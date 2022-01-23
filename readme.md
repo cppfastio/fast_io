@@ -27,6 +27,11 @@ int main()
 }
 ```
 
+## Old Repository was archived due to bloat with git through time
+
+Old commits were at:
+https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23
+
 ## Examples
 Deprecated examples are in
 https://bitbucket.org/ejsvifq_mabmip/fast_io_deprecated
