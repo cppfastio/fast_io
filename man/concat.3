@@ -1,0 +1,186 @@
+.\" Manpage for fast_io::concat
+.\" Contact euloanty@live.com or pssvv4@gmail.com to correct errors of typos
+.TH CONCAT 3 2020-11-14 "fast_io" "C++ Programmer's Manual"
+.SH "NAME"
+concat, concatln - string generators
+.SH "SYNOPSIS"
+.nf
+.B #include <fast_io.h>
+.PP
+.BI "template<typename T=std::string,typename...Args>"
+.BI "constexpr T concat(args...);"
+.PP
+.BI "template<typename T=std::string,typename...Args>"
+.BI "constexpr T concatln(args...);" 
+.SH DESCRIPTION
+The functions in the
+.BR concat ()
+family generate a std::string by default using the given parameters.
+.PP
+Function concatln() will add a newline character to the concatenating result.
+.PP
+Neither concat() nor concatln() will dereference a pointer argument, since such action is un-safe and may lead to SegmentFault. Function  
+.BR chvw ()
+may help if you really want to do so. See EXAMPLES to get more information.
+.PP
+When dealing with pointers, concat() and concatln() return the value of the pointers(themselves) as a hexadecimal literal.
+.PP
+The functions concat() and concatln() take one or more printable objects as parameter and return a std::string by default, with content of the concatenation of the parameters.
+.PP
+
+.SH RETURN VALUE
+These functions return std::string as default. Return type can be specified by specifying the first template parameter T when calling concat() and concatln().
+.SH THREAD SAFETY
+Function concat () and concatln () guarantee thread safety during each call.
+
+.SH EXCEPTIONS
+When concat () family functions fail, they throw exceptions. These functions are exception safe.
+.SH EXAMPLE
+generate a std::string with content "It's a sunny day!":
+.PP
+.in +8n
+.EX
+#include<fast_io.h>
+
+int main()
+{
+	std::string weather("sunny");
+	print(fast_io::concat("It's a ", weather, " day!")); // type of str is std::string as default
+}
+
+.EE
+.in -8n
+.PP
+generate a std::string with multiple different type args:
+.PP
+.in +8n
+.EX
+#include<fast_io.h>
+
+int main()
+{
+	std::size_t answer{42u};
+	std::string color("red");
+	print(fast_io::concat("The answer is ", answer, " and the color is ", color, "."));
+}
+.EE
+.in -8n
+.PP
+generate std::string ending with newline character:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main() 
+{
+	print(fast_io::concatln("This example shows how to use ", "fast_io::concatln() ", "to generate a std::string ending with newline character."));
+	print(fast_io::concatln("This can also take ", "more ", "than ", 1, "parameters. And even floating number: ", 1.234567));
+}
+.EE
+.in -8n
+.PP
+WARNING: pointers passed to concat() and concatln() are treated only as a value that describes the address and is converted to a hexadecimal literal:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main() 
+{
+	char const *ptr{"Hello,Pointer?"};
+	// this will not dereference ptr to string literal "Hello,Pointer?"
+	// but the literal value of ptr itself.
+	print(fast_io::concat("The address that ptr describes is ", ptr));
+	// this prints The address that ptr describes is 0X...... 
+	// where the dots(...) represents the value of ptr
+}
+.EE
+.in -8n
+.PP
+perform with single character and char const *:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main() 
+{
+	char const *str{"correct usage: "};
+	print(fast_io::concat(fast_io::chvw(str), fast_io::chvw('Y')));
+}
+.EE
+.in -8n
+.PP
+generate std::wstring:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main()
+{
+	std::wstring wstr1{L"Hello, "};
+	std::wstring wstr2{fast_io::concat<std::wstring>(wstr1, L"World!")};
+}
+.EE
+.in -8n
+.PP
+perform the same action of concat() and concatln() with functions:
+.BR print () 
+and 
+.BR println ()
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main() 
+{
+	{
+		std::string str;
+		fast_io::ostring_ref ref(str);
+		print(ref, "Hello World", 40, " ok ", 4.32535);
+
+		println("result of do concat with print(): ", str);
+	}
+	{
+		println("result of do concat with concat(): ", fast_io::concat("Hello World", 40, " ok ", 4.32535));
+	}
+}
+.EE
+.in -8n
+.PP
+generate string with percision:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main() 
+{
+    double value;
+    print("Enter a double: ");
+    scan(value);
+    std::string str;
+    fast_io::ostring_ref ref(str);
+    println(ref, "integer: ", 40,
+    		   "\nscientific: ", value,
+    		   "\nscientific with percision 3: ",fast_io::scientific(value, 3),
+    		   "\nfixed: ", fast_io::fixed(value),
+    		   "\nfixed with percision 3: ", fast_io::fixed(value, 3));
+    println("with percision: ", str);
+}
+.EE
+.in -8n
+.PP
+
+.SH SEE ALSO
+.BR print (3),
+.BR chvw (3),
+.BR to (3)
+.SH COLOPHON
+This page is part of 2596 version of the
+.I fast_io
+project.
+Wiki can be found out in https://github.com/expnkx/fast_io/wiki

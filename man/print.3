@@ -1,0 +1,174 @@
+.\" Manpage for print
+.\" Contact euloanty@live.com to correct errors of typos
+.TH PRINT 3 2020-10-25 "fast_io" "C++ Programmer's Manual"
+.SH "NAME"
+print, println, perr, perrln, panic, panicln, debug_print, debug_println, debug_perr, debug_perrln - output conversion
+.SH "SYNOPSIS"
+.nf
+.B #include <fast_io.h>
+.PP
+.BI "constexpr void print(args...);"
+.BI "constexpr void print([output stream device],args...);"
+.BI "constexpr void println(args...);"
+.BI "constexpr void println([output stream device],args...);"
+.BI "constexpr void perr(args...);"
+.BI "constexpr void perrln(args...);"
+.BI "constexpr void panic(args...);"
+.BI "constexpr void panicln(args...);"
+.PP
+.BI
+.BI "constexpr void debug_print(args...);"
+.BI "constexpr void debug_print([output stream device],args...);"
+.BI "constexpr void debug_println(args...);"
+.BI "constexpr void debug_println([output stream device],args...);"
+.BI "constexpr void debug_perr(args...);"
+.BI "constexpr void debug_perrln(args...);"
+.SH DESCRIPTION
+The functions in the
+.BR print ()
+family produce output.
+.PP
+Functions which end up ln will print out a newline character after print.
+.PP
+The functions
+.BR print ()
+and
+.BR println ()
+write output to C's
+.IR stdout ,
+the standard output stream by default;
+if the first argument is an output device, it will output to that output device.
+.PP
+The functions
+.BR perr ()
+and
+.BR perrln ()
+write output to
+.IR native
+stderr, the native standard error stream on your platform, which means it is not synchronized with C's stderr.
+They are not buffered stream either. When users call perr or perrln to print data to standard error, they guarantee atomicity of syscalls.
+Ignore CRLF on all platforms including Windows.
+Equivalent to "print (fast_io::err(),....)" or "println (fast_io::err(),...)"
+.PP
+The functions
+.BR panic ()
+and
+.BR panicln ()
+are equivalent to perr () and perrln (), except the program terminates with a builtin trap.
+.PP
+.BR debug_print ()
+family is basically the same as normal
+.BR print ()
+family functions, but they are only available under debugging mode. When user defines NDEBUG macro, these functions will not be available. This prevents print leaks for release mode.
+.PP
+Unlike
+.BR print ()
+and
+.BR println (),
+.BR debug_print ()
+and
+.BR debug_perrln ()
+by default print out to
+.IR native
+stdout, instead of C's stdout , 
+when the first argument is not an output device. So even when the program crashes, the data will still get printed out to the standard output.
+.SH RETURN VALUE
+These functions have no return value.
+.SH PROCESS SAFETY
+.BR print ()
+family functions guarantee process safety when output device is not an buffered output stream.
+.SH THREAD SAFETY
+Thread safety depends on whether the output device satisfies the mutex stream concept. For example, fast_io::c_stdout() is thread-safe. print to c_stdout is thread-safe if underlining libc provides thread-safety for FILE*. If the output device is process-safe, it is thread-safe too.
+.SH EXCEPTIONS
+When print () family functions fail, they throw exceptions. These functions are exception safe.
+.SH EXAMPLE
+print out "Hello World\en" to C's stdout
+.PP
+.in +8n
+.EX
+#include<fast_io.h>
+
+int main()
+{
+	print("Hello World\en");
+}
+.EE
+.in -8n
+.PP
+print out "Hello World\en" to an output device. Here we use fast_io::out() as an example.
+.PP
+.in +8n
+.EX
+#include<fast_io.h>
+
+int main()
+{
+	print(fast_io::out(),"Hello World\en");
+}
+.EE
+.in -8n
+.BR
+.PP
+print out multiple args.
+.PP
+.in +8n
+.EX
+#include<fast_io.h>
+
+int main()
+{
+	println("hello ",3," ",4," ",5," ",6," ",7," ",8);
+}
+.EE
+.in -8n
+The best practice (with fast_io) to print char const * ("Hello world!") to C's stdout:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main()
+{
+	char const *str = "Hello world!";
+	
+	println("str = ", str); // this will print the pointer's value instead of the string. See the correct solutions above:
+	println("str = ", std::string_view(str)); // use std::string_view instead
+	println("str = ", fast_io::mnp::chvw(str));    // use  fast_io::chvw()
+}
+.EE
+.in -8n
+.PP
+print char to C's stdout:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main()
+{
+	char ch = 'Y';
+	println(ch); // this will print the ASCII code (89) of 'Y' instead character 'Y'
+	println(fast_io::mnp::chvw(ch)); // this can print 'Y'
+}
+.EE
+.in -8n
+.PP
+.SH SEE ALSO
+.BR native_file (3),
+.BR c_file (3),
+.BR scan (3),
+.BR concat (3),
+.BR concatln (3),
+.BR to (3),
+.BR obuf_file (3),
+.BR nt_file (3),
+.BR win32_file (3),
+.BR posix_file (3),
+.BR c_file_unlocked (3),
+.BR filebuf_file (3),
+.BR socket_file (3),
+.SH COLOPHON
+This page is part of 2628 version of the
+.I fast_io
+project.
+Wiki can be found out in https://github.com/expnkx/fast_io/wiki

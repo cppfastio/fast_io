@@ -1,0 +1,11 @@
+*.exe
+benchmarks/*/*.txt
+*/build/*
+!.cc
+*.app
+/include/.vscode
+/include/fast_io_network/.vscode/settings.json
+.tmp
+.vscode
+build
+

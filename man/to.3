@@ -1,0 +1,93 @@
+.\" Manpage for fast_io::concat
+.\" Contact euloanty@live.com or pssvv4@gmail.com to correct errors of typos
+.TH TO 3 2020-11-14 "fast_io" "C++ Programmer's Manual"
+.SH "NAME"
+to - do the opposite of fast_io::concat(). Convert string to integer/floating point/etc.
+.SH "SYNOPSIS"
+.nf
+.B #include <fast_io.h>
+.PP
+.BI "template<typename T,typename... Args>"
+.BI "inline constexpr T to(args...)"
+.PP
+.SH DESCRIPTION
+The function 
+.BR to () 
+takes two or more strings and returns the conversion result truncated from the first unexpected character (depending on the specified template parameter T).
+.PP
+
+.SH RETURN VALUE
+The function returns the conversion result with specified type T. Return value type can be specified by specifying the first template parameter T while calling to().
+.SH THREAD SAFETY
+Function to () guarantees thread safety during each call.
+
+.SH EXCEPTIONS
+When call to function to() fails, to() throws exceptions. The function is exception safe. The truncation does not cause exceptions.
+But when the return type is too small to hold the conversion result, an fast_io::input_overflow_error will be thrown.
+.SH EXAMPLE
+convert string to integer:
+.PP
+.in +8n
+.EX
+#include<fast_io.h>
+
+int main()
+{
+	std::string answer("42");
+    uint32_t result{fast_io::to<uint32_t>(answer)}; // telling to() what to do by specifying T.
+	print("the answer is ", result);
+}
+
+.EE
+.in -8n
+.PP
+convert multiple strings to one integer:
+.PP
+.in +8n
+.EX
+#include<fast_io.h>
+
+int main()
+{
+	std::string part1("123");
+    std::string part2("456");
+    std::string part3("789");
+    int32_t result{fast_io::to<int32_t>(part1, part2, part3)};
+
+	print("the result is: ", result); // the result is 123456789
+}
+.EE
+.in -8n
+.PP
+anything after the first unexpected character will be ignored, even if they are expected ones:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+
+int main() 
+{
+    std::string with_point("123456.789");
+    std::string with_char("123456A789");
+    std::string with_star("123456*789");
+    // if the first character is illegal, 0 will be returned.
+    std::string with_etc("~!@#$%^&*()_+{}:\"\\';/.,<>?");
+
+    println("with point: ", with_point, " -> ", fast_io::to<int32_t>(with_point));
+    println("with char:  ", with_char,  " -> ", fast_io::to<int32_t>(with_char));
+    println("with star:  ", with_star,  " -> ", fast_io::to<int32_t>(with_star));
+    println("with other: ", with_etc,   " -> ", fast_io::to<int32_t>(with_etc));
+}
+.EE
+.in -8n
+.PP
+
+.SH SEE ALSO
+.BR print (3)
+.BR chvw (3)
+.BR concat (3)
+.SH COLOPHON
+This page is part of 2628 version of the
+.I fast_io
+project.
+Wiki can be found out in https://github.com/expnkx/fast_io/wiki

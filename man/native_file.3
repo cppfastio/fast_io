@@ -1,0 +1,142 @@
+.\" Manpage for fast_io::concat
+.\" Contact euloanty@live.com or pssvv4@gmail.com to correct errors of typos
+.TH CONCAT 3 2020-11-20 "fast_io" "C++ Programmer's Manual"
+.SH "NAME"
+native_file, inative_file, onative_file, u8native_file, u8inative_file, u8onative_file, wnative_file, winative_file, wonative_file - native file file observer.
+.SH "SYNOPSIS"
+.nf
+.B #include <fast_io_device.h>
+.PP
+.BI "using native_file =   /* Depending on platform*/ "
+.BI "using inative_file = input_file_wrapper<native_file>;"
+.BI "using onative_file = output_file_wrapper<native_file>;"
+.PP
+.BI "using u8native_file = /* Depending on platform */"
+.BI "using u8inative_file = input_file_wrapper<u8native_file>; "
+.BI "using u8onative_file = output_file_wrapper<u8native_file>; "
+.PP
+.BI "using wnative_file = /* Depending on platform */ "
+.BI "using winative_file = input_file_wrapper<wnative_file>; "
+.BI "using wonative_file = output_file_wrapper<wnative_file>; "
+.PP
+.SH INITIALIZATION
+list common usages only:
+.PP
+.BI "native_file file(cstring_view filename, open_mode om, perms pm=perms(436));"
+.PP
+.BI "native_file file(native_at_entry nate, cstring_view filename, open_mode om, perms pm=perms(436));
+.PP
+.BI "native_file file(wcstring_view filename, open_mode om, perms pm=perms(436)); // win32_file only"
+.PP
+.BI "native_file file(native_at_entry nate, wcstring_view filename, open_mode om, perms pm=static_cast<perms>(436)); // win32_file Only" 
+.PP
+.SH DESCRIPTION
+native_file is an alias of current platform native file. Depending on your platform, native_file can be an alias of either
+.BR win32_file
+or
+.BR posix_file
+.PP
+An inative_file is equal to native_file with open mode fast_io::open_mode::in
+.PP
+A onative_file is equal to native_file with open mode fast_io::open_mode::out
+.PP
+.SH RETURN VALUE
+.BR native_file
+has no return value. It's not a function but a struct.
+.PP
+.BR inative_file
+has no return value. It's not a function but a struct.
+.PP
+.BR onative_file
+has no return value. It's not a function but a struct.
+.PP
+.SH THREAD SAFETY
+native_file guarantees for thread safety.
+.SH PROCESS SAFETY
+native_file guarantees for process safety.
+.PP
+fast_io also provides thread-safe files: 
+.BR ibuf_file_mutex ,
+.BR obuf_file_mutex
+and 
+.BR iobuf_file_mutex 
+. Check their manpage for more details.
+.PP
+.SH PROCESS SAFETY
+native_file guarantees for process safety.
+.SH EXCEPTIONS
+When failed to open/create native_file, it will throw exceptions.
+.PP
+.SH EXAMPLE
+create or open (if such a file already exists) a file "text.txt" and write string "It's a sunny day!\en" (if such file exists, append this string). 
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+#include <fast_io_device.h>
+
+int main()
+{
+	std::string str("It's a sunny ");
+	fast_io::native_file file("text.txt",  fast_io::open_mode::out | fast_io::open_mode::app);
+	print(file, str, "day!\en");
+}
+.EE
+.in -8n
+.PP
+Open an existing local file "text.txt" and read one line at a time, until the end of the file:
+.PP
+.in +8n
+.EX
+#include <fast_io.h>
+#include <fast_io_device.h>
+
+int main()
+{
+	fast_io::native_file file("text.txt", fast_io::open_mode::in);
+	for(std::string str;scan<true>(file, fast_io::line(str)); println(str));
+}
+.EE
+.in -8n
+.PP
+Get file status of file "text.txt":
+.in +8n
+.EX
+#include <fast_io.h>
+#include <fast_io_device.h>
+
+int main()
+{
+	fast_io::ionative_file nfl("text.txt");
+	auto st{status(nfl)};
+	println("status of text.txt:\en ", st);
+}
+.EE
+.in -8n
+
+.SH SEE ALSO
+.BR open_mode (3),
+.BR status (3),
+.BR to_span (3),
+.BR native_pipe (3),
+.BR win32_file (3),
+.BR posix_file (3),
+.BR ibuf_file (3),
+.BR obuf_file (3),
+.BR ibuf_file_mutex (3),
+.BR obuf_file_mutex (3),
+.BR iobuf_file_mutex (3),
+.BR ibuf_text_file (3),
+.BR obuf_text_file (3),
+.BR basic_ibuf_utf (3),
+.BR basic_obuf_utf (3),
+.BR basic_ibuf_utf_file (3),
+.BR basic_obuf_utf_file (3),
+.BR ibuf_utf8_file (3),
+.BR obuf_utf8_file (3),
+.BR native_memory_map_file (3)
+.SH COLOPHON
+This page is part of 2596 version of the
+.I fast_io
+project.
+Wiki can be found out in https://github.com/expnkx/fast_io/wiki

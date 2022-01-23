@@ -1,0 +1,24 @@
+﻿#include<fast_io.h>
+#include<fast_io_device.h>
+#include<fast_io_crypto.h>
+
+/*
+fast_io's own implementation. No need to install anything.
+Probably need -march=native to enable sha intrinsics
+*/
+
+int main(int argc,char** argv)
+{
+	using namespace fast_io::mnp;
+	if(argc!=2)
+	{
+		perr("Usage: ",os_c_str(*argv)," <file>\n");
+		return 1;
+	}
+	auto t0{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
+	fast_io::sha256_context ctx;
+	fast_io::ibuf_file ibf(os_c_str(argv[1]));
+	auto transmitted{transmit(as_file(ctx),ibf)};
+	ctx.do_final();
+	println(hash_digest(ctx)," *",os_c_str(argv[1]),"\nTransmitted:",transmitted," bytes\tElapsed Time:",fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)-t0);
+}
