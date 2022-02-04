@@ -45,10 +45,9 @@ https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n
 https://ewindy.gitee.io/fast_io_rst/index.html
 
 ## Compiler Support
-- GCC 11 or GCC 12
+- GCC 12
 - VS 19.29.29917
-- Clang 14
-- Intel(R) oneAPI DPC++ Compiler 2021.2.0 (2021.2.0.20210317)
+- Clang 15
 - Winegcc
 
 ## C++ standard library support
