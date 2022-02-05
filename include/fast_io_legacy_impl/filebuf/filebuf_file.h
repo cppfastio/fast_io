@@ -110,12 +110,10 @@ public:
 #endif
 	basic_filebuf_file& operator=(basic_filebuf_file const&)=delete;
 	basic_filebuf_file(basic_filebuf_file const&)=delete;
-	basic_filebuf_file(basic_filebuf_file&& other) noexcept:basic_filebuf_io_observer<CharT,Traits>{other.release()}{}
+	basic_filebuf_file(basic_filebuf_file&& __restrict other) noexcept:basic_filebuf_io_observer<CharT,Traits>{other.release()}{}
 
-	basic_filebuf_file& operator=(basic_filebuf_file&& bf) noexcept
+	basic_filebuf_file& operator=(basic_filebuf_file&& __restrict bf) noexcept
 	{
-		if(this->fb==bf.fb)[[unlikely]]
-			return *this;
 		delete this->fb;
 		this->fb=bf.release();
 		return *this;

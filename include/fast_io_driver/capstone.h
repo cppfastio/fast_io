@@ -54,14 +54,12 @@ public:
 	explicit constexpr cs_file(T cs) noexcept:cs_io_observer{cs}{}
 	cs_file(cs_file const&)=delete;
 	cs_file& operator=(cs_file const&)=delete;
-	constexpr cs_file(cs_file&& other) noexcept: cs_io_observer{other.csh}
+	constexpr cs_file(cs_file&& __restrict other) noexcept: cs_io_observer{other.csh}
 	{
 		other.csh=0;
 	}
-	cs_file& operator=(cs_file&& c) noexcept
+	cs_file& operator=(cs_file&& __restrict c) noexcept
 	{
-		if(__builtin_addressof(c)==this)[[unlikely]]
-			return *this;
 		if(this->csh)[[likely]]
 			::fast_io::noexcept_call(cs_close,__builtin_addressof(this->csh));
 		this->csh=c.csh;
@@ -107,15 +105,13 @@ public:
 	}
 	cs_insn_range(cs_insn_range const&)=delete;
 	cs_insn_range& operator=(cs_insn_range const&)=delete;
-	cs_insn_range(cs_insn_range&& other) noexcept:ins{other.ins},count{other.count}
+	cs_insn_range(cs_insn_range&& __restrict other) noexcept:ins{other.ins},count{other.count}
 	{
 		other.ins=nullptr;
 		other.count=0;
 	}
-	cs_insn_range& operator=(cs_insn_range&& other) noexcept
+	cs_insn_range& operator=(cs_insn_range&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)[[unlikely]]
-			return *this;
 		if(this->ins)[[likely]]
 			::fast_io::noexcept_call(cs_free,this->ins,this->count);
 		this->ins=other.ins;

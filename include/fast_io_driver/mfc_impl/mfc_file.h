@@ -147,14 +147,12 @@ public:
 		this->phandle=temp;
 		return *this;
 	}
-	basic_mfc_file(basic_mfc_file&& mcf) noexcept:basic_mfc_io_observer<char_type>{mcf.phandle}
+	basic_mfc_file(basic_mfc_file&& __restrict mcf) noexcept:basic_mfc_io_observer<char_type>{mcf.phandle}
 	{
 		mcf.phandle=nullptr;
 	}
-	basic_mfc_file& operator=(basic_mfc_file&& mcf) noexcept
+	basic_mfc_file& operator=(basic_mfc_file&& __restrict mcf) noexcept
 	{
-		if(this==__builtin_addressof(mcf))
-			return *this;
 		delete this->phandle;
 		this->phandle=mcf.phandle;
 		mcf.phandle=nullptr;

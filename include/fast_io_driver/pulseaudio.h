@@ -77,14 +77,12 @@ public:
 	}
 	basic_pulseaudio_simple_file(basic_pulseaudio_simple_file const&)=delete;
 	basic_pulseaudio_simple_file& operator=(basic_pulseaudio_simple_file const&)=delete;
-	constexpr basic_pulseaudio_simple_file(basic_pulseaudio_simple_file&& hd) noexcept:basic_pulseaudio_simple_file(hd.native_handle())
+	constexpr basic_pulseaudio_simple_file(basic_pulseaudio_simple_file&& __restrict hd) noexcept:basic_pulseaudio_simple_file(hd.native_handle())
 	{
 		hd.native_handle()=nullptr;
 	}
-	basic_pulseaudio_simple_file& operator=(basic_pulseaudio_simple_file&& hd) noexcept
+	basic_pulseaudio_simple_file& operator=(basic_pulseaudio_simple_file&& __restrict hd) noexcept
 	{
-		if(this->native_handle()==hd.native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			pa_simple_free(this->native_handle());
 		this->native_handle()=hd.native_handle();

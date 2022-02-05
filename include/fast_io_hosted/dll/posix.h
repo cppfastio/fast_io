@@ -137,14 +137,12 @@ public:
 	explicit posix_dll_file(T const& t,dll_mode mode):posix_dll_io_observer{::fast_io::details::create_posix_rtld_impl(t,mode)}{}
 	posix_dll_file(posix_dll_file const&)=delete;
 	posix_dll_file& operator=(posix_dll_file const&)=delete;
-	constexpr posix_dll_file(posix_dll_file&& other) noexcept:posix_dll_io_observer{other.rtld_handle}
+	constexpr posix_dll_file(posix_dll_file&& __restrict other) noexcept:posix_dll_io_observer{other.rtld_handle}
 	{
 		other.rtld_handle=nullptr;
 	}
-	posix_dll_file& operator=(posix_dll_file&& other) noexcept
+	posix_dll_file& operator=(posix_dll_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)[[unlikely]]
-			return *this;
 		if(this->rtld_handle)[[likely]]
 			noexcept_call(dlclose,this->rtld_handle);
 		this->rtld_handle=other.rtld_handle;

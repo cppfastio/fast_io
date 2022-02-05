@@ -54,14 +54,12 @@ public:
 	}
 	ssl_context(ssl_context const&) = delete;
 	ssl_context& operator=(ssl_context const&) = delete;
-	constexpr ssl_context(ssl_context&& bmv) noexcept:ssl_context_observer(bmv.native_handle())
+	constexpr ssl_context(ssl_context&& __restrict bmv) noexcept:ssl_context_observer(bmv.native_handle())
 	{
 		bmv.native_handle()=nullptr;
 	}
-	ssl_context& operator=(ssl_context&& bmv) noexcept
+	ssl_context& operator=(ssl_context&& __restrict bmv) noexcept
 	{
-		if(bmv.native_handle()==this->native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			SSL_CTX_free(this->native_handle());
 		this->native_handle()=bmv.native_handle();

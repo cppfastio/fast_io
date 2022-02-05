@@ -275,17 +275,15 @@ public:
 	}
 	posix_file_loader_impl(posix_file_loader_impl const&)=delete;
 	posix_file_loader_impl& operator=(posix_file_loader_impl const&)=delete;
-	constexpr posix_file_loader_impl(posix_file_loader_impl&& other) noexcept:address_begin(other.address_begin),address_end(other.address_end)
+	constexpr posix_file_loader_impl(posix_file_loader_impl&& __restrict other) noexcept:address_begin(other.address_begin),address_end(other.address_end)
 	{
 		if constexpr(allocation)
 			other.address_end=other.address_begin=nullptr;
 		else
 			other.address_end=other.address_begin=(char*)-1;
 	}
-	posix_file_loader_impl& operator=(posix_file_loader_impl && other) noexcept
+	posix_file_loader_impl& operator=(posix_file_loader_impl && __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));
 		address_begin=other.address_begin;
 		address_end=other.address_end;

@@ -92,15 +92,13 @@ public:
 	{}
 	basic_win32_family_crypt_gen_random_file(basic_win32_family_crypt_gen_random_file const&)=delete;
 	basic_win32_family_crypt_gen_random_file& operator=(basic_win32_family_crypt_gen_random_file const&)=delete;
-	constexpr basic_win32_family_crypt_gen_random_file(basic_win32_family_crypt_gen_random_file&& other) noexcept:
+	constexpr basic_win32_family_crypt_gen_random_file(basic_win32_family_crypt_gen_random_file&& __restrict other) noexcept:
 		basic_win32_crypt_gen_random_io_observer<ch_type>{other.hprov}
 	{
 		other.hprov=0;
 	}
-	basic_win32_family_crypt_gen_random_file& operator=(basic_win32_family_crypt_gen_random_file&& other) noexcept
+	basic_win32_family_crypt_gen_random_file& operator=(basic_win32_family_crypt_gen_random_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		if(this->hprov)[[likely]]
 		{
 			::fast_io::win32::CryptReleaseContext(this->hprov,0);

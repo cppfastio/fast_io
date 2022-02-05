@@ -407,14 +407,12 @@ public:
 #endif
 	posix_process(posix_process const&)=delete;
 	posix_process& operator=(posix_process const&)=delete;
-	constexpr posix_process(posix_process&& other) noexcept:posix_process_observer{other.pid}
+	constexpr posix_process(posix_process&& __restrict other) noexcept:posix_process_observer{other.pid}
 	{
 		other.pid=-1;
 	}
-	posix_process& operator=(posix_process&& other) noexcept
+	posix_process& operator=(posix_process&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		details::posix_waitpid_noexcept(this->pid);
 		this->pid=other.pid;
 		other.pid=-1;

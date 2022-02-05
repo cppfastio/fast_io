@@ -1016,13 +1016,11 @@ public:
 		this->handle=win32::details::win32_dup2_impl(other.handle,this->handle);
 		return *this;
 	}
-	basic_win32_family_file(basic_win32_family_file&& b) noexcept:
+	basic_win32_family_file(basic_win32_family_file&& __restrict b) noexcept:
 		basic_win32_family_io_observer<family,ch_type>{b.release()}
 	{}
-	basic_win32_family_file& operator=(basic_win32_family_file&& b) noexcept
+	basic_win32_family_file& operator=(basic_win32_family_file&& __restrict b) noexcept
 	{
-		if(__builtin_addressof(b)==this)
-			return *this;
 		if(this->handle)[[likely]]
 			::fast_io::win32::CloseHandle(this->handle);
 		this->handle = b.handle;

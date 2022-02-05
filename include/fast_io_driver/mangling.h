@@ -43,15 +43,13 @@ struct cxa_demangle
 		length=other.length;
 		return *this;
 	}
-	constexpr cxa_demangle(cxa_demangle&& other) noexcept:buffer(other.buffer),length(other.length)
+	constexpr cxa_demangle(cxa_demangle&& __restrict other) noexcept:buffer(other.buffer),length(other.length)
 	{
 		other.buffer=nullptr;
 		other.length=0;
 	}
-	cxa_demangle& operator=(cxa_demangle&& other) noexcept
+	cxa_demangle& operator=(cxa_demangle&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		free(buffer);
 		buffer=other.buffer;
 		length=other.length;

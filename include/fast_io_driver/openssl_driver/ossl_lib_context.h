@@ -15,14 +15,12 @@ public:
 	}
 	openssl_context(openssl_context const&) = delete;
 	openssl_context& operator=(openssl_context const&) = delete;
-	constexpr openssl_context(openssl_context&& bmv) noexcept:ossl_lib_context_observer(bmv.native_handle())
+	constexpr openssl_context(openssl_context&& __restrict bmv) noexcept:ossl_lib_context_observer(bmv.native_handle())
 	{
 		bmv.native_handle()=nullptr;
 	}
-	openssl_context& operator=(openssl_context&& bmv) noexcept
+	openssl_context& operator=(openssl_context&& __restrict bmv) noexcept
 	{
-		if(bmv.native_handle()==this->native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			OSSL_LIB_CTX_free(this->native_handle());
 		this->native_handle()=bmv.native_handle();

@@ -199,14 +199,11 @@ public:
 	{
 		mcf.phandle=nullptr;
 	}
-	basic_atl_file& operator=(basic_atl_file&& mcf) noexcept
+	basic_atl_file& operator=(basic_atl_file&& __restrict mcf) noexcept
 	{
-		if(mcf.phandle!=this->phandle)
-		{
-			delete this->phandle;
-			this->phandle=mcf.phandle;
-			mcf.phandle=nullptr;
-		}
+		delete this->phandle;
+		this->phandle=mcf.phandle;
+		mcf.phandle=nullptr;
 		return *this;
 	}
 	void close() noexcept

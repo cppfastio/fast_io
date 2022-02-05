@@ -17,7 +17,7 @@ public:
 	constexpr win32_internet_handle(){}
 	constexpr win32_internet_handle(void* value):handle(value){}
 	
-	constexpr win32_internet_handle(win32_internet_handle&& bmv) noexcept:handle(bmv.handle)
+	constexpr win32_internet_handle(win32_internet_handle&& __restrict bmv) noexcept:handle(bmv.handle)
 	{
 		bmv.handle={};
 	}
@@ -30,10 +30,8 @@ public:
 			handle=nullptr;
 		}
 	}
-	win32_internet_handle& operator=(win32_internet_handle&& bmv) noexcept
+	win32_internet_handle& operator=(win32_internet_handle&& __restrict bmv) noexcept
 	{
-		if(bmv.handle==handle)
-			return *this;
 		if(handle)
 			InternetCloseHandle(handle);
 		handle=bmv.handle;

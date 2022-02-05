@@ -102,14 +102,12 @@ public:
 	constexpr basic_gz_file(native_handle_type hd) noexcept:basic_gz_io_observer<char_type>(hd){}
 	basic_gz_file(basic_gz_file const&)=delete;
 	basic_gz_file& operator=(basic_gz_file const&)=delete;
-	constexpr basic_gz_file(basic_gz_file&& bmv) noexcept:basic_gz_io_observer<char_type>(bmv.native_handle())
+	constexpr basic_gz_file(basic_gz_file&& __restrict bmv) noexcept:basic_gz_io_observer<char_type>(bmv.native_handle())
 	{
 		bmv.native_handle()=nullptr;
 	}
-	basic_gz_file& operator=(basic_gz_file&& bmv) noexcept
+	basic_gz_file& operator=(basic_gz_file&& __restrict bmv) noexcept
 	{
-		if(__builtin_addressof(bmv)==this)[[unlikely]]
-			return *this;
 		if(this->native_handle())[[likely]]
 			gzclose(this->native_handle());
 		this->native_handle()=bmv.native_handle();

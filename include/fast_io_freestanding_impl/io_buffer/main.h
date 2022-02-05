@@ -364,10 +364,8 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
-	basic_io_buffer& operator=(basic_io_buffer&& other) noexcept requires(std::movable<handle_type>)
+	basic_io_buffer& operator=(basic_io_buffer&& __restrict other) noexcept requires(std::movable<handle_type>)
 	{
-		if(this==__builtin_addressof(other))
-			return *this;
 		if constexpr((mode&buffer_mode::out)==buffer_mode::out)
 			close_impl();
 		cleanup_impl();
@@ -383,7 +381,7 @@ public:
 		decorators=::fast_io::freestanding::move(other.decorators);
 		return *this;
 	}
-	constexpr basic_io_buffer& operator=(basic_io_buffer&&)=delete;
+	constexpr basic_io_buffer& operator=(basic_io_buffer&& __restrict)=delete;
 	constexpr void swap(basic_io_buffer&& other) noexcept requires std::swappable<handle_type>
 	{
 		std::ranges::swap(ibuffer,other.ibuffer);

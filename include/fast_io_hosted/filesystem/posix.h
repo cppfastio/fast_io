@@ -101,13 +101,11 @@ public:
 		this->dirp=newdir;
 		return *this;
 	}
-	constexpr posix_directory_file(posix_directory_file&& other) noexcept:
+	constexpr posix_directory_file(posix_directory_file&& __restrict other) noexcept:
 		posix_directory_io_observer{other.release()}{}
 
-	posix_directory_file& operator=(posix_directory_file&& other) noexcept
+	posix_directory_file& operator=(posix_directory_file&& __restrict other) noexcept
 	{
-		if(this==__builtin_addressof(other))
-			return *this;
 		if(this->dirp)[[likely]]
 			noexcept_call(::closedir,this->dirp);
 		this->dirp=other.release();

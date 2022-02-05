@@ -592,7 +592,7 @@ public:
 		dll_handle=details::deal_with_locale_fullname(loc,fullname);
 	}
 	constexpr l10n(l10n const&)=delete;
-	constexpr l10n(l10n&& other) noexcept : loc(::fast_io::freestanding::move(other.loc)),dll_handle(other.dll_handle)
+	constexpr l10n(l10n&& __restrict other) noexcept : loc(::fast_io::freestanding::move(other.loc)),dll_handle(other.dll_handle)
 	{
 		dll_handle=nullptr;
 	}
@@ -613,10 +613,8 @@ public:
 		}
 	}
 	l10n& operator=(l10n const&)=delete;
-	l10n& operator=(l10n&& other) noexcept
+	l10n& operator=(l10n&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		close();
 		loc=::fast_io::freestanding::move(other.loc);
 		dll_handle=other.dll_handle;

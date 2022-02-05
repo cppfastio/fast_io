@@ -17,14 +17,12 @@ public:
 	settings(settings const&) = delete;
 	settings& operator=(settings const&) = delete;
 
-	constexpr settings(settings&& bmv) noexcept:settings_observer(bmv.handle)
+	constexpr settings(settings&& __restrict bmv) noexcept:settings_observer(bmv.handle)
 	{
 		bmv.handle=nullptr;
 	}
-	settings& operator=(settings&& bmv) noexcept
+	settings& operator=(settings&& __restrict bmv) noexcept
 	{
-		if(bmv.native_handle()==this->native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			OPENSSL_INIT_free(this->native_handle());
 		this->native_handle()=bmv->native_handle();

@@ -26,7 +26,7 @@ public:
 	naive_vector(naive_vector const&)=delete;
 	naive_vector& operator=(naive_vector const&)=delete;
 
-	constexpr naive_vector(naive_vector<T>&& other) noexcept:beg_ptr(other.beg_ptr),end_ptr(other.end_ptr),cap_ptr(other.cap_ptr)
+	constexpr naive_vector(naive_vector<T>&& __restrict other) noexcept:beg_ptr(other.beg_ptr),end_ptr(other.end_ptr),cap_ptr(other.cap_ptr)
 	{
 		other.cap_ptr=other.end_ptr=other.beg_ptr=nullptr;
 	}
@@ -49,10 +49,8 @@ private:
 	}
 public:
 
-	constexpr naive_vector& operator=(naive_vector<T>&& other) noexcept
+	constexpr naive_vector& operator=(naive_vector<T>&& __restrict other) noexcept
 	{
-		if(this==__builtin_addressof(other))[[unlikely]]
-			return *this;
 		destroy();
 		beg_ptr=other.beg_ptr;
 		end_ptr=other.end_ptr;

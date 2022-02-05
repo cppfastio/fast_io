@@ -132,14 +132,12 @@ public:
 	{}
 	posix_memory_map_file(posix_memory_map_file const&)=delete;
 	posix_memory_map_file& operator=(posix_memory_map_file const&)=delete;
-	posix_memory_map_file(posix_memory_map_file&& other) noexcept:address_begin{other.address_begin},address_end{other.address_end}
+	posix_memory_map_file(posix_memory_map_file&& __restrict other) noexcept:address_begin{other.address_begin},address_end{other.address_end}
 	{
 		other.address_end=other.address_begin=reinterpret_cast<std::byte*>(MAP_FAILED);
 	}
-	posix_memory_map_file& operator=(posix_memory_map_file&& other) noexcept
+	posix_memory_map_file& operator=(posix_memory_map_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		if(this->address_begin!=reinterpret_cast<std::byte*>(MAP_FAILED))[[likely]]
 			details::sys_munmap(this->address_begin,static_cast<std::size_t>(address_end-address_begin));
 		this->address_begin=other.address_begin;

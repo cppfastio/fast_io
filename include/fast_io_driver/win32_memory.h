@@ -247,10 +247,8 @@ public:
 		this->base_address()=other.base_address();
 		return *this;
 	}
-	basic_win32_memory_io_handle& operator=(basic_win32_memory_io_handle&& other) noexcept
+	basic_win32_memory_io_handle& operator=(basic_win32_memory_io_handle&& __restrict other) noexcept
 	{
-		if(other.native_handle()==this->native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			fast_io::win32::CloseHandle(this->native_handle());
 		this->native_handle()=other.native_handle();
@@ -259,7 +257,7 @@ public:
 		other.base_address()={};
 		return *this;
 	}
-	constexpr basic_win32_memory_io_handle(basic_win32_memory_io_handle&& other) noexcept:basic_win32_memory_io_observer<ch_type>(other.native_handle(),other.base_address())
+	constexpr basic_win32_memory_io_handle(basic_win32_memory_io_handle&& __restrict other) noexcept:basic_win32_memory_io_observer<ch_type>(other.native_handle(),other.base_address())
 	{
 		other.native_handle()=nullptr;
 		other.base_address()={};
@@ -357,8 +355,8 @@ public:
 	}
 	constexpr basic_win32_memory_file(basic_win32_memory_file const&)=default;
 	constexpr basic_win32_memory_file& operator=(basic_win32_memory_file const&)=default;
-	constexpr basic_win32_memory_file(basic_win32_memory_file&&) noexcept=default;
-	constexpr basic_win32_memory_file& operator=(basic_win32_memory_file&&) noexcept=default;
+	constexpr basic_win32_memory_file(basic_win32_memory_file&& __restrict) noexcept=default;
+	constexpr basic_win32_memory_file& operator=(basic_win32_memory_file&& __restrict) noexcept=default;
 	~basic_win32_memory_file()
 	{
 		if(this->native_handle())[[likely]]

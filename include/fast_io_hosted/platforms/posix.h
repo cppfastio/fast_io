@@ -1280,14 +1280,12 @@ To verify whether O_TMPFILE is a thing on FreeBSD. https://github.com/FreeRDP/Fr
 		this->fd=details::sys_dup2(dp.fd,this->fd);
 		return *this;
 	}
-	constexpr basic_posix_file(basic_posix_file&& b) noexcept : basic_posix_io_observer<ch_type>{b.fd}
+	constexpr basic_posix_file(basic_posix_file&& __restrict b) noexcept : basic_posix_io_observer<ch_type>{b.fd}
 	{
 		b.fd = -1;
 	}
-	basic_posix_file& operator=(basic_posix_file&& b) noexcept
+	basic_posix_file& operator=(basic_posix_file&& __restrict b) noexcept
 	{
-		if(__builtin_addressof(b)==this)
-			return *this;
 		if(this->fd!=-1)[[likely]]
 			details::sys_close(this->fd);
 		this->fd=b.fd;

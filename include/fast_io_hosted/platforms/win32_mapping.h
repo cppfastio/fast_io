@@ -194,14 +194,12 @@ public:
 	}
 	win32_family_memory_map_file(win32_family_memory_map_file const&)=delete;
 	win32_family_memory_map_file& operator=(win32_family_memory_map_file const&)=delete;
-	constexpr win32_family_memory_map_file(win32_family_memory_map_file&& other) noexcept:address_begin{other.address_begin},address_end{other.address_end}
+	constexpr win32_family_memory_map_file(win32_family_memory_map_file&& __restrict other) noexcept:address_begin{other.address_begin},address_end{other.address_end}
 	{
 		other.address_end=other.address_begin=nullptr;
 	}
-	win32_family_memory_map_file& operator=(win32_family_memory_map_file&& other) noexcept
+	win32_family_memory_map_file& operator=(win32_family_memory_map_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)[[unlikely]]
-			return *this;
 		if(this->address_begin)[[likely]]
 			win32::UnmapViewOfFile(this->address_begin);
 		this->address_begin=other.address_begin;

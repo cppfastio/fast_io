@@ -111,14 +111,12 @@ public:
 	}
 	win32_family_file_loader(win32_family_file_loader const&)=delete;
 	win32_family_file_loader& operator=(win32_family_file_loader const&)=delete;
-	constexpr win32_family_file_loader(win32_family_file_loader&& other) noexcept:address_begin(other.address_begin),address_end(other.address_end)
+	constexpr win32_family_file_loader(win32_family_file_loader&& __restrict other) noexcept:address_begin(other.address_begin),address_end(other.address_end)
 	{
 		other.address_end=other.address_begin=nullptr;
 	}
-	win32_family_file_loader& operator=(win32_family_file_loader && other) noexcept
+	win32_family_file_loader& operator=(win32_family_file_loader&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		win32::details::win32_unload_address(address_begin);
 		address_begin=other.address_begin;
 		address_end=other.address_end;

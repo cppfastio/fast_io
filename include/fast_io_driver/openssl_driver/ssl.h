@@ -89,10 +89,8 @@ public:
 		this->native_handle()=temp;
 		return *this;
 	}
-	constexpr basic_ssl_io_handle(basic_ssl_io_handle&& h) noexcept:basic_ssl_io_observer<ch_type>(h.native_handle())
+	constexpr basic_ssl_io_handle(basic_ssl_io_handle&& __restrict h) noexcept:basic_ssl_io_observer<ch_type>(h.native_handle())
 	{
-		if(this->native_handle())[[likely]]
-			SSL_free(this->native_handle());
 		h.native_handle()=nullptr;
 	}
 	inline void reset(native_handle_type newhandle=nullptr) noexcept
@@ -109,10 +107,8 @@ public:
 			this->ssl=nullptr;
 		}
 	}
-	basic_ssl_io_handle& operator=(basic_ssl_io_handle&& h) noexcept
+	basic_ssl_io_handle& operator=(basic_ssl_io_handle&& __restrict h) noexcept
 	{
-		if(h.native_handle()==this->native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			SSL_free(this->native_handle());
 		this->native_handle()=h.native_handle();
@@ -147,8 +143,8 @@ public:
 	}
 	constexpr basic_ssl_file(basic_ssl_file const&)=default;
 	constexpr basic_ssl_file& operator=(basic_ssl_file const&)=default;
-	constexpr basic_ssl_file(basic_ssl_file &&) noexcept=default;
-	constexpr basic_ssl_file& operator=(basic_ssl_file &&) noexcept=default;
+	constexpr basic_ssl_file(basic_ssl_file && __restrict) noexcept=default;
+	constexpr basic_ssl_file& operator=(basic_ssl_file && __restrict) noexcept=default;
 	~basic_ssl_file()
 	{
 		if(this->native_handle())[[likely]]

@@ -210,14 +210,12 @@ struct nt_family_directory_generator
 	}
 	nt_family_directory_generator(nt_family_directory_generator const&)=delete;
 	nt_family_directory_generator& operator=(nt_family_directory_generator const&)=delete;
-	constexpr nt_family_directory_generator(nt_family_directory_generator&& other) noexcept:entry(other.entry)
+	constexpr nt_family_directory_generator(nt_family_directory_generator&& __restrict other) noexcept:entry(other.entry)
 	{
 		other.entry=nullptr;
 	}
-	constexpr nt_family_directory_generator& operator=(nt_family_directory_generator&& other) noexcept
+	constexpr nt_family_directory_generator& operator=(nt_family_directory_generator&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)[[unlikely]]
-			return *this;
 		delete entry;
 		entry=other.entry;
 		other.entry=nullptr;
@@ -264,8 +262,8 @@ struct nt_family_recursive_directory_iterator
 	nt_family_recursive_directory_iterator(void* root_han,nt_dirent* ent):root_handle(root_han),entry(ent){}
 	nt_family_recursive_directory_iterator(nt_family_recursive_directory_iterator const&)=delete;
 	nt_family_recursive_directory_iterator& operator=(nt_family_recursive_directory_iterator const&)=delete;
-	nt_family_recursive_directory_iterator(nt_family_recursive_directory_iterator&&) noexcept=default;
-	nt_family_recursive_directory_iterator& operator=(nt_family_recursive_directory_iterator&&) noexcept=default;
+	nt_family_recursive_directory_iterator(nt_family_recursive_directory_iterator&& __restrict) noexcept=default;
+	nt_family_recursive_directory_iterator& operator=(nt_family_recursive_directory_iterator&& __restrict) noexcept=default;
 };
 
 template<nt_family family>
@@ -277,15 +275,13 @@ struct nt_family_recursive_directory_generator
 	explicit constexpr nt_family_recursive_directory_generator(void* rhd):root_handle(rhd),entry(new nt_dirent){}
 	nt_family_recursive_directory_generator(nt_family_recursive_directory_generator const&)=delete;
 	nt_family_recursive_directory_generator& operator=(nt_family_recursive_directory_generator const&)=delete;
-	constexpr nt_family_recursive_directory_generator(nt_family_recursive_directory_generator&& other) noexcept:root_handle(other.root_handle),entry(other.entry)
+	constexpr nt_family_recursive_directory_generator(nt_family_recursive_directory_generator&& __restrict other) noexcept:root_handle(other.root_handle),entry(other.entry)
 	{
 		other.root_handle=nullptr;
 		entry=nullptr;
 	}
-	constexpr nt_family_recursive_directory_generator& operator=(nt_family_recursive_directory_generator&& other) noexcept
+	constexpr nt_family_recursive_directory_generator& operator=(nt_family_recursive_directory_generator&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)[[unlikely]]
-			return *this;
 		delete entry;
 		root_handle=other.root_handle;
 		entry=other.entry;

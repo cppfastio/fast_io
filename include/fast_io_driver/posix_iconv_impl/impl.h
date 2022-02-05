@@ -213,11 +213,9 @@ public:
 	{}
 	posix_iconv_file(posix_iconv_file const&)=delete;
 	posix_iconv_file& operator=(posix_iconv_file const&)=delete;
-	constexpr posix_iconv_file(posix_iconv_file&& other) noexcept:posix_iconv_io_observer{other.release()}{}	
-	posix_iconv_file& operator=(posix_iconv_file&& other) noexcept
+	constexpr posix_iconv_file(posix_iconv_file&& __restrict other) noexcept:posix_iconv_io_observer{other.release()}{}	
+	posix_iconv_file& operator=(posix_iconv_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)[[unlikely]]
-			return *this;
 		iconv_close(this->cd);
 		this->cd=other.release();
 		return *this;

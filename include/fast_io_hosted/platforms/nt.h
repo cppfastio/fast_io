@@ -994,15 +994,13 @@ public:
 		this->handle=win32::nt::details::nt_dup2_impl<family==nt_family::zw>(other.handle,this->handle);
 		return *this;
 	}
-	constexpr basic_nt_family_file(basic_nt_family_file&& other) noexcept:
+	constexpr basic_nt_family_file(basic_nt_family_file&& __restrict other) noexcept:
 		basic_nt_family_io_observer<family,ch_type>{other.handle}
 	{
 		other.handle=nullptr;
 	}
-	basic_nt_family_file& operator=(basic_nt_family_file&& other) noexcept
+	basic_nt_family_file& operator=(basic_nt_family_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		if(this->handle)[[likely]]
 			win32::nt::nt_close<family==nt_family::zw>(this->handle);
 		this->handle = other.handle;

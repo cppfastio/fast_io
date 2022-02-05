@@ -134,14 +134,12 @@ public:
 	explicit win32_family_dll_file(T const& t,dll_mode mode):win32_family_dll_io_observer<family>{::fast_io::details::create_win32_family_dll_impl<family>(t,mode)}{}
 	win32_family_dll_file(win32_family_dll_file const&)=delete;
 	win32_family_dll_file& operator=(win32_family_dll_file const&)=delete;
-	constexpr win32_family_dll_file(win32_family_dll_file&& other) noexcept:win32_family_dll_io_observer<family>{other.hmodule}
+	constexpr win32_family_dll_file(win32_family_dll_file&& __restrict other) noexcept:win32_family_dll_io_observer<family>{other.hmodule}
 	{
 		other.hmodule=nullptr;
 	}
-	win32_family_dll_file& operator=(win32_family_dll_file&& other) noexcept
+	win32_family_dll_file& operator=(win32_family_dll_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)[[unlikely]]
-			return *this;
 		if(this->hmodule)[[likely]]
 			win32::FreeLibrary(this->hmodule);
 		this->hmodule=other.hmodule;

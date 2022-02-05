@@ -161,17 +161,15 @@ public:
 		this->io_ptr=temp;
 		return *this;
 	}
-	constexpr basic_io_file(basic_io_file&& other) noexcept:basic_io_io_observer<ch_type>{other.io_ptr}
+	constexpr basic_io_file(basic_io_file&& __restrict other) noexcept:basic_io_io_observer<ch_type>{other.io_ptr}
 	{
 		other.io_ptr=nullptr;
 	}
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
-	basic_io_file& operator=(basic_io_file&& other) noexcept
+	basic_io_file& operator=(basic_io_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		delete this->io_ptr;
 		this->io_ptr=other.io_ptr;
 		other.io_ptr=nullptr;

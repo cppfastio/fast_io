@@ -161,13 +161,11 @@ private:
 	}
 public:
 
-	constexpr basic_qt_file(basic_qt_file&& other) noexcept:
+	constexpr basic_qt_file(basic_qt_file&& __restrict other) noexcept:
 		basic_qt_io_observer<ch_type>{other.release()}
 	{}
-	basic_qt_file& operator=(basic_qt_file&& other) noexcept
+	basic_qt_file& operator=(basic_qt_file&& __restrict other) noexcept
 	{
-		if(this->qdevice==other.device)
-			return *this;
 		close_nothrow();
 		this->qdevice=other.release();
 		return *this;

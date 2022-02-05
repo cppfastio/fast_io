@@ -41,17 +41,12 @@ public:
 	template<typename T>
 	requires std::same_as<T,::llvm::raw_fd_ostream>
 	explicit constexpr basic_raw_fd_ostream_file(T* p) noexcept:basic_raw_fd_ostream_io_observer<char_type>{p}{}
-	constexpr basic_raw_fd_ostream_file(basic_raw_fd_ostream_file&& other) noexcept:basic_raw_fd_ostream_io_observer<char_type>{other.os}
+	constexpr basic_raw_fd_ostream_file(basic_raw_fd_ostream_file&& __restrict other) noexcept:basic_raw_fd_ostream_io_observer<char_type>{other.os}
 	{
 		other.os=nullptr;
 	}
-	basic_raw_fd_ostream_file& operator=(basic_raw_fd_ostream_file&& other) noexcept
+	basic_raw_fd_ostream_file& operator=(basic_raw_fd_ostream_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-#if __has_cpp_attribute(unlikely)
-[[unlikely]]
-#endif
-			return *this;
 		delete this->os;
 		this->os=other.os;
 		other.os=nullptr;

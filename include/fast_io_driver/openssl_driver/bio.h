@@ -352,14 +352,12 @@ public:
 	}
 	basic_bio_file(basic_bio_file const&)=delete;
 	basic_bio_file& operator=(basic_bio_file const&)=delete;
-	constexpr basic_bio_file(basic_bio_file&& bf) noexcept:basic_bio_io_observer<char_type>(bf.bio)
+	constexpr basic_bio_file(basic_bio_file&& __restrict bf) noexcept:basic_bio_io_observer<char_type>(bf.bio)
 	{
 		bf.bio=nullptr;
 	}
-	basic_bio_file& operator=(basic_bio_file&& bf) noexcept
+	basic_bio_file& operator=(basic_bio_file&& __restrict bf) noexcept
 	{
-		if(__builtin_addressof(bf)==this)
-			return *this;
 		if(this->bio)[[likely]]
 			noexcept_call(BIO_free,this->bio);
 		this->bio=bf.bio;

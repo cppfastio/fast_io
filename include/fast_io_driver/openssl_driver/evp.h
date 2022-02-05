@@ -67,14 +67,12 @@ public:
 	}
 	evp_pkey(evp_pkey const&)=delete;
 	evp_pkey& operator=(evp_pkey const&)=delete;
-	constexpr evp_pkey(evp_pkey&& other) noexcept: evp_pkey_observer{other.native_handle()}
+	constexpr evp_pkey(evp_pkey&& __restrict other) noexcept: evp_pkey_observer{other.native_handle()}
 	{
 		other.native_handle()=nullptr;
 	}
-	evp_pkey& operator=(evp_pkey&& other) noexcept
+	evp_pkey& operator=(evp_pkey&& __restrict other) noexcept
 	{
-		if(other.native_handle()==this->native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			EVP_PKEY_free(this->native_handle());
 		this->native_handle()=other.native_handle();
@@ -152,14 +150,12 @@ public:
 		this->native_handle()=newp;
 		return *this;
 	}
-	constexpr evp_pkey_ctx(evp_pkey_ctx&& other) noexcept: evp_pkey_ctx_observer{other.native_handle()}
+	constexpr evp_pkey_ctx(evp_pkey_ctx&& __restrict other) noexcept: evp_pkey_ctx_observer{other.native_handle()}
 	{
 		other.native_handle()=nullptr;
 	}
-	evp_pkey_ctx& operator=(evp_pkey_ctx&& other) noexcept
+	evp_pkey_ctx& operator=(evp_pkey_ctx&& __restrict other) noexcept
 	{
-		if(other.native_handle()==this->native_handle())
-			return *this;
 		if(this->native_handle())[[likely]]
 			EVP_PKEY_CTX_free(this->native_handle());
 		this->native_handle()=other.native_handle();

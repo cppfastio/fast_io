@@ -503,14 +503,12 @@ public:
 		this->hsocket=win32::details::win32_dup2hsocket(dp.hsocket,this->hsocket);
 		return *this;
 	}
-	constexpr basic_win32_family_socket_file(basic_win32_family_socket_file&& b) noexcept : basic_win32_family_socket_io_observer<family,char_type>{b.hsocket}
+	constexpr basic_win32_family_socket_file(basic_win32_family_socket_file&& __restrict b) noexcept : basic_win32_family_socket_io_observer<family,char_type>{b.hsocket}
 	{
 		b.hsocket = 0;
 	}
-	basic_win32_family_socket_file& operator=(basic_win32_family_socket_file&& b) noexcept
+	basic_win32_family_socket_file& operator=(basic_win32_family_socket_file&& __restrict b) noexcept
 	{
-		if(__builtin_addressof(b)==this)
-			return *this;
 		if(this->hsocket)[[likely]]
 			::fast_io::win32::closesocket(this->hsocket);
 		this->hsocket=b.hsocket;

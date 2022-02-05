@@ -172,14 +172,12 @@ public:
 	explicit posix_dns_file(T const& t):posix_dns_io_observer{::fast_io::details::posix_dns_open_impl(t)}{}
 	posix_dns_file(posix_dns_file const&)=delete;
 	posix_dns_file& operator=(posix_dns_file const&)=delete;
-	constexpr posix_dns_file(posix_dns_file&& other) noexcept: posix_dns_io_observer{other.res}
+	constexpr posix_dns_file(posix_dns_file&& __restrict other) noexcept: posix_dns_io_observer{other.res}
 	{
 		other.res=nullptr;
 	}
-	posix_dns_file& operator=(posix_dns_file&& other) noexcept
+	posix_dns_file& operator=(posix_dns_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		if(this->res)[[likely]]
 			details::libc_freeaddrinfo(this->res);
 		this->res=other.res;
