@@ -180,14 +180,12 @@ public:
 	explicit win32_family_dns_file(T const& t):win32_family_dns_io_observer<fam>{::fast_io::details::win32_family_dns_open_impl<fam>(t)}{}
 	win32_family_dns_file(win32_family_dns_file const&)=delete;
 	win32_family_dns_file& operator=(win32_family_dns_file const&)=delete;
-	constexpr win32_family_dns_file(win32_family_dns_file&& other) noexcept: win32_family_dns_io_observer<fam>{other.res}
+	constexpr win32_family_dns_file(win32_family_dns_file&& __restrict other) noexcept: win32_family_dns_io_observer<fam>{other.res}
 	{
 		other.res=nullptr;
 	}
-	win32_family_dns_file& operator=(win32_family_dns_file&& other) noexcept
+	win32_family_dns_file& operator=(win32_family_dns_file&& __restrict other) noexcept
 	{
-		if(__builtin_addressof(other)==this)
-			return *this;
 		if(this->res)[[likely]]
 			::fast_io::details::win32_family_freeaddrinfo_impl<fam>(this->res);
 		this->res=other.res;
