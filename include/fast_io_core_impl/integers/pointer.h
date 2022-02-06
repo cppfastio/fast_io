@@ -31,25 +31,11 @@ inline constexpr chvw_t<T> chvw(T ch) noexcept
 	return {ch};
 }
 
-template<std::integral T>
-[[deprecated("chvw for printing c style string is duplicated. Just use fast_io::mnp::os_c_str(char_type const*) instead for both filename and printing")]]
-inline constexpr basic_io_scatter_t<T> chvw(T const* ch) noexcept
-{
-	return {ch,::fast_io::cstr_len(ch)};
-}
-
 template<std::integral char_type>
 inline constexpr basic_io_scatter_t<char_type> print_alias_define(io_alias_t,basic_os_c_str<char_type> bas) noexcept
 {
 	auto ptr{bas.ptr};
 	return {ptr,::fast_io::cstr_len(ptr)};
-}
-
-template<std::integral T>
-[[deprecated("chvw for printing c style string is duplicated. Just use fast_io::mnp::os_c_str(char_type const*,std::size_t) instead for both filename and printing")]]
-inline constexpr basic_io_scatter_t<T> chvw(T const* ch,std::size_t n) noexcept
-{
-	return {ch,::fast_io::cstr_nlen(ch,n)};
 }
 
 template<std::integral T>
@@ -77,9 +63,9 @@ inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_v
 
 template<::std::ranges::contiguous_range rg>
 requires ::std::integral<::std::ranges::range_value_t<rg>>
-inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_value_t<rg>>> chvw(rg&& r) noexcept
+inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_value_t<rg>>> os_c_str(rg&& r) noexcept
 {
-	return ::fast_io::mnp::chvw(::std::ranges::data(r),::std::ranges::size(r));
+	return ::fast_io::mnp::os_c_str(::std::ranges::data(r),::std::ranges::size(r));
 }
 #endif
 }

@@ -14,7 +14,7 @@ public:
 #if 0
 	void report(error_reporter& err) const override
 	{
-		print_freestanding(err,manipulators::chvw(pa_strerror(error)));
+		print_freestanding(err,manipulators::os_c_str(pa_strerror(error)));
 	}
 #endif
 };

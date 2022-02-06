@@ -19,7 +19,7 @@ int main()
 				ch=ch-10u+u8'a';
 			else
 				ch=ch-36u+u8'A';
-			print(obf,fast_io::mnp::chvw(ch));
+			print(obf,fast_io::mnp::os_c_str(ch));
 		}
 		println(obf);
 	}

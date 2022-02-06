@@ -9,7 +9,7 @@ int main(int argc,char** argv)
 {
 	if(argc<2)
 	{
-		perr("Usage: ",fast_io::mnp::chvw(*argv)," <source directory>\n");
+		perr("Usage: ",fast_io::mnp::os_c_str(*argv)," <source directory>\n");
 		return 1;
 	}
 	using namespace std::string_view_literals;

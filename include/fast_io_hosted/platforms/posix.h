@@ -1071,12 +1071,12 @@ An Example of Multiple Inheritance in C++: A Model of the Iostream Library
 	if(((flags&O_CREAT)==O_CREAT))
 	{
 		if((flags&O_EXCL)!=O_EXCL)
-			ret=my_dos_creat(pathname,0,&fd);
+			ret=my_dos_creat(pathname,0,__builtin_addressof(fd));
 		else
-			ret=my_dos_creatnew(pathname,0,&fd);
+			ret=my_dos_creatnew(pathname,0,__builtin_addressof(fd));
 	}
 	else
-		ret=my_dos_open(pathname,static_cast<short unsigned>(static_cast<unsigned>(flags)),&fd);
+		ret=my_dos_open(pathname,static_cast<short unsigned>(static_cast<unsigned>(flags)),__builtin_addressof(fd));
 	if(ret)
 	{
 		if constexpr(always_terminate)
