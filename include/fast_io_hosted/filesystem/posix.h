@@ -467,11 +467,11 @@ inline auto u8stem(posix_directory_entry ent) noexcept
 
 inline cross_code_cvt_t<char8_t> print_alias_define(io_alias_t,posix_directory_entry pth) noexcept
 {
-	using char8_const_may_alias_ptr =
+	using char8_const_may_alias_ptr
 #if __has_cpp_attribute(gnu::may_alias)
 [[gnu::may_alias]]
 #endif
-	char8_t const*;
+	= char8_t const*;
 	return {{reinterpret_cast<char8_const_may_alias_ptr>(pth.entry->d_name),pth.d_namlen}};
 }
 
