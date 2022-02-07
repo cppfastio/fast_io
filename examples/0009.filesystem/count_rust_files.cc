@@ -6,7 +6,7 @@ int main(int argc,char** argv)
 {
 	if(argc<2)
 	{
-		perrln(fast_io::mnp::os_c_str(*argv)," <dir>");
+		perrln(fast_io::mnp::os_env(argc,argv,0)," <dir>");
 		return 1;
 	}
 	using namespace std::string_view_literals;
@@ -21,7 +21,7 @@ int main(int argc,char** argv)
 	std::size_t assembly_count{};
 	for(auto ent: recursive(at(df)))
 	{
-		std::u8string_view exten{extension(ent)};
+		std::u8string_view exten{u8extension(ent)};
 		if(exten==u8".rs"sv)
 		{
 			++rs_count;

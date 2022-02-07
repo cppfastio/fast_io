@@ -21,18 +21,10 @@ struct nt_dirent
 {
 	void* d_handle{};
 	file_type d_type{};
-	::fast_io::freestanding::array<wchar_t,0x2001> native_d_name_array{};
-	std::size_t native_d_name_size{};
-	::fast_io::freestanding::array<char8_t,0x8004> d_name_array{};
-	std::size_t d_name_size{};
-	inline constexpr wcstring_view native_d_name() const noexcept
-	{
-		return wcstring_view(null_terminated,native_d_name_array.data(),native_d_name_size);
-	}
-	inline constexpr u8cstring_view d_name() const noexcept
-	{
-		return u8cstring_view(null_terminated,d_name_array.data(),d_name_size);
-	}
+	char16_t native_d_name[0x2001];
+	std::size_t native_d_namlen{};
+	char8_t u8d_name[0x8004];
+	std::size_t u8d_namlen{};
 };
 
 namespace win32::nt::details
@@ -42,11 +34,12 @@ template<nt_family family>
 inline nt_dirent* set_nt_dirent(nt_dirent* entry,bool start)
 {
 	io_status_block block{};
-	::fast_io::freestanding::array<std::byte,0x4000> buffer;
-	win32::nt::dir_information d_info{buffer.data()};
+	constexpr std::uint_least32_t ul32_buffer_size{0x4000};
+	std::byte buffer[ul32_buffer_size];
+	::fast_io::win32::nt::dir_information d_info{buffer};
 	auto status{nt_query_directory_file<family==nt_family::zw>(entry->d_handle,nullptr,nullptr,nullptr,
 	__builtin_addressof(block),d_info.DirInfo,
-	static_cast<std::uint32_t>(buffer.size()),file_information_class::FileFullDirectoryInformation,
+	ul32_buffer_size,file_information_class::FileFullDirectoryInformation,
 	true,nullptr,start)};
 	if(status)
 	{
@@ -55,20 +48,17 @@ inline nt_dirent* set_nt_dirent(nt_dirent* entry,bool start)
 		throw_nt_error(status);
 	}
 	auto ful_dir_info{d_info.FullDirInfo};
-	entry->native_d_name_size=ful_dir_info->FileNameLength/sizeof(wchar_t);
-	if(ful_dir_info->FileNameLength)
-		::fast_io::details::my_memcpy(entry->native_d_name_array.data(),ful_dir_info->FileName,ful_dir_info->FileNameLength);
-	entry->native_d_name_array[entry->native_d_name_size]=0;
+	entry->native_d_namlen=ful_dir_info->FileNameLength/sizeof(char16_t);
 
-	using char16_may_alias_pointer
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
-#endif
-	= char16_t const*;
-	char16_may_alias_pointer enstart{reinterpret_cast<char16_may_alias_pointer>(entry->native_d_name_array.data())};
-	char16_may_alias_pointer enend{enstart+entry->native_d_name_size};
-	entry->d_name_size=static_cast<std::size_t>(::fast_io::details::codecvt::general_code_cvt_full(enstart,enend,entry->d_name_array.data())-entry->d_name_array.data());
-	entry->d_name_array[entry->d_name_size]=0;
+	::fast_io::freestanding::nonoverlapped_bytes_copy_n(
+		reinterpret_cast<std::byte const*>(ful_dir_info->FileName),ful_dir_info->FileNameLength,
+		reinterpret_cast<std::byte*>(entry->native_d_name));
+	entry->native_d_name[entry->native_d_namlen]=0;
+
+	char16_t const* enstart{entry->native_d_name};
+	char16_t const* enend{enstart+entry->native_d_namlen};
+	entry->u8d_namlen=static_cast<std::size_t>(::fast_io::details::codecvt::general_code_cvt_full(enstart,enend,entry->u8d_name)-entry->u8d_name);
+	entry->u8d_name[entry->u8d_namlen]=0;
 /*
 Referenced from win32 port dirent.h
 https://github.com/win32ports/dirent_h/blob/5a40afce928f1780058f44e0dda37553c662a8a7/dirent.h#L249
@@ -82,7 +72,7 @@ https://github.com/win32ports/dirent_h/blob/5a40afce928f1780058f44e0dda37553c662
 			data->entries[data->index].d_type = DT_REG;
 */
 
-	std::uint32_t attribute{ful_dir_info->FileAttributes};
+	std::uint_least32_t attribute{ful_dir_info->FileAttributes};
 	if(attribute&0x400)
 		entry->d_type=file_type::symlink;
 	else if(attribute&0x40)
@@ -112,15 +102,16 @@ inline nt_dirent* nt_dirent_next(nt_dirent* entry)
 
 struct nt_directory_entry
 {
-	using native_char_type = wchar_t;
+	using native_char_type = char16_t;
 	using char_type = char8_t;
 	nt_dirent* entry{};
-	template<nt_family family>
-	explicit constexpr operator basic_nt_family_io_observer<family,char>() const noexcept
+	template<nt_family family,std::integral ch_type>
+	explicit constexpr operator basic_nt_family_io_observer<family,ch_type>() const noexcept
 	{
 		return {entry->d_handle};
 	}
-	explicit constexpr operator win32_io_observer() const noexcept
+	template<win32_family family,std::integral ch_type>
+	explicit constexpr operator basic_win32_family_io_observer<family,ch_type>() const noexcept
 	{
 		return {entry->d_handle};
 	}
@@ -131,22 +122,25 @@ inline constexpr nt_at_entry at(nt_directory_entry ndet) noexcept
 	return nt_at_entry{ndet.entry->d_handle};
 }
 
-inline constexpr wcstring_view native_filename(nt_directory_entry pioe) noexcept
+inline constexpr ::fast_io::manipulators::basic_os_c_str_n<char16_t> native_filename(nt_directory_entry pioe) noexcept
 {
-	return pioe.entry->native_d_name();
+	auto& ent{*pioe.entry};
+	return {ent.native_d_name,ent.native_d_namlen};
 }
 
 inline constexpr nt_fs_dirent drt(nt_directory_entry pioe) noexcept
 {
-	return nt_fs_dirent{pioe.entry->d_handle,pioe.entry->native_d_name()};
+	auto& ent{*pioe.entry};
+	return nt_fs_dirent{ent.d_handle,{ent.native_d_name,ent.native_d_namlen}};
 }
 
-inline constexpr u8cstring_view filename(nt_directory_entry pioe) noexcept
+inline constexpr ::fast_io::manipulators::basic_os_c_str_n<char8_t> u8filename(nt_directory_entry pioe) noexcept
 {
-	return pioe.entry->d_name();
+	auto& ent{*pioe.entry};
+	return {ent.u8d_name,ent.u8d_namlen};
 }
 
-inline constexpr std::uintmax_t inode(nt_directory_entry)  noexcept
+inline constexpr std::uint_least64_t inode_ul64(nt_directory_entry) noexcept
 {
 	return 0;
 }
@@ -324,10 +318,12 @@ inline nt_family_recursive_directory_iterator<family>& operator++(nt_family_recu
 		}
 		if(prdit.entry->d_type==file_type::directory)
 		{
-			wcstring_view name{prdit.entry->native_d_name()};
-			if((name.size()==1&&name.front()==u'.')||(name.size()==2&&name.front()==u'.'&&name[1]==u'.'))
+			std::size_t const native_d_namlen{prdit.entry->native_d_namlen};
+			char16_t const *native_d_name_ptr{prdit.entry->native_d_name};
+			if((native_d_namlen==1&&*native_d_name_ptr==u'.')||(native_d_namlen==2&&*native_d_name_ptr==u'.'&&native_d_name_ptr[1]==u'.'))
 				continue;
-			prdit.stack.emplace_back(nt_at_entry{prdit.stack.empty()?prdit.root_handle:prdit.stack.back().handle},name,
+			prdit.stack.emplace_back(nt_at_entry{prdit.stack.empty()?prdit.root_handle:prdit.stack.back().handle},
+				::fast_io::manipulators::basic_os_c_str_n<char16_t>{native_d_name_ptr,native_d_namlen},
 				open_mode::directory);
 		}
 		return prdit;
@@ -355,12 +351,19 @@ inline nt_family_recursive_directory_iterator<family> begin(nt_family_recursive_
 	prdit.entry=win32::nt::details::set_nt_dirent_first<family>(prdit.entry);
 	if(prdit.entry&&prdit.entry->d_type==file_type::directory)
 	{
-		wcstring_view name{prdit.entry->native_d_name()};
-		if((name.size()==1&&name.front()==u'.')||(name.size()==2&&name.front()==u'.'&&name[1]==u'.'))
+		auto& ent{*prdit.entry};
+		char16_t const *native_d_name_ptr{ent.native_d_name};
+		std::size_t const native_d_namlen{ent.native_d_namlen};
+		if((native_d_namlen==1&&*native_d_name_ptr==u'.')||(native_d_namlen==2&&*native_d_name_ptr==u'.'&&native_d_name_ptr[1]==u'.'))
+		{
 			++prdit;
+		}
 		else
-			prdit.stack.emplace_back(nt_at_entry{prdit.root_handle},name,
+		{
+			prdit.stack.emplace_back(nt_at_entry{prdit.root_handle},
+				::fast_io::manipulators::basic_os_c_str_n<char16_t>{native_d_name_ptr,native_d_namlen},
 				open_mode::directory);
+		}
 	}
 	return prdit;
 }
@@ -414,87 +417,47 @@ inline zw_recursive_directory_generator recursive(zw_at_entry zate)
 	return zw_recursive_directory_generator{zate.handle};
 }
 
-
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,nt_directory_entry>,
-	nt_directory_entry ent) noexcept
+inline auto native_extension(nt_directory_entry ent) noexcept
 {
-	if constexpr(std::same_as<char_type,typename nt_directory_entry::native_char_type>)
-		return native_filename(ent).size();
-	else if constexpr(std::same_as<char_type,char8_t>)
-		return filename(ent).size();
-	else
-		return details::cal_full_reserve_size<
-			sizeof(typename nt_directory_entry::native_char_type),
-			sizeof(char_type)>(native_filename(ent).size());
+	auto& et{*ent.entry};
+	return ::fast_io::details::find_dot_and_sep<false,char16_t,char16_t>(et.native_d_name,et.native_d_namlen);
 }
 
-inline u8cstring_view extension(nt_directory_entry ent) noexcept
+inline auto native_stem(nt_directory_entry ent) noexcept
 {
-	auto fnm{filename(ent)};
-	auto pos{fnm.rfind(u8'.')};
-	if(pos==SIZE_MAX)
-		return {};
-	if(pos==0)
-		return {};
-	if(2<fnm.size()&&pos==1&&fnm.front()==u8'.')
-		return {};
-	return u8cstring_view(null_terminated,fnm.data()+pos,fnm.data()+fnm.size());
+	auto& et{*ent.entry};
+	return ::fast_io::details::find_dot_and_sep<true,char16_t,char16_t>(et.native_d_name,et.native_d_namlen);
 }
 
-inline ::fast_io::freestanding::u8string_view stem(nt_directory_entry ent) noexcept
+inline auto u8extension(nt_directory_entry ent) noexcept
 {
-	auto fnm{filename(ent)};
-	auto pos{fnm.rfind(u8'.')};
-	if(pos==SIZE_MAX)
-		return ::fast_io::freestanding::u8string_view(fnm.data(),fnm.size());
-	if(pos==0)
-		return ::fast_io::freestanding::u8string_view(fnm.data(),fnm.size());
-	if(2<fnm.size()&&pos==1&&fnm.front()==u8'.')
-		return ::fast_io::freestanding::u8string_view(fnm.data(),fnm.size());
-	return ::fast_io::freestanding::u8string_view(fnm.data(),pos);
+	auto& et{*ent.entry};
+	return ::fast_io::details::find_dot_and_sep<false,char8_t,char8_t>(et.u8d_name,et.u8d_namlen);
+}
+
+inline auto u8stem(nt_directory_entry ent) noexcept
+{
+	auto& et{*ent.entry};
+	return ::fast_io::details::find_dot_and_sep<true,char8_t,char8_t>(et.u8d_name,et.u8d_namlen);
 }
 
 template<std::integral char_type>
-requires ((std::same_as<char_type,char8_t>)||(std::same_as<char_type,nt_directory_entry::native_char_type>))
-inline basic_io_scatter_t<char_type> print_scatter_define(io_reserve_type_t<char_type,char_type>,nt_directory_entry pth)
+inline constexpr auto status_io_print_forward(io_alias_type_t<char_type>,nt_directory_entry ent) noexcept
 {
-	if constexpr(std::same_as<char_type,char8_t>)
+	auto& et{*ent.entry};
+	if constexpr(sizeof(char_type)==1||(std::same_as<char_type,char>&&
+		::fast_io::execution_charset_encoding_scheme<char>()==::fast_io::encoding_scheme::utf))
 	{
-		auto name{filename(pth)};
-		return {name.data(),name.size()};
+		return status_io_print_forward(io_alias_type<char_type>,
+			::fast_io::cross_code_cvt_t<char8_t>{{et.u8d_name,et.u8d_namlen}});
 	}
 	else
 	{
-		auto name{native_filename(pth)};
-		return {name.data(),name.size()};
+		return status_io_print_forward(io_alias_type<char_type>,
+			::fast_io::cross_code_cvt_t<char16_t>{{et.native_d_name,et.native_d_namlen}});
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,nt_directory_entry>,
-	Iter iter,nt_directory_entry ent) noexcept
-{
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
-	if constexpr(std::same_as<char_type,typename nt_directory_entry::native_char_type>)
-	{
-		auto nfnm{native_filename(ent)};
-		return details::non_overlapped_copy_n(nfnm.data(),nfnm.size(),iter);
-	}
-	else if constexpr(std::same_as<char_type,char8_t>)
-	{
-		auto fnm{filename(ent)};
-		return details::non_overlapped_copy_n(fnm.data(),fnm.size(),iter);
-	}
-	else
-	{
-		auto fnm{filename(ent)};
-		if constexpr(std::is_pointer_v<Iter>)
-			return details::codecvt::general_code_cvt_full<encoding_scheme::utf>(fnm.data(),fnm.data()+fnm.size(),iter);
-		else
-			return iter+(details::codecvt::general_code_cvt_full<encoding_scheme::utf>(fnm.data(),fnm.data()+fnm.size(),::fast_io::freestanding::to_address(iter))-::fast_io::freestanding::to_address(iter));
-	}
-}
 
 #ifndef __CYGWIN__
 using native_directory_entry = nt_directory_entry;

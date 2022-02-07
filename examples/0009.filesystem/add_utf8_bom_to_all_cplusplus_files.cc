@@ -9,7 +9,7 @@ int main(int argc,char** argv)
 {
 	if(argc<2)
 	{
-		perr("Usage: ",fast_io::mnp::os_c_str(*argv)," <source directory>\n");
+		perr("Usage: ",fast_io::mnp::os_env(argc,argv,0)," <source directory>\n");
 		return 1;
 	}
 	using namespace std::string_view_literals;
@@ -17,8 +17,7 @@ int main(int argc,char** argv)
 	fast_io::dir_file df(::fast_io::mnp::os_c_str(argv[1]));
 	for(auto const& ent : recursive(at(df)))
 	{
-		auto exts{extension(ent)};
-		std::u8string_view view(exts.cbegin(),exts.cend());
+		std::u8string_view view(u8extension(ent));
 		if(view!=u8".cc"sv&&view!=u8".h"sv&&view!=u8".cpp"sv&&view!=u8".cxx"sv&&view!=u8".hpp"sv)
 			continue;
 		fast_io::allocation_file_loader loader(drt(ent));	

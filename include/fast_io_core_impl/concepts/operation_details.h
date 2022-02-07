@@ -30,6 +30,12 @@ concept constructible_to_os_c_str = type_has_c_str_method<T>||(std::is_array_v<s
 	{t.data()};
 };
 
+template<typename T>
+concept constructible_to_os_c_str_or_nullptr = constructible_to_os_c_str<T>||requires(T&& t)
+{
+	{t.is_nullptr()}->std::same_as<bool>;
+};
+
 namespace manipulators
 {
 
@@ -51,6 +57,95 @@ inline constexpr basic_os_c_str<char_type> os_c_str(char_type const* cstr) noexc
 }
 
 inline constexpr void os_c_str(decltype(nullptr))=delete;
+
+template<std::integral ch_type>
+struct basic_os_c_str_or_nullptr
+{
+	using char_type = ch_type;
+	char_type const* ptr{};
+	inline constexpr char_type const* c_str() const noexcept
+	{
+		return ptr;
+	}
+	inline constexpr bool is_nullptr() const noexcept
+	{
+		return ptr==nullptr;
+	}
+};
+
+template<std::integral char_type>
+inline constexpr basic_os_c_str_or_nullptr<char_type> os_c_str_or_nullptr(char_type const* cstr) noexcept
+{
+	return {cstr};
+}
+
+template<std::integral ch_type>
+struct basic_os_c_str_n
+{
+	using char_type = ch_type;
+	char_type const* ptr{};
+	std::size_t n{};
+	inline constexpr char_type const* c_str() const noexcept
+	{
+		return ptr;
+	}
+	inline constexpr std::size_t size() const noexcept
+	{
+		return n;
+	}
+	inline constexpr char_type const* data() const noexcept
+	{
+		return ptr;
+	}
+	inline constexpr char_type const* begin() const noexcept
+	{
+		return ptr;
+	}
+	inline constexpr char_type const* end() const noexcept
+	{
+		return ptr+n;
+	}
+};
+
+template<std::integral char_type>
+inline constexpr basic_os_c_str<char_type> os_c_str_n(char_type const* cstr,std::size_t n) noexcept
+{
+	return {cstr,n};
+}
+
+inline constexpr void os_c_str_n(decltype(nullptr),std::size_t)=delete;
+
+template<std::integral ch_type>
+struct basic_os_not_c_str_n
+{
+	using char_type = ch_type;
+	char_type const* ptr{};
+	std::size_t n{};
+	inline constexpr std::size_t size() const noexcept
+	{
+		return n;
+	}
+	inline constexpr char_type const* data() const noexcept
+	{
+		return ptr;
+	}
+	inline constexpr char_type const* begin() const noexcept
+	{
+		return ptr;
+	}
+	inline constexpr char_type const* end() const noexcept
+	{
+		return ptr+n;
+	}
+};
+
+template<std::integral char_type>
+inline constexpr basic_os_not_c_str_n<char_type> os_not_c_str_n(char_type const* cstr,std::size_t n) noexcept
+{
+	return {cstr,n};
+}
+
+inline constexpr void os_not_c_str_n(decltype(nullptr),std::size_t)=delete;
 
 }
 

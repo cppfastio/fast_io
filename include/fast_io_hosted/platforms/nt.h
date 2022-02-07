@@ -328,9 +328,15 @@ inline void* nt_family_create_file_at_impl(void* directory_handle,wchar_t const*
 }
 
 template<bool zw>
-inline void* nt_family_create_file_fs_dirent_impl(void* directory_handle,wchar_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
+inline void* nt_family_create_file_fs_dirent_impl(void* directory_handle,char16_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
 {
-	return ::fast_io::win32::nt::details::nt_call_kernel_fs_dirent_callback(directory_handle,filename_c_str,filename_c_str_len,
+	using wchar_t_may_alias_const_ptr
+#if __has_cpp_attribute(gnu::may_alias)
+	[[gnu::may_alias]]
+#endif
+	= wchar_t const*;
+	return ::fast_io::win32::nt::details::nt_call_kernel_fs_dirent_callback(directory_handle,
+	reinterpret_cast<wchar_t_may_alias_const_ptr>(filename_c_str),filename_c_str_len,
 		nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(md)});
 }
 
@@ -557,9 +563,7 @@ struct nt_family_at_entry:nt_at_entry
 struct nt_fs_dirent
 {
 	void* handle{};
-	wcstring_view filename{};
-	explicit constexpr nt_fs_dirent() noexcept = default;
-	explicit constexpr nt_fs_dirent(void* mhandle,wcstring_view mfilename) noexcept:handle(mhandle),filename(mfilename){}
+	::fast_io::manipulators::basic_os_c_str_n<char16_t> filename{};
 };
 
 using zw_at_entry=nt_family_at_entry<nt_family::zw>;

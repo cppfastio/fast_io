@@ -24,11 +24,7 @@ class posix_directory_io_observer
 public:
 	using native_handle_type = DIR*;
 	native_handle_type dirp{};
-	constexpr auto& native_handle() noexcept
-	{
-		return dirp;
-	}
-	constexpr auto& native_handle() const noexcept
+	constexpr native_handle_type native_handle() const noexcept
 	{
 		return dirp;
 	}
@@ -36,13 +32,14 @@ public:
 	{
 		return dirp;
 	}
-	operator basic_posix_io_observer<char>() const noexcept
+	template<std::integral char_type>
+	operator basic_posix_io_observer<char_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
 	constexpr native_handle_type release() noexcept
 	{
-		auto temp{dirp};
+		native_handle_type temp{dirp};
 		dirp=nullptr;
 		return temp;
 	}
@@ -141,7 +138,8 @@ struct posix_directory_entry
 	DIR* dirp{};
 	struct dirent* entry{};
 	std::size_t d_namlen{};
-	explicit operator posix_io_observer() const noexcept
+	template<std::integral ch_type>
+	explicit operator basic_posix_io_observer<ch_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
@@ -157,24 +155,22 @@ inline posix_at_entry at(posix_directory_entry ndet) noexcept
 	return posix_at_entry{details::dirp_to_fd(ndet.dirp)};
 }
 
-inline constexpr cstring_view native_filename(posix_directory_entry pioe) noexcept
+inline constexpr ::fast_io::manipulators::basic_os_c_str_n<char> native_filename(posix_directory_entry pioe) noexcept
 {
-	return cstring_view(null_terminated,pioe.entry->d_name,pioe.d_namlen);
+	return {pioe.entry->d_name,pioe.d_namlen};
 }
 
-inline u8cstring_view filename(posix_directory_entry pioe) noexcept
+inline ::fast_io::manipulators::basic_os_c_str_n<char8_t> u8filename(posix_directory_entry pioe) noexcept
 {
 	using char8_may_alias_const_ptr
 #if __has_cpp_attribute(gnu::may_alias)
 	[[gnu::may_alias]]
 #endif
 	=char8_t const*;
-	return u8cstring_view(null_terminated,
-		reinterpret_cast<char8_may_alias_const_ptr>(pioe.entry->d_name),
-		pioe.d_namlen);
+	return {reinterpret_cast<char8_may_alias_const_ptr>(pioe.entry->d_name),pioe.d_namlen};
 }
 
-inline constexpr std::uintmax_t inode(posix_directory_entry pioe) noexcept
+inline constexpr std::uint_least64_t inode_ul64(posix_directory_entry pioe) noexcept
 {
 	return pioe.entry->d_ino;
 }
@@ -254,8 +250,9 @@ To fix: avoid setting errno
 */
 	errno=0;
 	auto entry{readdir(pdit.dirp)};
-	if(entry==nullptr&&errno)
-		throw_posix_error();
+	auto en{errno};
+	if(entry==nullptr&&en)
+		throw_posix_error(en);
 	pdit.entry=entry;
 	if(entry==nullptr)
 		pdit.d_namlen=0;
@@ -340,8 +337,9 @@ inline posix_recursive_directory_iterator& operator++(posix_recursive_directory_
 			auto entry{readdir(prdit.dirp)};
 			if(entry==nullptr)
 			{
-				if(errno)
-					throw_posix_error();
+				auto en{errno};
+				if(en)
+					throw_posix_error(en);
 				prdit.entry=nullptr;
 				return prdit;
 			}
@@ -352,8 +350,9 @@ inline posix_recursive_directory_iterator& operator++(posix_recursive_directory_
 			auto entry=readdir(prdit.stack.back().dirp);
 			if(entry==nullptr)
 			{
-				if(errno)
-					throw_posix_error();
+				auto en{errno};
+				if(en)
+					throw_posix_error(en);
 				prdit.stack.pop_back();
 				continue;
 			}
@@ -388,7 +387,7 @@ inline posix_recursive_directory_iterator& operator++(posix_recursive_directory_
 	}
 }
 
-inline void pop(posix_recursive_directory_iterator& prdit)
+inline void pop(posix_recursive_directory_iterator& prdit) noexcept
 {
 	if(prdit.stack.empty())
 	{
@@ -446,85 +445,34 @@ inline posix_recursive_directory_generator recursive(posix_at_entry pate)
 	return {.dir_fl=posix_directory_file(posix_file(details::sys_dup(pate.fd)))};
 }
 
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_directory_entry>,
-	posix_directory_entry ent) noexcept
+inline auto native_extension(posix_directory_entry ent) noexcept
 {
-	if constexpr(std::same_as<char_type,typename posix_directory_entry::native_char_type>)
-		return native_filename(ent).size();
-	else if constexpr(std::same_as<char_type,char8_t>)
-		return filename(ent).size();
-	else
-		return details::cal_full_reserve_size<
-			sizeof(typename posix_directory_entry::native_char_type),
-			sizeof(char_type)>(native_filename(ent).size());
+	return ::fast_io::details::find_dot_and_sep<false,char,char>(ent.entry->d_name,ent.d_namlen);
 }
 
-inline u8cstring_view extension(posix_directory_entry ent) noexcept
+inline auto native_stem(posix_directory_entry ent) noexcept
 {
-	auto fnm{filename(ent)};
-	auto pos{fnm.rfind(u8'.')};
-	if(pos==static_cast<std::size_t>(-1))
-		return {};
-	if(pos==0)
-		return {};
-	if(2<fnm.size()&&pos==1&&fnm.front()==u8'.')
-		return {};
-	return u8cstring_view(null_terminated,fnm.data()+pos,fnm.data()+fnm.size());
+	return ::fast_io::details::find_dot_and_sep<true,char,char>(ent.entry->d_name,ent.d_namlen);
 }
 
-inline ::fast_io::freestanding::u8string_view stem(posix_directory_entry ent) noexcept
+inline auto u8extension(posix_directory_entry ent) noexcept
 {
-	auto fnm{filename(ent)};
-	auto pos{fnm.rfind(u8'.')};
-	if(pos==static_cast<std::size_t>(-1))
-		return ::fast_io::freestanding::u8string_view(fnm.data(),fnm.size());
-	if(pos==0)
-		return ::fast_io::freestanding::u8string_view(fnm.data(),fnm.size());
-	if(2<fnm.size()&&pos==1&&fnm.front()==u8'.')
-		return ::fast_io::freestanding::u8string_view(fnm.data(),fnm.size());
-	return ::fast_io::freestanding::u8string_view(fnm.data(),pos);
+	return ::fast_io::details::find_dot_and_sep<false,char8_t,char>(ent.entry->d_name,ent.d_namlen);
 }
 
-template<std::integral char_type>
-requires ((std::same_as<char_type,char8_t>)||(std::same_as<char_type,posix_directory_entry::native_char_type>))
-inline basic_io_scatter_t<char_type> print_scatter_define(io_reserve_type_t<char_type,posix_directory_entry>,posix_directory_entry pth)
+inline auto u8stem(posix_directory_entry ent) noexcept
 {
-	if constexpr(std::same_as<char_type,char8_t>)
-	{
-		auto name{filename(pth)};
-		return {name.data(),name.size()};
-	}
-	else
-	{
-		auto name{native_filename(pth)};
-		return {name.data(),name.size()};
-	}
+	return ::fast_io::details::find_dot_and_sep<true,char8_t,char>(ent.entry->d_name,ent.d_namlen);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,posix_directory_entry>,
-	Iter iter,posix_directory_entry ent) noexcept
+inline cross_code_cvt_t<char8_t> print_alias_define(io_alias_t,posix_directory_entry pth) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
-	if constexpr(std::same_as<char_type,typename posix_directory_entry::native_char_type>)
-	{
-		auto nfnm{native_filename(ent)};
-		return details::non_overlapped_copy_n(nfnm.data(),nfnm.size(),iter);
-	}
-	else if constexpr(std::same_as<char_type,char8_t>)
-	{
-		auto fnm{filename(ent)};
-		return details::non_overlapped_copy_n(fnm.data(),fnm.size(),iter);
-	}
-	else
-	{
-		auto fnm{filename(ent)};
-		if constexpr(std::is_pointer_v<Iter>)
-			return details::codecvt::general_code_cvt_full<encoding_scheme::utf>(fnm.data(),fnm.data()+fnm.size(),iter);
-		else
-			return iter+(details::codecvt::general_code_cvt_full<encoding_scheme::utf>(fnm.data(),fnm.data()+fnm.size(),::fast_io::freestanding::to_address(iter))-::fast_io::freestanding::to_address(iter));
-	}
+	using char8_const_may_alias_ptr =
+#if __has_cpp_attribute(gnu::may_alias)
+[[gnu::may_alias]]
+#endif
+	char8_t const*;
+	return {{reinterpret_cast<char8_const_may_alias_ptr>(pth.entry->d_name),pth.d_namlen}};
 }
 
 using native_directory_entry = posix_directory_entry;
