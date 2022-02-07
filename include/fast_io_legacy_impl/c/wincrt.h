@@ -432,7 +432,7 @@ inline bool wincrt_fp_underflow_impl(FILE* __restrict fpp)
 	fp->_ptr=fp->_base;
 	fp->_cnt=static_cast<int>(static_cast<unsigned int>(size));
 	if constexpr(sizeof(char_type)==1)
-		return size;
+		return static_cast<bool>(size);
 	else
 		return sizeof(char_type)<=size;
 }

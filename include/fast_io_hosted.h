@@ -36,6 +36,7 @@ For hosted implementations the set of standard library headers required by the C
 #pragma warning( disable : 4710 )
 #pragma warning( disable : 4820 )
 #pragma warning( disable : 5027 )
+#pragma warning( disable : 5045 )
 #endif
 
 #include"fast_io_hosted/posix_error_scatter/impl.h"
