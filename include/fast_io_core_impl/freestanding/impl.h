@@ -12,6 +12,7 @@ no std::move, std::forward, std::addressof. WTF???
 #include"iterator.h"
 #include"cstr_len.h"
 #include"bytes.h"
+#include"string_view.h"
 #include"algorithm.h"
 
 #if _LIBCPP_VERSION
