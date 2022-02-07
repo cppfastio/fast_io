@@ -19,17 +19,17 @@ struct basic_http_header_buffer
 	{
 		return buffer_size;
 	}
-	inline constexpr ::std::basic_string_view<char_type> request() const noexcept
+	inline constexpr ::fast_io::manipulators::basic_os_not_c_str_n<char_type> request() const noexcept
 	{
-		return ::std::basic_string_view<char_type>(buffer,buffer+http_request_end_location);
+		return ::fast_io::manipulators::basic_os_not_c_str_n<char_type>(buffer,buffer+http_request_end_location);
 	}
-	inline constexpr ::std::basic_string_view<char_type> code() const noexcept
+	inline constexpr ::fast_io::manipulators::basic_os_not_c_str_n<char_type> code() const noexcept
 	{
-		return ::std::basic_string_view<char_type>(buffer+http_status_code_start_location,buffer+http_status_code_end_location);
+		return ::fast_io::manipulators::basic_os_not_c_str_n<char_type>(buffer+http_status_code_start_location,buffer+http_status_code_end_location);
 	}
-	inline constexpr ::std::basic_string_view<char_type> reason() const noexcept
+	inline constexpr ::fast_io::manipulators::basic_os_not_c_str_n<char_type> reason() const noexcept
 	{
-		return ::std::basic_string_view<char_type>(buffer+http_status_reason_start_location,buffer+http_status_reason_end_location);
+		return ::fast_io::manipulators::basic_os_not_c_str_n<char_type>(buffer+http_status_reason_start_location,buffer+http_status_reason_end_location);
 	}
 };
 
@@ -239,7 +239,7 @@ struct basic_http_line_generator
 template<std::integral char_type>
 struct basic_http_line
 {
-	::std::basic_string_view<char_type> key,value;
+	::fast_io::manipulators::basic_os_not_c_str_n<char_type> key,value;
 };
 
 template<std::integral char_type,std::size_t buffer_size>
@@ -307,7 +307,7 @@ inline constexpr bool operator!=(basic_http_line_generator<char_type>& b,::fast_
 template<std::integral char_type>
 inline constexpr basic_http_line<char_type> operator*(basic_http_line_generator<char_type>& b) noexcept
 {
-	return {::std::basic_string_view<char_type>(b.current,static_cast<std::size_t>(b.key_end-b.current)),::std::basic_string_view<char_type>(b.value_start,static_cast<std::size_t>(b.value_end-b.value_start))};
+	return {::fast_io::manipulators::basic_os_not_c_str_n<char_type>(b.current,static_cast<std::size_t>(b.key_end-b.current)),::fast_io::manipulators::basic_os_not_c_str_n<char_type>(b.value_start,static_cast<std::size_t>(b.value_end-b.value_start))};
 }
 
 }

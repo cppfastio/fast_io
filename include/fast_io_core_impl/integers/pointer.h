@@ -38,8 +38,20 @@ inline constexpr basic_io_scatter_t<char_type> print_alias_define(io_alias_t,bas
 	return {ptr,::fast_io::cstr_len(ptr)};
 }
 
+template<std::integral char_type>
+inline constexpr basic_io_scatter_t<char_type> print_alias_define(io_alias_t,basic_os_c_str_n<char_type> bas) noexcept
+{
+	return {bas.ptr,bas.n};
+}
+
+template<std::integral char_type>
+inline constexpr basic_io_scatter_t<char_type> print_alias_define(io_alias_t,basic_os_not_c_str_n<char_type> bas) noexcept
+{
+	return {bas.ptr,bas.n};
+}
+
 template<std::integral T>
-inline constexpr basic_io_scatter_t<T> os_c_str(T const* ch,std::size_t n) noexcept
+inline constexpr basic_os_c_str_n<T> os_c_str(T const* ch,std::size_t n) noexcept
 {
 	return {ch,::fast_io::cstr_nlen(ch,n)};
 }

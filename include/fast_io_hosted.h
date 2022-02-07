@@ -82,10 +82,6 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_unit/string.h"
 #endif
 
-#if defined(_GLIBCXX_STRING_VIEW) || defined(_LIBCPP_STRING_VIEW) || defined(_STRING_VIEW_)
-#include"fast_io_unit/http_header.h"
-#endif
-
 #if defined(_GLIBCXX_CHRONO) || defined(_LIBCPP_CHRONO) || defined(_CHRONO_)
 #include"fast_io_unit/chrono.h"
 #endif
