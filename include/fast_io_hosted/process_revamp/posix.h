@@ -155,7 +155,7 @@ inline int child_process_deal_with_process_io(posix_io_redirection const& red,in
 }
 
 
-inline void child_process_execveat(int dirfd,cstring_view csv,char const* const* args_ptr,char const* const* envp_ptr,posix_process_io const& pio) noexcept
+inline void child_process_execveat(int dirfd,char const* cstr,char const* const* args_ptr,char const* const* envp_ptr,posix_process_io const& pio) noexcept
 {
 	int in_fd{child_process_deal_with_process_io(pio.in,0)};
 	int out_fd{child_process_deal_with_process_io(pio.out,1)};
@@ -176,7 +176,7 @@ inline void child_process_execveat(int dirfd,cstring_view csv,char const* const*
 		sys_dup2<true>(out_fd,1);
 	if((err_fd!=-1)&(err_fd!=2))
 		sys_dup2<true>(err_fd,2);	
-	posix_execveat(dirfd,csv.c_str(),args_ptr,envp_ptr);
+	posix_execveat(dirfd,cstr,args_ptr,envp_ptr);
 };
 
 
@@ -195,7 +195,7 @@ inline void parent_process_deal_with_process_io(posix_io_redirection const& red)
 }
 
 
-inline pid_t posix_fork_execveat_impl(int dirfd,cstring_view csv,char const* const* args,char const* const* envp,posix_process_io const& pio)
+inline pid_t posix_fork_execveat_common_impl(int dirfd,char const* cstr,char const* const* args,char const* const* envp,posix_process_io const& pio)
 {
 	pid_t pid{posix_fork()};
 	if(pid)
@@ -205,8 +205,27 @@ inline pid_t posix_fork_execveat_impl(int dirfd,cstring_view csv,char const* con
 		parent_process_deal_with_process_io<false>(pio.err);
 		return pid;
 	}
-	child_process_execveat(dirfd,csv,args,envp,pio);
+	child_process_execveat(dirfd,cstr,args,envp,pio);
 	fast_terminate();
+}
+
+template<typename path_type>
+inline pid_t posix_fork_execveat_impl(int dirfd,path_type const& csv,char const* const* args,char const* const* envp,posix_process_io const& pio)
+{
+	return ::fast_io::posix_api_common(csv,[&](char const* cstr){
+		return posix_fork_execveat_common_impl(dirfd,cstr,args,envp,pio);
+	});
+}
+
+template<typename path_type>
+inline pid_t posix_fork_execve_impl(path_type const& csv,char const* const* args,char const* const* envp,posix_process_io const& pio)
+{
+#if defined(AT_FDCWD)
+	return posix_fork_execveat_impl(AT_FDCWD,csv,args,envp,pio);
+#else
+	throw_posix_error(EINVAL);
+	return -1;
+#endif
 }
 
 }
@@ -348,7 +367,6 @@ char const* const* dup_enviro_entry(Iter begin,Iter end)
 		return dup_enviro_impl(begin,end);
 }
 
-
 }
 
 struct posix_process_args
@@ -399,12 +417,17 @@ public:
 	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
 	explicit constexpr posix_process(native_hd pid1) noexcept:
 		posix_process_observer{pid1}{}
-	posix_process(posix_at_entry pate,cstring_view filename,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
+	template<::fast_io::constructible_to_os_c_str path_type>
+	posix_process(posix_at_entry pate,path_type const& filename,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
 		posix_process_observer{details::posix_fork_execveat_impl(pate.fd,filename,args.args,envp.args,pio)}{}
-#ifdef AT_FDCWD
-	posix_process(cstring_view filename,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
-		posix_process_observer{details::posix_fork_execveat_impl(AT_FDCWD,filename,args.args,envp.args,pio)}{}
-#endif
+
+	template<::fast_io::constructible_to_os_c_str path_type>
+	posix_process(path_type const& filename,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
+		posix_process_observer{::fast_io::details::posix_fork_execve_impl(filename,args.args,envp.args,pio)}{}
+
+	posix_process(::fast_io::posix_fs_dirent ent,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
+		posix_process_observer{::fast_io::details::posix_fork_execveat_common_impl(ent.fd,ent.filename,args.args,envp.args,pio)}{}
+
 	posix_process(posix_process const&)=delete;
 	posix_process& operator=(posix_process const&)=delete;
 	constexpr posix_process(posix_process&& __restrict other) noexcept:posix_process_observer{other.pid}

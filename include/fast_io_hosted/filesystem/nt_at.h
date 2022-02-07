@@ -199,137 +199,99 @@ inline auto nt1x_api_dispatcher(void* dir_handle,wchar_t const* path_c_str,std::
 #endif
 }
 
-template<nt_family family,::fast_io::details::posix_api_1x dsp,std::integral char_type,typename... Args>
+template<nt_family family,::fast_io::details::posix_api_1x dsp,typename path_type,typename... Args>
 inline auto nt_deal_with1x(
 	void* dir_handle,
-	char_type const* path_c_str,
-	std::size_t path_size,
+	path_type const& path,
 	Args... args)
 {
-	using wchar_t_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
-#endif
-	= wchar_t const*;
-	if constexpr(sizeof(char_type)==2)
+	return nt_api_common(path,[&](wchar_t const* path_c_str,std::size_t path_size)
 	{
-		return nt1x_api_dispatcher<family==nt_family::zw,dsp>(dir_handle,reinterpret_cast<wchar_t_may_alias_const_ptr>(path_c_str),path_size,args...);
-	}
-	else
-	{
-		nt_api_encoding_converter converter(path_c_str,path_size);
-		return nt1x_api_dispatcher<family==nt_family::zw,dsp>(dir_handle,converter.native_c_str(),converter.size(),args...);
-	}
+		return nt1x_api_dispatcher<family==nt_family::zw,dsp>(dir_handle,path_c_str,path_size,args...);
+	});
 }
 
-template<nt_family family,::fast_io::details::posix_api_22 dsp,std::integral char_type1,std::integral char_type2>
-inline auto nt_deal_with22(void* olddirhd,char_type1 const* oldpath_c_str,std::size_t oldpath_size,
-	void* newdirhd,char_type2 const* newpath_c_str,std::size_t newpath_size,nt_at_flags flags)
+template<nt_family family,::fast_io::details::posix_api_22 dsp,typename oldpath_type,typename newpath_type>
+inline auto nt_deal_with22(void* olddirhd,oldpath_type const& oldpath,
+	void* newdirhd,newpath_type const& newpath,nt_at_flags flags)
 {
-	using wchar_t_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
-#endif
-	= wchar_t const*;
-	if constexpr(sizeof(char_type1)==2&&sizeof(char_type2)==2)
+	return nt_api_common(oldpath,[&](wchar_t const* oldpath_c_str,std::size_t oldpath_size)
 	{
-		return nt22_api_dispatcher<family==nt_family::zw,dsp>(olddirhd,reinterpret_cast<wchar_t_may_alias_const_ptr>(oldpath_c_str),oldpath_size,
-		newdirhd,reinterpret_cast<wchar_t_may_alias_const_ptr>(newpath_c_str),newpath_size,flags);
-	}
-	else if constexpr(sizeof(char_type1)==2&&sizeof(char_type2)!=2)
-	{
-		nt_api_encoding_converter converter(newpath_c_str,newpath_size);
-		return nt22_api_dispatcher<family==nt_family::zw,dsp>(olddirhd,reinterpret_cast<wchar_t_may_alias_const_ptr>(oldpath_c_str),oldpath_size,
-		newdirhd,converter.native_c_str(),converter.size(),flags);
-	}
-	else if constexpr(sizeof(char_type1)!=2&&sizeof(char_type2)==2)
-	{
-		nt_api_encoding_converter op_converter(oldpath_c_str,oldpath_size);
-		return nt22_api_dispatcher<family==nt_family::zw,dsp>(olddirhd,op_converter.native_c_str(),op_converter.size(),
-		newdirhd,reinterpret_cast<wchar_t_may_alias_const_ptr>(newpath_c_str),newpath_size,flags);
-	}
-	else
-	{
-		nt_api_encoding_converter opdealer(oldpath_c_str,oldpath_size);
-		nt_api_encoding_converter newpdealer(newpath_c_str,newpath_size);
-		return nt22_api_dispatcher<family==nt_family::zw,dsp>(olddirhd,opdealer.native_c_str(),opdealer.size(),
-		newdirhd,newpdealer.native_c_str(),newpdealer.size());
-	}
+		return nt_api_common(newpath,[&](wchar_t const* newpath_c_str,std::size_t newpath_size)
+		{
+			return nt22_api_dispatcher<family==nt_family::zw,dsp>(olddirhd,
+				oldpath_c_str,oldpath_size,
+				newdirhd,
+				newpath_c_str,newpath_size);
+		});
+	});
 }
 
 
 }
 
 
-template<nt_family family,constructible_to_path path_type>
+template<nt_family family,::fast_io::constructible_to_os_c_str path_type>
 requires (family==nt_family::nt||family==nt_family::zw)
-inline void nt_family_mkdirat(nt_at_entry ent,path_type&& path,perms pm=static_cast<perms>(436))
+inline void nt_family_mkdirat(nt_at_entry ent,path_type const& path,perms pm=static_cast<perms>(436))
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<family,details::posix_api_1x::mkdirat>(ent.handle,vw.c_str(),vw.size(),pm);
+	::fast_io::win32::nt::details::nt_deal_with1x<family,details::posix_api_1x::mkdirat>(ent.handle,path,pm);
 }
 
-template<constructible_to_path path_type>
-inline void nt_mkdirat(nt_at_entry ent,path_type&& path,perms pm=static_cast<perms>(436))
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void nt_mkdirat(nt_at_entry ent,path_type const& path,perms pm=static_cast<perms>(436))
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,details::posix_api_1x::mkdirat>(ent.handle,vw.c_str(),vw.size(),pm);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,details::posix_api_1x::mkdirat>(ent.handle,path,pm);
 }
 
-template<constructible_to_path path_type>
-inline void zw_mkdirat(nt_at_entry ent,path_type&& path,perms pm=static_cast<perms>(436))
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void zw_mkdirat(nt_at_entry ent,path_type const& path,perms pm=static_cast<perms>(436))
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw,details::posix_api_1x::mkdirat>(ent.handle,vw.c_str(),vw.size(),pm);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw,details::posix_api_1x::mkdirat>(ent.handle,path,pm);
 }
 
-template<nt_family family,constructible_to_path path_type>
+template<nt_family family,::fast_io::constructible_to_os_c_str path_type>
 requires (family==nt_family::nt||family==nt_family::zw)
-inline void nt_family_unlinkat(nt_at_entry ent,path_type&& path,nt_at_flags flags={})
+inline void nt_family_unlinkat(nt_at_entry ent,path_type const& path,nt_at_flags flags={})
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<family,details::posix_api_1x::unlinkat>(ent.handle,vw.c_str(),vw.size(),flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<family,details::posix_api_1x::unlinkat>(ent.handle,path,flags);
 }
 
-template<constructible_to_path path_type>
-inline void nt_unlinkat(nt_at_entry ent,path_type&& path,nt_at_flags flags={})
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void nt_unlinkat(nt_at_entry ent,path_type const& path,nt_at_flags flags={})
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,details::posix_api_1x::unlinkat>(ent.handle,vw.c_str(),vw.size(),flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,details::posix_api_1x::unlinkat>(ent.handle,path,flags);
 }
 
-template<constructible_to_path path_type>
-inline void zw_unlinkat(nt_at_entry ent,path_type&& path,nt_at_flags flags={})
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void zw_unlinkat(nt_at_entry ent,path_type const& path,nt_at_flags flags={})
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw,details::posix_api_1x::unlinkat>(ent.handle,vw.c_str(),vw.size(),flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw,details::posix_api_1x::unlinkat>(ent.handle,path,flags);
 }
 
 
 #if !defined(__CYGWIN__) && !defined(__WINE__)
 using native_at_flags = nt_at_flags;
 
-template<constructible_to_path path_type>
-inline void native_mkdirat(nt_at_entry ent,path_type&& path, perms pm=static_cast<perms>(436))
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void native_mkdirat(nt_at_entry ent,path_type const& path, perms pm=static_cast<perms>(436))
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,details::posix_api_1x::mkdirat>(ent.handle,vw.c_str(),vw.size(),pm);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,details::posix_api_1x::mkdirat>(ent.handle,path,pm);
 }
 
-template<constructible_to_path path_type>
-inline void native_unlinkat(nt_at_entry ent,path_type&& path,native_at_flags flags={})
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void native_unlinkat(nt_at_entry ent,path_type const& path,native_at_flags flags={})
 {
-	auto vw{::fast_io::details::to_its_cstring_view(path)};
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,::fast_io::details::posix_api_1x::unlinkat>(ent.handle,vw.c_str(),vw.size(),flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt,::fast_io::details::posix_api_1x::unlinkat>(ent.handle,path,flags);
 }
 
-template<constructible_to_path path_type>
+template<::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchownat(nt_at_entry,path_type&&,std::uintptr_t,std::uintptr_t,[[maybe_unused]] nt_at_flags flags=nt_at_flags::symlink_nofollow)
 {
 //windows does not use POSIX user group system. stub it and it is perfectly fine. But nt_fchownat,zw_fchownat will not be provided since they do not exist.
 }
 #if 0
-template<constructible_to_path old_path_type,constructible_to_path new_path_type>
+template<::fast_io::constructible_to_os_c_str old_path_type,::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_linkat(native_at_entry oldent,old_path_type&& oldpath,native_at_entry newent,new_path_type&& newpath,nt_at_flags flags=nt_at_flags::symlink_nofollow)
 {
 	auto oldvw{details::to_its_cstring_view(oldpath)};

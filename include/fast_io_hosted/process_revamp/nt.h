@@ -180,19 +180,24 @@ inline nt_user_process_information* nt_process_create_impl(void* __restrict fhan
 	return uptr.release();
 }
 
-template<nt_family family,typename T>
-requires (std::same_as<T,char>||std::same_as<T,wchar_t>)
-inline nt_user_process_information* nt_create_process_overloads(nt_at_entry entry,basic_cstring_view<T> filename,win32_process_io const& processio)
+template<nt_family family,typename path_type>
+inline nt_user_process_information* nt_create_process_overloads(nt_at_entry entry,path_type const& filename,win32_process_io const& processio)
 {
 	basic_nt_family_file<family,char> nf(entry,filename,open_mode::in|open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle,processio);
 }
 
-template<nt_family family,typename T>
-requires (std::same_as<T,char>||std::same_as<T,wchar_t>)
-inline nt_user_process_information* nt_create_process_overloads(basic_cstring_view<T> filename,win32_process_io const& processio)
+template<nt_family family,typename path_type>
+inline nt_user_process_information* nt_create_process_overloads(path_type const& filename,win32_process_io const& processio)
 {
 	basic_nt_family_file<family,char> nf(filename,open_mode::in|open_mode::excl);
+	return nt_process_create_impl<family>(nf.handle,processio);
+}
+
+template<nt_family family,typename path_type>
+inline nt_user_process_information* nt_create_process_overloads(::fast_io::nt_fs_dirent ent,win32_process_io const& processio)
+{
+	basic_nt_family_file<family,char> nf(ent,open_mode::in|open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle,processio);
 }
 
@@ -310,9 +315,18 @@ public:
 	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
 	explicit constexpr nt_family_process(native_hd hd) noexcept:nt_family_process_observer<family>{hd}{}
 
-	explicit nt_family_process(nt_at_entry nate,wcstring_view filename,win32_process_io const& processio):
+	template<::fast_io::constructible_to_os_c_str path_type>
+	explicit nt_family_process(nt_at_entry nate,path_type const& filename,win32_process_io const& processio):
 		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(nate,filename,processio)}
-		//to do. first test API
+	{}
+
+	template<::fast_io::constructible_to_os_c_str path_type>
+	explicit nt_family_process(path_type const& filename,win32_process_io const& processio):
+		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(filename,processio)}
+	{}
+
+	explicit nt_family_process(::fast_io::nt_fs_dirent ent,win32_process_io const& processio):
+		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(ent,processio)}
 	{}
 
 	nt_family_process(nt_family_process const& b)=delete;

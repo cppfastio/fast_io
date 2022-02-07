@@ -46,7 +46,6 @@ For hosted implementations the set of standard library headers required by the C
 #endif
 
 #include"fast_io_hosted/io_io_file.h"
-#include"fast_io_hosted/cstring_view.h"
 
 #include"fast_io_hosted/mmap.h"
 #include"fast_io_hosted/posix_status.h"
