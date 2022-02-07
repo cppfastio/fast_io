@@ -21,12 +21,10 @@ int main(int argc,char const** argv)
 		auto ftype{type(ent)};
 		if(ftype==fast_io::file_type::regular||ftype==fast_io::file_type::symlink)
 		{
-			auto exts{extension(ent)};
-			std::u8string_view view(exts.cbegin(),exts.cend());
+			std::u8string_view view(u8extension(ent));
 			if(view==u8".py"sv)	//excluse .py like libstdc++.so.6.0.29-gdb.py
 				continue;
-			auto name{filename(ent)};
-			std::u8string_view name_view(name.cbegin(),name.cend());
+			std::u8string_view name_view(u8filename(ent));
 			if(name_view==u8"libgcc_s.so"sv)	//libgcc_s.so should not be a symlink. It is a linker script
 				continue;
 			if(name_view.ends_with(u8".so"sv)||name_view.contains(u8".so."sv))
