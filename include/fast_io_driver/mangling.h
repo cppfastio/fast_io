@@ -57,19 +57,22 @@ struct cxa_demangle
 		other.length=0;
 		return *this;
 	}
-	explicit constexpr operator ::fast_io::freestanding::string_view() noexcept
+	char const* data() const noexcept
 	{
-		return ::fast_io::freestanding::string_view(buffer,length);
+		return buffer;
+	}
+	char const* begin() const noexcept
+	{
+		return buffer;
+	}
+	char const* end() const noexcept
+	{
+		return buffer+length;
 	}
 	~cxa_demangle()
 	{
 		free(buffer);
 	}
 };
-
-inline constexpr basic_io_scatter_t<char> print_alias_define(io_alias_t,cxa_demangle const& als) noexcept
-{
-	return {als.buffer,als.length};
-}
 
 }
