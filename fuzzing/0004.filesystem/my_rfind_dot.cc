@@ -1,4 +1,5 @@
 #include<fast_io.h>
+#include<fast_io_device.h>
 
 thread_local fast_io::obuf_file obf(u8"/dev/null");
 
