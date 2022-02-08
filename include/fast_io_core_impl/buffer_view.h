@@ -34,7 +34,7 @@ requires std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>
 	auto view_diff{view.end_ptr-view.curr_ptr};
 	if(view_diff<diff)
 		diff=view_diff;
-	auto it{non_overlapped_copy_n(view.curr_ptr,static_cast<std::size_t>(view_diff),first)};
+	auto it{::fast_io::details::non_overlapped_copy_n(view.curr_ptr,static_cast<std::size_t>(view_diff),first)};
 	view.curr_ptr+=diff;
 	return it;
 }
@@ -83,7 +83,9 @@ struct basic_obuffer_view
 	constexpr basic_obuffer_view() noexcept = default;
 	template<::fast_io::freestanding::contiguous_iterator Iter>
 	requires std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>
-	constexpr basic_obuffer_view(Iter first,Iter last) noexcept:begin_ptr{::fast_io::freestanding::to_address(first)},curr_ptr{begin_ptr+(last-first)},end_ptr{curr_ptr}{}
+	constexpr basic_obuffer_view(Iter first,Iter last) noexcept:begin_ptr{::fast_io::freestanding::to_address(first)},
+		curr_ptr{begin_ptr},
+		end_ptr{::fast_io::freestanding::to_address(last)}{}
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
 //std::ranges are not freestanding
 	template<std::ranges::contiguous_range rg>
@@ -93,6 +95,49 @@ struct basic_obuffer_view
 	constexpr void clear() noexcept
 	{
 		curr_ptr=begin_ptr;
+	}
+	constexpr char_type const* cbegin() const noexcept
+	{
+		return begin_ptr;
+	}
+	constexpr char_type const* cend() const noexcept
+	{
+		return curr_ptr;
+	}
+	constexpr char_type const* begin() const noexcept
+	{
+		return begin_ptr;
+	}
+	constexpr char_type const* end() const noexcept
+	{
+		return curr_ptr;
+	}
+	constexpr char_type* begin() noexcept
+	{
+		return begin_ptr;
+	}
+	constexpr char_type* end() noexcept
+	{
+		return curr_ptr;
+	}
+
+	constexpr char_type const* data() const noexcept
+	{
+		return begin_ptr;
+	}
+	constexpr char_type* data() noexcept
+	{
+		return begin_ptr;
+	}
+
+	constexpr std::size_t size() const noexcept
+	{
+		return static_cast<std::size_t>(curr_ptr-begin_ptr);
+	}
+
+	constexpr std::size_t capacity() const noexcept
+	{
+		return static_cast<std::size_t>(end_ptr-begin_ptr);
 	}
 };
 
@@ -104,7 +149,7 @@ inline constexpr void write(basic_obuffer_view<ch_type>& view,Iter first,Iter la
 	auto view_diff{view.end_ptr-view.curr_ptr};
 	if(view_diff<diff)
 		fast_terminate();
-	view.curr_ptr=non_overlapped_copy_n(first,static_cast<std::size_t>(view_diff),view.curr_ptr);
+	view.curr_ptr=::fast_io::details::non_overlapped_copy_n(first,static_cast<std::size_t>(diff),view.curr_ptr);
 }
 
 template<std::integral ch_type>
@@ -142,7 +187,6 @@ inline constexpr bool obuffer_overflow_never(basic_obuffer_view<ch_type>&) noexc
 {
 	return true;
 }
-
 
 using ibuffer_view = basic_ibuffer_view<char>;
 using wibuffer_view = basic_ibuffer_view<wchar_t>;
