@@ -1332,7 +1332,7 @@ inline constexpr Iter print_rsvflt_define_impl(Iter iter,flt f) noexcept
 		auto [mantissa,exponent,sign] = get_punned_result(f);
 		iter=print_rsv_fp_sign_impl<showpos>(iter,sign);
 		if(exponent==exponent_mask_u32)
-			return prsv_fp_nan_impl<uppercase>(iter,mantissa);
+			return prsv_fp_nan_impl<uppercase>(iter,mantissa!=0u);
 		if(!mantissa&&!exponent)
 		{
 			if constexpr(mt!=::fast_io::manipulators::floating_format::scientific)
