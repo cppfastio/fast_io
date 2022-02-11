@@ -812,6 +812,13 @@ inline void truncate(basic_nt_family_io_observer<family,ch_type> handle,std::uin
 {
 	win32::nt::details::nt_truncate_impl<family==nt_family::zw>(handle.handle,newfilesize);
 }
+#if 0
+template<nt_family family,std::integral ch_type>
+inline posix_file_status status(basic_nt_family_io_observer<family,ch_type> handle)
+{
+	return win32::win32::details::nt_status_impl<family==nt_family::zw>(handle.handle);
+}
+#endif
 
 template<nt_family family>
 struct
