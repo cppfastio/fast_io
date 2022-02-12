@@ -24,6 +24,6 @@ int main()
 		hexfloat(std::numeric_limits<float>::min()),"\n",
 		hexfloat(std::numeric_limits<float>::max()),"\n",
 		comma_hexfloat(std::numeric_limits<float>::min()),"\n",
-		comma_hexfloat(std::numeric_limits<float>::max())
-		);
+		comma_hexfloat(std::numeric_limits<float>::max()),"\n",
+		1.26111095e-36f);
 }

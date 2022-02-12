@@ -339,6 +339,57 @@ inline constexpr void jeaiii_hash(char_type* iter,std::uint_least32_t u,std::uin
 			}
 		}
 	}
+	else if constexpr(n==8)
+	{
+		switch(len)
+		{
+			case 1:
+			{
+				jeaiii_c<0>(iter,u);
+				return;
+			}
+			case 2:
+			{
+				jeaiii_c<1>(iter,u);
+				return;
+			}
+			case 3:
+			{
+				jeaiii_c<2>(iter,u);
+				return;
+			}
+			case 4:
+			{
+				jeaiii_c<3>(iter,u);
+				return;
+			}
+			case 5:
+			{
+				jeaiii_c<4>(iter,u);
+				return;
+			}
+			case 6:
+			{
+				jeaiii_c<5>(iter,u);
+				return;
+			}
+			case 7:
+			{
+				jeaiii_c<6>(iter,u);
+				return;
+			}
+			case 8:
+			{
+				jeaiii_c<7>(iter,u);
+				return;
+			}
+			default:
+			{
+				jeaiii_c<8>(iter,u);
+				return;
+			}
+		}
+	}
 	else if constexpr(n==9)
 	{
 		switch(len)
@@ -503,7 +554,7 @@ inline constexpr void jeaiii_main_len(char_type* iter,U n,std::uint_least32_t le
 		static_assert(!recursive);
 		if constexpr(ryu_mode)
 		{
-			jeaiii_hash<7>(iter,n,len);
+			jeaiii_hash<8>(iter,n,len);
 		}
 		else
 		{
