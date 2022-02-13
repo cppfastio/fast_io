@@ -56,7 +56,7 @@ inline constexpr void jeaiii_s(ch_type* iter,std::uint_least64_t t) noexcept
 {
 	using char_type = ch_type;
 	constexpr std::uint_least64_t ten{10u};
-	iter[n]=static_cast<char_type>(ten*static_cast<std::uint_least32_t>(t)>>32u)+char_literal_v<u8'0',char_type>;
+	iter[n]=static_cast<char_type>((ten*static_cast<std::uint_least32_t>(t))>>32u)+char_literal_v<u8'0',char_type>;
 }
 
 template<std::size_t n,bool last=false,std::integral char_type>
@@ -137,53 +137,115 @@ inline constexpr char_type* jeaiii_tree(char_type* iter,std::uint_least32_t u) n
 /*
 binary search tree
 */
-	if constexpr(left==right)
+	if constexpr(left==0&&right==9)
 	{
-		return jeaiii_f<right>(iter,u);
-	}
-	else if constexpr(left+1==right)
-	{
-		if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,right>))
+		if(u<::fast_io::details::compile_pow10<std::uint_least32_t,2>)
 		{
-			return jeaiii_f<left>(iter,u);
+			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,1>)
+			{
+				*iter=static_cast<char_type>(u)+char_literal_v<u8'0',char_type>;
+				return iter+1;
+			}
+			else
+			{
+				return jeaiii_f<1>(iter,u);
+			}
+		}
+		else if(u<::fast_io::details::compile_pow10<std::uint_least32_t,6>)
+		{
+			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,4>)
+			{
+				if(u<::fast_io::details::compile_pow10<std::uint_least32_t,3>)
+				{
+					return jeaiii_f<2>(iter,u);
+				}
+				else
+				{
+					return jeaiii_f<3>(iter,u);
+				}
+			}
+			else if(u<::fast_io::details::compile_pow10<std::uint_least32_t,5>)
+			{
+				return jeaiii_f<4>(iter,u);
+			}
+			else
+			{
+				return jeaiii_f<5>(iter,u);
+			}
+		}
+		else if(u<::fast_io::details::compile_pow10<std::uint_least32_t,8>)
+		{
+			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,7>)
+			{
+				return jeaiii_f<6>(iter,u);
+			}
+			else
+			{
+				return jeaiii_f<7>(iter,u);
+			}
 		}
 		else
 		{
-			return jeaiii_f<right>(iter,u);
-		}
-	}
-	else if constexpr(left+2==right)
-	{
-		if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,left+1>))
-		{
-			return jeaiii_f<left>(iter,u);
-		}
-		else
-		{
-			return jeaiii_tree<left+1,right>(iter,u);
-		}
-	}
-	else if constexpr(left==0)
-	{
-		if(u<100u)
-		{
-			return jeaiii_tree<0,1>(iter,u);
-		}
-		else
-		{
-			return jeaiii_tree<2,right>(iter,u);
+			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,9>)
+			{
+				return jeaiii_f<8>(iter,u);
+			}
+			else
+			{
+				return jeaiii_f<9>(iter,u);
+			}
 		}
 	}
 	else
 	{
-		constexpr std::size_t middle{(left+right)/2};
-		if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,middle+1>))
+		if constexpr(left==right)
 		{
-			return jeaiii_tree<left,middle>(iter,u);
+			return jeaiii_f<right>(iter,u);
+		}
+		else if constexpr(left+1==right)
+		{
+			if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,right>))
+			{
+				return jeaiii_f<left>(iter,u);
+			}
+			else
+			{
+				return jeaiii_f<right>(iter,u);
+			}
+		}
+		else if constexpr(left+2==right)
+		{
+			if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,left+1>))
+			{
+				return jeaiii_f<left>(iter,u);
+			}
+			else
+			{
+				return jeaiii_tree<left+1,right>(iter,u);
+			}
+		}
+		else if constexpr(left==0)
+		{
+			if(u<100u)
+			{
+				return jeaiii_tree<0,1>(iter,u);
+			}
+			else
+			{
+				return jeaiii_tree<2,right>(iter,u);
+			}
 		}
 		else
 		{
-			return jeaiii_tree<middle+1,right>(iter,u);
+			constexpr std::size_t middle{(left+right)/2};
+			if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,middle+1>))
+			{
+				return jeaiii_tree<left,middle>(iter,u);
+			}
+			else
+			{
+				return jeaiii_tree<middle+1,right>(iter,u);
+			}
 		}
 	}
 }
