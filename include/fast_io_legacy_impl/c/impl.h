@@ -628,12 +628,12 @@ public:
 	template<win32_family fam>
 	explicit operator basic_win32_family_io_observer<fam,char_type>() const noexcept
 	{
-		return static_cast<basic_win32_family_io_observer<fam,char_type>>(details::my_fp_to_win32_handle_impl<family>(fp));
+		return {details::my_fp_to_win32_handle_impl<family>(fp)};
 	}
 	template<nt_family fam>
 	explicit operator basic_nt_family_io_observer<fam,char_type>() const noexcept
 	{
-		return static_cast<basic_nt_family_io_observer<fam,char_type>>(details::my_fp_to_win32_handle_impl<family>(fp));
+		return {details::my_fp_to_win32_handle_impl<family>(fp)};
 	}
 #endif
 #endif
