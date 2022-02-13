@@ -1247,21 +1247,13 @@ inline constexpr Iter print_rsv_fp_decision_impl(Iter iter,typename iec559_trait
 		}
 		else
 		{
-			if(m10<10u)
-			{
-				*iter=static_cast<char_type>(static_cast<unsigned_char_type>(m10)+char_literal_v<u8'0',char_type>);
-				++iter;
-			}
-			else
-			{
-				auto iterp1{iter};
-				++iterp1;
-				auto new_iter{::fast_io::details::jeaiii::jeaiii_main<false>(iterp1,m10)};
-				e10+=static_cast<std::int_least32_t>(static_cast<std::uint_least32_t>(new_iter-iterp1)-1u);
-				*iter=*iterp1;
-				*iterp1=char_literal_v<comma?u8',':u8'.',char_type>;
-				iter=new_iter;
-			}
+			auto iterp1{iter};
+			++iterp1;
+			auto new_iter{::fast_io::details::jeaiii::jeaiii_main<false>(iterp1,m10)};
+			e10+=static_cast<std::int_least32_t>(static_cast<std::uint_least32_t>(new_iter-iterp1)-1u);
+			*iter=*iterp1;
+			*iterp1=char_literal_v<comma?u8',':u8'.',char_type>;
+			iter=new_iter;
 		}
 		return print_rsv_fp_e_impl<flt,uppercase_e>(iter,e10);
 	}
