@@ -137,6 +137,7 @@ inline constexpr char_type* jeaiii_tree(char_type* iter,std::uint_least32_t u) n
 /*
 binary search tree
 */
+#if 0
 	if constexpr(left==0&&right==9)
 	{
 		if(u<::fast_io::details::compile_pow10<std::uint_least32_t,2>)
@@ -197,6 +198,7 @@ binary search tree
 		}
 	}
 	else
+#endif
 	{
 		if constexpr(left==right)
 		{
