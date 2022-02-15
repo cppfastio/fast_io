@@ -89,12 +89,21 @@ inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_t
 }
 
 template<std::integral char_type,std::size_t n>
-inline constexpr auto print_alias_define(io_alias_t,char_type const(&s)[n]) noexcept
+inline constexpr auto print_alias_define(io_alias_t,char_type (&s)[n]) noexcept
 {
-	if constexpr(n==2)
-		return manipulators::chvw_t<char_type>{*s};
+	constexpr bool not_char_literal{::std::is_const_v<char_type>};
+	if constexpr(not_char_literal)
+	{
+		if constexpr(n==2)
+			return manipulators::chvw_t<std::remove_const_t<char_type>>{*s};
+		else
+			return basic_io_scatter_t<std::remove_const_t<char_type>>{s,n-1};
+	}
 	else
-		return basic_io_scatter_t<char_type>{s,n-1};
+	{
+static_assert(not_char_literal,"The type is an array but not char array literal. Reject.");
+		return;
+	}
 }
 
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
