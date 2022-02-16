@@ -102,13 +102,7 @@ struct basic_white_hole_engine
 		if constexpr(::fast_io::details::has_entroy_method_impl<handletype>)
 		{
 			auto v{random_entropy(handle)};
-			constexpr auto mx_value(sizeof(result_type)*
-#if defined(__CHAR_BIT__)
-			__CHAR_BIT__
-#else
-			8
-#endif
-			);
+			constexpr std::size_t mx_value{static_cast<std::size_t>(::std::numeric_limits<::std::size_t>::digits)};
 			if(v>mx_value)
 				v=mx_value;
 			return static_cast<double>(v);
