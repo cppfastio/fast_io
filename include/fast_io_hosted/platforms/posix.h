@@ -932,7 +932,7 @@ inline decltype(auto) io_control(basic_posix_io_observer<ch_type> h,Args&& ...ar
 
 namespace posix
 {
-extern int ioctl(int fd, unsigned long request, ...) noexcept __asm__("ioctl");
+extern int ioctl(int, long unsigned, ...) noexcept __asm__("ioctl");
 }
 
 
@@ -1173,9 +1173,6 @@ posix_file_factory
 template<std::integral ch_type>
 class basic_posix_file:public basic_posix_io_observer<ch_type>
 {
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
-	using mode_t = int;
-#endif
 public:
 	using typename basic_posix_io_observer<ch_type>::char_type;
 	using typename basic_posix_io_observer<ch_type>::native_handle_type;
