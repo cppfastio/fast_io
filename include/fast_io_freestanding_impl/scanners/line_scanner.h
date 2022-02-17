@@ -188,11 +188,19 @@ inline constexpr parse_result<char_type const*> scan_iterative_contiguous_define
 }
 #endif
 
-template<buffer_input_stream input>
+template<input_stream input>
 inline constexpr auto line_scanner(input&& in) noexcept(noexcept(io_ref(in)))
 {
-	using char_type = typename std::remove_cvref_t<input>::char_type;
-	return basic_scanner_context<decltype(io_ref(in)),basic_line_scanner_buffer<char_type>>{io_ref(in)};
+	if constexpr(mutex_stream<input>)
+	{
+		using char_type = typename std::remove_cvref_t<input>::char_type;
+		return basic_scanner_context_mutex<decltype(io_ref(in)),basic_line_scanner_buffer<char_type>>(io_ref(in));
+	}
+	else
+	{
+		using char_type = typename std::remove_cvref_t<input>::char_type;
+		return basic_scanner_context<decltype(io_ref(in)),basic_line_scanner_buffer<char_type>>{io_ref(in)};
+	}
 }
 
 }
