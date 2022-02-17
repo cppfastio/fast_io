@@ -98,7 +98,7 @@
 #include"fast_io_core_impl/enums/impl.h"
 
 #include"fast_io_core_impl/simd/impl.h"
-
+#include"fast_io_core_impl/simd_find.h"
 #include"fast_io_core_impl/integers/sto/sto_contiguous.h"
 
 #if !(defined(FAST_IO_DISABLE_CODECVT)&&(__STDC_HOSTED__==0 || (defined(_GLIBCXX_HOSTED) && _GLIBCXX_HOSTED==0)))

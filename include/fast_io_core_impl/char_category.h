@@ -300,12 +300,25 @@ inline constexpr bool is_html_whitespace(char_type ch) noexcept
 
 namespace fast_io
 {
+namespace details
+{
+template<std::integral char_type>
+inline constexpr char_type const* find_lf_simd_impl(char_type const*,char_type const*) noexcept;
+}
 
 template<::fast_io::freestanding::forward_iterator Iter>
+requires (::std::integral<::fast_io::freestanding::iter_value_t<Iter>>)
 inline constexpr Iter find_lf(Iter first, Iter last)
 {
 	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
-	return ::fast_io::freestanding::find(first,last,::fast_io::char_literal_v<u8'\n',char_type>);
+	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>)
+	{
+		return ::fast_io::details::find_lf_simd_impl(::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last))-::fast_io::freestanding::to_address(first)+first;
+	}
+	else
+	{
+		return ::fast_io::freestanding::find(first,last,::fast_io::char_literal_v<u8'\n',char_type>);
+	}
 }
 
 template<::fast_io::freestanding::random_access_iterator Iter>
