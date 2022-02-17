@@ -150,12 +150,13 @@ inline constexpr parse_code scan_iterative_eof_define_line_internal(basic_line_s
 	{
 		buf.view_begin_ptr=buf.buffer.begin_ptr;
 		buf.view_end_ptr=buf.buffer.curr_ptr;
+		return parse_code::ok;
 	}
 	else
 	{
 		buf.view_end_ptr=buf.view_begin_ptr=nullptr;
+		return parse_code::end_of_file;
 	}
-	return parse_code::ok;
 }
 
 }

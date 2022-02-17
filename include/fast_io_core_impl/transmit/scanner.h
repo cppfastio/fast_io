@@ -73,6 +73,11 @@ inline constexpr void basic_scanner_context_next_common(input handle,context_typ
 								scnctx.last_is_eof=true;
 								break;
 							}
+							else if(code==parse_code::end_of_file)
+							{
+								scnctx.ptr=nullptr;
+								break;
+							}
 							else
 							{
 								throw_parse_code(code);
