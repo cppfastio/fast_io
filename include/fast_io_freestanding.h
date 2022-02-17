@@ -30,9 +30,7 @@
 #include"fast_io_freestanding_impl/auto_indent.h"
 #include"fast_io_freestanding_impl/space_reserve.h"
 #include"fast_io_freestanding_impl/width.h"
-#if 0
-#include"fast_io_freestanding_impl/serialize.h"
-#endif
+#include"fast_io_freestanding_impl/scanners/impl.h"
 #include"fast_io_freestanding_impl/api_encoding_converter/impl.h"
 
 
