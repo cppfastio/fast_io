@@ -3,80 +3,6 @@
 namespace fast_io
 {
 
-template<std::integral char_type>
-struct basic_scanner_line_buffer
-{
-	char_type *begin_ptr{};
-	char_type *curr_ptr{};
-	char_type *end_ptr{};
-	char_type const* view_begin_ptr{};
-	char_type const* view_end_ptr{};
-	bool inbuffer{};
-};
-/*
-namespace details
-{
-
-template<std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_iterative_next_line_define_impl(
-	basic_line_scanner_buffer<char_type>& buf,char_type const* buffer_curr,char_type const* buffer_end) noexcept
-{
-
-}
-
-}
-*/
-
-template<std::integral char_type,bool buffer>
-inline constexpr void scan_iterative_init_define(io_reserve_type_t<char_type,basic_line_scanner_buffer<char_type,buffer>>,
-		basic_line_scanner_buffer<char_type,buffer>& buf) noexcept
-{
-	buf.inbuffer=false;	
-}
-
-template<std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_iterative_next_define(io_reserve_type<char_type,basic_line_scanner_buffer<char_type>>,
-	basic_line_scanner_buffer<char_type>& buf,char_type const* first,char_type const* last) noexcept
-{
-	for(;buffer_curr!=buffer_end&&*buffer_curr!=::fast_io::details::char_literal_v<u8'\n',char_type>;++buffer_curr);
-	if(buffer_curr==buffer_end)
-	{
-		if(buf.inbuffer)
-		{
-			std::size_t const remain_buffer_size{static_cast<std::size_t>(buff.end_ptr-buff.curr_ptr)};
-			std::size_t const diff{static_cast<std::size_t>(last-first)};
-			if(remain_buffer_size<diff)
-			{
-				
-			}
-			non_overlapped_copy(buffer_curr,);
-		}
-		else
-		{
-			buf.
-		}
-		return {};
-	}
-	else
-	{
-
-	}
-}
-
-template<typename char_type,typename T>
-concept iterative_scannable = ::std::integral<char_type>&&requires(T& t,char_type const* buffer_curr,char_type const* buffer_end)
-{
-	{scan_iterative_init_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t)};
-	{scan_iterative_next_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t,buffer_curr,buffer_end)}->parse_result<char_type const*>;
-	{scan_iterative_eof_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t)}->fast_io::parse_code;
-};
-
-template<typename char_type,typename T>
-concept iterative_contiguous_scannable = ::std::integral<char_type>&&requires(T& t,char_type const* buffer_curr,char_type const* buffer_end)
-{
-	{scan_iterative_contiguous_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t,buffer_curr,buffer_end)}->parse_result<char_type const*>;
-};
-
 template<::fast_io::buffer_input_stream input,typename T>
 requires std::is_trivially_copyable_v<input>
 struct basic_scanner_context
@@ -102,7 +28,7 @@ struct basic_scanner_context
 #endif
 	context_type context;
 	bool eof{};
-	inline constexpr basic_scanner& operator++()
+	inline constexpr basic_scanner_context& operator++()
 	{
 		if constexpr(iterative_scannable<char_type,T>)
 		{
@@ -113,9 +39,9 @@ struct basic_scanner_context
 				if constexpr(iterative_contiguous_scannable<char_type,context_type>)
 				{
 					auto [it,ec]=scan_iterative_contiguous_define(io_reserve_type<char_type,context_type>,curr_ptr,end_ptr);
-					if(ec!=parse_code::okay)
+					if(ec!=parse_code::ok)
 					{
-						throw_parse_code(code);
+						throw_parse_code(ec);
 					}
 					ibuffer_set_curr(handle,it);
 				}
@@ -124,7 +50,7 @@ struct basic_scanner_context
 					if(curr_ptr==end_ptr)
 					{
 						auto code{scan_iterative_eof_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,context)};
-						if(code!=parse_code::okay)
+						if(code!=parse_code::ok)
 						{
 							throw_parse_code(code);
 						}
@@ -132,10 +58,9 @@ struct basic_scanner_context
 					else
 					{
 						auto p{scan_iterative_next_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,context,curr_ptr,end_ptr)};
-						if(p.code==parse_code::okay)
+						if(p.code==parse_code::ok)
 						{
 							ibuffer_set_curr(handle,p);
-							break;
 						}
 					}
 				}
@@ -152,7 +77,7 @@ struct basic_scanner_context
 						if(!u)
 						{
 							auto code{scan_iterative_eof_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,context)};
-							if(code!=parse_code::okay)
+							if(code!=parse_code::ok)
 							{
 								throw_parse_code(code);
 							}
@@ -162,7 +87,7 @@ struct basic_scanner_context
 						continue;
 					}
 					auto [p,code]{scan_iterative_next_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,context,curr_ptr,end_ptr)};
-					if(code==parse_code::okay)[[likely]]
+					if(code==parse_code::ok)[[likely]]
 					{
 						ibuffer_set_curr(handle,p);
 						break;
@@ -178,11 +103,12 @@ struct basic_scanner_context
 		}
 		else
 		{
-			eof=scan_freestanding(handle,p);
+			eof=scan_freestanding(handle,context);
 		}
 		return *this;
 	}
 };
+
 #if 0
 template<::fast_io::buffer_input_stream input,typename T>
 requires std::is_trivially_copyable_v<input>
@@ -190,7 +116,7 @@ struct basic_scanner_context_mutex
 {
 
 };
-#endif
+
 template<typename T>
 inline constexpr auto basic_scanner(T&& input)
 {
@@ -213,5 +139,5 @@ static_assert(type_error,"input stream is not bufferred");
 		}
 	}
 }
-
+#endif
 }

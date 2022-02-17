@@ -159,6 +159,21 @@ constexpr auto print_scatter_define(io_reserve_type_t<char_type,parameter<value_
 	return print_scatter_define(io_reserve_type<char_type,std::remove_cvref_t<value_type>>,para.reference);
 }
 
+
+template<typename char_type,typename T>
+concept iterative_scannable = ::std::integral<char_type>&&requires(T& t,char_type const* buffer_curr,char_type const* buffer_end)
+{
+	{scan_iterative_init_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t)};
+	{scan_iterative_next_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t,buffer_curr,buffer_end)}->std::same_as<parse_result<char_type const*>>;
+	{scan_iterative_eof_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t)}->std::same_as<fast_io::parse_code>;
+};
+
+template<typename char_type,typename T>
+concept iterative_contiguous_scannable = ::std::integral<char_type>&&requires(T t,char_type const* buffer_curr,char_type const* buffer_end)
+{
+	{scan_iterative_contiguous_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t,buffer_curr,buffer_end)}->std::same_as<parse_result<char_type const*>>;
+};
+
 namespace manipulators
 {}
 
