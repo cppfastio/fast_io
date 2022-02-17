@@ -13,15 +13,7 @@ inline constexpr void basic_scanner_context_next_common(input handle,context_typ
 	using char_type = typename std::remove_cvref_t<input>::char_type;
 	if constexpr(mutex_stream<input>)
 	{
-		if constexpr(mutex_stream<decltype(handle.unlocked_handle())>)
-		{
-			::fast_io::io_lock_guard guard{handle};
-			basic_scanner_context_next_common(handle.unlocked_handle(),context,scnctx);
-		}
-		else
-		{
-			basic_scanner_context_next_common(handle.unlocked_handle(),context,scnctx);
-		}
+		basic_scanner_context_next_common(handle.unlocked_handle(),context,scnctx);
 	}
 	else
 	{
