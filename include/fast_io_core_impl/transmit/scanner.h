@@ -17,7 +17,7 @@ inline constexpr void basic_scanner_context_next_common(input handle,context_typ
 	}
 	else
 	{
-		if constexpr(iterative_scannable<char_type,context_type>)
+		if constexpr(iterative_scannable<char_type,context_type>||iterative_contiguous_scannable<char_type,context_type>)
 		{
 			if constexpr(contiguous_input_stream<input_handle_type>)
 			{
@@ -25,11 +25,29 @@ inline constexpr void basic_scanner_context_next_common(input handle,context_typ
 				auto end_ptr{ibuffer_end(handle)};
 				if constexpr(iterative_contiguous_scannable<char_type,context_type>)
 				{
-					auto [it,ec]=scan_iterative_contiguous_define(io_reserve_type<char_type,std::remove_cvref_t<context_type>>,curr_ptr,end_ptr);
+					auto [it,ec]=scan_iterative_contiguous_define(io_reserve_type<char_type,std::remove_cvref_t<context_type>>,context,curr_ptr,end_ptr);
 					ibuffer_set_curr(handle,it);
-					if(ec!=parse_code::ok)
+					if(it==end_ptr)
 					{
-						throw_parse_code(ec);
+						if(ec==parse_code::ok)
+						{
+							scnctx.last_is_eof=true;
+						}
+						else if(ec==parse_code::end_of_file)
+						{
+							scnctx.ptr=nullptr;
+						}
+						else
+						{
+							throw_parse_code(ec);
+						}
+					}
+					else
+					{
+						if(ec!=parse_code::ok)
+						{
+							throw_parse_code(ec);
+						}
 					}
 				}
 				else
@@ -117,14 +135,7 @@ struct basic_scanner_context_iterator
 	using char_type = typename T::char_type;
 	using context_type = typename T::context_type;
 	T* ptr{};
-#ifndef __INTELLISENSE__
-#if __has_cpp_attribute(msvc::no_unique_address)
-[[msvc::no_unique_address]]
-#elif __has_cpp_attribute(no_unique_address) >= 201803
-[[no_unique_address]]
-#endif
-#endif
-	std::conditional_t<::fast_io::contiguous_input_stream<input_handle_type>,::fast_io::details::empty,bool> last_is_eof{};
+	bool last_is_eof{};
 	inline constexpr context_type& operator*() const noexcept
 	{
 		return ptr->context;

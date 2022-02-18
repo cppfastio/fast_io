@@ -46,6 +46,21 @@ struct basic_line_scanner_buffer
 	}
 };
 
+template<std::integral char_type>
+struct basic_line_scanner_contiguous_view
+{
+	char_type const* view_begin_ptr{};
+	char_type const* view_end_ptr{};
+	constexpr char_type const* begin() const noexcept
+	{
+		return view_begin_ptr;
+	}
+	constexpr char_type const* end() const noexcept
+	{
+		return view_end_ptr;
+	}
+};
+
 namespace details
 {
 
@@ -159,6 +174,23 @@ inline constexpr parse_code scan_iterative_eof_define_line_internal(basic_line_s
 	}
 }
 
+template<std::integral char_type>
+inline constexpr parse_result<char_type const*> scan_iterative_contiguous_line_define_impl(
+	basic_line_scanner_contiguous_view<char_type>& __restrict buf,char_type const* first,char_type const* last) noexcept
+{
+	auto it{::fast_io::find_lf(first,last)};
+	if(it==last)[[unlikely]]
+	{
+		if(first==it)
+		{
+			return {it,parse_code::end_of_file};
+		}
+	}
+	buf.view_begin_ptr=first;
+	buf.view_end_ptr=it;
+	return {it+1,parse_code::ok};
+}
+
 }
 
 template<std::integral char_type>
@@ -181,25 +213,28 @@ inline constexpr parse_code scan_iterative_eof_define(io_reserve_type_t<char_typ
 {
 	return ::fast_io::details::scan_iterative_eof_define_line_internal(buf);
 }
-#if 0
+
 template<std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_iterative_contiguous_define(io_reserve_type_t<char_type,basic_line_scanner_buffer<char_type>>,
-	basic_line_scanner_buffer<char_type>& __restrict buf,char_type const* first,char_type const* last) noexcept
+inline constexpr parse_result<char_type const*> scan_iterative_contiguous_define(io_reserve_type_t<char_type,basic_line_scanner_contiguous_view<char_type>>,
+	basic_line_scanner_contiguous_view<char_type>& __restrict buf,char_type const* first,char_type const* last) noexcept
 {
+	return ::fast_io::details::scan_iterative_contiguous_line_define_impl(buf,first,last);
 }
-#endif
 
 template<input_stream input>
 inline constexpr auto line_scanner(input&& in) noexcept(noexcept(io_ref(in)))
 {
+	using char_type = typename std::remove_cvref_t<input>::char_type;
 	if constexpr(mutex_stream<input>)
 	{
-		using char_type = typename std::remove_cvref_t<input>::char_type;
 		return basic_scanner_context_mutex<decltype(io_ref(in)),basic_line_scanner_buffer<char_type>>(io_ref(in));
+	}
+	else if constexpr(contiguous_input_stream<input>)
+	{
+		return basic_scanner_context<decltype(io_ref(in)),basic_line_scanner_contiguous_view<char_type>>(io_ref(in));
 	}
 	else
 	{
-		using char_type = typename std::remove_cvref_t<input>::char_type;
 		return basic_scanner_context<decltype(io_ref(in)),basic_line_scanner_buffer<char_type>>{io_ref(in)};
 	}
 }
