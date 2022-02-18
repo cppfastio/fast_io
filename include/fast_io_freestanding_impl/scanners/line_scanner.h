@@ -178,7 +178,6 @@ template<std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_iterative_contiguous_line_define_impl(
 	basic_line_scanner_contiguous_view<char_type>& __restrict buf,char_type const* first,char_type const* last) noexcept
 {
-	assert(first<=last);
 	auto it{::fast_io::find_lf(first,last)};
 	if(it==last)[[unlikely]]
 	{
@@ -186,6 +185,7 @@ inline constexpr parse_result<char_type const*> scan_iterative_contiguous_line_d
 		{
 			return {it,parse_code::end_of_file};
 		}
+		return {it,parse_code::ok};
 	}
 	buf.view_begin_ptr=first;
 	buf.view_end_ptr=it;

@@ -25,7 +25,6 @@ inline constexpr void basic_scanner_context_next_common(input handle,context_typ
 				auto end_ptr{ibuffer_end(handle)};
 				if constexpr(iterative_contiguous_scannable<char_type,context_type>)
 				{
-					printf("%p %p\n",curr_ptr,end_ptr);
 					auto [it,ec]=scan_iterative_contiguous_define(io_reserve_type<char_type,std::remove_cvref_t<context_type>>,context,curr_ptr,end_ptr);
 					ibuffer_set_curr(handle,it);
 					if(ec!=parse_code::ok)
