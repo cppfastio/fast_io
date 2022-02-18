@@ -231,7 +231,7 @@ inline constexpr auto line_scanner(input&& in) noexcept(noexcept(io_ref(in)))
 	}
 	else if constexpr(contiguous_input_stream<input>)
 	{
-		return basic_scanner_context<decltype(io_ref(in)),basic_line_scanner_contiguous_view<char_type>>(io_ref(in));
+		return basic_scanner_context<decltype(io_ref(in)),basic_line_scanner_contiguous_view<char_type>>{io_ref(in)};
 	}
 	else
 	{

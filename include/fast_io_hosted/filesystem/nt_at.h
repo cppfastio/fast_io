@@ -213,7 +213,7 @@ inline auto nt_deal_with1x(
 
 template<nt_family family,::fast_io::details::posix_api_22 dsp,typename oldpath_type,typename newpath_type>
 inline auto nt_deal_with22(void* olddirhd,oldpath_type const& oldpath,
-	void* newdirhd,newpath_type const& newpath,nt_at_flags flags)
+	void* newdirhd,newpath_type const& newpath,nt_at_flags )
 {
 	return nt_api_common(oldpath,[&](wchar_t const* oldpath_c_str,std::size_t oldpath_size)
 	{
