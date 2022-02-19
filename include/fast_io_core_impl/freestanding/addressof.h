@@ -42,17 +42,6 @@ template<typename T>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-[[nodiscard]] inline constexpr T&& forward(std::remove_reference_t<T>&& t) noexcept
-{
-	return static_cast<T&&>(t);
-}
-
-template<typename T>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
 [[nodiscard]] inline constexpr typename std::remove_reference<T>::type&& move(T&& t) noexcept
 {
 	return static_cast<typename std::remove_reference<T>::type&&>(t);
