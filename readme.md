@@ -1,6 +1,6 @@
 # fast_io
 
-fast_io is a new C++20 library for extremely fast input/output and aims to replace iostream and cstdio. It is header-only (module only in the future) for easy inclusion in your project. It requires a capable C++20 compiler supporting concepts.
+fast_io is a new C++20 library for extremely fast input/output aiming to replace `<iostream>` and `<cstdio>`. It is header only (module only in the future) for easy inclusion in any project. It requires a capable C++20 compiler supporting concepts.
 
 ## QQ group
 1076846339
@@ -14,18 +14,9 @@ https://discord.gg/wYfh8kk
 
 ## What does "fast" mean in fast_io?
 
-It does not necessary mean it will be faster than everything else. (Or it would be named as fastest_io. Of course those fmt trolls would claim that.) It means it is significantly faster than stdio.h and iostream for all cases. fast means faster than stdio.h and iostream.
+It doesn't necessary mean it will be faster than everything else (or it would be named `fastest_io`; of course those fmt trolls would claim that.) It means it is significantly faster than `<iostream>` and `<cstdio>` for all cases.
 
-## Hello World
 
-```cpp
-#include<fast_io.h>
-
-int main()
-{
-	print("Hello World!\n");
-}
-```
 
 ## Old Repository was archived due to bloat with git through time
 
@@ -33,10 +24,29 @@ Old commits were at:
 https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23
 
 ## Examples
-Deprecated examples are in
-https://bitbucket.org/ejsvifq_mabmip/fast_io_deprecated
+### Print to `stdout`
+```cpp
+#include <fast_io.h>
 
-However, they might not work current fast_io since fast_io keeps changing.
+int main()
+{
+	print("Hello World!\n");
+}
+```
+### Load whole file through memory mapping
+```cpp
+#include <fast_io.h>
+
+int main()
+{
+	fast_io::native_file_loader file_data("text.txt");
+	// `file_data` statifies `std::ranges::contiguous_range`
+}
+```
+### Other examples
+For other up to date examples please look in the [`examples/`](examples/) folder.
+
+Deprecated examples are [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_deprecated) but they might not work anymore since fast_io keeps changing.
 
 This i18n repo stores the i18n source files.
 https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n
