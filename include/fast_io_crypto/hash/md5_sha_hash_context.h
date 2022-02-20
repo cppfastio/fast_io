@@ -101,24 +101,7 @@ struct md5_sha_common_impl
 			}
 		}
 		constexpr std::size_t start_pos{block_size-sizeof(counter_type)};
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
-		{
-			auto a{std::bit_cast<::fast_io::freestanding::array<std::byte,sizeof(counter_type)>>(this->counter)};
-			for(std::size_t i{};i!=sizeof(counter_type);++i)
-			{
-				this->buffer[start_pos+i]=a[i];
-			}
-		}
-		else
-#endif
-		{
-			::fast_io::details::my_memcpy(buffer+start_pos,__builtin_addressof(ct),sizeof(counter_type));
-		}
+		::fast_io::freestanding::type_punning_to_bytes(ct,buffer+start_pos);
 		this->hasher.update_blocks(buffer,buffer+block_size);
 	}
 	inline constexpr void update(std::byte const* block_first,std::byte const* block_last) noexcept
@@ -323,25 +306,7 @@ inline constexpr void hash_digest_to_byte_ptr_common(digest_value_type const* di
 		{
 			v=::fast_io::byte_swap(v);
 		}
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if(__builtin_is_constant_evaluated())
-#endif
-		{
-			::fast_io::freestanding::array<std::byte,sizeof(digest_value_type)> a{::fast_io::bit_cast<::fast_io::freestanding::array<std::byte,sizeof(digest_value_type)>>(v)};
-			for(std::size_t i{};i!=remainder;++i)
-			{
-				*ptr=a[i];
-				++ptr;
-			}
-		}
-		else
-#endif
-		{
-			::fast_io::details::my_memcpy(ptr,__builtin_addressof(v),remainder);
-		}
+		::fast_io::freestanding::type_punning_to_bytes_n<remainder>(v,ptr);
 	}
 }
 
