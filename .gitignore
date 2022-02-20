@@ -8,4 +8,4 @@ benchmarks/*/*.txt
 .tmp
 .vscode
 build
-
+.vs/
