@@ -1,10 +1,13 @@
 # fast_io
 
-fast_io is an extremely [fast](readme.md#Benchmarks) C++20 input/output library aiming to replace `<iostream>` and `<cstdio>`. 
+fast_io is an extremely [fast](readme.md#Benchmarks) C++20 input/output library
+aiming to replace `<iostream>` and `<cstdio>`. 
 
-It is header only + [MIT licensed](license.txt) for easy inclusion in any project. It requires a capable C++20 compiler supporting concepts.
+It is header only + [MIT licensed](license.txt) for easy inclusion in any
+project. It requires a capable C++20 compiler supporting concepts.
 
-*Old Repository was archived due to bloat with git through time; old commits were [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23).*
+*The old repository was archived due to git bloat over time;*
+*old commits were [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23).*
 
 ## Examples
 ### Print to `stdout`
@@ -12,36 +15,42 @@ It is header only + [MIT licensed](license.txt) for easy inclusion in any projec
 #include <fast_io.h>
 
 int main() {
-    print("Hello, fast_io world!\n");
+	print("Hello, fast_io world!\n");
 }
 ```
-### Load whole file through memory mapping
+### Memory map file
 ```cpp
 #include <fast_io.h>
 
 int main() {
-    fast_io::native_file_loader file_data("text.txt");
-    // file_data satisfies std::ranges::contiguous_range
+	fast_io::native_file_loader file_data("text.txt");
+	// file_data satisfies std::ranges::contiguous_range
 }
 ```
 ### Other examples
 
-For other up to date examples please look in the [`examples/`](examples/) folder.
+For other up-to-date examples, please look in the [`examples/`](examples/) folder.
 
-Deprecated examples are [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_deprecated) but they might not work anymore since fast_io keeps changing.
+Deprecated examples are [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_deprecated)
+but they might not work anymore.
 
 This i18n repo stores the i18n source files.
-https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n
+
+[https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n](https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n)
 
 ## F.A.Q.
 ### What does "fast" mean in fast_io?
 
-It doesn't necessary mean it will be faster than everything else (or it would be named `fastest_io`; of course `{fmt}` trolls would claim that) it means it is significantly faster than `<iostream>` and `<cstdio>` in all cases.
-### What are the supported platforms, compilers, etc.
-See [support.md](support.md) for a list of supported "stuff" + platform specific usage notes.
-### Other questions
-You can directly ask questions on the [Discord server](https://discord.gg/wYfh8kk).
-QQ group: `1076846339`
+It doesn't necessary mean it's faster than everything else (or it would be named `fastest_io`.)
+However, the "fast" in fast_io means that it's significantly faster than
+`<iostream>` and `<cstdio>` in every case.
+
+### What are the supported platforms, compilers...?
+See [support.md](support.md) for a list of supported things and platform specific usage notes.
+
+### Other questions?
+You can ask questions on the [fast_io discord server](https://discord.gg/wYfh8kk)
+or QQ group: `1076846339`.
 
 ## Documentation
 See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/qabeowjbtkwb/fast_io/wikis.
@@ -52,12 +61,12 @@ See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/q
 - RAII for C `FILE*`, POSIX `fd` and win32 `HANDLE`
 - Interop with `<cstdio>` and `<iostream>` 
 - No easily misused stuff like `std::endl`
-- Static I/O manipulators instead of format string nonsense.
-- No locale by default. It is optional.
-- No internal `iomanip` states (since it creates security issues)
+- Static I/O manipulators instead of format strings.
+- Optional locale.
+- Stateless I/O manipulation.
 - Consistent error handling; when available, exceptions as the **only** error reporting mechanism (no `std::error_code`, `std::system_error` or useless bounds checking)
-- Freestanding mode
-- Addresss Sanitizer special code for protecting memory safety issues.
+- Freestanding mode.
+- Address Sanitizer special code for protecting memory safety issues.
 
 - Supports POSIX iconv. You can use fast_io for your coding conversion.
 - Binary serialization for trivially copyable types and standard containers
@@ -78,9 +87,7 @@ See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/q
 - zlib compression/decompression
 - Filesystem
 - OpenSSL BIO, Qt QFile, MFC CFile support
-## Possible Improvements
-1. Interfaces for cloud computing algorithms like MapReduce
-2. This being in the standard library.
+
 ### Post C++20
   1. Module support
   2. Coroutine support for async IO
@@ -317,19 +324,19 @@ iconv test:
 
 This project is made possible by referencing other open-source projects. (I don't take their code directly, they are reimplemented by myself to fit the purpose of this library or it might have integration issues.)
 
-|Project  | Url                                 |
-|---------|-----------------------------------------|
-|Grisu-Exact| https://github.com/jk-jeon/Grisu-Exact |
-|Ryu| https://github.com/ulfjack/ryu  |
-|SHA-Intrinsics| https://github.com/noloader/SHA-Intrinsics |
-|SHA1| https://github.com/vog/sha1 |
-|UTF-utils| https://github.com/BobSteagall/utf_utils|
-|jenkins-hash-java|https://github.com/vkandy/jenkins-hash-java |
-|md5|https://github.com/JieweiWei/md5 |
-|ReactOS|https://github.com/reactos/reactos |
-|dirent_h|https://github.com/win32ports/dirent_h|
-|GNU C library|https://www.gnu.org/software/libc/|
-|GNU Newlib |https://sourceware.org/newlib/|
-|Dragonbox|https://github.com/jk-jeon/dragonbox|
-|JEAIII|https://github.com/jeaiii/itoa|
-|Crypto++|https://github.com/weidai11/cryptopp|
+|Project          | Url
+|-----------------|-----------------------------------------
+|Grisu-Exact      |https://github.com/jk-jeon/Grisu-Exact
+|Ryu              |https://github.com/ulfjack/ryu
+|SHA-Intrinsics   |https://github.com/noloader/SHA-Intrinsics
+|SHA1             |https://github.com/vog/sha1
+|UTF-utils        |https://github.com/BobSteagall/utf_utils
+|jenkins-hash-java|https://github.com/vkandy/jenkins-hash-java
+|md5              |https://github.com/JieweiWei/md5
+|ReactOS          |https://github.com/reactos/reactos
+|dirent_h         |https://github.com/win32ports/dirent_h
+|GNU C library    |https://www.gnu.org/software/libc/
+|GNU Newlib       |https://sourceware.org/newlib/
+|Dragonbox        |https://github.com/jk-jeon/dragonbox
+|JEAIII           |https://github.com/jeaiii/itoa
+|Crypto++         |https://github.com/weidai11/cryptopp
