@@ -12,7 +12,7 @@ It is header only + [MIT licensed](license.txt) for easy inclusion in any projec
 #include <fast_io.h>
 
 int main() {
-    println("Hello, fast_io world!");
+    print("Hello, fast_io world!\n");
 }
 ```
 ### Load whole file through memory mapping
