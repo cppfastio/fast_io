@@ -90,6 +90,76 @@ inline constexpr ::std::byte* nonoverlapped_bytes_copy(::std::byte const* first,
 	return nonoverlapped_bytes_copy_n(first,static_cast<std::size_t>(last-first),dest);
 }
 
+template<typename T>
+inline constexpr ::std::byte const* type_punning_from_bytes(::std::byte const* __restrict first,T& __restrict t) noexcept
+{
+	constexpr std::size_t n{sizeof(T)};
+	if constexpr(n!=0)
+	{
+#if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
+	#if __cpp_if_consteval >= 202106L
+		if consteval
+	#elif __cpp_lib_is_constant_evaluated >= 201811L
+		if (__builtin_is_constant_evaluated())
+	#endif
+		{
+			::std::byte buffer[n];
+			nonoverlapped_bytes_copy_n(first,n,buffer);
+			t=::std::bit_cast<T>(buffer);
+		}
+		else
+#endif
+		{
+#if !defined(__has_builtin)
+			::std::memcpy(__builtin_addressof(t),first,n);
+#elif __has_builtin(__builtin_memcpy)
+			__builtin_memcpy(__builtin_addressof(t),first,n);
+#else
+			::std::memcpy(__builtin_addressof(t),first,n);
+#endif
+		}
+	}
+	return first+n;
+}
+
+template<std::size_t n,typename T>
+requires (n<=sizeof(T))
+inline constexpr std::byte* type_punning_to_bytes_n(T const& __restrict first,::std::byte* __restrict dest) noexcept
+{
+	if constexpr(n!=0)
+	{
+#if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
+	#if __cpp_if_consteval >= 202106L
+		if consteval
+	#elif __cpp_lib_is_constant_evaluated >= 201811L
+		if (__builtin_is_constant_evaluated())
+	#endif
+		{
+			auto buffer{::std::bit_cast<::fast_io::freestanding::array<::std::byte,sizeof(T)>>(first)};
+			nonoverlapped_bytes_copy_n(buffer.data(),n,dest);
+		}
+		else
+#endif
+		{
+#if !defined(__has_builtin)
+			::std::memcpy(dest,__builtin_addressof(first),n);
+#elif __has_builtin(__builtin_memcpy)
+			__builtin_memcpy(dest,__builtin_addressof(first),n);
+#else
+			::std::memcpy(dest,__builtin_addressof(first),n);
+#endif
+		}
+	}
+	return dest+n;
+}
+
+template<typename T>
+inline constexpr std::byte* type_punning_to_bytes(T const& __restrict first,::std::byte* __restrict dest) noexcept
+{
+	constexpr std::size_t n{sizeof(T)};
+	return type_punning_to_bytes_n<n>(first,dest);
+}
+
 inline constexpr ::std::byte* bytes_clear_n(::std::byte* data,std::size_t size) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
