@@ -1,6 +1,6 @@
 ﻿#pragma once
 #if !defined(__cplusplus)
-#error "You are not using C++ compiler"
+#error "You are not using a C++ compiler"
 #endif
 
 #if defined(__GNUC__) && __GNUC__>=11 && __cplusplus<202002L

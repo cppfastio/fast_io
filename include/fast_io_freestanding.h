@@ -2,7 +2,7 @@
 
 //fast_io_freestanding.h is usable when the underlining system implements dynamic memory allocations and exceptions
 #if !defined(__cplusplus)
-#error "You are not using C++ compiler"
+#error "You are not using a C++ compiler"
 #endif
 
 #if defined(__GNUC__) && __GNUC__>=11 && __cplusplus<202002L

@@ -3,7 +3,7 @@
 //fast_io_crypto.h defines what you could use for cryptography
 //It is likely usable in a freestanding environment
 #if !defined(__cplusplus)
-#error "You are not using C++ compiler"
+#error "You are not using a C++ compiler"
 #endif
 
 #if defined(__GNUC__) && __GNUC__>=11 && __cplusplus<202002L
