@@ -1,6 +1,7 @@
 # fast_io
 
-fast_io is a new C++20 library for extremely fast input/output aiming to replace `<iostream>` and `<cstdio>`. It is header only (module only in the future) for easy inclusion in any project. It requires a capable C++20 compiler supporting concepts.
+fast_io is a new C++20 library for extremely fast input/output aiming to replace `<iostream>` and `<cstdio>`. 
+It is header only + [MIT licensed](license.txt) for easy inclusion in any project. It requires a capable C++20 compiler supporting concepts.
 
 ## QQ group
 1076846339
@@ -14,9 +15,7 @@ https://discord.gg/wYfh8kk
 
 ## What does "fast" mean in fast_io?
 
-It doesn't necessary mean it will be faster than everything else (or it would be named `fastest_io`; of course those fmt trolls would claim that.) It means it is significantly faster than `<iostream>` and `<cstdio>` for all cases.
-
-
+It doesn't necessary mean it will be faster than everything else (or it would be named `fastest_io`; of course `{fmt}` trolls would claim that) it means it is significantly faster than `<iostream>` and `<cstdio>` in all cases.
 
 ## Old Repository was archived due to bloat with git through time
 
@@ -30,7 +29,7 @@ https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23
 
 int main()
 {
-	print("Hello World!\n");
+    print("Hello World!\n");
 }
 ```
 ### Load whole file through memory mapping
@@ -39,8 +38,8 @@ int main()
 
 int main()
 {
-	fast_io::native_file_loader file_data("text.txt");
-	// `file_data` statifies `std::ranges::contiguous_range`
+    fast_io::native_file_loader file_data("text.txt");
+    // file_data satisfies std::ranges::contiguous_range
 }
 ```
 ### Other examples
@@ -54,182 +53,34 @@ https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n
 ## Online docs
 https://ewindy.gitee.io/fast_io_rst/index.html
 
-## Compiler Support
-- GCC 12
-- VS 19.29.29917
-- Clang 15
-- Winegcc
+## Supported platforms, compiler, etc...
+See [support.md](support.md) for a list of supported stuff(?) + platform specific usage notes.
 
-## C++ standard library support
-
-- GCC libstdc++
-- LLVM libc++
-- MSVC STL
-
-## Architecture Support
-- alpha
-- i686
-- x86_64
-- arm
-- aarch64
-- riscv
-- riscv64
-- powerpc64
-- wasm32-wasi
-- mips-abi32
-- mips-abin32
-- mips-abi64
-- avr
-- ia64
-- All architectures should work. (Just i do not have time to build all cross-toolchains to test them one by one)
-
-## Platform Support
-- Windows 11
-- Windows 10
-- Windows Server 2019
-- Linux
-- BSD platforms (Including FreeBSD, NetBSD, OpenBSD)
-- Apple Darwin (MacOS)
-- Apple IOS
-- Microsoft DOS
-- FreeDOS
-- Barebone (No any operating system.)
-- Cygwin/MSYS2
-- Android
-- Wine
-- Wine GCC
-- ReactOS
-- Windows Runtime
-- Nintendo DS (devkitPro)
-- Webassembly
-- Managarm
-- Vinix
-- limine Bootloader
-- AVR
-- Banana
-- LemonOS
-- LLVM raw_fd_ostream
-- Windows Kernel Driver
-- Linux Kernel Module
-- wasm2lua (Compile fast_io to Lua!)
-- Any other platform (if you want me to support it, tell me, including your own OS)
-
-## Kernel Driver Support
-- Windows NT kernel Driver
-- Linux kernel Module
-
-## Legacy Windows Version Support (need define _WIN32_WINNT and _WIN32_WINDOWS version by yourself)
-- Windows 95
-- Windows 95 Plus!
-- Windows Nashville
-- Microsoft Memphis
-- Windows 98 FE
-- Windows 98 SE
-- Windows ME
-- Microsoft Neptune
-- Windows NT
-- Windows Odyssey
-- Windows 2000
-- Windows Whistler
-- Windows XP
-- Windows Server 2003
-- Windows Longhorn
-- Windows Vista
-- Windows Server 2008
-- Windows Vienna
-- Windows 7
-- Windows 8
-- Windows 8.1
-- Windows Home Server 2011
-- Windows Server 2012
-- Windows Server 2016
-
-## Windows 95 or 95 Plus! Support
-You can enable -O3 but you cannot not enable -Ofast.
-Also need to install msvcrt.dll
-
-## Legacy Windows Version Support with DJGPP toolchain
-- Windows 1.0
-- Windows 2.0
-- Windows 3.0
-- Windows 3.1
-- Microsoft Chicago
-- Windows 95
-- Windows 95 Plus!
-- Microsoft Memphis
-- Windows 98 FE
-- Windows 98 SE
-- Windows ME
-
-## Supported libc FILE* hacks platforms
-- glibc
-- MSVCRT
-- Universal CRT
-- Universal CRT with MSVC debugging
-- Wine's Emulated MSVCRT
-- Wine's Emulated UCRT
-- ReactOS Emulated MSVCRT
-- ReactOS Emulated UCRT
-- BSD libc/Apple Darwin
-- MUSL libc
-- DJGPP
-- Newlib
-- Bionic(Android)
-- uclibc-ng
-- wasi libc
-- mlibc (this is a new libc which still contains a lot of bugs currently)
-- avrlibc
-- picolibc
-
-## Supported C++ standard library std::streambuf/std::filebuf hacks platforms
-- GCC libstdc++
-- LLVM libc++
-- MSVC STL
-
-## Remote Debugger Support
-- WinDbg
-- Visual Studio Debugger
-- DbgViewer
-- Android ADB
-
-## Special Support
-- LLVM Address Sanitizer
-- Full freestanding support (which means we do not have any headers besides freestanding headers. Tested with GCC's --disable-hosted-libstdcxx without any libc, including newlib)
-
-## Design Goal
-
-A general purpose I/O library to replace stdio.h and iostream
-
+## Features
 - As close to system call as possible.
 - No default locale. It is optional.
 - Correctly deal with EBCDIC exec-charset (where no libc correctly deals it).
-- OOP is not allowed. Yes to C with Concepts. No to C with Classes.
+- No OOP. Yes to C with Concepts. No to C with Classes.
 
-### Safe
-
-- No easily misused stuff like std::endl  
-- No internal iomanip states (since it creates security issues)  
-- Providing RAII for C FILE\*&POSIX fd&win32 HANDLE
-- No dual error reporting mechanism. Exception as the ONLY error reporting mechanism.
-- No std::error_code and std::system_error
+- No easily misused stuff like `std::endl`
+- No internal `iomanip` states (since it creates security issues)  
+- RAII for C `FILE*`, POSIX `fd` and win32 `HANDLE`
+- No dual error reporting mechanism. Exception as the **only** error reporting mechanism.
+- No `std::error_code` or `std::system_error`
 - No useless bounds checking
 - No format string nonsense
 - Addresss Sanitizer special code for protecting memory safety issues.
 
-### Easy to use
-
-- Unicode/UTF-8 support
+- Unicode support (UTF-8, UTF-16, UTf-32)
 - Support POSIX iconv. You can use fast_io for your coding conversion.
-- Compatible with C stdio and C++ iostream  
+- Interop with `<cstdio>` and `<iostream>` 
 - Binary serialization for trivially copyable types and C++ standard library containers  
-- All fast_io devices can be natively put in C++ containers. std::vector<fast_io::obuf_file> is valid  
-- Basic/Lua/Python/etc format (print, scan). No support to C and C++ since they are security hazards.
-- Static I/O manipulator
-- Provide APIs to expose the internal implementation of C FILE* and C++ stream.
+- Plays well with C++ containers (e.g. `std::vector<fast_io::obuf_file>` is valid)
+- Basic/Lua/Python/etc format (print, scan). No support for C and C++ since they are security hazards.
+- Static I/O manipulators
+- Provide APIs to expose the internal implementation of `FILE*` and C++ streams.
 
-### Customizability
-
-- Exception Safe & Exception neutral  
+- Exception Safe & Exception neutral 
 - Native Handle Interface  
 - Extremely easy to support custom devices
 - mutex stream without std::mutex since std::mutex is not provided by x86_64-w64-mingw32 with win32 threads. YES TO POSIX PTHREAD and windows Rtl threads.
@@ -237,7 +88,7 @@ A general purpose I/O library to replace stdio.h and iostream
 - No traits_type and EOF
 - Dynamic Type Support
 - Multi Process
-- Memory map
+- Memory mapping
 - debugging IO
 - GUI debugging IO
 - Freestanding mode
@@ -510,7 +361,7 @@ iconv test:
 
 ## Credit
 
-This project is made possible by referencing from other open-source projects. (I won't take their code directly. They are reimplemented by myself to fit the purpose of this library or it might have integration issues.)
+This project is made possible by referencing other open-source projects. (I don't take their code directly, they are reimplemented by myself to fit the purpose of this library or it might have integration issues.)
 
 |Project  | Url                                 |
 |---------|-----------------------------------------|
