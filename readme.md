@@ -37,83 +37,54 @@ https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n
 ### What does "fast" mean in fast_io?
 
 It doesn't necessary mean it will be faster than everything else (or it would be named `fastest_io`; of course `{fmt}` trolls would claim that) it means it is significantly faster than `<iostream>` and `<cstdio>` in all cases.
-
+### What are the supported platforms, compilers, etc.
+See [support.md](support.md) for a list of supported "stuff" + platform specific usage notes.
 ### Other questions
 You can directly ask questions on the [Discord server](https://discord.gg/wYfh8kk).
 QQ group: `1076846339`
 
-## Online docs
-https://ewindy.gitee.io/fast_io_rst/index.html
-
-## Supported platforms, compiler, etc...
-See [support.md](support.md) for a list of supported stuff(?) + platform specific usage notes.
+## Documentation
+See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/qabeowjbtkwb/fast_io/wikis.
 
 ## Features
 - As close to system call as possible.
-- No default locale. It is optional.
-- Correctly deals with EBCDIC exec-charset (where no libc correctly deals it).
-- No OOP. Yes to C with Concepts. No to C with Classes.
-
-
-- No easily misused stuff such as `std::endl`
-- No internal `iomanip` states (since it creates security issues)  
+- Unicode support (UTF-8, UTF-16, UTF-32) + codecvt for GB18030 and UTF-EBCDIC (no libc correctly deals with it)
 - RAII for C `FILE*`, POSIX `fd` and win32 `HANDLE`
-- No dual error reporting mechanism. Exception as the **only** error reporting mechanism.
-- No `std::error_code` or `std::system_error`
-- No useless bounds checking
-- No format string nonsense
+- Interop with `<cstdio>` and `<iostream>` 
+- No easily misused stuff like `std::endl`
+- Static I/O manipulators instead of format string nonsense.
+- No locale by default. It is optional.
+- No internal `iomanip` states (since it creates security issues)
+- Consistent error handling; when available, exceptions as the **only** error reporting mechanism (no `std::error_code`, `std::system_error` or useless bounds checking)
+- Freestanding mode
 - Addresss Sanitizer special code for protecting memory safety issues.
 
-
-- Unicode support (UTF-8, UTF-16, UTF-32) + codecvt for GB18030 and UTF-EBCDIC
 - Supports POSIX iconv. You can use fast_io for your coding conversion.
-- Interop with `<cstdio>` and `<iostream>` 
-- Binary serialization for trivially copyable types and C++ standard library containers  
+- Binary serialization for trivially copyable types and standard containers
 - Plays well with C++ containers (e.g. `std::vector<fast_io::obuf_file>` is valid)
 - Basic/Lua/Python/etc format (print, scan). No support for C and C++ since they are security hazards.
-- Static I/O manipulators
 - Provide APIs to expose the internal implementation of `FILE*` and C++ streams.
 
-
-- Exception Safe & Exception neutral 
-- Native Handle Interface  
+- Native Handle Interface
 - Extremely easy to support custom devices
-- mutex stream without std::mutex since std::mutex is not provided by x86_64-w64-mingw32 with win32 threads. YES TO POSIX PTHREAD and windows Rtl threads.
-- Compile time open mode parsing. Supports C style open mode and C++ style open mode.
+- C and C++ style compile time open mode parsing.
 - No `traits_type` and `EOF`
 - Dynamic Type Support
 - Multi Process
 - Memory mapping
 - debugging IO (optionally with GUI)
-- Freestanding mode
 - Round-trip floating point algorithm
-- Network
-- Intrinsic SHA-1, Intrinsic HMAC-SHA1, Intrinsic SHA-256, Intrinsic HMAC-SHA256, SHA-512, HMAC-SHA512
+- Hash algorithms support: intrinsic SHA-1, intrinsic HMAC-SHA1, intrinsic SHA-256, intrinsic HMAC-SHA256, SHA-512, HMAC-SHA512 aswell as non crypto hash algorithms, such as Jenkins Hash.
 - zlib compression/decompression
-- Non crypto hash algorithms support, such as Jenkins Hash.
 - Filesystem
 - OpenSSL BIO, Qt QFile, MFC CFile support
-
-## Post C++20 Plan
+## Possible Improvements
+1. Interfaces for cloud computing algorithms like MapReduce
+2. This being in the standard library.
+### Post C++20
   1. Module support
   2. Coroutine support for async IO
   3. Improve and refactor code once [Zero-overhead deterministic exceptions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0709r0.pdf) are added to the standard
-
-## Possible Improvements
-  2. Interfaces for cloud computing algorithms like MapReduce
-
-I'm aiming for this to be in the C++ standard library in the future :)
-
-## Getting Started 
-Please see examples in the examples folder.
-
-compile option:
-    
-`g++ -o example example.cc -Ofast -std=c++20 -s -flto -march=native`
-
-## Documentation
-
-See Wiki Page: https://gitee.com/qabeowjbtkwb/fast_io/wikis
 
 ## Benchmarks
 
