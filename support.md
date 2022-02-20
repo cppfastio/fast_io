@@ -62,6 +62,8 @@
 
 ## Legacy Windows Version Support
 **You need define `_WIN32_WINNT` and `_WIN32_WINDOWS` version by yourself.**
+
+On Windows 95 or 95 Plus! you can enable `-O3` but not `-Ofast`. You'll also need `msvcrt.dll`.
 - Windows 95
 - Windows 95 Plus!
 - Windows Nashville
@@ -86,10 +88,6 @@
 - Windows Home Server 2011
 - Windows Server 2012
 - Windows Server 2016
-
-## Windows 95 or 95 Plus! Support
-You can enable `-O3` but not not `-Ofast`.
-You also need to install `msvcrt.dll`.
 
 ## Legacy Windows Version Support with DJGPP toolchain
 - Windows 1.0
