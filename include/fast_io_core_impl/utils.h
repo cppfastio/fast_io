@@ -96,7 +96,6 @@ decltype(auto) noexcept_call(F* f,Args&& ...args) noexcept
 #endif
 }
 
-
 /*
 Since many toolchains do not provide lock_guard. Let's implement it by ourselves based on libstdc++'s lock_guard
 https://github.com/gcc-mirror/gcc/blob/53046f072c6e92aa4ba4594c992fe31d89e223ed/libstdc%2B%2B-v3/include/bits/std_mutex.h#L152

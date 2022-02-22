@@ -5,18 +5,31 @@ namespace fast_io
 namespace details
 {
 
-template<::fast_io::input_stream input>
+template<bool throweh=true,::fast_io::input_stream input>
 #if __has_cpp_attribute(gnu::cold)
 [[gnu::cold]]
 #endif
-inline constexpr void read_all_impl_decay_cold(input in,typename input::char_type* first,typename input::char_type* last)
+inline constexpr ::std::conditional_t<throweh,void,bool> read_all_impl_decay_cold(input in,typename input::char_type* first,typename input::char_type* last)
 {
 	while(first!=last)
 	{
 		auto it{read(in,first,last)};
 		if(it==first)[[unlikely]]
-			throw_parse_code(parse_code::end_of_file);
+		{
+			if constexpr(throweh)
+			{
+				throw_parse_code(parse_code::end_of_file);
+			}
+			else
+			{
+				return false;
+			}
+		}
 		first=it;
+	}
+	if constexpr(!throweh)
+	{
+		return true;
 	}
 }
 

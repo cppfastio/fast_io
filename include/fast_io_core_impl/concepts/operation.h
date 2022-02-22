@@ -174,6 +174,19 @@ concept iterative_contiguous_scannable = ::std::integral<char_type>&&requires(T 
 	{scan_iterative_contiguous_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t,buffer_curr,buffer_end)}->std::same_as<parse_result<char_type const*>>;
 };
 
+template<typename char_type,typename T>
+concept precise_reserve_scannable = ::std::integral<char_type>&&requires(char_type const* buffer_curr,T t)
+{
+	{scan_precise_reserve_size(io_reserve_type<char_type,std::remove_cvref_t<T>>)}->::std::same_as<::std::size_t>;
+	scan_precise_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,buffer_curr,t);
+};
+
+template<typename char_type,typename T>
+concept precise_reserve_scannable_no_error = precise_reserve_scannable<char_type,T>&&requires(char_type const* buffer_curr,T t)
+{
+	{scan_precise_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,buffer_curr,t)}->::std::same_as<void>;
+};
+
 namespace manipulators
 {}
 
