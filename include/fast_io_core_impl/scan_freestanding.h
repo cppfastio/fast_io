@@ -249,6 +249,7 @@ template<buffer_input_stream input,typename T>
 				}
 			}
 			ibuffer_set_curr(in,curr_ptr+n);
+			return true;
 		}
 		else if constexpr(contiguous_scanable<char_type,T>)
 		{
