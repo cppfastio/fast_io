@@ -14,7 +14,9 @@ inline constexpr auto strlike_construct_single_character_define(io_strlike_type_
 {
 	return ::std::basic_string<char_type,traits_type,allocator_type>(1,ch);
 }
-#if !defined(_GLIBCXX_USE_CXX11_ABI)
+
+#if (!defined(__GLIBCXX__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI))
+
 template<std::integral char_type,typename traits_type,typename allocator_type>
 inline constexpr char_type* strlike_begin(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>,::std::basic_string<char_type,traits_type,allocator_type>& str)
 {
@@ -39,7 +41,7 @@ namespace details
 template<std::integral char_type,typename size_type>
 struct empty_string_set_ptr
 {
-	constexpr std::size_t operator()(char_type const* p,size_type n) noexcept
+	constexpr std::size_t operator()(char_type const*,size_type n) noexcept
 	{
 		return n;
 	}
@@ -110,7 +112,7 @@ inline constexpr void strlike_push_back(io_strlike_type_t<char_type,::std::basic
 {
 	str.push_back(ch);
 }
-#if !defined(_GLIBCXX_USE_CXX11_ABI)
+#if (!defined(__GLIBCXX__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI))
 template<std::integral char_type,typename traits_type,typename allocator_type>
 inline constexpr std::size_t strlike_sso_size(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>) noexcept
 {

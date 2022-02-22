@@ -14,6 +14,8 @@
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push)
 #pragma warning( disable : 4514 )
+#pragma warning( disable : 4554 )
+#pragma warning( disable : 4668 )
 #pragma warning( disable : 4820 )
 #pragma warning( disable : 4710 )
 #endif
@@ -28,7 +30,7 @@
 #include"fast_io_freestanding_impl/io_buffer/impl.h"
 #include"fast_io_freestanding_impl/naive_vector.h"
 #include"fast_io_freestanding_impl/auto_indent.h"
-#include"fast_io_freestanding_impl/lebe.h"
+#include"fast_io_freestanding_impl/serializations/impl.h"
 #include"fast_io_freestanding_impl/space_reserve.h"
 #include"fast_io_freestanding_impl/width.h"
 #include"fast_io_freestanding_impl/scanners/impl.h"

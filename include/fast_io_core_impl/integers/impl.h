@@ -954,18 +954,12 @@ constexpr Iter print_reserve_integral_withfull_main_impl(Iter first,T u)
 template<std::size_t base,bool uppercase,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral T>
 inline constexpr void print_reserve_integral_withfull_precise_main_impl(Iter last,T u,std::size_t n)
 {
+
 	if constexpr(sizeof(u)<=sizeof(unsigned)&&sizeof(unsigned)<=sizeof(std::size_t))
 		print_reserve_integral_main_impl<base,uppercase>(last,static_cast<unsigned>(u),n);
 	else
 	{
-		if constexpr(sizeof(std::size_t)<sizeof(u))
-		{
-			
-		}
-		else
-		{
-			print_reserve_integral_main_impl<base,uppercase>(last,u,n);
-		}
+		print_reserve_integral_main_impl<base,uppercase>(last,u,n);
 	}
 }
 
@@ -1114,11 +1108,22 @@ constexpr void print_reserve_integral_define_precise(Iter start,std::size_t n,in
 			}
 			if constexpr(showbase&&(base!=10))
 				first=print_reserve_show_base_impl<base,uppercase_showbase>(first);
-			auto ed{start+n};
-			if constexpr(my_unsigned_integral<int_type>&&!showbase&&!showpos)
-				print_reserve_integral_withfull_precise_main_impl<base,uppercase>(ed,u,n);
+			if constexpr(::std::is_pointer_v<Iter>&&base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
+			{
+				return ::fast_io::details::jeaiii::jeaiii_main_len(first,u,static_cast<std::uint_least32_t>(n));
+			}
+			else if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>&&base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
+			{
+				return ::fast_io::details::jeaiii::jeaiii_main_len(::fast_io::freestanding::to_address(first),u,static_cast<std::uint_least32_t>(n))-::fast_io::freestanding::to_address(first)+first;
+			}
 			else
-				print_reserve_integral_withfull_precise_main_impl<base,uppercase>(ed,u,static_cast<std::size_t>(ed-first));
+			{
+				auto ed{start+n};
+				if constexpr(my_unsigned_integral<int_type>&&!showbase&&!showpos)
+					print_reserve_integral_withfull_precise_main_impl<base,uppercase>(ed,u,n);
+				else
+					print_reserve_integral_withfull_precise_main_impl<base,uppercase>(ed,u,static_cast<std::size_t>(ed-first));
+			}
 		}
 	}
 }
