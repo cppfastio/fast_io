@@ -349,9 +349,8 @@ inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std
 	std::size_t cnt{static_cast<std::size_t>(static_cast<unsigned int>(fp->_cnt))};
 	non_overlapped_copy_n(fp->_ptr,cnt,first);
 	auto first_temp{first};
-	first+=diff;
+	first+=cnt;
 	diff-=cnt;
-
 	std::size_t allocated_buffer_size{static_cast<std::size_t>(static_cast<unsigned int>(fp->_bufsiz))};
 	if(allocated_buffer_size<4)
 		allocated_buffer_size=wincrt_internal_buffer_size;
@@ -373,7 +372,7 @@ inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std
 		fp->_ptr=fp->_base;
 		if(readed<diff)
 			diff=readed;
-		non_overlapped_copy_n(fp->_ptr,diff,first);
+		non_overlapped_copy_n(fp->_base,diff,first);
 		fp->_ptr+=diff;
 		fp->_cnt-=static_cast<int>(static_cast<unsigned int>(diff));
 		return static_cast<std::size_t>(first+diff-first_temp);
