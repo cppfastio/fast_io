@@ -68,20 +68,22 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,nt_c
 	constexpr std::size_t full_size(print_reserve_size(io_reserve_type<char_type,scalar_manip_t<::fast_io::details::nt_errorflags,std::uint32_t>>)+print_reserve_size(io_reserve_type<char_type,nt_code>));
 	if constexpr(std::same_as<char_type,char>)
 	{
-		return full_size+details::string_literal_size("[nt:0x]");
+		return full_size+::fast_io::details::string_literal_size("[nt:0x]");
 	}
 	else if constexpr(std::same_as<char_type,wchar_t>)
 	{
-		return full_size+details::string_literal_size(L"[nt:0x]");
+		return full_size+::fast_io::details::string_literal_size(L"[nt:0x]");
 	}
 	else
-		return full_size+details::string_literal_size(u8"[nt:0x]");
+	{
+		return full_size+::fast_io::details::string_literal_size(u8"[nt:0x]");
+	}
 }
 
 template<::fast_io::freestanding::contiguous_iterator Iter>
 inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,nt_code>,Iter iter,nt_code e) noexcept
 {
-	return details::print_reserve_nt_error_impl(iter,e.ntstatus);
+	return ::fast_io::details::print_reserve_nt_error_impl(iter,e.ntstatus);
 }
 
 }

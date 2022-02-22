@@ -28,6 +28,7 @@
 #include"fast_io_freestanding_impl/io_buffer/impl.h"
 #include"fast_io_freestanding_impl/naive_vector.h"
 #include"fast_io_freestanding_impl/auto_indent.h"
+#include"fast_io_freestanding_impl/lebe.h"
 #include"fast_io_freestanding_impl/space_reserve.h"
 #include"fast_io_freestanding_impl/width.h"
 #include"fast_io_freestanding_impl/scanners/impl.h"

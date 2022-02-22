@@ -221,7 +221,36 @@ template<buffer_input_stream input,typename T>
 	using char_type = typename input::char_type;
 	if constexpr(contiguous_input_stream<input>)
 	{
-		if constexpr(contiguous_scanable<char_type,T>)
+		if constexpr(precise_reserve_scannable<char_type,T>)
+		{
+			constexpr std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
+			auto curr_ptr{ibuffer_curr(in)};
+			char_type const* curr{curr_ptr};
+			char_type const* end{ibuffer_end(in)};
+			std::size_t const diff{static_cast<std::size_t>(end-curr)};
+			if(diff<n)[[unlikely]]
+			{
+				return false;
+			}
+			if constexpr(precise_reserve_scannable_no_error<char_type,T>)
+			{
+				scan_precise_reserve_define(io_reserve_type<char_type,T>,curr,arg);
+			}
+			else
+			{
+				auto ret{scan_precise_reserve_define(io_reserve_type<char_type,T>,curr,arg)};
+				if(ret!=parse_code::ok)
+				{
+					if(ret==parse_code::end_of_file)
+					{
+						return false;
+					}
+					throw_parse_code(ret);
+				}
+			}
+			ibuffer_set_curr(in,curr_ptr+n);
+		}
+		else if constexpr(contiguous_scanable<char_type,T>)
 		{
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
@@ -262,7 +291,76 @@ template<buffer_input_stream input,typename T>
 	}
 	else
 	{
-		if constexpr(contiguous_scanable<char_type,T>&&context_scanable<char_type,T>)
+		if constexpr(precise_reserve_scannable<char_type,T>)
+		{
+			constexpr std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
+			char_type buffer[n];
+			if constexpr(::fast_io::details::asan_state::current==::fast_io::details::asan_state::activate)
+			{
+				char_type const* p{buffer};
+				bool ef{::fast_io::details::read_all_impl_decay_cold<false>(in,buffer,buffer+n)};
+				if(!ef)
+				{
+					return false;
+				}
+				if constexpr(precise_reserve_scannable_no_error<char_type,T>)
+				{
+					scan_precise_reserve_define(io_reserve_type<char_type,T>,p,arg);
+				}
+				else
+				{
+					auto ret{scan_precise_reserve_define(io_reserve_type<char_type,T>,p,arg)};
+					if(ret!=parse_code::ok)
+					{
+						if(ret==parse_code::end_of_file)
+						{
+							return false;
+						}
+						throw_parse_code(ret);
+					}
+				}
+			}
+			else
+			{
+				auto curr_ptr{ibuffer_curr(in)};
+				char_type const* curr{curr_ptr};
+				char_type const* end{ibuffer_end(in)};
+				char_type const* p{curr};
+				std::size_t const diff{static_cast<std::size_t>(end-curr)};
+				bool inbuffer{diff<n};
+				if(inbuffer)[[unlikely]]
+				{
+					bool ef{::fast_io::details::read_all_impl_decay_cold<false>(in,buffer,buffer+n)};
+					if(!ef)
+					{
+						return false;
+					}
+					p=buffer;
+				}
+				if constexpr(precise_reserve_scannable_no_error<char_type,T>)
+				{
+					scan_precise_reserve_define(io_reserve_type<char_type,T>,p,arg);
+				}
+				else
+				{
+					auto ret{scan_precise_reserve_define(io_reserve_type<char_type,T>,p,arg)};
+					if(ret!=parse_code::ok)
+					{
+						if(ret==parse_code::end_of_file)
+						{
+							return false;
+						}
+						throw_parse_code(ret);
+					}
+				}
+				if(!inbuffer)[[likely]]
+				{
+					ibuffer_set_curr(in,curr_ptr+n);
+				}
+			}
+			return true;
+		}
+		else if constexpr(contiguous_scanable<char_type,T>&&context_scanable<char_type,T>)
 		{
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
