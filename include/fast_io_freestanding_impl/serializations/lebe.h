@@ -1,5 +1,11 @@
 ﻿#pragma once
+namespace fast_io::details
+{
 
+template<std::size_t sz>
+inline constexpr bool supported_lebe_size{sz==8||sz==16||sz==32||sz==64};
+
+}
 namespace fast_io::manipulators
 {
 
@@ -12,6 +18,13 @@ struct basic_lebe_get_integral
 template<std::size_t sz,typename value_type>
 struct basic_lebe_put_integral
 {
+#ifndef __INTELLISENSE__
+#if __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#endif
+#endif
 	value_type value;
 };
 
@@ -20,53 +33,46 @@ template<::std::endian end,typename value_type>
 struct basic_lebe_get_put
 {
 	using manip_tag = manip_tag_t;
+#ifndef __INTELLISENSE__
+#if __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#endif
+#endif
 	value_type reference;
 };
 
 template<::std::endian en,::std::size_t sz,::fast_io::details::my_integral int_type>
-requires (!::std::is_const_v<int_type>
-#if __cpp_lib_int_pow2 >= 202002L
-&&(::std::has_single_bit(sz))
-#endif
-)
+requires (!::std::is_const_v<int_type>&&::fast_io::details::supported_lebe_size<sz>)
 inline constexpr auto lebe_get(int_type& t) noexcept
 {
 	return basic_lebe_get_put<en,basic_lebe_get_integral<sz,int_type>>{{__builtin_addressof(t)}};
 }
 
 template<::std::size_t sz,::fast_io::details::my_integral int_type>
-requires (!::std::is_const_v<int_type>
-#if __cpp_lib_int_pow2 >= 202002L
-&&(::std::has_single_bit(sz))
-#endif
-)
+requires (!::std::is_const_v<int_type>&&::fast_io::details::supported_lebe_size<sz>)
 inline constexpr auto le_get(int_type& t) noexcept
 {
 	return basic_lebe_get_put<::std::endian::little,basic_lebe_get_integral<sz,int_type>>{{__builtin_addressof(t)}};
 }
 
 template<::std::size_t sz,::fast_io::details::my_integral int_type>
-requires (!::std::is_const_v<int_type>
-#if __cpp_lib_int_pow2 >= 202002L
-&&(::std::has_single_bit(sz))
-#endif
-)
+requires (!::std::is_const_v<int_type>&&::fast_io::details::supported_lebe_size<sz>)
 inline constexpr auto be_get(int_type& t) noexcept
 {
 	return basic_lebe_get_put<::std::endian::big,basic_lebe_get_integral<sz,int_type>>{{__builtin_addressof(t)}};
 }
 
 template<::std::endian en,::std::size_t sz,::fast_io::details::my_integral int_type>
-#if __cpp_lib_int_pow2 >= 202002L
-requires (::std::has_single_bit(sz))
-#endif
+requires ::fast_io::details::supported_lebe_size<sz>
 inline constexpr auto lebe_put(int_type t) noexcept((::std::numeric_limits<::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<int_type>>>::digits)<=sz)
 {
 	using uint_type = ::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<int_type>>;
 	uint_type u{static_cast<uint_type>(t)};
 	if constexpr(sz<(::std::numeric_limits<uint_type>::digits))
 	{
-		constexpr uint_type mx_value_halfm1{static_cast<uint_type>(static_cast<int_type>(1)<<static_cast<int_type>(sz-1))};
+		constexpr uint_type mx_value_halfm1{static_cast<uint_type>((static_cast<int_type>(1) << static_cast<int_type>(sz-1)))};
 		constexpr uint_type mx_value{static_cast<uint_type>(static_cast<uint_type>(mx_value_halfm1-static_cast<uint_type>(1))+mx_value_halfm1)};
 		if(u>mx_value)
 			throw_parse_code(::fast_io::parse_code::invalid);
@@ -80,18 +86,14 @@ inline constexpr auto lebe_put(int_type t) noexcept((::std::numeric_limits<::fas
 }
 
 template<::std::size_t sz,::fast_io::details::my_integral int_type>
-#if __cpp_lib_int_pow2 >= 202002L
-requires (::std::has_single_bit(sz))
-#endif
+requires ::fast_io::details::supported_lebe_size<sz>
 inline constexpr auto le_put(int_type t) noexcept(noexcept(lebe_put<::std::endian::little,sz>(t)))
 {
 	return lebe_put<::std::endian::little,sz>(t);
 }
 
 template<::std::size_t sz,::fast_io::details::my_integral int_type>
-#if __cpp_lib_int_pow2 >= 202002L
-requires (::std::has_single_bit(sz))
-#endif
+requires ::fast_io::details::supported_lebe_size<sz>
 inline constexpr auto be_put(int_type t) noexcept(noexcept(lebe_put<::std::endian::big,sz>(t)))
 {
 	return lebe_put<::std::endian::big,sz>(t);
