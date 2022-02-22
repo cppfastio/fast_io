@@ -18,13 +18,13 @@ struct basic_str_get_all
 #endif
 #endif
 	T reference;
-	std::size_t n;
+	std::size_t const* n;
 };
 
 template<typename T>
-inline constexpr auto str_get_all(T&& reference,std::size_t n) noexcept
+inline constexpr auto str_get_all(T&& reference,std::size_t const& n) noexcept
 {
-	return basic_str_get_all<decltype(io_strlike_ref(io_alias,reference))>{io_strlike_ref(io_alias,reference),n};
+	return basic_str_get_all<decltype(io_strlike_ref(io_alias,reference))>{io_strlike_ref(io_alias,reference),__builtin_addressof(n)};
 }
 
 }
@@ -104,11 +104,11 @@ inline constexpr parse_result<Iter> scan_context_define(
 {
 	if constexpr(::fast_io::buffer_strlike<::fast_io::freestanding::iter_value_t<Iter>,T>)
 	{
-		return ::fast_io::details::scan_context_define_str_get_all_buffer_strlike_impl(first,last,str.reference,str.n,ctx.coping);
+		return ::fast_io::details::scan_context_define_str_get_all_buffer_strlike_impl(first,last,str.reference,*str.n,ctx.coping);
 	}
 	else
 	{
-		return ::fast_io::details::scan_context_define_str_get_all_general_strlike_impl(first,last,str.reference,str.n,ctx);
+		return ::fast_io::details::scan_context_define_str_get_all_general_strlike_impl(first,last,str.reference,*str.n,ctx);
 	}
 }
 

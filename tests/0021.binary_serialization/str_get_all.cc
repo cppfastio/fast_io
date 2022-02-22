@@ -17,8 +17,7 @@ int main()
 	{
 		fast_io::ibuf_file ibf(u8"a.txt");
 		std::size_t u;
-		scan(ibf,le_get<32>(u));
-		scan(ibf,str_get_all(str,u));
+		scan(ibf,le_get<32>(u),str_get_all(str,u));
 	}
 	println("size=",str.size(),"\n",str);
 }
