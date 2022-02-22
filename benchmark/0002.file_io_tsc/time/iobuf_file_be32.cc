@@ -8,7 +8,7 @@ int main()
 	constexpr std::size_t N(10000000);
 	{
 	fast_io::timer t(u8"output");
-	fast_io::obuf_file obf(u8"iobuf_file_lebe32.txt");
+	fast_io::obuf_file obf(u8"iobuf_file_be32.txt");
 	for(std::size_t i{};i!=N;++i)
 	{
 		print(obf,fast_io::mnp::be_put<32>(i));
@@ -17,7 +17,7 @@ int main()
 	std::vector<std::size_t> vec(N,u8'0');
 	{
 	fast_io::timer t(u8"input");
-	fast_io::ibuf_file ibf(u8"iobuf_file_lebe32.txt");
+	fast_io::ibuf_file ibf(u8"iobuf_file_be32.txt");
 	for(auto it{vec.begin()};it!=vec.cend();++it)
 	{
 		scan(ibf,fast_io::mnp::be_get<32>(*it));
