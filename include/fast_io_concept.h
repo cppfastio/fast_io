@@ -14,7 +14,7 @@
 #pragma warning( disable : 4820 )
 #pragma warning( disable : 5027 )
 #endif
-#if defined(__GNUC__) && __GNUC__>=11 && __cplusplus<202002L
+#if !defined(__cpp_concepts)
 #error "fast_io requires at least a C++20 standard compiler."
 #else
 #include<concepts>
