@@ -3,7 +3,7 @@
 #error "You are not using a C++ compiler"
 #endif
 
-#if defined(__GNUC__) && __GNUC__>=11 && __cplusplus<202002L
+#if !defined(__cpp_concepts)
 #error "fast_io requires at least C++20 standard compiler."
 #else
 //fast_io_legacy.h deals with legacy C++ <iostream>/<fstream>/<sstream> interface
