@@ -3,7 +3,8 @@
 #error "You are not using a C++ compiler"
 #endif
 
-#if defined(__GNUC__) && __GNUC__>=11 && __cplusplus<202002L
+#if (defined(__GNUC__) && __GNUC__>=11 && __cplusplus<202002L) \
+    || (defined(_MSC_VER) && _MSVC_LANG<202002L)
 #error "fast_io requires at least C++20 standard compiler."
 #else
 #include"fast_io_hosted.h"
