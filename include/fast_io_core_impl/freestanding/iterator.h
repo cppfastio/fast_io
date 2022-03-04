@@ -5,6 +5,7 @@
 #ifdef __GLIBCXX__
 
 #if __has_include(<bits/ranges_base.h>) && __has_include(<bits/stl_iterator.h>)
+#include<initializer_list>
 #include<bits/stl_iterator.h>
 #include<bits/ranges_base.h>
 #else
