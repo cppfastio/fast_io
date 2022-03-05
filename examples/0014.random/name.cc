@@ -24,7 +24,7 @@ int main()
 	for(std::size_t i(0);i!=1000000;++i)
 	{
 		for(std::size_t j(0),s(rlen(eng));j!=s;++j)
-			print(obf,fast_io::mnp::os_c_str(vec[ud(eng)]));
+			print(obf,fast_io::mnp::chvw(vec[ud(eng)]));
 		println(obf);
 	}	
 }
