@@ -38,19 +38,19 @@ static_assert(type_error,"this type is not printable with C++ ostream facilities
 
 template<typename... Args>
 requires (sizeof...(Args)!=0)
-inline std::wstring woperator_output(Args const& ...args)
+inline std::basic_string<wchar_t> woperator_output(Args const& ...args)
 {
 	constexpr bool type_error{(::fast_io::details::printable_to_cxx_ostringstream<wchar_t,Args>&&...)};
 	if constexpr(type_error)
 	{
-		std::wostringstream oss;
+		std::basic_ostringstream<wchar_t> oss;
 		(oss<<...<<args);
 		return oss.str();
 	}
 	else
 	{
 static_assert(type_error,"this type is not printable with C++ ostream facilities.");
-		return std::wstring();
+		return std::basic_string<wchar_t>();
 	}
 	return {};
 }
