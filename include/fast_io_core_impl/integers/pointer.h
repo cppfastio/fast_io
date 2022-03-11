@@ -80,6 +80,14 @@ inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_v
 	return ::fast_io::mnp::os_c_str(::std::ranges::data(r),::std::ranges::size(r));
 }
 #endif
+
+template<typename enumtype>
+requires (::std::is_enum_v<enumtype>)
+inline constexpr ::std::underlying_type_t<enumtype> enum_int_view(enumtype enm) noexcept
+{
+	return static_cast<::std::underlying_type_t<enumtype>>(enm);
+}
+
 }
 
 template<std::integral char_type>
