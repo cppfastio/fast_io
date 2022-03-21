@@ -83,7 +83,7 @@ See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/q
 - Memory mapping
 - debugging IO (optionally with GUI)
 - Round-trip floating point algorithm
-- Hash algorithms support: intrinsic SHA-1, intrinsic HMAC-SHA1, intrinsic SHA-256, intrinsic HMAC-SHA256, SHA-512, HMAC-SHA512 aswell as non crypto hash algorithms, such as Jenkins Hash.
+- Hash algorithms support: intrinsic SHA-1, intrinsic HMAC-SHA1, intrinsic SHA-256, intrinsic HMAC-SHA256, SHA-512, HMAC-SHA512 as well as non crypto hash algorithms, such as Jenkins Hash.
 - zlib compression/decompression
 - Filesystem
 - OpenSSL BIO, Qt QFile, MFC CFile support
