@@ -16,9 +16,8 @@ inline constexpr bool compile_time_compare(char_type1 const (&a)[n1],char_type2 
 	return true;
 }
 
-
 extern "C" void
-#if defined(_WIN32) && !defined(__WINE__)
+#if (defined(_WIN32)||defined(__CYGWIN__)) && !defined(__WINE__)
 __declspec(dllexport) __stdcall
 #endif
 export_v0(lc_locale* lc_ptr) noexcept
