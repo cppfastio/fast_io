@@ -524,6 +524,25 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
+extern ::std::uint_least32_t __stdcall GetUserDefaultLCID(void) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("GetUserDefaultLCID@0")
+#else
+__asm__("_GetUserDefaultLCID@0")
+#endif
+#else
+__asm__("GetUserDefaultLCID")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif __has_cpp_attribute(gnu::dllimport)
+[[gnu::dllimport]]
+#endif
 extern void __stdcall GetSystemTimePreciseAsFileTime(filetime*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -935,6 +954,31 @@ __asm__("_getenv_s")
 #endif
 #else
 __asm__("getenv_s")
+#endif
+#endif
+;
+#endif
+
+#if !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_MSC_VER) && !defined(__clang__)
+#if _DLL
+__declspec(dllimport)
+#endif
+#elif __has_cpp_attribute(gnu::dllimport)
+#if !defined(_MSC_VER) || defined(_DLL)
+[[gnu::dllimport]]
+#endif
+#endif
+extern int __cdecl _wgetenv_s(std::size_t*,char16_t* buffer,std::size_t,char16_t const *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("_wgetenv_s")
+#else
+__asm__("__wgetenv_s")
+#endif
+#else
+__asm__("_wgetenv_s")
 #endif
 #endif
 ;
