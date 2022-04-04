@@ -99,7 +99,7 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 	{
 		it=::fast_io::details::copy_string_literal(u8"fast_io_i18n.locale.",it);
 	}
-	if(found_dot-cstr<2)
+	if(n==0)
 	{
 		constexpr bool use_get_user_default_locale_name
 {
@@ -144,11 +144,11 @@ family==::fast_io::win32_family::wide_nt
 			it=win32_get_locale_name_from_lcid(::fast_io::win32::GetUserDefaultLCID(),it);
 		}
 	}
-	if(found_dot != cstr_end)
+	else
 	{
 		it=::fast_io::details::non_overlapped_copy_n(cstr,n,it);
 	}
-	else
+	if(found_dot == cstr_end)
 	{
 		switch(::fast_io::win32::GetACP())
 		{
@@ -190,7 +190,6 @@ family==::fast_io::win32_family::wide_nt
 	func(__builtin_addressof(loc));
 	return dllfile.release();
 }
-
 
 template<::fast_io::win32_family family,::fast_io::constructible_to_os_c_str path_type>
 inline void* win32_family_load_l10n_impl(path_type const& p,lc_locale& loc)
@@ -235,6 +234,19 @@ public:
 			dll_handle=nullptr;
 		}
 	}
+	inline constexpr native_handle_type release() noexcept
+	{
+		auto temp{this->dll_handle};
+		this->dll_handle=nullptr;
+		return temp;
+	}
+	inline constexpr native_handle_type native_handle() const noexcept
+	{
+		auto temp{this->dll_handle};
+		this->dll_handle=nullptr;
+		return temp;
+	}
+
 	win32_family_l10n& operator=(win32_family_l10n const&)=delete;
 	win32_family_l10n(win32_family_l10n const&)=delete;
 	win32_family_l10n& operator=(win32_family_l10n&& __restrict other) noexcept
@@ -252,7 +264,6 @@ public:
 	}
 };
 
-
 template<std::integral char_type,::fast_io::win32_family family>
 inline constexpr ::fast_io::parameter<basic_lc_all<char_type> const&> status_io_print_forward(io_alias_type_t<char_type>,win32_family_l10n<fam> const& ln) noexcept
 {
@@ -264,11 +275,15 @@ requires (std::is_lvalue_reference_v<stm>||std::is_trivially_copyable_v<stm>)
 inline constexpr auto imbue(win32_family_l10n<fam>& loc,stm&& out) noexcept
 {
 	using char_type = typename std::remove_cvref_t<stm>::char_type;
-	return imbue(get_all<char_type>(loc.loc),out);
+	return imbue(get_all<char_type>(loc.loc),::fast_io::freestanding::forward<stm>(out));
 }
 
 using win32_l10n_9xa = win32_family_l10n<::fast_io::win32::ansi_9x>;
 using win32_l10n_ntw = win32_family_l10n<::fast_io::win32::wide_nt>;
 using win32_l10n = win32_family_l10n<::fast_io::win32::native>;
+
+#if !defined(__CYGWIN__) && !defined(__WINE__)
+using native_l10n = win32_l10n;
+#endif
 
 }
