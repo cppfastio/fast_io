@@ -7,6 +7,7 @@ template<typename char_type>
 struct basic_lc_identification
 {
 	basic_io_scatter_t<char_type> name{};
+	basic_io_scatter_t<char_type> encoding{};
 	basic_io_scatter_t<char_type> title{};
 	basic_io_scatter_t<char_type> source{};
 	basic_io_scatter_t<char_type> address{};

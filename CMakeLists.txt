@@ -48,6 +48,12 @@ if(COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
 		if (NOT ${compilerencodingtoggle} STREQUAL "")
 			target_compile_options(${purfilename}.${encoding} PRIVATE ${compilerencodingtoggle})
 		endif()
+		target_compile_definitions(${purfilename}.${encoding} PUBLIC
+			FAST_IO_LOCALE_ENCODING="${encoding}"
+			FAST_IO_LOCALE_LENCODING=L"${encoding}"
+			FAST_IO_LOCALE_u8ENCODING=u8"${encoding}"
+			FAST_IO_LOCALE_uENCODING=u"${encoding}"
+			FAST_IO_LOCALE_UENCODING=U"${encoding}")
 		install(TARGETS ${purfilename}.${encoding}
 			LIBRARY DESTINATION ${I18N_INSTALL_DIR})
 	endforeach()

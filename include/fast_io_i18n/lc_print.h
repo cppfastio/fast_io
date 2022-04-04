@@ -15,6 +15,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 	if constexpr(std::same_as<char_type,char>)
 		print_freestanding(bos,"LC_IDENTIFICATION\n"
 			"name\t\"",identification.name,"\"\n"
+			"encoding\t\"",identification.encoding,"\"\n"
 			"title\t\"",identification.title,"\"\n"
 			"source\t\"",identification.source,"\"\n"
 			"address\t\"",identification.address,"\"\n"
@@ -33,6 +34,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 	else if constexpr(std::same_as<char_type,wchar_t>)
 		print_freestanding(bos,L"LC_IDENTIFICATION\n"
 			L"name\t\"",identification.name,L"\"\n"
+			L"encoding\t\"",identification.encoding,L"\"\n"
 			L"title\t\"",identification.title,L"\"\n"
 			L"source\t\"",identification.source,L"\"\n"
 			L"address\t\"",identification.address,L"\"\n"
@@ -51,6 +53,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 	else if constexpr(std::same_as<char_type,char16_t>)
 		print_freestanding(bos,u"LC_IDENTIFICATION\n"
 			u"name\t\"",identification.name,u"\"\n"
+			u"encoding\t\"",identification.encoding,u"\"\n"
 			u"title\t\"",identification.title,u"\"\n"
 			u"source\t\"",identification.source,u"\"\n"
 			u"address\t\"",identification.address,u"\"\n"
@@ -69,6 +72,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 	else if constexpr(std::same_as<char_type,char32_t>)
 		print_freestanding(bos,U"LC_IDENTIFICATION\n"
 			U"name\t\"",identification.name,U"\"\n"
+			U"encoding\t\"",identification.encoding,U"\"\n"
 			U"title\t\"",identification.title,U"\"\n"
 			U"source\t\"",identification.source,U"\"\n"
 			U"address\t\"",identification.address,U"\"\n"
@@ -87,6 +91,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 	else if constexpr(std::same_as<char_type,char8_t>)
 		print_freestanding(bos,u8"LC_IDENTIFICATION\n"
 			u8"name\t\"",identification.name,u8"\"\n"
+			u8"encoding\t\"",identification.encoding,u8"\"\n"
 			u8"title\t\"",identification.title,u8"\"\n"
 			u8"source\t\"",identification.source,u8"\"\n"
 			u8"address\t\"",identification.address,u8"\"\n"
