@@ -85,7 +85,7 @@ inline void* posix_load_l10n_common_impl(char8_t const* cstr,std::size_t n,lc_lo
 		}
 	}
 	constexpr bool extension_is_dll{
-#if !defined(__ELF__)&&!defined(__WINE__)&&defined(__CYGWIN__)
+#ifdef __CYGWIN__
 true
 #endif
 	};
