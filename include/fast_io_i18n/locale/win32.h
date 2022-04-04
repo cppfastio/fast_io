@@ -193,9 +193,10 @@ family==::fast_io::win32_family::wide_nt
 			it=::fast_io::details::copy_string_literal(u8".dll",it);
 		}
 		*it=0;
-		win32_family_dll_file<family> fam(::fast_io::mnp::os_c_str(buffer),::fast_io::dll_mode::none);
-		auto func{reinterpret_cast<void (*)(lc_locale*) noexcept>(dll_load_symbol(fam,u8"export_v0"))};
+		win32_family_dll_file<family> dllfile(::fast_io::mnp::os_c_str(buffer),::fast_io::dll_mode::none);
+		auto func{reinterpret_cast<void (*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,u8"export_v0"))};
 		func(__builtin_addressof(loc));
+		return dllfile.release();
 	});
 }
 
