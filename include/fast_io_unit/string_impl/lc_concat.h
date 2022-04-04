@@ -181,102 +181,102 @@ std::basic_string<ch_type> lc_concatln(basic_lc_all<ch_type> const* all,Args ...
 	return ::fast_io::details::decay::lc_concat_decay_impl<true,ch_type>(all,io_print_forward<ch_type>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::string lc_concat(fast_io::l10n& loc,Args&& ...args)
+std::string lc_concat(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<false,std::string>(loc.loc.all,io_print_forward<char>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::string lc_concatln(fast_io::l10n& loc,Args&& ...args)
+std::string lc_concatln(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<true,std::string>(loc.loc.all,io_print_forward<char>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::basic_string<wchar_t> wlc_concat(fast_io::l10n& loc,Args&& ...args)
+std::basic_string<wchar_t> wlc_concat(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<false,std::basic_string<wchar_t>>(loc.loc.wall,io_print_forward<wchar_t>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::basic_string<wchar_t> wlc_concatln(fast_io::l10n& loc,Args&& ...args)
+std::basic_string<wchar_t> wlc_concatln(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<true,std::basic_string<wchar_t>>(loc.loc.wall,io_print_forward<wchar_t>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::u8string u8lc_concat(fast_io::l10n& loc,Args&& ...args)
+std::u8string u8lc_concat(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<false,std::u8string>(loc.loc.u8all,io_print_forward<char8_t>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::u8string u8lc_concatln(fast_io::l10n& loc,Args&& ...args)
+std::u8string u8lc_concatln(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<true,std::u8string>(loc.loc.u8all,io_print_forward<char8_t>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::u16string u16lc_concat(fast_io::l10n& loc,Args&& ...args)
+std::u16string u16lc_concat(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<false,std::u16string>(loc.loc.u16all,io_print_forward<char16_t>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::u16string u16lc_concatln(fast_io::l10n& loc,Args&& ...args)
+std::u16string u16lc_concatln(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<true,std::u16string>(loc.loc.u16all,io_print_forward<char16_t>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::u32string u32lc_concat(fast_io::l10n& loc,Args&& ...args)
+std::u32string u32lc_concat(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<false,std::u32string>(loc.loc.u32all,io_print_forward<char32_t>(io_print_alias(args))...);
 }
 
-template<typename ...Args>
+template<typename T,typename ...Args>
 inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
-std::u32string u32lc_concatln(fast_io::l10n& loc,Args&& ...args)
+std::u32string u32lc_concatln(T& loc,Args&& ...args)
 {
 	return ::fast_io::details::decay::lc_concat_decay_impl<true,std::u32string>(loc.loc.u32all,io_print_forward<char32_t>(io_print_alias(args))...);
 }
