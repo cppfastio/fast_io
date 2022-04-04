@@ -14,6 +14,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 {
 	if constexpr(std::same_as<char_type,char>)
 		print_freestanding(bos,"LC_IDENTIFICATION\n"
+			"name\t\"",identification.name,"\"\n"
 			"title\t\"",identification.title,"\"\n"
 			"source\t\"",identification.source,"\"\n"
 			"address\t\"",identification.address,"\"\n"
@@ -31,6 +32,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			"END LC_IDENTIFICATION");
 	else if constexpr(std::same_as<char_type,wchar_t>)
 		print_freestanding(bos,L"LC_IDENTIFICATION\n"
+			L"name\t\"",identification.name,L"\"\n"
 			L"title\t\"",identification.title,L"\"\n"
 			L"source\t\"",identification.source,L"\"\n"
 			L"address\t\"",identification.address,L"\"\n"
@@ -48,6 +50,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			L"END LC_IDENTIFICATION");
 	else if constexpr(std::same_as<char_type,char16_t>)
 		print_freestanding(bos,u"LC_IDENTIFICATION\n"
+			u"name\t\"",identification.name,u"\"\n"
 			u"title\t\"",identification.title,u"\"\n"
 			u"source\t\"",identification.source,u"\"\n"
 			u"address\t\"",identification.address,u"\"\n"
@@ -65,6 +68,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			u"END LC_IDENTIFICATION");
 	else if constexpr(std::same_as<char_type,char32_t>)
 		print_freestanding(bos,U"LC_IDENTIFICATION\n"
+			U"name\t\"",identification.name,U"\"\n"
 			U"title\t\"",identification.title,U"\"\n"
 			U"source\t\"",identification.source,U"\"\n"
 			U"address\t\"",identification.address,U"\"\n"
@@ -82,6 +86,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			U"END LC_IDENTIFICATION");
 	else if constexpr(std::same_as<char_type,char8_t>)
 		print_freestanding(bos,u8"LC_IDENTIFICATION\n"
+			u8"name\t\"",identification.name,u8"\"\n"
 			u8"title\t\"",identification.title,u8"\"\n"
 			u8"source\t\"",identification.source,u8"\"\n"
 			u8"address\t\"",identification.address,u8"\"\n"
@@ -370,16 +375,48 @@ constexpr void print_loc_days_real_impl(output bos,typename output::char_type co
 	}
 	put(bos,char_literal_v<u8'\n',char_type>);
 }
-template<buffer_output_stream output>
-constexpr void print_loc_days_impl(output bos,::fast_io::freestanding::basic_string_view<typename output::char_type> category_name,basic_io_scatter_t<basic_io_scatter_t<typename output::char_type>> day_strings)
+
+template<std::size_t n,buffer_output_stream output>
+constexpr void print_loc_days_impl(output bos,typename output::char_type const (&category_name)[n],basic_io_scatter_t<basic_io_scatter_t<typename output::char_type>> day_strings)
 {
-	print_loc_days_real_impl(bos,category_name.data(),category_name.size(),day_strings.base,day_strings.len);
+	print_loc_days_real_impl(bos,category_name,n-1,day_strings.base,day_strings.len);
 }
 
 template<buffer_output_stream output>
-constexpr void print_loc_era_impl(output,::fast_io::freestanding::basic_string_view<typename output::char_type>,basic_io_scatter_t<basic_lc_time_era<typename output::char_type>> const&)
+constexpr void print_loc_era_impl(output bos,basic_lc_time_era<typename output::char_type> const* eras_ptr,std::size_t n)
 {
-//	print_loc_days_real_impl(bos,category_name,day_strings.base,day_strings.len);
+	using char_type = typename output::char_type;
+	if(n==0)
+		return;
+	if constexpr(std::same_as<char_type,char>)
+	{
+		print(bos,"era\t");
+	}
+	else if constexpr(std::same_as<char_type,wchar_t>)
+	{
+		print(bos,L"era\t");
+	}
+	else if constexpr(std::same_as<char_type,char16_t>)
+	{
+		print(bos,u"era\t");
+	}
+	else if constexpr(std::same_as<char_type,char32_t>)
+	{
+		print(bos,U"era\t");
+	}
+	else
+	{
+		print(bos,u8"era\t");
+	}
+	for(std::size_t i{};i!=n;++i)
+	{
+		if(i)
+			put(bos,char_literal_v<u8';',char_type>);
+		put(bos,char_literal_v<u8'\"',char_type>);
+		print_freestanding(bos,eras_ptr[i].era);
+		put(bos,char_literal_v<u8'\"',char_type>);
+	}
+	put(bos,char_literal_v<u8'\n',char_type>);
 }
 
 template<buffer_output_stream output,std::integral ch_type1,std::size_t n1,std::integral ch_type2,std::size_t n2>
@@ -409,7 +446,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		"t_fmt_ampm\t\"",time.t_fmt_ampm,"\"\n",
 		"date_fmt\t\"",time.date_fmt,"\"\n",
 		"am_pm\t\"",time.am_pm[0],"\";\"",time.am_pm[1],"\"\n");
-		::fast_io::details::print_loc_era_impl(bos,"era",time.era);
+		::fast_io::details::print_loc_era_impl(bos,time.era.base,time.era.len);
 		print_freestanding(bos,"era_d_fmt\t\"",time.era_d_fmt,"\"\n",
 		"era_d_t_fmt\t\"",time.era_d_t_fmt,"\"\n",
 		"era_t_fmt\t\"",time.era_t_fmt,"\"\n");
@@ -436,7 +473,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		L"t_fmt_ampm\t\"",time.t_fmt_ampm,L"\"\n",
 		L"date_fmt\t\"",time.date_fmt,L"\"\n",
 		L"am_pm\t\"",time.am_pm[0],L"\";\"",time.am_pm[1],L"\"\n");
-		::fast_io::details::print_loc_era_impl(bos,L"era",time.era);
+		::fast_io::details::print_loc_era_impl(bos,time.era.base,time.era.len);
 		print_freestanding(bos,L"era_d_fmt\t\"",time.era_d_fmt,L"\"\n",
 		L"era_d_t_fmt\t\"",time.era_d_t_fmt,L"\"\n",
 		L"era_t_fmt\t\"",time.era_t_fmt,L"\"\n");
@@ -463,7 +500,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		u"t_fmt_ampm\t\"",time.t_fmt_ampm,u"\"\n",
 		u"date_fmt\t\"",time.date_fmt,u"\"\n",
 		u"am_pm\t\"",time.am_pm[0],u"\";\"",time.am_pm[1],u"\"\n");
-		::fast_io::details::print_loc_era_impl(bos,u"era",time.era);
+		::fast_io::details::print_loc_era_impl(bos,time.era.base,time.era.len);
 		print_freestanding(bos,u"era_d_fmt\t\"",time.era_d_fmt,u"\"\n",
 		u"era_d_t_fmt\t\"",time.era_d_t_fmt,u"\"\n",
 		u"era_t_fmt\t\"",time.era_t_fmt,u"\"\n");
@@ -490,7 +527,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		U"t_fmt_ampm\t\"",time.t_fmt_ampm,U"\"\n",
 		U"date_fmt\t\"",time.date_fmt,U"\"\n",
 		U"am_pm\t\"",time.am_pm[0],U"\";\"",time.am_pm[1],U"\"\n");
-		::fast_io::details::print_loc_era_impl(bos,U"era",time.era);
+		::fast_io::details::print_loc_era_impl(bos,time.era.base,time.era.len);
 		print_freestanding(bos,U"era_d_fmt\t\"",time.era_d_fmt,U"\"\n",
 		U"era_d_t_fmt\t\"",time.era_d_t_fmt,U"\"\n",
 		U"era_t_fmt\t\"",time.era_t_fmt,U"\"\n");
@@ -517,7 +554,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		u8"t_fmt_ampm\t\"",time.t_fmt_ampm,u8"\"\n",
 		u8"date_fmt\t\"",time.date_fmt,u8"\"\n",
 		u8"am_pm\t\"",time.am_pm[0],u8"\";\"",time.am_pm[1],u8"\"\n");
-		::fast_io::details::print_loc_era_impl(bos,u8"era",time.era);
+		::fast_io::details::print_loc_era_impl(bos,time.era.base,time.era.len);
 		print_freestanding(bos,u8"era_d_fmt\t\"",time.era_d_fmt,u8"\"\n",
 		u8"era_d_t_fmt\t\"",time.era_d_t_fmt,u8"\"\n",
 		u8"era_t_fmt\t\"",time.era_t_fmt,u8"\"\n");
