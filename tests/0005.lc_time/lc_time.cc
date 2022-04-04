@@ -10,11 +10,11 @@ int main()
 	using namespace fast_io::mnp;
 	for (auto fnm : files)
 	{
-		fast_io::l10n loc(fnm);
+		fast_io::native_l10n loc(os_c_str(fnm));
 		auto v{posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 		fast_io::iso8601_timestamp utc_tsp{ utc(v) };
 		fast_io::iso8601_timestamp tsp{ local(v) };
-		print(imbue(loc, obf), chvw(fnm),"\n"
+		print(imbue(loc, obf), os_c_str(fnm),"\n"
 			"unix:\t", v,"\n"
 			"utc\niso 8601:\t", utc_tsp, "\n"
 			"d_t_fmt:\t", d_t_fmt(utc_tsp), "\n"

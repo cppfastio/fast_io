@@ -31,11 +31,11 @@ int main()
 		};
 		for (auto fnm : files)
 		{
-			println(f, u8"Current Locale:", fast_io::mnp::code_cvt(std::string_view(fnm)));
+			println(f, u8"Current Locale:", fast_io::mnp::code_cvt(fast_io::mnp::os_c_str(fnm)));
 			println(f, u8"Current Timestamp:", ts);
 			char8_t format_buffer[3]{ u8'%',u8'%',u8'%' };
 			fast_io::basic_io_scatter_t<char8_t> test_format{ format_buffer,2 };
-			fast_io::l10n loc(fnm);
+			fast_io::native_l10n loc(fast_io::mnp::os_c_str(fnm));
 			auto test = [&](char8_t i) {
 				std::size_t reserved{ ::fast_io::details::lc_print_reserve_size_time_format_common_impl(loc.loc.u8all->time, ts, test_format) };
 				u8s.resize(reserved);
