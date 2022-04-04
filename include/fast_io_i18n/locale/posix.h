@@ -9,7 +9,7 @@ namespace details
 extern char const* libc_secure_getenv(char const*) noexcept __asm__("secure_getenv");
 #endif
 
-inline char const* my_getenv(char8_t const* env) noexcept
+inline char const* my_u8getenv(char8_t const* env) noexcept
 {
 	return
 #if defined(_GNU_SOURCE)
@@ -30,24 +30,36 @@ inline void* posix_load_l10n_common_impl(char8_t const* cstr,std::size_t n,lc_lo
 #endif
 	= native_char_type const*;
 	constexpr std::size_t msys2_encoding_size_restriction{size_restriction>>2};
-	native_char_type msys2_encoding[msys2_encoding_size_restriction];
 	if(n>=size_restriction)	//locale should not contain so many characters
 	{
 		throw_posix_error(EINVAL);
 	}
 	else if(n==0)
 	{
-		char const* lc_all_env{my_getenv(u8"LC_ALL")};
+		char const* lc_all_env{my_u8getenv(u8"LC_ALL")};
 		if(lc_all_env==nullptr)
 		{
-			lc_all_env=my_getenv(u8"LANG");
+			lc_all_env=my_u8getenv(u8"LANG");
 			if(lc_all_env==nullptr)
 			{
 				lc_all_env=reinterpret_cast<char const*>(u8"C");
 			}
 		}
 		cstr=reinterpret_cast<native_char_type_may_alias_const_ptr>(lc_all_env);
-		n=::fast_io::details::my_strlen(lc_all_env);
+		n=
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_strlen)
+		__builtin_strlen(lc_all_env);
+#else
+		::std::strlen(lc_all_env);
+#endif
+#else
+		::std::strlen(lc_all_env);
+#endif
+		if(n>=msys2_encoding_size_restriction)
+		{
+			throw_posix_error(EINVAL);
+		}
 	}
 	auto const cstr_end{cstr+n};
 	auto found_dot{cstr_end};
@@ -79,7 +91,7 @@ true
 	};
 	constexpr std::size_t extension_size{extension_is_dll?sizeof(u8".dll"):sizeof(u8".so")};
 	//fast_io_i18n.locale.{localename}.{dll/so}
-	constexpr std::size_t total_size{::fast_io::details::add_or_overflow_die_chain(sizeof(u8"fast_io_i18n.locale."),size_restriction,encoding_size_restriction,extension_size)};
+	constexpr std::size_t total_size{::fast_io::details::intrinsics::add_or_overflow_die_chain(sizeof(u8"fast_io_i18n.locale."),size_restriction,encoding_size_restriction,extension_size)};
 	native_char_type buffer[total_size];
 	native_char_type* it{buffer};
 	it=::fast_io::details::copy_string_literal(u8"fast_io_i18n.locale.",it);
@@ -97,7 +109,8 @@ true
 		it=::fast_io::details::copy_string_literal(u8".so",it);
 	}
 	*it=0;
-	posix_dll_file dllfile(::fast_io::mnp::os_c_str(buffer),::fast_io::dll_mode::none);
+	auto p{buffer};
+	posix_dll_file dllfile(::fast_io::mnp::os_c_str(p),::fast_io::dll_mode::posix_rtld_global | ::fast_io::dll_mode::posix_rtld_now);
 	auto func{reinterpret_cast<void (*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,u8"export_v0"))};
 	func(__builtin_addressof(loc));
 	return dllfile.release();
@@ -131,7 +144,7 @@ public:
 	template<::fast_io::constructible_to_os_c_str path_type>
 	explicit posix_l10n(path_type const& p)
 	{
-		this->rtld_handle=::fast_io::details::posix_load_l10n_impl(loc);
+		this->rtld_handle=::fast_io::details::posix_load_l10n_impl(p,loc);
 	}
 
 	explicit constexpr operator bool() const noexcept
@@ -154,9 +167,7 @@ public:
 	}
 	inline constexpr native_handle_type native_handle() const noexcept
 	{
-		auto temp{this->rtld_handle};
-		this->rtld_handle=nullptr;
-		return temp;
+		return this->rtld_handle;
 	}
 	posix_l10n& operator=(posix_l10n const&)=delete;
 	posix_l10n(posix_l10n const&)=delete;
@@ -176,14 +187,14 @@ public:
 };
 
 template<std::integral char_type>
-inline constexpr ::fast_io::parameter<basic_lc_all<char_type> const&> status_io_print_forward(io_alias_type_t<char_type>,posix_l10n const& ln) noexcept
+inline constexpr ::fast_io::parameter<basic_lc_all<char_type> const&> status_io_print_forward(io_alias_type_t<char_type>,posix_l10n const& loc) noexcept
 {
-	return status_io_print_forward(io_alias_type<char_type>,ln.loc);
+	return status_io_print_forward(io_alias_type<char_type>,loc.loc);
 }
 
 template<stream stm>
 requires (std::is_lvalue_reference_v<stm>||std::is_trivially_copyable_v<stm>)
-inline constexpr auto imbue(posix_l10n<fam>& loc,stm&& out) noexcept
+inline constexpr auto imbue(posix_l10n& loc,stm&& out) noexcept
 {
 	using char_type = typename std::remove_cvref_t<stm>::char_type;
 	return imbue(get_all<char_type>(loc.loc),::fast_io::freestanding::forward<stm>(out));

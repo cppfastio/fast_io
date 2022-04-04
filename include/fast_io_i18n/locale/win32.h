@@ -88,7 +88,7 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		}
 	}
 	//fast_io_i18n.locale.{localename}.{dll/so}
-	constexpr std::size_t total_size{::fast_io::details::add_or_overflow_die_chain(sizeof(u8"fast_io_i18n.locale."),size_restriction,encoding_size_restriction,sizeof(u8".dll"))};
+	constexpr std::size_t total_size{::fast_io::details::intrinsics::add_or_overflow_die_chain(sizeof(u8"fast_io_i18n.locale."),size_restriction,encoding_size_restriction,sizeof(u8".dll"))};
 	native_char_type buffer[total_size];
 	native_char_type* it{buffer};
 	if constexpr(family==::fast_io::win32_family::wide_nt)
@@ -111,9 +111,15 @@ family==::fast_io::win32_family::wide_nt
 		{
 			constexpr int locale_name_max_len{85};
 			static_assert(locale_name_max_len<size_restriction);
-			int ret{::fast_io::win32::GetUserDefaultLocaleName(it,locale_name_max_len)};
+			using wchar_may_alia_ptr
+#if __has_cpp_attribute(gnu::may_alias)
+			[[gnu::may_alias]]
+#endif
+			= wchar_t*;
+			int ret{::fast_io::win32::GetUserDefaultLocaleName(reinterpret_cast<wchar_may_alia_ptr>(it),locale_name_max_len)};
 			if(ret)
 			{
+				--ret;
 				for(auto p{it},pe{it+ret};p!=pe;++p)
 				{
 					switch(*p)
@@ -162,6 +168,7 @@ family==::fast_io::win32_family::wide_nt
 				{
 					it=copy_string_literal(u8".GB18030",it);
 				}
+				break;
 			}
 			default:
 			{
@@ -185,7 +192,8 @@ family==::fast_io::win32_family::wide_nt
 		it=::fast_io::details::copy_string_literal(u8".dll",it);
 	}
 	*it=0;
-	win32_family_dll_file<family> dllfile(::fast_io::mnp::os_c_str(buffer),::fast_io::dll_mode::none);
+	auto p{buffer};
+	win32_family_dll_file<family> dllfile(::fast_io::mnp::os_c_str(p),::fast_io::dll_mode::none);
 	auto func{reinterpret_cast<void (*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,u8"export_v0"))};
 	func(__builtin_addressof(loc));
 	return dllfile.release();
@@ -212,39 +220,38 @@ template<::fast_io::win32_family family>
 class win32_family_l10n
 {
 public:
+	using native_handle_type = void*;
 	lc_locale loc{};
-	void* dll_handle{};
+	native_handle_type hmodule{};
 	constexpr win32_family_l10n() noexcept=default;
 
 	template<::fast_io::constructible_to_os_c_str path_type>
 	explicit win32_family_l10n(path_type const& p)
 	{
-		this->dll_handle=::fast_io::details::win32_family_load_l10n_impl<family>(loc);
+		this->hmodule=::fast_io::details::win32_family_load_l10n_impl<family>(p,loc);
 	}
 
 	explicit constexpr operator bool() const noexcept
 	{
-		return dll_handle!=nullptr;
+		return hmodule!=nullptr;
 	}
 	void close() noexcept
 	{
-		if(dll_handle)[[likely]]
+		if(hmodule)[[likely]]
 		{
-			fast_io::win32::FreeLibrary(dll_handle);
-			dll_handle=nullptr;
+			fast_io::win32::FreeLibrary(hmodule);
+			hmodule=nullptr;
 		}
 	}
 	inline constexpr native_handle_type release() noexcept
 	{
-		auto temp{this->dll_handle};
-		this->dll_handle=nullptr;
+		auto temp{this->hmodule};
+		this->hmodule=nullptr;
 		return temp;
 	}
 	inline constexpr native_handle_type native_handle() const noexcept
 	{
-		auto temp{this->dll_handle};
-		this->dll_handle=nullptr;
-		return temp;
+		return this->hmodule;
 	}
 
 	win32_family_l10n& operator=(win32_family_l10n const&)=delete;
@@ -253,8 +260,8 @@ public:
 	{
 		close();
 		loc=other.loc;
-		dll_handle=other.dll_handle;
-		other.dll_handle=nullptr;
+		hmodule=other.hmodule;
+		other.hmodule=nullptr;
 		other.loc={};
 		return *this;
 	}
@@ -265,22 +272,22 @@ public:
 };
 
 template<std::integral char_type,::fast_io::win32_family family>
-inline constexpr ::fast_io::parameter<basic_lc_all<char_type> const&> status_io_print_forward(io_alias_type_t<char_type>,win32_family_l10n<fam> const& ln) noexcept
+inline constexpr ::fast_io::parameter<basic_lc_all<char_type> const&> status_io_print_forward(io_alias_type_t<char_type>,win32_family_l10n<family> const& loc) noexcept
 {
-	return status_io_print_forward(io_alias_type<char_type>,ln.loc);
+	return status_io_print_forward(io_alias_type<char_type>,loc.loc);
 }
 
 template<::fast_io::win32_family family,stream stm>
 requires (std::is_lvalue_reference_v<stm>||std::is_trivially_copyable_v<stm>)
-inline constexpr auto imbue(win32_family_l10n<fam>& loc,stm&& out) noexcept
+inline constexpr auto imbue(win32_family_l10n<family>& loc,stm&& out) noexcept
 {
 	using char_type = typename std::remove_cvref_t<stm>::char_type;
 	return imbue(get_all<char_type>(loc.loc),::fast_io::freestanding::forward<stm>(out));
 }
 
-using win32_l10n_9xa = win32_family_l10n<::fast_io::win32::ansi_9x>;
-using win32_l10n_ntw = win32_family_l10n<::fast_io::win32::wide_nt>;
-using win32_l10n = win32_family_l10n<::fast_io::win32::native>;
+using win32_l10n_9xa = win32_family_l10n<::fast_io::win32_family::ansi_9x>;
+using win32_l10n_ntw = win32_family_l10n<::fast_io::win32_family::wide_nt>;
+using win32_l10n = win32_family_l10n<::fast_io::win32_family::native>;
 
 #if !defined(__CYGWIN__) && !defined(__WINE__)
 using native_l10n = win32_l10n;

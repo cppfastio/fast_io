@@ -29,7 +29,7 @@ This is an example to explain how fast_io's files work with each other, and how 
 	print(fiob,"Hello World from fast_io::filebuf_io_observer\n");
 	fast_io::posix_tzset();
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
-	fast_io::l10n l10n("");
+	fast_io::native_l10n l10n(u8"");
 	println(imbue(l10n,fast_io::c_stdout()),
 	"Unix Timestamp:",unix_ts,"\n"
 	"Universe Timestamp:",static_cast<fast_io::universe_timestamp>(unix_ts),"\n"

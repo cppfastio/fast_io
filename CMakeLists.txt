@@ -2,18 +2,16 @@ cmake_minimum_required(VERSION 3.15)
 
 project(fast_io)
 
-set(CMAKE_CXX_STANDARD 20)
-
 INSTALL (DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
 INSTALL (DIRECTORY ${CMAKE_SOURCE_DIR}/man/ DESTINATION man/man3)
 
+option(BUILD_I18N_DLLS "build i18n runtime dlls" OFF)
 
-if(BUILD_SHARED_LIBS)
-set(BUILD_STATIC_LIBS OFF)
-set(CMAKE_SHARED_LIBRARY_PREFIX "fast_io_i18n.locale.")
-set(CMAKE_STATIC_LIBRARY_PREFIX "fast_io_i18n.locale.")
+if(BUILD_I18N_DLLS)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_SHARED_MODULE_PREFIX "fast_io_i18n.locale.")
 file(GLOB localefiles ${CMAKE_SOURCE_DIR}/src/i18n_data/locale/*.cc)
-
 
 include(CheckCXXCompilerFlag)
 
@@ -36,16 +34,22 @@ else()
 	CHECK_CXX_COMPILER_FLAG(${compilerencodingtoggle} COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
 endif()
 
+if(I18N_INSTALL_DIR)
+else()
+	set(I18N_INSTALL_DIR lib)
+endif()
+
 if(COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
 	foreach(filepath ${localefiles})
 		get_filename_component(filename ${filepath} NAME_WE)
 		string(REPLACE "@" "_" purfilename ${filename})
-		add_library(${purfilename}.${encoding} SHARED ${filepath})
+		add_library(${purfilename}.${encoding} MODULE ${filepath})
 		set_target_properties(${purfilename}.${encoding} PROPERTIES OUTPUT_NAME ${filename}.${encoding})
 		if (NOT ${compilerencodingtoggle} STREQUAL "")
 			target_compile_options(${purfilename}.${encoding} PRIVATE ${compilerencodingtoggle})
 		endif()
-		install(TARGETS ${purfilename}.${encoding} RUNTIME DESTINATION lib)
+		install(TARGETS ${purfilename}.${encoding}
+			LIBRARY DESTINATION ${I18N_INSTALL_DIR})
 	endforeach()
 else()
 	message("Compiler does not support \"${compilerencodingtoggle}\"; locale under ${encoding} execution charset will not build.")
