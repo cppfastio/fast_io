@@ -3,6 +3,6 @@
 
 int main()
 {
-	fast_io::l10n loc("");
+	fast_io::native_l10n loc(u8"");
 	println(imbue(loc,fast_io::c_stdout()),"Hello World ",-1248721947124LL," ",fast_io::mnp::boolalpha(true));
 }

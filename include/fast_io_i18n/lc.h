@@ -6,6 +6,7 @@ namespace fast_io
 template<typename char_type>
 struct basic_lc_identification
 {
+	basic_io_scatter_t<char_type> name{};
 	basic_io_scatter_t<char_type> title{};
 	basic_io_scatter_t<char_type> source{};
 	basic_io_scatter_t<char_type> address{};
@@ -88,6 +89,7 @@ struct basic_lc_time_era
 	std::uint_least8_t end_date_day{};
 	basic_io_scatter_t<char_type> era_name;
 	basic_io_scatter_t<char_type> era_format;
+	basic_io_scatter_t<char_type> era;
 };
 
 template<typename char_type>

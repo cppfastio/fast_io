@@ -66,37 +66,31 @@ public:
 	}
 };
 
-struct posix_rtld_error{};
-
-[[noreturn]] inline void throw_posix_rtld_error()
-{
-#ifdef __cpp_exceptions
-#if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
-	fast_terminate();
-#else
-	throw posix_rtld_error();
-#endif
-#else
-	fast_terminate();
-#endif
-}
-
-inline constexpr basic_io_scatter_t<char> print_alias_define(io_alias_t,posix_rtld_error) noexcept
-{
-	char const* message{noexcept_call(dlerror)};
-	if(message==nullptr)
-		return {};
-	return {message,cstr_len(message)};
-}
-
 namespace details
 {
 
+[[noreturn]] inline void throw_posix_rtld_error(int err=EINVAL)
+{
+	int en{errno};
+	if(!en)
+	{
+		en=err;
+	}
+	throw_posix_error(en);
+}
+
 inline void* create_posix_rtld(char const* filename,dll_mode mode)
 {
-	auto hd{noexcept_call(dlopen,filename,dll_mode_to_posix_rtld_mode(mode))};
+	errno={};
+	auto hd{noexcept_call(dlopen,filename,::fast_io::dll_mode_to_posix_rtld_mode(mode))};
 	if(hd==nullptr)
-		throw_posix_rtld_error();
+	{
+		::fast_io::details::throw_posix_rtld_error(
+#if defined(ENOENT)
+		ENOENT
+#endif
+		);
+	}
 	return hd;
 }
 
@@ -153,10 +147,13 @@ public:
 	{
 		if(this->rtld_handle)[[likely]]
 		{
+			errno={};
 			auto ret{noexcept_call(dlclose,this->rtld_handle)};
 			this->rtld_handle=nullptr;
 			if(ret)
-				throw_posix_rtld_error();
+			{
+				::fast_io::details::throw_posix_rtld_error();
+			}
 		}
 	}
 	~posix_dll_file()
