@@ -7,28 +7,12 @@ namespace details
 {
 
 template<std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
 inline char_type* win32_get_locale_name_from_lcid(::std::uint_least32_t lcid,char_type* p) noexcept
 {
-	if constexpr(std::same_as<char_type,char16_t>)
-	{
-		switch(lcid)
-		{
-		default:
-		{
-			return copy_string_literal(u"C",p);
-		}
-		}
-	}
-	else
-	{
-		switch(lcid)
-		{
-		default:
-		{
-			return copy_string_literal(u8"C",p);
-		}
-		}
-	}
+#include"win32_lcid_table.h"
 }
 
 template<::fast_io::win32_family family>
@@ -43,6 +27,7 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 	{
 		throw_win32_error(0x0000203C);
 	}
+#if 0
 	else if(n==0)
 	{
 		std::size_t env_size{};
@@ -50,19 +35,31 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		{
 			if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"LC_ALL"))
 			{
+				auto p{msys2_encoding};
+				cstr=msys2_encoding;
+				n=env_size;
+			}
+			else if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"LANG"))
+			{
 				cstr=msys2_encoding;
 				n=env_size;
 			}
 		}
 		else
 		{
-			if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u8"LC_ALL"))
+			if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"LC_ALL")))
+			{
+				cstr=msys2_encoding;
+				n=env_size;
+			}
+			else if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"LANG")))
 			{
 				cstr=msys2_encoding;
 				n=env_size;
 			}
 		}
 	}
+#endif
 	auto const cstr_end{cstr+n};
 	auto found_dot{cstr_end};
 
