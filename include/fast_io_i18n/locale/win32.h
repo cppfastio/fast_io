@@ -41,9 +41,10 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 				{
 					if(env_size<2u)
 						continue;
+					n=cstr_nlen(msys2_encoding,env_size);
+					if(n==0)
+						continue;
 					cstr=msys2_encoding;
-					n=env_size;
-					--n;
 					break;
 				}
 			}
@@ -59,9 +60,10 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 				{
 					if(env_size<2u)
 						continue;
+					n=cstr_nlen(msys2_encoding,env_size);
+					if(n==0)
+						continue;
 					cstr=msys2_encoding;
-					n=env_size;
-					--n;
 					break;
 				}
 			}
