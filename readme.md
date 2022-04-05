@@ -208,7 +208,7 @@ All benchmarks are in benchmarks/0014.file_io/file_io.
 
 Output 100000000x "Hello World\n"
 
-Notice: I modified libstdc++'s std::filebuf's BUFSIZ to 1048576 due to BUFSIZE is too small (512 bytes) for MinGW-W64 or it performs horribly.
+Notice: I modified libstdc++'s std::filebuf's BUFSIZ to 1048576 due to BUFSIZ is too small (512 bytes) for MinGW-W64 or it performs horribly.
 
 
 
