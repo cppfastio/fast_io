@@ -33,9 +33,13 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		std::size_t env_size{};
 		if constexpr(family==::fast_io::win32_family::wide_nt)
 		{
-			if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"LC_ALL"))
+			if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"L10N"))
 			{
-				auto p{msys2_encoding};
+				cstr=msys2_encoding;
+				n=env_size;
+			}
+			else if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"LC_ALL"))
+			{
 				cstr=msys2_encoding;
 				n=env_size;
 			}
@@ -47,7 +51,12 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		}
 		else
 		{
-			if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"LC_ALL")))
+			if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"L10N")))
+			{
+				cstr=msys2_encoding;
+				n=env_size;
+			}
+			else if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"LC_ALL")))
 			{
 				cstr=msys2_encoding;
 				n=env_size;
