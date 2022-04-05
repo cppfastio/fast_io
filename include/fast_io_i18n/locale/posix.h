@@ -111,7 +111,17 @@ true
 	*it=0;
 	auto p{buffer};
 	posix_dll_file dllfile(::fast_io::mnp::os_c_str(p),::fast_io::dll_mode::posix_rtld_global | ::fast_io::dll_mode::posix_rtld_now);
-	auto func{reinterpret_cast<void (*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,u8"export_v0"))};
+	auto func{reinterpret_cast<void (
+#if defined(__CYGWIN__)
+__fastcall
+#endif
+		*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,
+#if defined(__CYGWIN__) && (SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__)))
+	u8"@export_v0@4"
+#else
+	u8"export_v0"
+#endif
+	))};
 	func(__builtin_addressof(loc));
 	return dllfile.release();
 }
