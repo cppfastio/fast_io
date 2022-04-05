@@ -29,18 +29,21 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 	}
 	else if(n==0)
 	{
-		
-		if constexpr(family==::fast_io::win32_family::wide_nt)
+		if constexpr(family==::fast_io::win32_family::ansi_9x)
 		{
 			constexpr std::size_t sz{3};
-			constexpr char16_t const* candidates[3]{u"L10N",u"LC_ALL",u"LANG"};
+			constexpr char8_t const* candidates[3]{u8"L10N",u8"LC_ALL",u8"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
 				std::size_t env_size{};
-				if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,*i))
+				if(!::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),
+						msys2_encoding_size_restriction,reinterpret_cast<char const*>(*i)))
 				{
+					if(env_size<2u)
+						continue;
 					cstr=msys2_encoding;
 					n=env_size;
+					--n;
 					break;
 				}
 			}
@@ -48,15 +51,17 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		else
 		{
 			constexpr std::size_t sz{3};
-			constexpr char8_t const* candidates[3]{u8"L10N",u8"LC_ALL",u8"LANG"};
+			constexpr char16_t const* candidates[3]{u"L10N",u"LC_ALL",u"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
 				std::size_t env_size{};
-				if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),
-						msys2_encoding_size_restriction,reinterpret_cast<char const*>(*i)))
+				if(!::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,*i))
 				{
+					if(env_size<2u)
+						continue;
 					cstr=msys2_encoding;
 					n=env_size;
+					--n;
 					break;
 				}
 			}
