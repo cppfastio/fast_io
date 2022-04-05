@@ -27,48 +27,41 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 	{
 		throw_win32_error(0x0000203C);
 	}
-#if 0
 	else if(n==0)
 	{
-		std::size_t env_size{};
+		
 		if constexpr(family==::fast_io::win32_family::wide_nt)
 		{
-			if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"L10N"))
+			constexpr std::size_t sz{3};
+			constexpr char16_t const* candidates[3]{u"L10N",u"LC_ALL",u"LANG"};
+			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
-				cstr=msys2_encoding;
-				n=env_size;
-			}
-			else if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"LC_ALL"))
-			{
-				cstr=msys2_encoding;
-				n=env_size;
-			}
-			else if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,u"LANG"))
-			{
-				cstr=msys2_encoding;
-				n=env_size;
+				std::size_t env_size{};
+				if(::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,*i))
+				{
+					cstr=msys2_encoding;
+					n=env_size;
+					break;
+				}
 			}
 		}
 		else
 		{
-			if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"L10N")))
+			constexpr std::size_t sz{3};
+			constexpr char8_t const* candidates[3]{u8"L10N",u8"LC_ALL",u8"LANG"};
+			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
-				cstr=msys2_encoding;
-				n=env_size;
-			}
-			else if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"LC_ALL")))
-			{
-				cstr=msys2_encoding;
-				n=env_size;
-			}
-			else if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction,reinterpret_cast<char const*>(u8"LANG")))
-			{
-				cstr=msys2_encoding;
-				n=env_size;
+				std::size_t env_size{};
+				if(::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),
+						msys2_encoding_size_restriction,reinterpret_cast<char const*>(*i)))
+				{
+					cstr=msys2_encoding;
+					n=env_size;
+					break;
+				}
 			}
 		}
 	}
-#endif
 	auto const cstr_end{cstr+n};
 	auto found_dot{cstr_end};
 
