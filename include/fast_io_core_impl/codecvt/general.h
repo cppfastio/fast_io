@@ -509,6 +509,15 @@ constexpr auto code_cvt(T const& t) noexcept
 template<
 encoding_scheme src_scheme=encoding_scheme::execution_charset,
 encoding_scheme dst_scheme=encoding_scheme::execution_charset,
+std::integral char_type>
+constexpr auto code_cvt(basic_io_scatter_t<char_type> t) noexcept
+{
+	return code_cvt_t<src_scheme,dst_scheme,char_type>{t};
+}
+
+template<
+encoding_scheme src_scheme=encoding_scheme::execution_charset,
+encoding_scheme dst_scheme=encoding_scheme::execution_charset,
 std::integral src_char_type,
 std::integral dst_char_type>
 inline constexpr std::size_t print_reserve_size(
