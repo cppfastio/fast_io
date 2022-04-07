@@ -183,12 +183,45 @@ struct posix_dll_load_impl_context
 	}
 };
 
+#if defined(__GLIBC__) && __GLIBC_PREREQ(2,0)
+inline void* posix_dll_load_vers_symbol_impl(void* rtld_handle,char const* symbol,char const* vers)
+{
+	auto ptr{noexcept_call(dlvsym,rtld_handle,symbol,vers)};
+	if(ptr==nullptr)[[unlikely]]
+		throw_posix_error(EINVAL);
+	return ptr;
+}
+
+struct posix_dll_load_versioned_symbol_impl_context
+{
+	void* rtld_handle{};
+	char const* vers{};
+	inline void* operator()(char const* symbol) const
+	{
+		return posix_dll_load_vers_symbol_impl(rtld_handle,symbol,vers);
+	}
+};
+#endif
+
 }
 
 template<::fast_io::constructible_to_os_c_str T>
 inline void* dll_load_symbol(posix_dll_io_observer pdliob,T const& symbol)
 {
 	return ::fast_io::posix_api_common(symbol,::fast_io::details::posix_dll_load_impl_context{pdliob.rtld_handle});
+}
+
+template<::fast_io::constructible_to_os_c_str T,::fast_io::constructible_to_os_c_str T1>
+inline void* dll_load_versioned_symbol(posix_dll_io_observer pdliob,T const& symbol,[[maybe_unused]] T1 const& vers)
+{
+#if defined(__GLIBC__) && __GLIBC_PREREQ(2,0)
+	return ::fast_io::posix_api_common(vers,[&](char const* ver)
+	{
+		return ::fast_io::posix_api_common(symbol,::fast_io::details::posix_dll_load_versioned_symbol_impl_context{pdliob.rtld_handle,ver});
+	});
+#else
+	return ::fast_io::posix_api_common(symbol,::fast_io::details::posix_dll_load_impl_context{pdliob.rtld_handle});
+#endif
 }
 
 using native_dll_io_observer = posix_dll_io_observer;
