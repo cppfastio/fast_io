@@ -36,17 +36,16 @@ inline void* posix_load_l10n_common_impl(char8_t const* cstr,std::size_t n,lc_lo
 	}
 	else if(n==0)
 	{
-		char const* lc_all_env{my_u8getenv(u8"FAST_IO_LC_ALL")};
-		if(lc_all_env==nullptr)
+		constexpr std::size_t sz{3};
+		constexpr char8_t const* candidates[sz]{u8"L10N",u8"LC_ALL",u8"LANG"};
+		char const* lc_all_env{reinterpret_cast<char const*>(u8"C")};
+		for(auto i{candidates},iend{candidates+sz};i!=iend;++i)
 		{
-			lc_all_env=my_u8getenv(u8"LC_ALL");
-			if(lc_all_env==nullptr)
+			char const* ret{my_u8getenv(*i)};
+			if(ret!=nullptr&&*ret!=0)
 			{
-				lc_all_env=my_u8getenv(u8"LANG");
-				if(lc_all_env==nullptr)
-				{
-					lc_all_env=reinterpret_cast<char const*>(u8"C");
-				}
+				lc_all_env=ret;
+				break;
 			}
 		}
 		cstr=reinterpret_cast<native_char_type_may_alias_const_ptr>(lc_all_env);

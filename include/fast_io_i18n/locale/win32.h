@@ -32,7 +32,7 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		if constexpr(family==::fast_io::win32_family::ansi_9x)
 		{
 			constexpr std::size_t sz{3};
-			constexpr char8_t const* candidates[3]{u8"L10N",u8"LC_ALL",u8"LANG"};
+			constexpr char8_t const* candidates[sz]{u8"L10N",u8"LC_ALL",u8"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
 				std::size_t env_size{};
@@ -52,7 +52,7 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		else
 		{
 			constexpr std::size_t sz{3};
-			constexpr char16_t const* candidates[3]{u"L10N",u"LC_ALL",u"LANG"};
+			constexpr char16_t const* candidates[sz]{u"L10N",u"LC_ALL",u"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
 				std::size_t env_size{};
