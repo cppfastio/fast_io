@@ -190,6 +190,12 @@ inline void* dll_load_symbol(win32_family_dll_io_observer<family> pdliob,T const
 	return ::fast_io::posix_api_common(symbol,::fast_io::details::win32_dll_load_impl_context{pdliob.hmodule});
 }
 
+template<win32_family family,::fast_io::constructible_to_os_c_str T,::fast_io::constructible_to_os_c_str T1>
+inline void* dll_load_versioned_symbol(win32_family_dll_io_observer<family> pdliob,T const& symbol,[[maybe_unused]] T1 const&)
+{
+	return ::fast_io::posix_api_common(symbol,::fast_io::details::win32_dll_load_impl_context{pdliob.hmodule});
+}
+
 using win32_dll_io_observer_9xa = win32_family_dll_io_observer<win32_family::ansi_9x>;
 using win32_dll_file_9xa = win32_family_dll_file<win32_family::ansi_9x>;
 
