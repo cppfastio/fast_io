@@ -934,7 +934,7 @@ __asm__("GetACP")
 #endif
 #endif
 ;
-#if !defined(__CYGWIN__) && !defined(__WINE__)
+
 #if defined(_MSC_VER) && !defined(__clang__)
 #if _DLL
 __declspec(dllimport)
@@ -957,9 +957,7 @@ __asm__("getenv_s")
 #endif
 #endif
 ;
-#endif
 
-#if !defined(__CYGWIN__) && !defined(__WINE__)
 #if defined(_MSC_VER) && !defined(__clang__)
 #if _DLL
 __declspec(dllimport)
@@ -982,7 +980,6 @@ __asm__("_wgetenv_s")
 #endif
 #endif
 ;
-#endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
