@@ -10,7 +10,7 @@ template<std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline char_type* win32_get_locale_name_from_lcid(::std::uint_least32_t lcid,char_type* p) noexcept
+inline constexpr char_type* win32_get_locale_name_from_lcid(::std::uint_least32_t lcid,char_type* p) noexcept
 {
 #include"win32_lcid_table.h"
 }
@@ -19,7 +19,7 @@ template<std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline char_type* win32_get_locale_encoding_from_code_page(::std::uint_least32_t acp,char_type* p) noexcept
+inline constexpr char_type* win32_get_locale_encoding_from_code_page(::std::uint_least32_t acp,char_type* p) noexcept
 {
 	if constexpr(::std::same_as<char_type,char16_t>)
 	{
