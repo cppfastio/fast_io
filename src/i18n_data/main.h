@@ -28,7 +28,11 @@ export_v0(lc_locale* lc_ptr) noexcept
 #endif
 	= lc_all const*;
 	lc_all_ptr ptr;
+#if defined(FAST_IO_LOCALE_u8ENCODING)
+	if constexpr(compile_time_compare(FAST_IO_LOCALE_u8ENCODING,u8"UTF-8"))
+#else
 	if constexpr(compile_time_compare("我",u8"我"))
+#endif
 		ptr=reinterpret_cast<lc_all_ptr>(&u8lc_all_global);
 	else
 		ptr=&lc_all_global;
