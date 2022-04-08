@@ -223,35 +223,28 @@ inline constexpr std::size_t cal_decorated_reserve_size(std::size_t internal_siz
 		}
 	}
 }
-#if defined(__GNUC_EXECUTION_CHARSET_NAME)
+#if defined(__GNUC_EXECUTION_CHARSET_NAME) || defined(__GNUC_WIDE_EXECUTION_CHARSET_NAME)
 
-template<std::size_t N>
-inline constexpr bool execution_charset_is_gb18030(char const (&buffer)[N]) noexcept
+template<std::size_t N1,std::size_t N2>
+inline constexpr bool execution_charset_is(char const (&str)[N1],char8_t const (&encoding)[N2]) noexcept
 {
-	if constexpr(N==8)
+	if constexpr(N1!=N2)
 	{
-		if((buffer[0]==u8'G'||buffer[0]==u8'g')&&(buffer[1]==u8'B'||buffer[1]==u8'b')
-			&&buffer[2]==u8'1'&&buffer[3]==u8'8'&&buffer[4]==u8'0'&&buffer[5]==u8'3'&&buffer[6]==u8'0'&&buffer[7]==0)
-		{
-			return true;
-		}
+		return false;
 	}
-	else if constexpr(N==6)
+	else
 	{
-		if((buffer[0]==u8'G'||buffer[0]==u8'g')&&(buffer[1]==u8'B'||buffer[1]==u8'b')
-			&&buffer[2]==u8'2'&&buffer[3]==u8'3'&&buffer[4]==u8'1'&&buffer[5]==u8'2'&&buffer[6]==0)
+		for(std::size_t i{};i!=N1;++i)
 		{
-			return true;
+			char8_t ch{::fast_io::char_category::to_c_upper(static_cast<char8_t>(str[i]))};
+			char8_t ch1{::fast_io::char_category::to_c_upper(static_cast<char8_t>(encoding[i]))};
+			if(ch!=ch1)
+			{
+				return false;
+			}
 		}
+		return true;
 	}
-	else if constexpr(N==4)
-	{
-		if((buffer[0]==u8'G'||buffer[0]==u8'g')&&(buffer[1]==u8'B'||buffer[1]==u8'b')&&(buffer[2]==u8'K'||buffer[2]==u8'k')&&buffer[3]==0)
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 #endif
@@ -277,7 +270,25 @@ inline constexpr encoding_scheme execution_charset_encoding_scheme() noexcept
 				return encoding_scheme::utf;
 			}
 #elif defined(__GNUC_EXECUTION_CHARSET_NAME)
-			if constexpr(::fast_io::details::execution_charset_is_gb18030(__GNUC_EXECUTION_CHARSET_NAME))
+			if constexpr(::fast_io::details::execution_charset_is(__GNUC_EXECUTION_CHARSET_NAME,u8"GB18030")
+				|| ::fast_io::details::execution_charset_is(__GNUC_EXECUTION_CHARSET_NAME,u8"GBK"))
+			{
+				return encoding_scheme::gb18030;
+			}
+			else
+			{
+				return encoding_scheme::utf;
+			}
+#else
+			return encoding_scheme::utf;
+#endif
+		}
+		else if constexpr(std::same_as<char_type_no_cvref_t,wchar_t>)
+		{
+#if defined(__GNUC_WIDE_EXECUTION_CHARSET_NAME)
+			if constexpr(sizeof(wchar_t)==1&&
+				(::fast_io::details::execution_charset_is(__GNUC_WIDE_EXECUTION_CHARSET_NAME,u8"GB18030")
+				|| ::fast_io::details::execution_charset_is(__GNUC_WIDE_EXECUTION_CHARSET_NAME,u8"GBK")))
 			{
 				return encoding_scheme::gb18030;
 			}
