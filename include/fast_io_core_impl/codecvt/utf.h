@@ -223,7 +223,38 @@ inline constexpr std::size_t cal_decorated_reserve_size(std::size_t internal_siz
 		}
 	}
 }
+#if defined(__GNUC_EXECUTION_CHARSET_NAME)
 
+template<std::size_t N>
+inline constexpr bool execution_charset_is_gb18030(char const (&buffer)[N]) noexcept
+{
+	if constexpr(N==8)
+	{
+		if((buffer[0]==u8'G'||buffer[0]==u8'g')&&(buffer[1]==u8'B'||buffer[1]==u8'b')
+			&&buffer[2]==u8'1'&&buffer[3]==u8'8'&&buffer[4]==u8'0'&&buffer[5]==u8'3'&&buffer[6]==u8'0'&&buffer[7]==0)
+		{
+			return true;
+		}
+	}
+	else if constexpr(N==6)
+	{
+		if((buffer[0]==u8'G'||buffer[0]==u8'g')&&(buffer[1]==u8'B'||buffer[1]==u8'b')
+			&&buffer[2]==u8'2'&&buffer[3]==u8'3'&&buffer[4]==u8'1'&&buffer[5]==u8'2'&&buffer[6]==0)
+		{
+			return true;
+		}
+	}
+	else if constexpr(N==4)
+	{
+		if((buffer[0]==u8'G'||buffer[0]==u8'g')&&(buffer[1]==u8'B'||buffer[1]==u8'b')&&(buffer[2]==u8'K'||buffer[2]==u8'k')&&buffer[3]==0)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+#endif
 }
 
 template<std::integral char_type>
@@ -236,31 +267,32 @@ inline constexpr encoding_scheme execution_charset_encoding_scheme() noexcept
 	{
 		if constexpr(std::same_as<char_type_no_cvref_t,char>)
 		{
-#if 'A'==U'A'
-			constexpr char arr[]{"我"};
-			if constexpr(sizeof(arr)==3)
+#if defined(_MSVC_EXECUTION_CHARACTER_SET)
+			if constexpr(_MSVC_EXECUTION_CHARACTER_SET == 936 || _MSVC_EXECUTION_CHARACTER_SET == 54936)
 			{
-				if(static_cast<char8_t>(arr[0])==0xCE&&static_cast<char8_t>(arr[1])==0xD2)
-					return encoding_scheme::gb18030;
+				return encoding_scheme::gb18030;
 			}
-#endif
-			return encoding_scheme::utf;
-		}
-		else if constexpr(std::same_as<char_type_no_cvref_t,wchar_t>&&sizeof(wchar_t)==sizeof(char))
-		{
-#if U'A'==L'A'
-			constexpr wchar_t arr[]{L"我"};
-			if constexpr(sizeof(arr)==3)
+			else
 			{
-				if(static_cast<char8_t>(arr[0])==0xCE&&static_cast<char8_t>(arr[1])==0xD2)
-					return encoding_scheme::gb18030;
+				return encoding_scheme::utf;
 			}
-#endif
+#elif defined(__GNUC_EXECUTION_CHARSET_NAME)
+			if constexpr(::fast_io::details::execution_charset_is_gb18030(__GNUC_EXECUTION_CHARSET_NAME))
+			{
+				return encoding_scheme::gb18030;
+			}
+			else
+			{
+				return encoding_scheme::utf;
+			}
+#else
 			return encoding_scheme::utf;
-
+#endif
 		}
 		else
+		{
 			return encoding_scheme::utf;
+		}
 	}
 }
 
