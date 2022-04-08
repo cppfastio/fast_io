@@ -10,9 +10,121 @@ template<std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline char_type* win32_get_locale_name_from_lcid(::std::uint_least32_t lcid,char_type* p) noexcept
+inline constexpr char_type* win32_get_locale_name_from_lcid(::std::uint_least32_t lcid,char_type* p) noexcept
 {
 #include"win32_lcid_table.h"
+}
+
+template<std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr char_type* win32_get_locale_encoding_from_code_page(::std::uint_least32_t acp,char_type* p) noexcept
+{
+	if constexpr(::std::same_as<char_type,char16_t>)
+	{
+		switch(acp)
+		{
+			case 936:case 54936:
+			{
+				return copy_string_literal(u".GB18030",p);
+			}
+#if 0
+			case 1250:
+			{
+				return copy_string_literal(u".Windows-1250",p);
+			}
+			case 1251:
+			{
+				return copy_string_literal(u".Windows-1251",p);
+			}
+			case 1252:
+			{
+				return copy_string_literal(u".Windows-1252",p);
+			}
+			case 1253:
+			{
+				return copy_string_literal(u".Windows-1253",p);
+			}
+			case 1254:
+			{
+				return copy_string_literal(u".Windows-1254",p);
+			}
+			case 1255:
+			{
+				return copy_string_literal(u".Windows-1255",p);
+			}
+			case 1256:
+			{
+				return copy_string_literal(u".Windows-1256",p);
+			}
+			case 1257:
+			{
+				return copy_string_literal(u".Windows-1257",p);
+			}
+			case 1258:
+			{
+				return copy_string_literal(u".Windows-1258",p);
+			}
+#endif
+			default:
+			{
+				return copy_string_literal(u".UTF-8",p);
+			}
+		}
+	}
+	else
+	{
+		switch(acp)
+		{
+			case 936:case 54936:
+			{
+				return copy_string_literal(u8".GB18030",p);
+			}
+#if 0
+			case 1250:
+			{
+				return copy_string_literal(u8".Windows-1250",p);
+			}
+			case 1251:
+			{
+				return copy_string_literal(u8".Windows-1251",p);
+			}
+			case 1252:
+			{
+				return copy_string_literal(u8".Windows-1252",p);
+			}
+			case 1253:
+			{
+				return copy_string_literal(u8".Windows-1253",p);
+			}
+			case 1254:
+			{
+				return copy_string_literal(u8".Windows-1254",p);
+			}
+			case 1255:
+			{
+				return copy_string_literal(u8".Windows-1255",p);
+			}
+			case 1256:
+			{
+				return copy_string_literal(u8".Windows-1256",p);
+			}
+			case 1257:
+			{
+				return copy_string_literal(u8".Windows-1257",p);
+			}
+			case 1258:
+			{
+				return copy_string_literal(u8".Windows-1258",p);
+			}
+#endif
+			default:
+			{
+				return copy_string_literal(u8".UTF-8",p);
+			}
+		}
+	}
 }
 
 template<::fast_io::win32_family family>
@@ -71,7 +183,6 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 	}
 	auto const cstr_end{cstr+n};
 	auto found_dot{cstr_end};
-
 	for(auto i{cstr};i!=cstr_end;++i)
 	{
 		switch(*i)
@@ -117,12 +228,12 @@ family==::fast_io::win32_family::wide_nt
 		{
 			constexpr int locale_name_max_len{85};
 			static_assert(locale_name_max_len<size_restriction);
-			using wchar_may_alia_ptr
+			using wchar_may_alias_ptr
 #if __has_cpp_attribute(gnu::may_alias)
 			[[gnu::may_alias]]
 #endif
 			= wchar_t*;
-			int ret{::fast_io::win32::GetUserDefaultLocaleName(reinterpret_cast<wchar_may_alia_ptr>(it),locale_name_max_len)};
+			int ret{::fast_io::win32::GetUserDefaultLocaleName(reinterpret_cast<wchar_may_alias_ptr>(it),locale_name_max_len)};
 			if(ret)
 			{
 				--ret;
@@ -162,32 +273,7 @@ family==::fast_io::win32_family::wide_nt
 	}
 	if(found_dot == cstr_end)
 	{
-		switch(::fast_io::win32::GetACP())
-		{
-			case 936:case 54936:
-			{
-				if constexpr(family==::fast_io::win32_family::wide_nt)
-				{
-					it=copy_string_literal(u".GB18030",it);
-				}
-				else
-				{
-					it=copy_string_literal(u8".GB18030",it);
-				}
-				break;
-			}
-			default:
-			{
-				if constexpr(family==::fast_io::win32_family::wide_nt)
-				{
-					it=copy_string_literal(u".UTF-8",it);
-				}
-				else
-				{
-					it=copy_string_literal(u8".UTF-8",it);
-				}
-			}
-		}
+		it=win32_get_locale_encoding_from_code_page(::fast_io::win32::GetACP(),it);
 	}
 	if constexpr(family==::fast_io::win32_family::wide_nt)
 	{
