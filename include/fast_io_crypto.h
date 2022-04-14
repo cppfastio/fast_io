@@ -22,10 +22,10 @@
 
 //#include"fast_io_crypto/symmetric_crypto.h"
 //#include"fast_io_crypto/hash/intrin_include.h"
-#if 0
 #include"fast_io_crypto/hash/impl.h"
-#endif
+#if 0
 #include"fast_io_crypto/platforms/impl.h"
+#endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
