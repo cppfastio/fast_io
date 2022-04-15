@@ -96,7 +96,7 @@ public:
 	{
 		noexcept_call(EVP_MD_CTX_reset,this->pmdctx);
 	}
-	inline constexpr native_char_type native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return this->pmdctx;
 	}
