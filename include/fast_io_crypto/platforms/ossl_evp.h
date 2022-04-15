@@ -69,19 +69,21 @@ class ossl_evp_hash_file
 {
 public:
 	using native_handle_type = EVP_MD_CTX*;
-	static inline constexpr std::size_t digest_size{EVP_MAX_MD_SIZE};
+	static inline constexpr std::size_t evp_max_md_size{EVP_MAX_MD_SIZE};
 	native_handle_type pmdctx{};
 	std::size_t evp_size{};
-	::std::byte digest_buffer[digest_size]{};
+	::std::byte digest_buffer[evp_max_md_size];
+	constexpr ossl_evp_hash_file() noexcept = default;
 	template<constructible_to_os_c_str T>
 	explicit ossl_evp_hash_file(T const& s):pmdctx{::fast_io::details::create_ossl_evp_hash_impl(s)}{}
 	ossl_evp_hash_file(ossl_evp_hash_file const&)=delete;
 	ossl_evp_hash_file& operator=(ossl_evp_hash_file const&)=delete;
 	~ossl_evp_hash_file()
 	{
-		noexcept_call(EVP_MD_CTX_free,this->pmdctx);
-		secure_clear(__builtin_addressof(evp_size),sizeof(std::size_t));
-		secure_clear(digest_buffer,digest_size);
+		if(this->pmdctx)
+		{
+			noexcept_call(EVP_MD_CTX_free,this->pmdctx);
+		}
 	}
 	void update(std::byte const* first,std::byte const* last)
 	{
@@ -94,6 +96,10 @@ public:
 	{
 		noexcept_call(EVP_MD_CTX_reset,this->pmdctx);
 	}
+	inline constexpr native_char_type native_handle() const noexcept
+	{
+		return this->pmdctx;
+	}
 	void do_final()
 	{
 		int unsigned u{};
@@ -103,9 +109,13 @@ public:
 		}
 		evp_size=static_cast<std::size_t>(u);
 	}
-	constexpr std::byte* digest_to_byte_ptr(std::byte* __restrict dest) const noexcept
+	constexpr std::size_t runtime_digest_size() const noexcept
 	{
-		return ::fast_io::freestanding::nonoverlapped_bytes_copy_n(digest_buffer,evp_size,dest);
+		return evp_size;
+	}
+	constexpr std::byte const* digest_byte_ptr() const noexcept
+	{
+		return digest_buffer;
 	}
 };
 
