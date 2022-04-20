@@ -74,10 +74,11 @@ inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_v
 }
 
 template<::std::ranges::contiguous_range rg>
-requires ::std::integral<::std::ranges::range_value_t<rg>>
-inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_value_t<rg>>> os_c_str(rg&& r) noexcept
+requires (::std::integral<::std::ranges::range_value_t<rg>>)
+inline constexpr basic_os_c_str_n<::std::remove_cvref_t<::std::ranges::range_value_t<rg>>> os_c_str(rg&& r) noexcept
 {
-	return ::fast_io::mnp::os_c_str(::std::ranges::data(r),::std::ranges::size(r));
+	auto p{::std::ranges::data(r)};
+	return {p,::fast_io::cstr_nlen(p,::std::ranges::size(r))};
 }
 #endif
 
