@@ -46,11 +46,7 @@ class posix_dll_io_observer
 public:
 	using native_handle_type = void*;
 	native_handle_type rtld_handle{};
-	inline constexpr native_handle_type& native_handle() noexcept
-	{
-		return rtld_handle;
-	}
-	inline constexpr native_handle_type const& native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return rtld_handle;
 	}
