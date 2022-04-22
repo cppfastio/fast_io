@@ -60,12 +60,14 @@ using CloseFunc = int(File *) noexcept;
 using FlushFunc = int(File *) noexcept;
 
 using ModeFlags = ::std::uint_least32_t;
-enum class FileOp : uint8_t { NONE, READ, WRITE, SEEK };
+enum class FileOp : ::std::uint_least8_t { NONE, READ, WRITE, SEEK };
 WriteFunc *platform_write;
 ReadFunc *platform_read;
 SeekFunc *platform_seek;
 CloseFunc *platform_close;
 FlushFunc *platform_flush;
+
+Mutex mutex;
 
 void *buf;      // Pointer to the stream buffer for buffered streams
 size_t bufsize; // Size of the buffer pointed to by |buf|.
