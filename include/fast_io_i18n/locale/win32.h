@@ -141,24 +141,25 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 	}
 	else if(n==0)
 	{
+		constexpr std::uint_least32_t encoding_size_restriction_ul32{msys2_encoding_size_restriction};
 		if constexpr(family==::fast_io::win32_family::ansi_9x)
 		{
 			constexpr std::size_t sz{3};
 			constexpr char8_t const* candidates[sz]{u8"L10N",u8"LC_ALL",u8"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
-				std::size_t env_size{};
-				if(!::fast_io::win32::getenv_s(__builtin_addressof(env_size),reinterpret_cast<char*>(msys2_encoding),
-						msys2_encoding_size_restriction,reinterpret_cast<char const*>(*i)))
+				::std::uint_least32_t env_size{::fast_io::win32::GetEnvironmentVariableA(reinterpret_cast<char const*>(*i),reinterpret_cast<char*>(msys2_encoding),msys2_encoding_size_restriction)};
+				if(env_size<2u)
 				{
-					if(env_size<2u)
-						continue;
-					n=cstr_nlen(msys2_encoding,env_size);
-					if(n==0)
-						continue;
-					cstr=msys2_encoding;
-					break;
+					continue;
 				}
+				else if(env_size>=encoding_size_restriction_ul32)
+				{
+					throw_win32_error(0x00000057);
+				}
+				cstr=msys2_encoding;
+				n=static_cast<std::size_t>(env_size);
+				break;
 			}
 		}
 		else
@@ -167,17 +168,18 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 			constexpr char16_t const* candidates[sz]{u"L10N",u"LC_ALL",u"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
-				std::size_t env_size{};
-				if(!::fast_io::win32::_wgetenv_s(__builtin_addressof(env_size),msys2_encoding,msys2_encoding_size_restriction,*i))
+				::std::uint_least32_t env_size{::fast_io::win32::GetEnvironmentVariableW(*i,msys2_encoding,msys2_encoding_size_restriction)};
+				if(env_size<2u)
 				{
-					if(env_size<2u)
-						continue;
-					n=cstr_nlen(msys2_encoding,env_size);
-					if(n==0)
-						continue;
-					cstr=msys2_encoding;
-					break;
+					continue;
 				}
+				else if(env_size>=encoding_size_restriction_ul32)
+				{
+					throw_win32_error(0x00000057);
+				}
+				cstr=msys2_encoding;
+				n=static_cast<std::size_t>(env_size);
+				break;
 			}
 		}
 	}

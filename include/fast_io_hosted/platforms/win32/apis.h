@@ -5,8 +5,8 @@ namespace fast_io::win32
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall GetLastError() noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -24,8 +24,8 @@ __asm__("GetLastError")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall LoadLibraryA(char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -43,8 +43,8 @@ __asm__("LoadLibraryA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void * __stdcall LoadLibraryW(wchar_t const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -62,8 +62,8 @@ __asm__("LoadLibraryW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall LoadLibraryExA(char const*,void*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -81,8 +81,8 @@ __asm__("LoadLibraryExA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void * __stdcall LoadLibraryExW(wchar_t const*,void*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -101,8 +101,8 @@ __asm__("LoadLibraryExW")
 // Used to retrieve a locale-specific message string for some error code
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall FormatMessageA(std::uint32_t, char const*, std::uint32_t,std::uint32_t, char*, std::uint32_t, void /*va_list*/ *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -120,8 +120,8 @@ __asm__("FormatMessageA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall FormatMessageW(std::uint32_t, wchar_t const*, std::uint32_t,std::uint32_t, wchar_t*, std::uint32_t, void /*va_list*/ *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -139,8 +139,8 @@ __asm__("FormatMessageW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall CreateFileMappingA(void*,security_attributes*,std::uint32_t,std::uint32_t,std::uint32_t,char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -158,8 +158,8 @@ __asm__("CreateFileMappingA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall CreateFileMappingW(void*,security_attributes*,std::uint32_t,std::uint32_t,std::uint32_t,wchar_t const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -177,8 +177,8 @@ __asm__("CreateFileMappingW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall MapViewOfFile(void*,std::uint32_t,std::uint32_t,std::uint32_t,std::size_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -196,8 +196,8 @@ __asm__("MapViewOfFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall SetEndOfFile(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -215,8 +215,8 @@ __asm__("SetEndOfFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall UnmapViewOfFile(void const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -234,8 +234,8 @@ __asm__("UnmapViewOfFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WriteFile(void*,void const*,std::uint32_t,std::uint32_t*,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -253,8 +253,8 @@ __asm__("WriteFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall ReadFile(void*,void const*,std::uint32_t,std::uint32_t*,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -272,8 +272,8 @@ __asm__("ReadFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint_least32_t __stdcall SetFilePointer(void*,std::int_least32_t,std::int_least32_t*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -291,8 +291,8 @@ __asm__("SetFilePointer")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall SetFilePointerEx(void*,std::int64_t,std::int64_t*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -310,8 +310,8 @@ __asm__("SetFilePointerEx")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall DuplicateHandle(void*,void*,void*,void**,std::uint32_t,int,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -329,8 +329,8 @@ __asm__("DuplicateHandle")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall GetStdHandle(std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -348,8 +348,8 @@ __asm__("GetStdHandle")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall CreatePipe(void**,void**,security_attributes*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -367,8 +367,8 @@ __asm__("CreatePipe")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall FreeLibrary(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -388,8 +388,8 @@ using farproc = intptr_t(__stdcall*)() noexcept;
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern farproc __stdcall GetProcAddress(void*,char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -407,8 +407,8 @@ __asm__("GetProcAddress")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall GetModuleHandleA(char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -426,8 +426,8 @@ __asm__("GetModuleHandleA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall GetModuleHandleW(wchar_t const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -445,8 +445,8 @@ __asm__("GetModuleHandleW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall WaitForSingleObject(void*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -464,8 +464,8 @@ __asm__("WaitForSingleObject")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall CancelIo(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -483,8 +483,8 @@ __asm__("CancelIo")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetFileInformationByHandle(void* __restrict,by_handle_file_information* __restrict) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -502,8 +502,8 @@ __asm__("GetFileInformationByHandle")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetUserDefaultLocaleName(wchar_t*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -521,8 +521,8 @@ __asm__("GetUserDefaultLocaleName")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall GetUserDefaultLCID(void) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -540,8 +540,8 @@ __asm__("GetUserDefaultLCID")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall GetSystemTimePreciseAsFileTime(filetime*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -559,8 +559,8 @@ __asm__("GetSystemTimePreciseAsFileTime")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall GetSystemTimeAsFileTime(filetime*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -578,8 +578,8 @@ __asm__("GetSystemTimeAsFileTime")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall QueryUnbiasedInterruptTime(std::uint64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -597,8 +597,8 @@ __asm__("QueryUnbiasedInterruptTime")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall QueryPerformanceCounter(std::int64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -616,8 +616,8 @@ __asm__("QueryPerformanceCounter")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall QueryPerformanceFrequency(std::int64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -636,8 +636,8 @@ __asm__("QueryPerformanceFrequency")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetProcessTimes(void*,filetime*,filetime*,filetime*,filetime*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -655,8 +655,8 @@ __asm__("GetProcessTimes")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetThreadTimes(void*,filetime*,filetime*,filetime*,filetime*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -674,8 +674,8 @@ __asm__("GetThreadTimes")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetHandleInformation(void*,std::uint32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -692,8 +692,8 @@ __asm__("GetHandleInformation")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall SetHandleInformation(void*,std::uint32_t,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -711,8 +711,8 @@ __asm__("SetHandleInformation")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall GetTempPathA(std::uint32_t,char* buffer) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -730,8 +730,8 @@ __asm__("GetTempPathA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall GetTempPathW(std::uint32_t,wchar_t* buffer) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -749,8 +749,8 @@ __asm__("GetTempPathW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall CreateFileA(char const*,std::uint32_t,std::uint32_t,security_attributes*,std::uint32_t,std::uint32_t,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -768,8 +768,8 @@ __asm__("CreateFileA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall CreateFileW(wchar_t const*,std::uint32_t,std::uint32_t,security_attributes*,std::uint32_t,std::uint32_t,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -787,8 +787,8 @@ __asm__("CreateFileW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void* __stdcall CreateIoCompletionPort(void*,void*,std::uintptr_t,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -805,8 +805,8 @@ __asm__("CreateIoCompletionPort")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall SystemFunction036(void*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -823,8 +823,8 @@ __asm__("SystemFunction036")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall CloseHandle(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -841,8 +841,8 @@ __asm__("CloseHandle")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall LockFileEx(void*,std::uint32_t,std::uint32_t,std::uint32_t,std::uint32_t,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -860,8 +860,8 @@ __asm__("LockFileEx")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall UnlockFileEx(void*,std::uint32_t,std::uint32_t,std::uint32_t,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -879,8 +879,8 @@ __asm__("UnlockFileEx")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall DeviceIoControl(void*,std::uint32_t,void*,std::uint32_t,void*,std::uint32_t,void*,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -898,8 +898,8 @@ __asm__("DeviceIoControl")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall GetFileType(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -918,8 +918,8 @@ __asm__("GetFileType")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall GetACP() noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -936,55 +936,47 @@ __asm__("GetACP")
 ;
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#if _DLL
 __declspec(dllimport)
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
-#elif __has_cpp_attribute(gnu::dllimport)
-#if !defined(_MSC_VER) || defined(_DLL)
-[[gnu::dllimport]]
-#endif
-#endif
-extern int __cdecl getenv_s(std::size_t *,char* buffer,std::size_t ,char const *) noexcept
+extern ::std::uint_least32_t __stdcall GetEnvironmentVariableA(char const*,char*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
-__asm__("getenv_s")
+__asm__("GetEnvironmentVariableA@12")
 #else
-__asm__("_getenv_s")
-#endif
-#else
-__asm__("getenv_s")
-#endif
-#endif
-;
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#if _DLL
-__declspec(dllimport)
-#endif
-#elif __has_cpp_attribute(gnu::dllimport)
-#if !defined(_MSC_VER) || defined(_DLL)
-[[gnu::dllimport]]
-#endif
-#endif
-extern int __cdecl _wgetenv_s(std::size_t*,char16_t* buffer,std::size_t,char16_t const *) noexcept
-#if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if !defined(__clang__)
-__asm__("_wgetenv_s")
-#else
-__asm__("__wgetenv_s")
+__asm__("_GetEnvironmentVariableA@12")
 #endif
 #else
-__asm__("_wgetenv_s")
+__asm__("GetEnvironmentVariableA")
 #endif
 #endif
 ;
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
+#endif
+extern ::std::uint_least32_t __stdcall GetEnvironmentVariableW(char16_t const*,char16_t*,::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("GetEnvironmentVariableW@12")
+#else
+__asm__("_GetEnvironmentVariableW@12")
+#endif
+#else
+__asm__("GetEnvironmentVariableW")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall MessageBoxA(void*,char const*,char const*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1002,8 +994,8 @@ __asm__("MessageBoxA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall MessageBoxW(void*,wchar_t const*,wchar_t const*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1021,8 +1013,8 @@ __asm__("MessageBoxW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetConsoleMode(void *, std::uint32_t *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1040,8 +1032,8 @@ __asm__("GetConsoleMode")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall SetConsoleMode(void *, std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1059,8 +1051,8 @@ __asm__("SetConsoleMode")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall ReadConsoleA(void*,void*,std::uint32_t,std::uint32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1078,8 +1070,8 @@ __asm__("ReadConsoleA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall ReadConsoleW(void*,void*,std::uint32_t,std::uint32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1097,8 +1089,8 @@ __asm__("ReadConsoleW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WriteConsoleA(void*,void const*,std::uint32_t,std::uint32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1116,8 +1108,8 @@ __asm__("WriteConsoleA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WriteConsoleW(void*,void const*,std::uint32_t,std::uint32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1135,8 +1127,8 @@ __asm__("WriteConsoleW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetConsoleScreenBufferInfo(void *, console_screen_buffer_info *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1154,8 +1146,8 @@ __asm__("GetConsoleScreenBufferInfo")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall ScrollConsoleScreenBufferA(void *, small_rect const *, small_rect const *, coord, char_info const *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1173,8 +1165,8 @@ __asm__("ScrollConsoleScreenBufferA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall ScrollConsoleScreenBufferW(void *, small_rect const *, small_rect const *, coord, char_info const *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1192,8 +1184,8 @@ __asm__("ScrollConsoleScreenBufferW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall SetConsoleCursorPosition(void *, coord) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1212,8 +1204,8 @@ __asm__("SetConsoleCursorPosition")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall InitializeCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1231,8 +1223,8 @@ __asm__("InitializeCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall EnterCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1250,8 +1242,8 @@ __asm__("EnterCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall TryEnterCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1269,8 +1261,8 @@ __asm__("TryEnterCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall LeaveCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1288,8 +1280,8 @@ __asm__("LeaveCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall DeleteCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1307,8 +1299,8 @@ __asm__("DeleteCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSADuplicateSocketA(void*,std::uint32_t,wsaprotocol_infoa*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1326,8 +1318,8 @@ __asm__("WSADuplicateSocketA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall WSADuplicateSocketW(void*,std::uint32_t,wsaprotocol_infow*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1345,8 +1337,8 @@ __asm__("WSADuplicateSocketW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSACleanup() noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1364,8 +1356,8 @@ __asm__("WSACleanup")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSAStartup(std::uint32_t,wsadata*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1383,8 +1375,8 @@ __asm__("WSAStartup")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSAGetLastError() noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1402,8 +1394,8 @@ __asm__("WSAGetLastError")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall closesocket(std::uintptr_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1421,8 +1413,8 @@ __asm__("closesocket")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uintptr_t __stdcall WSASocketW(int,int,int,wsaprotocol_infow*,std::uint32_t,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1440,8 +1432,8 @@ __asm__("WSASocketW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uintptr_t __stdcall WSASocketA(int,int,int,wsaprotocol_infoa*,std::uint32_t,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1459,8 +1451,8 @@ __asm__("WSASocketA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall bind(std::uintptr_t,void const*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1478,8 +1470,8 @@ __asm__("bind")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall listen(std::uintptr_t,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1497,8 +1489,8 @@ __asm__("listen")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uintptr_t __stdcall WSAAccept(std::uintptr_t,void const*,int*,lpconditionproc,std::uintptr_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1516,8 +1508,8 @@ __asm__("WSAAccept")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall ioctlsocket(std::uintptr_t,long,std::uint32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1536,8 +1528,8 @@ __asm__("ioctlsocket")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSASend(std::uintptr_t,wsabuf*,std::uint32_t,std::uint32_t*,std::uint32_t,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1555,8 +1547,8 @@ __asm__("WSASend")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSASendMsg(std::uintptr_t,wsamsg*,std::uint32_t,std::uint32_t*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1575,8 +1567,8 @@ __asm__("WSASendMsg")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSASendTo(std::uintptr_t,wsabuf*,std::uint32_t,std::uint32_t*,std::uint32_t,void const*,int,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1594,8 +1586,8 @@ __asm__("WSASendTo")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall recv(std::uintptr_t,char* buf,int len,int flags) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1613,8 +1605,8 @@ __asm__("recv")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSARecv(std::uintptr_t,wsabuf*,std::uint32_t,std::uint32_t*,std::uint32_t*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1632,8 +1624,8 @@ __asm__("WSARecv")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSARecvFrom(std::uintptr_t,wsabuf*,std::uint32_t,std::uint32_t*,std::uint32_t*,void const*,int*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1651,8 +1643,8 @@ __asm__("WSARecvFrom")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall connect(std::uintptr_t,void const*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1670,8 +1662,8 @@ __asm__("connect")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall WSAConnect(std::uintptr_t,void const*,int,wsabuf*,wsabuf*,qualityofservice*,qualityofservice*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1689,8 +1681,8 @@ __asm__("WSAConnect")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall shutdown(std::uintptr_t,void const*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1708,8 +1700,8 @@ __asm__("shutdown")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern std::uint32_t __stdcall GetCurrentProcessId() noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1727,8 +1719,8 @@ __asm__("GetCurrentProcessId")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall FlushFileBuffers(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1746,8 +1738,8 @@ __asm__("FlushFileBuffers")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetQueuedCompletionStatus(void*,std::uint32_t*,std::uintptr_t*,overlapped*,std::uint32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1765,8 +1757,8 @@ __asm__("GetQueuedCompletionStatus")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall freeaddrinfo(win32_addrinfo_9xa*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1784,8 +1776,8 @@ __asm__("freeaddrinfo")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void __stdcall FreeAddrInfoW(win32_addrinfo_ntw*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1803,8 +1795,8 @@ __asm__("FreeAddrInfoW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall getaddrinfo(char const*,char const*,win32_addrinfo_9xa const*,win32_addrinfo_9xa**) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1822,8 +1814,8 @@ __asm__("getaddrinfo")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall GetAddrInfoW(wchar_t const*,wchar_t const*,win32_addrinfo_ntw const*,win32_addrinfo_ntw**) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1841,8 +1833,8 @@ __asm__("GetAddrInfoW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall CryptAcquireContextA(::std::uintptr_t*,char8_t const*,char8_t const*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1860,8 +1852,8 @@ __asm__("CryptAcquireContextA")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall CryptAcquireContextW(::std::uintptr_t*,char16_t const*,char16_t const*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1879,8 +1871,8 @@ __asm__("CryptAcquireContextW")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall CryptReleaseContext(::std::uintptr_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -1898,8 +1890,8 @@ __asm__("CryptReleaseContext")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int __stdcall CryptGenRandom(::std::uintptr_t,::std::uint_least32_t,char unsigned*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
