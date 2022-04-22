@@ -1023,7 +1023,9 @@ using c_file_factory_unlocked = c_family_file_factory<c_family::native_unlocked>
 #include"avrlibc.h"
 #include"macros_general.h"
 #else
-#if defined(__UCLIBC__)
+#if defined(__LLVM_LIBC_TYPES_FILE_H__)
+#include"llvm.h"
+#elif defined(__UCLIBC__)
 #if defined(__STDIO_BUFFERS)
 #include"uclibc.h"
 #elif defined(FAST_IO_LIBC_CUSTOM_BUFFER_PTRS)
