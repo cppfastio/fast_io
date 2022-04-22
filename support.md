@@ -121,6 +121,8 @@ On Windows 95 or 95 Plus! you can enable `-O3` but not `-Ofast`. You'll also nee
 - mlibc (this is a new libc which still contains a lot of bugs currently)
 - avrlibc
 - picolibc
+- SerenityOS libc (untested)
+- LLVM libc (untested)
 
 ## Supported C++ standard library `std::streambuf`/`std::filebuf` hacks platforms
 - GCC libstdc++
