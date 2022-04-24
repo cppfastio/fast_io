@@ -67,8 +67,8 @@ struct ucrt_stdio_stream_data
 */
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 ucrt_iobuf
 {
@@ -437,8 +437,8 @@ inline bool wincrt_fp_underflow_impl(FILE* __restrict fpp)
 }
 
 template<typename T,std::size_t num>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline T* wincrt_get_buffer_ptr_impl(FILE* __restrict fpp) noexcept
 {
@@ -459,8 +459,8 @@ inline T* wincrt_get_buffer_ptr_impl(FILE* __restrict fpp) noexcept
 
 template<typename T>
 inline void wincrt_set_buffer_curr_ptr_impl(FILE* __restrict fpp,
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 T* ptr) noexcept
 {
@@ -476,8 +476,8 @@ T* ptr) noexcept
 }
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* ibuffer_begin(basic_c_io_observer_unlocked<char_type> ciob) noexcept
 {
@@ -485,8 +485,8 @@ inline char_type* ibuffer_begin(basic_c_io_observer_unlocked<char_type> ciob) no
 }
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* ibuffer_curr(basic_c_io_observer_unlocked<char_type> ciob) noexcept
 {
@@ -494,8 +494,8 @@ inline char_type* ibuffer_curr(basic_c_io_observer_unlocked<char_type> ciob) noe
 }
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* ibuffer_end(basic_c_io_observer_unlocked<char_type> ciob) noexcept
 {
@@ -516,8 +516,8 @@ inline bool ibuffer_underflow(basic_c_io_observer_unlocked<char_type> ciob)
 
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_begin(basic_c_io_observer_unlocked<char_type> ciob) noexcept
 {
@@ -525,8 +525,8 @@ inline char_type* obuffer_begin(basic_c_io_observer_unlocked<char_type> ciob) no
 }
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_curr(basic_c_io_observer_unlocked<char_type> ciob) noexcept
 {
@@ -534,8 +534,8 @@ inline char_type* obuffer_curr(basic_c_io_observer_unlocked<char_type> ciob) noe
 }
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_end(basic_c_io_observer_unlocked<char_type> ciob) noexcept
 {

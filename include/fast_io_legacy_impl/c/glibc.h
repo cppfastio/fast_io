@@ -59,17 +59,17 @@ inline void obuffer_overflow(c_io_observer_unlocked cio,char ch)
 }
 
 
-[[gnu::may_alias]] inline char8_t* ibuffer_begin(u8c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char8_t* ibuffer_begin(u8c_io_observer_unlocked cio) noexcept
 {
 	return bit_cast<char8_t*>(cio.fp->_IO_read_base);
 }
 
-[[gnu::may_alias]] inline char8_t* ibuffer_curr(u8c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char8_t* ibuffer_curr(u8c_io_observer_unlocked cio) noexcept
 {
 	return bit_cast<char8_t*>(cio.fp->_IO_read_ptr);
 }
 
-[[gnu::may_alias]] inline char8_t* ibuffer_end(u8c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char8_t* ibuffer_end(u8c_io_observer_unlocked cio) noexcept
 {
 	return bit_cast<char8_t*>(cio.fp->_IO_read_end);
 }
@@ -85,22 +85,22 @@ inline bool ibuffer_underflow(u8c_io_observer_unlocked cio) noexcept
 	return glibc_underflow(cio.fp)!=EOF;
 }
 
-[[gnu::may_alias]] inline char8_t* obuffer_begin(u8c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char8_t* obuffer_begin(u8c_io_observer_unlocked cio) noexcept
 {
 	return bit_cast<char8_t*>(cio.fp->_IO_write_base);
 }
 
-[[gnu::may_alias]] inline char8_t* obuffer_curr(u8c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char8_t* obuffer_curr(u8c_io_observer_unlocked cio) noexcept
 {
 	return bit_cast<char8_t*>(cio.fp->_IO_write_ptr);
 }
 
-[[gnu::may_alias]] inline char8_t* obuffer_end(u8c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char8_t* obuffer_end(u8c_io_observer_unlocked cio) noexcept
 {
 	return bit_cast<char8_t*>(cio.fp->_IO_write_end);
 }
 
-inline void obuffer_set_curr(u8c_io_observer_unlocked cio,[[gnu::may_alias]] char8_t* ptr) noexcept
+inline void obuffer_set_curr(u8c_io_observer_unlocked cio,[[__gnu__::__may_alias__]] char8_t* ptr) noexcept
 {
 	cio.fp->_IO_write_ptr=bit_cast<char*>(ptr);
 }
@@ -208,22 +208,22 @@ inline void obuffer_overflow(wc_io_observer_unlocked cio,wchar_t ch)
 }
 
 
-[[gnu::may_alias]] inline char32_t* ibuffer_begin(u32c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char32_t* ibuffer_begin(u32c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_wide_hack::hack_wp<2,char32_t>(cio.fp);
 }
 
-[[gnu::may_alias]] inline char32_t* ibuffer_curr(u32c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char32_t* ibuffer_curr(u32c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_wide_hack::hack_wp<0,char32_t>(cio.fp);
 }
 
-[[gnu::may_alias]] inline char32_t* ibuffer_end(u32c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char32_t* ibuffer_end(u32c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_wide_hack::hack_wp<1,char32_t>(cio.fp);
 }
 
-inline void ibuffer_set_curr(u32c_io_observer_unlocked cio,[[gnu::may_alias]] char32_t* ptr) noexcept
+inline void ibuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alias__]] char32_t* ptr) noexcept
 {
 	details::fp_wide_hack::hack_wpset<0,char32_t>(cio.fp,ptr);
 }
@@ -234,22 +234,22 @@ inline bool ibuffer_underflow(u32c_io_observer_unlocked cio) noexcept
 	return details::glibc_wunderflow(cio.fp)!=static_cast<std::uint32_t>(0xffffffffu);
 }
 
-[[gnu::may_alias]] inline char32_t* obuffer_begin(u32c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char32_t* obuffer_begin(u32c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_wide_hack::hack_wp<3,char32_t>(cio.fp);
 }
 
-[[gnu::may_alias]] inline char32_t* obuffer_curr(u32c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char32_t* obuffer_curr(u32c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_wide_hack::hack_wp<4,char32_t>(cio.fp);
 }
 
-[[gnu::may_alias]] inline char32_t* obuffer_end(u32c_io_observer_unlocked cio) noexcept
+[[__gnu__::__may_alias__]] inline char32_t* obuffer_end(u32c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_wide_hack::hack_wp<5,char32_t>(cio.fp);
 }
 
-inline void obuffer_set_curr(u32c_io_observer_unlocked cio,[[gnu::may_alias]] char32_t* ptr) noexcept
+inline void obuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alias__]] char32_t* ptr) noexcept
 {
 	details::fp_wide_hack::hack_wpset<4,char32_t>(cio.fp,ptr);
 }

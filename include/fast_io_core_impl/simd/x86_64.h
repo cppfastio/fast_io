@@ -10,8 +10,8 @@ namespace fast_io
 
 namespace intrinsics
 {
-using x86_64_m128 [[gnu::__vector_size__(16),gnu::may_alias]] = float ;
-using x86_64_m128i [[gnu::__vector_size__ (16),gnu::may_alias]] = long long;
+using x86_64_m128 [[gnu::__vector_size__(16),__gnu__::__may_alias__]] = float ;
+using x86_64_m128i [[gnu::__vector_size__ (16),__gnu__::__may_alias__]] = long long;
 using x86_64_v16qi [[gnu::__vector_size__ (16)]] = char;
 using x86_64_v16qs [[gnu::__vector_size__ (16)]] = char signed;
 using x86_64_v16qu [[gnu::__vector_size__ (16)]] = char unsigned;
@@ -20,16 +20,16 @@ using x86_64_v8hu [[gnu::__vector_size__ (16)]] = short unsigned;
 using x86_64_v4si [[gnu::__vector_size__ (16)]] = int;
 using x86_64_v4su [[gnu::__vector_size__ (16)]] = int unsigned;
 
-using x86_64_m256 [[gnu::__vector_size__(32),gnu::may_alias]]  = float;
-using x86_64_m256i [[gnu::__vector_size__ (32),gnu::may_alias]] = long long;
-using x86_64_m512 [[gnu::__vector_size__(64),gnu::may_alias]]  = float ;
-using x86_64_m512i [[gnu::__vector_size__ (64),gnu::may_alias]] = long long;
-using x86_64_m1024 [[gnu::__vector_size__(128),gnu::may_alias]]  = float ;
-using x86_64_m1024i [[gnu::__vector_size__ (128),gnu::may_alias]] = long long;
-using x86_64_m2048 [[gnu::__vector_size__(256),gnu::may_alias]]  = float ;
-using x86_64_m2048i [[gnu::__vector_size__ (256),gnu::may_alias]] = long long;
-using x86_64_m4096 [[gnu::__vector_size__(512),gnu::may_alias]]  = float ;
-using x86_64_m4096i [[gnu::__vector_size__ (512),gnu::may_alias]] = long long;
+using x86_64_m256 [[gnu::__vector_size__(32),__gnu__::__may_alias__]]  = float;
+using x86_64_m256i [[gnu::__vector_size__ (32),__gnu__::__may_alias__]] = long long;
+using x86_64_m512 [[gnu::__vector_size__(64),__gnu__::__may_alias__]]  = float ;
+using x86_64_m512i [[gnu::__vector_size__ (64),__gnu__::__may_alias__]] = long long;
+using x86_64_m1024 [[gnu::__vector_size__(128),__gnu__::__may_alias__]]  = float ;
+using x86_64_m1024i [[gnu::__vector_size__ (128),__gnu__::__may_alias__]] = long long;
+using x86_64_m2048 [[gnu::__vector_size__(256),__gnu__::__may_alias__]]  = float ;
+using x86_64_m2048i [[gnu::__vector_size__ (256),__gnu__::__may_alias__]] = long long;
+using x86_64_m4096 [[gnu::__vector_size__(512),__gnu__::__may_alias__]]  = float ;
+using x86_64_m4096i [[gnu::__vector_size__ (512),__gnu__::__may_alias__]] = long long;
 
 
 inline constexpr bool simd_shuffle_size_is_supported(std::size_t n) noexcept

@@ -34,8 +34,8 @@ inline constexpr std::size_t llvm_raw_ostream_cal_obuffer_ptr_position() noexcep
 
 template<std::size_t position,std::integral char_type>
 requires (position<3u)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* llvm_raw_ostream_obuffer_ptr(::llvm::raw_ostream* os) noexcept
 {

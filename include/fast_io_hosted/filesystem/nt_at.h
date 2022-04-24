@@ -144,8 +144,8 @@ inline void nt_linkat_impl(
 
 		io_status_block block;
 		using file_link_information_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-		[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
 #endif
 		= file_link_information*;
 		std::uint32_t status{nt_set_information_file<zw>(

@@ -14,8 +14,8 @@ namespace fast_io::details::string_hack
 
 template<class _CharT, class _Traits, class _Allocator>
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 model
 {
@@ -118,8 +118,8 @@ inline decltype(auto) hack_rep(std::basic_string<elem,traits,alloc>& str) noexce
 	using model_t = model<elem,traits,alloc>;
 	using __rep = typename model_t::__rep;
     using alias_pointer
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
     = typename ::std::__compressed_pair<__rep, alloc>*;
 	return reinterpret_cast<alias_pointer>(reinterpret_cast<std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,__r_))->first();

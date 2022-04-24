@@ -86,8 +86,8 @@ inline constexpr void flush(basic_general_raw_ostream_io_observer<char_type,T> o
 }
 
 template<std::integral char_type,typename T>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_begin(basic_general_raw_ostream_io_observer<char_type,T> osiob) noexcept
 {
@@ -95,8 +95,8 @@ inline char_type* obuffer_begin(basic_general_raw_ostream_io_observer<char_type,
 }
 
 template<std::integral char_type,typename T>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_curr(basic_general_raw_ostream_io_observer<char_type,T> osiob) noexcept
 {
@@ -104,8 +104,8 @@ inline char_type* obuffer_curr(basic_general_raw_ostream_io_observer<char_type,T
 }
 
 template<std::integral char_type,typename T>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_end(basic_general_raw_ostream_io_observer<char_type,T> osiob) noexcept
 {
@@ -114,8 +114,8 @@ inline char_type* obuffer_end(basic_general_raw_ostream_io_observer<char_type,T>
 
 template<std::integral char_type,typename T>
 inline void obuffer_set_curr(basic_general_raw_ostream_io_observer<char_type,T> osiob,
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 char_type* ptr) noexcept
 {

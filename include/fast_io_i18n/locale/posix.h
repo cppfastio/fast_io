@@ -25,8 +25,8 @@ inline void* posix_load_l10n_common_impl(char8_t const* cstr,std::size_t n,lc_lo
 	constexpr std::size_t encoding_size_restriction{128u};
 	using native_char_type = char8_t;
 	using native_char_type_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= native_char_type const*;
 	constexpr std::size_t msys2_encoding_size_restriction{size_restriction>>2};
@@ -136,8 +136,8 @@ inline void* posix_load_l10n_impl(path_type const& p,lc_locale& loc)
 	{
 		using native_char_type = char8_t;
 		using native_char_type_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-		[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
 #endif
 		= native_char_type const*;
 		return posix_load_l10n_common_impl(reinterpret_cast<native_char_type_may_alias_const_ptr>(cstr_ptr),n,loc);

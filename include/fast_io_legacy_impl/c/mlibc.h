@@ -108,24 +108,24 @@ inline void obuffer_overflow(c_io_observer_unlocked ciob,char ch)
 	details::mlibc_hack::hack_overflow_impl(ciob.fp,static_cast<char unsigned>(ch));
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(details::mlibc_hack::hack_obuffer_begin_impl(ciob.fp));
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(details::mlibc_hack::hack_obuffer_curr_impl(ciob.fp));
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_end(u8c_io_observer_unlocked ciob) noexcept
 {
@@ -169,22 +169,22 @@ inline bool ibuffer_underflow(c_io_observer_unlocked ciob)
 	return details::mlibc_hack::hack_underflow_impl(ciob.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(details::mlibc_hack::hack_ibuffer_begin_impl(ciob.fp));
 }
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(details::mlibc_hack::hack_ibuffer_curr_impl(ciob.fp));
 }
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_end(u8c_io_observer_unlocked ciob) noexcept
 {

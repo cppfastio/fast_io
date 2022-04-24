@@ -38,8 +38,8 @@ struct nt_api_encoding_converter
 		return buffer_data;
 	}
 #if defined(_WIN32) || defined(__CYGWIN__)
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	inline wchar_t const* native_c_str() const noexcept
 	{
