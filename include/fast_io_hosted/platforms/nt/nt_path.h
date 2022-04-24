@@ -33,15 +33,15 @@ template<std::integral char_type,typename func>
 inline auto nt_call_invoke_with_directory_handle_impl(void* directory,char_type const* filename,std::size_t filename_len,func callback)
 {
 	using wchar_t_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= wchar_t const*;
 	if constexpr(std::same_as<char_type,wchar_t>)
 	{
 		using wchar_t_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-		[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
 #endif
 		= wchar_t*;
 		std::uint16_t const bytes(nt_filename_bytes(filename_len));
@@ -76,8 +76,8 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const* filena
 	else
 	{
 		using wchar_t_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-		[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
 #endif
 		= wchar_t const*;
 		return nt_call_invoke_without_directory_handle_impl(reinterpret_cast<wchar_t_may_alias_const_ptr>(filename_c_str),callback);
@@ -88,8 +88,8 @@ template<std::integral char_type,typename func>
 inline auto nt_call_invoke_without_directory_handle(char_type const* filename,std::size_t filename_len,func callback)
 {
 	using wchar_t_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= wchar_t const*;
 	if constexpr(sizeof(char_type)==sizeof(wchar_t))

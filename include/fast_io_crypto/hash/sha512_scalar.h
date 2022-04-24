@@ -33,8 +33,8 @@ inline constexpr void sha512_round(std::uint_least64_t T1,std::uint_least64_t a,
 inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
 {
 	using ul64_may_alias
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= std::uint_least64_t;
 	std::uint_least64_t a{state[0]};

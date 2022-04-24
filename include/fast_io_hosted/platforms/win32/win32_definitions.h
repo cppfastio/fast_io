@@ -270,8 +270,8 @@ using lpconditionproc = void (__stdcall*)(wsabuf*,wsabuf*,qualityofservice*,qual
 template<win32_family fam>
 requires (fam==win32_family::ansi_9x||fam==win32_family::wide_nt)
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 win32_family_addrinfo
 {

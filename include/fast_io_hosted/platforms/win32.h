@@ -73,13 +73,13 @@ inline void* create_win32_temp_file_impl()
 	using char_type = std::conditional_t<is_nt,wchar_t,char>;
 	using replace_char_type = std::conditional_t<is_nt,char16_t,char8_t>;
 	using char_type_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= char_type*;
 	using char_type_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= char_type const*;
 	constexpr std::uint_least32_t maximum_temp_path_size{261};

@@ -10,8 +10,8 @@ Referenced from https://github.com/SerenityOS/serenity/blob/master/Userland/Libr
 
 */
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 serenity_file_buffer_model
 {
@@ -27,8 +27,8 @@ serenity_file_buffer_model
 };
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 serenity_file_model
 {
@@ -43,8 +43,8 @@ serenity_file_model
 };
 
 inline char* serenity_obuffer_begin(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp) noexcept
 {
@@ -52,8 +52,8 @@ fp) noexcept
 }
 
 inline char* serenity_obuffer_curr(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp) noexcept
 {
@@ -61,8 +61,8 @@ fp) noexcept
 }
 
 inline char* serenity_obuffer_end(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp) noexcept
 {
@@ -70,8 +70,8 @@ fp) noexcept
 }
 
 inline void serenity_obuffer_set_curr(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp,char * ptr) noexcept
 {
@@ -79,14 +79,14 @@ fp,char * ptr) noexcept
 }
 
 inline void serenity_obuffer_overflow(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp,char ch)
 {
 	using file_ptr_may_alias
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 	= FILE*;
 	int ret{noexcept_call(::fputc,ch,reinterpret_cast<file_ptr_may_alias>(fp))};
@@ -96,8 +96,8 @@ fp,char ch)
 
 
 inline char* serenity_ibuffer_begin(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp) noexcept
 {
@@ -105,8 +105,8 @@ fp) noexcept
 }
 
 inline char* serenity_ibuffer_curr(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp) noexcept
 {
@@ -114,8 +114,8 @@ fp) noexcept
 }
 
 inline char* serenity_ibuffer_end(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp) noexcept
 {
@@ -123,8 +123,8 @@ fp) noexcept
 }
 
 inline void serenity_ibuffer_set_curr(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp,char* ptr) noexcept
 {
@@ -132,15 +132,15 @@ fp,char* ptr) noexcept
 }
 
 inline bool serenity_ibuffer_underflow(serenity_file_model*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 fp)
 {
 	fp->m_buffer.m_begin=fp->m_buffer.m_end;
 	using file_ptr_may_alias
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 	= FILE*;
 	int c{noexcept_call(fgetc,reinterpret_cast<file_ptr_may_alias>(fp))};
@@ -158,8 +158,8 @@ fp)
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* ibuffer_begin(basic_c_io_observer_unlocked<char_type> bciob) noexcept
 {
@@ -168,8 +168,8 @@ inline char_type* ibuffer_begin(basic_c_io_observer_unlocked<char_type> bciob) n
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* ibuffer_curr(basic_c_io_observer_unlocked<char_type> bciob) noexcept
 {
@@ -178,8 +178,8 @@ inline char_type* ibuffer_curr(basic_c_io_observer_unlocked<char_type> bciob) no
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* ibuffer_end(basic_c_io_observer_unlocked<char_type> bciob) noexcept
 {
@@ -188,12 +188,12 @@ inline char_type* ibuffer_end(basic_c_io_observer_unlocked<char_type> bciob) noe
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> bciob,char_type*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 ptr
 ) noexcept
@@ -209,8 +209,8 @@ inline bool ibuffer_underflow(basic_c_io_observer_unlocked<char_type> bciob) noe
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_begin(basic_c_io_observer_unlocked<char_type> bciob) noexcept
 {
@@ -219,8 +219,8 @@ inline char_type* obuffer_begin(basic_c_io_observer_unlocked<char_type> bciob) n
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_curr(basic_c_io_observer_unlocked<char_type> bciob) noexcept
 {
@@ -229,8 +229,8 @@ inline char_type* obuffer_curr(basic_c_io_observer_unlocked<char_type> bciob) no
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char_type* obuffer_end(basic_c_io_observer_unlocked<char_type> bciob) noexcept
 {
@@ -239,12 +239,12 @@ inline char_type* obuffer_end(basic_c_io_observer_unlocked<char_type> bciob) noe
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline void obuffer_set_curr(basic_c_io_observer_unlocked<char_type> bciob,char_type*
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 ptr
 ) noexcept

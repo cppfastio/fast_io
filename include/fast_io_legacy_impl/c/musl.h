@@ -142,24 +142,24 @@ inline void ibuffer_set_curr(c_io_observer_unlocked cio,char* ptr) noexcept
 	details::fp_hack::hack_fp_set_ptr<1>(cio.fp,ptr);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_begin(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_hack::hack_fp_ptr<char8_t,0>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_curr(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_hack::hack_fp_ptr<char8_t,1>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_end(u8c_io_observer_unlocked cio) noexcept
 {
@@ -167,8 +167,8 @@ inline char8_t* ibuffer_end(u8c_io_observer_unlocked cio) noexcept
 }
 
 inline void ibuffer_set_curr(u8c_io_observer_unlocked cio,
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 char8_t* ptr) noexcept
 {
@@ -223,24 +223,24 @@ inline void obuffer_set_curr(c_io_observer_unlocked cio,char* ptr) noexcept
 	details::fp_hack::hack_fp_set_ptr<4>(cio.fp,ptr);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_begin(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_hack::hack_fp_ptr<char8_t,3>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_curr(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::fp_hack::hack_fp_ptr<char8_t,4>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_end(u8c_io_observer_unlocked cio) noexcept
 {
@@ -248,8 +248,8 @@ inline char8_t* obuffer_end(u8c_io_observer_unlocked cio) noexcept
 }
 
 inline void obuffer_set_curr(u8c_io_observer_unlocked cio,
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 char8_t* ptr) noexcept
 {

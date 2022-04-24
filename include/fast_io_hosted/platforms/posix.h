@@ -1520,8 +1520,8 @@ inline std::size_t posix_scatter_read_size_impl(int fd,io_scatters_t sp)
 	return static_cast<std::size_t>(val);
 #elif defined(__wasi__)
 	using iovec_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= __wasi_iovec_t const*;
 	std::size_t val{};
@@ -1536,8 +1536,8 @@ inline std::size_t posix_scatter_read_size_impl(int fd,io_scatters_t sp)
 	if(static_cast<std::size_t>(std::numeric_limits<int>::max())<sz)
 		sz=static_cast<std::size_t>(std::numeric_limits<int>::max());
 	using iovec_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= iovec const*;
 	auto ptr{reinterpret_cast<iovec_may_alias_const_ptr>(sp.base)};
@@ -1597,8 +1597,8 @@ struct wasmtime_bug_code
 inline std::size_t wasmtime_bug_code_write_normal(int fd,io_scatters_t sp)
 {
 	using iovec_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= __wasi_ciovec_t const*;
 	std::size_t val{};
@@ -1630,8 +1630,8 @@ inline std::size_t posix_scatter_write_size_impl(int fd,io_scatters_t sp)
 	if(static_cast<std::size_t>(std::numeric_limits<int>::max())<sz)
 		sz=static_cast<std::size_t>(std::numeric_limits<int>::max());
 	using iovec_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= iovec const*;
 	auto ptr{reinterpret_cast<iovec_may_alias_const_ptr>(sp.base)};

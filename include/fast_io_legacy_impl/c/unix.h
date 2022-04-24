@@ -14,8 +14,8 @@ namespace details
 
 #if defined(__BIONIC__)
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 sbuf {
 	unsigned char *_base;
@@ -23,8 +23,8 @@ sbuf {
 };
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 sFILE {
 	unsigned char *_p;	/* current position in (some) buffer */
@@ -99,8 +99,8 @@ struct ucrt_stdio_stream_data
 */
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 ucrt_iobuf
 {
@@ -118,8 +118,8 @@ ucrt_iobuf
 #endif
 
 template<typename T,std::size_t num>
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline T* bsd_get_buffer_ptr_impl(FILE* __restrict fpp) noexcept
 {
@@ -156,8 +156,8 @@ inline T* bsd_get_buffer_ptr_impl(FILE* __restrict fpp) noexcept
 
 template<bool w,typename T>
 inline void bsd_set_buffer_curr_ptr_impl(FILE* __restrict fpp,
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 T* ptr) noexcept
 {
@@ -324,24 +324,24 @@ inline bool ibuffer_underflow(c_io_observer_unlocked cio)
 	return details::bsd_underflow_impl(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_begin(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::bsd_get_buffer_ptr_impl<char8_t,0>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_curr(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::bsd_get_buffer_ptr_impl<char8_t,1>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_end(u8c_io_observer_unlocked cio) noexcept
 {
@@ -349,8 +349,8 @@ inline char8_t* obuffer_end(u8c_io_observer_unlocked cio) noexcept
 }
 
 inline void obuffer_set_curr(u8c_io_observer_unlocked cio,
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 char8_t* __restrict ptr) noexcept
 {
@@ -362,24 +362,24 @@ inline void obuffer_overflow(u8c_io_observer_unlocked cio,char8_t ch)
 	details::bsd_overflow(cio.fp,static_cast<char unsigned>(ch));
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_begin(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::bsd_get_buffer_ptr_impl<char8_t,0>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_curr(u8c_io_observer_unlocked cio) noexcept
 {
 	return details::bsd_get_buffer_ptr_impl<char8_t,1>(cio.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_end(u8c_io_observer_unlocked cio) noexcept
 {
@@ -387,8 +387,8 @@ inline char8_t* ibuffer_end(u8c_io_observer_unlocked cio) noexcept
 }
 
 inline void ibuffer_set_curr(u8c_io_observer_unlocked cio,
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 char8_t* ptr) noexcept
 {

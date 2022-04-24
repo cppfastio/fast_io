@@ -231,8 +231,8 @@ family==::fast_io::win32_family::wide_nt
 			constexpr int locale_name_max_len{85};
 			static_assert(locale_name_max_len<size_restriction);
 			using wchar_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 #endif
 			= wchar_t*;
 			int ret{::fast_io::win32::GetUserDefaultLocaleName(reinterpret_cast<wchar_may_alias_ptr>(it),locale_name_max_len)};
@@ -306,8 +306,8 @@ inline void* win32_family_load_l10n_impl(path_type const& p,lc_locale& loc)
 	{
 		using native_char_type = std::conditional_t<family==::fast_io::win32_family::wide_nt,char16_t,char8_t>;
 		using native_char_type_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-		[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
 #endif
 		= native_char_type const*;
 		return win32_family_load_l10n_common_impl<family>(reinterpret_cast<native_char_type_may_alias_const_ptr>(cstr_ptr),n,loc);

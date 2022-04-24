@@ -8,8 +8,8 @@ namespace details
 inline void wasi_random_get_full_impl(void* ptr,std::size_t sz)
 {
 	using u8ptr_may_alias
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= std::uint8_t*;
 	auto ret{::fast_io::noexcept_call(__wasi_random_get,reinterpret_cast<u8ptr_may_alias>(ptr),static_cast<__wasi_size_t>(sz))};
@@ -20,8 +20,8 @@ inline void wasi_random_get_full_impl(void* ptr,std::size_t sz)
 inline std::size_t wasi_random_get_impl(void* ptr,std::size_t sz)
 {
 	using u8ptr_may_alias
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= std::uint8_t*;
 	static_assert(std::unsigned_integral<__wasi_size_t>);

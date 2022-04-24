@@ -4,8 +4,8 @@ namespace fast_io
 {
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 posix_addrinfo
 {

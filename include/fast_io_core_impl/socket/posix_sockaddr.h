@@ -7,8 +7,8 @@ namespace fast_io
 #pragma warning(disable : 4324)
 #endif
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 alignas(16)
 posix_sockaddr
@@ -23,8 +23,8 @@ struct posix_in_addr
 };
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 alignas(16)
 posix_sockaddr_in
@@ -40,8 +40,8 @@ struct posix_in6_addr
 };
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 posix_sockaddr_in6
 {
@@ -53,8 +53,8 @@ posix_sockaddr_in6
 };
 
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 alignas(128)
 posix_sockaddr_storage

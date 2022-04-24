@@ -47,8 +47,8 @@ inline void win32_box_write_impl(char16_t* first,char16_t* last)
 {
 	*::fast_io::freestanding::remove(first,last,0)=0;
 	using wchar_t_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= wchar_t const*;
 	if(!::fast_io::win32::MessageBoxW(nullptr,

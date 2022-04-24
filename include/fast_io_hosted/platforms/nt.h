@@ -331,8 +331,8 @@ template<bool zw>
 inline void* nt_family_create_file_fs_dirent_impl(void* directory_handle,char16_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
 {
 	using wchar_t_may_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= wchar_t const*;
 	return ::fast_io::win32::nt::details::nt_call_kernel_fs_dirent_callback(directory_handle,

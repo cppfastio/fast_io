@@ -101,8 +101,8 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 	{
 #if __has_builtin(__builtin_ia32_addcarryx_u64)
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned long long*;
 		return __builtin_ia32_addcarryx_u64(carry,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
@@ -116,8 +116,8 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 		__builtin_memcpy(__builtin_addressof(b_low),__builtin_addressof(b),4);
 		__builtin_memcpy(__builtin_addressof(b_high),reinterpret_cast<char const*>(__builtin_addressof(b))+4,4);
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned*;
 	#if __has_builtin(__builtin_ia32_addcarry_u32)
@@ -134,8 +134,8 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 	else if constexpr(sizeof(T)==4)
 	{
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned*;
 #if __has_builtin(__builtin_ia32_addcarry_u32)
@@ -245,15 +245,15 @@ inline constexpr bool sub_borrow(bool borrow,T a,T b,T& out) noexcept
 	{
 #if __has_builtin(__builtin_ia32_sbb_u64)
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned long long*;
 		return __builtin_ia32_sbb_u64(borrow,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
 #elif __has_builtin(__builtin_ia32_subborrow_u64)
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned long long*;
 		return __builtin_ia32_subborrow_u64(borrow,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
@@ -267,8 +267,8 @@ inline constexpr bool sub_borrow(bool borrow,T a,T b,T& out) noexcept
 		__builtin_memcpy(__builtin_addressof(b_low),__builtin_addressof(b),4);
 		__builtin_memcpy(__builtin_addressof(b_high),reinterpret_cast<char const*>(__builtin_addressof(b))+4,4);
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned*;
 #if __has_builtin(__builtin_ia32_sbb_u32)
@@ -286,15 +286,15 @@ inline constexpr bool sub_borrow(bool borrow,T a,T b,T& out) noexcept
 	{
 #if __has_builtin(__builtin_ia32_sbb_u32)
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned*;
 		return __builtin_ia32_sbb_u32(borrow,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
 #elif __has_builtin(__builtin_ia32_subborrow_u32)
 		using may_alias_ptr_type
-		#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned*;
 		return __builtin_ia32_subborrow_u32(borrow,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));

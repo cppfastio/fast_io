@@ -9,8 +9,8 @@ https://github.com/gcc-mirror/gcc/blob/47fe96341d28ff9e68990038b1beb8a760ff26d0/
 
 template<typename T>
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 model
 {

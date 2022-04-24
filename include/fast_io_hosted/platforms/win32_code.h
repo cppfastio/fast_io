@@ -59,8 +59,8 @@ inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type*
 		else if constexpr(sizeof(char_type)==2)
 		{
 			using char_type_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 #endif
 			= wchar_t*;
 			return ptr+print_reserve_define_win32_error_ntw_impl(reinterpret_cast<char_type_may_alias_ptr>(ptr),ec);
@@ -69,8 +69,8 @@ inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type*
 		{
 			::fast_io::freestanding::array<char16_t,32768> buffer;
 			using char_type_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-			[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
 #endif
 			= wchar_t*;
 			std::size_t sz{print_reserve_define_win32_error_ntw_impl(reinterpret_cast<char_type_may_alias_ptr>(buffer.data()),ec)};

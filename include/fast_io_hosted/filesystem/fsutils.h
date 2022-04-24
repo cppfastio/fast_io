@@ -55,8 +55,8 @@ inline constexpr std::conditional_t<stem,
 	else
 	{
 		using return_char_type_const_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 		= return_char_type const*;
 		auto rtval{find_dot_and_sep<stem,char_type,char_type>(beg_ptr,namlen)};

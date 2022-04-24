@@ -48,8 +48,8 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 	std::uint_least32_t a{*state},b{state[1]},c{state[2]},d{state[3]};
 
 	using ul32_may_alias
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= std::uint_least32_t;
 
@@ -179,8 +179,8 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 	std::uint_least32_t a{*state},b{state[1]},c{state[2]},d{state[3]};
 
 	using ul32_may_alias
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= std::uint_least32_t;
 

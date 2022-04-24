@@ -23,8 +23,8 @@ requires (::fast_io::constructible_to_os_c_str<T>)
 inline auto nt_api_common(T const& t,Func callback)
 {
 	using wchar_t_const_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= wchar_t const*;
 	constexpr bool has_size_overload{::fast_io::details::api_common_has_size_overload<wchar_t,Func>};

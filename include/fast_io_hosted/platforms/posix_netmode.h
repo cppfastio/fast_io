@@ -686,8 +686,8 @@ inline void posix_connect_posix_socket_impl(int fd,void const* addr,posix_sockle
 	system_call_throw_error(system_call<__NR_connect,int>(fd,addr,addrlen));
 #else
 	using sockaddr_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= struct sockaddr const*;
 	if(::connect(fd,reinterpret_cast<sockaddr_alias_const_ptr>(addr),addrlen)==-1)
@@ -701,8 +701,8 @@ inline void posix_bind_posix_socket_impl(int fd,void const* addr,posix_socklen_t
 	system_call_throw_error(system_call<__NR_bind,int>(fd,addr,addrlen));
 #else
 	using sockaddr_alias_const_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= struct sockaddr const*;
 	if(::bind(fd,reinterpret_cast<sockaddr_alias_const_ptr>(addr),addrlen)==-1)
@@ -728,8 +728,8 @@ inline int posix_accept_posix_socket_impl(int fd,void* addr,posix_socklen_t* add
 	return socfd;
 #else
 	using sockaddr_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= struct sockaddr*;
 	int socfd{::accept(fd,reinterpret_cast<sockaddr_alias_ptr>(addr),addrlen)};

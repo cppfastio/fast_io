@@ -61,8 +61,8 @@ constexpr std::conditional_t<sizeof(char_type)==sizeof(char16_t),basic_io_scatte
 	if constexpr(sizeof(char_type)==sizeof(char16_t))
 	{
 		using general_utf16_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-		[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
 #endif
 		= char_type const*;
 		return {reinterpret_cast<general_utf16_may_alias_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
@@ -70,8 +70,8 @@ constexpr std::conditional_t<sizeof(char_type)==sizeof(char16_t),basic_io_scatte
 	else
 	{
 		using char16_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-		[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
 #endif
 		= char16_t const*;
 		return {{reinterpret_cast<char16_may_alias_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())}};
@@ -95,8 +95,8 @@ inline QString strlike_construct_define(io_strlike_type_t<char16_t,QString>,char
 			::fast_io::fast_terminate();
 	}
 	using qchar_may_alias_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= QChar const*;
 	return QString(reinterpret_cast<qchar_may_alias_ptr>(first),static_cast<int>(static_cast<unsigned>(diff)));

@@ -9,8 +9,8 @@ https://github.com/microsoft/STL/blob/master/stl/inc/xstring
 
 template <class _Elem, class _Traits = std::char_traits<_Elem>, class _Alloc = std::allocator<_Elem>>
 struct
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 model
 {
@@ -29,8 +29,8 @@ inline constexpr decltype(auto) hack_scary_val(std::basic_string<elem,traits,all
 	using model_t = model<elem,traits,alloc>;
 	using compress_pair_type = typename model_t::compress_pair_type;
 	using scary_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= typename model_t::_Scary_val*;
 	return *reinterpret_cast<scary_ptr>(reinterpret_cast<std::byte*>(__builtin_addressof(str))+offsetof(model_t,_Mypair)+offsetof(compress_pair_type,_Myval2));

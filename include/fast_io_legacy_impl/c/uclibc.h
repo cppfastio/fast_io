@@ -152,32 +152,32 @@ inline void obuffer_overflow(c_io_observer_unlocked ciob,char ch)
 	details::uclibc_overflow_impl(ciob.fp,static_cast<char unsigned>(ch));
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(ciob.fp->__bufstart);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(ciob.fp->__bufpos);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* ibuffer_end(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(ciob.fp->__bufread);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline void ibuffer_set_curr(u8c_io_observer_unlocked ciob,char8_t* ptr) noexcept
 {
@@ -189,24 +189,24 @@ inline bool ibuffer_underflow(u8c_io_observer_unlocked ciob)
 	return details::uclibc_underflow_impl(ciob.fp);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(ciob.fp->__bufstart);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 {
 	return reinterpret_cast<char8_t*>(ciob.fp->__bufpos);
 }
 
-#if __has_cpp_attribute(gnu::may_alias)
-[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
 #endif
 inline char8_t* obuffer_end(u8c_io_observer_unlocked ciob) noexcept
 {
