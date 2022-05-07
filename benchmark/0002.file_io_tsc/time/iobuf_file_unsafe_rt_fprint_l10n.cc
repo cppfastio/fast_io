@@ -6,7 +6,7 @@
 int main()
 {
 	constexpr std::size_t N(10000000);
-	fast_io::l10n loc("");
+	fast_io::native_l10n loc("");
 	constexpr fast_io::unsafe_rt_format_string_view view("{}\n",3);
 	{
 	fast_io::timer t(u8"output");
