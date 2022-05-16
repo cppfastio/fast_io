@@ -139,4 +139,76 @@ inline constexpr decltype(auto) zero_copy_out_handle(basic_io_buffer<handletype,
 	return zero_copy_out_handle(bios.handle);
 }
 
+namespace details
+{
+
+template<typename T>
+concept has_file_lock_type_impl = requires(T t)
+{
+	file_lock(io_ref(t));
+};
+
+}
+
+template<typename handletype,
+buffer_mode mde,
+typename decorators,
+std::size_t bfs>
+struct basic_io_buffer_file_lock
+{
+	basic_io_buffer<handletype,mde,decorators,bfs>* ptr{};
+	template<typename RequestType>
+	constexpr void lock(RequestType& req)
+	{
+		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
+		{
+			file_lock(io_ref(ptr->handle))->lock(req);
+		}
+	}
+	template<typename RequestType>
+	constexpr void unlock(RequestType& req) noexcept
+	{
+#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
+#if __cpp_exceptions
+		try
+		{
+#endif
+#endif
+			flush(*ptr);
+#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
+#if __cpp_exceptions
+		}
+		catch(...)
+		{
+		}
+#endif
+#endif
+		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
+		{
+			file_lock(io_ref(ptr->handle))->unlock(req);
+		}
+	}
+	template<typename RequestType>
+	constexpr bool try_lock(RequestType& req)
+	{
+		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
+		{
+			return file_lock(io_ref(ptr->handle))->try_lock(req);
+		}
+		else
+		{
+			return true;
+		}
+	}
+};
+
+template<stream handletype,
+buffer_mode mde,
+typename decorators,
+std::size_t bfs>
+inline constexpr decltype(auto) file_lock(basic_io_buffer<handletype,mde,decorators,bfs>& bios)
+{
+	return basic_io_buffer_file_lock<handletype,mde,decorators,bfs>{__builtin_addressof(bios)};
+}
+
 }
