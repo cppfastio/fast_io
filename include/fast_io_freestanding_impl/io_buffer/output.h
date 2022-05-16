@@ -162,7 +162,7 @@ struct basic_io_buffer_file_lock
 	{
 		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
 		{
-			file_lock(io_ref(ptr->handle))->lock(req);
+			file_lock(io_ref(ptr->handle)).lock(req);
 		}
 	}
 	template<typename RequestType>
@@ -185,7 +185,7 @@ struct basic_io_buffer_file_lock
 #endif
 		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
 		{
-			file_lock(io_ref(ptr->handle))->unlock(req);
+			file_lock(io_ref(ptr->handle)).unlock(req);
 		}
 	}
 	template<typename RequestType>
@@ -193,7 +193,7 @@ struct basic_io_buffer_file_lock
 	{
 		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
 		{
-			return file_lock(io_ref(ptr->handle))->try_lock(req);
+			return file_lock(io_ref(ptr->handle)).try_lock(req);
 		}
 		else
 		{
