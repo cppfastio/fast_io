@@ -271,8 +271,8 @@ template<bool zw>
 struct nt_create_callback
 {
 	nt_open_mode const& mode;
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -294,8 +294,8 @@ template<bool zw>
 struct nt_family_open_file_parameter
 {
 	open_mode_perms ompm{};
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -352,8 +352,8 @@ template<bool zw>
 struct nt_family_open_file_kernel_parameter
 {
 	open_mode_perms ompm{};
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -375,8 +375,8 @@ struct nt_family_open_file_at_parameter
 {
 	void* directory_handle{};
 	open_mode_perms ompm{};
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -443,43 +443,8 @@ inline std::size_t nt_write_impl(void* __restrict handle,void const* __restrict 
 }
 
 template<bool zw>
-struct nt_file_lock_guard
-{
-	void* handle{};
-	explicit constexpr nt_file_lock_guard(void* h):handle(h){}
-	nt_file_lock_guard(nt_file_lock_guard const&)=delete;
-	nt_file_lock_guard& operator=(nt_file_lock_guard const&)=delete;
-	~nt_file_lock_guard()
-	{
-		if(handle)
-		{
-			win32::nt::io_status_block block;
-			std::int64_t byte_offset{};
-			std::int64_t length{INT64_MAX};
-			win32::nt::nt_unlock_file<zw>(handle,__builtin_addressof(block),__builtin_addressof(byte_offset),__builtin_addressof(length),0);//ignore error
-		}
-	}
-};
-
-template<bool zw>
-inline bool nt_lock_entire_file(void* __restrict handle) noexcept
-{
-	win32::nt::io_status_block block;
-	std::int64_t byte_offset{};
-	std::int64_t length{INT64_MAX};
-	std::uint32_t status{win32::nt::nt_lock_file<zw>(handle,nullptr,nullptr,nullptr,__builtin_addressof(block),
-		__builtin_addressof(byte_offset),__builtin_addressof(length),0,0,1/*exclusive lock*/)};
-	return status;
-}
-
-template<bool zw>
 inline io_scatter_status_t nt_scatter_read_impl(void* __restrict handle,io_scatter_t const* scatters,std::size_t n)
 {
-	nt_file_lock_guard<zw> gd{
-		nt_lock_entire_file<zw>(handle)?
-		nullptr:
-		handle
-	};
 	std::size_t total_size{};
 	for(std::size_t i{};i!=n;++i)
 	{
@@ -494,11 +459,6 @@ inline io_scatter_status_t nt_scatter_read_impl(void* __restrict handle,io_scatt
 template<bool zw>
 inline io_scatter_status_t nt_scatter_write_impl(void* __restrict handle,io_scatter_t const* scatters,std::size_t n)
 {
-	nt_file_lock_guard<zw> gd{
-		nt_lock_entire_file<zw>(handle)?
-		nullptr:
-		handle
-	};
 	std::size_t total_size{};
 	for(std::size_t i{};i!=n;++i)
 	{
@@ -529,8 +489,8 @@ struct nt_at_entry
 #endif
 };
 
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -541,8 +501,8 @@ inline nt_at_entry nt_at_fdcwd() noexcept
 }
 
 #if !defined(__CYGWIN__) && !defined(__WINE__)
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -702,20 +662,19 @@ inline void data_sync(basic_nt_family_io_observer<family,ch_type> ntiob,data_syn
 	win32::nt::details::nt_data_sync_impl<family==nt_family::zw>(ntiob.handle,flags);
 }
 
-/*
-Let's first borrow win32 code before I finish it.
-ReactOS provides implementation of how to do this
-https://doxygen.reactos.org/da/d02/dll_2win32_2kernel32_2client_2file_2fileinfo_8c_source.html#l00327
-*/
-
 namespace win32::nt::details
 {
+struct nt_file_position_status
+{
+	::std::uint_least32_t status;
+	::std::int_least64_t file_position;
+};
 
 template<bool zw>
-inline std::uint64_t nt_seek64_impl(void* __restrict handle,std::int64_t offset,seekdir s)
+inline nt_file_position_status nt_get_file_position_impl(void* __restrict handle,::std::int_least64_t offset,seekdir s)
 {
 	std::uint64_t file_position{static_cast<std::uint64_t>(offset)};
-	win32::nt::io_status_block block{};
+	win32::nt::io_status_block block;
 	switch(s)
 	{
 	case seekdir::cur:
@@ -727,7 +686,7 @@ inline std::uint64_t nt_seek64_impl(void* __restrict handle,std::int64_t offset,
 			sizeof(std::uint64_t),
 			win32::nt::file_information_class::FilePositionInformation)};
 		if(status)
-			throw_nt_error(status);
+			return {status};
 		file_position+=fps;
 	}
 	break;
@@ -740,20 +699,30 @@ inline std::uint64_t nt_seek64_impl(void* __restrict handle,std::int64_t offset,
 			sizeof(win32::nt::file_standard_information),
 			win32::nt::file_information_class::FileStandardInformation)};
 		if(status)
-			throw_nt_error(status);
+			return {status};
 		file_position+=fsi.end_of_file;
 	}
 	break;
 	default:
 	[[fallthrough]];
 	}
-	if(static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max())<file_position)
+	if(static_cast<::std::uint_least64_t>(std::numeric_limits<::std::int_least64_t>::max())<file_position)
 		file_position=0;
-	auto status{win32::nt::nt_set_information_file<zw>(handle,
+	return {0,static_cast<::std::int_least64_t>(file_position)};
+}
+
+template<bool zw>
+inline std::uint64_t nt_seek64_impl(void* __restrict handle,std::int64_t offset,seekdir s)
+{
+	auto [status,file_position]=nt_get_file_position_impl<zw>(handle,offset,s);
+	if(status)
+		throw_nt_error(status);
+	win32::nt::io_status_block block;
+	status=win32::nt::nt_set_information_file<zw>(handle,
 		__builtin_addressof(block),
 		__builtin_addressof(file_position),
 		sizeof(std::uint64_t),
-		win32::nt::file_information_class::FilePositionInformation)};
+		win32::nt::file_information_class::FilePositionInformation);
 	if(status)
 		throw_nt_error(status);
 	return file_position;
@@ -789,7 +758,7 @@ template<bool zw>
 inline void nt_truncate_impl(void* handle,std::uintmax_t newfilesizem)
 {
 	std::uint64_t newfilesize{static_cast<std::uint64_t>(newfilesizem)};
-	win32::nt::io_status_block block{};
+	win32::nt::io_status_block block;
 	auto status{win32::nt::nt_set_information_file<zw>(handle,
 		__builtin_addressof(block),
 		__builtin_addressof(newfilesize),
@@ -797,6 +766,125 @@ inline void nt_truncate_impl(void* handle,std::uintmax_t newfilesizem)
 		win32::nt::file_information_class::FileEndOfFileInformation)};
 	if(status)
 		throw_nt_error(status);
+}
+
+template<bool zw>
+inline ::std::uint_least32_t nt_family_file_lock_common_impl(void* __restrict handle,flock_request_l64& req,bool failedimmediately)
+{
+	auto [status,file_position]=nt_get_file_position_impl<zw>(handle,req.start,req.whence);
+	if(status)
+	{
+		return status;
+	}
+	win32::nt::io_status_block block;
+	std::int_least64_t len{req.len};
+	if(len==0)
+	{
+		len=INT_LEAST64_MAX;
+	}
+	req.whence = seekdir::beg;
+	req.start = file_position;
+	req.len = len;
+	if(req.type==file_lock_mode::unlock)
+	{
+		status=win32::nt::nt_unlock_file<zw>(handle,__builtin_addressof(block),
+			__builtin_addressof(file_position),__builtin_addressof(len),0u);
+	}
+	else
+	{
+		status=win32::nt::nt_lock_file<zw>(handle,nullptr,nullptr,nullptr,__builtin_addressof(block),
+			__builtin_addressof(file_position),__builtin_addressof(len),0u,failedimmediately,req.type!=file_lock_mode::shared_lock);
+	}
+	return status;
+}
+
+template<bool zw>
+inline void nt_family_file_unlock_common_impl(void* __restrict handle,flock_request_l64& req) noexcept
+{
+	auto [status,file_position]=nt_get_file_position_impl<zw>(handle,req.start,req.whence);
+	::std::int_least64_t len{req.len};
+	if(status)
+	{
+		file_position=0;
+		len=0;
+	}
+	if(len==0)
+	{
+		len=INT_LEAST64_MAX;
+	}
+	req.whence = seekdir::beg;
+	req.start = file_position;
+	req.len = len;
+	win32::nt::io_status_block block;
+	win32::nt::nt_unlock_file<zw>(handle,__builtin_addressof(block),
+		__builtin_addressof(file_position),__builtin_addressof(len),0u);
+}
+
+
+template<bool zw>
+inline void nt_family_file_lock_common_impl(void* __restrict handle,flock_request_l64& req)
+{
+	auto status{nt_family_file_lock_common_impl<zw>(handle,req,false)};
+	if(status)
+	{
+		throw_nt_error(status);
+	}
+}
+
+template<bool zw,std::integral int_type>
+inline void nt_family_file_lock_impl(void* __restrict handle,basic_flock_request<int_type>& __restrict t)
+{
+	if constexpr(sizeof(int_type)>=sizeof(::std::int_least64_t))
+	{
+		constexpr int_type mn{std::numeric_limits<::std::int_least64_t>::min()};
+		constexpr int_type mx{std::numeric_limits<::std::int_least64_t>::max()};
+		if(t.start<mn||mx<t.start||t.len<mn||mx<t.len)
+		{
+			throw_nt_error(0xC0000095);	//STATUS_INTEGER_OVERFLOW
+		}
+	}
+	nt_family_file_lock_common_impl<zw>(handle,t);
+}
+
+template<bool zw,std::integral int_type>
+inline void nt_family_file_unlock_impl(void* __restrict handle,basic_flock_request<int_type>& __restrict t)
+{
+	if constexpr(sizeof(int_type)>=sizeof(::std::int_least64_t))
+	{
+		constexpr int_type mn{std::numeric_limits<::std::int_least64_t>::min()};
+		constexpr int_type mx{std::numeric_limits<::std::int_least64_t>::max()};
+		if(t.start<mn||mx<t.start||t.len<mn||mx<t.len)
+		{
+			fast_terminate();
+		}
+	}
+	nt_family_file_unlock_common_impl<zw>(handle,t);
+}
+
+template<bool zw,std::integral int_type>
+inline bool nt_family_file_try_lock_impl(void* __restrict handle,basic_flock_request<int_type>& __restrict t)
+{
+	if constexpr(sizeof(int_type)>=sizeof(::std::int_least64_t))
+	{
+		constexpr int_type mn{std::numeric_limits<::std::int_least64_t>::min()};
+		constexpr int_type mx{std::numeric_limits<::std::int_least64_t>::max()};
+		if(t.start<mn||mx<t.start||t.len<mn||mx<t.len)
+		{
+			return false;
+		}
+	}
+	if constexpr(::std::same_as<int_type,::std::int_least64_t>)
+	{
+		return nt_family_file_lock_common_impl<zw>(handle,t,true)==0;
+	}
+	else
+	{
+		static_assert(::std::same_as<int_type,::std::int_least64_t>);
+		return false;
+#if 0
+		return nt_family_file_lock_common_impl<zw>(handle,flock_request_l64{t.type,t.whence,static_cast<::std::int_least64_t>(t.start),static_cast<::std::int_least64_t>(t.len)},true)==0;
+#endif
+	}
 }
 
 }
@@ -819,6 +907,40 @@ inline posix_file_status status(basic_nt_family_io_observer<family,ch_type> hand
 	return win32::win32::details::nt_status_impl<family==nt_family::zw>(handle.handle);
 }
 #endif
+
+
+template<nt_family family>
+struct nt_family_file_lock
+{
+	void* handle{};
+	template<std::signed_integral int_type>
+	requires (sizeof(int_type)>=sizeof(std::int_least64_t))
+	inline void lock(basic_flock_request<int_type>& __restrict t)
+	{
+		::fast_io::win32::nt::details::nt_family_file_lock_impl<family==nt_family::zw>(this->handle,t);
+	}
+	template<std::signed_integral int_type>
+	requires (sizeof(int_type)>=sizeof(std::int_least64_t))
+	inline void unlock(basic_flock_request<int_type>& __restrict t) noexcept
+	{
+		::fast_io::win32::nt::details::nt_family_file_unlock_impl<family==nt_family::zw>(this->handle,t);
+	}
+	template<std::signed_integral int_type>
+	requires (sizeof(int_type)>=sizeof(std::int_least64_t))
+	inline bool try_lock(basic_flock_request<int_type>& __restrict t) noexcept
+	{
+		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl<family==nt_family::zw>(this->handle,t);
+	}
+};
+
+using nt_file_lock = nt_family_file_lock<nt_family::nt>;
+using zw_file_lock = nt_family_file_lock<nt_family::zw>;
+
+template<nt_family family,::std::integral char_type>
+inline constexpr nt_family_file_lock<family> file_lock(basic_nt_family_io_observer<family,char_type> niob) noexcept
+{
+	return {niob};
+}
 
 template<nt_family family>
 struct
