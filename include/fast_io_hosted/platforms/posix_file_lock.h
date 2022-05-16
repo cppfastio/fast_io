@@ -1,17 +1,20 @@
 #pragma once
-
 namespace fast_io
 {
 
 namespace details
 {
+inline int fcntl_file_lock(int fd,int cmd,struct flock const* lockp)
+{
+	return ::fcntl(fd,cmd,F_SETLKW,__builtin_addressof(lockp));
+}
 
-inline void posix_file_lock_lock_common_impl(int fd,::flock const& lockp)
+inline void posix_file_lock_lock_common_impl(int fd,struct flock const& lockp)
 {
 #if defined(__linux__) && defined(__NR_fcntl)
 	system_call_throw_error(system_call<__NR_fcntl,int>(fd,F_SETLKW,__builtin_addressof(lockp)));
 #else
-	int ret{noexcept_call(::fcntl,fd,F_SETLKW,__builtin_addressof(lockp))}:
+	int ret{noexcept_call(fcntl_file_lock,fd,F_SETLKW,__builtin_addressof(lockp))};
 	if(ret<0)
 	{
 		throw_posix_error();
@@ -52,20 +55,21 @@ inline void posix_file_lock_lock_impl(int fd,basic_flock_request<int_type> const
 			throw_posix_error(EINVAL);
 		}
 	}
-	posix_file_lock_lock_common_impl(fd,
-		::flock{flock_type_to_native(t.type),
-			static_cast<short>(t.whence),
-			static_cast<flock_off_type>(t.start),
-			static_cast<flock_off_type>(t.len),
-			-1});
+	struct flock temp{};
+	temp.l_type = flock_type_to_native(t.type);
+	temp.l_start=static_cast<flock_off_type>(t.start);
+	temp.l_whence=static_cast<short>(t.whence);
+	temp.l_pid = -1;
+	temp.l_len = static_cast<flock_off_type>(t.len);
+	posix_file_lock_lock_common_impl(fd,temp);
 }
 
-inline bool posix_file_lock_try_lock_common_impl(int fd,::flock const& lockp) noexcept
+inline bool posix_file_lock_try_lock_common_impl(int fd,struct flock const& lockp) noexcept
 {
 #if defined(__linux__) && defined(__NR_fcntl)
 	return !linux_system_call_fails(system_call<__NR_fcntl,int>(fd,F_SETLK,__builtin_addressof(lockp)));
 #else
-	int ret{noexcept_call(::fcntl,fd,F_SETLK,__builtin_addressof(lockp))}:
+	int ret{noexcept_call(fcntl_file_lock,fd,F_SETLK,__builtin_addressof(lockp))};
 	return 0<=ret;
 #endif
 }
@@ -84,12 +88,13 @@ inline bool posix_file_lock_try_lock_impl(int fd,basic_flock_request<int_type> c
 			return false;
 		}
 	}
-	return posix_file_lock_try_lock_common_impl(fd,
-		::flock{flock_type_to_native(t.type),
-			static_cast<short unsigned>(t.whence),
-			static_cast<flock_off_type>(t.start),
-			static_cast<flock_off_type>(t.len),
-			-1});
+	struct flock temp{};
+	temp.l_type = flock_type_to_native(t.type);
+	temp.l_start=static_cast<flock_off_type>(t.start);
+	temp.l_whence=static_cast<short>(t.whence);
+	temp.l_pid = -1;
+	temp.l_len = static_cast<flock_off_type>(t.len);
+	return posix_file_lock_try_lock_common_impl(fd,temp);
 }
 
 
@@ -107,15 +112,16 @@ inline void posix_file_lock_unlock_impl(int fd,basic_flock_request<int_type> con
 			return;
 		}
 	}
-	::flock lockp{F_UNLCK,
-			static_cast<short>(t.whence),
-			static_cast<flock_off_type>(t.start),
-			static_cast<flock_off_type>(t.len),
-			-1};
+	struct flock temp{};
+	temp.l_type = flock_type_to_native(t.type);
+	temp.l_start=static_cast<flock_off_type>(t.start);
+	temp.l_whence=static_cast<short>(t.whence);
+	temp.l_pid = -1;
+	temp.l_len = static_cast<flock_off_type>(t.len);
 #if defined(__linux__) && defined(__NR_fcntl)
-	system_call<__NR_fcntl,int>(fd,F_SETLKW,__builtin_addressof(lockp));
+	system_call<__NR_fcntl,int>(fd,F_SETLKW,__builtin_addressof(temp));
 #else
-	noexcept_call(::fcntl,fd,F_SETLKW,__builtin_addressof(lockp)):
+	noexcept_call(fcntl_file_lock,fd,F_SETLKW,__builtin_addressof(temp));
 #endif
 }
 
