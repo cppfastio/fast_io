@@ -43,15 +43,15 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 	if constexpr(sizeof(T)==8)
 	{
 #if defined(_M_AMD64)
-		return _addcarryx_u64(carry,a,b,reinterpret_cast<std::uint64_t*>(__builtin_addressof(out)));
+		return _addcarry_u64(carry,a,b,reinterpret_cast<std::uint64_t*>(__builtin_addressof(out)));
 #else
-		return _addcarryx_u32(_addcarryx_u32(carry,
+		return _addcarry_u32(_addcarry_u32(carry,
 		*reinterpret_cast<std::uint32_t*>(__builtin_addressof(a)),*reinterpret_cast<std::uint32_t*>(__builtin_addressof(b)),reinterpret_cast<std::uint32_t*>(__builtin_addressof(out))),
 		reinterpret_cast<std::uint32_t*>(__builtin_addressof(a))[1],reinterpret_cast<std::uint32_t*>(__builtin_addressof(b))[1],reinterpret_cast<std::uint32_t*>(__builtin_addressof(out))+1);
 #endif
 	}
 	else if constexpr(sizeof(T)==4)
-		return _addcarryx_u32(carry,a,b,reinterpret_cast<std::uint32_t*>(__builtin_addressof(out)));
+		return _addcarry_u32(carry,a,b,reinterpret_cast<std::uint32_t*>(__builtin_addressof(out)));
 	else if constexpr(sizeof(T)==2)
 		return _addcarry_u16(carry,a,b,reinterpret_cast<short unsigned*>(__builtin_addressof(out)));
 	else if constexpr(sizeof(T)==1)
@@ -106,6 +106,13 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 		#endif
 		= unsigned long long*;
 		return __builtin_ia32_addcarryx_u64(carry,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
+#elif __has_builtin(__builtin_ia32_addcarry_u64)
+		using may_alias_ptr_type
+		#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+		#endif
+		= unsigned long long*;
+		return __builtin_ia32_addcarry_u64(carry,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
 #else
 		std::uint32_t a_low;
 		std::uint32_t a_high;
@@ -120,11 +127,11 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned*;
-	#if __has_builtin(__builtin_ia32_addcarry_u32)
-		return __builtin_ia32_addcarry_u32(__builtin_ia32_addcarry_u32(carry,a_low,b_low,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))),
-		a_high,b_high,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))+1);
-	#elif __has_builtin(__builtin_ia32_addcarryx_u32)
+	#if __has_builtin(__builtin_ia32_addcarryx_u32)
 		return __builtin_ia32_addcarryx_u32(__builtin_ia32_addcarryx_u32(carry,a_low,b_low,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))),
+		a_high,b_high,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))+1);
+	#elif __has_builtin(__builtin_ia32_addcarry_u32)
+		return __builtin_ia32_addcarry_u32(__builtin_ia32_addcarry_u32(carry,a_low,b_low,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))),
 		a_high,b_high,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))+1);
 	#else
 		return add_carry_naive(carry,a,b,out);
@@ -138,10 +145,10 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 			[[__gnu__::__may_alias__]]
 		#endif
 		= unsigned*;
-#if __has_builtin(__builtin_ia32_addcarry_u32)
-		return __builtin_ia32_addcarry_u32(carry,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
-#elif __has_builtin(__builtin_ia32_addcarryx_u32)
+#if __has_builtin(__builtin_ia32_addcarryx_u32)
 		return __builtin_ia32_addcarryx_u32(carry,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
+#elif __has_builtin(__builtin_ia32_addcarry_u32)
+		return __builtin_ia32_addcarry_u32(carry,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
 #else
 		return add_carry_naive(carry,a,b,out);
 #endif
