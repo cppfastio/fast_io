@@ -119,6 +119,32 @@ struct io_lock_guard
 	io_lock_guard& operator=(io_lock_guard const&) = delete;
 };
 
+template<typename stream_type>
+struct io_flush_guard
+{
+	using handle_type = stream_type;
+	handle_type& device;
+	explicit constexpr io_flush_guard(mutex_type& m) noexcept: device(m)
+	{ }
+
+	#if __cpp_constexpr >= 201907L
+	constexpr
+	#endif
+	~io_flush_guard() noexcept
+	{
+		try
+		{
+			device.flush();
+		}
+		catch(...)
+		{
+		}
+	}
+
+	io_flush_guard(io_flush_guard const&) = delete;
+	io_flush_guard& operator=(io_flush_guard const&) = delete;
+};
+
 namespace details
 {
 
