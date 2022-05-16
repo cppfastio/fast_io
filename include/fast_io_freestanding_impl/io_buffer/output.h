@@ -160,6 +160,7 @@ struct basic_io_buffer_file_lock
 	template<typename RequestType>
 	constexpr void lock(RequestType& req)
 	{
+		flush(*ptr);
 		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
 		{
 			file_lock(io_ref(ptr->handle)).lock(req);
@@ -191,6 +192,22 @@ struct basic_io_buffer_file_lock
 	template<typename RequestType>
 	constexpr bool try_lock(RequestType& req)
 	{
+#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
+#if __cpp_exceptions
+		try
+		{
+#endif
+#endif
+			flush(*ptr);
+#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
+#if __cpp_exceptions
+		}
+		catch(...)
+		{
+			return false;
+		}
+#endif
+#endif
 		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
 		{
 			return file_lock(io_ref(ptr->handle)).try_lock(req);
