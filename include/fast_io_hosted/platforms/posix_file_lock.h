@@ -6,7 +6,7 @@ namespace details
 {
 inline int fcntl_file_lock(int fd,int cmd,struct flock const* lockp)
 {
-	return ::fcntl(fd,cmd,F_SETLKW,__builtin_addressof(lockp));
+	return ::fcntl(fd,cmd,__builtin_addressof(lockp));
 }
 
 inline void posix_file_lock_lock_common_impl(int fd,struct flock const& lockp)
