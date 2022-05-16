@@ -633,22 +633,6 @@ inline std::size_t pread_impl(void* __restrict handle,void* __restrict begin,std
 	return number_of_bytes_read;
 }
 
-struct file_lock_guard
-{
-	void* handle;
-	constexpr file_lock_guard(void* h):handle(h){}
-	file_lock_guard(file_lock_guard const&)=delete;
-	file_lock_guard& operator=(file_lock_guard const&)=delete;
-	~file_lock_guard()
-	{
-		if(handle)
-		{
-			win32::overlapped overlap{};
-			win32::UnlockFileEx(handle,0,UINT32_MAX,UINT32_MAX,__builtin_addressof(overlap));
-		}
-	}
-};
-
 inline io_scatter_status_t scatter_read_impl(void* __restrict handle,io_scatter_t const* scatters,std::size_t n)
 {
 	std::size_t total_size{};
@@ -788,7 +772,6 @@ inline std::uintmax_t seek_impl(void* handle,std::intmax_t offset,seekdir s)
 		throw_win32_error();
 	}
 	return static_cast<std::uintmax_t>(static_cast<std::uint_least32_t>(distance_to_move_high));
-
 #else
 	if constexpr(sizeof(std::intmax_t)>sizeof(std::int_least64_t))
 	{
@@ -808,12 +791,6 @@ inline std::uintmax_t seek_impl(void* handle,std::intmax_t offset,seekdir s)
 
 inline io_scatter_status_t scatter_write_impl(void* __restrict handle,io_scatter_t const* scatters,std::size_t n)
 {
-	win32::overlapped overlap{};
-	file_lock_guard gd{
-		win32::LockFileEx(handle,0x00000002,0,UINT32_MAX,UINT32_MAX,__builtin_addressof(overlap))?
-		handle:
-		nullptr
-	};
 	std::size_t total_size{};
 	for(std::size_t i{};i!=n;++i)
 	{
@@ -824,7 +801,6 @@ inline io_scatter_status_t scatter_write_impl(void* __restrict handle,io_scatter
 	}
 	return {total_size,n,0};
 }
-
 
 }
 
@@ -856,6 +832,19 @@ template<win32_family family,std::integral ch_type>
 inline io_scatter_status_t scatter_write(basic_win32_family_io_observer<family,ch_type> handle,io_scatters_t sp)
 {
 	return win32::details::scatter_write_impl(handle.handle,sp.base,sp.len);
+}
+
+template<win32_family family,::std::integral char_type>
+inline constexpr ::std::conditional_t<family==win32_family::ansi_9x,nop_file_lock,nt_file_lock> file_lock(basic_win32_family_io_observer<family,char_type> wiob) noexcept
+{
+	if constexpr(family==win32_family::ansi_9x)
+	{
+		return {};
+	}
+	else
+	{
+		return {wiob.handle};
+	}
 }
 
 #if 0

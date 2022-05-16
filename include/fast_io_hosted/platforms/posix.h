@@ -48,6 +48,10 @@
 #include "posix_netmode.h"
 #endif
 
+#if defined(F_RDLCK) && defined(F_WRLCK) && defined(F_UNLCK) && !defined(__wasi__)
+#include"posix_file_lock.h"
+#endif
+
 namespace fast_io
 {
 
@@ -514,25 +518,11 @@ inline std::size_t posix_write_nolock_impl(int fd,void const* address,std::size_
 
 inline std::size_t posix_write_lock_impl(int fd,void const* address,std::size_t to_write)
 {
-	auto handle{my_get_osfile_handle(fd)};
-	fast_io::win32::overlapped overlap{};
-	fast_io::win32::details::file_lock_guard gd{
-		fast_io::win32::LockFileEx(handle,0x00000002,0,UINT32_MAX,UINT32_MAX,__builtin_addressof(overlap))?
-		handle:
-		reinterpret_cast<void*>(static_cast<std::uintptr_t>(-1))
-	};
 	return posix_write_nolock_impl(fd,address,to_write);
 }
 
 inline io_scatter_status_t posix_scatter_write_impl(int fd,io_scatters_t sp)
 {
-	auto handle{my_get_osfile_handle(fd)};
-	fast_io::win32::overlapped overlap{};
-	fast_io::win32::details::file_lock_guard gd{
-		fast_io::win32::LockFileEx(handle,0x00000002,0,UINT32_MAX,UINT32_MAX,__builtin_addressof(overlap))?
-		handle:
-		reinterpret_cast<void*>(static_cast<std::uintptr_t>(-1))
-	};
 	std::size_t total_size{};
 	for(std::size_t i{};i!=sp.len;++i)
 	{
@@ -717,6 +707,33 @@ inline void data_sync(basic_posix_io_observer<ch_type> piob,data_sync_flags flag
 {
 	details::posix_data_sync_flags_impl(piob.fd,flags);
 }
+#if defined(_WIN32)&& !defined(__WINE__) && !defined(__CYGINW__)
+
+template<std::integral ch_type>
+inline auto file_lock(basic_posix_io_observer<ch_type> piob) noexcept
+{
+	return {my_get_osfile_handle(piob.fd)};
+}
+
+#elif defined(F_RDLCK) && defined(F_WRLCK) && defined(F_UNLCK) && !defined(__wasi__)
+
+template<std::integral ch_type>
+inline constexpr posix_file_lock file_lock(basic_posix_io_observer<ch_type> piob) noexcept
+{
+	return {piob.fd};
+}
+
+#else
+
+template<std::integral ch_type>
+inline constexpr nop_file_lock file_lock(basic_posix_io_observer<ch_type>) noexcept
+{
+	return {};
+}
+
+#endif
+
+
 
 #if (!defined(__NEWLIB__) || defined(__CYGWIN__)) && (!defined(_WIN32) || defined(__WINE__))
 namespace details
