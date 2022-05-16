@@ -124,7 +124,7 @@ struct io_flush_guard
 {
 	using handle_type = stream_type;
 	handle_type& device;
-	explicit constexpr io_flush_guard(mutex_type& m) noexcept: device(m)
+	explicit constexpr io_flush_guard(handle_type& m) noexcept: device(m)
 	{ }
 
 	#if __cpp_constexpr >= 201907L
@@ -132,15 +132,22 @@ struct io_flush_guard
 	#endif
 	~io_flush_guard() noexcept
 	{
+#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
+#if __cpp_exceptions
 		try
 		{
-			device.flush();
+#endif
+#endif
+			flush(device);
+#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
+#if __cpp_exceptions
 		}
 		catch(...)
 		{
 		}
+#endif
+#endif
 	}
-
 	io_flush_guard(io_flush_guard const&) = delete;
 	io_flush_guard& operator=(io_flush_guard const&) = delete;
 };
