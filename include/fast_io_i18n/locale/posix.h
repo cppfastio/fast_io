@@ -113,7 +113,7 @@ true
 	}
 	*it=0;
 	auto p{buffer};
-	posix_dll_file dllfile(::fast_io::mnp::os_c_str(p),::fast_io::dll_mode::posix_rtld_global | ::fast_io::dll_mode::posix_rtld_now);
+	posix_dll_file dllfile(::fast_io::mnp::os_c_str(p),::fast_io::dll_mode::posix_rtld_global | ::fast_io::dll_mode::posix_rtld_now | ::fast_io::dll_mode::posix_rtld_nodelete);
 	auto func{reinterpret_cast<void (
 #if defined(__CYGWIN__)
 __fastcall
