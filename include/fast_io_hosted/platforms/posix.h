@@ -710,9 +710,9 @@ inline void data_sync(basic_posix_io_observer<ch_type> piob,data_sync_flags flag
 #if defined(_WIN32)&& !defined(__WINE__) && !defined(__CYGINW__)
 
 template<std::integral ch_type>
-inline auto file_lock(basic_posix_io_observer<ch_type> piob) noexcept
+inline constexpr auto file_lock(basic_posix_io_observer<ch_type> piob) noexcept
 {
-	return {my_get_osfile_handle(piob.fd)};
+	return file_lock(::fast_io::basic_win32_io_observer<ch_type>{::fast_io::details::my_get_osfile_handle(piob.fd)});
 }
 
 #elif defined(F_RDLCK) && defined(F_WRLCK) && defined(F_UNLCK) && !defined(__wasi__)

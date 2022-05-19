@@ -79,6 +79,7 @@ public:
 		details::streambuf_hack::msvc_hack_set_close(this->fb);
 	}
 #endif
+#if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 #if !defined(__AVR__) && !defined(_GLIBCXX_USE_STDIO_PURE)
 	basic_filebuf_file(basic_posix_file<char_type>&& piohd,open_mode mode):
 		basic_filebuf_file(basic_c_file_unlocked<char_type>(::fast_io::freestanding::move(piohd),mode),mode){}
@@ -107,6 +108,7 @@ public:
 	basic_filebuf_file(native_at_entry nate,T const& file,open_mode om,perms pm=static_cast<perms>(436)):
 		basic_filebuf_file(basic_posix_file<char_type>(nate,file,om,pm),om)
 	{}
+#endif
 #endif
 	basic_filebuf_file& operator=(basic_filebuf_file const&)=delete;
 	basic_filebuf_file(basic_filebuf_file const&)=delete;
