@@ -89,6 +89,25 @@ inline constexpr ::std::underlying_type_t<enumtype> enum_int_view(enumtype enm) 
 	return static_cast<::std::underlying_type_t<enumtype>>(enm);
 }
 
+template<typename T1,typename T2>
+inline constexpr decltype(auto) cond(bool pred,T1&& t1,T2&& t2) noexcept
+{
+	constexpr bool type_error{::std::same_as<decltype(fast_io::io_print_alias(t1)),
+		decltype(fast_io::io_print_alias(t2))>};
+static_assert(type_error,"type not same for cond");
+	if constexpr(type_error)
+	{
+		if(pred)
+		{
+			return fast_io::io_print_alias(t1);
+		}
+		else
+		{
+			return fast_io::io_print_alias(t2);
+		}
+	}
+}
+
 }
 
 template<std::integral char_type>
