@@ -3,8 +3,8 @@
 #include"win32_definitions.h"
 #include"apis.h"
 
-#if defined(_MSC_VER) && !defined(_WIN32_WINDOWS)
-#pragma comment(lib,"Bcrypt.lib")
+#if defined(_MSC_VER) && !defined(_WIN32_WINDOWS) && !defined(_KERNEL_MODE)
+#pragma comment(lib,"bcrypt.lib")
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
