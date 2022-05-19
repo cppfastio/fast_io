@@ -1,5 +1,5 @@
 ## Compiler Support
-- GCC >= 12
+- GCC >= 13
 - VS >= 19.29.29917
 - Clang >= 15
 - Winegcc
