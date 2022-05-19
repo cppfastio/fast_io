@@ -945,7 +945,7 @@ constexpr std::size_t chars_len(U value) noexcept
 #endif
 		{
 			constexpr U one_constant{1};
-			std::size_t const base2len{bits-static_cast<std::size_t>(std::countl_zero(value|one_constant))};
+			std::size_t const base2len{bits-static_cast<std::size_t>(std::countl_zero(static_cast<U>(value|one_constant)))};
 			if constexpr(base==2)
 				return base2len;
 			else
