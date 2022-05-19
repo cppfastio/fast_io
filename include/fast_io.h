@@ -428,7 +428,7 @@ requires (sizeof...(Args)!=0)
 }
 
 //Allow debug print
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(FAST_IO_ENABLE_DEBUG_PRINT)
 //With debugging. We output to POSIX fd or Win32 Handle directly instead of C's stdout.
 template<typename T,typename... Args>
 inline constexpr void debug_print(T&& t,Args&& ...args)
