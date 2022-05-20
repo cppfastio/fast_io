@@ -108,7 +108,7 @@ struct basic_os_c_str_n
 };
 
 template<std::integral char_type>
-inline constexpr basic_os_c_str<char_type> os_c_str_n(char_type const* cstr,std::size_t n) noexcept
+inline constexpr basic_os_c_str_n<char_type> os_c_str_n(char_type const* cstr,std::size_t n) noexcept
 {
 	return {cstr,n};
 }
