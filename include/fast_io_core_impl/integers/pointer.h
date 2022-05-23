@@ -56,6 +56,14 @@ inline constexpr basic_os_c_str_n<T> os_c_str(T const* ch,std::size_t n) noexcep
 	return {ch,::fast_io::cstr_nlen(ch,n)};
 }
 
+
+template<::std::integral char_type,::std::size_t n>
+requires (n!=0)
+inline constexpr basic_os_c_str_n<char_type> os_c_str_arr(char_type const (&cstr)[n]) noexcept
+{
+        return os_c_str(cstr,n);
+}
+
 template<std::integral T>
 inline constexpr void os_c_str(decltype(nullptr),std::size_t) noexcept=delete;
 
@@ -87,25 +95,6 @@ requires (::std::is_enum_v<enumtype>)
 inline constexpr ::std::underlying_type_t<enumtype> enum_int_view(enumtype enm) noexcept
 {
 	return static_cast<::std::underlying_type_t<enumtype>>(enm);
-}
-
-template<typename T1,typename T2>
-inline constexpr decltype(auto) cond(bool pred,T1&& t1,T2&& t2) noexcept
-{
-	constexpr bool type_error{::std::same_as<decltype(fast_io::io_print_alias(t1)),
-		decltype(fast_io::io_print_alias(t2))>};
-static_assert(type_error,"type not same for cond");
-	if constexpr(type_error)
-	{
-		if(pred)
-		{
-			return fast_io::io_print_alias(t1);
-		}
-		else
-		{
-			return fast_io::io_print_alias(t2);
-		}
-	}
 }
 
 }

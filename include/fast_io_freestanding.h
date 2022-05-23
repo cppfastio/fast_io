@@ -35,6 +35,7 @@
 #include"fast_io_freestanding_impl/width.h"
 #include"fast_io_freestanding_impl/scanners/impl.h"
 #include"fast_io_freestanding_impl/api_encoding_converter/impl.h"
+#include"fast_io_freestanding_impl/cond.h"
 
 
 namespace fast_io

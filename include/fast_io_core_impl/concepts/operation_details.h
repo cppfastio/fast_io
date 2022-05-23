@@ -115,13 +115,6 @@ inline constexpr basic_os_c_str_n<char_type> os_c_str_n(char_type const* cstr,st
 
 inline constexpr void os_c_str_n(decltype(nullptr),std::size_t)=delete;
 
-template<::std::integral char_type,::std::size_t n>
-requires (n!=0)
-inline constexpr basic_os_c_str_n<char_type> os_c_str_arr(char_type const (&cstr)[n]) noexcept
-{
-        return {cstr,n-1};
-}
-
 template<std::integral ch_type>
 struct basic_os_not_c_str_n
 {
