@@ -80,7 +80,7 @@ public:
 		details::streambuf_hack::msvc_hack_set_close(this->fb);
 	}
 #endif
-	basic_filebuf_file(io_temp_t):basic_filebuf_file(::fast_io::c_file_unlocked(::fast_io::io_temp),::fast_io::open_mode::in|::fast_io::open_mode::out)
+	basic_filebuf_file(io_temp_t):basic_filebuf_file(::fast_io::basic_c_file_unlocked<char_type>(::fast_io::io_temp),::fast_io::open_mode::in|::fast_io::open_mode::out)
 	{
 	}
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
