@@ -164,7 +164,6 @@ is_nt
 		return handle;
 	}
 	throw_win32_error(80u);	//ERROR_FILE_EXISTS
-	return nullptr;
 }
 
 inline void* create_io_completion_port(void* filehandle,void* existing_completionport,std::uintptr_t completionkey,std::uint_least32_t numberofconcurrentthreads)
