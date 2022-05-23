@@ -495,6 +495,7 @@ inline std::uintmax_t my_c_io_seek_impl(FILE*,std::intmax_t,seekdir)
 {
 	avr_libc_nosup_impl();
 }
+
 #else
 template<c_family family>
 inline std::uintmax_t my_c_io_seek_impl(FILE* fp,std::intmax_t offset,seekdir s)
@@ -595,6 +596,19 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 	}
 }
 #endif
+
+inline FILE* my_c_open_tmp_file()
+{
+#if defined(__AVR__) || defined(_PICOLIBC__)
+	throw_posix_error(EINVAL);
+#else
+	::fast_io::posix_file pf(io_temp);
+	auto fp{::fast_io::details::my_c_file_open_impl(pf.fd,::fast_io::open_mode::in|::fast_io::open_mode::out)};
+	pf.release();
+	return fp;
+#endif
+}
+
 }
 
 template<c_family family,std::integral ch_type>
@@ -950,7 +964,7 @@ public:
 	}
 #if !defined(__AVR__)
 	basic_c_family_file(basic_posix_file<char_type>&& phd,open_mode om):
-		basic_c_family_io_observer<family,ch_type>{details::my_c_file_open_impl(phd.fd,om)}
+		basic_c_family_io_observer<family,ch_type>{::fast_io::details::my_c_file_open_impl(phd.fd,om)}
 	{
 		phd.fd=-1;
 	}
@@ -979,6 +993,8 @@ public:
 		basic_c_family_file(basic_posix_file<char_type>(nate,file,om,pm),om)
 	{}
 #endif
+	basic_c_family_file(io_temp_t):basic_c_family_io_observer<family,ch_type>{::fast_io::details::my_c_open_tmp_file()}
+	{}
 };
 
 template<std::integral char_type>

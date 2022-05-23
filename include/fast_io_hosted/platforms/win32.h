@@ -86,7 +86,6 @@ inline void* create_win32_temp_file_impl()
 	constexpr std::uint_least32_t uuid_size{36};
 	constexpr std::uint_least32_t literal_tmp_size{5};
 	constexpr std::uint_least32_t total_buffer_size{maximum_temp_path_size+uuid_size+literal_tmp_size};
-	
 	replace_char_type arr[total_buffer_size];
 	std::uint_least32_t temp_path_size;
 	if constexpr(is_nt)
