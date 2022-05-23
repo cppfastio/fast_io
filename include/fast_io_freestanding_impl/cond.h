@@ -18,7 +18,7 @@ struct condition
 };
 
 template<typename T1,typename T2>
-inline constexpr decltype(auto) cond(bool pred,T1&& t1,T2&& t2) noexcept
+inline constexpr auto cond(bool pred,T1&& t1,T2&& t2) noexcept
 {
 	using t1aliastype=::std::remove_cvref_t<decltype(fast_io::io_print_alias(t1))>;
 	using t2aliastype=::std::remove_cvref_t<decltype(fast_io::io_print_alias(t2))>;
