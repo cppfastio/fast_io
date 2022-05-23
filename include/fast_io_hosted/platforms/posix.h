@@ -1057,7 +1057,7 @@ inline constexpr unsigned calculate_win32_cygwin_open_mode(open_mode value)
 
 inline int cygwin_create_fd_with_win32_handle(void* handle,open_mode mode)
 {
-	int fd{my_cygwin_attach_handle_to_fd(nullptr,-1,handle,true,calculate_win32_cygwin_open_mode(mode))};
+	int fd{my_cygwin_attach_handle_to_fd(nullptr,-1,handle,true,static_cast<int>(calculate_win32_cygwin_open_mode(mode)))};
 	if(fd==-1)
 		throw_posix_error();
 	return fd;
@@ -1167,6 +1167,35 @@ inline constexpr int posix_open_file_impl(T const& t,open_mode om,perms pm)
 
 #endif
 
+inline int my_open_posix_fd_temp_file()
+{
+#if (defined(_WIN32) && !defined(__WINE__)) && !defined(__CYGWIN__)
+	::fast_io::basic_win32_file<char> wf(::fast_io::io_temp);
+	int fd{::fast_io::noexcept_call(_open_osfhandle,reinterpret_cast<std::intptr_t>(wf.handle),_O_BINARY)};
+	if(fd==-1)
+		throw_posix_error();
+	wf.release();
+	return fd;
+#elif defined(__CYGWIN__)
+/*
+This implementation is not correct since cygwin runtime changes the tmp environment and it causes issues.
+*/
+	::fast_io::basic_win32_file<char> wf(::fast_io::io_temp);
+	constexpr int flag{static_cast<int>(0x80000000|0x40000000)};
+	int fd{my_cygwin_attach_handle_to_fd(nullptr,-1,wf.handle,true,flag)};
+	if(fd==-1)
+		throw_posix_error();
+	wf.release();
+	return fd;
+#elif defined(O_TMPFILE)&&defined(__linux__)
+	int fd{system_call<__NR_openat,int>(AT_FDCWD,u8"/tmp",O_EXCL|O_RDWR|O_TMPFILE|O_APPEND|O_NOATIME,S_IRUSR | S_IWUSR)};
+	system_call_throw_error(fd);
+	return fd;
+#else
+	throw_posix_error(EINVAL);
+#endif
+}
+
 }
 
 struct
@@ -1265,23 +1294,7 @@ public:
 	{}
 
 #endif
-
-
-/*
-To verify whether O_TMPFILE is a thing on FreeBSD. https://github.com/FreeRDP/FreeRDP/pull/6268
-*/
-#if defined(O_TMPFILE)&&defined(__linux__)
-	basic_posix_file(io_temp_t):basic_posix_io_observer<char_type>{
-		system_call<__NR_openat,int>(AT_FDCWD,u8"/tmp",O_EXCL|O_RDWR|O_TMPFILE|O_APPEND|O_NOATIME,S_IRUSR | S_IWUSR)}
-	{
-		system_call_throw_error(this->fd);
-	}
-#else
-	basic_posix_file(io_temp_t)
-	{
-		throw_posix_error(EINVAL);
-	}
-#endif
+	basic_posix_file(io_temp_t):basic_posix_io_observer<char_type>{::fast_io::details::my_open_posix_fd_temp_file()}{}
 
 	constexpr basic_posix_file(basic_posix_io_observer<ch_type>) noexcept=delete;
 	constexpr basic_posix_file& operator=(basic_posix_io_observer<ch_type>) noexcept=delete;

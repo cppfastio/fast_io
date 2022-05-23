@@ -32,6 +32,7 @@ inline constexpr std::ios::openmode calculate_fstream_open_value(open_mode om) n
 {
 	return calculate_fstream_file_open_mode(om);
 }
+
 }
 
 
@@ -79,6 +80,9 @@ public:
 		details::streambuf_hack::msvc_hack_set_close(this->fb);
 	}
 #endif
+	basic_filebuf_file(io_temp_t):basic_filebuf_file(::fast_io::basic_c_file_unlocked<char_type>(::fast_io::io_temp),::fast_io::open_mode::in|::fast_io::open_mode::out)
+	{
+	}
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 #if !defined(__AVR__) && !defined(_GLIBCXX_USE_STDIO_PURE)
 	basic_filebuf_file(basic_posix_file<char_type>&& piohd,open_mode mode):
