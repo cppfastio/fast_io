@@ -7,8 +7,8 @@ namespace details
 {
 
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_identification(output bos,basic_lc_identification<char_type> const& identification)
 {
@@ -155,8 +155,8 @@ constexpr void print_grouping(output bos,basic_io_scatter_t<std::size_t> groupin
 }
 
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_type> const& monetary)
 {
@@ -302,8 +302,8 @@ constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_t
 	}
 }
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_numeric(output bos,basic_lc_numeric<char_type> const& numeric)
 {
@@ -431,8 +431,8 @@ constexpr void print_loc_days_impl_const(output bos,ch_type1 const (&category_na
 }
 
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> const& time)
 {
@@ -587,8 +587,8 @@ constexpr void print_loc_keyboards_impl(output bos,basic_io_scatter_t<typename o
 }
 
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_type> const& messages)
 {
@@ -639,8 +639,8 @@ constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_t
 	}
 }
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_paper(output bos,basic_lc_paper<char_type> const& paper)
 {
@@ -682,8 +682,8 @@ constexpr void print_define_impl_lc_paper(output bos,basic_lc_paper<char_type> c
 }
 
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char_type> const& telephone)
 {
@@ -734,8 +734,8 @@ constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char
 	}
 }
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> const& name)
 {
@@ -796,8 +796,8 @@ constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> con
 	}
 }
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_measurement(output bos,basic_lc_measurement<char_type> measurement)
 {
@@ -833,8 +833,8 @@ constexpr void print_define_impl_lc_measurement(output bos,basic_lc_measurement<
 	}
 }
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_keyboard(output bos,basic_lc_keyboard<char_type> const& keyboard)
 {
@@ -886,8 +886,8 @@ inline constexpr char_type const* lc_all_create_nn() noexcept
 }
 
 template<typename output,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_all(output bos,basic_lc_all<char_type> const& all)
 {
