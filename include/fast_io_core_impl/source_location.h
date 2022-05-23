@@ -55,4 +55,14 @@ inline constexpr source_location_scatter print_alias_define(io_alias_t,std::sour
 	return details::print_alias_define_source_location_impl(location);
 }
 
+namespace manipulators
+{
+
+inline constexpr ::std::source_location cur_src_loc(::std::source_location loc=::std::source_location::current()) noexcept
+{
+	return loc;
+}
+
+}
+
 }
