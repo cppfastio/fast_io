@@ -20,8 +20,8 @@ struct condition
 template<typename T1,typename T2>
 inline constexpr decltype(auto) cond(bool pred,T1&& t1,T2&& t2) noexcept
 {
-	using t1aliastype=decltype(fast_io::io_print_alias(t1));
-	using t2aliastype=decltype(fast_io::io_print_alias(t2));
+	using t1aliastype=::std::remove_cvref_t<decltype(fast_io::io_print_alias(t1))>;
+	using t2aliastype=::std::remove_cvref_t<decltype(fast_io::io_print_alias(t2))>;
 	constexpr bool type_match{::std::same_as<t1aliastype,t2aliastype>};
 	if constexpr(type_match)
 	{
@@ -53,6 +53,7 @@ template<std::integral char_type,typename T1,typename T2>
 requires (reserve_printable<char_type,T1>&&reserve_printable<char_type,T2>)
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,::fast_io::manipulators::condition<T1,T2>>) noexcept
 {
+
 	constexpr std::size_t s1{print_reserve_size(io_reserve_type<char_type,T1>)};
 	constexpr std::size_t s2{print_reserve_size(io_reserve_type<char_type,T2>)};
 	if constexpr(s1<s2)
@@ -67,7 +68,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,::
 
 template<std::integral char_type,typename T1,typename T2>
 requires (reserve_printable<char_type,T1>&&reserve_printable<char_type,T2>)
-inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io::manipulators::condition<T1,T2>>,char_type *iter,::fast_io::manipulators::condition<T1,T2> c) noexcept
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io::manipulators::condition<T1,T2>>,char_type* iter,::fast_io::manipulators::condition<T1,T2> c) noexcept
 {
 	if(c.pred)
 	{
