@@ -28,11 +28,11 @@ struct cxa_demangle
 			length=strlen(mangled_name);
 			std::size_t lengthp1{length+1};
 			auto newp{malloc(lengthp1)};
-			if(buffer==nullptr)
+			if(newp==nullptr)
 			{
 				fast_terminate();
 			}
-			memcpy(buffer,mangled_name,lengthp1);
+			memcpy(newp,mangled_name,lengthp1);
 			buffer=reinterpret_cast<char*>(newp);
 		}
 	}
