@@ -2,6 +2,7 @@
 #if __has_include(<cxxabi.h>)
 #include<cxxabi.h>
 #endif
+#include<cstdlib>
 
 namespace fast_io
 {
