@@ -112,7 +112,7 @@ inline void* llvm_libc_buffer_curr(FILE* fpp) noexcept
 inline void* llvm_libc_ibuffer_end(FILE* fpp) noexcept
 {
 	auto fp{reinterpret_cast<File*>(fpp)};
-	return reinterpret_cast<char*>(fp->buf)+fp->pos;
+	return reinterpret_cast<char*>(fp->buf)+fp->read_limit;
 }
 
 inline void* llvm_libc_obuffer_end(FILE* fpp) noexcept
