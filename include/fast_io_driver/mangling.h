@@ -48,6 +48,8 @@ struct cxa_demangle
 	cxa_demangle& operator=(cxa_demangle const& other) noexcept
 	{
 		auto newp{reinterpret_cast<char*>(malloc(other.length+1))};
+		if(newp==nullptr)
+			fast_terminate();
 		::fast_io::details::my_memcpy(newp,other.buffer,other.length);
 		newp[other.length]=0;
 		free(buffer);
