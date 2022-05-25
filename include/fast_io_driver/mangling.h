@@ -69,6 +69,12 @@ struct cxa_demangle
 	{
 		return buffer+length;
 	}
+	char const* c_str() const noexcept
+	{
+		if(buffer==nullptr)
+			return "";
+		return buffer;
+	}
 	~cxa_demangle()
 	{
 		free(buffer);
