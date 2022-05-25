@@ -1,6 +1,7 @@
 ﻿#pragma once
-
+#if __has_include(<cxxabi.h>)
 #include<cxxabi.h>
+#endif
 
 namespace fast_io
 {
@@ -9,20 +10,31 @@ struct cxa_demangle
 {
 	char* buffer{};
 	std::size_t length{};
-	explicit cxa_demangle(char const* mangled_name)
+	explicit cxa_demangle(char const* mangled_name) noexcept
 	{
+#if __has_include(<cxxabi.h>)
 		int status{};
 		buffer=static_cast<char*>(
 		abi::__cxa_demangle(mangled_name,
-		nullptr,&length,&status));
-		if(buffer==nullptr)
+		nullptr,__builtin_addressof(length),
+			__builtin_addressof(status)));
+		if(buffer!=nullptr)
 		{
-			int errn{EINVAL};
-			if(status==-1)
-				errn=ENOMEM;
-			throw_posix_error(errn);
+			length=strlen(buffer);
 		}
-		length=strlen(buffer);
+		else
+#endif
+		{
+			length=strlen(mangled_name);
+			std::size_t lengthp1{length+1};
+			auto newp{malloc(lengthp1)};
+			if(buffer==nullptr)
+			{
+				fast_terminate();
+			}
+			memcpy(buffer,mangled_name,lengthp1);
+			buffer=reinterpret_cast<char*>(newp);
+		}
 	}
 	cxa_demangle(cxa_demangle const& other) noexcept:
 		buffer(reinterpret_cast<char*>(malloc(other.length+1))),
@@ -36,6 +48,8 @@ struct cxa_demangle
 	cxa_demangle& operator=(cxa_demangle const& other) noexcept
 	{
 		auto newp{reinterpret_cast<char*>(malloc(other.length+1))};
+		if(newp==nullptr)
+			fast_terminate();
 		::fast_io::details::my_memcpy(newp,other.buffer,other.length);
 		newp[other.length]=0;
 		free(buffer);
@@ -74,5 +88,10 @@ struct cxa_demangle
 		free(buffer);
 	}
 };
+
+inline constexpr basic_io_scatter_t<char> print_alias_define(io_alias_t,cxa_demangle const& man) noexcept
+{
+	return {man.buffer,man.length};
+}
 
 }
