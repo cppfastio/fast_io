@@ -121,7 +121,7 @@ true
 __fastcall
 #endif
 		*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,
-#if defined(__CYGWIN__) && (SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__)))
+#if defined(__CYGWIN__) && (SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__)))
 	u8"@export_v0@4"
 #else
 	u8"export_v0"

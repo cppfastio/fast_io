@@ -107,8 +107,8 @@ https://doxygen.reactos.org/d3/d4d/sdk_2lib_2rtl_2process_8c.html
 */
 
 struct
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 nt_user_process_information_scoped_ptr
 {

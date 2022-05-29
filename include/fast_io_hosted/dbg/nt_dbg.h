@@ -7,7 +7,7 @@ template<std::integral ch_type>
 struct basic_nt_dbg
 {
 	using char_type = ch_type;
-	std::uint_least32_t component_id{UINT32_MAX};
+	std::uint_least32_t component_id{UINT_LEAST32_MAX};
 	std::uint_least32_t level{};
 	static inline constexpr std::size_t output_buffer_alignment_size{512u};
 };
@@ -71,7 +71,7 @@ inline constexpr auto nt_fmt_cache{calculate_nt_dbg_fmt<iswide,n>()};
 
 struct nt_dbg_carrier
 {
-	std::uint_least32_t component_id{UINT32_MAX};
+	std::uint_least32_t component_id{UINT_LEAST32_MAX};
 	std::uint_least32_t level{};
 };
 
@@ -91,9 +91,9 @@ inline void nt_fmt_dbg_forward([[maybe_unused]] nt_dbg_carrier carr,char8_t cons
 		--arg;
 		void const* arg_n_ptr{arg->base};
 		std::size_t arg_n_len{arg->len};
-		if(UINT16_MAX<arg_n_len)
+		if(UINT_LEAST16_MAX<arg_n_len)
 		{
-			arg_n_len=UINT16_MAX;
+			arg_n_len=UINT_LEAST16_MAX;
 		}
 		std::uint_least16_t const u16argnlen{static_cast<std::uint_least16_t>(arg_n_len)};
 		::fast_io::win32::nt::ansi_string astr{u16argnlen,u16argnlen,const_cast<char*>(reinterpret_cast<char const*>(arg_n_ptr))};
@@ -108,9 +108,9 @@ template<bool iswide>
 inline void nt_dbg_write_impl([[maybe_unused]] nt_dbg_carrier carr,char const* first,char const* last) noexcept
 {
 	std::size_t arg_n_len{static_cast<std::size_t>(last-first)};
-	if(UINT16_MAX<arg_n_len)
+	if(UINT_LEAST16_MAX<arg_n_len)
 	{
-		arg_n_len=UINT16_MAX;
+		arg_n_len=UINT_LEAST16_MAX;
 	}
 	std::uint_least16_t const u16argnlen{static_cast<std::uint_least16_t>(arg_n_len)};
 	::fast_io::win32::nt::ansi_string astr{u16argnlen,u16argnlen,const_cast<char*>(first)};
@@ -159,23 +159,23 @@ inline void scatter_constant_write(basic_nt_dbg<ch_type> d,io_scatter_t const* p
 }
 
 #if !defined(_WIN32_WINDOWS)
-inline auto dbg(std::uint_least32_t component_id=UINT32_MAX,std::uint_least32_t level=0) noexcept
+inline auto dbg(std::uint_least32_t component_id=UINT_LEAST32_MAX,std::uint_least32_t level=0) noexcept
 {
 	return nt_dbg{component_id,level};
 }
-inline auto wdbg(std::uint_least32_t component_id=UINT32_MAX,std::uint_least32_t level=0) noexcept
+inline auto wdbg(std::uint_least32_t component_id=UINT_LEAST32_MAX,std::uint_least32_t level=0) noexcept
 {
 	return wnt_dbg{component_id,level};
 }
-inline auto u8dbg(std::uint_least32_t component_id=UINT32_MAX,std::uint_least32_t level=0) noexcept
+inline auto u8dbg(std::uint_least32_t component_id=UINT_LEAST32_MAX,std::uint_least32_t level=0) noexcept
 {
 	return u8nt_dbg{component_id,level};
 }
-inline auto u16dbg(std::uint_least32_t component_id=UINT32_MAX,std::uint_least32_t level=0) noexcept
+inline auto u16dbg(std::uint_least32_t component_id=UINT_LEAST32_MAX,std::uint_least32_t level=0) noexcept
 {
 	return u16nt_dbg{component_id,level};
 }
-inline auto u32dbg(std::uint_least32_t component_id=UINT32_MAX,std::uint_least32_t level=0) noexcept
+inline auto u32dbg(std::uint_least32_t component_id=UINT_LEAST32_MAX,std::uint_least32_t level=0) noexcept
 {
 	return u32nt_dbg{component_id,level};
 }

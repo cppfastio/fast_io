@@ -141,7 +141,7 @@ inline void hack_wpset(FILE* fp,char_type* ptr) noexcept
 	::fast_io::details::my_memcpy(hack_wide_data(fp)+off,__builtin_addressof(ptr),sizeof(wchar_t*));
 }
 }
-#if WCHAR_MAX == UINT32_MAX
+#if WCHAR_MAX == UINT_LEAST32_MAX
 //wchar_t supports
 
 inline wchar_t* ibuffer_begin(wc_io_observer_unlocked cio) noexcept
@@ -169,7 +169,7 @@ namespace details
 {
 extern std::uint_least32_t glibc_wunderflow (FILE *) noexcept asm("__wunderflow");
 }
-#if WCHAR_MAX == UINT32_MAX
+#if WCHAR_MAX == UINT_LEAST32_MAX
 inline bool ibuffer_underflow(wc_io_observer_unlocked cio) noexcept
 {
 	ibuffer_set_curr(cio,ibuffer_end(cio));

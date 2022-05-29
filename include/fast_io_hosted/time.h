@@ -14,8 +14,8 @@ extern int libc_clock_gettime(clockid_t clk_id, struct timespec* tp) noexcept __
 namespace details
 {
 #if !defined(__AVR__)
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
 inline constexpr auto posix_clock_id_to_native_value(posix_clock_id pcid)
 {
@@ -131,8 +131,8 @@ inline constexpr auto posix_clock_id_to_native_value(posix_clock_id pcid)
 
 #endif
 #ifdef _WIN32
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
 inline std::int_least64_t win32_query_performance_frequency()
 {
@@ -144,8 +144,8 @@ inline std::int_least64_t win32_query_performance_frequency()
 	return val;
 }
 
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
 inline unix_timestamp win32_query_performance_frequency_to_unix_timestamp()
 {
@@ -353,7 +353,7 @@ inline unix_timestamp get_dos_unix_timestamp()
 inline void set_dos_unix_timestamp(unix_timestamp tsp)
 {
 	iso8601_timestamp iso8601{utc(tsp)};
-	if(iso8601.year>static_cast<std::int_least64_t>(UINT16_MAX)||iso8601.year<0)
+	if(iso8601.year>static_cast<std::int_least64_t>(UINT_LEAST16_MAX)||iso8601.year<0)
 		throw_posix_error(EINVAL);
 	std::uint_least16_t year{static_cast<std::uint_least16_t>(iso8601.year)};
 	my_dos_date_t dos_date{static_cast<std::uint_least8_t>(iso8601.day),static_cast<std::uint_least8_t>(iso8601.month),year,0};
@@ -642,8 +642,8 @@ inline iso8601_timestamp to_iso8601_local_impl(std::int_least64_t seconds,std::u
 }
 
 #if defined(__NEWLIB__) || defined(_PICOLIBC__)
-#if __has_cpp_attribute(gnu::dllimport)&&defined(__CYGWIN__)
-[[gnu::dllimport]]
+#if __has_cpp_attribute(__gnu__::__dllimport__)&&defined(__CYGWIN__)
+[[__gnu__::__dllimport__]]
 #endif
 extern void m_tzset() noexcept asm("tzset");
 #endif

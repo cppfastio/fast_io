@@ -329,11 +329,11 @@ namespace details
 Warning! cygwin's _get_osfhandle has the same name as msvcrt or ucrt's name, but they are completely different functions. Also, it returns long, not std::intptr_t
 */
 #if defined(__CYGWIN__)
-#if __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#if __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern long cygwin_get_osfhandle(int fd) noexcept
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 __asm__("_get_osfhandle")
 #else
@@ -449,8 +449,8 @@ inline std::size_t posix_read_impl(int fd,void* address,std::size_t bytes_to_rea
 {
 #if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
 	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(INT32_MAX)<bytes_to_read)
-			bytes_to_read=static_cast<std::size_t>(INT32_MAX);
+		if(static_cast<std::size_t>(INT_LEAST32_MAX)<bytes_to_read)
+			bytes_to_read=static_cast<std::size_t>(INT_LEAST32_MAX);
 #endif
 	auto read_bytes(
 #if defined(__linux__)
@@ -501,8 +501,8 @@ inline std::size_t posix_write_nolock_impl(int fd,void const* address,std::size_
 		std::size_t written{};
 		for(;to_write;)
 		{
-			std::uint_least32_t to_write_this_round{INT32_MAX};
-			if(to_write<static_cast<std::size_t>(INT32_MAX))
+			std::uint_least32_t to_write_this_round{INT_LEAST32_MAX};
+			if(to_write<static_cast<std::size_t>(INT_LEAST32_MAX))
 				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
 			std::uint_least32_t number_of_bytes_written{posix_write_simple_impl(fd,address,to_write_this_round)};
 			written+=number_of_bytes_written;
@@ -691,8 +691,8 @@ inline std::uintmax_t seek(basic_posix_io_observer<ch_type> h,std::intmax_t i=0,
 }
 
 template<std::integral ch_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void flush(basic_posix_io_observer<ch_type> piob)
 {
@@ -700,8 +700,8 @@ inline void flush(basic_posix_io_observer<ch_type> piob)
 }
 
 template<std::integral ch_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void data_sync(basic_posix_io_observer<ch_type> piob,data_sync_flags flags)
 {
@@ -1030,11 +1030,11 @@ inline int my_posix_openat(int dirfd,char const* pathname,int flags,mode_t mode)
 
 #if defined(__CYGWIN__)
 
-#if __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#if __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern int my_cygwin_attach_handle_to_fd(char const* name, int fd, void* handle, int bin, int access) noexcept
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 __asm__("cygwin_attach_handle_to_fd")
 #else
@@ -1199,8 +1199,8 @@ This implementation is not correct since cygwin runtime changes the tmp environm
 }
 
 struct
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 posix_file_factory
 {
@@ -1342,9 +1342,15 @@ namespace details
 {
 
 #if defined(__CYGWIN__)
-[[gnu::dllimport,gnu::cdecl]] extern int ftruncate(int, off_t) noexcept
+#if __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
+#endif
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern int ftruncate(int, off_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
 __asm__("ftruncate")
 #else
@@ -1387,8 +1393,8 @@ inline void posix_truncate_impl(int fd,std::uintmax_t size)
 }
 
 template<std::integral ch_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void truncate(basic_posix_io_observer<ch_type> h,std::uintmax_t size)
 {

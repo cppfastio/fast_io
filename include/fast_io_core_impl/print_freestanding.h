@@ -439,8 +439,8 @@ inline constexpr print_size_struct print_reserve_multiple_parameters_total_size(
 
 template<std::size_t n,typename T,typename Iter,typename... Args>
 requires(n!=0)
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -462,8 +462,8 @@ template<bool line,
 std::size_t n,
 typename output,
 typename T,typename... Args>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -587,8 +587,8 @@ inline constexpr void print_controls_line_multi_impl(output out,T t,Args ...args
 }
 
 template<bool ln,output_stream output,typename T,typename... Args>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

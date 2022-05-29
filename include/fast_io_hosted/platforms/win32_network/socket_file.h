@@ -52,8 +52,8 @@ inline std::size_t win32_socket_write_impl(std::uintptr_t socket, void const* da
 		std::size_t written{};
 		for(;to_write;)
 		{
-			std::uint_least32_t to_write_this_round{UINT32_MAX};
-			if(to_write<static_cast<std::size_t>(UINT32_MAX))
+			std::uint_least32_t to_write_this_round{UINT_LEAST32_MAX};
+			if(to_write<static_cast<std::size_t>(UINT_LEAST32_MAX))
 				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
 			std::uint_least32_t number_of_bytes_written{win32_socket_write_simple_impl(socket,data,to_write_this_round)};
 			written+=number_of_bytes_written;
@@ -439,8 +439,8 @@ inline std::uintptr_t open_win32_socket_impl(sock_family d,sock_type t,open_mode
 }
 
 struct
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 win32_socket_factory
 {
@@ -471,8 +471,8 @@ inline win32_socket_factory tcp_accept(basic_win32_family_socket_io_observer<fam
 
 template<win32_family family,std::integral ch_type>
 class
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 basic_win32_family_socket_file : public basic_win32_family_socket_io_observer<family,ch_type>
 {

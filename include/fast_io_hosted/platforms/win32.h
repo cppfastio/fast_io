@@ -577,8 +577,8 @@ inline void win32_data_sync_impl(void* __restrict handle,data_sync_flags flags [
 }
 
 template<win32_family family,std::integral char_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void flush(basic_win32_family_io_observer<family,char_type> wiob)
 {
@@ -586,8 +586,8 @@ inline void flush(basic_win32_family_io_observer<family,char_type> wiob)
 }
 
 template<win32_family family,std::integral char_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void data_sync(basic_win32_family_io_observer<family,char_type> wiob,data_sync_flags flags)
 {
@@ -601,8 +601,8 @@ inline std::size_t read_impl(void* __restrict handle,void* __restrict begin,std:
 {
 	std::uint_least32_t number_of_bytes_read{};
 	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(UINT32_MAX)<to_read)
-			to_read=static_cast<std::size_t>(UINT32_MAX);
+		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_read)
+			to_read=static_cast<std::size_t>(UINT_LEAST32_MAX);
 	if(!win32::ReadFile(handle,begin,static_cast<std::uint_least32_t>(to_read),__builtin_addressof(number_of_bytes_read),nullptr))
 	{
 		auto err(win32::GetLastError());
@@ -617,8 +617,8 @@ inline std::size_t pread_impl(void* __restrict handle,void* __restrict begin,std
 {
 	std::uint_least32_t number_of_bytes_read{};
 	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(UINT32_MAX)<to_read)
-			to_read=static_cast<std::size_t>(UINT32_MAX);
+		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_read)
+			to_read=static_cast<std::size_t>(UINT_LEAST32_MAX);
 	win32::overlapped overlap{};
 	overlap.dummy_union_name.dummy_struct_name={static_cast<std::uint_least32_t>(u64off),static_cast<std::uint_least32_t>(u64off>>32)};
 	if(!win32::ReadFile(handle,begin,static_cast<std::uint_least32_t>(to_read),__builtin_addressof(number_of_bytes_read),__builtin_addressof(overlap)))
@@ -689,8 +689,8 @@ inline std::size_t pwrite_impl(void* __restrict handle,void const* __restrict cb
 		std::size_t written{};
 		for(;to_write;)
 		{
-			std::uint_least32_t to_write_this_round{UINT32_MAX};
-			if(to_write<static_cast<std::size_t>(UINT32_MAX))
+			std::uint_least32_t to_write_this_round{UINT_LEAST32_MAX};
+			if(to_write<static_cast<std::size_t>(UINT_LEAST32_MAX))
 				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
 			std::uint_least32_t number_of_bytes_written{pwrite_simple_impl(handle,cbegin,to_write_this_round,offset)};
 			written+=number_of_bytes_written;
@@ -726,8 +726,8 @@ inline std::size_t write_nolock_impl(void* __restrict handle,void const* __restr
 		std::size_t written{};
 		for(;to_write;)
 		{
-			std::uint_least32_t to_write_this_round{UINT32_MAX};
-			if(to_write<static_cast<std::size_t>(UINT32_MAX))
+			std::uint_least32_t to_write_this_round{UINT_LEAST32_MAX};
+			if(to_write<static_cast<std::size_t>(UINT_LEAST32_MAX))
 				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
 			std::uint_least32_t number_of_bytes_written{write_simple_impl(handle,cbegin,to_write_this_round)};
 			written+=number_of_bytes_written;
@@ -881,8 +881,8 @@ inline void iocp_async_write_define_impl(void* handle,void const* data,std::size
 {
 
 	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(UINT32_MAX)<to_write)
-			to_write=static_cast<std::size_t>(UINT32_MAX);
+		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_write)
+			to_write=static_cast<std::size_t>(UINT_LEAST32_MAX);
 	if constexpr(4<sizeof(std::size_t))
 	{
 		callback->dummy_union_name.dummy_struct_name.Offset=static_cast<std::size_t>(offset)&std::numeric_limits<std::uint_least32_t>::max();
@@ -967,8 +967,8 @@ inline void io_control(basic_win32_family_io_observer<family,ch_type> h,Args&& .
 }
 
 struct
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 win32_file_factory
 {

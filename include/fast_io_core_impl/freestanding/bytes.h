@@ -2,8 +2,8 @@
 
 namespace fast_io::details
 {
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -20,8 +20,8 @@ inline constexpr ::std::byte* bytes_copy_naive_n_impl(::std::byte const* first,s
 
 namespace fast_io::freestanding
 {
-#if __has_cpp_attribute(gnu::flatten)
-[[gnu::flatten]]
+#if __has_cpp_attribute(__gnu__::__flatten__)
+[[__gnu__::__flatten__]]
 #endif
 inline constexpr ::std::byte* bytes_copy_n(::std::byte const* first,::std::size_t n,::std::byte* dest) noexcept
 {

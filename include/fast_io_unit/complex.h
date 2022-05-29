@@ -349,8 +349,8 @@ inline constexpr auto comma_scientific(std::complex<scalar_type> t,std::size_t n
 
 template<typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

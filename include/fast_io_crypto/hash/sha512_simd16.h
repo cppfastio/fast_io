@@ -1,7 +1,7 @@
 #pragma once
 
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void sha512_simd16_byte_swap_message_2rounds(::fast_io::intrinsics::simd_vector<std::uint_least64_t,2>& __restrict s1,
 	std::byte const* __restrict blocks_start,std::uint_least64_t* __restrict w,std::uint_least64_t* __restrict wt,std::uint_fast16_t round) noexcept
@@ -19,8 +19,8 @@ inline void sha512_simd16_byte_swap_message_2rounds(::fast_io::intrinsics::simd_
 	s0.store(wt+round);
 }
 
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void sha512_simd16_compute_message_2rounds(
 	::fast_io::intrinsics::simd_vector<std::uint_least64_t,2>& __restrict s1,
@@ -47,8 +47,8 @@ inline void sha512_simd16_compute_message_2rounds(
 	s0.store(wt+round);
 }
 
-#if __has_cpp_attribute(gnu::flatten)
-[[gnu::flatten]]
+#if __has_cpp_attribute(__gnu__::__flatten__)
+[[__gnu__::__flatten__]]
 #endif
 inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
 {
