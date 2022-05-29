@@ -5,17 +5,19 @@ namespace fast_io
 
 namespace details
 {
-#if defined(_GNU_SOURCE)
+#if defined(_GNU_SOURCE) && !defined(__ANDROID__)
 extern char const* libc_secure_getenv(char const*) noexcept __asm__("secure_getenv");
+#else
+extern char const* libc_getenv(char const*) noexcept __asm__("getenv");
 #endif
 
 inline char const* my_u8getenv(char8_t const* env) noexcept
 {
 	return
-#if defined(_GNU_SOURCE)
+#if defined(_GNU_SOURCE) && !defined(__ANDROID__)
 	libc_secure_getenv(reinterpret_cast<char const*>(env));
 #else
-	std::getenv(reinterpret_cast<char const*>(env));
+	libc_getenv(reinterpret_cast<char const*>(env));
 #endif
 }
 
