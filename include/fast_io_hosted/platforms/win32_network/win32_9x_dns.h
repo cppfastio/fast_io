@@ -21,7 +21,7 @@ __declspec(dllimport)
 #endif
 extern hostent* __stdcall gethostbyname(char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
 asm("gethostbyname@4")
 #else

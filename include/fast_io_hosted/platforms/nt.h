@@ -397,8 +397,8 @@ template<bool zw>
 inline std::size_t nt_read_impl(void* __restrict handle,void* __restrict begin,std::size_t size)
 {
 	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(UINT32_MAX)<size)
-			size=static_cast<std::size_t>(UINT32_MAX);
+		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<size)
+			size=static_cast<std::size_t>(UINT_LEAST32_MAX);
 	win32::nt::io_status_block block;	//some poeple in zwclose7 forum said we do not need to initialize io_status_block
 	auto const status{win32::nt::nt_read_file<zw>(handle,nullptr,nullptr,nullptr,
 		__builtin_addressof(block), begin, static_cast<std::uint_least32_t>(size), nullptr, nullptr)};
@@ -415,8 +415,8 @@ inline std::size_t nt_write_impl(void* __restrict handle,void const* __restrict 
 		std::size_t written{};
 		for(;size;)
 		{
-			std::uint_least32_t to_write_this_round{UINT32_MAX};
-			if(size<static_cast<std::size_t>(UINT32_MAX))
+			std::uint_least32_t to_write_this_round{UINT_LEAST32_MAX};
+			if(size<static_cast<std::size_t>(UINT_LEAST32_MAX))
 				to_write_this_round=static_cast<std::uint_least32_t>(size);
 			win32::nt::io_status_block block; //some poeple in zwclose7 forum said we do not need to initialize io_status_block
 			auto const status{win32::nt::nt_write_file<zw>(handle,nullptr,nullptr,nullptr,

@@ -73,7 +73,7 @@ inline void atl_write_n_impl(CAtlFile* cfp,std::byte const* first_ptr,std::size_
 	{
 		while(n)
 		{
-			constexpr std::size_t sz_max{static_cast<std::size_t>(UINT32_MAX)};
+			constexpr std::size_t sz_max{static_cast<std::size_t>(UINT_LEAST32_MAX)};
 			std::size_t write_this_round{n};
 			if(sz_max<write_this_round)
 			{
@@ -101,8 +101,8 @@ inline void atl_write_impl(CAtlFile* cfp,void const* first,void const* last)
 inline std::size_t atl_read_impl(CAtlFile* cfp,void* first,std::size_t to_read)
 {
 	if constexpr(sizeof(std::size_t)>4)
-		if(static_cast<std::size_t>(UINT32_MAX)<to_read)
-			to_read=static_cast<std::size_t>(UINT32_MAX);
+		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_read)
+			to_read=static_cast<std::size_t>(UINT_LEAST32_MAX);
 	DWORD ret{};
 	auto hr{cfp->Read(first,static_cast<std::uint_least32_t>(to_read),ret)};
 	if(hr!=S_OK)

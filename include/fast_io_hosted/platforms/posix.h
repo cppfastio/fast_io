@@ -333,7 +333,7 @@ Warning! cygwin's _get_osfhandle has the same name as msvcrt or ucrt's name, but
 [[gnu::dllimport]]
 #endif
 extern long cygwin_get_osfhandle(int fd) noexcept
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 __asm__("_get_osfhandle")
 #else
@@ -449,8 +449,8 @@ inline std::size_t posix_read_impl(int fd,void* address,std::size_t bytes_to_rea
 {
 #if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
 	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(INT32_MAX)<bytes_to_read)
-			bytes_to_read=static_cast<std::size_t>(INT32_MAX);
+		if(static_cast<std::size_t>(INT_LEAST32_MAX)<bytes_to_read)
+			bytes_to_read=static_cast<std::size_t>(INT_LEAST32_MAX);
 #endif
 	auto read_bytes(
 #if defined(__linux__)
@@ -501,8 +501,8 @@ inline std::size_t posix_write_nolock_impl(int fd,void const* address,std::size_
 		std::size_t written{};
 		for(;to_write;)
 		{
-			std::uint_least32_t to_write_this_round{INT32_MAX};
-			if(to_write<static_cast<std::size_t>(INT32_MAX))
+			std::uint_least32_t to_write_this_round{INT_LEAST32_MAX};
+			if(to_write<static_cast<std::size_t>(INT_LEAST32_MAX))
 				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
 			std::uint_least32_t number_of_bytes_written{posix_write_simple_impl(fd,address,to_write_this_round)};
 			written+=number_of_bytes_written;
@@ -1034,7 +1034,7 @@ inline int my_posix_openat(int dirfd,char const* pathname,int flags,mode_t mode)
 [[gnu::dllimport]]
 #endif
 extern int my_cygwin_attach_handle_to_fd(char const* name, int fd, void* handle, int bin, int access) noexcept
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 __asm__("cygwin_attach_handle_to_fd")
 #else
@@ -1344,7 +1344,7 @@ namespace details
 #if defined(__CYGWIN__)
 [[gnu::dllimport,gnu::cdecl]] extern int ftruncate(int, off_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
 __asm__("ftruncate")
 #else

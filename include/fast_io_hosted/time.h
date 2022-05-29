@@ -353,7 +353,7 @@ inline unix_timestamp get_dos_unix_timestamp()
 inline void set_dos_unix_timestamp(unix_timestamp tsp)
 {
 	iso8601_timestamp iso8601{utc(tsp)};
-	if(iso8601.year>static_cast<std::int_least64_t>(UINT16_MAX)||iso8601.year<0)
+	if(iso8601.year>static_cast<std::int_least64_t>(UINT_LEAST16_MAX)||iso8601.year<0)
 		throw_posix_error(EINVAL);
 	std::uint_least16_t year{static_cast<std::uint_least16_t>(iso8601.year)};
 	my_dos_date_t dos_date{static_cast<std::uint_least8_t>(iso8601.day),static_cast<std::uint_least8_t>(iso8601.month),year,0};

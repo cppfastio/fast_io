@@ -335,8 +335,8 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 			}
 			case 4:
 			{
-				constexpr std::uint_least64_t risky_value{UINT64_MAX/10000ULL};
-				constexpr std::uint_least64_t risky_mod{UINT64_MAX%10000ULL};
+				constexpr std::uint_least64_t risky_value{UINT_LEAST64_MAX/10000ULL};
+				constexpr std::uint_least64_t risky_mod{UINT_LEAST64_MAX%10000ULL};
 				if(result>risky_value)
 					return {20,parse_code::overflow};
 				std::uint_least64_t partial{static_cast<std::uint_least64_t>(buffer[16]-zero_constant)*1000ULL+static_cast<std::uint_least64_t>(buffer[17]-zero_constant)*100ULL

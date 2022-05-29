@@ -16,7 +16,7 @@ inline ::ATL::CStringT<ch_type, traits_type> strlike_construct_define(io_strlike
 	std::size_t diff{static_cast<std::size_t>(last-first)};
 	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
-		constexpr std::uint_least32_t max_sz{INT32_MAX/sizeof(ch_type)};
+		constexpr std::uint_least32_t max_sz{INT_LEAST32_MAX/sizeof(ch_type)};
 		if(max_sz<diff)
 			::fast_io::fast_terminate();
 	}

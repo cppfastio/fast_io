@@ -13,7 +13,7 @@ inline ::winrt::hstring strlike_construct_define(io_strlike_type_t<wchar_t,::win
 	std::size_t diff{static_cast<std::size_t>(last-first)};
 	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
-		constexpr std::uint_least32_t max_sz{UINT32_MAX/sizeof(wchar_t)};
+		constexpr std::uint_least32_t max_sz{UINT_LEAST32_MAX/sizeof(wchar_t)};
 		if(max_sz<diff)
 			::fast_io::fast_terminate();
 	}

@@ -177,7 +177,7 @@ extern int fileno(FILE*) noexcept asm("_fileno");
 extern FILE* fdopen(int,char const*) noexcept asm("_fdopen");
 #elif defined(__CYGWIN__)
 [[gnu::dllimport]] extern int fileno(FILE*) noexcept 
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("fileno")
 #else
@@ -188,7 +188,7 @@ asm("fileno")
 #endif
 ;
 [[gnu::dllimport]] extern FILE* fdopen(int,char const*) noexcept
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("fdopen")
 #else
@@ -205,7 +205,7 @@ asm("fdopen")
 #if defined(__CYGWIN__)
 
 [[gnu::dllimport]] extern void my_cygwin_pthread_mutex_lock(void*) noexcept
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("pthread_mutex_lock")
 #else
@@ -217,7 +217,7 @@ asm("pthread_mutex_lock")
 ;
 
 [[gnu::dllimport]] extern void my_cygwin_pthread_mutex_unlock(void*) noexcept
-#if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("pthread_mutex_unlock")
 #else
