@@ -4,13 +4,13 @@ namespace fast_io::details::ryu
 {
 
 template<std::floating_point floating_type>
-inline constexpr typename floating_traits<floating_type>::mantissa_type me10_to_me2(typename floating_traits<floating_type>::mantissa_type m10,std::uint32_t ue10,std::uint32_t m10digits,std::int32_t dot_index,std::int32_t e_index,std::uint32_t index,bool exp_negative)
+inline constexpr typename floating_traits<floating_type>::mantissa_type me10_to_me2(typename floating_traits<floating_type>::mantissa_type m10,std::uint_least32_t ue10,std::uint_least32_t m10digits,std::int_least32_t dot_index,std::int_least32_t e_index,std::uint_least32_t index,bool exp_negative)
 {
 	using floating_trait = floating_traits<floating_type>;
 	using mantissa_type = typename floating_trait::mantissa_type;
 	using exponent_type = typename floating_trait::exponent_type;
 	constexpr exponent_type real_bits{floating_trait::exponent_bits+floating_trait::mantissa_bits+1};
-	std::int32_t e10(static_cast<std::int32_t>(ue10));
+	std::int_least32_t e10(static_cast<std::int_least32_t>(ue10));
 	if(exp_negative)
 		e10=-e10;
 	if(e_index==-1)
@@ -19,12 +19,12 @@ inline constexpr typename floating_traits<floating_type>::mantissa_type me10_to_
 		dot_index=index;
 	e10-=dot_index<e_index?e_index-dot_index-1:0;
 	constexpr exponent_type maximum_representable_e2{(1<<floating_trait::exponent_bits)-1};
-	if((static_cast<std::int32_t>(m10digits+e10)<floating_trait::minimum_exp)||(!m10))
+	if((static_cast<std::int_least32_t>(m10digits+e10)<floating_trait::minimum_exp)||(!m10))
 		return {};
-	if(floating_trait::maximum_exp<static_cast<std::int32_t>(m10digits+e10))
+	if(floating_trait::maximum_exp<static_cast<std::int_least32_t>(m10digits+e10))
 		return static_cast<mantissa_type>(static_cast<mantissa_type>(maximum_representable_e2) << floating_trait::mantissa_bits);
 	bool trailing_zeros{};
-	std::int32_t e2(static_cast<std::int32_t>(std::bit_width(m10))+e10-(2+floating_trait::mantissa_bits));
+	std::int_least32_t e2(static_cast<std::int_least32_t>(std::bit_width(m10))+e10-(2+floating_trait::mantissa_bits));
 	mantissa_type m2{};
 	if(e10<0)
 	{
@@ -55,16 +55,16 @@ inline constexpr typename floating_traits<floating_type>::mantissa_type me10_to_
 			m2=mul_pow5_div_pow2(m10,e10,j);
 		else
 			m2=mul_shift(m10,pow5<floating_type,true>::split[e10],j);
-		trailing_zeros = e2 < e10 || (e2 - e10 < static_cast<std::int32_t>(real_bits) && multiple_of_power_of_2(m10, e2 - e10));
+		trailing_zeros = e2 < e10 || (e2 - e10 < static_cast<std::int_least32_t>(real_bits) && multiple_of_power_of_2(m10, e2 - e10));
 	}
-	std::int32_t ieee_e2(e2 + (floating_trait::bias-1) + std::bit_width(m2));
+	std::int_least32_t ieee_e2(e2 + (floating_trait::bias-1) + std::bit_width(m2));
 	if(ieee_e2<0)
 		ieee_e2=0;
-	if(static_cast<std::int32_t>(maximum_representable_e2)<=ieee_e2)[[unlikely]]
+	if(static_cast<std::int_least32_t>(maximum_representable_e2)<=ieee_e2)[[unlikely]]
 	{
 		return static_cast<mantissa_type>(static_cast<mantissa_type>(maximum_representable_e2) << floating_trait::mantissa_bits);
 	}
-	std::int32_t shift((!ieee_e2?1:ieee_e2)-e2-(floating_trait::bias+floating_trait::mantissa_bits));
+	std::int_least32_t shift((!ieee_e2?1:ieee_e2)-e2-(floating_trait::bias+floating_trait::mantissa_bits));
 	trailing_zeros &= !(m2 & ((static_cast<mantissa_type>(1) << (shift - 1)) - 1));
 	bool last_removed_bit((m2>>(shift-1))&1);
 	bool round_up((last_removed_bit) && (!trailing_zeros || ((m2 >> shift) & 1)));

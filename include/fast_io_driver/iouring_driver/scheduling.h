@@ -12,7 +12,7 @@ inline void deal_with_cqe(io_uring_observer ring,io_uring_cqe *cqe)
 	if(!cqe)
 		return;
 	void* data{io_uring_cqe_get_data(cqe)};
-	std::int32_t res{cqe->res};
+	std::int_least32_t res{cqe->res};
 	io_uring_cqe_seen(ring.ring,cqe);
 	if(res<0)
 		static_cast<io_uring_overlapped_base*>(data)->invoke(0,-res);

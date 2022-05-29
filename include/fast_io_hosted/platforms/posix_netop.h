@@ -28,7 +28,7 @@ inline int posix_tcp_connect_v4_impl(ipv4 v4,open_mode m)
 {
 	posix_file soc(sock_family::inet,sock_type::stream,m,sock_protocol::tcp);
 	constexpr auto inet{to_posix_sock_family(sock_family::inet)};
-	posix_sockaddr_in in{.sin_family=inet,.sin_port=big_endian(static_cast<std::uint16_t>(v4.port)),.sin_addr=v4.address};
+	posix_sockaddr_in in{.sin_family=inet,.sin_port=big_endian(static_cast<std::uint_least16_t>(v4.port)),.sin_addr=v4.address};
 	posix_connect(soc,__builtin_addressof(in),sizeof(in));
 	return soc.release();
 }
@@ -37,7 +37,7 @@ inline int posix_tcp_connect_v6_impl(ipv6 v6,open_mode m)
 {
 	posix_file soc(sock_family::inet6,sock_type::stream,m,sock_protocol::tcp);
 	constexpr auto inet6{to_posix_sock_family(sock_family::inet6)};
-	posix_sockaddr_in6 in6{.sin6_family=inet6,.sin6_port=big_endian(static_cast<std::uint16_t>(v6.port)),.sin6_addr=v6.address};
+	posix_sockaddr_in6 in6{.sin6_family=inet6,.sin6_port=big_endian(static_cast<std::uint_least16_t>(v6.port)),.sin6_addr=v6.address};
 	posix_connect(soc,__builtin_addressof(in6),sizeof(in6));
 	return soc.release();
 }
@@ -60,7 +60,7 @@ inline int posix_tcp_connect_ip_impl(ip v,open_mode m)
 	return soc.release();
 }
 
-inline int posix_tcp_listen_impl(std::uint16_t port,open_mode m)
+inline int posix_tcp_listen_impl(std::uint_least16_t port,open_mode m)
 {
 	posix_file soc(sock_family::inet,sock_type::stream,m,sock_protocol::tcp);
 	constexpr auto inet{to_posix_sock_family(sock_family::inet)};
@@ -111,7 +111,7 @@ inline posix_file_factory tcp_connect(ip v,open_mode m=open_mode{})
 {
 	return posix_file_factory{details::posix_tcp_connect_ip_impl(v,m)};
 }
-inline posix_file_factory tcp_listen(std::uint16_t port,open_mode m=open_mode{})
+inline posix_file_factory tcp_listen(std::uint_least16_t port,open_mode m=open_mode{})
 {
 	return posix_file_factory{details::posix_tcp_listen_impl(port,m)};
 }

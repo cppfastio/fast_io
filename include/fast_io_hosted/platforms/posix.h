@@ -462,7 +462,7 @@ inline std::size_t posix_read_impl(int fd,void* address,std::size_t bytes_to_rea
 #endif
 	fd,address,
 #if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
-	static_cast<std::uint32_t>(bytes_to_read)
+	static_cast<std::uint_least32_t>(bytes_to_read)
 #else
 	bytes_to_read
 #endif
@@ -486,25 +486,25 @@ inline io_scatter_status_t posix_scatter_read_impl(int fd,io_scatters_t sp)
 	return {total_size,sp.len,0};
 }
 
-inline std::uint32_t posix_write_simple_impl(int fd,void const* address,std::size_t bytes_to_write)
+inline std::uint_least32_t posix_write_simple_impl(int fd,void const* address,std::size_t bytes_to_write)
 {
-	auto ret{noexcept_call(_write,fd,address,static_cast<std::uint32_t>(bytes_to_write))};
+	auto ret{noexcept_call(_write,fd,address,static_cast<std::uint_least32_t>(bytes_to_write))};
 	if(ret==-1)
 		throw_posix_error();
-	return static_cast<std::uint32_t>(ret);
+	return static_cast<std::uint_least32_t>(ret);
 }
 
 inline std::size_t posix_write_nolock_impl(int fd,void const* address,std::size_t to_write)
 {
-	if constexpr(4<sizeof(std::size_t))		//above the size of std::uint32_t, unfortunately, we cannot guarantee the atomicity of syscall
+	if constexpr(4<sizeof(std::size_t))		//above the size of std::uint_least32_t, unfortunately, we cannot guarantee the atomicity of syscall
 	{
 		std::size_t written{};
 		for(;to_write;)
 		{
-			std::uint32_t to_write_this_round{INT32_MAX};
+			std::uint_least32_t to_write_this_round{INT32_MAX};
 			if(to_write<static_cast<std::size_t>(INT32_MAX))
-				to_write_this_round=static_cast<std::uint32_t>(to_write);
-			std::uint32_t number_of_bytes_written{posix_write_simple_impl(fd,address,to_write_this_round)};
+				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
+			std::uint_least32_t number_of_bytes_written{posix_write_simple_impl(fd,address,to_write_this_round)};
 			written+=number_of_bytes_written;
 			if(number_of_bytes_written<to_write_this_round)
 				break;
@@ -578,29 +578,29 @@ inline std::uintmax_t posix_seek_impl(int fd,std::intmax_t offset,seekdir s)
 	return static_cast<std::uintmax_t>(static_cast<my_make_unsigned_t<off_t>>(ret));
 #elif defined(__linux__)
 #if defined(__NR_llseek)
-	if constexpr(sizeof(off_t)<=sizeof(std::int32_t))
+	if constexpr(sizeof(off_t)<=sizeof(std::int_least32_t))
 	{
-		std::uint64_t result{};
-		std::uint64_t offset64_val{static_cast<std::uint64_t>(static_cast<std::uintmax_t>(offset))};
-		auto ret{system_call<__NR_llseek,int>(fd,static_cast<std::uint32_t>(offset>>32u),static_cast<std::uint32_t>(offset),
+		std::uint_least64_t result{};
+		std::uint_least64_t offset64_val{static_cast<std::uint_least64_t>(static_cast<std::uintmax_t>(offset))};
+		auto ret{system_call<__NR_llseek,int>(fd,static_cast<std::uint_least32_t>(offset>>32u),static_cast<std::uint_least32_t>(offset),
 			__builtin_addressof(result),static_cast<int>(s))};
 		system_call_throw_error(ret);
-		return static_cast<std::uintmax_t>(static_cast<std::uint64_t>(result));
+		return static_cast<std::uintmax_t>(static_cast<std::uint_least64_t>(result));
 	}
 	else
 #endif
 	{
-		if constexpr(sizeof(off_t)<=sizeof(std::int32_t))
+		if constexpr(sizeof(off_t)<=sizeof(std::int_least32_t))
 		{
 			if(offset<static_cast<std::intmax_t>(std::numeric_limits<off_t>::min())||offset>static_cast<std::intmax_t>(std::numeric_limits<off_t>::max()))
 				throw_posix_error(EOVERFLOW);
 		}
 		auto ret{system_call<__NR_lseek,std::ptrdiff_t>(fd,offset,static_cast<int>(s))};
 		system_call_throw_error(ret);
-		return static_cast<std::uintmax_t>(static_cast<std::uint64_t>(ret));
+		return static_cast<std::uintmax_t>(static_cast<std::uint_least64_t>(ret));
 	}
 #else
-	if constexpr(sizeof(off_t)<=sizeof(std::int32_t))
+	if constexpr(sizeof(off_t)<=sizeof(std::int_least32_t))
 	{
 		if(offset<static_cast<std::intmax_t>(std::numeric_limits<off_t>::min())||offset>static_cast<std::intmax_t>(std::numeric_limits<off_t>::max()))
 			throw_posix_error(EOVERFLOW);
@@ -613,7 +613,7 @@ inline std::uintmax_t posix_seek_impl(int fd,std::intmax_t offset,seekdir s)
 #endif
 		(fd,static_cast<off_t>(offset),static_cast<int>(s)));
 	system_call_throw_error(ret);
-	return static_cast<std::uintmax_t>(static_cast<std::uint64_t>(ret));
+	return static_cast<std::uintmax_t>(static_cast<std::uint_least64_t>(ret));
 #endif
 }
 
@@ -1361,9 +1361,9 @@ inline void posix_truncate_impl(int fd,std::uintmax_t size)
 {
 #if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
 #if (!defined(__MINGW32__) || __has_include(<_mingw_stat64.h>))
-	if(size>static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
+	if(size>static_cast<std::uint_least64_t>(std::numeric_limits<std::int_least64_t>::max()))
 		throw_posix_error(EINVAL);
-	auto err(noexcept_call(_chsize_s,fd,static_cast<std::int64_t>(size)));
+	auto err(noexcept_call(_chsize_s,fd,static_cast<std::int_least64_t>(size)));
 	if(err)
 		throw_posix_error(err);
 #else
@@ -1596,8 +1596,8 @@ inline constexpr io_scatter_status_t scatter_size_to_status(std::size_t sz,io_sc
 
 #if defined(__wasi__)
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline io_scatter_status_t wasmtime_bug_posix_scatter_write_cold(int fd,io_scatters_t sp)
 {

@@ -36,26 +36,26 @@ inline constexpr basic_win32_family_socket_io_observer<family,char_type> io_valu
 
 namespace win32::details
 {
-inline std::uint32_t win32_socket_write_simple_impl(std::uintptr_t socket, void const* data,std::uint32_t len)
+inline std::uint_least32_t win32_socket_write_simple_impl(std::uintptr_t socket, void const* data,std::uint_least32_t len)
 {
 	wsabuf buffer{len,const_cast<char*>(reinterpret_cast<char const*>(data))};
-	std::uint32_t sent{};
+	std::uint_least32_t sent{};
 	if(::fast_io::win32::WSASend(socket,__builtin_addressof(buffer),1,__builtin_addressof(sent),0,nullptr,nullptr))
-		throw_win32_error(static_cast<std::uint32_t>(::fast_io::win32::WSAGetLastError()));
+		throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	return sent;
 }
 
 inline std::size_t win32_socket_write_impl(std::uintptr_t socket, void const* data,std::size_t to_write)
 {
-	if constexpr(sizeof(std::uint32_t)<sizeof(std::size_t))
+	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
 		std::size_t written{};
 		for(;to_write;)
 		{
-			std::uint32_t to_write_this_round{UINT32_MAX};
+			std::uint_least32_t to_write_this_round{UINT32_MAX};
 			if(to_write<static_cast<std::size_t>(UINT32_MAX))
-				to_write_this_round=static_cast<std::uint32_t>(to_write);
-			std::uint32_t number_of_bytes_written{win32_socket_write_simple_impl(socket,data,to_write_this_round)};
+				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
+			std::uint_least32_t number_of_bytes_written{win32_socket_write_simple_impl(socket,data,to_write_this_round)};
 			written+=number_of_bytes_written;
 			if(number_of_bytes_written<to_write_this_round)
 				break;
@@ -65,7 +65,7 @@ inline std::size_t win32_socket_write_impl(std::uintptr_t socket, void const* da
 	}
 	else
 	{
-		return win32_socket_write_simple_impl(socket,data,static_cast<std::uint32_t>(to_write));
+		return win32_socket_write_simple_impl(socket,data,static_cast<std::uint_least32_t>(to_write));
 	}
 }
 inline std::size_t win32_socket_read_impl(std::uintptr_t socket, void* data,std::size_t to_read)
@@ -78,7 +78,7 @@ inline std::size_t win32_socket_read_impl(std::uintptr_t socket, void* data,std:
 	}
 	int recved{::fast_io::win32::recv(socket,reinterpret_cast<char*>(data),static_cast<int>(static_cast<unsigned>(to_read)),0)};
 	if(recved==-1)
-		throw_win32_error(static_cast<std::uint32_t>(::fast_io::win32::WSAGetLastError()));
+		throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	return static_cast<std::size_t>(static_cast<int>(recved));
 }
 
@@ -107,26 +107,26 @@ inline io_scatter_status_t win32_socket_scatter_write_impl(std::uintptr_t socket
 inline void posix_connect_win32_socket_impl(std::uintptr_t hsocket,void const* addr,int addrlen)
 {
 	if(::fast_io::win32::WSAConnect(hsocket,addr,addrlen,nullptr,nullptr,nullptr,nullptr))
-		throw_win32_error(static_cast<std::uint32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<std::uint_least32_t>(WSAGetLastError()));
 }
 
 inline void posix_bind_win32_socket_impl(std::uintptr_t hsocket,void const* addr,int addrlen)
 {
 	if(::fast_io::win32::bind(hsocket,addr,addrlen)==-1)
-		throw_win32_error(static_cast<std::uint32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<std::uint_least32_t>(WSAGetLastError()));
 }
 
 inline void posix_listen_win32_socket_impl(std::uintptr_t hsocket,int backlog)
 {
 	if(::fast_io::win32::listen(hsocket,backlog)==-1)
-		throw_win32_error(static_cast<std::uint32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<std::uint_least32_t>(WSAGetLastError()));
 }
 
 inline std::uintptr_t posix_accept_win32_socket_impl(std::uintptr_t hsocket,void* addr,int* addrlen)
 {
 	std::uintptr_t accepted_socket{::fast_io::win32::WSAAccept(hsocket,addr,addrlen,nullptr,0)};
 	if(accepted_socket==static_cast<std::uintptr_t>(-1))
-		throw_win32_error(static_cast<std::uint32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<std::uint_least32_t>(WSAGetLastError()));
 	return accepted_socket;
 }
 
@@ -349,9 +349,9 @@ inline constexpr int to_win32_sock_type(sock_type dom) noexcept
 	};
 }
 
-inline constexpr std::uint32_t to_win32_sock_open_mode(open_mode m) noexcept
+inline constexpr std::uint_least32_t to_win32_sock_open_mode(open_mode m) noexcept
 {
-	std::uint32_t flags{};
+	std::uint_least32_t flags{};
 	if((m&open_mode::no_block)==open_mode::no_block)
 		flags|=0x01;
 #if defined(_WIN32_WINDOWS) || _WIN32_WINNT >= 0x0602
@@ -362,9 +362,9 @@ inline constexpr std::uint32_t to_win32_sock_open_mode(open_mode m) noexcept
 	return flags;
 }
 
-inline constexpr std::uint32_t to_win32_sock_open_mode_9xa(open_mode m) noexcept
+inline constexpr std::uint_least32_t to_win32_sock_open_mode_9xa(open_mode m) noexcept
 {
-	std::uint32_t flags{};
+	std::uint_least32_t flags{};
 	if((m&open_mode::no_block)==open_mode::no_block)
 		flags|=0x01;
 	return flags;
@@ -388,7 +388,7 @@ inline constexpr int to_native_sock_protocol(sock_protocol prot) noexcept
 	return to_win32_sock_protocol(prot);
 }
 
-inline constexpr std::uint32_t to_native_sock_open_mode(open_mode m) noexcept
+inline constexpr std::uint_least32_t to_native_sock_open_mode(open_mode m) noexcept
 {
 	return to_win32_sock_open_mode(m);
 }
@@ -399,20 +399,20 @@ namespace win32::details
 {
 
 template<win32_family family>
-inline std::uintptr_t open_win32_socket_raw_impl(int af,int tp,int prt,std::uint32_t dwflags)
+inline std::uintptr_t open_win32_socket_raw_impl(int af,int tp,int prt,std::uint_least32_t dwflags)
 {
 	if constexpr(family==win32_family::wide_nt)
 	{
 		std::uintptr_t ret{::fast_io::win32::WSASocketW(af,tp,prt,nullptr,0,dwflags)};
 		if(ret==UINTPTR_MAX)
-			throw_win32_error(static_cast<std::uint32_t>(WSAGetLastError()));
+			throw_win32_error(static_cast<std::uint_least32_t>(WSAGetLastError()));
 		return ret;
 	}
 	else
 	{
 		std::uintptr_t ret{::fast_io::win32::WSASocketA(af,tp,prt,nullptr,0,dwflags)};
 		if(ret==UINTPTR_MAX)
-			throw_win32_error(static_cast<std::uint32_t>(WSAGetLastError()));
+			throw_win32_error(static_cast<std::uint_least32_t>(WSAGetLastError()));
 		return ret;
 	}
 }
@@ -528,7 +528,7 @@ public:
 			auto ret{::fast_io::win32::closesocket(this->hsocket)};
 			this->hsocket=0;//POSIX standard says we should never call close(2) again even close syscall fails
 			if(ret)
-				throw_win32_error(static_cast<std::uint32_t>(::fast_io::win32::WSAGetLastError()));
+				throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 		}
 	}
 

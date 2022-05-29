@@ -5,7 +5,7 @@ namespace fast_io
 
 struct win32_code
 {
-	std::uint32_t ec{};
+	std::uint_least32_t ec{};
 };
 
 inline constexpr std::uintptr_t domain_define(error_type_t<win32_code>) noexcept
@@ -23,7 +23,7 @@ inline constexpr std::uintptr_t win32_domain_value{domain_define(error_type<win3
 namespace details
 {
 
-inline std::size_t print_reserve_define_win32_error_9xa_impl(char* ptr, std::uint32_t ec) noexcept
+inline std::size_t print_reserve_define_win32_error_9xa_impl(char* ptr, std::uint_least32_t ec) noexcept
 {
 	constexpr std::size_t char8_buffer_size{65536};
 	return win32::FormatMessageA(
@@ -36,7 +36,7 @@ inline std::size_t print_reserve_define_win32_error_9xa_impl(char* ptr, std::uin
 	nullptr);
 }
 
-inline std::size_t print_reserve_define_win32_error_ntw_impl(wchar_t* ptr, std::uint32_t ec) noexcept
+inline std::size_t print_reserve_define_win32_error_ntw_impl(wchar_t* ptr, std::uint_least32_t ec) noexcept
 {
 	constexpr std::size_t char16_buffer_size{32768};
 	return win32::FormatMessageW(
@@ -50,7 +50,7 @@ inline std::size_t print_reserve_define_win32_error_ntw_impl(wchar_t* ptr, std::
 }
 
 template<win32_family family,std::integral char_type>
-inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type* ptr, std::uint32_t ec) noexcept
+inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type* ptr, std::uint_least32_t ec) noexcept
 {
 	if constexpr(family==win32_family::wide_nt)
 	{
@@ -95,7 +95,7 @@ inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type*
 }
 
 template<win32_family family,::fast_io::freestanding::contiguous_iterator Iter>
-inline constexpr Iter print_reserve_define_win32_error_impl(Iter iter,std::uint32_t ec) noexcept
+inline constexpr Iter print_reserve_define_win32_error_impl(Iter iter,std::uint_least32_t ec) noexcept
 {
 	if constexpr(std::is_pointer_v<::fast_io::freestanding::iter_value_t<Iter>>)
 		return print_reserve_define_win32_error_ptr_impl<family>(iter,ec);

@@ -110,13 +110,13 @@ inline ::fast_io::win32::win32_family_addrinfo<fam>* win32_getaddrinfo_impl(std:
 	{
 		int ret{::fast_io::win32::getaddrinfo(node,service,hints,__builtin_addressof(res))};
 		if(ret)
-			throw_win32_error(static_cast<std::uint32_t>(ret));
+			throw_win32_error(static_cast<std::uint_least32_t>(ret));
 	}
 	else
 	{
 		int ret{::fast_io::win32::GetAddrInfoW(node,service,hints,__builtin_addressof(res))};
 		if(ret)
-			throw_win32_error(static_cast<std::uint32_t>(ret));
+			throw_win32_error(static_cast<std::uint_least32_t>(ret));
 	}
 	return res;
 }

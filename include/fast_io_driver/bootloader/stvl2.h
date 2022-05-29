@@ -25,17 +25,17 @@ struct stvl2_empty{};
 [[no_unique_address]]
 #endif
 #endif
-std::conditional_t<sizeof(void*)==8,stvl2_empty,std::uint32_t> pad{};
+std::conditional_t<sizeof(void*)==8,stvl2_empty,std::uint_least32_t> pad{};
 };
 
-enum class stvl2_header_tag:std::uint64_t
+enum class stvl2_header_tag:std::uint_least64_t
 {
 framebuffer_id=0x3ecc1bc43d0f7971,
 fb_mtrr_id=0x4c7bb07731282e00,
 smp_id=0x1ab015085f3273df
 };
 
-enum class stvl2_struct_tag:std::uint64_t
+enum class stvl2_struct_tag:std::uint_least64_t
 {
 cmdline_id=0xe5e76a1b4597a781,
 memmap_id=0x2187f79e8612de07,
@@ -52,7 +52,7 @@ dtb=0xabb29bd49a2833fa,
 vmap=0xb0ed257db18cb58f
 };
 
-enum class stvl2_mmap_type:std::uint32_t
+enum class stvl2_mmap_type:std::uint_least32_t
 {
 usable=1,
 reserved=2,
@@ -63,7 +63,7 @@ bootloader_reclaimable=0x1000,
 kernel_and_modules=0x1001
 };
 
-enum class stvl2_firmware_flags:std::uint64_t
+enum class stvl2_firmware_flags:std::uint_least64_t
 {
 bios=1<<0
 };
@@ -97,7 +97,7 @@ struct [[gnu::packed]] stvl2_header
 #endif
 	stvl2_pointer_padding stack_pointer_padding{};
 	void* stack{};
-	std::uint64_t flags{};
+	std::uint_least64_t flags{};
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 [[msvc::no_unique_address]]
@@ -111,14 +111,14 @@ struct [[gnu::packed]] stvl2_header
 
 struct [[gnu::packed]] stvl2_header_tag_framebuffer : stvl2_tag
 {
-	std::uint16_t framebuffer_width{};
-	std::uint16_t framebuffer_height{};
-	std::uint16_t framebuffer_bpp{};
+	std::uint_least16_t framebuffer_width{};
+	std::uint_least16_t framebuffer_height{};
+	std::uint_least16_t framebuffer_bpp{};
 };
 
 struct [[gnu::packed]] stvl2_header_tag_smp : stvl2_tag
 {
-	std::uint64_t flags{};
+	std::uint_least64_t flags{};
 };
 
 struct [[gnu::packed]] stvl2_struct
@@ -132,7 +132,7 @@ struct [[gnu::packed]] stvl2_struct
 
 struct [[gnu::packed]] stvl2_struct_tag_cmdline:stvl2_tag
 {
-	std::uint64_t cmdline{};
+	std::uint_least64_t cmdline{};
 };
 
 struct [[gnu::packed]] stvl2_mmap_entry
@@ -156,12 +156,12 @@ struct [[gnu::packed]] stvl2_mmap_entry
 	stvl2_pointer_padding length_padding;
 	std::size_t length{};
 	stvl2_mmap_type type{};
-	std::uint32_t unused{};
+	std::uint_least32_t unused{};
 };
 
 struct [[gnu::packed]] stvl2_struct_tag_memmap:stvl2_tag
 {
-	std::uint64_t entries{};
+	std::uint_least64_t entries{};
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 [[msvc::no_unique_address]]
@@ -183,17 +183,17 @@ struct [[gnu::packed]] stvl2_struct_tag_framebuffer:stvl2_tag
 #endif
 	stvl2_pointer_padding framebuffer_addr_pointer_padding;
 	void* framebuffer_addr{};
-	std::uint16_t framebuffer_width{};
-	std::uint16_t framebuffer_height{};
-	std::uint16_t framebuffer_pitch{};
-	std::uint16_t framebuffer_bpp{};
-	std::uint8_t  memory_model{};
-	std::uint8_t  red_mask_size{};
-	std::uint8_t  red_mask_shift{};
-	std::uint8_t  green_mask_size{};
-	std::uint8_t  green_mask_shift{};
-	std::uint8_t  blue_mask_size{};
-	std::uint8_t  blue_mask_shift{};
+	std::uint_least16_t framebuffer_width{};
+	std::uint_least16_t framebuffer_height{};
+	std::uint_least16_t framebuffer_pitch{};
+	std::uint_least16_t framebuffer_bpp{};
+	std::uint_least8_t  memory_model{};
+	std::uint_least8_t  red_mask_size{};
+	std::uint_least8_t  red_mask_shift{};
+	std::uint_least8_t  green_mask_size{};
+	std::uint_least8_t  green_mask_shift{};
+	std::uint_least8_t  blue_mask_size{};
+	std::uint_least8_t  blue_mask_shift{};
 };
 
 struct [[gnu::packed]] stvl2_module
@@ -243,12 +243,12 @@ struct [[gnu::packed]] stvl2_struct_tag_modules:stvl2_tag
 
 struct [[gnu::packed]] stvl2_struct_tag_rsdp:stvl2_tag
 {
-	std::uint64_t rdsp{};
+	std::uint_least64_t rdsp{};
 };
 
 struct [[gnu::packed]] stvl2_struct_tag_epoch:stvl2_tag
 {
-	std::uint64_t epoch{};
+	std::uint_least64_t epoch{};
 };
 
 struct [[gnu::packed]] stvl2_struct_tag_firmware:stvl2_tag
@@ -258,8 +258,8 @@ struct [[gnu::packed]] stvl2_struct_tag_firmware:stvl2_tag
 
 struct [[gnu::packed]] stvl2_smp_info
 {
-	std::uint32_t process_id{};
-	std::uint32_t lapic_id{};
+	std::uint_least32_t process_id{};
+	std::uint_least32_t lapic_id{};
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 [[msvc::no_unique_address]]
@@ -291,10 +291,10 @@ struct [[gnu::packed]] stvl2_smp_info
 
 struct [[gnu::packed]] stvl2_struct_tag_smp:stvl2_tag
 {
-	std::uint64_t flags{};
-	std::uint32_t bsp_lapic_id{};
-	std::uint32_t unused{};
-	std::uint64_t cpu_count{};
+	std::uint_least64_t flags{};
+	std::uint_least32_t bsp_lapic_id{};
+	std::uint_least32_t unused{};
+	std::uint_least64_t cpu_count{};
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 [[msvc::no_unique_address]]
@@ -307,7 +307,7 @@ struct [[gnu::packed]] stvl2_struct_tag_smp:stvl2_tag
 
 struct [[gnu::packed]] stvl2_struct_tag_pxe_server_info:stvl2_tag
 {
-	std::uint32_t server_ip{};
+	std::uint_least32_t server_ip{};
 };
 
 struct [[gnu::packed]] stvl2_struct_tag_mmio32_uart:stvl2_tag

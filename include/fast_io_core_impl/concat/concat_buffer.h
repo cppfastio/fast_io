@@ -54,8 +54,8 @@ inline constexpr void strlike_set_curr(::fast_io::io_strlike_type_t<char_type,::
 }
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void basic_concat_buffer_strlike_reserve_cold_impl(::fast_io::details::basic_concat_buffer<char_type>& str,std::size_t n,std::size_t df) noexcept
 {

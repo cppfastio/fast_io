@@ -15,12 +15,12 @@ struct
 #endif
 serenity_file_buffer_model
 {
-	std::uint8_t* m_data{};
+	std::uint_least8_t* m_data{};
 	std::size_t m_capacity{BUFSIZ};
 	std::size_t m_begin{};
 	std::size_t m_end{};
 	int m_mode{-1};
-	std::uint8_t m_unget_buffer{};
+	std::uint_least8_t m_unget_buffer{};
 	bool m_ungotten:1 {};
 	bool m_data_is_malloced:1 {};
 	bool m_empty: 1{true};
@@ -34,7 +34,7 @@ serenity_file_model
 {
 	int m_fd{-1};
 	int m_mode{};
-	std::uint8_t m_flags{};
+	std::uint_least8_t m_flags{};
 	int m_error{};
 	bool m_eof{};
 	pid_t m_popen_child{-1};

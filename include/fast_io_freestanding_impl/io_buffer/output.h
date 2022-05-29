@@ -9,8 +9,8 @@ namespace details
 {
 
 template<typename T,::fast_io::freestanding::random_access_iterator Iter>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void iobuf_write_unhappy_impl(T& t,Iter first,Iter last)
 {

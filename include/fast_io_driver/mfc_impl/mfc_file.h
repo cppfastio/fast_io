@@ -45,12 +45,12 @@ inline constexpr basic_mfc_io_observer<T> io_value_handle(basic_mfc_io_observer<
 
 namespace details
 {
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void mfc_write_n_impl(CFile* cfp,std::byte const* first_ptr,std::size_t n)
 {
-	if constexpr(sizeof(std::size_t)>sizeof(std::uint32_t))
+	if constexpr(sizeof(std::size_t)>sizeof(std::uint_least32_t))
 	{
 		while(n)
 		{
@@ -60,13 +60,13 @@ inline void mfc_write_n_impl(CFile* cfp,std::byte const* first_ptr,std::size_t n
 			{
 				write_this_round=sz_max;
 			}
-			cfp->Write(first_ptr,static_cast<std::uint32_t>(write_this_round));
+			cfp->Write(first_ptr,static_cast<std::uint_least32_t>(write_this_round));
 			n-=write_this_round;
 		}
 	}
 	else
 	{
-		cfp->Write(first_ptr,static_cast<std::uint32_t>(n));
+		cfp->Write(first_ptr,static_cast<std::uint_least32_t>(n));
 	}
 }
 
@@ -82,11 +82,11 @@ inline std::size_t mfc_read_impl(CFile* cfp,void* first,std::size_t to_read)
 	if constexpr(sizeof(std::size_t)>4)
 		if(static_cast<std::size_t>(UINT32_MAX)<to_read)
 			to_read=static_cast<std::size_t>(UINT32_MAX);
-	return cfp->Read(first,static_cast<std::uint32_t>(to_read));
+	return cfp->Read(first,static_cast<std::uint_least32_t>(to_read));
 }
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void mfc_scatter_write_impl(CFile* cfp,io_scatter_t const* scats,std::size_t n)
 {

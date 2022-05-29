@@ -115,9 +115,9 @@ inline void nt_linkat_no_newpath_size_impl(void* olddirhd,wchar_t const* oldpath
 
 struct file_link_information
 {
-	std::uint32_t ReplaceIfExists;
+	std::uint_least32_t ReplaceIfExists;
 	void* RootDirectory;
-	std::uint32_t FileNameLength;
+	std::uint_least32_t FileNameLength;
 };
 
 template<bool zw>
@@ -133,11 +133,11 @@ inline void nt_linkat_impl(
 		[&](void* directory_hd,win32::nt::unicode_string const* ustr)
 	{
 		wchar_t const* pth_cstr{ustr->Buffer};
-		std::uint32_t pth_size2{ustr->Length};
+		std::uint_least32_t pth_size2{ustr->Length};
 		::fast_io::details::local_operator_new_array_ptr<char> buffer(sizeof(file_link_information)+pth_size2); 
 		file_link_information info{.ReplaceIfExists=false,
 			.RootDirectory=directory_hd,
-			.FileNameLength=static_cast<std::uint32_t>(pth_size2)};
+			.FileNameLength=static_cast<std::uint_least32_t>(pth_size2)};
 
 		::fast_io::details::my_memcpy(buffer.ptr,__builtin_addressof(info),sizeof(file_link_information));
 		::fast_io::details::my_memcpy(buffer.ptr+sizeof(file_link_information),pth_cstr,pth_size2);
@@ -148,11 +148,11 @@ inline void nt_linkat_impl(
 		[[__gnu__::__may_alias__]]
 #endif
 		= file_link_information*;
-		std::uint32_t status{nt_set_information_file<zw>(
+		std::uint_least32_t status{nt_set_information_file<zw>(
 			file.handle,
 			__builtin_addressof(block),
 			reinterpret_cast<file_link_information_may_alias_ptr>(buffer.ptr),
-			static_cast<std::uint32_t>(sizeof(info)),
+			static_cast<std::uint_least32_t>(sizeof(info)),
 			file_information_class::FileLinkInformation)};
 		if(status)
 			throw_nt_error(status);

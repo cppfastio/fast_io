@@ -14,13 +14,13 @@ template<std::integral cross_ch_type,std::integral ch_type,typename traits_type>
 inline ::ATL::CStringT<ch_type, traits_type> strlike_construct_define(io_strlike_type_t<cross_ch_type,::ATL::CStringT<ch_type, traits_type>>,cross_ch_type const* first,cross_ch_type const* last)
 {
 	std::size_t diff{static_cast<std::size_t>(last-first)};
-	if constexpr(sizeof(std::uint32_t)<sizeof(std::size_t))
+	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
-		constexpr std::uint32_t max_sz{INT32_MAX/sizeof(ch_type)};
+		constexpr std::uint_least32_t max_sz{INT32_MAX/sizeof(ch_type)};
 		if(max_sz<diff)
 			::fast_io::fast_terminate();
 	}
-	return ::ATL::CStringT<ch_type, traits_type>(first,static_cast<std::int32_t>(static_cast<std::uint32_t>(diff)));
+	return ::ATL::CStringT<ch_type, traits_type>(first,static_cast<std::int_least32_t>(static_cast<std::uint_least32_t>(diff)));
 }
 
 template<typename... Args>

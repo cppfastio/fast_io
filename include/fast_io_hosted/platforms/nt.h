@@ -52,12 +52,12 @@ namespace win32::nt::details
 
 struct nt_open_mode
 {
-std::uint32_t DesiredAccess{};
-std::uint32_t FileAttributes{};
-std::uint32_t ShareAccess{1|2};
-std::uint32_t CreateDisposition{};
-std::uint32_t CreateOptions{};
-std::uint32_t ObjAttributes{};
+std::uint_least32_t DesiredAccess{};
+std::uint_least32_t FileAttributes{};
+std::uint_least32_t ShareAccess{1|2};
+std::uint_least32_t CreateDisposition{};
+std::uint_least32_t CreateOptions{};
+std::uint_least32_t ObjAttributes{};
 };
 
 /*
@@ -401,7 +401,7 @@ inline std::size_t nt_read_impl(void* __restrict handle,void* __restrict begin,s
 			size=static_cast<std::size_t>(UINT32_MAX);
 	win32::nt::io_status_block block;	//some poeple in zwclose7 forum said we do not need to initialize io_status_block
 	auto const status{win32::nt::nt_read_file<zw>(handle,nullptr,nullptr,nullptr,
-		__builtin_addressof(block), begin, static_cast<std::uint32_t>(size), nullptr, nullptr)};
+		__builtin_addressof(block), begin, static_cast<std::uint_least32_t>(size), nullptr, nullptr)};
 	if(status)
 		throw_nt_error(status);
 	return block.Information;
@@ -410,20 +410,20 @@ inline std::size_t nt_read_impl(void* __restrict handle,void* __restrict begin,s
 template<bool zw>
 inline std::size_t nt_write_impl(void* __restrict handle,void const* __restrict begin,std::size_t size)
 {
-	if constexpr(4<sizeof(std::size_t))		//above the size of std::uint32_t, unfortunately, we cannot guarantee the atomicity of syscall
+	if constexpr(4<sizeof(std::size_t))		//above the size of std::uint_least32_t, unfortunately, we cannot guarantee the atomicity of syscall
 	{
 		std::size_t written{};
 		for(;size;)
 		{
-			std::uint32_t to_write_this_round{UINT32_MAX};
+			std::uint_least32_t to_write_this_round{UINT32_MAX};
 			if(size<static_cast<std::size_t>(UINT32_MAX))
-				to_write_this_round=static_cast<std::uint32_t>(size);
+				to_write_this_round=static_cast<std::uint_least32_t>(size);
 			win32::nt::io_status_block block; //some poeple in zwclose7 forum said we do not need to initialize io_status_block
 			auto const status{win32::nt::nt_write_file<zw>(handle,nullptr,nullptr,nullptr,
 				__builtin_addressof(block), begin, to_write_this_round, nullptr, nullptr)};
 			if(status)
 				throw_nt_error(status);
-			std::uint32_t number_of_bytes_written{static_cast<std::uint32_t>(block.Information)};
+			std::uint_least32_t number_of_bytes_written{static_cast<std::uint_least32_t>(block.Information)};
 			written+=number_of_bytes_written;
 			if(number_of_bytes_written<to_write_this_round)
 				break;
@@ -435,7 +435,7 @@ inline std::size_t nt_write_impl(void* __restrict handle,void const* __restrict 
 	{
 		win32::nt::io_status_block block;	//some poeple in zwclose7 forum said we do not need to initialize io_status_block
 		auto const status{win32::nt::nt_write_file<zw>(handle,nullptr,nullptr,nullptr,
-			__builtin_addressof(block), begin, static_cast<std::uint32_t>(size), nullptr, nullptr)};
+			__builtin_addressof(block), begin, static_cast<std::uint_least32_t>(size), nullptr, nullptr)};
 		if(status)
 			throw_nt_error(status);
 		return block.Information;
@@ -627,7 +627,7 @@ template<bool zw>
 inline void nt_flush_impl(void* handle)
 {
 	win32::nt::io_status_block block;
-	std::uint32_t status{win32::nt::nt_flush_buffers_file<zw>(handle,__builtin_addressof(block))};
+	std::uint_least32_t status{win32::nt::nt_flush_buffers_file<zw>(handle,__builtin_addressof(block))};
 	if(status)
 		throw_nt_error(status);
 }
@@ -640,7 +640,7 @@ inline void nt_data_sync_impl(void* handle,data_sync_flags flags [[maybe_unused]
 NtFlushBuffersFileEx and ZwFlushBuffersFileEx are only provided since windows 8
 */
 	win32::nt::io_status_block block;
-	std::uint32_t status{win32::nt::nt_flush_buffers_file_ex<zw>(handle,static_cast<std::uint32_t>(flags),nullptr,0u,__builtin_addressof(block))};
+	std::uint_least32_t status{win32::nt::nt_flush_buffers_file_ex<zw>(handle,static_cast<std::uint_least32_t>(flags),nullptr,0u,__builtin_addressof(block))};
 	if(status)
 		throw_nt_error(status);
 #else
@@ -711,7 +711,7 @@ inline nt_file_position_status nt_get_file_position_impl(void* __restrict handle
 }
 
 template<bool zw>
-inline std::uint64_t nt_seek64_impl(void* __restrict handle,std::int64_t offset,seekdir s)
+inline std::uint_least64_t nt_seek64_impl(void* __restrict handle,std::int_least64_t offset,seekdir s)
 {
 	auto [status,file_position]=nt_get_file_position_impl<zw>(handle,offset,s);
 	if(status)
@@ -720,7 +720,7 @@ inline std::uint64_t nt_seek64_impl(void* __restrict handle,std::int64_t offset,
 	status=win32::nt::nt_set_information_file<zw>(handle,
 		__builtin_addressof(block),
 		__builtin_addressof(file_position),
-		sizeof(std::uint64_t),
+		sizeof(std::uint_least64_t),
 		win32::nt::file_information_class::FilePositionInformation);
 	if(status)
 		throw_nt_error(status);
@@ -730,7 +730,7 @@ inline std::uint64_t nt_seek64_impl(void* __restrict handle,std::int64_t offset,
 template<bool zw>
 inline std::uintmax_t nt_seek_impl(void* __restrict handle,std::intmax_t offset,seekdir s)
 {
-	return static_cast<std::uintmax_t>(nt_seek64_impl<zw>(handle,static_cast<std::int64_t>(offset),s));
+	return static_cast<std::uintmax_t>(nt_seek64_impl<zw>(handle,static_cast<std::int_least64_t>(offset),s));
 }
 
 template<bool zw>
@@ -756,12 +756,12 @@ inline void* nt_dup2_impl(void* handle,void* newhandle)
 template<bool zw>
 inline void nt_truncate_impl(void* handle,std::uintmax_t newfilesizem)
 {
-	std::uint64_t newfilesize{static_cast<std::uint64_t>(newfilesizem)};
+	std::uint_least64_t newfilesize{static_cast<std::uint_least64_t>(newfilesizem)};
 	win32::nt::io_status_block block;
 	auto status{win32::nt::nt_set_information_file<zw>(handle,
 		__builtin_addressof(block),
 		__builtin_addressof(newfilesize),
-		sizeof(std::uint64_t),
+		sizeof(std::uint_least64_t),
 		win32::nt::file_information_class::FileEndOfFileInformation)};
 	if(status)
 		throw_nt_error(status);
@@ -1170,19 +1170,19 @@ using u32nt_file=basic_nt_file<char32_t>;
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint32_t>(-10))};
+	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-10))};
 }
 
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint32_t>(-11))};
+	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-11))};
 }
 
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint32_t>(-12))};
+	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-12))};
 }
 
 
@@ -1210,19 +1210,19 @@ using u32zw_file=basic_zw_file<char32_t>;
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint32_t>(-10))};
+	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-10))};
 }
 
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint32_t>(-11))};
+	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-11))};
 }
 
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint32_t>(-12))};
+	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-12))};
 }
 
 #if 0

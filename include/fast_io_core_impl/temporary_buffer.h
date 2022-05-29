@@ -49,8 +49,8 @@ inline constexpr void flush(temporary_buffer<output>& out)
 }
 
 template<typename output>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void obuffer_overflow(temporary_buffer<output>& out,typename output::char_type ch)
 {
@@ -61,8 +61,8 @@ inline constexpr void obuffer_overflow(temporary_buffer<output>& out,typename ou
 }
 
 template<bool line,typename output>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void temporary_buffer_write_cold_path(temporary_buffer<output>& out,
 	typename output::char_type const* first,

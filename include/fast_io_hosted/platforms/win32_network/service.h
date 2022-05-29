@@ -7,10 +7,10 @@ struct win32_wsa_service
 {
 	using native_handle_type = win32::wsadata;
 	win32::wsadata wsa_data;
-	explicit win32_wsa_service(std::uint16_t version)
+	explicit win32_wsa_service(std::uint_least16_t version)
 	{
 		if(win32::WSAStartup(version,__builtin_addressof(wsa_data)))
-			throw_win32_error(static_cast<std::uint32_t>(win32::WSAGetLastError()));
+			throw_win32_error(static_cast<std::uint_least32_t>(win32::WSAGetLastError()));
 	}
 	win32_wsa_service():win32_wsa_service(514)
 	{}

@@ -92,8 +92,8 @@ inline constexpr std::size_t cal_new_cap_io_strlike(std::size_t cap) noexcept
 
 template<std::integral ch_type,typename T>
 requires buffer_strlike<ch_type,T>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void obuffer_overflow(io_strlike_reference_wrapper<ch_type,T> bref,ch_type ch)
 {
@@ -119,8 +119,8 @@ namespace details
 {
 
 template<std::integral ch_type,typename T>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void write_strike_like_cold(io_strlike_reference_wrapper<ch_type,T> bref,ch_type const* first,ch_type const* last)
 {

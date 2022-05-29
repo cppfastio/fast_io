@@ -5,9 +5,9 @@
 namespace fast_io
 {
 
-inline constexpr std::uint32_t win32_stdin_number(static_cast<std::uint32_t>(-10));
-inline constexpr std::uint32_t win32_stdout_number(static_cast<std::uint32_t>(-11));
-inline constexpr std::uint32_t win32_stderr_number(static_cast<std::uint32_t>(-12));
+inline constexpr std::uint_least32_t win32_stdin_number(static_cast<std::uint_least32_t>(-10));
+inline constexpr std::uint_least32_t win32_stdout_number(static_cast<std::uint_least32_t>(-11));
+inline constexpr std::uint_least32_t win32_stderr_number(static_cast<std::uint_least32_t>(-12));
 
 }
 #include"win32_code.h"

@@ -11,13 +11,13 @@ inline cross_code_cvt_t<::winrt::hstring::value_type> print_alias_define(io_alia
 inline ::winrt::hstring strlike_construct_define(io_strlike_type_t<wchar_t,::winrt::hstring>,wchar_t const* first,wchar_t const* last)
 {
 	std::size_t diff{static_cast<std::size_t>(last-first)};
-	if constexpr(sizeof(std::uint32_t)<sizeof(std::size_t))
+	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
-		constexpr std::uint32_t max_sz{UINT32_MAX/sizeof(wchar_t)};
+		constexpr std::uint_least32_t max_sz{UINT32_MAX/sizeof(wchar_t)};
 		if(max_sz<diff)
 			::fast_io::fast_terminate();
 	}
-	return ::winrt::hstring(first,static_cast<std::uint32_t>(diff));
+	return ::winrt::hstring(first,static_cast<std::uint_least32_t>(diff));
 }
 
 template<typename... Args>

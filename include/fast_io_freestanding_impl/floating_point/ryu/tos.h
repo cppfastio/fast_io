@@ -65,7 +65,7 @@ inline constexpr Iter output_shortest(
 	if constexpr(int_hint&&sizeof(F)!=16)//scientific integer hint?? Is that useless?
 	{
 		auto const r2(init_rep<F,false>(mantissa,static_cast<signed_exponent_type>(exponent)));
-		if(-static_cast<std::int32_t>(floating_trait::mantissa_bits)<=r2.e&&r2.e<=0)[[likely]]
+		if(-static_cast<std::int_least32_t>(floating_trait::mantissa_bits)<=r2.e&&r2.e<=0)[[likely]]
 		{
 			mantissa_type const mask = (static_cast<mantissa_type>(1) << -r2.e) - 1;
 			if (!(r2.m & mask))[[likely]]
@@ -201,8 +201,8 @@ inline constexpr Iter output_shortest(
 			vm = mul_pow5_inv_div_pow2(mv-1-mm_shift, q, i);
 			if (q != 0 && (vp - 1) / 10 <= vm / 10)
 			{
-				std::int32_t const l = floating_trait::pow5_inv_bitcount + pow5bits(static_cast<std::int32_t>(q - 1)) - 1;
-				last_removed_digit = static_cast<char8_t>(mul_pow5_inv_div_pow2(mv, q - 1, -r2.e + static_cast<std::int32_t>(q) - 1 + l) % 10);
+				std::int_least32_t const l = floating_trait::pow5_inv_bitcount + pow5bits(static_cast<std::int_least32_t>(q - 1)) - 1;
+				last_removed_digit = static_cast<char8_t>(mul_pow5_inv_div_pow2(mv, q - 1, -r2.e + static_cast<std::int_least32_t>(q) - 1 + l) % 10);
 			}
 		}
 		if(q<=floating_trait::floor_log5)//here
@@ -240,13 +240,13 @@ inline constexpr Iter output_shortest(
 			vr=mul_shift_all(r2.m,pow5<F,true>::split[i],j,vp,vm,mm_shift);
 		else if constexpr(std::same_as<floating_type,float>)
 		{
-			vr = mul_pow5_div_pow2(mv, static_cast<std::uint32_t>(i), j);
-			vp = mul_pow5_div_pow2(mv+2, static_cast<std::uint32_t>(i), j);
-			vm = mul_pow5_div_pow2(mv-1-mm_shift, static_cast<std::uint32_t>(i), j);
+			vr = mul_pow5_div_pow2(mv, static_cast<std::uint_least32_t>(i), j);
+			vp = mul_pow5_div_pow2(mv+2, static_cast<std::uint_least32_t>(i), j);
+			vm = mul_pow5_div_pow2(mv-1-mm_shift, static_cast<std::uint_least32_t>(i), j);
 			if (q != 0 && (vp - 1) / 10 <= vm / 10)
 			{
-				j = static_cast<std::int32_t>(q) - 1 - (pow5bits(i + 1) - floating_trait::pow5_bitcount);
-				last_removed_digit = static_cast<char8_t>(mul_pow5_div_pow2(mv,static_cast<std::uint32_t>(i + 1), j) % 10);
+				j = static_cast<std::int_least32_t>(q) - 1 - (pow5bits(i + 1) - floating_trait::pow5_bitcount);
+				last_removed_digit = static_cast<char8_t>(mul_pow5_div_pow2(mv,static_cast<std::uint_least32_t>(i + 1), j) % 10);
 			}
 		}
 		if(q<2)
@@ -381,9 +381,9 @@ inline constexpr Iter output_shortest(
 	}
 	if constexpr(mode==0) //general
 	{
-		std::int32_t olength(static_cast<std::int32_t>(chars_len<10,true>(vr)));	
-		std::int32_t const real_exp(static_cast<std::int32_t>(e10 + removed + olength - 1));
-		std::uint32_t fixed_length(0),this_case(0);
+		std::int_least32_t olength(static_cast<std::int_least32_t>(chars_len<10,true>(vr)));	
+		std::int_least32_t const real_exp(static_cast<std::int_least32_t>(e10 + removed + olength - 1));
+		std::uint_least32_t fixed_length(0),this_case(0);
 		if(olength<=real_exp)
 		{
 			fixed_length=real_exp+1;
@@ -398,11 +398,11 @@ inline constexpr Iter output_shortest(
 		}
 		else
 			fixed_length=static_cast<exponent_type>(-real_exp)+olength+1;
-		std::uint32_t scientific_length(olength==1?olength+3:olength+5);
+		std::uint_least32_t scientific_length(olength==1?olength+3:olength+5);
 		if(scientific_length<fixed_length)
 		{
 			result+=fp_output_unsigned_point(decmpt,vr,result);
-			return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int32_t>(real_exp),result);
+			return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int_least32_t>(real_exp),result);
 		}
 		switch(this_case)
 		{
@@ -459,8 +459,8 @@ inline constexpr Iter output_shortest(
 	}
 	else if constexpr(mode==1) //fixed
 	{
-		std::int32_t olength(static_cast<std::int32_t>(chars_len<10,true>(vr)));	
-		std::int32_t const real_exp(static_cast<std::int32_t>(e10 + removed + olength - 1));
+		std::int_least32_t olength(static_cast<std::int_least32_t>(chars_len<10,true>(vr)));	
+		std::int_least32_t const real_exp(static_cast<std::int_least32_t>(e10 + removed + olength - 1));
 		if(olength<=real_exp)
 		{
 			fp_output_unsigned(result,vr);
@@ -518,7 +518,7 @@ inline constexpr Iter output_shortest(
 	else		//scientific
 	{
 		auto a(vr);
-		std::int32_t real_exp(static_cast<std::int32_t>(e10 + removed - 1));
+		std::int_least32_t real_exp(static_cast<std::int_least32_t>(e10 + removed - 1));
 		if(a<10)
 		{
 			std::size_t olength(fp_output_unsigned(result,a));
@@ -528,7 +528,7 @@ inline constexpr Iter output_shortest(
 		else
 		{
 			std::size_t olength(fp_output_unsigned(result+1,a));
-			real_exp+=static_cast<std::int32_t>(olength);
+			real_exp+=static_cast<std::int_least32_t>(olength);
 			*result=result[1];
 			if constexpr(is_runtime_decimal_point)
 				result[1]=decmpt.decimal_point;
@@ -536,7 +536,7 @@ inline constexpr Iter output_shortest(
 				result[1]=decimal_point;
 			result+=olength+1;
 		}
-		return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int32_t>(real_exp),result);
+		return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int_least32_t>(real_exp),result);
 	}
 }
 

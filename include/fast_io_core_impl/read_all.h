@@ -6,8 +6,8 @@ namespace details
 {
 
 template<bool throweh=true,::fast_io::input_stream input>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr ::std::conditional_t<throweh,void,bool> read_all_impl_decay_cold(input in,typename input::char_type* first,typename input::char_type* last)
 {

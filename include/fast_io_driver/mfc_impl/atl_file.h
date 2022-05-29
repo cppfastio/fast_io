@@ -64,12 +64,12 @@ inline void throw_com_error(HRESULT hr)
 #endif
 }
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void atl_write_n_impl(CAtlFile* cfp,std::byte const* first_ptr,std::size_t n)
 {
-	if constexpr(sizeof(std::size_t)>sizeof(std::uint32_t))
+	if constexpr(sizeof(std::size_t)>sizeof(std::uint_least32_t))
 	{
 		while(n)
 		{
@@ -79,7 +79,7 @@ inline void atl_write_n_impl(CAtlFile* cfp,std::byte const* first_ptr,std::size_
 			{
 				write_this_round=sz_max;
 			}
-			auto hresult{cfp->Write(first_ptr,static_cast<std::uint32_t>(write_this_round))};
+			auto hresult{cfp->Write(first_ptr,static_cast<std::uint_least32_t>(write_this_round))};
 			if(hresult!=S_OK)
 				throw_com_error(hresult); 
 			n-=write_this_round;
@@ -87,7 +87,7 @@ inline void atl_write_n_impl(CAtlFile* cfp,std::byte const* first_ptr,std::size_
 	}
 	else
 	{
-		cfp->Write(first_ptr,static_cast<std::uint32_t>(n));
+		cfp->Write(first_ptr,static_cast<std::uint_least32_t>(n));
 	}
 }
 
@@ -104,14 +104,14 @@ inline std::size_t atl_read_impl(CAtlFile* cfp,void* first,std::size_t to_read)
 		if(static_cast<std::size_t>(UINT32_MAX)<to_read)
 			to_read=static_cast<std::size_t>(UINT32_MAX);
 	DWORD ret{};
-	auto hr{cfp->Read(first,static_cast<std::uint32_t>(to_read),ret)};
+	auto hr{cfp->Read(first,static_cast<std::uint_least32_t>(to_read),ret)};
 	if(hr!=S_OK)
 		throw_com_error(hr);
 	return static_cast<std::size_t>(ret);
 }
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void atl_scatter_write_impl(CAtlFile* cfp,io_scatter_t const* scats,std::size_t n)
 {

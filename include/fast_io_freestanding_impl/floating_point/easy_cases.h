@@ -4,7 +4,7 @@ namespace fast_io::details::fp
 {
 
 template<bool uppercase_e=false,bool four_digits=false,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter output_exp(std::int32_t exp,Iter result)
+inline constexpr Iter output_exp(std::int_least32_t exp,Iter result)
 {
 	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(uppercase_e)
@@ -46,7 +46,7 @@ inline constexpr Iter output_exp(std::int32_t exp,Iter result)
 			*result=u8'+';
 	}
 	++result;
-	std::uint32_t unsigned_exp(exp);
+	std::uint_least32_t unsigned_exp(exp);
 #ifdef __OPTIMIZE_SIZE__
 	std::size_t len{2};
 	if constexpr(four_digits)
@@ -64,7 +64,7 @@ inline constexpr Iter output_exp(std::int32_t exp,Iter result)
 	auto str{result+len};
 	for(std::size_t i{};i!=len;++i)
 	{
-		std::uint32_t const temp(static_cast<std::uint32_t>(unsigned_exp/10));
+		std::uint_least32_t const temp(static_cast<std::uint_least32_t>(unsigned_exp/10));
 		char_type const res(static_cast<char_type>(unsigned_exp%10));
 		if constexpr(std::same_as<char_type,char>)
 			*--str=static_cast<char_type>('0'+res);
@@ -413,13 +413,13 @@ inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_
 	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(flt_mode==manipulators::floating_representation::general) //general
 	{
-		std::int32_t olength(static_cast<std::int32_t>(chars_len<10,true>(vr)));	
-		std::int32_t const real_exp(static_cast<std::int32_t>(e10 
+		std::int_least32_t olength(static_cast<std::int_least32_t>(chars_len<10,true>(vr)));	
+		std::int_least32_t const real_exp(static_cast<std::int_least32_t>(e10 
 /*
 		+ removed
 */
 		 + olength - 1));
-		std::uint32_t fixed_length(0),this_case(0);
+		std::uint_least32_t fixed_length(0),this_case(0);
 		if(olength<=real_exp)
 		{
 			fixed_length=real_exp+1;
@@ -434,11 +434,11 @@ inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_
 		}
 		else
 			fixed_length=static_cast<exponent_type>(-real_exp)+olength+1;
-		std::uint32_t scientific_length(olength==1?olength+3:olength+5);
+		std::uint_least32_t scientific_length(olength==1?olength+3:olength+5);
 		if(scientific_length<fixed_length)
 		{
 			result+=fp_output_unsigned_point_no_dcm<decimal_point>(vr,result);
-			return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int32_t>(real_exp),result);
+			return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int_least32_t>(real_exp),result);
 		}
 		switch(this_case)
 		{
@@ -534,8 +534,8 @@ inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_
 	}
 	else if constexpr(flt_mode==manipulators::floating_representation::fixed) //fixed
 	{
-		std::int32_t olength(static_cast<std::int32_t>(chars_len<10,true>(vr)));	
-		std::int32_t const real_exp(static_cast<std::int32_t>(e10 
+		std::int_least32_t olength(static_cast<std::int_least32_t>(chars_len<10,true>(vr)));	
+		std::int_least32_t const real_exp(static_cast<std::int_least32_t>(e10 
 /*
 		+ removed
 */
@@ -628,7 +628,7 @@ inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_
 	}
 	else		//scientific
 	{
-		std::int32_t real_exp(static_cast<std::int32_t>(e10
+		std::int_least32_t real_exp(static_cast<std::int_least32_t>(e10
 /*
 		+ removed
 */
@@ -636,13 +636,13 @@ inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_
 		 - 1));
 		if(vr<10)
 		{
-			std::uint32_t olength(static_cast<std::uint32_t>(fp_output_unsigned(result,vr)));
+			std::uint_least32_t olength(static_cast<std::uint_least32_t>(fp_output_unsigned(result,vr)));
 			real_exp+=olength;
 			result+=olength;
 		}
 		else
 		{
-			std::uint32_t olength(static_cast<std::uint32_t>(fp_output_unsigned(result+1,vr)));
+			std::uint_least32_t olength(static_cast<std::uint_least32_t>(fp_output_unsigned(result+1,vr)));
 			real_exp+=olength;
 			*result=result[1];
 			if constexpr(decimal_point==u8'.')
@@ -665,7 +665,7 @@ inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_
 			}
 			result+=olength+1;
 		}
-		return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int32_t>(real_exp),result);
+		return output_exp<uppercase_e,sizeof(mantissa_type)==16>(static_cast<std::int_least32_t>(real_exp),result);
 	}
 }
 

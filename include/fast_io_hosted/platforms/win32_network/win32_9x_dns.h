@@ -153,7 +153,7 @@ inline ::fast_io::win32::hostent* win32_9x_gethostbyname_impl(char const* name)
 {
 	::fast_io::win32::hostent* ret{::fast_io::win32::gethostbyname(name)};
 	if(ret==nullptr)
-		throw_win32_error(static_cast<std::uint32_t>(::fast_io::win32::WSAGetLastError()));
+		throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	return ret;
 }
 

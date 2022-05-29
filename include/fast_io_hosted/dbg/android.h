@@ -5,17 +5,17 @@ namespace fast_io
 
 struct android_logmessage_meta_base
 {
-	std::int32_t priority{4};
+	std::int_least32_t priority{4};
 	char const* tag{""};
 };
 
 struct android_logmessage_meta_v30
 {
-	std::int32_t buffer_id{};
-	std::int32_t priority{4};
+	std::int_least32_t buffer_id{};
+	std::int_least32_t priority{4};
 	char const* tag{""};
 	char const* file{""};
-	std::uint32_t line{};
+	std::uint_least32_t line{};
 };
 
 enum class android_logger_family_tag
@@ -83,8 +83,8 @@ inline void copy_to_cstr_buffer(void* buffer,void const* source,std::size_t n) n
 }
 
 template<typename callback>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void cstr_concat_write_impl(void const* first,std::size_t n,callback func)
 {
@@ -94,8 +94,8 @@ inline void cstr_concat_write_impl(void const* first,std::size_t n,callback func
 }
 
 template<typename callback>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void cstr_concat_writev_impl(io_scatter_t const* first,std::size_t n,callback func)
 {
@@ -117,22 +117,22 @@ inline void cstr_concat_writev_impl(io_scatter_t const* first,std::size_t n,call
 template<android_logger_family_tag fam>
 inline constexpr bool android_smaller_than_pass_by_mem_size{sizeof(basic_android_family_logger<fam,char>)<=(sizeof(std::size_t)*2)};
 
-extern int my_android_log_write(std::int32_t,char const*,char const*) noexcept __asm__("__android_log_write");
+extern int my_android_log_write(std::int_least32_t,char const*,char const*) noexcept __asm__("__android_log_write");
 
 struct android_logmessage_v30
 {
 	std::size_t size{sizeof(android_logmessage_v30)};
-	std::int32_t buffer_id{};
-	std::int32_t priority{4};
+	std::int_least32_t buffer_id{};
+	std::int_least32_t priority{4};
 	char const* tag{""};
 	char const* file{""};
-	std::uint32_t line{};
+	std::uint_least32_t line{};
 	char const* text;
 };
 
 extern void my_android_log_write_log_message(android_logmessage_v30* log_message) noexcept __asm__("__android_log_write_log_message");
 
-inline void my_android_log_write_impl(std::int32_t prio,char const* tag,char const* text) noexcept
+inline void my_android_log_write_impl(std::int_least32_t prio,char const* tag,char const* text) noexcept
 {
 	my_android_log_write(prio,tag,text);
 }
@@ -201,52 +201,52 @@ namespace details
 {
 
 template<std::integral char_type>
-inline constexpr auto android_dbg_impl(std::int32_t priorit,char const* tg,std::source_location const& loc)
+inline constexpr auto android_dbg_impl(std::int_least32_t priorit,char const* tg,std::source_location const& loc)
 {
-	return basic_android_logger<char_type>{.meta={.priority=priorit,.tag=tg,.file=loc.file_name(),.line=static_cast<std::uint32_t>(loc.line())}};
+	return basic_android_logger<char_type>{.meta={.priority=priorit,.tag=tg,.file=loc.file_name(),.line=static_cast<std::uint_least32_t>(loc.line())}};
 }
 
 }
 
-inline constexpr auto dbg(std::int32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
+inline constexpr auto dbg(std::int_least32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
 {
 	return ::fast_io::details::android_dbg_impl<char>(priority,tg,loc);
 }
-inline constexpr auto wdbg(std::int32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
+inline constexpr auto wdbg(std::int_least32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
 {
 	return ::fast_io::details::android_dbg_impl<wchar_t>(priority,tg,loc);
 }
-inline constexpr auto u8dbg(std::int32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
+inline constexpr auto u8dbg(std::int_least32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
 {
 	return ::fast_io::details::android_dbg_impl<char8_t>(priority,tg,loc);
 }
-inline constexpr auto u16dbg(std::int32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
+inline constexpr auto u16dbg(std::int_least32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
 {
 	return ::fast_io::details::android_dbg_impl<char16_t>(priority,tg,loc);
 }
-inline constexpr auto u32dbg(std::int32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
+inline constexpr auto u32dbg(std::int_least32_t priority=4,char const* tg="",std::source_location loc=std::source_location::current()) noexcept
 {
 	return ::fast_io::details::android_dbg_impl<char32_t>(priority,tg,loc);
 }
 
 #else
-inline constexpr auto dbg(std::int32_t priorit=4,char const* tg="") noexcept
+inline constexpr auto dbg(std::int_least32_t priorit=4,char const* tg="") noexcept
 {
 	return android_logger{.meta={.priority=priorit,.tag=tg}};
 }
-inline constexpr auto wdbg(std::int32_t priorit=4,char const* tg="") noexcept
+inline constexpr auto wdbg(std::int_least32_t priorit=4,char const* tg="") noexcept
 {
 	return wandroid_logger{.meta={.priority=priorit,.tag=tg}};
 }
-inline constexpr auto u8dbg(std::int32_t priorit=4,char const* tg="") noexcept
+inline constexpr auto u8dbg(std::int_least32_t priorit=4,char const* tg="") noexcept
 {
 	return u8android_logger{.meta={.priority=priorit,.tag=tg}};
 }
-inline constexpr auto u16dbg(std::int32_t priorit=4,char const* tg="") noexcept
+inline constexpr auto u16dbg(std::int_least32_t priorit=4,char const* tg="") noexcept
 {
 	return u16android_logger{.meta={.priority=priorit,.tag=tg}};
 }
-inline constexpr auto u32dbg(std::int32_t priorit=4,char const* tg="") noexcept
+inline constexpr auto u32dbg(std::int_least32_t priorit=4,char const* tg="") noexcept
 {
 	return u32android_logger{.meta={.priority=priorit,.tag=tg}};
 }

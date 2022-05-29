@@ -229,8 +229,8 @@ template<::fast_io::freestanding::contiguous_iterator Iter,my_unsigned_integral 
 inline constexpr void fp_output_two_digits(Iter iter,U i)
 {
 #ifdef __OPTIMIZE_SIZE__
-	std::uint32_t u(i/10);
-	std::uint32_t v(i%10);
+	std::uint_least32_t u(i/10);
+	std::uint_least32_t v(i%10);
 	*iter=u;
 	iter[1]=v;
 #elif defined(FAST_IO_OPTIMIZE_TIME)

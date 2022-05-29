@@ -90,9 +90,9 @@ inline constexpr basic_timestamp<0> div_uint(std::int_least64_t rseconds,std::ui
 		seconds=zero-seconds;
 #ifdef __SIZEOF_INT128__
 	__uint128_t total_subseconds{static_cast<__uint128_t>(seconds)*uint_least64_subseconds_per_second+subseconds};
-	std::uint64_t mid{d>>1};
+	std::uint_least64_t mid{d>>1};
 	__uint128_t rr{total_subseconds%d};
-	std::uint64_t r{static_cast<std::uint64_t>(rr)};
+	std::uint_least64_t r{static_cast<std::uint_least64_t>(rr)};
 	__uint128_t q{total_subseconds/d};
 	if(mid<r)
 		++q;
@@ -101,17 +101,17 @@ inline constexpr basic_timestamp<0> div_uint(std::int_least64_t rseconds,std::ui
 		if((q&1)==1)
 			++q;
 	}
-	std::uint64_t result_seconds{static_cast<std::uint64_t>(q/uint_least64_subseconds_per_second)};
-	std::uint64_t result_subseconds{static_cast<std::uint64_t>(q%uint_least64_subseconds_per_second)};
+	std::uint_least64_t result_seconds{static_cast<std::uint_least64_t>(q/uint_least64_subseconds_per_second)};
+	std::uint_least64_t result_subseconds{static_cast<std::uint_least64_t>(q%uint_least64_subseconds_per_second)};
 	if(minus)
 		result_seconds=zero-result_seconds;
 	return {static_cast<std::int_least64_t>(result_seconds),result_subseconds};
 #else
 	constexpr std::uint_least64_t one{1};
-	std::uint64_t total_seconds_high;
-	std::uint64_t total_seconds_low{intrinsics::umul(seconds,uint_least64_subseconds_per_second,total_seconds_high)};
+	std::uint_least64_t total_seconds_high;
+	std::uint_least64_t total_seconds_low{intrinsics::umul(seconds,uint_least64_subseconds_per_second,total_seconds_high)};
 	intrinsics::add_carry(intrinsics::add_carry(false,total_seconds_low,subseconds,total_seconds_low),total_seconds_high,zero,total_seconds_high);
-	std::uint64_t mid{d>>1};
+	std::uint_least64_t mid{d>>1};
 	auto [q_low,q_high,r,r_high]=intrinsics::udivmod(total_seconds_low,total_seconds_high,d,zero);
 	if(mid<r||(mid==r&&(q_low&1)==1))
 		intrinsics::add_carry(intrinsics::add_carry(false,q_low,one,q_low),q_high,zero,q_high);

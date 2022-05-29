@@ -33,7 +33,7 @@ inline void close_nt_user_process_information(nt_user_process_information* hnt_u
 		return details::close_nt_user_process_information_not_null<family>(hnt_user_process_info);
 }
 template<nt_family family>
-inline std::uint32_t nt_wait_user_process_or_thread(void* hprocess_thread) noexcept
+inline std::uint_least32_t nt_wait_user_process_or_thread(void* hprocess_thread) noexcept
 {
 	return win32::nt::nt_wait_for_single_object<family==nt_family::zw>(hprocess_thread,false,nullptr);
 }
@@ -74,7 +74,7 @@ inline void nt_duplicate_object_std(void* parent_process,void*& standard_io_hand
 	check_nt_status(nt_duplicate_object<family>(parent_process,standard_io_handle,process_handle,__builtin_addressof(standard_io_handle),0,0,0x00000002|0x00000004));
 }
 
-inline void check_nt_status(std::uint32_t status)
+inline void check_nt_status(std::uint_least32_t status)
 {
 	if(status)
 		throw_nt_error(status);
@@ -173,7 +173,7 @@ inline nt_user_process_information* nt_process_create_impl(void* __restrict fhan
 			sec_info.CommittedStackSize,sec_info.TransferAddress,pb_info.PebBaseAddress,__builtin_addressof(hthread),__builtin_addressof(cid)));
 	basic_nt_family_file<family,char> thread(hthread);
 //	println_freestanding(fast_io::win32_stdout(),std::source_location::current()," ",cid.hprocess," ",cid.hthread);
-	std::uint32_t lprevcount{};
+	std::uint_least32_t lprevcount{};
 	check_nt_status(nt_resume_thread<zw>(hthread,__builtin_addressof(lprevcount)));
 //	println_freestanding(fast_io::win32_stdout(),std::source_location::current()," ",lprevcount);
 	*uptr={process.release(),thread.release()};
@@ -239,7 +239,7 @@ inline void detach(nt_family_process_observer<family>& ppob) noexcept
 #if 0
 struct nt_wait_status
 {
-	std::uint32_t exit_code{};
+	std::uint_least32_t exit_code{};
 };
 
 inline nt_wait_status query_process_basic_info(nt_process_observer ppob)

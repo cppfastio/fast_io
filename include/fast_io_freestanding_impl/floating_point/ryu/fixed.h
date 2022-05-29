@@ -19,21 +19,21 @@ inline constexpr T pow10_bits_for_index(T idx){return (idx<<4)+120;}
 
 
 template<typename T>
-inline constexpr std::uint32_t mul_shift_mod_1e9(std::uint64_t m, ::fast_io::freestanding::array<T,3> const& mul, std::size_t j)
+inline constexpr std::uint_least32_t mul_shift_mod_1e9(std::uint_least64_t m, ::fast_io::freestanding::array<T,3> const& mul, std::size_t j)
 {
 	uint128_t b1(mul_extend(m,mul[1]));
 	b1+=high(mul_extend(m,mul[0]));
 	uint128_t s1(mul_extend(m,mul[2]));
 	s1+=high(b1);
 	s1>>=j-128;
-	uint128_t constexpr mulb(construct_unsigned_extension(static_cast<std::uint64_t>(0x31680A88F8953031),static_cast<std::uint64_t>(0x89705F4136B4A597)));
-	return static_cast<std::uint32_t>(s1)-1000000000*static_cast<std::uint32_t>(low(mul_high(s1,mulb))>>29);
+	uint128_t constexpr mulb(construct_unsigned_extension(static_cast<std::uint_least64_t>(0x31680A88F8953031),static_cast<std::uint_least64_t>(0x89705F4136B4A597)));
+	return static_cast<std::uint_least32_t>(s1)-1000000000*static_cast<std::uint_least32_t>(low(mul_high(s1,mulb))>>29);
 }
 
 template<typename T>
-inline constexpr std::uint32_t pow5_factor(T value)
+inline constexpr std::uint_least32_t pow5_factor(T value)
 {
-	for (std::uint32_t count{};value;++count)
+	for (std::uint_least32_t count{};value;++count)
 	{
 		if (value%5)
 			return count;
@@ -46,40 +46,40 @@ inline constexpr std::uint32_t pow5_factor(T value)
 
 // Returns true if value is divisible by 5^p.
 template<typename T>
-inline constexpr bool multiple_of_power_of_5(T value,std::uint32_t p)
+inline constexpr bool multiple_of_power_of_5(T value,std::uint_least32_t p)
 {
 	// The author tried a case distinction on p, but there was no performance difference.
 	return p<=pow5_factor(value);
 }
 
-inline constexpr uint32_t log10_pow2(std::uint64_t e)
+inline constexpr uint_least32_t log10_pow2(std::uint_least64_t e)
 {
-	return static_cast<std::uint32_t> (((static_cast<std::uint64_t>(e)) * 169464822037455ull) >> 49);
+	return static_cast<std::uint_least32_t> (((static_cast<std::uint_least64_t>(e)) * 169464822037455ull) >> 49);
 }
 template<std::unsigned_integral T>
 inline constexpr std::size_t length_for_index(T idx){return (log10_pow2(idx<<4)+25)/9;}
 
 template<std::integral T>
-inline constexpr uint32_t log10_pow5(T e)
+inline constexpr uint_least32_t log10_pow5(T e)
 {
 	// The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
-	return static_cast<uint32_t> (((static_cast<uint64_t>(e)) * 196742565691928ull) >> 48);
+	return static_cast<uint_least32_t> (((static_cast<uint_least64_t>(e)) * 196742565691928ull) >> 48);
 }
 /*
 template<bool controller,std::unsigned_integral T>
 inline constexpr ::fast_io::freestanding::array<fast_io::uint128_t,2> compute_pow5(T v)
 {
-	std::uint32_t const base(v/56);
-	std::uint32_t const base2(base*56);
-	::fast_io::freestanding::array<std::uint64_t,4> const& mul(pow5<long double,controller>::split[base]);
+	std::uint_least32_t const base(v/56);
+	std::uint_least32_t const base2(base*56);
+	::fast_io::freestanding::array<std::uint_least64_t,4> const& mul(pow5<long double,controller>::split[base]);
 	if(v==base2)
 		return {construct_unsigned_extension(mul.front(),mul[1]),construct_unsigned_extension(mul[2],mul[3])};
 	else
 	{
-		std::uint32_t const offset(v - base2);
-		::fast_io::freestanding::array<std::uint64_t,2> const &m = pow5<long double,controller>::[offset];
-		const uint32_t delta = pow5bits(i) - pow5bits(base2);
-		const uint32_t corr = (uint32_t) ((POW5_ERRORS[i / 32] >> (2 * (i % 32))) & 3);
+		std::uint_least32_t const offset(v - base2);
+		::fast_io::freestanding::array<std::uint_least64_t,2> const &m = pow5<long double,controller>::[offset];
+		const uint_least32_t delta = pow5bits(i) - pow5bits(base2);
+		const uint_least32_t corr = (uint_least32_t) ((POW5_ERRORS[i / 32] >> (2 * (i % 32))) & 3);
 		mul_128_256_shift(m, mul, delta, corr, result);
 	}
 //		return pow5<long double,controller>::;
@@ -128,7 +128,7 @@ inline constexpr unrep<mantissaType,exponentType> init_rep(mantissaType const& m
 }
 
 template<bool uppercase_e=false,bool four_digits=false,std::signed_integral T,::fast_io::freestanding::random_access_iterator Iter>
-requires std::same_as<T,std::int32_t>
+requires std::same_as<T,std::int_least32_t>
 inline constexpr Iter output_exp(T exp,Iter result)
 {
 	if constexpr(uppercase_e)

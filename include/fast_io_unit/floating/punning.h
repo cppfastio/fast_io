@@ -16,7 +16,7 @@ struct iec559_traits;
 template<>
 struct iec559_traits<__float16>
 {
-	using mantissa_type = std::uint16_t;
+	using mantissa_type = std::uint_least16_t;
 	inline static constexpr std::size_t mbits{10};
 	inline static constexpr std::size_t ebits{5};
 	inline static constexpr std::uint_least32_t m10digits{4};
@@ -355,7 +355,7 @@ struct
 float80_result
 {
 	std::uint_least64_t mantissa;
-	std::uint16_t exponent;
+	std::uint_least16_t exponent;
 };
 
 template<typename flt>

@@ -202,7 +202,7 @@ struct simd_parse_result
 #if defined(__SSE4_1__) && defined(__x86_64__)
 
 template<bool char_execharset>
-inline std::uint32_t detect_length(char unsigned const* buffer) noexcept
+inline std::uint_least32_t detect_length(char unsigned const* buffer) noexcept
 {
 	constexpr char8_t zero_constant{char_execharset?static_cast<char8_t>('0'):u8'0'};
 	constexpr char8_t v176_constant{static_cast<char8_t>((zero_constant+static_cast<char8_t>(128))&255u)};
@@ -215,19 +215,19 @@ inline std::uint32_t detect_length(char unsigned const* buffer) noexcept
 	x86_64_v16qu const t0{chunk-v176};
 	x86_64_v16qs const minus118{-118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118};
 	x86_64_v16qs const mask{(x86_64_v16qs)t0<minus118};
-	std::uint16_t v{static_cast<std::uint16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
+	std::uint_least16_t v{static_cast<std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
 #else
 	__m128i chunk = _mm_loadu_si128(reinterpret_cast<__m128i const*>(buffer));
 	__m128i const t0 = _mm_sub_epi8(chunk, _mm_set1_epi8(v176_constant));
 	__m128i const mask = _mm_cmplt_epi8(t0, _mm_set1_epi8(-118));
-	std::uint16_t v{static_cast<std::uint16_t>(_mm_movemask_epi8(mask))};
+	std::uint_least16_t v{static_cast<std::uint_least16_t>(_mm_movemask_epi8(mask))};
 #endif
-	return static_cast<std::uint32_t>(std::countr_one(v));
+	return static_cast<std::uint_least32_t>(std::countr_one(v));
 }
 
 template<bool char_execharset>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline std::size_t sse_skip_long_overflow_digits(char unsigned const* buffer,char unsigned const* buffer_end) noexcept
 {
@@ -251,7 +251,7 @@ template<bool char_execharset,bool less_than_64_bits>
 #if __has_cpp_attribute(gnu::hot)
 [[gnu::hot]]
 #endif
-inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned const* buffer_end,std::uint64_t &res) noexcept
+inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned const* buffer_end,std::uint_least64_t &res) noexcept
 {
 	constexpr char8_t zero_constant{char_execharset?static_cast<char8_t>('0'):u8'0'};
 	constexpr char8_t v176_constant{static_cast<char8_t>((zero_constant+static_cast<char8_t>(128))&255u)};
@@ -265,8 +265,8 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 	x86_64_v16qu const t0{chunk-v176};
 	x86_64_v16qs const minus118{-118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118};
 	x86_64_v16qs const mask{(x86_64_v16qs)t0<minus118};
-	std::uint16_t v{static_cast<std::uint16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
-	std::uint32_t digits{static_cast<std::uint32_t>(std::countr_one(v))};
+	std::uint_least16_t v{static_cast<std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
+	std::uint_least32_t digits{static_cast<std::uint_least32_t>(std::countr_one(v))};
 	if(digits==0)
 		return {0,parse_code::invalid};
 	x86_64_v16qu const zeros{zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,
@@ -279,14 +279,14 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 	chunk=(x86_64_v16qu)__builtin_ia32_pmaddwd128((x86_64_v8hi)chunk,x86_64_v8hi{100,1,100,1,100,1,100,1});
 	chunk=(x86_64_v16qu)__builtin_ia32_packusdw128((x86_64_v4si)chunk,(x86_64_v4si)chunk);
 	chunk=(x86_64_v16qu)__builtin_ia32_pmaddwd128((x86_64_v8hi)chunk,x86_64_v8hi{10000,1,10000,1,0,0,0,0});
-	std::uint64_t chunk0;
+	std::uint_least64_t chunk0;
 	__builtin_memcpy(__builtin_addressof(chunk0),__builtin_addressof(chunk),sizeof(chunk0));
 #else
 	__m128i chunk = _mm_loadu_si128(reinterpret_cast<__m128i const*>(buffer));
 	__m128i const t0 = _mm_sub_epi8(chunk, _mm_set1_epi8(v176_constant));
 	__m128i const mask = _mm_cmplt_epi8(t0, _mm_set1_epi8(-118));
-	std::uint16_t v{static_cast<std::uint16_t>(_mm_movemask_epi8(mask))};
-	std::uint32_t digits{static_cast<std::uint32_t>(std::countr_one(v))};
+	std::uint_least16_t v{static_cast<std::uint_least16_t>(_mm_movemask_epi8(mask))};
+	std::uint_least32_t digits{static_cast<std::uint_least32_t>(std::countr_one(v))};
 	if(digits==0)
 		return {0,parse_code::invalid};
 	chunk = _mm_sub_epi8(chunk, _mm_set1_epi8(zero_constant));
@@ -295,15 +295,15 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 	chunk = _mm_madd_epi16(chunk, _mm_set_epi16(1,100,1,100,1,100,1,100));
 	chunk = _mm_packus_epi32(chunk, chunk);
 	chunk = _mm_madd_epi16(chunk,_mm_set_epi16(0,0,0,0,1,10000,1,10000));
-	std::uint64_t chunk0;
+	std::uint_least64_t chunk0;
 	std::memcpy(__builtin_addressof(chunk0),__builtin_addressof(chunk),sizeof(chunk0));
 #endif
-	std::uint64_t result{static_cast<std::uint64_t>(((chunk0 & 0xffffffff) * 100000000ULL) + (chunk0 >> 32))};
+	std::uint_least64_t result{static_cast<std::uint_least64_t>(((chunk0 & 0xffffffff) * 100000000ULL) + (chunk0 >> 32))};
 	if(digits==16)[[unlikely]]
 	{
 		if constexpr(less_than_64_bits)
 		{
-			//std::uint32_t can never have 16 digits
+			//std::uint_least32_t can never have 16 digits
 			return {sse_skip_long_overflow_digits<char_execharset>(buffer+16,buffer_end)+16,parse_code::overflow};
 		}
 		else
@@ -314,18 +314,18 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 			{
 			case 3:
 			{
-				res=result*1000ULL+static_cast<std::uint64_t>(buffer[16]-zero_constant)*100ULL+static_cast<std::uint64_t>(buffer[17]-zero_constant)*10ULL
-				+static_cast<std::uint64_t>(buffer[18]-zero_constant);
+				res=result*1000ULL+static_cast<std::uint_least64_t>(buffer[16]-zero_constant)*100ULL+static_cast<std::uint_least64_t>(buffer[17]-zero_constant)*10ULL
+				+static_cast<std::uint_least64_t>(buffer[18]-zero_constant);
 				return {19,parse_code::ok};
 			}
 			case 2:
 			{
-				res=result*100+static_cast<std::uint64_t>(buffer[16]-zero_constant)*10ULL+static_cast<std::uint64_t>(buffer[17]-zero_constant);
+				res=result*100+static_cast<std::uint_least64_t>(buffer[16]-zero_constant)*10ULL+static_cast<std::uint_least64_t>(buffer[17]-zero_constant);
 				return {18,parse_code::ok};
 			}
 			case 1:
 			{
-				res=result*10+static_cast<std::uint64_t>(buffer[16]-zero_constant);
+				res=result*10+static_cast<std::uint_least64_t>(buffer[16]-zero_constant);
 				return {17,parse_code::ok};
 			}
 			case 0:
@@ -335,12 +335,12 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 			}
 			case 4:
 			{
-				constexpr std::uint64_t risky_value{UINT64_MAX/10000ULL};
-				constexpr std::uint64_t risky_mod{UINT64_MAX%10000ULL};
+				constexpr std::uint_least64_t risky_value{UINT64_MAX/10000ULL};
+				constexpr std::uint_least64_t risky_mod{UINT64_MAX%10000ULL};
 				if(result>risky_value)
 					return {20,parse_code::overflow};
-				std::uint64_t partial{static_cast<std::uint64_t>(buffer[16]-zero_constant)*1000ULL+static_cast<std::uint64_t>(buffer[17]-zero_constant)*100ULL
-				+static_cast<std::uint64_t>(buffer[18]-zero_constant)*10ULL+static_cast<std::uint64_t>(buffer[19]-zero_constant)};
+				std::uint_least64_t partial{static_cast<std::uint_least64_t>(buffer[16]-zero_constant)*1000ULL+static_cast<std::uint_least64_t>(buffer[17]-zero_constant)*100ULL
+				+static_cast<std::uint_least64_t>(buffer[18]-zero_constant)*10ULL+static_cast<std::uint_least64_t>(buffer[19]-zero_constant)};
 				if(result==risky_value&&risky_mod<partial)
 					return {20,parse_code::overflow};
 				res=result*10000ULL+partial;
@@ -365,8 +365,8 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 #endif
 
 template<char8_t base,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral T>
-#if defined(__SSE4_1__) && __has_cpp_attribute(gnu::cold) && defined(__x86_64__)
-[[gnu::cold]]
+#if defined(__SSE4_1__) && __has_cpp_attribute(__gnu__::__cold__) && defined(__x86_64__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr parse_result<Iter> scan_int_contiguous_none_simd_space_part_define_impl(Iter first,Iter last,T& res) noexcept
 {
@@ -445,7 +445,7 @@ inline constexpr parse_result<Iter> scan_int_contiguous_none_space_part_define_i
 	unsigned_type res{};
 	Iter it;
 #if defined(__SSE4_1__) && defined(__x86_64__)
-	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint64_t))
+	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
 	{
 		if(
 #if __cpp_lib_is_constant_evaluated >= 201811L
@@ -453,8 +453,8 @@ inline constexpr parse_result<Iter> scan_int_contiguous_none_space_part_define_i
 #endif
 		last-first>=32)[[likely]]
 		{
-			constexpr bool smaller_than_uint64{sizeof(unsigned_type)<sizeof(std::uint64_t)};
-			std::uint64_t temp{};
+			constexpr bool smaller_than_uint64{sizeof(unsigned_type)<sizeof(std::uint_least64_t)};
+			std::uint_least64_t temp{};
 			auto [digits,ec]=sse_parse<is_ebcdic<char_type>,smaller_than_uint64>(reinterpret_cast<char unsigned const*>(first),reinterpret_cast<char unsigned const*>(last),temp);
 			it=first+digits;
 			if(ec!=parse_code::ok)[[unlikely]]
@@ -682,8 +682,8 @@ inline constexpr parse_result<Iter> scan_context_define_parse_impl(State& st,Ite
 }
 
 template<char8_t base,typename State,my_integral T>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr parse_code scan_context_eof_define_parse_impl(State& st,T& t) noexcept
 {

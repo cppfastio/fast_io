@@ -918,13 +918,13 @@ constexpr std::size_t chars_len(U value) noexcept
 #if defined(__SIZEOF_INT128__)
 		if constexpr(sizeof(U)==sizeof(__uint128_t))
 		{
-			std::uint64_t high{static_cast<std::uint64_t>(value>>64u)};
-			constexpr std::uint64_t zero{};
+			std::uint_least64_t high{static_cast<std::uint_least64_t>(value>>64u)};
+			constexpr std::uint_least64_t zero{};
 			std::size_t base2len;
 			if(high==zero)
 			{
-				constexpr std::uint64_t one_constant{1};
-				std::uint64_t low{static_cast<std::uint64_t>(value)|one_constant};
+				constexpr std::uint_least64_t one_constant{1};
+				std::uint_least64_t low{static_cast<std::uint_least64_t>(value)|one_constant};
 				constexpr std::size_t bitsdv2{bits>>1u};
 				base2len=bitsdv2-static_cast<std::size_t>(std::countl_zero(low));
 			}
