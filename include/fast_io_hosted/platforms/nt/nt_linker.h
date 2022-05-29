@@ -12,7 +12,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall rtl_nt_status_to_dos_error(std::uint32_t status) noexcept
+extern std::uint_least32_t __stdcall rtl_nt_status_to_dos_error(std::uint_least32_t status) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -31,7 +31,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtClose(void*) noexcept
+extern std::uint_least32_t __stdcall NtClose(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -49,7 +49,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwClose(void*) noexcept
+extern std::uint_least32_t __stdcall ZwClose(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -64,7 +64,7 @@ __asm__("ZwClose")
 ;
 
 template<bool zw>
-inline std::uint32_t nt_close(void* handle) noexcept
+inline std::uint_least32_t nt_close(void* handle) noexcept
 {
 	if constexpr(zw)
 		return ZwClose(handle);
@@ -77,8 +77,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtCreateFile(void**,std::uint32_t,object_attributes*,io_status_block*,std::int64_t*,
-			std::uint32_t,std::uint32_t,std::uint32_t,std::uint32_t,void*,std::uint32_t) noexcept
+extern std::uint_least32_t __stdcall NtCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
+			std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,void*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -96,8 +96,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwCreateFile(void**,std::uint32_t,object_attributes*,io_status_block*,std::int64_t*,
-			std::uint32_t,std::uint32_t,std::uint32_t,std::uint32_t,void*,std::uint32_t) noexcept
+extern std::uint_least32_t __stdcall ZwCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
+			std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,void*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -113,7 +113,7 @@ __asm__("ZwCreateFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==11)
-inline std::uint32_t nt_create_file(Args... args) noexcept
+inline std::uint_least32_t nt_create_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwCreateFile(args...);
@@ -126,8 +126,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtCreateSection(void** __restrict,std::uint32_t,object_attributes* __restrict,
-		std::uint64_t*,std::uint32_t,std::uint32_t,void* __restrict) noexcept
+extern std::uint_least32_t __stdcall NtCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
+		std::uint_least64_t*,std::uint_least32_t,std::uint_least32_t,void* __restrict) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -145,8 +145,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwCreateSection(void** __restrict,std::uint32_t,object_attributes* __restrict,
-		std::uint64_t*,std::uint32_t,std::uint32_t,void* __restrict) noexcept
+extern std::uint_least32_t __stdcall ZwCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
+		std::uint_least64_t*,std::uint_least32_t,std::uint_least32_t,void* __restrict) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -162,7 +162,7 @@ __asm__("ZwCreateSection")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==7)
-inline std::uint32_t nt_create_section(Args... args) noexcept
+inline std::uint_least32_t nt_create_section(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwCreateSection(args...);
@@ -175,9 +175,9 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtQueryInformationProcess(void* __restrict,
+extern std::uint_least32_t __stdcall NtQueryInformationProcess(void* __restrict,
 		process_information_class,process_basic_information*,
-		std::uint32_t,std::uint32_t*) noexcept
+		std::uint_least32_t,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -196,9 +196,9 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwQueryInformationProcess(void* __restrict,
+extern std::uint_least32_t __stdcall ZwQueryInformationProcess(void* __restrict,
 		process_information_class,process_basic_information*,
-		std::uint32_t,std::uint32_t*) noexcept
+		std::uint_least32_t,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -214,7 +214,7 @@ __asm__("ZwQueryInformationProcess")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==5)
-inline std::uint32_t nt_query_information_process(Args... args) noexcept
+inline std::uint_least32_t nt_query_information_process(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwQueryInformationProcess(args...);
@@ -227,8 +227,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
-				void const*,std::uint32_t,std::int64_t*,std::uint32_t*) noexcept
+extern std::uint_least32_t __stdcall NtWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -246,8 +246,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
-				void const*,std::uint32_t,std::int64_t*,std::uint32_t*) noexcept
+extern std::uint_least32_t __stdcall ZwWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -263,7 +263,7 @@ __asm__("ZwWriteFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==9)
-inline std::uint32_t nt_write_file(Args... args) noexcept
+inline std::uint_least32_t nt_write_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwWriteFile(args...);
@@ -276,8 +276,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
-				void const*,std::uint32_t,std::int64_t*,std::uint32_t*) noexcept
+extern std::uint_least32_t __stdcall NtReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -295,8 +295,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
-				void const*,std::uint32_t,std::int64_t*,std::uint32_t*) noexcept
+extern std::uint_least32_t __stdcall ZwReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -312,7 +312,7 @@ __asm__("ZwReadFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==9)
-inline std::uint32_t nt_read_file(Args... args) noexcept
+inline std::uint_least32_t nt_read_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwReadFile(args...);
@@ -325,8 +325,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
-				void*,std::uint32_t,file_information_class,int,unicode_string*,int) noexcept
+extern std::uint_least32_t __stdcall NtQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+				void*,std::uint_least32_t,file_information_class,int,unicode_string*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -344,8 +344,8 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
-				void*,std::uint32_t,file_information_class,int,unicode_string*,int) noexcept
+extern std::uint_least32_t __stdcall ZwQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+				void*,std::uint_least32_t,file_information_class,int,unicode_string*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -361,7 +361,7 @@ __asm__("ZwQueryDirectoryFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==11)
-inline std::uint32_t nt_query_directory_file(Args... args) noexcept
+inline std::uint_least32_t nt_query_directory_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwQueryDirectoryFile(args...);
@@ -374,7 +374,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
+extern std::uint_least32_t __stdcall NtQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -393,7 +393,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
+extern std::uint_least32_t __stdcall ZwQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -409,7 +409,7 @@ __asm__("ZwQuerySection")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==5)
-inline std::uint32_t nt_query_section(Args... args) noexcept
+inline std::uint_least32_t nt_query_section(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwQuerySection(args...);
@@ -423,7 +423,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint32_t,file_information_class) noexcept
+extern std::uint_least32_t __stdcall NtQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -441,7 +441,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint32_t,file_information_class) noexcept
+extern std::uint_least32_t __stdcall ZwQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -457,7 +457,7 @@ __asm__("ZwQueryInformationFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==5)
-inline std::uint32_t nt_query_information_file(Args... args) noexcept
+inline std::uint_least32_t nt_query_information_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwQueryInformationFile(args...);
@@ -471,7 +471,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint32_t,file_information_class) noexcept
+extern std::uint_least32_t __stdcall NtSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -489,7 +489,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint32_t,file_information_class) noexcept
+extern std::uint_least32_t __stdcall ZwSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -505,7 +505,7 @@ __asm__("ZwSetInformationFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==5)
-inline std::uint32_t nt_set_information_file(Args... args) noexcept
+inline std::uint_least32_t nt_set_information_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwSetInformationFile(args...);
@@ -518,7 +518,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtDuplicateObject(void*,void*,void*,void**,std::uint32_t,std::uint32_t,std::uint32_t) noexcept
+extern std::uint_least32_t __stdcall NtDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -536,7 +536,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwDuplicateObject(void*,void*,void*,void**,std::uint32_t,std::uint32_t,std::uint32_t) noexcept
+extern std::uint_least32_t __stdcall ZwDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -552,7 +552,7 @@ __asm__("ZwDuplicateObject")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==7)
-inline std::uint32_t nt_duplicate_object(Args... args) noexcept
+inline std::uint_least32_t nt_duplicate_object(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwDuplicateObject(args...);
@@ -565,7 +565,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtWaitForSingleObject(void*,int,std::uint64_t*) noexcept
+extern std::uint_least32_t __stdcall NtWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -584,7 +584,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwWaitForSingleObject(void*,int,std::uint64_t*) noexcept
+extern std::uint_least32_t __stdcall ZwWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -600,7 +600,7 @@ __asm__("ZwWaitForSingleObject")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==3)
-inline std::uint32_t nt_wait_for_single_object(Args... args) noexcept
+inline std::uint_least32_t nt_wait_for_single_object(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwWaitForSingleObject(args...);
@@ -613,7 +613,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtSetSystemTime(std::uint64_t*,std::uint64_t*) noexcept
+extern std::uint_least32_t __stdcall NtSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -631,7 +631,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwSetSystemTime(std::uint64_t*,std::uint64_t*) noexcept
+extern std::uint_least32_t __stdcall ZwSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -647,7 +647,7 @@ __asm__("ZwSetSystemTime")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==2)
-inline std::uint32_t nt_set_system_time(Args... args) noexcept
+inline std::uint_least32_t nt_set_system_time(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwSetSystemTime(args...);
@@ -660,7 +660,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-std::uint32_t __stdcall NtCreateProcess(void**,std::uint32_t,object_attributes*,void*,std::uint32_t,void*,void*,void*) noexcept
+std::uint_least32_t __stdcall NtCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -679,7 +679,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-std::uint32_t __stdcall ZwCreateProcess(void**,std::uint32_t,object_attributes*,void*,std::uint32_t,void*,void*,void*) noexcept
+std::uint_least32_t __stdcall ZwCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -695,7 +695,7 @@ __asm__("ZwCreateProcess")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==8)
-inline std::uint32_t nt_create_process(Args... args) noexcept
+inline std::uint_least32_t nt_create_process(Args... args) noexcept
 {
 	if constexpr(zw)
 		return NtCreateProcess(args...);
@@ -727,7 +727,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall rtl_dos_path_name_to_nt_path_name_u_with_status(wchar_t const*,unicode_string*,wchar_t const**,rtl_relative_name_u*) noexcept
+extern std::uint_least32_t __stdcall rtl_dos_path_name_to_nt_path_name_u_with_status(wchar_t const*,unicode_string*,wchar_t const**,rtl_relative_name_u*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -861,7 +861,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall RtlCreateUserThread(void*,void*,int,std::uint32_t,std::size_t,std::size_t,void*,void*,void**,client_id*) noexcept
+extern std::uint_least32_t __stdcall RtlCreateUserThread(void*,void*,int,std::uint_least32_t,std::size_t,std::size_t,void*,void*,void**,client_id*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -880,7 +880,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtResumeThread(void*,std::uint32_t*) noexcept
+extern std::uint_least32_t __stdcall NtResumeThread(void*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -899,7 +899,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwResumeThread(void*,std::uint32_t*) noexcept
+extern std::uint_least32_t __stdcall ZwResumeThread(void*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -915,7 +915,7 @@ __asm__("ZwResumeThread")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==2)
-inline std::uint32_t nt_resume_thread(Args... args) noexcept
+inline std::uint_least32_t nt_resume_thread(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwResumeThread(args...);
@@ -928,7 +928,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int64_t*,std::int64_t*,std::uint32_t,char unsigned,char unsigned) noexcept
+extern std::uint_least32_t __stdcall NtLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -947,7 +947,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int64_t*,std::int64_t*,std::uint32_t,char unsigned,char unsigned) noexcept
+extern std::uint_least32_t __stdcall ZwLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -963,7 +963,7 @@ __asm__("ZwLockFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==10)
-inline std::uint32_t nt_lock_file(Args... args) noexcept
+inline std::uint_least32_t nt_lock_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwLockFile(args...);
@@ -976,7 +976,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtUnlockFile(void*,io_status_block*,std::int64_t*,std::int64_t*,std::uint32_t) noexcept
+extern std::uint_least32_t __stdcall NtUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -995,7 +995,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwUnlockFile(void*,io_status_block*,std::int64_t*,std::int64_t*,std::uint32_t) noexcept
+extern std::uint_least32_t __stdcall ZwUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1011,7 +1011,7 @@ __asm__("ZwUnlockFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==5)
-inline std::uint32_t nt_unlock_file(Args... args) noexcept
+inline std::uint_least32_t nt_unlock_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwUnlockFile(args...);
@@ -1030,7 +1030,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtFlushBuffersFile(void*,io_status_block*) noexcept
+extern std::uint_least32_t __stdcall NtFlushBuffersFile(void*,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1049,7 +1049,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwFlushBuffersFile(void*,io_status_block*) noexcept
+extern std::uint_least32_t __stdcall ZwFlushBuffersFile(void*,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1065,7 +1065,7 @@ __asm__("ZwFlushBuffersFile")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==2)
-inline std::uint32_t nt_flush_buffers_file(Args... args) noexcept
+inline std::uint_least32_t nt_flush_buffers_file(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwFlushBuffersFile(args...);
@@ -1078,7 +1078,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall NtFlushBuffersFileEx(void*,std::uint32_t,void*,std::uint32_t,io_status_block*) noexcept
+extern std::uint_least32_t __stdcall NtFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1097,7 +1097,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __stdcall ZwFlushBuffersFileEx(void*,std::uint32_t,void*,std::uint32_t,io_status_block*) noexcept
+extern std::uint_least32_t __stdcall ZwFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1113,7 +1113,7 @@ __asm__("ZwFlushBuffersFileEx")
 
 template<bool zw,typename... Args>
 requires (sizeof...(Args)==5)
-inline std::uint32_t nt_flush_buffers_file_ex(Args... args) noexcept
+inline std::uint_least32_t nt_flush_buffers_file_ex(Args... args) noexcept
 {
 	if constexpr(zw)
 		return ZwFlushBuffersFileEx(args...);
@@ -1126,7 +1126,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __cdecl DbgPrint(char const*,...) noexcept
+extern std::uint_least32_t __cdecl DbgPrint(char const*,...) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1145,7 +1145,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(gnu::dllimport)
 [[gnu::dllimport]]
 #endif
-extern std::uint32_t __cdecl DbgPrintEx(std::uint32_t,std::uint32_t,char const*,...) noexcept
+extern std::uint_least32_t __cdecl DbgPrintEx(std::uint_least32_t,std::uint_least32_t,char const*,...) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

@@ -153,8 +153,8 @@ inline constexpr auto extract_one_scatter(T t)
 }
 
 template<bool line,typename value_type,output_stream output>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void print_control_dynamic_reserve_bad_path(output out,value_type t,std::size_t sizep1)
 {
@@ -810,8 +810,8 @@ inline constexpr void print_freestanding_decay(output out,Args ...args)
 
 template<bool line,typename output,typename ...Args>
 requires print_freestanding_decay_okay<output,Args...>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void print_freestanding_decay_cold(output out,Args ...args)
 {

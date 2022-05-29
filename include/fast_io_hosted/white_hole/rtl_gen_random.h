@@ -22,7 +22,7 @@ namespace details
 {
 inline void rtl_gen_random_read_u32(void* ptr,std::size_t sz)
 {
-	if(!SystemFunction036(ptr,static_cast<std::uint32_t>(sz)))
+	if(!SystemFunction036(ptr,static_cast<std::uint_least32_t>(sz)))
 		throw_win32_error();
 }
 
@@ -36,7 +36,7 @@ inline std::size_t rtl_gen_random_read(void* ptr,std::size_t sz)
 		std::size_t mn{sz};
 		if(uint32_max<sz)
 			mn=uint32_max;
-		if(!SystemFunction036(iter,static_cast<std::uint32_t>(mn)))
+		if(!SystemFunction036(iter,static_cast<std::uint_least32_t>(mn)))
 		{
 			if(base_ptr==iter)
 				throw_win32_error();
@@ -53,7 +53,7 @@ inline std::size_t rtl_gen_random_read(void* ptr,std::size_t sz)
 template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
 inline Iter read(basic_rtl_gen_random<char_type>,Iter bg,Iter ed)
 {
-	if constexpr(sizeof(std::uint32_t)<sizeof(std::size_t))
+	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
 		auto ret{win32::details::rtl_gen_random_read(::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
 		return bg+(ret/sizeof(*bg));

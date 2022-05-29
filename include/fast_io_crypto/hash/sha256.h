@@ -51,7 +51,7 @@ inline constexpr auto Maj(auto x,auto y,auto z) noexcept
 	return (x&y)^(x&z)^(y&z);
 }
 
-inline constexpr std::uint_least32_t B2U32(std::byte val, std::uint8_t sh) noexcept
+inline constexpr std::uint_least32_t B2U32(std::byte val, std::uint_least8_t sh) noexcept
 {
 	return (static_cast<std::uint_least32_t>(val)) << sh;
 }

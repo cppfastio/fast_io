@@ -83,8 +83,8 @@ inline constexpr char8_t const* kern_to_fmt(kern k) noexcept
 namespace details
 {
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void linux_kpr_raw_write_fmt(char const* fmt,void const* start,void const* last) noexcept
 {

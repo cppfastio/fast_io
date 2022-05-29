@@ -3,14 +3,14 @@
 namespace fast_io::win32::nt::details
 {
 
-inline std::uint16_t nt_filename_bytes(std::size_t sz)
+inline std::uint_least16_t nt_filename_bytes(std::size_t sz)
 {
-	if constexpr(sizeof(sz)<sizeof(std::uint16_t))//sizeof(std::size_t) can never be smaller than sizeof(std::uint16_t)
-		return static_cast<std::uint16_t>(static_cast<std::uint16_t>(sz)<<1u);
-	constexpr std::size_t max_value{static_cast<std::size_t>(std::numeric_limits<std::uint16_t>::max()>>1u)};
+	if constexpr(sizeof(sz)<sizeof(std::uint_least16_t))//sizeof(std::size_t) can never be smaller than sizeof(std::uint_least16_t)
+		return static_cast<std::uint_least16_t>(static_cast<std::uint_least16_t>(sz)<<1u);
+	constexpr std::size_t max_value{static_cast<std::size_t>(std::numeric_limits<std::uint_least16_t>::max()>>1u)};
 	if(max_value<sz)
 		throw_nt_error(0xC0000106);
-	return static_cast<std::uint16_t>(sz<<1);
+	return static_cast<std::uint_least16_t>(sz<<1);
 }
 
 inline void nt_file_rtl_path(wchar_t const* filename,win32::nt::unicode_string& nt_name,wchar_t const*& part_name,win32::nt::rtl_relative_name_u& relative_name)
@@ -44,7 +44,7 @@ inline auto nt_call_invoke_with_directory_handle_impl(void* directory,char_type 
 		[[__gnu__::__may_alias__]]
 #endif
 		= wchar_t*;
-		std::uint16_t const bytes(nt_filename_bytes(filename_len));
+		std::uint_least16_t const bytes(nt_filename_bytes(filename_len));
 		win32::nt::unicode_string relative_path{
 			.Length=bytes,
 			.MaximumLength=bytes,
@@ -120,7 +120,7 @@ inline auto nt_call_callback_without_directory_handle(char_type const* filename,
 template<typename func>
 inline auto nt_call_kernel_common_impl(void* directory,wchar_t const* filename,std::size_t filename_len,func callback)
 {
-	std::uint16_t const bytes(nt_filename_bytes(filename_len));
+	std::uint_least16_t const bytes(nt_filename_bytes(filename_len));
 	win32::nt::unicode_string relative_path{
 		.Length=bytes,
 		.MaximumLength=bytes,

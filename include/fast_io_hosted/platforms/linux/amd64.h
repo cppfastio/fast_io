@@ -88,7 +88,7 @@ requires (1<sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4) noexcept
 {
 	return_value_type ret;
-	register std::uint64_t r10 __asm__("r10") = (std::uint64_t)p4;
+	register std::uint_least64_t r10 __asm__("r10") = (std::uint_least64_t)p4;
 	__asm__ __volatile__
 	("syscall"
 	: "=a" (ret)
@@ -104,8 +104,8 @@ requires (1<sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4,auto p5) noexcept
 {
 	return_value_type ret;
-	register std::uint64_t r10 __asm__("r10") = (std::uint64_t)p4;
-	register std::uint64_t r8 __asm__("r8") = (std::uint64_t)p5;
+	register std::uint_least64_t r10 __asm__("r10") = (std::uint_least64_t)p4;
+	register std::uint_least64_t r8 __asm__("r8") = (std::uint_least64_t)p5;
 	__asm__ __volatile__
 	("syscall"
 	: "=a" (ret)
@@ -121,9 +121,9 @@ requires (1<sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4,auto p5,auto p6) noexcept
 {
 	return_value_type ret;
-	register std::uint64_t r10 __asm__("r10") = (std::uint64_t)p4;
-	register std::uint64_t r8 __asm__("r8") = (std::uint64_t)p5;
-	register std::uint64_t r9 __asm__("r9") = (std::uint64_t)p6;
+	register std::uint_least64_t r10 __asm__("r10") = (std::uint_least64_t)p4;
+	register std::uint_least64_t r8 __asm__("r8") = (std::uint_least64_t)p5;
+	register std::uint_least64_t r9 __asm__("r9") = (std::uint_least64_t)p6;
 	__asm__ __volatile__
 	("syscall"
 	: "=a" (ret)

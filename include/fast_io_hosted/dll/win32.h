@@ -3,9 +3,9 @@
 namespace fast_io
 {
 
-inline constexpr std::uint32_t dll_mode_to_win32_ex_flags(dll_mode mode) noexcept
+inline constexpr std::uint_least32_t dll_mode_to_win32_ex_flags(dll_mode mode) noexcept
 {
-	std::uint32_t flags{};
+	std::uint_least32_t flags{};
 	if((mode&dll_mode::win32_dont_resolve_dll_references)==dll_mode::win32_dont_resolve_dll_references)
 		flags|=0x00000001;
 	if((mode&dll_mode::win32_load_ignore_code_authz_level)==dll_mode::win32_load_ignore_code_authz_level)

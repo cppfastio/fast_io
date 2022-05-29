@@ -11,8 +11,8 @@ concept allow_iobuf_punning = ::fast_io::freestanding::contiguous_iterator<Iter>
 (std::same_as<char_type,char>&&::fast_io::freestanding::contiguous_iterator<Iter>));
 
 template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void iobuf_write_unhappy_nullptr_case_impl(basic_io_buffer_pointers<char_type>& obuffer,Iter first,Iter last,std::size_t buffer_size)
 {

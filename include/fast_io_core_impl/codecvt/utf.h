@@ -427,7 +427,7 @@ inline constexpr bool is_utf16_low_surrogate(char16_t uc) noexcept { return (uc 
 
 inline constexpr char32_t utf16_surrogate_to_utf32(char16_t high, char16_t low) noexcept
 { 
-	return static_cast<char32_t>((static_cast<std::uint32_t>(high) << 10u) + low - 0x35fdc00u); 
+	return static_cast<char32_t>((static_cast<std::uint_least32_t>(high) << 10u) + low - 0x35fdc00u); 
 }
 
 #if (defined(_MSC_VER)&&defined(_M_AMD64)&&!defined(__clang__)) || (defined(__SSE__) && defined(__x86_64__))
@@ -561,7 +561,7 @@ inline constexpr advance_with_big_table_unchecked_result<T> advance_with_big_tab
 {
 	char8_t const* info{first_unit_info[static_cast<char8_t>(*it)]};
 	char32_t cdpt{static_cast<char32_t>(*info)};                                //- From it, get the initial code point value
-	std::int32_t curr{info[1]};                                 //- From it, get the second state
+	std::int_least32_t curr{info[1]};                                 //- From it, get the second state
 	for(++it;12<curr;)
 	{
 		char8_t const unit{static_cast<char8_t>(*it)};
@@ -589,7 +589,7 @@ inline constexpr advance_with_big_table_result<T> advance_with_big_table(T const
 {
 	char8_t const* info{first_unit_info[static_cast<char8_t>(*first)]};
 	char32_t cdpt{static_cast<char32_t>(*info)};                //- From it, get the initial code point value
-	std::int32_t curr{info[1]};                                 //- From it, get the second state
+	std::int_least32_t curr{info[1]};                                 //- From it, get the second state
 	auto it{first};
 	for(++it;12<curr;)
 	{

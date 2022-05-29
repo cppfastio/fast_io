@@ -17,8 +17,8 @@ namespace details
 inline constexpr std::size_t print_reserve_size_source_location_impl(source_location_scatter location) noexcept
 {
 	constexpr std::size_t uint32_rsv_size{print_reserve_size(io_reserve_type<char,std::uint_least32_t>)};
-	constexpr std::size_t total_uint32_t_rsv_size{uint32_rsv_size*2+3};
-	return intrinsics::add_or_overflow_die_chain(location.file_name.len,location.function_name.len,total_uint32_t_rsv_size);
+	constexpr std::size_t total_uint_least32_t_rsv_size{uint32_rsv_size*2+3};
+	return intrinsics::add_or_overflow_die_chain(location.file_name.len,location.function_name.len,total_uint_least32_t_rsv_size);
 }
 
 template<::fast_io::freestanding::random_access_iterator Iter>

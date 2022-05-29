@@ -134,9 +134,9 @@ inline constexpr auto posix_clock_id_to_native_value(posix_clock_id pcid)
 #if __has_cpp_attribute(gnu::pure)
 [[gnu::pure]]
 #endif
-inline std::int64_t win32_query_performance_frequency()
+inline std::int_least64_t win32_query_performance_frequency()
 {
-	std::int64_t val{};
+	std::int_least64_t val{};
 	if(!::fast_io::win32::QueryPerformanceFrequency(__builtin_addressof(val)))
 		throw_win32_error();
 	if(val<=0)
@@ -149,7 +149,7 @@ inline std::int64_t win32_query_performance_frequency()
 #endif
 inline unix_timestamp win32_query_performance_frequency_to_unix_timestamp()
 {
-	return {0,uint_least64_subseconds_per_second/static_cast<std::uint64_t>(win32_query_performance_frequency())};
+	return {0,uint_least64_subseconds_per_second/static_cast<std::uint_least64_t>(win32_query_performance_frequency())};
 }
 #endif
 }
@@ -238,12 +238,12 @@ inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 
 inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 {
-	std::uint64_t ftm{};
+	std::uint_least64_t ftm{};
 	if(!::fast_io::win32::QueryUnbiasedInterruptTime(__builtin_addressof(ftm)))
 		throw_win32_error();
 	constexpr std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
-	std::uint64_t seconds{ftm/10000000ULL};
-	std::uint64_t subseconds{ftm%10000000ULL};
+	std::uint_least64_t seconds{ftm/10000000ULL};
+	std::uint_least64_t subseconds{ftm%10000000ULL};
 	return {static_cast<std::int_least64_t>(seconds),static_cast<std::uint_least64_t>(subseconds*mul_factor)};
 }
 
@@ -269,27 +269,27 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 		__builtin_addressof(user_time)))
 			throw_win32_error();
 	}
-	std::uint64_t ftm{::fast_io::win32::filetime_to_uint64_t(kernel_time)+
-		::fast_io::win32::filetime_to_uint64_t(user_time)};
-	std::uint64_t seconds{ftm/10000000ULL};
-	std::uint64_t subseconds{ftm%10000000ULL};
+	std::uint_least64_t ftm{::fast_io::win32::filetime_to_uint_least64_t(kernel_time)+
+		::fast_io::win32::filetime_to_uint_least64_t(user_time)};
+	std::uint_least64_t seconds{ftm/10000000ULL};
+	std::uint_least64_t subseconds{ftm%10000000ULL};
 	constexpr std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
 	return {static_cast<std::int_least64_t>(seconds),static_cast<std::uint_least64_t>(subseconds*mul_factor)};
 }
 
 inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
 {
-	std::uint64_t freq{static_cast<std::uint64_t>(::fast_io::details::win32_query_performance_frequency())};
-	std::int64_t counter{};
+	std::uint_least64_t freq{static_cast<std::uint_least64_t>(::fast_io::details::win32_query_performance_frequency())};
+	std::int_least64_t counter{};
 	if(!::fast_io::win32::QueryPerformanceCounter(__builtin_addressof(counter)))
 		throw_win32_error();
 	if(counter<0)
 		throw_win32_error(0x00000057);
-	std::uint64_t ucounter{static_cast<std::uint64_t>(counter)};
-	std::uint64_t val{uint_least64_subseconds_per_second/freq};
-	std::uint64_t dv{ucounter/freq};
-	std::uint64_t md{ucounter%freq};
-	return unix_timestamp{static_cast<std::int_least64_t>(dv),static_cast<std::uint_least64_t>(md*static_cast<std::uint64_t>(val))};
+	std::uint_least64_t ucounter{static_cast<std::uint_least64_t>(counter)};
+	std::uint_least64_t val{uint_least64_subseconds_per_second/freq};
+	std::uint_least64_t dv{ucounter/freq};
+	std::uint_least64_t md{ucounter%freq};
+	return unix_timestamp{static_cast<std::int_least64_t>(dv),static_cast<std::uint_least64_t>(md*static_cast<std::uint_least64_t>(val))};
 }
 
 }
@@ -303,7 +303,7 @@ struct my_dos_date_t
 {
 	std::uint_least8_t day;
 	std::uint_least8_t month;
-	std::uint16_t year;
+	std::uint_least16_t year;
 	std::uint_least8_t dayofweek;
 };
 
@@ -355,7 +355,7 @@ inline void set_dos_unix_timestamp(unix_timestamp tsp)
 	iso8601_timestamp iso8601{utc(tsp)};
 	if(iso8601.year>static_cast<std::int_least64_t>(UINT16_MAX)||iso8601.year<0)
 		throw_posix_error(EINVAL);
-	std::uint16_t year{static_cast<std::uint16_t>(iso8601.year)};
+	std::uint_least16_t year{static_cast<std::uint_least16_t>(iso8601.year)};
 	my_dos_date_t dos_date{static_cast<std::uint_least8_t>(iso8601.day),static_cast<std::uint_least8_t>(iso8601.month),year,0};
 	constexpr std::uint_least64_t precision{uint_least64_subseconds_per_second/100ULL};
 	my_dos_time_t dos_time{static_cast<std::uint_least8_t>(iso8601.hours),
@@ -467,8 +467,8 @@ inline basic_timestamp<off_to_epoch> nt_family_clock_settime(posix_clock_id pclk
 			case posix_clock_id::tai:
 			{
 				constexpr std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
-				std::uint64_t tms(static_cast<std::uint_least64_t>(timestamp.seconds)*10000000ULL+timestamp.subseconds/mul_factor);
-				std::uint64_t old_tms{};
+				std::uint_least64_t tms(static_cast<std::uint_least64_t>(timestamp.seconds)*10000000ULL+timestamp.subseconds/mul_factor);
+				std::uint_least64_t old_tms{};
 				auto ntstatus{win32::nt::nt_set_system_time<family==nt_family::zw>(__builtin_addressof(tms),__builtin_addressof(old_tms))};
 				if(ntstatus)
 					throw_nt_error(ntstatus);

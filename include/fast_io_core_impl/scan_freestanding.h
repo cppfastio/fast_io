@@ -154,8 +154,8 @@ inline constexpr bool ibuffer_underflow(unget_temp_buffer<T>& in)
 namespace details
 {
 template<buffer_input_stream input,typename T,typename P>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr bool scan_single_status_impl(input in,T& state_machine,P arg)
 {
@@ -181,8 +181,8 @@ inline constexpr bool scan_single_status_impl(input in,T& state_machine,P arg)
 
 
 template<buffer_input_stream input,typename P>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr bool scan_context_status_impl(input in,P arg)
 {

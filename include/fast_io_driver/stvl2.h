@@ -143,7 +143,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header(Iter iter,stvl2
 		iter=copy_string_literal("\nstack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.stack);
 		iter=copy_string_literal("\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,tg.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,tg.flags);
 		iter=copy_string_literal("\ntags_root: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -153,7 +153,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header(Iter iter,stvl2
 		iter=copy_string_literal(L"\nstack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.stack);
 		iter=copy_string_literal(L"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,tg.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,tg.flags);
 		iter=copy_string_literal(L"\ntags_root: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char16_t>)
@@ -163,7 +163,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header(Iter iter,stvl2
 		iter=copy_string_literal(u"\nstack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.stack);
 		iter=copy_string_literal(u"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,tg.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,tg.flags);
 		iter=copy_string_literal(u"\ntags_root: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char32_t>)
@@ -173,7 +173,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header(Iter iter,stvl2
 		iter=copy_string_literal(U"\nstack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.stack);
 		iter=copy_string_literal(U"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,tg.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,tg.flags);
 		iter=copy_string_literal(U"\ntags_root: ",iter);
 	}
 	else
@@ -183,7 +183,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header(Iter iter,stvl2
 		iter=copy_string_literal(u8"\nstack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.stack);
 		iter=copy_string_literal(u8"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,tg.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,tg.flags);
 		iter=copy_string_literal(u8"\ntags_root: ",iter);
 	}
 	return print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.tags_root);
@@ -197,44 +197,44 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag_framebuffer
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal("\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal("\nframebuffer_bpp: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,wchar_t>)
 	{
 		iter=copy_string_literal(L"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(L"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(L"\nframebuffer_bpp: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char16_t>)
 	{
 		iter=copy_string_literal(u"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(u"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(u"\nframebuffer_bpp: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char32_t>)
 	{
 		iter=copy_string_literal(U"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(U"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(U"\nframebuffer_bpp: ",iter);
 	}
 	else
 	{
 		iter=copy_string_literal(u8"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(u8"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(u8"\nframebuffer_bpp: ",iter);
 	}
-	return print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_bpp);
+	return print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_bpp);
 }
 
 template<::fast_io::freestanding::random_access_iterator Iter>
@@ -252,7 +252,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag_smp(Iter it
 		iter=copy_string_literal(U"\nflags: ",iter);
 	else
 		iter=copy_string_literal(u8"\nflags: ",iter);
-	return print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,tg.flags);
+	return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,tg.flags);
 }
 
 template<::fast_io::freestanding::random_access_iterator Iter>
@@ -577,7 +577,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_cmdline(Ite
 		iter=copy_string_literal(U"\ncmdline: ",iter);
 	else
 		iter=copy_string_literal(u8"\ncmdline: ",iter);
-	return print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.cmdline);
+	return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.cmdline);
 }
 
 template<::fast_io::freestanding::random_access_iterator Iter,typename T>
@@ -621,7 +621,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_single(Iter
 			iter=copy_string_literal(U"\nentries: ",iter);
 		else
 			iter=copy_string_literal(u8"\nentries: ",iter);
-		return print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.entries);
+		return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.entries);
 	}
 	else if constexpr(std::same_as<T,stvl2::stvl2_struct_tag_rsdp>)
 	{
@@ -635,7 +635,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_single(Iter
 			iter=copy_string_literal(U"\nrdsp: ",iter);
 		else
 			iter=copy_string_literal(u8"\nrdsp: ",iter);
-		return print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.rdsp);
+		return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.rdsp);
 	}
 	else if constexpr(std::same_as<T,stvl2::stvl2_struct_tag_epoch>)
 	{
@@ -649,7 +649,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_single(Iter
 			iter=copy_string_literal(U"\nepoch: ",iter);
 		else
 			iter=copy_string_literal(u8"\nepoch: ",iter);
-		return print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.epoch);
+		return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.epoch);
 	}
 	else if constexpr(std::same_as<T,stvl2::stvl2_struct_tag_firmware>)
 	{
@@ -677,7 +677,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_single(Iter
 			iter=copy_string_literal(U"\nserver_ip: ",iter);
 		else
 			iter=copy_string_literal(u8"\nserver_ip: ",iter);
-		return print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.server_ip);
+		return print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.server_ip);
 	}
 	else if constexpr(std::same_as<T,stvl2::stvl2_struct_tag_mmio32_uart>||
 	std::same_as<T,stvl2::stvl2_struct_vmap>||
@@ -722,25 +722,25 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_framebuffer
 		iter=copy_string_literal("\nframebuffer_addr: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.framebuffer_addr);
 		iter=copy_string_literal("\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal("\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal("\nframebuffer_pitch: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_pitch);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_pitch);
 		iter=copy_string_literal("\nframebuffer_bpp: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_bpp);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_bpp);
 		iter=copy_string_literal("\nmemory_model: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.memory_model);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.memory_model);
 		iter=copy_string_literal("\nred_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_size);
 		iter=copy_string_literal("\nred_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_shift);
 		iter=copy_string_literal("\ngreen_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_size);
 		iter=copy_string_literal("\ngreen_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_shift);
 		iter=copy_string_literal("\nblue_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.blue_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.blue_mask_size);
 		iter=copy_string_literal("\nblue_mask_shift: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -748,25 +748,25 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_framebuffer
 		iter=copy_string_literal(L"\nframebuffer_addr: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.framebuffer_addr);
 		iter=copy_string_literal(L"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(L"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(L"\nframebuffer_pitch: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_pitch);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_pitch);
 		iter=copy_string_literal(L"\nframebuffer_bpp: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_bpp);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_bpp);
 		iter=copy_string_literal(L"\nmemory_model: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.memory_model);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.memory_model);
 		iter=copy_string_literal(L"\nred_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_size);
 		iter=copy_string_literal(L"\nred_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_shift);
 		iter=copy_string_literal(L"\ngreen_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_size);
 		iter=copy_string_literal(L"\ngreen_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_shift);
 		iter=copy_string_literal(L"\nblue_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.blue_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.blue_mask_size);
 		iter=copy_string_literal(L"\nblue_mask_shift: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char16_t>)
@@ -774,25 +774,25 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_framebuffer
 		iter=copy_string_literal(u"\nframebuffer_addr: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.framebuffer_addr);
 		iter=copy_string_literal(u"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(u"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(u"\nframebuffer_pitch: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_pitch);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_pitch);
 		iter=copy_string_literal(u"\nframebuffer_bpp: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_bpp);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_bpp);
 		iter=copy_string_literal(u"\nmemory_model: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.memory_model);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.memory_model);
 		iter=copy_string_literal(u"\nred_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_size);
 		iter=copy_string_literal(u"\nred_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_shift);
 		iter=copy_string_literal(u"\ngreen_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_size);
 		iter=copy_string_literal(u"\ngreen_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_shift);
 		iter=copy_string_literal(u"\nblue_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.blue_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.blue_mask_size);
 		iter=copy_string_literal(u"\nblue_mask_shift: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char32_t>)
@@ -800,25 +800,25 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_framebuffer
 		iter=copy_string_literal(U"\nframebuffer_addr: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.framebuffer_addr);
 		iter=copy_string_literal(U"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(U"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(U"\nframebuffer_pitch: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_pitch);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_pitch);
 		iter=copy_string_literal(U"\nframebuffer_bpp: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_bpp);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_bpp);
 		iter=copy_string_literal(U"\nmemory_model: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.memory_model);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.memory_model);
 		iter=copy_string_literal(U"\nred_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_size);
 		iter=copy_string_literal(U"\nred_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_shift);
 		iter=copy_string_literal(U"\ngreen_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_size);
 		iter=copy_string_literal(U"\ngreen_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_shift);
 		iter=copy_string_literal(U"\nblue_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.blue_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.blue_mask_size);
 		iter=copy_string_literal(U"\nblue_mask_shift: ",iter);
 	}
 	else
@@ -826,28 +826,28 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_framebuffer
 		iter=copy_string_literal(u8"\nframebuffer_addr: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.framebuffer_addr);
 		iter=copy_string_literal(u8"\nframebuffer_width: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_width);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_width);
 		iter=copy_string_literal(u8"\nframebuffer_height: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_height);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_height);
 		iter=copy_string_literal(u8"\nframebuffer_pitch: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_pitch);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_pitch);
 		iter=copy_string_literal(u8"\nframebuffer_bpp: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint16_t>,iter,tg.framebuffer_bpp);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_bpp);
 		iter=copy_string_literal(u8"\nmemory_model: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.memory_model);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.memory_model);
 		iter=copy_string_literal(u8"\nred_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_size);
 		iter=copy_string_literal(u8"\nred_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.red_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.red_mask_shift);
 		iter=copy_string_literal(u8"\ngreen_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_size);
 		iter=copy_string_literal(u8"\ngreen_mask_shift: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.green_mask_shift);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.green_mask_shift);
 		iter=copy_string_literal(u8"\nblue_mask_size: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.blue_mask_size);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.blue_mask_size);
 		iter=copy_string_literal(u8"\nblue_mask_shift: ",iter);
 	}
-	return print_reserve_define(io_reserve_type<char_type,std::uint8_t>,iter,tg.blue_mask_shift);
+	return print_reserve_define(io_reserve_type<char_type,std::uint_least8_t>,iter,tg.blue_mask_shift);
 }
 
 
@@ -952,7 +952,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_mmap_entry(Iter iter,s
 		iter=print_reserve_define(io_reserve_type<char_type,stvl2::stvl2_mmap_type>,iter,st.type);
 		iter=copy_string_literal(u8"\nunused: ",iter);
 	}
-	return print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.unused);
+	return print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.unused);
 }
 
 template<::fast_io::freestanding::random_access_iterator Iter>
@@ -962,9 +962,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_smp_info(Iter iter,stv
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("process_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.process_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.process_id);
 		iter=copy_string_literal("\nlapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.lapic_id);
 		iter=copy_string_literal("\ntarget_stack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,st.target_stack);
 		iter=copy_string_literal("\ngoto_address: ",iter);
@@ -974,9 +974,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_smp_info(Iter iter,stv
 	else if constexpr(std::same_as<char_type,wchar_t>)
 	{
 		iter=copy_string_literal(L"process_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.process_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.process_id);
 		iter=copy_string_literal(L"\nlapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.lapic_id);
 		iter=copy_string_literal(L"\ntarget_stack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,st.target_stack);
 		iter=copy_string_literal(L"\ngoto_address: ",iter);
@@ -986,9 +986,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_smp_info(Iter iter,stv
 	else if constexpr(std::same_as<char_type,char16_t>)
 	{
 		iter=copy_string_literal(u"process_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.process_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.process_id);
 		iter=copy_string_literal(u"\nlapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.lapic_id);
 		iter=copy_string_literal(u"\ntarget_stack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,st.target_stack);
 		iter=copy_string_literal(u"\ngoto_address: ",iter);
@@ -998,9 +998,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_smp_info(Iter iter,stv
 	else if constexpr(std::same_as<char_type,char32_t>)
 	{
 		iter=copy_string_literal(U"process_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.process_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.process_id);
 		iter=copy_string_literal(U"\nlapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.lapic_id);
 		iter=copy_string_literal(U"\ntarget_stack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,st.target_stack);
 		iter=copy_string_literal(U"\ngoto_address: ",iter);
@@ -1010,9 +1010,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_smp_info(Iter iter,stv
 	else
 	{
 		iter=copy_string_literal(u8"process_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.process_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.process_id);
 		iter=copy_string_literal(u8"\nlapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.lapic_id);
 		iter=copy_string_literal(u8"\ntarget_stack: ",iter);
 		iter=print_reserve_define(io_reserve_type<char_type,void const*>,iter,st.target_stack);
 		iter=copy_string_literal(u8"\ngoto_address: ",iter);
@@ -1030,54 +1030,54 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_smp(Iter it
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.flags);
 		iter=copy_string_literal("\nbsp_lapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.bsp_lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.bsp_lapic_id);
 		iter=copy_string_literal("\nunused: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.unused);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.unused);
 		iter=copy_string_literal("\ncpu_count: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,wchar_t>)
 	{
 		iter=copy_string_literal(L"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.flags);
 		iter=copy_string_literal(L"\nbsp_lapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.bsp_lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.bsp_lapic_id);
 		iter=copy_string_literal(L"\nunused: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.unused);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.unused);
 		iter=copy_string_literal(L"\ncpu_count: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char16_t>)
 	{
 		iter=copy_string_literal(u"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.flags);
 		iter=copy_string_literal(u"\nbsp_lapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.bsp_lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.bsp_lapic_id);
 		iter=copy_string_literal(u"\nunused: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.unused);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.unused);
 		iter=copy_string_literal(u"\ncpu_count: ",iter);
 	}
 	else if constexpr(std::same_as<char_type,char32_t>)
 	{
 		iter=copy_string_literal(U"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.flags);
 		iter=copy_string_literal(U"\nbsp_lapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.bsp_lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.bsp_lapic_id);
 		iter=copy_string_literal(U"\nunused: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.unused);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.unused);
 		iter=copy_string_literal(U"\ncpu_count: ",iter);
 	}
 	else
 	{
 		iter=copy_string_literal(u8"\nflags: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.flags);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.flags);
 		iter=copy_string_literal(u8"\nbsp_lapic_id: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.bsp_lapic_id);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.bsp_lapic_id);
 		iter=copy_string_literal(u8"\nunused: ",iter);
-		iter=print_reserve_define(io_reserve_type<char_type,std::uint32_t>,iter,st.unused);
+		iter=print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.unused);
 		iter=copy_string_literal(u8"\ncpu_count: ",iter);
 	}
-	return print_reserve_define(io_reserve_type<char_type,std::uint64_t>,iter,st.cpu_count);
+	return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.cpu_count);
 }
 
 }
@@ -1111,7 +1111,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 {
 	constexpr std::size_t tag_size{print_reserve_size(io_reserve_type<char_type,stvl2::stvl2_header_tag>)
 	+print_reserve_size(io_reserve_type<char_type,void const*>)*3
-	+print_reserve_size(io_reserve_type<char_type,std::uint64_t>)};
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least64_t>)};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("entry_point: \nstack: \nflags: \ntags_root: ");
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -1126,7 +1126,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 	constexpr std::size_t tag_size
 	{
 		print_reserve_size(io_reserve_type<char_type,stvl2::stvl2_tag>)+
-		print_reserve_size(io_reserve_type<char_type,std::uint16_t>)*3
+		print_reserve_size(io_reserve_type<char_type,std::uint_least16_t>)*3
 	};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("\nframebuffer_width: \nframebuffer_height: \nframebuffer_bpp: ");
@@ -1142,7 +1142,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 	constexpr std::size_t tag_size
 	{
 		print_reserve_size(io_reserve_type<char_type,stvl2::stvl2_tag>)+
-		print_reserve_size(io_reserve_type<char_type,std::uint64_t>)
+		print_reserve_size(io_reserve_type<char_type,std::uint_least64_t>)
 	};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("\nflags: ");
@@ -1175,7 +1175,7 @@ template<std::integral char_type>
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl2::stvl2_struct_tag_cmdline>) noexcept
 {
 	constexpr std::size_t tag_size{print_reserve_size(io_reserve_type<char_type,stvl2::stvl2_tag>)
-	+print_reserve_size(io_reserve_type<char_type,std::uint64_t>)};
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least64_t>)};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("\ncmdline: ");
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -1220,7 +1220,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,T>) 
 	std::same_as<T,stvl2::stvl2_struct_tag_epoch>
 	)
 	{
-		constexpr std::size_t tag_size{tagbase_size+print_reserve_size(io_reserve_type<char_type,std::uint64_t>)};
+		constexpr std::size_t tag_size{tagbase_size+print_reserve_size(io_reserve_type<char_type,std::uint_least64_t>)};
 		if constexpr(std::same_as<T,stvl2::stvl2_struct_tag_memmap>)
 		{
 		if constexpr(std::same_as<char_type,char>)
@@ -1277,7 +1277,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,T>) 
 	}
 	else if constexpr(std::same_as<T,stvl2::stvl2_struct_tag_pxe_server_info>)
 	{
-		constexpr std::size_t tag_size{tagbase_size+print_reserve_size(io_reserve_type<char_type,std::uint32_t>)};
+		constexpr std::size_t tag_size{tagbase_size+print_reserve_size(io_reserve_type<char_type,std::uint_least32_t>)};
 		if constexpr(std::same_as<char_type,char>)
 			return tag_size+details::string_literal_size("\nserver_ip: ");
 		else if constexpr(std::same_as<char_type,wchar_t>)
@@ -1325,8 +1325,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 {
 	constexpr std::size_t tag_size{
 	print_reserve_size(io_reserve_type<char_type,stvl2::stvl2_tag>)
-	+print_reserve_size(io_reserve_type<char_type,std::uint8_t>)*7+
-	+print_reserve_size(io_reserve_type<char_type,std::uint16_t>)*4
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least8_t>)*7+
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least16_t>)*4
 	+print_reserve_size(io_reserve_type<char_type,void const*>)};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("\nframebuffer_addr: \nframebuffer_width: \nframebuffer_height: \nframebuffer_pitch: \nframebuffer_bpp: \nmemory_model: \nred_mask_size: \nred_mask_shift: \ngreen_mask_size: \ngreen_mask_shift: \nblue_mask_size: \nblue_mask_shift: ");
@@ -1365,7 +1365,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 	print_reserve_size(io_reserve_type<char_type,std::size_t>)
 	+print_reserve_size(io_reserve_type<char_type,void const*>)
 	+print_reserve_size(io_reserve_type<char_type,stvl2::stvl2_mmap_type>)
-	+print_reserve_size(io_reserve_type<char_type,std::uint32_t>)};
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least32_t>)};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("base: \nlength: \ntype: \nunused: ");
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -1383,7 +1383,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 {
 	constexpr std::size_t tag_size{
 	print_reserve_size(io_reserve_type<char_type,void const*>)*3
-	+print_reserve_size(io_reserve_type<char_type,std::uint32_t>)*2};
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least32_t>)*2};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("process_id: \nlapic_id: \ntarget_stack: \ngoto_address: \nextra_argument: ");
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -1401,8 +1401,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 {
 	constexpr std::size_t tag_size{
 	print_reserve_size(io_reserve_type<char_type,stvl2::stvl2_tag>)
-	+print_reserve_size(io_reserve_type<char_type,std::uint32_t>)*2
-	+print_reserve_size(io_reserve_type<char_type,std::uint64_t>)*2};
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least32_t>)*2
+	+print_reserve_size(io_reserve_type<char_type,std::uint_least64_t>)*2};
 	if constexpr(std::same_as<char_type,char>)
 		return tag_size+details::string_literal_size("\nflags: \nbsp_lapic_id: \nunused: \ncpu_count: ");
 	else if constexpr(std::same_as<char_type,wchar_t>)

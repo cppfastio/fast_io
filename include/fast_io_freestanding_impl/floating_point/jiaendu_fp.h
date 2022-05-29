@@ -15,27 +15,27 @@ inline std::size_t output_unsigned(Iter str,U value)
 		if(value>=10000000000000000000ULL)
 		{
 			auto v2{value/10000000000000000000ULL};
-			std::uint64_t remain{static_cast<std::uint64_t>(value-v2*10000000000000000000ULL)};
-			auto offset{output_unsigned(str,static_cast<std::uint64_t>(v2))};
+			std::uint_least64_t remain{static_cast<std::uint_least64_t>(value-v2*10000000000000000000ULL)};
+			auto offset{output_unsigned(str,static_cast<std::uint_least64_t>(v2))};
 			output_unsigned_partial(str+offset,remain);
 			return offset+19;
 		}
 		else
-			return fast_io::details::jiaendu::output_unsigned(str,static_cast<std::uint64_t>(value));
+			return fast_io::details::jiaendu::output_unsigned(str,static_cast<std::uint_least64_t>(value));
 	}
 	else if constexpr(sizeof(U)==8)
 	{
 		if (value>=10000000000000000ULL)
 		{
-			std::uint64_t v4{value/10000000000000000ULL};
-			std::uint64_t remains3{value-v4*10000000000000000ULL};
-			std::uint64_t temp3(remains3/1000000000000ULL);
-			std::uint64_t remains2
+			std::uint_least64_t v4{value/10000000000000000ULL};
+			std::uint_least64_t remains3{value-v4*10000000000000000ULL};
+			std::uint_least64_t temp3(remains3/1000000000000ULL);
+			std::uint_least64_t remains2
 			{remains3-temp3*1000000000000ULL};
 			remains3=temp3;
-			std::uint64_t temp2{remains2};
-			std::uint64_t remains0{remains2/10000};
-			std::uint64_t remains1{remains2/100000000};
+			std::uint_least64_t temp2{remains2};
+			std::uint_least64_t remains0{remains2/10000};
+			std::uint_least64_t remains1{remains2/100000000};
 			remains2 = remains1;
 			remains1 = remains0 - remains1*10000;
 			remains0 = temp2 - remains0*10000;
@@ -48,12 +48,12 @@ inline std::size_t output_unsigned(Iter str,U value)
 		}
 		else if (value>=1000000000000ULL)
 		{
-			std::uint64_t v3{value/1000000000000ULL};
-			std::uint64_t remains2
+			std::uint_least64_t v3{value/1000000000000ULL};
+			std::uint_least64_t remains2
 			{value-v3*1000000000000ULL};
-			std::uint64_t temp2{remains2};
-			std::uint64_t remains0{remains2/10000};
-			std::uint64_t remains1{remains2/100000000};
+			std::uint_least64_t temp2{remains2};
+			std::uint_least64_t remains0{remains2/10000};
+			std::uint_least64_t remains1{remains2/100000000};
 			remains2 = remains1;
 			remains1 = remains0 - remains1*10000;
 			remains0 = temp2 - remains0*10000;
@@ -79,8 +79,8 @@ inline std::size_t output_unsigned(Iter str,U value)
 		}
 		else if (value >= 100000000)
 		{
-			std::uint64_t remains0{value/10000};// value/1,0000
-			std::uint64_t remains1{value/100000000};// value/1,0000,0000
+			std::uint_least64_t remains0{value/10000};// value/1,0000
+			std::uint_least64_t remains1{value/100000000};// value/1,0000,0000
 			auto v2(remains1);
 			remains1 = remains0 - remains1*10000;
 			remains0 = value - remains0*10000;
@@ -104,10 +104,10 @@ inline std::size_t output_unsigned(Iter str,U value)
 		}
 		else if (value >= 10000)
 		{
-			std::uint64_t const v2{
-				(static_cast<std::uint64_t>(value) *
-				static_cast<std::uint64_t>(3518437209)) >> 45};
-			std::uint64_t const remains0{value - v2 * 10000};
+			std::uint_least64_t const v2{
+				(static_cast<std::uint_least64_t>(value) *
+				static_cast<std::uint_least64_t>(3518437209)) >> 45};
+			std::uint_least64_t const remains0{value - v2 * 10000};
 			if (v2 >= 1000)
 			{
 				::fast_io::details::my_memcpy(str,static_tables<ch_type,start>::table4[v2].data(),bytes4);
@@ -154,13 +154,13 @@ inline std::size_t output_unsigned(Iter str,U value)
 		if (value >= 100000000)
 		{
 #if (_WIN64 || __x86_64__ || __ppc64__)
-			std::uint64_t remains0{(static_cast<std::uint64_t>(value) *
-			static_cast<std::uint64_t>(3518437209)) >> 45};
-			std::uint64_t remains1{static_cast<std::uint64_t>(value) * 
-			static_cast<std::uint64_t>((2882303762)) >> 58};
+			std::uint_least64_t remains0{(static_cast<std::uint_least64_t>(value) *
+			static_cast<std::uint_least64_t>(3518437209)) >> 45};
+			std::uint_least64_t remains1{static_cast<std::uint_least64_t>(value) * 
+			static_cast<std::uint_least64_t>((2882303762)) >> 58};
 #else
-			std::uint32_t remains0{value/10000};
-			std::uint32_t remains1{value/100000000};
+			std::uint_least32_t remains0{value/10000};
+			std::uint_least32_t remains1{value/100000000};
 #endif
 			auto v2(remains1);
 			remains1 = remains0 - remains1*10000;
@@ -173,13 +173,13 @@ inline std::size_t output_unsigned(Iter str,U value)
 		else if (value >= 10000)
 		{
 #if (_WIN64 || __x86_64__ || __ppc64__)
-			std::uint64_t const v2{
-				(static_cast<std::uint64_t>(value) *
-				static_cast<std::uint64_t>(3518437209)) >> 45};
-			std::uint64_t const remains0{value - v2 * 10000};
+			std::uint_least64_t const v2{
+				(static_cast<std::uint_least64_t>(value) *
+				static_cast<std::uint_least64_t>(3518437209)) >> 45};
+			std::uint_least64_t const remains0{value - v2 * 10000};
 #else
-			std::uint32_t const v2{value/10000};
-			std::uint32_t const remains0{value - v2 * 10000};
+			std::uint_least32_t const v2{value/10000};
+			std::uint_least32_t const remains0{value - v2 * 10000};
 #endif
 			if (v2 >= 1000)
 			{

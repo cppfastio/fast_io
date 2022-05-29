@@ -43,15 +43,15 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 	if constexpr(sizeof(T)==8)
 	{
 #if defined(_M_AMD64)
-		return _addcarry_u64(carry,a,b,reinterpret_cast<std::uint64_t*>(__builtin_addressof(out)));
+		return _addcarry_u64(carry,a,b,reinterpret_cast<std::uint_least64_t*>(__builtin_addressof(out)));
 #else
 		return _addcarry_u32(_addcarry_u32(carry,
-		*reinterpret_cast<std::uint32_t*>(__builtin_addressof(a)),*reinterpret_cast<std::uint32_t*>(__builtin_addressof(b)),reinterpret_cast<std::uint32_t*>(__builtin_addressof(out))),
-		reinterpret_cast<std::uint32_t*>(__builtin_addressof(a))[1],reinterpret_cast<std::uint32_t*>(__builtin_addressof(b))[1],reinterpret_cast<std::uint32_t*>(__builtin_addressof(out))+1);
+		*reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(a)),*reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(b)),reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(out))),
+		reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(a))[1],reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(b))[1],reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(out))+1);
 #endif
 	}
 	else if constexpr(sizeof(T)==4)
-		return _addcarry_u32(carry,a,b,reinterpret_cast<std::uint32_t*>(__builtin_addressof(out)));
+		return _addcarry_u32(carry,a,b,reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(out)));
 	else if constexpr(sizeof(T)==2)
 		return _addcarry_u16(carry,a,b,reinterpret_cast<short unsigned*>(__builtin_addressof(out)));
 	else if constexpr(sizeof(T)==1)
@@ -114,12 +114,12 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 		= unsigned long long*;
 		return __builtin_ia32_addcarry_u64(carry,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
 #else
-		std::uint32_t a_low;
-		std::uint32_t a_high;
+		std::uint_least32_t a_low;
+		std::uint_least32_t a_high;
 		__builtin_memcpy(__builtin_addressof(a_low),__builtin_addressof(a),4);
 		__builtin_memcpy(__builtin_addressof(a_high),reinterpret_cast<char const*>(__builtin_addressof(a))+4,4);
-		std::uint32_t b_low;
-		std::uint32_t b_high;
+		std::uint_least32_t b_low;
+		std::uint_least32_t b_high;
 		__builtin_memcpy(__builtin_addressof(b_low),__builtin_addressof(b),4);
 		__builtin_memcpy(__builtin_addressof(b_high),reinterpret_cast<char const*>(__builtin_addressof(b))+4,4);
 		using may_alias_ptr_type
@@ -194,15 +194,15 @@ inline constexpr bool sub_borrow(bool borrow,T a,T b,T& out) noexcept
 	if constexpr(sizeof(T)==8)
 	{
 #if defined(_M_AMD64)
-		return _subborrow_u64(borrow,a,b,reinterpret_cast<std::uint64_t*>(__builtin_addressof(out)));
+		return _subborrow_u64(borrow,a,b,reinterpret_cast<std::uint_least64_t*>(__builtin_addressof(out)));
 #else
 		return _subborrow_u32(_subborrow_u32(borrow,
-		*reinterpret_cast<std::uint32_t*>(__builtin_addressof(a)),*reinterpret_cast<std::uint32_t*>(__builtin_addressof(b)),reinterpret_cast<std::uint32_t*>(__builtin_addressof(out))),
-		reinterpret_cast<std::uint32_t*>(__builtin_addressof(a))[1],reinterpret_cast<std::uint32_t*>(__builtin_addressof(b))[1],reinterpret_cast<std::uint32_t*>(__builtin_addressof(out))+1);
+		*reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(a)),*reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(b)),reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(out))),
+		reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(a))[1],reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(b))[1],reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(out))+1);
 #endif
 	}
 	else if constexpr(sizeof(T)==4)
-		return _subborrow_u32(borrow,a,b,reinterpret_cast<std::uint32_t*>(__builtin_addressof(out)));
+		return _subborrow_u32(borrow,a,b,reinterpret_cast<std::uint_least32_t*>(__builtin_addressof(out)));
 	else if constexpr(sizeof(T)==2)
 		return _subborrow_u16(borrow,a,b,reinterpret_cast<short unsigned*>(__builtin_addressof(out)));
 	else if constexpr(sizeof(T)==1)
@@ -265,12 +265,12 @@ inline constexpr bool sub_borrow(bool borrow,T a,T b,T& out) noexcept
 		= unsigned long long*;
 		return __builtin_ia32_subborrow_u64(borrow,a,b,reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
 #elif __has_builtin(__builtin_ia32_sbb_u32) || __has_builtin(__builtin_ia32_subborrow_u32)
-		std::uint32_t a_low;
-		std::uint32_t a_high;
+		std::uint_least32_t a_low;
+		std::uint_least32_t a_high;
 		__builtin_memcpy(__builtin_addressof(a_low),__builtin_addressof(a),4);
 		__builtin_memcpy(__builtin_addressof(a_high),reinterpret_cast<char const*>(__builtin_addressof(a))+4,4);
-		std::uint32_t b_low;
-		std::uint32_t b_high;
+		std::uint_least32_t b_low;
+		std::uint_least32_t b_high;
 		__builtin_memcpy(__builtin_addressof(b_low),__builtin_addressof(b),4);
 		__builtin_memcpy(__builtin_addressof(b_high),reinterpret_cast<char const*>(__builtin_addressof(b))+4,4);
 		using may_alias_ptr_type
@@ -456,23 +456,23 @@ inline
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
 #endif
-std::uint64_t umul(std::uint64_t a,std::uint64_t b,std::uint64_t& high) noexcept
+std::uint_least64_t umul(std::uint_least64_t a,std::uint_least64_t b,std::uint_least64_t& high) noexcept
 {
 #ifdef __SIZEOF_INT128__
 #if __cpp_if_consteval >= 202106L
 	if consteval
 	{
 		__uint128_t res{static_cast<__uint128_t>(a)*b};
-		high=static_cast<std::uint64_t>(res>>64u);
-		return static_cast<std::uint64_t>(res);
+		high=static_cast<std::uint_least64_t>(res>>64u);
+		return static_cast<std::uint_least64_t>(res);
 	}
 	else
 #elif __cpp_lib_is_constant_evaluated >= 201811L
 	if(std::is_constant_evaluated())
 	{
 		__uint128_t res{static_cast<__uint128_t>(a)*b};
-		high=static_cast<std::uint64_t>(res>>64u);
-		return static_cast<std::uint64_t>(res);
+		high=static_cast<std::uint_least64_t>(res>>64u);
+		return static_cast<std::uint_least64_t>(res);
 	}
 	else
 
@@ -483,11 +483,11 @@ std::uint64_t umul(std::uint64_t a,std::uint64_t b,std::uint64_t& high) noexcept
 		{
 			struct u64x2_little_endian_t
 			{
-				std::uint64_t low,high;
+				std::uint_least64_t low,high;
 			};
 			struct u64x2_big_endian_t
 			{
-				std::uint64_t high,low;
+				std::uint_least64_t high,low;
 			};
 			using u64x2_t = std::conditional_t<std::endian::native==std::endian::little,u64x2_little_endian_t,u64x2_big_endian_t>;
 			static_assert(sizeof(__uint128_t)==sizeof(u64x2_t));
@@ -511,8 +511,8 @@ std::uint64_t umul(std::uint64_t a,std::uint64_t b,std::uint64_t& high) noexcept
 #endif
 		{
 			__uint128_t res{static_cast<__uint128_t>(a)*b};
-			high=static_cast<std::uint64_t>(res>>64u);
-			return static_cast<std::uint64_t>(res);
+			high=static_cast<std::uint_least64_t>(res>>64u);
+			return static_cast<std::uint_least64_t>(res);
 		}
 	}
 #elif defined(_MSC_VER) && defined(_M_X64)
@@ -744,10 +744,10 @@ struct udiv_result
 };
 
 template<typename U>
-inline constexpr U shiftright_naive(U low_part,U high_part,std::uint8_t shift) noexcept
+inline constexpr U shiftright_naive(U low_part,U high_part,std::uint_least8_t shift) noexcept
 {
 	U const value{(static_cast<U>(1)<<shift)-1};
-	constexpr std::uint8_t bits{sizeof(U)*8};
+	constexpr std::uint_least8_t bits{sizeof(U)*8};
 	U const v{high_part&value};
 	if(shift==0)
 		return low_part;
@@ -755,7 +755,7 @@ inline constexpr U shiftright_naive(U low_part,U high_part,std::uint8_t shift) n
 }
 
 template<typename U>
-inline constexpr U shiftright(U low_part,U high_part,std::uint8_t shift) noexcept
+inline constexpr U shiftright(U low_part,U high_part,std::uint_least8_t shift) noexcept
 {
 #if __cpp_lib_is_constant_evaluated >= 201811L
 	if(std::is_constant_evaluated())
@@ -791,13 +791,13 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 		}
 		return {0,0,n_low,0};
 	}
-	constexpr std::uint32_t n_udword_bits{sizeof(U) * 8};
-	constexpr std::uint32_t n_utword_bits{n_udword_bits<<1};
-	constexpr std::uint32_t n_udword_bits_m1{n_udword_bits-1};
-	constexpr std::uint32_t n_udword_bits_m2{n_udword_bits-2};
+	constexpr std::uint_least32_t n_udword_bits{sizeof(U) * 8};
+	constexpr std::uint_least32_t n_utword_bits{n_udword_bits<<1};
+	constexpr std::uint_least32_t n_udword_bits_m1{n_udword_bits-1};
+	constexpr std::uint_least32_t n_udword_bits_m2{n_udword_bits-2};
 	// n_high != 0
 	U q_low,q_high,r_low,r_high;
-	std::uint32_t sr;
+	std::uint_least32_t sr;
 	if (d_low == 0)
 	{
 		if (d_high == 0)
@@ -819,10 +819,10 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 #if __has_builtin(__builtin_ctzll)
 			return {n_high >> __builtin_ctzll(d_high),0,n_low,n_high & (d_high - 1)};
 #else
-			return {n_high >> static_cast<std::uint32_t>(std::countl_zero(d_high)),0,n_low,n_high & (d_high - 1)};
+			return {n_high >> static_cast<std::uint_least32_t>(std::countl_zero(d_high)),0,n_low,n_high & (d_high - 1)};
 #endif
 #else
-			return {n_high >> static_cast<std::uint32_t>(std::countl_zero(d_high)),0,n_low,n_high & (d_high - 1)};
+			return {n_high >> static_cast<std::uint_least32_t>(std::countl_zero(d_high)),0,n_low,n_high & (d_high - 1)};
 #endif
 
 		}
@@ -831,12 +831,12 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 		// K 0
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-		sr=static_cast<std::uint32_t>(__builtin_clzll(d_high) - __builtin_clzll(n_high));
+		sr=static_cast<std::uint_least32_t>(__builtin_clzll(d_high) - __builtin_clzll(n_high));
 #else
-		sr=static_cast<std::uint32_t>(std::countl_zero(d_high) - std::countl_zero(n_high));
+		sr=static_cast<std::uint_least32_t>(std::countl_zero(d_high) - std::countl_zero(n_high));
 #endif
 #else
-		sr=static_cast<std::uint32_t>(std::countl_zero(d_high) - std::countl_zero(n_high));
+		sr=static_cast<std::uint_least32_t>(std::countl_zero(d_high) - std::countl_zero(n_high));
 #endif
 
 		// 0 <= sr <= n_udword_bits - 2 or sr large
@@ -865,12 +865,12 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 					return {n_low,n_high,rem,0};
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-				sr = static_cast<std::uint32_t>(__builtin_ctzll(d_low));
+				sr = static_cast<std::uint_least32_t>(__builtin_ctzll(d_low));
 #else
-				sr = static_cast<std::uint32_t>(std::countl_zero(d_low));
+				sr = static_cast<std::uint_least32_t>(std::countl_zero(d_low));
 #endif
 #else
-				sr = static_cast<std::uint32_t>(std::countl_zero(d_low));
+				sr = static_cast<std::uint_least32_t>(std::countl_zero(d_low));
 #endif
 				q_high = n_high >> sr;
 				q_low = (n_high << (n_udword_bits - sr)) | (n_low >> sr);
@@ -881,12 +881,12 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 			// 0 K
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-			sr = 1 + n_udword_bits + static_cast<std::uint32_t>(__builtin_clzll(d_low)) - static_cast<std::uint32_t>(__builtin_clzll(n_high));
+			sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(__builtin_clzll(d_low)) - static_cast<std::uint_least32_t>(__builtin_clzll(n_high));
 #else
-			sr = 1 + n_udword_bits + static_cast<std::uint32_t>(std::countl_zero(d_low)) - static_cast<std::uint32_t>(std::countl_zero(n_high));
+			sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(std::countl_zero(d_low)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
 #endif
 #else
-			sr = 1 + n_udword_bits + static_cast<std::uint32_t>(std::countl_zero(d_low)) - static_cast<std::uint32_t>(std::countl_zero(n_high));
+			sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(std::countl_zero(d_low)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
 #endif
 			// 2 <= sr <= n_utword_bits - 1
 			// q.all = n.all << (n_utword_bits - sr);
@@ -921,12 +921,12 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 			// K K
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-			sr = static_cast<std::uint32_t>(__builtin_clzll(d_high)) - static_cast<std::uint32_t>(__builtin_clzll(n_high));
+			sr = static_cast<std::uint_least32_t>(__builtin_clzll(d_high)) - static_cast<std::uint_least32_t>(__builtin_clzll(n_high));
 #else
-			sr = static_cast<std::uint32_t>(std::countl_zero(d_high)) - static_cast<std::uint32_t>(std::countl_zero(n_high));
+			sr = static_cast<std::uint_least32_t>(std::countl_zero(d_high)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
 #endif
 #else
-			sr = static_cast<std::uint32_t>(std::countl_zero(d_high)) - static_cast<std::uint32_t>(std::countl_zero(n_high));
+			sr = static_cast<std::uint_least32_t>(std::countl_zero(d_high)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
 #endif
 			// 0 <= sr <= n_udword_bits - 1 or sr large
 			if (sr > n_udword_bits_m1)
@@ -956,7 +956,7 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 	// r.all = n.all >> sr;
 	// 1 <= sr <= n_utword_bits - 1
 
-	std::uint8_t carry{};
+	std::uint_least8_t carry{};
 	for (;sr;--sr)
 	{
 		// r:q = ((r:q)	<< 1) | carry

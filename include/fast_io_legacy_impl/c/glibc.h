@@ -167,13 +167,13 @@ inline void ibuffer_set_curr(wc_io_observer_unlocked cio,wchar_t* ptr) noexcept
 
 namespace details
 {
-extern std::uint32_t glibc_wunderflow (FILE *) noexcept asm("__wunderflow");
+extern std::uint_least32_t glibc_wunderflow (FILE *) noexcept asm("__wunderflow");
 }
 #if WCHAR_MAX == UINT32_MAX
 inline bool ibuffer_underflow(wc_io_observer_unlocked cio) noexcept
 {
 	ibuffer_set_curr(cio,ibuffer_end(cio));
-	return details::glibc_wunderflow(cio.fp)!=static_cast<std::uint32_t>(0xffffffffu);
+	return details::glibc_wunderflow(cio.fp)!=static_cast<std::uint_least32_t>(0xffffffffu);
 }
 inline wchar_t* obuffer_begin(wc_io_observer_unlocked cio) noexcept
 {
@@ -198,12 +198,12 @@ inline void obuffer_set_curr(wc_io_observer_unlocked cio,wchar_t* ptr) noexcept
 #endif
 namespace details
 {
-extern std::uint32_t glibc_woverflow (FILE *,std::uint32_t) noexcept asm("__woverflow");
+extern std::uint_least32_t glibc_woverflow (FILE *,std::uint_least32_t) noexcept asm("__woverflow");
 }
 
 inline void obuffer_overflow(wc_io_observer_unlocked cio,wchar_t ch)
 {
-	if(details::glibc_woverflow(cio.fp,static_cast<std::uint32_t>(ch))==static_cast<std::uint32_t>(0xffffffffu))[[unlikely]]
+	if(details::glibc_woverflow(cio.fp,static_cast<std::uint_least32_t>(ch))==static_cast<std::uint_least32_t>(0xffffffffu))[[unlikely]]
 		throw_posix_error();
 }
 
@@ -231,7 +231,7 @@ inline void ibuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alia
 inline bool ibuffer_underflow(u32c_io_observer_unlocked cio) noexcept
 {
 	ibuffer_set_curr(cio,ibuffer_end(cio));
-	return details::glibc_wunderflow(cio.fp)!=static_cast<std::uint32_t>(0xffffffffu);
+	return details::glibc_wunderflow(cio.fp)!=static_cast<std::uint_least32_t>(0xffffffffu);
 }
 
 [[__gnu__::__may_alias__]] inline char32_t* obuffer_begin(u32c_io_observer_unlocked cio) noexcept
@@ -256,7 +256,7 @@ inline void obuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alia
 
 inline void obuffer_overflow(u32c_io_observer_unlocked cio,char32_t ch)
 {
-	if(details::glibc_woverflow(cio.fp,static_cast<std::uint32_t>(ch))==static_cast<std::uint32_t>(0xffffffffu))[[unlikely]]
+	if(details::glibc_woverflow(cio.fp,static_cast<std::uint_least32_t>(ch))==static_cast<std::uint_least32_t>(0xffffffffu))[[unlikely]]
 		throw_posix_error();
 }
 

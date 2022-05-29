@@ -99,9 +99,9 @@ public:
 
 	constexpr cs_insn_range() noexcept = default;
 
-	explicit cs_insn_range(cs_io_observer csiob,char const* buffer,std::size_t code_size,std::uint64_t address,std::size_t c) noexcept
+	explicit cs_insn_range(cs_io_observer csiob,char const* buffer,std::size_t code_size,std::uint_least64_t address,std::size_t c) noexcept
 	{
-		count=noexcept_call(cs_disasm,csiob.csh,reinterpret_cast<std::uint8_t const*>(buffer),code_size,address,c,__builtin_addressof(ins));
+		count=noexcept_call(cs_disasm,csiob.csh,reinterpret_cast<std::uint_least8_t const*>(buffer),code_size,address,c,__builtin_addressof(ins));
 	}
 	cs_insn_range(cs_insn_range const&)=delete;
 	cs_insn_range& operator=(cs_insn_range const&)=delete;

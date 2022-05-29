@@ -186,8 +186,8 @@ inline void wincrt_fp_allocate_buffer_impl(FILE* __restrict fpp) noexcept
 	wincrt_fp_set_flag_mybuf_impl(fp);
 }
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void wincrt_fp_write_cold_malloc_case_impl(FILE* __restrict fpp,char const* __restrict first,std::size_t diff)
 {
@@ -244,8 +244,8 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE* __restrict fpp,char cons
 	}
 }
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void wincrt_fp_write_cold_impl(FILE* __restrict fp,char const* __restrict first,std::size_t diff)
 {
@@ -296,8 +296,8 @@ inline void wincrt_fp_write_impl(FILE* __restrict fpp,char_type const* first,cha
 
 template<std::integral char_type>
 requires (sizeof(char_type)<=4)
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void wincrt_fp_overflow_impl(FILE* __restrict fpp,char_type ch)
 {
@@ -317,8 +317,8 @@ inline void wincrt_fp_overflow_impl(FILE* __restrict fpp,char_type ch)
 	wincrt_fp_set_flag_dirty_impl(fp);
 }
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline void wincrt_fp_flush_stdout_impl()
 {
@@ -334,8 +334,8 @@ inline void wincrt_fp_flush_stdout_impl()
 	fp->_ptr=fp->_base;
 }
 
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std::size_t diff)
 {
@@ -413,8 +413,8 @@ inline char_type* wincrt_fp_read_impl(FILE* __restrict fpp,char_type* first,char
 }
 
 template<std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline bool wincrt_fp_underflow_impl(FILE* __restrict fpp)
 {

@@ -14,8 +14,8 @@ inline constexpr bool ibuffer_underflow_rl_impl(T t,basic_io_buffer_pointers<cha
 }
 
 template<std::size_t bfsz,stream T,std::integral char_type>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr bool ibuffer_underflow_impl(T t,basic_io_buffer_pointers<char_type>& ibuffer)
 {
@@ -23,8 +23,8 @@ inline constexpr bool ibuffer_underflow_impl(T t,basic_io_buffer_pointers<char_t
 }
 
 template<typename T,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr Iter iobuf_read_unhappy_decay_impl(T t,basic_io_buffer_pointers<char_type>& ibuffer,Iter first,Iter last,std::size_t buffer_size)
 {

@@ -61,14 +61,14 @@ inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 {
 	if constexpr(family==win32_family::wide_nt)
 	{
-		void* addr{win32::CreateFileMappingW(handle,nullptr,static_cast<std::uint32_t>(attr),0,0,nullptr)};
+		void* addr{win32::CreateFileMappingW(handle,nullptr,static_cast<std::uint_least32_t>(attr),0,0,nullptr)};
 		if(addr==nullptr)
 			throw_win32_error();
 		return addr;
 	}
 	else
 	{
-		void* addr{win32::CreateFileMappingA(handle,nullptr,static_cast<std::uint32_t>(attr),0,0,nullptr)};
+		void* addr{win32::CreateFileMappingA(handle,nullptr,static_cast<std::uint_least32_t>(attr),0,0,nullptr)};
 		if(addr==nullptr)
 			throw_win32_error();
 		return addr;
@@ -98,7 +98,7 @@ public:
 	win32_family_memory_map_file(nt_at_entry bf,file_map_attribute attr,std::size_t bytes,std::uintmax_t start_address=0)
 	{
 		basic_win32_family_file<family,char> mapping_file{win32::details::create_file_mapping_impl<family>(bf.handle,attr)};
-		void *base_ptr{win32::MapViewOfFile(mapping_file.handle,static_cast<std::uint32_t>(to_win32_file_map_attribute(attr)),start_address>>32,static_cast<std::uint32_t>(start_address),bytes)};
+		void *base_ptr{win32::MapViewOfFile(mapping_file.handle,static_cast<std::uint_least32_t>(to_win32_file_map_attribute(attr)),start_address>>32,static_cast<std::uint_least32_t>(start_address),bytes)};
 		if(base_ptr==nullptr)
 			throw_win32_error();
 		this->address_begin=reinterpret_cast<std::byte*>(base_ptr);

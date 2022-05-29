@@ -832,8 +832,8 @@ inline constexpr bool is_integral_mid_point_float32(std::uint_least32_t two_f,st
 }
 
 template<typename flt>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> schubfach_asymmetric_interval(std::int_least32_t e2) noexcept
 {

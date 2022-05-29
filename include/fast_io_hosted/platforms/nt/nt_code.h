@@ -5,7 +5,7 @@ namespace fast_io
 
 struct nt_code
 {
-	std::uint32_t ntstatus{};
+	std::uint_least32_t ntstatus{};
 };
 
 inline constexpr std::uintptr_t domain_define(error_type_t<nt_code>) noexcept
@@ -53,7 +53,7 @@ inline constexpr Iter print_reserve_nt_error_impl(Iter iter,std::uint_least32_t 
 	else
 		iter=copy_string_literal(u8"[nt:0x",iter);
 	using namespace ::fast_io::manipulators;
-	iter=print_reserve_define(io_reserve_type<char_type,scalar_manip_t<::fast_io::details::nt_errorflags,std::uint32_t>>,iter,{ntstatus});
+	iter=print_reserve_define(io_reserve_type<char_type,scalar_manip_t<::fast_io::details::nt_errorflags,std::uint_least32_t>>,iter,{ntstatus});
 	*iter=char_literal_v<u8']',char_type>;
 	++iter;
 	return print_reserve_define_win32_error_impl<win32_family::wide_nt>(iter,win32::nt::rtl_nt_status_to_dos_error(ntstatus));
@@ -65,7 +65,7 @@ template<std::integral char_type>
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,nt_code>) noexcept
 {
 	using namespace ::fast_io::manipulators;
-	constexpr std::size_t full_size(print_reserve_size(io_reserve_type<char_type,scalar_manip_t<::fast_io::details::nt_errorflags,std::uint32_t>>)+print_reserve_size(io_reserve_type<char_type,nt_code>));
+	constexpr std::size_t full_size(print_reserve_size(io_reserve_type<char_type,scalar_manip_t<::fast_io::details::nt_errorflags,std::uint_least32_t>>)+print_reserve_size(io_reserve_type<char_type,nt_code>));
 	if constexpr(std::same_as<char_type,char>)
 	{
 		return full_size+::fast_io::details::string_literal_size("[nt:0x]");

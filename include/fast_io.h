@@ -179,8 +179,8 @@ inline constexpr void print_after_io_print_forward(Args ...args)
 }
 
 template<bool line,typename... Args>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void perr_after_io_print_forward(Args ...args)
 {
@@ -192,8 +192,8 @@ inline constexpr void perr_after_io_print_forward(Args ...args)
 }
 
 template<bool line,typename... Args>
-#if __has_cpp_attribute(gnu::cold)
-[[gnu::cold]]
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
 inline constexpr void debug_print_after_io_print_forward(Args ...args)
 {
