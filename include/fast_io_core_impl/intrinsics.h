@@ -673,8 +673,8 @@ inline constexpr std::size_t mul_or_overflow_die(std::size_t a,std::size_t b) no
 }
 
 template<std::signed_integral int_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

@@ -200,8 +200,8 @@ inline constexpr void lc_print_control(basic_lc_all<typename output::char_type> 
 }
 
 template<bool line,output_stream output,typename T,typename... Args>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

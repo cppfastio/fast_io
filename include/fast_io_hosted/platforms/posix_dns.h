@@ -151,8 +151,8 @@ inline constexpr ::fast_io::ip to_ip(posix_dns_io_observer d,std::uint_least16_t
 }
 
 class
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 posix_dns_file:public posix_dns_io_observer
 {

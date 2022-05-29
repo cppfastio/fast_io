@@ -4,8 +4,8 @@ namespace fast_io
 {
 
 template<std::integral ch_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

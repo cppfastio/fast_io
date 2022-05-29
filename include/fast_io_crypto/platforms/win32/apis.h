@@ -5,8 +5,8 @@ namespace fast_io::win32
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall BCryptOpenAlgorithmProvider(void**,char16_t const*,char16_t const*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -24,8 +24,8 @@ __asm__("BCryptOpenAlgorithmProvider")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall BCryptCloseAlgorithmProvider(void*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -43,8 +43,8 @@ __asm__("BCryptCloseAlgorithmProvider")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall BCryptGetProperty(void*,char16_t const*,void*,::std::uint_least32_t,::std::uint_least32_t*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -62,8 +62,8 @@ __asm__("BCryptGetProperty")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall BCryptCreateHash(void*,void**,void*,::std::uint_least32_t,void*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -82,8 +82,8 @@ __asm__("BCryptCreateHash")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall BCryptHashData(void*,void const*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -101,8 +101,8 @@ __asm__("BCryptHashData")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall BCryptFinishHash(void*,void*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -120,8 +120,8 @@ __asm__("BCryptFinishHash")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern ::std::uint_least32_t __stdcall BCryptDestroyHash(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)

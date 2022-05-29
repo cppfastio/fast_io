@@ -10,26 +10,26 @@ namespace fast_io
 
 namespace intrinsics
 {
-using x86_64_m128 [[gnu::__vector_size__(16),__gnu__::__may_alias__]] = float ;
-using x86_64_m128i [[gnu::__vector_size__ (16),__gnu__::__may_alias__]] = long long;
-using x86_64_v16qi [[gnu::__vector_size__ (16)]] = char;
-using x86_64_v16qs [[gnu::__vector_size__ (16)]] = char signed;
-using x86_64_v16qu [[gnu::__vector_size__ (16)]] = char unsigned;
-using x86_64_v8hi [[gnu::__vector_size__ (16)]] = short;
-using x86_64_v8hu [[gnu::__vector_size__ (16)]] = short unsigned;
-using x86_64_v4si [[gnu::__vector_size__ (16)]] = int;
-using x86_64_v4su [[gnu::__vector_size__ (16)]] = int unsigned;
+using x86_64_m128 [[__gnu__::__vector_size__(16),__gnu__::__may_alias__]] = float ;
+using x86_64_m128i [[__gnu__::__vector_size__ (16),__gnu__::__may_alias__]] = long long;
+using x86_64_v16qi [[__gnu__::__vector_size__ (16)]] = char;
+using x86_64_v16qs [[__gnu__::__vector_size__ (16)]] = char signed;
+using x86_64_v16qu [[__gnu__::__vector_size__ (16)]] = char unsigned;
+using x86_64_v8hi [[__gnu__::__vector_size__ (16)]] = short;
+using x86_64_v8hu [[__gnu__::__vector_size__ (16)]] = short unsigned;
+using x86_64_v4si [[__gnu__::__vector_size__ (16)]] = int;
+using x86_64_v4su [[__gnu__::__vector_size__ (16)]] = int unsigned;
 
-using x86_64_m256 [[gnu::__vector_size__(32),__gnu__::__may_alias__]]  = float;
-using x86_64_m256i [[gnu::__vector_size__ (32),__gnu__::__may_alias__]] = long long;
-using x86_64_m512 [[gnu::__vector_size__(64),__gnu__::__may_alias__]]  = float ;
-using x86_64_m512i [[gnu::__vector_size__ (64),__gnu__::__may_alias__]] = long long;
-using x86_64_m1024 [[gnu::__vector_size__(128),__gnu__::__may_alias__]]  = float ;
-using x86_64_m1024i [[gnu::__vector_size__ (128),__gnu__::__may_alias__]] = long long;
-using x86_64_m2048 [[gnu::__vector_size__(256),__gnu__::__may_alias__]]  = float ;
-using x86_64_m2048i [[gnu::__vector_size__ (256),__gnu__::__may_alias__]] = long long;
-using x86_64_m4096 [[gnu::__vector_size__(512),__gnu__::__may_alias__]]  = float ;
-using x86_64_m4096i [[gnu::__vector_size__ (512),__gnu__::__may_alias__]] = long long;
+using x86_64_m256 [[__gnu__::__vector_size__(32),__gnu__::__may_alias__]]  = float;
+using x86_64_m256i [[__gnu__::__vector_size__ (32),__gnu__::__may_alias__]] = long long;
+using x86_64_m512 [[__gnu__::__vector_size__(64),__gnu__::__may_alias__]]  = float ;
+using x86_64_m512i [[__gnu__::__vector_size__ (64),__gnu__::__may_alias__]] = long long;
+using x86_64_m1024 [[__gnu__::__vector_size__(128),__gnu__::__may_alias__]]  = float ;
+using x86_64_m1024i [[__gnu__::__vector_size__ (128),__gnu__::__may_alias__]] = long long;
+using x86_64_m2048 [[__gnu__::__vector_size__(256),__gnu__::__may_alias__]]  = float ;
+using x86_64_m2048i [[__gnu__::__vector_size__ (256),__gnu__::__may_alias__]] = long long;
+using x86_64_m4096 [[__gnu__::__vector_size__(512),__gnu__::__may_alias__]]  = float ;
+using x86_64_m4096i [[__gnu__::__vector_size__ (512),__gnu__::__may_alias__]] = long long;
 
 
 inline constexpr bool simd_shuffle_size_is_supported(std::size_t n) noexcept
@@ -57,7 +57,7 @@ template<typename T,std::size_t N>
 struct simd_vector
 {
 	using value_type = T;
-	using vec_type [[gnu::__vector_size__ (N*sizeof(T))]] = T;
+	using vec_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
 	vec_type value;
 	constexpr T const* data() const noexcept
 	{
@@ -71,15 +71,15 @@ struct simd_vector
 	{
 		return N;
 	}
-#if __has_cpp_attribute(gnu::always_inline)
-	[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
 #endif
 	inline void load(void const* address) noexcept
 	{
 		__builtin_memcpy(__builtin_addressof(value),address,sizeof(value));
 	}
-#if __has_cpp_attribute(gnu::always_inline)
-	[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
 #endif
 	inline void store(void* address) noexcept
 	{
@@ -225,7 +225,7 @@ struct simd_vector
 		{
 			if constexpr(N*sizeof(T)==32)
 			{
-				using temp_vec_type [[gnu::__vector_size__ (32)]] = char;
+				using temp_vec_type [[__gnu__::__vector_size__ (32)]] = char;
 #if __has_builtin(__builtin_bit_cast)
 				auto temp_vec{__builtin_bit_cast(temp_vec_type,this->value)};
 #else
@@ -291,7 +291,7 @@ struct simd_vector
 			}
 			else
 			{
-				using temp_vec_type [[gnu::__vector_size__ (16)]] = char;
+				using temp_vec_type [[__gnu__::__vector_size__ (16)]] = char;
 #if __has_builtin(__builtin_bit_cast)
 				auto temp_vec{__builtin_bit_cast(temp_vec_type,this->value)};
 #else
@@ -353,7 +353,7 @@ struct simd_vector
 		if constexpr(sizeof(mask)==16)
 		{
 #if __has_builtin(__builtin_ia32_pshufb128)
-			using value_type2 [[gnu::__vector_size__ (16)]] = char;
+			using value_type2 [[__gnu__::__vector_size__ (16)]] = char;
 #if __has_builtin(__builtin_bit_cast)
 			value=__builtin_bit_cast(vec_type,__builtin_ia32_pshufb128(__builtin_bit_cast(value_type2,value),mask.value));
 #else
@@ -367,7 +367,7 @@ struct simd_vector
 		else if constexpr(sizeof(mask)==32)
 		{
 #if __has_builtin(__builtin_ia32_pshufb256)
-			using value_type2 [[gnu::__vector_size__ (32)]] = char;
+			using value_type2 [[__gnu__::__vector_size__ (32)]] = char;
 #if __has_builtin(__builtin_bit_cast)
 			value=__builtin_bit_cast(vec_type,__builtin_ia32_pshufb256(__builtin_bit_cast(value_type2,value),mask.value));
 #else

@@ -883,11 +883,11 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> schubfac
 }
 
 template<typename flt>
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
-#if __has_cpp_attribute(gnu::hot)
-[[gnu::hot]]
+#if __has_cpp_attribute(__gnu__::__hot__)
+[[__gnu__::__hot__]]
 #endif
 inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbox_main(typename iec559_traits<flt>::mantissa_type m2,std::int_least32_t e2) noexcept
 {
@@ -998,11 +998,11 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 }
 
 template<typename flt>
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
-#if __has_cpp_attribute(gnu::hot)
-[[gnu::hot]]
+#if __has_cpp_attribute(__gnu__::__hot__)
+[[__gnu__::__hot__]]
 #endif
 inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2,std::int_least32_t e2) noexcept
 {

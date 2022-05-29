@@ -349,8 +349,8 @@ struct punning_result
 };
 
 struct
-#if __has_cpp_attribute(gnu::packed)
-[[gnu::packed]]
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
 #endif
 float80_result
 {
@@ -359,8 +359,8 @@ float80_result
 };
 
 template<typename flt>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -411,8 +411,8 @@ inline constexpr Iter print_rsv_fp_sign_impl(Iter iter,bool sign) noexcept
 }
 
 template<::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
-#if __has_cpp_attribute(gnu::hot)
-[[gnu::hot]]
+#if __has_cpp_attribute(__gnu__::__hot__)
+[[__gnu__::__hot__]]
 #endif
 inline constexpr Iter prt_rsv_hundred_flt_impl(Iter iter,U u) noexcept
 {

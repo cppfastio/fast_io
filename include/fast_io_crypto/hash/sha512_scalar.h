@@ -14,8 +14,8 @@ inline constexpr auto create_k512scalar() noexcept
 
 inline constexpr auto k512scalar{create_k512scalar()};
 
-#if __has_cpp_attribute(gnu::flatten)
-[[gnu::flatten]]
+#if __has_cpp_attribute(__gnu__::__flatten__)
+[[__gnu__::__flatten__]]
 #endif
 #if __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
@@ -27,8 +27,8 @@ inline constexpr void sha512_round(std::uint_least64_t T1,std::uint_least64_t a,
 	sha512_scalar_round(T1+k,a,b,d,e,f,g,h,bpc);
 }
 
-#if __has_cpp_attribute(gnu::flatten)
-[[gnu::flatten]]
+#if __has_cpp_attribute(__gnu__::__flatten__)
+[[__gnu__::__flatten__]]
 #endif
 inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
 {

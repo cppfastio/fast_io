@@ -15,7 +15,11 @@ namespace stvl2
 
 static_assert(sizeof(void*)==4||sizeof(void*)==8);
 static_assert(std::endian::little==std::endian::native);
-struct [[gnu::packed]] stvl2_pointer_padding
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_pointer_padding
 {
 struct stvl2_empty{};
 #ifndef __INTELLISENSE__
@@ -71,13 +75,21 @@ bios=1<<0
 /*
 use stvl2 instead of stivale2 to avoid collision with stivale2.h
 */
-struct [[gnu::packed]] stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_tag
 {
 	stvl2_header_tag identifier{};
 	stvl2_tag* next{};
 };
 
-struct [[gnu::packed]] stvl2_header
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_header
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -109,19 +121,31 @@ struct [[gnu::packed]] stvl2_header
 	stvl2_tag* tags_root{};
 };
 
-struct [[gnu::packed]] stvl2_header_tag_framebuffer : stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_header_tag_framebuffer : stvl2_tag
 {
 	std::uint_least16_t framebuffer_width{};
 	std::uint_least16_t framebuffer_height{};
 	std::uint_least16_t framebuffer_bpp{};
 };
 
-struct [[gnu::packed]] stvl2_header_tag_smp : stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_header_tag_smp : stvl2_tag
 {
 	std::uint_least64_t flags{};
 };
 
-struct [[gnu::packed]] stvl2_struct
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct
 {
 	inline static constexpr std::size_t bootloader_brand_size{64};
 	inline static constexpr std::size_t bootloader_version_size{64};
@@ -130,12 +154,20 @@ struct [[gnu::packed]] stvl2_struct
 	stvl2_tag* tags_root{};
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_cmdline:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_cmdline:stvl2_tag
 {
 	std::uint_least64_t cmdline{};
 };
 
-struct [[gnu::packed]] stvl2_mmap_entry
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_mmap_entry
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -159,7 +191,11 @@ struct [[gnu::packed]] stvl2_mmap_entry
 	std::uint_least32_t unused{};
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_memmap:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_memmap:stvl2_tag
 {
 	std::uint_least64_t entries{};
 #ifndef __INTELLISENSE__
@@ -172,7 +208,11 @@ struct [[gnu::packed]] stvl2_struct_tag_memmap:stvl2_tag
 	stvl2_mmap_entry memmaps[];
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_framebuffer:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_framebuffer:stvl2_tag
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -196,7 +236,11 @@ struct [[gnu::packed]] stvl2_struct_tag_framebuffer:stvl2_tag
 	std::uint_least8_t  blue_mask_shift{};
 };
 
-struct [[gnu::packed]] stvl2_module
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_module
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -220,7 +264,11 @@ struct [[gnu::packed]] stvl2_module
 	char8_t module_string[module_string_size];
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_modules:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_modules:stvl2_tag
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -241,22 +289,38 @@ struct [[gnu::packed]] stvl2_struct_tag_modules:stvl2_tag
 	stvl2_module modules[];
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_rsdp:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_rsdp:stvl2_tag
 {
 	std::uint_least64_t rdsp{};
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_epoch:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_epoch:stvl2_tag
 {
 	std::uint_least64_t epoch{};
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_firmware:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_firmware:stvl2_tag
 {
 	stvl2_firmware_flags tag{};
 };
 
-struct [[gnu::packed]] stvl2_smp_info
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_smp_info
 {
 	std::uint_least32_t process_id{};
 	std::uint_least32_t lapic_id{};
@@ -289,7 +353,11 @@ struct [[gnu::packed]] stvl2_smp_info
 	void* extra_argument{};
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_smp:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_smp:stvl2_tag
 {
 	std::uint_least64_t flags{};
 	std::uint_least32_t bsp_lapic_id{};
@@ -305,12 +373,20 @@ struct [[gnu::packed]] stvl2_struct_tag_smp:stvl2_tag
 	stvl2_smp_info smp_info[];
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_pxe_server_info:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_pxe_server_info:stvl2_tag
 {
 	std::uint_least32_t server_ip{};
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_mmio32_uart:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_mmio32_uart:stvl2_tag
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -323,7 +399,11 @@ struct [[gnu::packed]] stvl2_struct_tag_mmio32_uart:stvl2_tag
 	void* addr{};
 };
 
-struct [[gnu::packed]] stvl2_struct_tag_dtb:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_tag_dtb:stvl2_tag
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -345,7 +425,11 @@ struct [[gnu::packed]] stvl2_struct_tag_dtb:stvl2_tag
 	std::size_t size{};
 };
 
-struct [[gnu::packed]] stvl2_struct_vmap:stvl2_tag
+struct
+#if __has_cpp_attribute(__gnu__::__packed__)
+[[__gnu__::__packed__]]
+#endif
+stvl2_struct_vmap:stvl2_tag
 {
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)

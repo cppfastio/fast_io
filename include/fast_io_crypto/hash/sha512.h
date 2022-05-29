@@ -79,8 +79,8 @@ inline constexpr auto Maj(auto x,auto y,auto z) noexcept
 	return (x&y)^(x&z)^(y&z);
 }
 
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

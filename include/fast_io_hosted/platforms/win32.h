@@ -577,8 +577,8 @@ inline void win32_data_sync_impl(void* __restrict handle,data_sync_flags flags [
 }
 
 template<win32_family family,std::integral char_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void flush(basic_win32_family_io_observer<family,char_type> wiob)
 {
@@ -586,8 +586,8 @@ inline void flush(basic_win32_family_io_observer<family,char_type> wiob)
 }
 
 template<win32_family family,std::integral char_type>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void data_sync(basic_win32_family_io_observer<family,char_type> wiob,data_sync_flags flags)
 {
@@ -967,8 +967,8 @@ inline void io_control(basic_win32_family_io_observer<family,ch_type> h,Args&& .
 }
 
 struct
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 win32_file_factory
 {

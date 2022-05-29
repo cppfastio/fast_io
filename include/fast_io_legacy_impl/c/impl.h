@@ -176,7 +176,7 @@ namespace details
 extern int fileno(FILE*) noexcept asm("_fileno");
 extern FILE* fdopen(int,char const*) noexcept asm("_fdopen");
 #elif defined(__CYGWIN__)
-[[gnu::dllimport]] extern int fileno(FILE*) noexcept 
+[[__gnu__::__dllimport__]] extern int fileno(FILE*) noexcept 
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("fileno")
@@ -187,7 +187,7 @@ asm("_fileno")
 asm("fileno")
 #endif
 ;
-[[gnu::dllimport]] extern FILE* fdopen(int,char const*) noexcept
+[[__gnu__::__dllimport__]] extern FILE* fdopen(int,char const*) noexcept
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("fdopen")
@@ -204,7 +204,7 @@ asm("fdopen")
 
 #if defined(__CYGWIN__)
 
-[[gnu::dllimport]] extern void my_cygwin_pthread_mutex_lock(void*) noexcept
+[[__gnu__::__dllimport__]] extern void my_cygwin_pthread_mutex_lock(void*) noexcept
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("pthread_mutex_lock")
@@ -216,7 +216,7 @@ asm("pthread_mutex_lock")
 #endif
 ;
 
-[[gnu::dllimport]] extern void my_cygwin_pthread_mutex_unlock(void*) noexcept
+[[__gnu__::__dllimport__]] extern void my_cygwin_pthread_mutex_unlock(void*) noexcept
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
 asm("pthread_mutex_unlock")
@@ -867,8 +867,8 @@ inline decltype(auto) zero_copy_out_handle(basic_c_family_io_observer<family,ch_
 
 template<c_family family>
 struct
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 c_family_file_factory
 {

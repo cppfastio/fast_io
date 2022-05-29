@@ -7,8 +7,8 @@ namespace details
 {
 
 template<std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -39,8 +39,8 @@ inline constexpr void inplace_to_decay_context_impl(io_reference_wrapper<dynamic
 }
 
 template<std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -69,8 +69,8 @@ inline constexpr void inplace_to_decay_buffer_scatter_context_impl(state& s,T t,
 }
 
 template<std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

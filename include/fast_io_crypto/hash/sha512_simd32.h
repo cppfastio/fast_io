@@ -1,7 +1,7 @@
 #pragma once
 
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void sha512_simd32_byte_swap_message_4rounds(::fast_io::intrinsics::simd_vector<std::uint_least64_t,4>& __restrict s1,
 	std::byte const* __restrict blocks_start,std::uint_least64_t* __restrict w,std::uint_least64_t* __restrict wt,std::size_t round) noexcept
@@ -19,8 +19,8 @@ inline void sha512_simd32_byte_swap_message_4rounds(::fast_io::intrinsics::simd_
 	s0.store(wt+round);
 }
 
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #endif
 inline void sha512_simd32_compute_message_4rounds(::fast_io::intrinsics::simd_vector<std::uint_least64_t,4>& __restrict s1,
 	std::uint_least64_t* __restrict w,std::uint_least64_t* __restrict wt,std::size_t round) noexcept
@@ -62,8 +62,8 @@ wt[r,r+1,r+2,r+3]=wt[r-16,r-15,r-14,r-13]+wt[r-7,r-6,r-5,r-4]
 	s0.store(wt+round);
 }
 
-#if __has_cpp_attribute(gnu::flatten)
-[[gnu::flatten]]
+#if __has_cpp_attribute(__gnu__::__flatten__)
+[[__gnu__::__flatten__]]
 #endif
 inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
 {

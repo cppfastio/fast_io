@@ -439,8 +439,8 @@ inline std::uintptr_t open_win32_socket_impl(sock_family d,sock_type t,open_mode
 }
 
 struct
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 win32_socket_factory
 {
@@ -471,8 +471,8 @@ inline win32_socket_factory tcp_accept(basic_win32_family_socket_io_observer<fam
 
 template<win32_family family,std::integral ch_type>
 class
-#if __has_cpp_attribute(gnu::trivial_abi)
-[[gnu::trivial_abi]]
+#if __has_cpp_attribute(__clang__::__trivial_abi__)
+[[__clang__::__trivial_abi__]]
 #endif
 basic_win32_family_socket_file : public basic_win32_family_socket_io_observer<family,ch_type>
 {

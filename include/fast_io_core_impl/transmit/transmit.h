@@ -266,8 +266,8 @@ inline constexpr decltype(auto) transmit64_decay(output outs,input ins,std::uint
 
 
 template<typename output,typename input>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -280,8 +280,8 @@ inline constexpr decltype(auto) transmit(output&& outs,input&& ins)
 }
 
 template<typename output,typename input>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

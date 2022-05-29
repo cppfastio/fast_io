@@ -16,8 +16,8 @@ char  **h_addr_list;
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(gnu::dllimport)
-[[gnu::dllimport]]
+#elif __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
 #endif
 extern hostent* __stdcall gethostbyname(char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)

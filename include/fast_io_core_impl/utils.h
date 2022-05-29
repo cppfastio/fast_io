@@ -50,8 +50,8 @@ using make_noexcept_t = typename make_noexcept<R,Args...>::type;
 
 template<typename F>
 requires std::is_function_v<F>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -66,8 +66,8 @@ inline constexpr auto noexcept_cast(F* f) noexcept
 
 template<typename F,typename... Args>
 requires std::is_function_v<F>
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif

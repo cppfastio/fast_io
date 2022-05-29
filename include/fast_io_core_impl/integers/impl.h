@@ -1441,8 +1441,8 @@ inline constexpr Iter print_reserve_nullptr_alphabet_impl(Iter iter)
 
 template<typename scalar_type>
 requires (details::my_integral<scalar_type>||std::is_pointer_v<std::remove_cvref_t<scalar_type>>||::fast_io::freestanding::contiguous_iterator<scalar_type>||::fast_io::details::my_floating_point<scalar_type>||std::same_as<std::nullptr_t,std::remove_cvref_t<scalar_type>>)
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
@@ -1494,8 +1494,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,T>) 
 
 template<freestanding::random_access_iterator Iter,typename T>
 requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>)
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]//always inline to reduce inline depth in GCC and LLVM clang
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]//always inline to reduce inline depth in GCC and LLVM clang
 #endif
 inline constexpr Iter print_reserve_define(io_reserve_type_t<freestanding::iter_value_t<Iter>,T>,Iter iter,T t) noexcept
 {
@@ -1527,8 +1527,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,mani
 
 template<::fast_io::freestanding::random_access_iterator Iter,manipulators::scalar_flags flags,typename T>
 requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>||std::same_as<std::remove_cvref_t<T>,std::nullptr_t>)
-#if __has_cpp_attribute(gnu::always_inline)
-[[gnu::always_inline]]//always inline to reduce inline depth in GCC and LLVM clang
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]//always inline to reduce inline depth in GCC and LLVM clang
 #endif
 constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,::fast_io::manipulators::scalar_manip_t<flags,T>>,Iter iter,::fast_io::manipulators::scalar_manip_t<flags,T> t) noexcept
 {

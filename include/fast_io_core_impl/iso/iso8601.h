@@ -343,8 +343,8 @@ inline constexpr T sub_overflow(T a,T b) noexcept
 #endif
 }
 
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
 inline constexpr iso8601_timestamp unix_timestamp_to_iso8601_tsp_impl_internal(std::int_least64_t seconds,std::uint_least64_t subseconds,std::int_least32_t timezone) noexcept
 {
@@ -395,16 +395,16 @@ inline constexpr iso8601_timestamp unix_timestamp_to_iso8601_tsp_impl_internal(s
 		static_cast<std::uint_least8_t>(remsecs%60),subseconds,timezone};
 }
 
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
 inline constexpr iso8601_timestamp unix_timestamp_to_iso8601_tsp_impl(std::int_least64_t t,std::uint_least64_t subseconds) noexcept
 {
 	return unix_timestamp_to_iso8601_tsp_impl_internal(t,subseconds,0);
 }
 
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
 inline constexpr std::int_least64_t year_month_to_seconds(std::int_least64_t year,std::uint_least8_t month) noexcept
 {
@@ -429,8 +429,8 @@ inline constexpr std::int_least64_t year_month_to_seconds(std::int_least64_t yea
 	return (year*365LL+leaps)*86400LL-62167219200LL+static_cast<std::int_least64_t>(t);
 }
 
-#if __has_cpp_attribute(gnu::pure)
-[[gnu::pure]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
 #endif
 inline constexpr unix_timestamp iso8601_to_unix_timestamp_impl(iso8601_timestamp const& tsp) noexcept
 {
