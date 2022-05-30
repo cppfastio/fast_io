@@ -645,7 +645,7 @@ inline iso8601_timestamp to_iso8601_local_impl(std::int_least64_t seconds,std::u
 #if __has_cpp_attribute(__gnu__::__dllimport__)&&defined(__CYGWIN__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void m_tzset() noexcept asm("tzset");
+extern void m_tzset() noexcept __asm__("tzset");
 #endif
 }
 

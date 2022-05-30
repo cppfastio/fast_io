@@ -23,12 +23,12 @@ extern hostent* __stdcall gethostbyname(char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
-asm("gethostbyname@4")
+__asm__("gethostbyname@4")
 #else
-asm("_gethostbyname@4")
+__asm__("_gethostbyname@4")
 #endif
 #else
-asm("gethostbyname")
+__asm__("gethostbyname")
 #endif
 #endif
 ;

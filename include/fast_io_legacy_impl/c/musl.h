@@ -180,7 +180,7 @@ char8_t* ptr) noexcept
 
 namespace details::fp_hack
 {
-extern int libc_uflow (FILE *) noexcept asm("__uflow");
+extern int libc_uflow (FILE *) noexcept __asm__("__uflow");
 
 inline bool musl_fp_underflow_impl(FILE* fp)
 {
@@ -258,7 +258,7 @@ char8_t* ptr) noexcept
 
 namespace details
 {
-extern int libc_overflow(_IO_FILE *, int) noexcept asm("__overflow");
+extern int libc_overflow(_IO_FILE *, int) noexcept __asm__("__overflow");
 }
 
 inline void obuffer_overflow(c_io_observer_unlocked cio,char ch)

@@ -191,10 +191,10 @@ T* ptr) noexcept
 }
 
 #if defined(__BSD_VISIBLE) ||defined(__DARWIN_C_LEVEL)
-extern int bsd_srget(FILE *) noexcept asm("__srget");
+extern int bsd_srget(FILE *) noexcept __asm__("__srget");
 #elif defined(__MSDOS__)
-extern int _filbuf(FILE *) noexcept asm("__filbuf");
-extern int _flsbuf(int, FILE*) noexcept asm("__flsbuf");
+extern int _filbuf(FILE *) noexcept __asm__("__filbuf");
+extern int _flsbuf(int, FILE*) noexcept __asm__("__flsbuf");
 #elif defined(_MSC_VER)
 //extern "C" int __cdecl __acrt_stdio_refill_and_read_narrow_nolock(FILE*);
 #endif

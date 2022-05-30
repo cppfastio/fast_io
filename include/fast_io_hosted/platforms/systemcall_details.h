@@ -4,12 +4,12 @@ namespace fast_io::details
 {
 
 #ifdef __MSDOS__
-extern int dup(int) noexcept asm("dup");
-extern int dup2(int,int) noexcept asm("dup2");
-extern int _close(int) noexcept asm("_close");
+extern int dup(int) noexcept __asm__("dup");
+extern int dup2(int,int) noexcept __asm__("dup2");
+extern int _close(int) noexcept __asm__("_close");
 #elif defined(__wasi__)
-extern int dup(int) noexcept asm("dup");
-extern int dup2(int,int) noexcept asm("dup2");
+extern int dup(int) noexcept __asm__("dup");
+extern int dup2(int,int) noexcept __asm__("dup2");
 #endif
 
 inline int sys_dup(int old_fd)

@@ -167,7 +167,7 @@ inline void ibuffer_set_curr(wc_io_observer_unlocked cio,wchar_t* ptr) noexcept
 
 namespace details
 {
-extern std::uint_least32_t glibc_wunderflow (FILE *) noexcept asm("__wunderflow");
+extern std::uint_least32_t glibc_wunderflow (FILE *) noexcept __asm__("__wunderflow");
 }
 #if WCHAR_MAX == UINT_LEAST32_MAX
 inline bool ibuffer_underflow(wc_io_observer_unlocked cio) noexcept
@@ -198,7 +198,7 @@ inline void obuffer_set_curr(wc_io_observer_unlocked cio,wchar_t* ptr) noexcept
 #endif
 namespace details
 {
-extern std::uint_least32_t glibc_woverflow (FILE *,std::uint_least32_t) noexcept asm("__woverflow");
+extern std::uint_least32_t glibc_woverflow (FILE *,std::uint_least32_t) noexcept __asm__("__woverflow");
 }
 
 inline void obuffer_overflow(wc_io_observer_unlocked cio,wchar_t ch)
@@ -262,7 +262,7 @@ inline void obuffer_overflow(u32c_io_observer_unlocked cio,char32_t ch)
 
 namespace details
 {
-extern int glibc_flbf(FILE* fp) noexcept asm("__flbf");
+extern int glibc_flbf(FILE* fp) noexcept __asm__("__flbf");
 }
 
 template<std::integral ch_type>
