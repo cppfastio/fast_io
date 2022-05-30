@@ -16,12 +16,12 @@ extern void __cdecl _lock(int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
-asm("_lock")
+__asm__("_lock")
 #else
-asm("__lock")
+__asm__("__lock")
 #endif
 #else
-asm("_lock")
+__asm__("_lock")
 #endif
 #endif
 ;
@@ -33,12 +33,12 @@ extern void __cdecl _unlock(int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
-asm("_unlock")
+__asm__("_unlock")
 #else
-asm("__unlock")
+__asm__("__unlock")
 #endif
 #else
-asm("_unlock")
+__asm__("_unlock")
 #endif
 #endif
 ;

@@ -173,29 +173,29 @@ namespace details
 {
 
 #if defined(__MSDOS__)
-extern int fileno(FILE*) noexcept asm("_fileno");
-extern FILE* fdopen(int,char const*) noexcept asm("_fdopen");
+extern int fileno(FILE*) noexcept __asm__("_fileno");
+extern FILE* fdopen(int,char const*) noexcept __asm__("_fdopen");
 #elif defined(__CYGWIN__)
 [[__gnu__::__dllimport__]] extern int fileno(FILE*) noexcept 
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
-asm("fileno")
+__asm__("fileno")
 #else
-asm("_fileno")
+__asm__("_fileno")
 #endif
 #else
-asm("fileno")
+__asm__("fileno")
 #endif
 ;
 [[__gnu__::__dllimport__]] extern FILE* fdopen(int,char const*) noexcept
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
-asm("fdopen")
+__asm__("fdopen")
 #else
-asm("_fdopen")
+__asm__("_fdopen")
 #endif
 #else
-asm("fdopen")
+__asm__("fdopen")
 #endif
 ;
 
@@ -207,24 +207,24 @@ asm("fdopen")
 [[__gnu__::__dllimport__]] extern void my_cygwin_pthread_mutex_lock(void*) noexcept
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
-asm("pthread_mutex_lock")
+__asm__("pthread_mutex_lock")
 #else
-asm("_pthread_mutex_lock")
+__asm__("_pthread_mutex_lock")
 #endif
 #else
-asm("pthread_mutex_lock")
+__asm__("pthread_mutex_lock")
 #endif
 ;
 
 [[__gnu__::__dllimport__]] extern void my_cygwin_pthread_mutex_unlock(void*) noexcept
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if defined(__GNUC__)
-asm("pthread_mutex_unlock")
+__asm__("pthread_mutex_unlock")
 #else
-asm("_pthread_mutex_unlock")
+__asm__("_pthread_mutex_unlock")
 #endif
 #else
-asm("pthread_mutex_unlock")
+__asm__("pthread_mutex_unlock")
 #endif
 ;
 
@@ -377,7 +377,7 @@ inline int my_fclose_impl(FILE* fp) noexcept
 #if !defined(__NEWLIB__) || defined(__CYGWIN__)
 
 #if defined(__GLIBC__)
-extern size_t glibc_fbufsize(FILE *stream) noexcept asm("__fbufsize");
+extern size_t glibc_fbufsize(FILE *stream) noexcept __asm__("__fbufsize");
 #endif
 
 inline FILE* my_fdopen(int fd,char const* mode) noexcept

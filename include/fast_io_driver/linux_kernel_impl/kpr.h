@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-extern int linux_kernel_printk(char const* fmt, ...) noexcept asm("printk");
+extern int linux_kernel_printk(char const* fmt, ...) noexcept __asm__("printk");
 
 enum class kern
 {
