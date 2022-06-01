@@ -16,6 +16,7 @@ inline constexpr auto status_io_print_forward(io_alias_type_t<char_type>,cross_c
 {
 	if constexpr(std::same_as<char_type,cross_char_type>)
 	{
+#if 0
 constexpr bool is_windows{
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 true
@@ -28,6 +29,7 @@ false
 			return parameter<basic_io_scatter_t<char_type> const&>{ccvt.scatter};
 		}
 		else
+#endif
 		{
 			return ccvt.scatter;
 		}
