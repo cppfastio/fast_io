@@ -41,8 +41,8 @@ public:
 
 template<wine_family family>
 struct
-#if __has_cpp_attribute(__clang__::__trivial_abi__)
-[[__clang__::__trivial_abi__]]
+#if __has_cpp_attribute(clang::trivially_relocatable)
+[[clang::trivially_relocatable]]
 #endif
 wine_family_file_factory
 {

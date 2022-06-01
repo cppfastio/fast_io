@@ -108,8 +108,8 @@ inline void* create_posix_rtld_impl(T const& t,dll_mode mode)
 }
 
 class
-#if __has_cpp_attribute(__clang__::__trivial_abi__)
-[[__clang__::__trivial_abi__]]
+#if __has_cpp_attribute(clang::trivially_relocatable)
+[[clang::trivially_relocatable]]
 #endif
 posix_dll_file:public posix_dll_io_observer
 {

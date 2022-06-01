@@ -867,8 +867,8 @@ inline decltype(auto) zero_copy_out_handle(basic_c_family_io_observer<family,ch_
 
 template<c_family family>
 struct
-#if __has_cpp_attribute(__clang__::__trivial_abi__)
-[[__clang__::__trivial_abi__]]
+#if __has_cpp_attribute(clang::trivially_relocatable)
+[[clang::trivially_relocatable]]
 #endif
 c_family_file_factory
 {

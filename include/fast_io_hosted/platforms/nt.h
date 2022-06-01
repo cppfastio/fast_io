@@ -943,8 +943,8 @@ inline constexpr nt_family_file_lock<family> file_lock(basic_nt_family_io_observ
 
 template<nt_family family>
 struct
-#if __has_cpp_attribute(__clang__::__trivial_abi__)
-[[__clang__::__trivial_abi__]]
+#if __has_cpp_attribute(clang::trivially_relocatable)
+[[clang::trivially_relocatable]]
 #endif
 nt_family_file_factory
 {

@@ -111,8 +111,8 @@ inline void* create_win32_family_dll_impl(T const& t,dll_mode mode)
 
 template<win32_family family>
 class
-#if __has_cpp_attribute(__clang__::__trivial_abi__)
-[[__clang__::__trivial_abi__]]
+#if __has_cpp_attribute(clang::trivially_relocatable)
+[[clang::trivially_relocatable]]
 #endif
 win32_family_dll_file:public win32_family_dll_io_observer<family>
 {
