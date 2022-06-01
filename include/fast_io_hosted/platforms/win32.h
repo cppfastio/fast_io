@@ -967,8 +967,8 @@ inline void io_control(basic_win32_family_io_observer<family,ch_type> h,Args&& .
 }
 
 struct
-#if __has_cpp_attribute(__clang__::__trivial_abi__)
-[[__clang__::__trivial_abi__]]
+#if __has_cpp_attribute(clang::trivially_relocatable)
+[[clang::trivially_relocatable]]
 #endif
 win32_file_factory
 {
