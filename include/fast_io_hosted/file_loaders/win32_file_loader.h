@@ -203,6 +203,9 @@ public:
 	{
 		return address_end[-1];
 	}
+#if __has_cpp_attribute(nodiscard)
+	[[nodiscard]]
+#endif
 	constexpr pointer release() noexcept
 	{
 		auto temp{this->address_begin};
