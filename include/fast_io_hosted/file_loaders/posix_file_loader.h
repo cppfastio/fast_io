@@ -389,6 +389,9 @@ public:
 		else
 			address_end=address_begin=(char*)-1;
 	}
+#if __has_cpp_attribute(nodiscard)
+	[[nodiscard]]
+#endif
 	inline constexpr pointer release() noexcept
 	{
 		pointer temp{address_begin};
