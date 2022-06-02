@@ -389,6 +389,15 @@ public:
 		else
 			address_end=address_begin=(char*)-1;
 	}
+	inline constexpr pointer release() noexcept
+	{
+		pointer temp{address_begin};
+		if constexpr(allocation)
+			address_end=address_begin=nullptr;
+		else
+			address_end=address_begin=(char*)-1;
+		return temp;
+	}
 	~posix_file_loader_impl()
 	{
 		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));

@@ -203,6 +203,12 @@ public:
 	{
 		return address_end[-1];
 	}
+	constexpr pointer release() noexcept
+	{
+		auto temp{this->address_begin};
+		this->address_end=this->address_begin = nullptr;
+		return temp;
+	}
 	inline constexpr reference operator[](size_type size) noexcept
 	{
 		return address_begin[size];
