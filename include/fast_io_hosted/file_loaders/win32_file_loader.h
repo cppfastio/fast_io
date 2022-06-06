@@ -36,23 +36,23 @@ inline win32_file_loader_return_value_t win32_load_address_impl(void* handle)
 }
 
 template<win32_family family>
-inline auto win32_load_file_impl(nt_fs_dirent fsdirent,perms pm)
+inline auto win32_load_file_impl(nt_fs_dirent fsdirent,open_mode om,perms pm)
 {
-	basic_win32_family_file<family,char> wf(fsdirent,fast_io::open_mode::in,pm);
+	basic_win32_family_file<family,char> wf(fsdirent,om,pm);
 	return win32_load_address_impl<family>(wf.handle);
 }
 
 template<win32_family family,::fast_io::constructible_to_os_c_str T>
-inline auto win32_load_file_impl(T const& str,perms pm)
+inline auto win32_load_file_impl(T const& str,open_mode om,perms pm)
 {
-	basic_win32_family_file<family,char> wf(str,fast_io::open_mode::in,pm);
+	basic_win32_family_file<family,char> wf(str,om,pm);
 	return win32_load_address_impl<family>(wf.handle);
 }
 
 template<win32_family family,::fast_io::constructible_to_os_c_str T>
-inline auto win32_load_file_impl(nt_at_entry ent,T const& str,perms pm)
+inline auto win32_load_file_impl(nt_at_entry ent,T const& str,open_mode om,perms pm)
 {
-	basic_win32_family_file<family,char> wf(ent,str,fast_io::open_mode::in,pm);
+	basic_win32_family_file<family,char> wf(ent,str,om,pm);
 	return win32_load_address_impl<family>(wf.handle);
 }
 
@@ -89,23 +89,23 @@ public:
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
-	inline explicit win32_family_file_loader(nt_fs_dirent fsdirent,perms pm=static_cast<perms>(436))
+	inline explicit win32_family_file_loader(nt_fs_dirent fsdirent,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
-		auto ret{win32::details::win32_load_file_impl<family>(fsdirent,pm)};
+		auto ret{win32::details::win32_load_file_impl<family>(fsdirent,om,pm)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
 	template<::fast_io::constructible_to_os_c_str T>
-	inline explicit win32_family_file_loader(T const& filename,perms pm=static_cast<perms>(436))
+	inline explicit win32_family_file_loader(T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
-		auto ret{win32::details::win32_load_file_impl<family>(filename,pm)};
+		auto ret{win32::details::win32_load_file_impl<family>(filename,om,pm)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
 	template<::fast_io::constructible_to_os_c_str T>
-	inline explicit win32_family_file_loader(nt_at_entry ent,T const& filename,perms pm=static_cast<perms>(436))
+	inline explicit win32_family_file_loader(nt_at_entry ent,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
-		auto ret{win32::details::win32_load_file_impl<family>(ent,filename,pm)};
+		auto ret{win32::details::win32_load_file_impl<family>(ent,filename,om,pm)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
