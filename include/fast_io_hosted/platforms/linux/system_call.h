@@ -8,6 +8,8 @@
 #include"aarch64.h"
 #elif defined(__riscv) && __SIZEOF_SIZE_T__==8
 #include"riscv64.h"
+#elif defined(__loongarch__) && __SIZEOF_SIZE_T__==8
+#include"loongarch64.h"
 #else
 #include"generic.h"
 #endif
