@@ -8,15 +8,15 @@ namespace posix
 extern int libc_faccessat(int dirfd,char const* pathname,int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_renameat(int olddirfd,char const* oldpath,int newdirfd, char const* newpath) noexcept __asm__("renameat");
 extern int libc_linkat(int olddirfd,char const* oldpath,int newdirfd, char const* newpath,int flags) noexcept __asm__("linkat");
-extern int libc_symlinkat(char const* oldpath, int newdirfd, char const *newpath) noexcept __asm__("symlinkat");
-extern int libc_fchmodat(int dirfd, char const *pathname, mode_t mode, int flags) noexcept __asm__("fchmodat");
-extern int libc_utimensat(int dirfd, char const *pathname,struct timespec const* times, int flags) noexcept __asm__("utimensat");
-extern int libc_fchownat(int dirfd, char const *pathname,uid_t owner, gid_t group, int flags) noexcept __asm__("fchownat");
-extern int libc_fstatat(int dirfd, char const *pathname, struct stat *buf,int flags) noexcept __asm__("fstatat");
+extern int libc_symlinkat(char const* oldpath, int newdirfd, char const* newpath) noexcept __asm__("symlinkat");
+extern int libc_fchmodat(int dirfd, char const* pathname, mode_t mode, int flags) noexcept __asm__("fchmodat");
+extern int libc_utimensat(int dirfd, char const* pathname,struct timespec const* times, int flags) noexcept __asm__("utimensat");
+extern int libc_fchownat(int dirfd, char const* pathname,uid_t owner, gid_t group, int flags) noexcept __asm__("fchownat");
+extern int libc_fstatat(int dirfd, char const* pathname, struct stat *buf,int flags) noexcept __asm__("fstatat");
 extern int libc_mkdirat(int dirfd, char const* pathname, mode_t mode) noexcept __asm__("mkdirat");
 extern int libc_mknodat(int dirfd, char const* pathname, mode_t mode, dev_t dev) noexcept __asm__("mknodat");
 extern int libc_unlinkat(int dirfd, char const*pathname, int flags) noexcept __asm__("unlinkat");
-extern int libc_readlinkat(int dirfd, char const *pathname,char *buf, std::size_t bufsiz) noexcept __asm__("readlinkat");
+extern int libc_readlinkat(int dirfd, char const* pathname,char *buf, std::size_t bufsiz) noexcept __asm__("readlinkat");
 }
 
 namespace details
@@ -76,7 +76,7 @@ inline auto posix12_api_dispatcher(char const* oldpath,
 	}
 }
 
-inline void posix_faccessat_impl(int dirfd, char const *pathname, int mode, int flags)
+inline void posix_faccessat_impl(int dirfd, char const* pathname, int mode, int flags)
 {
 	system_call_throw_error(
 #if defined(__linux__) && defined(__NR_faccessat2)
@@ -90,12 +90,12 @@ inline void posix_faccessat_impl(int dirfd, char const *pathname, int mode, int 
 }
 
 #if defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)
-inline void posix_fchownat_impl(int, const char *, uintmax_t, uintmax_t, int)
+inline void posix_fchownat_impl(int, char const* , uintmax_t, uintmax_t, int)
 {
 	throw_posix_error(ENOTSUP);
 }
 #else
-inline void posix_fchownat_impl(int dirfd, const char *pathname, uintmax_t owner, uintmax_t group, int flags)
+inline void posix_fchownat_impl(int dirfd, char const* pathname, uintmax_t owner, uintmax_t group, int flags)
 {
 	if constexpr(sizeof(uintmax_t)>sizeof(uid_t))
 	{
@@ -120,12 +120,12 @@ inline void posix_fchownat_impl(int dirfd, const char *pathname, uintmax_t owner
 #endif
 
 #if defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)
-inline void posix_fchmodat_impl(int, const char *, mode_t, int)
+inline void posix_fchmodat_impl(int, char const* , mode_t, int)
 {
 	throw_posix_error(ENOTSUP);
 }
 #else
-inline void posix_fchmodat_impl(int dirfd, const char *pathname, mode_t mode, int flags)
+inline void posix_fchmodat_impl(int dirfd, char const* pathname, mode_t mode, int flags)
 {
 	system_call_throw_error(
 #if defined(__linux__)
@@ -137,30 +137,42 @@ inline void posix_fchmodat_impl(int dirfd, const char *pathname, mode_t mode, in
 }
 #endif
 
-inline posix_file_status posix_fstatat_impl(int dirfd, const char *pathname, int flags)
+inline posix_file_status posix_fstatat_impl(int dirfd, char const* pathname, int flags)
 {
-#if defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
+#if defined(__linux__)
+
+#if !defined(__MLIBC_O_CLOEXEC) && (defined(__NR_newfstatat) || defined(__NR_fstatat64))
 	struct stat64 buf;
 #else
 	struct stat buf;
 #endif
+#if defined(__NR_newfstatat) || defined(__NR_fstatat64) || defined(__NR_fstatat)
 	system_call_throw_error(
-#if defined(__linux__)
 	system_call<
 #if defined(__NR_newfstatat)
 	__NR_newfstatat
-#else
+#elif defined(__NR_fstatat64)
 	__NR_fstatat64
-#endif
-	,int>
 #else
-	::fast_io::posix::libc_fstatat
+	__NR_fstatat
 #endif
-	(dirfd,pathname,__builtin_addressof(buf),flags));
+	,int>(dirfd,pathname,__builtin_addressof(buf),flags));
+
+#else
+	if((::fast_io::posix::libc_fstatat(dirfd,pathname,__builtin_addressof(buf),flags)) < 0)
+	{
+		throw_posix_error();
+	}
+#endif
+
+#else
+	struct stat buf;
+	system_call_throw_error(::fast_io::posix::libc_fstatat(dirfd,pathname,__builtin_addressof(buf),flags));
+#endif
 	return struct_stat_to_posix_file_status(buf);
 }
 
-inline void posix_mkdirat_impl(int dirfd, const char *pathname, mode_t mode)
+inline void posix_mkdirat_impl(int dirfd, char const* pathname, mode_t mode)
 {
 	system_call_throw_error(
 #if defined(__linux__)
@@ -174,13 +186,13 @@ inline void posix_mkdirat_impl(int dirfd, const char *pathname, mode_t mode)
 }
 #if 0
 #if (defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)) || defined(__DARWIN_C_LEVEL)
-inline void posix_mknodat_impl(int, const char *, mode_t,std::uintmax_t)
+inline void posix_mknodat_impl(int, char const* , mode_t,std::uintmax_t)
 {
 	throw_posix_error(ENOTSUP);
 }
 #else
 
-inline void posix_mknodat_impl(int dirfd, const char *pathname, mode_t mode,std::uintmax_t dev)
+inline void posix_mknodat_impl(int dirfd, char const* pathname, mode_t mode,std::uintmax_t dev)
 {
 	if constexpr(sizeof(std::uintmax_t)>sizeof(dev_t))
 	{
