@@ -24,6 +24,7 @@
 - mips-abi64
 - avr
 - ia64
+- loongarch64
 - All other architectures should work, they just aren't tested due to time not being infinite.
 
 ## Platform Support
