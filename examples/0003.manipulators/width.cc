@@ -3,7 +3,7 @@
 int main()
 {
 	using namespace fast_io::mnp;
-	println(left_width("hello",20));
-	println(middle_width("hello",20));
-	println(right_width("hello",20));
+	println(left("hello",20));
+	println(middle("hello",20));
+	println(right("hello",20));
 }
