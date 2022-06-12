@@ -241,7 +241,17 @@ inline bool bsd_underflow_impl(FILE* __restrict fp)
 	--fpp->_p;
 	return eof;
 #else
-	bool eof{bsd_srget(fp)!=EOF};
+	bool eof{
+#if defined(__DARWIN_C_LEVEL)
+#if __DARWIN_C_LEVEL >= 199506L
+	::fast_io::noexcept_call(::__srget,fp)
+#else
+	::fast_io::noexcept_call(::fgetc,fp)
+#endif
+#else
+bsd_srget(fp)
+#endif
+!=EOF};
 	if(!eof&&ferror_unlocked(fp))[[unlikely]]
 		throw_posix_error();
 	++fp->_r;
