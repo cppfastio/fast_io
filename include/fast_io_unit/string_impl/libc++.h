@@ -1,14 +1,12 @@
 ﻿#pragma once
-
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC system_header
+#endif
 /*
 https://github.com/llvm-mirror/libcxx/blob/78d6a7767ed57b50122a161b91f59f19c9bd0d19/include/string#L703
 
 */
-/*
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC system_header
-#endif
-*/
+
 namespace fast_io::details::string_hack
 {
 
@@ -19,7 +17,6 @@ struct
 #endif
 model
 {
-
     typedef _Traits                                      traits_type;
     typedef _CharT                                       value_type;
     typedef _Allocator                                   allocator_type;
@@ -35,16 +32,9 @@ model
     {
         pointer   __data_;
         size_type __size_;
-        size_type __cap_;
+        size_type __cap_ : sizeof(size_type) * CHAR_BIT - 1;
+        size_type __is_long_ : 1;
     };
-
-#ifdef _LIBCPP_BIG_ENDIAN
-    static const size_type __short_mask = 0x01;
-    static const size_type __long_mask  = 0x1ul;
-#else  // _LIBCPP_BIG_ENDIAN
-    static const size_type __short_mask = 0x80;
-    static const size_type __long_mask  = ~(size_type(~0) >> 1);
-#endif  // _LIBCPP_BIG_ENDIAN
 
     enum {__min_cap = (sizeof(__long) - 1)/sizeof(value_type) > 2 ?
                       (sizeof(__long) - 1)/sizeof(value_type) : 2};
@@ -52,40 +42,30 @@ model
     struct __short
     {
         value_type __data_[__min_cap];
-        struct __pad
-            : std::__padding<value_type>
-        {
-            unsigned char __size_;
-        }pad;
+        unsigned char __padding_[sizeof(value_type) - 1];
+        unsigned char __size_ : 7;
+        unsigned char __is_long_ : 1;
     };
+
 
 #else
 
     struct __long
     {
-        size_type __cap_;
+        size_type __is_long_ : 1;
+        size_type __cap_ : sizeof(size_type) * CHAR_BIT - 1;
         size_type __size_;
         pointer   __data_;
     };
-
-#ifdef _LIBCPP_BIG_ENDIAN
-    static const size_type __short_mask = 0x80;
-    static const size_type __long_mask  = ~(size_type(~0) >> 1);
-#else  // _LIBCPP_BIG_ENDIAN
-    static const size_type __short_mask = 0x01;
-    static const size_type __long_mask  = 0x1ul;
-#endif  // _LIBCPP_BIG_ENDIAN
 
     enum {__min_cap = (sizeof(__long) - 1)/sizeof(value_type) > 2 ?
                       (sizeof(__long) - 1)/sizeof(value_type) : 2};
 
     struct __short
     {
-        union
-        {
-            unsigned char __size_;
-            value_type __lx;
-        };
+        unsigned char __is_long_ : 1;
+        unsigned char __size_ : 7;
+        char __padding_[sizeof(value_type) - 1];
         value_type __data_[__min_cap];
     };
 
@@ -126,34 +106,14 @@ inline decltype(auto) hack_rep(std::basic_string<elem,traits,alloc>& str) noexce
 }
 
 template<typename elem,typename traits,typename alloc>
-inline bool is_long(std::basic_string<elem,traits,alloc>& str) noexcept
-{
-	using model_t = model<elem,traits,alloc>;
-	decltype(auto) __r_{hack_rep(str)};
-	{return bool(__r_.__s.__size_ & model_t::__short_mask);}
-}
-
-template<typename elem,typename traits,typename alloc>
 inline void set_size(std::basic_string<elem,traits,alloc>& str,typename std::basic_string<elem,traits,alloc>::size_type s) noexcept
 {
 	decltype(auto) __r_{hack_rep(str)};
-	if (is_long(str))
+	if (bool(__r_.__s.__is_long_))
 		__r_.__l.__size_=s;
 	else
 	{
-#ifdef _LIBCPP_ABI_ALTERNATE_STRING_LAYOUT
-#ifdef _LIBCPP_BIG_ENDIAN
-        	__r_.__s.__size_ = (unsigned char)(s << 1);
-#else
-	        __r_.__s.__size_ = (unsigned char)(s);
-#endif
-#else
-#ifdef _LIBCPP_BIG_ENDIAN
-        	__r_.__s.__size_ = (unsigned char)(s);
-#else
-	        __r_.__s.__size_ = (unsigned char)(s << 1);
-#endif
-#endif
+        __r_.__s.__size_ = (unsigned char)(s);
 	}
 }
 
@@ -170,6 +130,5 @@ inline constexpr std::size_t local_capacity() noexcept
     constexpr std::size_t mcapminus1{static_cast<std::size_t>(model_type::__min_cap-static_cast<std::size_t>(1u))};
     return mcapminus1;
 }
-
 
 }
