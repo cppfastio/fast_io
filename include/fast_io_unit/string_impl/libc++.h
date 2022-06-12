@@ -97,11 +97,11 @@ inline decltype(auto) hack_rep(std::basic_string<elem,traits,alloc>& str) noexce
 {
 	using model_t = model<elem,traits,alloc>;
 	using __rep = typename model_t::__rep;
-    using alias_pointer
+	using alias_pointer
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
 #endif
-    = typename ::std::__compressed_pair<__rep, alloc>*;
+	= typename ::std::__compressed_pair<__rep, alloc>*;
 	return reinterpret_cast<alias_pointer>(reinterpret_cast<std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,__r_))->first();
 }
 
@@ -113,7 +113,7 @@ inline void set_size(std::basic_string<elem,traits,alloc>& str,typename std::bas
 		__r_.__l.__size_=s;
 	else
 	{
-        __r_.__s.__size_ = (unsigned char)(s);
+		__r_.__s.__size_ = (unsigned char)(s);
 	}
 }
 
@@ -127,8 +127,8 @@ template<typename T>
 inline constexpr std::size_t local_capacity() noexcept
 {
 	using model_type = model<typename T::value_type,typename T::traits_type,typename T::allocator_type>;
-    constexpr std::size_t mcapminus1{static_cast<std::size_t>(model_type::__min_cap-static_cast<std::size_t>(1u))};
-    return mcapminus1;
+	constexpr std::size_t mcapminus1{static_cast<std::size_t>(model_type::__min_cap-static_cast<std::size_t>(1u))};
+	return mcapminus1;
 }
 
 }
