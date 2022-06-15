@@ -101,7 +101,7 @@ Goal: Print out ten million integers from 0 to 10M to file. Then reopen that fil
 
 All benchmarks are in benchmarks/0000.10m_size_t/unit.
 
-Notice: I modified libstdc++'s BUFSIZ 1048576 due to BUFSIZE is too small (512 bytes) for MinGW-W64, or it performs horribly.
+Notice: I modified libstdc++'s BUFSIZ 1048576 due to BUFSIZ is too small (512 bytes) for MinGW-W64, or it performs horribly.
 
 
 | Platform                       |        Windows          |MinGW-W64 GCC 11.0.0   |   MSVCRT + libstdc++                                 |
