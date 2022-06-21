@@ -1,7 +1,9 @@
 ﻿#pragma once
 
 #if ((defined(_WIN32)&&!defined(__WINE__))&&!defined(__CYGWIN__)) || defined(__MSDOS__)
-#if __has_include(<io.h>)
+#if __has_include(<corecrt_io.h>)
+#include<corecrt_io.h>
+#elif __has_include(<io.h>)
 #include<io.h>
 #endif
 #endif
