@@ -181,7 +181,6 @@ inline pyobject_file concatln_pyobject_file(Args&& ...args)
 
 inline pyobject_file print_alias_define(io_alias_t,pyobject_io_observer pyiob) noexcept
 {
-	debug_println(std::source_location::current()," ",pyiob.p->ob_refcnt);
 	pyobject_file pyob_repr{::fast_io::noexcept_call(::fast_io::details::pyobject_repr_model_impl,pyiob.p)};
 	return pyobject_file(::fast_io::details::pyunicode_asencodedstring_impl(
 		pyob_repr.p,reinterpret_cast<char const*>(u8"utf-8"),reinterpret_cast<char const*>(u8"~E~")));
