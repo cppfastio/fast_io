@@ -42,6 +42,17 @@ This is an example to explain how fast_io's files work with each other, and how 
 #else
 	"Unknown C++ compiler\n"
 #endif
+#if defined(__GLIBC__)
+	"GNU C Library ", __GLIBC__,".",__GLIBC_MINOR__, "\n"
+#elif defined(__CYGWIN__) || defined(__NEWLIB__)
+	"Newlib cygwin\n"
+#elif defined(_WIN32) && !defined(__WINE__)
+#if defined(_UCRT) || defined(_MSC_VER)
+	"Universal CRT\n"
+#elif defined(__MSVCRT_VERSION__)
+	"MSVCRT 0x",fast_io::mnp::hex(__MSVCRT_VERSION__),"\n"
+#endif
+#endif
 #if defined(_LIBCPP_VERSION)
 	"LLVM libc++ ", _LIBCPP_VERSION, "\n"
 #elif defined(__GLIBCXX__)
