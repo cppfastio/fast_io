@@ -44,7 +44,7 @@ This potentially contains format string vuln.
 #if defined(_LIBCPP_VERSION)
 	"LLVM libc++ ", _LIBCPP_VERSION, "\n"
 #elif defined(__GLIBCXX__)
-	"GCC libstdc++ ",_GLIBCXX_RELEASE," ", __GLIBCXX__, "\n"
+	"GNU C++ Library ",_GLIBCXX_RELEASE," ", __GLIBCXX__, "\n"
 #elif defined(_MSVC_STL_UPDATE)
 	"Microsoft Visual C++ STL ", _MSVC_STL_UPDATE, "\n"
 #else
