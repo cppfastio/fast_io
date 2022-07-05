@@ -24,10 +24,6 @@
 //#include"fast_io_crypto/hash/intrin_include.h"
 #include"fast_io_crypto/hash/impl.h"
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
-#include"fast_io_crypto/platforms/impl.h"
-#endif
-
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
 #endif
