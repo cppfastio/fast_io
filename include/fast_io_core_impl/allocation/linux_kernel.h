@@ -3,15 +3,15 @@
 namespace fast_io
 {
 
-extern void* linux_kernel_kmalloc(::std::size_t,int unsigned) noexcept __asm__("kmalloc");
-
-extern void* linux_kernel_kcalloc(::std::size_t,::std::size_t,int unsigned) noexcept __asm__("kcalloc");
+extern void* linux_kernel_kmalloc(::std::size_t,int unsigned) noexcept __asm__("__kmalloc");
 
 extern void* linux_kernel_krealloc(void const*,::std::size_t,int unsigned) noexcept __asm__("krealloc");
 
 extern void linux_kernel_kfree(void const*) noexcept __asm__("kfree");
 
 inline constexpr int unsigned linux_kernel_gfp_kernel{0x400u | 0x800u | 0x40u | 0x80u};
+
+inline constexpr int unsigned linux_kernel_gfp_kernel_zero{linux_kernel_gfp_kernel|0x100u};
 
 class linux_kmalloc_allocator
 {
@@ -51,7 +51,7 @@ public:
 		{
 			n=1;
 		}
-		void* p = linux_kernel_kcalloc(1,n,linux_kernel_gfp_kernel);
+		void* p = linux_kernel_kmalloc(n,linux_kernel_gfp_kernel_zero);
 		if(p==nullptr)
 		{
 			::fast_io::fast_terminate();
