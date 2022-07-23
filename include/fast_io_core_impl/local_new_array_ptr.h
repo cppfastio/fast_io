@@ -17,15 +17,7 @@ inline constexpr char_type* allocate_iobuf_space(std::size_t buffer_size) noexce
 	else
 #endif
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_operator_new)
-		return static_cast<char_type*>(__builtin_operator_new(intrinsics::cal_allocation_size_or_die<char_type>(buffer_size)));
-#else
-		return static_cast<char_type*>(operator new(intrinsics::cal_allocation_size_or_die<char_type>(buffer_size)));
-#endif
-#else
-		return static_cast<char_type*>(operator new(intrinsics::cal_allocation_size_or_die<char_type>(buffer_size)));
-#endif
+		return static_cast<char_type*>(native_typed_thread_local_allocator<char_type>::allocate(buffer_size));
 	}
 }
 
@@ -34,28 +26,7 @@ inline void deallocate_with_secure_clear(void* ptr,[[maybe_unused]] std::size_t 
 {
 	if constexpr(nsecure_clear)
 		secure_clear(ptr,buffer_bytes);
-#if __cpp_sized_deallocation >= 201309L
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_operator_delete)
-	__builtin_operator_delete(ptr,buffer_bytes);
-#else
-	operator delete(ptr,buffer_bytes);
-#endif
-
-#else
-	operator delete(ptr,buffer_bytes);
-#endif
-#else
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_operator_delete)
-	__builtin_operator_delete(ptr);
-#else
-	operator delete(ptr);
-#endif
-#else
-	operator delete(ptr);
-#endif
-#endif
+	native_thread_local_allocator::deallocate(ptr);
 }
 
 template<bool nsecure_clear,typename char_type>
@@ -73,7 +44,9 @@ inline constexpr void deallocate_iobuf_space(char_type* ptr,[[maybe_unused]] std
 	else
 #endif
 	{
-		deallocate_with_secure_clear<nsecure_clear>(ptr,buffer_size*sizeof(char_type));
+		if constexpr(nsecure_clear)
+			secure_clear(ptr,buffer_size*sizeof(char_type));
+		native_typed_thread_local_allocator<char_type>::deallocate(ptr);
 	}
 }
 
@@ -83,6 +56,7 @@ struct buffer_alloc_arr_ptr
 	T* ptr{};
 	std::size_t size{};
 	constexpr buffer_alloc_arr_ptr() noexcept = default;
+	explicit
 #if __cpp_constexpr >=201907L && __cpp_constexpr_dynamic_alloc >= 201907L && (__cpp_lib_is_constant_evaluated >=201811L || __cpp_if_consteval >= 202106L)
 	constexpr
 #endif
