@@ -43,10 +43,37 @@ __asm__("RtlFreeHeap")
 #endif
 ;
 
-#if 0
-/*
-Unknown reason RtlGetProcessHeap is not available. Use GetProcessHeap instead
-*/
+struct peb_ldr_data;
+struct rtl_user_process_parameters;
+using pps_post_process_init_routine = void (__stdcall*)(void)noexcept;
+
+struct peb
+{
+char unsigned InheritedAddressSpace;
+char unsigned ReadImageFileExecOptions;
+char unsigned BeingDebugged;
+char unsigned SpareBool;
+void* Mutant;
+void* ImageBaseAddress;
+peb_ldr_data* Ldr;
+rtl_user_process_parameters* ProcessParameters;//PRTL_USER_PROCESS_PARAMETERS
+void* SubSystemData;
+void* ProcessHeap;
+void* FastPebLock;
+void* FastPebLockRoutine;
+void* FastPebUnlockRoutine;
+::std::uint_least32_t Reserved6;
+void* Reserved7;
+::std::uint_least32_t Reserved8;
+::std::uint_least32_t AtlThunkSListPtr32;
+void* Reserved9[45];
+char unsigned Reserved10[96];
+pps_post_process_init_routine PostProcessInitRoutine;
+char unsigned Reserved11[128];
+void* Reserved12[1];
+::std::uint_least32_t SessionId;
+};
+
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
@@ -55,20 +82,19 @@ __declspec(dllimport)
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
-extern void* __stdcall RtlGetProcessHeap() noexcept
+extern peb* __stdcall RtlGetCurrentPeb() noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
-__asm__("RtlGetProcessHeap@0")
+__asm__("RtlGetCurrentPeb@0")
 #else
-__asm__("_RtlGetProcessHeap@0")
+__asm__("_RtlGetCurrentPeb@0")
 #endif
 #else
-__asm__("RtlGetProcessHeap")
+__asm__("RtlGetCurrentPeb")
 #endif
 #endif
 ;
-#endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -89,10 +115,19 @@ __asm__("RtlReAllocateHeap")
 #endif
 ;
 
+#if __has_cpp_attribute(__gnu__::__const__)
+[[__gnu__::__const__]]
+#endif
+inline void* rtl_get_process_heap() noexcept
+{
+	return ::fast_io::nt::RtlGetCurrentPeb()->ProcessHeap;
+}
+
 }
 
 namespace details
 {
+
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 [[__gnu__::__returns_nonnull__]]
 #endif
@@ -103,7 +138,7 @@ inline void* nt_rtlallocate_heap_common_impl(::std::size_t to_allocate,::std::ui
 		to_allocate=1;
 	}
 	auto p{::fast_io::nt::RtlAllocateHeap(
-		::fast_io::win32::GetProcessHeap(),
+		::fast_io::nt::rtl_get_process_heap(),
 		flag,to_allocate)};
 	if(p==nullptr)
 	{
@@ -111,6 +146,7 @@ inline void* nt_rtlallocate_heap_common_impl(::std::size_t to_allocate,::std::ui
 	}
 	return p;
 }
+
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 [[__gnu__::__returns_nonnull__]]
 #endif
@@ -128,7 +164,7 @@ inline void* nt_rtlreallocate_heap_common_impl(void* addr,::std::size_t n,::std:
 		return nt_rtlallocate_heap_common_impl(n,flag);
 	}
 	auto p{::fast_io::nt::RtlReAllocateHeap(
-		::fast_io::win32::GetProcessHeap(),
+		::fast_io::nt::rtl_get_process_heap(),
 		flag,addr,n)};
 	if(p==nullptr)
 	{
@@ -160,18 +196,12 @@ public:
 	{
 		return ::fast_io::details::nt_rtlreallocate_heap_common_impl(addr,n,0u);
 	}
-#if 0
-	static inline void* reallocate_zero(void* addr,::std::size_t n) noexcept
-	{
-		return ::fast_io::details::nt_rtlreallocate_heap_common_impl(addr,n,0x00000008u);
-	}
-#endif
 	static inline void deallocate(void* addr) noexcept
 	{
 		if(addr==nullptr)
 			return;
 		::fast_io::nt::RtlFreeHeap(
-			::fast_io::win32::GetProcessHeap(),
+			::fast_io::nt::rtl_get_process_heap(),
 			0u,addr);
 	}
 };
