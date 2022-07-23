@@ -9,7 +9,7 @@ extern void* linux_kernel_kcalloc(::std::size_t,::std::size_t,int unsigned) noex
 
 extern void* linux_kernel_krealloc(void const*,::std::size_t,int unsigned) noexcept __asm__("krealloc");
 
-extern void* linux_kernel_kfree(void const*) noexcept __asm__("kfree");
+extern void linux_kernel_kfree(void const*) noexcept __asm__("kfree");
 
 inline constexpr int unsigned linux_kernel_gfp_kernel{0x400u | 0x800u | 0x40u | 0x80u};
 
