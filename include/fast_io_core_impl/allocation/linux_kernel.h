@@ -38,7 +38,6 @@ public:
 		{
 			n=1;
 		}
-		::std::size_t const to_allocate{n};
 		p=linux_kernel_krealloc(p,n,linux_kernel_gfp_kernel);
 		if(p==nullptr)
 		{
