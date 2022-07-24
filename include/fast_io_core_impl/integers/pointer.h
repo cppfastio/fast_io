@@ -141,8 +141,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,mani
 	return 1;
 }
 
-template<std::integral char_type,std::integral pchar_type,::fast_io::freestanding::contiguous_iterator caiter,typename T>
-inline constexpr caiter print_reserve_define(io_reserve_type_t<char_type,manipulators::chvw_t<pchar_type>>,caiter iter,T ch) noexcept
+template<std::integral char_type,std::integral pchar_type,typename T>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,manipulators::chvw_t<pchar_type>>,char_type* iter,T ch) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	*iter=static_cast<char_type>(static_cast<unsigned_char_type>(ch.reference));

@@ -530,11 +530,11 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,::fa
 	}
 }
 
-template<::fast_io::manipulators::digest_format d,::fast_io::manipulators::crypto_hash_context T,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(
-	::fast_io::io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,
+template<::fast_io::manipulators::digest_format d,::fast_io::manipulators::crypto_hash_context T,::std::integral char_type>
+inline constexpr char_type* print_reserve_define(
+	::fast_io::io_reserve_type_t<char_type,
 	::fast_io::manipulators::hash_digest_t<d,T const&>>,
-	Iter iter,::fast_io::manipulators::hash_digest_t<d,T const&> t) noexcept
+	char_type* iter,::fast_io::manipulators::hash_digest_t<d,T const&> t) noexcept
 {
 	return ::fast_io::details::prv_srv_hash_df_impl<d>(iter,t.reference);
 }
@@ -546,11 +546,11 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,::fa
 {
 	return ::fast_io::details::crypto_hash_resrv_size_cache<d,std::remove_cvref_t<T>::digest_size>;
 }
-template<::fast_io::manipulators::digest_format d,::fast_io::manipulators::crypto_hash_context T,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(
-	::fast_io::io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,
+template<::fast_io::manipulators::digest_format d,::fast_io::manipulators::crypto_hash_context T,::std::integral char_type>
+inline constexpr char_type* print_reserve_define(
+	::fast_io::io_reserve_type_t<char_type,
 	::fast_io::manipulators::hash_compress_t<d,T>>,
-	Iter iter,::fast_io::manipulators::hash_compress_t<d,T> t) noexcept
+	char_type* iter,::fast_io::manipulators::hash_compress_t<d,T> t) noexcept
 {
 	return ::fast_io::details::prv_srv_hash_compress_df_impl<d,T>(iter,t.base,t.len);
 }

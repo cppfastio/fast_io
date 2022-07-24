@@ -696,11 +696,10 @@ inline constexpr auto generate_base_prefix_array() noexcept
 template<std::integral char_type,std::size_t base>
 inline constexpr auto base_prefix_array{generate_base_prefix_array<char_type,base>()};
 
-template<std::size_t base,bool uppercase_showbase,::fast_io::freestanding::random_access_iterator Iter>
-constexpr Iter print_reserve_show_base_impl(Iter iter)
+template<std::size_t base,bool uppercase_showbase,::std::integral char_type>
+constexpr char_type* print_reserve_show_base_impl(char_type* iter)
 {
 	static_assert(2<=base&&base<=36);
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(base==2)
 	{
 		if constexpr(uppercase_showbase)
@@ -802,10 +801,9 @@ constexpr Iter print_reserve_show_base_impl(Iter iter)
 	return iter;
 }
 
-template<std::size_t base,bool uppercase,bool ryu_mode=false,::fast_io::freestanding::random_access_iterator Iter,typename T>
-constexpr void print_reserve_integral_main_impl(Iter iter,T t,std::size_t len)
+template<std::size_t base,bool uppercase,bool ryu_mode=false,::std::integral char_type,typename T>
+constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t len)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(base<=10&&uppercase)
 	{
 		print_reserve_integral_main_impl<base,false,ryu_mode>(iter,t,len);//prevent duplications
@@ -910,8 +908,8 @@ constexpr void print_reserve_integral_main_impl(Iter iter,T t,std::size_t len)
 	}
 }
 
-template<bool full,std::size_t base,bool uppercase,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral T>
-constexpr Iter print_reserve_integral_withfull_main_impl(Iter first,T u)
+template<bool full,std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
+constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,T u)
 {
 	if constexpr(base<=10&&uppercase)
 	{
@@ -930,13 +928,9 @@ constexpr Iter print_reserve_integral_withfull_main_impl(Iter first,T u)
 		}
 		else
 		{
-			if constexpr(::std::is_pointer_v<Iter>&&base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
+			if constexpr(base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
 			{
 				return ::fast_io::details::jeaiii::jeaiii_main(first,u);
-			}
-			else if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>&&base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
-			{
-				return ::fast_io::details::jeaiii::jeaiii_main(::fast_io::freestanding::to_address(first),u)-::fast_io::freestanding::to_address(first)+first;
 			}
 			else
 			{
@@ -970,8 +964,8 @@ template<std::size_t base,
 	bool showpos=false,
 	bool uppercase=false,
 	bool full=false,
-	typename int_type,::fast_io::freestanding::random_access_iterator Iter>
-constexpr Iter print_reserve_integral_define(Iter first,int_type t)
+	typename int_type,::std::integral char_type>
+constexpr char_type* print_reserve_integral_define(char_type* first,int_type t)
 {
 	if constexpr(base<=10&&uppercase)
 	{
@@ -980,7 +974,6 @@ constexpr Iter print_reserve_integral_define(Iter first,int_type t)
 	else
 	{
 		static_assert((2<=base)&&(base<=36));
-		using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 		if constexpr(std::same_as<bool,std::remove_cvref_t<int_type>>)
 		{
 			if constexpr(showpos)
@@ -1314,10 +1307,9 @@ bool full
 >
 inline constexpr auto nullptr_print_optimization_call_cache{nullptr_print_optimization_call_impl<char_type,base,showbase,uppercase_showbase,showpos,uppercase,full>()};
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_boolalpha_impl(Iter iter,bool b)
+template<bool uppercase, ::std::integral char_type>
+inline constexpr char_type* print_reserve_boolalpha_impl(char_type* iter,bool b)
 {
-	using char_type = std::remove_cvref_t<::fast_io::freestanding::iter_value_t<Iter>>;
 	if(b)
 	{
 		if constexpr(std::same_as<char_type,char>)
@@ -1396,10 +1388,9 @@ inline constexpr Iter print_reserve_boolalpha_impl(Iter iter,bool b)
 	}
 }
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_nullptr_alphabet_impl(Iter iter)
+template<bool uppercase, ::std::integral char_type>
+inline constexpr char_type* print_reserve_nullptr_alphabet_impl(char_type* iter)
 {
-	using char_type = std::remove_cvref_t<::fast_io::freestanding::iter_value_t<Iter>>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		if constexpr(uppercase)
@@ -1492,12 +1483,12 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,T>) 
 		return details::print_integer_reserved_size_cache<10,false,false,std::remove_cvref_t<T>>;
 }
 
-template<freestanding::random_access_iterator Iter,typename T>
+template<::std::integral char_type,typename T>
 requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]//always inline to reduce inline depth in GCC and LLVM clang
 #endif
-inline constexpr Iter print_reserve_define(io_reserve_type_t<freestanding::iter_value_t<Iter>,T>,Iter iter,T t) noexcept
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,T>, char_type* iter,T t) noexcept
 {
 	if constexpr(std::same_as<std::remove_cv_t<T>,std::byte>)
 		return details::print_reserve_integral_define<10,false,false,false,false,false>(iter,static_cast<char8_t>(t));
@@ -1525,12 +1516,12 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,mani
 		return details::print_integer_reserved_size_cache<flags.base,flags.showbase,flags.showpos,T>;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,manipulators::scalar_flags flags,typename T>
+template<::std::integral char_type,manipulators::scalar_flags flags,typename T>
 requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>||std::same_as<std::remove_cvref_t<T>,std::nullptr_t>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]//always inline to reduce inline depth in GCC and LLVM clang
 #endif
-constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,::fast_io::manipulators::scalar_manip_t<flags,T>>,Iter iter,::fast_io::manipulators::scalar_manip_t<flags,T> t) noexcept
+constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,T>>, char_type* iter,::fast_io::manipulators::scalar_manip_t<flags,T> t) noexcept
 {
 	if constexpr(flags.alphabet)
 	{
@@ -1542,7 +1533,7 @@ constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::i
 	}
 	else if constexpr(std::same_as<std::remove_cv_t<T>,std::nullptr_t>)
 	{
-		constexpr auto& cache{details::nullptr_print_optimization_call_cache<::fast_io::freestanding::iter_value_t<Iter>,flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>};
+		constexpr auto& cache{details::nullptr_print_optimization_call_cache<char_type,flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>};
 		constexpr std::size_t n{cache.size()};
 		return details::non_overlapped_copy_n(cache.element,n,iter);
 	}

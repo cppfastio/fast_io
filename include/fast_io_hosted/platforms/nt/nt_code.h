@@ -37,11 +37,10 @@ namespace details
 {
 inline constexpr ::fast_io::manipulators::scalar_flags nt_errorflags{.base=16,.full=true,.floating=::fast_io::manipulators::floating_format::fixed};
 
-template<bool enable=true,::fast_io::freestanding::contiguous_iterator Iter>
+template<bool enable=true,::std::integral char_type>
 requires (enable)
-inline constexpr Iter print_reserve_nt_error_impl(Iter iter,std::uint_least32_t ntstatus) noexcept
+inline constexpr char_type* print_reserve_nt_error_impl(char_type* iter,std::uint_least32_t ntstatus) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 		iter=copy_string_literal("[nt:0x",iter);
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -80,8 +79,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,nt_c
 	}
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,nt_code>,Iter iter,nt_code e) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,nt_code>, char_type* iter,nt_code e) noexcept
 {
 	return ::fast_io::details::print_reserve_nt_error_impl(iter,e.ntstatus);
 }

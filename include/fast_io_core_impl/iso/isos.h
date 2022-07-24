@@ -6,8 +6,8 @@ namespace fast_io
 namespace details
 {
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter output_iso8601_subseconds_main(Iter iter,std::uint_least64_t subseconds) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* output_iso8601_subseconds_main(char_type* iter,std::uint_least64_t subseconds) noexcept
 {
 	constexpr std::size_t digitsm1(std::numeric_limits<std::uint_least64_t>::digits10);
 	std::size_t sz(digitsm1);
@@ -17,10 +17,9 @@ inline constexpr Iter output_iso8601_subseconds_main(Iter iter,std::uint_least64
 	return iter;
 }
 
-template<bool comma=false,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter output_iso8601_subseconds(Iter iter,std::uint_least64_t subseconds) noexcept
+template<bool comma=false, ::std::integral char_type>
+inline constexpr char_type* output_iso8601_subseconds(char_type* iter,std::uint_least64_t subseconds) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	*iter=char_literal_v<(comma?u8',':u8'.'),char_type>;
 	++iter;
 	return output_iso8601_subseconds_main(iter,subseconds);

@@ -49,8 +49,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,fast
 
 namespace details
 {
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator raiter>
-inline constexpr raiter print_file_status_impl(raiter iter,fast_io::posix_file_status const& status)
+template<std::integral char_type>
+inline constexpr char_type* print_file_status_impl(char_type* iter,fast_io::posix_file_status const& status)
 {
 	if constexpr(std::same_as<char_type,char>)
 	{
@@ -255,8 +255,8 @@ inline constexpr raiter print_file_status_impl(raiter iter,fast_io::posix_file_s
 }
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator raiter>
-inline constexpr raiter print_reserve_define(io_reserve_type_t<char_type,fast_io::posix_file_status>,raiter iter,fast_io::posix_file_status const& status)
+template<std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,fast_io::posix_file_status>, char_type* iter,fast_io::posix_file_status const& status)
 {
 	return details::print_file_status_impl<char_type>(iter,status);
 }

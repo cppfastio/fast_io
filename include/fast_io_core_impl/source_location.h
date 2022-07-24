@@ -21,8 +21,7 @@ inline constexpr std::size_t print_reserve_size_source_location_impl(source_loca
 	return intrinsics::add_or_overflow_die_chain(location.file_name.len,location.function_name.len,total_uint_least32_t_rsv_size);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_source_location_impl(Iter iter,source_location_scatter location) noexcept
+inline constexpr char* print_reserve_define_source_location_impl(char* iter,source_location_scatter location) noexcept
 {
 	*(iter=non_overlapped_copy_n(location.file_name.base,location.file_name.len,iter))=':';
 	*(iter=print_reserve_define(io_reserve_type<char,std::uint_least32_t>,++iter,location.line))=':';
@@ -44,8 +43,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char,source_lo
 	return details::print_reserve_size_source_location_impl(location);
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<char,source_location_scatter>,Iter iter,source_location_scatter location) noexcept
+inline constexpr char* print_reserve_define(io_reserve_type_t<char,source_location_scatter>, char* iter,source_location_scatter location) noexcept
 {
 	return details::print_reserve_define_source_location_impl(iter,location);
 }

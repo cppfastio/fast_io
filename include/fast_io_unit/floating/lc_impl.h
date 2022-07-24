@@ -69,9 +69,9 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* a
 	return ::fast_io::details::lc_print_reserve_float_size_impl<char_type,flags,flt>(all);
 }
 
-template<freestanding::random_access_iterator Iter,manipulators::scalar_flags flags,details::my_floating_point flt>
+template<::std::integral char_type,manipulators::scalar_flags flags,details::my_floating_point flt>
 requires (flags.base==10)
-inline constexpr Iter print_reserve_define(basic_lc_all<freestanding::iter_value_t<Iter>> const* all,Iter iter,manipulators::scalar_manip_t<flags,flt> f) noexcept
+inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* all, char_type* iter,manipulators::scalar_manip_t<flags,flt> f) noexcept
 {
 	static_assert(manipulators::floating_format::general==flags.floating||
 		manipulators::floating_format::scientific==flags.floating||

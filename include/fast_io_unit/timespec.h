@@ -72,8 +72,8 @@ inline constexpr Iter timespec_print_impl(Iter it,struct timespec spc) noexcept
 
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
-constexpr Iter print_reserve_define(io_reserve_type_t<char_type,struct timespec>,Iter it,struct timespec spc) noexcept
+template<std::integral char_type>
+constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,struct timespec>, char_type* it,struct timespec spc) noexcept
 {
 	return details::timespec_print_impl<char_type>(it,spc);	
 }
