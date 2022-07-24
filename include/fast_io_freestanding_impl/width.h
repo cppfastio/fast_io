@@ -300,7 +300,7 @@ inline constexpr char_type* print_reserve_define_width_ch_impl(char_type* iter,T
 			}
 			else
 			{
-				Iter it{print_reserve_define(io_reserve_type<char_type,value_type>,iter,t)};
+				char_type* it{print_reserve_define(io_reserve_type<char_type,value_type>,iter,t)};
 				return handle_common_internal_ch(iter,it,wdt,fillch,print_define_internal_shift(io_reserve_type<char_type,value_type>,t));
 			}
 		}
@@ -319,7 +319,7 @@ inline constexpr char_type* print_reserve_define_width_ch_impl(char_type* iter,T
 		}
 		else
 		{
-			Iter it{print_reserve_define(io_reserve_type<char_type,value_type>,iter,t)};
+			char_type* it{print_reserve_define(io_reserve_type<char_type,value_type>,iter,t)};
 			return handle_common_ch<placement>(iter,it,wdt,fillch);
 		}
 	}
@@ -330,7 +330,7 @@ template<::fast_io::manipulators::scalar_placement placement,::std::integral cha
 requires std::is_trivially_copyable_v<T>
 inline constexpr char_type* print_reserve_define_width_impl(char_type* iter,T t,std::size_t wdt)
 {
-	return print_reserve_define_width_ch_impl<placement>(iter,t,wdt,char_literal_v<u8' ',::fast_io::freestanding::iter_value_t<Iter>>);
+	return print_reserve_define_width_ch_impl<placement>(iter,t,wdt,char_literal_v<u8' ',char_type>);
 }
 
 }

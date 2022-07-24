@@ -1533,7 +1533,7 @@ constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io:
 	}
 	else if constexpr(std::same_as<std::remove_cv_t<T>,std::nullptr_t>)
 	{
-		constexpr auto& cache{details::nullptr_print_optimization_call_cache<::fast_io::freestanding::iter_value_t<Iter>,flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>};
+		constexpr auto& cache{details::nullptr_print_optimization_call_cache<char_type,flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>};
 		constexpr std::size_t n{cache.size()};
 		return details::non_overlapped_copy_n(cache.element,n,iter);
 	}

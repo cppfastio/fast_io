@@ -675,9 +675,9 @@ inline constexpr std::size_t string_literal_size(char_type const(&)[n])
 	return n-1;
 }
 
-template<std::integral char_type,std::size_t n, ::std::integral char_type>
+template<std::integral char_type,std::size_t n,::fast_io::freestanding::random_access_iterator output_iter>
 requires(n!=0)
-inline constexpr char_type* copy_string_literal(char_type const(&s)[n], char_type* result)
+inline constexpr output_iter copy_string_literal(char_type const(&s)[n],output_iter result)
 {
 	details::non_overlapped_copy_n(s,n-1,result);
 	return result+(n-1);
