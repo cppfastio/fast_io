@@ -534,10 +534,9 @@ namespace details
 template<std::integral char_type>
 inline constexpr std::size_t print_reserve_size_timezone_impl_v{print_reserve_size(io_reserve_type<char_type,std::int_least32_t>)+static_cast<std::size_t>(4u)};
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_timezone_impl(Iter iter,std::int_least32_t timezone) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_timezone_impl(char_type* iter,std::int_least32_t timezone) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	std::uint_least64_t unsigned_tz{static_cast<std::uint_least64_t>(timezone)};
 	if(timezone<0)
 	{
@@ -566,10 +565,9 @@ inline constexpr Iter print_reserve_timezone_impl(Iter iter,std::int_least32_t t
 	return iter;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_iso8601_timestamp_impl(Iter iter,iso8601_timestamp const& timestamp) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_iso8601_timestamp_impl(char_type* iter,iso8601_timestamp const& timestamp) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	iter=chrono_year_impl(iter,timestamp.year);
 	*iter=char_literal_v<u8'-',char_type>;
 	++iter;
@@ -599,10 +597,9 @@ inline constexpr Iter print_reserve_iso8601_timestamp_impl(Iter iter,iso8601_tim
 	return iter;
 }
 
-template<bool comma=false,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_bsc_timestamp_impl(Iter iter,unix_timestamp timestamp) noexcept
+template<bool comma=false, ::std::integral char_type>
+inline constexpr char_type* print_reserve_bsc_timestamp_impl(char_type* iter,unix_timestamp timestamp) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	iter=print_reserve_define(io_reserve_type<char_type,std::int_least64_t>,iter,timestamp.seconds);
 	if(timestamp.subseconds)
 		iter=output_iso8601_subseconds<comma>(iter,timestamp.subseconds);
@@ -619,9 +616,9 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,iso8
 	return print_reserve_size(io_reserve_type<char_type,std::int_least64_t>)+16+print_reserve_size(io_reserve_type<char_type,std::uint_least64_t>)+::fast_io::details::print_reserve_size_timezone_impl_v<char_type>+3+2;
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter,std::int_least64_t off_to_epoch>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<char_type,basic_timestamp<off_to_epoch>>,
-		Iter iter,basic_timestamp<off_to_epoch> timestamp) noexcept
+template<std::integral char_type,std::int_least64_t off_to_epoch>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,basic_timestamp<off_to_epoch>>,
+		char_type* iter,basic_timestamp<off_to_epoch> timestamp) noexcept
 {
 	if constexpr(off_to_epoch==0)
 		return details::print_reserve_bsc_timestamp_impl(iter,timestamp);
@@ -629,8 +626,8 @@ inline constexpr Iter print_reserve_define(io_reserve_type_t<char_type,basic_tim
 		return details::print_reserve_bsc_timestamp_impl(iter,{timestamp.seconds,timestamp.subseconds});
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<char_type,iso8601_timestamp>,Iter iter,iso8601_timestamp const& timestamp) noexcept
+template<std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,iso8601_timestamp>,char_type* iter,iso8601_timestamp const& timestamp) noexcept
 {
 	return details::print_reserve_iso8601_timestamp_impl(iter,timestamp);
 }

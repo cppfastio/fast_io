@@ -80,8 +80,8 @@ inline constexpr std::size_t lc_format_alt_digits_len(basic_io_scatter_t<basic_i
 	}
 }
 
-template<std::integral T,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_format_alt_digits_print(basic_io_scatter_t<basic_io_scatter_t<char_type>> const& alt_digits,T value,Iter iter) noexcept
+template<std::integral T,std::integral char_type>
+inline constexpr char_type* lc_format_alt_digits_print(basic_io_scatter_t<basic_io_scatter_t<char_type>> const& alt_digits,T value, char_type* iter) noexcept
 {
 	std::size_t size_value{static_cast<std::size_t>(value)};
 	std::size_t alt_digits_len{alt_digits.len};
@@ -242,8 +242,8 @@ inline constexpr lc_time_ox_common_res lc_time_ox_common_impl(iso8601_timestamp 
 	return {0,true};
 }
 
-template<::fast_io::freestanding::input_or_output_iterator srcIter,::fast_io::freestanding::input_or_output_iterator Iter>
-inline constexpr Iter non_overlapped_copy_to_lowercase(srcIter first,srcIter last, Iter dest) noexcept
+template <::std::integral char_type>
+inline constexpr char_type* non_overlapped_copy_to_lowercase(char_type* __restrict first, char_type* last, char_type* __restrict dest) noexcept
 {
 	for(;first!=last;++first)
 	{
@@ -253,8 +253,8 @@ inline constexpr Iter non_overlapped_copy_to_lowercase(srcIter first,srcIter las
 	return dest;
 }
 
-template<std::integral char_type,::fast_io::freestanding::input_or_output_iterator Iter>
-inline constexpr Iter copy_scatter_to_lowercase(basic_io_scatter_t<char_type> const& scatter, Iter iter) noexcept
+template<std::integral char_type>
+inline constexpr char_type* copy_scatter_to_lowercase(basic_io_scatter_t<char_type> const& scatter, char_type* iter) noexcept
 {
 	return non_overlapped_copy_to_lowercase(scatter.base,scatter.base+scatter.len,iter);
 }
@@ -542,10 +542,9 @@ inline constexpr std::size_t lc_print_reserve_size_time_format_common_impl(basic
 	return value;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_copy_01_impl(Iter iter) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* lc_copy_01_impl(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr (std::same_as<char_type, char>)
 		return copy_string_literal("01", iter);
 	else if constexpr (std::same_as<char_type, wchar_t>)
@@ -558,10 +557,9 @@ inline constexpr Iter lc_copy_01_impl(Iter iter) noexcept
 		return copy_string_literal(u8"01", iter);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_copy_12_impl(Iter iter) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* lc_copy_12_impl(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 		return copy_string_literal("12",iter);
 	else if constexpr(std::same_as<char_type,wchar_t>)
@@ -574,10 +572,9 @@ inline constexpr Iter lc_copy_12_impl(Iter iter) noexcept
 		return copy_string_literal(u8"12",iter);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_copy_52_impl(Iter iter) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* lc_copy_52_impl(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr (std::same_as<char_type, char>)
 		return copy_string_literal("52", iter);
 	else if constexpr (std::same_as<char_type, wchar_t>)
@@ -590,10 +587,9 @@ inline constexpr Iter lc_copy_52_impl(Iter iter) noexcept
 		return copy_string_literal(u8"52", iter);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_copy_53_impl(Iter iter) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* lc_copy_53_impl(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr (std::same_as<char_type, char>)
 		return copy_string_literal("53", iter);
 	else if constexpr (std::same_as<char_type, wchar_t>)
@@ -606,8 +602,8 @@ inline constexpr Iter lc_copy_53_impl(Iter iter) noexcept
 		return copy_string_literal(u8"53", iter);
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_print_month_fmt_common(basic_io_scatter_t<char_type> const* month_array,Iter iter,std::uint_least8_t month)
+template<std::integral char_type>
+inline constexpr char_type* lc_print_month_fmt_common(basic_io_scatter_t<char_type> const* month_array, char_type* iter,std::uint_least8_t month)
 {
 	constexpr std::uint_least8_t twelve{12};
 	std::uint_least8_t month_minus1{month};
@@ -618,9 +614,8 @@ inline constexpr Iter lc_print_month_fmt_common(basic_io_scatter_t<char_type> co
 		return print_reserve_integral_define<10>(iter, month);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::integral char_type>
-requires std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>
-inline constexpr Iter lc_print_reserve_define_time_fmt_common_impl(basic_lc_time<char_type> const& t,Iter iter,iso8601_timestamp const& tsp,basic_io_scatter_t<char_type> const& format_str)
+template<std::integral char_type>
+inline constexpr char_type* lc_print_reserve_define_time_fmt_common_impl(basic_lc_time<char_type> const& t, char_type* iter,iso8601_timestamp const& tsp,basic_io_scatter_t<char_type> const& format_str)
 {
 	for (char_type const* i{format_str.base},*end_it{i+format_str.len};i!=end_it;++i)
 	{
@@ -1205,10 +1200,10 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* a
 	}
 }
 
-template<::fast_io::manipulators::scalar_flags flags,::fast_io::freestanding::random_access_iterator Iter>
+template<::fast_io::manipulators::scalar_flags flags, ::std::integral char_type>
 requires (static_cast<std::uint_least8_t>(static_cast<std::uint_least8_t>(flags.time_flag)-static_cast<std::uint_least8_t>(1u))<
 	static_cast<std::uint_least8_t>(8u))
-inline constexpr Iter print_reserve_define(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* all,Iter iter,
+inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* all, char_type* iter,
 	::fast_io::manipulators::scalar_manip_t<flags,iso8601_timestamp const&> tsp) noexcept
 {
 	constexpr manipulators::lc_time_flag current_lc_time_flag{flags.time_flag};

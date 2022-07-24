@@ -4,10 +4,10 @@ namespace fast_io
 {
 namespace details
 {
-template<::fast_io::freestanding::forward_iterator Iter>
-inline constexpr Iter print_reserve_parse_code_impl(Iter iter,parse_code code) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_parse_code_impl(char_type* iter,parse_code code) noexcept
 {
-	if constexpr(std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char>)
+	if constexpr(std::same_as<char_type,char>)
 	{
 	switch(code)
 	{
@@ -25,7 +25,7 @@ inline constexpr Iter print_reserve_parse_code_impl(Iter iter,parse_code code) n
 		return copy_string_literal("unknown",iter);
 	}
 	}
-	else if constexpr(std::same_as<::fast_io::freestanding::iter_value_t<Iter>,wchar_t>)
+	else if constexpr(std::same_as<char_type,wchar_t>)
 	{
 	switch(code)
 	{
@@ -43,7 +43,7 @@ inline constexpr Iter print_reserve_parse_code_impl(Iter iter,parse_code code) n
 		return copy_string_literal(L"unknown",iter);
 	}
 	}
-	else if constexpr(std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char16_t>)
+	else if constexpr(std::same_as<char_type,char16_t>)
 	{
 	switch(code)
 	{
@@ -89,8 +89,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,pars
 	return 16;
 }
 
-template<::fast_io::freestanding::forward_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,parse_code>,Iter iter,parse_code code) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,parse_code>, char_type* iter,parse_code code) noexcept
 {
 	return details::print_reserve_parse_code_impl(iter,code);
 }

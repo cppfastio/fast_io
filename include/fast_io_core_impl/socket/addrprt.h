@@ -6,10 +6,9 @@ namespace fast_io
 namespace details
 {
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prtrsv_inaddr_define_impl(Iter it,posix_in_addr inaddr) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* prtrsv_inaddr_define_impl(char_type* it,posix_in_addr inaddr) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	auto j{inaddr.address};
 	it=print_reserve_integral_define<10>(it,*j);
 	++j;
@@ -22,10 +21,9 @@ inline constexpr Iter prtrsv_inaddr_define_impl(Iter it,posix_in_addr inaddr) no
 	return it;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prtrsv_ipv4_define_impl(Iter it,ipv4 v) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* prtrsv_ipv4_define_impl(char_type* it,ipv4 v) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	it=prtrsv_inaddr_define_impl(it,v.address);
 	*it=::fast_io::char_literal_v<u8':',char_type>;
 	++it;
@@ -42,8 +40,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,posi
 	return res;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,posix_in_addr>,Iter it,posix_in_addr inaddr) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,posix_in_addr>, char_type* it,posix_in_addr inaddr) noexcept
 {
 	return ::fast_io::details::prtrsv_inaddr_define_impl(it,inaddr);
 }
@@ -56,8 +54,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,ipv4
 	return res;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,ipv4>,Iter it,ipv4 inaddr) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,ipv4>, char_type* it,ipv4 inaddr) noexcept
 {
 	return ::fast_io::details::prtrsv_ipv4_define_impl(it,inaddr);
 }

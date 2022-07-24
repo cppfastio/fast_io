@@ -124,9 +124,9 @@ constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,parameter<v
 	return print_reserve_size(io_reserve_type<char_type,std::remove_cvref_t<value_type>>,para.reference);
 }
 
-template<std::integral char_type,typename value_type,typename Iter>
+template<std::integral char_type,typename value_type>
 requires (reserve_printable<char_type,std::remove_cvref_t<value_type>>||dynamic_reserve_printable<char_type,std::remove_cvref_t<value_type>>)
-constexpr auto print_reserve_define(io_reserve_type_t<char_type,parameter<value_type>>,Iter begin,parameter<value_type> para)
+constexpr auto print_reserve_define(io_reserve_type_t<char_type,parameter<value_type>>,char_type* begin,parameter<value_type> para)
 {
 	return print_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<value_type>>,begin,para.reference);
 }

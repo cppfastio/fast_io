@@ -94,13 +94,10 @@ inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type*
 	}
 }
 
-template<win32_family family,::fast_io::freestanding::contiguous_iterator Iter>
-inline constexpr Iter print_reserve_define_win32_error_impl(Iter iter,std::uint_least32_t ec) noexcept
+template<win32_family family,::std::integral char_type>
+inline constexpr char_type* print_reserve_define_win32_error_impl(char_type* iter,std::uint_least32_t ec) noexcept
 {
-	if constexpr(std::is_pointer_v<::fast_io::freestanding::iter_value_t<Iter>>)
-		return print_reserve_define_win32_error_ptr_impl<family>(iter,ec);
-	else
-		return print_reserve_define_win32_error_ptr_impl<family>(::fast_io::freestanding::to_address(iter),ec)-::fast_io::freestanding::to_address(iter)+iter;
+	return print_reserve_define_win32_error_ptr_impl<family>(iter,ec);
 }
 
 }
@@ -130,8 +127,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,win3
 	}
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,win32_code>,Iter iter,win32_code e) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,win32_code>, char_type* iter,win32_code e) noexcept
 {
 	return details::print_reserve_define_win32_error_impl<win32_family::native>(iter,e.ec);
 }

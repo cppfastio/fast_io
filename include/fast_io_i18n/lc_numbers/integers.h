@@ -87,8 +87,8 @@ inline constexpr char_type to_char_single_digit(T t) noexcept
 	}
 }
 
-template<bool full,std::size_t base,bool uppercase,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral T>
-constexpr Iter lc_grouping_single_sep_ch_impl(basic_io_scatter_t<std::size_t> const& grouping,Iter iter,T t,::fast_io::freestanding::iter_value_t<Iter> replacement_ch) noexcept
+template<bool full,std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
+constexpr char_type* lc_grouping_single_sep_ch_impl(basic_io_scatter_t<std::size_t> const& grouping, char_type* iter,T t, char_type replacement_ch) noexcept
 {
 	std::size_t const* grouping_base{grouping.base};
 	std::size_t const grouping_len{grouping.len};
@@ -161,10 +161,10 @@ constexpr Iter lc_grouping_single_sep_ch_impl(basic_io_scatter_t<std::size_t> co
 }
 
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
-constexpr Iter grouping_mul_sep_print_sep_impl(char_type const* thousands_sep_base,std::size_t thousands_sep_len,
+template<std::integral char_type>
+constexpr char_type* grouping_mul_sep_print_sep_impl(char_type const* thousands_sep_base,std::size_t thousands_sep_len,
 	char_type const* first,char_type const* last,
-	Iter outit) noexcept
+	char_type* outit) noexcept
 {
 	for(;first!=last;++first)
 	{
@@ -181,8 +181,8 @@ constexpr Iter grouping_mul_sep_print_sep_impl(char_type const* thousands_sep_ba
 	return outit;
 }
 
-template<bool full,std::size_t base,bool uppercase,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral T>
-constexpr Iter grouping_mul_sep_impl(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter iter,T t) noexcept
+template<bool full,std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
+constexpr char_type* grouping_mul_sep_impl(basic_lc_all<char_type> const* __restrict all, char_type* iter,T t) noexcept
 {
 	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	constexpr std::size_t array_len{cal_max_int_size<T,base>()*2u-1u};
@@ -206,9 +206,9 @@ constexpr Iter grouping_mul_sep_impl(basic_lc_all<::fast_io::freestanding::iter_
 	}
 }
 
-template<std::size_t base,bool uppercase,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral T>
+template<std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
 requires (sizeof(T)>1)
-constexpr void lc_print_unsigned_with_3_seperator_len(::fast_io::freestanding::iter_value_t<Iter> seperator_ch,Iter iter,T value,std::size_t size) noexcept
+constexpr void lc_print_unsigned_with_3_seperator_len(char_type seperator_ch, char_type* iter,T value,std::size_t size) noexcept
 {
 	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	constexpr auto table(get_shared_inline_constexpr_base_table<char_type,base,uppercase>().element);
@@ -240,8 +240,8 @@ constexpr void lc_print_unsigned_with_3_seperator_len(::fast_io::freestanding::i
 	}
 }
 
-template<bool full,std::size_t base,bool uppercase,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral int_type>
-inline constexpr Iter print_lc_grouping_3_path_impl(::fast_io::freestanding::iter_value_t<Iter> seperator,Iter iter,int_type t) noexcept
+template<bool full,std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral int_type>
+inline constexpr char_type* print_lc_grouping_3_path_impl(char_type seperator, char_type* iter,int_type t) noexcept
 {
 	if constexpr(full)
 	{
@@ -264,8 +264,8 @@ inline constexpr Iter print_lc_grouping_3_path_impl(::fast_io::freestanding::ite
 	return iter;
 }
 
-template<bool full,std::size_t base,bool uppercase,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral intg>
-inline constexpr Iter lc_print_reserve_integral_withfull_main_impl(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter first,intg t)
+template<bool full,std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral intg>
+inline constexpr char_type* lc_print_reserve_integral_withfull_main_impl(basic_lc_all<char_type> const* __restrict all, char_type* first,intg t)
 {
 	if((all->numeric.grouping.len==0)|(all->numeric.thousands_sep.len==0))
 		return print_reserve_integral_withfull_main_impl<full,base,uppercase>(first,t);
@@ -281,8 +281,8 @@ template<std::size_t base,
 	bool showpos=false,
 	bool uppercase=false,
 	bool full=false,
-	typename int_type,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_print_reserve_integral_define(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter first,int_type t) noexcept
+	typename int_type,::std::integral char_type>
+inline constexpr char_type* lc_print_reserve_integral_define(basic_lc_all<char_type> const* __restrict all, char_type* first,int_type t) noexcept
 {
 	if constexpr(base<=10&&uppercase)
 	{
@@ -343,8 +343,8 @@ inline constexpr std::size_t print_reserve_size_grouping_timestamp_impl(basic_lc
 	return static_size+static_sizem1*all->numeric.thousands_sep.len+all->numeric.decimal_point.len+std::numeric_limits<std::uint_least64_t>::digits10;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_grouping_timestamp_impl(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter iter,unix_timestamp timestamp)
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_grouping_timestamp_impl(basic_lc_all<char_type> const* __restrict all, char_type* iter,unix_timestamp timestamp)
 {
 	iter=lc_print_reserve_integral_define<10>(all,iter,timestamp.seconds);
 	if(timestamp.subseconds)
@@ -372,9 +372,9 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 		return ::fast_io::details::lc_print_reserve_size_int_cal<char_type,flags,std::remove_cv_t<T>>(all);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,::fast_io::manipulators::scalar_flags flags,typename T>
+template<::std::integral char_type,::fast_io::manipulators::scalar_flags flags,typename T>
 requires ((details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>)&&!flags.alphabet&&!std::same_as<std::remove_cv_t<T>,bool>)
-inline constexpr Iter print_reserve_define(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter iter,manipulators::scalar_manip_t<flags,T> t) noexcept
+inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* __restrict all, char_type* iter,manipulators::scalar_manip_t<flags,T> t) noexcept
 {
 	if constexpr(std::same_as<std::remove_cv_t<T>,std::byte>)
 		return details::lc_print_reserve_integral_define<flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>(iter,static_cast<char8_t>(t.reference));
@@ -388,8 +388,8 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	return details::print_reserve_size_grouping_timestamp_impl(all);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::int_least64_t off_to_epoch>
-inline constexpr Iter print_reserve_define(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter iter,basic_timestamp<off_to_epoch> ts) noexcept
+template<::std::integral char_type,std::int_least64_t off_to_epoch>
+inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* __restrict all, char_type* iter,basic_timestamp<off_to_epoch> ts) noexcept
 {
 	if constexpr(off_to_epoch==0)
 		return details::print_reserve_define_grouping_timestamp_impl(all,iter,ts);

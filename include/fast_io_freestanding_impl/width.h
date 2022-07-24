@@ -241,8 +241,8 @@ inline constexpr std::size_t print_reserve_size_width_impl(T t,std::size_t wid)
 	return wid;
 }
 
-template<::fast_io::manipulators::scalar_placement placement,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter handle_common_ch(Iter first,Iter last,std::size_t wd,::fast_io::freestanding::iter_value_t<Iter> fillch)
+template<::fast_io::manipulators::scalar_placement placement, ::std::integral char_type>
+inline constexpr char_type* handle_common_ch(char_type* first, char_type* last,std::size_t wd, char_type fillch)
 {
 	std::size_t const diff{static_cast<std::size_t>(last-first)};
 	if(wd<=diff)
@@ -269,8 +269,8 @@ inline constexpr Iter handle_common_ch(Iter first,Iter last,std::size_t wd,::fas
 	return first+wd;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter handle_common_internal_ch(Iter first,Iter last,std::size_t wd,::fast_io::freestanding::iter_value_t<Iter> fillch,std::size_t internal_len)
+template<::std::integral char_type>
+inline constexpr char_type* handle_common_internal_ch(char_type* first, char_type* last,std::size_t wd, char_type fillch,std::size_t internal_len)
 {
 	std::size_t const diff1{static_cast<std::size_t>(last-first)};
 	if(wd<=diff1||diff1<internal_len)
@@ -284,10 +284,9 @@ inline constexpr Iter handle_common_internal_ch(Iter first,Iter last,std::size_t
 	return first+wd;
 }
 
-template<::fast_io::manipulators::scalar_placement placement,::fast_io::freestanding::random_access_iterator Iter,typename T>
-inline constexpr Iter print_reserve_define_width_ch_impl(Iter iter,T t,std::size_t wdt,::fast_io::freestanding::iter_value_t<Iter> fillch)
+template<::fast_io::manipulators::scalar_placement placement,::std::integral char_type,typename T>
+inline constexpr char_type* print_reserve_define_width_ch_impl(char_type* iter,T t,std::size_t wdt, char_type fillch)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using value_type = std::remove_cvref_t<T>;
 	if constexpr(placement==::fast_io::manipulators::scalar_placement::internal)
 	{
@@ -327,9 +326,9 @@ inline constexpr Iter print_reserve_define_width_ch_impl(Iter iter,T t,std::size
 }
 
 
-template<::fast_io::manipulators::scalar_placement placement,::fast_io::freestanding::random_access_iterator Iter,typename T>
+template<::fast_io::manipulators::scalar_placement placement,::std::integral char_type,typename T>
 requires std::is_trivially_copyable_v<T>
-inline constexpr Iter print_reserve_define_width_impl(Iter iter,T t,std::size_t wdt)
+inline constexpr char_type* print_reserve_define_width_impl(char_type* iter,T t,std::size_t wdt)
 {
 	return print_reserve_define_width_ch_impl<placement>(iter,t,wdt,char_literal_v<u8' ',::fast_io::freestanding::iter_value_t<Iter>>);
 }
@@ -349,11 +348,11 @@ constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,::fast_io::
 		return ::fast_io::details::print_reserve_size_width_impl<char_type>(t.reference,t.width);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,::fast_io::manipulators::scalar_placement placement,typename T>
-requires ((reserve_printable<::fast_io::freestanding::iter_value_t<Iter>,std::remove_cvref_t<T>>||dynamic_reserve_printable<::fast_io::freestanding::iter_value_t<Iter>,std::remove_cvref_t<T>>
-	||scatter_printable<::fast_io::freestanding::iter_value_t<Iter>,std::remove_cvref_t<T>>)&&
+template<::std::integral char_type,::fast_io::manipulators::scalar_placement placement,typename T>
+requires ((reserve_printable<char_type,std::remove_cvref_t<T>>||dynamic_reserve_printable<char_type,std::remove_cvref_t<T>>
+	||scatter_printable<char_type,std::remove_cvref_t<T>>)&&
 	(static_cast<std::size_t>(static_cast<std::size_t>(placement)-static_cast<std::size_t>(1u))<static_cast<std::size_t>(4u)))
-constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,::fast_io::manipulators::width_t<placement,T>>,Iter iter,
+constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io::manipulators::width_t<placement,T>>, char_type* iter,
 	::fast_io::manipulators::width_t<placement,T> t) noexcept
 {
 	if constexpr(std::is_reference_v<T>)
@@ -374,13 +373,13 @@ constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,::fast_io::
 		return ::fast_io::details::print_reserve_size_width_impl<char_type>(t.reference,t.width);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,::fast_io::manipulators::scalar_placement placement,typename T>
-requires ((reserve_printable<::fast_io::freestanding::iter_value_t<Iter>,std::remove_cvref_t<T>>||dynamic_reserve_printable<::fast_io::freestanding::iter_value_t<Iter>,std::remove_cvref_t<T>>
-	||scatter_printable<::fast_io::freestanding::iter_value_t<Iter>,std::remove_cvref_t<T>>)&&
+template<::std::integral char_type,::fast_io::manipulators::scalar_placement placement,typename T>
+requires ((reserve_printable<char_type,std::remove_cvref_t<T>>||dynamic_reserve_printable<char_type,std::remove_cvref_t<T>>
+	||scatter_printable<char_type,std::remove_cvref_t<T>>)&&
 	(static_cast<std::size_t>(static_cast<std::size_t>(placement)-static_cast<std::size_t>(1u))<static_cast<std::size_t>(4u)))
-constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,
-		::fast_io::manipulators::width_ch_t<placement,T,::fast_io::freestanding::iter_value_t<Iter>>>,
-		Iter iter,::fast_io::manipulators::width_ch_t<placement,T,::fast_io::freestanding::iter_value_t<Iter>> t) noexcept
+constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,
+		::fast_io::manipulators::width_ch_t<placement,T, char_type>>,
+	char_type* iter,::fast_io::manipulators::width_ch_t<placement,T, char_type> t) noexcept
 {
 	if constexpr(std::is_reference_v<T>)
 		return ::fast_io::details::print_reserve_define_width_ch_impl<placement>(iter,parameter<T>{t.reference},t.width,t.ch);

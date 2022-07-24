@@ -18,9 +18,9 @@ inline constexpr auto print_reserve_size(basic_lc_all<char_type> const* __restri
 	return print_reserve_size(all,para.reference);
 }
 
-template<std::integral char_type,typename value_type,typename Iter>
+template<std::integral char_type,typename value_type>
 requires lc_dynamic_reserve_printable<char_type,std::remove_cvref_t<value_type>>
-inline constexpr auto print_reserve_define(basic_lc_all<char_type> const* __restrict all,Iter begin,parameter<value_type> para)
+inline constexpr auto print_reserve_define(basic_lc_all<char_type> const* __restrict all,char_type* begin,parameter<value_type> para)
 {
 	return print_reserve_define(all,begin,para.reference);
 }

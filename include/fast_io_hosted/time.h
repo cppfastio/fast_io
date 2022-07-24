@@ -706,9 +706,7 @@ inline std::size_t print_reserve_define_impl(char* first,win32_timezone_t tzt)
 
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter>
-requires std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<char,win32_timezone_t>,Iter first,win32_timezone_t tzt)
+inline constexpr char* print_reserve_define(io_reserve_type_t<char,win32_timezone_t>, char* first,win32_timezone_t tzt)
 {
 	return details::print_reserve_define_impl(::fast_io::freestanding::to_address(first),tzt)+first;
 }

@@ -34,10 +34,9 @@ bool showpos,
 bool uppercase,
 bool uppercase_e,
 bool comma,
-typename flt,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_rsvhexfloat_define_impl(Iter iter,flt f) noexcept
+typename flt,::std::integral char_type>
+inline constexpr char_type* print_rsvhexfloat_define_impl(char_type* iter,flt f) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using trait = iec559_traits<flt>;
 	using mantissa_type = typename trait::mantissa_type;
 	constexpr std::size_t mbits{trait::mbits};
