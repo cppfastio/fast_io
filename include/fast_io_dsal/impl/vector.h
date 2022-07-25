@@ -206,6 +206,8 @@ private:
 	void destroy()
 	{
 		clear();
+#if 0
+#endif
 		typed_allocator_type::deallocate(imp.begin_ptr);
 	}
 	struct run_destroy
@@ -248,13 +250,12 @@ public:
 	constexpr vector(vector const& vec) requires(::std::copyable<value_type>)
 	{
 		std::size_t const vecsize{static_cast<std::size_t>(vec.imp.curr_ptr-vec.imp.begin_ptr)};
-		std::size_t n{vecsize*sizeof(value_type)};
-		if(n==0)
+		if(vecsize==0)
 		{
 			return;
 		}
 		imp.begin_ptr=typed_allocator_type::allocate(vecsize);
-		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr(::std::is_trivially_copyable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -264,15 +265,15 @@ public:
 #endif
 #endif
 		{
-
+			std::size_t const n{vecsize*sizeof(value_type)};
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memcpy)
-			__builtin_memcpy(imp.begin_ptr,vec.begin_ptr,n);
+			__builtin_memcpy(imp.begin_ptr,vec.imp.begin_ptr,n);
 #else
-			std::memcpy(imp.begin_ptr,vec.begin_ptr,n);
+			std::memcpy(imp.begin_ptr,vec.imp.begin_ptr,n);
 #endif
 #else
-			std::memcpy(imp.begin_ptr,vec.begin_ptr,n);
+			std::memcpy(imp.begin_ptr,vec.imp.begin_ptr,n);
 #endif
 			imp.end_ptr=imp.curr_ptr=imp.begin_ptr+vecsize;
 			return;
@@ -281,9 +282,10 @@ public:
 		run_destroy des(this);
 		auto e{imp.begin_ptr+vecsize};
 		this->imp.end_ptr=e;
-		for(;this->imp.curr_ptr!=e;++this->imp.curr_ptr)
+		for(auto i{vec.imp.begin_ptr};i!=vec.imp_curr_ptr;++i)
 		{
-			new (this->imp.curr_ptr) value_type;
+			new (this->imp.curr_ptr) value_type(*i);
+			++this->imp.curr_ptr;
 		}
 		des.thisvec=nullptr;
 	}
