@@ -43,25 +43,35 @@ inline void grow_to_size_common_aligned_impl(vector_model* m,::std::size_t align
 	m->end_ptr=begin_ptr+newcap;
 }
 
-template<::std::size_t size>
+template<::std::size_t size,bool trivial>
 inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
 {
-	constexpr std::size_t mx_value{::std::numeric_limits<std::size_t>::max()/size};
-	constexpr std::size_t mx_half_value{mx_value>>1};
+	constexpr 
+		::std::size_t mx_value2{::std::numeric_limits<std::size_t>::max()/size};
+	constexpr
+		::std::size_t mx_value{trivial?mx_value2*size:mx_value2};
+	constexpr 
+		::std::size_t mx_half_value{mx_value>>1u};
 	if(cap==mx_value)
 	{
 		::fast_io::fast_terminate();
 	}
 	else if(cap>mx_half_value)
 	{
-		return mx_value;
+		if constexpr(trivial)
+		{
+			return mx_value;
+		}
+		else
+		{
+			return 1;
+		}
 	}
 	else if(cap==0)
 	{
-		return 1;
+		return size;
 	}
-	constexpr std::size_t two{2};
-	return static_cast<std::size_t>(cap*two);
+	return static_cast<std::size_t>(cap<<1);
 }
 
 template<typename allocator,::std::size_t size>
@@ -70,7 +80,7 @@ inline constexpr void grow_twice_common_impl(vector_model* m) noexcept
 	auto begin_ptr{m->begin_ptr};
 	auto end_ptr{m->end_ptr};
 	grow_to_size_common_impl<allocator>(m,
-		cal_grow_twice_size<size>(static_cast<::std::size_t>(end_ptr-begin_ptr))*size);
+		cal_grow_twice_size<size,true>(static_cast<::std::size_t>(end_ptr-begin_ptr)));
 }
 
 template<typename allocator,::std::size_t size>
@@ -80,7 +90,7 @@ inline constexpr void grow_twice_common_aligned_impl(vector_model* m,::std::size
 	auto end_ptr{m->end_ptr};
 	grow_to_size_common_aligned_impl<allocator>(m,
 		alignment,
-		cal_grow_twice_size<size>(static_cast<::std::size_t>(end_ptr-begin_ptr))*size);
+		cal_grow_twice_size<size,true>(static_cast<::std::size_t>(end_ptr-begin_ptr)));
 }
 
 template<typename T>
@@ -386,7 +396,7 @@ private:
 			}
 		}
 		std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
-		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type)>(cap));
+		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type),false>(cap));
 	}
 public:
 	constexpr void reserve(size_type n) noexcept
@@ -432,6 +442,14 @@ public:
 	constexpr void push_back(T&& value) noexcept(noexcept(this->emplace_back(::fast_io::freestanding::move(value))))
 	{
 		this->emplace_back(::fast_io::freestanding::move(value));
+	}
+	constexpr void push_back_unchecked(T const& value) noexcept(noexcept(this->emplace_back_unchecked(value)))
+	{
+		this->emplace_back_unchecked(value);
+	}
+	constexpr void push_back_unchecked(T&& value) noexcept(noexcept(this->emplace_back_unchecked(::fast_io::freestanding::move(value))))
+	{
+		this->emplace_back_unchecked(::fast_io::freestanding::move(value));
 	}
 	constexpr const_reference back() const noexcept
 	{
