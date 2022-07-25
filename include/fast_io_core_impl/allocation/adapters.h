@@ -605,6 +605,51 @@ public:
 			return static_cast<T*>(alloc::reallocate_aligned_n(ptr,oldn,n*sizeof(T),alignof(T)));
 		}
 	}
+
+	static inline constexpr bool has_reallocate = allocator_adapter::has_reallocate;
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+	constexpr
+#endif
+	void* reallocate_zero(T* ptr,::std::size_t n) noexcept requires(has_reallocate)
+	{
+		constexpr
+			::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()/sizeof(T)};
+		if(n>mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr(alignof(T)<=alloc::default_alignment)
+		{
+			return static_cast<T*>(alloc::reallocate_zero(ptr,n*sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T*>(alloc::reallocate_aligned_zero(ptr,n*sizeof(T),alignof(T)));
+		}
+	}
+
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+	constexpr
+#endif
+	void* reallocate_zero_n(T* ptr,::std::size_t oldn,::std::size_t n) noexcept
+	{
+		constexpr
+			::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()/sizeof(T)};
+		if(n>mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr(alignof(T)<=alloc::default_alignment)
+		{
+			return static_cast<T*>(alloc::reallocate_zero_n(ptr,oldn,n*sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T*>(alloc::reallocate_aligned_zero_n(ptr,oldn,n*sizeof(T),alignof(T)));
+		}
+	}
 };
 
 }
