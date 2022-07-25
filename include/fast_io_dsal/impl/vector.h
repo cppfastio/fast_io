@@ -23,8 +23,10 @@ template<typename allocator>
 inline void grow_to_size_common_impl(vector_model* m,::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
+#if 0
 	auto end_ptr{m->end_ptr};
 	::std::size_t const cap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
+#endif
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr-begin_ptr)};
 	m->begin_ptr=begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate(begin_ptr,newcap));
 	m->curr_ptr=begin_ptr+old_size;
@@ -35,8 +37,10 @@ template<typename allocator>
 inline void grow_to_size_common_aligned_impl(vector_model* m,::std::size_t alignment,::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
+#if 0
 	auto end_ptr{m->end_ptr};
 	::std::size_t const cap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
+#endif
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr-begin_ptr)};
 	m->begin_ptr=begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_aligned(begin_ptr,alignment,newcap));
 	m->curr_ptr=begin_ptr+old_size;
@@ -354,8 +358,9 @@ private:
 				return;
 			}
 		}
+#if 0
 		std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
-		std::size_t const old_size{static_cast<std::size_t>(imp.curr_ptr-imp.begin_ptr)};
+#endif
 		auto new_begin_ptr=typed_allocator_type::allocate(newcap);
 		auto new_i{new_begin_ptr};
 		for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
