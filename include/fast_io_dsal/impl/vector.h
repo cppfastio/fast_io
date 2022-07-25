@@ -432,16 +432,18 @@ public:
 	{
 		(--imp.curr_ptr)->~value_type();
 	}
+	constexpr const_reference operator[](size_type pos) const noexcept
+	{
+		return imp.begin_ptr[pos];
+	}
 	constexpr reference operator[](size_type pos) noexcept
 	{
 		return imp.begin_ptr[pos];
 	}
-
 	constexpr const_reference front() const noexcept
 	{
 		return *imp.begin_ptr;
 	}
-
 	constexpr reference front() noexcept
 	{
 		return *imp.begin_ptr;
