@@ -104,7 +104,11 @@ struct vector_internal
 }
 
 template<::std::movable T,typename allocator>
-class vector
+class
+#if __has_cpp_attribute(clang::trivial_abi)
+[[clang::trivial_abi]]
+#endif
+vector
 {
 public:
 	using allocator_type = allocator;
