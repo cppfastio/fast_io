@@ -494,4 +494,14 @@ public:
 
 }
 
+namespace freestanding
+{
+
+template<typename T,typename Alloc>
+struct is_trivially_relocatable<::fast_io::containers::vector<T,Alloc>>
+{
+	inline static constexpr bool value = true;
+};
+
+}
 }
