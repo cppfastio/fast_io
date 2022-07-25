@@ -169,7 +169,7 @@ public:
 	}
 	constexpr void clear() noexcept
 	{
-		if constexpr(!::std::is_trivially_copyable_v<value_type>)
+		if constexpr(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 			for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
 			{
@@ -246,7 +246,7 @@ public:
 			return;
 		}
 		imp.begin_ptr=typed_allocator_type::allocate(vecsize);
-		if constexpr(::std::is_trivially_copyable_v<value_type>)
+		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -315,7 +315,7 @@ public:
 private:
 	inline constexpr void grow_to_size_impl(size_type newcap) noexcept
 	{
-		if constexpr(::std::is_trivially_copyable_v<value_type>)
+		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -371,7 +371,7 @@ private:
 	}
 	inline constexpr void grow_twice_impl() noexcept
 	{
-		if constexpr(::std::is_trivially_copyable_v<value_type>)
+		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
