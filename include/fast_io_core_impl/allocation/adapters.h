@@ -606,7 +606,7 @@ public:
 		}
 	}
 
-	static inline constexpr bool has_reallocate = allocator_adapter::has_reallocate;
+	static inline constexpr bool has_reallocate_zero = allocator_adapter::has_reallocate_zero;
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
