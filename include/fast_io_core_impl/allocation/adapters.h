@@ -78,22 +78,22 @@ inline constexpr void* allocator_pointer_aligned_impl(::std::size_t alignment,::
 		{
 			if constexpr(has_allocate_zero_impl<alloc>)
 			{
-				p=alloc::allocate_zero(p);
+				p=alloc::allocate_zero(to_allocate);
 			}
 			else
 			{
-				p=alloc::allocate(p);
+				p=alloc::allocate(to_allocate);
 			}
 		}
 		else
 		{
 			if constexpr(has_allocate_impl<alloc>)
 			{
-				p=alloc::allocate(p);
+				p=alloc::allocate(to_allocate);
 			}
 			else
 			{
-				p=alloc::allocate_zero(p);
+				p=alloc::allocate_zero(to_allocate);
 			}
 		}
 		void* aligned_ptr{reinterpret_cast<void*>((reinterpret_cast<::std::size_t>(p)+alignment)&(-alignment))};
