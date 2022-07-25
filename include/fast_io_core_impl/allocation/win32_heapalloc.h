@@ -160,6 +160,10 @@ public:
 	{
 		return ::fast_io::details::win32_heaprealloc_common_impl(addr,n,0u);
 	}
+	static inline void* reallocate_zero(void* addr,::std::size_t n) noexcept
+	{
+		return ::fast_io::details::win32_heaprealloc_common_impl(addr,n,0x00000008u);
+	}
 	static inline void deallocate(void* addr) noexcept
 	{
 		if(addr==nullptr)
