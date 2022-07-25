@@ -474,9 +474,6 @@ public:
 	}
 	template<typename... Args>
 	requires std::constructible_from<value_type,Args...>
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#endif
 	constexpr reference emplace_back(Args&& ...args) noexcept(noexcept(value_type(::fast_io::freestanding::forward<Args>(args)...)))
 	{
 		if(imp.curr_ptr==imp.end_ptr)
