@@ -280,9 +280,9 @@ public:
 		}
 		}
 		run_destroy des(this);
-		auto e{imp.begin_ptr+vecsize};
-		this->imp.end_ptr=e;
-		for(auto i{vec.imp.begin_ptr};i!=vec.imp_curr_ptr;++i)
+		this->imp.curr_ptr=this->imp.begin_ptr;
+		this->imp.end_ptr=this->imp.begin_ptr+vecsize;
+		for(auto i{vec.imp.begin_ptr};i!=vec.imp.curr_ptr;++i)
 		{
 			new (this->imp.curr_ptr) value_type(*i);
 			++this->imp.curr_ptr;
