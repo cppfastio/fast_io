@@ -203,7 +203,7 @@ public:
 	explicit constexpr vector() noexcept = default;
 
 private:
-	void destroy()
+	void destroy() noexcept
 	{
 		clear();
 #if 0
