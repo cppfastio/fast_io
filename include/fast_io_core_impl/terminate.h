@@ -1,6 +1,6 @@
 ﻿#pragma once
-#if (!defined(__GNUC__)&&!defined(__clang__)||defined(__INTEL_COMPILER))
-#include<intrin.h>
+#if defined(_MSC_VER)&&!defined(__clang__)
+#include<cstdlib>
 #endif
 
 namespace fast_io
@@ -18,8 +18,6 @@ namespace fast_io
 #else
 	std::abort();
 #endif
-#elif defined(_MSC_VER)
-	__fastfail(1);
 #else
 	std::abort();
 #endif
