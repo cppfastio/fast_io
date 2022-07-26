@@ -22,9 +22,7 @@ Unfortunately fast_io internally sometimes uses vector despite i try to avoid th
 
 int main()
 {
-	test::vector<test::vector<std::int_least32_t>> vec1;
+	test::vector<test::vector<std::int_least32_t>> vec1(1000);
 	test::vector<test::vector<char32_t>> vec2;
-	vec1.emplace_back();
-	vec1.emplace_back();
-	vec1.emplace_back();
+
 }

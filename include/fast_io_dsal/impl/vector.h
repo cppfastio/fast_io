@@ -23,12 +23,20 @@ template<typename allocator>
 inline void grow_to_size_common_impl(vector_model* m,::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
-#if 0
-	auto end_ptr{m->end_ptr};
-	::std::size_t const cap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
-#endif
+
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr-begin_ptr)};
-	m->begin_ptr=begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate(begin_ptr,newcap));
+
+	if constexpr(allocator::has_reallocate)
+	{
+		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate(begin_ptr,newcap));
+	}
+	else
+	{
+		auto end_ptr{m->end_ptr};
+		::std::size_t const old_cap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
+		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_n(begin_ptr,old_cap,newcap));
+	}
+	m->begin_ptr=begin_ptr;
 	m->curr_ptr=begin_ptr+old_size;
 	m->end_ptr=begin_ptr+newcap;
 }
@@ -37,12 +45,18 @@ template<typename allocator>
 inline void grow_to_size_common_aligned_impl(vector_model* m,::std::size_t alignment,::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
-#if 0
-	auto end_ptr{m->end_ptr};
-	::std::size_t const cap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
-#endif
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr-begin_ptr)};
-	m->begin_ptr=begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_aligned(begin_ptr,alignment,newcap));
+	if constexpr(allocator::has_reallocate_aligned)
+	{
+		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_aligned(begin_ptr,alignment,newcap));
+	}
+	else
+	{
+		auto end_ptr{m->end_ptr};
+		::std::size_t const oldcap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
+		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_aligned_n(begin_ptr,oldcap,alignment,newcap));
+	}
+	m->begin_ptr=begin_ptr;
 	m->curr_ptr=begin_ptr+old_size;
 	m->end_ptr=begin_ptr+newcap;
 }
@@ -206,9 +220,15 @@ private:
 	void destroy() noexcept
 	{
 		clear();
-#if 0
-#endif
-		typed_allocator_type::deallocate(imp.begin_ptr);
+		if constexpr(!typed_allocator_type::has_deallocate)
+		{
+			typed_allocator_type::deallocate(imp.begin_ptr);
+		}
+		else
+		{
+			typed_allocator_type::deallocate_n(imp.begin_ptr,
+				static_cast<::std::size_t>(imp.end_ptr-imp.begin_ptr));
+		}
 	}
 	struct run_destroy
 	{
@@ -227,9 +247,9 @@ private:
 	};
 public:
 
-	explicit constexpr vector(size_type n) noexcept(::std::is_scalar_v<value_type>)
+	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type>||noexcept(value_type()))
 	{
-		if constexpr(::std::is_scalar_v<value_type>)
+		if constexpr(::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
 		{
 			imp.begin_ptr=typed_allocator_type::allocate_zero(n);
 			imp.end_ptr=imp.curr_ptr=imp.begin_ptr+n;
@@ -360,9 +380,11 @@ private:
 				return;
 			}
 		}
-#if 0
-		std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
-#endif
+		std::size_t cap;
+		if constexpr(!typed_allocator_type::has_deallocate)
+		{
+			cap = static_cast<size_type>(imp.end_ptr-imp.begin_ptr);
+		}
 		auto new_begin_ptr=typed_allocator_type::allocate(newcap);
 		auto new_i{new_begin_ptr};
 		for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
@@ -371,11 +393,14 @@ private:
 			old_i->~value_type();
 			++new_i;
 		}
-#if 0
-		typed_allocator_type::deallocate(imp.begin_ptr,cap);
-#else
-		typed_allocator_type::deallocate(imp.begin_ptr);
-#endif
+		if constexpr(typed_allocator_type::has_deallocate)
+		{
+			typed_allocator_type::deallocate(imp.begin_ptr);
+		}
+		else
+		{
+			typed_allocator_type::deallocate_n(imp.begin_ptr,cap);
+		}
 		imp.begin_ptr=new_begin_ptr;
 		imp.curr_ptr=new_i;
 		imp.end_ptr=new_begin_ptr+newcap;
@@ -496,6 +521,12 @@ namespace freestanding
 
 template<typename T,typename Alloc>
 struct is_trivially_relocatable<::fast_io::containers::vector<T,Alloc>>
+{
+	inline static constexpr bool value = true;
+};
+
+template<typename T,typename Alloc>
+struct is_zero_default_constructible<::fast_io::containers::vector<T,Alloc>>
 {
 	inline static constexpr bool value = true;
 };

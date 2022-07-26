@@ -200,6 +200,10 @@ public:
 	{
 		return ::fast_io::details::nt_rtlreallocate_heap_common_impl(addr,n,0u);
 	}
+	static inline void* reallocate_zero(void* addr,::std::size_t n) noexcept
+	{
+		return ::fast_io::details::nt_rtlreallocate_heap_common_impl(addr,n,0x00000008u);
+	}
 	static inline void deallocate(void* addr) noexcept
 	{
 		if(addr==nullptr)
