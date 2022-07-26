@@ -554,6 +554,7 @@ public:
 		for (auto ptr{ imp.begin_ptr }; ptr != imp.curr_ptr; ++ptr)
 			new (ptr) value_type(value);
 	}
+#if 0
 	template <typename InputIt>
 	constexpr void assign(InputIt first, InputIt last)
 	{
@@ -562,6 +563,7 @@ public:
 	constexpr void assign(::std::initializer_list<T> ilist) noexcept
 	{
 	}
+#endif
 	constexpr void resize(size_type n) noexcept(::std::is_nothrow_default_constructible_v<value_type>)
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
