@@ -542,7 +542,7 @@ public:
 		else
 		{
 			auto tmp_ptr = imp.begin_ptr + n;
-			if constexpr (!::fast_io::freestanding::is_trivially_relocatable<value_type>)
+			if constexpr (!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 			{
 				for (auto ptr{tmp_ptr}; ptr != imp.curr_ptr; ++ptr)
 				{
@@ -661,7 +661,7 @@ public:
 			}
 		}
 	}
-	constexpr iterator erase_unchecked(const_iterator pos) noexcept(::std::is_nothrow_destructible_v<value_type> && ::std::is_nothrow_copy_assignable_v<value_type>)
+	constexpr iterator erase(const_iterator pos) noexcept(::std::is_nothrow_destructible_v<value_type> && ::std::is_nothrow_copy_assignable_v<value_type>)
 	{
 		auto cur_pos{ const_cast<iterator>(pos) };
 		cur_pos->~value_type();
@@ -670,11 +670,6 @@ public:
 			*(ptr - 1) = ::fast_io::freestanding::move(*ptr);
 		}
 		return cur_pos;
-	}
-	constexpr iterator erase(const_iterator pos) noexcept(noexcept(erase_unchecked(pos)))
-	{
-		// if (pos >= imp.end_ptr) ::fast_io::fast_terminate();
-		return erase_unchecked(pos);
 	}
 	//constexpr iterator erase(const_iterator first, const_iterator last) TODO
 	constexpr void shrink_to_fit() noexcept
