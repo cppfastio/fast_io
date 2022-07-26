@@ -325,7 +325,7 @@ public:
 	{
 		this->destroy();
 		this->imp=vec.imp;
-		vec.imp=nullptr;
+		vec.imp={};
 		return *this;
 	}
 	constexpr ~vector()
@@ -434,6 +434,40 @@ private:
 		std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
 		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type),false>(cap));
 	}
+	inline constexpr void shrink_to_smaller_size_impl(size_type newcap)
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+			return grow_to_size_impl(newcap);
+		}
+		std::size_t cap;
+		if constexpr (!typed_allocator_type::has_deallocate)
+		{
+			cap = static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
+		}
+		auto new_begin_ptr = typed_allocator_type::allocate(newcap);
+		auto old_e{ imp.begin_ptr + newcap };
+		for (auto new_i{ new_begin_ptr }, old_i{ imp.begin_ptr }; old_i != old_e; ++old_i, ++new_i)
+		{
+			new (new_i) value_type(::fast_io::freestanding::move(*old_i));
+			old_i->~value_type();
+		}
+		for (; old_e </*in case old_e has been greater then curr_ptr*/ imp.curr_ptr; ++old_e)
+		{
+			old_e->~value_type();
+		}
+		if constexpr (typed_allocator_type::has_deallocate)
+		{
+			typed_allocator_type::deallocate(imp.begin_ptr);
+		}
+		else
+		{
+			typed_allocator_type::deallocate_n(imp.begin_ptr, cap);
+		}
+		imp.begin_ptr = new_begin_ptr;
+		imp.curr_ptr = new_begin_ptr + newcap;
+		imp.end_ptr = imp.curr_ptr;
+	}
 public:
 	constexpr void reserve(size_type n) noexcept
 	{
@@ -444,7 +478,147 @@ public:
 		grow_to_size_impl(n);
 	}
 
-
+	constexpr void resize(size_type n) noexcept(::std::is_nothrow_default_constructible_v<value_type>)
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+			if constexpr (::std::is_default_constructible_v<value_type>)
+			{
+				constexpr ::std::size_t mxv{ max_size() };
+				if constexpr (1 < sizeof(value_type))
+				{
+					if (mxv < n)
+					{
+						::fast_io::fast_terminate();
+					}
+				}
+				n *= sizeof(value_type);
+				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				{
+					auto begin_ptr{ imp.begin_ptr };
+					::std::size_t const old_size{ static_cast<::std::size_t>(imp.curr_ptr - begin_ptr) };
+					if constexpr (allocator::has_reallocate_zero)
+					{
+						begin_ptr = reinterpret_cast<value_type*>(allocator::reallocate_zero(begin_ptr, n));
+					}
+					else
+					{
+						auto end_ptr{ imp.end_ptr };
+						::std::size_t const old_cap{ static_cast<::std::size_t>(end_ptr - begin_ptr) };
+						begin_ptr = reinterpret_cast<value_type*>(allocator::reallocate_zero_n(begin_ptr, old_cap, n));
+					}
+					imp.begin_ptr = begin_ptr;
+					imp.curr_ptr = begin_ptr + old_size;
+					imp.end_ptr = begin_ptr + n;
+				}
+				else
+				{
+					constexpr auto alignment{ alignof(value_type) };
+					auto begin_ptr{ imp.begin_ptr };
+					::std::size_t const old_size{ static_cast<::std::size_t>(imp.curr_ptr - begin_ptr) };
+					if constexpr (allocator::has_reallocate_aligned)
+					{
+						begin_ptr = reinterpret_cast<char8_t*>(allocator::reallocate_aligned_zero(begin_ptr, alignment, n));
+					}
+					else
+					{
+						auto end_ptr{ imp.end_ptr };
+						::std::size_t const oldcap{ static_cast<::std::size_t>(end_ptr - begin_ptr) };
+						begin_ptr = reinterpret_cast<char8_t*>(allocator::reallocate_aligned_zero_n(begin_ptr, oldcap, alignment, n));
+					}
+					imp.begin_ptr = begin_ptr;
+					imp.curr_ptr = begin_ptr + old_size;
+					imp.end_ptr = begin_ptr + n;
+				}
+				return;
+			}
+			// else (that is, not zero-initialized)
+			auto const old_size = size();
+			grow_to_size_impl(n);
+			if (n > old_size)
+			{
+				for (auto ptr = imp.begin_ptr + old_size; ptr != imp.end_ptr; ++ptr)
+				{
+					new(ptr) value_type();
+				}
+			}
+			return;
+		}
+		// else (that is, not trivally relocatable)
+		if (n < size())
+		{
+			shrink_to_smaller_size_impl(n);
+		}
+		else if (n <= capacity())
+		{
+			for (auto new_e{ imp.begin_ptr + n }; imp.curr_ptr != new_e; ++imp.curr_ptr)
+			{
+				new (imp.curr_ptr) value_type();
+			}
+		}
+		else // n > capacity()
+		{
+			grow_to_size_impl(n);
+			for (; imp.curr_ptr != imp.end_ptr; ++imp.curr_ptr)
+			{
+				new (imp.curr_ptr) value_type();
+			}
+		}
+	}
+	constexpr void resize(size_type n, value_type const& value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+		requires(::std::copy_constructible<value_type>)
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+			auto const old_size = size();
+			grow_to_size_impl(n);
+			if (n > old_size)
+			{
+				for (auto ptr = imp.begin_ptr + old_size; ptr != imp.end_ptr; ++ptr)
+				{
+					new(ptr) value_type(value);
+				}
+			}
+			return;
+		}
+		// else
+		if (n < size())
+		{
+			shrink_to_smaller_size_impl(n);
+		}
+		else if (n <= capacity())
+		{
+			for (auto new_e{imp.begin_ptr + n}; imp.curr_ptr != new_e; ++imp.curr_ptr)
+			{
+				new (imp.curr_ptr) value_type(value);
+			}
+		}
+		else // n > capacity()
+		{
+			grow_to_size_impl(n);
+			for (; imp.curr_ptr != imp.end_ptr; ++imp.curr_ptr)
+			{
+				new (imp.curr_ptr) value_type(value);
+			}
+		}
+	}
+	constexpr iterator erase_unchecked(const_iterator pos) noexcept(::std::is_nothrow_destructible_v<value_type> && ::std::is_nothrow_copy_assignable_v<value_type>)
+	{
+		auto cur_pos{ const_cast<iterator>(pos) };
+		cur_pos->~value_type();
+		for (auto ptr{ cur_pos + 1 }; ptr != imp.end_ptr; ++ptr)
+		{
+			*(ptr - 1) = ::fast_io::freestanding::move(*ptr);
+		}
+		return cur_pos;
+	}
+	constexpr iterator erase(const_iterator pos) noexcept(noexcept(erase_unchecked(pos)))
+	{
+		// TODO: check or uncheck?
+		if (pos >= imp.end_ptr) ::fast_io::fast_terminate();
+		return erase_unchecked(pos);
+	}
+	// constexpr iterator erase(const_iterator first, const_iterator last) TODO
 	constexpr void shrink_to_fit() noexcept
 	{
 		if(imp.curr_ptr==imp.end_ptr)
