@@ -21,6 +21,10 @@ int main(int argc,char** argv)
 	std::size_t assembly_count{};
 	for(auto ent: recursive(at(df)))
 	{
+		if(type(ent)!=fast_io::file_type::regular)
+		{
+			continue;
+		}
 		std::u8string_view exten{u8extension(ent)};
 		if(exten==u8".rs"sv)
 		{
