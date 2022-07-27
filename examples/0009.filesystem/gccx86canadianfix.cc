@@ -34,7 +34,7 @@ int main(int argc,char **argv)
     postuninstall_cmds='dldll=`$SHELL 2>&1 -c '\''. $file; echo \$dlname'\''`~
       dlpath=$dir/\$dldll~
        $RM \$dlpath'
-    shlibpath_overrides_runpath=yes)abc");
+    shlibpath_overrides_runpath=yes)abc"sv);
 	constexpr
 		::std::u8string_view newvw(u8R"abc(case $GCC,$host_os in
   yes,cygwin* | yes,mingw* | yes,pw32* | yes,cegcc*)
@@ -65,7 +65,7 @@ int main(int argc,char **argv)
     postuninstall_cmds='dldll=`$SHELL 2>&1 -c '\''. $file; echo \$dlname'\''`~
       dlpath=$dir/\$dldll~
        $RM \$dlpath'
-    shlibpath_overrides_runpath=yes)abc");
+    shlibpath_overrides_runpath=yes)abc"sv);
 	::std::boyer_moore_horspool_searcher searcher(reinterpret_cast<char const*>(vw.data()),
 		reinterpret_cast<char const*>(vw.data())+vw.size());
 	fast_io::dir_file df(fast_io::mnp::os_c_str(argv[1]));
