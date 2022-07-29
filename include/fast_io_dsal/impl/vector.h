@@ -172,7 +172,7 @@ inline constexpr void add_zero_towards(vector_model* m, char8_t* end)
 }
 
 template <typename allocator>
-inline constexpr void check_size_and_assign(vector_model* m, char8_t* begin, char8_t* end)
+inline constexpr void check_size_and_assign(vector_model* m, char8_t const* begin, char8_t const* end)
 {
 	auto const newcap{ static_cast<::std::size_t>(end - begin) };
 	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
@@ -183,7 +183,16 @@ inline constexpr void check_size_and_assign(vector_model* m, char8_t* begin, cha
 }
 
 template <typename allocator>
-inline constexpr void check_size_and_assign_align(vector_model* m, ::std::size_t alignment, char8_t* begin, char8_t* end)
+inline constexpr void check_size_and_construct(vector_model* m, char8_t const* begin, char8_t const* end)
+{
+	auto const new_size{ static_cast<::std::size_t>(end - begin) };
+	m->begin_ptr = (char8_t*)allocator::allocate(new_size);
+	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
+	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
+}
+
+template <typename allocator>
+inline constexpr void check_size_and_assign_align(vector_model* m, ::std::size_t alignment, char8_t const* begin, char8_t const* end)
 {
 	auto const newcap{ static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) };
 	if (end - begin > newcap)
@@ -191,6 +200,15 @@ inline constexpr void check_size_and_assign_align(vector_model* m, ::std::size_t
 		grow_to_size_common_aligned_impl<allocator>(m, alignment, newcap);
 	}
 	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->begin_ptr);
+}
+
+template <typename allocator>
+inline constexpr void check_size_and_construct_align(vector_model* m, ::std::size_t alignment, char8_t const* begin, char8_t const* end)
+{
+	auto const new_size{ static_cast<::std::size_t>(end - begin) };
+	m->begin_ptr = allocator::allocate_aligned(alignment, new_size);
+	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
+	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
 }
 
 template<typename T>
@@ -354,6 +372,24 @@ public:
 				new (this->imp.curr_ptr) value_type;
 			}
 			des.thisvec=nullptr;
+		}
+	}
+	constexpr vector(::std::initializer_list<T> ilist) noexcept
+	{
+		if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+		{
+			::fast_io::containers::details::check_size_and_construct<allocator_type>(
+				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+				reinterpret_cast<char8_t const*>(ilist.begin()),
+				reinterpret_cast<char8_t const*>(ilist.end()));
+		}
+		else
+		{
+			::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
+				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+				alignof(value_type),
+				reinterpret_cast<char8_t const*>(ilist.begin()),
+				reinterpret_cast<char8_t const*>(ilist.end()));
 		}
 	}
 
@@ -724,7 +760,7 @@ public:
 		auto mut_pos{ const_cast<iterator>(pos) };
 		if constexpr (is_trivially_reallocatable_v)
 		{
-			if (mut_pos == imp.end_ptr - 1) // no need to memmove
+			if (mut_pos == imp.curr_ptr - 1) // no need to memmove
 			{
 				imp.curr_ptr = mut_pos;
 				return imp.end_ptr;
@@ -732,7 +768,7 @@ public:
 			else
 			{
 				auto length{ imp.curr_ptr - mut_pos - 1 };
-				::fast_io::freestanding::my_memmove(mut_pos, mut_pos + 1, length);
+				::fast_io::freestanding::my_memmove(mut_pos, mut_pos + 1, length * sizeof(value_type));
 				--imp.curr_ptr;
 				return const_cast<iterator>(mut_pos);
 			}
@@ -761,7 +797,7 @@ public:
 			else
 			{
 				auto length{ imp.curr_ptr - mut_last - 1 };
-				::fast_io::freestanding::my_memmove(mut_first, mut_last + 1, length);
+				::fast_io::freestanding::my_memmove(mut_first, mut_last + 1, length * sizeof(value_type));
 				imp.curr_ptr -= mut_last - mut_first;
 				return mut_first;
 			}
@@ -791,19 +827,19 @@ public:
 	{
 		(--imp.curr_ptr)->~value_type();
 	}
-	constexpr const_reference operator[](size_type pos) const noexcept
+	[[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
 	{
 		return imp.begin_ptr[pos];
 	}
-	constexpr reference operator[](size_type pos) noexcept
+	[[nodiscard]] constexpr reference operator[](size_type pos) noexcept
 	{
 		return imp.begin_ptr[pos];
 	}
-	constexpr const_reference front() const noexcept
+	[[nodiscard]] constexpr const_reference front() const noexcept
 	{
 		return *imp.begin_ptr;
 	}
-	constexpr reference front() noexcept
+	[[nodiscard]] constexpr reference front() noexcept
 	{
 		return *imp.begin_ptr;
 	}
@@ -823,11 +859,11 @@ public:
 	{
 		this->emplace_back_unchecked(::fast_io::freestanding::move(value));
 	}
-	constexpr const_reference back() const noexcept
+	[[nodiscard]] constexpr const_reference back() const noexcept
 	{
 		return imp.curr_ptr[-1];
 	}
-	constexpr reference back() noexcept
+	[[nodiscard]] constexpr reference back() noexcept
 	{
 		return imp.curr_ptr[-1];
 	}
@@ -869,6 +905,9 @@ public:
 		return (*this <=> other) == 0;
 	}
 };
+
+template <::std::input_iterator InputIt>
+vector(InputIt, InputIt)->vector<typename ::std::iterator_traits<InputIt>::value, native_global_allocator>;
 
 }
 
