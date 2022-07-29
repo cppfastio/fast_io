@@ -380,7 +380,7 @@ private:
 			if (!begin || !thisvec) return;
 			for (; begin != thisvec->imp.curr_ptr; ++begin)
 				begin->~value_type();
-			imp.curr_ptr = begin;
+			thisvec->imp.curr_ptr = begin;
 		}
 	};
 public:
@@ -449,34 +449,36 @@ public:
 		assign_common_impl(first, last);
 		des.thisvec = nullptr;
 	}
-	constexpr vector(::std::initializer_list<T> ilist) noexcept
-		requires(is_trivially_reallocatable_v)
+	constexpr vector(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
-		if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+		if constexpr (is_trivially_reallocatable_v)
 		{
-			::fast_io::containers::details::check_size_and_construct<allocator_type>(
-				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-				reinterpret_cast<char8_t const*>(ilist.begin()),
-				reinterpret_cast<char8_t const*>(ilist.end()));
+			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+			{
+				::fast_io::containers::details::check_size_and_construct<allocator_type>(
+					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+					reinterpret_cast<char8_t const*>(ilist.begin()),
+					reinterpret_cast<char8_t const*>(ilist.end()));
+			}
+			else
+			{
+				::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
+					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+					alignof(value_type),
+					reinterpret_cast<char8_t const*>(ilist.begin()),
+					reinterpret_cast<char8_t const*>(ilist.end()));
+			}
 		}
 		else
 		{
-			::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
-				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-				alignof(value_type),
-				reinterpret_cast<char8_t const*>(ilist.begin()),
-				reinterpret_cast<char8_t const*>(ilist.end()));
+			auto const size{ ilist.size() };
+			imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(size);
+			auto e = imp.end_ptr = imp.begin_ptr + size;
+			run_destroy des{ this };
+			assign_common_impl(ilist.begin(), ilist.end());
+			des.thisvec = nullptr;
+
 		}
-	}
-	constexpr vector(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
-		requires(!is_trivially_reallocatable_v)
-	{
-		auto const size{ static_cast<std::size_t>(last - first) };
-		imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(size);
-		auto e = imp.end_ptr = imp.begin_ptr + size;
-		run_destroy des{ this };
-		assign_common_impl(ilist.begin(), ilist.end());
-		des.thisvec = nullptr;
 	}
 
 	constexpr vector(vector const& vec) requires(::std::copyable<value_type>)
@@ -742,7 +744,7 @@ public:
 		requires(!is_trivially_reallocatable_v)
 	{
 		clear();
-		auto const size{ static_cast<std::size_t>(last - first) };
+		auto const size{ ilist.size() };
 		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(size);
 		run_destroy des{ this };
@@ -840,6 +842,7 @@ public:
 		if (new_e > imp.end_ptr)
 		{
 			grow_to_size_impl(n);
+			new_e = imp.begin_ptr + n;
 			// fallthrough
 		}
 		partial_destroy des{ imp.curr_ptr, this };
