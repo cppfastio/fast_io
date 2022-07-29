@@ -211,6 +211,20 @@ inline constexpr void check_size_and_construct_align(vector_model* m, ::std::siz
 	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
 }
 
+inline void erase_impl(vector_model* m, char8_t* first, char8_t* last)
+{
+	if (last == m->curr_ptr) // no need to memmove
+	{
+		m->curr_ptr = first;
+	}
+	else
+	{
+		auto const length{ m->curr_ptr - last };
+		::fast_io::freestanding::my_memmove(first, last, length);
+		m->curr_ptr -= last - first;
+	}
+}
+
 template<typename T>
 struct vector_internal
 {
@@ -355,26 +369,71 @@ private:
 	};
 public:
 
-	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type>||noexcept(value_type()))
+	explicit constexpr vector(size_type n) noexcept
+		requires(is_trivially_reallocatable_v)
 	{
-		if constexpr(::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+		imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+		imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+	}
+	explicit constexpr vector(size_type n, value_type const& value) noexcept
+	{
+		imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+		imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		::fast_io::freestanding::fill_n(imp.begin_ptr, n, value);
+	}
+	explicit constexpr vector(size_type n, value_type const& value = value_type{}) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+		requires(!is_trivially_reallocatable_v)
+	{
+		imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(n);
+		auto e = imp.end_ptr = imp.begin_ptr + n;
+		run_destroy des(this);
+		for (; imp.curr_ptr != e; ++imp.curr_ptr)
 		{
-			imp.begin_ptr=typed_allocator_type::allocate_zero(n);
-			imp.end_ptr=imp.curr_ptr=imp.begin_ptr+n;
+			new (imp.curr_ptr) value_type(value);
+		}
+		des.thisvec = nullptr;
+	}
+	template <::std::input_iterator InputIt>
+	constexpr vector(InputIt first, InputIt last) noexcept
+		requires(is_trivially_reallocatable_v)
+	{
+		if constexpr (::std::contiguous_iterator<InputIt>)
+		{
+			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+			{
+				::fast_io::containers::details::check_size_and_construct<allocator_type>(
+					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(first)),
+					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(last)));
+			}
+			else
+			{
+				::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
+					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+					alignof(value_type),
+					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(first)),
+					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(last)));
+			}
 		}
 		else
 		{
-			auto e{this->imp.end_ptr=(this->imp.curr_ptr=this->imp.begin_ptr=
-				typed_allocator_type::allocate(n))+n};
-			run_destroy des(this);
-			for(;this->imp.curr_ptr!=e;++this->imp.curr_ptr)
-			{
-				new (this->imp.curr_ptr) value_type;
-			}
-			des.thisvec=nullptr;
+			auto const size{ static_cast<std::size_t>(last - first) };
+			new (this) vector(size);
+			assign_common_impl(first, last);
 		}
 	}
+	template <::std::input_iterator InputIt>
+	constexpr vector(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+		requires(!is_trivially_reallocatable_v)
+	{
+		run_destroy des{ this };
+		auto const size{ static_cast<std::size_t>(last - first) };
+		new (this) vector(size);
+		assign_common_impl(first, last);
+		des.thisvec = nullptr;
+	}
 	constexpr vector(::std::initializer_list<T> ilist) noexcept
+		requires(is_trivially_reallocatable_v)
 	{
 		if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 		{
@@ -391,6 +450,13 @@ public:
 				reinterpret_cast<char8_t const*>(ilist.begin()),
 				reinterpret_cast<char8_t const*>(ilist.end()));
 		}
+	}
+	constexpr vector(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+		requires(!is_trivially_reallocatable_v)
+	{
+		auto const size{ static_cast<std::size_t>(last - first) };
+		new (this) vector(size);
+		assign_common_impl(ilist.begin(), ilist.end());
 	}
 
 	constexpr vector(vector const& vec) requires(::std::copyable<value_type>)
@@ -555,11 +621,8 @@ private:
 	}
 	template <typename InputIt>
 		requires(::std::input_iterator<InputIt>)
-	inline constexpr void assign_common_impl(InputIt first, InputIt last)
+	inline constexpr void assign_common_impl(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
-		auto const size{ static_cast<std::size_t>(last - first) };
-		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
-			grow_to_size_impl(size);
 		auto ptr{ imp.begin_ptr };
 		for (; first != last; ++first, ++ptr)
 		{
@@ -603,7 +666,7 @@ public:
 		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
 		{
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-				::fast_io::containers::details::check_size_and_assign<allocator_type> (
+				::fast_io::containers::details::check_size_and_assign<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(first)),
 					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(last)));
@@ -612,18 +675,24 @@ public:
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 					alignof(value_type),
 					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(first)),
-						reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(last)));
+					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(last)));
 		}
 		else
 		{
+			auto const size{ static_cast<std::size_t>(last - first) };
+			if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+				grow_to_size_impl(size);
 			assign_common_impl(first, last);
 		}
 	}
 	template <::std::input_iterator InputIt>
-	constexpr void assign(InputIt first, InputIt last) noexcept
+	constexpr void assign(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 		requires(!is_trivially_reallocatable_v)
 	{
 		clear();
+		auto const size{ static_cast<std::size_t>(last - first) };
+		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+			grow_to_size_impl(size);
 		if constexpr (::std::contiguous_iterator<InputIt>)
 			assign_common_impl(::fast_io::freestanding::to_address(first),
 				::fast_io::freestanding::to_address(last));
@@ -649,6 +718,9 @@ public:
 		requires(!is_trivially_reallocatable_v)
 	{
 		clear();
+		auto const size{ static_cast<std::size_t>(last - first) };
+		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+			grow_to_size_impl(size);
 		assign_common_impl(ilist.begin(), ilist.end());
 	}
 	constexpr void resize(size_type n) noexcept(::std::is_nothrow_default_constructible_v<value_type>)
@@ -755,22 +827,23 @@ public:
 			}
 		}
 	}
-	constexpr iterator erase(const_iterator pos) noexcept(::std::is_nothrow_destructible_v<value_type>&& ::std::is_nothrow_copy_assignable_v<value_type>)
+	constexpr iterator erase(const_iterator pos) noexcept
 	{
 		auto mut_pos{ const_cast<iterator>(pos) };
 		if constexpr (is_trivially_reallocatable_v)
 		{
-			if (mut_pos == imp.curr_ptr - 1) // no need to memmove
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
 			{
-				imp.curr_ptr = mut_pos;
-				return imp.end_ptr;
-			}
-			else
-			{
-				auto length{ imp.curr_ptr - mut_pos - 1 };
-				::fast_io::freestanding::my_memmove(mut_pos, mut_pos + 1, length * sizeof(value_type));
-				--imp.curr_ptr;
-				return const_cast<iterator>(mut_pos);
+				erase_impl(reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+					reinterpret_cast<char8_t*>(mut_pos),
+					reinterpret_cast<char8_t*>(mut_pos + 1));
+				return mut_pos;
 			}
 		}
 		// else
@@ -782,23 +855,24 @@ public:
 		--imp.curr_ptr;
 		return mut_pos;
 	}
-	constexpr iterator erase(const_iterator first, const_iterator last) noexcept(noexcept(erase(first)))
+	constexpr iterator erase(const_iterator first, const_iterator last) noexcept()
 	{
 		if (first == last) return imp.end_ptr;
 		auto mut_first = const_cast<iterator>(first);
 		auto mut_last = const_cast<iterator>(last);
 		if constexpr (is_trivially_reallocatable_v)
 		{
-			if (mut_last == imp.end_ptr - 1) // no need to memmove
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
 			{
-				imp.curr_ptr = mut_first;
-				return mut_first;
-			}
-			else
-			{
-				auto length{ imp.curr_ptr - mut_last - 1 };
-				::fast_io::freestanding::my_memmove(mut_first, mut_last + 1, length * sizeof(value_type));
-				imp.curr_ptr -= mut_last - mut_first;
+				erase_impl(reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
+					reinterpret_cast<char8_t*>(mut_first),
+					reinterpret_cast<char8_t*>(mut_last));
 				return mut_first;
 			}
 		}
@@ -883,10 +957,9 @@ public:
 		return *p;
 	}
 
-#if 0
 	constexpr auto operator<=>(vector& other)
 	{
-		// using ordering_category_t = decltype(operator<=>(value_type&, value_type&));
+		using ordering_category_t = decltype(value_type{} <=> value_type{});
 		// copied from cppreference: lexicographical_compare
 		auto first1 = imp.begin_ptr, last1 = imp.curr_ptr,
 			first2 = other.imp.begin_ptr, last2 = other.imp.curr_ptr;
@@ -894,12 +967,10 @@ public:
 			if (auto result = *first1 <=> *first2; result != 0)
 				return result;
 		}
-		// this is wrong. how to convert the result according to decltype(operator<=>(value_type&, value_type&))?
 		if (first1 == last1)
-			return /*ordering_category_t*/first2 <=> last2;
-		return /*ordering_category_t*/::std::strong_ordering::greater;
+			return ordering_category_t(first2 <=> last2);
+		return ordering_category_t(::std::strong_ordering::greater);
 	}
-#endif
 	constexpr bool operator==(vector& other)
 	{
 		return (*this <=> other) == 0;
