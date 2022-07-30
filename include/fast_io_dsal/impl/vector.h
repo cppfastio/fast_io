@@ -986,7 +986,7 @@ public:
 };
 
 template<typename T, typename allocator>
-constexpr auto operator<=>(vector<T, allocator>& lhs, vector<T, allocator>& rhs)
+constexpr auto operator<=>(vector<T, allocator>& lhs, vector<T, allocator>& rhs) noexcept
 {
 	using ordering_category_t = decltype(T{} <=> T{});
 	// copied from cppreference: lexicographical_compare
@@ -1002,13 +1002,16 @@ constexpr auto operator<=>(vector<T, allocator>& lhs, vector<T, allocator>& rhs)
 }
 
 template<typename T, typename allocator>
-constexpr bool operator==(vector<T, allocator>& lhs, vector<T, allocator>& rhs)
+constexpr bool operator==(vector<T, allocator>& lhs, vector<T, allocator>& rhs) noexcept
 {
 	return (lhs <=> rhs) == 0;
 }
 
-template <::std::input_iterator InputIt>
-vector(InputIt, InputIt)->vector<typename ::std::iterator_traits<InputIt>::value, native_global_allocator>;
+template <typename T, typename allocator>
+constexpr void swap(vector<T, allocator>& lhs, vector<T, allocator>& rhs) noexcept
+{
+	lhs.swap(rhs);
+}
 
 }
 
@@ -1028,13 +1031,4 @@ struct is_zero_default_constructible<::fast_io::containers::vector<T,Alloc>>
 };
 
 }
-}
-
-namespace std
-{
-	template <typename T, typename Alloc>
-	void swap(::fast_io::containers::vector<T, Alloc>& lhs, ::fast_io::containers::vector<T, Alloc>& rhs)
-	{
-		swap(*reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(lhs.imp)), *reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(rhs.imp)));
-	}
 }
