@@ -131,6 +131,235 @@ inline constexpr ForwardIt remove(ForwardIt first, ForwardIt last, T value)
 	return first;
 }
 }
+
+namespace fast_io::freestanding
+{
+
+inline
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memcpy)
+constexpr
+#endif
+#endif
+void* my_memcpy(void* dest, void const* src, std::size_t count) noexcept
+{
+	return
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memcpy)
+		__builtin_memcpy
+#else
+		std::memcpy
+#endif
+#else
+		std::memcpy
+#endif
+		(dest, src, count);
+}
+
+
+inline
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memmove)
+constexpr
+#endif
+#endif
+void* my_memmove(void* dest, void const* src, std::size_t count) noexcept
+{
+	return
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memmove)
+		__builtin_memmove
+#else
+		std::memmove
+#endif
+#else
+		std::memmove
+#endif
+		(dest, src, count);
+}
+
+inline void* my_memset(void* dest, int ch, std::size_t count) noexcept
+{
+	return
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memset)
+		__builtin_memset
+#else
+		std::memset
+#endif
+#else
+		std::memset
+#endif
+		(dest, ch, count);
+}
+
+
+
+template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t count, output_iter result)
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if (__builtin_is_constant_evaluated())
+#endif
+	{
+		return ::fast_io::freestanding::copy_n(first, count, result);
+	}
+	else
+#endif
+	{
+		using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
+		using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+		if constexpr
+			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
+				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+				std::is_trivially_copyable_v<input_value_type> &&
+				std::is_trivially_copyable_v<output_value_type> &&
+				(std::same_as<input_value_type, output_value_type> ||
+					(std::integral<input_value_type> && std::integral<output_value_type> &&
+						sizeof(input_value_type) == sizeof(output_value_type))))
+		{
+			if (count)	//to avoid nullptr UB
+				my_memcpy(::fast_io::freestanding::to_address(result), ::fast_io::freestanding::to_address(first), sizeof(::fast_io::freestanding::iter_value_t<input_iter>) * count);
+			return result += count;
+		}
+		else
+			return ::fast_io::freestanding::copy_n(first, count, result);
+	}
+}
+
+template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter last, output_iter result)
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if (__builtin_is_constant_evaluated())
+#endif
+	{
+		return ::fast_io::freestanding::copy(first, last, result);
+	}
+	else
+#endif
+	{
+		using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
+		using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+		if constexpr
+			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
+				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+				std::is_trivially_copyable_v<input_value_type> &&
+				std::is_trivially_copyable_v<output_value_type> &&
+				(std::same_as<input_value_type, output_value_type> ||
+					(std::integral<input_value_type> && std::integral<output_value_type> &&
+						sizeof(input_value_type) == sizeof(output_value_type))))
+		{
+			std::size_t count{ static_cast<std::size_t>(last - first) };
+			if (count)	//to avoid nullptr UB
+				my_memcpy(::fast_io::freestanding::to_address(result), ::fast_io::freestanding::to_address(first), sizeof(::fast_io::freestanding::iter_value_t<input_iter>) * count);
+			return result += count;
+		}
+		else
+		{
+			return ::fast_io::freestanding::copy(first, last, result);
+		}
+	}
+}
+
+template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+inline constexpr output_iter my_copy_n(input_iter first, std::size_t count, output_iter result)
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if (__builtin_is_constant_evaluated())
+#endif
+	{
+		return ::fast_io::freestanding::copy_n(first, count, result);
+	}
+	else
+#endif
+	{
+		using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
+		using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+		if constexpr
+			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
+				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+				std::is_trivially_copyable_v<input_value_type> &&
+				std::is_trivially_copyable_v<output_value_type> &&
+				(std::same_as<input_value_type, output_value_type> ||
+					(std::integral<input_value_type> && std::integral<output_value_type> &&
+						sizeof(input_value_type) == sizeof(output_value_type))))
+		{
+			if (count)	//to avoid nullptr UB
+				my_memmove(::fast_io::freestanding::to_address(result), ::fast_io::freestanding::to_address(first), sizeof(::fast_io::freestanding::iter_value_t<input_iter>) * count);
+			return result += count;
+		}
+		else
+		{
+			return ::fast_io::freestanding::copy_n(first, count, result);
+		}
+	}
+}
+
+template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+inline constexpr output_iter my_copy(input_iter first, input_iter second, output_iter result)
+{
+	using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
+	using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+	if constexpr (::fast_io::freestanding::contiguous_iterator<input_iter> && ::fast_io::freestanding::contiguous_iterator<output_iter> && std::is_trivially_copyable_v<input_value_type> &&
+		std::is_trivially_copyable_v<output_value_type> &&
+		(std::same_as<input_value_type, output_value_type> || (std::integral<input_value_type> && std::integral<output_value_type> && sizeof(std::is_trivially_copyable_v<input_value_type>) == sizeof(std::is_trivially_copyable_v<output_value_type>))))
+	{
+		my_copy_n(first, static_cast<std::size_t>(second - first), result);
+		return result + (second - first);
+	}
+	else
+		return ::fast_io::freestanding::copy(first, second, result);
+}
+
+template<::fast_io::freestanding::bidirectional_iterator input_iter, ::fast_io::freestanding::bidirectional_iterator output_iter>
+inline constexpr output_iter my_copy_backward(input_iter first, input_iter last, output_iter d_last)
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if (__builtin_is_constant_evaluated())
+#endif
+	{
+		return ::fast_io::freestanding::copy_backward(first, last, d_last);
+	}
+	else
+#endif
+	{
+		using input_value_type = typename ::fast_io::freestanding::iter_value_t<input_iter>;
+		using output_value_type = typename ::fast_io::freestanding::iter_value_t<output_iter>;
+		if constexpr
+			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
+				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+				std::is_trivially_copyable_v<input_value_type> &&
+				std::is_trivially_copyable_v<output_value_type> &&
+				(std::same_as<input_value_type, output_value_type> ||
+					(std::integral<input_value_type> && std::integral<output_value_type> &&
+						sizeof(input_value_type) == sizeof(output_value_type))))
+		{
+			std::size_t const count(last - first);
+			d_last -= count;
+			if (count)	//to avoid nullptr UB
+				my_memmove(::fast_io::freestanding::to_address(d_last), ::fast_io::freestanding::to_address(first), sizeof(input_value_type) * count);
+			return d_last;
+		}
+		else
+			return ::fast_io::freestanding::copy_backward(first, last, d_last);
+	}
+}
+
+}
+
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
 #endif
