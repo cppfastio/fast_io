@@ -28,4 +28,5 @@ extern "C" int LLVMFuzzerTestOneInput(std::uint8_t* data, std::size_t size)
 			vec_not_char.emplace_back(*data++);
 		}
 	}
+	return 0;
 }
