@@ -10,6 +10,8 @@ struct range_view_t
     It begin;
     It end;
 };
+template <::std::integral char_type, ::fast_io::freestanding::input_or_output_iterator I>
+range_view_t(::fast_io::basic_io_scatter_t<char_type>, I, I)->range_view_t<char_type, I>;
 
 template <::std::integral char_type, ::fast_io::freestanding::input_or_output_iterator It, output_stream output>
 inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<char_type, It>>, output out, range_view_t<char_type, It> t)
