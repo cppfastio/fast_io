@@ -273,7 +273,7 @@ private:
 	void destroy() noexcept
 	{
 		clear();
-		if constexpr(!typed_allocator_type::has_deallocate)
+		if constexpr(typed_allocator_type::has_deallocate)
 		{
 			typed_allocator_type::deallocate(imp.begin_ptr);
 		}

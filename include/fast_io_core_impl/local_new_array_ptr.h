@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/allocation/impl.h"
 namespace fast_io::details
 {
 template<typename char_type>
@@ -21,12 +22,15 @@ inline constexpr char_type* allocate_iobuf_space(std::size_t buffer_size) noexce
 	}
 }
 
-template<bool nsecure_clear>
+template<bool nsecure_clear, typename allocator = ::fast_io::native_thread_local_allocator>
 inline void deallocate_with_secure_clear(void* ptr,[[maybe_unused]] std::size_t buffer_bytes) noexcept
 {
 	if constexpr(nsecure_clear)
 		secure_clear(ptr,buffer_bytes);
-	native_thread_local_allocator::deallocate(ptr);
+	if constexpr(allocator::has_deallocate)
+		allocator::deallocate(ptr);
+	else
+	 	allocator::deallocate_n(ptr,buffer_bytes);
 }
 
 template<bool nsecure_clear,typename char_type>
@@ -46,7 +50,10 @@ inline constexpr void deallocate_iobuf_space(char_type* ptr,[[maybe_unused]] std
 	{
 		if constexpr(nsecure_clear)
 			secure_clear(ptr,buffer_size*sizeof(char_type));
-		native_typed_thread_local_allocator<char_type>::deallocate(ptr);
+		if constexpr(native_typed_thread_local_allocator<char_type>::has_deallocate)
+			native_typed_thread_local_allocator<char_type>::deallocate(ptr);
+		else
+		 	native_typed_thread_local_allocator<char_type>::deallocate_n(ptr,buffer_size);
 	}
 }
 
