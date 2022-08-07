@@ -72,6 +72,8 @@
 #include"fast_io_core_impl/local_new_array_ptr.h"
 #include"fast_io_core_impl/dynamic_io_buffer.h"
 #include"fast_io_core_impl/temporary_buffer.h"
+// Although std::ranges is not freestanding, you can use the function by constructing a range_view_t, which relies on iterators not ranges
+#include"fast_io_core_impl/range_view.h"
 //#include"fast_io_core_impl/manip/impl.h"
 #include"fast_io_core_impl/mode.h"
 #include"fast_io_core_impl/perms.h"
