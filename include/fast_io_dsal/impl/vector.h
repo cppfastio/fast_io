@@ -409,11 +409,11 @@ public:
 		}
 		des.thisvec = nullptr;
 	}
-	template <::std::input_iterator InputIt>
+	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept
 		requires(is_trivially_reallocatable_v)
 	{
-		if constexpr (::std::contiguous_iterator<InputIt>)
+		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
 		{
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 			{
@@ -438,7 +438,7 @@ public:
 			assign_common_impl(first, last);
 		}
 	}
-	template <::std::input_iterator InputIt>
+	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 		requires(!is_trivially_reallocatable_v)
 	{
@@ -642,7 +642,7 @@ private:
 		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type),false>(cap));
 	}
 	template <typename InputIt>
-		requires(::std::input_iterator<InputIt>)
+		requires(::fast_io::freestanding::input_iterator<InputIt>)
 	inline constexpr void assign_common_impl(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		auto ptr{ imp.begin_ptr };
@@ -683,7 +683,7 @@ public:
 		}
 		des.thisvec = nullptr;
 	}
-	template <::std::input_iterator InputIt>
+	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr void assign(InputIt first, InputIt last) noexcept
 		requires(is_trivially_reallocatable_v)
 	{
@@ -709,7 +709,7 @@ public:
 			assign_common_impl(first, last);
 		}
 	}
-	template <::std::input_iterator InputIt>
+	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr void assign(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
 		requires(!is_trivially_reallocatable_v)
 	{
@@ -718,7 +718,7 @@ public:
 		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(size);
 		run_destroy des{ this };
-		if constexpr (::std::contiguous_iterator<InputIt>)
+		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
 			assign_common_impl(::fast_io::freestanding::to_address(first),
 				::fast_io::freestanding::to_address(last));
 		else
