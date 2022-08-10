@@ -50,7 +50,7 @@ See [support.md](support.md) for a list of supported things and platform specifi
 
 ### Other questions?
 You can ask questions on the [fast_io discord server](https://discord.gg/wYfh8kk)
-or QQ group: `1076846339`.
+or QQ group: `824374967`.
 
 ## Documentation
 See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/qabeowjbtkwb/fast_io/wikis.
