@@ -261,7 +261,7 @@ public:
 	using difference_type = ::std::ptrdiff_t;
 	::fast_io::containers::details::vector_internal<T> imp;
 
-	static constexpr bool is_trivially_reallocatable_v = ::fast_io::freestanding::is_trivially_relocatable_v<value_type>;
+	static inline constexpr bool is_trivially_reallocatable_v = ::fast_io::freestanding::is_trivially_relocatable_v<value_type>;
 
 	[[nodiscard]] constexpr iterator begin() noexcept
 	{
