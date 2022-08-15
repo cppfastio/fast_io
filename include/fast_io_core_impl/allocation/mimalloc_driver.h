@@ -10,7 +10,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__cdecl__)
+#if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 [[__gnu__::__cdecl__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__malloc__)
@@ -21,7 +21,7 @@ extern void*
 __cdecl
 #endif
 mi_malloc(::std::size_t size) noexcept
-#if defined(__clang__) || defined(__GNUC__)
+#if (defined(__clang__) || defined(__GNUC__)) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
 __asm__("mi_malloc")
@@ -38,7 +38,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__cdecl__)
+#if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 [[__gnu__::__cdecl__]]
 #endif
 extern void
@@ -46,7 +46,7 @@ extern void
 __cdecl
 #endif
 mi_free(void* p) noexcept
-#if defined(__clang__) || defined(__GNUC__)
+#if (defined(__clang__) || defined(__GNUC__)) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
 __asm__("mi_free")
@@ -64,7 +64,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__cdecl__)
+#if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 [[__gnu__::__cdecl__]]
 #endif
 extern void*
@@ -72,7 +72,7 @@ extern void*
 __cdecl
 #endif
 mi_calloc(::std::size_t count,::std::size_t size) noexcept
-#if defined(__clang__) || defined(__GNUC__)
+#if (defined(__clang__) || defined(__GNUC__)) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
 __asm__("mi_calloc")
@@ -90,7 +90,7 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__cdecl__)
+#if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 [[__gnu__::__cdecl__]]
 #endif
 extern void*
@@ -98,7 +98,7 @@ extern void*
 __cdecl
 #endif
 mi_realloc(void* p, ::std::size_t newsize) noexcept
-#if defined(__clang__) || defined(__GNUC__)
+#if (defined(__clang__) || defined(__GNUC__)) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
 __asm__("mi_realloc")
