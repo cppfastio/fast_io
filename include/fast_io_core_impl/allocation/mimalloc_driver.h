@@ -10,10 +10,17 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
 #if __has_cpp_attribute(__gnu__::__malloc__)
 [[__gnu__::__malloc__]]
 #endif
-extern void* __cdecl mi_malloc(::std::size_t size) noexcept
+extern void*
+#if defined(_MSC_VER) && !defined(__clang__)
+__cdecl
+#endif
+mi_malloc(::std::size_t size) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -31,7 +38,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __cdecl mi_free(void* p) noexcept
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern void
+#if defined(_MSC_VER) && !defined(__clang__)
+__cdecl
+#endif
+mi_free(void* p) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -50,7 +64,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void* __cdecl mi_calloc(::std::size_t count,::std::size_t size) noexcept
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern void*
+#if defined(_MSC_VER) && !defined(__clang__)
+__cdecl
+#endif
+mi_calloc(::std::size_t count,::std::size_t size) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -69,7 +90,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void* __cdecl mi_realloc(void* p, ::std::size_t newsize) noexcept
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern void*
+#if defined(_MSC_VER) && !defined(__clang__)
+__cdecl
+#endif
+mi_realloc(void* p, ::std::size_t newsize) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
