@@ -1,5 +1,15 @@
 #include<fast_io.h>
 #include<fast_io_driver/timer.h>
+
+#if defined(USE_STD)
+#include<vector>
+#include<cstdint>
+namespace test
+{
+template<typename T>
+using vector = ::std::vector<T>;
+}
+#else
 #include<fast_io_dsal/vector.h>
 namespace test
 {
