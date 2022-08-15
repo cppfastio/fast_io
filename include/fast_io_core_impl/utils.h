@@ -363,65 +363,6 @@ inline constexpr U little_endian(U u) noexcept
 namespace details
 {
 
-inline
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
-constexpr
-#endif
-#endif
-void* my_memcpy(void* dest,void const* src,std::size_t count) noexcept
-{
-    return
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
-		__builtin_memcpy
-#else
-		std::memcpy
-#endif
-#else
-		std::memcpy
-#endif
-        (dest,src,count);
-}
-
-
-inline
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memmove)
-constexpr
-#endif
-#endif
-void* my_memmove(void* dest,void const* src,std::size_t count) noexcept
-{
-    return
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memmove)
-		__builtin_memmove
-#else
-		std::memmove
-#endif
-#else
-		std::memmove
-#endif
-        (dest,src,count);
-}
-
-inline void* my_memset(void* dest, int ch, std::size_t count) noexcept
-{
-    return
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memset)
-		__builtin_memset
-#else
-		std::memset
-#endif
-#else
-		std::memset
-#endif
-        (dest,ch,count);
-}
-
-
 template<typename range_type>
 inline 
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L

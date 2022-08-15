@@ -16,7 +16,7 @@
 #include"linux_kernel.h"
 #endif
 
-#if defined(FAST_IO_ENABLE_MIMALLOC) || defined(FAST_IO_USE_MIMALLOC)
+#if (defined(FAST_IO_ENABLE_MIMALLOC) || defined(FAST_IO_USE_MIMALLOC)) && (!defined(_MSC_VER) || defined(__clang__))
 #include"mimalloc_driver.h"
 #endif
 
@@ -30,7 +30,7 @@ using native_global_allocator =
 generic_allocator_adapter<
 #if defined(FAST_IO_USE_CUSTOM_GLOBAL_ALLOCATOR)
 custom_global_allocator
-#elif defined(FAST_IO_USE_MIMALLOC)
+#elif defined(FAST_IO_USE_MIMALLOC) && (!defined(_MSC_VER) || defined(__clang__))
 mimalloc_allocator
 #elif (defined(__linux__) && defined(__KERNEL__)) || defined(FAST_IO_USE_LINUX_KERNEL_ALLOCATOR)
 linux_kmalloc_allocator

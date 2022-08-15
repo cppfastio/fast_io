@@ -102,7 +102,7 @@ public:
 	}
 	static inline void* reallocate(void* p,::std::size_t n) noexcept
 	{
-		void* p = ::fast_io::mimalloc::mi_realloc(p,n);
+		p = ::fast_io::mimalloc::mi_realloc(p,n);
 		if(p==nullptr)
 		{
 			::fast_io::fast_terminate();
