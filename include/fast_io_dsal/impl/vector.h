@@ -261,8 +261,6 @@ public:
 	using difference_type = ::std::ptrdiff_t;
 	::fast_io::containers::details::vector_internal<T> imp;
 
-	static inline constexpr bool is_trivially_reallocatable_v = ::fast_io::freestanding::is_trivially_relocatable_v<value_type>;
-
 	[[nodiscard]] constexpr iterator begin() noexcept
 	{
 		return imp.begin_ptr;
@@ -307,7 +305,7 @@ public:
 	}
 	constexpr void clear() noexcept
 	{
-		if constexpr(!is_trivially_reallocatable_v)
+		if constexpr(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 			for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
 			{
@@ -386,21 +384,24 @@ private:
 public:
 
 	explicit constexpr vector(size_type n) noexcept
-		requires(is_trivially_reallocatable_v)
+		requires(::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
 	{
 		imp.begin_ptr = typed_allocator_type::allocate_zero(n);
 		imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
 	}
+#if 0
+//WTF with this???
 	explicit constexpr vector(size_type n, value_type const& value) noexcept
 	{
 		imp.begin_ptr = typed_allocator_type::allocate_zero(n);
 		imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
 		::fast_io::freestanding::fill_n(imp.begin_ptr, n, value);
 	}
+#endif
 	explicit constexpr vector(size_type n, value_type const& value = value_type{}) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
-		requires(!is_trivially_reallocatable_v)
+		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
-		imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(n);
+		imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocate(n);
 		auto e = imp.end_ptr = imp.begin_ptr + n;
 		run_destroy des(this);
 		for (; imp.curr_ptr != e; ++imp.curr_ptr)
@@ -411,7 +412,7 @@ public:
 	}
 	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept
-		requires(is_trivially_reallocatable_v)
+		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
 		{
@@ -440,7 +441,7 @@ public:
 	}
 	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
-		requires(!is_trivially_reallocatable_v)
+		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		auto const size{ static_cast<std::size_t>(last - first) };
 		imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(size);
@@ -451,7 +452,7 @@ public:
 	}
 	constexpr vector(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
-		if constexpr (is_trivially_reallocatable_v)
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 			{
@@ -552,7 +553,7 @@ private:
 	inline constexpr void grow_to_size_impl(size_type newcap) noexcept
 	{
 		// assert(newcap >= size())
-		if constexpr(is_trivially_reallocatable_v)
+		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -614,7 +615,7 @@ private:
 	}
 	inline constexpr void grow_twice_impl() noexcept
 	{
-		if constexpr(is_trivially_reallocatable_v)
+		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -663,7 +664,7 @@ public:
 	}
 
 	constexpr void assign(size_type n, value_type const& value) noexcept
-		requires(is_trivially_reallocatable_v)
+		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		if (n > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(n);
@@ -671,7 +672,7 @@ public:
 		imp.curr_ptr = imp.begin_ptr + n;
 	}
 	constexpr void assign(size_type n, value_type const& value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!is_trivially_reallocatable_v)
+		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
 		if (n > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
@@ -685,7 +686,7 @@ public:
 	}
 	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr void assign(InputIt first, InputIt last) noexcept
-		requires(is_trivially_reallocatable_v)
+		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
 		{
@@ -711,7 +712,7 @@ public:
 	}
 	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr void assign(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!is_trivially_reallocatable_v)
+		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
 		auto const size{ static_cast<std::size_t>(last - first) };
@@ -726,7 +727,7 @@ public:
 		des.thisvec = nullptr;
 	}
 	constexpr void assign(::std::initializer_list<T> ilist) noexcept
-		requires(is_trivially_reallocatable_v)
+		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 			::fast_io::containers::details::check_size_and_assign<allocator_type>(
@@ -741,7 +742,7 @@ public:
 				reinterpret_cast<char8_t*>(ilist.end()));
 	}
 	constexpr void assign(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!is_trivially_reallocatable_v)
+		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
 		auto const size{ ilist.size() };
@@ -752,7 +753,7 @@ public:
 		des.thisvec = nullptr;
 	}
 	constexpr void resize(size_type n) noexcept(::std::is_nothrow_default_constructible_v<value_type>)
-		requires(is_trivially_reallocatable_v)
+		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
 		{
@@ -809,7 +810,7 @@ public:
 		return;
 	}
 	constexpr void resize(size_type n, value_type const& value) noexcept
-		requires(is_trivially_reallocatable_v)
+		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		auto new_e{ imp.begin_ptr + n };
 		if (new_e <= imp.curr_ptr)
@@ -829,7 +830,7 @@ public:
 		return;
 	}
 	constexpr void resize(size_type n, value_type const& value = value_type{}) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!is_trivially_reallocatable_v)
+		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		auto new_e{ imp.begin_ptr + n };
 		if (new_e <= imp.curr_ptr)
@@ -856,7 +857,7 @@ public:
 	constexpr iterator erase(const_iterator pos) noexcept
 	{
 		auto mut_pos{ const_cast<iterator>(pos) };
-		if constexpr (is_trivially_reallocatable_v)
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -886,7 +887,7 @@ public:
 		if (first == last) return imp.end_ptr;
 		auto mut_first = const_cast<iterator>(first);
 		auto mut_last = const_cast<iterator>(last);
-		if constexpr (is_trivially_reallocatable_v)
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
