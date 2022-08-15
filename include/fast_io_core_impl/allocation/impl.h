@@ -35,7 +35,7 @@ mimalloc_allocator
 #elif (defined(__linux__) && defined(__KERNEL__)) || defined(FAST_IO_USE_LINUX_KERNEL_ALLOCATOR)
 linux_kmalloc_allocator
 #elif __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
-#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(FAST_IO_USE_C_MALLOC)
 win32_heapalloc_allocator
 #else
 c_malloc_allocator
