@@ -398,7 +398,7 @@ public:
 		::fast_io::freestanding::fill_n(imp.begin_ptr, n, value);
 	}
 #endif
-	explicit constexpr vector(size_type n, value_type const& value = value_type{}) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	explicit constexpr vector(size_type n, value_type const& value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		auto begin_ptr{typed_allocator_type::allocate(n)};
 		if constexpr(::std::is_nothrow_copy_constructible_v<value_type>)
@@ -421,6 +421,7 @@ public:
 			des.thisvec = nullptr;
 		}
 	}
+	explicit constexpr vector(size_type n) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) :vector(n,value_type()){}
 	template <::fast_io::freestanding::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept
 		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
