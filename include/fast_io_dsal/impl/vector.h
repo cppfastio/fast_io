@@ -186,7 +186,7 @@ template <typename allocator>
 inline constexpr void check_size_and_construct(vector_model* m, char8_t const* begin, char8_t const* end) noexcept
 {
 	auto const new_size{ static_cast<::std::size_t>(end - begin) };
-	m->begin_ptr = (char8_t*)allocator::allocate(new_size);
+	m->begin_ptr = reinterpret_cast<char8_t*>(allocator::allocate(new_size));
 	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
 	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
 }
