@@ -360,6 +360,9 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 
 namespace fast_io::details
 {
+using ::fast_io::freestanding::my_memcpy;
+using ::fast_io::freestanding::my_memmove;
+using ::fast_io::freestanding::my_memset;
 using ::fast_io::freestanding::non_overlapped_copy_n;
 using ::fast_io::freestanding::non_overlapped_copy;
 using ::fast_io::freestanding::my_copy;
