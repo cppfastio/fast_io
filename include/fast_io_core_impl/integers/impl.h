@@ -220,8 +220,26 @@ inline constexpr scalar_manip_t<::fast_io::details::base_mani_flags_cache<16,fal
 
 template<typename scalar_type>
 requires (::fast_io::details::my_integral<scalar_type>||std::is_pointer_v<std::remove_cvref_t<scalar_type>>||std::same_as<std::nullptr_t,std::remove_cvref_t<scalar_type>>||::fast_io::freestanding::contiguous_iterator<scalar_type>)
-inline constexpr scalar_manip_t<::fast_io::details::base_mani_flags_cache<16,false,true,true,::fast_io::details::my_signed_integral<::std::remove_cvref_t<scalar_type>>>,
-	::std::conditional_t<::fast_io::details::my_integral<scalar_type>,::std::remove_cvref_t<scalar_type>,::std::uintptr_t>> addrvw(scalar_type t) noexcept
+inline constexpr scalar_manip_t<::fast_io::details::base_mani_flags_cache<16,false,true,true,false>,
+	::std::conditional_t<::fast_io::details::my_integral<scalar_type>,
+	::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<scalar_type>>,::std::uintptr_t>> addrvw(scalar_type t) noexcept
+{
+	if constexpr(std::same_as<scalar_type,std::nullptr_t>)
+		return {};
+	else if constexpr(::fast_io::details::my_signed_integral<scalar_type>)
+		return {static_cast<::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<scalar_type>>>(t)};
+	else if constexpr(::fast_io::details::my_integral<scalar_type>)
+		return {t};
+	else if constexpr(std::is_pointer_v<std::remove_cvref_t<scalar_type>>)
+		return {::fast_io::bit_cast<std::uintptr_t>(t)};
+	else
+		return {::fast_io::bit_cast<std::uintptr_t>(::fast_io::freestanding::to_address(t))};
+}
+
+template<typename scalar_type>
+requires (::fast_io::details::my_integral<scalar_type>||std::is_pointer_v<std::remove_cvref_t<scalar_type>>||std::same_as<std::nullptr_t,std::remove_cvref_t<scalar_type>>||::fast_io::freestanding::contiguous_iterator<scalar_type>)
+inline constexpr scalar_manip_t<::fast_io::details::base_mani_flags_cache<16,false,true,true,true>,
+	::std::conditional_t<::fast_io::details::my_integral<scalar_type>,::std::remove_cvref_t<scalar_type>,::std::uintptr_t>> dfvw(scalar_type t) noexcept
 {
 	if constexpr(std::same_as<scalar_type,std::nullptr_t>)
 		return {};
