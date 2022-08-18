@@ -193,8 +193,6 @@ inline void* my_memset(void* dest, int ch, std::size_t count) noexcept
 		(dest, ch, count);
 }
 
-
-
 template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t count, output_iter result)
 {
@@ -358,6 +356,18 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 	}
 }
 
+}
+
+namespace fast_io::details
+{
+using ::fast_io::freestanding::my_memcpy;
+using ::fast_io::freestanding::my_memmove;
+using ::fast_io::freestanding::my_memset;
+using ::fast_io::freestanding::non_overlapped_copy_n;
+using ::fast_io::freestanding::non_overlapped_copy;
+using ::fast_io::freestanding::my_copy;
+using ::fast_io::freestanding::my_copy_backward;
+using ::fast_io::freestanding::my_copy_n;
 }
 
 #if defined(_MSC_VER) && !defined(__clang__)
