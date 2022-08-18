@@ -1,11 +1,17 @@
 #pragma once
 
 namespace fast_io {	
-template <::std::integral ch_type, ::fast_io::freestanding::input_or_output_iterator It>
+template <::std::integral ch_type,
+	::fast_io::freestanding::input_or_output_iterator It,
+	bool dynamic_reserve_printable
+		= reserve_printable<ch_type, typename ::fast_io::freestanding::iterator_traits<It>::value_type>
+		|| dynamic_reserve_printable<ch_type, typename ::fast_io::freestanding::iterator_traits<It>::value_type>
+>
 struct range_view_t
 {
     using char_type = ch_type;
     using iterator = It;
+	using value_type = typename ::fast_io::freestanding::iterator_traits<It>::value_type;
     ::fast_io::basic_io_scatter_t<ch_type> sep;
     It begin;
     It end;
@@ -13,16 +19,29 @@ struct range_view_t
 template <::std::integral char_type, ::fast_io::freestanding::input_or_output_iterator I>
 range_view_t(::fast_io::basic_io_scatter_t<char_type>, I, I)->range_view_t<char_type, I>;
 
+#if 0
+template <::std::integral char_type, ::fast_io::freestanding::input_or_output_iterator It>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, range_view_t<char_type, It, true>>, range_view_t<char_type, It, true> t)
+{
+	return 0;
+}
+
+template <::std::integral char_type, ::fast_io::freestanding::input_or_output_iterator It>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type, range_view_t<char_type, It, true>>, char_type* ptr, range_view_t<char_type, It, true> t)
+{
+	return nullptr;
+}
+#endif
+
 template <::std::integral char_type, ::fast_io::freestanding::input_or_output_iterator It, output_stream output>
-inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<char_type, It>>, output out, range_view_t<char_type, It> t)
+inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<char_type, It, false>>, output out, range_view_t<char_type, It, false> t)
 {
     if (t.begin == t.end) return;
     auto cur{ t.begin };
     print_freestanding(out, *cur);
     for (++cur; cur != t.end; ++cur)
     {
-        print_freestanding(out, t.sep);
-        print_freestanding(out, *cur);
+		print_freestanding(out, t.sep, *cur);
     }
 }
 
