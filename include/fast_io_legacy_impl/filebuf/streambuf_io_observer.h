@@ -37,7 +37,7 @@ public:
 	{
 		return basic_c_io_observer<char_type>{details::streambuf_hack::fp_hack(fb)};
 	}
-#if !defined(__AVR__)
+#if !(defined(__AVR__)||defined(__XTENSA__))
 	explicit operator basic_posix_io_observer<char_type>() const noexcept
 	{
 		return static_cast<basic_posix_io_observer<char_type>>(static_cast<basic_c_io_observer<char_type>>(*this));
@@ -189,7 +189,7 @@ inline void clear_screen(basic_general_streambuf_io_observer<T> other)
 			throw_posix_error(EINVAL);
 #endif
 	}
-#ifdef __AVR__
+#if (defined(__AVR__)||defined(__XTENSA__))
 	::fast_io::details::avr_libc_nosup_impl();
 #else
 	io_lock_guard guard{bciob};

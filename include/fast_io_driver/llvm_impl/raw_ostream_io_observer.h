@@ -25,7 +25,7 @@ public:
 	{
 		return os;
 	}
-#if !defined(__AVR__)
+#if !(defined(__AVR__)||defined(__XTENSA__))
 	explicit operator basic_posix_io_observer<char_type>() const noexcept requires(std::derived_from<T,::llvm::raw_fd_ostream>)
 	{
 		return {::fast_io::llvm::details::hack_fd_from_llvm_raw_fd_ostream(this->os)};
