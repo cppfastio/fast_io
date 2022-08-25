@@ -95,7 +95,7 @@ public:
 	{
 		cioh.fp=nullptr;
 	}
-#if !defined(__AVR__)
+#if !(defined(__AVR__)||defined(__XTENSA__))
 	basic_qt_file(basic_posix_file<ch_type>&& pioh,open_mode mode):basic_qt_io_observer<char_type>{::fast_io::details::open_qfile_with_fd(pioh.fd,mode)}
 	{
 		pioh.fd=-1;

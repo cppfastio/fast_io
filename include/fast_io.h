@@ -20,7 +20,7 @@
 
 namespace fast_io
 {
-#if !defined(__AVR__) && !defined(__XTENSA__)
+#if !(defined(__AVR__)||defined(__XTENSA__))
 inline
 #if defined(__WINE__) || !defined(_WIN32)
 constexpr
@@ -184,7 +184,7 @@ template<bool line,typename... Args>
 #endif
 inline constexpr void perr_after_io_print_forward(Args ...args)
 {
-#if defined(__AVR__) || defined(__XTENSA__)
+#if (defined(__AVR__)||defined(__XTENSA__))
 	print_freestanding_decay<line>(c_stderr(),args...);
 #else
 	print_freestanding_decay<line>(err(),args...);
@@ -197,7 +197,7 @@ template<bool line,typename... Args>
 #endif
 inline constexpr void debug_print_after_io_print_forward(Args ...args)
 {
-#if defined(__AVR__) || defined(__XTENSA__)
+#if (defined(__AVR__)||defined(__XTENSA__))
 	print_freestanding_decay<line>(c_stdout(),args...);
 #else
 	print_freestanding_decay<line>(out(),args...);
@@ -333,7 +333,7 @@ static_assert(type_error,"some types are not printable for perr");
 	{
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
-#if defined(__AVR__) && defined(__XTENSA__)
+#if (defined(__AVR__)||defined(__XTENSA__))
 		::fast_io::c_io_observer
 #else
 		::fast_io::native_io_observer
@@ -373,7 +373,7 @@ static_assert(type_error,"some types are not printable for perrln");
 	{
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
-#if defined(__AVR__) && defined(__XTENSA__)
+#if (defined(__AVR__)||defined(__XTENSA__))
 		::fast_io::c_io_observer
 #else
 		::fast_io::native_io_observer
@@ -450,7 +450,7 @@ static_assert(type_error,"some types are not printable for debug_print");
 	{
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
-#if defined(__AVR__) && defined(__XTENSA__)
+#if (defined(__AVR__)||defined(__XTENSA__))
 		::fast_io::c_io_observer
 #else
 		::fast_io::native_io_observer
@@ -490,7 +490,7 @@ static_assert(type_error,"some types are not printable for debug_println");
 	{
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
-#if defined(__AVR__) && defined(__XTENSA__)
+#if (defined(__AVR__)||defined(__XTENSA__))
 		::fast_io::c_io_observer
 #else
 		::fast_io::native_io_observer

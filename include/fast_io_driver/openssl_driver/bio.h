@@ -275,7 +275,7 @@ public:
 	{
 		return {details::bio_to_fp(bio)};
 	}
-#if !defined(__AVR__)
+#if !(defined(__AVR__)||defined(__XTENSA__))
 	explicit operator basic_posix_io_observer<char_type>() const noexcept
 	{
 		return {details::bio_to_fd(bio)};
