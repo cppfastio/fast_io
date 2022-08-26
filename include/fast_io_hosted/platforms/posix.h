@@ -1773,7 +1773,7 @@ inline std::size_t posix_pwrite_impl(int fd,void const* address,std::size_t byte
 	system_call_throw_error(written_bytes);
 	return static_cast<std::size_t>(written_bytes);
 }
-#if __BSD_VISIBLE || _BSD_SOURCE || _DEFAULT_SOURCE
+#if !defined(__NEWLIB__) && (__BSD_VISIBLE || _BSD_SOURCE || _DEFAULT_SOURCE)
 inline std::size_t posix_scatter_pread_size_impl(int fd,io_scatters_t sp,std::intmax_t offset)
 {
 	if constexpr(sizeof(std::intmax_t)>sizeof(off_t))
@@ -1855,7 +1855,7 @@ inline constexpr Iter pwrite(basic_posix_io_observer<char_type> piob,Iter begin,
 {
 	return begin+details::posix_pwrite_impl(piob.fd,::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
 }
-#if __BSD_VISIBLE || _BSD_SOURCE || _DEFAULT_SOURCE
+#if !defined(__NEWLIB__) && (__BSD_VISIBLE || _BSD_SOURCE || _DEFAULT_SOURCE)
 template<std::integral ch_type>
 [[nodiscard]] inline io_scatter_status_t scatter_pread(basic_posix_io_observer<ch_type> piob,io_scatters_t sp,std::intmax_t offset)
 {
