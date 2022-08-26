@@ -1773,7 +1773,7 @@ inline std::size_t posix_pwrite_impl(int fd,void const* address,std::size_t byte
 	system_call_throw_error(written_bytes);
 	return static_cast<std::size_t>(written_bytes);
 }
-
+#if __BSD_VISIBLE || _BSD_SOURCE || _DEFAULT_SOURCE
 inline std::size_t posix_scatter_pread_size_impl(int fd,io_scatters_t sp,std::intmax_t offset)
 {
 	if constexpr(sizeof(std::intmax_t)>sizeof(off_t))
@@ -1787,10 +1787,15 @@ inline std::size_t posix_scatter_pread_size_impl(int fd,io_scatters_t sp,std::in
 	system_call_throw_error(val);
 	return static_cast<std::size_t>(val);
 #else
+	using iovec_may_alias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= iovec const*;
 	std::size_t sz{sp.len};
-	if(static_cast<std::size_t>(std::numeric_limits<int>::max())<len)
+	if(static_cast<std::size_t>(std::numeric_limits<int>::max())<sz)
 		sz=static_cast<std::size_t>(std::numeric_limits<int>::max());
-	auto ptr{reinterpret_cast<iovec_may_alias const*>(sp.base)};
+	auto ptr{reinterpret_cast<iovec_may_alias_const_ptr>(sp.base)};
 	std::ptrdiff_t val{noexcept_call(::preadv,fd,ptr,static_cast<int>(sz),static_cast<off_t>(offset))};
 	if(val<0)
 		throw_posix_error();
@@ -1811,10 +1816,15 @@ inline std::size_t posix_scatter_pwrite_size_impl(int fd,io_scatters_t sp,std::i
 	system_call_throw_error(val);
 	return static_cast<std::size_t>(val);
 #else
+	using iovec_may_alias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= iovec const*;
 	std::size_t sz{sp.len};
 	if(static_cast<std::size_t>(std::numeric_limits<int>::max())<sz)
 		sz=static_cast<std::size_t>(std::numeric_limits<int>::max());
-	auto ptr{reinterpret_cast<iovec_may_alias const*>(sp.base)};
+	auto ptr{reinterpret_cast<iovec_may_alias_const_ptr>(sp.base)};
 	std::ptrdiff_t val{noexcept_call(::pwritev,fd,ptr,static_cast<int>(sz),static_cast<off_t>(offset))};
 	if(val<0)
 		throw_posix_error();
@@ -1831,6 +1841,7 @@ inline io_scatter_status_t posix_scatter_pwrite_impl(int fd,io_scatters_t sp,std
 {
 	return scatter_size_to_status(posix_scatter_pread_size_impl(fd,sp,offset),sp);
 }
+#endif
 }
 
 template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
@@ -1844,7 +1855,7 @@ inline constexpr Iter pwrite(basic_posix_io_observer<char_type> piob,Iter begin,
 {
 	return begin+details::posix_pwrite_impl(piob.fd,::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
 }
-
+#if __BSD_VISIBLE || _BSD_SOURCE || _DEFAULT_SOURCE
 template<std::integral ch_type>
 [[nodiscard]] inline io_scatter_status_t scatter_pread(basic_posix_io_observer<ch_type> piob,io_scatters_t sp,std::intmax_t offset)
 {
@@ -1856,7 +1867,7 @@ inline io_scatter_status_t scatter_pwrite(basic_posix_io_observer<ch_type> piob,
 {
 	return details::posix_scatter_pwrite_impl(piob.fd,sp,offset);
 }
-
+#endif
 #endif
 
 }
