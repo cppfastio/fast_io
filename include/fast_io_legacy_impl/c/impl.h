@@ -1035,7 +1035,7 @@ using c_file_factory_unlocked = c_family_file_factory<c_family::native_unlocked>
 
 #if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
 #include"wincrt.h"
-#elif (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__)
+#elif defined(__AVR__) || defined(_PICOLIBC__)
 #include"avrlibc.h"
 #include"macros_general.h"
 #else
