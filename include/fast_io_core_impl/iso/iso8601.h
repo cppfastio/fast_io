@@ -632,4 +632,13 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,iso
 	return details::print_reserve_iso8601_timestamp_impl(iter,timestamp);
 }
 
+
+inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t ftu64) noexcept
+{
+	::std::uint_least64_t seconds{ftu64/10000000ULL};
+	::std::uint_least64_t subseconds{ftu64%10000000ULL};
+	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
+	return {static_cast<::std::int_least64_t>(seconds),static_cast<::std::uint_least64_t>(subseconds*mul_factor)};
+}
+
 }
