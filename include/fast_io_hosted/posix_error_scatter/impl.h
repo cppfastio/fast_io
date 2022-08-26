@@ -30,7 +30,7 @@ https://github.com/bminor/newlib/blob/ea275093c179fea636470173509615eb6bddad0f/n
 */
 	using namespace details::tsc_namespace;
 #if __has_include(<errno.h>)
-#if (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__AVR__)
 #include"avr.h"
 #else
 #include"generic.h"

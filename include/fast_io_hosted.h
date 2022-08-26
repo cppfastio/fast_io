@@ -52,7 +52,7 @@ For hosted implementations the set of standard library headers required by the C
 #include<ctime>
 #include"fast_io_unit/timespec.h"
 
-#if !(defined(__AVR__)||defined(__XTENSA__))
+#if !defined(__AVR__)
 #include"fast_io_hosted/platforms/native.h"
 #include"fast_io_hosted/file_loaders/impl.h"
 #include"fast_io_hosted/wrapper.h"
