@@ -2,7 +2,7 @@
 
 namespace fast_io
 {
-#if !defined(_WIN32) && !(defined(__AVR__)||defined(__XTENSA__)) && !defined(__MSDOS__)
+#if !defined(_WIN32) && !defined(__AVR__) && !defined(__MSDOS__)
 namespace posix
 {
 extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_getres");
@@ -13,7 +13,7 @@ extern int libc_clock_gettime(clockid_t clk_id, struct timespec* tp) noexcept __
 
 namespace details
 {
-#if !(defined(__AVR__)||defined(__XTENSA__))
+#if !defined(__AVR__)
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
 #endif
@@ -207,7 +207,7 @@ unix_timestamp posix_clock_getres([[maybe_unused]] posix_clock_id pclk_id)
 	default:
 		throw_posix_error(EINVAL);
 	};
-#elif (defined(__AVR__)||defined(__XTENSA__))
+#elif defined(__AVR__)
 	return {1,0};
 #elif !defined(__NEWLIB__) || defined(_POSIX_TIMERS)
 	auto clk{details::posix_clock_id_to_native_value(pclk_id)};
@@ -435,7 +435,7 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	default:
 		throw_posix_error(EINVAL);
 	}
-#elif (defined(__AVR__)||defined(__XTENSA__))
+#elif defined(__AVR__)
 	time_t t{};
 	constexpr std::int_least64_t y2k_offset{static_cast<std::int_least64_t>(UNIX_OFFSET)};
 	return {static_cast<std::int_least64_t>(static_cast<std::uint_least64_t>(static_cast<std::make_unsigned_t<time_t>>(noexcept_call(::time,__builtin_addressof(t)))))+y2k_offset,0};
@@ -520,7 +520,7 @@ inline struct tm unix_timestamp_to_tm_impl(std::int_least64_t seconds)
 #else
 	time_t val{static_cast<time_t>(seconds)};
 	struct tm t;
-#if (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__AVR__)
 	if constexpr(local_tm)
 		noexcept_call(localtime_r,__builtin_addressof(val),__builtin_addressof(t));
 	else
@@ -546,7 +546,7 @@ inline struct tm unix_timestamp_to_tm_impl(std::int_least64_t seconds)
 
 inline iso8601_timestamp to_iso8601_local_impl(std::int_least64_t seconds,std::uint_least64_t subseconds,[[maybe_unused]] bool dstadj)
 {
-#if defined(__MSDOS__) || (defined(__NEWLIB__)&&!defined(__CYGWIN__)) || (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__) || defined(__serenity__)
+#if defined(__MSDOS__) || (defined(__NEWLIB__)&&!defined(__CYGWIN__)) || defined(__AVR__) || defined(_PICOLIBC__) || defined(__serenity__)
 	return unix_timestamp_to_iso8601_tsp_impl_internal(seconds,subseconds,0);
 #elif (defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)) || defined(__linux__)
 #if (defined(__MINGW32__) && !__has_include(<_mingw_stat64.h>))
@@ -616,7 +616,7 @@ inline iso8601_timestamp to_iso8601_local_impl(std::int_least64_t seconds,std::u
 	tm_gmtoff=static_cast<long>(ulong_tm_gmtoff);
 #elif defined(__TM_GMTOFF)
 	tm_gmtoff=res.__TM_GMTOFF;
-#elif defined(__NEWLIB__) || (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__) || defined(__serenity__)
+#elif defined(__NEWLIB__) || defined(__AVR__) || defined(_PICOLIBC__) || defined(__serenity__)
 	tm_gmtoff=0;
 #else
 	tm_gmtoff=res.tm_gmtoff;
@@ -655,7 +655,7 @@ inline void posix_tzset() noexcept
 	noexcept_call(_tzset);
 #elif defined(__NEWLIB__) || defined(_PICOLIBC__)
 	details::m_tzset();
-#elif !(defined(__AVR__)||defined(__XTENSA__))&&(!defined(__wasi__) || defined(__wasilibc_unmodified_upstream))
+#elif !defined(__AVR__)&&(!defined(__wasi__) || defined(__wasilibc_unmodified_upstream))
 	noexcept_call(tzset);
 #endif
 }
@@ -720,7 +720,7 @@ extern int m_daylight __asm__("_daylight");
 
 inline bool posix_daylight()
 {
-#if defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream)) || (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream)) || defined(__AVR__)
 	return 0;
 #elif defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
 	return _daylight;
@@ -737,7 +737,7 @@ inline bool posix_daylight()
 
 inline basic_io_scatter_t<char> timezone_name([[maybe_unused]] bool dst=posix_daylight()) noexcept
 {
-#if defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream)) || (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream)) || defined(__AVR__)
 	return {reinterpret_cast<char const*>(u8"UTC"),3}; 
 #else
 #if defined(__NEWLIB__) || defined(_PICOLIBC__)
@@ -803,7 +803,7 @@ inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id,[[maybe_
 	default:
 		throw_posix_error(EINVAL);
 	}
-#elif (defined(__AVR__)||defined(__XTENSA__))
+#elif defined(__AVR__)
 	constexpr std::int_least64_t mn_unix_offset{UNIX_OFFSET};
 	auto tsp_seconds{timestamp.seconds};
 	if(tsp_seconds<mn_unix_offset)

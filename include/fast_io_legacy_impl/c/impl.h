@@ -252,7 +252,7 @@ unlocked,
 emulated,
 emulated_unlocked,
 native=
-#if (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__)
+#if defined(__AVR__) || defined(_PICOLIBC__)
 emulated_unlocked
 #elif defined(__MSDOS__)
 unlocked
@@ -261,7 +261,7 @@ standard
 #endif
 ,
 native_unlocked = 
-#if (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__)
+#if defined(__AVR__) || defined(_PICOLIBC__)
 emulated_unlocked
 #else
 unlocked
@@ -273,7 +273,7 @@ enum class c_io_device_environment:std::uint_fast8_t
 file,
 custom,
 native =
-#if (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__AVR__)
 custom
 #else
 file
@@ -483,7 +483,7 @@ inline void c_flush_unlocked_impl(FILE* fp)
 	my_c_io_flush_impl<c_family::unlocked>(fp);
 }
 
-#if (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__AVR__)
 
 [[noreturn]] inline void avr_libc_nosup_impl()
 {
@@ -599,7 +599,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 
 inline FILE* my_c_open_tmp_file()
 {
-#if (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__)
+#if defined(__AVR__) || defined(_PICOLIBC__)
 	throw_posix_error(EINVAL);
 #else
 	::fast_io::posix_file pf(io_temp);
@@ -633,7 +633,7 @@ public:
 		fp=nullptr;
 		return temp;
 	}
-#if !(defined(__AVR__)||defined(__XTENSA__))
+#if !defined(__AVR__)
 	explicit operator basic_posix_io_observer<char_type>() const noexcept
 	{
 		return basic_posix_io_observer<char_type>{details::my_fileno_impl<family>(fp)};
@@ -664,7 +664,7 @@ public:
 #elif !defined(__SINGLE_THREAD__)
 //	_flockfile(fp);	//TO FIX undefined reference to `__cygwin_lock_lock' why?
 #endif
-#elif defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream) && !defined(_REENTRANT)) || (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__)
+#elif defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream) && !defined(_REENTRANT)) || defined(__AVR__) || defined(_PICOLIBC__)
 #else
 	noexcept_call(flockfile,fp);
 #endif
@@ -683,7 +683,7 @@ public:
 #elif !defined(__SINGLE_THREAD__)
 //	_funlockfile(fp); //TO FIX
 #endif
-#elif defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream) && !defined(_REENTRANT)) || (defined(__AVR__)||defined(__XTENSA__)) || defined(_PICOLIBC__)
+#elif defined(__MSDOS__) || (defined(__wasi__) &&!defined(__wasilibc_unmodified_upstream) && !defined(_REENTRANT)) || defined(__AVR__) || defined(_PICOLIBC__)
 #else
 	noexcept_call(funlockfile,fp);
 #endif
@@ -704,7 +704,7 @@ inline constexpr basic_c_family_io_observer<family,ch_type> io_value_handle(basi
 {
 	return other;
 }
-#if (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__AVR__)
 template<c_family family,std::integral ch_type>
 inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_type> ciob)
 {
@@ -773,7 +773,7 @@ inline constexpr auto operator<=>(basic_c_family_io_observer<family,ch_type> a,b
 
 namespace details
 {
-#if (defined(__AVR__)||defined(__XTENSA__))
+#if defined(__AVR__)
 template<c_family family>
 inline constexpr bool my_c_is_character_device_impl(FILE*) noexcept
 {
@@ -839,7 +839,7 @@ inline void clear_screen(basic_c_family_io_observer<family,ch_type> ciob)
 {
 	details::my_c_clear_screen_impl<family>(ciob.fp);
 }
-#if !(defined(__AVR__)||defined(__XTENSA__))
+#if !defined(__AVR__)
 template<c_family family,std::integral ch_type>
 requires requires(basic_c_family_io_observer<family,ch_type> h)
 {
@@ -962,7 +962,7 @@ public:
 #endif
 		}
 	}
-#if !(defined(__AVR__)||defined(__XTENSA__))
+#if !defined(__AVR__)
 	basic_c_family_file(basic_posix_file<char_type>&& phd,open_mode om):
 		basic_c_family_io_observer<family,ch_type>{::fast_io::details::my_c_file_open_impl(phd.fd,om)}
 	{
