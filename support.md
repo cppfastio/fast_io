@@ -25,6 +25,7 @@
 - avr
 - ia64
 - loongarch64
+- xtensa-esp32
 - All other architectures should work, they just aren't tested due to time not being infinite.
 
 ## Platform Support
