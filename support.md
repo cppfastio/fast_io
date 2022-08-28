@@ -90,7 +90,7 @@ On Windows 95 or 95 Plus! you can enable `-O3` but not `-Ofast`. You'll also nee
 - Windows Home Server 2011
 - Windows Server 2012
 - Windows Server 2016
-- Windows 11. Only losers use windows 11
+- Windows 11. Windows 11 was a significant mistake.
 
 ## Legacy Windows Version Support with DJGPP toolchain
 - Windows 1.0
