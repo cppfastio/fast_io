@@ -25,7 +25,7 @@ inline auto fgetc_unlocked_impl(FILE* fp) noexcept
 	{
 #if (defined(_WIN32)&&!defined(__WINE__))
 		return _fgetc_nolock(fp);
-#elif _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE
+#elif (defined(__NEWLIB__) && __GNU_VISIBLE) || (!defined(__NEWLIB__)&&(_POSIX_C_SOURCE >= 199309L || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE))
 		return fgetc_unlocked(fp);
 #else
 		return fgetc(fp);
@@ -35,7 +35,7 @@ inline auto fgetc_unlocked_impl(FILE* fp) noexcept
 	{
 #if defined(_MSC_VER) || defined(_UCRT)  || __MSVCRT_VERSION__ >= 0x800
 		return _fgetwc_nolock(fp);
-#elif _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE
+#elif (defined(__NEWLIB__) && __GNU_VISIBLE) || (!defined(__NEWLIB__)&&(_POSIX_C_SOURCE >= 199309L || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE))
 		return fgetwc_unlocked(fp);
 #elif defined(__serenity__)
 		return EOF;
@@ -62,7 +62,7 @@ inline auto ungetc_unlocked_impl(char_type ch,FILE* fp) noexcept
 	{
 #if defined(_MSC_VER)
 		return _ungetc_nolock(ch,fp);
-#elif _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE
+#elif (defined(__NEWLIB__) && __GNU_VISIBLE) || (!defined(__NEWLIB__)&&(_POSIX_C_SOURCE >= 199309L || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE))
 		return ungetc_unlocked(ch,fp);
 #else
 		return ungetc(ch,fp);
@@ -72,7 +72,7 @@ inline auto ungetc_unlocked_impl(char_type ch,FILE* fp) noexcept
 	{
 #if defined(_MSC_VER)
 		return _ungetwc_nolock(ch,fp);
-#elif _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE
+#elif (defined(__NEWLIB__) && __GNU_VISIBLE) || (!defined(__NEWLIB__)&&(_POSIX_C_SOURCE >= 199309L || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE))
 		return ungetwc_unlocked(ch,fp);
 #else
 		return ungetwc(ch,fp);
@@ -82,7 +82,7 @@ inline auto ungetc_unlocked_impl(char_type ch,FILE* fp) noexcept
 inline void ferror_throw_ex_impl(FILE* fp)
 {
 	if(
-#if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE
+#if (defined(__NEWLIB__) && __GNU_VISIBLE) || (!defined(__NEWLIB__)&&(_POSIX_C_SOURCE >= 199309L || _XOPEN_SOURCE || _POSIX_SOURCE || _BSD_SOURCE || _SVID_SOURCE))
 	ferror_unlocked(fp)
 #else
 	ferror(fp)

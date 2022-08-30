@@ -189,7 +189,7 @@ inline void clear_screen(basic_general_streambuf_io_observer<T> other)
 			throw_posix_error(EINVAL);
 #endif
 	}
-#ifdef __AVR__
+#if defined(__AVR__)
 	::fast_io::details::avr_libc_nosup_impl();
 #else
 	io_lock_guard guard{bciob};

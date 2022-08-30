@@ -472,7 +472,7 @@ inline basic_timestamp<off_to_epoch> nt_family_clock_settime(posix_clock_id pclk
 				auto ntstatus{win32::nt::nt_set_system_time<family==nt_family::zw>(__builtin_addressof(tms),__builtin_addressof(old_tms))};
 				if(ntstatus)
 					throw_nt_error(ntstatus);
-				return win32::to_win32_timestamp_ftu64(old_tms);
+				return to_win32_timestamp_ftu64(old_tms);
 			}
 			default:
 				throw_nt_error(0xC00000EF);

@@ -25,10 +25,11 @@
 - avr
 - ia64
 - loongarch64
+- xtensa-esp32
 - All other architectures should work, they just aren't tested due to time not being infinite.
 
 ## Platform Support
-- Windows 10/11
+- Windows 10/12
 - Windows Server 2019
 - Linux
 - BSD platforms (Including FreeBSD, NetBSD, OpenBSD)
@@ -89,6 +90,7 @@ On Windows 95 or 95 Plus! you can enable `-O3` but not `-Ofast`. You'll also nee
 - Windows Home Server 2011
 - Windows Server 2012
 - Windows Server 2016
+- Windows 11. Windows 11 was a significant mistake.
 
 ## Legacy Windows Version Support with DJGPP toolchain
 - Windows 1.0
