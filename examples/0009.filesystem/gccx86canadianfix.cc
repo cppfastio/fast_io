@@ -75,7 +75,8 @@ int main(int argc,char **argv)
 		{
 			continue;
 		}
-		if(u8filename(ent)==u8"configure"sv||u8filename(ent)==u8"libtool.m4"sv)
+		std::u8string_view fnm_view(u8filename(ent));
+		if(fnm_view==u8"configure"sv||fnm_view==u8"libtool.m4"sv)
 		{
 			{
 				fast_io::native_file_loader loader(drt(ent));
