@@ -308,9 +308,9 @@ struct posix_recursive_directory_iterator
 	DIR* dirp{};
 	struct dirent* entry{};
 	std::size_t d_namlen{};
-	details::naive_vector<posix_directory_file> stack;
+	details::naive_vector<posix_directory_file> stack{};
 	posix_recursive_directory_iterator()=default;
-	posix_recursive_directory_iterator(DIR* dp):dirp(dp){}
+	explicit constexpr posix_recursive_directory_iterator(DIR* dp):dirp(dp){}
 	posix_recursive_directory_iterator(posix_recursive_directory_iterator const&)=delete;
 	posix_recursive_directory_iterator& operator=(posix_recursive_directory_iterator const&)=delete;
 	posix_recursive_directory_iterator(posix_recursive_directory_iterator&&) noexcept=default;
