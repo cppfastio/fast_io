@@ -11,7 +11,7 @@ struct temporary_buffer
 	static inline constexpr std::size_t buffer_size{512};
 	std::size_t pos{};
 	char_type buffer[buffer_size];
-	output out;
+	output out{};
 };
 
 template<typename output>

@@ -41,12 +41,6 @@ inline constexpr basic_input_buffer_iterator<input>& operator++(basic_input_buff
 }
 
 template<buffer_input_stream input>
-inline constexpr void operator++(basic_input_buffer_iterator<input>& gen,int)
-{
-	static_cast<void>(operator++(gen));
-}
-
-template<buffer_input_stream input>
 inline constexpr bool operator!=(basic_input_buffer_iterator<input> a, ::fast_io::freestanding::default_sentinel_t)
 {
 	if constexpr(contiguous_input_stream<input>)
