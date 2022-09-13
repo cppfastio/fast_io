@@ -243,7 +243,7 @@ inline constexpr lc_time_ox_common_res lc_time_ox_common_impl(iso8601_timestamp 
 }
 
 template <::std::integral char_type>
-inline constexpr char_type* non_overlapped_copy_to_lowercase(char_type* __restrict first, char_type* last, char_type* __restrict dest) noexcept
+inline constexpr char_type* non_overlapped_copy_to_lowercase(char_type const* __restrict first, char_type const* last, char_type* __restrict dest) noexcept
 {
 	for(;first!=last;++first)
 	{
