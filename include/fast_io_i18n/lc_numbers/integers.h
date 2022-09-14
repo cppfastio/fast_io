@@ -92,7 +92,6 @@ constexpr char_type* lc_grouping_single_sep_ch_impl(basic_io_scatter_t<std::size
 {
 	std::size_t const* grouping_base{grouping.base};
 	std::size_t const grouping_len{grouping.len};
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	std::size_t i{};
 	constexpr T c0{static_cast<T>(base)};
 	constexpr std::size_t full_len{cal_max_int_size<T,base>()};
@@ -184,7 +183,6 @@ constexpr char_type* grouping_mul_sep_print_sep_impl(char_type const* thousands_
 template<bool full,std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
 constexpr char_type* grouping_mul_sep_impl(basic_lc_all<char_type> const* __restrict all, char_type* iter,T t) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	constexpr std::size_t array_len{cal_max_int_size<T,base>()*2u-1u};
 	char_type array[array_len];
 	auto const ed{array+array_len};
@@ -210,7 +208,6 @@ template<std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_i
 requires (sizeof(T)>1)
 constexpr void lc_print_unsigned_with_3_seperator_len(char_type seperator_ch, char_type* iter,T value,std::size_t size) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	constexpr auto table(get_shared_inline_constexpr_base_table<char_type,base,uppercase>().element);
 	constexpr std::uint_least32_t cpow1{static_cast<std::uint_least32_t>(base)};
 	constexpr std::uint_least32_t cpow2{static_cast<std::uint_least32_t>(cpow1*cpow1)};
@@ -291,7 +288,6 @@ inline constexpr char_type* lc_print_reserve_integral_define(basic_lc_all<char_t
 	else
 	{
 		static_assert((2<=base)&&(base<=36));
-		using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 		using unsigned_type = ::fast_io::details::my_make_unsigned_t<int_type>;
 		unsigned_type u{static_cast<unsigned_type>(t)};
 		if constexpr(showpos)
