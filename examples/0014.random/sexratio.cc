@@ -1,0 +1,40 @@
+#include<random>
+#include<fast_io.h>
+#include<fast_io_device.h>
+
+int main()
+{
+	using namespace fast_io::mnp;
+	constexpr auto natural_male_to_female_ratio{1.05};
+	constexpr auto total_ratio{natural_male_to_female_ratio+1.0};
+	constexpr auto male_probability{natural_male_to_female_ratio/total_ratio};
+	fast_io::ibuf_white_hole_engine engine;
+	std::bernoulli_distribution dis(male_probability);
+	::std::size_t boys{};
+	::std::size_t girls{};
+	fast_io::u8obuf_file obf(u8"sexratio.txt");
+	println(obf,u8"Natural Male to female birth ratio:",natural_male_to_female_ratio,u8"\n"
+		u8"Male Baby birth Probability:",male_probability);	
+	constexpr ::std::uint_least64_t const n{1000000};
+	for(::std::uint_least64_t i{};i!=n;++i)
+	{
+		bool const is_boy{dis(engine)};
+		if(is_boy)
+		{
+			++boys;
+		}
+		else
+		{
+			++girls;
+		}
+		println(obf,u8"Round ",i,u8": Is ",cond(is_boy,u8"boy",u8"girl"), u8"\n"
+			u8"Total boys:",boys,u8"\n"
+			u8"Total girls:",girls);
+		
+		if(girls!=0)
+		{
+			println(obf,u8"Sex Ratio:",static_cast<double>(boys)/girls);
+		}
+		println(obf);
+	}
+}
