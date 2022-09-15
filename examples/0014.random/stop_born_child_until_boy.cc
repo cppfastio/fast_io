@@ -22,16 +22,25 @@ int main(int argc,char** argv)
 	std::bernoulli_distribution dis(male_probability);
 
 	::std::uint_least64_t const n{::fast_io::to<::std::uint_least64_t>(os_c_str(argv[1]))};
-	std::map<std::uint_least64_t,std::uint_least64_t> map;
+	::std::map<std::uint_least64_t,std::uint_least64_t> map;
+	::std::uint_least64_t total_population{};
 	for(::std::uint_least64_t i{};i!=n;++i)
 	{
 		std::uint_least64_t j{1};
 		for(;!dis(engine);++j);
 		++map[j];
+		total_population+=j+1;
 	}
 	fast_io::out_buf_type obf(fast_io::out());
 	for(auto const &e : map)
 	{
 		print(obf,e.first," ",e.second," (",static_cast<double>(e.second)/n,")\n");
+	}
+	::std::uint_least64_t const females{total_population-n};
+	println(obf,"males:",n,"\tfemales:",females,"\n"
+		"total population:",total_population);
+	if(females)
+	{
+		println(obf,"Male To Female Ratio:",static_cast<double>(n)/females);
 	}
 }
