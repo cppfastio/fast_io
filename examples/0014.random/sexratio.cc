@@ -15,7 +15,7 @@ int main()
 	fast_io::u8obuf_file obf(u8"sexratio.txt");
 	print(obf,u8"Natural Male to female birth ratio:",natural_male_to_female_ratio,u8"\n"
 		u8"Male Baby birth Probability:",male_probability,u8"\n\n");	
-	constexpr ::std::uint_least64_t const n{1000000};
+	constexpr ::std::uint_least64_t const n{100000};
 	for(::std::uint_least64_t i{};i!=n;++i)
 	{
 		bool const is_boy{dis(engine)};
