@@ -29,7 +29,7 @@ int main(int argc,char** argv)
 		std::uint_least64_t j{1};
 		for(;!dis(engine);++j);
 		++map[j];
-		total_population+=j+1;
+		total_population+=j;
 	}
 	fast_io::out_buf_type obf(fast_io::out());
 	for(auto const &e : map)
