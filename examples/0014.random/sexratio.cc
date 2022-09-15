@@ -13,8 +13,8 @@ int main()
 	::std::size_t boys{};
 	::std::size_t girls{};
 	fast_io::u8obuf_file obf(u8"sexratio.txt");
-	println(obf,u8"Natural Male to female birth ratio:",natural_male_to_female_ratio,u8"\n"
-		u8"Male Baby birth Probability:",male_probability);	
+	print(obf,u8"Natural Male to female birth ratio:",natural_male_to_female_ratio,u8"\n"
+		u8"Male Baby birth Probability:",male_probability,u8"\n\n");	
 	constexpr ::std::uint_least64_t const n{1000000};
 	for(::std::uint_least64_t i{};i!=n;++i)
 	{
@@ -35,6 +35,6 @@ int main()
 		{
 			println(obf,u8"Sex Ratio:",static_cast<double>(boys)/girls);
 		}
-		println(obf);
+		print(obf,u8"Male Ratio in Entire Population:",static_cast<double>(boys)/(boys+girls),u8"\n\n");
 	}
 }
