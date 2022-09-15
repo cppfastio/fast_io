@@ -2,18 +2,9 @@
 #include<fast_io.h>
 #include<fast_io_device.h>
 
-int main(int argc,char** argv)
+int main()
 {
 	using namespace fast_io::mnp;
-	if(argc<2)
-	{
-		if(argc==0)
-		{
-			return 1;
-		}
-		perr("Usage: ",os_c_str(*argv)," <filename>\n");
-		return 1;
-	}
 	constexpr auto natural_male_to_female_ratio{1.05};
 	constexpr auto total_ratio{natural_male_to_female_ratio+1.0};
 	constexpr auto male_probability{natural_male_to_female_ratio/total_ratio};
@@ -21,7 +12,7 @@ int main(int argc,char** argv)
 	std::bernoulli_distribution dis(male_probability);
 	::std::size_t boys{};
 	::std::size_t girls{};
-	fast_io::u8obuf_file obf(os_c_str(argv[1]));
+	fast_io::u8obuf_file obf(u8"sexratio.txt");
 	println(obf,u8"Natural Male to female birth ratio:",natural_male_to_female_ratio,u8"\n"
 		u8"Male Baby birth Probability:",male_probability);	
 	constexpr ::std::uint_least64_t const n{1000000};
