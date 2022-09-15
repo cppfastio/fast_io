@@ -39,7 +39,7 @@ int main()
 	u8"ぎゃ",u8"ぎゅ",u8"ぎょ",
 	u8"じゃ",u8"じゅ",u8"じょ",
 
-	u8"びゃ",u8"びゅ",u8"びょ"
+	u8"びゃ",u8"びゅ",u8"びょ",
 	u8"ぴゃ",u8"ぴゅ",u8"ぴょ"
 	};
 	constexpr std::array katakana{
@@ -75,7 +75,7 @@ int main()
 	u8"ギャ",u8"ギュ",u8"ギョ",
 	u8"ジャ",u8"ジュ",u8"ジョ",
 
-	u8"ビャ",u8"ビュ",u8"ビョ"
+	u8"ビャ",u8"ビュ",u8"ビョ",
 	u8"ピャ",u8"ピュ",u8"ピョ"
 	};
 	constexpr std::array romaji{
@@ -89,7 +89,7 @@ int main()
 	u8"ya",u8"yu",u8"yo",
 	u8"ra",u8"ri",u8"ru",u8"re",u8"ro",
 	u8"wa",			u8"o",
-	u8"n"
+	u8"n",
 
 
 	u8"kya",u8"kyu",u8"kyo",
@@ -126,7 +126,7 @@ int main()
 	u8"jä",u8"jɯ",u8"jo̞",
 	u8"ɾä",u8"ɾi",u8"ɾɯ",u8"ɾe",u8"ɾo̞",
 	u8"wä",			u8"o̞",
-	u8"n/m/ŋ/N/ũ͍/ĩ"
+	u8"n/m/ŋ/N/ũ͍/ĩ",
 
 
 	u8"kʲä",u8"kʲɯ",u8"kʲo̞",
