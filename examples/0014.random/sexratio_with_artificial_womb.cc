@@ -23,7 +23,7 @@ int main(int argc,char** argv)
 	std::bernoulli_distribution dis;//no need to put a factor here. It is 0.5 by default
 	::std::size_t boys{};
 	::std::size_t girls{};
-	fast_io::u8obuf_file obf(u8"sexratio.txt");
+	fast_io::u8obuf_file obf(u8"sexratio_with_aritificial_womb.txt");
 	print(obf,u8"Natural Male to female birth ratio:",natural_male_to_female_ratio,u8"\n"
 		u8"Male Baby birth Probability:",male_probability,u8"\n\n");	
 	::std::uint_least64_t const n{::fast_io::to<::std::uint_least64_t>(os_c_str(argv[1]))};
