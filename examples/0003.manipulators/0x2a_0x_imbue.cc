@@ -4,8 +4,14 @@
 int main()
 {
 	using namespace fast_io::mnp;
+#if !defined(FAST_IO_DISABLE_L10N)
 	fast_io::native_l10n loc(u8"");
-	println(imbue(loc,fast_io::c_stdout()),
+	auto imbued_c_stdout{imbue(loc,fast_io::c_stdout())};
+#endif
+	println(
+#if !defined(FAST_IO_DISABLE_L10N)
+	imbue(loc,fast_io::c_stdout()),
+#endif
 	middle(hex0x(420000U),11,'-'),"\t",addrvw(420000U),"\n",
 	middle(hex0xupper(420000U),11,'-'),"\t",addrvw(420000U),"\n",
 	middle(base<36,true>(420000U),12,'-'),"\n",
