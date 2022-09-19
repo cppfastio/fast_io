@@ -20,9 +20,9 @@ Thread model: win32
 Supported LTO compression algorithms: zlib
 gcc version 13.0.0 20220703 (experimental) (GCC)
 
-D:\hg\fast_io\examples\0003.manipulators>g++ -o 0x2a 0x2a.cc -Ofast -std=c++23 -s -flto -march=native -I../../include
+D:\hg\fast_io\examples\0003.manipulators>g++ -o 0x2a_0x 0x2a_0x.cc -Ofast -std=c++23 -s -flto -march=native -I../../include -Wall -Wextra
 
-D:\hg\fast_io\examples\0003.manipulators>0x2a
+D:\hg\fast_io\examples\0003.manipulators>0x2a_0x
 --0x2a--        0x0000002a
---0x2a--        0x0000002a
+--0x2A--        0x0000002a
 */
