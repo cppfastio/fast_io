@@ -61,7 +61,7 @@ inline constexpr scalar_flags address_default_scalar_flags{.base=16,.showbase=tr
 namespace details
 {
 template<std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false>
-inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase=((bs<=10)?false:upper),.full=fll,.floating=::fast_io::manipulators::floating_format::fixed};
+inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs<=10)?false:upper),.uppercase=((bs<=10)?false:upper),.full=fll,.floating=::fast_io::manipulators::floating_format::fixed};
 
 template<bool upper>
 inline constexpr ::fast_io::manipulators::scalar_flags boolalpha_mani_flags_cache{.alphabet=true,.uppercase=upper};
