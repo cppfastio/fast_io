@@ -55,7 +55,7 @@ This is an example to explain how fast_io's files work with each other, and how 
 #if defined(_UCRT) || defined(_MSC_VER)
 	"Universal CRT\n"
 #elif defined(__MSVCRT_VERSION__)
-	"MSVCRT 0x",fast_io::mnp::hex(__MSVCRT_VERSION__),"\n"
+	"MSVCRT ",fast_io::mnp::hex0x(__MSVCRT_VERSION__),"\n"
 #endif
 #endif
 #if defined(_LIBCPP_VERSION)
