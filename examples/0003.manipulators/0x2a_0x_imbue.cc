@@ -6,9 +6,9 @@ int main()
 	using namespace fast_io::mnp;
 	fast_io::native_l10n loc(u8"");
 	println(imbue(loc,fast_io::c_stdout()),
-	middle(hex0x(4200),11,'-'),"\t",addrvw(42),"\n",
-	middle(hex0xupper(4200),11,'-'),"\t",addrvw(42),"\n",
-	middle(base<36,true>(4200),12,'-'),"\n",
+	middle(hex0x(420000U),11,'-'),"\t",addrvw(420000U),"\n",
+	middle(hex0xupper(420000U),11,'-'),"\t",addrvw(420000U),"\n",
+	middle(base<36,true>(420000U),12,'-'),"\n",
 	24124214.64364,"\t",hexfloat(24124214.64364));
 }
 
@@ -26,8 +26,8 @@ gcc version 13.0.0 20220703 (experimental) (GCC)
 D:\hg\fast_io\examples\0003.manipulators>g++ -o 0x2a_0x_imbue 0x2a_0x_imbue.cc -Ofast -std=c++23 -s -flto -march=native -I../../include
 
 D:\hg\fast_io\examples\0003.manipulators>0x2a_0x_imbue
---0x1,068--     0x00,000,02a
---0X1,068--     0x00,000,02a
---0[36]38o--
+-0x66,8a0--     0x00,066,8a0
+-0X66,8A0--     0x00,066,8a0
+-0[36]9,02o-
 24,124,214.64364        0x1.701b36a4c5975p+24
 */
