@@ -1,0 +1,33 @@
+#include<fast_io.h>
+#include<fast_io_i18n.h>
+
+int main()
+{
+	using namespace fast_io::mnp;
+	fast_io::native_l10n loc(u8"");
+	println(imbue(loc,fast_io::c_stdout()),
+	middle(hex0x(4200),11,'-'),"\t",addrvw(42),"\n",
+	middle(hex0xupper(4200),11,'-'),"\t",addrvw(42),"\n",
+	middle(base<36,true>(4200),12,'-'),"\n",
+	24124214.64364,"\t",hexfloat(24124214.64364));
+}
+
+/*
+D:\hg\fast_io\examples\0003.manipulators>g++ -v
+Using built-in specs.
+COLLECT_GCC=g++
+COLLECT_LTO_WRAPPER=d:/x86_64-windows-gnu/x86_64-w64-mingw32/bin/../libexec/gcc/x86_64-w64-mingw32/13.0.0/lto-wrapper.exe
+Target: x86_64-w64-mingw32
+Configured with: ../../../../gcc/configure --disable-nls --disable-werror --target=x86_64-w64-mingw32 --prefix=/home/cqwrteur/toolchains/x86_64-w64-mingw32/x86_64-w64-mingw32 --disable-sjlj-exceptions --disable-libstdcxx-verbose --enable-languages=c,c++ --with-gxx-libcxx-include-dir=/home/cqwrteur/toolchains/x86_64-w64-mingw32/x86_64-w64-mingw32/include/c++/v1 --host=x86_64-w64-mingw32
+Thread model: win32
+Supported LTO compression algorithms: zlib
+gcc version 13.0.0 20220703 (experimental) (GCC)
+
+D:\hg\fast_io\examples\0003.manipulators>g++ -o 0x2a_0x_imbue 0x2a_0x_imbue.cc -Ofast -std=c++23 -s -flto -march=native -I../../include
+
+D:\hg\fast_io\examples\0003.manipulators>0x2a_0x_imbue
+--0x1,068--     0x00,000,02a
+--0X1,068--     0x00,000,02a
+--0[36]38o--
+24,124,214.64364        0x1.701b36a4c5975p+24
+*/
