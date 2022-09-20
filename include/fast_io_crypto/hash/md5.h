@@ -46,11 +46,12 @@ inline constexpr void uu(auto& a,auto b,auto c,auto d,auto x,auto s,auto ac) noe
 
 inline constexpr void uuh(auto& tmp,auto& a,auto b,auto d,auto x,auto s,auto ac) noexcept
 {
+	x+=ac;
+	x+=a;
 	tmp^=b;
 	x+=tmp;
-	x+=ac;
-	a=std::rotl(a+x,s)+b;
 	tmp^=d;
+	a=std::rotl(x,s)+b;
 }
 
 
