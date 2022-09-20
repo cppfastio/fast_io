@@ -36,16 +36,23 @@ inline constexpr auto unit(auto const x,auto const y,auto const z) noexcept
 }
 
 template<operation op>
-inline constexpr auto uu_impl(auto a,auto b,auto c,auto d,auto x,auto s) noexcept
-{
-	return std::rotl(a+x+unit<op>(b,c,d),s)+b;
-}
-
-template<operation op>
 inline constexpr void uu(auto& a,auto b,auto c,auto d,auto x,auto s,auto ac) noexcept
 {
-	a=uu_impl<op>(a+ac,b,c,d,x,s);
+	x+=ac;
+	x+=a;
+	x+=unit<op>(b,c,d);
+	a=std::rotl(x,s)+b;
 }
+
+inline constexpr void uuh(auto& tmp,auto& a,auto b,auto d,auto x,auto s,auto ac) noexcept
+{
+	tmp^=b;
+	x+=tmp;
+	x+=ac;
+	a=std::rotl(a+x,s)+b;
+	tmp^=d;
+}
+
 
 inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
@@ -63,6 +70,9 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 
 	constexpr std::size_t block_size{64};
 	std::uint_least32_t x[16];
+#if 1
+	std::uint_least32_t tmp;
+#endif
 	for(;block!=ed;block+=block_size)
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
@@ -135,6 +145,7 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 		uu<operation::G>(b, c, d, a, x[12], 20, 0x8d2a4c8au);
 
 		/* Round 3 */
+#if 0
 		uu<operation::H>(a, b, c, d, x[ 5], 4, 0xfffa3942u);
 		uu<operation::H>(d, a, b, c, x[ 8], 11, 0x8771f681u);
 		uu<operation::H>(c, d, a, b, x[11], 16, 0x6d9d6122u);
@@ -151,6 +162,25 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 		uu<operation::H>(d, a, b, c, x[12], 11, 0xe6db99e5u);
 		uu<operation::H>(c, d, a, b, x[15], 16, 0x1fa27cf8u);
 		uu<operation::H>(b, c, d, a, x[ 2], 23, 0xc4ac5665u);
+#else
+		tmp=c^d;
+		uuh(tmp, a, b, d, x[ 5], 4, 0xfffa3942u);
+		uuh(tmp, d, a, c, x[ 8], 11, 0x8771f681u);
+		uuh(tmp, c, d, b, x[11], 16, 0x6d9d6122u);
+		uuh(tmp, b, c, a, x[14], 23, 0xfde5380cu);
+		uuh(tmp, a, b, d, x[ 1], 4, 0xa4beea44u);
+		uuh(tmp, d, a, c, x[ 4], 11, 0x4bdecfa9u);
+		uuh(tmp, c, d, b, x[ 7], 16, 0xf6bb4b60u);
+		uuh(tmp, b, c, a, x[10], 23, 0xbebfbc70u);
+		uuh(tmp, a, b, d, x[13], 4, 0x289b7ec6u);
+		uuh(tmp, d, a, c, x[ 0], 11, 0xeaa127fau);
+		uuh(tmp, c, d, b, x[ 3], 16, 0xd4ef3085u);
+		uuh(tmp, b, c, a, x[ 6], 23,  0x4881d05u);
+		uuh(tmp, a, b, d, x[ 9], 4, 0xd9d4d039u);
+		uuh(tmp, d, a, c, x[12], 11, 0xe6db99e5u);
+		uuh(tmp, c, d, b, x[15], 16, 0x1fa27cf8u);
+		uuh(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
+#endif
 
 		/* Round 4 */
 		uu<operation::I>(a, b, c, d, x[ 0], 6, 0xf4292244u);
@@ -193,6 +223,9 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 	= std::uint_least32_t;
 
 	constexpr std::size_t block_size{64};
+#if 1
+	std::uint_least32_t tmp;
+#endif
 	for(;block!=ed;block+=block_size)
 	{
 		ul32_may_alias const* x{reinterpret_cast<ul32_may_alias const*>(block)};
@@ -231,6 +264,7 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 		uu<operation::G>(b, c, d, a, x[12], 20, 0x8d2a4c8au);
 
 		/* Round 3 */
+#if 0
 		uu<operation::H>(a, b, c, d, x[ 5], 4, 0xfffa3942u);
 		uu<operation::H>(d, a, b, c, x[ 8], 11, 0x8771f681u);
 		uu<operation::H>(c, d, a, b, x[11], 16, 0x6d9d6122u);
@@ -247,7 +281,25 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 		uu<operation::H>(d, a, b, c, x[12], 11, 0xe6db99e5u);
 		uu<operation::H>(c, d, a, b, x[15], 16, 0x1fa27cf8u);
 		uu<operation::H>(b, c, d, a, x[ 2], 23, 0xc4ac5665u);
-
+#else
+		tmp=c^d;
+		uuh(tmp, a, b, d, x[ 5], 4, 0xfffa3942u);
+		uuh(tmp, d, a, c, x[ 8], 11, 0x8771f681u);
+		uuh(tmp, c, d, b, x[11], 16, 0x6d9d6122u);
+		uuh(tmp, b, c, a, x[14], 23, 0xfde5380cu);
+		uuh(tmp, a, b, d, x[ 1], 4, 0xa4beea44u);
+		uuh(tmp, d, a, c, x[ 4], 11, 0x4bdecfa9u);
+		uuh(tmp, c, d, b, x[ 7], 16, 0xf6bb4b60u);
+		uuh(tmp, b, c, a, x[10], 23, 0xbebfbc70u);
+		uuh(tmp, a, b, d, x[13], 4, 0x289b7ec6u);
+		uuh(tmp, d, a, c, x[ 0], 11, 0xeaa127fau);
+		uuh(tmp, c, d, b, x[ 3], 16, 0xd4ef3085u);
+		uuh(tmp, b, c, a, x[ 6], 23,  0x4881d05u);
+		uuh(tmp, a, b, d, x[ 9], 4, 0xd9d4d039u);
+		uuh(tmp, d, a, c, x[12], 11, 0xe6db99e5u);
+		uuh(tmp, c, d, b, x[15], 16, 0x1fa27cf8u);
+		uuh(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
+#endif
 		/* Round 4 */
 		uu<operation::I>(a, b, c, d, x[ 0], 6, 0xf4292244u);
 		uu<operation::I>(d, a, b, c, x[ 7], 10, 0x432aff97u);
