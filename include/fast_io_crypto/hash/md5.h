@@ -44,16 +44,34 @@ inline constexpr void uu(auto& a,auto b,auto c,auto d,auto x,auto s,auto ac) noe
 	a=std::rotl(x,s)+b;
 }
 
-inline constexpr void uuh(auto& tmp,auto& a,auto b,auto d,auto x,auto s,auto ac) noexcept
+template<operation op>
+inline constexpr void uutmp(auto& tmp,auto& a,auto b,auto d,auto x,auto s,auto ac) noexcept
 {
-	tmp^=b;
-	x+=tmp;
 	x+=ac;
-	a=std::rotl(a+x,s)+b;
-	tmp^=d;
+	x+=a;
+	if constexpr(op==operation::H)
+	{
+		tmp^=b;
+		x+=tmp;
+		tmp^=d;
+	}
+	else
+	{
+		auto t2{~b};
+		d&=t2;
+		d^=tmp;
+		tmp=t2;
+		x+=d;
+	}
+	a=std::rotl(x,s)+b;
 }
 
-
+inline constexpr bool md5_usei_use_tmp
+{
+#if defined(__x86_64__)
+true
+#endif
+};
 inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
@@ -145,60 +163,64 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 		uu<operation::G>(b, c, d, a, x[12], 20, 0x8d2a4c8au);
 
 		/* Round 3 */
-#if 0
-		uu<operation::H>(a, b, c, d, x[ 5], 4, 0xfffa3942u);
-		uu<operation::H>(d, a, b, c, x[ 8], 11, 0x8771f681u);
-		uu<operation::H>(c, d, a, b, x[11], 16, 0x6d9d6122u);
-		uu<operation::H>(b, c, d, a, x[14], 23, 0xfde5380cu);
-		uu<operation::H>(a, b, c, d, x[ 1], 4, 0xa4beea44u);
-		uu<operation::H>(d, a, b, c, x[ 4], 11, 0x4bdecfa9u);
-		uu<operation::H>(c, d, a, b, x[ 7], 16, 0xf6bb4b60u);
-		uu<operation::H>(b, c, d, a, x[10], 23, 0xbebfbc70u);
-		uu<operation::H>(a, b, c, d, x[13], 4, 0x289b7ec6u);
-		uu<operation::H>(d, a, b, c, x[ 0], 11, 0xeaa127fau);
-		uu<operation::H>(c, d, a, b, x[ 3], 16, 0xd4ef3085u);
-		uu<operation::H>(b, c, d, a, x[ 6], 23,  0x4881d05u);
-		uu<operation::H>(a, b, c, d, x[ 9], 4, 0xd9d4d039u);
-		uu<operation::H>(d, a, b, c, x[12], 11, 0xe6db99e5u);
-		uu<operation::H>(c, d, a, b, x[15], 16, 0x1fa27cf8u);
-		uu<operation::H>(b, c, d, a, x[ 2], 23, 0xc4ac5665u);
-#else
 		tmp=c^d;
-		uuh(tmp, a, b, d, x[ 5], 4, 0xfffa3942u);
-		uuh(tmp, d, a, c, x[ 8], 11, 0x8771f681u);
-		uuh(tmp, c, d, b, x[11], 16, 0x6d9d6122u);
-		uuh(tmp, b, c, a, x[14], 23, 0xfde5380cu);
-		uuh(tmp, a, b, d, x[ 1], 4, 0xa4beea44u);
-		uuh(tmp, d, a, c, x[ 4], 11, 0x4bdecfa9u);
-		uuh(tmp, c, d, b, x[ 7], 16, 0xf6bb4b60u);
-		uuh(tmp, b, c, a, x[10], 23, 0xbebfbc70u);
-		uuh(tmp, a, b, d, x[13], 4, 0x289b7ec6u);
-		uuh(tmp, d, a, c, x[ 0], 11, 0xeaa127fau);
-		uuh(tmp, c, d, b, x[ 3], 16, 0xd4ef3085u);
-		uuh(tmp, b, c, a, x[ 6], 23,  0x4881d05u);
-		uuh(tmp, a, b, d, x[ 9], 4, 0xd9d4d039u);
-		uuh(tmp, d, a, c, x[12], 11, 0xe6db99e5u);
-		uuh(tmp, c, d, b, x[15], 16, 0x1fa27cf8u);
-		uuh(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
-#endif
-
+		uutmp<operation::H>(tmp, a, b, d, x[ 5], 4, 0xfffa3942u);
+		uutmp<operation::H>(tmp, d, a, c, x[ 8], 11, 0x8771f681u);
+		uutmp<operation::H>(tmp, c, d, b, x[11], 16, 0x6d9d6122u);
+		uutmp<operation::H>(tmp, b, c, a, x[14], 23, 0xfde5380cu);
+		uutmp<operation::H>(tmp, a, b, d, x[ 1], 4, 0xa4beea44u);
+		uutmp<operation::H>(tmp, d, a, c, x[ 4], 11, 0x4bdecfa9u);
+		uutmp<operation::H>(tmp, c, d, b, x[ 7], 16, 0xf6bb4b60u);
+		uutmp<operation::H>(tmp, b, c, a, x[10], 23, 0xbebfbc70u);
+		uutmp<operation::H>(tmp, a, b, d, x[13], 4, 0x289b7ec6u);
+		uutmp<operation::H>(tmp, d, a, c, x[ 0], 11, 0xeaa127fau);
+		uutmp<operation::H>(tmp, c, d, b, x[ 3], 16, 0xd4ef3085u);
+		uutmp<operation::H>(tmp, b, c, a, x[ 6], 23,  0x4881d05u);
+		uutmp<operation::H>(tmp, a, b, d, x[ 9], 4, 0xd9d4d039u);
+		uutmp<operation::H>(tmp, d, a, c, x[12], 11, 0xe6db99e5u);
+		uutmp<operation::H>(tmp, c, d, b, x[15], 16, 0x1fa27cf8u);
+		uutmp<operation::H>(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
+		
 		/* Round 4 */
-		uu<operation::I>(a, b, c, d, x[ 0], 6, 0xf4292244u);
-		uu<operation::I>(d, a, b, c, x[ 7], 10, 0x432aff97u);
-		uu<operation::I>(c, d, a, b, x[14], 15, 0xab9423a7u);
-		uu<operation::I>(b, c, d, a, x[ 5], 21, 0xfc93a039u);
-		uu<operation::I>(a, b, c, d, x[12], 6, 0x655b59c3u);
-		uu<operation::I>(d, a, b, c, x[ 3], 10, 0x8f0ccc92u);
-		uu<operation::I>(c, d, a, b, x[10], 15, 0xffeff47du);
-		uu<operation::I>(b, c, d, a, x[ 1], 21, 0x85845dd1u);
-		uu<operation::I>(a, b, c, d, x[ 8], 6, 0x6fa87e4fu);
-		uu<operation::I>(d, a, b, c, x[15], 10, 0xfe2ce6e0u);
-		uu<operation::I>(c, d, a, b, x[ 6], 15, 0xa3014314u);
-		uu<operation::I>(b, c, d, a, x[13], 21, 0x4e0811a1u);
-		uu<operation::I>(a, b, c, d, x[ 4], 6, 0xf7537e82u);
-		uu<operation::I>(d, a, b, c, x[11], 10, 0xbd3af235u);
-		uu<operation::I>(c, d, a, b, x[ 2], 15, 0x2ad7d2bbu);
-		uu<operation::I>(b, c, d, a, x[ 9], 21, 0xeb86d391u);
+		if constexpr(md5_usei_use_tmp)
+		{
+			tmp=~c;
+			uutmp<operation::I>(tmp, a, b, d, x[ 0], 6, 0xf4292244u);
+			uutmp<operation::I>(tmp, d, a, c, x[ 7], 10, 0x432aff97u);
+			uutmp<operation::I>(tmp, c, d, b, x[14], 15, 0xab9423a7u);
+			uutmp<operation::I>(tmp, b, c, a, x[ 5], 21, 0xfc93a039u);
+			uutmp<operation::I>(tmp, a, b, d, x[12], 6, 0x655b59c3u);
+			uutmp<operation::I>(tmp, d, a, c, x[ 3], 10, 0x8f0ccc92u);
+			uutmp<operation::I>(tmp, c, d, b, x[10], 15, 0xffeff47du);
+			uutmp<operation::I>(tmp, b, c, a, x[ 1], 21, 0x85845dd1u);
+			uutmp<operation::I>(tmp, a, b, d, x[ 8], 6, 0x6fa87e4fu);
+			uutmp<operation::I>(tmp, d, a, c, x[15], 10, 0xfe2ce6e0u);
+			uutmp<operation::I>(tmp, c, d, b, x[ 6], 15, 0xa3014314u);
+			uutmp<operation::I>(tmp, b, c, a, x[13], 21, 0x4e0811a1u);
+			uutmp<operation::I>(tmp, a, b, d, x[ 4], 6, 0xf7537e82u);
+			uutmp<operation::I>(tmp, d, a, c, x[11], 10, 0xbd3af235u);
+			uutmp<operation::I>(tmp, c, d, b, x[ 2], 15, 0x2ad7d2bbu);
+			uutmp<operation::I>(tmp, b, c, a, x[ 9], 21, 0xeb86d391u);
+		}
+		else
+		{
+			uu<operation::I>(a, b, c, d, x[ 0], 6, 0xf4292244u);
+			uu<operation::I>(d, a, b, c, x[ 7], 10, 0x432aff97u);
+			uu<operation::I>(c, d, a, b, x[14], 15, 0xab9423a7u);
+			uu<operation::I>(b, c, d, a, x[ 5], 21, 0xfc93a039u);
+			uu<operation::I>(a, b, c, d, x[12], 6, 0x655b59c3u);
+			uu<operation::I>(d, a, b, c, x[ 3], 10, 0x8f0ccc92u);
+			uu<operation::I>(c, d, a, b, x[10], 15, 0xffeff47du);
+			uu<operation::I>(b, c, d, a, x[ 1], 21, 0x85845dd1u);
+			uu<operation::I>(a, b, c, d, x[ 8], 6, 0x6fa87e4fu);
+			uu<operation::I>(d, a, b, c, x[15], 10, 0xfe2ce6e0u);
+			uu<operation::I>(c, d, a, b, x[ 6], 15, 0xa3014314u);
+			uu<operation::I>(b, c, d, a, x[13], 21, 0x4e0811a1u);
+			uu<operation::I>(a, b, c, d, x[ 4], 6, 0xf7537e82u);
+			uu<operation::I>(d, a, b, c, x[11], 10, 0xbd3af235u);
+			uu<operation::I>(c, d, a, b, x[ 2], 15, 0x2ad7d2bbu);
+			uu<operation::I>(b, c, d, a, x[ 9], 21, 0xeb86d391u);
+		}
 
 		a=(*state+=a);
 		b=(state[1]+=b);
@@ -223,12 +245,12 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 	= std::uint_least32_t;
 
 	constexpr std::size_t block_size{64};
-#if 1
 	std::uint_least32_t tmp;
-#endif
 	for(;block!=ed;block+=block_size)
 	{
 		ul32_may_alias const* x{reinterpret_cast<ul32_may_alias const*>(block)};
+
+		/* Round 1 */
 		uu<operation::F>(a, b, c, d, x[ 0], 7, 0xd76aa478u);
 		uu<operation::F>(d, a, b, c, x[ 1], 12, 0xe8c7b756u);
 		uu<operation::F>(c, d, a, b, x[ 2], 17, 0x242070dbu);
@@ -245,6 +267,7 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 		uu<operation::F>(d, a, b, c, x[13], 12, 0xfd987193u);
 		uu<operation::F>(c, d, a, b, x[14], 17, 0xa679438eu);
 		uu<operation::F>(b, c, d, a, x[15], 22, 0x49b40821u);
+
 		/* Round 2 */
 		uu<operation::G>(a, b, c, d, x[ 1], 5, 0xf61e2562u);
 		uu<operation::G>(d, a, b, c, x[ 6], 9, 0xc040b340u);
@@ -264,60 +287,64 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 		uu<operation::G>(b, c, d, a, x[12], 20, 0x8d2a4c8au);
 
 		/* Round 3 */
-#if 0
-		uu<operation::H>(a, b, c, d, x[ 5], 4, 0xfffa3942u);
-		uu<operation::H>(d, a, b, c, x[ 8], 11, 0x8771f681u);
-		uu<operation::H>(c, d, a, b, x[11], 16, 0x6d9d6122u);
-		uu<operation::H>(b, c, d, a, x[14], 23, 0xfde5380cu);
-		uu<operation::H>(a, b, c, d, x[ 1], 4, 0xa4beea44u);
-		uu<operation::H>(d, a, b, c, x[ 4], 11, 0x4bdecfa9u);
-		uu<operation::H>(c, d, a, b, x[ 7], 16, 0xf6bb4b60u);
-		uu<operation::H>(b, c, d, a, x[10], 23, 0xbebfbc70u);
-		uu<operation::H>(a, b, c, d, x[13], 4, 0x289b7ec6u);
-		uu<operation::H>(d, a, b, c, x[ 0], 11, 0xeaa127fau);
-		uu<operation::H>(c, d, a, b, x[ 3], 16, 0xd4ef3085u);
-		uu<operation::H>(b, c, d, a, x[ 6], 23,  0x4881d05u);
-		uu<operation::H>(a, b, c, d, x[ 9], 4, 0xd9d4d039u);
-		uu<operation::H>(d, a, b, c, x[12], 11, 0xe6db99e5u);
-		uu<operation::H>(c, d, a, b, x[15], 16, 0x1fa27cf8u);
-		uu<operation::H>(b, c, d, a, x[ 2], 23, 0xc4ac5665u);
-#else
 		tmp=c^d;
-		uuh(tmp, a, b, d, x[ 5], 4, 0xfffa3942u);
-		uuh(tmp, d, a, c, x[ 8], 11, 0x8771f681u);
-		uuh(tmp, c, d, b, x[11], 16, 0x6d9d6122u);
-		uuh(tmp, b, c, a, x[14], 23, 0xfde5380cu);
-		uuh(tmp, a, b, d, x[ 1], 4, 0xa4beea44u);
-		uuh(tmp, d, a, c, x[ 4], 11, 0x4bdecfa9u);
-		uuh(tmp, c, d, b, x[ 7], 16, 0xf6bb4b60u);
-		uuh(tmp, b, c, a, x[10], 23, 0xbebfbc70u);
-		uuh(tmp, a, b, d, x[13], 4, 0x289b7ec6u);
-		uuh(tmp, d, a, c, x[ 0], 11, 0xeaa127fau);
-		uuh(tmp, c, d, b, x[ 3], 16, 0xd4ef3085u);
-		uuh(tmp, b, c, a, x[ 6], 23,  0x4881d05u);
-		uuh(tmp, a, b, d, x[ 9], 4, 0xd9d4d039u);
-		uuh(tmp, d, a, c, x[12], 11, 0xe6db99e5u);
-		uuh(tmp, c, d, b, x[15], 16, 0x1fa27cf8u);
-		uuh(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
-#endif
-		/* Round 4 */
-		uu<operation::I>(a, b, c, d, x[ 0], 6, 0xf4292244u);
-		uu<operation::I>(d, a, b, c, x[ 7], 10, 0x432aff97u);
-		uu<operation::I>(c, d, a, b, x[14], 15, 0xab9423a7u);
-		uu<operation::I>(b, c, d, a, x[ 5], 21, 0xfc93a039u);
-		uu<operation::I>(a, b, c, d, x[12], 6, 0x655b59c3u);
-		uu<operation::I>(d, a, b, c, x[ 3], 10, 0x8f0ccc92u);
-		uu<operation::I>(c, d, a, b, x[10], 15, 0xffeff47du);
-		uu<operation::I>(b, c, d, a, x[ 1], 21, 0x85845dd1u);
-		uu<operation::I>(a, b, c, d, x[ 8], 6, 0x6fa87e4fu);
-		uu<operation::I>(d, a, b, c, x[15], 10, 0xfe2ce6e0u);
-		uu<operation::I>(c, d, a, b, x[ 6], 15, 0xa3014314u);
-		uu<operation::I>(b, c, d, a, x[13], 21, 0x4e0811a1u);
-		uu<operation::I>(a, b, c, d, x[ 4], 6, 0xf7537e82u);
-		uu<operation::I>(d, a, b, c, x[11], 10, 0xbd3af235u);
-		uu<operation::I>(c, d, a, b, x[ 2], 15, 0x2ad7d2bbu);
-		uu<operation::I>(b, c, d, a, x[ 9], 21, 0xeb86d391u);
+		uutmp<operation::H>(tmp, a, b, d, x[ 5], 4, 0xfffa3942u);
+		uutmp<operation::H>(tmp, d, a, c, x[ 8], 11, 0x8771f681u);
+		uutmp<operation::H>(tmp, c, d, b, x[11], 16, 0x6d9d6122u);
+		uutmp<operation::H>(tmp, b, c, a, x[14], 23, 0xfde5380cu);
+		uutmp<operation::H>(tmp, a, b, d, x[ 1], 4, 0xa4beea44u);
+		uutmp<operation::H>(tmp, d, a, c, x[ 4], 11, 0x4bdecfa9u);
+		uutmp<operation::H>(tmp, c, d, b, x[ 7], 16, 0xf6bb4b60u);
+		uutmp<operation::H>(tmp, b, c, a, x[10], 23, 0xbebfbc70u);
+		uutmp<operation::H>(tmp, a, b, d, x[13], 4, 0x289b7ec6u);
+		uutmp<operation::H>(tmp, d, a, c, x[ 0], 11, 0xeaa127fau);
+		uutmp<operation::H>(tmp, c, d, b, x[ 3], 16, 0xd4ef3085u);
+		uutmp<operation::H>(tmp, b, c, a, x[ 6], 23,  0x4881d05u);
+		uutmp<operation::H>(tmp, a, b, d, x[ 9], 4, 0xd9d4d039u);
+		uutmp<operation::H>(tmp, d, a, c, x[12], 11, 0xe6db99e5u);
+		uutmp<operation::H>(tmp, c, d, b, x[15], 16, 0x1fa27cf8u);
+		uutmp<operation::H>(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
 
+		/* Round 4 */
+		if constexpr(md5_usei_use_tmp)
+		{
+			tmp=~c;
+			uutmp<operation::I>(tmp, a, b, d, x[ 0], 6, 0xf4292244u);
+			uutmp<operation::I>(tmp, d, a, c, x[ 7], 10, 0x432aff97u);
+			uutmp<operation::I>(tmp, c, d, b, x[14], 15, 0xab9423a7u);
+			uutmp<operation::I>(tmp, b, c, a, x[ 5], 21, 0xfc93a039u);
+			uutmp<operation::I>(tmp, a, b, d, x[12], 6, 0x655b59c3u);
+			uutmp<operation::I>(tmp, d, a, c, x[ 3], 10, 0x8f0ccc92u);
+			uutmp<operation::I>(tmp, c, d, b, x[10], 15, 0xffeff47du);
+			uutmp<operation::I>(tmp, b, c, a, x[ 1], 21, 0x85845dd1u);
+			uutmp<operation::I>(tmp, a, b, d, x[ 8], 6, 0x6fa87e4fu);
+			uutmp<operation::I>(tmp, d, a, c, x[15], 10, 0xfe2ce6e0u);
+			uutmp<operation::I>(tmp, c, d, b, x[ 6], 15, 0xa3014314u);
+			uutmp<operation::I>(tmp, b, c, a, x[13], 21, 0x4e0811a1u);
+			uutmp<operation::I>(tmp, a, b, d, x[ 4], 6, 0xf7537e82u);
+			uutmp<operation::I>(tmp, d, a, c, x[11], 10, 0xbd3af235u);
+			uutmp<operation::I>(tmp, c, d, b, x[ 2], 15, 0x2ad7d2bbu);
+			uutmp<operation::I>(tmp, b, c, a, x[ 9], 21, 0xeb86d391u);
+		}
+		else
+		{
+			uu<operation::I>(a, b, c, d, x[ 0], 6, 0xf4292244u);
+			uu<operation::I>(d, a, b, c, x[ 7], 10, 0x432aff97u);
+			uu<operation::I>(c, d, a, b, x[14], 15, 0xab9423a7u);
+			uu<operation::I>(b, c, d, a, x[ 5], 21, 0xfc93a039u);
+			uu<operation::I>(a, b, c, d, x[12], 6, 0x655b59c3u);
+			uu<operation::I>(d, a, b, c, x[ 3], 10, 0x8f0ccc92u);
+			uu<operation::I>(c, d, a, b, x[10], 15, 0xffeff47du);
+			uu<operation::I>(b, c, d, a, x[ 1], 21, 0x85845dd1u);
+			uu<operation::I>(a, b, c, d, x[ 8], 6, 0x6fa87e4fu);
+			uu<operation::I>(d, a, b, c, x[15], 10, 0xfe2ce6e0u);
+			uu<operation::I>(c, d, a, b, x[ 6], 15, 0xa3014314u);
+			uu<operation::I>(b, c, d, a, x[13], 21, 0x4e0811a1u);
+			uu<operation::I>(a, b, c, d, x[ 4], 6, 0xf7537e82u);
+			uu<operation::I>(d, a, b, c, x[11], 10, 0xbd3af235u);
+			uu<operation::I>(c, d, a, b, x[ 2], 15, 0x2ad7d2bbu);
+			uu<operation::I>(b, c, d, a, x[ 9], 21, 0xeb86d391u);
+		}
 		a=(*state+=a);
 		b=(state[1]+=b);
 		c=(state[2]+=c);
