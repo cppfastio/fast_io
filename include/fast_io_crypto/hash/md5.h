@@ -13,7 +13,7 @@ inline constexpr auto unit(auto const x,auto const y,auto const z) noexcept
 {
 	if constexpr(op==operation::F)
 	{
-#if 0
+#if 1
 		return (x&(y^z))^z;
 #else
 		return (x&y) + ((~x)&z);
@@ -66,12 +66,6 @@ inline constexpr void uutmp(auto& tmp,auto& a,auto b,auto d,auto x,auto s,auto a
 	a=std::rotl(x,s)+b;
 }
 
-inline constexpr bool md5_usei_use_tmp
-{
-#if defined(__x86_64__)
-true
-#endif
-};
 inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
@@ -180,7 +174,7 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 		uutmp<operation::H>(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
 		
 		/* Round 4 */
-		if constexpr(md5_usei_use_tmp)
+		if constexpr(false)
 		{
 			tmp=~c;
 			uutmp<operation::I>(tmp, a, b, d, x[ 0], 6, 0xf4292244u);
@@ -304,7 +298,7 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 		uutmp<operation::H>(tmp, b, c, a, x[ 2], 23, 0xc4ac5665u);
 
 		/* Round 4 */
-		if constexpr(md5_usei_use_tmp)
+		if constexpr(false)
 		{
 			tmp=~c;
 			uutmp<operation::I>(tmp, a, b, d, x[ 0], 6, 0xf4292244u);
