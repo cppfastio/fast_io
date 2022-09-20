@@ -13,11 +13,19 @@ inline constexpr auto unit(auto const x,auto const y,auto const z) noexcept
 {
 	if constexpr(op==operation::F)
 	{
+#if 0
 		return (x&(y^z))^z;
+#else
+		return (x&y) + ((~x)&z);
+#endif
 	}
 	else if constexpr(op==operation::G)
 	{
+#if 0
 		return (z&(x^y))^y;
+#else
+		return (z&x) + ((~z)&y);
+#endif
 	}
 	else if constexpr(op==operation::H)
 		return x^y^z;
