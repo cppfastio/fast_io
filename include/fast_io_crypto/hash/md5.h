@@ -88,9 +88,7 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 
 	constexpr std::size_t block_size{64};
 	std::uint_least32_t x[16];
-#if 1
 	std::uint_least32_t tmp;
-#endif
 	for(;block!=ed;block+=block_size)
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
