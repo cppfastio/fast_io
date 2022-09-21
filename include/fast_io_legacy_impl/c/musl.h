@@ -184,6 +184,10 @@ extern int libc_uflow (FILE *) noexcept __asm__("__uflow");
 
 inline bool musl_fp_underflow_impl(FILE* fp)
 {
+	if(fp==stdin)
+	{
+		::fast_io::noexcept_call(fflush,stdout);
+	}
 	bool eof{libc_uflow(fp)!=EOF};
 	if(!eof&&ferror_unlocked(fp))
 		throw_posix_error();
