@@ -1,6 +1,7 @@
 ﻿#include<fast_io.h>
 #include<fast_io_device.h>
 #include<random>
+#include<fast_io_dsal/vector.h>
 
 int main(int argc,char** argv)
 {
@@ -10,7 +11,7 @@ int main(int argc,char** argv)
 		n=fast_io::to<std::size_t>(argv[1]);
 	}
 	fast_io::u8ibuf_file ibuf(u"freq.txt");
-	fast_io::details::naive_vector<char8_t> vec;
+	fast_io::vector<char8_t> vec;
 	{
 		char8_t c;
 		for(std::size_t f;scan<true>(ibuf,fast_io::mnp::ch_get(c),f);)
