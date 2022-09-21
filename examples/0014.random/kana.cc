@@ -162,6 +162,7 @@ int main()
 	std::uniform_int_distribution<std::size_t> dis(0,total_kanas-1);
 	::std::uint_least64_t rounds{};
 	::std::uint_least64_t correct_rounds{};
+	fast_io::u8in_buf_type ibf(fast_io::u8in());
 	for(std::u8string buffer;;++rounds)
 	{
 		std::size_t v{dis(engine)};
@@ -176,8 +177,8 @@ int main()
 			correct_pos-=hiragana_size;
 			s=katakana[correct_pos];
 		}
-		print(fast_io::u8c_stdout(),rounds,u8"/",correct_rounds,u8": Romaji of ",fast_io::mnp::os_c_str(s),u8" is??\n");
-		if(!scan<true>(fast_io::u8c_stdin(),buffer))
+		print(fast_io::u8out(),rounds,u8"/",correct_rounds,u8": Romaji of ",fast_io::mnp::os_c_str(s),u8" is??\n");
+		if(!scan<true>(ibf,buffer))
 		{
 			break;
 		}
@@ -187,7 +188,7 @@ int main()
 			++correct_rounds;
 			correct=true;
 		}
-		println(fast_io::u8c_stdout(),
+		println(fast_io::u8out(),
 			fast_io::mnp::cond(correct,u8"Right!",u8"\aWrong!"),
 			u8"\tRomaji: ",fast_io::mnp::os_c_str(romaji[correct_pos]),
 			u8"\tHiragana: ",fast_io::mnp::os_c_str(hiragana[correct_pos]),
@@ -195,5 +196,5 @@ int main()
 			u8"\tIPA: ",fast_io::mnp::os_c_str(ipa[correct_pos]));
 
 	}
-	println(fast_io::u8c_stdout(),u8"Total rounds:", rounds,u8"\nCorrect:", correct_rounds);
+	println(fast_io::u8out(),u8"Total rounds:", rounds,u8"\nCorrect:", correct_rounds);
 }
