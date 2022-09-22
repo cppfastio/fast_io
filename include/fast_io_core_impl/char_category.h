@@ -386,7 +386,7 @@ inline constexpr char_type to_c_halfwidth(char_type ch) noexcept
 		{
 			return static_cast<unsigned_char_type>(umav+halfwidth_exclaimation_mark_val);
 		}
-		return umav;
+		return ch;
 	}
 }
 
