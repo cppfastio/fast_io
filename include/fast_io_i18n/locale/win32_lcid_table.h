@@ -1,4 +1,4 @@
-if constexpr(::std::same_as<char_type,char16_t>)
+﻿if constexpr(::std::same_as<char_type,char16_t>)
 {
 switch(lcid)
 {

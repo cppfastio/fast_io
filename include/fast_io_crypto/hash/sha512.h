@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 https://github.com/noloader/SHA-Intrinsics/blob/master/sha256-x86.c
 */
@@ -194,7 +194,7 @@ public:
 	static inline constexpr std::size_t state_size{8};
 	state_value_type state[state_size];
 	inline
-#if __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif
 	void update_blocks(std::byte const* blocks_start,std::byte const* blocks_last) noexcept

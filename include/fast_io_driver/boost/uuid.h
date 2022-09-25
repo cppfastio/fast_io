@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef BOOST_UUID_HPP
 #include<boost/uuid/uuid.hpp>
 #endif

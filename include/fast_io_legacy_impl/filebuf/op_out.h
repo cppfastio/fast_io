@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /*
 This provides a compatibility layer for printing custom types with existing ostream apis.

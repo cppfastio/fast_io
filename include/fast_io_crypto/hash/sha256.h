@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 https://github.com/noloader/SHA-Intrinsics/blob/master/sha256-x86.c
 */

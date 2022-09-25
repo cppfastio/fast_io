@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #undef min
 #undef max
 

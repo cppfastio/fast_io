@@ -1,4 +1,4 @@
-#include<fast_io.h>
+﻿#include<fast_io.h>
 
 template<typename U,std::size_t n>
 inline void test_type()

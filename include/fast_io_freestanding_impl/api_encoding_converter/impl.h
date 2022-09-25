@@ -18,14 +18,19 @@ native = wide_nt
 #endif
 };
 
-#ifdef _WIN32_WINDOWS
-using win32_api_encoding_converter = posix_api_encoding_converter;
-#else
-using win32_api_encoding_converter = nt_api_encoding_converter;
-#endif
+template<win32_family family,typename allocator_type>
+using basic_win32_family_api_encoding_converter=std::conditional_t<family==win32_family::ansi_9x,
+	basic_posix_api_encoding_converter<allocator_type>,
+	basic_nt_api_encoding_converter<allocator_type>>;
 
 template<win32_family family>
-using win32_family_api_encoding_converter=std::conditional_t<family==win32_family::ansi_9x,posix_api_encoding_converter,nt_api_encoding_converter>;
+using win32_family_api_encoding_converter = basic_win32_family_api_encoding_converter<family,generic_allocator_adapter<win32_heapalloc_allocator>>;
+
+template<typename allocator_type>
+using basic_win32_api_encoding_converter = basic_win32_family_api_encoding_converter<win32_family::native,allocator_type>;
+
+using win32_api_encoding_converter = basic_win32_api_encoding_converter<typename win32_family_api_encoding_converter<win32_family::native>::allocator_type>;
+
 #if defined(__CYGWIN__) || defined(__WINE__)
 using native_char_type = char;
 #else

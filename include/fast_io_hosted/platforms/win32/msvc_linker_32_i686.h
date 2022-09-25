@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #pragma comment(linker,"/alternatename:__imp_?GetLastError@win32@fast_io@@YGIXZ=__imp__GetLastError@0")
 #pragma comment(linker,"/alternatename:__imp_?LoadLibraryA@win32@fast_io@@YGPAXPBD@Z=__imp__LoadLibraryA@4")

@@ -77,7 +77,7 @@ class posix_directory_file:public posix_directory_io_observer
 {
 public:
 	using native_handle_type = DIR*;
-	constexpr posix_directory_file()=default;
+	constexpr posix_directory_file() noexcept=default;
 
 	explicit constexpr posix_directory_file(posix_directory_io_observer) noexcept=delete;
 	constexpr posix_directory_file& operator=(posix_directory_io_observer) noexcept=delete;
@@ -303,31 +303,39 @@ inline posix_directory_generator current(posix_at_entry pate)
 	return {.dir_fl=posix_directory_file(posix_file(details::sys_dup(pate.fd)))};
 }
 
-struct posix_recursive_directory_iterator
+template<typename StackType>
+struct basic_posix_recursive_directory_iterator
 {
+	using stack_type = StackType;
 	DIR* dirp{};
 	struct dirent* entry{};
 	std::size_t d_namlen{};
-	details::naive_vector<posix_directory_file> stack{};
-	posix_recursive_directory_iterator()=default;
-	explicit constexpr posix_recursive_directory_iterator(DIR* dp):dirp(dp){}
-	posix_recursive_directory_iterator(posix_recursive_directory_iterator const&)=delete;
-	posix_recursive_directory_iterator& operator=(posix_recursive_directory_iterator const&)=delete;
-	posix_recursive_directory_iterator(posix_recursive_directory_iterator&&) noexcept=default;
-	posix_recursive_directory_iterator& operator=(posix_recursive_directory_iterator&&) noexcept=default;
+	stack_type stack;
+	constexpr basic_posix_recursive_directory_iterator()=default;
+	explicit constexpr basic_posix_recursive_directory_iterator(DIR* dp):dirp(dp){}
+	basic_posix_recursive_directory_iterator(basic_posix_recursive_directory_iterator const&)=delete;
+	basic_posix_recursive_directory_iterator& operator=(basic_posix_recursive_directory_iterator const&)=delete;
+	basic_posix_recursive_directory_iterator(basic_posix_recursive_directory_iterator&&) noexcept=default;
+	basic_posix_recursive_directory_iterator& operator=(basic_posix_recursive_directory_iterator&&) noexcept=default;
 };
 
-struct posix_recursive_directory_generator
+template<typename StackType>
+struct basic_posix_recursive_directory_generator
 {
+	using stack_type = StackType;
 	posix_directory_file dir_fl;
 };
 
-inline std::size_t depth(posix_recursive_directory_iterator const& prdit) noexcept
+using posix_recursive_directory_generator = basic_posix_recursive_directory_generator<::fast_io::containers::vector<posix_directory_file,::fast_io::posix_api_encoding_converter::allocator_type>>;
+
+template<typename StackType>
+inline std::size_t depth(basic_posix_recursive_directory_iterator<StackType> const& prdit) noexcept
 {
 	return prdit.stack.size();
 }
 
-inline posix_recursive_directory_iterator& operator++(posix_recursive_directory_iterator& prdit)
+template<typename StackType>
+inline basic_posix_recursive_directory_iterator<StackType>& operator++(basic_posix_recursive_directory_iterator<StackType>& prdit)
 {
 	for(;;)
 	{
@@ -387,7 +395,8 @@ inline posix_recursive_directory_iterator& operator++(posix_recursive_directory_
 	}
 }
 
-inline void pop(posix_recursive_directory_iterator& prdit) noexcept
+template<typename StackType>
+inline void pop(basic_posix_recursive_directory_iterator<StackType>& prdit) noexcept
 {
 	if(prdit.stack.empty())
 	{
@@ -401,41 +410,48 @@ inline void pop(posix_recursive_directory_iterator& prdit) noexcept
 	}
 }
 
-inline posix_recursive_directory_iterator begin(posix_recursive_directory_generator const& pdg)
+template<typename StackType>
+inline basic_posix_recursive_directory_iterator<StackType> begin(basic_posix_recursive_directory_generator<StackType> const& pdg)
 {
 	auto dirp{pdg.dir_fl.dirp};
 	::rewinddir(dirp);
-	posix_recursive_directory_iterator pdit{dirp};
+	basic_posix_recursive_directory_iterator<StackType> pdit{dirp};
 	++pdit;
 	return pdit;
 }
 
-inline ::fast_io::freestanding::default_sentinel_t end(posix_recursive_directory_generator const&) noexcept
+template<typename StackType>
+inline ::fast_io::freestanding::default_sentinel_t end(basic_posix_recursive_directory_generator<StackType> const&) noexcept
 {
 	return {};
 }
 
-inline posix_directory_entry operator*(posix_recursive_directory_iterator const& prdit) noexcept
+template<typename StackType>
+inline posix_directory_entry operator*(basic_posix_recursive_directory_iterator<StackType> const& prdit) noexcept
 {
 	return {prdit.stack.empty()?prdit.dirp:prdit.stack.back().dirp,prdit.entry,prdit.d_namlen};
 }
 
-inline bool operator==(::fast_io::freestanding::default_sentinel_t, posix_recursive_directory_iterator const& b) noexcept
+template<typename StackType>
+inline bool operator==(::fast_io::freestanding::default_sentinel_t, basic_posix_recursive_directory_iterator<StackType> const& b) noexcept
 {
 	return b.stack.empty()&&b.entry == nullptr;
 }
 
-inline bool operator==(posix_recursive_directory_iterator const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+template<typename StackType>
+inline bool operator==(basic_posix_recursive_directory_iterator<StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
 {
 	return sntnl==b;
 }
 
-inline bool operator!=(::fast_io::freestanding::default_sentinel_t sntnl, posix_recursive_directory_iterator const& b) noexcept
+template<typename StackType>
+inline bool operator!=(::fast_io::freestanding::default_sentinel_t sntnl, basic_posix_recursive_directory_iterator<StackType> const& b) noexcept
 {
 	return !(sntnl==b);
 }
 
-inline bool operator!=(posix_recursive_directory_iterator const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+template<typename StackType>
+inline bool operator!=(basic_posix_recursive_directory_iterator<StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
 {
 	return sntnl!=b;
 }

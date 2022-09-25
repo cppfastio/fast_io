@@ -1,4 +1,4 @@
-#include<fast_io.h>
+﻿#include<fast_io.h>
 
 int main()
 {

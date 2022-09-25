@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include"lc_hexfloat.h"
 #include"lc_roundtrip.h"

@@ -65,6 +65,8 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/threads/mutex/impl.h"
 #include"fast_io_hosted/iomutex.h"
 
+#include"fast_io_dsal/impl/vector.h"
+
 #include"fast_io_hosted/filesystem/native.h"
 #include"fast_io_hosted/dll/dll.h"
 #include"fast_io_hosted/process_revamp/native.h"

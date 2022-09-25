@@ -1,4 +1,4 @@
-#include<string_view>
+﻿#include<string_view>
 #include<fast_io.h>
 #include<fast_io_device.h>
 
@@ -6,7 +6,11 @@ int main(int argc,char** argv)
 {
 	if(argc<2)
 	{
-		perrln(fast_io::mnp::os_env(argc,argv,0)," <dir>");
+		if(argc==0)
+		{
+			return 1;
+		}
+		perr("Usage: ",::fast_io::mnp::os_c_str(*argv)," <dir>\n");
 		return 1;
 	}
 	using namespace std::string_view_literals;

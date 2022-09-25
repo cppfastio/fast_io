@@ -1,4 +1,4 @@
-/*
+﻿/*
 Use sha512 to measure performance of ISA
 */
 

@@ -1,4 +1,4 @@
-#include<fast_io.h>
+﻿#include<fast_io.h>
 #include<fast_io_device.h>
 #include<algorithm>
 
@@ -6,7 +6,11 @@ int main(int argc,char** argv)
 {
 	if(argc<2)
 	{
-		perr("Usage: ",::fast_io::mnp::os_env(argc,argv,0)," <directory>\n");
+		if(argc==0)
+		{
+			return 1;
+		}
+		perr("Usage: ",::fast_io::mnp::os_c_str(*argv)," <directory>\n");
 		return 1;
 	}
 	fast_io::dir_file dir(::fast_io::mnp::os_c_str(argv[1]));

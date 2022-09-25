@@ -1,3 +1,3 @@
-#pragma once
+﻿#pragma once
 
 #include"line_scanner.h"

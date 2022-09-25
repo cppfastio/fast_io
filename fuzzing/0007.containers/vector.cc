@@ -1,4 +1,4 @@
-#include <fast_io.h>
+﻿#include <fast_io.h>
 #include <fast_io_dsal/vector.h>
 
 struct not_a_char_t
