@@ -15,6 +15,14 @@ struct basic_timestamp
 		constexpr std::int_least64_t diff{off_to_epoch-new_off_to_epoch};
 		return {seconds+diff,subseconds};
 	}
+	
+	template<std::floating_point flt_type>
+	explicit constexpr operator flt_type() noexcept
+	{
+		//I know this is not accurate. but it is better than nothing
+		constexpr flt_type precision{static_cast<flt_type>(uint_least64_subseconds_per_second)};
+		return static_cast<flt_type>(seconds)+static_cast<flt_type>(subseconds)/precision;
+	}
 };
 
 template<std::int_least64_t off_to_epoch>

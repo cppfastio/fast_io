@@ -55,7 +55,7 @@ This is an example to explain how fast_io's files work with each other, and how 
 #if defined(_UCRT) || defined(_MSC_VER)
 	"Universal CRT\n"
 #elif defined(__MSVCRT_VERSION__)
-	"MSVCRT 0x",fast_io::mnp::hex(__MSVCRT_VERSION__),"\n"
+	"MSVCRT ",fast_io::mnp::hex0x(__MSVCRT_VERSION__),"\n"
 #endif
 #endif
 #if defined(_LIBCPP_VERSION)
@@ -88,4 +88,24 @@ g++ -o construct_fstream_from_syscall construct_fstream_from_syscall.cc -Ofast -
 
 9x kernel with clang might need
 -Wl,--major-subsystem-version -Wl,4 -Wl,--minor-subsystem-version -Wl,0 -D_WIN32_WINDOWS=0x0400 -DWINVER=0x0400
+
+D:\hg\fast_io\examples\0007.legacy>g++ -o construct_fstream_from_syscall_l10n construct_fstream_from_syscall_l10n.cc -Ofast -std=c++23 -s -flto -march=native -I../../include -lntdll
+
+D:\hg\fast_io\examples\0007.legacy>construct_fstream_from_syscall_l10n
+Unix Timestamp:1,663,581,555.4071499
+Universe Timestamp:434,602,343,092,816,755.4071499
+UTC iso8601:2022-09-19T09:59:15.4071499Z
+UTC date_fmt:Mon Sep 19 09:59:15 AM +00:00 2022
+Local iso8601:2022-09-19T05:59:15.4071499-04:00
+Local date_fmt:Mon Sep 19 05:59:15 AM -04:00 2022
+Local Timezone:Eastern Daylight Time
+GCC 13.0.0 20220703 (experimental)
+MSVCRT 0x700
+GNU C++ Library 13 20,220,703
+fstream.rdbuf():0x0,000,002,929,1ff,358
+FILE*:0x0,000,7ff,92e,b5f,a90
+fd:3
+win32 HANDLE:0x0,000,000,000,000,0a8
+zw HANDLE:0x0,000,000,000,000,0a8
+nt HANDLE:0x0,000,000,000,000,0a8
 */

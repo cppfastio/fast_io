@@ -58,6 +58,10 @@ inline std::size_t c_fwrite_unlocked_impl(void const* __restrict begin,std::size
 
 inline std::size_t c_fread_unlocked_impl(void* __restrict begin,std::size_t type_size,std::size_t count,FILE* __restrict fp)
 {
+	if(fp==stdin)
+	{
+		::fast_io::noexcept_call(::fflush,stdout);
+	}
 #if defined(__NEWLIB__)&&!defined(__CYGWIN__)
 	struct _reent rent{};
 	std::size_t read_count{
@@ -157,6 +161,10 @@ inline std::size_t c_fwrite_impl(void const* __restrict begin,std::size_t type_s
 
 inline std::size_t c_read_impl(void* __restrict begin,std::size_t type_size,std::size_t count,FILE* __restrict fp)
 {
+	if(fp==stdin)
+	{
+		::fast_io::noexcept_call(::fflush,stdout);
+	}
 #if defined(__NEWLIB__)
 	struct _reent rent{};
 	std::size_t read_count{noexcept_call(_fread_r,__builtin_addressof(rent),begin,type_size,count,fp)};

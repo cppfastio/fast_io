@@ -50,7 +50,7 @@ This is an example to explain how fast_io's files work with each other, and how 
 #if defined(_UCRT) || defined(_MSC_VER)
 	"Universal CRT\n"
 #elif defined(__MSVCRT_VERSION__)
-	"MSVCRT 0x",fast_io::mnp::hex(__MSVCRT_VERSION__),"\n"
+	"MSVCRT ",fast_io::mnp::hex0x(__MSVCRT_VERSION__),"\n"
 #endif
 #endif
 #if defined(_LIBCPP_VERSION)
@@ -83,4 +83,21 @@ g++ -o construct_fstream_from_syscall construct_fstream_from_syscall.cc -Ofast -
 
 9x kernel with clang might need
 -Wl,--major-subsystem-version -Wl,4 -Wl,--minor-subsystem-version -Wl,0 -D_WIN32_WINDOWS=0x0400 -DWINVER=0x0400
+
+D:\hg\fast_io\examples\0007.legacy>g++ -o construct_fstream_from_syscall construct_fstream_from_syscall.cc -Ofast -std=c++23 -s -flto -march=native -I../../include -lntdll
+
+D:\hg\fast_io\examples\0007.legacy>construct_fstream_from_syscall
+Unix Timestamp:1663581526.3485249
+Universe Timestamp:434602343092816726.3485249
+UTC:2022-09-19T09:58:46.3485249Z
+Local:2022-09-19T05:58:46.3485249-04:00 Timezone:Eastern Daylight Time
+GCC 13.0.0 20220703 (experimental)
+MSVCRT 0x700
+GNU C++ Library 13 20220703
+fstream.rdbuf():0x0000004a1f3ffb68
+FILE*:0x00007ff92eb5fa90
+fd:3
+win32 HANDLE:0x00000000000000a8
+zw HANDLE:0x00000000000000a8
+nt HANDLE:0x00000000000000a8
 */

@@ -254,8 +254,8 @@ Let's just add this into this library
 
 namespace details
 {
-
-inline constexpr bool is_html_whitespace_ascii_impl(char32_t ch) noexcept
+template<std::unsigned_integral char_type>
+inline constexpr bool is_html_whitespace_ascii_impl(char_type ch) noexcept
 {
 	switch(ch)
 	{
@@ -273,7 +273,6 @@ ASCII: carriage return (0x0d, '\r'), EBCDIC:13
 ASCII: horizontal tab (0x09, '\t'), EBCDIC:5
 EBCDIC specific: NL:21
 */
-
 inline constexpr bool is_html_whitespace_ebcdic_impl(char32_t ch) noexcept
 {
 	switch(ch)
@@ -292,10 +291,105 @@ inline constexpr bool is_html_whitespace(char_type ch) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if constexpr(fast_io::details::exec_charset_is_ebcdic<char_type>())
+	{
 		return details::is_html_whitespace_ebcdic_impl(static_cast<unsigned_char_type>(ch));
+	}
 	else
-		return details::is_html_whitespace_ascii_impl(static_cast<unsigned_char_type>(ch));
+	{
+		if constexpr(sizeof(char_type)<=sizeof(char32_t))
+		{
+			return details::is_html_whitespace_ascii_impl(static_cast<char32_t>(static_cast<unsigned_char_type>(ch)));
+		}
+		else
+		{
+			return details::is_html_whitespace_ascii_impl(static_cast<unsigned_char_type>(ch));
+		}
+	}
 }
+
+template<std::integral char_type>
+inline constexpr bool is_c_halfwidth(char_type ch) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	if constexpr(sizeof(char_type)<sizeof(char32_t))
+	{
+		return ch;
+	}
+	else if constexpr(!std::same_as<char_type,char32_t>&&sizeof(char_type)==sizeof(char32_t))
+	{
+		return is_c_halfwidth(static_cast<char32_t>(ch));
+	}
+	else if constexpr(std::signed_integral<char_type>)
+	{
+		return is_c_halfwidth(static_cast<unsigned_char_type>(ch));
+	}
+	else
+	{
+		constexpr unsigned_char_type halfwidth_exclaimation_mark_val{u8'!'};
+		constexpr unsigned_char_type num{94};
+		return static_cast<unsigned_char_type>(ch-halfwidth_exclaimation_mark_val)<num;
+	}
+}
+
+template<std::integral char_type>
+inline constexpr bool is_c_fullwidth(char_type ch) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	if constexpr(sizeof(char_type)<sizeof(char32_t))
+	{
+		return ch;
+	}
+	else if constexpr(!std::same_as<char_type,char32_t>&&sizeof(char_type)==sizeof(char32_t))
+	{
+		return is_c_fullwidth(static_cast<char32_t>(ch));
+	}
+	else if constexpr(std::signed_integral<char_type>)
+	{
+		return is_c_fullwidth(static_cast<unsigned_char_type>(ch));
+	}
+	else
+	{
+		constexpr unsigned_char_type fullwidth_exclaimation_mark_val{0xFF01};
+		constexpr unsigned_char_type num{94};
+		return static_cast<unsigned_char_type>(ch-fullwidth_exclaimation_mark_val)<num;
+	}
+}
+
+
+/*
+To do: to_c_fullwidth
+*/
+
+template<std::integral char_type>
+inline constexpr char_type to_c_halfwidth(char_type ch) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	if constexpr(sizeof(char_type)<sizeof(char32_t))
+	{
+		return ch;
+	}
+	else if constexpr(!std::same_as<char_type,char32_t>&&sizeof(char_type)==sizeof(char32_t))
+	{
+		return static_cast<char_type>(to_c_halfwidth(static_cast<char32_t>(ch)));
+	}
+	else if constexpr(std::signed_integral<char_type>)
+	{
+		return static_cast<char_type>(to_c_halfwidth(static_cast<unsigned_char_type>(ch)));
+	}
+	else
+	{
+		constexpr unsigned_char_type fullwidth_exclaimation_mark_val{0xFF01};
+		constexpr unsigned_char_type num{94};
+		constexpr unsigned_char_type halfwidth_exclaimation_mark_val{u8'!'};
+		unsigned_char_type const umav{static_cast<unsigned_char_type>(ch-fullwidth_exclaimation_mark_val)};
+		if(umav<num)
+		{
+			return static_cast<unsigned_char_type>(umav+halfwidth_exclaimation_mark_val);
+		}
+		return ch;
+	}
+}
+
 }
 
 namespace fast_io
