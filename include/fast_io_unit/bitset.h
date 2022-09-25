@@ -11,8 +11,9 @@ struct bitset_print_reserve_proxy
 #if defined(_LIBCPP_VERSION)
 	::std::size_t
 #else
-	unsigned long;
+	unsigned long
 #endif
+;
 	using native_storage_const_pointer
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
