@@ -94,6 +94,10 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_unit/filesystem.h"
 #endif
 
+#if defined(_GLIBCXX_BITSET) || defined(_LIBCPP_BITSET) || defined(_BITSET_)
+#include"fast_io_unit/bitset.h"
+#endif
+
 #if defined(_WIN32) && defined(WINRT_BASE_H)
 #if __has_include(<winrt/base.h>)
 #include"fast_io_driver/cppwinrt_impl/impl.h"
