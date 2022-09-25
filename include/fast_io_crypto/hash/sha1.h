@@ -748,7 +748,7 @@ public:
 struct sha1_initializer
 {
 	static inline constexpr std::size_t digest_size{20};
-	static inline constexpr ::fast_io::details::sha1::sha1 initialize_value{0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0};
+	static inline constexpr ::fast_io::details::sha1::sha1 initialize_value{{0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0}};
 	static inline constexpr void digest_to_byte_ptr(std::uint_least32_t const* digest,std::byte* ptr) noexcept
 	{
 		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,std::endian::big>(digest,ptr);

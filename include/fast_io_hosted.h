@@ -106,8 +106,6 @@ For hosted implementations the set of standard library headers required by the C
 #endif
 #endif
 
-#include"fast_io_crypto/platforms/impl.h"
-
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)

@@ -390,7 +390,7 @@ public:
 struct md5_initializer
 {
 	static inline constexpr std::size_t digest_size{16};
-	static inline constexpr ::fast_io::details::md5::md5 initialize_value{0x67452301,0xefcdab89,0x98badcfe,0x10325476};
+	static inline constexpr ::fast_io::details::md5::md5 initialize_value{{0x67452301,0xefcdab89,0x98badcfe,0x10325476}};
 	static inline constexpr void digest_to_byte_ptr(std::uint_least32_t const* digest,std::byte* ptr) noexcept
 	{
 		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,std::endian::little>(digest,ptr);
