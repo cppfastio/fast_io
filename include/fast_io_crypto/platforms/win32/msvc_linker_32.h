@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #pragma comment(linker,"/alternatename:__imp_?BCryptOpenAlgorithmProvider@win32@fast_io@@YAIPAPAXPB_S1I@Z=__imp_BCryptOpenAlgorithmProvider")
 #pragma comment(linker,"/alternatename:__imp_?BCryptCloseAlgorithmProvider@win32@fast_io@@YAIPAXI@Z=__imp_BCryptCloseAlgorithmProvider")

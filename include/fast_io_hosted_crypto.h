@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if !defined(__cplusplus)
 #error "You are not using a C++ compiler"

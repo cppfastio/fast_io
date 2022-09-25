@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace fast_io
 {
@@ -120,7 +120,7 @@ inline void create_bcrypt_common_hash_impl(nt_bcrypt_hash_file& g,char16_t const
 	}
 	g.phAlgorithm=guard.release();
 	g.hashHandle=hash_handle;
-	g.bcrypt_size=static_cast<::std::size_t>(hash_digest_length);
+	g.bcrypt_size=static_cast<::std::uint_least32_t>(hash_digest_length);
 	g.digest_buffer=locarr.ptr;
 	locarr.ptr=nullptr;
 	locarr.size=0u;

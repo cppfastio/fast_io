@@ -1,4 +1,4 @@
-#include<string>
+﻿#include<string>
 #include<fast_io_legacy.h>
 
 int main()

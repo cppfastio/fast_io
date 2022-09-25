@@ -13,6 +13,7 @@ no std::move, std::forward, std::addressof. WTF???
 #include"cstr_len.h"
 #include"bytes.h"
 #include"algorithm.h"
+#include"relocatable.h"
 
 #if _LIBCPP_VERSION
 #if __has_include(<__ranges/concepts.h>)

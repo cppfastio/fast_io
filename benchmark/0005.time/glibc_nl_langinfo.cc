@@ -1,4 +1,4 @@
-#include<clocale>
+﻿#include<clocale>
 #include<langinfo.h>
 #include<fast_io_device.h>
 #include<fast_io.h>

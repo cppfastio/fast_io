@@ -1,4 +1,4 @@
-//This is an emulation on how many times you can keep born a child to be a boy without abortion.
+﻿//This is an emulation on how many times you can keep born a child to be a boy without abortion.
 #include<random>
 #include<fast_io.h>
 #include<map>

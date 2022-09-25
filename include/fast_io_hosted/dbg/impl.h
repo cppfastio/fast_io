@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #if defined(__BIONIC__) && __has_include(<android/log.h>)
 #include"android.h"
 #elif ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))

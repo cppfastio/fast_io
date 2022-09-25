@@ -1,4 +1,4 @@
-// rgvw is only available in host environment
+﻿// rgvw is only available in host environment
 #include <string>
 #include <string_view>
 #include <deque>

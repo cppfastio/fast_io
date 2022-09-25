@@ -1,4 +1,4 @@
-#include<cstdio>
+﻿#include<cstdio>
 #include<fast_io.h>
 
 int main()

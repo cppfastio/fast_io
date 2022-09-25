@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include"../fast_io.h"
 #include<llvm/Support/raw_ostream.h>

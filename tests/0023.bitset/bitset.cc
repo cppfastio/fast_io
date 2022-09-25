@@ -1,4 +1,4 @@
-#ifdef TEST_VERIFY_WITH_COUT
+﻿#ifdef TEST_VERIFY_WITH_COUT
 #include<iostream>
 #endif
 #include<bitset>

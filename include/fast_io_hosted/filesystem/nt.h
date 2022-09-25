@@ -30,6 +30,83 @@ struct nt_dirent
 namespace win32::nt::details
 {
 
+template<typename Allocator,typename T>
+struct nt_dirent_space_guard
+{
+	using pointer = T*;
+	pointer ptr{};
+	constexpr nt_dirent_space_guard() noexcept = default;
+	nt_dirent_space_guard(nt_dirent_space_guard const&)=delete;
+	nt_dirent_space_guard& operator=(nt_dirent_space_guard const&)=delete;
+	constexpr T* release() noexcept
+	{
+		pointer temp{ptr};
+		this->ptr=nullptr;
+		return temp;
+	}
+	~nt_dirent_space_guard()
+	{
+		if(ptr)
+		{
+			typed_generic_allocator_adapter<Allocator,T>::deallocate_n(ptr,1);
+		}
+	}
+};
+
+template<typename Allocator>
+inline
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+constexpr
+#endif
+nt_dirent* new_nt_dirent() noexcept
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if(__builtin_is_constant_evaluated())
+#endif
+	{
+		return new nt_dirent;
+	}
+	else
+#endif
+	{
+		nt_dirent_space_guard<Allocator,nt_dirent> guard;
+		guard.ptr=typed_generic_allocator_adapter<Allocator,nt_dirent>::allocate(1);
+		::new (guard.ptr) nt_dirent;
+		return guard.release();
+	}
+}
+
+template<typename Allocator>
+inline
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+constexpr
+#endif
+void delete_nt_dirent(nt_dirent* ptr) noexcept
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if(__builtin_is_constant_evaluated())
+#endif
+	{
+		delete ptr;
+	}
+	else
+#endif
+	{
+		if(ptr==nullptr)
+		{
+			return;
+		}
+		ptr->~nt_dirent();
+		typed_generic_allocator_adapter<Allocator,nt_dirent>::deallocate_n(ptr, 1);
+	}
+}
+
 template<nt_family family>
 inline nt_dirent* set_nt_dirent(nt_dirent* entry,bool start)
 {
@@ -193,42 +270,47 @@ inline constexpr bool operator!=(nt_family_directory_iterator<family> b, ::fast_
 	return !(other==b);
 }
 
-template<nt_family family>
-struct nt_family_directory_generator
+template<nt_family family,typename Allocator>
+struct basic_nt_family_directory_generator
 {
+	using allocator_type = Allocator;
 	nt_dirent* entry{};
-	constexpr nt_family_directory_generator()=default;
-	constexpr nt_family_directory_generator(void* directory_handle):entry(new nt_dirent)
+	constexpr basic_nt_family_directory_generator() noexcept=default;
+	explicit constexpr basic_nt_family_directory_generator(void* directory_handle) noexcept:entry(::fast_io::win32::nt::details::new_nt_dirent<Allocator>())
 	{
 		entry->d_handle=directory_handle;
 	}
-	nt_family_directory_generator(nt_family_directory_generator const&)=delete;
-	nt_family_directory_generator& operator=(nt_family_directory_generator const&)=delete;
-	constexpr nt_family_directory_generator(nt_family_directory_generator&& __restrict other) noexcept:entry(other.entry)
+
+	basic_nt_family_directory_generator(basic_nt_family_directory_generator const&)=delete;
+	basic_nt_family_directory_generator& operator=(basic_nt_family_directory_generator const&)=delete;
+	constexpr basic_nt_family_directory_generator(basic_nt_family_directory_generator&& __restrict other) noexcept:entry(other.entry)
 	{
 		other.entry=nullptr;
 	}
-	constexpr nt_family_directory_generator& operator=(nt_family_directory_generator&& __restrict other) noexcept
+	constexpr basic_nt_family_directory_generator& operator=(basic_nt_family_directory_generator&& __restrict other) noexcept
 	{
-		delete entry;
+		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(entry);
 		entry=other.entry;
 		other.entry=nullptr;
 		return *this;
 	}
-	constexpr ~nt_family_directory_generator()
+	constexpr ~basic_nt_family_directory_generator()
 	{
-		delete entry;
+		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(entry);
 	}
 };
 
 template<nt_family family>
-inline nt_family_directory_iterator<family> begin(nt_family_directory_generator<family> const& pdg)
+using nt_family_directory_generator = basic_nt_family_directory_generator<family,typename nt_api_encoding_converter::allocator_type>;
+
+template<nt_family family,typename Allocator>
+inline nt_family_directory_iterator<family> begin(basic_nt_family_directory_generator<family,Allocator> const& pdg)
 {
 	return {win32::nt::details::set_nt_dirent_first<family>(pdg.entry)};
 }
 
-template<nt_family family>
-inline ::fast_io::freestanding::default_sentinel_t end(nt_family_directory_generator<family> const&) noexcept
+template<nt_family family,typename Allocator>
+inline ::fast_io::freestanding::default_sentinel_t end(basic_nt_family_directory_generator<family,Allocator> const&) noexcept
 {
 	return {};
 }
@@ -246,55 +328,58 @@ inline zw_directory_generator current(zw_at_entry nate)
 	return zw_directory_generator(nate.handle);
 }
 
-template<nt_family family>
-struct nt_family_recursive_directory_iterator
+template<nt_family family,typename StackType>
+struct basic_nt_family_recursive_directory_iterator
 {
+	using stack_type = StackType;
 	void* root_handle{};
 	nt_dirent* entry{};
-	details::naive_vector<basic_nt_family_file<family,char>> stack;
-	nt_family_recursive_directory_iterator()=default;
-	nt_family_recursive_directory_iterator(void* root_han,nt_dirent* ent):root_handle(root_han),entry(ent){}
-	nt_family_recursive_directory_iterator(nt_family_recursive_directory_iterator const&)=delete;
-	nt_family_recursive_directory_iterator& operator=(nt_family_recursive_directory_iterator const&)=delete;
-	nt_family_recursive_directory_iterator(nt_family_recursive_directory_iterator&& __restrict) noexcept=default;
-	nt_family_recursive_directory_iterator& operator=(nt_family_recursive_directory_iterator&& __restrict) noexcept=default;
+	stack_type stack;
+	constexpr basic_nt_family_recursive_directory_iterator()=default;
+	basic_nt_family_recursive_directory_iterator(void* root_han,nt_dirent* ent):root_handle(root_han),entry(ent){}
+	basic_nt_family_recursive_directory_iterator(basic_nt_family_recursive_directory_iterator const&)=delete;
+	basic_nt_family_recursive_directory_iterator& operator=(basic_nt_family_recursive_directory_iterator const&)=delete;
+	basic_nt_family_recursive_directory_iterator(basic_nt_family_recursive_directory_iterator&& __restrict) noexcept=default;
+	basic_nt_family_recursive_directory_iterator& operator=(basic_nt_family_recursive_directory_iterator&& __restrict) noexcept=default;
 };
 
-template<nt_family family>
-struct nt_family_recursive_directory_generator
+template<nt_family family,typename Allocator,typename StackType>
+struct basic_nt_family_recursive_directory_generator
 {
+	using allocator_type = Allocator;
+	using stack_type = StackType;
 	void* root_handle{};
 	nt_dirent* entry{};
-	constexpr nt_family_recursive_directory_generator()=default;
-	explicit constexpr nt_family_recursive_directory_generator(void* rhd):root_handle(rhd),entry(new nt_dirent){}
-	nt_family_recursive_directory_generator(nt_family_recursive_directory_generator const&)=delete;
-	nt_family_recursive_directory_generator& operator=(nt_family_recursive_directory_generator const&)=delete;
-	constexpr nt_family_recursive_directory_generator(nt_family_recursive_directory_generator&& __restrict other) noexcept:root_handle(other.root_handle),entry(other.entry)
+	constexpr basic_nt_family_recursive_directory_generator()=default;
+	explicit constexpr basic_nt_family_recursive_directory_generator(void* rhd):root_handle(rhd),entry(::fast_io::win32::nt::details::new_nt_dirent<Allocator>()){}
+	basic_nt_family_recursive_directory_generator(basic_nt_family_recursive_directory_generator const&)=delete;
+	basic_nt_family_recursive_directory_generator& operator=(basic_nt_family_recursive_directory_generator const&)=delete;
+	constexpr basic_nt_family_recursive_directory_generator(basic_nt_family_recursive_directory_generator&& __restrict other) noexcept:root_handle(other.root_handle),entry(other.entry)
 	{
 		other.root_handle=nullptr;
 		entry=nullptr;
 	}
-	constexpr nt_family_recursive_directory_generator& operator=(nt_family_recursive_directory_generator&& __restrict other) noexcept
+	constexpr basic_nt_family_recursive_directory_generator& operator=(basic_nt_family_recursive_directory_generator&& __restrict other) noexcept
 	{
-		delete entry;
+		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(this->entry);
 		root_handle=other.root_handle;
 		entry=other.entry;
 		return *this;
 	}
-	constexpr ~nt_family_recursive_directory_generator()
+	constexpr ~basic_nt_family_recursive_directory_generator()
 	{
-		delete entry;
+		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(this->entry);
 	}
 };
 
-template<nt_family family>
-inline std::size_t depth(nt_family_recursive_directory_iterator<family> const& prdit) noexcept
+template<nt_family family,typename StackType>
+inline std::size_t depth(basic_nt_family_recursive_directory_iterator<family,StackType> const& prdit) noexcept
 {
 	return prdit.stack.size();
 }
 
-template<nt_family family>
-inline nt_family_recursive_directory_iterator<family>& operator++(nt_family_recursive_directory_iterator<family>& prdit)
+template<nt_family family,typename StackType>
+inline basic_nt_family_recursive_directory_iterator<family,StackType>& operator++(basic_nt_family_recursive_directory_iterator<family,StackType>& prdit)
 {
 	for(;;)
 	{
@@ -331,8 +416,8 @@ inline nt_family_recursive_directory_iterator<family>& operator++(nt_family_recu
 	return prdit;
 }
 
-template<nt_family family>
-inline void pop(nt_family_recursive_directory_iterator<family>& prdit)
+template<nt_family family,typename StackType>
+inline void pop(basic_nt_family_recursive_directory_iterator<family,StackType>& prdit)
 {
 	if(prdit.stack.empty())
 		prdit.entry=nullptr;
@@ -343,10 +428,10 @@ inline void pop(nt_family_recursive_directory_iterator<family>& prdit)
 	}
 }
 
-template<nt_family family>
-inline nt_family_recursive_directory_iterator<family> begin(nt_family_recursive_directory_generator<family> const& prg) noexcept
+template<nt_family family,typename AllocatorType,typename StackType>
+inline basic_nt_family_recursive_directory_iterator<family,StackType> begin(basic_nt_family_recursive_directory_generator<family,AllocatorType,StackType> const& prg) noexcept
 {
-	nt_family_recursive_directory_iterator<family> prdit{prg.root_handle,prg.entry};
+	basic_nt_family_recursive_directory_iterator<family,StackType> prdit{prg.root_handle,prg.entry};
 	prdit.entry->d_handle=prg.root_handle;
 	prdit.entry=win32::nt::details::set_nt_dirent_first<family>(prdit.entry);
 	if(prdit.entry&&prdit.entry->d_type==file_type::directory)
@@ -368,41 +453,46 @@ inline nt_family_recursive_directory_iterator<family> begin(nt_family_recursive_
 	return prdit;
 }
 
-template<nt_family family>
-inline ::fast_io::freestanding::default_sentinel_t end(nt_family_recursive_directory_generator<family> const&) noexcept
+template<nt_family family,typename AllocatorType,typename StackType>
+inline ::fast_io::freestanding::default_sentinel_t end(basic_nt_family_recursive_directory_generator<family,AllocatorType,StackType> const&) noexcept
 {
 	return {};
 }
 
-template<nt_family family>
-inline nt_directory_entry operator*(nt_family_recursive_directory_iterator<family> const& prdit) noexcept
+template<nt_family family,typename StackType>
+inline nt_directory_entry operator*(basic_nt_family_recursive_directory_iterator<family,StackType> const& prdit) noexcept
 {
 	return {prdit.entry};
 }
 
-template<nt_family family>
-inline bool operator==(::fast_io::freestanding::default_sentinel_t, nt_family_recursive_directory_iterator<family> const& b) noexcept
+template<nt_family family,typename StackType>
+inline bool operator==(::fast_io::freestanding::default_sentinel_t, basic_nt_family_recursive_directory_iterator<family,StackType> const& b) noexcept
 {
 	return b.stack.empty()&&b.entry == nullptr;
 }
 
-template<nt_family family>
-inline bool operator==(nt_family_recursive_directory_iterator<family> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+template<nt_family family,typename StackType>
+inline bool operator==(basic_nt_family_recursive_directory_iterator<family,StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
 {
 	return sntnl==b;
 }
 
-template<nt_family family>
-inline bool operator!=(::fast_io::freestanding::default_sentinel_t sntnl, nt_family_recursive_directory_iterator<family> const& b) noexcept
+template<nt_family family,typename StackType>
+inline bool operator!=(::fast_io::freestanding::default_sentinel_t sntnl, basic_nt_family_recursive_directory_iterator<family,StackType> const& b) noexcept
 {
 	return !(sntnl==b);
 }
 
-template<nt_family family>
-inline bool operator!=(nt_family_recursive_directory_iterator<family> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+template<nt_family family,typename StackType>
+inline bool operator!=(basic_nt_family_recursive_directory_iterator<family,StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
 {
 	return sntnl!=b;
 }
+
+template<nt_family family>
+using nt_family_recursive_directory_generator = basic_nt_family_recursive_directory_generator<family,
+	typename nt_directory_generator::allocator_type,
+	::fast_io::containers::vector<basic_nt_family_file<family,char>,typename nt_directory_generator::allocator_type>>;
 
 using nt_recursive_directory_generator = nt_family_recursive_directory_generator<nt_family::nt>;
 using zw_recursive_directory_generator = nt_family_recursive_directory_generator<nt_family::zw>;

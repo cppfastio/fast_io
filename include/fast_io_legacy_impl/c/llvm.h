@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 This implementation is an untested guessing implementation since i do not know how to build LLVM libc.
 
