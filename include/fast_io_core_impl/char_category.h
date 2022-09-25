@@ -319,7 +319,7 @@ inline constexpr bool is_c_halfwidth(char_type ch) noexcept
 	{
 		return is_c_halfwidth(static_cast<char32_t>(ch));
 	}
-	else if constexpr(std::signed_integral<char_type>(ch))
+	else if constexpr(std::signed_integral<char_type>)
 	{
 		return is_c_halfwidth(static_cast<unsigned_char_type>(ch));
 	}
