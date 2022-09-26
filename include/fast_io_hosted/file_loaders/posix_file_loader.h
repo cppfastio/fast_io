@@ -246,7 +246,8 @@ public:
 
 	pointer address_begin{};
 	pointer address_end{};
-	inline constexpr posix_file_loader_impl() noexcept=default;
+	inline constexpr posix_file_loader_impl() noexcept requires(allocation)=default;
+	inline constexpr posix_file_loader_impl() noexcept : address_begin((char*)-1),address_end((char*)-1){}
 	inline explicit posix_file_loader_impl(posix_at_entry pate)
 	{
 		auto ret{posix_load_address_impl<allocation>(pate.fd)};
