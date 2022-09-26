@@ -1869,7 +1869,18 @@ inline io_scatter_status_t scatter_pwrite(basic_posix_io_observer<ch_type> piob,
 }
 #endif
 #endif
+#if 0
+namespace freestanding
+{
 
+template<std::integral char_type>
+struct is_trivially_relocatable<basic_posix_file<fm,char_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+}
+#endif
 }
 
 #if defined(__MSDOS__) || ((defined(__NEWLIB__)||defined(_PICOLIBC__))&&!defined(FAST_IO_USE_NEWLIB_CUSTOM_WRITEV)&&!defined(__CYGWIN__))
