@@ -131,6 +131,23 @@ public:
 	}
 };
 
+namespace freestanding
+{
+
+template<>
+struct is_trivially_relocatable<posix_directory_file>
+{
+	inline static constexpr bool value = true;
+};
+
+template<>
+struct is_zero_default_constructible<posix_directory_file>
+{
+	inline static constexpr bool value = true;
+};
+
+}
+
 struct posix_directory_entry
 {
 	using native_char_type = char;
