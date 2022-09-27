@@ -185,6 +185,7 @@ inline constexpr void sha512_do_constexpr_function(std::uint_least64_t* __restri
 #else
 #include"sha512_scalar.h"
 #endif
+
 class sha512
 {
 public:
@@ -199,12 +200,6 @@ public:
 #endif
 	void update_blocks(std::byte const* blocks_start,std::byte const* blocks_last) noexcept
 	{
-#if (defined(_MSC_VER) && !defined(__clang__))
-/*
-optimization of msvc is very bad
-*/
-		::fast_io::details::sha512::sha512_do_constexpr_function(state,blocks_start,blocks_last);
-#else
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
 		if consteval
@@ -219,7 +214,6 @@ optimization of msvc is very bad
 		{
 			::fast_io::details::sha512::sha512_runtime_routine(state,blocks_start,blocks_last);
 		}
-#endif
 	}
 };
 
