@@ -1,4 +1,4 @@
-#if defined(USE_STD)
+﻿#if defined(USE_STD)
 #include<vector>
 #include<cstdint>
 namespace test

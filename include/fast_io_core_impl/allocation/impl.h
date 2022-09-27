@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
 

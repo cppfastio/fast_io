@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if SIZE_MAX > UINT_LEAST32_MAX
 #include"msvc_linker_64.h"

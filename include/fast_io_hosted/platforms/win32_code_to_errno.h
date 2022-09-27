@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 case 0: return 0;
 #if defined(EACCES)
 case 5:return EACCES;

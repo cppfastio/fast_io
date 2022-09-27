@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined(_MSC_VER) && !defined(_KERNEL_MODE) && !defined(_WIN32_WINDOWS)
 #pragma comment(lib,"ntdll.lib")

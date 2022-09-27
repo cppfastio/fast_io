@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 Algorithm: fast_io
 Author: cqwrteur

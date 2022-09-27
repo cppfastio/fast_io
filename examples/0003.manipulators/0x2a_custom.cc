@@ -1,4 +1,4 @@
-#include<string>
+﻿#include<string>
 #include<fast_io.h>
 
 namespace fast_io::manipulators

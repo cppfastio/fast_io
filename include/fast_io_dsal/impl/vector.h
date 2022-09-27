@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 namespace fast_io
 {
 
@@ -166,7 +166,7 @@ inline constexpr void add_zero_towards(vector_model* m, char8_t* end) noexcept
 	}
 	else
 	{
-		::fast_io::freestanding::my_memset(m->curr_ptr, 0, end - m->curr_ptr);
+		::fast_io::freestanding::my_memset(m->curr_ptr, 0, static_cast<std::size_t>(end - m->curr_ptr));
 		m->curr_ptr = end;
 	}
 }
@@ -195,7 +195,7 @@ template <typename allocator>
 inline constexpr void check_size_and_assign_align(vector_model* m, ::std::size_t alignment, char8_t const* begin, char8_t const* end) noexcept
 {
 	auto const newcap{ static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) };
-	if (end - begin > newcap)
+	if ( newcap < static_cast<std::size_t>(end - begin))
 	{
 		grow_to_size_common_aligned_impl<allocator>(m, alignment, newcap);
 	}
@@ -219,7 +219,7 @@ inline void erase_impl(vector_model* m, char8_t* first, char8_t* last) noexcept
 	}
 	else
 	{
-		auto const length{ m->curr_ptr - last };
+		std::size_t const length{static_cast<std::size_t>(m->curr_ptr - last)};
 		::fast_io::freestanding::my_memmove(first, last, length);
 		m->curr_ptr -= last - first;
 	}

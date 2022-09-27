@@ -1,4 +1,4 @@
-/*
+﻿/*
 Referenced from:
 https://www.cnblogs.com/Mr94Kevin/p/9651975.html
 */

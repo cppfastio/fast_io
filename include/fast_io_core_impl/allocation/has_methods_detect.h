@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 template<typename alloc>
 concept has_allocate_impl = requires(::std::size_t n)

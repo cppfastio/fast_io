@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /*
 Create python's PyBytesObject by using fast_io's api

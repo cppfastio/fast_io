@@ -1,4 +1,4 @@
-//should compile with -fsanitize=address -fsanitize=undefined to verify code
+﻿//should compile with -fsanitize=address -fsanitize=undefined to verify code
 #include<fast_io.h>
 
 int main()

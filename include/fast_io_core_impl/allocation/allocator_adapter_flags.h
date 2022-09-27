@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 enum class allocator_adapter_flags
 {

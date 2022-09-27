@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #pragma comment(linker,"/alternatename:__imp_?HeapAlloc@win32@fast_io@@YGPAXPAXII@Z=__imp__HeapAlloc@12")
 #pragma comment(linker,"/alternatename:__imp_?HeapFree@win32@fast_io@@YGHPAXI0@Z=__imp__HeapFree@12")
