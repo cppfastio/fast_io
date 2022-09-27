@@ -8,7 +8,7 @@ requires (fam==win32_family::ansi_9x||fam==win32_family::wide_nt)
 class win32_family_dns_io_observer
 {
 public:
-	using char_type = std::conditional_t<fam==win32_family::wide_nt,wchar_t,char>;
+	using char_type = std::conditional_t<fam==win32_family::wide_nt,char16_t,char>;
 	using native_handle_type = ::fast_io::win32::win32_family_addrinfo<fam>*;
 	native_handle_type res{};
 	inline constexpr native_handle_type native_handle() const noexcept
@@ -103,7 +103,7 @@ namespace details
 {
 
 template<win32_family fam>
-inline ::fast_io::win32::win32_family_addrinfo<fam>* win32_getaddrinfo_impl(std::conditional_t<fam==win32_family::wide_nt,wchar_t,char> const* node,std::conditional_t<fam==win32_family::wide_nt,wchar_t,char> const* service,::fast_io::win32::win32_family_addrinfo<fam> const* hints)
+inline ::fast_io::win32::win32_family_addrinfo<fam>* win32_getaddrinfo_impl(std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node,std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* service,::fast_io::win32::win32_family_addrinfo<fam> const* hints)
 {
 	::fast_io::win32::win32_family_addrinfo<fam>* res{};
 	if constexpr(win32_family::ansi_9x==fam)
@@ -136,7 +136,7 @@ inline void win32_family_freeaddrinfo_impl(::fast_io::win32::win32_family_addrin
 
 
 template<win32_family fam>
-inline constexpr auto win32_family_dns_open_internal_impl(std::conditional_t<fam==win32_family::wide_nt,wchar_t,char> const* node)
+inline constexpr auto win32_family_dns_open_internal_impl(std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node)
 {
 	constexpr ::fast_io::win32::win32_family_addrinfo<fam> info{.ai_family=0};
 	return win32_getaddrinfo_impl<fam>(node,nullptr,__builtin_addressof(info));
@@ -145,7 +145,7 @@ inline constexpr auto win32_family_dns_open_internal_impl(std::conditional_t<fam
 template<win32_family fam>
 struct win32_family_dns_open_parameter
 {
-	inline auto operator()(std::conditional_t<fam==win32_family::wide_nt,wchar_t,char> const* node_name_c_str)
+	inline auto operator()(std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node_name_c_str)
 	{
 		return ::fast_io::details::win32_family_dns_open_internal_impl<fam>(node_name_c_str);
 	}

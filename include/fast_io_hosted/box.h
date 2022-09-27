@@ -46,14 +46,14 @@ requires (family==win32_family::wide_nt)
 inline void win32_box_write_impl(char16_t* first,char16_t* last)
 {
 	*::fast_io::freestanding::remove(first,last,0)=0;
-	using wchar_t_may_alias_ptr
+	using char16_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	= wchar_t const*;
+	= char16_t const*;
 	if(!::fast_io::win32::MessageBoxW(nullptr,
-		reinterpret_cast<wchar_t_may_alias_ptr>(first),
-		reinterpret_cast<wchar_t_may_alias_ptr>(u"fast_io"),
+		reinterpret_cast<char16_may_alias_ptr>(first),
+		reinterpret_cast<char16_may_alias_ptr>(u"fast_io"),
 		0x00000040L /*MB_ICONINFORMATION*/))
 		throw_win32_error();
 }

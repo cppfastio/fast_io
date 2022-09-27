@@ -36,7 +36,7 @@ inline std::size_t print_reserve_define_win32_error_9xa_impl(char* ptr, std::uin
 	nullptr);
 }
 
-inline std::size_t print_reserve_define_win32_error_ntw_impl(wchar_t* ptr, std::uint_least32_t ec) noexcept
+inline std::size_t print_reserve_define_win32_error_ntw_impl(char16_t* ptr, std::uint_least32_t ec) noexcept
 {
 	constexpr std::size_t char16_buffer_size{32768};
 	return win32::FormatMessageW(
@@ -54,7 +54,7 @@ inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type*
 {
 	if constexpr(family==win32_family::wide_nt)
 	{
-		if constexpr(std::same_as<char_type,wchar_t>)
+		if constexpr(std::same_as<char_type,char16_t>)
 			return ptr+print_reserve_define_win32_error_ntw_impl(ptr,ec);
 		else if constexpr(sizeof(char_type)==2)
 		{
@@ -62,7 +62,7 @@ inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type*
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 			[[__gnu__::__may_alias__]]
 #endif
-			= wchar_t*;
+			= char16_t*;
 			return ptr+print_reserve_define_win32_error_ntw_impl(reinterpret_cast<char_type_may_alias_ptr>(ptr),ec);
 		}
 		else
@@ -72,7 +72,7 @@ inline constexpr char_type* print_reserve_define_win32_error_ptr_impl(char_type*
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 			[[__gnu__::__may_alias__]]
 #endif
-			= wchar_t*;
+			= char16_t*;
 			std::size_t sz{print_reserve_define_win32_error_ntw_impl(reinterpret_cast<char_type_may_alias_ptr>(buffer.data()),ec)};
 			return ::fast_io::details::codecvt::general_code_cvt_full(buffer.data(),buffer.data()+sz,ptr);
 		}

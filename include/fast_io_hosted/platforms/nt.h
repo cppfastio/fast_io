@@ -283,7 +283,7 @@ struct nt_create_callback
 };
 
 template<bool zw>
-inline void* nt_family_create_file_impl(wchar_t const* filename_cstr,open_mode_perms ompm)
+inline void* nt_family_create_file_impl(char16_t const* filename_cstr,open_mode_perms ompm)
 {
 	return ::fast_io::win32::nt::details::nt_call_invoke_without_directory_handle_impl(
 				filename_cstr,
@@ -299,7 +299,7 @@ struct nt_family_open_file_parameter
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-	inline void* operator()(wchar_t const* filename_cstr)
+	inline void* operator()(char16_t const* filename_cstr)
 	{
 		return nt_family_create_file_impl<zw>(filename_cstr,ompm);
 	}
@@ -313,7 +313,7 @@ inline void* nt_create_file_impl(T const& t,open_mode_perms ompm)
 }
 
 template<bool zw,bool kernel>
-inline void* nt_family_create_file_at_impl(void* directory_handle,wchar_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
+inline void* nt_family_create_file_at_impl(void* directory_handle,char16_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
 {
 	if constexpr(kernel)
 	{
@@ -330,18 +330,18 @@ inline void* nt_family_create_file_at_impl(void* directory_handle,wchar_t const*
 template<bool zw>
 inline void* nt_family_create_file_fs_dirent_impl(void* directory_handle,char16_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
 {
-	using wchar_t_may_alias_const_ptr
+	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	= wchar_t const*;
+	= char16_t const*;
 	return ::fast_io::win32::nt::details::nt_call_kernel_fs_dirent_callback(directory_handle,
-	reinterpret_cast<wchar_t_may_alias_const_ptr>(filename_c_str),filename_c_str_len,
+	reinterpret_cast<char16_may_alias_const_ptr>(filename_c_str),filename_c_str_len,
 		nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(md)});
 }
 
 template<bool zw>
-inline void* nt_family_create_file_kernel_impl(wchar_t const* filename_cstr,std::size_t filename_c_str_len,open_mode_perms ompm)
+inline void* nt_family_create_file_kernel_impl(char16_t const* filename_cstr,std::size_t filename_c_str_len,open_mode_perms ompm)
 {
 	return ::fast_io::win32::nt::details::nt_call_kernel_nodir_callback(
 				filename_cstr,filename_c_str_len,
@@ -357,7 +357,7 @@ struct nt_family_open_file_kernel_parameter
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-	inline void* operator()(wchar_t const* filename_cstr,std::size_t filename_c_str_len)
+	inline void* operator()(char16_t const* filename_cstr,std::size_t filename_c_str_len)
 	{
 		return nt_family_create_file_kernel_impl<zw>(filename_cstr,filename_c_str_len,ompm);
 	}
@@ -380,7 +380,7 @@ struct nt_family_open_file_at_parameter
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-	inline void* operator()(wchar_t const* filename_cstr,std::size_t filename_c_str_len)
+	inline void* operator()(char16_t const* filename_cstr,std::size_t filename_c_str_len)
 	{
 		return nt_family_create_file_at_impl<zw,kernel>(directory_handle,filename_cstr,filename_c_str_len,ompm);
 	}

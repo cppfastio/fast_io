@@ -230,12 +230,12 @@ family==::fast_io::win32_family::wide_nt
 		{
 			constexpr int locale_name_max_len{85};
 			static_assert(locale_name_max_len<size_restriction);
-			using wchar_may_alias_ptr
+			using char16_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 			[[__gnu__::__may_alias__]]
 #endif
-			= wchar_t*;
-			int ret{::fast_io::win32::GetUserDefaultLocaleName(reinterpret_cast<wchar_may_alias_ptr>(it),locale_name_max_len)};
+			= char16_t*;
+			int ret{::fast_io::win32::GetUserDefaultLocaleName(reinterpret_cast<char16_may_alias_ptr>(it),locale_name_max_len)};
 			if(ret)
 			{
 				--ret;
