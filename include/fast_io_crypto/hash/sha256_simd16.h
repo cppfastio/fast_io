@@ -72,8 +72,8 @@ inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::by
 
 	simd_vector<std::uint_least32_t,4> simd;
 
-	std::uint_least32_t wt[80];
-	std::uint_least32_t w[80];
+	std::uint_least32_t wt[64];
+	std::uint_least32_t w[64];
 	std::uint_least32_t a{state[0]};
 	std::uint_least32_t b{state[1]};
 	std::uint_least32_t c{state[2]};
