@@ -102,7 +102,7 @@ inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::by
 		sha256_simd16_byte_swap_message_4rounds(simd,blocks_start,w,wt,12);
 		sha256_scalar_round(wt[10],g,h,b,c,d,e,f,bpc);
 		sha256_scalar_round(wt[11],f,g,a,b,c,d,e,bpc);
-		for(std::uint_fast8_t i{12};i!=60;i+=8)
+		for(std::uint_fast8_t i{12};i!=60;i+=16)
 		{
 			std::uint_least32_t const* const p{wt+i};
 			sha256_scalar_round(*p,e,f,h,a,b,c,d,bpc);
@@ -115,6 +115,17 @@ inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::by
 			sha256_simd16_compute_message_4rounds(simd,w,wt,i+8);
 			sha256_scalar_round(p[6],g,h,b,c,d,e,f,bpc);
 			sha256_scalar_round(p[7],f,g,a,b,c,d,e,bpc);
+
+			sha256_scalar_round(p[8],e,f,h,a,b,c,d,bpc);
+			sha256_scalar_round(p[9],d,e,g,h,a,b,c,bpc);
+			sha256_simd16_compute_message_4rounds(simd,w,wt,i+12);
+			sha256_scalar_round(p[10],c,d,f,g,h,a,b,bpc);
+			sha256_scalar_round(p[11],b,c,e,f,g,h,a,bpc);
+			sha256_scalar_round(p[12],a,b,d,e,f,g,h,bpc);
+			sha256_scalar_round(p[13],h,a,c,d,e,f,g,bpc);
+			sha256_simd16_compute_message_4rounds(simd,w,wt,i+16);
+			sha256_scalar_round(p[14],g,h,b,c,d,e,f,bpc);
+			sha256_scalar_round(p[15],f,g,a,b,c,d,e,bpc);
 		}
 		sha256_scalar_round(wt[60],e,f,h,a,b,c,d,bpc);
 		sha256_scalar_round(wt[61],d,e,g,h,a,b,c,bpc);
