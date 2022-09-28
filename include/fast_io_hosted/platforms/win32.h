@@ -70,7 +70,7 @@ template<win32_family family>
 inline void* create_win32_temp_file_impl()
 {
 	constexpr bool is_nt{family==win32_family::wide_nt};
-	using char_type = std::conditional_t<is_nt,wchar_t,char>;
+	using char_type = std::conditional_t<is_nt,char16_t,char>;
 	using replace_char_type = std::conditional_t<is_nt,char16_t,char8_t>;
 	using char_type_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -189,7 +189,7 @@ std::uint_least32_t dwFlagsAndAttributes{};//=128|0x10000000;//FILE_ATTRIBUTE_NO
 };
 
 template<win32_family family>
-inline void* win32_family_create_file_internal_impl(std::conditional_t<family==win32_family::wide_nt,wchar_t,char> const* lpFileName,win32_open_mode const& mode)
+inline void* win32_family_create_file_internal_impl(std::conditional_t<family==win32_family::wide_nt,char16_t,char> const* lpFileName,win32_open_mode const& mode)
 {
 	if constexpr(family==win32_family::wide_nt)
 	{
@@ -408,7 +408,7 @@ I tried this. Oh no. It cannot
 }
 
 template<win32_family family>
-inline void* win32_family_create_file_impl(std::conditional_t<family==win32_family::wide_nt,wchar_t,char> const* filename_c_str,open_mode_perms ompm)
+inline void* win32_family_create_file_impl(std::conditional_t<family==win32_family::wide_nt,char16_t,char> const* filename_c_str,open_mode_perms ompm)
 {
 	return win32_family_create_file_internal_impl<family>(filename_c_str,calculate_win32_open_mode(ompm));
 }
@@ -416,7 +416,7 @@ inline void* win32_family_create_file_impl(std::conditional_t<family==win32_fami
 template<win32_family family>
 struct win32_family_open_file_parameter
 {
-	using family_char_type = std::conditional_t<family==win32_family::wide_nt,wchar_t,char>;
+	using family_char_type = std::conditional_t<family==win32_family::wide_nt,char16_t,char>;
 	open_mode_perms ompm{};
 	inline void* operator()(family_char_type const* filename)
 	{

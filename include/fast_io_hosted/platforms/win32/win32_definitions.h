@@ -27,9 +27,9 @@ int bInheritHandle;
 struct startupinfo
 {
 std::uint_least32_t cb;
-wchar_t* lpReserved;
-wchar_t* lpDesktop;
-wchar_t* lpTitle;
+char16_t* lpReserved;
+char16_t* lpDesktop;
+char16_t* lpTitle;
 std::uint_least32_t dwX;
 std::uint_least32_t dwY;
 std::uint_least32_t dwXSize;
@@ -179,7 +179,7 @@ int              iNetworkByteOrder;
 int              iSecurityScheme;
 std::uint_least32_t            dwMessageSize;
 std::uint_least32_t            dwProviderReserved;
-wchar_t  szProtocol[wsaprotocol_len + 1];
+char16_t  szProtocol[wsaprotocol_len + 1];
 };
 
 struct wsaprotocol_infoa
@@ -280,7 +280,7 @@ int              ai_family{};
 int              ai_socktype{};
 int              ai_protocol{};
 std::size_t	 ai_addrlen{};
-std::conditional_t<fam==win32_family::ansi_9x,char,wchar_t>  *ai_canonname{};
+std::conditional_t<fam==win32_family::ansi_9x,char,char16_t>  *ai_canonname{};
 posix_sockaddr *ai_addr{};
 win32_family_addrinfo<fam> *ai_next{};
 };

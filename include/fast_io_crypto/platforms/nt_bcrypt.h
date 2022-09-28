@@ -129,14 +129,14 @@ inline void create_bcrypt_common_hash_impl(nt_bcrypt_hash_file& g,char16_t const
 struct bcrypt_common
 {
 	nt_bcrypt_hash_file* fl{};
-	inline void operator()(wchar_t const* name) const
+	inline void operator()(char16_t const* name) const
 	{
-		using char16_may_alias_const_ptr
+		using char16_t_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
 #endif
 		= char16_t const*;
-		create_bcrypt_common_hash_impl(*(this->fl),reinterpret_cast<char16_may_alias_const_ptr>(name));
+		create_bcrypt_common_hash_impl(*(this->fl),reinterpret_cast<char16_t_may_alias_const_ptr>(name));
 	}
 };
 

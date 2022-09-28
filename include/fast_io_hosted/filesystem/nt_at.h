@@ -72,7 +72,7 @@ inline constexpr nt_open_mode calculate_nt_delete_flag(nt_at_flags flags) noexce
 }
 
 template<bool zw>
-inline void nt_unlinkat_impl(void* dirhd,wchar_t const* path_c_str,std::size_t path_size,nt_at_flags flags)
+inline void nt_unlinkat_impl(void* dirhd,char16_t const* path_c_str,std::size_t path_size,nt_at_flags flags)
 {
 	auto status{nt_close<zw>(nt_call_callback(dirhd,path_c_str,path_size,nt_create_callback<zw>{calculate_nt_delete_flag(flags)}))};
 	if(status)
@@ -80,7 +80,7 @@ inline void nt_unlinkat_impl(void* dirhd,wchar_t const* path_c_str,std::size_t p
 }
 
 template<bool zw>
-inline void nt_mkdirat_impl(void* dirhd,wchar_t const* path_c_str,std::size_t path_size,perms pm)
+inline void nt_mkdirat_impl(void* dirhd,char16_t const* path_c_str,std::size_t path_size,perms pm)
 {
 	constexpr fast_io::win32::nt::details::nt_open_mode create_dir_mode{fast_io::win32::nt::details::calculate_nt_open_mode({fast_io::open_mode::creat|fast_io::open_mode::directory})};
 	auto m_dir_mode{create_dir_mode};
@@ -106,8 +106,8 @@ inline constexpr nt_open_mode calculate_nt_link_flag(nt_at_flags flags) noexcept
 }
 #if 0
 template<bool zw>
-inline void nt_linkat_no_newpath_size_impl(void* olddirhd,wchar_t const* oldpath_c_str,std::size_t oldpath_size,
-	void* newdirhd,wchar_t const* to_path_c_str,nt_at_flags flags)
+inline void nt_linkat_no_newpath_size_impl(void* olddirhd,char16_t const* oldpath_c_str,std::size_t oldpath_size,
+	void* newdirhd,char16_t const* to_path_c_str,nt_at_flags flags)
 {
 
 }
@@ -122,8 +122,8 @@ struct file_link_information
 
 template<bool zw>
 inline void nt_linkat_impl(
-	void* olddirhd,wchar_t const* oldpath_c_str,std::size_t oldpath_size,
-	void* newdirhd,wchar_t const* newpath_c_str,std::size_t newpath_size,
+	void* olddirhd,char16_t const* oldpath_c_str,std::size_t oldpath_size,
+	void* newdirhd,char16_t const* newpath_c_str,std::size_t newpath_size,
 	nt_at_flags flags)
 {
 	nt_open_mode const md{calculate_nt_link_flag(flags)};
@@ -132,7 +132,7 @@ inline void nt_linkat_impl(
 		newdirhd,newpath_c_str,newpath_size,
 		[&](void* directory_hd,win32::nt::unicode_string const* ustr)
 	{
-		wchar_t const* pth_cstr{ustr->Buffer};
+		char16_t const* pth_cstr{ustr->Buffer};
 		std::uint_least32_t pth_size2{ustr->Length};
 		::fast_io::details::local_operator_new_array_ptr<char> buffer(sizeof(file_link_information)+pth_size2); 
 		file_link_information info{.ReplaceIfExists=false,
@@ -160,8 +160,8 @@ inline void nt_linkat_impl(
 }
 
 template<bool zw,::fast_io::details::posix_api_22 dsp,typename... Args>
-inline auto nt22_api_dispatcher(void* olddirhd,wchar_t const* oldpath_c_str,std::size_t oldpath_size,
-	void* newdirhd,wchar_t const* newpath_c_str,std::size_t newpath_size,Args... args)
+inline auto nt22_api_dispatcher(void* olddirhd,char16_t const* oldpath_c_str,std::size_t oldpath_size,
+	void* newdirhd,char16_t const* newpath_c_str,std::size_t newpath_size,Args... args)
 {
 #if 0
 	if constexpr(dsp==::fast_io::details::posix_api_22::renameat)
@@ -178,7 +178,7 @@ inline auto nt22_api_dispatcher(void* olddirhd,wchar_t const* oldpath_c_str,std:
 }
 
 template<bool zw,::fast_io::details::posix_api_1x dsp,typename... Args>
-inline auto nt1x_api_dispatcher(void* dir_handle,wchar_t const* path_c_str,std::size_t path_size,Args... args)
+inline auto nt1x_api_dispatcher(void* dir_handle,char16_t const* path_c_str,std::size_t path_size,Args... args)
 {
 #if 0
 	if constexpr(dsp==::fast_io::details::posix_api_1x::faccessat)
@@ -205,7 +205,7 @@ inline auto nt_deal_with1x(
 	path_type const& path,
 	Args... args)
 {
-	return nt_api_common(path,[&](wchar_t const* path_c_str,std::size_t path_size)
+	return nt_api_common(path,[&](char16_t const* path_c_str,std::size_t path_size)
 	{
 		return nt1x_api_dispatcher<family==nt_family::zw,dsp>(dir_handle,path_c_str,path_size,args...);
 	});
@@ -215,9 +215,9 @@ template<nt_family family,::fast_io::details::posix_api_22 dsp,typename oldpath_
 inline auto nt_deal_with22(void* olddirhd,oldpath_type const& oldpath,
 	void* newdirhd,newpath_type const& newpath,nt_at_flags )
 {
-	return nt_api_common(oldpath,[&](wchar_t const* oldpath_c_str,std::size_t oldpath_size)
+	return nt_api_common(oldpath,[&](char16_t const* oldpath_c_str,std::size_t oldpath_size)
 	{
-		return nt_api_common(newpath,[&](wchar_t const* newpath_c_str,std::size_t newpath_size)
+		return nt_api_common(newpath,[&](char16_t const* newpath_c_str,std::size_t newpath_size)
 		{
 			return nt22_api_dispatcher<family==nt_family::zw,dsp>(olddirhd,
 				oldpath_c_str,oldpath_size,

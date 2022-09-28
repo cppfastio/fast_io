@@ -14,7 +14,7 @@ struct unicode_string
 {
 std::uint_least16_t Length;
 std::uint_least16_t MaximumLength;
-wchar_t*  Buffer;
+char16_t*  Buffer;
 };
 
 struct object_attributes
@@ -164,7 +164,7 @@ std::int_least64_t AllocationSize;
 std::uint_least32_t FileAttributes;
 std::uint_least32_t FileNameLength;
 std::uint_least32_t EaSize;
-wchar_t FileName[1];
+char16_t FileName[1];
 };
 
 struct file_both_dir_information
@@ -181,8 +181,8 @@ std::uint_least32_t         FileAttributes;
 std::uint_least32_t         FileNameLength;
 std::uint_least32_t         EaSize;
 char         ShortNameLength;
-wchar_t         ShortName[12];
-wchar_t         FileName[1];
+char16_t         ShortName[12];
+char16_t         FileName[1];
 };
 
 
@@ -416,7 +416,7 @@ struct rtl_user_process_parameters
 	unicode_string DllPath;
 	unicode_string ImagePathName;
 	unicode_string CommandLine;
-	wchar_t *Environment;
+	char16_t *Environment;
 
 	std::uint_least32_t StartingX;
 	std::uint_least32_t StartingY;

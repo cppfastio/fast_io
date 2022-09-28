@@ -42,9 +42,9 @@ struct basic_nt_api_encoding_converter
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	inline wchar_t const* native_c_str() const noexcept
+	inline char16_t const* native_c_str() const noexcept
 	{
-		return reinterpret_cast<wchar_t const*>(buffer_data);
+		return reinterpret_cast<char16_t const*>(buffer_data);
 	}
 #endif
 	inline constexpr std::size_t size() const noexcept

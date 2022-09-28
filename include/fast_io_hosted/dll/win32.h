@@ -67,7 +67,7 @@ inline void* create_win32_dll_9xa(char const* filename)	//9x kernel does not sup
 		throw_win32_error();
 	return hmodule;
 }
-inline void* create_win32_dll_ntw(wchar_t const* filename,[[maybe_unused]] dll_mode mode)
+inline void* create_win32_dll_ntw(char16_t const* filename,[[maybe_unused]] dll_mode mode)
 {
 	auto hmodule{
 #if defined(_WIN32_WINNT) && _WIN32_WINNT <= 0x0500
@@ -85,7 +85,7 @@ inline void* create_win32_dll_ntw(wchar_t const* filename,[[maybe_unused]] dll_m
 template<win32_family family>
 struct win32_family_win32_dll_parameter
 {
-	using family_char_type = std::conditional_t<family==win32_family::wide_nt,wchar_t,char>;
+	using family_char_type = std::conditional_t<family==win32_family::wide_nt,char16_t,char>;
 	dll_mode mode{};
 	inline void* operator()(family_char_type const* filename_c_str)
 	{

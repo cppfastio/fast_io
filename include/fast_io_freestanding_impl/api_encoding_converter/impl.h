@@ -34,7 +34,7 @@ using win32_api_encoding_converter = basic_win32_api_encoding_converter<typename
 #if defined(__CYGWIN__) || defined(__WINE__)
 using native_char_type = char;
 #else
-using native_char_type = std::conditional_t<win32_family::native==win32_family::ansi_9x,char,wchar_t>;
+using native_char_type = std::conditional_t<win32_family::native==win32_family::ansi_9x,char,char16_t>;
 #endif
 
 }
