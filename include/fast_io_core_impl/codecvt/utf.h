@@ -423,7 +423,7 @@ inline constexpr std::size_t get_utf_code_units(char32_t cdpt,T* dst) noexcept
 }
 inline constexpr bool is_utf16_surrogate(char16_t uc) noexcept { return (uc - 0xd800u) < 2048u; }
 inline constexpr bool is_utf16_high_surrogate(char16_t uc) noexcept { return (uc & 0xfffffc00) == 0xd800; }
-inline constexpr bool is_utf16_low_surrogate(char16_t uc) noexcept { return (uc & 0xfffffc00) == 0xd800; }
+inline constexpr bool is_utf16_low_surrogate(char16_t uc) noexcept { return (uc & 0xfffffc00) == 0xdc00; }
 
 inline constexpr char32_t utf16_surrogate_to_utf32(char16_t high, char16_t low) noexcept
 { 
