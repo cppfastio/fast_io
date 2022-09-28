@@ -5,7 +5,7 @@
 int main()
 {
 	using namespace fast_io::mnp;
-	fast_io::l10n l10n("");
+	fast_io::native_l10n l10n("");
 	println(imbue(l10n,fast_io::c_stdout()),std::numeric_limits<double>::infinity(),"\n",
 		std::numeric_limits<double>::min(),"\n",
 		std::numeric_limits<double>::max(),"\n",

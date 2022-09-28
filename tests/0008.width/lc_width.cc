@@ -3,7 +3,7 @@
 
 int main()
 {
-	fast_io::l10n loc("");
+	fast_io::native_l10n loc("");
 	println(imbue(loc,fast_io::c_stdout()),"rigstr\t",fast_io::mnp::internal("asf",10),"\n"
 		"lft\t",fast_io::mnp::left(-10000,10),"\n"
 		"mid\t",fast_io::mnp::middle(-10000,10),"\n"
