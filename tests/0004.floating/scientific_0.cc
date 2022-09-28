@@ -4,7 +4,7 @@
 int main()
 {
 	using namespace fast_io::mnp;
-	fast_io::l10n loc("");
+	fast_io::native_l10n loc("");
 	constexpr float value{-2.271745e-01f};
 	print("general:\t",value,"\t",comma_general(value),"\n"
 		"scientific:\t",scientific(value),"\t",comma_scientific(value),"\n"

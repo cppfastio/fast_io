@@ -19,16 +19,10 @@ try
 	println(os_c_str(argv[1])," => ",os_c_str(argv[2]),"\nTransmitted:",transmitted," utf-16 characters\tElapsed Time:",fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)-t0);
 }
 #ifdef __cpp_exceptions
-catch(fast_io::posix_error e)
+catch(fast_io::error e)
 {
 	perrln(e);
 }
-#ifdef _WIN32
-catch(fast_io::win32_error e)
-{
-	perrln(e);
-}
-#endif
 catch(std::exception const& e)
 {
 	perrln(e);
