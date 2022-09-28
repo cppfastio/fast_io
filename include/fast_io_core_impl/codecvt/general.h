@@ -99,37 +99,32 @@ inline constexpr code_cvt_result<src_char_type,dest_char_type> general_code_cvt(
 Referenced from
 https://stackoverflow.com/questions/23919515/how-to-convert-from-utf-16-to-utf-32-on-linux-with-std-library
 */
-		for(;src_first!=src_last;)
+		for(;src_first!=src_last;++src_first)
 		{
-			char16_t code(*src_first);
+			char16_t code{static_cast<char16_t>(*src_first)};
 			if constexpr(!is_native_scheme(src_encoding))
 				code=byte_swap(code);
-			++src_first;
 			if(is_utf16_surrogate(code))[[unlikely]]
 			{
 				if(is_utf16_high_surrogate(code))
 				{
-					if(src_first==src_last)
+					if(src_first+1==src_last)
 					{
-						--src_first;
 						break;
 					}
-					else
+					char16_t code1{static_cast<char16_t>(*++src_first)};
+					if constexpr(!is_native_scheme(src_encoding))
+						code1=byte_swap(code1);
+					if(is_utf16_low_surrogate(code1))
 					{
-						char16_t code1(*src_first);
-						if constexpr(!is_native_scheme(src_encoding))
-							code1=byte_swap(code1);
-						if(is_utf16_low_surrogate(code1))
+						if constexpr(sizeof(dest_char_type)==4)
 						{
-							if constexpr(sizeof(dest_char_type)==4)
-							{
-								*dst = utf16_surrogate_to_utf32(code,code1);
-								++dst;
-							}
-							else
-								dst+=get_utf_code_units<encoding>(utf16_surrogate_to_utf32(code,code1),dst);
-							continue;
+							*dst = utf16_surrogate_to_utf32(code,code1);
+							++dst;
 						}
+						else
+							dst+=get_utf_code_units<encoding>(utf16_surrogate_to_utf32(code,code1),dst);
+						continue;
 					}
 				}
 				if constexpr(sizeof(dest_char_type)==4)
@@ -141,7 +136,9 @@ https://stackoverflow.com/questions/23919515/how-to-convert-from-utf-16-to-utf-3
 					++dst;
 				}
 				else
+				{
 					dst+=get_general_invalid_code_units<encoding>(dst);
+				}
 			}
 			else[[likely]]
 			{
@@ -157,7 +154,7 @@ https://stackoverflow.com/questions/23919515/how-to-convert-from-utf-16-to-utf-3
 					dst+=get_utf_code_units<encoding>(code,dst);
 			}
 		}
-		return {src_last,dst};
+		return {src_first,dst};
 	}
 	else
 	{
