@@ -18,6 +18,7 @@ struct basic_lebe_get_integral
 template<std::size_t sz,typename value_type>
 struct basic_lebe_put_integral
 {
+	using manip_tag = manip_tag_t;
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
