@@ -83,20 +83,12 @@ template<std::integral char_type,::fast_io::details::my_integral T>
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_leb128_get_put<T>>) noexcept
 {
-	constexpr std::size_t digits{std::numeric_limits<T>::digits};
+	constexpr std::size_t digits{std::numeric_limits<T>::digits + (::fast_io::details::my_signed_integral<T>)};
 	constexpr std::size_t seven{7};
 	constexpr std::size_t digitsdiv7{digits/seven};
 	constexpr bool notsevenmul{(digits%seven)!=0};
 	constexpr std::size_t urret{notsevenmul+digitsdiv7};
-	if constexpr(::fast_io::details::my_unsigned_integral<T>)
-	{
-		return urret;
-	}
-	else
-	{
-		//set a fake value to determine the value later
-		return urret*3;
-	}
+	return urret;
 }
 
 namespace details
@@ -105,36 +97,41 @@ namespace details
 template<std::integral char_type,::fast_io::details::my_integral T>
 inline constexpr char_type* pr_rsv_leb128_impl(char_type* iter,T value) noexcept
 {
+	using unsigned_char_type =
+		::std::make_unsigned_t<char_type>;
 	if constexpr(::fast_io::details::my_unsigned_integral<T>)
 	{
 		for(;;++iter)
 		{
-			*iter=static_cast<char_type>(value&0x7f);
+			unsigned_char_type temp{static_cast<unsigned_char_type>(value&0x7f)};
 			value >>= 7;
 			if(!value)
 			{
-				*iter|=0xf0;
+				temp|=0x80;
+				*iter=temp;
 				return ++iter;
 			}
+			*iter=temp;
 		}
 	}
 	else
 	{
-		using unsigned_type = ::fast_io::details::my_make_unsigned_t<T>;
-		constexpr unsigned_type digits{std::numeric_limits<T>::digits};
-		constexpr unsigned_type seven{7};
-		constexpr unsigned_type mask1{((~static_cast<unsigned_type>(1))>>7)<<7};
-		unsigned_type uvalue{static_cast<unsigned_type>(value)};
-		bool isnegative{value<0};
-		for(;;++t)
+		for(;;++iter)
 		{
-			*t=static_cast<char_type>(uvalue&0x7f);
-			uvalue >>= 7;
-			if(!uvalue)
+			unsigned_char_type temp{static_cast<unsigned_char_type>(value&0x7f)};
+			value >>= 7;
+			bool iszero{!value};
+			if(iszero|(value==-1))
 			{
-				*t|=0xf0;
-				return ++t;
+				bool const m{(temp&0x40)!=0};
+				if(iszero!=m)
+				{
+					temp|=0x80;
+					*iter=temp;
+					return ++iter;
+				}
 			}
+			*iter=temp;
 		}
 	}
 }
