@@ -6,12 +6,6 @@ namespace fast_io
 namespace manipulators
 {
 
-template<bool issigned,std::size_t bytes>
-struct basic_leb128_arbitary_carrier
-{
-	std::byte buffer[bytes];
-};
-
 template<typename value_type>
 struct basic_leb128_get_put
 {
@@ -26,9 +20,8 @@ struct basic_leb128_get_put
 	value_type reference;
 };
 
-template<typename T>
-requires (::fast_io::details::my_integral<T>||::std::floating_point<T>)
-inline constexpr auto leb128_put(T t) noexcept
+template<::fast_io::details::my_integral T>
+inline constexpr auto leb128_put(::fast_io::details::my_integral t) noexcept
 {
 	if constexpr(::fast_io::details::my_unsigned_integral<T>)
 	{
@@ -44,21 +37,6 @@ inline constexpr auto leb128_put(T t) noexcept
 		{
 			return ::fast_io::manipulators::basic_leb128_get_put<std::remove_cvref_t<T>>{t};
 		}
-	}
-	else if constexpr(::std::floating_point<T>)
-	{
-		using value_type =
-			std::conditional_t<sizeof(T)==sizeof(::std::int_least8_t),
-			::std::int_least8_t,
-			std::conditional_t<sizeof(T)==sizeof(::std::int_least16_t),
-			::std::int_least16_t,
-			std::conditional_t<sizeof(T)==sizeof(::std::int_least32_t),
-			::std::int_least32_t,
-			std::conditional_t<sizeof(T)==sizeof(::std::int_least64_t),
-			::std::int_least64_t,
-			basic_leb128_arbitary_carrier<true,sizeof(T)>
-			>>>>;
-		return ::fast_io::manipulators::basic_leb128_get_put<value_type>{std::bit_cast<value_type>(t)};
 	}
 	else
 	{
