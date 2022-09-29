@@ -14,16 +14,18 @@ int main(int argc,char** argv)
 		perr("Usage: ",::fast_io::mnp::os_c_str(*argv)," <directory>\n");
 		return 1;
 	}
+	using namespace std::string_view_literals;
 	fast_io::dir_file dir(::fast_io::mnp::os_c_str(argv[1]));
 	std::uint_least64_t lines{};
 	for(auto ent : recursive(at(dir)))
 	{
+		std::u8string_view ext(u8extension(ent));
 		if(type(ent)==fast_io::file_type::regular&&
-			(u8extension(ent).c_str()== std::u8string_view(u8".h") ||
-			u8extension(ent).c_str()==std::u8string_view(u8".cc")||
-			u8extension(ent).c_str()==std::u8string_view(u8".cpp")||
-			u8extension(ent).c_str()==std::u8string_view(u8".hpp")||
-			u8extension(ent).c_str()==std::u8string_view(u8".cxx")))
+			(ext==u8".h"sv ||
+			ext==u8".cc"sv||
+			ext==u8".cpp"sv||
+			ext==u8".hpp"sv||
+			ext==u8".cxx"sv))
 		{
 			fast_io::native_file_loader loader(drt(ent));
 			lines+=std::ranges::count(loader,u8'\n');
