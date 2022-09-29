@@ -21,7 +21,7 @@ struct basic_leb128_get_put
 };
 
 template<::fast_io::details::my_integral T>
-inline constexpr auto leb128_put(::fast_io::details::my_integral t) noexcept
+inline constexpr auto leb128_put(T t) noexcept
 {
 	if constexpr(::fast_io::details::my_unsigned_integral<T>)
 	{
