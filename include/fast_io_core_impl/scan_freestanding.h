@@ -153,6 +153,7 @@ inline constexpr bool ibuffer_underflow(unget_temp_buffer<T>& in)
 }
 namespace details
 {
+#if 0
 template<buffer_input_stream input,typename T,typename P>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
@@ -178,7 +179,7 @@ inline constexpr bool scan_single_status_impl(input in,T& state_machine,P arg)
 	}
 	throw_parse_code(state_machine.code);
 }
-
+#endif
 
 template<buffer_input_stream input,typename P>
 #if __has_cpp_attribute(__gnu__::__cold__)
@@ -192,7 +193,14 @@ inline constexpr bool scan_context_status_impl(input in,P arg)
 		auto curr{ibuffer_curr(in)};
 		auto end{ibuffer_end(in)};
 		auto [it,ec]=scan_context_define(io_reserve_type<char_type,P>,state,curr,end,arg);
-		ibuffer_set_curr(in,it);
+		if constexpr(std::same_as<decltype(curr),decltype(it)>)
+		{
+			ibuffer_set_curr(in,it);
+		}
+		else
+		{
+			ibuffer_set_curr(in,it-curr+curr);
+		}
 		if(ec==parse_code::ok)
 		{
 			return true;
@@ -256,7 +264,14 @@ template<buffer_input_stream input,typename T>
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
 			auto [it,ec] = scan_contiguous_define(io_reserve_type<char_type,T>,curr,end,arg);
-			ibuffer_set_curr(in,it);
+			if constexpr(std::same_as<decltype(curr),decltype(it)>)
+			{
+				ibuffer_set_curr(in,it);
+			}
+			else
+			{
+				ibuffer_set_curr(in,it-curr+curr);
+			}
 			if(ec!=parse_code::ok)
 			{
 				if(ec==parse_code::end_of_file)
@@ -271,7 +286,14 @@ template<buffer_input_stream input,typename T>
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
 			auto [it,ec]=scan_context_define(io_reserve_type<char_type,T>,state,curr,end,arg);
-			ibuffer_set_curr(in,it);
+			if constexpr(std::same_as<decltype(curr),decltype(it)>)
+			{
+				ibuffer_set_curr(in,it);
+			}
+			else
+			{
+				ibuffer_set_curr(in,it-curr+curr);
+			}
 			if(ec==parse_code::ok)
 				return true;
 			else if(ec!=parse_code::partial)
@@ -370,7 +392,14 @@ template<buffer_input_stream input,typename T>
 				return scan_context_status_impl(in,arg);
 			else
 			{
-				ibuffer_set_curr(in,it);
+				if constexpr(std::same_as<decltype(curr),decltype(it)>)
+				{
+					ibuffer_set_curr(in,it);
+				}
+				else
+				{
+					ibuffer_set_curr(in,it-curr+curr);
+				}
 				if(ec!=parse_code::ok)
 					throw_parse_code(ec);
 			}
@@ -383,7 +412,14 @@ template<buffer_input_stream input,typename T>
 				auto curr{ibuffer_curr(in)};
 				auto end{ibuffer_end(in)};
 				auto [it,ec]=scan_context_define(io_reserve_type<char_type,T>,state,curr,end,arg);
-				ibuffer_set_curr(in,it);
+				if constexpr(std::same_as<decltype(curr),decltype(it)>)
+				{
+					ibuffer_set_curr(in,it);
+				}
+				else
+				{
+					ibuffer_set_curr(in,it-curr+curr);
+				}
 				if(ec==parse_code::ok)
 					return true;
 				else if(ec!=parse_code::partial)
