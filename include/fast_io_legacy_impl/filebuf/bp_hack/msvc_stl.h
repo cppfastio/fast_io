@@ -84,7 +84,7 @@ inline typename T::char_type* ibuffer_end(::fast_io::basic_general_streambuf_io_
 }
 
 template<typename T>
-inline void ibuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> biob,typename T::char_type* ptr) noexcept
+inline void ibuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> biob,typename T::char_type const* ptr) noexcept
 {
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;

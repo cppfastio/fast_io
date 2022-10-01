@@ -503,9 +503,9 @@ inline char_type* ibuffer_end(basic_c_io_observer_unlocked<char_type> ciob) noex
 }
 
 template<std::integral char_type>
-inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type* ptr) noexcept
+inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type const* ptr) noexcept
 {
-	details::wincrt_set_buffer_curr_ptr_impl(ciob.fp,ptr);
+	details::wincrt_set_buffer_curr_ptr_impl(ciob.fp,const_cast<char_type*>(ptr));
 }
 
 template<std::integral char_type>

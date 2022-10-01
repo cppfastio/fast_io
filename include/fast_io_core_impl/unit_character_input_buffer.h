@@ -54,7 +54,7 @@ constexpr auto ibuffer_end(single_character_input_buffer<input>& in)
 }
 
 template<input_stream input>
-constexpr void ibuffer_set_curr(single_character_input_buffer<input>& in,typename input::char_type* ptr)
+constexpr void ibuffer_set_curr(single_character_input_buffer<input>& in,typename input::char_type const* ptr)
 {
 	in.pos=(ptr!=__builtin_addressof(in.single_character));
 }

@@ -50,7 +50,7 @@ buffer_mode mde,
 typename decorators,
 std::size_t bfs>
 requires ((mde&buffer_mode::in)==buffer_mode::in)
-inline constexpr void ibuffer_set_curr(basic_io_buffer<handletype,mde,decorators,bfs>& bios,typename basic_io_buffer<handletype,mde,decorators,bfs>::char_type* ptr) noexcept
+inline constexpr void ibuffer_set_curr(basic_io_buffer<handletype,mde,decorators,bfs>& bios,typename basic_io_buffer<handletype,mde,decorators,bfs>::char_type const* ptr) noexcept
 {
 	bios.ibuffer.buffer_curr=ptr;
 }

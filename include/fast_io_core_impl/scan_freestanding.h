@@ -127,7 +127,7 @@ inline constexpr auto ibuffer_end(unget_temp_buffer<T>& in) noexcept
 }
 
 template<typename T>
-inline constexpr auto ibuffer_set_curr(unget_temp_buffer<T>& in,typename T::char_type* ptr) noexcept
+inline constexpr auto ibuffer_set_curr(unget_temp_buffer<T>& in,typename T::char_type const* ptr) noexcept
 {
 	in.pos=ptr-__builtin_addressof(in.buffer);
 }

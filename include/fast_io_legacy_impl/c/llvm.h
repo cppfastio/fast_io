@@ -221,9 +221,9 @@ inline char_type* obuffer_end(basic_c_io_observer_unlocked<char_type> ciob) noex
 
 template<std::integral char_type>
 requires (sizeof(char_type)==1)
-inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type* ptr) noexcept
+inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type const* ptr) noexcept
 {
-	::fast_io::details::llvmlibc_hack::llvm_libc_set_buffer_curr(ciob.fp,ptr);
+	::fast_io::details::llvmlibc_hack::llvm_libc_set_buffer_curr(ciob.fp,const_cast<char_type*>(ptr));
 }
 
 template<std::integral char_type>

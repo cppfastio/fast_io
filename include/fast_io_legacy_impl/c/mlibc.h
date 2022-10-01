@@ -159,9 +159,9 @@ inline constexpr char* ibuffer_end(c_io_observer_unlocked ciob) noexcept
 	return details::mlibc_hack::hack_ibuffer_end_impl(ciob.fp);
 }
 
-inline constexpr void ibuffer_set_curr(c_io_observer_unlocked ciob,char* ptr) noexcept
+inline constexpr void ibuffer_set_curr(c_io_observer_unlocked ciob,char const* ptr) noexcept
 {
-	details::mlibc_hack::hack_ibuffer_set_curr_impl(ciob.fp,ptr);
+	details::mlibc_hack::hack_ibuffer_set_curr_impl(ciob.fp,const_cast<char*>(ptr));
 }
 
 inline bool ibuffer_underflow(c_io_observer_unlocked ciob)
@@ -196,9 +196,9 @@ inline bool ibuffer_underflow(u8c_io_observer_unlocked ciob)
 	return details::mlibc_hack::hack_underflow_impl(ciob.fp);
 }
 
-inline void ibuffer_set_curr(u8c_io_observer_unlocked ciob,char8_t* ptr) noexcept
+inline void ibuffer_set_curr(u8c_io_observer_unlocked ciob,char8_t const* ptr) noexcept
 {
-	details::mlibc_hack::hack_ibuffer_set_curr_impl(ciob.fp,reinterpret_cast<char*>(ptr));
+	details::mlibc_hack::hack_ibuffer_set_curr_impl(ciob.fp,const_cast<char*>(reinterpret_cast<char const*>(ptr)));
 }
 
 }

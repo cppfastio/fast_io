@@ -18,9 +18,9 @@ inline constexpr char* ibuffer_end(c_io_observer_unlocked cio) noexcept
 	return cio.fp->_IO_read_end;
 }
 
-inline constexpr void ibuffer_set_curr(c_io_observer_unlocked cio,char* ptr) noexcept
+inline constexpr void ibuffer_set_curr(c_io_observer_unlocked cio,char const* ptr) noexcept
 {
-	cio.fp->_IO_read_ptr=ptr;
+	cio.fp->_IO_read_ptr=const_cast<char*>(ptr);
 }
 
 extern int glibc_underflow (FILE*) noexcept __asm__("__underflow");
@@ -74,9 +74,9 @@ inline void obuffer_overflow(c_io_observer_unlocked cio,char ch)
 	return bit_cast<char8_t*>(cio.fp->_IO_read_end);
 }
 
-inline void ibuffer_set_curr(u8c_io_observer_unlocked cio,char8_t* ptr) noexcept
+inline void ibuffer_set_curr(u8c_io_observer_unlocked cio,char8_t const* ptr) noexcept
 {
-	cio.fp->_IO_read_ptr=bit_cast<char*>(ptr);
+	cio.fp->_IO_read_ptr=const_cast<char*>(bit_cast<char const*>(ptr));
 }
 
 inline bool ibuffer_underflow(u8c_io_observer_unlocked cio) noexcept
@@ -159,9 +159,9 @@ inline wchar_t* ibuffer_end(wc_io_observer_unlocked cio) noexcept
 	return details::fp_wide_hack::hack_wp<1,wchar_t>(cio.fp);
 }
 
-inline void ibuffer_set_curr(wc_io_observer_unlocked cio,wchar_t* ptr) noexcept
+inline void ibuffer_set_curr(wc_io_observer_unlocked cio,wchar_t const* ptr) noexcept
 {
-	details::fp_wide_hack::hack_wpset<0,wchar_t>(cio.fp,ptr);
+	details::fp_wide_hack::hack_wpset<0,wchar_t>(cio.fp,const_cast<wchar_t*>(ptr));
 }
 #endif
 
@@ -223,9 +223,9 @@ inline void obuffer_overflow(wc_io_observer_unlocked cio,wchar_t ch)
 	return details::fp_wide_hack::hack_wp<1,char32_t>(cio.fp);
 }
 
-inline void ibuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alias__]] char32_t* ptr) noexcept
+inline void ibuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alias__]] char32_t const* ptr) noexcept
 {
-	details::fp_wide_hack::hack_wpset<0,char32_t>(cio.fp,ptr);
+	details::fp_wide_hack::hack_wpset<0,char32_t>(cio.fp,const_cast<char32_t*>(ptr));
 }
 
 inline bool ibuffer_underflow(u32c_io_observer_unlocked cio) noexcept

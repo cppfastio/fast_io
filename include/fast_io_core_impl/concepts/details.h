@@ -214,7 +214,7 @@ inline constexpr char_type* ibuffer_end(dummy_buffer_input_stream<char_type>) no
 }
 
 template<std::integral char_type>
-inline constexpr void ibuffer_set_curr(dummy_buffer_input_stream<char_type>,char_type*) noexcept{}
+inline constexpr void ibuffer_set_curr(dummy_buffer_input_stream<char_type>,char_type const*) noexcept{}
 
 template<std::integral char_type>
 inline constexpr bool ibuffer_underflow(dummy_buffer_input_stream<char_type>) noexcept

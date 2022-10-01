@@ -137,9 +137,9 @@ inline char* ibuffer_end(c_io_observer_unlocked cio) noexcept
 	return details::fp_hack::hack_fp_ptr<char,2>(cio.fp);
 }
 
-inline void ibuffer_set_curr(c_io_observer_unlocked cio,char* ptr) noexcept
+inline void ibuffer_set_curr(c_io_observer_unlocked cio,char const* ptr) noexcept
 {
-	details::fp_hack::hack_fp_set_ptr<1>(cio.fp,ptr);
+	details::fp_hack::hack_fp_set_ptr<1>(cio.fp,const_cast<char*>(ptr));
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -170,9 +170,9 @@ inline void ibuffer_set_curr(u8c_io_observer_unlocked cio,
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
 #endif
-char8_t* ptr) noexcept
+char8_t const* ptr) noexcept
 {
-	details::fp_hack::hack_fp_set_ptr<1>(cio.fp,ptr);
+	details::fp_hack::hack_fp_set_ptr<1>(cio.fp,const_cast<char8_t*>(ptr));
 }
 
 

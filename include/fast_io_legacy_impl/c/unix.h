@@ -324,9 +324,9 @@ inline char* ibuffer_end(c_io_observer_unlocked cio) noexcept
 	return details::bsd_get_buffer_ptr_impl<char,3>(cio.fp);
 }
 
-inline void ibuffer_set_curr(c_io_observer_unlocked cio,char* __restrict ptr) noexcept
+inline void ibuffer_set_curr(c_io_observer_unlocked cio,char const* __restrict ptr) noexcept
 {
-	details::bsd_set_buffer_curr_ptr_impl<false>(cio.fp,ptr);
+	details::bsd_set_buffer_curr_ptr_impl<false>(cio.fp,const_cast<char*>(ptr));
 }
 
 inline bool ibuffer_underflow(c_io_observer_unlocked cio)
@@ -400,9 +400,9 @@ inline void ibuffer_set_curr(u8c_io_observer_unlocked cio,
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
 #endif
-char8_t* ptr) noexcept
+char8_t const* ptr) noexcept
 {
-	details::bsd_set_buffer_curr_ptr_impl<false>(cio.fp,ptr);
+	details::bsd_set_buffer_curr_ptr_impl<false>(cio.fp,const_cast<char8_t*>(ptr));
 }
 
 inline bool ibuffer_underflow(u8c_io_observer_unlocked cio)

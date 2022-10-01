@@ -67,13 +67,13 @@ inline typename T::char_type* ibuffer_end(::fast_io::basic_general_streambuf_io_
 }
 
 template<typename T>
-inline void ibuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> biob,typename T::char_type* ptr) noexcept
+inline void ibuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> biob,typename T::char_type const* ptr) noexcept
 {
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::libcxx_basic_streambuf_hack_model<char_type,traits_type>;
 	constexpr std::size_t offset{__builtin_offsetof(model,__ninp_)};
-	*reinterpret_cast<char_type**>(reinterpret_cast<char*>(biob.fb)+offset)=ptr;
+	*reinterpret_cast<char_type**>(reinterpret_cast<char*>(biob.fb)+offset)=const_cast<char_type*>(ptr);
 }
 
 template<typename T>

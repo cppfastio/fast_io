@@ -116,9 +116,9 @@ inline char* ibuffer_end(c_io_observer_unlocked ciob) noexcept
 	return reinterpret_cast<char*>(ciob.fp->__bufread);
 }
 
-inline void ibuffer_set_curr(c_io_observer_unlocked ciob,char* ptr) noexcept
+inline void ibuffer_set_curr(c_io_observer_unlocked ciob,char const* ptr) noexcept
 {
-	ciob.fp->__bufpos=reinterpret_cast<char unsigned*>(ptr);
+	ciob.fp->__bufpos=const_cast<char unsigned*>(reinterpret_cast<char unsigned const*>(ptr));
 }
 
 inline bool ibuffer_underflow(c_io_observer_unlocked ciob)
@@ -179,9 +179,9 @@ inline char8_t* ibuffer_end(u8c_io_observer_unlocked ciob) noexcept
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
 #endif
-inline void ibuffer_set_curr(u8c_io_observer_unlocked ciob,char8_t* ptr) noexcept
+inline void ibuffer_set_curr(u8c_io_observer_unlocked ciob,char8_t const* ptr) noexcept
 {
-	ciob.fp->__bufpos=reinterpret_cast<char unsigned*>(ptr);
+	ciob.fp->__bufpos=const_cast<char unsigned*>(reinterpret_cast<char unsigned const*>(ptr));
 }
 
 inline bool ibuffer_underflow(u8c_io_observer_unlocked ciob)

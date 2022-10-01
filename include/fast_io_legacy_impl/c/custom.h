@@ -38,9 +38,9 @@ requires requires(FILE* fp,char_type* ptr)
 {
 	{::std::posix::__libc_stdio_fp_ibuffer_set_curr<char_type>(fp,ptr)};
 }
-inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type* ptr) noexcept
+inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type const* ptr) noexcept
 {
-	::std::posix::__libc_stdio_fp_ibuffer_set_curr<char_type>(ciob.fp,ptr);
+	::std::posix::__libc_stdio_fp_ibuffer_set_curr<char_type>(ciob.fp,const_cast<char_type*>(ptr));
 }
 
 template<c_family family,std::integral char_type>

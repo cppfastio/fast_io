@@ -51,7 +51,7 @@ inline typename T::char_type* ibuffer_end(::fast_io::basic_general_streambuf_io_
 }
 
 template<typename T>
-inline void ibuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> biob,typename T::char_type* ptr) noexcept
+inline void ibuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> biob,typename T::char_type const* ptr) noexcept
 {
 /*
 Work around bugs in issue 255

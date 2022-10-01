@@ -191,14 +191,14 @@ requires (sizeof(char_type)==1)
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
 #endif
-inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> bciob,char_type*
+inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> bciob,
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
 #endif
-ptr
+char_type const* ptr
 ) noexcept
 {
-	::fast_io::details::serenity_ibuffer_set_curr(reinterpret_cast<::fast_io::details::serenity_file_model*>(bciob.fp),reinterpret_cast<char*>(ptr));
+	::fast_io::details::serenity_ibuffer_set_curr(reinterpret_cast<::fast_io::details::serenity_file_model*>(bciob.fp),const_cast<char*>(reinterpret_cast<char const*>(ptr)));
 }
 
 template<std::integral char_type>
