@@ -224,4 +224,75 @@ inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,
 	return parse_code::end_of_file;
 }
 
+template <std::integral char_type, ::fast_io::details::my_signed_integral I>
+inline constexpr
+parse_result<char_type const*> scan_contiguous_define(
+	io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I*>>,
+	char_type const* begin, char_type const* end,
+	manipulators::basic_leb128_get_put<I*> t) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	using U = std::make_unsigned_t<I>;
+	U tmp{};
+	std::uint_least64_t cnt{};
+	*t.reference = 0;
+	for (; begin != end; cnt += 7)
+	{
+		bool sign = (static_cast<unsigned_char_type>(*begin) & 0x80) != 0;
+		std::int_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
+		++begin;
+		constexpr auto digits{ std::numeric_limits<U>::digits };
+		// TODO: optimize
+		if (cnt > digits - 7 &&
+			(
+				cnt > digits ||
+				(!(byte & 0x40) && byte >= (1u << (digits % 7))) ||
+				((byte & 0x40) && (-byte & 0x7f) >= (1u << (digits % 7)))
+				)
+			) [[unlikely]]
+			return { begin, parse_code::overflow };
+		tmp |= static_cast<U>(byte) << cnt;
+		if (!sign)
+		{
+			if (byte & 0x40 && cnt < digits - 7)
+			{
+				tmp |= static_cast<U>(-1) << (cnt + 7);
+			}
+			*t.reference |= tmp;
+			return { begin, parse_code::ok };
+		}
+	}
+	return { begin, parse_code::invalid };
+}
+
+template <std::integral char_type, ::fast_io::details::my_unsigned_integral U>
+inline constexpr
+parse_result<char_type const*> scan_contiguous_define(
+	io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<U*>>,
+	char_type const* begin, char_type const* end,
+	manipulators::basic_leb128_get_put<U*> t) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	U tmp{};
+	std::uint_least64_t cnt{};
+	*t.reference = 0;
+	for (; begin != end; cnt += 7)
+	{
+		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
+		std::uint_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
+		++begin;
+		constexpr auto digits{ std::numeric_limits<U>::digits };
+		if (cnt > digits - 7 && (cnt > digits || byte >= (1u << (digits % 7)))) [[unlikely]]
+			return { begin, parse_code::overflow };
+		tmp |= static_cast<U>(byte) << cnt;
+		if (!sign)
+		{
+			*t.reference |= tmp;
+			return { begin, parse_code::ok };
+		}
+	}
+	return { begin, parse_code::invalid };
+}
+
+
 }
