@@ -152,6 +152,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	using U = ::fast_io::details::my_make_unsigned_t<I>;
+	constexpr auto digits{ std::numeric_limits<U>::digits };
 	U tmp{};
 	std::uint_least64_t cnt{ group_count };
 	if (cnt == 0)
@@ -159,12 +160,10 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 	for (; begin != end; cnt += 7)
 	{
 		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
-		std::uint_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
-		++begin;
-		constexpr auto digits{ std::numeric_limits<U>::digits };
-		
 		if constexpr(::fast_io::details::my_signed_integral<I>)
 		{
+			std::int_fast8_t byte{static_cast<std::int_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
+			++begin;
 			if (cnt > digits - 7 &&
 				(
 					cnt > digits ||
@@ -186,6 +185,8 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 		}
 		else
 		{
+			std::uint_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
+			++begin;
 			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << (digits % 7)))) [[unlikely]]
 				return { begin, parse_code::overflow };
 			tmp |= static_cast<U>(byte) << cnt;
@@ -207,24 +208,24 @@ inline constexpr parse_result<char_type const*>
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	using U = ::fast_io::details::my_make_unsigned_t<I>;
+	constexpr auto digits{ std::numeric_limits<U>::digits };
 	U tmp{};
 	std::uint_least64_t cnt{};
 	t = 0;
 	for (; begin != end; cnt += 7)
 	{
 		bool sign = (static_cast<unsigned_char_type>(*begin) & 0x80) != 0;
-		std::int_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
-		++begin;
-		constexpr auto digits{ std::numeric_limits<U>::digits };
 		// TODO: optimize
 
 		if constexpr(::fast_io::details::my_signed_integral<I>)
 		{
+			std::int_fast8_t byte{static_cast<std::int_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
+			++begin;
 			if (cnt > digits - 7 &&
 				(
 					cnt > digits ||
 					(!(byte & 0x40) && byte >= (1u << (digits % 7))) ||
-					((byte & 0x40) && (-byte & 0x7f) >= (1u << (digits % 7)))
+					((byte & 0x40) && (-byte & 0x7f) >= (1u << (digits % 7)))	//WTF with this logic??
 					)
 				) [[unlikely]]
 				return { begin, parse_code::overflow };
@@ -241,6 +242,8 @@ inline constexpr parse_result<char_type const*>
 		}
 		else
 		{
+			std::uint_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
+			++begin;
 			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << (digits % 7)))) [[unlikely]]
 				return { begin, parse_code::overflow };
 			tmp |= static_cast<U>(byte) << cnt;
