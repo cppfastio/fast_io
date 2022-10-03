@@ -248,7 +248,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 }
 
 template <std::integral char_type, ::fast_io::details::my_integral I>
-inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I>>, leb128_scan_state_t&, manipulators::basic_leb128_get_put<I>) noexcept
+inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I*>>, leb128_scan_state_t&, manipulators::basic_leb128_get_put<I*>) noexcept
 {
 	return parse_code::end_of_file;
 }
