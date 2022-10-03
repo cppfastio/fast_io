@@ -153,6 +153,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	using U = ::fast_io::details::my_make_unsigned_t<I>;
 	constexpr auto digits{ std::numeric_limits<U>::digits };
+	constexpr auto remains{ digits % 7 };
 	U tmp{};
 	std::uint_least64_t cnt{ group_count };
 	if (cnt == 0)
@@ -160,41 +161,30 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 	for (; begin != end; cnt += 7)
 	{
 		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
-		if constexpr(::fast_io::details::my_signed_integral<I>)
+		std::uint_fast8_t byte{static_cast<std::uint_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
+		++begin;
+		if constexpr (::fast_io::details::my_signed_integral<I>)
 		{
-			std::int_fast8_t byte{static_cast<std::int_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
-			++begin;
-			if (cnt > digits - 7 &&
-				(
-					cnt > digits ||
-					(!(byte & 0x40) && byte >= (1u << (digits % 7))) ||
-					((byte & 0x40) && (-byte & 0x7f) >= (1u << (digits % 7)))
-					)
-				) [[unlikely]]
+			constexpr auto lower_limit{ remains ? 1u << (remains - 1) : 0 };
+			constexpr auto upper_limit{ remains ? (0xffu << (remains - 1)) & 0x7f : 0x7f };
+			if (cnt > digits - 7 && (cnt > digits || (byte >= lower_limit && byte < upper_limit))) [[unlikely]]
 				return { begin, parse_code::overflow };
-			tmp |= static_cast<U>(byte) << cnt;
-			if (!sign)
-			{
-				if (byte & 0x40 && cnt < digits - 7)
-				{
-					tmp |= static_cast<U>(-1) << (cnt + 7);
-				}
-				t |= tmp;
-				return { begin, parse_code::ok };
-			}
 		}
 		else
 		{
-			std::uint_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
-			++begin;
-			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << (digits % 7)))) [[unlikely]]
+			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << remains))) [[unlikely]]
 				return { begin, parse_code::overflow };
-			tmp |= static_cast<U>(byte) << cnt;
-			if (!sign)
+		}
+		tmp |= static_cast<U>(byte) << cnt;
+		if (!sign)
+		{
+			if constexpr (::fast_io::details::my_signed_integral<I>)
 			{
-				t |= tmp;
-				return { begin, parse_code::ok };
+				if (byte & 0x40 && cnt < digits - 7)
+					tmp |= static_cast<U>(-1) << (cnt + 7);
 			}
+			t |= tmp;
+			return { begin, parse_code::ok };
 		}
 	}
 	t |= tmp;
@@ -209,49 +199,37 @@ inline constexpr parse_result<char_type const*>
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	using U = ::fast_io::details::my_make_unsigned_t<I>;
 	constexpr auto digits{ std::numeric_limits<U>::digits };
+	constexpr auto remains{ digits % 7 };
 	U tmp{};
 	std::uint_least64_t cnt{};
 	t = 0;
 	for (; begin != end; cnt += 7)
 	{
-		bool sign = (static_cast<unsigned_char_type>(*begin) & 0x80) != 0;
-		// TODO: optimize
-
-		if constexpr(::fast_io::details::my_signed_integral<I>)
+		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
+		std::uint_fast8_t byte{static_cast<std::uint_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
+		++begin;
+		if constexpr (::fast_io::details::my_signed_integral<I>)
 		{
-			std::int_fast8_t byte{static_cast<std::int_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
-			++begin;
-			if (cnt > digits - 7 &&
-				(
-					cnt > digits ||
-					(!(byte & 0x40) && byte >= (1u << (digits % 7))) ||
-					((byte & 0x40) && (-byte & 0x7f) >= (1u << (digits % 7)))	//WTF with this logic??
-					)
-				) [[unlikely]]
+			constexpr auto lower_limit{ remains ? 1u << (remains - 1) : 0 };
+			constexpr auto upper_limit{ remains ? (0xffu << (remains - 1)) & 0x7f : 0x7f };
+			if (cnt > digits - 7 && (cnt > digits || (byte >= lower_limit && byte < upper_limit))) [[unlikely]]
 				return { begin, parse_code::overflow };
-			tmp |= static_cast<U>(byte) << cnt;
-			if (!sign)
-			{
-				if (byte & 0x40 && cnt < digits - 7)
-				{
-					tmp |= static_cast<U>(-1) << (cnt + 7);
-				}
-				t |= tmp;
-				return { begin, parse_code::ok };
-			}
 		}
 		else
 		{
-			std::uint_fast8_t byte = static_cast<unsigned_char_type>(*begin) & 0x7f;
-			++begin;
-			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << (digits % 7)))) [[unlikely]]
+			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << remains))) [[unlikely]]
 				return { begin, parse_code::overflow };
-			tmp |= static_cast<U>(byte) << cnt;
-			if (!sign)
+		}
+		tmp |= static_cast<U>(byte) << cnt;
+		if (!sign)
+		{
+			if constexpr (::fast_io::details::my_signed_integral<I>)
 			{
-				t |= tmp;
-				return { begin, parse_code::ok };
+				if (byte & 0x40 && cnt < digits - 7)
+					tmp |= static_cast<U>(-1) << (cnt + 7);
 			}
+			t |= tmp;
+			return { begin, parse_code::ok };
 		}
 	}
 	return { begin, parse_code::invalid };
