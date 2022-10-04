@@ -67,7 +67,8 @@ template<std::integral char_type,::fast_io::details::my_integral T>
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_leb128_get_put<T>>) noexcept
 {
-	constexpr std::size_t digits{std::numeric_limits<T>::digits + (::fast_io::details::my_signed_integral<T>)};
+	constexpr std::size_t digits{
+		::std::numeric_limits<char unsigned>::digits*sizeof(T)};
 	constexpr std::size_t seven{7};
 	constexpr std::size_t digitsdiv7{digits/seven};
 	constexpr bool notsevenmul{(digits%seven)!=0};
@@ -132,7 +133,7 @@ inline constexpr char_type* print_reserve_define(
 
 struct leb128_scan_state_t
 {
-	std::uint_least64_t group_count{};
+	std::size_t group_count{};
 };
 
 template <std::integral char_type, typename I>
@@ -146,7 +147,7 @@ namespace details
 {
 template <std::integral char_type, ::fast_io::details::my_integral I>
 inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
-	std::uint_least64_t& group_count,
+	std::size_t& group_count,
 	char_type const* begin, char_type const* end,
 	I& t) noexcept
 {
@@ -155,7 +156,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 	constexpr auto digits{ std::numeric_limits<U>::digits };
 	constexpr auto remains{ digits % 7 };
 	U tmp{};
-	std::uint_least64_t cnt{ group_count };
+	std::size_t cnt{ group_count };
 	if (cnt == 0)
 		t = 0;
 	for (; begin != end; cnt += 7)
@@ -201,7 +202,7 @@ inline constexpr parse_result<char_type const*>
 	constexpr auto digits{ std::numeric_limits<U>::digits };
 	constexpr auto remains{ digits % 7 };
 	U tmp{};
-	std::uint_least64_t cnt{};
+	std::size_t cnt{};
 	t = 0;
 	for (; begin != end; cnt += 7)
 	{

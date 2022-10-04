@@ -62,7 +62,13 @@ struct basic_posix_api_encoding_converter
 	}
 };
 
-using posix_api_encoding_converter = basic_posix_api_encoding_converter<generic_allocator_adapter<::fast_io::c_malloc_allocator>>;
+using posix_api_encoding_converter = basic_posix_api_encoding_converter<
+#if (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __STDC_HOSTED__==1
+generic_allocator_adapter<::fast_io::c_malloc_allocator>
+#else
+native_thread_local_allocator
+#endif
+>;
 
 namespace details
 {
