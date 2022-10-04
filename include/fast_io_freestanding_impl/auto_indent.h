@@ -155,9 +155,9 @@ inline constexpr std::size_t print_reserve_size(
 }
 
 template<::std::integral char_type,typename containe>
-inline constexpr Iter print_reserve_define(
+inline constexpr char_type* print_reserve_define(
 	io_reserve_type_t<char_type,auto_indent_t<char_type,containe>>,
-	Iter iter,
+	char_type* iter,
 	auto_indent_t<char_type,containe> const& indent) noexcept
 {
 	return ::fast_io::details::print_reserve_define_auto_indent(iter,indent);

@@ -440,7 +440,7 @@ inline constexpr char_type* prv_srv_hash_compress_df_impl(char_type* iter,std::b
 			else
 #endif
 			{
-				if constexpr(sizeof(char_type)==1&&::std::is_pointer_v<Iter>)
+				if constexpr(sizeof(char_type)==1)
 				{
 					return cal_hash_internal_impl<T>(base,len,reinterpret_cast<std::byte*>(iter));
 				}
@@ -477,7 +477,7 @@ inline constexpr char_type* prv_srv_hash_compress_df_impl(char_type* iter,std::b
 			else
 #endif
 			{
-				if constexpr(sizeof(char_type)==1&&::std::is_pointer_v<Iter>)
+				if constexpr(sizeof(char_type)==1)
 				{
 					cal_hash_internal<T>(base,len,reinterpret_cast<std::byte*>(iter));
 					return iter+digest_size;

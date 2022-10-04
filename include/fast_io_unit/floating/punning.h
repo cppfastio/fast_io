@@ -116,7 +116,7 @@ struct iec559_rep
 	std::int_least32_t e;
 };
 
-template<bool uppercase,::std::integer char_type>
+template<bool uppercase,::std::integral char_type>
 inline constexpr char_type* prsv_fp_nan_impl(char_type* iter,bool nan) noexcept
 {
 	if(nan)
@@ -179,7 +179,7 @@ inline constexpr char_type* prsv_fp_nan_impl(char_type* iter,bool nan) noexcept
 	}
 }
 
-template<bool uppercase,::std::integer char_type>
+template<bool uppercase,::std::integral char_type>
 inline constexpr char_type* prsv_fp_hex_0(char_type* iter) noexcept
 {
 	if constexpr(uppercase)
@@ -210,7 +210,7 @@ inline constexpr char_type* prsv_fp_hex_0(char_type* iter) noexcept
 	}
 }
 
-template<bool comma=false,::std::integer char_type>
+template<bool comma=false,::std::integral char_type>
 inline constexpr char_type* prsv_fp_hex1d(char_type* iter) noexcept
 {
 	if constexpr(comma)
@@ -241,7 +241,7 @@ inline constexpr char_type* prsv_fp_hex1d(char_type* iter) noexcept
 	}
 }
 
-template<bool comma=false,::std::integer char_type>
+template<bool comma=false,::std::integral char_type>
 inline constexpr char_type* prsv_fp_hex0d(char_type* iter) noexcept
 {
 	if constexpr(comma)
@@ -303,7 +303,7 @@ inline constexpr char_type* prsv_fp_hex0p0(char_type* iter) noexcept
 	}
 }
 
-template<bool uppercase,::std::integer char_type>
+template<bool uppercase,::std::integral char_type>
 inline constexpr char_type* prsv_fp_dece0(char_type* iter) noexcept
 {
 	if constexpr(uppercase)
@@ -384,7 +384,7 @@ inline constexpr punning_result<flt> get_punned_result(flt f) noexcept
 	return {unwrap&mantissa_mask,static_cast<std::uint_least32_t>((unwrap>>mbits)&exponent_mask),static_cast<bool>((unwrap>>total_bits)&1u)};
 }
 
-template<bool showpos,::std::integer char_type>
+template<bool showpos,::std::integral char_type>
 inline constexpr char_type* print_rsv_fp_sign_impl(char_type* iter,bool sign) noexcept
 {
 	if constexpr(showpos)
@@ -403,7 +403,7 @@ inline constexpr char_type* print_rsv_fp_sign_impl(char_type* iter,bool sign) no
 	return iter;
 }
 
-template<::std::integer char_type,my_unsigned_integral U>
+template<::std::integral char_type,my_unsigned_integral U>
 #if __has_cpp_attribute(__gnu__::__hot__)
 [[__gnu__::__hot__]]
 #endif
@@ -413,7 +413,7 @@ inline constexpr char_type* prt_rsv_hundred_flt_impl(char_type* iter,U u) noexce
 	return non_overlapped_copy_n(tb[u].element,2,iter);
 }
 
-template<std::size_t mxdigits,bool indent,::std::integer char_type,my_unsigned_integral U>
+template<std::size_t mxdigits,bool indent,::std::integral char_type,my_unsigned_integral U>
 inline constexpr char_type* prt_rsv_exponent_impl(char_type* iter,U u) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;

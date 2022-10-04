@@ -1082,7 +1082,7 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 	}
 }
 
-template<bool comma,::std::integer char_type,my_unsigned_integral U>
+template<bool comma,::std::integral char_type,my_unsigned_integral U>
 inline constexpr char_type* print_rsv_fp_general_scientific_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
 	auto itp1{iter+1};
@@ -1092,7 +1092,7 @@ inline constexpr char_type* print_rsv_fp_general_scientific_common_impl(char_typ
 	return itp1+m10len;
 }
 
-template<bool comma,::std::integer char_type,my_unsigned_integral U>
+template<bool comma,::std::integral char_type,my_unsigned_integral U>
 inline constexpr char_type* print_rsv_fp_general_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
@@ -1106,7 +1106,7 @@ inline constexpr char_type* print_rsv_fp_general_common_impl(char_type* iter,U m
 		return print_rsv_fp_general_scientific_common_impl<comma>(iter,m10,m10len);
 }
 
-template<typename flt,bool uppercase_e,::std::integer char_type>
+template<typename flt,bool uppercase_e,::std::integral char_type>
 inline constexpr char_type* print_rsv_fp_e_impl(char_type* iter,std::int_least32_t e10) noexcept
 {
 	*iter=char_literal_v<uppercase_e?u8'E':u8'e',char_type>;
@@ -1123,7 +1123,7 @@ inline constexpr char_type* print_rsv_fp_e_impl(char_type* iter,std::int_least32
 	return prt_rsv_exponent_impl<iec559_traits<flt>::e10digits,true>(iter,ue10);
 }
 
-template<::std::integer char_type>
+template<::std::integral char_type>
 inline constexpr char_type* fill_zeros_impl(char_type* iter,std::size_t n) noexcept
 {
 	for(std::size_t i{};i!=n;++i)
@@ -1134,8 +1134,8 @@ inline constexpr char_type* fill_zeros_impl(char_type* iter,std::size_t n) noexc
 	return iter;
 }
 
-template<bool comma,::std::integer char_type>
-inline constexpr Iter fill_zero_point_impl(Iter iter) noexcept
+template<bool comma,::std::integral char_type>
+inline constexpr char_type* fill_zero_point_impl(char_type* iter) noexcept
 {
 	if constexpr(comma)
 	{
@@ -1165,7 +1165,7 @@ inline constexpr Iter fill_zero_point_impl(Iter iter) noexcept
 	}
 }
 
-template<typename flt,::std::integer char_type>
+template<typename flt,::std::integral char_type>
 inline constexpr char_type* fixed_case0_full_integer(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t olength,std::int_least32_t real_exp) noexcept
 {
 	::fast_io::details::jeaiii::jeaiii_main_len<true>(iter,m10,static_cast<std::uint_least32_t>(olength));
@@ -1173,7 +1173,7 @@ inline constexpr char_type* fixed_case0_full_integer(char_type* iter,typename ie
 	return fill_zeros_impl(iter,static_cast<std::uint_least32_t>(real_exp+1-olength));
 }
 
-template<typename flt,bool comma,::std::integer char_type>
+template<typename flt,bool comma,::std::integral char_type>
 inline constexpr char_type* fixed_case1_integer_and_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t olength,std::int_least32_t real_exp) noexcept
 {
 	auto eposition(real_exp+1);
@@ -1193,7 +1193,7 @@ inline constexpr char_type* fixed_case1_integer_and_point(char_type* iter,typena
 	return iter;
 }
 
-template<typename flt,bool comma,::std::integer char_type>
+template<typename flt,bool comma,::std::integral char_type>
 inline constexpr char_type* fixed_case2_all_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t olength,std::int_least32_t real_exp) noexcept
 {
 	iter=fill_zero_point_impl<comma>(iter);
@@ -1203,7 +1203,7 @@ inline constexpr char_type* fixed_case2_all_point(char_type* iter,typename iec55
 	return iter;
 }
 
-template<typename flt,bool comma,::std::integer char_type>
+template<typename flt,bool comma,::std::integral char_type>
 inline constexpr char_type* print_rsv_fp_fixed_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
 {
 	std::int_least32_t olength(static_cast<std::int_least32_t>(chars_len<10,true>(m10)));	
@@ -1227,7 +1227,7 @@ typename flt,
 bool comma,
 bool uppercase_e,
 ::fast_io::manipulators::floating_format mt,
-::std::integer char_type>
+::std::integral char_type>
 inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
@@ -1299,7 +1299,7 @@ bool uppercase,
 bool uppercase_e,
 bool comma,
 ::fast_io::manipulators::floating_format mt,
-typename flt,::std::integer char_type>
+typename flt,::std::integral char_type>
 inline constexpr char_type* print_rsvflt_define_impl(char_type* iter,flt f) noexcept
 {
 	if constexpr(::fast_io::manipulators::floating_format::fixed==mt&&uppercase_e)

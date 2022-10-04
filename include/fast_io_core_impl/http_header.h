@@ -101,7 +101,7 @@ inline constexpr parse_code determine_http_header_location(basic_http_header_buf
 }
 
 template<::std::integral char_type,std::size_t buffer_size>
-inline constexpr parse_result<char_type onst*> http_header_scan_context_define_impl(std::size_t& state,char_type const* first, char_type const* last,basic_http_header_buffer<char_type,buffer_size>& bufferref) noexcept
+inline constexpr parse_result<char_type const*> http_header_scan_context_define_impl(std::size_t& state,char_type const* first1, char_type const* last,basic_http_header_buffer<char_type,buffer_size>& bufferref) noexcept
 {
 	auto first{first1};
 	if(first==last)
@@ -114,7 +114,7 @@ inline constexpr parse_result<char_type onst*> http_header_scan_context_define_i
 		{
 		case 1:
 		{
-			if(*first!=char_literal_v<u8'\n',ch_type>)
+			if(*first!=char_literal_v<u8'\n',char_type>)
 				break;
 			++first;
 			if(first==last)
@@ -128,7 +128,7 @@ inline constexpr parse_result<char_type onst*> http_header_scan_context_define_i
 		}
 		case 2:
 		{
-			if(*first!=char_literal_v<u8'\r',ch_type>)
+			if(*first!=char_literal_v<u8'\r',char_type>)
 				break;
 			++first;
 			if(first==last)
@@ -142,7 +142,7 @@ inline constexpr parse_result<char_type onst*> http_header_scan_context_define_i
 		}
 		case 3:
 		{
-			if(*first!=char_literal_v<u8'\n',ch_type>)
+			if(*first!=char_literal_v<u8'\n',char_type>)
 				break;
 			++first;
 			if(!::fast_io::details::try_copy_into_buffer(bufferref,first1,first))
@@ -154,7 +154,7 @@ inline constexpr parse_result<char_type onst*> http_header_scan_context_define_i
 	state=0;
 	for(;;)
 	{
-		for(;first!=last&&*first!=char_literal_v<u8'\r',ch_type>;++first);
+		for(;first!=last&&*first!=char_literal_v<u8'\r',char_type>;++first);
 		if(first==last)
 		{
 			if(!::fast_io::details::try_copy_into_buffer(bufferref,first1,first))
@@ -170,7 +170,7 @@ inline constexpr parse_result<char_type onst*> http_header_scan_context_define_i
 			state=1u;
 			return {first,parse_code::partial};
 		}
-		if(*first!=char_literal_v<u8'\n',ch_type>)
+		if(*first!=char_literal_v<u8'\n',char_type>)
 		{
 			return {first,parse_code::invalid};
 		}
@@ -182,7 +182,7 @@ inline constexpr parse_result<char_type onst*> http_header_scan_context_define_i
 			state=2u;
 			return {first,parse_code::partial};
 		}
-		if(*first!=char_literal_v<u8'\r',ch_type>)
+		if(*first!=char_literal_v<u8'\r',char_type>)
 		{
 			continue;
 		}
@@ -194,7 +194,7 @@ inline constexpr parse_result<char_type onst*> http_header_scan_context_define_i
 			state=3u;
 			return {first,parse_code::partial};
 		}
-		if(*first!=char_literal_v<u8'\n',ch_type>)
+		if(*first!=char_literal_v<u8'\n',char_type>)
 		{
 			return {first,parse_code::invalid};
 		}

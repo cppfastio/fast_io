@@ -441,7 +441,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 	}
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
 	unsigned_type res{};
-	Iter it;
+	char_type const* it;
 #if defined(__SSE4_1__) && defined(__x86_64__)
 	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
 	{

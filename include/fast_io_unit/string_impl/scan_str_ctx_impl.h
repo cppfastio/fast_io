@@ -73,10 +73,10 @@ inline constexpr io_type_t<scan_string_context> scan_context_type(io_reserve_typ
 }
 
 template<::std::integral char_type,::fast_io::manipulators::scalar_flags flags,typename traits,typename allocator_type>
-inline constexpr parse_result<Iter> scan_context_define(
+inline constexpr parse_result<char_type const*> scan_context_define(
 	io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,::std::basic_string<char_type,traits,allocator_type>&>>,
 	scan_string_context& skip_space_done,
-	Iter first,Iter last,
+	char_type const* first,char_type const* last,
 	::fast_io::manipulators::scalar_manip_t<flags,::std::basic_string<char_type,traits,allocator_type>&> str)
 {
 	return ::fast_io::details::scan_context_define_string_impl<flags.noskipws,flags.line>(skip_space_done.copying,first,last,str.reference);

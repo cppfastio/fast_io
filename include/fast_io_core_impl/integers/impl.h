@@ -1083,7 +1083,7 @@ template<std::size_t base,
 	bool showpos=false,
 	bool uppercase=false,
 	typename int_type,::std::integral char_type>
-constexpr void print_reserve_integral_define_precise(Iter start,std::size_t n,int_type t)
+constexpr void print_reserve_integral_define_precise(char_type* start,std::size_t n,int_type t)
 {	
 	if constexpr(base<=10&&uppercase)
 	{
@@ -1594,9 +1594,9 @@ inline constexpr std::size_t print_reserve_precise_size(io_reserve_type_t<char_t
 		return details::print_integer_reserved_precise_size<flags.base,flags.showbase,flags.showpos,flags.full>(t.reference);
 }
 
-template<std::integral char_type,::std::integral char_type,manipulators::scalar_flags flags,typename T>
+template<std::integral char_type,::std::random_access_iterator Iter,manipulators::scalar_flags flags,typename T>
 requires ((details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>) && !flags.alphabet)
-inline constexpr void print_reserve_precise_define(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,char_type* iter,std::size_t n,manipulators::scalar_manip_t<flags,T> t) noexcept
+inline constexpr void print_reserve_precise_define(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,Iter iter,std::size_t n,manipulators::scalar_manip_t<flags,T> t) noexcept
 {
 	if constexpr(std::same_as<T,std::byte>)
 		details::print_reserve_integral_define_precise<flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase>(iter,n,static_cast<char8_t>(t.reference));
