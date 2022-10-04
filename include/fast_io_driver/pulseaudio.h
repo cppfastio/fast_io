@@ -102,26 +102,26 @@ public:
 	}
 };
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_pulseaudio_simple_io_observer<char_type> bpsiob,Iter begin,Iter end)
 {
 	int err{};
-	if(pa_simple_read(bpsiob.native_handle(),::fast_io::freestanding::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(err))<0)[[unlikely]]
+	if(pa_simple_read(bpsiob.native_handle(),::std::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(err))<0)[[unlikely]]
 		throw_pulse_audio_error(err);
 	return end;
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_pulseaudio_simple_io_observer<char_type> bpsiob,Iter begin,Iter end)
 {
 	int err{};
-	if(pa_simple_write(bpsiob.native_handle(),::fast_io::freestanding::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(err))<0)[[unlikely]]
+	if(pa_simple_write(bpsiob.native_handle(),::std::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(err))<0)[[unlikely]]
 		throw_pulse_audio_error(err);
 	return end;
 }
 
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline void flush(basic_pulseaudio_simple_io_observer<char_type> bpsiob)
 {
 	int err{};

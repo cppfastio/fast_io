@@ -62,7 +62,7 @@ inline constexpr bool ibuffer_underflow_impl_deco(T t,decot deco,basic_io_buffer
 	return ibuffer_underflow_rl_impl_deco<nsecure>(t,deco,ibuffer,ibuffer_external,bfsz);
 }
 
-template<bool nsecure,typename T,typename decot,std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<bool nsecure,typename T,typename decot,std::integral char_type,::std::contiguous_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif

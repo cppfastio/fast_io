@@ -79,11 +79,11 @@ inline void win32_box_converter_path_impl(char_type const* first,char_type const
 
 }
 
-template<win32_family family,std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires std::same_as<char_type,::fast_io::freestanding::iter_value_t<Iter>>
+template<win32_family family,std::integral char_type,::std::contiguous_iterator Iter>
+requires std::same_as<char_type,::std::iter_value_t<Iter>>
 inline void write(basic_win32_family_box_t<family,char_type>,Iter first,Iter last)
 {
-	details::win32_box_converter_path_impl<family>(::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+	details::win32_box_converter_path_impl<family>(::std::to_address(first),::std::to_address(last));
 }
 
 }

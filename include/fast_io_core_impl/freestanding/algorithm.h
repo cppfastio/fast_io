@@ -24,7 +24,7 @@ using ::std::fill_n;
 namespace fast_io::freestanding
 {
 
-template<input_iterator Iter,typename predicate>
+template<::std::input_iterator Iter,typename predicate>
 inline constexpr Iter find_if(Iter first,Iter last,predicate q)
 {
 	for(;first!=last;++first)
@@ -33,7 +33,7 @@ inline constexpr Iter find_if(Iter first,Iter last,predicate q)
 	return last;
 }
 
-template<input_iterator input_iter,input_or_output_iterator output_iter>
+template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter copy_n(input_iter first,std::size_t count,output_iter result)
 {
 	for (std::size_t i{}; i != count; ++i)
@@ -45,7 +45,7 @@ inline constexpr output_iter copy_n(input_iter first,std::size_t count,output_it
 	return result;
 }
 
-template<::fast_io::freestanding::input_iterator input_iter,::fast_io::freestanding::input_or_output_iterator output_iter>
+template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter copy(input_iter first,input_iter last,output_iter result)
 {
 	for(;first!=last;)
@@ -58,7 +58,7 @@ inline constexpr output_iter copy(input_iter first,input_iter last,output_iter r
 }
 
 
-template<::fast_io::freestanding::input_iterator fwd_iter,typename T>
+template<::std::input_iterator fwd_iter,typename T>
 inline constexpr void fill(fwd_iter first,fwd_iter last,T value)
 {
 	for(;first!=last;++first)
@@ -66,7 +66,7 @@ inline constexpr void fill(fwd_iter first,fwd_iter last,T value)
 }
 
 
-template<::fast_io::freestanding::input_iterator fwd_iter,typename T>
+template<::std::input_iterator fwd_iter,typename T>
 inline constexpr void fill_n(fwd_iter first,std::size_t n,T value)
 {
 	for(std::size_t i{};i!=n;++i)
@@ -77,7 +77,7 @@ inline constexpr void fill_n(fwd_iter first,std::size_t n,T value)
 }
 
 
-template<::fast_io::freestanding::bidirectional_iterator BidirIt1, ::fast_io::freestanding::bidirectional_iterator BidirIt2 >
+template<::std::bidirectional_iterator BidirIt1,::std::bidirectional_iterator BidirIt2 >
 constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 {
 	for(;first!=last;*(--d_last)=*(--last));
@@ -91,9 +91,9 @@ constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 namespace fast_io::freestanding
 {
 
-template<input_iterator Iter,std::integral T>
+template<::std::input_iterator Iter,::std::integral T>
 //requires (std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(std::uintmax_t))
-requires (std::is_trivially_copyable_v<T>)
+requires (::std::is_trivially_copyable_v<T>)
 inline constexpr Iter find(Iter first,Iter last,T t)
 {
 	for(;first!=last;++first)
@@ -102,22 +102,22 @@ inline constexpr Iter find(Iter first,Iter last,T t)
 	return last;
 }
 
-template<input_iterator Iter,input_iterator Iter2>
+template<::std::input_iterator Iter,::std::input_iterator Iter2>
 struct mismatch_result
 {
 	Iter first;
 	Iter2 second;
 };
 
-template<input_iterator Iter,input_iterator Iter2>
+template<::std::input_iterator Iter,::std::input_iterator Iter2>
 inline constexpr mismatch_result<Iter,Iter2> my_mismatch(Iter first1,Iter last1,Iter2 first2,Iter2 last2)
 {
 	for(;first1!=last1&&first2!=last2&&*first1==*first2;++first2)
 		++first1;
 	return {first1,first2};
 }
-template<forward_iterator ForwardIt, class T >
-requires (std::is_trivially_copyable_v<T>)
+template<::std::forward_iterator ForwardIt,class T >
+requires (::std::is_trivially_copyable_v<T>)
 inline constexpr ForwardIt remove(ForwardIt first, ForwardIt last, T value)
 {
 	first = find(first, last, value);
@@ -125,7 +125,7 @@ inline constexpr ForwardIt remove(ForwardIt first, ForwardIt last, T value)
 		for(ForwardIt i = first; ++i != last; )
 			if (!(*i == value))
 			{
-				*first = ::fast_io::freestanding::move(*i);
+				*first = ::std::move(*i);
 				++first;
 			}
 	return first;
@@ -193,7 +193,7 @@ inline void* my_memset(void* dest, int ch, std::size_t count) noexcept
 		(dest, ch, count);
 }
 
-template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t count, output_iter result)
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
@@ -208,11 +208,11 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t
 	else
 #endif
 	{
-		using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
-		using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+		using input_value_type = ::std::iter_value_t<input_iter>;
+		using output_value_type = ::std::iter_value_t<output_iter>;
 		if constexpr
-			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
-				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+			(::std::contiguous_iterator<input_iter> &&
+				::std::contiguous_iterator<output_iter> &&
 				std::is_trivially_copyable_v<input_value_type> &&
 				std::is_trivially_copyable_v<output_value_type> &&
 				(std::same_as<input_value_type, output_value_type> ||
@@ -220,7 +220,7 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			if (count)	//to avoid nullptr UB
-				my_memcpy(::fast_io::freestanding::to_address(result), ::fast_io::freestanding::to_address(first), sizeof(::fast_io::freestanding::iter_value_t<input_iter>) * count);
+				my_memcpy(::std::to_address(result), ::std::to_address(first), sizeof(::std::iter_value_t<input_iter>) * count);
 			return result += count;
 		}
 		else
@@ -228,7 +228,7 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t
 	}
 }
 
-template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter last, output_iter result)
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
@@ -243,11 +243,11 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 	else
 #endif
 	{
-		using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
-		using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+		using input_value_type = ::std::iter_value_t<input_iter>;
+		using output_value_type = ::std::iter_value_t<output_iter>;
 		if constexpr
-			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
-				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+			(::std::contiguous_iterator<input_iter> &&
+				::std::contiguous_iterator<output_iter> &&
 				std::is_trivially_copyable_v<input_value_type> &&
 				std::is_trivially_copyable_v<output_value_type> &&
 				(std::same_as<input_value_type, output_value_type> ||
@@ -256,7 +256,7 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 		{
 			std::size_t count{ static_cast<std::size_t>(last - first) };
 			if (count)	//to avoid nullptr UB
-				my_memcpy(::fast_io::freestanding::to_address(result), ::fast_io::freestanding::to_address(first), sizeof(::fast_io::freestanding::iter_value_t<input_iter>) * count);
+				my_memcpy(::std::to_address(result), ::std::to_address(first), sizeof(::std::iter_value_t<input_iter>) * count);
 			return result += count;
 		}
 		else
@@ -266,7 +266,7 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 	}
 }
 
-template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy_n(input_iter first, std::size_t count, output_iter result)
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
@@ -281,11 +281,11 @@ inline constexpr output_iter my_copy_n(input_iter first, std::size_t count, outp
 	else
 #endif
 	{
-		using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
-		using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+		using input_value_type = ::std::iter_value_t<input_iter>;
+		using output_value_type = ::std::iter_value_t<output_iter>;
 		if constexpr
-			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
-				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+			(::std::contiguous_iterator<input_iter> &&
+				::std::contiguous_iterator<output_iter> &&
 				std::is_trivially_copyable_v<input_value_type> &&
 				std::is_trivially_copyable_v<output_value_type> &&
 				(std::same_as<input_value_type, output_value_type> ||
@@ -293,7 +293,7 @@ inline constexpr output_iter my_copy_n(input_iter first, std::size_t count, outp
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			if (count)	//to avoid nullptr UB
-				my_memmove(::fast_io::freestanding::to_address(result), ::fast_io::freestanding::to_address(first), sizeof(::fast_io::freestanding::iter_value_t<input_iter>) * count);
+				my_memmove(::std::to_address(result), ::std::to_address(first), sizeof(::std::iter_value_t<input_iter>) * count);
 			return result += count;
 		}
 		else
@@ -303,12 +303,12 @@ inline constexpr output_iter my_copy_n(input_iter first, std::size_t count, outp
 	}
 }
 
-template<::fast_io::freestanding::input_iterator input_iter, ::fast_io::freestanding::input_or_output_iterator output_iter>
+template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy(input_iter first, input_iter second, output_iter result)
 {
-	using input_value_type = ::fast_io::freestanding::iter_value_t<input_iter>;
-	using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
-	if constexpr (::fast_io::freestanding::contiguous_iterator<input_iter> && ::fast_io::freestanding::contiguous_iterator<output_iter> && std::is_trivially_copyable_v<input_value_type> &&
+	using input_value_type = ::std::iter_value_t<input_iter>;
+	using output_value_type = ::std::iter_value_t<output_iter>;
+	if constexpr (::std::contiguous_iterator<input_iter> && ::std::contiguous_iterator<output_iter> && std::is_trivially_copyable_v<input_value_type> &&
 		std::is_trivially_copyable_v<output_value_type> &&
 		(std::same_as<input_value_type, output_value_type> || (std::integral<input_value_type> && std::integral<output_value_type> && sizeof(std::is_trivially_copyable_v<input_value_type>) == sizeof(std::is_trivially_copyable_v<output_value_type>))))
 	{
@@ -319,7 +319,7 @@ inline constexpr output_iter my_copy(input_iter first, input_iter second, output
 		return ::fast_io::freestanding::copy(first, second, result);
 }
 
-template<::fast_io::freestanding::bidirectional_iterator input_iter, ::fast_io::freestanding::bidirectional_iterator output_iter>
+template<::std::bidirectional_iterator input_iter,::std::bidirectional_iterator output_iter>
 inline constexpr output_iter my_copy_backward(input_iter first, input_iter last, output_iter d_last)
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
@@ -334,11 +334,11 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 	else
 #endif
 	{
-		using input_value_type = typename ::fast_io::freestanding::iter_value_t<input_iter>;
-		using output_value_type = typename ::fast_io::freestanding::iter_value_t<output_iter>;
+		using input_value_type = typename ::std::iter_value_t<input_iter>;
+		using output_value_type = typename ::std::iter_value_t<output_iter>;
 		if constexpr
-			(::fast_io::freestanding::contiguous_iterator<input_iter> &&
-				::fast_io::freestanding::contiguous_iterator<output_iter> &&
+			(::std::contiguous_iterator<input_iter> &&
+				::std::contiguous_iterator<output_iter> &&
 				std::is_trivially_copyable_v<input_value_type> &&
 				std::is_trivially_copyable_v<output_value_type> &&
 				(std::same_as<input_value_type, output_value_type> ||
@@ -348,7 +348,7 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 			std::size_t const count(last - first);
 			d_last -= count;
 			if (count)	//to avoid nullptr UB
-				my_memmove(::fast_io::freestanding::to_address(d_last), ::fast_io::freestanding::to_address(first), sizeof(input_value_type) * count);
+				my_memmove(::std::to_address(d_last), ::std::to_address(first), sizeof(input_value_type) * count);
 			return d_last;
 		}
 		else

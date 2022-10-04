@@ -247,25 +247,25 @@ inline nt_family_directory_iterator<family>& operator++(nt_family_directory_iter
 }
 
 template<nt_family family>
-inline constexpr bool operator==(::fast_io::freestanding::default_sentinel_t, nt_family_directory_iterator<family> b) noexcept
+inline constexpr bool operator==(::std::default_sentinel_t, nt_family_directory_iterator<family> b) noexcept
 {
 	return b.entry==nullptr;
 }
 
 template<nt_family family>
-inline constexpr bool operator==(nt_family_directory_iterator<family> b, ::fast_io::freestanding::default_sentinel_t other) noexcept
+inline constexpr bool operator==(nt_family_directory_iterator<family> b, ::std::default_sentinel_t other) noexcept
 {
 	return other==b;
 }
 
 template<nt_family family>
-inline constexpr bool operator!=(::fast_io::freestanding::default_sentinel_t other,nt_family_directory_iterator<family> b) noexcept
+inline constexpr bool operator!=(::std::default_sentinel_t other,nt_family_directory_iterator<family> b) noexcept
 {
 	return !(other==b);
 }
 
 template<nt_family family>
-inline constexpr bool operator!=(nt_family_directory_iterator<family> b, ::fast_io::freestanding::default_sentinel_t other) noexcept
+inline constexpr bool operator!=(nt_family_directory_iterator<family> b, ::std::default_sentinel_t other) noexcept
 {
 	return !(other==b);
 }
@@ -310,7 +310,7 @@ inline nt_family_directory_iterator<family> begin(basic_nt_family_directory_gene
 }
 
 template<nt_family family,typename Allocator>
-inline ::fast_io::freestanding::default_sentinel_t end(basic_nt_family_directory_generator<family,Allocator> const&) noexcept
+inline ::std::default_sentinel_t end(basic_nt_family_directory_generator<family,Allocator> const&) noexcept
 {
 	return {};
 }
@@ -454,7 +454,7 @@ inline basic_nt_family_recursive_directory_iterator<family,StackType> begin(basi
 }
 
 template<nt_family family,typename AllocatorType,typename StackType>
-inline ::fast_io::freestanding::default_sentinel_t end(basic_nt_family_recursive_directory_generator<family,AllocatorType,StackType> const&) noexcept
+inline ::std::default_sentinel_t end(basic_nt_family_recursive_directory_generator<family,AllocatorType,StackType> const&) noexcept
 {
 	return {};
 }
@@ -466,25 +466,25 @@ inline nt_directory_entry operator*(basic_nt_family_recursive_directory_iterator
 }
 
 template<nt_family family,typename StackType>
-inline bool operator==(::fast_io::freestanding::default_sentinel_t, basic_nt_family_recursive_directory_iterator<family,StackType> const& b) noexcept
+inline bool operator==(::std::default_sentinel_t, basic_nt_family_recursive_directory_iterator<family,StackType> const& b) noexcept
 {
 	return b.stack.empty()&&b.entry == nullptr;
 }
 
 template<nt_family family,typename StackType>
-inline bool operator==(basic_nt_family_recursive_directory_iterator<family,StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+inline bool operator==(basic_nt_family_recursive_directory_iterator<family,StackType> const& b, ::std::default_sentinel_t sntnl) noexcept
 {
 	return sntnl==b;
 }
 
 template<nt_family family,typename StackType>
-inline bool operator!=(::fast_io::freestanding::default_sentinel_t sntnl, basic_nt_family_recursive_directory_iterator<family,StackType> const& b) noexcept
+inline bool operator!=(::std::default_sentinel_t sntnl, basic_nt_family_recursive_directory_iterator<family,StackType> const& b) noexcept
 {
 	return !(sntnl==b);
 }
 
 template<nt_family family,typename StackType>
-inline bool operator!=(basic_nt_family_recursive_directory_iterator<family,StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+inline bool operator!=(basic_nt_family_recursive_directory_iterator<family,StackType> const& b, ::std::default_sentinel_t sntnl) noexcept
 {
 	return sntnl!=b;
 }

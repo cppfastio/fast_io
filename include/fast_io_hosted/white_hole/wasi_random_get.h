@@ -55,17 +55,17 @@ public:
 	constexpr void close() noexcept{}
 };
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_wasi_random_get<char_type>,Iter bg,Iter ed)
 {
 	if constexpr(sizeof(__wasi_size_t)<sizeof(std::size_t))
 	{
-		std::size_t sz{::fast_io::details::wasi_random_get_impl(::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
+		std::size_t sz{::fast_io::details::wasi_random_get_impl(::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
 		return bg+(sz/sizeof(*bg));
 	}
 	else
 	{
-		::fast_io::details::wasi_random_get_full_impl(::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg));
+		::fast_io::details::wasi_random_get_full_impl(::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg));
 		return ed;
 	}
 }

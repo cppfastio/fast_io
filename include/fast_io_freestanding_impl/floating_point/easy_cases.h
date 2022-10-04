@@ -3,10 +3,10 @@
 namespace fast_io::details::fp
 {
 
-template<bool uppercase_e=false,bool four_digits=false,::fast_io::freestanding::random_access_iterator Iter>
+template<bool uppercase_e=false,bool four_digits=false,::std::random_access_iterator Iter>
 inline constexpr Iter output_exp(std::int_least32_t exp,Iter result)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if constexpr(uppercase_e)
 	{
 		if constexpr(std::same_as<char_type,char>)
@@ -113,10 +113,10 @@ inline constexpr Iter output_exp(std::int_least32_t exp,Iter result)
 #endif
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral mantissaType>
+template<::std::random_access_iterator Iter,my_unsigned_integral mantissaType>
 inline constexpr Iter nan_inf_case(Iter result,bool sign, mantissaType mantissa) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if (mantissa)
 	{
 		if constexpr(std::same_as<char,char_type>)
@@ -156,10 +156,10 @@ inline constexpr Iter nan_inf_case(Iter result,bool sign, mantissaType mantissa)
 }
 
 
-template<::fast_io::freestanding::random_access_iterator Iter>
+template<::std::random_access_iterator Iter>
 inline constexpr Iter sign_case(Iter result,bool sign) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if(sign)
 	{
 		if constexpr(std::same_as<char,char_type>)
@@ -173,10 +173,10 @@ inline constexpr Iter sign_case(Iter result,bool sign) noexcept
 	return result;
 }
 
-template<manipulators::floating_representation flt_mode,bool uppercase_e,::fast_io::freestanding::random_access_iterator Iter>
+template<manipulators::floating_representation flt_mode,bool uppercase_e,::std::random_access_iterator Iter>
 inline constexpr Iter zero_case(Iter result,bool sign) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if constexpr(flt_mode==manipulators::floating_representation::scientific)
 	{
 		if constexpr(uppercase_e)
@@ -248,10 +248,10 @@ inline constexpr Iter zero_case(Iter result,bool sign) noexcept
 		return zero_case<manipulators::floating_representation::general,true>(result,sign);
 }
 
-template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral mantissa_type>
+template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::std::random_access_iterator Iter,my_unsigned_integral mantissa_type>
 inline constexpr Iter integer_case_no_sign(Iter result,mantissa_type v2) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if constexpr(flt_mode==manipulators::floating_representation::general)
 	{
 		if(v2)[[likely]]
@@ -400,17 +400,17 @@ inline constexpr Iter integer_case_no_sign(Iter result,mantissa_type v2) noexcep
 	return result;
 }
 
-template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral muint>
+template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::std::random_access_iterator Iter,my_unsigned_integral muint>
 inline constexpr Iter integer_case(Iter result,bool sign,muint v2) noexcept
 {
 	return integer_case_no_sign<flt_mode,uppercase_e,decimal_point>(sign_case(result,sign),v2);
 }
 
-template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral mantissa_type,
+template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::std::random_access_iterator Iter,my_unsigned_integral mantissa_type,
 		my_signed_integral exponent_type>
 inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_type e10) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if constexpr(flt_mode==manipulators::floating_representation::general) //general
 	{
 		std::int_least32_t olength(static_cast<std::int_least32_t>(chars_len<10,true>(vr)));	
@@ -669,7 +669,7 @@ inline constexpr Iter normal_case_no_sign(Iter result,mantissa_type vr,exponent_
 	}
 }
 
-template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral muint,
+template<manipulators::floating_representation flt_mode,bool uppercase_e,char8_t decimal_point,::std::random_access_iterator Iter,my_unsigned_integral muint,
 		my_signed_integral exp_type>
 inline constexpr Iter normal_case(Iter result,bool sign,muint vr,exp_type e10) noexcept
 {

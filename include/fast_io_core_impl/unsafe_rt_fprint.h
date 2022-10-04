@@ -17,11 +17,11 @@ struct basic_unsafe_rt_format_string_view
 	char_type const* data_last_ptr{};
 	inline explicit constexpr basic_unsafe_rt_format_string_view() noexcept = default;
 	inline explicit constexpr basic_unsafe_rt_format_string_view(char_type const* dat,std::size_t le) noexcept:data_first_ptr{dat},data_last_ptr{dat+le}{}
-	template<::fast_io::freestanding::contiguous_iterator Iter>
-	requires (std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>)
+	template<::std::contiguous_iterator Iter>
+	requires (std::same_as<::std::iter_value_t<Iter>,char_type>)
 	inline explicit constexpr basic_unsafe_rt_format_string_view(Iter first,Iter last):
-		data_first_ptr{::fast_io::freestanding::to_address(first)},
-		data_last_ptr{::fast_io::freestanding::to_address(last)}{}
+		data_first_ptr{::std::to_address(first)},
+		data_last_ptr{::std::to_address(last)}{}
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __cpp_lib_ranges >= 202106L
 	template<::std::ranges::contiguous_range rg>
 	requires (std::same_as<::std::ranges::range_value_t<std::remove_cvref_t<rg>>,char_type>&&!::std::is_array_v<rg>&&::std::is_lvalue_reference_v<rg&>)

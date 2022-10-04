@@ -29,7 +29,7 @@ _Alloc_hider(pointer __dat, allocator_type const& __a)
 : allocator_type(__a), _M_p(__dat) { }
 
 _Alloc_hider(pointer __dat, allocator_type&& __a = allocator_type())
-: allocator_type(::fast_io::freestanding::move(__a)), _M_p(__dat) { }
+: allocator_type(::std::move(__a)), _M_p(__dat) { }
 #endif
 
 pointer _M_p; // The actual data.
@@ -69,7 +69,7 @@ inline decltype(auto) hack_M_string_length(T& str) noexcept
 template<typename T>
 inline constexpr void set_end_ptr(T& str,typename T::value_type* ptr) noexcept
 {
-	hack_M_string_length(str)=static_cast<std::size_t>(ptr-::fast_io::freestanding::to_address(hack_M_data(str)));
+	hack_M_string_length(str)=static_cast<std::size_t>(ptr-::std::to_address(hack_M_data(str)));
 }
 
 template<typename T>

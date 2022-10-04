@@ -63,7 +63,7 @@ constexpr io_reference_wrapper<stm> io_value_handle(io_reference_wrapper<stm> wr
 	return wrap;
 }
 
-template<output_stream output,::fast_io::freestanding::input_or_output_iterator Iter>
+template<output_stream output,::std::input_or_output_iterator Iter>
 constexpr decltype(auto) write(io_reference_wrapper<output> out,Iter first,Iter last)
 {
 	return write(*out.ptr,first,last);
@@ -133,7 +133,7 @@ constexpr void obuffer_initialize(io_reference_wrapper<output> out)
 	obuffer_initialize(*out.ptr);
 }
 
-template<input_stream input,::fast_io::freestanding::input_or_output_iterator Iter>
+template<input_stream input,::std::input_or_output_iterator Iter>
 constexpr Iter read(io_reference_wrapper<input> in,Iter first,Iter last)
 {
 	return read(*in.ptr,first,last);

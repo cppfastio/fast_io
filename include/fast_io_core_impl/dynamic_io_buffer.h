@@ -91,7 +91,7 @@ inline constexpr void dynamic_io_buffer_overflow_impl(dynamic_io_buffer<char_typ
 	++ob.buffer_curr;
 }
 
-template<std::integral char_type,::fast_io::freestanding::forward_iterator Iter>
+template<std::integral char_type,::std::forward_iterator Iter>
 inline constexpr void dynamic_io_buffer_write_impl_unhappy_iter(dynamic_io_buffer<char_type>& ob,
 	Iter first,std::size_t diff) noexcept
 {
@@ -99,13 +99,13 @@ inline constexpr void dynamic_io_buffer_write_impl_unhappy_iter(dynamic_io_buffe
 	ob.buffer_curr=non_overlapped_copy_n(first,diff,ob.buffer_curr);
 }
 
-template<::fast_io::freestanding::forward_iterator Iter>
-inline constexpr void dynamic_io_buffer_write_impl_unhappy(dynamic_io_buffer<::fast_io::freestanding::iter_value_t<Iter>>& ob,
+template<::std::forward_iterator Iter>
+inline constexpr void dynamic_io_buffer_write_impl_unhappy(dynamic_io_buffer<::std::iter_value_t<Iter>>& ob,
 	Iter first,std::size_t diff) noexcept
 {
-	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>)
+	if constexpr(::std::contiguous_iterator<Iter>)
 	{
-		auto const * ptr{::fast_io::freestanding::to_address(first)};
+		auto const * ptr{::std::to_address(first)};
 		dynamic_io_buffer_write_impl_unhappy_iter(ob,ptr,diff);
 	}
 	else
@@ -135,24 +135,24 @@ inline constexpr void obuffer_overflow(dynamic_io_buffer<ch_type>& ob,ch_type ch
 	details::dynamic_io_buffer_overflow_impl(ob,ch);
 }
 
-template<std::integral ch_type,::fast_io::freestanding::forward_iterator Iter>
-requires ((std::same_as<ch_type,char>&&::fast_io::freestanding::contiguous_iterator<Iter>)||
-	std::same_as<ch_type,::fast_io::freestanding::iter_value_t<Iter>>)
+template<std::integral ch_type,::std::forward_iterator Iter>
+requires ((std::same_as<ch_type,char>&&::std::contiguous_iterator<Iter>)||
+	std::same_as<ch_type,::std::iter_value_t<Iter>>)
 inline constexpr void write(dynamic_io_buffer<ch_type>& ob,Iter first,Iter last) noexcept
 {
-	if constexpr(!std::same_as<ch_type,::fast_io::freestanding::iter_value_t<Iter>>)
+	if constexpr(!std::same_as<ch_type,::std::iter_value_t<Iter>>)
 	{
 		write(ob,
-		reinterpret_cast<char const*>(::fast_io::freestanding::to_address(first)),
-		reinterpret_cast<char const*>(::fast_io::freestanding::to_address(last)));
+		reinterpret_cast<char const*>(::std::to_address(first)),
+		reinterpret_cast<char const*>(::std::to_address(last)));
 	}
-	else if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>&&!std::is_pointer_v<std::remove_cvref_t<Iter>>)
+	else if constexpr(::std::contiguous_iterator<Iter>&&!std::is_pointer_v<std::remove_cvref_t<Iter>>)
 	{
-		write(ob,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+		write(ob,::std::to_address(first),::std::to_address(last));
 	}
 	else
 	{
-		std::size_t diff{static_cast<std::size_t>(::fast_io::freestanding::distance(first,last))};
+		std::size_t diff{static_cast<std::size_t>(::std::distance(first,last))};
 		std::size_t remain_space{static_cast<std::size_t>(ob.buffer_end-ob.buffer_curr)};
 		if(remain_space<diff)
 		{

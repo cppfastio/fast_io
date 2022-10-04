@@ -132,17 +132,17 @@ inline std::uintptr_t posix_accept_win32_socket_impl(std::uintptr_t hsocket,void
 
 }
 
-template<win32_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 [[nodiscard]]
 inline constexpr Iter read(basic_win32_family_socket_io_observer<family,ch_type> sockiob,Iter first,Iter last) 
 {
-	return win32::details::win32_socket_read_impl(sockiob.hsocket,::fast_io::freestanding::to_address(first),sizeof(*first)*static_cast<std::size_t>(::fast_io::freestanding::to_address(last)-::fast_io::freestanding::to_address(first)))/sizeof(*first)+first;
+	return win32::details::win32_socket_read_impl(sockiob.hsocket,::std::to_address(first),sizeof(*first)*static_cast<std::size_t>(::std::to_address(last)-::std::to_address(first)))/sizeof(*first)+first;
 }
 
-template<win32_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 inline constexpr Iter write(basic_win32_family_socket_io_observer<family,ch_type> sockiob,Iter first,Iter last)
 {
-	return win32::details::win32_socket_write_impl(sockiob.hsocket,::fast_io::freestanding::to_address(first),sizeof(*first)*static_cast<std::size_t>(::fast_io::freestanding::to_address(last)-::fast_io::freestanding::to_address(first)))/sizeof(*first)+first;
+	return win32::details::win32_socket_write_impl(sockiob.hsocket,::std::to_address(first),sizeof(*first)*static_cast<std::size_t>(::std::to_address(last)-::std::to_address(first)))/sizeof(*first)+first;
 }
 
 template<win32_family family,std::integral ch_type>

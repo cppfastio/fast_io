@@ -37,10 +37,10 @@ inline std::size_t linux_getrandom_read(void* ptr,std::size_t sz,unsigned flags)
 }
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_linux_getrandom<char_type> g,Iter bg,Iter ed)
 {
-	return bg+::fast_io::details::linux_getrandom_read(::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg),g.flags)/sizeof(*bg);
+	return bg+::fast_io::details::linux_getrandom_read(::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg),g.flags)/sizeof(*bg);
 }
 
 using linux_getrandom = basic_linux_getrandom<char>;

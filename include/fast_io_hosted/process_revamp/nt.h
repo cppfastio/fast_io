@@ -275,8 +275,8 @@ struct nt_process_args
 	char const* const* args{};
 	bool is_dynamic_allocated{};
 	inline constexpr nt_process_args(char const* const* envir) noexcept:args(envir){}
-	template<::fast_io::freestanding::random_access_iterator Iter>
-	requires (std::convertible_to<::fast_io::freestanding::iter_value_t<Iter>,char const*>||requires(::fast_io::freestanding::iter_value_t<Iter> v)
+	template<::std::random_access_iterator Iter>
+	requires (std::convertible_to<::std::iter_value_t<Iter>,char const*>||requires(::std::iter_value_t<Iter> v)
 	{
 		{v.c_str()}->std::convertible_to<char const*>;
 	})

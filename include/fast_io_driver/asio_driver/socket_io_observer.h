@@ -31,11 +31,11 @@ public:
 		return temp;
 	}
 };
-template<typename T,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<typename T,std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_socket_io_observer<T,ch_type> iob,Iter begin,Iter end)
 {
 	std::error_code ec{};//WTF??? WHY?? WHY??WHY??WHY??WHY??WHY??WHY??WHY?? FUCK YOU ASIO
-	std::size_t sz{iob.handle->read_some(asio::buffer(::fast_io::freestanding::to_address(begin), (end-begin)*sizeof(*begin)),ec)};
+	std::size_t sz{iob.handle->read_some(asio::buffer(::std::to_address(begin), (end-begin)*sizeof(*begin)),ec)};
 	if(ec==asio::error::eof)	//This is BRAINDEAD RETARDED. HOW COULD THIS SHIT GET ADDED INTO ISO C++?
 		return begin;
 	else if(ec)
@@ -43,10 +43,10 @@ inline Iter read(basic_socket_io_observer<T,ch_type> iob,Iter begin,Iter end)
 	return begin+sz/sizeof(*begin);
 }
 
-template<typename T,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<typename T,std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_socket_io_observer<T,ch_type> iob,Iter begin,Iter end)
 {
-	return begin+iob.handle->write_some(asio::buffer(::fast_io::freestanding::to_address(begin), (end-begin)*sizeof(*begin)))/sizeof(*begin);
+	return begin+iob.handle->write_some(asio::buffer(::std::to_address(begin), (end-begin)*sizeof(*begin)))/sizeof(*begin);
 }
 template<typename T,std::integral ch_type>
 inline constexpr void flush(basic_socket_io_observer<T,ch_type>){}

@@ -22,7 +22,7 @@ inline constexpr bool ibuffer_underflow_impl(T t,basic_io_buffer_pointers<char_t
 	return ibuffer_underflow_rl_impl(t,ibuffer,bfsz);
 }
 
-template<typename T,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<typename T,std::integral char_type,::std::random_access_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif

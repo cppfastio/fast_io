@@ -34,7 +34,7 @@ struct basic_general_iomutex
 	
 	template<typename... Args>
 	requires std::constructible_from<T,Args...>
-	explicit constexpr basic_general_iomutex(Args&& ...args):handle(::fast_io::freestanding::forward<Args>(args)...)
+	explicit constexpr basic_general_iomutex(Args&& ...args):handle(::std::forward<Args>(args)...)
 	{
 	}
 	inline constexpr void lock() noexcept(noexcept(mutex.lock()))
@@ -61,7 +61,7 @@ struct basic_general_iomutex
 	inline constexpr void reopen(Args&& ...args)
 	{
 		io_lock_guard gd{mutex};
-		handle.reopen(::fast_io::freestanding::forward<Args>(args)...);
+		handle.reopen(::std::forward<Args>(args)...);
 	}
 	inline constexpr void close()
 		requires requires()

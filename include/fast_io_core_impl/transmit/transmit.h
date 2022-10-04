@@ -7,7 +7,7 @@ namespace fast_io
 template<typename T,typename P>
 concept status_transmitable = requires(T&& t,P&& p)
 {
-	status_transmit_define(io_alias,::fast_io::freestanding::forward<T>(t),::fast_io::freestanding::forward<P>(p));
+	status_transmit_define(io_alias,::std::forward<T>(t),::std::forward<P>(p));
 };
 
 template<typename T,typename P>
@@ -274,7 +274,7 @@ template<typename output,typename input>
 inline constexpr decltype(auto) transmit(output&& outs,input&& ins)
 {
 	if constexpr(status_transmitable<output,input>)
-		return status_transmit_define(io_alias,::fast_io::freestanding::forward<output>(outs),::fast_io::freestanding::forward<input>(ins));
+		return status_transmit_define(io_alias,::std::forward<output>(outs),::std::forward<input>(ins));
 	else
 		return transmit_decay(fast_io::io_ref(outs),fast_io::io_ref(ins));
 }
@@ -288,7 +288,7 @@ template<typename output,typename input>
 inline constexpr decltype(auto) transmit64(output&& outs,input&& ins,std::uint_least64_t characters=UINT_LEAST64_MAX)
 {
 	if constexpr(status_transmitable<output,input>)
-		return status_transmit64_define(io_alias,::fast_io::freestanding::forward<output>(outs),::fast_io::freestanding::forward<input>(ins),characters);
+		return status_transmit64_define(io_alias,::std::forward<output>(outs),::std::forward<input>(ins),characters);
 	else
 		return transmit64_decay(fast_io::io_ref(outs),fast_io::io_ref(ins),characters);
 }

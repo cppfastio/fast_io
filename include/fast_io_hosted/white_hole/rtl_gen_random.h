@@ -50,17 +50,17 @@ inline std::size_t rtl_gen_random_read(void* ptr,std::size_t sz)
 }
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_rtl_gen_random<char_type>,Iter bg,Iter ed)
 {
 	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
-		auto ret{win32::details::rtl_gen_random_read(::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
+		auto ret{win32::details::rtl_gen_random_read(::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
 		return bg+(ret/sizeof(*bg));
 	}
 	else
 	{
-		win32::details::rtl_gen_random_read_u32(::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg));
+		win32::details::rtl_gen_random_read_u32(::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg));
 		return ed;
 	}
 }

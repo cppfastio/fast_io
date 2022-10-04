@@ -45,10 +45,10 @@ static_assert(error,"type is not reserve_printable");
 template<std::integral char_type,typename T>
 inline constexpr std::size_t pr_rsv_size{::fast_io::details::pr_rsv_size_impl<char_type,T>()};
 
-template<::fast_io::freestanding::random_access_iterator Iter,typename T>
+template<::std::random_access_iterator Iter,typename T>
 inline constexpr Iter pr_rsv_to_iterator_unchecked(Iter it,T&& t) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
 		using alias_type = decltype(print_alias_define(::fast_io::io_alias,t));
@@ -84,7 +84,7 @@ inline constexpr char_type* pr_rsv_to_c_array(char_type (&buffer)[n],T&& t) noex
 	constexpr bool error{(pr_rsv_size<char_type,std::remove_cvref_t<T>>)<=n};
 	if constexpr(error)
 	{
-		return pr_rsv_to_iterator_unchecked(buffer,::fast_io::freestanding::forward<T>(t));
+		return pr_rsv_to_iterator_unchecked(buffer,::std::forward<T>(t));
 	}
 	else
 	{
@@ -100,7 +100,7 @@ inline constexpr typename ::std::array<char_type,n>::iterator pr_rsv_to_array(::
 	constexpr bool error{(pr_rsv_size<char_type,std::remove_cvref_t<T>>)<=n};
 	if constexpr(error)
 	{
-		return pr_rsv_to_iterator_unchecked(buffer.data(),::fast_io::freestanding::forward<T>(t))-buffer.data()+buffer.begin();
+		return pr_rsv_to_iterator_unchecked(buffer.data(),::std::forward<T>(t))-buffer.data()+buffer.begin();
 	}
 	else
 	{

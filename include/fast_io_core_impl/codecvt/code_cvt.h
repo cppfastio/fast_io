@@ -30,24 +30,24 @@ basic_code_converter<from_char_type,from_scheme,to_scheme>&,std::size_t from_siz
 }
 
 template<encoding_scheme from_scheme,encoding_scheme to_scheme,
-::fast_io::freestanding::contiguous_iterator from_iter,::fast_io::freestanding::contiguous_iterator to_iter>
-inline constexpr to_iter deco_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<to_iter>,
-basic_code_converter<::fast_io::freestanding::iter_value_t<from_iter>,from_scheme,to_scheme>>,
-basic_code_converter<::fast_io::freestanding::iter_value_t<from_iter>,from_scheme,to_scheme>& conv,from_iter src_first,from_iter src_last,to_iter dst) noexcept
+::std::contiguous_iterator from_iter,::std::contiguous_iterator to_iter>
+inline constexpr to_iter deco_reserve_define(io_reserve_type_t<::std::iter_value_t<to_iter>,
+basic_code_converter<::std::iter_value_t<from_iter>,from_scheme,to_scheme>>,
+basic_code_converter<::std::iter_value_t<from_iter>,from_scheme,to_scheme>& conv,from_iter src_first,from_iter src_last,to_iter dst) noexcept
 {
 	if constexpr(std::is_pointer_v<from_iter>&&std::is_pointer_v<to_iter>)
 		return details::codecvt::general_code_cvt<from_scheme,to_scheme>(conv.state,src_first,src_last,dst);
 	else if constexpr(std::is_pointer_v<to_iter>)
 		return details::codecvt::general_code_cvt<from_scheme,to_scheme>(conv.state,
-			::fast_io::freestanding::to_address(src_first),
-			::fast_io::freestanding::to_address(src_last),
+			::std::to_address(src_first),
+			::std::to_address(src_last),
 			dst);
 	else
 	{
 		return dst+(details::codecvt::general_code_cvt<from_scheme,to_scheme>(conv.state,
-		::fast_io::freestanding::to_address(src_first),
-		::fast_io::freestanding::to_address(src_last),
-		::fast_io::freestanding::to_address(dst))-::fast_io::freestanding::to_address(dst));
+		::std::to_address(src_first),
+		::std::to_address(src_last),
+		::std::to_address(dst))-::std::to_address(dst));
 	}
 }
 

@@ -186,7 +186,7 @@ inline void android_logger_writev_impl(android_logmessage_meta_v30 const& meta,i
 template<android_logger_family_tag fam,std::integral char_type,std::contiguous_iterator Iter>
 inline void write(basic_android_family_logger<fam,char_type> const& b,Iter first,Iter last)
 {
-	::fast_io::details::android_logger_write_impl(b.meta,::fast_io::freestanding::to_address(first),static_cast<std::size_t>(last-first)*sizeof(*first));
+	::fast_io::details::android_logger_write_impl(b.meta,::std::to_address(first),static_cast<std::size_t>(last-first)*sizeof(*first));
 }
 
 template<android_logger_family_tag fam,std::integral char_type>

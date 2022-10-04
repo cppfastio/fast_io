@@ -15,17 +15,17 @@ public:
 	bool pos_end{};
 };
 
-template<input_stream input,::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<typename input::char_type,::fast_io::freestanding::iter_value_t<Iter>>||std::same_as<char,typename input::char_type>)
+template<input_stream input,::std::contiguous_iterator Iter>
+requires (std::same_as<typename input::char_type,::std::iter_value_t<Iter>>||std::same_as<char,typename input::char_type>)
 constexpr Iter read(single_character_input_buffer<input>& in,Iter begin,Iter end)
 {
-	if constexpr(std::same_as<typename input::char_type,::fast_io::freestanding::iter_value_t<Iter>>)
+	if constexpr(std::same_as<typename input::char_type,::std::iter_value_t<Iter>>)
 	{
 		if(in.pos!=in.pos_end)
 		{
 			if(begin==end)
 				return begin;
-			details::non_overlapped_copy_n(__builtin_addressof(in.single_character),1,::fast_io::freestanding::to_address(begin));
+			details::non_overlapped_copy_n(__builtin_addressof(in.single_character),1,::std::to_address(begin));
 			in.pos=in.pos_end;
 			++begin;
 		}
@@ -33,7 +33,7 @@ constexpr Iter read(single_character_input_buffer<input>& in,Iter begin,Iter end
 	}
 	else
 	{
-		return read(in,reinterpret_cast<char*>(::fast_io::freestanding::to_address(begin)),reinterpret_cast<char*>(::fast_io::freestanding::to_address(end)));
+		return read(in,reinterpret_cast<char*>(::std::to_address(begin)),reinterpret_cast<char*>(::std::to_address(end)));
 	}
 }
 

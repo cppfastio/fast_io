@@ -293,24 +293,24 @@ inline posix_directory_iterator begin(posix_directory_generator const& pdg)
 	return pdit;
 }
 
-inline ::fast_io::freestanding::default_sentinel_t end(posix_directory_generator const&) noexcept
+inline ::std::default_sentinel_t end(posix_directory_generator const&) noexcept
 {
 	return {};
 }
 
-inline constexpr bool operator==(::fast_io::freestanding::default_sentinel_t, posix_directory_iterator const& b) noexcept
+inline constexpr bool operator==(::std::default_sentinel_t, posix_directory_iterator const& b) noexcept
 {
 	return b.entry == nullptr;
 }
-inline constexpr bool operator==(posix_directory_iterator const& b, ::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator==(posix_directory_iterator const& b, ::std::default_sentinel_t) noexcept
 {
 	return b.entry == nullptr;
 }
-inline constexpr bool operator!=(::fast_io::freestanding::default_sentinel_t, posix_directory_iterator const& b) noexcept
+inline constexpr bool operator!=(::std::default_sentinel_t, posix_directory_iterator const& b) noexcept
 {
 	return b.entry;
 }
-inline constexpr bool operator!=(posix_directory_iterator const& b, ::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator!=(posix_directory_iterator const& b, ::std::default_sentinel_t) noexcept
 {
 	return b.entry;
 }
@@ -438,7 +438,7 @@ inline basic_posix_recursive_directory_iterator<StackType> begin(basic_posix_rec
 }
 
 template<typename StackType>
-inline ::fast_io::freestanding::default_sentinel_t end(basic_posix_recursive_directory_generator<StackType> const&) noexcept
+inline ::std::default_sentinel_t end(basic_posix_recursive_directory_generator<StackType> const&) noexcept
 {
 	return {};
 }
@@ -450,25 +450,25 @@ inline posix_directory_entry operator*(basic_posix_recursive_directory_iterator<
 }
 
 template<typename StackType>
-inline bool operator==(::fast_io::freestanding::default_sentinel_t, basic_posix_recursive_directory_iterator<StackType> const& b) noexcept
+inline bool operator==(::std::default_sentinel_t, basic_posix_recursive_directory_iterator<StackType> const& b) noexcept
 {
 	return b.stack.empty()&&b.entry == nullptr;
 }
 
 template<typename StackType>
-inline bool operator==(basic_posix_recursive_directory_iterator<StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+inline bool operator==(basic_posix_recursive_directory_iterator<StackType> const& b, ::std::default_sentinel_t sntnl) noexcept
 {
 	return sntnl==b;
 }
 
 template<typename StackType>
-inline bool operator!=(::fast_io::freestanding::default_sentinel_t sntnl, basic_posix_recursive_directory_iterator<StackType> const& b) noexcept
+inline bool operator!=(::std::default_sentinel_t sntnl, basic_posix_recursive_directory_iterator<StackType> const& b) noexcept
 {
 	return !(sntnl==b);
 }
 
 template<typename StackType>
-inline bool operator!=(basic_posix_recursive_directory_iterator<StackType> const& b, ::fast_io::freestanding::default_sentinel_t sntnl) noexcept
+inline bool operator!=(basic_posix_recursive_directory_iterator<StackType> const& b, ::std::default_sentinel_t sntnl) noexcept
 {
 	return sntnl!=b;
 }

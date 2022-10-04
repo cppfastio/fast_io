@@ -50,11 +50,11 @@ public:
 template<typename... Args>
 requires requires(Args&& ...args)
 {
-	InternetOpenA(::fast_io::freestanding::forward<Args>(args)...);
+	InternetOpenA(::std::forward<Args>(args)...);
 }
 inline win32_internet_handle win32_internet_open(Args&& ...args)
 {
-	auto ptr(InternetOpenA(::fast_io::freestanding::forward<Args>(args)...));
+	auto ptr(InternetOpenA(::std::forward<Args>(args)...));
 	if(ptr==nullptr)
 		throw fast_io::win32_error();
 	return win32_internet_handle(ptr);
@@ -64,11 +64,11 @@ inline win32_internet_handle win32_internet_open(Args&& ...args)
 template<typename... Args>
 requires requires(win32_internet_handle& handle,Args&& ...args)
 {
-	InternetConnectA(handle.handle,::fast_io::freestanding::forward<Args>(args)...);
+	InternetConnectA(handle.handle,::std::forward<Args>(args)...);
 }
 inline win32_internet_handle win32_internet_connect(win32_internet_handle& handle,Args&& ...args)
 {
-	auto ptr(InternetConnectA(handle.handle,::fast_io::freestanding::forward<Args>(args)...));
+	auto ptr(InternetConnectA(handle.handle,::std::forward<Args>(args)...));
 	if(ptr==nullptr)
 		throw fast_io::win32_error();
 	return win32_internet_handle(ptr);
@@ -77,11 +77,11 @@ inline win32_internet_handle win32_internet_connect(win32_internet_handle& handl
 template<typename... Args>
 requires requires(win32_internet_handle& handle,Args&& ...args)
 {
-	HttpOpenRequestA(handle.handle,::fast_io::freestanding::forward<Args>(args)...);
+	HttpOpenRequestA(handle.handle,::std::forward<Args>(args)...);
 }
 inline win32_internet_handle win32_http_open_request(win32_internet_handle& handle,Args&& ...args)
 {
-	auto ptr(HttpOpenRequestA(handle.handle,::fast_io::freestanding::forward<Args>(args)...));
+	auto ptr(HttpOpenRequestA(handle.handle,::std::forward<Args>(args)...));
 	if(ptr==nullptr)
 		throw fast_io::win32_error();
 	return win32_internet_handle(ptr);
@@ -150,20 +150,20 @@ public:
 	}
 };
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_win32_internet_io_observer<ch_type> iob,Iter begin,Iter end)
 {
 	unsigned long readed{};
-	if(!InternetReadFile(iob.handle,::fast_io::freestanding::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(readed)))
+	if(!InternetReadFile(iob.handle,::std::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(readed)))
 		throw fast_io::win32_error();
 	return begin+readed/sizeof(begin);
 }
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_win32_internet_io_observer<ch_type> iob,Iter begin,Iter end)
 {
 	unsigned long written{};
-	if(!InternetWriteFile(iob.handle,::fast_io::freestanding::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(written)))
+	if(!InternetWriteFile(iob.handle,::std::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(written)))
 		throw fast_io::win32_error();
 	return begin+written/sizeof(begin);
 }
