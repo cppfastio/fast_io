@@ -49,7 +49,7 @@ inline constexpr std::size_t calculate_scatter_dynamic_reserve_size_with_scatter
 }
 
 template<bool line,::std::integral char_type,typename T,typename... Args>
-inline constexpr char_type print_reserve_define_chain_scatter_impl(char_type* p,T t,Args ...args)
+inline constexpr char_type* print_reserve_define_chain_scatter_impl(char_type* p,T t,Args ...args)
 {
 	if constexpr(dynamic_reserve_printable<char_type,T>||reserve_printable<char_type,T>)
 		p = print_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,p,t);

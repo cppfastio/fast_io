@@ -28,7 +28,7 @@ inline constexpr std::size_t lc_print_reserve_size_width_impl(basic_lc_all<char_
 
 template<::fast_io::manipulators::scalar_placement placement,::std::integral char_type,typename T>
 requires (std::is_trivially_copyable_v<T>)
-inline constexpr Iter lc_print_reserve_define_width_ch_impl(basic_lc_all<char_type> const* __restrict all,Iter iter,T t,std::size_t wdt,char_type fillch) noexcept
+inline constexpr char_type* lc_print_reserve_define_width_ch_impl(basic_lc_all<char_type> const* __restrict all,char_type* iter,T t,std::size_t wdt,char_type fillch) noexcept
 {
 	using value_type = std::remove_cvref_t<T>;
 	if constexpr(placement==::fast_io::manipulators::scalar_placement::internal)
@@ -44,7 +44,7 @@ inline constexpr Iter lc_print_reserve_define_width_ch_impl(basic_lc_all<char_ty
 			}
 			else
 			{
-				Iter it{print_reserve_define(all,iter,t)};
+				char_type* it{print_reserve_define(all,iter,t)};
 				return handle_common_internal_ch(iter,it,wdt,fillch,print_define_internal_shift(all,t));
 			}
 		}
@@ -63,7 +63,7 @@ inline constexpr Iter lc_print_reserve_define_width_ch_impl(basic_lc_all<char_ty
 		}
 		else
 		{
-			Iter it{print_reserve_define(all,iter,t)};
+			char_type* it{print_reserve_define(all,iter,t)};
 			return handle_common_ch<placement>(iter,it,wdt,fillch);
 		}
 	}

@@ -27,28 +27,6 @@
 #include<compare>
 #endif
 
-#if defined(__GLIBCXX__)
-#if __has_include(<bits/ranges_base.h>) && __has_include(<bits/stl_iterator.h>)
-#include<initializer_list>
-#include<bits/stl_iterator.h>
-#include<bits/ranges_base.h>
-#else
-#include<iterator>
-#endif
-#else
-#include<iterator>
-#endif
-
-#if defined(__GLIBCXX__)
-#include<bits/ptr_traits.h>
-#else
-#include<memory>
-#endif
-
-#if __cpp_lib_ranges >= 201911L
-#include<ranges>
-#endif
-
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push)
 #pragma warning( disable : 4365 )

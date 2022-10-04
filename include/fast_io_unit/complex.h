@@ -362,7 +362,7 @@ inline constexpr auto print_alias_define(io_alias_t,::std::complex<scalar_type> 
 namespace details
 {
 template<::fast_io::manipulators::scalar_flags flags,typename T,::std::integral char_type>
-inline constexpr Iter print_reserve_complex_impl(Iter iter,T real,T imag) noexcept
+inline constexpr char_type* print_reserve_complex_impl(char_type* iter,T real,T imag) noexcept
 {
 	*iter=char_literal_v<u8'(',char_type>;
 	++iter;
@@ -385,9 +385,9 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,mani
 	return res;
 }
 
-template<freestanding::random_access_iterator Iter,manipulators::scalar_flags flags,details::my_floating_point flt>
+template<::std::integral char_type,manipulators::scalar_flags flags,details::my_floating_point flt>
 requires (flags.base==10)
-inline constexpr Iter print_reserve_define(io_reserve_type_t<freestanding::iter_value_t<Iter>,manipulators::scalar_manip_t<flags,std::complex<flt>>>,Iter iter,manipulators::scalar_manip_t<flags,std::complex<flt>> f) noexcept
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,std::complex<flt>>>,char_type* iter,manipulators::scalar_manip_t<flags,std::complex<flt>> f) noexcept
 {
 	return ::fast_io::details::print_reserve_complex_impl<flags>(iter,::std::real(f.reference),::std::imag(f.reference));
 }

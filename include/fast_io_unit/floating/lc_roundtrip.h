@@ -18,7 +18,7 @@ inline constexpr char_type* lc_print_rsv_fp_general_scientific_common_decay_impl
 }
 
 template<::std::integral char_type,my_unsigned_integral U>
-inline constexpr char_type* lc_print_rsv_fp_general_scientific_common_impl(basic_io_scatter_t<char_type> const& decimal_point_ref,Iter iter,U m10,std::uint_least32_t m10len) noexcept
+inline constexpr char_type* lc_print_rsv_fp_general_scientific_common_impl(basic_io_scatter_t<char_type> const& decimal_point_ref,char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
 	basic_io_scatter_t<char_type> decimal_point{decimal_point_ref};
 	return lc_print_rsv_fp_general_scientific_common_decay_impl(decimal_point.base,decimal_point.len,iter,m10,m10len);
