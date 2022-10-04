@@ -83,12 +83,9 @@ struct basic_obuffer_view
 	constexpr basic_obuffer_view(Iter first,Iter last) noexcept:begin_ptr{::std::to_address(first)},
 		curr_ptr{begin_ptr},
 		end_ptr{::std::to_address(last)}{}
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
-//std::ranges are not freestanding
 	template<std::ranges::contiguous_range rg>
 	requires (std::same_as<::std::ranges::range_value_t<rg>,char_type>&&!::std::is_array_v<std::remove_cvref_t<rg>>)
 	explicit constexpr basic_obuffer_view(rg& r) noexcept : basic_obuffer_view(::std::ranges::begin(r),::std::ranges::end(r)){}
-#endif
 	constexpr void clear() noexcept
 	{
 		curr_ptr=begin_ptr;
