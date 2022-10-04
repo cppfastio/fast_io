@@ -63,9 +63,11 @@ inline constexpr auto leb128_get(T & t) noexcept
 
 }
 
-template<std::integral char_type,::fast_io::details::my_integral T>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
-	::fast_io::manipulators::basic_leb128_get_put<T>>) noexcept
+namespace details
+{
+
+template<::fast_io::details::my_integral T>
+inline constexpr std::size_t print_reserve_size_leb128_length() noexcept
 {
 	constexpr std::size_t digits{
 		::std::numeric_limits<char unsigned>::digits*sizeof(T)};
@@ -76,6 +78,18 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	return urret;
 }
 
+template<::fast_io::details::my_integral T>
+inline constexpr std::size_t leb128_length_val{print_reserve_size_leb128_length<T>()};
+
+}
+
+template<std::integral char_type,::fast_io::details::my_integral T>
+inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
+	::fast_io::manipulators::basic_leb128_get_put<T>>) noexcept
+{
+	return ::fast_io::details::leb128_length_val<T>;
+}
+
 namespace details
 {
 
@@ -84,26 +98,20 @@ inline constexpr char_type* pr_rsv_leb128_impl(char_type* iter,T value) noexcept
 {
 	using unsigned_char_type =
 		::std::make_unsigned_t<char_type>;
-	if constexpr(::fast_io::details::my_unsigned_integral<T>)
+	for(;;++iter)
 	{
-		for(;;++iter)
+		unsigned_char_type temp{static_cast<unsigned_char_type>(value&0x7f)};
+		value >>= 7;
+		if constexpr(::fast_io::details::my_unsigned_integral<T>)
 		{
-			unsigned_char_type temp{static_cast<unsigned_char_type>(value&0x7f)};
-			value >>= 7;
 			if(!value)
 			{
 				*iter=temp;
 				return ++iter;
 			}
-			*iter=temp|0x80;
 		}
-	}
-	else
-	{
-		for(;;++iter)
+		else
 		{
-			unsigned_char_type temp{static_cast<unsigned_char_type>(value&0x7f)};
-			value >>= 7;
 			bool iszero{!value};
 			if(iszero|(value==-1))
 			{
@@ -114,8 +122,8 @@ inline constexpr char_type* pr_rsv_leb128_impl(char_type* iter,T value) noexcept
 					return ++iter;
 				}
 			}
-			*iter=temp|0x80;
 		}
+		*iter=static_cast<char_type>(static_cast<unsigned_char_type>(temp|0x80));
 	}
 }
 
