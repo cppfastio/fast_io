@@ -67,7 +67,8 @@ template<std::integral char_type,::fast_io::details::my_integral T>
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_leb128_get_put<T>>) noexcept
 {
-	constexpr std::size_t digits{std::numeric_limits<T>::digits + (::fast_io::details::my_signed_integral<T>)};
+	constexpr std::size_t digits{
+		::std::numeric_limits<char unsigned>::digits*sizeof(T)};
 	constexpr std::size_t seven{7};
 	constexpr std::size_t digitsdiv7{digits/seven};
 	constexpr bool notsevenmul{(digits%seven)!=0};
