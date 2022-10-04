@@ -3,10 +3,9 @@
 namespace fast_io::details::decay
 {
 
-template<bool line,typename ptr_type,typename T,typename... Args>
-inline constexpr ptr_type print_reserve_define_chain_impl(ptr_type p,T t,Args ...args)
+template<bool line,::std::integral char_type,typename T,typename... Args>
+inline constexpr char_type* print_reserve_define_chain_impl(char_type* p,T t,Args ...args)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<ptr_type>;
 	if constexpr(sizeof...(Args)==0)
 	{
 		p=print_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,p,t);
@@ -49,10 +48,9 @@ inline constexpr std::size_t calculate_scatter_dynamic_reserve_size_with_scatter
 	}
 }
 
-template<bool line,typename ptr_type,typename T,typename... Args>
-inline constexpr ptr_type print_reserve_define_chain_scatter_impl(ptr_type p,T t,Args ...args)
+template<bool line,::std::integral char_type,typename T,typename... Args>
+inline constexpr char_type* print_reserve_define_chain_scatter_impl(char_type* p,T t,Args ...args)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<ptr_type>;
 	if constexpr(dynamic_reserve_printable<char_type,T>||reserve_printable<char_type,T>)
 		p = print_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,p,t);
 	else

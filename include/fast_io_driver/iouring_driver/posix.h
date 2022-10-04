@@ -28,21 +28,21 @@ inline auto ensure_io_uring_sqe(io_uring_observer ring)
 
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline void async_write_callback(io_uring_observer ring,basic_posix_io_observer<char_type> piob,
 	Iter b,Iter e,io_uring_overlapped_observer callback,std::ptrdiff_t offset)
 {
 	auto sqe{details::ensure_io_uring_sqe(ring)};
-	io_uring_prep_write(sqe,piob.fd,::fast_io::freestanding::to_address(b),(e-b)*sizeof(*b),callback,offset);
+	io_uring_prep_write(sqe,piob.fd,::std::to_address(b),(e-b)*sizeof(*b),callback,offset);
 	io_uring_sqe_set_data(sqe,callback.native_handle());
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline void async_read_callback(io_uring_observer ring,basic_posix_io_observer<char_type> piob,
 	Iter b,Iter e,io_uring_overlapped_observer callback,std::ptrdiff_t offset)
 {
 	auto sqe{details::ensure_io_uring_sqe(ring)};
-	io_uring_prep_read(sqe,piob.fd,::fast_io::freestanding::to_address(b),(e-b)*sizeof(*b),callback,offset);
+	io_uring_prep_read(sqe,piob.fd,::std::to_address(b),(e-b)*sizeof(*b),callback,offset);
 	io_uring_sqe_set_data(sqe,callback.native_handle());
 }
 

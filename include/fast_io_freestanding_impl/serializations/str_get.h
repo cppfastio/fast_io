@@ -36,9 +36,8 @@ struct str_get_all_context
 	bool coping{};
 };
 
-template<::fast_io::freestanding::forward_iterator Iter,typename T>
-inline constexpr parse_result<Iter> scan_context_define_str_get_all_buffer_common_impl(Iter first,Iter last,
-	io_strlike_reference_wrapper<::fast_io::freestanding::iter_value_t<Iter>,T> output,std::size_t n)
+template<::std::integral char_type,typename T>
+inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_buffer_common_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,std::size_t n)
 {
 	auto bg{obuffer_begin(output)};
 	auto curr{obuffer_curr(output)};
@@ -57,25 +56,21 @@ inline constexpr parse_result<Iter> scan_context_define_str_get_all_buffer_commo
 	return {firstthen,(not_enough?(parse_code::partial):(parse_code::ok))};
 }
 
-template<::fast_io::freestanding::forward_iterator Iter,typename T>
-inline constexpr parse_result<Iter> scan_context_define_str_get_all_buffer_strlike_impl(Iter first,Iter last,
-	io_strlike_reference_wrapper<::fast_io::freestanding::iter_value_t<Iter>,T> output,std::size_t n,bool& ctx)
+template<::std::integral char_type,typename T>
+inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_buffer_strlike_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,std::size_t n,bool& ctx)
 {
 	if(!ctx)
 	{
 		obuffer_set_curr(output,obuffer_begin(output));
-		strlike_reserve(io_strlike_type<::fast_io::freestanding::iter_value_t<Iter>,T>,*output.ptr,n);
+		strlike_reserve(io_strlike_type<char_type,T>,*output.ptr,n);
 		ctx=true;
 	}
 	return scan_context_define_str_get_all_buffer_common_impl(first,last,output,n);
 }
 
-template<::fast_io::freestanding::forward_iterator Iter,typename T>
-inline constexpr parse_result<Iter> scan_context_define_str_get_all_general_strlike_impl(Iter first,Iter last,
-	io_strlike_reference_wrapper<::fast_io::freestanding::iter_value_t<Iter>,T> output,
-	std::size_t n,::fast_io::details::basic_concat_buffer<::fast_io::freestanding::iter_value_t<Iter>>& ctx)
+template<::std::integral char_type,typename T>
+inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_general_strlike_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,std::size_t n,::fast_io::details::basic_concat_buffer<char_type>& ctx)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	auto ret{scan_context_define_str_get_all_buffer_common_impl(first,last,io_strlike_ref(ctx),n)};
 	if(ret.code==parse_code::ok)
 	{
@@ -94,15 +89,15 @@ inline constexpr io_type_t<::std::conditional_t<::fast_io::buffer_strlike<char_t
 	return {};
 }
 
-template<::fast_io::freestanding::forward_iterator Iter,typename ctxtype,typename T>
-inline constexpr parse_result<Iter> scan_context_define(
-	io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,
-	::fast_io::manipulators::basic_str_get_all<io_strlike_reference_wrapper<::fast_io::freestanding::iter_value_t<Iter>,T>>>,
+template<::std::integral char_type,typename ctxtype,typename T>
+inline constexpr parse_result<char_type const*> scan_context_define(
+	io_reserve_type_t<char_type,
+	::fast_io::manipulators::basic_str_get_all<io_strlike_reference_wrapper<char_type,T>>>,
 	ctxtype& ctx,
-	Iter first,Iter last,
-	::fast_io::manipulators::basic_str_get_all<io_strlike_reference_wrapper<::fast_io::freestanding::iter_value_t<Iter>,T>> str)
+	char_type const* first,char_type const* last,
+	::fast_io::manipulators::basic_str_get_all<io_strlike_reference_wrapper<char_type,T>> str)
 {
-	if constexpr(::fast_io::buffer_strlike<::fast_io::freestanding::iter_value_t<Iter>,T>)
+	if constexpr(::fast_io::buffer_strlike<char_type,T>)
 	{
 		return ::fast_io::details::scan_context_define_str_get_all_buffer_strlike_impl(first,last,str.reference,str.n,ctx.coping);
 	}

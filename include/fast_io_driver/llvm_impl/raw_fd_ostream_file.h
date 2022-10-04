@@ -66,12 +66,12 @@ public:
 //windows specific. open posix file from win32 io handle
 	template<win32_family family>
 	basic_raw_fd_ostream_file(basic_win32_family_file<family,char_type>&& win32_handle,open_mode mode):
-		basic_raw_fd_ostream_file(basic_posix_file<char_type>(::fast_io::freestanding::move(win32_handle),mode),mode)
+		basic_raw_fd_ostream_file(basic_posix_file<char_type>(::std::move(win32_handle),mode),mode)
 	{
 	}
 	template<nt_family family>
 	basic_raw_fd_ostream_file(basic_nt_family_file<family,char_type>&& nt_handle,open_mode mode):
-		basic_raw_fd_ostream_file(basic_posix_file<char_type>(::fast_io::freestanding::move(nt_handle),mode),mode)
+		basic_raw_fd_ostream_file(basic_posix_file<char_type>(::std::move(nt_handle),mode),mode)
 	{
 	}
 #endif

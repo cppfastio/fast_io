@@ -139,12 +139,12 @@ public:
 //windows specific. open posix file from win32 io handle
 	template<win32_family family>
 	basic_gz_file(basic_win32_family_file<family,char_type>&& win32_handle,open_mode om):
-		basic_gz_file(basic_posix_file<char_type>(::fast_io::freestanding::move(win32_handle),om),to_native_c_mode(om))
+		basic_gz_file(basic_posix_file<char_type>(::std::move(win32_handle),om),to_native_c_mode(om))
 	{
 	}
 	template<nt_family family>
 	basic_gz_file(basic_nt_family_file<family,char_type>&& nt_handle,open_mode om):
-		basic_gz_file(basic_posix_file<char_type>(::fast_io::freestanding::move(nt_handle),om),to_native_c_mode(om))
+		basic_gz_file(basic_posix_file<char_type>(::std::move(nt_handle),om),to_native_c_mode(om))
 	{
 	}
 #endif
@@ -168,42 +168,42 @@ using gz_io_observer = basic_gz_io_observer<char>;
 using gz_file = basic_gz_file<char>;
 
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<char_type,::fast_io::freestanding::iter_value_t<Iter>>||std::same_as<char,char_type>)
+template<std::integral char_type,::std::contiguous_iterator Iter>
+requires (std::same_as<char_type,::std::iter_value_t<Iter>>||std::same_as<char,char_type>)
 inline Iter read(basic_gz_io_observer<char_type> giob,Iter b,Iter e)
 {
-	if constexpr(std::same_as<char_type,::fast_io::freestanding::iter_value_t<Iter>>)
+	if constexpr(std::same_as<char_type,::std::iter_value_t<Iter>>)
 	{
 		std::size_t to_read((e-b)*sizeof(*b));
 		if constexpr(sizeof(unsigned)<sizeof(std::size_t))
 			if(static_cast<std::size_t>(std::numeric_limits<unsigned>::max())<to_read)
 				to_read=std::numeric_limits<unsigned>::max();
-		int readed{gzread(giob.gzfile,::fast_io::freestanding::to_address(b),static_cast<unsigned>(to_read))};
+		int readed{gzread(giob.gzfile,::std::to_address(b),static_cast<unsigned>(to_read))};
 		if(readed==-1)
 			throw_posix_error();
 		return b+static_cast<std::size_t>(readed)/sizeof(*b);
 	}
 	else
-		return b+(read(giob,reinterpret_cast<char*>(::fast_io::freestanding::to_address(b)),reinterpret_cast<char*>(::fast_io::freestanding::to_address(e)))-reinterpret_cast<char*>(::fast_io::freestanding::to_address(b)))/sizeof(*b);
+		return b+(read(giob,reinterpret_cast<char*>(::std::to_address(b)),reinterpret_cast<char*>(::std::to_address(e)))-reinterpret_cast<char*>(::std::to_address(b)))/sizeof(*b);
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<char_type,::fast_io::freestanding::iter_value_t<Iter>>||std::same_as<char,char_type>)
+template<std::integral char_type,::std::contiguous_iterator Iter>
+requires (std::same_as<char_type,::std::iter_value_t<Iter>>||std::same_as<char,char_type>)
 inline Iter write(basic_gz_io_observer<char_type> giob,Iter b,Iter e)
 {
-	if constexpr(std::same_as<char_type,::fast_io::freestanding::iter_value_t<Iter>>)
+	if constexpr(std::same_as<char_type,::std::iter_value_t<Iter>>)
 	{
 		std::size_t to_write((e-b)*sizeof(*b));
 		if constexpr(sizeof(unsigned)<sizeof(std::size_t))
 			if(static_cast<std::size_t>(std::numeric_limits<unsigned>::max())<to_write)
 				to_write=std::numeric_limits<unsigned>::max();
-		int written{gzwrite(giob.gzfile,::fast_io::freestanding::to_address(b),static_cast<unsigned>(to_write))};
+		int written{gzwrite(giob.gzfile,::std::to_address(b),static_cast<unsigned>(to_write))};
 		if(written<0)
 			throw_posix_error();
 		return b+static_cast<std::size_t>(written)/sizeof(*b);
 	}
 	else
-		return b+(write(giob,reinterpret_cast<char const*>(::fast_io::freestanding::to_address(b)),reinterpret_cast<char const*>(::fast_io::freestanding::to_address(e)))-reinterpret_cast<char const*>(::fast_io::freestanding::to_address(b)))/sizeof(*b);
+		return b+(write(giob,reinterpret_cast<char const*>(::std::to_address(b)),reinterpret_cast<char const*>(::std::to_address(e)))-reinterpret_cast<char const*>(::std::to_address(b)))/sizeof(*b);
 }
 
 template<std::integral char_type>

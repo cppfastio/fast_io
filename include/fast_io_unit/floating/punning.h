@@ -116,10 +116,9 @@ struct iec559_rep
 	std::int_least32_t e;
 };
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prsv_fp_nan_impl(Iter iter,bool nan) noexcept
+template<bool uppercase,::std::integral char_type>
+inline constexpr char_type* prsv_fp_nan_impl(char_type* iter,bool nan) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if(nan)
 	{
 		if constexpr(uppercase)
@@ -180,10 +179,9 @@ inline constexpr Iter prsv_fp_nan_impl(Iter iter,bool nan) noexcept
 	}
 }
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prsv_fp_hex_0(Iter iter) noexcept
+template<bool uppercase,::std::integral char_type>
+inline constexpr char_type* prsv_fp_hex_0(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(uppercase)
 	{
 		if constexpr(std::same_as<char_type,char>)
@@ -212,10 +210,9 @@ inline constexpr Iter prsv_fp_hex_0(Iter iter) noexcept
 	}
 }
 
-template<bool comma=false,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prsv_fp_hex1d(Iter iter) noexcept
+template<bool comma=false,::std::integral char_type>
+inline constexpr char_type* prsv_fp_hex1d(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(comma)
 	{
 		if constexpr(std::same_as<char_type,char>)
@@ -244,10 +241,9 @@ inline constexpr Iter prsv_fp_hex1d(Iter iter) noexcept
 	}
 }
 
-template<bool comma=false,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prsv_fp_hex0d(Iter iter) noexcept
+template<bool comma=false,::std::integral char_type>
+inline constexpr char_type* prsv_fp_hex0d(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(comma)
 	{
 		if constexpr(std::same_as<char_type,char>)
@@ -276,10 +272,9 @@ inline constexpr Iter prsv_fp_hex0d(Iter iter) noexcept
 	}
 }
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prsv_fp_hex0p0(Iter iter) noexcept
+template<bool uppercase,::std::integral char_type>
+inline constexpr char_type* prsv_fp_hex0p0(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(uppercase)
 	{
 		if constexpr(std::same_as<char_type,char>)
@@ -308,10 +303,9 @@ inline constexpr Iter prsv_fp_hex0p0(Iter iter) noexcept
 	}
 }
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prsv_fp_dece0(Iter iter) noexcept
+template<bool uppercase,::std::integral char_type>
+inline constexpr char_type* prsv_fp_dece0(char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(uppercase)
 	{
 		if constexpr(std::same_as<char_type,char>)
@@ -390,10 +384,9 @@ inline constexpr punning_result<flt> get_punned_result(flt f) noexcept
 	return {unwrap&mantissa_mask,static_cast<std::uint_least32_t>((unwrap>>mbits)&exponent_mask),static_cast<bool>((unwrap>>total_bits)&1u)};
 }
 
-template<bool showpos,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_rsv_fp_sign_impl(Iter iter,bool sign) noexcept
+template<bool showpos,::std::integral char_type>
+inline constexpr char_type* print_rsv_fp_sign_impl(char_type* iter,bool sign) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(showpos)
 	{
 		*iter=sign?char_literal_v<u8'-',char_type>:char_literal_v<u8'+',char_type>;
@@ -410,21 +403,19 @@ inline constexpr Iter print_rsv_fp_sign_impl(Iter iter,bool sign) noexcept
 	return iter;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
+template<::std::integral char_type,my_unsigned_integral U>
 #if __has_cpp_attribute(__gnu__::__hot__)
 [[__gnu__::__hot__]]
 #endif
-inline constexpr Iter prt_rsv_hundred_flt_impl(Iter iter,U u) noexcept
+inline constexpr char_type* prt_rsv_hundred_flt_impl(char_type* iter,U u) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	constexpr auto tb{::fast_io::details::get_shared_inline_constexpr_base_table<char_type,10,false>().element};
 	return non_overlapped_copy_n(tb[u].element,2,iter);
 }
 
-template<std::size_t mxdigits,bool indent,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
-inline constexpr Iter prt_rsv_exponent_impl(Iter iter,U u) noexcept
+template<std::size_t mxdigits,bool indent,::std::integral char_type,my_unsigned_integral U>
+inline constexpr char_type* prt_rsv_exponent_impl(char_type* iter,U u) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if constexpr(mxdigits==0)
 		return iter;

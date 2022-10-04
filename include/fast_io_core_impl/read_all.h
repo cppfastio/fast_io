@@ -34,10 +34,10 @@ inline constexpr ::std::conditional_t<throweh,void,bool> read_all_impl_decay_col
 }
 
 #if 0
-template<typename char_type,::fast_io::freestanding::input_or_output_iterator output_iter>
+template<typename char_type,::std::input_or_output_iterator output_iter>
 inline output_iter type_punning_copy(char_type const* first,char_type const* last,output_iter result)
 {
-	using value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
+	using value_type = ::std::iter_value_t<output_iter>;
 	if constexpr(sizeof(value_type)==0)
 		return result;
 	else if constexpr(sizeof(value_type)==sizeof(char_type))
@@ -68,14 +68,14 @@ inline output_iter type_punning_copy(char_type const* first,char_type const* las
 	}
 }
 
-template<::fast_io::input_stream input,fast_io::freestanding::forward_iterator Iter>
+template<::fast_io::input_stream input,std::forward_iterator Iter>
 inline constexpr void read_all_impl_none_contiguous(input in,Iter first,Iter last)
 {
 	using char_type = typename input::char_type;
-	using iter_value_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using iter_value_type = ::std::iter_value_t<Iter>;
 	if constexpr(::fast_io::buffer_input_stream<input>)
 	{
-		auto to_read{::fast_io::freestanding::distance(first,last)};
+		auto to_read{::std::distance(first,last)};
 		for(;to_read;)
 		{
 			auto curr{ibuffer_curr(in)};
@@ -116,7 +116,7 @@ inline constexpr void read_all_impl_none_contiguous(input in,Iter first,Iter las
 	{
 		constexpr std::size_t buffer_size{512};
 		char_type buffer[buffer_size];
-		auto to_read{::fast_io::freestanding::distance(first,last)};
+		auto to_read{::std::distance(first,last)};
 		for(;to_read;)
 		{
 			std::size_t read_this_round{buffer_size};
@@ -152,22 +152,22 @@ inline constexpr void read_all_impl_decay(input in,typename input::char_type* fi
 	}
 }
 
-template<::fast_io::input_stream input,fast_io::freestanding::input_or_output_iterator Iter>
-requires std::same_as<typename input::char_type,char>||std::same_as<typename input::char_type,::fast_io::freestanding::iter_value_t<Iter>>
+template<::fast_io::input_stream input,std::input_or_output_iterator Iter>
+requires std::same_as<typename input::char_type,char>||std::same_as<typename input::char_type,::std::iter_value_t<Iter>>
 inline constexpr void read_all_impl(input in,Iter first,Iter last)
 {
-	using iter_char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using iter_char_type = ::std::iter_value_t<Iter>;
 #if 0
 	using char_type = typename input::char_type;
-	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>)
+	if constexpr(::std::contiguous_iterator<Iter>)
 	{
 		if constexpr(std::same_as<typename input::char_type,iter_char_type>)
 		{
-			read_all_impl_decay(in,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+			read_all_impl_decay(in,::std::to_address(first),::std::to_address(last));
 		}
 		else
 		{
-			read_all_impl_decay(in,reinterpret_cast<char*>(::fast_io::freestanding::to_address(first)),reinterpret_cast<char*>(::fast_io::freestanding::to_address(last)));
+			read_all_impl_decay(in,reinterpret_cast<char*>(::std::to_address(first)),reinterpret_cast<char*>(::std::to_address(last)));
 		}
 	}
 	else
@@ -179,21 +179,21 @@ inline constexpr void read_all_impl(input in,Iter first,Iter last)
 		}
 	}
 #else
-	static_assert(::fast_io::freestanding::contiguous_iterator<Iter>);
+	static_assert(::std::contiguous_iterator<Iter>);
 	if constexpr(std::same_as<typename input::char_type,iter_char_type>)
 	{
-		read_all_impl_decay(in,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+		read_all_impl_decay(in,::std::to_address(first),::std::to_address(last));
 	}
 	else
 	{
-		read_all_impl_decay(in,reinterpret_cast<char*>(::fast_io::freestanding::to_address(first)),reinterpret_cast<char*>(::fast_io::freestanding::to_address(last)));
+		read_all_impl_decay(in,reinterpret_cast<char*>(::std::to_address(first)),reinterpret_cast<char*>(::std::to_address(last)));
 	}
 #endif
 }
 
 }
 
-template<typename input,::fast_io::freestanding::forward_iterator Iter>
+template<typename input,::std::forward_iterator Iter>
 inline constexpr void read_all(input&& in,Iter first,Iter last)
 {
 	::fast_io::details::read_all_impl(io_ref(in),first,last);

@@ -21,12 +21,12 @@ struct match_context
 namespace details
 {
 
-template<::fast_io::freestanding::input_iterator Iter>
+template<::std::input_iterator Iter>
 inline
 #if __cpp_lib_is_constant_evaluated >= 201811
 constexpr
 #endif
-parse_result<Iter> match_context_impl(std::size_t& matched,Iter first,Iter last,::fast_io::freestanding::iter_value_t<Iter> const* base,std::size_t len) noexcept
+parse_result<Iter> match_context_impl(std::size_t& matched,Iter first,Iter last,::std::iter_value_t<Iter> const* base,std::size_t len) noexcept
 {
 	auto base_ed{base+len-matched};
 	auto [first_it,base_it]=::fast_io::freestanding::my_mismatch(first,last,base,base_ed);
@@ -49,8 +49,8 @@ inline constexpr io_type_t<match_context> scan_context_type(io_reserve_type_t<ch
 	return {};
 }
 
-template<::fast_io::freestanding::input_iterator Iter>
-inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,manipulators::basic_matcher_t<basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>>>>,match_context& ctx,Iter first,Iter last,manipulators::basic_matcher_t<basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>>> t) noexcept
+template<::std::input_iterator Iter>
+inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::std::iter_value_t<Iter>,manipulators::basic_matcher_t<basic_io_scatter_t<::std::iter_value_t<Iter>>>>,match_context& ctx,Iter first,Iter last,manipulators::basic_matcher_t<basic_io_scatter_t<::std::iter_value_t<Iter>>> t) noexcept
 {
 	return details::match_context_impl(ctx.matched,first,last,t.reference.base,t.reference.len);
 }

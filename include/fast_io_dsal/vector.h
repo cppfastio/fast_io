@@ -27,12 +27,10 @@
 #include<cstddef>
 #include<new>
 #include<initializer_list>
-#include"../fast_io_core_impl/freestanding/addressof.h"
-#include"../fast_io_core_impl/freestanding/relocatable.h"
+#include<bit>
+#include<compare>
+#include"../fast_io_core_impl/freestanding/impl.h"
 #include"../fast_io_core_impl/terminate.h"
-#include"../fast_io_core_impl/freestanding/iterator.h"
-#include"../fast_io_core_impl/freestanding/to_address.h"
-#include"../fast_io_core_impl/freestanding/algorithm.h"
 #include"../fast_io_core_impl/allocation/impl.h"
 
 #include"impl/vector.h"

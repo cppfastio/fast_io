@@ -299,9 +299,9 @@ struct posix_io_redirection_std:posix_io_redirection
 	template<typename T>
 	requires requires(T&& t)
 	{
-		{redirect(::fast_io::freestanding::forward<T>(t))}->std::same_as<posix_io_redirection>;
+		{redirect(::std::forward<T>(t))}->std::same_as<posix_io_redirection>;
 	}
-	constexpr posix_io_redirection_std(T&& t) noexcept:posix_io_redirection(redirect(::fast_io::freestanding::forward<T>(t))){}
+	constexpr posix_io_redirection_std(T&& t) noexcept:posix_io_redirection(redirect(::std::forward<T>(t))){}
 };
 
 struct posix_process_io
@@ -675,15 +675,15 @@ inline void posix_data_sync_flags_impl(int fd,data_sync_flags)
 
 }
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 [[nodiscard]] inline Iter read(basic_posix_io_observer<ch_type> h,Iter begin,Iter end)
 {
-	return begin+details::posix_read_impl(h.fd,::fast_io::freestanding::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
+	return begin+details::posix_read_impl(h.fd,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
 }
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_posix_io_observer<ch_type> h,Iter cbegin,Iter cend)
 {
-	return cbegin+details::posix_write_impl(h.fd,::fast_io::freestanding::to_address(cbegin),static_cast<std::size_t>(cend-cbegin)*sizeof(*cbegin))/sizeof(*cbegin);
+	return cbegin+details::posix_write_impl(h.fd,::std::to_address(cbegin),static_cast<std::size_t>(cend-cbegin)*sizeof(*cbegin))/sizeof(*cbegin);
 }
 
 template<std::integral ch_type>
@@ -945,7 +945,7 @@ template<std::integral ch_type,typename... Args>
 requires io_controllable<basic_win32_io_observer<ch_type>,Args...>
 inline decltype(auto) io_control(basic_posix_io_observer<ch_type> h,Args&& ...args)
 {
-	return io_control(static_cast<basic_win32_io_observer<ch_type>>(h),::fast_io::freestanding::forward<Args>(args)...);
+	return io_control(static_cast<basic_win32_io_observer<ch_type>>(h),::std::forward<Args>(args)...);
 }
 #else
 
@@ -958,14 +958,14 @@ extern int ioctl(int, long unsigned, ...) noexcept __asm__("ioctl");
 template<std::integral ch_type,typename... Args>
 requires requires(basic_posix_io_observer<ch_type> h,Args&& ...args)
 {
-	::fast_io::posix::ioctl(h.fd,::fast_io::freestanding::forward<Args>(args)...);
+	::fast_io::posix::ioctl(h.fd,::std::forward<Args>(args)...);
 }
 inline void io_control(basic_posix_io_observer<ch_type> h,Args&& ...args)
 {
 #if defined(__linux__) && defined(__NR_ioctl)
-	system_call_throw_error(system_call<__NR_ioctl,int>(h.fd,::fast_io::freestanding::forward<Args>(args)...));
+	system_call_throw_error(system_call<__NR_ioctl,int>(h.fd,::std::forward<Args>(args)...));
 #else
-	if(::fast_io::posix::ioctl(h.fd,::fast_io::freestanding::forward<Args>(args)...)==-1)
+	if(::fast_io::posix::ioctl(h.fd,::std::forward<Args>(args)...)==-1)
 		throw_posix_error();
 #endif
 }
@@ -1436,12 +1436,12 @@ public:
 	}
 };
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_posix_pipe<ch_type>& h,Iter begin,Iter end)
 {
 	return read(h.in(),begin,end);
 }
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_posix_pipe<ch_type>& h,Iter begin,Iter end)
 {
 	return write(h.out(),begin,end);
@@ -1844,16 +1844,16 @@ inline io_scatter_status_t posix_scatter_pwrite_impl(int fd,io_scatters_t sp,std
 #endif
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr Iter pread(basic_posix_io_observer<char_type> piob,Iter begin,Iter end,std::intmax_t offset)
 {
-	return begin+details::posix_pread_impl(piob.fd,::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
+	return begin+details::posix_pread_impl(piob.fd,::std::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr Iter pwrite(basic_posix_io_observer<char_type> piob,Iter begin,Iter end,std::intmax_t offset)
 {
-	return begin+details::posix_pwrite_impl(piob.fd,::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
+	return begin+details::posix_pwrite_impl(piob.fd,::std::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
 }
 #if !defined(__NEWLIB__) && (__BSD_VISIBLE || _BSD_SOURCE || _DEFAULT_SOURCE)
 template<std::integral ch_type>

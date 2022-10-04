@@ -170,13 +170,13 @@ inline pyobject_file strlike_construct_define(io_strlike_type_t<char,pyobject_fi
 template<typename... Args>
 inline pyobject_file concat_pyobject_file(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<false,char,pyobject_file>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<false,char,pyobject_file>(::std::forward<Args>(args)...);
 }
 
 template<typename... Args>
 inline pyobject_file concatln_pyobject_file(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<true,char,pyobject_file>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<true,char,pyobject_file>(::std::forward<Args>(args)...);
 }
 
 inline pyobject_file print_alias_define(io_alias_t,pyobject_io_observer pyiob) noexcept

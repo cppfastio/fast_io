@@ -23,7 +23,7 @@ public:
 	T callback;
 	template<typename... Args>
 	requires std::constructible_from<T,Args...>
-	constexpr io_uring_overlapped_derived(std::in_place_t,Args&& ...args):callback(::fast_io::freestanding::forward<Args>(args)...){}
+	constexpr io_uring_overlapped_derived(std::in_place_t,Args&& ...args):callback(::std::forward<Args>(args)...){}
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
@@ -74,12 +74,12 @@ public:
 	constexpr
 #endif
 	io_uring_overlapped(std::in_place_type_t<T>,Args&& ...args):
-		io_uring_overlapped_observer{new io_uring_overlapped_derived<T>(std::in_place,::fast_io::freestanding::forward<Args>(args)...)}{}
+		io_uring_overlapped_observer{new io_uring_overlapped_derived<T>(std::in_place,::std::forward<Args>(args)...)}{}
 	template<typename Func>
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
-	io_uring_overlapped(std::in_place_t,Func&& func):io_uring_overlapped(std::in_place_type<std::remove_cvref_t<Func>>,::fast_io::freestanding::forward<Func>(func)){}
+	io_uring_overlapped(std::in_place_t,Func&& func):io_uring_overlapped(std::in_place_type<std::remove_cvref_t<Func>>,::std::forward<Func>(func)){}
 
 	io_uring_overlapped(io_uring_overlapped const&)=delete;
 	io_uring_overlapped& operator=(io_uring_overlapped const&)=delete;

@@ -142,13 +142,13 @@ inline void nt_dbg_scatter_constant_write_impl(nt_dbg_carrier carr,io_scatter_t 
 
 }
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline void write(basic_nt_dbg<ch_type> d,Iter first,Iter last) noexcept
 {
-	constexpr bool is_wide{sizeof(ch_type)==2&&std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>};
+	constexpr bool is_wide{sizeof(ch_type)==2&&std::same_as<::std::iter_value_t<Iter>,ch_type>};
 	::fast_io::details::nt_dbg_write_impl<is_wide>({d.component_id,d.level},
-		reinterpret_cast<char const*>(::fast_io::freestanding::to_address(first)),
-		reinterpret_cast<char const*>(::fast_io::freestanding::to_address(last)));
+		reinterpret_cast<char const*>(::std::to_address(first)),
+		reinterpret_cast<char const*>(::std::to_address(last)));
 }
 
 template<std::size_t n,std::integral ch_type>

@@ -400,14 +400,14 @@ template<std::integral char_type>
 inline constexpr char_type const* find_lf_simd_impl(char_type const*,char_type const*) noexcept;
 }
 
-template<::fast_io::freestanding::forward_iterator Iter>
-requires (::std::integral<::fast_io::freestanding::iter_value_t<Iter>>)
+template<::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_lf(Iter first, Iter last)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
-	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>)
+	using char_type = ::std::iter_value_t<Iter>;
+	if constexpr(::std::contiguous_iterator<Iter>)
 	{
-		return ::fast_io::details::find_lf_simd_impl(::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last))-::fast_io::freestanding::to_address(first)+first;
+		return ::fast_io::details::find_lf_simd_impl(::std::to_address(first),::std::to_address(last))-::std::to_address(first)+first;
 	}
 	else
 	{
@@ -415,15 +415,17 @@ inline constexpr Iter find_lf(Iter first, Iter last)
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter find_non_c_space(Iter begin,Iter end)
+template<typename char_type>
+requires ::std::integral<::std::remove_const_t<char_type>>
+inline constexpr char_type* find_non_c_space(char_type* begin,char_type* end)
 {
 	for(;begin!=end&&fast_io::char_category::is_c_space(*begin);++begin);
 	return begin;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter find_c_space(Iter begin,Iter end)
+template<typename char_type>
+requires ::std::integral<::std::remove_const_t<char_type>>
+inline constexpr char_type* find_c_space(char_type* begin,char_type* end)
 {
 	for(;begin!=end&&!fast_io::char_category::is_c_space(*begin);++begin);
 	return begin;
@@ -433,8 +435,9 @@ inline constexpr Iter find_c_space(Iter begin,Iter end)
 deprecate this
 */
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter scan_skip_space(Iter begin, Iter end)
+template<typename char_type>
+requires ::std::integral<::std::remove_const_t<char_type>>
+inline constexpr char_type* scan_skip_space(char_type* begin, char_type* end)
 {
 	return find_non_c_space(begin,end);
 }

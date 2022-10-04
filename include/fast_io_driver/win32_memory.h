@@ -364,11 +364,11 @@ public:
 	}
 };
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 [[nodiscard]] inline Iter read(basic_win32_memory_io_observer<char_type>& iob,Iter begin,Iter end)
 {
 	std::size_t readed{};
-	if(!win32::ReadProcessMemory(iob.handle,bit_cast<void const*>(iob.base_addr),::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),__builtin_addressof(readed)))
+	if(!win32::ReadProcessMemory(iob.handle,bit_cast<void const*>(iob.base_addr),::std::to_address(begin),(end-begin)*sizeof(*begin),__builtin_addressof(readed)))
 		throw_win32_error();
 	iob.base_addr+=readed;
 	return begin+readed/sizeof(*begin);
@@ -380,12 +380,12 @@ template<std::integral char_type>
 	for(std::byte ch{};!win32::ReadProcessMemory(iob.handle,bit_cast<void const*>(iob.base_addr),__builtin_addressof(ch),1,__builtin_addressof(readed));++iob.base_addr);
 	return iob;
 }
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_win32_memory_io_observer<char_type>& iob,Iter begin,Iter end)
 {
 	std::size_t written{};
 	if(!win32::WriteProcessMemory(iob.handle,bit_cast<void*>(iob.base_addr),
-		::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),__builtin_addressof(written)))
+		::std::to_address(begin),(end-begin)*sizeof(*begin),__builtin_addressof(written)))
 		throw_win32_error();
 	iob.base_addr+=written;
 	return begin+written/sizeof(*begin);

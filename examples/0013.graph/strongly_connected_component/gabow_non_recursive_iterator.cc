@@ -105,6 +105,7 @@ int main()
 	}
 	ctx.run();
 	auto& component_graph{ctx.component_graph};
+	fast_io::u8obuf_file obf(u8"out.txt");
 	for(std::size_t i{},sz{component_graph.size()};i!=sz;++i)
 	{
 		print(obf,i,u8":");

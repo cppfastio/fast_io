@@ -306,10 +306,10 @@ inline void deal_with_kpr_common(basic_kpr<char_type> kpr,Args ...args)
 
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline void write(basic_kpr<char_type> kpr,Iter first,Iter last) noexcept
 {
-	details::linux_kpr_raw_write<false>(kpr.level,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+	details::linux_kpr_raw_write<false>(kpr.level,::std::to_address(first),::std::to_address(last));
 }
 
 template<std::integral ch_type>

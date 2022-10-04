@@ -26,13 +26,13 @@ inline ::ATL::CStringT<ch_type, traits_type> strlike_construct_define(io_strlike
 template<typename... Args>
 inline CString concat_atl_cstring(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<false,char,CString>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<false,char,CString>(::std::forward<Args>(args)...);
 }
 
 template<typename... Args>
 inline CString concatln_atl_cstring(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<true,char,CString>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<true,char,CString>(::std::forward<Args>(args)...);
 }
 
 }

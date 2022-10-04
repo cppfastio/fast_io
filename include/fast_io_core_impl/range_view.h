@@ -1,33 +1,33 @@
 ﻿#pragma once
 
 namespace fast_io {
-template <::std::integral ch_type, ::fast_io::freestanding::input_iterator It>
+template <::std::integral ch_type, ::std::input_iterator It>
 struct sized_range_view_t
 {
 	using char_type = ch_type;
 	using iterator = It;
-	using value_type = typename ::fast_io::freestanding::iterator_traits<It>::value_type;
+	using value_type = typename ::std::iterator_traits<It>::value_type;
 	basic_io_scatter_t<char_type> sep;
 	iterator begin;
 	::std::size_t size;
 };
-template <::std::integral char_type, ::fast_io::freestanding::input_iterator I>
+template <::std::integral char_type, ::std::input_iterator I>
 sized_range_view_t(basic_io_scatter_t<char_type>, I, ::std::size_t)->sized_range_view_t<char_type, I>;
 
-template <::std::integral ch_type, ::fast_io::freestanding::input_iterator It>
+template <::std::integral ch_type, ::std::input_iterator It>
 struct range_view_t
 {
 	using char_type = ch_type;
 	using iterator = It;
-	using value_type = typename ::fast_io::freestanding::iterator_traits<It>::value_type;
+	using value_type = typename ::std::iterator_traits<It>::value_type;
 	basic_io_scatter_t<char_type> sep;
 	iterator begin;
 	iterator end;
 };
-template <::std::integral char_type, ::fast_io::freestanding::input_iterator I>
+template <::std::integral char_type, ::std::input_iterator I>
 range_view_t(basic_io_scatter_t<char_type>, I, I)->range_view_t<char_type, I>;
 
-template <::std::integral char_type, ::fast_io::freestanding::input_iterator It>
+template <::std::integral char_type, ::std::input_iterator It>
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, sized_range_view_t<char_type, It>>, sized_range_view_t<char_type, It> t)
 {
 	if (t.size == 0) return 0;
@@ -44,7 +44,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, s
 		return retval;
 	}
 }
-template <::std::integral char_type, ::fast_io::freestanding::input_iterator It>
+template <::std::integral char_type, ::std::input_iterator It>
 inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type, sized_range_view_t<char_type, It>>, char_type* __restrict ptr, sized_range_view_t<char_type, It> t)
 {
 	if (t.size == 0) return ptr;
@@ -61,7 +61,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type, si
 	return ptr;
 }
 
-template <::std::integral char_type, ::fast_io::freestanding::input_iterator It, output_stream output>
+template <::std::integral char_type, ::std::input_iterator It, output_stream output>
 inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<char_type, It>>, output out, range_view_t<char_type, It> t)
 {
 	if (t.begin == t.end) return;
@@ -73,7 +73,6 @@ inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<cha
 	}
 }
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
 namespace details {
 template <typename char_type, typename rg>
 concept dynamic_reserve_printable_range = ::std::integral<char_type> &&
@@ -124,5 +123,4 @@ inline constexpr auto rgvw(rg&& r, char_type const (&sep)[2])
 }
 
 }
-#endif
 }
