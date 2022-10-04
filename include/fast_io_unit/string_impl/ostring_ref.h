@@ -41,9 +41,10 @@ namespace details
 template<std::integral char_type,typename size_type>
 struct empty_string_set_ptr
 {
-	constexpr std::size_t operator()(char_type const*,size_type n) noexcept
+	std::size_t realsize{};
+	inline constexpr std::size_t operator()(char_type const*,size_type n) noexcept
 	{
-		return n;
+		return realsize;
 	}
 };
 
