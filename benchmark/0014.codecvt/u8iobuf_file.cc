@@ -5,7 +5,7 @@
 
 int main()
 {
-	constexpr std::size_t N(10000);
+	constexpr std::size_t N(1000000);
 	{
 		fast_io::timer t(u8"output");
 		fast_io::u8obuf_file obf(u8"u8iobuf_file.txt");
