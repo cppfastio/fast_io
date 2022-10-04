@@ -145,6 +145,12 @@ inline constexpr basic_os_not_c_str_n<char_type> os_not_c_str_n(char_type const*
 	return {cstr,n};
 }
 
+template<std::integral char_type>
+inline constexpr basic_os_not_c_str_n<char_type> os_not_c_str_n(char_type const* cstr, char_type const* end) noexcept
+{
+	return {cstr,end-cstr};
+}
+
 inline constexpr void os_not_c_str_n(decltype(nullptr),std::size_t)=delete;
 
 }

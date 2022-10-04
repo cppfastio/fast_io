@@ -27,6 +27,7 @@
 #include<cstddef>
 #include<new>
 #include<initializer_list>
+#include<bit>
 #include<compare>
 #include"../fast_io_core_impl/freestanding/impl.h"
 #include"../fast_io_core_impl/terminate.h"

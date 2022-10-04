@@ -21,15 +21,15 @@ struct basic_http_header_buffer
 	}
 	inline constexpr ::fast_io::manipulators::basic_os_not_c_str_n<char_type> request() const noexcept
 	{
-		return ::fast_io::manipulators::basic_os_not_c_str_n<char_type>(buffer,buffer+http_request_end_location);
+		return ::fast_io::manipulators::os_not_c_str_n<char_type>(buffer,buffer+http_request_end_location);
 	}
 	inline constexpr ::fast_io::manipulators::basic_os_not_c_str_n<char_type> code() const noexcept
 	{
-		return ::fast_io::manipulators::basic_os_not_c_str_n<char_type>(buffer+http_status_code_start_location,buffer+http_status_code_end_location);
+		return ::fast_io::manipulators::os_not_c_str_n<char_type>(buffer+http_status_code_start_location,buffer+http_status_code_end_location);
 	}
 	inline constexpr ::fast_io::manipulators::basic_os_not_c_str_n<char_type> reason() const noexcept
 	{
-		return ::fast_io::manipulators::basic_os_not_c_str_n<char_type>(buffer+http_status_reason_start_location,buffer+http_status_reason_end_location);
+		return ::fast_io::manipulators::os_not_c_str_n<char_type>(buffer+http_status_reason_start_location,buffer+http_status_reason_end_location);
 	}
 };
 
