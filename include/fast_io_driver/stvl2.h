@@ -495,7 +495,7 @@ inline constexpr std::size_t constexpr_stvl2_u8strlen(char8_t const* strlen) noe
 
 template<::std::integral char_type>
 inline constexpr char_type* deal_with_stvl2_cstr(char_type* iter,char8_t const* u8cstr) noexcept
-{\
+{
 	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	if constexpr(sizeof(char_type)==1&&!ebcdic)
 		return non_overlapped_copy_n(u8cstr,constexpr_stvl2_u8strlen(u8cstr),iter);
