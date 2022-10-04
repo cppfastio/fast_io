@@ -93,7 +93,7 @@ inline constexpr ::fast_io::freestanding::array<fast_io::uint128_t,2> compute_po
 */
 
 
-template<::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral mantissaType>
+template<::std::random_access_iterator Iter,my_unsigned_integral mantissaType>
 inline constexpr auto easy_case(Iter result,bool sign, mantissaType const& mantissa)
 {
 	if (mantissa)
@@ -127,7 +127,7 @@ inline constexpr unrep<mantissaType,exponentType> init_rep(mantissaType const& m
 	}
 }
 
-template<bool uppercase_e=false,bool four_digits=false,std::signed_integral T,::fast_io::freestanding::random_access_iterator Iter>
+template<bool uppercase_e=false,bool four_digits=false,std::signed_integral T,::std::random_access_iterator Iter>
 requires std::same_as<T,std::int_least32_t>
 inline constexpr Iter output_exp(T exp,Iter result)
 {
@@ -205,7 +205,7 @@ inline constexpr Iter output_exp(T exp,Iter result)
 #endif
 }
 
-template<char32_t dec,bool scientific = false,bool uppercase_e=false,::fast_io::freestanding::random_access_iterator Iter,std::floating_point F>
+template<char32_t dec,bool scientific = false,bool uppercase_e=false,::std::random_access_iterator Iter,std::floating_point F>
 inline constexpr auto output_fixed(Iter result, F d,std::size_t precision)
 {
 	using floating_trait = floating_traits<F>;

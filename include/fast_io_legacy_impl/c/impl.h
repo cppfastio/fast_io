@@ -739,7 +739,7 @@ template<c_family family,std::integral ch_type,typename... Args>
 requires io_controllable<basic_posix_io_observer<ch_type>,Args...>
 inline decltype(auto) io_control(basic_c_family_io_observer<family,ch_type> h,Args&& ...args)
 {
-	return io_control(static_cast<basic_posix_io_observer<ch_type>>(h),::fast_io::freestanding::forward<Args>(args)...);
+	return io_control(static_cast<basic_posix_io_observer<ch_type>>(h),::std::forward<Args>(args)...);
 }
 #endif
 
@@ -972,12 +972,12 @@ public:
 //windows specific. open posix file from win32 io handle
 	template<win32_family wfamily>
 	basic_c_family_file(basic_win32_family_file<wfamily,char_type>&& win32_handle,open_mode om):
-		basic_c_family_file(basic_posix_file<char_type>(::fast_io::freestanding::move(win32_handle),om),om)
+		basic_c_family_file(basic_posix_file<char_type>(::std::move(win32_handle),om),om)
 	{
 	}
 	template<nt_family nfamily>
 	basic_c_family_file(basic_nt_family_file<nfamily,char_type>&& nt_handle,open_mode om):
-		basic_c_family_file(basic_posix_file<char_type>(::fast_io::freestanding::move(nt_handle),om),om)
+		basic_c_family_file(basic_posix_file<char_type>(::std::move(nt_handle),om),om)
 	{
 	}
 #endif

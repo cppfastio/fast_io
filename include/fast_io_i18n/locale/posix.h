@@ -212,7 +212,7 @@ requires (std::is_lvalue_reference_v<stm>||std::is_trivially_copyable_v<stm>)
 inline constexpr auto imbue(posix_l10n& loc,stm&& out) noexcept
 {
 	using char_type = typename std::remove_cvref_t<stm>::char_type;
-	return imbue(get_all<char_type>(loc.loc),::fast_io::freestanding::forward<stm>(out));
+	return imbue(get_all<char_type>(loc.loc),::std::forward<stm>(out));
 }
 
 using native_l10n = posix_l10n;

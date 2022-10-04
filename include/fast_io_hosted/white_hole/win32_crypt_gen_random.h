@@ -66,17 +66,17 @@ inline std::size_t win32_crypt_gen_random_read(std::uintptr_t hprov,void* ptr,st
 
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_win32_crypt_gen_random_io_observer<char_type> hp,Iter bg,Iter ed)
 {
 	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
 	{
-		auto ret{win32::details::win32_crypt_gen_random_read(hp.hprov,::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
+		auto ret{win32::details::win32_crypt_gen_random_read(hp.hprov,::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
 		return bg+(ret/sizeof(*bg));
 	}
 	else
 	{
-		win32::details::win32_crypt_gen_random_read_u32(hp.hprov,::fast_io::freestanding::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg));
+		win32::details::win32_crypt_gen_random_read_u32(hp.hprov,::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg));
 		return ed;
 	}
 }

@@ -92,7 +92,7 @@ struct unget_temp_buffer
 #endif
 };
 
-template<input_stream T,::fast_io::freestanding::input_or_output_iterator Iter>
+template<input_stream T,::std::input_or_output_iterator Iter>
 inline constexpr Iter read(unget_temp_buffer<T>& in,Iter begin, Iter end)
 {
 	if(begin==end)

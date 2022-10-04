@@ -23,13 +23,13 @@ inline ::winrt::hstring strlike_construct_define(io_strlike_type_t<wchar_t,::win
 template<typename... Args>
 inline ::winrt::hstring wconcat_winrt_hstring(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<false,wchar_t,::winrt::hstring>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<false,wchar_t,::winrt::hstring>(::std::forward<Args>(args)...);
 }
 
 template<typename... Args>
 inline ::winrt::hstring wconcatln_winrt_hstring(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<true,wchar_t,::winrt::hstring>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<true,wchar_t,::winrt::hstring>(::std::forward<Args>(args)...);
 }
 
 }

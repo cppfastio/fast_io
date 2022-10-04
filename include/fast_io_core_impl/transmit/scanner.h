@@ -142,25 +142,25 @@ struct basic_scanner_context_iterator
 };
 
 template<typename T>
-inline constexpr bool operator==(basic_scanner_context_iterator<T> it,::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator==(basic_scanner_context_iterator<T> it,::std::default_sentinel_t) noexcept
 {
 	return it.ptr==nullptr;
 }
 
 template<typename T>
-inline constexpr bool operator!=(basic_scanner_context_iterator<T> it,::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator!=(basic_scanner_context_iterator<T> it,::std::default_sentinel_t) noexcept
 {
 	return it.ptr!=nullptr;
 }
 
 template<typename T>
-inline constexpr bool operator==(::fast_io::freestanding::default_sentinel_t,basic_scanner_context_iterator<T> it) noexcept
+inline constexpr bool operator==(::std::default_sentinel_t,basic_scanner_context_iterator<T> it) noexcept
 {
 	return it.ptr==nullptr;
 }
 
 template<typename T>
-inline constexpr bool operator!=(::fast_io::freestanding::default_sentinel_t,basic_scanner_context_iterator<T> it) noexcept
+inline constexpr bool operator!=(::std::default_sentinel_t,basic_scanner_context_iterator<T> it) noexcept
 {
 	return it.ptr!=nullptr;
 }
@@ -195,7 +195,7 @@ struct basic_scanner_context
 	{
 		return ++iterator{this};
 	}
-	inline constexpr ::fast_io::freestanding::default_sentinel_t end() const noexcept
+	inline constexpr ::std::default_sentinel_t end() const noexcept
 	{
 		return {};
 	}
@@ -242,7 +242,7 @@ struct basic_scanner_context_mutex
 	{
 		return ++iterator{this};
 	}
-	inline constexpr ::fast_io::freestanding::default_sentinel_t end() const noexcept
+	inline constexpr ::std::default_sentinel_t end() const noexcept
 	{
 		return {};
 	}

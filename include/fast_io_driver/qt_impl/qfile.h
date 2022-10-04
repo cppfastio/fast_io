@@ -103,11 +103,11 @@ public:
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	template<win32_family family>
 	basic_qt_file(basic_win32_family_file<family,ch_type>&& wioh,open_mode mode):
-		basic_qt_file(basic_posix_file<ch_type>(::fast_io::freestanding::move(wioh),mode),mode)
+		basic_qt_file(basic_posix_file<ch_type>(::std::move(wioh),mode),mode)
 	{}
 	template<nt_family family>
 	basic_qt_file(basic_nt_family_file<family,ch_type>&& wioh,open_mode mode):
-		basic_qt_file(basic_posix_file<ch_type>(::fast_io::freestanding::move(wioh),mode),mode)
+		basic_qt_file(basic_posix_file<ch_type>(::std::move(wioh),mode),mode)
 	{}
 #endif
 	basic_qt_file(native_fs_dirent fsdirent,open_mode om,perms pm=static_cast<perms>(436)):

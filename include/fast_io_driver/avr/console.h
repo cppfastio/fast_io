@@ -66,7 +66,7 @@ inline constexpr basic_avr_console<char_type> io_value_handle(basic_avr_console<
 template<std::integral char_type,std::contiguous_iterator Iter>
 inline void write(basic_avr_console<char_type>,Iter first,Iter last) noexcept
 {
-	avr_usart_console_write(reinterpret_cast<char const*>(::fast_io::freestanding::to_address(first)),reinterpret_cast<char const*>(::fast_io::freestanding::to_address(last)));
+	avr_usart_console_write(reinterpret_cast<char const*>(::std::to_address(first)),reinterpret_cast<char const*>(::std::to_address(last)));
 }
 
 template<std::integral char_type>

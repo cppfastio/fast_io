@@ -54,7 +54,7 @@ inline constexpr auto external_decorator(basic_decorators<char_type,internaltype
 namespace details
 {
 
-template<typename T,typename decot,::fast_io::freestanding::random_access_iterator Iter>
+template<typename T,typename decot,::std::random_access_iterator Iter>
 inline constexpr void write_with_deco(T t,decot deco,Iter first,Iter last,
 	basic_io_buffer_pointers_no_curr<typename T::char_type>& external_buffer,
 	std::size_t buffer_size)
@@ -119,7 +119,7 @@ concept has_external_decorator_impl = requires(decorators_type&& decos)
 template<typename handle_type,typename... Args>
 concept iobuffer_reopenable_impl =  requires(handle_type handle,Args&& ...args)
 {
-	handle.reopen(::fast_io::freestanding::forward<Args>(args)...);
+	handle.reopen(::std::forward<Args>(args)...);
 };
 
 }
@@ -304,13 +304,13 @@ public:
 	constexpr basic_io_buffer()=default;
 	template<typename... Args>
 	requires (((mode&buffer_mode::construct_decorator)!=buffer_mode::construct_decorator)&&std::constructible_from<handle_type,Args...>)
-	explicit constexpr basic_io_buffer(Args&& ...args):handle(::fast_io::freestanding::forward<Args>(args)...){}
+	explicit constexpr basic_io_buffer(Args&& ...args):handle(::std::forward<Args>(args)...){}
 
 	template<typename... Args>
 	requires (((mode&buffer_mode::construct_decorator)==buffer_mode::construct_decorator)
 	&&std::constructible_from<handle_type,Args...>)
-	explicit constexpr basic_io_buffer(decorators_type&& decos,Args&& ...args):handle(::fast_io::freestanding::forward<Args>(args)...),
-		decorators(::fast_io::freestanding::move(decos)){}
+	explicit constexpr basic_io_buffer(decorators_type&& decos,Args&& ...args):handle(::std::forward<Args>(args)...),
+		decorators(::std::move(decos)){}
 
 	constexpr basic_io_buffer(basic_io_buffer const& other) requires std::copyable<handle_type>:handle(other.handle),decorators(other.decorators){}
 	constexpr basic_io_buffer(basic_io_buffer const&)=delete;
@@ -337,9 +337,9 @@ public:
 		if constexpr((mode&buffer_mode::out)==buffer_mode::out)
 			obuffer.buffer_curr=obuffer.buffer_begin;
 		if constexpr(details::iobuffer_reopenable_impl<handle_type,Args...>)
-			handle.reopen(::fast_io::freestanding::forward<Args>(args)...);
+			handle.reopen(::std::forward<Args>(args)...);
 		else
-			handle=handle_type(::fast_io::freestanding::forward<Args>(args)...);
+			handle=handle_type(::std::forward<Args>(args)...);
 	}
 	constexpr void close() requires requires()
 	{
@@ -357,7 +357,7 @@ public:
 	constexpr basic_io_buffer(basic_io_buffer&& other) noexcept requires(std::movable<handle_type>):
 		ibuffer(other.ibuffer),obuffer(other.obuffer),
 		ibuffer_external(other.ibuffer_external),obuffer_external(other.obuffer_external),
-		handle(::fast_io::freestanding::move(other.handle)),decorators(::fast_io::freestanding::move(other.decorators))
+		handle(::std::move(other.handle)),decorators(::std::move(other.decorators))
 	{
 		other.ibuffer={};
 		other.obuffer={};
@@ -381,8 +381,8 @@ public:
 		other.ibuffer_external={};
 		obuffer_external=other.obuffer_external;
 		other.obuffer_external={};
-		handle=::fast_io::freestanding::move(other.handle);
-		decorators=::fast_io::freestanding::move(other.decorators);
+		handle=::std::move(other.handle);
+		decorators=::std::move(other.decorators);
 		return *this;
 	}
 	constexpr basic_io_buffer& operator=(basic_io_buffer&& __restrict)=delete;

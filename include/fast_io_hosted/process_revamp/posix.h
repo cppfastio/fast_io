@@ -53,7 +53,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,posi
 		+sizeof(u8" native_code:")+print_reserve_size(io_reserve_type<char_type,int>);
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr Iter print_reserve_define(io_reserve_type_t<char_type,posix_wait_status>,Iter iter,posix_wait_status pws) noexcept
 {
 	if constexpr(std::same_as<char_type,char>)
@@ -319,7 +319,7 @@ struct temp_array_scoped_ptr
 	}
 };
 
-template<::fast_io::freestanding::forward_iterator Iter>
+template<::std::forward_iterator Iter>
 inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 //	constexpr
@@ -327,7 +327,7 @@ inline
 char const* const* dup_enviro_impl_with_size(Iter begin,Iter end,std::size_t size)
 {
 	temp_array_scoped_ptr<char const*> uptr(size+1);
-	if constexpr(requires(::fast_io::freestanding::iter_value_t<Iter> v)
+	if constexpr(requires(::std::iter_value_t<Iter> v)
 	{
 		{v.c_str()}->std::convertible_to<char const*>;
 	})
@@ -344,25 +344,25 @@ char const* const* dup_enviro_impl_with_size(Iter begin,Iter end,std::size_t siz
 	return uptr.release();
 }
 
-template<::fast_io::freestanding::forward_iterator Iter>
+template<::std::forward_iterator Iter>
 inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
 char const* const* dup_enviro_impl(Iter begin,Iter end)
 {
-	return dup_enviro_impl_with_size(begin,end,static_cast<std::size_t>(::fast_io::freestanding::distance(begin,end)));
+	return dup_enviro_impl_with_size(begin,end,static_cast<std::size_t>(::std::distance(begin,end)));
 }
 
-template<::fast_io::freestanding::forward_iterator Iter>
+template<::std::forward_iterator Iter>
 inline 
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
 char const* const* dup_enviro_entry(Iter begin,Iter end)
 {
-	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>)
-		return dup_enviro_impl(::fast_io::freestanding::to_address(begin),::fast_io::freestanding::to_address(end));
+	if constexpr(::std::contiguous_iterator<Iter>)
+		return dup_enviro_impl(::std::to_address(begin),::std::to_address(end));
 	else
 		return dup_enviro_impl(begin,end);
 }
@@ -374,8 +374,8 @@ struct posix_process_args
 	char const* const* args{};
 	bool is_dynamic_allocated{};
 	constexpr posix_process_args(char const* const* envir) noexcept:args(envir){}
-	template<::fast_io::freestanding::forward_iterator Iter>
-	requires (std::convertible_to<::fast_io::freestanding::iter_value_t<Iter>,char const*>||requires(::fast_io::freestanding::iter_value_t<Iter> v)
+	template<::std::forward_iterator Iter>
+	requires (std::convertible_to<::std::iter_value_t<Iter>,char const*>||requires(::std::iter_value_t<Iter> v)
 	{
 		{v.c_str()}->std::convertible_to<char const*>;
 	})

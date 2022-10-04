@@ -67,11 +67,11 @@ inline constexpr basic_os_c_str_n<char_type> os_c_str_arr(char_type const (&cstr
 template<std::integral T>
 inline constexpr void os_c_str(decltype(nullptr),std::size_t) noexcept=delete;
 
-template<::fast_io::freestanding::contiguous_iterator Iter>
-requires ::std::integral<::fast_io::freestanding::iter_value_t<Iter>>
-inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::fast_io::freestanding::iter_value_t<Iter>>> strvw(Iter first,Iter last) noexcept
+template<::std::contiguous_iterator Iter>
+requires ::std::integral<::std::iter_value_t<Iter>>
+inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::iter_value_t<Iter>>> strvw(Iter first,Iter last) noexcept
 {
-	return {::fast_io::freestanding::to_address(first),static_cast<std::size_t>(last-first)};
+	return {::std::to_address(first),static_cast<std::size_t>(last-first)};
 }
 #if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
 template<::std::ranges::contiguous_range rg>

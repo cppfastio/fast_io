@@ -81,7 +81,7 @@ namespace details
 {
 
 
-template<typename T,::fast_io::freestanding::random_access_iterator Iter>
+template<typename T,::std::random_access_iterator Iter>
 inline constexpr Iter iobuf_read_unhappy_impl(T& bios,Iter first,Iter last)
 {
 	if constexpr(((T::mode&buffer_mode::out)==buffer_mode::out)&&((T::mode&buffer_mode::tie)==buffer_mode::tie))
@@ -111,18 +111,18 @@ inline constexpr Iter iobuf_read_unhappy_impl(T& bios,Iter first,Iter last)
 template<stream handletype,
 buffer_mode mde,
 typename decorators,
-std::size_t bfs,::fast_io::freestanding::random_access_iterator Iter>
+std::size_t bfs,::std::random_access_iterator Iter>
 requires (((mde&buffer_mode::in)==buffer_mode::in)&&details::allow_iobuf_punning<typename decorators::internal_type,Iter>)
 [[nodiscard]]
 inline constexpr Iter read(basic_io_buffer<handletype,mde,decorators,bfs>& bios,Iter first,Iter last)
 {
-	using iter_char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using iter_char_type = ::std::iter_value_t<Iter>;
 	using char_type = typename decorators::internal_type;
 	if constexpr(std::same_as<iter_char_type,char_type>)
 	{
-		if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>&&!std::is_pointer_v<Iter>)
+		if constexpr(::std::contiguous_iterator<Iter>&&!std::is_pointer_v<Iter>)
 		{
-			return first+(read(bios,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last))-::fast_io::freestanding::to_address(first));
+			return first+(read(bios,::std::to_address(first),::std::to_address(last))-::std::to_address(first));
 		}
 		else
 		{
@@ -137,9 +137,9 @@ inline constexpr Iter read(basic_io_buffer<handletype,mde,decorators,bfs>& bios,
 	}
 	else
 	{
-		auto newb{reinterpret_cast<char*>(::fast_io::freestanding::to_address(first))};
+		auto newb{reinterpret_cast<char*>(::std::to_address(first))};
 		auto ret{read(bios,newb,
-			reinterpret_cast<char*>(::fast_io::freestanding::to_address(last)))};
+			reinterpret_cast<char*>(::std::to_address(last)))};
 		return first+static_cast<std::size_t>(ret-newb)/sizeof(*first);
 	}
 }

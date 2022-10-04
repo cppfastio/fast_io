@@ -3,7 +3,7 @@
 namespace fast_io::details
 {
 
-template<typename T,typename decot,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<typename T,typename decot,std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr void iobuf_write_unhappy_decay_no_alloc_impl_deco(T t,decot deco,
 	basic_io_buffer_pointers<char_type>& pointers,
 	basic_io_buffer_pointers_no_curr<typename T::char_type>& external_buffer,
@@ -22,7 +22,7 @@ inline constexpr void iobuf_write_unhappy_decay_no_alloc_impl_deco(T t,decot dec
 		pointers.buffer_curr=non_overlapped_copy_n(first,new_remain_space,pointers.buffer_begin);
 
 }
-template<std::size_t buffer_size,typename T,typename decot,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<std::size_t buffer_size,typename T,typename decot,std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr void iobuf_write_unhappy_decay_impl_deco(
 	T t,decot deco,
 	basic_io_buffer_pointers<char_type>& pointers,

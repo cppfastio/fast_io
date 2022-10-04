@@ -98,14 +98,13 @@ inline ::fast_io::manipulators::auto_indent_t<char_type,containe>
 	for(auto e : cont)
 		total_length=intrinsics::add_or_overflow_die_chain(total_length,e,static_cast<std::size_t>(1));
 	total_length=intrinsics::mul_or_overflow_die(total_length,lines);
-	return {total_length,first2,last,::fast_io::freestanding::move(cont)};
+	return {total_length,first2,last,::std::move(cont)};
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,typename containe>
-inline constexpr Iter print_reserve_define_auto_indent(Iter iter,
-	::fast_io::manipulators::auto_indent_t<::fast_io::freestanding::iter_value_t<Iter>,containe> const& indent) noexcept
+template<::std::integral char_type,typename containe>
+inline constexpr char_type* print_reserve_define_auto_indent(char_type* iter,
+	::fast_io::manipulators::auto_indent_t<char_type,containe> const& indent) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	constexpr auto slasht{get_horizontal_exec_char<char_type>()};
 	constexpr auto lf{get_horizontal_exec_char<char_type,1>()};
 	constexpr auto space{get_horizontal_exec_char<char_type,2>()};
@@ -155,11 +154,11 @@ inline constexpr std::size_t print_reserve_size(
 	return indent.total_size;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,typename containe>
+template<::std::integral char_type,typename containe>
 inline constexpr Iter print_reserve_define(
-	io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,auto_indent_t<::fast_io::freestanding::iter_value_t<Iter>,containe>>,
+	io_reserve_type_t<char_type,auto_indent_t<char_type,containe>>,
 	Iter iter,
-	auto_indent_t<::fast_io::freestanding::iter_value_t<Iter>,containe> const& indent) noexcept
+	auto_indent_t<char_type,containe> const& indent) noexcept
 {
 	return ::fast_io::details::print_reserve_define_auto_indent(iter,indent);
 }

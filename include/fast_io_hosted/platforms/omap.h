@@ -32,10 +32,10 @@ inline constexpr void omemory_map_write_impl(basic_omemory_map<char_type>& bomp,
 }
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 constexpr void write(basic_omemory_map<char_type>& bomp,Iter begin,Iter end) noexcept
 {
-	details::omemory_map_write_impl(bomp,::fast_io::freestanding::to_address(begin),::fast_io::freestanding::to_address(end));
+	details::omemory_map_write_impl(bomp,::std::to_address(begin),::std::to_address(end));
 }
 
 template<std::integral char_type>
@@ -81,7 +81,7 @@ public:
 	constexpr basic_imemory_map(native_memory_map_file const& iob,std::size_t offset=0):begin_ptr(reinterpret_cast<char_type*>(iob.address_begin+offset)),curr_ptr(this->begin_ptr),end_ptr(this->begin_ptr+iob.size()/sizeof(char_type)){}
 };
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 constexpr Iter read(basic_imemory_map<char_type>& bomp,Iter begin,Iter end) noexcept
 {
 	std::size_t to_read(end-begin);

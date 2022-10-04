@@ -4,7 +4,7 @@ namespace fast_io::details::jiaendu::fp
 {
 
 //this is only use for floating point formatting
-template<char8_t start=u8'0',::fast_io::freestanding::contiguous_iterator Iter,my_unsigned_integral U>
+template<char8_t start=u8'0',::std::contiguous_iterator Iter,my_unsigned_integral U>
 requires (sizeof(U)==4||sizeof(U)==8||sizeof(U)==16)
 inline std::size_t output_unsigned(Iter str,U value)
 {

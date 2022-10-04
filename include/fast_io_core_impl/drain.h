@@ -14,7 +14,7 @@ constexpr basic_io_scatter_t<typename std::remove_cvref_t<source_type>::char_typ
 template<output_stream dest_type,output_stream source_type>
 inline constexpr void drain(dest_type&& dest,source_type&& source)
 {
-	print_freestanding(::fast_io::freestanding::forward<dest_type>(dest),drainage(source));
+	print_freestanding(::std::forward<dest_type>(dest),drainage(source));
 }
 
 

@@ -10,24 +10,22 @@ Time output should strictly following ISO 8601
 namespace fast_io::details
 {
 
-template<bool unchecked=false,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
-inline constexpr Iter chrono_one_digit_impl(Iter it,U uv) noexcept
+template<bool unchecked=false,::std::integral char_type,my_unsigned_integral U>
+inline constexpr char_type* chrono_one_digit_impl(char_type* it,U uv) noexcept
 {
 	if constexpr(!unchecked)
 	{
 		if(10u<=uv)[[unlikely]]
 			return print_reserve_integral_define<10>(it,uv);
 	}
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	*it=static_cast<char_type>(uv+char_literal_v<u8'0',char_type>);
 	++it;
 	return it;
 }
 
-template<bool unchecked=false,bool transparent=false,::fast_io::freestanding::random_access_iterator Iter,my_integral I>
-inline constexpr Iter chrono_two_digits_impl(Iter it,I i) noexcept
+template<bool unchecked=false,bool transparent=false,::std::integral char_type,my_integral I>
+inline constexpr char_type* chrono_two_digits_impl(char_type* it,I i) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
 	if constexpr(my_signed_integral<I>)
 	{
@@ -64,11 +62,10 @@ inline constexpr Iter chrono_two_digits_impl(Iter it,I i) noexcept
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::signed_integral integ>
-inline constexpr Iter chrono_year_impl(Iter it,integ i) noexcept
+template<::std::integral char_type,std::signed_integral integ>
+inline constexpr char_type* chrono_year_impl(char_type* it,integ i) noexcept
 {
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<integ>>;
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	unsigned_type u{static_cast<unsigned_type>(i)};
 	if(i<0)[[unlikely]]
 	{

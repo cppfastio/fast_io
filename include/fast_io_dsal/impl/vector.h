@@ -422,26 +422,26 @@ public:
 		}
 	}
 	explicit constexpr vector(size_type n) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) :vector(n,value_type()){}
-	template <::fast_io::freestanding::input_iterator InputIt>
+	template <::std::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept
 		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
-		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
+		if constexpr (::std::contiguous_iterator<InputIt>)
 		{
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 			{
 				::fast_io::containers::details::check_size_and_construct<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(first)),
-					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(last)));
+					reinterpret_cast<char8_t const*>(::std::to_address(first)),
+					reinterpret_cast<char8_t const*>(::std::to_address(last)));
 			}
 			else
 			{
 				::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 					alignof(value_type),
-					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(first)),
-					reinterpret_cast<char8_t const*>(::fast_io::freestanding::to_address(last)));
+					reinterpret_cast<char8_t const*>(::std::to_address(first)),
+					reinterpret_cast<char8_t const*>(::std::to_address(last)));
 			}
 		}
 		else
@@ -451,7 +451,7 @@ public:
 			assign_common_impl(first, last);
 		}
 	}
-	template <::fast_io::freestanding::input_iterator InputIt>
+	template <::std::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
@@ -532,7 +532,7 @@ public:
 	constexpr vector& operator=(vector const& vec) requires(::std::copyable<value_type>)
 	{
 		vector newvec(vec);
-		this->operator=(::fast_io::freestanding::move(newvec));
+		this->operator=(::std::move(newvec));
 		return *this;
 	}
 	constexpr vector& operator=(vector const& vec) = delete;
@@ -554,9 +554,9 @@ public:
 
 	template<typename... Args>
 	requires std::constructible_from<value_type,Args...>
-	constexpr reference emplace_back_unchecked(Args&& ...args) noexcept(noexcept(value_type(::fast_io::freestanding::forward<Args>(args)...)))
+	constexpr reference emplace_back_unchecked(Args&& ...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
-		auto p{::new (imp.curr_ptr) value_type(::fast_io::freestanding::forward<Args>(args)...)};
+		auto p{::new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
 		++imp.curr_ptr;
 		return *p;
 	}
@@ -609,7 +609,7 @@ private:
 		auto new_i{new_begin_ptr};
 		for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
 		{
-			new (new_i) value_type(::fast_io::freestanding::move(*old_i));
+			new (new_i) value_type(::std::move(*old_i));
 			old_i->~value_type();
 			++new_i;
 		}
@@ -655,7 +655,7 @@ private:
 		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type),false>(cap));
 	}
 	template <typename InputIt>
-		requires(::fast_io::freestanding::input_iterator<InputIt>)
+		requires(::std::input_iterator<InputIt>)
 	inline constexpr void assign_common_impl(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		auto ptr{ imp.begin_ptr };
@@ -696,23 +696,23 @@ public:
 		}
 		des.thisvec = nullptr;
 	}
-	template <::fast_io::freestanding::input_iterator InputIt>
+	template <::std::input_iterator InputIt>
 	constexpr void assign(InputIt first, InputIt last) noexcept
 		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
-		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
+		if constexpr (::std::contiguous_iterator<InputIt>)
 		{
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 				::fast_io::containers::details::check_size_and_assign<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(first)),
-					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(last)));
+					reinterpret_cast<char8_t*>(::std::to_address(first)),
+					reinterpret_cast<char8_t*>(::std::to_address(last)));
 			else
 				::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 					alignof(value_type),
-					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(first)),
-					reinterpret_cast<char8_t*>(::fast_io::freestanding::to_address(last)));
+					reinterpret_cast<char8_t*>(::std::to_address(first)),
+					reinterpret_cast<char8_t*>(::std::to_address(last)));
 		}
 		else
 		{
@@ -722,7 +722,7 @@ public:
 			assign_common_impl(first, last);
 		}
 	}
-	template <::fast_io::freestanding::input_iterator InputIt>
+	template <::std::input_iterator InputIt>
 	constexpr void assign(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
@@ -731,9 +731,9 @@ public:
 		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(size);
 		run_destroy des{ this };
-		if constexpr (::fast_io::freestanding::contiguous_iterator<InputIt>)
-			assign_common_impl(::fast_io::freestanding::to_address(first),
-				::fast_io::freestanding::to_address(last));
+		if constexpr (::std::contiguous_iterator<InputIt>)
+			assign_common_impl(::std::to_address(first),
+				::std::to_address(last));
 		else
 			assign_common_impl(first, last);
 		des.thisvec = nullptr;
@@ -889,7 +889,7 @@ public:
 		mut_pos->~value_type();
 		for (auto ptr{ mut_pos + 1 }; ptr != imp.curr_ptr; ++ptr)
 		{
-			*(ptr - 1) = ::fast_io::freestanding::move(*ptr);
+			*(ptr - 1) = ::std::move(*ptr);
 		}
 		--imp.curr_ptr;
 		return mut_pos;
@@ -923,7 +923,7 @@ public:
 		auto to_ptr{ mut_first };
 		for (auto from_ptr{ mut_last }; from_ptr != imp.curr_ptr; ++to_ptr, ++from_ptr)
 		{
-			*to_ptr = ::fast_io::freestanding::move(*from_ptr);
+			*to_ptr = ::std::move(*from_ptr);
 		}
 		imp.curr_ptr = to_ptr;
 		return mut_first;
@@ -960,17 +960,17 @@ public:
 	{
 		this->emplace_back(value);
 	}
-	constexpr void push_back(T&& value) noexcept(noexcept(this->emplace_back(::fast_io::freestanding::move(value))))
+	constexpr void push_back(T&& value) noexcept(noexcept(this->emplace_back(::std::move(value))))
 	{
-		this->emplace_back(::fast_io::freestanding::move(value));
+		this->emplace_back(::std::move(value));
 	}
 	constexpr void push_back_unchecked(T const& value) noexcept(noexcept(this->emplace_back_unchecked(value)))
 	{
 		this->emplace_back_unchecked(value);
 	}
-	constexpr void push_back_unchecked(T&& value) noexcept(noexcept(this->emplace_back_unchecked(::fast_io::freestanding::move(value))))
+	constexpr void push_back_unchecked(T&& value) noexcept(noexcept(this->emplace_back_unchecked(::std::move(value))))
 	{
-		this->emplace_back_unchecked(::fast_io::freestanding::move(value));
+		this->emplace_back_unchecked(::std::move(value));
 	}
 	[[nodiscard]] constexpr const_reference back() const noexcept
 	{
@@ -982,7 +982,7 @@ public:
 	}
 	template<typename... Args>
 	requires std::constructible_from<value_type,Args...>
-	constexpr reference emplace_back(Args&& ...args) noexcept(noexcept(value_type(::fast_io::freestanding::forward<Args>(args)...)))
+	constexpr reference emplace_back(Args&& ...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
 		if(imp.curr_ptr==imp.end_ptr)
 #if __has_cpp_attribute(unlikely)
@@ -991,7 +991,7 @@ public:
 		{
 			grow_twice_impl();
 		}
-		auto p{new (imp.curr_ptr) value_type(::fast_io::freestanding::forward<Args>(args)...)};
+		auto p{new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
 		++imp.curr_ptr;
 		return *p;
 	}

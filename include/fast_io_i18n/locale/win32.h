@@ -382,7 +382,7 @@ requires (std::is_lvalue_reference_v<stm>||std::is_trivially_copyable_v<stm>)
 inline constexpr auto imbue(win32_family_l10n<family>& loc,stm&& out) noexcept
 {
 	using char_type = typename std::remove_cvref_t<stm>::char_type;
-	return imbue(get_all<char_type>(loc.loc),::fast_io::freestanding::forward<stm>(out));
+	return imbue(get_all<char_type>(loc.loc),::std::forward<stm>(out));
 }
 
 using win32_l10n_9xa = win32_family_l10n<::fast_io::win32_family::ansi_9x>;

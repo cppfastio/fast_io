@@ -727,10 +727,10 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,basi
 	}
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter,std::integral char_type>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,
+template<::std::integral char_type,std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,
 	basic_posix_readlinkat_t<char_type>>,
-	Iter iter,
+	char_type* iter,
 	basic_posix_readlinkat_t<char_type> rlkat)
 {
 	return details::read_linkat_impl_phase1(iter,rlkat);

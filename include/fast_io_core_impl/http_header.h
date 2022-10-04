@@ -52,8 +52,8 @@ inline constexpr basic_io_scatter_t<ch_type> print_alias_define(io_alias_t,basic
 
 namespace details
 {
-template<std::integral ch_type,std::size_t buffer_size,::fast_io::freestanding::random_access_iterator Iter>
-inline bool try_copy_into_buffer(basic_http_header_buffer<ch_type,buffer_size>& b,Iter first,Iter last) noexcept
+template<std::integral ch_type,std::size_t buffer_size,::std::integral char_type>
+inline bool try_copy_into_buffer(basic_http_header_buffer<ch_type,buffer_size>& b,char_type const* first,char_type const* last) noexcept
 {
 	std::size_t diff{static_cast<std::size_t>(last-first)};
 	std::size_t remain_space{static_cast<std::size_t>(buffer_size-b.header_length)};
@@ -100,10 +100,9 @@ inline constexpr parse_code determine_http_header_location(basic_http_header_buf
 	return parse_code::ok;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::size_t buffer_size>
-inline constexpr parse_result<Iter> http_header_scan_context_define_impl(std::size_t& state,Iter first1,Iter last,basic_http_header_buffer<::fast_io::freestanding::iter_value_t<Iter>,buffer_size>& bufferref) noexcept
+template<::std::integral char_type,std::size_t buffer_size>
+inline constexpr parse_result<char_type onst*> http_header_scan_context_define_impl(std::size_t& state,char_type const* first, char_type const* last,basic_http_header_buffer<char_type,buffer_size>& bufferref) noexcept
 {
-	using ch_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	auto first{first1};
 	if(first==last)
 	{
@@ -208,8 +207,8 @@ inline constexpr parse_result<Iter> http_header_scan_context_define_impl(std::si
 
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::size_t buffer_size>
-inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,::fast_io::parameter<basic_http_header_buffer<::fast_io::freestanding::iter_value_t<Iter>,buffer_size>&>>,http_buffer_parse_context& statetp,Iter first1,Iter last,::fast_io::parameter<basic_http_header_buffer<::fast_io::freestanding::iter_value_t<Iter>>&> t) noexcept
+template<::std::integral char_type,std::size_t buffer_size>
+inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type,::fast_io::parameter<basic_http_header_buffer<char_type,buffer_size>&>>,http_buffer_parse_context& statetp,char_type const* first1,char_type const* last,::fast_io::parameter<basic_http_header_buffer<char_type>&> t) noexcept
 {
 	return ::fast_io::details::http_header_scan_context_define_impl(statetp.state,first1,last,t.reference);
 }
@@ -287,19 +286,19 @@ inline constexpr basic_http_line_generator<char_type>& begin(basic_http_line_gen
 }
 
 template<std::integral char_type>
-inline constexpr ::fast_io::freestanding::default_sentinel_t end(basic_http_line_generator<char_type>&) noexcept
+inline constexpr ::std::default_sentinel_t end(basic_http_line_generator<char_type>&) noexcept
 {
 	return {};
 }
 
 template<std::integral char_type>
-inline constexpr bool operator==(basic_http_line_generator<char_type>& b,::fast_io::freestanding::default_sentinel_t)
+inline constexpr bool operator==(basic_http_line_generator<char_type>& b,::std::default_sentinel_t)
 {
 	return b.current==b.last;
 }
 
 template<std::integral char_type>
-inline constexpr bool operator!=(basic_http_line_generator<char_type>& b,::fast_io::freestanding::default_sentinel_t)
+inline constexpr bool operator!=(basic_http_line_generator<char_type>& b,::std::default_sentinel_t)
 {
 	return b.current!=b.last;
 }

@@ -36,13 +36,13 @@ struct win32_family_dns_iterator
 };
 
 template<win32_family fam>
-inline constexpr bool operator==(win32_family_dns_iterator<fam> a, ::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator==(win32_family_dns_iterator<fam> a, ::std::default_sentinel_t) noexcept
 {
 	return a.res == nullptr;
 }
 
 template<win32_family fam>
-inline constexpr bool operator!=(win32_family_dns_iterator<fam> a, ::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator!=(win32_family_dns_iterator<fam> a, ::std::default_sentinel_t) noexcept
 {
 	return a.res;
 }
@@ -220,13 +220,13 @@ inline constexpr win32_family_dns_iterator<fam> cbegin(win32_family_dns_io_obser
 }
 
 template<win32_family fam>
-inline constexpr ::fast_io::freestanding::default_sentinel_t end(win32_family_dns_io_observer<fam>) noexcept
+inline constexpr ::std::default_sentinel_t end(win32_family_dns_io_observer<fam>) noexcept
 {
 	return {};
 }
 
 template<win32_family fam>
-inline constexpr ::fast_io::freestanding::default_sentinel_t cend(win32_family_dns_io_observer<fam>) noexcept
+inline constexpr ::std::default_sentinel_t cend(win32_family_dns_io_observer<fam>) noexcept
 {
 	return {};
 }

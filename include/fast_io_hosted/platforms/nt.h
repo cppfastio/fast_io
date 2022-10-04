@@ -596,16 +596,16 @@ inline constexpr basic_nt_family_io_observer<family,ch_type> io_value_handle(bas
 	return other;
 }
 
-template<nt_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<nt_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 [[nodiscard]] inline Iter read(basic_nt_family_io_observer<family,ch_type> obs,Iter begin,Iter end)
 {
-	return begin+win32::nt::details::nt_read_impl<family==nt_family::zw>(obs.handle,::fast_io::freestanding::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
+	return begin+win32::nt::details::nt_read_impl<family==nt_family::zw>(obs.handle,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
 }
 
-template<nt_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<nt_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_nt_family_io_observer<family,ch_type> obs,Iter cbegin,Iter cend)
 {
-	return cbegin+win32::nt::details::nt_write_impl<family==nt_family::zw>(obs.handle,::fast_io::freestanding::to_address(cbegin),static_cast<std::size_t>(cend-cbegin)*sizeof(*cbegin))/sizeof(*cbegin);
+	return cbegin+win32::nt::details::nt_write_impl<family==nt_family::zw>(obs.handle,::std::to_address(cbegin),static_cast<std::size_t>(cend-cbegin)*sizeof(*cbegin))/sizeof(*cbegin);
 }
 
 template<nt_family family,std::integral ch_type>

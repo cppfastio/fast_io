@@ -18,7 +18,7 @@ constexpr void return_void() {}
 namespace details
 {
 
-template<typename stm,::fast_io::freestanding::input_iterator Iter,bool write>
+template<typename stm,::std::input_iterator Iter,bool write>
 requires ((write&&async_output_stream<stm>)||(!write&&async_input_stream<stm>))
 class async_io_coroutine
 {
@@ -130,13 +130,13 @@ public:
 };
 }
 
-template<async_input_stream stm,::fast_io::freestanding::input_iterator Iter>
+template<async_input_stream stm,::std::input_iterator Iter>
 constexpr inline details::async_io_coroutine<stm,Iter,false> async_read(typename io_async_scheduler_t<stm>::type& scheduler,stm& sm,Iter begin,Iter end,std::ptrdiff_t offset=0)
 {
 	return {scheduler,sm,begin,end,offset};
 }
 
-template<async_output_stream stm,::fast_io::freestanding::input_iterator Iter>
+template<async_output_stream stm,::std::input_iterator Iter>
 constexpr inline details::async_io_coroutine<stm,Iter,true> async_write(typename io_async_scheduler_t<stm>::type& scheduler,stm& sm,Iter begin,Iter end,std::ptrdiff_t offset=-1)
 {
 	return {scheduler,sm,begin,end,offset};

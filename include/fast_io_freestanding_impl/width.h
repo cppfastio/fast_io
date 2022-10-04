@@ -35,7 +35,7 @@ inline constexpr auto left(T&& t,std::size_t n) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_t<scalar_placement::left,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)))>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n};
+		return width_t<scalar_placement::left,decltype(print_alias_define(io_alias,::std::forward<T>(t)))>{print_alias_define(io_alias,::std::forward<T>(t)),n};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
@@ -58,7 +58,7 @@ inline constexpr auto middle(T&& t,std::size_t n) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_t<scalar_placement::middle,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)))>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n};
+		return width_t<scalar_placement::middle,decltype(print_alias_define(io_alias,::std::forward<T>(t)))>{print_alias_define(io_alias,::std::forward<T>(t)),n};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
@@ -81,7 +81,7 @@ inline constexpr auto right(T&& t,std::size_t n) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_t<scalar_placement::right,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)))>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n};
+		return width_t<scalar_placement::right,decltype(print_alias_define(io_alias,::std::forward<T>(t)))>{print_alias_define(io_alias,::std::forward<T>(t)),n};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
@@ -105,7 +105,7 @@ inline constexpr auto internal(T&& t,std::size_t n) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_t<scalar_placement::internal,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)))>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n};
+		return width_t<scalar_placement::internal,decltype(print_alias_define(io_alias,::std::forward<T>(t)))>{print_alias_define(io_alias,::std::forward<T>(t)),n};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
@@ -129,7 +129,7 @@ inline constexpr auto left(T&& t,std::size_t n,char_type ch) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_ch_t<scalar_placement::left,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t))),char_type>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n,ch};
+		return width_ch_t<scalar_placement::left,decltype(print_alias_define(io_alias,::std::forward<T>(t))),char_type>{print_alias_define(io_alias,::std::forward<T>(t)),n,ch};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
@@ -152,7 +152,7 @@ inline constexpr auto middle(T&& t,std::size_t n,char_type ch) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_ch_t<scalar_placement::middle,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t))),char_type>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n,ch};
+		return width_ch_t<scalar_placement::middle,decltype(print_alias_define(io_alias,::std::forward<T>(t))),char_type>{print_alias_define(io_alias,::std::forward<T>(t)),n,ch};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
@@ -174,7 +174,7 @@ inline constexpr auto right(T&& t,std::size_t n,char_type ch) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_ch_t<scalar_placement::right,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t))),char_type>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n,ch};
+		return width_ch_t<scalar_placement::right,decltype(print_alias_define(io_alias,::std::forward<T>(t))),char_type>{print_alias_define(io_alias,::std::forward<T>(t)),n,ch};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
@@ -196,7 +196,7 @@ inline constexpr auto internal(T&& t,std::size_t n,char_type ch) noexcept
 	using noref = std::remove_cvref_t<T>;
 	if constexpr(alias_printable<std::remove_cvref_t<T>>)
 	{
-		return width_ch_t<scalar_placement::internal,decltype(print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t))),char_type>{print_alias_define(io_alias,::fast_io::freestanding::forward<T>(t)),n,ch};
+		return width_ch_t<scalar_placement::internal,decltype(print_alias_define(io_alias,::std::forward<T>(t))),char_type>{print_alias_define(io_alias,::std::forward<T>(t)),n,ch};
 	}
 	else if constexpr((manipulator<noref>||std::is_trivially_copyable_v<noref>)&&
 #if defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)

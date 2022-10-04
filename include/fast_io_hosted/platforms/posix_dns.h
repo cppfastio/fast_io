@@ -61,12 +61,12 @@ struct posix_dns_iterator
 	native_handle_type res{};
 };
 
-inline constexpr bool operator==(posix_dns_iterator a, ::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator==(posix_dns_iterator a, ::std::default_sentinel_t) noexcept
 {
 	return a.res == nullptr;
 }
 
-inline constexpr bool operator!=(posix_dns_iterator a, ::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator!=(posix_dns_iterator a, ::std::default_sentinel_t) noexcept
 {
 	return a.res;
 }
@@ -209,12 +209,12 @@ inline constexpr posix_dns_iterator cbegin(posix_dns_io_observer pdniob) noexcep
 	return {pdniob.res};
 }
 
-inline constexpr ::fast_io::freestanding::default_sentinel_t end(posix_dns_io_observer) noexcept
+inline constexpr ::std::default_sentinel_t end(posix_dns_io_observer) noexcept
 {
 	return {};
 }
 
-inline constexpr ::fast_io::freestanding::default_sentinel_t cend(posix_dns_io_observer) noexcept
+inline constexpr ::std::default_sentinel_t cend(posix_dns_io_observer) noexcept
 {
 	return {};
 }

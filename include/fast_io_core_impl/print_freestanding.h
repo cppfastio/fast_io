@@ -446,7 +446,7 @@ requires(n!=0)
 #endif
 inline constexpr Iter partition_reserve_impl(Iter iter,T t,[[maybe_unused]] Args ...args)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	iter=print_reserve_define(io_reserve_type<char_type,T>,iter,t);
 	if constexpr(n==1)
 	{

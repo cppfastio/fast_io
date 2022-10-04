@@ -39,7 +39,7 @@ inline constexpr bool operator!=(stvl2_struct_iterator first,stvl2_struct_iterat
 	return first.ptr!=second.ptr;
 }
 
-static_assert(::fast_io::freestanding::forward_iterator<stvl2_struct_iterator>);
+static_assert(::std::forward_iterator<stvl2_struct_iterator>);
 
 inline constexpr stvl2_struct_iterator begin(stvl2_struct& s) noexcept
 {

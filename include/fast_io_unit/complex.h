@@ -361,10 +361,9 @@ inline constexpr auto print_alias_define(io_alias_t,::std::complex<scalar_type> 
 
 namespace details
 {
-template<::fast_io::manipulators::scalar_flags flags,typename T,::fast_io::freestanding::random_access_iterator Iter>
+template<::fast_io::manipulators::scalar_flags flags,typename T,::std::integral char_type>
 inline constexpr Iter print_reserve_complex_impl(Iter iter,T real,T imag) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	*iter=char_literal_v<u8'(',char_type>;
 	++iter;
 	iter=print_reserve_define(io_reserve_type<char_type,::fast_io::manipulators::scalar_manip_t<flags,T>>,iter,::fast_io::manipulators::scalar_manip_t<flags,T>{real});

@@ -47,19 +47,19 @@ inline void async_scatter_read_callback(io_uring_observer ring,basic_socket_io_o
 	async_scatter_read_callback(ring,pio,sp,callback,offset);
 }
 */
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline void async_read_callback(io_uring_observer ring,basic_socket_io_observer<char_type> sio,Iter b,Iter e,io_uring_overlapped_observer callback,std::ptrdiff_t)
 {
 	auto sqe{details::ensure_io_uring_sqe(ring)};
-	io_uring_prep_recv(sqe,sio.soc,::fast_io::freestanding::to_address(b),(e-b)*sizeof(*b),0);
+	io_uring_prep_recv(sqe,sio.soc,::std::to_address(b),(e-b)*sizeof(*b),0);
 	io_uring_sqe_set_data(sqe,callback.native_handle());
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline void async_write_callback(io_uring_observer ring,basic_socket_io_observer<char_type> sio,Iter b,Iter e,io_uring_overlapped_observer callback,std::ptrdiff_t)
 {
 	auto sqe{details::ensure_io_uring_sqe(ring)};
-	io_uring_prep_send(sqe,sio.soc,::fast_io::freestanding::to_address(b),(e-b)*sizeof(*b),0);
+	io_uring_prep_send(sqe,sio.soc,::std::to_address(b),(e-b)*sizeof(*b),0);
 	io_uring_sqe_set_data(sqe,callback.native_handle());
 }
 

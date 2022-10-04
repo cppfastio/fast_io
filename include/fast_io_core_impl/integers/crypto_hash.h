@@ -6,10 +6,9 @@ namespace fast_io
 namespace details
 {
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter crypto_hash_pr_df_impl(std::byte const* first,std::byte const* last,Iter iter) noexcept
+template<bool uppercase,::std::integral char_type>
+inline constexpr char_type* crypto_hash_pr_df_impl(std::byte const* first,std::byte const* last,char_type* iter) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	constexpr auto tb{::fast_io::details::get_shared_inline_constexpr_base_table<char_type,16,uppercase>().element};
 	constexpr std::size_t two{2};
 	for(;first!=last;++first)
@@ -27,10 +26,9 @@ inline void update_multiple_blocks(T* __restrict ctx,io_scatter_t const* base,st
 	}
 }
 
-template<bool uppercase,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter pr_rsv_uuid(Iter iter,std::byte const* uuid) noexcept
+template<bool uppercase,::std::integral char_type>
+inline constexpr char_type* pr_rsv_uuid(char_type* iter,std::byte const* uuid) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	auto next_it{uuid+4};//4
 	iter=crypto_hash_pr_df_impl<uppercase>(uuid,next_it,iter);
 	for(std::size_t i{};i!=3;++i)//2*3=6
@@ -66,8 +64,8 @@ inline constexpr basic_crypto_hash_as_file<ch_type,T> io_value_handle(basic_cryp
 template<std::integral char_type,typename T>
 inline constexpr void require_secure_clear(basic_crypto_hash_as_file<char_type,T>) noexcept{}
 
-template<::std::integral ch_type,typename T,::fast_io::freestanding::contiguous_iterator Iter>
-inline constexpr void write(basic_crypto_hash_as_file<ch_type,T> t,Iter first,Iter last) noexcept
+template<::std::integral ch_type,typename T,::std::integral char_type>
+inline constexpr void write(basic_crypto_hash_as_file<ch_type,T> t,char_type const* first,char_type const* last) noexcept
 {
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
 #if __cpp_if_consteval >= 202106L
@@ -78,15 +76,15 @@ inline constexpr void write(basic_crypto_hash_as_file<ch_type,T> t,Iter first,It
 	{
 		for(;first!=last;++first)
 		{
-			auto a{std::bit_cast<::fast_io::freestanding::array<std::byte,sizeof(*first)>>(*first)};
+			auto a{::std::bit_cast<::fast_io::freestanding::array<::std::byte,sizeof(*first)>>(*first)};
 			t.ptr->update(a.data(),a.data()+sizeof(*first));
 		}
 	}
 	else
 #endif
 	{
-		t.ptr->update(reinterpret_cast<std::byte const*>(::fast_io::freestanding::to_address(first)),
-			reinterpret_cast<std::byte const*>(::fast_io::freestanding::to_address(last)));
+		t.ptr->update(reinterpret_cast<std::byte const*>(first),
+			reinterpret_cast<std::byte const*>(last));
 	}
 }
 
@@ -275,8 +273,8 @@ inline constexpr std::size_t cal_crypto_hash_resrv_size() noexcept
 template<::fast_io::manipulators::digest_format d,std::size_t digest_size>
 inline constexpr std::size_t crypto_hash_resrv_size_cache{cal_crypto_hash_resrv_size<d,digest_size>()};
 
-template<::fast_io::manipulators::digest_format d,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter copy_to_hash_df_commom_impl(Iter iter,std::byte const* buffer,std::size_t digest_size) noexcept
+template<::fast_io::manipulators::digest_format d,::std::integral char_type>
+inline constexpr char_type* copy_to_hash_df_commom_impl(char_type* iter,std::byte const* buffer,std::size_t digest_size) noexcept
 {
 	if constexpr(d==::fast_io::manipulators::digest_format::raw_bytes)
 	{
@@ -307,8 +305,8 @@ inline constexpr Iter copy_to_hash_df_commom_impl(Iter iter,std::byte const* buf
 }
 
 
-template<::fast_io::manipulators::digest_format d,typename T,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prv_srv_hash_df_common_impl(Iter iter,T const& t) noexcept
+template<::fast_io::manipulators::digest_format d,typename T,::std::integral char_type>
+inline constexpr char_type* prv_srv_hash_df_common_impl(char_type* iter,T const& t) noexcept
 {
 	if constexpr(::fast_io::manipulators::compile_time_size_crypto_hash_context<T>)
 	{
@@ -351,16 +349,17 @@ inline constexpr Iter prv_srv_hash_df_common_impl(Iter iter,T const& t) noexcept
 	}
 }
 
-template<::fast_io::manipulators::digest_format d,typename T,::fast_io::freestanding::random_access_iterator Iter>
+// this function may possibly be useless because scan_freestanding will correctly deal with context_scannable
+template<::fast_io::manipulators::digest_format d,typename T,::std::random_access_iterator Iter>
 inline constexpr Iter prv_srv_hash_df_impl(Iter iter,T const& t) noexcept
 {
-	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>&&!::std::is_pointer_v<Iter>)
+	if constexpr(::std::contiguous_iterator<Iter>&&!::std::is_pointer_v<Iter>)
 	{
-		return ::fast_io::details::prv_srv_hash_df_impl<d>(::fast_io::freestanding::to_address(iter),t)-::fast_io::freestanding::to_address(iter)+iter;
+		return ::fast_io::details::prv_srv_hash_df_impl<d>(::std::to_address(iter),t)-::std::to_address(iter)+iter;
 	}
 	else
 	{
-		using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+		using char_type = ::std::iter_value_t<Iter>;
 		if constexpr(d==::fast_io::manipulators::digest_format::raw_bytes)
 		{
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
@@ -419,11 +418,10 @@ inline constexpr void cal_hash_internal(std::byte const* base,std::size_t len,st
 	t.digest_to_byte_ptr(buffer);
 }
 
-template<::fast_io::manipulators::digest_format d,typename T,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter prv_srv_hash_compress_df_impl(Iter iter,std::byte const* base,std::size_t len) noexcept
+template<::fast_io::manipulators::digest_format d,typename T,::std::integral char_type>
+inline constexpr char_type* prv_srv_hash_compress_df_impl(char_type* iter,std::byte const* base,std::size_t len) noexcept
 {
 	constexpr std::size_t digest_size{std::remove_cvref_t<T>::digest_size};
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(context_digest_to_byte_ptr_runtime_impl<T>)
 	{
 		if constexpr(d==::fast_io::manipulators::digest_format::raw_bytes)

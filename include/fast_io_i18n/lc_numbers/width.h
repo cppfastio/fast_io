@@ -26,11 +26,10 @@ inline constexpr std::size_t lc_print_reserve_size_width_impl(basic_lc_all<char_
 	}
 }
 
-template<::fast_io::manipulators::scalar_placement placement,::fast_io::freestanding::random_access_iterator Iter,typename T>
+template<::fast_io::manipulators::scalar_placement placement,::std::integral char_type,typename T>
 requires (std::is_trivially_copyable_v<T>)
-inline constexpr Iter lc_print_reserve_define_width_ch_impl(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter iter,T t,std::size_t wdt,::fast_io::freestanding::iter_value_t<Iter> fillch) noexcept
+inline constexpr Iter lc_print_reserve_define_width_ch_impl(basic_lc_all<char_type> const* __restrict all,Iter iter,T t,std::size_t wdt,char_type fillch) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using value_type = std::remove_cvref_t<T>;
 	if constexpr(placement==::fast_io::manipulators::scalar_placement::internal)
 	{
