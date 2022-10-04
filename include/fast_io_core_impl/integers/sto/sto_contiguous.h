@@ -11,7 +11,7 @@ requires (2<=base&&base<=36)
 inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) noexcept
 {
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	constexpr unsigned_char_type base_char_type(base);
 	if constexpr(base<=10)
 	{
@@ -123,7 +123,7 @@ requires (2<=base&&base<=36)
 inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 {
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	constexpr unsigned_char_type base_char_type(base);
 	if constexpr(base<=10)
 	{
