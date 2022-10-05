@@ -35,6 +35,9 @@
 #include"fast_io_freestanding_impl/api_encoding_converter/impl.h"
 #include"fast_io_freestanding_impl/cond.h"
 
+#if defined(_GLIBCXX_BITSET)
+#include"fast_io_unit/bitset.h"
+#endif
 
 namespace fast_io
 {
