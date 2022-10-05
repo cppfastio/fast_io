@@ -166,20 +166,20 @@ inline constexpr std::size_t deco_reserve_size(io_reserve_type_t<to_char_type,ic
 		details::intrinsics::add_or_overflow_die(size,32),factor);
 }
 
-template<::fast_io::freestanding::contiguous_iterator fromIter,::fast_io::freestanding::contiguous_iterator toIter>
-inline toIter deco_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<toIter>,iconv_deco_t>,
+template<::std::contiguous_iterator fromIter,::std::contiguous_iterator toIter>
+inline toIter deco_reserve_define(io_reserve_type_t<::std::iter_value_t<toIter>,iconv_deco_t>,
 	iconv_deco_t& icdt,fromIter first,fromIter last,toIter iter)
 {
-	using to_char_type = ::fast_io::freestanding::iter_value_t<toIter>;
-	using from_char_type = ::fast_io::freestanding::iter_value_t<fromIter>;
+	using to_char_type = ::std::iter_value_t<toIter>;
+	using from_char_type = ::std::iter_value_t<fromIter>;
 	constexpr std::size_t factor{8/sizeof(to_char_type)};
 	std::size_t dis{static_cast<std::size_t>(last-first)};
 	std::size_t inbytes{sizeof(from_char_type)*dis};
 	std::size_t const allocated_bytes{(inbytes+32)*8};
 	return iter+details::iconv_deco_reserve_define_impl(icdt,
-		reinterpret_cast<char const*>(::fast_io::freestanding::to_address(first)),
+		reinterpret_cast<char const*>(::std::to_address(first)),
 		inbytes,
-		reinterpret_cast<char*>(::fast_io::freestanding::to_address(iter)),
+		reinterpret_cast<char*>(::std::to_address(iter)),
 		allocated_bytes)/sizeof(to_char_type);
 }
 
@@ -303,14 +303,13 @@ inline std::size_t print_reserve_size(
 	return v.reference.len*8/sizeof(char_type);
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter>
-inline Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,iconv_code_cvt_t<io_scatter_t>>,
+template<::std::integral char_type>
+inline Iter print_reserve_define(io_reserve_type_t<char_type,iconv_code_cvt_t<io_scatter_t>>,
 	Iter iter,iconv_code_cvt_t<io_scatter_t> v) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	std::size_t const sz{::fast_io::details::iconv_print_reserve_define_impl(v.cd,
-	reinterpret_cast<char const*>(::fast_io::freestanding::to_address(v.reference.base)),
-	v.reference.len,reinterpret_cast<char*>(::fast_io::freestanding::to_address(iter)))};
+	reinterpret_cast<char const*>(::std::to_address(v.reference.base)),
+	v.reference.len,reinterpret_cast<char*>(::std::to_address(iter)))};
 	return iter+sz/sizeof(char_type);
 }
 }

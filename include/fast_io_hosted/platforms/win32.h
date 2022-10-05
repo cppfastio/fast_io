@@ -460,9 +460,9 @@ struct win32_io_redirection_std:win32_io_redirection
 	template<typename T>
 	requires requires(T&& t)
 	{
-		{redirect(::fast_io::freestanding::forward<T>(t))}->std::same_as<win32_io_redirection>;
+		{redirect(::std::forward<T>(t))}->std::same_as<win32_io_redirection>;
 	}
-	constexpr win32_io_redirection_std(T&& t) noexcept:win32_io_redirection(redirect(::fast_io::freestanding::forward<T>(t))){}
+	constexpr win32_io_redirection_std(T&& t) noexcept:win32_io_redirection(redirect(::std::forward<T>(t))){}
 };
 
 struct win32_process_io
@@ -808,16 +808,16 @@ inline std::uintmax_t seek(basic_win32_family_io_observer<family,ch_type> handle
 	return win32::details::seek_impl(handle.handle,offset,s);
 }
 
-template<win32_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 [[nodiscard]] inline Iter read(basic_win32_family_io_observer<family,ch_type> handle,Iter begin,Iter end)
 {
-	return begin+win32::details::read_impl(handle.handle,::fast_io::freestanding::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
+	return begin+win32::details::read_impl(handle.handle,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
 }
 
-template<win32_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_win32_family_io_observer<family,ch_type> handle,Iter cbegin,Iter cend)
 {
-	return cbegin+win32::details::write_impl(handle.handle,::fast_io::freestanding::to_address(cbegin),static_cast<std::size_t>(cend-cbegin)*sizeof(*cbegin))/sizeof(*cbegin);
+	return cbegin+win32::details::write_impl(handle.handle,::std::to_address(cbegin),static_cast<std::size_t>(cend-cbegin)*sizeof(*cbegin))/sizeof(*cbegin);
 }
 
 template<win32_family family,std::integral ch_type>
@@ -867,7 +867,7 @@ struct iocp_overlapped_derived:iocp_overlapped_base
 	Func func;
 	template<typename... Args>
 	requires std::constructible_from<Func,Args...>
-	iocp_overlapped_derived(Args&& ...args):func(::fast_io::freestanding::forward<Args>(args)...){}
+	iocp_overlapped_derived(Args&& ...args):func(::std::forward<Args>(args)...){}
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
@@ -958,11 +958,11 @@ inline void cancel(basic_win32_family_io_observer<family,ch_type> h)
 template<win32_family family,std::integral ch_type,typename... Args>
 requires requires(basic_win32_family_io_observer<family,ch_type> h,Args&& ...args)
 {
-	fast_io::win32::DeviceIoControl(h.handle,::fast_io::freestanding::forward<Args>(args)...);
+	fast_io::win32::DeviceIoControl(h.handle,::std::forward<Args>(args)...);
 }
 inline void io_control(basic_win32_family_io_observer<family,ch_type> h,Args&& ...args)
 {
-	if(!fast_io::win32::DeviceIoControl(h.handle,::fast_io::freestanding::forward<Args>(args)...))
+	if(!fast_io::win32::DeviceIoControl(h.handle,::std::forward<Args>(args)...))
 		throw_win32_error();
 }
 
@@ -1075,10 +1075,10 @@ inline void truncate(basic_win32_family_io_observer<family,ch_type> handle,std::
 		throw_win32_error();
 }
 
-template<win32_family family,std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr Iter pwrite(basic_win32_family_io_observer<family,char_type> wpioent,Iter begin,Iter end,std::intmax_t offset)
 {
-	return begin+win32::details::pwrite_impl(wpioent.handle,::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
+	return begin+win32::details::pwrite_impl(wpioent.handle,::std::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
 }
 
 template<win32_family family,std::integral ch_type>
@@ -1087,10 +1087,10 @@ inline io_scatter_status_t scatter_pwrite(basic_win32_family_io_observer<family,
 	return win32::details::scatter_pwrite_impl(wpioent.handle,sp,offset);
 }
 
-template<win32_family family,std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr Iter pread(basic_win32_family_io_observer<family,char_type> wpioent,Iter begin,Iter end,std::intmax_t offset)
 {
-	return begin+win32::details::pread_impl(wpioent.handle,::fast_io::freestanding::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
+	return begin+win32::details::pread_impl(wpioent.handle,::std::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
 }
 
 template<win32_family family,std::integral ch_type>
@@ -1246,13 +1246,13 @@ public:
 	}
 };
 
-template<win32_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_win32_family_pipe<family,ch_type>& h,Iter begin,Iter end)
 {
 	return read(h.in(),begin,end);
 }
 
-template<win32_family family,std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_win32_family_pipe<family,ch_type>& h,Iter begin,Iter end)
 {
 	return write(h.out(),begin,end);

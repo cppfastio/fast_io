@@ -6,7 +6,6 @@
 
 int main()
 {
-	constexpr std::size_t N(10000000);
 	std::size_t lines{};
 	{
 		fast_io::timer t(u8"input");

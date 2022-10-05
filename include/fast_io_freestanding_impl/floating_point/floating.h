@@ -148,8 +148,8 @@ namespace details
 template<bool comma,
 ::fast_io::manipulators::floating_representation rep,
 ::fast_io::manipulators::rounding_mode round,
-bool uppercase_e,::fast_io::freestanding::random_access_iterator Iter,std::floating_point fp_type>
-inline constexpr Iter fp_print_reserve_define_impl(Iter iter,fp_type f) noexcept
+bool uppercase_e,std::integral char_type,std::floating_point fp_type>
+inline constexpr char_type* fp_print_reserve_define_impl(char_type* iter,fp_type f) noexcept
 {
 
 	if constexpr(round==::fast_io::manipulators::rounding_mode::nearest_to_even)
@@ -226,18 +226,18 @@ inline constexpr Iter fp_print_reserve_define_impl(Iter iter,fp_type f) noexcept
 
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::floating_point fp_type>
+template<::std::integral char_type,std::floating_point fp_type>
 requires (std::same_as<fp_type,float>||std::same_as<fp_type,double>)
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,fp_type>,Iter iter,fp_type f) noexcept
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,fp_type>,char_type* iter,fp_type f) noexcept
 {
 	return details::fp_print_reserve_define_impl<false,
 	manipulators::floating_representation::general,
 	::fast_io::manipulators::rounding_mode::nearest_to_even,false>(iter,f);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::floating_point fp_type>
+template<::std::integral char_type,std::floating_point fp_type>
 requires (std::same_as<fp_type,float>||std::same_as<fp_type,double>)
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,manipulators::comma_t<fp_type>>,Iter iter,manipulators::comma_t<fp_type> f) noexcept
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,manipulators::comma_t<fp_type>>,char_type* iter,manipulators::comma_t<fp_type> f) noexcept
 {
 	return details::fp_print_reserve_define_impl<true,manipulators::floating_representation::general,
 	::fast_io::manipulators::rounding_mode::nearest_to_even
@@ -245,13 +245,13 @@ inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestan
 }
 
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::floating_point fp,
+template<::std::integral char_type,std::floating_point fp,
 	manipulators::floating_representation rep,
 	manipulators::rounding_mode round_mode>
 requires (std::same_as<fp,float>||std::same_as<fp,double>)
-inline constexpr Iter print_reserve_define(
-	io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,
-	manipulators::floating_format_t<fp,rep,round_mode>>,Iter iter,
+inline constexpr char_type* print_reserve_define(
+	io_reserve_type_t<char_type,
+	manipulators::floating_format_t<fp,rep,round_mode>>,char_type* iter,
 	manipulators::floating_format_t<fp,rep,round_mode> f) noexcept
 {
 	return details::fp_print_reserve_define_impl<false,
@@ -261,13 +261,13 @@ inline constexpr Iter print_reserve_define(
 }
 
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::floating_point fp,
+template<::std::integral char_type,std::floating_point fp,
 	manipulators::floating_representation rep,
 	manipulators::rounding_mode round_mode>
 requires (std::same_as<fp,float>||std::same_as<fp,double>)
-inline constexpr Iter print_reserve_define(
-	io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,
-	manipulators::comma_t<manipulators::floating_format_t<fp,rep,round_mode>>>,Iter iter,
+inline constexpr char_type* print_reserve_define(
+	io_reserve_type_t<char_type,
+	manipulators::comma_t<manipulators::floating_format_t<fp,rep,round_mode>>>,char_type* iter,
 	manipulators::comma_t<manipulators::floating_format_t<fp,rep,round_mode>> f) noexcept
 {
 	return details::fp_print_reserve_define_impl<true,

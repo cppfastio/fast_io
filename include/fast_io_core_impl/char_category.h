@@ -128,7 +128,7 @@ template<std::integral char_type>
 inline constexpr char_type to_c_lower(char_type ch) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
-	if constexpr(!::fast_io::details::exec_charset_is_ebcdic<char_type>())
+	if constexpr(!::fast_io::details::is_ebcdic<char_type>)
 		return static_cast<char_type>(static_cast<unsigned_char_type>(details::to_c_lower_ascii_impl(static_cast<unsigned_char_type>(ch))));
 	else if constexpr(std::same_as<char,char_type>)
 switch(ch){case 'A':return 'a';case 'B':return 'b';case 'C':return 'c';case 'D':return 'd';case 'E':return 'e';case 'F':return 'f';case 'G':return 'g';case 'H':return 'h';case 'I':return 'i';case 'J':return 'j';case 'K':return 'k';case 'L':return 'l';case 'M':return 'm';case 'N':return 'n';case 'O':return 'o';case 'P':return 'p';case 'Q':return 'q';case 'R':return 'r';case 'S':return 's';case 'T':return 't';case 'U':return 'u';case 'V':return 'v';case 'W':return 'w';case 'X':return 'x';case 'Y':return 'y';case 'Z':return 'z';default:return ch;}
@@ -140,7 +140,7 @@ template<std::integral char_type>
 inline constexpr char_type to_c_upper(char_type ch) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
-	if constexpr(!::fast_io::details::exec_charset_is_ebcdic<char_type>())
+	if constexpr(!::fast_io::details::is_ebcdic<char_type>)
 		return static_cast<char_type>(static_cast<unsigned_char_type>(details::to_c_upper_ascii_impl(static_cast<unsigned_char_type>(ch))));
 	else if constexpr(std::same_as<char,char_type>)
 switch(ch){case 'a':return 'A';case 'b':return 'B';case 'c':return 'C';case 'd':return 'D';case 'e':return 'E';case 'f':return 'F';case 'g':return 'G';case 'h':return 'H';case 'i':return 'I';case 'j':return 'J';case 'k':return 'K';case 'l':return 'L';case 'm':return 'M';case 'n':return 'N';case 'o':return 'O';case 'p':return 'P';case 'q':return 'Q';case 'r':return 'R';case 's':return 'S';case 't':return 'T';case 'u':return 'U';case 'v':return 'V';case 'w':return 'W';case 'x':return 'X';case 'y':return 'Y';case 'z':return 'Z';default:return ch;}
@@ -174,7 +174,7 @@ namespace details
 template<std::integral char_type>
 inline constexpr bool is_c_space_impl(char_type ch) noexcept
 {
-	if constexpr(fast_io::details::exec_charset_is_ebcdic<char_type>())
+	if constexpr(::fast_io::details::is_ebcdic<char_type>)
 	{
 		switch(ch)
 		{
@@ -221,7 +221,7 @@ inline constexpr bool is_c_space(char_type ch) noexcept
 #if 0
 	if constexpr(sizeof(char_type)==1)
 	{
-		if constexpr(fast_io::details::exec_charset_is_ebcdic<char_type>())
+		if constexpr(::fast_io::details::is_ebcdic<char_type>)
 			return details::is_c_space_tb<char_type>[static_cast<std::make_unsigned_t<char_type>>(ch)];
 		else
 			return details::is_c_space_tb<char8_t>[static_cast<std::make_unsigned_t<char_type>>(ch)];
@@ -229,7 +229,7 @@ inline constexpr bool is_c_space(char_type ch) noexcept
 	else
 	{
 #endif
-	if constexpr(fast_io::details::exec_charset_is_ebcdic<char_type>())
+	if constexpr(::fast_io::details::is_ebcdic<char_type>)
 		return details::is_c_space_impl(ch);
 	else
 		return details::is_c_space_impl(static_cast<char32_t>(static_cast<std::make_unsigned_t<char_type>>(ch)));
@@ -290,7 +290,7 @@ template<std::integral char_type>
 inline constexpr bool is_html_whitespace(char_type ch) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
-	if constexpr(fast_io::details::exec_charset_is_ebcdic<char_type>())
+	if constexpr(::fast_io::details::is_ebcdic<char_type>)
 	{
 		return details::is_html_whitespace_ebcdic_impl(static_cast<unsigned_char_type>(ch));
 	}
@@ -400,14 +400,14 @@ template<std::integral char_type>
 inline constexpr char_type const* find_lf_simd_impl(char_type const*,char_type const*) noexcept;
 }
 
-template<::fast_io::freestanding::forward_iterator Iter>
-requires (::std::integral<::fast_io::freestanding::iter_value_t<Iter>>)
+template<::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_lf(Iter first, Iter last)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
-	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>)
+	using char_type = ::std::iter_value_t<Iter>;
+	if constexpr(::std::contiguous_iterator<Iter>)
 	{
-		return ::fast_io::details::find_lf_simd_impl(::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last))-::fast_io::freestanding::to_address(first)+first;
+		return ::fast_io::details::find_lf_simd_impl(::std::to_address(first),::std::to_address(last))-::std::to_address(first)+first;
 	}
 	else
 	{
@@ -415,15 +415,17 @@ inline constexpr Iter find_lf(Iter first, Iter last)
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter find_non_c_space(Iter begin,Iter end)
+template<typename char_type>
+requires ::std::integral<::std::remove_const_t<char_type>>
+inline constexpr char_type* find_non_c_space(char_type* begin,char_type* end)
 {
 	for(;begin!=end&&fast_io::char_category::is_c_space(*begin);++begin);
 	return begin;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter find_c_space(Iter begin,Iter end)
+template<typename char_type>
+requires ::std::integral<::std::remove_const_t<char_type>>
+inline constexpr char_type* find_c_space(char_type* begin,char_type* end)
 {
 	for(;begin!=end&&!fast_io::char_category::is_c_space(*begin);++begin);
 	return begin;
@@ -433,8 +435,9 @@ inline constexpr Iter find_c_space(Iter begin,Iter end)
 deprecate this
 */
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter scan_skip_space(Iter begin, Iter end)
+template<typename char_type>
+requires ::std::integral<::std::remove_const_t<char_type>>
+inline constexpr char_type* scan_skip_space(char_type* begin, char_type* end)
 {
 	return find_non_c_space(begin,end);
 }

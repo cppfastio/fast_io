@@ -5,7 +5,6 @@
 
 int main()
 {
-	constexpr std::size_t buffer_size{10000};
 	constexpr std::size_t N(10000000);
 	auto iso8601_ts{utc(fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime))};
 	{

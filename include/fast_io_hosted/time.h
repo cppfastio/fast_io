@@ -708,7 +708,7 @@ inline std::size_t print_reserve_define_impl(char* first,win32_timezone_t tzt)
 
 inline char* print_reserve_define(io_reserve_type_t<char,win32_timezone_t>, char* first,win32_timezone_t tzt)
 {
-	return details::print_reserve_define_impl(::fast_io::freestanding::to_address(first),tzt)+first;
+	return details::print_reserve_define_impl(::std::to_address(first),tzt)+first;
 }
 
 #else

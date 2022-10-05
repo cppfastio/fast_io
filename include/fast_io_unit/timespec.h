@@ -35,7 +35,7 @@ inline constexpr std::size_t denom_natural_log10(std::uint_least64_t den) noexce
 	return logarithm;
 }
 
-template<std::uint_least64_t lim,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter,details::my_unsigned_integral uint_type>
+template<std::uint_least64_t lim,std::integral char_type,::std::random_access_iterator Iter,details::my_unsigned_integral uint_type>
 inline constexpr Iter subseconds_part_print_sz_impl(Iter it,uint_type nsec) noexcept
 {
 	if constexpr(std::numeric_limits<uint_type>::max()>=lim)
@@ -62,7 +62,7 @@ inline constexpr Iter subseconds_part_print_sz_impl(Iter it,uint_type nsec) noex
 	return it+sz;
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr Iter timespec_print_impl(Iter it,struct timespec spc) noexcept
 {
 	return subseconds_part_print_sz_impl<1000000000UL,char_type>(

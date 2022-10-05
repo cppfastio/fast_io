@@ -51,7 +51,7 @@ public:
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
-	basic_io_io_derived(io_cookie_type_t<handle_type>,Args&& ...args):handle(::fast_io::freestanding::forward<Args>(args)...){}
+	basic_io_io_derived(io_cookie_type_t<handle_type>,Args&& ...args):handle(::std::forward<Args>(args)...){}
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
@@ -187,7 +187,7 @@ public:
 	constexpr
 #endif
 	basic_io_file(io_cookie_type_t<smt>,Args&& ...args)
-		:basic_io_io_observer<ch_type>{new basic_io_io_derived<char_type,smt>(io_cookie_type<smt>,::fast_io::freestanding::forward<Args>(args)...)}{}
+		:basic_io_io_observer<ch_type>{new basic_io_io_derived<char_type,smt>(io_cookie_type<smt>,::std::forward<Args>(args)...)}{}
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
@@ -197,33 +197,33 @@ public:
 	}
 };
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>||std::same_as<ch_type,char>)
+template<std::integral ch_type,::std::contiguous_iterator Iter>
+requires (std::same_as<::std::iter_value_t<Iter>,ch_type>||std::same_as<ch_type,char>)
 constexpr Iter read(basic_io_io_observer<ch_type> iob,Iter begin,Iter end)
 {
-	if constexpr(std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>)
+	if constexpr(std::same_as<::std::iter_value_t<Iter>,ch_type>)
 	{
-		return iob.io_ptr->read_internal(::fast_io::freestanding::to_address(begin),::fast_io::freestanding::to_address(end))-::fast_io::freestanding::to_address(begin)+begin;
+		return iob.io_ptr->read_internal(::std::to_address(begin),::std::to_address(end))-::std::to_address(begin)+begin;
 	}
 	else
 	{
-		auto b(reinterpret_cast<ch_type*>(::fast_io::freestanding::to_address(begin)));
+		auto b(reinterpret_cast<ch_type*>(::std::to_address(begin)));
 		return begin+(iob.io_ptr->read_internal(b,
 			b+(end-begin)*sizeof(*begin))-b)/sizeof(*begin);
 	}
 }
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>||std::same_as<ch_type,char>)
+template<std::integral ch_type,::std::contiguous_iterator Iter>
+requires (std::same_as<::std::iter_value_t<Iter>,ch_type>||std::same_as<ch_type,char>)
 constexpr Iter write(basic_io_io_observer<ch_type> iob,Iter begin,Iter end)
 {
-	if constexpr(std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>)
+	if constexpr(std::same_as<::std::iter_value_t<Iter>,ch_type>)
 	{
-		return iob.io_ptr->write_internal(::fast_io::freestanding::to_address(begin),::fast_io::freestanding::to_address(end))-::fast_io::freestanding::to_address(begin)+begin;
+		return iob.io_ptr->write_internal(::std::to_address(begin),::std::to_address(end))-::std::to_address(begin)+begin;
 	}
 	else
 	{
-		auto b(reinterpret_cast<ch_type const*>(::fast_io::freestanding::to_address(begin)));
+		auto b(reinterpret_cast<ch_type const*>(::std::to_address(begin)));
 		return begin+(iob.io_ptr->write_internal(b,
 			b+(end-begin)*sizeof(*begin))-b)/sizeof(*begin);
 	}

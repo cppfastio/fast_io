@@ -507,12 +507,12 @@ simd_vector<T,N> wrap_add(simd_vector<T,N> a,simd_vector<T,N> b) noexcept
 namespace details
 {
 
-template<::fast_io::freestanding::forward_iterator Iter,typename T,std::size_t size>
+template<::std::forward_iterator Iter,typename T,std::size_t size>
 inline constexpr Iter print_reserve_df_mm_impl(Iter iter,::fast_io::intrinsics::simd_vector<T,size> const& mm) noexcept
 {
 	if constexpr(size==0)
 		return iter;
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	*iter=char_literal_v<u8'(',char_type>;
 	++iter;
 	iter=print_reserve_define(io_reserve_type<char_type,T>,iter,mm[0]);
@@ -537,8 +537,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,intr
 	constexpr std::size_t sz{(1+p)*n+1};
 	return sz;
 }
-template<::fast_io::freestanding::forward_iterator Iter,typename T,std::size_t n>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,intrinsics::simd_vector<T,n>>,Iter iter,intrinsics::simd_vector<T,n> const& t) noexcept
+template<::std::forward_iterator Iter,typename T,std::size_t n>
+inline constexpr Iter print_reserve_define(io_reserve_type_t<::std::iter_value_t<Iter>,intrinsics::simd_vector<T,n>>,Iter iter,intrinsics::simd_vector<T,n> const& t) noexcept
 {
 	return details::print_reserve_df_mm_impl(iter,t);
 }

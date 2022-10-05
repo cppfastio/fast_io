@@ -73,10 +73,10 @@ inline void llvm_ostream_write_impl(::llvm::raw_ostream* os,void const* first_vp
 
 }
 
-template<std::integral char_type,typename T,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,typename T,::std::contiguous_iterator Iter>
 inline constexpr void write(basic_general_raw_ostream_io_observer<char_type,T> osiob,Iter first,Iter last)
 {
-	::fast_io::llvm::details::llvm_ostream_write_impl(osiob.os,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+	::fast_io::llvm::details::llvm_ostream_write_impl(osiob.os,::std::to_address(first),::std::to_address(last));
 }
 
 template<std::integral char_type,typename T>

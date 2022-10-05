@@ -11,23 +11,20 @@ struct basic_ibuffer_view
 	char_type const *curr_ptr{};
 	char_type const *end_ptr{};
 	constexpr basic_ibuffer_view() noexcept = default;
-	template<::fast_io::freestanding::contiguous_iterator Iter>
-	requires std::same_as<std::remove_cvref_t<::fast_io::freestanding::iter_value_t<Iter>>,char_type>
-	constexpr basic_ibuffer_view(Iter first,Iter last) noexcept:begin_ptr{::fast_io::freestanding::to_address(first)},curr_ptr{begin_ptr},end_ptr{curr_ptr+(last-first)}{}
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
-//std::ranges are not freestanding
+	template<::std::contiguous_iterator Iter>
+	requires std::same_as<std::remove_cvref_t<::std::iter_value_t<Iter>>,char_type>
+	constexpr basic_ibuffer_view(Iter first,Iter last) noexcept:begin_ptr{::std::to_address(first)},curr_ptr{begin_ptr},end_ptr{curr_ptr+(last-first)}{}
 	template<std::ranges::contiguous_range rg>
 	requires (std::same_as<::std::ranges::range_value_t<rg>,char_type>&&!::std::is_array_v<std::remove_cvref_t<rg>>)
 	explicit constexpr basic_ibuffer_view(rg& r) noexcept : basic_ibuffer_view(::std::ranges::cbegin(r),::std::ranges::cend(r)){}
-#endif
 	constexpr void clear() noexcept
 	{
 		curr_ptr=begin_ptr;
 	}
 };
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
+requires std::same_as<::std::iter_value_t<Iter>,ch_type>
 [[nodiscard]] inline constexpr Iter read(basic_ibuffer_view<ch_type>& view,Iter first,Iter last) noexcept
 {
 	auto diff{last-first};
@@ -81,17 +78,14 @@ struct basic_obuffer_view
 	using char_type = ch_type;
 	char_type *begin_ptr{},*curr_ptr{},*end_ptr{};
 	constexpr basic_obuffer_view() noexcept = default;
-	template<::fast_io::freestanding::contiguous_iterator Iter>
-	requires std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>
-	constexpr basic_obuffer_view(Iter first,Iter last) noexcept:begin_ptr{::fast_io::freestanding::to_address(first)},
+	template<::std::contiguous_iterator Iter>
+	requires std::same_as<::std::iter_value_t<Iter>,char_type>
+	constexpr basic_obuffer_view(Iter first,Iter last) noexcept:begin_ptr{::std::to_address(first)},
 		curr_ptr{begin_ptr},
-		end_ptr{::fast_io::freestanding::to_address(last)}{}
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
-//std::ranges are not freestanding
+		end_ptr{::std::to_address(last)}{}
 	template<std::ranges::contiguous_range rg>
 	requires (std::same_as<::std::ranges::range_value_t<rg>,char_type>&&!::std::is_array_v<std::remove_cvref_t<rg>>)
 	explicit constexpr basic_obuffer_view(rg& r) noexcept : basic_obuffer_view(::std::ranges::begin(r),::std::ranges::end(r)){}
-#endif
 	constexpr void clear() noexcept
 	{
 		curr_ptr=begin_ptr;
@@ -141,8 +135,8 @@ struct basic_obuffer_view
 	}
 };
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
+requires std::same_as<::std::iter_value_t<Iter>,ch_type>
 inline constexpr void write(basic_obuffer_view<ch_type>& view,Iter first,Iter last) noexcept
 {
 	auto diff{last-first};

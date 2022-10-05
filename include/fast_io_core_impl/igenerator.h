@@ -41,7 +41,7 @@ inline constexpr basic_input_buffer_iterator<input>& operator++(basic_input_buff
 }
 
 template<buffer_input_stream input>
-inline constexpr bool operator!=(basic_input_buffer_iterator<input> a, ::fast_io::freestanding::default_sentinel_t)
+inline constexpr bool operator!=(basic_input_buffer_iterator<input> a, ::std::default_sentinel_t)
 {
 	if constexpr(contiguous_input_stream<input>)
 		return ibuffer_curr(*a.ptr)!=ibuffer_end(*a.ptr);
@@ -50,7 +50,7 @@ inline constexpr bool operator!=(basic_input_buffer_iterator<input> a, ::fast_io
 }
 
 template<buffer_input_stream input>
-inline constexpr bool operator==(basic_input_buffer_iterator<input> a, ::fast_io::freestanding::default_sentinel_t)
+inline constexpr bool operator==(basic_input_buffer_iterator<input> a, ::std::default_sentinel_t)
 {
 	if constexpr(contiguous_input_stream<input>)
 		return ibuffer_curr(*a.ptr)==ibuffer_end(*a.ptr);
@@ -59,7 +59,7 @@ inline constexpr bool operator==(basic_input_buffer_iterator<input> a, ::fast_io
 }
 
 template<buffer_input_stream input>
-inline constexpr bool operator!=(::fast_io::freestanding::default_sentinel_t,basic_input_buffer_iterator<input> a)
+inline constexpr bool operator!=(::std::default_sentinel_t,basic_input_buffer_iterator<input> a)
 {
 	if constexpr(contiguous_input_stream<input>)
 		return ibuffer_curr(*a.ptr)!=ibuffer_end(*a.ptr);
@@ -68,7 +68,7 @@ inline constexpr bool operator!=(::fast_io::freestanding::default_sentinel_t,bas
 }
 
 template<buffer_input_stream input>
-inline constexpr bool operator==(::fast_io::freestanding::default_sentinel_t,basic_input_buffer_iterator<input> a)
+inline constexpr bool operator==(::std::default_sentinel_t,basic_input_buffer_iterator<input> a)
 {
 	if constexpr(contiguous_input_stream<input>)
 		return ibuffer_curr(*a.ptr)==ibuffer_end(*a.ptr);
@@ -89,7 +89,7 @@ inline constexpr basic_input_buffer_iterator<input> begin(basic_input_buffer_gen
 }
 
 template<buffer_input_stream input>
-inline constexpr ::fast_io::freestanding::default_sentinel_t end(basic_input_buffer_generator<input>)
+inline constexpr ::std::default_sentinel_t end(basic_input_buffer_generator<input>)
 {
 	return {};
 }

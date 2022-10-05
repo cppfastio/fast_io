@@ -100,10 +100,10 @@ inline void mfc_scatter_write_impl(CFile* cfp,io_scatter_t const* scats,std::siz
 
 }
 
-template<std::integral T,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral T,::std::contiguous_iterator Iter>
 inline void write(basic_mfc_io_observer<T> hd,Iter first,Iter last)
 {
-	::fast_io::details::mfc_write_impl(hd.phandle,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+	::fast_io::details::mfc_write_impl(hd.phandle,::std::to_address(first),::std::to_address(last));
 }
 
 template<std::integral T>
@@ -118,10 +118,10 @@ inline void flush(basic_mfc_io_observer<T> hd)
 	hd.phandle->Flush();
 }
 
-template<std::integral T,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral T,::std::contiguous_iterator Iter>
 inline Iter read(basic_mfc_io_observer<T> hd,Iter first,Iter last)
 {
-	return first+mfc_read_impl(hd.phandle,::fast_io::freestanding::to_address(first),(last-first)*sizeof(*first))/sizeof(T);
+	return first+mfc_read_impl(hd.phandle,::std::to_address(first),(last-first)*sizeof(*first))/sizeof(T);
 }
 
 template<std::integral ch_type>

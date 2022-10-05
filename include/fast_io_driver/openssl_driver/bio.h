@@ -187,7 +187,7 @@ template<stream stm,typename... Args>
 requires (std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
 inline void* construct_cookie_by_args_trivial(Args&& ...args)
 {
-	stm s{::fast_io::freestanding::forward<Args>(args)...};
+	stm s{::std::forward<Args>(args)...};
 #if __cpp_lib_bit_cast >= 201806L
 	if constexpr(sizeof(stm)==sizeof(void*))
 		return __builtin_bit_cast(void*,s);
@@ -226,11 +226,11 @@ inline BIO* construct_bio_by_args(Args&&... args)
 {
 	if constexpr(std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
 	{
-		return construct_bio_by_t<stm>(construct_cookie_by_args_trivial<stm>(::fast_io::freestanding::forward<Args>(args)...));
+		return construct_bio_by_t<stm>(construct_cookie_by_args_trivial<stm>(::std::forward<Args>(args)...));
 	}
 	else
 	{
-		return construct_bio_by_phase2<stm>(new stm(::fast_io::freestanding::forward<Args>(args)...));
+		return construct_bio_by_phase2<stm>(new stm(::std::forward<Args>(args)...));
 	}
 }
 
@@ -313,7 +313,7 @@ public:
 	template<stream stm,typename ...Args>
 	requires (!std::is_reference_v<stm>&&std::constructible_from<stm,Args...>)
 	basic_bio_file(::fast_io::io_cookie_type_t<stm>,Args&& ...args):
-		basic_bio_io_observer<char_type>{details::construct_bio_by_args<stm>(::fast_io::freestanding::forward<Args>(args)...)}
+		basic_bio_io_observer<char_type>{details::construct_bio_by_args<stm>(::std::forward<Args>(args)...)}
 	{
 	}
 	template<c_family family>
@@ -323,16 +323,16 @@ public:
 		bmv.fp=nullptr;
 	}
 	basic_bio_file(basic_posix_file<char_type>&& bmv,fast_io::open_mode om):
-		basic_bio_file(basic_c_file<char_type>(::fast_io::freestanding::move(bmv),om),om){}
+		basic_bio_file(basic_c_file<char_type>(::std::move(bmv),om),om){}
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 	template<win32_family family>
 	basic_bio_file(basic_win32_family_file<family,char_type>&& win32_handle,fast_io::open_mode om):
-		basic_bio_file(basic_posix_file<char_type>(::fast_io::freestanding::move(win32_handle),om),om)
+		basic_bio_file(basic_posix_file<char_type>(::std::move(win32_handle),om),om)
 	{
 	}
 	template<nt_family family>
 	basic_bio_file(basic_nt_family_file<family,char_type>&& nt_handle,open_mode om):
-		basic_bio_file(basic_posix_file<char_type>(::fast_io::freestanding::move(nt_handle),om),to_native_c_mode(om))
+		basic_bio_file(basic_posix_file<char_type>(::std::move(nt_handle),om),to_native_c_mode(om))
 	{
 	}
 #endif
@@ -417,16 +417,16 @@ inline posix_file_status bio_status_impl(BIO* bio)
 #endif
 }
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_bio_io_observer<ch_type> iob,Iter begin,Iter end)
 {
-	return begin+details::bio_read_impl(iob.bio,::fast_io::freestanding::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
+	return begin+details::bio_read_impl(iob.bio,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
 }
 
-template<std::integral ch_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_bio_io_observer<ch_type> iob,Iter begin,Iter end)
 {
-	return begin+details::bio_write_impl(iob.bio,::fast_io::freestanding::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
+	return begin+details::bio_write_impl(iob.bio,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
 }
 
 #if __cpp_lib_three_way_comparison >= 201907L

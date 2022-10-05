@@ -80,7 +80,7 @@ inline constexpr std::size_t cstr_nlen(char_type const* cstr,std::size_t n) noex
 		if constexpr(std::same_as<char_type,char>)
 		{
 #if defined(__has_builtin)
-#if __has_builtin(__builtin_strlen)
+#if __has_builtin(__builtin_strnlen)
 			return __builtin_strnlen(cstr,n);
 #else
 			return details::dummy_cstr_nlen(cstr,n);

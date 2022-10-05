@@ -125,10 +125,10 @@ inline void atl_scatter_write_impl(CAtlFile* cfp,io_scatter_t const* scats,std::
 
 }
 
-template<std::integral T,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral T,::std::contiguous_iterator Iter>
 inline void write(basic_atl_io_observer<T> hd,Iter first,Iter last)
 {
-	::fast_io::details::atl_write_impl(hd.phandle,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+	::fast_io::details::atl_write_impl(hd.phandle,::std::to_address(first),::std::to_address(last));
 }
 
 template<std::integral T>
@@ -143,10 +143,10 @@ inline void flush(basic_atl_io_observer<T> hd)
 	hd.phandle->Flush();
 }
 
-template<std::integral T,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral T,::std::contiguous_iterator Iter>
 inline Iter read(basic_atl_io_observer<T> hd,Iter first,Iter last)
 {
-	return first+atl_read_impl(hd.phandle,::fast_io::freestanding::to_address(first),(last-first)*sizeof(*first))/sizeof(T);
+	return first+atl_read_impl(hd.phandle,::std::to_address(first),(last-first)*sizeof(*first))/sizeof(T);
 }
 
 template<std::integral ch_type>

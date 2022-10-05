@@ -23,8 +23,8 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,file
 
 namespace details
 {
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator caiter>
-inline constexpr caiter print_file_status_impl(caiter it,file_type f) noexcept
+template<std::integral char_type>
+inline constexpr char_type* print_file_status_impl(char_type* it,file_type f) noexcept
 {
 	if constexpr(std::same_as<char_type,char>)
 	{

@@ -528,10 +528,10 @@ template<
 encoding_scheme src_scheme=encoding_scheme::execution_charset,
 encoding_scheme dst_scheme=encoding_scheme::execution_charset,
 std::integral src_char_type,
-::fast_io::freestanding::contiguous_iterator Iter>
-inline constexpr Iter print_reserve_define(
-io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,code_cvt_t<src_scheme,dst_scheme,src_char_type>>,
-Iter iter,
+::std::integral char_type>
+inline constexpr char_type* print_reserve_define(
+io_reserve_type_t<char_type,code_cvt_t<src_scheme,dst_scheme,src_char_type>>,
+char_type* iter,
 code_cvt_t<src_scheme,dst_scheme,src_char_type> v) noexcept
 {
 	return details::codecvt::general_code_cvt_full(v.reference.base,v.reference.base+v.reference.len,iter);

@@ -20,13 +20,13 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter it,std::chrono::weekday wkd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* __restrict all,char_type* it,std::chrono::weekday wkd) noexcept
 {
 	unsigned value{wkd.c_encoding()};
 	if(7u<value)
 	{
-		return print_reserve_define(io_reserve_type<::fast_io::freestanding::iter_value_t<Iter>,unsigned>,it,value);
+		return print_reserve_define(io_reserve_type<char_type,unsigned>,it,value);
 	}
 	else
 	{
@@ -50,7 +50,7 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::integral char_type>
+template<::std::random_access_iterator Iter,std::integral char_type>
 inline constexpr Iter print_reserve_define(basic_lc_all<char_type> const* __restrict all,Iter iter,std::chrono::month m) noexcept
 {
 	unsigned value(m);
@@ -152,13 +152,13 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter it,abbr_t<std::chrono::weekday> wkd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* __restrict all,char_type* it,abbr_t<std::chrono::weekday> wkd) noexcept
 {
 	unsigned value(wkd.reference.c_encoding());
 	if(7u<value)
 	{
-		return print_reserve_define(io_reserve_type<::fast_io::freestanding::iter_value_t<Iter>,unsigned>,it,value);
+		return print_reserve_define(io_reserve_type<char_type,unsigned>,it,value);
 	}
 	else
 	{
@@ -182,7 +182,7 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::integral char_type>
+template<::std::random_access_iterator Iter,std::integral char_type>
 inline constexpr Iter print_reserve_define(basic_lc_all<char_type> const* __restrict all,Iter iter,abbr_t<std::chrono::month> m) noexcept
 {
 	unsigned value(m.reference);
@@ -213,7 +213,7 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,std::integral char_type>
+template<::std::random_access_iterator Iter,std::integral char_type>
 inline constexpr Iter print_reserve_define(basic_lc_all<char_type> const* __restrict all,Iter iter,abbr_t<alt_t<std::chrono::month>> m) noexcept
 {
 	unsigned value(m.reference.reference);
@@ -262,7 +262,7 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	}
 }
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter,typename T>
+template<std::integral char_type,::std::random_access_iterator Iter,typename T>
 requires (std::same_as<T,std::chrono::month>||
 std::same_as<T,std::chrono::day>||
 std::same_as<T,std::chrono::weekday>)
@@ -298,8 +298,8 @@ inline constexpr std::size_t print_reserve_size(basic_lc_all<char_type> const* _
 	return unitsize*all->time.d_fmt.len;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* __restrict all,Iter iter,std::chrono::year_month_day m) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* __restrict all,char_type* iter,std::chrono::year_month_day m) noexcept
 {
 
 }

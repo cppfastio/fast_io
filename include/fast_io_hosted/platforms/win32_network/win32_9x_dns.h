@@ -123,21 +123,21 @@ inline constexpr win32_9x_dns_iterator cbegin(win32_9x_dns_io_observer w9xniob) 
 	return {w9xniob.res,0u};
 }
 
-inline constexpr ::fast_io::freestanding::default_sentinel_t end(win32_9x_dns_io_observer) noexcept
+inline constexpr ::std::default_sentinel_t end(win32_9x_dns_io_observer) noexcept
 {
 	return {};
 }
 
-inline constexpr ::fast_io::freestanding::default_sentinel_t cend(win32_9x_dns_io_observer) noexcept
+inline constexpr ::std::default_sentinel_t cend(win32_9x_dns_io_observer) noexcept
 {
 	return {};
 }
 
-inline constexpr bool operator==(win32_9x_dns_iterator a, ::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator==(win32_9x_dns_iterator a, ::std::default_sentinel_t) noexcept
 {
 	return a.res==nullptr||(a.res->h_addr_list[a.pos]==nullptr);
 }
-inline constexpr bool operator!=(win32_9x_dns_iterator a, ::fast_io::freestanding::default_sentinel_t b) noexcept
+inline constexpr bool operator!=(win32_9x_dns_iterator a, ::std::default_sentinel_t b) noexcept
 {
 	return !(a==b);
 }

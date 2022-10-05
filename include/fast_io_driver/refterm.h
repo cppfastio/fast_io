@@ -11,7 +11,7 @@ inline constexpr ::fast_io::manipulators::scalar_flags fast_pipe_hex_scl_flg{.ba
 template<win32_family family>
 inline void* win32_family_refterm_fast_pipe_impl(open_mode mode,perms pm)
 {
-	std::uint_least32_t process_id{win32::GetCurrentProcessId()};
+	std::uint_least32_t process_id{::fast_io::win32::GetCurrentProcessId()};
 	using type = ::fast_io::mnp::scalar_manip_t<fast_pipe_hex_scl_flg,std::uint_least32_t>;
 	if constexpr(family==win32_family::wide_nt)
 	{

@@ -3,22 +3,32 @@
 /*
 
 GCC provides more headers in freestanding environment than standard requires because WG21 sucks very badly.
-no std::move, std::forward, std::addressof. WTF???
+no std::array, std::copy and others
 
 */
+#if defined(__GLIBCXX__) &&__has_include(<bits/ranges_base.h>) && __has_include(<bits/stl_iterator.h>)
+#include<initializer_list>
+#include<bits/stl_iterator.h>
+#include<bits/ranges_base.h>
+#else
+#include<iterator>
+#include<ranges>
+#endif
 
-#include"to_address.h"
+#if defined(__GLIBCXX__) &&__has_include(<bits/move.h>)
+#include<bits/move.h>
+#else
+#include<utility>
+#endif
+
+#if defined(__GLIBCXX__) && __has_include(<bits/ptr_traits.h>)
+#include<bits/ptr_traits.h>
+#else
+#include<memory>
+#endif
+
 #include"array.h"
-#include"iterator.h"
 #include"cstr_len.h"
 #include"bytes.h"
 #include"algorithm.h"
 #include"relocatable.h"
-
-#if _LIBCPP_VERSION
-#if __has_include(<__ranges/concepts.h>)
-#include<__ranges/concepts.h>
-#elif __has_include(<ranges>)
-#include<ranges>
-#endif
-#endif

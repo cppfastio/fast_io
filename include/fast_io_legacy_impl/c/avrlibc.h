@@ -47,11 +47,11 @@ inline char* avr_libc_read_internal_impl(FILE* fp,char* first,char* last)
 
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr void write(basic_c_family_io_observer<c_family::emulated_unlocked,char_type> ciob,Iter first,Iter last)
 {
-	::fast_io::details::avr_libc_write_internal_impl(ciob.fp,reinterpret_cast<char const*>(::fast_io::freestanding::to_address(first)),
-					reinterpret_cast<char const*>(::fast_io::freestanding::to_address(last)));
+	::fast_io::details::avr_libc_write_internal_impl(ciob.fp,reinterpret_cast<char const*>(::std::to_address(first)),
+					reinterpret_cast<char const*>(::std::to_address(last)));
 }
 
 template<std::integral char_type>
@@ -60,12 +60,12 @@ inline constexpr void scatter_write(basic_c_family_io_observer<c_family::emulate
 	::fast_io::details::avr_libc_scatter_write_impl_with_normal_write(ciob.fp,scatters.base,scatters.len);
 }
 
-template<std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr Iter read(basic_c_family_io_observer<c_family::emulated_unlocked,char_type> ciob,Iter first,Iter last)
 {
-	auto first_addr{reinterpret_cast<char*>(::fast_io::freestanding::to_address(first))};
+	auto first_addr{reinterpret_cast<char*>(::std::to_address(first))};
 	return (::fast_io::details::avr_libc_read_internal_impl(ciob.fp,
-	first_addr,reinterpret_cast<char*>(::fast_io::freestanding::to_address(last)))-first_addr)+first;
+	first_addr,reinterpret_cast<char*>(::std::to_address(last)))-first_addr)+first;
 }
 
 template<std::integral char_type>

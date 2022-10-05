@@ -21,7 +21,7 @@ struct compile_time_floating_value<true,ch_type,0>		//if you see ~ which means i
 	ch_type decimal_point{};
 };
 
-template<::fast_io::freestanding::contiguous_iterator Iter,my_unsigned_integral U>
+template<::std::contiguous_iterator Iter,my_unsigned_integral U>
 inline constexpr std::size_t fp_output_unsigned(Iter iter,U i)
 {
 	if(std::is_constant_evaluated())
@@ -42,7 +42,7 @@ inline constexpr std::size_t fp_output_unsigned(Iter iter,U i)
 	}
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter,my_unsigned_integral U>
+template<::std::contiguous_iterator Iter,my_unsigned_integral U>
 inline constexpr void fp_output_unsigned_with_len(Iter iter,U i,std::size_t len) noexcept
 {
 	if(std::is_constant_evaluated())
@@ -61,14 +61,14 @@ inline constexpr void fp_output_unsigned_with_len(Iter iter,U i,std::size_t len)
 	}
 }
 /*To remove*/
-template<bool control,typename T,char8_t static_decimal_point,my_unsigned_integral U,::fast_io::freestanding::contiguous_iterator Iter>
+template<bool control,typename T,char8_t static_decimal_point,my_unsigned_integral U,::std::contiguous_iterator Iter>
 inline constexpr std::size_t fp_output_unsigned_point([[maybe_unused]]compile_time_floating_value<control,T,static_decimal_point> decm,U value,Iter str) noexcept
 {
 	if(value >= 10)[[likely]]
 	{
 		if(std::is_constant_evaluated())
 		{
-			std::size_t ret(optimize_size::output_unsigned(::fast_io::freestanding::to_address(str)+1,value));
+			std::size_t ret(optimize_size::output_unsigned(::std::to_address(str)+1,value));
 			*str=str[1];
 			if constexpr(control)
 				str[1]=decm.decimal_point;
@@ -87,7 +87,7 @@ inline constexpr std::size_t fp_output_unsigned_point([[maybe_unused]]compile_ti
 #else
 				twodigits::fp;
 #endif
-			std::size_t ret(algo_decision::output_unsigned(::fast_io::freestanding::to_address(str)+1,value));
+			std::size_t ret(algo_decision::output_unsigned(::std::to_address(str)+1,value));
 			*str=str[1];
 			if constexpr(control)
 				str[1]=decm.decimal_point;
@@ -105,10 +105,10 @@ inline constexpr std::size_t fp_output_unsigned_point([[maybe_unused]]compile_ti
 
 
 
-template<char8_t decimal_point,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
+template<char8_t decimal_point,::std::random_access_iterator Iter,my_unsigned_integral U>
 inline constexpr std::size_t fp_output_unsigned_point_no_dcm(U value,Iter str) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	if(value >= 10)[[likely]]
 	{
 		if(std::is_constant_evaluated())
@@ -184,11 +184,11 @@ inline constexpr std::size_t fp_output_unsigned_point_no_dcm(U value,Iter str) n
 
 namespace transparent
 {
-template<char8_t start=0,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
+template<char8_t start=0,::std::random_access_iterator Iter,my_unsigned_integral U>
 requires (start==0)
 inline constexpr std::size_t output_unsigned(Iter str,U value)
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	std::size_t len{chars_len<10,true>(value)};
 	str+=len-1;
 	for(std::size_t i{};i!=len;++i)
@@ -203,7 +203,7 @@ inline constexpr std::size_t output_unsigned(Iter str,U value)
 }
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter,my_unsigned_integral U>
+template<::std::contiguous_iterator Iter,my_unsigned_integral U>
 inline constexpr std::size_t fp_output_unsigned_trans(Iter iter,U i)
 {
 	if(std::is_constant_evaluated())
@@ -225,7 +225,7 @@ inline constexpr std::size_t fp_output_unsigned_trans(Iter iter,U i)
 	}
 }
 
-template<::fast_io::freestanding::contiguous_iterator Iter,my_unsigned_integral U>
+template<::std::contiguous_iterator Iter,my_unsigned_integral U>
 inline constexpr void fp_output_two_digits(Iter iter,U i)
 {
 #ifdef __OPTIMIZE_SIZE__
@@ -234,9 +234,9 @@ inline constexpr void fp_output_two_digits(Iter iter,U i)
 	*iter=u;
 	iter[1]=v;
 #elif defined(FAST_IO_OPTIMIZE_TIME)
-	my_copy_n(jiaendu::static_tables<::fast_io::freestanding::iter_value_t<Iter>>::table2[i].data(),2,iter);
+	my_copy_n(jiaendu::static_tables<::std::iter_value_t<Iter>>::table2[i].data(),2,iter);
 #else
-	constexpr auto tb(get_shared_inline_constexpr_base_table<::fast_io::freestanding::iter_value_t<Iter>,10,false>().data());
+	constexpr auto tb(get_shared_inline_constexpr_base_table<::std::iter_value_t<Iter>,10,false>().data());
 	my_copy_n(tb[i].data(),2,iter);
 #endif
 }

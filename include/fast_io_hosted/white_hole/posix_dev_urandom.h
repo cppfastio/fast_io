@@ -12,7 +12,7 @@ public:
 	native_handle_type device;
 	template<typename... Args>
 	requires ((sizeof...(Args)!=0)&&std::constructible_from<native_handle_type,Args...>)
-	constexpr posix_dev_urandom(Args&& ...args):device(::fast_io::freestanding::forward<Args>(args)...){}
+	constexpr posix_dev_urandom(Args&& ...args):device(::std::forward<Args>(args)...){}
 	constexpr posix_dev_urandom():device(u8"/dev/urandom",fast_io::open_mode::in){}
 	constexpr auto& native_handle() noexcept
 	{
@@ -28,7 +28,7 @@ public:
 	}
 };
 
-template<input_stream T,::fast_io::freestanding::contiguous_iterator Iter>
+template<input_stream T,::std::contiguous_iterator Iter>
 inline constexpr Iter read(posix_dev_urandom<T>& t,Iter begin,Iter end)
 {
 	return read(t.device,begin,end);

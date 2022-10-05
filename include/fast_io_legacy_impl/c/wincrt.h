@@ -554,26 +554,26 @@ inline void obuffer_overflow(basic_c_io_observer_unlocked<char_type> ciob,char_t
 	details::wincrt_fp_overflow_impl(ciob.fp,ch);
 }
 
-template<c_family family,std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<char_type,char>||std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>)
+template<c_family family,std::integral char_type,::std::contiguous_iterator Iter>
+requires (std::same_as<char_type,char>||std::same_as<::std::iter_value_t<Iter>,char_type>)
 inline Iter read(basic_c_family_io_observer<family,char_type> ciob,Iter bg,Iter ed)
 {
-	if constexpr(!std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>||!std::is_pointer_v<Iter>)
-		return read(ciob,reinterpret_cast<char_type*>(::fast_io::freestanding::to_address(bg)),
-				reinterpret_cast<char_type*>(::fast_io::freestanding::to_address(ed)))-
-				reinterpret_cast<char_type*>(::fast_io::freestanding::to_address(bg))+bg;
+	if constexpr(!std::same_as<::std::iter_value_t<Iter>,char_type>||!std::is_pointer_v<Iter>)
+		return read(ciob,reinterpret_cast<char_type*>(::std::to_address(bg)),
+				reinterpret_cast<char_type*>(::std::to_address(ed)))-
+				reinterpret_cast<char_type*>(::std::to_address(bg))+bg;
 	else
 		return details::wincrt_fp_read_impl<family>(ciob.fp,bg,ed);
 }
 
 
-template<c_family family,std::integral char_type,::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<char_type,char>||std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>)
+template<c_family family,std::integral char_type,::std::contiguous_iterator Iter>
+requires (std::same_as<char_type,char>||std::same_as<::std::iter_value_t<Iter>,char_type>)
 inline void write(basic_c_family_io_observer<family,char_type> ciob,Iter bg,Iter ed)
 {
-	if constexpr(!std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char_type>||!std::is_pointer_v<Iter>)
-		write(ciob,reinterpret_cast<char_type*>(::fast_io::freestanding::to_address(bg)),
-				reinterpret_cast<char_type*>(::fast_io::freestanding::to_address(ed)));
+	if constexpr(!std::same_as<::std::iter_value_t<Iter>,char_type>||!std::is_pointer_v<Iter>)
+		write(ciob,reinterpret_cast<char_type*>(::std::to_address(bg)),
+				reinterpret_cast<char_type*>(::std::to_address(ed)));
 	else
 		details::wincrt_fp_write_impl<family>(ciob.fp,bg,ed);
 }

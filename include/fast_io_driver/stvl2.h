@@ -11,18 +11,17 @@ namespace details
 template<std::integral char_type>
 inline constexpr std::size_t cal_stvl2_cstr_reserved_size(std::size_t sz) noexcept
 {
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	if constexpr(sizeof(char_type)==1&&!ebcdic)
 		return sz;
 	else
 		return cal_full_reserve_size<1,sizeof(char_type)>(sz);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag(Iter iter,stvl2::stvl2_header_tag tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_header_tag(char_type* iter,stvl2::stvl2_header_tag tg) noexcept
 {
 	using enum stvl2::stvl2_header_tag;
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		switch(tg)
@@ -95,10 +94,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag(Iter iter,s
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_tag(Iter iter,stvl2::stvl2_tag tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_tag(char_type* iter,stvl2::stvl2_tag tg) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("identifier: ",iter);
@@ -132,10 +130,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_tag(Iter iter,stvl2::s
 	return print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.next);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_header(Iter iter,stvl2::stvl2_header tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_header(char_type* iter,stvl2::stvl2_header tg) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("entry_point: ",iter);
@@ -189,10 +186,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header(Iter iter,stvl2
 	return print_reserve_define(io_reserve_type<char_type,void const*>,iter,tg.tags_root);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag_framebuffer(Iter iter,stvl2::stvl2_header_tag_framebuffer tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_header_tag_framebuffer(char_type* iter,stvl2::stvl2_header_tag_framebuffer tg) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	iter=print_reserve_define_impl_for_stvl2_tag(iter,tg);
 	if constexpr(std::same_as<char_type,char>)
 	{
@@ -237,10 +233,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag_framebuffer
 	return print_reserve_define(io_reserve_type<char_type,std::uint_least16_t>,iter,tg.framebuffer_bpp);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag_smp(Iter iter,stvl2::stvl2_header_tag_smp tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_header_tag_smp(char_type* iter,stvl2::stvl2_header_tag_smp tg) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	iter=print_reserve_define_impl_for_stvl2_tag(iter,tg);
 	if constexpr(std::same_as<char_type,char>)
 		iter=copy_string_literal("\nflags: ",iter);
@@ -255,11 +250,10 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_header_tag_smp(Iter it
 	return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,tg.flags);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag(Iter iter,stvl2::stvl2_struct_tag tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_struct_tag(char_type* iter,stvl2::stvl2_struct_tag tg) noexcept
 {
 	using enum stvl2::stvl2_struct_tag;
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		switch(tg)
@@ -362,11 +356,10 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag(Iter iter,s
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_mmap_type(Iter iter,stvl2::stvl2_mmap_type tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_mmap_type(char_type* iter,stvl2::stvl2_mmap_type tg) noexcept
 {
 	using enum stvl2::stvl2_mmap_type;
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		switch(tg)
@@ -440,11 +433,10 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_mmap_type(Iter iter,st
 }
 
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_firmware_flags(Iter iter,stvl2::stvl2_firmware_flags tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_firmware_flags(char_type* iter,stvl2::stvl2_firmware_flags tg) noexcept
 {
-	using enum stvl2::stvl2_firmware_flags;
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using enum stvl2::stvl2_firmware_flags;\
 	if constexpr(std::same_as<char_type,char>)
 	{
 		switch(tg)
@@ -501,11 +493,10 @@ inline constexpr std::size_t constexpr_stvl2_u8strlen(char8_t const* strlen) noe
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter deal_with_stvl2_cstr(Iter iter,char8_t const* u8cstr) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* deal_with_stvl2_cstr(char_type* iter,char8_t const* u8cstr) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	if constexpr(sizeof(char_type)==1&&!ebcdic)
 		return non_overlapped_copy_n(u8cstr,constexpr_stvl2_u8strlen(u8cstr),iter);
 	else
@@ -515,10 +506,9 @@ inline constexpr Iter deal_with_stvl2_cstr(Iter iter,char8_t const* u8cstr) noex
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_struct(Iter iter,stvl2::stvl2_struct const& st) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_struct(char_type* iter,stvl2::stvl2_struct const& st) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("bootloader_brand: ",iter);
@@ -562,10 +552,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct(Iter iter,stvl2
 	return print_reserve_define(io_reserve_type<char_type,void const*>,iter,st.tags_root);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_cmdline(Iter iter,stvl2::stvl2_struct_tag_cmdline st) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_struct_tag_cmdline(char_type* iter,stvl2::stvl2_struct_tag_cmdline st) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	iter=print_reserve_define_impl_for_stvl2_tag(iter,st);
 	if constexpr(std::same_as<char_type,char>)
 		iter=copy_string_literal("\ncmdline: ",iter);
@@ -580,7 +569,7 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_cmdline(Ite
 	return print_reserve_define(io_reserve_type<char_type,std::uint_least64_t>,iter,st.cmdline);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,typename T>
+template<::std::integral char_type,typename T>
 requires (
 	std::same_as<T,stvl2::stvl2_struct_tag_modules>||
 	std::same_as<T,stvl2::stvl2_struct_tag_memmap>||
@@ -591,9 +580,8 @@ requires (
 	std::same_as<T,stvl2::stvl2_struct_tag_mmio32_uart>||
 	std::same_as<T,stvl2::stvl2_struct_vmap>||
 	std::same_as<T,stvl2::stvl2_struct_tag_dtb>)
-inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_single(Iter iter,T st) noexcept
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_struct_tag_single(char_type* iter,T st) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	iter=print_reserve_define_impl_for_stvl2_tag(iter,st);
 	if constexpr(std::same_as<T,stvl2::stvl2_struct_tag_modules>)
 	{
@@ -712,11 +700,10 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_single(Iter
 	}
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_framebuffer(Iter iter,stvl2::stvl2_struct_tag_framebuffer tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_struct_tag_framebuffer(char_type* iter,stvl2::stvl2_struct_tag_framebuffer tg) noexcept
 {
 	iter=print_reserve_define_impl_for_stvl2_tag(iter,tg);
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("\nframebuffer_addr: ",iter);
@@ -851,10 +838,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_framebuffer
 }
 
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_module(Iter iter,stvl2::stvl2_module st) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_module(char_type* iter,stvl2::stvl2_module st) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("module_begin: ",iter);
@@ -898,10 +884,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_module(Iter iter,stvl2
 	return deal_with_stvl2_cstr(iter,st.module_string);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_mmap_entry(Iter iter,stvl2::stvl2_mmap_entry st) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_mmap_entry(char_type* iter,stvl2::stvl2_mmap_entry st) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("base: ",iter);
@@ -955,10 +940,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_mmap_entry(Iter iter,s
 	return print_reserve_define(io_reserve_type<char_type,std::uint_least32_t>,iter,st.unused);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_smp_info(Iter iter,stvl2::stvl2_smp_info st) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_smp_info(char_type* iter,stvl2::stvl2_smp_info st) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	if constexpr(std::same_as<char_type,char>)
 	{
 		iter=copy_string_literal("process_id: ",iter);
@@ -1022,10 +1006,9 @@ inline constexpr Iter print_reserve_define_impl_for_stvl2_smp_info(Iter iter,stv
 	return print_reserve_define(io_reserve_type<char_type,void const*>,iter,st.extra_argument);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define_impl_for_stvl2_struct_tag_smp(Iter iter,stvl2::stvl2_struct_tag_smp st) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define_impl_for_stvl2_struct_tag_smp(char_type* iter,stvl2::stvl2_struct_tag_smp st) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	iter=print_reserve_define_impl_for_stvl2_tag(iter,st);
 	if constexpr(std::same_as<char_type,char>)
 	{
@@ -1415,62 +1398,62 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,stvl
 		return tag_size+details::string_literal_size(u8"\nflags: \nbsp_lapic_id: \nunused: \ncpu_count: ");
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_tag>,Iter iter,stvl2::stvl2_tag tg) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_tag>,char_type* iter,stvl2::stvl2_tag tg) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_tag(iter,tg);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_header_tag>,Iter iter,stvl2::stvl2_header_tag hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_header_tag>,char_type* iter,stvl2::stvl2_header_tag hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_header_tag(iter,hd);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_header>,Iter iter,stvl2::stvl2_header hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_header>,char_type* iter,stvl2::stvl2_header hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_header(iter,hd);
 }
 
 static_assert(reserve_printable<char8_t,stvl2::stvl2_header>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_header_tag_framebuffer>,Iter iter,stvl2::stvl2_header_tag_framebuffer hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_header_tag_framebuffer>,char_type* iter,stvl2::stvl2_header_tag_framebuffer hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_header_tag_framebuffer(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_header_tag_framebuffer>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_header_tag_smp>,Iter iter,stvl2::stvl2_header_tag_smp hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_header_tag_smp>,char_type* iter,stvl2::stvl2_header_tag_smp hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_header_tag_smp(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_header_tag_smp>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_struct_tag>,Iter iter,stvl2::stvl2_struct_tag hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_struct_tag>,char_type* iter,stvl2::stvl2_struct_tag hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_struct_tag(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_struct_tag>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_struct>,Iter iter,stvl2::stvl2_struct const& hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_struct>,char_type* iter,stvl2::stvl2_struct const& hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_struct(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_struct>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_struct_tag_cmdline>,Iter iter,stvl2::stvl2_struct_tag_cmdline hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_struct_tag_cmdline>,char_type* iter,stvl2::stvl2_struct_tag_cmdline hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_struct_tag_cmdline(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_struct_tag_cmdline>);
 
-template<::fast_io::freestanding::random_access_iterator Iter,typename T>
+template<::std::integral char_type,typename T>
 requires (std::same_as<T,stvl2::stvl2_struct_tag_modules>||
 	std::same_as<T,stvl2::stvl2_struct_tag_memmap>||
 	std::same_as<T,stvl2::stvl2_struct_tag_rsdp>||
@@ -1480,57 +1463,57 @@ requires (std::same_as<T,stvl2::stvl2_struct_tag_modules>||
 	std::same_as<T,stvl2::stvl2_struct_tag_mmio32_uart>||
 	std::same_as<T,stvl2::stvl2_struct_vmap>||
 	std::same_as<T,stvl2::stvl2_struct_tag_dtb>)
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,T>,Iter iter,T hd) noexcept
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,T>,char_type* iter,T hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_struct_tag_single(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_struct_tag_memmap>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_struct_tag_framebuffer>,Iter iter,stvl2::stvl2_struct_tag_framebuffer hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_struct_tag_framebuffer>,char_type* iter,stvl2::stvl2_struct_tag_framebuffer hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_struct_tag_framebuffer(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_struct_tag_framebuffer>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_mmap_type>,Iter iter,stvl2::stvl2_mmap_type hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_mmap_type>,char_type* iter,stvl2::stvl2_mmap_type hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_mmap_type(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_mmap_type>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_firmware_flags>,Iter iter,stvl2::stvl2_firmware_flags hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_firmware_flags>,char_type* iter,stvl2::stvl2_firmware_flags hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_firmware_flags(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_firmware_flags>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_module>,Iter iter,stvl2::stvl2_module hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_module>,char_type* iter,stvl2::stvl2_module hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_module(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_module>);
 static_assert(reserve_printable<char8_t,stvl2::stvl2_struct_tag_dtb>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_mmap_entry>,Iter iter,stvl2::stvl2_mmap_entry hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_mmap_entry>,char_type* iter,stvl2::stvl2_mmap_entry hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_mmap_entry(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_mmap_entry>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_smp_info>,Iter iter,stvl2::stvl2_smp_info hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_smp_info>,Iter iter,stvl2::stvl2_smp_info hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_smp_info(iter,hd);
 }
 static_assert(reserve_printable<char8_t,stvl2::stvl2_smp_info>);
 
-template<::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter print_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,stvl2::stvl2_struct_tag_smp>,Iter iter,stvl2::stvl2_struct_tag_smp hd) noexcept
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,stvl2::stvl2_struct_tag_smp>,char_type* iter,stvl2::stvl2_struct_tag_smp hd) noexcept
 {
 	return details::print_reserve_define_impl_for_stvl2_struct_tag_smp(iter,hd);
 }

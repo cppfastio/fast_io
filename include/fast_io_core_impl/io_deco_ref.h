@@ -44,18 +44,18 @@ constexpr std::size_t deco_reserve_size(io_reserve_type_t<to_char_type,deco_refe
 	return deco_reserve_size(io_reserve_type<to_char_type,decot>,*deco.ptr,size);
 }
 
-template<::fast_io::freestanding::random_access_iterator srcIter,::fast_io::freestanding::random_access_iterator toIter,typename decot>
+template<::std::random_access_iterator srcIter,::std::random_access_iterator toIter,typename decot>
 requires requires(decot& deco,srcIter srcit,toIter toit)
 {
-	{deco_reserve_define(io_reserve_type<::fast_io::freestanding::iter_value_t<toIter>,decot>,deco,srcit,srcit,toit)}->std::convertible_to<toIter>;
+	{deco_reserve_define(io_reserve_type<::std::iter_value_t<toIter>,decot>,deco,srcit,srcit,toit)}->std::convertible_to<toIter>;
 }
-constexpr toIter deco_reserve_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<toIter>,deco_reference_wrapper<decot>>,deco_reference_wrapper<decot> deco,srcIter first,srcIter last,toIter iter)
+constexpr toIter deco_reserve_define(io_reserve_type_t<::std::iter_value_t<toIter>,deco_reference_wrapper<decot>>,deco_reference_wrapper<decot> deco,srcIter first,srcIter last,toIter iter)
 {
-	return deco_reserve_define(io_reserve_type<::fast_io::freestanding::iter_value_t<toIter>,decot>,*deco.ptr,first,last,iter);
+	return deco_reserve_define(io_reserve_type<::std::iter_value_t<toIter>,decot>,*deco.ptr,first,last,iter);
 }
 
 #if 0
-template<std::integral to_char_type,typename decot,::fast_io::freestanding::random_access_iterator fromIter>
+template<std::integral to_char_type,typename decot,::std::random_access_iterator fromIter>
 requires requires(decot& deco,fromIter from_it)
 {
 	{deco_reserve_size(io_reserve_type<to_char_type,decot>,deco,from_it,from_it)}->std::same_as<std::size_t>;
@@ -66,7 +66,7 @@ constexpr std::size_t deco_reserve_size(io_reserve_type_t<to_char_type,deco_refe
 	return deco_reserve_size(io_reserve_type<to_char_type,decot>,*deco.ptr,from_first,from_last);
 };
 
-template<std::integral to_char_type,typename decot,::fast_io::freestanding::random_access_iterator fromIter,::fast_io::freestanding::random_access_iterator toIter>
+template<std::integral to_char_type,typename decot,::std::random_access_iterator fromIter,::std::random_access_iterator toIter>
 requires requires(decot& deco,fromIter from_it,toIter to_it)
 {
 	{deco_reserve_define(io_reserve_type<to_char_type,decot>,deco,from_it,from_it,to_it,to_it)}->std::same_as<std::size_t>;

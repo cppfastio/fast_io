@@ -3,8 +3,8 @@
 namespace fast_io::details
 {
 //let the compiler pick the best calling convention.
-template<::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
-inline constexpr Iter lc_print_rsv_fp_general_scientific_common_decay_impl(::fast_io::freestanding::iter_value_t<Iter> const* decimal_point_base,std::size_t decimal_point_len,Iter iter,U m10,std::uint_least32_t m10len) noexcept
+template<::std::integral char_type,my_unsigned_integral U>
+inline constexpr char_type* lc_print_rsv_fp_general_scientific_common_decay_impl(char_type const* decimal_point_base,std::size_t decimal_point_len,char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
 	auto res{iter+m10len+decimal_point_len};
 	print_reserve_integral_main_impl<10,false,true>(res,m10,m10len);
@@ -17,17 +17,16 @@ inline constexpr Iter lc_print_rsv_fp_general_scientific_common_decay_impl(::fas
 	return res;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
-inline constexpr Iter lc_print_rsv_fp_general_scientific_common_impl(basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>> const& decimal_point_ref,Iter iter,U m10,std::uint_least32_t m10len) noexcept
+template<::std::integral char_type,my_unsigned_integral U>
+inline constexpr char_type* lc_print_rsv_fp_general_scientific_common_impl(basic_io_scatter_t<char_type> const& decimal_point_ref,char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
-	basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>> decimal_point{decimal_point_ref};
+	basic_io_scatter_t<char_type> decimal_point{decimal_point_ref};
 	return lc_print_rsv_fp_general_scientific_common_decay_impl(decimal_point.base,decimal_point.len,iter,m10,m10len);
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral U>
-inline constexpr Iter lc_print_rsv_fp_general_common_impl(basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>> const& decimal_point_ref,Iter iter,U m10,std::uint_least32_t m10len) noexcept
+template<::std::integral char_type,my_unsigned_integral U>
+inline constexpr char_type* lc_print_rsv_fp_general_common_impl(basic_io_scatter_t<char_type> const& decimal_point_ref,char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if(m10len==1)[[unlikely]]
 	{
@@ -44,8 +43,8 @@ struct lc_fixed_carrier
 	std::int_least32_t real_exp;
 };
 
-template<typename flt,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_no_grouping_fixed_case1_integer_and_point(Iter iter,typename iec559_traits<flt>::mantissa_type m10,lc_fixed_carrier carrier,basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>> const& decimal_point) noexcept
+template<typename flt,::std::integral char_type>
+inline constexpr char_type* lc_no_grouping_fixed_case1_integer_and_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,lc_fixed_carrier carrier,basic_io_scatter_t<char_type> const& decimal_point) noexcept
 {
 	std::int_least32_t olength{carrier.olength};
 	std::int_least32_t real_exp{carrier.real_exp};
@@ -69,10 +68,9 @@ inline constexpr Iter lc_no_grouping_fixed_case1_integer_and_point(Iter iter,typ
 	return iter;
 }
 
-template<typename flt,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_grouping_fixed_case2_all_point(Iter iter,typename iec559_traits<flt>::mantissa_type m10,lc_fixed_carrier carrier,basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>> const& decimal_point) noexcept
+template<typename flt,::std::integral char_type>
+inline constexpr char_type* lc_grouping_fixed_case2_all_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,lc_fixed_carrier carrier,basic_io_scatter_t<char_type> const& decimal_point) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	*iter=char_literal_v<u8'0',char_type>;
 	++iter;
 	auto decimal_point_base{decimal_point.base};
@@ -93,8 +91,8 @@ inline constexpr Iter lc_grouping_fixed_case2_all_point(Iter iter,typename iec55
 	return iter;
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter1,::fast_io::freestanding::random_access_iterator Iter>
-constexpr Iter lc_grouping_single_sep_ch_impl(std::size_t const* grouping_base,std::size_t grouping_len,Iter1 first,Iter1 last,Iter out_reverse,::fast_io::freestanding::iter_value_t<Iter> replacement_ch) noexcept
+template<::std::integral char_type>
+constexpr char_type* lc_grouping_single_sep_ch_impl(std::size_t const* grouping_base,std::size_t grouping_len,char_type* first,char_type* last,char_type* out_reverse,char_type replacement_ch) noexcept
 {
 	auto iter{last};
 	std::size_t i{};
@@ -135,11 +133,11 @@ constexpr Iter lc_grouping_single_sep_ch_impl(std::size_t const* grouping_base,s
 	return out_reverse;
 }
 
-template<::fast_io::freestanding::random_access_iterator srcIter,::fast_io::freestanding::random_access_iterator destIter>
+template<::std::random_access_iterator srcIter,::std::random_access_iterator destIter>
 inline constexpr destIter grouping_handle_buffer_internal(srcIter first,srcIter last,destIter dest,std::size_t const* grouping_base,std::size_t grouping_len,
-::fast_io::freestanding::iter_value_t<destIter> const* thousands_sep_base,std::size_t thousands_sep_len,::fast_io::freestanding::iter_value_t<destIter>* buffer_end) noexcept
+::std::iter_value_t<destIter> const* thousands_sep_base,std::size_t thousands_sep_len,::std::iter_value_t<destIter>* buffer_end) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<srcIter>;
+	using char_type = ::std::iter_value_t<srcIter>;
 	char_type seperator_ch{char_literal_v<u8',',char_type>};
 	bool sep_single_character{thousands_sep_len==1};
 	if(sep_single_character)
@@ -153,24 +151,24 @@ inline constexpr destIter grouping_handle_buffer_internal(srcIter first,srcIter 
 		return grouping_mul_sep_print_sep_impl(thousands_sep_base,thousands_sep_len,buffer_start,buffer_end,dest);
 }
 
-template<std::size_t digits,::fast_io::freestanding::random_access_iterator srcIter,::fast_io::freestanding::random_access_iterator destIter>
+template<std::size_t digits,::std::random_access_iterator srcIter,::std::random_access_iterator destIter>
 requires (digits<(SIZE_MAX>>1u))
 inline constexpr destIter grouping_handle_buffer(srcIter first,srcIter last,destIter dest,std::size_t const* grouping_base,std::size_t grouping_len,
-::fast_io::freestanding::iter_value_t<destIter> const* thousands_sep_base,std::size_t thousands_sep_len) noexcept
+::std::iter_value_t<destIter> const* thousands_sep_base,std::size_t thousands_sep_len) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<srcIter>;
+	using char_type = ::std::iter_value_t<srcIter>;
 	constexpr std::size_t allocated_buffer_size{digits<<1u};
 	char_type buffer[allocated_buffer_size];
 	return grouping_handle_buffer_internal(first,last,dest,grouping_base,grouping_len,thousands_sep_base,thousands_sep_len,buffer+allocated_buffer_size);
 }
 
-template<typename flt,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_grouping_fixed_case1_integer_and_point(Iter iter,typename iec559_traits<flt>::mantissa_type m10,lc_fixed_carrier carrier,basic_io_scatter_t<::fast_io::freestanding::iter_value_t<Iter>> const& decimal_point,
-std::size_t const* grouping_base,std::size_t grouping_len,::fast_io::freestanding::iter_value_t<Iter> const* thousands_sep_base,std::size_t thousands_sep_len) noexcept
+template<typename flt,::std::random_access_iterator Iter>
+inline constexpr Iter lc_grouping_fixed_case1_integer_and_point(Iter iter,typename iec559_traits<flt>::mantissa_type m10,lc_fixed_carrier carrier,basic_io_scatter_t<::std::iter_value_t<Iter>> const& decimal_point,
+std::size_t const* grouping_base,std::size_t grouping_len,::std::iter_value_t<Iter> const* thousands_sep_base,std::size_t thousands_sep_len) noexcept
 {
 	using trait = iec559_traits<flt>;
 	constexpr std::size_t m10total_digits{trait::m10digits+trait::e10digits+2};
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	std::int_least32_t olength{carrier.olength};
 	std::int_least32_t real_exp{carrier.real_exp};
 	auto eposition(real_exp+1);
@@ -207,10 +205,9 @@ template<
 typename flt,
 bool uppercase_e,
 ::fast_io::manipulators::floating_format mt,
-::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_print_rsv_fp_decision_impl(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* all,Iter iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
+::std::integral char_type>
+inline constexpr char_type* lc_print_rsv_fp_decision_impl(basic_lc_all<char_type> const* all,char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if constexpr(mt==::fast_io::manipulators::floating_format::scientific)
 	{
@@ -299,10 +296,9 @@ inline constexpr Iter lc_print_rsv_fp_decision_impl(basic_lc_all<::fast_io::free
 	}
 }
 
-template<typename flt,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_print_rsv_fp_fixed_decision_impl(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* all,Iter iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
+template<typename flt,::std::integral char_type>
+inline constexpr char_type* lc_print_rsv_fp_fixed_decision_impl(basic_lc_all<char_type> const* all,char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	auto const& numeric_ref{all->numeric};
 	auto thousands_sep{numeric_ref.thousands_sep};
 	auto thousands_sep_base{thousands_sep.base};
@@ -350,8 +346,8 @@ bool showpos,
 bool uppercase,
 bool uppercase_e,
 ::fast_io::manipulators::floating_format mt,
-typename flt,::fast_io::freestanding::random_access_iterator Iter>
-inline constexpr Iter lc_print_rsvflt_define_impl(basic_lc_all<::fast_io::freestanding::iter_value_t<Iter>> const* all,Iter iter,flt f) noexcept
+typename flt,::std::integral char_type>
+inline constexpr char_type* lc_print_rsvflt_define_impl(basic_lc_all<char_type> const* all,char_type* iter,flt f) noexcept
 {
 	if constexpr(::fast_io::manipulators::floating_format::fixed==mt&&uppercase_e)
 	{
@@ -359,7 +355,6 @@ inline constexpr Iter lc_print_rsvflt_define_impl(basic_lc_all<::fast_io::freest
 	}
 	else
 	{
-		using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 		using trait = iec559_traits<flt>;
 		using mantissa_type = typename trait::mantissa_type;
 		constexpr std::size_t ebits{trait::ebits};

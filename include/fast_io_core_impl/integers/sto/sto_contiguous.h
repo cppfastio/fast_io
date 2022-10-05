@@ -11,7 +11,7 @@ requires (2<=base&&base<=36)
 inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) noexcept
 {
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	constexpr unsigned_char_type base_char_type(base);
 	if constexpr(base<=10)
 	{
@@ -123,7 +123,7 @@ requires (2<=base&&base<=36)
 inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 {
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	constexpr unsigned_char_type base_char_type(base);
 	if constexpr(base<=10)
 	{
@@ -364,13 +364,12 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 
 #endif
 
-template<char8_t base,::fast_io::freestanding::random_access_iterator Iter,my_unsigned_integral T>
+template<char8_t base,::std::integral char_type,my_unsigned_integral T>
 #if defined(__SSE4_1__) && __has_cpp_attribute(__gnu__::__cold__) && defined(__x86_64__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr parse_result<Iter> scan_int_contiguous_none_simd_space_part_define_impl(Iter first,Iter last,T& res) noexcept
+inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_space_part_define_impl(char_type const* first,char_type const* last,T& res) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
 	constexpr unsigned_char_type base_char_type{base};
@@ -410,10 +409,9 @@ inline constexpr parse_result<Iter> scan_int_contiguous_none_simd_space_part_def
 	return {first,(overflow?(parse_code::overflow):(parse_code::ok))};
 }
 
-template<char8_t base,::fast_io::freestanding::random_access_iterator Iter,my_integral T>
-inline constexpr parse_result<Iter> scan_int_contiguous_none_space_part_define_impl(Iter first,Iter last,T& t) noexcept
+template<char8_t base,::std::integral char_type,my_integral T>
+inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_part_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	[[maybe_unused]] bool sign{};
 	if constexpr(my_signed_integral<T>)
@@ -443,7 +441,7 @@ inline constexpr parse_result<Iter> scan_int_contiguous_none_space_part_define_i
 	}
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
 	unsigned_type res{};
-	Iter it;
+	char_type const* it;
 #if defined(__SSE4_1__) && defined(__x86_64__)
 	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
 	{
@@ -503,8 +501,8 @@ inline constexpr parse_result<Iter> scan_int_contiguous_none_space_part_define_i
 	return {it,parse_code::ok};
 }
 
-template<char8_t base,::fast_io::freestanding::random_access_iterator Iter,details::my_integral T>
-inline constexpr parse_result<Iter> scan_int_contiguous_define_impl(Iter first,Iter last,T& t) noexcept
+template<char8_t base,::std::integral char_type,details::my_integral T>
+inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
 	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
 	if(first==last)
@@ -549,19 +547,19 @@ inline constexpr auto scan_context_type_impl_int() noexcept
 namespace details
 {
 
-template<char8_t base,::fast_io::freestanding::input_iterator Iter>
+template<char8_t base,::std::input_iterator Iter>
 inline constexpr Iter scan_skip_all_digits_impl(Iter first,Iter last) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	for(;first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first));++first);
 	return first;
 }
 
-template<char8_t base,typename State,::fast_io::freestanding::input_iterator Iter,my_integral T>
+template<char8_t base,typename State,::std::input_iterator Iter,my_integral T>
 inline constexpr parse_result<Iter> scan_context_define_parse_impl(State& st,Iter first,Iter last,T& t) noexcept
 {
-	using char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using char_type = ::std::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	auto phase{st.integer_phase};
 	switch(phase)
@@ -756,20 +754,14 @@ inline constexpr auto scan_context_type(io_reserve_type_t<char_type,::fast_io::m
 	return details::scan_context_type_impl_int<flags.base,char_type,T>();
 }
 
-template<::fast_io::freestanding::random_access_iterator Iter,manipulators::scalar_flags flags,details::my_integral T>
-inline constexpr parse_result<Iter> scan_contiguous_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,::fast_io::manipulators::scalar_manip_t<flags,T&>>,Iter begin,Iter end,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
+template<::std::integral char_type,manipulators::scalar_flags flags,details::my_integral T>
+inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,T&>>,char_type const* begin,char_type const* end,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
 {
-	if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>&&!std::is_pointer_v<Iter>)
-	{
-		auto [it,ec] = details::scan_int_contiguous_define_impl<flags.base>(::fast_io::freestanding::to_address(begin),::fast_io::freestanding::to_address(end),t.reference);
-		return {it-::fast_io::freestanding::to_address(begin)+begin,ec};
-	}
-	else
-		return details::scan_int_contiguous_define_impl<flags.base>(begin,end,t.reference);
+	return details::scan_int_contiguous_define_impl<flags.base>(begin,end,t.reference);
 }
 
-template<::fast_io::freestanding::input_iterator Iter,manipulators::scalar_flags flags,typename State,details::my_integral T>
-inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,::fast_io::manipulators::scalar_manip_t<flags,T&>>,State& state,Iter begin,Iter end,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
+template<::std::input_iterator Iter,manipulators::scalar_flags flags,typename State,details::my_integral T>
+inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::std::iter_value_t<Iter>,::fast_io::manipulators::scalar_manip_t<flags,T&>>,State& state,Iter begin,Iter end,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
 {
 	return details::scan_context_define_parse_impl<flags.base>(state,begin,end,t.reference);
 }
@@ -782,8 +774,8 @@ inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,
 
 namespace details
 {
-template<::fast_io::freestanding::input_iterator Iter>
-inline constexpr parse_result<Iter> ch_get_context_impl(Iter first,Iter last,::fast_io::freestanding::iter_value_t<Iter>& t) noexcept
+template<::std::input_iterator Iter>
+inline constexpr parse_result<Iter> ch_get_context_impl(Iter first,Iter last,::std::iter_value_t<Iter>& t) noexcept
 {
 	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
 	if(first==last)[[unlikely]]
@@ -800,8 +792,8 @@ inline constexpr io_type_t<details::empty> scan_context_type(io_reserve_type_t<c
 	return {};
 }
 
-template<::fast_io::freestanding::input_iterator Iter>
-inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::fast_io::freestanding::iter_value_t<Iter>,manipulators::ch_get_t<::fast_io::freestanding::iter_value_t<Iter>&>>,details::empty,Iter begin,Iter end,manipulators::ch_get_t<::fast_io::freestanding::iter_value_t<Iter>&> t) noexcept
+template<::std::input_iterator Iter>
+inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::std::iter_value_t<Iter>,manipulators::ch_get_t<::std::iter_value_t<Iter>&>>,details::empty,Iter begin,Iter end,manipulators::ch_get_t<::std::iter_value_t<Iter>&> t) noexcept
 {
 	return details::ch_get_context_impl(begin,end,t.reference);
 }

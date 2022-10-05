@@ -62,7 +62,7 @@ class generator_iterator
 {
 public:
 	using coroutine_handle_type = std::coroutine_handle<generator_promise<T>>;
-	using iterator_category = ::fast_io::freestanding::output_iterator_tag;
+	using iterator_category = ::std::output_iterator_tag;
 	coroutine_handle_type handle{};
 /*
 	inline constexpr auto operator->()
@@ -83,24 +83,24 @@ public:
 };
 
 template<typename T>
-inline constexpr bool operator==(::fast_io::freestanding::default_sentinel_t, generator_iterator<T> const& b) noexcept
+inline constexpr bool operator==(::std::default_sentinel_t, generator_iterator<T> const& b) noexcept
 {
 	return b.handle.done();
 }
 
 template<typename T>
-inline constexpr bool operator==(generator_iterator<T> const& b,::fast_io::freestanding::default_sentinel_t) noexcept
+inline constexpr bool operator==(generator_iterator<T> const& b,::std::default_sentinel_t) noexcept
 {
 	return b.handle.done();
 }
 template<typename T>
-inline constexpr bool operator!=(::fast_io::freestanding::default_sentinel_t s, generator_iterator<T> const& b) noexcept
+inline constexpr bool operator!=(::std::default_sentinel_t s, generator_iterator<T> const& b) noexcept
 {
 	return !(s==b);
 }
 
 template<typename T>
-inline constexpr bool operator!=(generator_iterator<T> const& b,::fast_io::freestanding::default_sentinel_t s) noexcept
+inline constexpr bool operator!=(generator_iterator<T> const& b,::std::default_sentinel_t s) noexcept
 {
 	return !(s==b);
 }
@@ -152,7 +152,7 @@ inline constexpr details::generator_iterator<T> begin(generator<T>& gen)
 	return {gen.handle};
 }
 template<typename T>
-inline constexpr ::fast_io::freestanding::default_sentinel_t end(generator<T>& gen)
+inline constexpr ::std::default_sentinel_t end(generator<T>& gen)
 {
 	return {};
 }
@@ -167,7 +167,7 @@ inline constexpr details::generator_iterator<T> cbegin(generator<T> const& gen)
 	return {gen.handle};
 }
 template<typename T>
-inline constexpr ::fast_io::freestanding::default_sentinel_t cend(generator<T> const& gen)
+inline constexpr ::std::default_sentinel_t cend(generator<T> const& gen)
 {
 	return {};
 }
@@ -182,7 +182,7 @@ inline constexpr details::generator_iterator<T> begin(generator<T> const& gen)
 	return {gen.handle};
 }
 template<typename T>
-inline constexpr ::fast_io::freestanding::default_sentinel_t end(generator<T> const& gen)
+inline constexpr ::std::default_sentinel_t end(generator<T> const& gen)
 {
 	return {};
 }

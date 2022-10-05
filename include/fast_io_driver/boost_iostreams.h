@@ -44,19 +44,19 @@ public:
 	source_type source;
 };
 
-template<std::integral ch_type, boost_iostreams_input_device src_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type, boost_iostreams_input_device src_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_boost_iostreams<ch_type,src_type>& in_device,Iter begin,Iter end)
 {
-	auto ret{in_device.source.read(reinterpret_cast<char*>(::fast_io::freestanding::to_address(begin)),(end-begin)*sizeof(*begin))};
+	auto ret{in_device.source.read(reinterpret_cast<char*>(::std::to_address(begin)),(end-begin)*sizeof(*begin))};
 	if(ret==-1)
 		return begin;
 	return begin+ret/sizeof(*begin);
 }
 
-template<std::integral ch_type, boost_iostreams_output_device src_type,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::integral ch_type, boost_iostreams_output_device src_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_boost_iostreams<ch_type,src_type>& out_device,Iter begin,Iter end)
 {
-	auto ret{out_device.source.write(reinterpret_cast<char const*>(::fast_io::freestanding::to_address(begin)),(end-begin)*sizeof(*begin))};
+	auto ret{out_device.source.write(reinterpret_cast<char const*>(::std::to_address(begin)),(end-begin)*sizeof(*begin))};
 	if(ret==-1)
 		return begin;
 	return begin+ret/sizeof(*begin);
@@ -67,7 +67,7 @@ inline void flush(basic_boost_iostreams<ch_type,src_type>& out_device)
 	out_device.source.flush();
 }
 
-template<std::integral ch_type, boost_iostream_seekable_device src_type,::fast_io::freestanding::contiguous_iterator Iter,typename T,std::integral U>
+template<std::integral ch_type, boost_iostream_seekable_device src_type,::std::contiguous_iterator Iter,typename T,std::integral U>
 inline auto seek(basic_boost_iostreams<ch_type,src_type>& dev,seek_type_t<T>,U i,seekdir s=seekdir::beg)
 {
 	return dev.seek(seek_precondition<std::intmax_t,T,ch_type>(i),static_cast<std::ios::seekdir>(static_cast<int>(s)));

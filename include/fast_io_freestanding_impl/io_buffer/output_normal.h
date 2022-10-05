@@ -5,12 +5,12 @@ namespace fast_io::details
 
 
 template<typename char_type,typename Iter>
-concept allow_iobuf_punning = ::fast_io::freestanding::contiguous_iterator<Iter>&&
+concept allow_iobuf_punning = ::std::contiguous_iterator<Iter>&&
 //temporary only allow contiguous_iterator before we finish this part
-(std::same_as<char_type,::fast_io::freestanding::iter_value_t<Iter>>||
-(std::same_as<char_type,char>&&::fast_io::freestanding::contiguous_iterator<Iter>));
+(std::same_as<char_type,::std::iter_value_t<Iter>>||
+(std::same_as<char_type,char>&&::std::contiguous_iterator<Iter>));
 
-template<std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<std::integral char_type,::std::random_access_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -21,7 +21,7 @@ inline constexpr void iobuf_write_unhappy_nullptr_case_impl(basic_io_buffer_poin
 	obuffer.buffer_curr=non_overlapped_copy(first,last,obuffer.buffer_curr);
 }
 
-template<typename T,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<typename T,std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr void iobuf_write_unhappy_decay_no_alloc_impl(T t,basic_io_buffer_pointers<char_type>& pointers,Iter first,Iter last,std::size_t buffer_size)
 {
 	std::size_t const remain_space{static_cast<std::size_t>(pointers.buffer_end-pointers.buffer_curr)};
@@ -38,7 +38,7 @@ inline constexpr void iobuf_write_unhappy_decay_no_alloc_impl(T t,basic_io_buffe
 		pointers.buffer_curr=non_overlapped_copy_n(first,new_remain_space,pointers.buffer_begin);
 }
 
-template<std::size_t buffer_size,typename T,std::integral char_type,::fast_io::freestanding::random_access_iterator Iter>
+template<std::size_t buffer_size,typename T,std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr void iobuf_write_unhappy_decay_impl(T t,basic_io_buffer_pointers<char_type>& pointers,Iter first,Iter last)
 {
 	std::size_t const diff{static_cast<std::size_t>(last-first)};

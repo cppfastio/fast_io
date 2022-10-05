@@ -8,7 +8,7 @@ namespace fast_io
 namespace details
 {
 
-template<typename T,::fast_io::freestanding::random_access_iterator Iter>
+template<typename T,::std::random_access_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -29,16 +29,16 @@ inline constexpr void iobuf_write_unhappy_impl(T& t,Iter first,Iter last)
 template<stream handletype,
 buffer_mode mde,
 typename decorators,
-std::size_t bfs,::fast_io::freestanding::random_access_iterator Iter>
+std::size_t bfs,::std::random_access_iterator Iter>
 requires (((mde&buffer_mode::out)==buffer_mode::out)&&details::allow_iobuf_punning<typename decorators::internal_type,Iter>)
 inline constexpr void write(basic_io_buffer<handletype,mde,decorators,bfs>& bios,Iter first,Iter last)
 {
-	using iter_char_type = ::fast_io::freestanding::iter_value_t<Iter>;
+	using iter_char_type = ::std::iter_value_t<Iter>;
 	using char_type = typename decorators::internal_type;
 	if constexpr(std::same_as<iter_char_type,char_type>)
 	{
-		if constexpr(::fast_io::freestanding::contiguous_iterator<Iter>&&!std::is_pointer_v<Iter>)
-			write(bios,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+		if constexpr(::std::contiguous_iterator<Iter>&&!std::is_pointer_v<Iter>)
+			write(bios,::std::to_address(first),::std::to_address(last));
 		else
 		{
 			if constexpr((mde&buffer_mode::deco_out_no_internal)==buffer_mode::deco_out_no_internal)
@@ -65,8 +65,8 @@ To do : forward_iterator. Support std::forward_list, std::list, std::set and std
 */
 	}
 	else
-		write(bios,reinterpret_cast<char const*>(::fast_io::freestanding::to_address(first)),
-			reinterpret_cast<char const*>(::fast_io::freestanding::to_address(last)));
+		write(bios,reinterpret_cast<char const*>(::std::to_address(first)),
+			reinterpret_cast<char const*>(::std::to_address(last)));
 }
 
 

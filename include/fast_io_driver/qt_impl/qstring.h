@@ -9,7 +9,7 @@ public:
 	QString qstr;
 	template<typename... Args>
 	requires std::constructible_from<QString,Args...>
-	qt_error(Args&& ...args):qstr(::fast_io::freestanding::forward<Args>(args)...){}
+	qt_error(Args&& ...args):qstr(::std::forward<Args>(args)...){}
 
 	QChar* data() noexcept
 	{
@@ -47,7 +47,7 @@ inline void throw_qt_error([[maybe_unused]] Args&& ...args)
 #if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
 	fast_terminate();
 #else
-	throw qt_error(::fast_io::freestanding::forward<Args>(args)...);
+	throw qt_error(::std::forward<Args>(args)...);
 #endif
 #else
 	fast_terminate();
@@ -110,13 +110,13 @@ inline QString strlike_single_character_construct_define(io_strlike_type_t<char1
 template<typename... Args>
 inline QString u16concat_qt_qstring(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<false,char16_t,QString>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<false,char16_t,QString>(::std::forward<Args>(args)...);
 }
 
 template<typename... Args>
 inline QString u16concatln_qt_qstring(Args&& ...args)
 {
-	return ::fast_io::basic_general_concat<true,char16_t,QString>(::fast_io::freestanding::forward<Args>(args)...);
+	return ::fast_io::basic_general_concat<true,char16_t,QString>(::std::forward<Args>(args)...);
 }
 
 }

@@ -80,19 +80,19 @@ decltype(auto) noexcept_call(F* f,Args&& ...args) noexcept
 #if __cpp_if_consteval >= 202106L
 	if consteval
 	{
-		return f(::fast_io::freestanding::forward<Args>(args)...);		//EH unwinding does not matter here
+		return f(::std::forward<Args>(args)...);		//EH unwinding does not matter here
 	}
 	else
 	{
-		return noexcept_cast(f)(::fast_io::freestanding::forward<Args>(args)...);
+		return noexcept_cast(f)(::std::forward<Args>(args)...);
 	}
 #else
 #if __cpp_lib_is_constant_evaluated >= 201811
 	if (std::is_constant_evaluated())
-		return f(::fast_io::freestanding::forward<Args>(args)...);		//EH unwinding does not matter here
+		return f(::std::forward<Args>(args)...);		//EH unwinding does not matter here
 	else
 #endif
-		return noexcept_cast(f)(::fast_io::freestanding::forward<Args>(args)...);
+		return noexcept_cast(f)(::std::forward<Args>(args)...);
 #endif
 }
 
@@ -404,7 +404,7 @@ void compile_time_type_punning_copy_n(range_type const* first,std::size_t bytes,
 	}
 }
 
-template<::fast_io::freestanding::input_or_output_iterator output_iter,typename T>
+template<::std::input_or_output_iterator output_iter,typename T>
 requires (std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(std::uintmax_t))
 inline constexpr output_iter my_fill_n(output_iter first,std::size_t count, T value)
 {
@@ -420,11 +420,11 @@ inline constexpr output_iter my_fill_n(output_iter first,std::size_t count, T va
 	else
 #endif
 	{
-	using output_value_type = ::fast_io::freestanding::iter_value_t<output_iter>;
-	if constexpr(::fast_io::freestanding::contiguous_iterator<output_iter>&&std::is_trivially_copyable_v<output_value_type>&&std::integral<output_value_type>&&sizeof(output_value_type)==1)
+	using output_value_type = ::std::iter_value_t<output_iter>;
+	if constexpr(::std::contiguous_iterator<output_iter>&&std::is_trivially_copyable_v<output_value_type>&&std::integral<output_value_type>&&sizeof(output_value_type)==1)
 	{
 		if(count)[[likely]]
-			my_memset(::fast_io::freestanding::to_address(first),static_cast<int>(value),count);
+			my_memset(::std::to_address(first),static_cast<int>(value),count);
 		return first+count;
 	}
 	else
@@ -433,12 +433,12 @@ inline constexpr output_iter my_fill_n(output_iter first,std::size_t count, T va
 	return first+count;
 }
 
-template<::fast_io::freestanding::forward_iterator fwd_iter,typename T>
+template<::std::forward_iterator fwd_iter,typename T>
 requires (std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(std::uintmax_t))
 inline constexpr void my_fill(fwd_iter first,fwd_iter last,T value)
 {
-	using fwd_iter_value_type = ::fast_io::freestanding::iter_value_t<fwd_iter>;
-	if constexpr(::fast_io::freestanding::contiguous_iterator<fwd_iter>&&std::is_trivially_copyable_v<fwd_iter_value_type>&&std::integral<fwd_iter_value_type>&&sizeof(fwd_iter_value_type)==1)
+	using fwd_iter_value_type = ::std::iter_value_t<fwd_iter>;
+	if constexpr(::std::contiguous_iterator<fwd_iter>&&std::is_trivially_copyable_v<fwd_iter_value_type>&&std::integral<fwd_iter_value_type>&&sizeof(fwd_iter_value_type)==1)
 		::fast_io::freestanding::fill_n(first,last-first,value);
 	else
 		::fast_io::freestanding::fill(first,last,value);
@@ -451,7 +451,7 @@ inline constexpr std::size_t string_literal_size(char_type const(&)[n])
 	return n-1;
 }
 
-template<std::integral char_type,std::size_t n,::fast_io::freestanding::random_access_iterator output_iter>
+template<std::integral char_type,std::size_t n,::std::random_access_iterator output_iter>
 requires(n!=0)
 inline constexpr output_iter copy_string_literal(char_type const(&s)[n],output_iter result)
 {
@@ -459,8 +459,8 @@ inline constexpr output_iter copy_string_literal(char_type const(&s)[n],output_i
 	return result+(n-1);
 }
 
-template<::fast_io::freestanding::input_or_output_iterator output_iter>
-inline constexpr output_iter copy_scatter(basic_io_scatter_t<::fast_io::freestanding::iter_value_t<output_iter>> scatter,output_iter result)
+template<::std::input_or_output_iterator output_iter>
+inline constexpr output_iter copy_scatter(basic_io_scatter_t<::std::iter_value_t<output_iter>> scatter,output_iter result)
 {
 	return details::non_overlapped_copy_n(scatter.base,scatter.len,result);
 }

@@ -145,11 +145,11 @@ inline constexpr void write_strike_like_cold(io_strlike_reference_wrapper<ch_typ
 
 }
 
-template<std::integral ch_type,typename T, ::fast_io::freestanding::contiguous_iterator Iter>
-requires (std::same_as<ch_type,char>||std::same_as<ch_type, ::fast_io::freestanding::iter_value_t<Iter>>)
+template<std::integral ch_type,typename T, ::std::contiguous_iterator Iter>
+requires (std::same_as<ch_type,char>||std::same_as<ch_type, ::std::iter_value_t<Iter>>)
 inline constexpr void write(io_strlike_reference_wrapper<ch_type,T> bref,Iter first,Iter last)
 {
-	if constexpr(std::same_as<::fast_io::freestanding::iter_value_t<Iter>,ch_type>)
+	if constexpr(std::same_as<::std::iter_value_t<Iter>,ch_type>)
 	{
 		if constexpr(std::is_pointer_v<Iter>)
 		{
@@ -176,13 +176,13 @@ inline constexpr void write(io_strlike_reference_wrapper<ch_type,T> bref,Iter fi
 		}
 		else
 		{
-			write(bref,::fast_io::freestanding::to_address(first),::fast_io::freestanding::to_address(last));
+			write(bref,::std::to_address(first),::std::to_address(last));
 		}
 	}
 	else
 	{
-		write(bref,reinterpret_cast<char const*>(::fast_io::freestanding::to_address(first)),
-			reinterpret_cast<char const*>(::fast_io::freestanding::to_address(last)));
+		write(bref,reinterpret_cast<char const*>(::std::to_address(first)),
+			reinterpret_cast<char const*>(::std::to_address(last)));
 	}
 }
 

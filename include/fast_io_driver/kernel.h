@@ -108,13 +108,13 @@ constexpr inline void write_impl(terminal<wd,ht>& tem,char const* b,char const* 
 
 }
 
-template<std::size_t wd,std::size_t ht,::fast_io::freestanding::contiguous_iterator Iter>
+template<std::size_t wd,std::size_t ht,::std::contiguous_iterator Iter>
 constexpr inline void write(terminal<wd,ht>& tem,Iter begin, Iter end) noexcept
 {
-	if constexpr(std::same_as<::fast_io::freestanding::iter_value_t<Iter>,char>)
-		details::write_impl(tem,::fast_io::freestanding::to_address(begin),::fast_io::freestanding::to_address(end));
+	if constexpr(std::same_as<::std::iter_value_t<Iter>,char>)
+		details::write_impl(tem,::std::to_address(begin),::std::to_address(end));
 	else
-		details::write_impl(tem,reinterpret_cast<char const*>(::fast_io::freestanding::to_address(begin)),reinterpret_cast<char const*>(::fast_io::freestanding::to_address(end)));
+		details::write_impl(tem,reinterpret_cast<char const*>(::std::to_address(begin)),reinterpret_cast<char const*>(::std::to_address(end)));
 }
 
 template<std::size_t wd,std::size_t ht>
