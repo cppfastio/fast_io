@@ -306,7 +306,7 @@ inline constexpr bool operator!=(basic_http_line_generator<char_type>& b,::std::
 template<std::integral char_type>
 inline constexpr basic_http_line<char_type> operator*(basic_http_line_generator<char_type>& b) noexcept
 {
-	return {::fast_io::manipulators::basic_os_not_c_str_n<char_type>(b.current,static_cast<std::size_t>(b.key_end-b.current)),::fast_io::manipulators::basic_os_not_c_str_n<char_type>(b.value_start,static_cast<std::size_t>(b.value_end-b.value_start))};
+	return {::fast_io::manipulators::os_not_c_str_n<char_type>(b.current,static_cast<std::size_t>(b.key_end-b.current)),::fast_io::manipulators::os_not_c_str_n<char_type>(b.value_start,static_cast<std::size_t>(b.value_end-b.value_start))};
 }
 
 }

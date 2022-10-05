@@ -25,7 +25,7 @@ catch(fast_io::error e)
 }
 catch(std::exception const& e)
 {
-	perrln(e);
+	perrln(fast_io::mnp::ehvw(e));
 }
 catch(...)
 {
