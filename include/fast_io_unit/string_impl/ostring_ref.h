@@ -41,9 +41,10 @@ namespace details
 template<std::integral char_type,typename size_type>
 struct empty_string_set_ptr
 {
-	constexpr std::size_t operator()(char_type const*,size_type n) noexcept
+	std::size_t realsize{};
+	inline constexpr std::size_t operator()(char_type const*,size_type n) noexcept
 	{
-		return n;
+		return realsize;
 	}
 };
 
@@ -61,12 +62,13 @@ inline constexpr void strlike_set_curr(io_strlike_type_t<char_type,::std::basic_
 #endif
 	{
 		auto old_ptr{str.data()};
+		std::size_t const sz{static_cast<std::size_t>(p-str.data())};
 #if __cpp_lib_string_resize_and_overwrite >= 202110L
-		str.resize_and_overwrite(static_cast<std::size_t>(p-str.data()),
-			::fast_io::details::empty_string_set_ptr<char_type,typename ::std::basic_string<char_type,traits_type,allocator_type>::size_type>{});
+		
+		str.resize_and_overwrite(sz,
+			::fast_io::details::empty_string_set_ptr<char_type,typename ::std::basic_string<char_type,traits_type,allocator_type>::size_type>{sz});
 #else
 		auto curr_ptr{str.data()+str.size()};
-		std::size_t const sz{static_cast<std::size_t>(p-str.data())};
 		if(p<curr_ptr)
 		{
 			str.resize(sz);

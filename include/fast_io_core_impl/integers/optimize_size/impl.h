@@ -19,14 +19,14 @@ inline constexpr void output_unsigned(char_type* str,U value,::std::size_t const
 		--str;
 		if constexpr(base<=10)
 		{
-			if constexpr(exec_charset_is_ebcdic<char_type>())
+			if constexpr(::fast_io::details::is_ebcdic<char_type>)
 				*str=0xF0+res;
 			else
 				*str=u8'0'+res;
 		}
 		else
 		{
-			if constexpr(exec_charset_is_ebcdic<char_type>())
+			if constexpr(::fast_io::details::is_ebcdic<char_type>)
 			{
 				if(res<10)
 					*str=0xF0+res;

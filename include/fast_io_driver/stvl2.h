@@ -11,7 +11,7 @@ namespace details
 template<std::integral char_type>
 inline constexpr std::size_t cal_stvl2_cstr_reserved_size(std::size_t sz) noexcept
 {
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	if constexpr(sizeof(char_type)==1&&!ebcdic)
 		return sz;
 	else
@@ -495,8 +495,8 @@ inline constexpr std::size_t constexpr_stvl2_u8strlen(char8_t const* strlen) noe
 
 template<::std::integral char_type>
 inline constexpr char_type* deal_with_stvl2_cstr(char_type* iter,char8_t const* u8cstr) noexcept
-{\
-	constexpr bool ebcdic{exec_charset_is_ebcdic<char_type>()};
+{
+	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	if constexpr(sizeof(char_type)==1&&!ebcdic)
 		return non_overlapped_copy_n(u8cstr,constexpr_stvl2_u8strlen(u8cstr),iter);
 	else
