@@ -190,7 +190,7 @@ struct simd_vector
 		return {~value};
 	}
 	template<typename T1,std::size_t N1>
-	requires (sizeof(T1)*N1==sizeof(T)*N&&N!=N1)
+	requires (sizeof(T1)*N1==sizeof(T)*N&&!std::same_as<T1,value_type>)
 	explicit
 #if __has_builtin(__builtin_bit_cast)
 	constexpr

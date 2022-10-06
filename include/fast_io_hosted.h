@@ -96,7 +96,7 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_unit/filesystem.h"
 #endif
 
-#if defined(_GLIBCXX_BITSET) || defined(_LIBCPP_BITSET) || defined(_BITSET_)
+#if defined(_LIBCPP_BITSET) || defined(_BITSET_)
 #include"fast_io_unit/bitset.h"
 #endif
 
