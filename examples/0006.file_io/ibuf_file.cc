@@ -5,6 +5,10 @@ int main(int argc,char** argv)
 {
 	if(argc!=2)
 	{
+		if(argc==0)
+		{
+			return 1;
+		}
 		perr("Usage: ",fast_io::mnp::os_c_str(*argv)," <file>\n");
 		return 1;
 	}

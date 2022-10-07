@@ -9,6 +9,10 @@ try
 	using namespace fast_io::mnp;
 	if(argc!=3)
 	{
+		if(argc==0)
+		{
+			return 1;
+		}
 		perr("Usage: ",os_c_str(*argv)," <input UTF8 file> <output UTF-32 file>\n");
 		return 1;
 	}

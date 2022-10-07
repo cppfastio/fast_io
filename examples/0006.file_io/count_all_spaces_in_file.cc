@@ -1,4 +1,5 @@
-﻿#include<fast_io.h>
+#include<algorithm>
+#include<fast_io.h>
 
 int main(int argc,char** argv)
 {
@@ -12,13 +13,8 @@ int main(int argc,char** argv)
 		return 1;
 	}
 	fast_io::native_file_loader loader(::fast_io::mnp::os_c_str(argv[1]));
-	//This will load entire file to memory through memory mapping.
-	/*
-	This is a contiguous container of the file.
-	You can do these things:
-	std::size_t sum{};
-	for(auto e:loader)
-		sum+=e;	
-	*/
-	print(loader);
+	println(std::ranges::count_if(loader,[](char8_t ch) noexcept
+	{
+		return fast_io::char_category::is_c_space(ch);
+	}));
 }
