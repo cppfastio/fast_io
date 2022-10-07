@@ -148,7 +148,7 @@ inline constexpr basic_os_not_c_str_n<char_type> os_not_c_str_n(char_type const*
 template<std::integral char_type>
 inline constexpr basic_os_not_c_str_n<char_type> os_not_c_str_n(char_type const* cstr, char_type const* end) noexcept
 {
-	return {cstr,end-cstr};
+	return {cstr,static_cast<::std::size_t>(end-cstr)};
 }
 
 inline constexpr void os_not_c_str_n(decltype(nullptr),std::size_t)=delete;
