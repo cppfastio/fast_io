@@ -5,7 +5,7 @@
 #include <vector>
 #include <cfloat>
 
-constexpr int buf_size = 25;
+[[maybe_unused]] constexpr int buf_size = 25;
 
 inline void fast_io_fast_io(const std::vector<double>& vec)
 {

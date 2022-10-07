@@ -5,8 +5,9 @@
 int main()
 {
 	fast_io::ibuf_file ibf(u8"test.txt");
-	for(std::string_view e : line_scanner(ibf))
+	for(auto&& e: line_scanner(ibf))
 	{
-		println(e);
+		std::string_view ev{e};
+		println(ev);
 	}
 }

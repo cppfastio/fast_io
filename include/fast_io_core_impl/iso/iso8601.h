@@ -662,8 +662,11 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	if (end - begin < 20) [[unlikely]]
 		return { begin, parse_code::invalid };
 	[[maybe_unused]] bool sign{};
-	if (sign = (*begin == char_literal_v<u8'-', char_type>)) [[unlikely]]
+	if (*begin == char_literal_v<u8'-', char_type>) [[unlikely]]
+	{
+		sign = true;
 		++begin;
+	}
 	::std::int_least64_t tmp_year{};
 	if (char_is_digit(*(begin + 4))) [[unlikely]]
 	{
@@ -776,6 +779,24 @@ template <::std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, iso8601_timestamp>, char_type const* begin, char_type const* end, iso8601_timestamp& t) noexcept
 {
 	return details::scn_cnt_define_iso8601_impl<char_type, false>(begin, end, t);
+}
+
+template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
+inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, basic_timestamp<off_to_epoch>>, char_type const* begin, char_type const* end, basic_timestamp<off_to_epoch>& t) noexcept
+{
+	iso8601_timestamp tsp;
+	auto result = details::scn_cnt_define_iso8601_impl<char_type, false>(begin, end, tsp);
+	if constexpr (off_to_epoch == 0)
+	{
+		t = details::iso8601_to_unix_timestamp_impl(tsp);
+	}
+	else
+	{
+		auto [seconds, subseconds] = details::iso8601_to_unix_timestamp_impl(tsp);
+		t.seconds = seconds - off_to_epoch;
+		t.subseconds = subseconds;
+	}
+	return result;
 }
 
 template <::std::integral char_type>
