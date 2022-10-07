@@ -13,9 +13,8 @@ int main(int argc,char** argv)
 		return 1;
 	}
 	fast_io::native_file_loader loader(::fast_io::mnp::os_c_str(argv[1]));
-	std::size_t count{std::ranges::count_if(loader,[](char8_t ch) noexcept
+	println(std::ranges::count_if(loader,[](char8_t ch) noexcept
 	{
 		return fast_io::char_category::is_c_space(ch);
-	})};
-	println(count);
+	}));
 }
