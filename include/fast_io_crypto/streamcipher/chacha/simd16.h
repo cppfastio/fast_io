@@ -13,10 +13,10 @@ template<bool evenround>
 [[__gnu__::__flatten__]]
 #endif
 inline void chacha_simd16_qr4_round_impl(
-::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& a,
-::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& b,
-::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& c,
-::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& d
+::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& __restrict a,
+::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& __restrict b,
+::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& __restrict c,
+::fast_io::intrinsics::simd_vector<::std::uint_least32_t,4>& __restrict d
 ) noexcept
 {
 	if constexpr(evenround)
