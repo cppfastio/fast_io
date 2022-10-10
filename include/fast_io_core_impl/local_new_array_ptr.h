@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "fast_io_core_impl/allocation/impl.h"
 namespace fast_io::details
 {
 template<typename char_type, typename allocator = ::fast_io::native_thread_local_allocator>
