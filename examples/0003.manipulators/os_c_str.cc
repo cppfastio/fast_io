@@ -7,7 +7,8 @@ int main()
 	println("Hello\0World\n",
 		ptr,"\n",
 		os_c_str(ptr),"\n",
-		os_c_str_n(ptr,4));
+		os_c_str(ptr,4),"\n",
+		os_c_str(ptr,10));
 }
 
 /*
@@ -19,11 +20,12 @@ Target: x86_64-pc-linux-gnu
 Configured with: ../../../../gcc/configure --disable-nls --disable-werror --enable-languages=c,c++ --enable-multilib --disable-bootstrap --disable-libstdcxx-verbose --with-gxx-libcxx-include-dir=/usr/local/include/c++/v1 --with-pkgversion=cqwrteur --with-multilib-list=m64,m32,mx32
 Thread model: posix
 Supported LTO compression algorithms: zlib
-gcc version 13.0.0 20221006 (experimental) (cqwrteur)
+gcc version 13.0.0 20221006 (experimental) (cqwrteur) 
 $ g++ -o os_c_str os_c_str.cc -Ofast -std=c++23 -s -flto -march=native -fuse-ld=gold -I../../include
 $ ./os_c_str 
 HelloWorld
-0x0000000000400d20
+0x0000000000400d60
 Hello
 Hell
+Hello
 */
