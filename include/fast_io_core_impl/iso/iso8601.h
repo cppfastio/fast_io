@@ -648,7 +648,7 @@ inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t 
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
 	return {static_cast<::std::int_least64_t>(seconds),static_cast<::std::uint_least64_t>(subseconds*mul_factor)};
 }
-
+#if 0
 namespace details
 {
 
@@ -805,5 +805,7 @@ template <::std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, iso8601_timestamp>, int& state, char_type const* begin, char_type const* end, iso8601_timestamp& t) noexcept { return{}; }
 template <::std::integral char_type>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, iso8601_timestamp>, int& state, iso8601_timestamp& t) noexcept { return{}; }
+
+#endif
 
 }
