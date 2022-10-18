@@ -117,9 +117,9 @@ struct iec559_rep
 };
 
 template<bool uppercase,::std::integral char_type>
-inline constexpr char_type* prsv_fp_nan_impl(char_type* iter,bool nan) noexcept
+inline constexpr char_type* prsv_fp_nan_impl(char_type* iter,bool isnan) noexcept
 {
-	if(nan)
+	if(isnan)
 	{
 		if constexpr(uppercase)
 		{
