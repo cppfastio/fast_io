@@ -201,11 +201,11 @@ using float_alias_type = typename float_alias_type_traits<std::remove_cvref_t<fl
 inline constexpr
 	::fast_io::manipulators::scalar_flags compute_bool_scalar_flags_cache(::fast_io::manipulators::scalar_flags flags) noexcept
 {
+	flags.uppercase=false;
 	if(!flags.showbase)
 	{
 		flags.base=2;
 		flags.uppercase_showbase=false;
-		flags.uppercase=false;
 	}
 	return flags;
 }
