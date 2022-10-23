@@ -223,7 +223,7 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 	{
 		if constexpr(std::same_as<scalar_type_nocvref,std::nullptr_t>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{};
+			return ::fast_io::manipulators::scalar_manip_t<cache,std::nullptr_t>{};
 		}
 		else if constexpr(::std::same_as<scalar_type_nocvref,bool>)
 		{
@@ -254,7 +254,7 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 	{
 		if constexpr(std::same_as<scalar_type_nocvref,std::nullptr_t>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{};
+			return ::fast_io::manipulators::scalar_manip_t<cache,std::nullptr_t>{};
 		}
 		else if constexpr(::std::same_as<scalar_type_nocvref,bool>)
 		{
