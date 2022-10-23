@@ -72,6 +72,85 @@ struct iec559_traits<__float128>
 
 #endif
 
+#ifdef __STDCPP_FLOAT16_T__
+template<>
+struct iec559_traits<_Float16>
+{
+	using mantissa_type = std::uint_least16_t;
+	inline static constexpr std::size_t mbits{10};
+	inline static constexpr std::size_t ebits{5};
+	inline static constexpr std::uint_least32_t m10digits{4};
+	inline static constexpr std::uint_least32_t m2hexdigits{3};
+	inline static constexpr std::uint_least32_t e10digits{2};
+	inline static constexpr std::uint_least32_t e2hexdigits{2};
+	inline static constexpr std::uint_least32_t e10max{7};
+};
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+template<>
+struct iec559_traits<_Float32>
+{
+	using mantissa_type = std::uint_least32_t;
+	inline static constexpr std::size_t mbits{23};
+	inline static constexpr std::size_t ebits{8};
+	inline static constexpr std::uint_least32_t m10digits{9};
+	inline static constexpr std::uint_least32_t m2hexdigits{6};
+	inline static constexpr std::uint_least32_t e10digits{2};
+	inline static constexpr std::uint_least32_t e2hexdigits{3};
+	inline static constexpr std::uint_least32_t e10max{38};
+};
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+template<>
+struct iec559_traits<_Float64>
+{
+	using mantissa_type = std::uint_least64_t;
+	inline static constexpr std::size_t mbits{52};
+	inline static constexpr std::size_t ebits{11};
+	inline static constexpr std::uint_least32_t m10digits{17};
+	inline static constexpr std::uint_least32_t m2hexdigits{13};
+	inline static constexpr std::uint_least32_t e10digits{3};
+	inline static constexpr std::uint_least32_t e2hexdigits{4};
+	inline static constexpr std::uint_least32_t e10max{308};
+};
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) && defined(__SIZEOF_INT128__)
+template<>
+struct iec559_traits<_Float128>
+{
+	using mantissa_type = __uint128_t;
+	inline static constexpr std::size_t mbits{112};
+	inline static constexpr std::size_t ebits{15};
+	inline static constexpr std::uint_least32_t m10digits{37};
+	inline static constexpr std::uint_least32_t m2hexdigits{28};
+	inline static constexpr std::uint_least32_t e10digits{4};
+	inline static constexpr std::uint_least32_t e2hexdigits{5};
+	inline static constexpr std::uint_least32_t e10max{4966};
+};
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+
+/*
+To do: change the value
+*/
+template<>
+struct iec559_traits<decltype(0.0bf16)>
+{
+	using mantissa_type = std::uint_least16_t;
+	inline static constexpr std::size_t mbits{7};
+	inline static constexpr std::size_t ebits{8};
+	inline static constexpr std::uint_least32_t m10digits{4};
+	inline static constexpr std::uint_least32_t m2hexdigits{3};
+	inline static constexpr std::uint_least32_t e10digits{2};
+	inline static constexpr std::uint_least32_t e2hexdigits{2};
+	inline static constexpr std::uint_least32_t e10max{7};
+};
+#endif
+
 template<my_unsigned_integral T>
 #if defined(_MSC_VER) && !defined(__clang__)
 #if __has_cpp_attribute(msvc::forceinline)

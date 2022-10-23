@@ -60,7 +60,7 @@ inline constexpr uint32x2 float_mod5_tb[]
 
 inline constexpr auto compute_pow10_float32{pow10_float32_tb+31};
 
-inline constexpr uint64x2 pow10_double_tb[]
+inline constexpr uint64x2 pow10_float64_tb[]
 {
 {0xFF77B1FCBEBCDC4F, 0x25E8E89C13BB0F7B},
 {0x9FAACF3DF73609B1, 0x77B191618C54E9AD},
@@ -683,7 +683,7 @@ inline constexpr uint64x2 pow10_double_tb[]
 {0xF70867153AA2DB38, 0xB8CBEE4FC66D1EA7}
 };
 
-inline constexpr uint64x2 double_mod5_tb[]
+inline constexpr uint64x2 float64_mod5_tb[]
 {
 {0x0000000000000001u, 0xFFFFFFFFFFFFFFFFu}, // 5^0
 {0xCCCCCCCCCCCCCCCDu, 0x3333333333333333u}, // 5^1
@@ -711,7 +711,7 @@ inline constexpr uint64x2 double_mod5_tb[]
 {0xDCD618596BE30FE5u, 0x000000000000060Bu} // 5^23
 };
 
-inline constexpr auto compute_pow10_double{pow10_double_tb+292};
+inline constexpr auto compute_pow10_float64{pow10_float64_tb+292};
 
 template<typename mantissa_type>
 struct m10_result
@@ -730,7 +730,7 @@ inline constexpr std::int_least32_t mul_ln10_div_ln2_floor(std::int_least32_t e)
 	return (e*1741647)>>19;
 }
 
-inline constexpr std::uint_least64_t mulshift_double(std::uint_least64_t x,std::uint_least64_t ylow,std::uint_least64_t yhigh) noexcept
+inline constexpr std::uint_least64_t mulshift_float64(std::uint_least64_t x,std::uint_least64_t ylow,std::uint_least64_t yhigh) noexcept
 {
 	std::uint_least64_t p0high{intrinsics::umul_least64_high(x,ylow)};
 	std::uint_least64_t p1high;
@@ -777,7 +777,7 @@ inline constexpr bool multiple_of_pow2(value_type value,std::int_least32_t e2) n
 
 inline constexpr bool multiple_of_pow5(std::uint_least64_t value,std::uint_least32_t e5) noexcept
 {
-	auto m5{double_mod5_tb[e5]};
+	auto m5{float64_mod5_tb[e5]};
 	return value*m5.hi <= m5.lo;
 }
 
@@ -844,9 +844,9 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> schubfac
 	std::int_least32_t const plus_k{-minus_k};
 	std::int_least32_t const beta_minus_1{e2 + mul_ln10_div_ln2_floor(plus_k)};
 	std::uint_least32_t const rshift{static_cast<std::uint_least32_t>(64-mbits-beta_minus_1)};
-	if constexpr(sizeof(flt)==sizeof(double))
+	if constexpr(sizeof(flt)==sizeof(::std::uint_least64_t))
 	{
-		uint64x2 const pw{compute_pow10_double[plus_k]};
+		uint64x2 const pw{compute_pow10_float64[plus_k]};
 		std::uint_least64_t const pw_lo{pw.lo},pw_hi{pw.hi};
 		std::uint_least64_t const lower_endpoint{(pw_hi-(pw_hi>>(mbits+1)))>>rshift};
 		std::uint_least64_t q{(pw_lo+(pw_hi>>mbits))>>rshift};
@@ -924,14 +924,14 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 	std::int_least32_t const minus_k{mul_ln2_div_ln10_floor(e2)-kappa};
 	std::int_least32_t const plus_k{-minus_k};
 	std::int_least32_t const beta_minus_1{e2+mul_ln10_div_ln2_floor(plus_k)};
-	if constexpr(std::same_as<flt,double>)
+	if constexpr(sizeof(flt)==sizeof(::std::uint_least64_t))
 	{
-		uint64x2 const pow10{compute_pow10_double[plus_k]};
+		uint64x2 const pow10{compute_pow10_float64[plus_k]};
 		std::uint_least64_t const pow10_lo{pow10.lo};
 		std::uint_least64_t const pow10_hi{pow10.hi};
 		std::uint_least32_t const delta{static_cast<std::uint_least32_t>(pow10_hi>>(63-beta_minus_1))};
 		std::uint_least64_t const two_fc{m2<<1},two_fl{two_fc-1},two_fr{two_fc+1};
-		std::uint_least64_t const zi{mulshift_double(two_fr<<beta_minus_1,pow10_lo,pow10_hi)};
+		std::uint_least64_t const zi{mulshift_float64(two_fr<<beta_minus_1,pow10_lo,pow10_hi)};
 		std::uint_least64_t q;
 		std::uint_least32_t r;
 		q=zi/big_divisor;
@@ -962,7 +962,7 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 		}
 		return {q,minus_k+kappa};
 	}
-	else if constexpr(std::same_as<flt,float>)
+	else if constexpr(sizeof(flt)==sizeof(::std::uint_least32_t))
 	{
 		std::uint_least64_t const pow10{compute_pow10_float32[plus_k]};
 		std::uint_least32_t const two_fc{m2<<1},two_fl{two_fc-1},two_fr{two_fc+1};

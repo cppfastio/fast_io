@@ -35,26 +35,38 @@ wt[r,r+1,r+2,r+3]=wt[r-16,r-15,r-14,r-13]+wt[r-7,r-6,r-5,r-4]
 	simd_vector<std::uint_least32_t,4> s10{s1[2],s1[3],0,0};
 	simd_vector<std::uint_least32_t,4> s0;
 	s0.load(w+(round-15));
-
-#if 0
-	s10=(s10>>17)^(s10<<15)^(s10>>19)^(s10<<13)^(s10>>10);
-	s0=(s0>>7)^(s0<<25)^(s0>>18)^(s0<<14)^(s0>>3);
-#else
-	s10=(((((s10>>2)^s10)>>7)^s10)>>10)^(((s10<<2)^s10)<<13);
-	s0=(((((s0>>11)^s0)>>4)^s0)>>3)^(((s0<<11)^s0)<<14);
-#endif
-
+	if constexpr(true)
+	{
+		s10=(s10>>17)^(s10<<15)^(s10>>19)^(s10<<13)^(s10>>10);
+		s0=(s0>>7)^(s0<<25)^(s0>>18)^(s0<<14)^(s0>>3);
+	}
+	else if constexpr(false)
+	{
+		s10=(((((s10>>2)^s10)>>7)^s10)>>10)^(((s10<<2)^s10)<<13);
+		s0=(((((s0>>11)^s0)>>4)^s0)>>3)^(((s0<<11)^s0)<<14);
+	}
+	else
+	{
+		s10=wrap_add((s10>>17),(s10<<15))^wrap_add((s10>>19),(s10<<13))^(s10>>10);
+		s0=wrap_add((s0>>7),(s0<<25))^wrap_add((s0>>18),(s0<<14))^(s0>>3);
+	}
 	s10.wrap_add_assign(s0);
 	s0.load(w+(round-16));
 	s10.wrap_add_assign(s0);
 	s0.load(w+(round-7));
 	s10.wrap_add_assign(s0);
 	s1=simd_vector<std::uint_least32_t,4>{0,0,s10[0],s10[1]};
-#if 0
-	s1=(s1>>17)^(s1<<15)^(s1>>19)^(s1<<13)^(s1>>10);
-#else
-	s1=(((((s1>>2)^s1)>>7)^s1)>>10)^(((s1<<2)^s1)<<13);
-#endif
+	if constexpr(false)
+	{
+		s1=(s1>>17)^(s1<<15)^(s1>>19)^(s1<<13)^(s1>>10);
+	}
+	else if constexpr(true)
+	{
+	}
+	else
+	{
+		s1=(((((s1>>2)^s1)>>7)^s1)>>10)^(((s1<<2)^s1)<<13);
+	}
 	s1.wrap_add_assign(s10);
 	s1.store(w+round);
 	s0.load(::fast_io::details::sha256::K256+round);

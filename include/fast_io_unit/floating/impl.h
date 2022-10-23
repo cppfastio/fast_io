@@ -40,7 +40,14 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,mani
 		{
 			return details::print_rsv_cache<double,flags.floating>;
 		}
-		static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>),"currently only support iec559 float32 and float64, sorry");
+		static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>
+#ifdef __STDCPP_FLOAT32_T__
+		||std::same_as<std::remove_cvref_t<flt>,_Float32>
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+		||std::same_as<std::remove_cvref_t<flt>,_Float64>
+#endif
+		),"currently only support iec559 float32 and float64, sorry");
 		return details::print_rsv_cache<std::remove_cvref_t<flt>,flags.floating>;
 	}
 }
@@ -80,7 +87,14 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,man
 		else
 		{
 			//this is the case for every other platform, including xxx-windows-gnu
-			static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>),"currently only support iec559 float32 and float64, sorry");
+			static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>
+#ifdef __STDCPP_FLOAT32_T__
+			||std::same_as<std::remove_cvref_t<flt>,_Float32>
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+			||std::same_as<std::remove_cvref_t<flt>,_Float64>
+#endif
+			),"currently only support iec559 float32 and float64, sorry");
 			return details::print_rsvflt_define_impl<flags.showpos,flags.uppercase,flags.uppercase_e,flags.comma,flags.floating>(iter,f.reference);
 		}
 	}

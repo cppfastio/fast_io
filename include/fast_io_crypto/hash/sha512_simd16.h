@@ -29,13 +29,21 @@ inline void sha512_simd16_compute_message_2rounds(
 	using namespace ::fast_io::intrinsics;
 	simd_vector<std::uint_least64_t,2> s0;
 	s0.load(w+(round-15));
-#if 1
-	s1=(((((s1>>42)^s1)>>13)^s1)>>6)^(((s1<<42)^s1)<<3);
-	s0=(((((s0>>1)^s0)>>6)^s0)>>1)^(((s0<<7)^s0)<<56);
-#else
-	s1=(s1>>19)^(s1<<45)^(s1>>61)^(s1<<3)^(s1>>6);
-	s0=(s0>>1)^(s0<<63)^(s0>>8)^(s0<<56)^(s0>>7);
-#endif
+	if constexpr(true)
+	{
+		s1=(((((s1>>42)^s1)>>13)^s1)>>6)^(((s1<<42)^s1)<<3);
+		s0=(((((s0>>1)^s0)>>6)^s0)>>1)^(((s0<<7)^s0)<<56);
+	}
+	else if constexpr(false)
+	{
+		s1=(s1>>19)^(s1<<45)^(s1>>61)^(s1<<3)^(s1>>6);
+		s0=(s0>>1)^(s0<<63)^(s0>>8)^(s0<<56)^(s0>>7);
+	}
+	else
+	{
+		s1=wrap_add((s1>>19),(s1<<45))^wrap_add((s1>>61),(s1<<3))^(s1>>6);
+		s0=wrap_add((s0>>1),(s0<<63))^wrap_add((s0>>8),(s0<<56))^(s0>>7);
+	}
 	s1.wrap_add_assign(s0);
 	s0.load(w+(round-16));
 	s1.wrap_add_assign(s0);

@@ -78,6 +78,54 @@ inline constexpr ::fast_io::manipulators::scalar_flags cryptohash_mani_flags_cac
 template<std::size_t bs,bool noskipws>
 inline constexpr ::fast_io::manipulators::scalar_flags base_scan_mani_flags_cache{.base=bs,.noskipws=noskipws,.floating=::fast_io::manipulators::floating_format::fixed};
 
+template<typename flt>
+struct float_alias_type_traits
+{
+	using alias_type = flt;
+};
+
+#ifdef __STDCPP_FLOAT64_T__
+template<>
+struct float_alias_type_traits<double>
+{
+	using alias_type = 
+	std::conditional_t<sizeof(_Float64)==sizeof(double)&&std::numeric_limits<double>::is_iec559,
+	_Float64,double>;
+};
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+template<>
+struct float_alias_type_traits<float>
+{
+	using alias_type = 
+	std::conditional_t<sizeof(_Float32)==sizeof(float)&&std::numeric_limits<float>::is_iec559,
+	_Float32,float>;
+};
+#endif
+
+template<>
+struct float_alias_type_traits<long double>
+{
+#if defined(__SIZEOF_INT128__) && (defined(__STDCPP_FLOAT128_T__)||defined(__FLOAT128__))
+#ifdef __STDCPP_FLOAT128_T__
+	using alias_type = _Float128;
+#else
+	using alias_type = __float128;
+#endif
+#else
+	using alias_type = typename float_alias_type_traits<double>::alias_type;
+#endif
+};
+
+#if (defined(__SIZEOF_FLOAT16__) || defined(__FLOAT16__)) && defined(__STDCPP_FLOAT16_T__)
+template<>
+struct float_alias_type_traits<__float16>
+{
+	using alias_type = _Float16;
+};
+#endif
+
 }
 
 namespace manipulators
@@ -342,21 +390,8 @@ inline constexpr scalar_manip_t<flags,std::conditional_t<(::fast_io::details::my
 		return {};
 	else if constexpr(::fast_io::details::my_floating_point<scalar_type>)
 	{
-		if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-		||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-		)
-		{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-			if constexpr(sizeof(scalar_type)>sizeof(double))
-				return scalar_manip_t<floating_point_default_scalar_flags,__float128>{static_cast<__float128>(t)};
-			else
-#endif
-				return scalar_manip_t<floating_point_default_scalar_flags,double>{static_cast<double>(t)};
-		}
-		else
-			return scalar_manip_t<floating_point_default_scalar_flags,std::remove_cvref_t<scalar_type>>{t};
+		using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+		return scalar_manip_t<floating_point_default_scalar_flags,float_alias_type>{static_cast<float_alias_type>(t)};
 	}
 	else if constexpr(::fast_io::details::my_integral<scalar_type>||::fast_io::details::my_floating_point<scalar_type>||std::same_as<std::nullptr_t,std::remove_cvref_t<scalar_type>>)
 		return {t};
@@ -376,63 +411,24 @@ template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto hexfloat(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto hexfloat(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_hexfloat(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 
@@ -440,147 +436,56 @@ template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_hexfloat(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto general(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_general(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto general(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_general(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto fixed(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_fixed(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 
@@ -588,126 +493,48 @@ template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto fixed(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_fixed(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto scientific(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_scientific(scalar_type t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,__float128>{static_cast<__float128>(t)};
-		else
-#endif
-			return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,double>{static_cast<double>(t)};
-	}
-	else
-		return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,std::remove_cvref_t<scalar_type>>{t};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto scientific(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_scientific(scalar_type t,std::size_t n) noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-	||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-	)
-	{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-		if constexpr(sizeof(scalar_type)>sizeof(double))
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,__float128>{static_cast<__float128>(t),n};
-		else
-#endif
-			return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,double>{static_cast<double>(t),n};
-	}
-	else
-		return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,std::remove_cvref_t<scalar_type>>{t,n};
+	using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
 
 }
@@ -1483,21 +1310,8 @@ inline constexpr auto print_alias_define(io_alias_t,scalar_type t) noexcept
 		return manipulators::scalar_manip_t<manipulators::integral_default_scalar_flags,scalar_type>{t};
 	else if constexpr(details::my_floating_point<scalar_type>)
 	{
-		if constexpr(std::same_as<std::remove_cvref_t<scalar_type>,long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-		||std::same_as<std::remove_cvref_t<scalar_type>,__float128>
-#endif
-		)
-		{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-			if constexpr(sizeof(scalar_type)>sizeof(double))
-				return manipulators::scalar_manip_t<manipulators::floating_point_default_scalar_flags,__float128>{static_cast<__float128>(t)};
-			else
-#endif
-				return manipulators::scalar_manip_t<manipulators::floating_point_default_scalar_flags,double>{static_cast<double>(t)};
-		}
-		else
-			return manipulators::scalar_manip_t<manipulators::floating_point_default_scalar_flags,std::remove_cvref_t<scalar_type>>{t};
+		using float_alias_type = typename ::fast_io::details::float_alias_type_traits<std::remove_cvref_t<scalar_type>>::alias_type;
+		return manipulators::scalar_manip_t<manipulators::floating_point_default_scalar_flags,float_alias_type>{static_cast<float_alias_type>(t)};
 	}
 	else if constexpr(std::same_as<std::nullptr_t,std::remove_cvref_t<scalar_type>>)
 	{
