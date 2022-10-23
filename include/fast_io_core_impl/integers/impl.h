@@ -211,11 +211,6 @@ inline constexpr
 }
 
 template<::fast_io::manipulators::scalar_flags cache,typename scalar_type>
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
 inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 {
 	using scalar_type_nocvref = std::remove_cvref_t<scalar_type>;
