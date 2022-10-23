@@ -254,10 +254,14 @@ inline constexpr std::size_t precision_m2_e2_common(std::size_t* res,typename ie
 		}
 	}
 	return mulassign(res,tempbuffer,resn1,base,basei);
-
-
 }
-
+#if 0
+template<std::unsigned_integral T>
+inline constexpr std::uint_fast8_t precisionindex(std::size_t* res,std::size_t resn,T val,std::size_t pos) noexcept
+{
+	return 0;
+}
+#endif
 template<std::integral char_type,
 bool showpos,
 bool uppercase,
@@ -293,7 +297,6 @@ inline constexpr char_type* precision_m2_e2(typename iec559_traits<flt>::mantiss
 
 	::std::size_t const length{total_length(res,n)};
 	::std::int_least32_t const lengthl32{static_cast<std::int_least32_t>(static_cast<std::uint_least32_t>(length))};
-//	println(e2," ",lengthl32);
 	::std::int_least32_t const lengthpluse2{lengthl32+e2};
 	if constexpr(mt==::fast_io::manipulators::floating_format::scientific)
 	{
