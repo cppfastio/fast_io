@@ -152,7 +152,7 @@ inline constexpr void write(dynamic_io_buffer<ch_type>& ob,Iter first,Iter last)
 	}
 	else
 	{
-		std::size_t diff{static_cast<std::size_t>(::std::distance(first,last))};
+		std::size_t diff{static_cast<std::size_t>(last-first)};
 		std::size_t remain_space{static_cast<std::size_t>(ob.buffer_end-ob.buffer_curr)};
 		if(remain_space<diff)
 		{
