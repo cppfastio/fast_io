@@ -199,8 +199,6 @@ struct hash_compress_t
 	std::size_t len{};
 };
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
-
 template<crypto_hash_context ctx,::std::ranges::contiguous_range T>
 requires (::std::is_trivially_copyable_v<::std::ranges::range_value_t<T>>&&!::std::is_array_v<T>)
 inline constexpr hash_compress_t<digest_format::lower,ctx> hash_compress(T const& t) noexcept
@@ -242,8 +240,6 @@ inline constexpr hash_compress_t<digest_format::raw_bytes,ctx> hash_compress_raw
 		return {reinterpret_cast<std::byte const*>(::std::ranges::data(t)),static_cast<std::size_t>(::std::ranges::size(t))*sizeof(T)};
 	}
 }
-
-#endif
 
 }
 
