@@ -339,6 +339,40 @@ struct width_ch_t
 	char_type ch;
 };
 
+template<typename T>
+struct width_runtime_t
+{
+	using manip_tag = manip_tag_t;
+	scalar_placement placement;
+#ifndef __INTELLISENSE__
+#if __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#endif
+#endif
+	T reference;
+	std::size_t width;
+};
+
+template<typename T,std::integral ch_type>
+struct width_runtime_ch_t
+{
+	using manip_tag = manip_tag_t;
+	using char_type = ch_type;
+	scalar_placement placement;
+#ifndef __INTELLISENSE__
+#if __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#endif
+#endif
+	T reference;
+	std::size_t width;
+	char_type ch;
+};
+
 template<std::size_t bs,bool shbase=false,bool full=false,typename scalar_type>
 requires ((2<=bs&&bs<=36)&&(::fast_io::details::scalar_integrals<scalar_type>))
 inline constexpr auto base(scalar_type t) noexcept
