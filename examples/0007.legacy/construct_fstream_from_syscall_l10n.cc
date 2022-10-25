@@ -35,8 +35,10 @@ This is an example to explain how fast_io's files work with each other, and how 
 	"Universe Timestamp:",static_cast<fast_io::universe_timestamp>(unix_ts),"\n"
 	"UTC iso8601:",utc(unix_ts),"\n",
 	"UTC date_fmt:",fast_io::mnp::date_fmt(utc(unix_ts)),"\n"
+	"UTC era_d_t_fmt:",fast_io::mnp::era_d_t_fmt(utc(unix_ts)),"\n"
 	"Local iso8601:",local(unix_ts),"\n"
 	"Local date_fmt:",fast_io::mnp::date_fmt(local(unix_ts)),"\n"
+	"Local era_d_t_fmt:",fast_io::mnp::era_d_t_fmt(local(unix_ts)),"\n"
 	"Local Timezone:",fast_io::timezone_name(),"\n"
 #ifdef __clang__
 	"LLVM clang " __clang_version__ "\n"
@@ -91,21 +93,25 @@ g++ -o construct_fstream_from_syscall construct_fstream_from_syscall.cc -Ofast -
 
 D:\hg\fast_io\examples\0007.legacy>g++ -o construct_fstream_from_syscall_l10n construct_fstream_from_syscall_l10n.cc -Ofast -std=c++23 -s -flto -march=native -I../../include -lntdll
 
+D:\hg\fast_io\examples\0007.legacy>set L10N=ja_JP.UTF-8
+
 D:\hg\fast_io\examples\0007.legacy>construct_fstream_from_syscall_l10n
-Unix Timestamp:1,663,581,555.4071499
-Universe Timestamp:434,602,343,092,816,755.4071499
-UTC iso8601:2022-09-19T09:59:15.4071499Z
-UTC date_fmt:Mon Sep 19 09:59:15 AM +00:00 2022
-Local iso8601:2022-09-19T05:59:15.4071499-04:00
-Local date_fmt:Mon Sep 19 05:59:15 AM -04:00 2022
+Unix Timestamp:1,666,670,097.1489241
+Universe Timestamp:434,602,343,095,905,297.1489241
+UTC iso8601:2022-10-25T03:54:57.1489241Z
+UTC date_fmt:2022年 10月 25日 火曜日 03:54:57 +00:00
+UTC era_d_t_fmt:令和4年10月25日 03時54分57秒
+Local iso8601:2022-10-24T23:54:57.1489241-04:00
+Local date_fmt:2022年 10月 24日 月曜日 23:54:57 -04:00
+Local era_d_t_fmt:令和4年10月24日 23時54分57秒
 Local Timezone:Eastern Daylight Time
-GCC 13.0.0 20220703 (experimental)
+GCC 13.0.0 20221023 (experimental)
 MSVCRT 0x700
-GNU C++ Library 13 20,220,703
-fstream.rdbuf():0x0,000,002,929,1ff,358
-FILE*:0x0,000,7ff,92e,b5f,a90
+GNU C++ Library 13 20,221,023
+fstream.rdbuf():0x0,000,006,86a,9ff,8c8
+FILE*:0x0,000,7ff,ca1,5ef,a90
 fd:3
-win32 HANDLE:0x0,000,000,000,000,0a8
-zw HANDLE:0x0,000,000,000,000,0a8
-nt HANDLE:0x0,000,000,000,000,0a8
+win32 HANDLE:0x0,000,000,000,000,0b8
+zw HANDLE:0x0,000,000,000,000,0b8
+nt HANDLE:0x0,000,000,000,000,0b8
 */
