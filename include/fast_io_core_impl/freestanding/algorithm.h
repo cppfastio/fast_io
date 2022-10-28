@@ -193,6 +193,27 @@ inline void* my_memset(void* dest, int ch, std::size_t count) noexcept
 		(dest, ch, count);
 }
 
+inline
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memcpy)
+constexpr
+#endif
+#endif
+int my_memcmp(void const* dest, void const* src, std::size_t count) noexcept
+{
+	return
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memcmp)
+		__builtin_memcmp
+#else
+		std::memcmp
+#endif
+#else
+		std::memcmp
+#endif
+		(dest, src, count);
+}
+
 template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t count, output_iter result)
 {
@@ -379,8 +400,6 @@ inline constexpr bool my_compare_iter_n(input_iter first,std::size_t n,output_it
 	else
 #endif
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcmp)
 		using input_value_type = typename ::std::iter_value_t<input_iter>;
 		using output_value_type = typename ::std::iter_value_t<output_iter>;
 		if constexpr
@@ -392,11 +411,9 @@ inline constexpr bool my_compare_iter_n(input_iter first,std::size_t n,output_it
 				(std::integral<input_value_type> && std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 		{
-			return __builtin_memcmp(std::to_address(first),std::to_address(outier),n)==0;
+			return my_memcmp(std::to_address(first),std::to_address(outier),n)==0;
 		}
 		else
-#endif
-#endif
 		{
 			for(auto last{first+n};first!=last;++first)
 			{

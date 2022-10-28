@@ -633,39 +633,114 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 {
 	if(first==last)
 	{
+		integer_phase=scan_integral_context_phase::prefix;
 		return {first,parse_code::partial};
 	}
-	std::uint_fast8_t size_cache{sz};
-	if constexpr(base==2||base==16)
+	if constexpr(base==8)
 	{
+		if(*first!=char_literal_v<u8'0',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+
+	}
+	else
+	{
+		std::uint_fast8_t size_cache{sz};
 		if(size_cache==0)
 		{
-			if(*first==char_literal_v<u8'0',char_type>)
+			if(*first!=char_literal_v<u8'0',char_type>)
+			{
+				return {first,parse_code::invalid};
+			}
+			if((++first)==last)
+			{
+				integer_phase=scan_integral_context_phase::prefix;
+				sz=1;
+				return {first,parse_code::partial};
+			}
+			if constexpr(base!=2&&base!=3&&base!=16)
 			{
 				size_cache=1;
+			}
+		}
+		if constexpr(base==2||base==3||base==16)
+		{
+			auto ch{*first};
+			if((ch==char_literal_v<(base==2?u8'B':(base==3?u8't':u8'X')),char_type>)|
+				(ch==char_literal_v<(base==2?u8'b':(base==3?u8't':u8'x')),char_type>))
+			{
+				sz=0;
+				++first;
+				return {first,ongoing_parse_code};
+			}
+			else
+			{
+				return {first,parse_code::invalid};
+			}
+		}
+		else
+		{
+			if(size_cache==1)
+			{
+				if(*first!=char_literal_v<u8'[',char_type>)
+				{
+					return {first,parse_code::invalid};
+				}
 				if((++first)==last)
 				{
-					sz=size_cache;
+					integer_phase=scan_integral_context_phase::prefix;
+					sz=2;
 					return {first,parse_code::partial};
 				}
 			}
-		}
-		if(size_cache==1)
-		{
-			auto ch{*first};
-			if constexpr(base==16)
+			constexpr auto digit0{char_literal_v<
+			u8'0'+(base<10?base:base/10),char_type>};
+			if(size_cache==2)
 			{
-				if((ch==char_literal_v<u8'x',char_type>)|(ch==char_literal_v<u8'X',char_type>))
+				if(*first!=digit0)
 				{
-					sz=0;
+					return {first,parse_code::invalid};
+				}
+				if((++first)==last)
+				{
+					integer_phase=scan_integral_context_phase::prefix;
+					sz=3;
+					return {first,parse_code::partial};
+				}
+			}
+			if constexpr(10<base)
+			{
+				constexpr auto digit1{char_literal_v<
+				u8'0'+(base%10),char_type>};
+				if(size_cache==3)
+				{
+					if(*first!=digit1)
+					{
+						return {first,parse_code::invalid};
+					}
 					if((++first)==last)
 					{
+						integer_phase=scan_integral_context_phase::prefix;
+						sz=4;
 						return {first,parse_code::partial};
 					}
 				}
 			}
+			constexpr
+				::std::uint_fast8_t last_index{base<10?3:4};
+			if(size_cache==last_index)
+			{
+				if(*first!=char_literal_v<u8']',char_type>)
+				{
+					return {first,parse_code::invalid};
+				}
+				sz=0;
+				++first;
+			}
 		}
 	}
+	return {first,ongoing_parse_code};
 }
 
 template<char8_t base,bool skipzero,std::integral char_type>
