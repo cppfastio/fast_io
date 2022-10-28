@@ -7,7 +7,11 @@ try
 {
 	if(argc<3)
 	{
-		perr("Usage: ",::fast_io::mnp::os_env(argc,argv,0)," <source directory> <dest directory>\n");
+		if(argc==0)
+		{
+			return 1;
+		}
+		perr("Usage: ",::fast_io::mnp::os_c_str(*argv)," <source directory> <dest directory>\n");
 		return 1;
 	}
 	fast_io::dir_file df(::fast_io::mnp::os_c_str(argv[1]));
