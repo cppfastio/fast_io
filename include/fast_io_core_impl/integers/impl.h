@@ -90,8 +90,8 @@ inline constexpr ::fast_io::manipulators::scalar_flags dcmfloat_mani_flags_cache
 template<bool uppercase,bool shbase>
 inline constexpr ::fast_io::manipulators::scalar_flags cryptohash_mani_flags_cache{.base=16,.showbase=shbase,.uppercase_showbase=uppercase,.uppercase=uppercase,.floating=::fast_io::manipulators::floating_format::fixed};
 
-template<std::size_t bs,bool noskipws>
-inline constexpr ::fast_io::manipulators::scalar_flags base_scan_mani_flags_cache{.base=bs,.noskipws=noskipws,.floating=::fast_io::manipulators::floating_format::fixed};
+template<std::size_t bs,bool noskipws,bool shbase,bool skipzero>
+inline constexpr ::fast_io::manipulators::scalar_flags base_scan_mani_flags_cache{.base=bs,.showbase=shbase,.noskipws=noskipws,.full=skipzero,.floating=::fast_io::manipulators::floating_format::fixed};
 
 template<typename inttype>
 struct unsigned_integer_alias_type_traits_helper
