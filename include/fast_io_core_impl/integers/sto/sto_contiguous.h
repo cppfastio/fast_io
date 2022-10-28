@@ -193,6 +193,9 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 	}
 }
 
+template<std::integral char_type>
+inline constexpr char_type const* find_none_zero_simd_impl(char_type const* first,char_type const* last) noexcept;
+
 struct simd_parse_result
 {
 	std::size_t digits;
@@ -409,7 +412,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	return {first,(overflow?(parse_code::overflow):(parse_code::ok))};
 }
 
-template<char8_t base,::std::integral char_type,my_integral T>
+template<char8_t base,bool skipzero=false,::std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_part_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
@@ -430,13 +433,26 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 			return {first,parse_code::invalid};
 		else if(first_ch==zero)
 		{
-			++first;
-			if((first==last)||(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first))))
+			if constexpr(skipzero)
 			{
-				t={};
-				return {first,parse_code::ok};
+				++first;
+				first=find_none_zero_simd_impl(first,last);
+				if(first==last)
+				{
+					t=0;
+					return {first,parse_code::ok};
+				}
 			}
-			return {first,parse_code::invalid};
+			else
+			{
+				++first;
+				if((first==last)||(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first))))
+				{
+					t={};
+					return {first,parse_code::ok};
+				}
+				return {first,parse_code::invalid};
+			}
 		}
 	}
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
@@ -501,16 +517,55 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 	return {it,parse_code::ok};
 }
 
+inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(std::numeric_limits<char unsigned>::max())};
+
+template<char8_t base,std::integral char_type>
+inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const* first,char_type const* last) noexcept
+{
+	constexpr std::size_t sz{::fast_io::details::base_prefix_array<base,char_type>.size()};
+	for(std::size_t i{};i!=sz&&first!=last;++first)
+	{
+		if(::fast_io::details::base_prefix_array<base,char_type>[i]!=*first)
+		{
+			return {first,parse_code::invalid};
+		}
+		++i;
+	}
+	if(first==last)
+		return {first,parse_code::invalid};
+	return {first,ongoing_parse_code};
+}
+
 template<char8_t base,bool noskipws,bool shbase,bool skipzero,::std::integral char_type,details::my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
 	if constexpr(!noskipws)
 	{
-	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
-	if(first==last)
-		return {first,parse_code::end_of_file};
+		for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
+		if(first==last)
+			return {first,parse_code::end_of_file};
 	}
-	return scan_int_contiguous_none_space_part_define_impl<base>(first,last,t);
+	if constexpr(shbase&&base!=10)
+	{
+		if constexpr(base==8)
+		{
+			if(first==last||*first!=char_literal_v<u8'0',char_type>)
+			{
+				return {first,parse_code::invalid};
+			}
+			++first;
+		}
+		else
+		{
+			auto phase_ret = scan_shbase_impl<base>(first,last);
+			if(phase_ret.code!=ongoing_parse_code)
+			{
+				return phase_ret;
+			}
+			first=phase_ret.iter;
+		}
+	}
+	return scan_int_contiguous_none_space_part_define_impl<base,skipzero>(first,last,t);
 }
 }
 
@@ -554,9 +609,6 @@ inline constexpr auto scan_context_type_impl_int() noexcept
 namespace details
 {
 
-template<std::integral char_type>
-inline constexpr char_type const* find_none_zero_simd_impl(char_type const* first,char_type const* last) noexcept;
-
 template<char8_t base,std::integral char_type>
 inline constexpr char_type const* scan_skip_all_digits_impl(char_type const* first,char_type const* last) noexcept
 {
@@ -564,8 +616,6 @@ inline constexpr char_type const* scan_skip_all_digits_impl(char_type const* fir
 	for(;first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first));++first);
 	return first;
 }
-
-inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(std::numeric_limits<char unsigned>::max())};
 
 template<::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_space_phase(char_type const* first,char_type const* last) noexcept
