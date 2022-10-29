@@ -3,15 +3,16 @@
 namespace fast_io::details
 {
 
-template<std::integral char_type>
-inline constexpr char_type const* find_lf_simd_impl(char_type const* first,char_type const* last) noexcept
+template<char8_t lfch,bool findnot,std::integral char_type>
+inline constexpr char_type const* find_simd_constant_common_impl(char_type const* first,char_type const* last) noexcept
 {
-	constexpr char_type lfchct{char_literal_v<u8'\n',std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
+
 #if (defined(__GNUC__) || defined(__clang__)) && defined(__SSE4_1__) && defined(__x86_64__)
 	if constexpr(sizeof(char_type)==1)
 	{
-		constexpr char lfch{static_cast<char>(lfchct)};
-		constexpr ::fast_io::intrinsics::simd_vector<char,16> zeros{lfch,lfch,lfch,lfch,
+		constexpr
+			::fast_io::intrinsics::simd_vector<char,16> zeros{lfch,lfch,lfch,lfch,
 						lfch,lfch,lfch,lfch,
 						lfch,lfch,lfch,lfch,
 						lfch,lfch,lfch,lfch};
@@ -22,22 +23,46 @@ inline constexpr char_type const* find_lf_simd_impl(char_type const* first,char_
 			simdvec.load(first);
 			::fast_io::intrinsics::simd_vector<char,16> chunk{zeros==simdvec};
 			std::uint_least32_t mask{static_cast<std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk))};
-			auto const incr{std::countr_zero(static_cast<std::uint_least16_t>(mask))};
+			std::uint_least16_t incr;
+			if constexpr(findnot)
+			{
+				incr=std::countr_one(static_cast<std::uint_least16_t>(mask));
+			}
+			else
+			{
+				incr=std::countr_zero(static_cast<std::uint_least16_t>(mask));
+			}
 			if(incr!=16)
 			{
 				return first+incr;
 			}
 			first+=16;
 		}
-		for(;first!=last&&*first!=lfch;++first);
+		if constexpr(findnot)
+		{
+			for(;first!=last&&*first==lfch;++first);
+		}
+		else
+		{
+			for(;first!=last&&*first!=lfch;++first);
+		}
 		return first;
 	}
-	else
 #endif
-	{
-		return ::fast_io::freestanding::find(first,last,lfchct);
-	}
+	return ::fast_io::freestanding::find(first,last,lfchct);
+}
+
+
+template<std::integral char_type>
+inline constexpr char_type const* find_lf_simd_impl(char_type const* first,char_type const* last) noexcept
+{
+	return find_simd_constant_common_impl<u8'\n',false>(first,last);
+}
+
+template<std::integral char_type>
+inline constexpr char_type const* find_none_zero_simd_impl(char_type const* first,char_type const* last) noexcept
+{
+	return find_simd_constant_common_impl<u8'0',true>(first,last);
 }
 
 }
-

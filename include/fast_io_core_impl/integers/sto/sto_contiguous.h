@@ -193,6 +193,9 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 	}
 }
 
+template<std::integral char_type>
+inline constexpr char_type const* find_none_zero_simd_impl(char_type const* first,char_type const* last) noexcept;
+
 struct simd_parse_result
 {
 	std::size_t digits;
@@ -409,7 +412,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	return {first,(overflow?(parse_code::overflow):(parse_code::ok))};
 }
 
-template<char8_t base,::std::integral char_type,my_integral T>
+template<char8_t base,bool skipzero=false,::std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_part_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
@@ -430,13 +433,26 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 			return {first,parse_code::invalid};
 		else if(first_ch==zero)
 		{
-			++first;
-			if((first==last)||(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first))))
+			if constexpr(skipzero)
 			{
-				t={};
-				return {first,parse_code::ok};
+				++first;
+				first=find_none_zero_simd_impl(first,last);
+				if(first==last)
+				{
+					t=0;
+					return {first,parse_code::ok};
+				}
 			}
-			return {first,parse_code::invalid};
+			else
+			{
+				++first;
+				if((first==last)||(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first))))
+				{
+					t={};
+					return {first,parse_code::ok};
+				}
+				return {first,parse_code::invalid};
+			}
 		}
 	}
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
@@ -501,13 +517,101 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 	return {it,parse_code::ok};
 }
 
-template<char8_t base,::std::integral char_type,details::my_integral T>
+inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(std::numeric_limits<char unsigned>::max())};
+
+template<char8_t base,std::integral char_type>
+inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const* first,char_type const* last) noexcept
+{
+	if(first==last||*first!=char_literal_v<u8'0',char_type>)
+	{
+		return {first,parse_code::invalid};
+	}
+	if((++first)==last)
+	{
+		return {first,parse_code::invalid};
+	}
+	if constexpr(base==2||base==3||base==16)
+	{
+		auto ch{*first};
+		if((ch!=char_literal_v<(base==2?u8'B':(base==3?u8't':u8'X')),char_type>)&
+			(ch!=char_literal_v<(base==2?u8'b':(base==3?u8't':u8'x')),char_type>))
+		{
+			return {first,parse_code::invalid};
+		}
+		++first;
+	}
+	else
+	{
+		if(*first!=char_literal_v<u8'[',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+		++first;
+		if((++first)==last)
+		{
+			return {first,parse_code::invalid};
+		}
+		constexpr auto digit0{char_literal_v<
+		u8'0'+(base<10?base:base/10),char_type>};
+		if(*first!=digit0)
+		{
+			return {first,parse_code::invalid};
+		}
+		if((++first)==last)
+		{
+			return {first,parse_code::invalid};
+		}
+		if constexpr(10<base)
+		{
+			constexpr auto digit1{char_literal_v<
+			u8'0'+(base%10),char_type>};
+			if(*first!=digit1)
+			{
+				return {first,parse_code::invalid};
+			}
+			if((++first)==last)
+			{
+				return {first,parse_code::invalid};
+			}
+		}
+		if(*first!=char_literal_v<u8']',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+	}
+	return {first,ongoing_parse_code};
+}
+
+template<char8_t base,bool noskipws,bool shbase,bool skipzero,::std::integral char_type,details::my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
-	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
-	if(first==last)
-		return {first,parse_code::end_of_file};
-	return scan_int_contiguous_none_space_part_define_impl<base>(first,last,t);
+	if constexpr(!noskipws)
+	{
+		for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
+		if(first==last)
+			return {first,parse_code::end_of_file};
+	}
+	if constexpr(shbase&&base!=10)
+	{
+		if constexpr(base==8)
+		{
+			if(first==last||*first!=char_literal_v<u8'0',char_type>)
+			{
+				return {first,parse_code::invalid};
+			}
+			++first;
+		}
+		else
+		{
+			auto phase_ret = scan_shbase_impl<base>(first,last);
+			if(phase_ret.code!=ongoing_parse_code)
+			{
+				return phase_ret;
+			}
+			first=phase_ret.iter;
+		}
+	}
+	return scan_int_contiguous_none_space_part_define_impl<base,skipzero>(first,last,t);
 }
 }
 
@@ -515,7 +619,9 @@ enum class scan_integral_context_phase:std::uint_fast8_t
 {
 space,
 sign,
+prefix,
 zero,
+zero_skip,
 zero_invalid,
 digit,
 overflow
@@ -523,11 +629,13 @@ overflow
 
 namespace details
 {
-template<char8_t base,std::integral char_type,details::my_integral T>
+template<char8_t base,std::integral char_type,
+	::fast_io::details::my_integral T>
 inline constexpr auto scan_context_type_impl_int() noexcept
 {
 	using unsigned_type = details::my_make_unsigned_t<std::remove_cvref_t<T>>;
-	constexpr std::size_t max_size{details::cal_max_int_size<unsigned_type,base>()+2};
+	constexpr std::size_t max_size{(::fast_io::details::print_integer_reserved_size_cache<base,false,
+	::fast_io::details::my_signed_integral<T>,unsigned_type>)+2};
 	struct scan_integer_context
 	{
 		::fast_io::freestanding::array<char_type,max_size> buffer;
@@ -547,139 +655,395 @@ inline constexpr auto scan_context_type_impl_int() noexcept
 namespace details
 {
 
-template<char8_t base,::std::input_iterator Iter>
-inline constexpr Iter scan_skip_all_digits_impl(Iter first,Iter last) noexcept
+template<char8_t base,std::integral char_type>
+inline constexpr char_type const* scan_skip_all_digits_impl(char_type const* first,char_type const* last) noexcept
 {
-	using char_type = ::std::iter_value_t<Iter>;
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	for(;first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first));++first);
 	return first;
 }
 
-template<char8_t base,typename State,::std::input_iterator Iter,my_integral T>
-inline constexpr parse_result<Iter> scan_context_define_parse_impl(State& st,Iter first,Iter last,T& t) noexcept
+template<::std::integral char_type>
+inline constexpr parse_result<char_type const*> sc_int_ctx_space_phase(char_type const* first,char_type const* last) noexcept
 {
-	using char_type = ::std::iter_value_t<Iter>;
+	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
+	if(first==last)
+		return {first,parse_code::partial};
+	return {first,ongoing_parse_code};
+}
+
+template<bool allow_negative,bool allow_positive,typename State,std::integral char_type>
+inline constexpr parse_result<char_type const*> sc_int_ctx_sign_phase(State& st,char_type const* first,char_type const* last) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	if(first==last)
+	{
+		st.integer_phase=scan_integral_context_phase::sign;
+		return {first,parse_code::partial};
+	}
+	if constexpr(allow_negative)
+	{
+		if constexpr(allow_positive)
+		{
+			auto ch{*first};
+			if(ch==char_literal_v<u8'-',char_type>)
+			{
+				*st.buffer.data()=ch;
+				st.size=1;
+				++first;
+			}
+			else if(ch==char_literal_v<u8'+',char_type>)
+			{
+				++first;
+			}
+		}
+		else
+		{
+			if(*first==char_literal_v<u8'-',char_type>)
+			{
+				*st.buffer.data()=char_literal_v<u8'-',char_type>;
+				st.size=1;
+				++first;
+			}
+		}
+	}
+	else
+	{
+		if constexpr(allow_positive)
+		{
+			auto ch{*first};
+			if(ch==char_literal_v<u8'+',char_type>)
+			{
+				++first;
+			}
+		}
+	}
+	return {first,ongoing_parse_code};
+}
+
+template<char8_t base,std::integral char_type>
+requires (base!=10)
+inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
+	std::uint_fast8_t& sz,char_type const* first,char_type const* last) noexcept
+{
+	if(first==last)
+	{
+		return {first,parse_code::partial};
+	}
+	if constexpr(base==8)
+	{
+		if(*first!=char_literal_v<u8'0',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+
+	}
+	else
+	{
+		std::uint_fast8_t size_cache{sz};
+		if(size_cache==0)
+		{
+			if(*first!=char_literal_v<u8'0',char_type>)
+			{
+				return {first,parse_code::invalid};
+			}
+			if((++first)==last)
+			{
+				sz=1;
+				return {first,parse_code::partial};
+			}
+			if constexpr(base!=2&&base!=3&&base!=16)
+			{
+				size_cache=1;
+			}
+		}
+		if constexpr(base==2||base==3||base==16)
+		{
+			auto ch{*first};
+			if((ch==char_literal_v<(base==2?u8'B':(base==3?u8't':u8'X')),char_type>)|
+				(ch==char_literal_v<(base==2?u8'b':(base==3?u8't':u8'x')),char_type>))
+			{
+				sz=0;
+				++first;
+				return {first,ongoing_parse_code};
+			}
+			else
+			{
+				return {first,parse_code::invalid};
+			}
+		}
+		else
+		{
+			if(size_cache==1)
+			{
+				if(*first!=char_literal_v<u8'[',char_type>)
+				{
+					return {first,parse_code::invalid};
+				}
+				if((++first)==last)
+				{
+					sz=2;
+					return {first,parse_code::partial};
+				}
+			}
+			constexpr auto digit0{char_literal_v<
+			u8'0'+(base<10?base:base/10),char_type>};
+			if(size_cache==2)
+			{
+				if(*first!=digit0)
+				{
+					return {first,parse_code::invalid};
+				}
+				if((++first)==last)
+				{
+					sz=3;
+					return {first,parse_code::partial};
+				}
+			}
+			if constexpr(10<base)
+			{
+				constexpr auto digit1{char_literal_v<
+				u8'0'+(base%10),char_type>};
+				if(size_cache==3)
+				{
+					if(*first!=digit1)
+					{
+						return {first,parse_code::invalid};
+					}
+					if((++first)==last)
+					{
+						sz=4;
+						return {first,parse_code::partial};
+					}
+				}
+			}
+			constexpr
+				::std::uint_fast8_t last_index{base<10?3:4};
+			if(size_cache==last_index)
+			{
+				if(*first!=char_literal_v<u8']',char_type>)
+				{
+					return {first,parse_code::invalid};
+				}
+				sz=0;
+				++first;
+			}
+		}
+	}
+	return {first,ongoing_parse_code};
+}
+
+template<char8_t base,bool skipzero,std::integral char_type>
+inline constexpr parse_result<char_type const*> sc_int_ctx_zero_phase(scan_integral_context_phase& integer_phase,char_type const* first,char_type const* last) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	if(first==last)
+	{
+		integer_phase=scan_integral_context_phase::zero;
+		return {first,parse_code::partial};
+	}
+	constexpr auto zero{char_literal_v<u8'0',char_type>};
+	auto first_ch{*first};
+	if(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(first_ch)))[[unlikely]]
+	{
+		return {first,parse_code::invalid};
+	}
+	else if(first_ch==zero)[[unlikely]]
+	{
+		++first;
+		if constexpr(skipzero)
+		{
+			first=find_none_zero_simd_impl(first,last);
+		}
+		if(first==last)
+		{
+			if constexpr(skipzero)
+			{
+				integer_phase=scan_integral_context_phase::zero_skip;
+			}
+			else
+			{
+				integer_phase=scan_integral_context_phase::zero_invalid;
+			}
+			return {first,parse_code::partial};
+		}
+		if(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first)))
+		{
+			return {first,parse_code::ok};
+		}
+		if constexpr(!skipzero)
+		{
+			return {first,parse_code::invalid};
+		}
+	}
+	return {first,ongoing_parse_code};
+}
+
+
+template<char8_t base,std::integral char_type,typename State,my_integral T>
+inline constexpr parse_result<char_type const*> sc_int_ctx_digit_phase(State& st,char_type const* first,char_type const* last,T& t) noexcept
+{
+	auto it{scan_skip_all_digits_impl<base>(first,last)};
+	std::size_t const diff{st.buffer.size()-static_cast<std::size_t>(st.size)};
+	std::size_t const first_it_diff{static_cast<std::size_t>(it-first)};
+	if(first_it_diff<diff)
+	{
+		auto start{st.buffer.data()+st.size};
+		auto e{non_overlapped_copy_n(first,first_it_diff,start)};
+		st.size+=static_cast<std::uint_fast8_t>(first_it_diff);
+		if(it==last)
+		{
+			st.integer_phase=scan_integral_context_phase::digit;
+			return {it,parse_code::partial};
+		}
+		if(st.size==0)
+		{
+			t={};
+			return {it,parse_code::ok};
+		}
+		auto [p,ec]=scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(),e,t);
+		return {p-start+first,ec};
+	}
+	else
+	{
+		if(it==last)
+		{
+			st.integer_phase=scan_integral_context_phase::overflow;
+			return {it,parse_code::partial};
+		}
+		else
+		{
+			return {it,parse_code::overflow};
+		}
+	}
+}
+
+template<char8_t base,std::integral char_type>
+inline constexpr parse_result<char_type const*> sc_int_ctx_zero_invalid_phase(char_type const* first,char_type const* last) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	if(first==last)
+		return {first,parse_code::partial};
+	++first;
+	if(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first)))
+	{
+		return {first,parse_code::ok};
+	}
+	return {first,parse_code::invalid};
+}
+
+template<char8_t base,std::integral char_type>
+inline constexpr parse_result<char_type const*> sc_int_ctx_skip_digits_phase(char_type const* first,char_type const* last) noexcept
+{
+	first=scan_skip_all_digits_impl<base>(first,last);
+	return {first,(first==last)?parse_code::partial:parse_code::invalid};
+}
+
+template<char8_t base,bool noskipws,bool shbase,bool skipzero,typename State,std::integral char_type,my_integral T>
+inline constexpr parse_result<char_type const*> scan_context_define_parse_impl(State& st,char_type const* first,char_type const* last,T& t) noexcept
+{
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	auto phase{st.integer_phase};
 	switch(phase)
 	{
 	case scan_integral_context_phase::space:
 	{
-		for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
-		if(first==last)
-			return {first,parse_code::partial};
+		if constexpr(!noskipws)
+		{
+			auto phase_ret = sc_int_ctx_space_phase(first,last);
+			if(phase_ret.code!=ongoing_parse_code)
+			{
+				return phase_ret;
+			}
+			first=phase_ret.iter;
+		}
 		[[fallthrough]];
 	}
 	case scan_integral_context_phase::sign:
 	{
 		if constexpr(my_signed_integral<T>)
 		{
-			if(first==last)
+			auto phase_ret = sc_int_ctx_sign_phase<true,false>(st,first,last);
+			if(phase_ret.code!=ongoing_parse_code)
 			{
-				st.integer_phase=scan_integral_context_phase::sign;
-				return {first,parse_code::partial};
+				return phase_ret;
 			}
-			constexpr auto minus{char_literal_v<u8'-',char_type>};
-			if(*first==minus)
+			first=phase_ret.iter;
+		}
+		[[fallthrough]];
+	}
+	case scan_integral_context_phase::prefix:
+	{
+		if constexpr(shbase&&base!=10)
+		{
+			st.integer_phase=scan_integral_context_phase::prefix;
+			auto phase_ret = sc_int_ctx_prefix_phase<base>(st.size,first,last);
+			if(phase_ret.code!=ongoing_parse_code)
 			{
-				*st.buffer.data()=*first;
-				st.size=1;
-				++first;
+				return phase_ret;
 			}
+			first=phase_ret.iter;
 		}
 		[[fallthrough]];
 	}
 	case scan_integral_context_phase::zero:
+	case scan_integral_context_phase::zero_skip:
 	{
-		if(first==last)
+		auto phase_ret=sc_int_ctx_zero_phase<base,skipzero>(st.integer_phase,first,last);
+		if(phase_ret.code!=ongoing_parse_code)
 		{
-			st.integer_phase=scan_integral_context_phase::zero;
-			return {first,parse_code::partial};
-		}
-		constexpr auto zero{char_literal_v<u8'0',char_type>};
-		{
-			auto first_ch{*first};
-			if(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(first_ch)))[[unlikely]]
+			if constexpr(skipzero)
 			{
-				return {first,parse_code::invalid};
-			}
-			else if(first_ch==zero)[[unlikely]]
-			{
-				++first;
-				if(first==last)
-				{
-					st.integer_phase=scan_integral_context_phase::zero_invalid;
-					return {first,parse_code::partial};
-				}
-				if(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first)))
+				if(phase_ret.code==parse_code::ok)
 				{
 					t={};
-					return {first,parse_code::ok};
 				}
-				return {first,parse_code::invalid};
+				else if(phase_ret.code==parse_code::invalid&&phase==scan_integral_context_phase::zero_skip)
+				{
+					t={};
+					phase_ret.code=parse_code::ok;
+				}
 			}
+			else
+			{
+				if(phase_ret.code==parse_code::ok)
+				{
+					t={};
+				}
+			}
+			return phase_ret;
 		}
+		first=phase_ret.iter;
 		[[fallthrough]];
 	}
 	case scan_integral_context_phase::digit:
 	{
-		auto it{scan_skip_all_digits_impl<base>(first,last)};
-		std::size_t const diff{st.buffer.size()-static_cast<std::size_t>(st.size)};
-		std::size_t const first_it_diff{static_cast<std::size_t>(it-first)};
-		if(first_it_diff<diff)
-		{
-			auto start{st.buffer.data()+st.size};
-			auto e{non_overlapped_copy_n(first,first_it_diff,start)};
-			st.size+=static_cast<std::uint_fast8_t>(first_it_diff);
-			if(it==last)
-			{
-				st.integer_phase=scan_integral_context_phase::digit;
-				return {it,parse_code::partial};
-			}
-			if(st.size==0)
-			{
-				t={};
-				return {it,parse_code::ok};
-			}
-			auto [p,ec]=scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(),e,t);
-			return {p-start+first,ec};
-		}
-		else
-		{
-			if(it==last)
-			{
-				st.integer_phase=scan_integral_context_phase::overflow;
-				return {it,parse_code::partial};
-			}
-			else
-			{
-				return {it,parse_code::overflow};
-			}
-		}
-		break;
+		return sc_int_ctx_digit_phase<base>(st,first,last,t);
 	}
 	case scan_integral_context_phase::zero_invalid:
 	{
-		if(first==last)
-			return {first,parse_code::partial};
-		++first;
-		if(!char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first)))
+		if constexpr(skipzero)
 		{
-			t={};
-			return {first,parse_code::ok};
+			return {first,parse_code::invalid};
 		}
-		return {first,parse_code::invalid};
+		else
+		{
+			auto phase_ret=sc_int_ctx_zero_invalid_phase<base>(first,last);
+			if(phase_ret.code==parse_code::ok)
+			{
+				t={};
+			}
+			return phase_ret;
+		}
 	}
 	default:
 	{
-		first=scan_skip_all_digits_impl<base>(first,last);
-		return {first,(first==last)?parse_code::partial:parse_code::invalid};
+		return sc_int_ctx_skip_digits_phase<base>(first,last);
 	}
 	}
 }
 
-template<char8_t base,typename State,my_integral T>
+template<char8_t base,bool noskipws,bool shbase,bool skipzero,typename State,my_integral T>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -688,11 +1052,21 @@ inline constexpr parse_code scan_context_eof_define_parse_impl(State& st,T& t) n
 	switch(st.integer_phase)
 	{
 	case scan_integral_context_phase::space:
-		return parse_code::end_of_file;
+	{
+		if constexpr(noskipws)
+		{
+			return parse_code::invalid;
+		}
+		else
+		{
+			return parse_code::end_of_file;
+		}
+	}
 	case scan_integral_context_phase::digit:
 		return scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(),st.buffer.data()+st.size,t).code;
 	case scan_integral_context_phase::overflow:
 		return parse_code::overflow;
+	case scan_integral_context_phase::zero_skip:
 	case scan_integral_context_phase::zero_invalid:
 	{
 		t={};
@@ -722,20 +1096,26 @@ inline constexpr ch_get_t<T&> ch_get(T& reference) noexcept
 	return {reference};
 }
 
-template<std::size_t bs,bool noskipws=false,::fast_io::details::my_integral scalar_type>
-inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<bs,noskipws>,scalar_type&> base_get(scalar_type& t) noexcept
+template<std::size_t bs,bool noskipws=false,bool skipzero=false,::fast_io::details::my_integral scalar_type>
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<bs,noskipws,false,skipzero>,scalar_type&> base_get(scalar_type& t) noexcept
+{
+	return {t};
+}
+
+template<bool noskipws=false,bool skipzero=false,::fast_io::details::my_integral scalar_type>
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<2,noskipws,false,skipzero>,scalar_type&> bin_get(scalar_type& t) noexcept
+{
+	return {t};
+}
+
+template<bool noskipws=false,bool skipzero=false,::fast_io::details::my_integral scalar_type>
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<16,noskipws,false,skipzero>,scalar_type&> hex_get(scalar_type& t) noexcept
 {
 	return {t};
 }
 
 template<bool noskipws=false,::fast_io::details::my_integral scalar_type>
-inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<2,noskipws>,scalar_type&> bin_get(scalar_type& t) noexcept
-{
-	return {t};
-}
-
-template<bool noskipws=false,::fast_io::details::my_integral scalar_type>
-inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<16,noskipws>,scalar_type&> hex_get(scalar_type& t) noexcept
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<16,noskipws,true,true>,scalar_type&> addrvw_get(scalar_type& t) noexcept
 {
 	return {t};
 }
@@ -743,7 +1123,7 @@ inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<1
 }
 
 template<details::my_integral T>
-inline constexpr ::fast_io::manipulators::scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<10,false>,T&> scan_alias_define(io_alias_t,T& t) noexcept
+inline constexpr ::fast_io::manipulators::scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<10,false,false,false>,T&> scan_alias_define(io_alias_t,T& t) noexcept
 {
 	return {t};
 }
@@ -757,25 +1137,25 @@ inline constexpr auto scan_context_type(io_reserve_type_t<char_type,::fast_io::m
 template<::std::integral char_type,manipulators::scalar_flags flags,details::my_integral T>
 inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,T&>>,char_type const* begin,char_type const* end,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
 {
-	return details::scan_int_contiguous_define_impl<flags.base>(begin,end,t.reference);
+	return details::scan_int_contiguous_define_impl<flags.base,flags.noskipws,flags.showbase,flags.full>(begin,end,t.reference);
 }
 
-template<::std::input_iterator Iter,manipulators::scalar_flags flags,typename State,details::my_integral T>
-inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::std::iter_value_t<Iter>,::fast_io::manipulators::scalar_manip_t<flags,T&>>,State& state,Iter begin,Iter end,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
+template<::std::integral char_type,manipulators::scalar_flags flags,typename State,details::my_integral T>
+inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,T&>>,State& state,char_type const* begin,char_type const* end,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
 {
-	return details::scan_context_define_parse_impl<flags.base>(state,begin,end,t.reference);
+	return details::scan_context_define_parse_impl<flags.base,flags.noskipws,flags.showbase,flags.full>(state,begin,end,t.reference);
 }
 
-template<std::integral char_type,manipulators::scalar_flags flags,typename State,details::my_integral T>
+template<::std::integral char_type,manipulators::scalar_flags flags,typename State,details::my_integral T>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,T&>>,State& state,::fast_io::manipulators::scalar_manip_t<flags,T&> t) noexcept
 {
-	return details::scan_context_eof_define_parse_impl<flags.base>(state,t.reference);
+	return details::scan_context_eof_define_parse_impl<flags.base,flags.noskipws,flags.showbase,flags.full>(state,t.reference);
 }
 
 namespace details
 {
-template<::std::input_iterator Iter>
-inline constexpr parse_result<Iter> ch_get_context_impl(Iter first,Iter last,::std::iter_value_t<Iter>& t) noexcept
+template<::std::integral char_type>
+inline constexpr parse_result<char_type const*> ch_get_context_impl(char_type const* first,char_type const* last,char_type& t) noexcept
 {
 	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
 	if(first==last)[[unlikely]]
@@ -792,8 +1172,8 @@ inline constexpr io_type_t<details::empty> scan_context_type(io_reserve_type_t<c
 	return {};
 }
 
-template<::std::input_iterator Iter>
-inline constexpr parse_result<Iter> scan_context_define(io_reserve_type_t<::std::iter_value_t<Iter>,manipulators::ch_get_t<::std::iter_value_t<Iter>&>>,details::empty,Iter begin,Iter end,manipulators::ch_get_t<::std::iter_value_t<Iter>&> t) noexcept
+template<std::integral char_type>
+inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type,manipulators::ch_get_t<char_type&>>,details::empty,char_type const* begin,char_type const* end,manipulators::ch_get_t<char_type&> t) noexcept
 {
 	return details::ch_get_context_impl(begin,end,t.reference);
 }
