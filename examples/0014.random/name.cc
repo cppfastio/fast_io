@@ -8,7 +8,7 @@ int main(int argc,char** argv)
 	std::size_t n{100};
 	if(1<argc)
 	{
-		n=fast_io::to<std::size_t>(argv[1]);
+		n=fast_io::to<std::size_t>(fast_io::mnp::os_c_str(argv[1]));
 	}
 	fast_io::u8ibuf_file ibuf(u"freq.txt");
 	fast_io::vector<char8_t> vec;
