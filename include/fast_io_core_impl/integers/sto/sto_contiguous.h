@@ -522,17 +522,63 @@ inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(std::nume
 template<char8_t base,std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const* first,char_type const* last) noexcept
 {
-	constexpr std::size_t sz{::fast_io::details::base_prefix_array<base,char_type>.size()};
-	for(std::size_t i{};i!=sz&&first!=last;++first)
+	if(first==last||*first!=char_literal_v<u8'0',char_type>)
 	{
-		if(::fast_io::details::base_prefix_array<base,char_type>[i]!=*first)
+		return {first,parse_code::invalid};
+	}
+	if((++first)==last)
+	{
+		return {first,parse_code::invalid};
+	}
+	if constexpr(base==2||base==3||base==16)
+	{
+		auto ch{*first};
+		if((ch!=char_literal_v<(base==2?u8'B':(base==3?u8't':u8'X')),char_type>)&
+			(ch!=char_literal_v<(base==2?u8'b':(base==3?u8't':u8'x')),char_type>))
 		{
 			return {first,parse_code::invalid};
 		}
-		++i;
+		++first;
 	}
-	if(first==last)
-		return {first,parse_code::invalid};
+	else
+	{
+		if(*first!=char_literal_v<u8'[',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+		++first;
+		if((++first)==last)
+		{
+			return {first,parse_code::invalid};
+		}
+		constexpr auto digit0{char_literal_v<
+		u8'0'+(base<10?base:base/10),char_type>};
+		if(*first!=digit0)
+		{
+			return {first,parse_code::invalid};
+		}
+		if((++first)==last)
+		{
+			return {first,parse_code::invalid};
+		}
+		if constexpr(10<base)
+		{
+			constexpr auto digit1{char_literal_v<
+			u8'0'+(base%10),char_type>};
+			if(*first!=digit1)
+			{
+				return {first,parse_code::invalid};
+			}
+			if((++first)==last)
+			{
+				return {first,parse_code::invalid};
+			}
+		}
+		if(*first!=char_literal_v<u8']',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+	}
 	return {first,ongoing_parse_code};
 }
 
@@ -1025,6 +1071,7 @@ inline constexpr parse_code scan_context_eof_define_parse_impl(State& st,T& t) n
 		return scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(),st.buffer.data()+st.size,t).code;
 	case scan_integral_context_phase::overflow:
 		return parse_code::overflow;
+	case scan_integral_context_phase::zero_skip:
 	case scan_integral_context_phase::zero_invalid:
 	{
 		t={};
