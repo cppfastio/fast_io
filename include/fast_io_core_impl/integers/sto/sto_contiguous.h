@@ -724,12 +724,10 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_sign_phase(State& st,
 template<char8_t base,std::integral char_type>
 requires (base!=10)
 inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
-	std::uint_fast8_t& sz,
-	scan_integral_context_phase& integer_phase,char_type const* first,char_type const* last) noexcept
+	std::uint_fast8_t& sz,char_type const* first,char_type const* last) noexcept
 {
 	if(first==last)
 	{
-		integer_phase=scan_integral_context_phase::prefix;
 		return {first,parse_code::partial};
 	}
 	if constexpr(base==8)
@@ -751,7 +749,6 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 			}
 			if((++first)==last)
 			{
-				integer_phase=scan_integral_context_phase::prefix;
 				sz=1;
 				return {first,parse_code::partial};
 			}
@@ -785,7 +782,6 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 				}
 				if((++first)==last)
 				{
-					integer_phase=scan_integral_context_phase::prefix;
 					sz=2;
 					return {first,parse_code::partial};
 				}
@@ -800,7 +796,6 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 				}
 				if((++first)==last)
 				{
-					integer_phase=scan_integral_context_phase::prefix;
 					sz=3;
 					return {first,parse_code::partial};
 				}
@@ -817,7 +812,6 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 					}
 					if((++first)==last)
 					{
-						integer_phase=scan_integral_context_phase::prefix;
 						sz=4;
 						return {first,parse_code::partial};
 					}
@@ -982,7 +976,8 @@ inline constexpr parse_result<char_type const*> scan_context_define_parse_impl(S
 	{
 		if constexpr(shbase&&base!=10)
 		{
-			auto phase_ret = sc_int_ctx_prefix_phase<base>(st,first,last);
+			st.integer_phase=scan_integral_context_phase::prefix;
+			auto phase_ret = sc_int_ctx_prefix_phase<base>(st.size,first,last);
 			if(phase_ret.code!=ongoing_parse_code)
 			{
 				return phase_ret;
