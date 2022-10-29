@@ -412,7 +412,72 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	return {first,(overflow?(parse_code::overflow):(parse_code::ok))};
 }
 
-template<char8_t base,bool skipzero=false,::std::integral char_type,my_integral T>
+inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(std::numeric_limits<char unsigned>::max())};
+
+template<char8_t base,std::integral char_type>
+inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const* first,char_type const* last) noexcept
+{
+	if(first==last||*first!=char_literal_v<u8'0',char_type>)
+	{
+		return {first,parse_code::invalid};
+	}
+	if((++first)==last)
+	{
+		return {first,parse_code::invalid};
+	}
+	if constexpr(base==2||base==3||base==16)
+	{
+		auto ch{*first};
+		if((ch!=char_literal_v<(base==2?u8'B':(base==3?u8't':u8'X')),char_type>)&
+			(ch!=char_literal_v<(base==2?u8'b':(base==3?u8't':u8'x')),char_type>))
+		{
+			return {first,parse_code::invalid};
+		}
+		++first;
+	}
+	else
+	{
+		if(*first!=char_literal_v<u8'[',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+		++first;
+		if((++first)==last)
+		{
+			return {first,parse_code::invalid};
+		}
+		constexpr auto digit0{char_literal_v<
+		u8'0'+(base<10?base:base/10),char_type>};
+		if(*first!=digit0)
+		{
+			return {first,parse_code::invalid};
+		}
+		if((++first)==last)
+		{
+			return {first,parse_code::invalid};
+		}
+		if constexpr(10<base)
+		{
+			constexpr auto digit1{char_literal_v<
+			u8'0'+(base%10),char_type>};
+			if(*first!=digit1)
+			{
+				return {first,parse_code::invalid};
+			}
+			if((++first)==last)
+			{
+				return {first,parse_code::invalid};
+			}
+		}
+		if(*first!=char_literal_v<u8']',char_type>)
+		{
+			return {first,parse_code::invalid};
+		}
+	}
+	return {first,ongoing_parse_code};
+}
+
+template<char8_t base,bool shbase=false,bool skipzero=false,::std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_part_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
@@ -424,6 +489,26 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 		constexpr auto minus_sign{char_literal_v<u8'-',char_type>};
 		if((sign=(minus_sign==*first)))
 			++first;
+		if constexpr(shbase&&base!=10)
+		{
+			if constexpr(base==8)
+			{
+				if(first==last||*first!=char_literal_v<u8'0',char_type>)
+				{
+					return {first,parse_code::invalid};
+				}
+				++first;
+			}
+			else
+			{
+				auto phase_ret = scan_shbase_impl<base>(first,last);
+				if(phase_ret.code!=ongoing_parse_code)
+				{
+					return phase_ret;
+				}
+				first=phase_ret.iter;
+			}
+		}
 	}
 	constexpr auto zero{char_literal_v<u8'0',char_type>};
 	if(first!=last)
@@ -517,71 +602,6 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 	return {it,parse_code::ok};
 }
 
-inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(std::numeric_limits<char unsigned>::max())};
-
-template<char8_t base,std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const* first,char_type const* last) noexcept
-{
-	if(first==last||*first!=char_literal_v<u8'0',char_type>)
-	{
-		return {first,parse_code::invalid};
-	}
-	if((++first)==last)
-	{
-		return {first,parse_code::invalid};
-	}
-	if constexpr(base==2||base==3||base==16)
-	{
-		auto ch{*first};
-		if((ch!=char_literal_v<(base==2?u8'B':(base==3?u8't':u8'X')),char_type>)&
-			(ch!=char_literal_v<(base==2?u8'b':(base==3?u8't':u8'x')),char_type>))
-		{
-			return {first,parse_code::invalid};
-		}
-		++first;
-	}
-	else
-	{
-		if(*first!=char_literal_v<u8'[',char_type>)
-		{
-			return {first,parse_code::invalid};
-		}
-		++first;
-		if((++first)==last)
-		{
-			return {first,parse_code::invalid};
-		}
-		constexpr auto digit0{char_literal_v<
-		u8'0'+(base<10?base:base/10),char_type>};
-		if(*first!=digit0)
-		{
-			return {first,parse_code::invalid};
-		}
-		if((++first)==last)
-		{
-			return {first,parse_code::invalid};
-		}
-		if constexpr(10<base)
-		{
-			constexpr auto digit1{char_literal_v<
-			u8'0'+(base%10),char_type>};
-			if(*first!=digit1)
-			{
-				return {first,parse_code::invalid};
-			}
-			if((++first)==last)
-			{
-				return {first,parse_code::invalid};
-			}
-		}
-		if(*first!=char_literal_v<u8']',char_type>)
-		{
-			return {first,parse_code::invalid};
-		}
-	}
-	return {first,ongoing_parse_code};
-}
-
 template<char8_t base,bool noskipws,bool shbase,bool skipzero,::std::integral char_type,details::my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
@@ -591,27 +611,30 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(
 		if(first==last)
 			return {first,parse_code::end_of_file};
 	}
-	if constexpr(shbase&&base!=10)
+	if constexpr(my_unsigned_integral<T>)
 	{
-		if constexpr(base==8)
+		if constexpr(shbase&&base!=10)
 		{
-			if(first==last||*first!=char_literal_v<u8'0',char_type>)
+			if constexpr(base==8)
 			{
-				return {first,parse_code::invalid};
+				if(first==last||*first!=char_literal_v<u8'0',char_type>)
+				{
+					return {first,parse_code::invalid};
+				}
+				++first;
 			}
-			++first;
-		}
-		else
-		{
-			auto phase_ret = scan_shbase_impl<base>(first,last);
-			if(phase_ret.code!=ongoing_parse_code)
+			else
 			{
-				return phase_ret;
+				auto phase_ret = scan_shbase_impl<base>(first,last);
+				if(phase_ret.code!=ongoing_parse_code)
+				{
+					return phase_ret;
+				}
+				first=phase_ret.iter;
 			}
-			first=phase_ret.iter;
 		}
 	}
-	return scan_int_contiguous_none_space_part_define_impl<base,skipzero>(first,last,t);
+	return scan_int_contiguous_none_space_part_define_impl<base,((shbase&&base!=10)&&my_signed_integral<T>),skipzero>(first,last,t);
 }
 }
 
@@ -1143,7 +1166,7 @@ inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<1
 	return {t};
 }
 
-template<bool noskipws=false,::fast_io::details::my_integral scalar_type>
+template<bool noskipws=false,::fast_io::details::my_unsigned_integral scalar_type>
 inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<16,noskipws,true,true>,scalar_type&> addrvw_get(scalar_type& t) noexcept
 {
 	return {t};
