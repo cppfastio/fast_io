@@ -638,7 +638,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(
 }
 }
 
-enum class scan_integral_context_phase:std::uint_fast8_t
+enum class scan_integral_context_phase:std::uint_least8_t
 {
 space,
 sign,
@@ -662,7 +662,7 @@ inline constexpr auto scan_context_type_impl_int() noexcept
 	struct scan_integer_context
 	{
 		::fast_io::freestanding::array<char_type,max_size> buffer;
-		std::uint_fast8_t size{};
+		std::uint_least8_t size{};
 		scan_integral_context_phase integer_phase{};
 		inline constexpr void reset() noexcept
 		{
@@ -747,7 +747,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_sign_phase(State& st,
 template<char8_t base,std::integral char_type>
 requires (base!=10)
 inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
-	std::uint_fast8_t& sz,char_type const* first,char_type const* last) noexcept
+	std::uint_least8_t& sz,char_type const* first,char_type const* last) noexcept
 {
 	if(first==last)
 	{
@@ -763,7 +763,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 	}
 	else
 	{
-		std::uint_fast8_t size_cache{sz};
+		std::uint_least8_t size_cache{sz};
 		if(size_cache==0)
 		{
 			if(*first!=char_literal_v<u8'0',char_type>)
@@ -841,7 +841,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 				}
 			}
 			constexpr
-				::std::uint_fast8_t last_index{base<10?3:4};
+				::std::uint_least8_t last_index{base<10?3:4};
 			if(size_cache==last_index)
 			{
 				if(*first!=char_literal_v<u8']',char_type>)
@@ -876,6 +876,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_zero_phase(scan_integ
 		++first;
 		if constexpr(skipzero)
 		{
+			auto first_before(first);
 			first=find_none_zero_simd_impl(first,last);
 		}
 		if(first==last)
@@ -913,7 +914,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_digit_phase(State& st
 	{
 		auto start{st.buffer.data()+st.size};
 		auto e{non_overlapped_copy_n(first,first_it_diff,start)};
-		st.size+=static_cast<std::uint_fast8_t>(first_it_diff);
+		st.size+=static_cast<std::uint_least8_t>(first_it_diff);
 		if(it==last)
 		{
 			st.integer_phase=scan_integral_context_phase::digit;

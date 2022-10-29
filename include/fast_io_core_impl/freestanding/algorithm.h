@@ -102,6 +102,17 @@ inline constexpr Iter find(Iter first,Iter last,T t)
 	return last;
 }
 
+template<::std::input_iterator Iter,::std::integral T>
+//requires (std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(std::uintmax_t))
+requires (::std::is_trivially_copyable_v<T>)
+inline constexpr Iter find_not(Iter first,Iter last,T t)
+{
+	for(;first!=last;++first)
+		if(*first!=t)
+			return first;
+	return last;
+}
+
 template<::std::input_iterator Iter,::std::input_iterator Iter2>
 struct mismatch_result
 {

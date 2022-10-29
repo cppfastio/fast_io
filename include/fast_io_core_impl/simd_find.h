@@ -38,18 +38,17 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 			}
 			first+=16;
 		}
-		if constexpr(findnot)
-		{
-			for(;first!=last&&*first==lfch;++first);
-		}
-		else
-		{
-			for(;first!=last&&*first!=lfch;++first);
-		}
-		return first;
+
 	}
 #endif
-	return ::fast_io::freestanding::find(first,last,lfchct);
+	if constexpr(findnot)
+	{
+		return ::fast_io::freestanding::find_not(first,last,lfchct);
+	}
+	else
+	{
+		return ::fast_io::freestanding::find(first,last,lfchct);
+	}
 }
 
 
