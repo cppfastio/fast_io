@@ -15,7 +15,7 @@ int main(int argc,char** argv)
 		perr("Usage: ",os_c_str(*argv)," N\n");
 		return 1;
 	}
-	constexpr auto natural_male_to_female_ratio{1.05};
+	constexpr auto natural_male_to_female_ratio{1.03};
 	constexpr auto total_ratio{natural_male_to_female_ratio+1.0};
 	constexpr auto male_probability{natural_male_to_female_ratio/total_ratio};
 	fast_io::ibuf_white_hole_engine engine;
