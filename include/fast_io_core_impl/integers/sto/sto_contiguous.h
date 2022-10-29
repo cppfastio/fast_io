@@ -944,6 +944,28 @@ inline constexpr parse_result<char_type const*> scan_context_define_parse_impl(S
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	auto phase{st.integer_phase};
+#if __has_cpp_attribute(assume)
+	if constexpr(noskipws)
+	{
+		[[assume(phase!=scan_integral_context_phase::space)]];
+	}
+	if constexpr(my_unsigned_integral<T>)
+	{
+		[[assume(phase!=scan_integral_context_phase::sign)]];
+	}
+	if constexpr(!shbase||base==10)
+	{
+		[[assume(phase!=scan_integral_context_phase::prefix)]];
+	}
+	if constexpr(skipzero)
+	{
+		[[assume(phase!=scan_integral_context_phase::zero_invalid)]];
+	}
+	else
+	{
+		[[assume(phase!=scan_integral_context_phase::zero_skip)]];
+	}
+#endif
 	switch(phase)
 	{
 	case scan_integral_context_phase::space:
@@ -1049,7 +1071,14 @@ template<char8_t base,bool noskipws,bool shbase,bool skipzero,typename State,my_
 #endif
 inline constexpr parse_code scan_context_eof_define_parse_impl(State& st,T& t) noexcept
 {
-	switch(st.integer_phase)
+	auto phase{st.integer_phase};
+#if __has_cpp_attribute(assume)
+	if constexpr(!skipzero)
+	{
+		[[assume(phase!=scan_integral_context_phase::zero_skip)]];
+	}
+#endif
+	switch(phase)
 	{
 	case scan_integral_context_phase::space:
 	{
