@@ -188,7 +188,7 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 			unsigned_char_type ch3(ch);
 			ch3-=u8'a';
 			ch-=u8'0';
-			return (ch2<mns)|(ch3<mns)|(ch<10u);
+			return (ch2<mns)||(ch3<mns)||(ch<10u);
 		}
 	}
 }
@@ -367,6 +367,17 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 
 #endif
 
+template<char8_t base,::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr char_type const* skip_digits(char_type const* first,char_type const* last) noexcept
+{
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	for(;first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first));++first);
+	return first;
+}
+
 template<char8_t base,::std::integral char_type,my_unsigned_integral T>
 #if defined(__SSE4_1__) && __has_cpp_attribute(__gnu__::__cold__) && defined(__x86_64__)
 [[__gnu__::__cold__]]
@@ -376,7 +387,10 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
 	constexpr unsigned_char_type base_char_type{base};
-	constexpr std::size_t max_size{details::cal_max_int_size<unsigned_type,base>()-1};
+	constexpr unsigned_type risky_uint_max{static_cast<unsigned_type>(-1)};
+	constexpr unsigned_type risky_value{risky_uint_max/base};
+	constexpr unsigned_char_type risky_digit(risky_uint_max%base);
+	constexpr std::size_t max_size{details::cal_max_int_size<unsigned_type,base>()-(risky_digit!=0)};
 	std::size_t const diff{static_cast<std::size_t>(last-first)};
 	std::size_t mn_val{max_size};
 	if(diff<mn_val)
@@ -394,19 +408,33 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	if(first!=last)[[likely]]
 	{
 		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-		if(!char_digit_to_literal<base,char_type>(ch))[[unlikely]]
+		if constexpr(risky_digit)
 		{
-			constexpr unsigned_type risky_uint_max{static_cast<unsigned_type>(-1)};
-			constexpr unsigned_type risky_value{risky_uint_max/base};
-			constexpr unsigned_char_type risky_digit(risky_uint_max%base);
-			overflow=res>risky_value||(risky_value==res&&ch>risky_digit);;
-			if(!overflow)
+			if(!char_digit_to_literal<base,char_type>(ch))[[unlikely]]
 			{
-				res*=base_char_type;
-				res+=ch;
+				overflow=res>risky_value||(risky_value==res&&ch>risky_digit);
+				if(!overflow)
+				{
+					res*=base_char_type;
+					res+=ch;
+				}
+				++first;
+				if(first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first)))
+				{
+					++first;
+					first=skip_digits<base>(first,last);
+					overflow=true;
+				}
 			}
-			for(++first;first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first));++first)
-				overflow|=true;
+		}
+		else
+		{
+			if(char_is_digit<base,char_type>(ch))
+			{
+				++first;
+				first=skip_digits<base>(first,last);
+				overflow=true;
+			}
 		}
 	}
 	return {first,(overflow?(parse_code::overflow):(parse_code::ok))};
@@ -598,7 +626,9 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 			t=static_cast<T>(res);
 	}
 	else
+	{
 		t=res;
+	}
 	return {it,parse_code::ok};
 }
 
@@ -678,14 +708,6 @@ inline constexpr auto scan_context_type_impl_int() noexcept
 namespace details
 {
 
-template<char8_t base,std::integral char_type>
-inline constexpr char_type const* scan_skip_all_digits_impl(char_type const* first,char_type const* last) noexcept
-{
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
-	for(;first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first));++first);
-	return first;
-}
-
 template<::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_space_phase(char_type const* first,char_type const* last) noexcept
 {
@@ -698,7 +720,6 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_space_phase(char_type
 template<bool allow_negative,bool allow_positive,typename State,std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_sign_phase(State& st,char_type const* first,char_type const* last) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if(first==last)
 	{
 		st.integer_phase=scan_integral_context_phase::sign;
@@ -876,7 +897,6 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_zero_phase(scan_integ
 		++first;
 		if constexpr(skipzero)
 		{
-			auto first_before(first);
 			first=find_none_zero_simd_impl(first,last);
 		}
 		if(first==last)
@@ -907,7 +927,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_zero_phase(scan_integ
 template<char8_t base,std::integral char_type,typename State,my_integral T>
 inline constexpr parse_result<char_type const*> sc_int_ctx_digit_phase(State& st,char_type const* first,char_type const* last,T& t) noexcept
 {
-	auto it{scan_skip_all_digits_impl<base>(first,last)};
+	auto it{skip_digits<base>(first,last)};
 	std::size_t const diff{st.buffer.size()-static_cast<std::size_t>(st.size)};
 	std::size_t const first_it_diff{static_cast<std::size_t>(it-first)};
 	if(first_it_diff<diff)
@@ -959,14 +979,13 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_zero_invalid_phase(ch
 template<char8_t base,std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_skip_digits_phase(char_type const* first,char_type const* last) noexcept
 {
-	first=scan_skip_all_digits_impl<base>(first,last);
+	first=skip_digits<base>(first,last);
 	return {first,(first==last)?parse_code::partial:parse_code::invalid};
 }
 
 template<char8_t base,bool noskipws,bool shbase,bool skipzero,typename State,std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_context_define_parse_impl(State& st,char_type const* first,char_type const* last,T& t) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	auto phase{st.integer_phase};
 #if __has_cpp_attribute(assume)
 	if constexpr(noskipws)
