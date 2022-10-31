@@ -23,7 +23,7 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 			simdvec.load(first);
 			::fast_io::intrinsics::simd_vector<char,16> chunk{zeros==simdvec};
 			std::uint_least32_t mask{static_cast<std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk))};
-			std::uint_least16_t incr;
+			int incr;
 			if constexpr(findnot)
 			{
 				incr=std::countr_one(static_cast<std::uint_least16_t>(mask));
