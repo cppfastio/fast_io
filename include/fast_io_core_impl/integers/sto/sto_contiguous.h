@@ -188,7 +188,7 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 			unsigned_char_type ch3(ch);
 			ch3-=u8'a';
 			ch-=u8'0';
-			return (ch2<mns)||(ch3<mns)||(ch<10u);
+			return (ch2<mns)|(ch3<mns)|(ch<10u);
 		}
 	}
 }
