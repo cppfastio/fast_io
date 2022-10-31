@@ -422,14 +422,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 		{
 			if(!char_digit_to_literal<base,char_type>(ch))[[unlikely]]
 			{
-				if constexpr(risky_digit)
-				{
-					overflow=res>risky_value||(risky_value==res&&ch>risky_digit);
-				}
-				else
-				{
-					overflow=res>risky_value;
-				}
+				overflow=res>risky_value||(risky_value==res&&ch>risky_digit);
 				if(!overflow)
 				{
 					res*=base_char_type;
