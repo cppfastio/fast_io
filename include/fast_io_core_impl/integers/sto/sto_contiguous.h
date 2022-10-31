@@ -390,7 +390,8 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	constexpr unsigned_type risky_uint_max{static_cast<unsigned_type>(-1)};
 	constexpr unsigned_type risky_value{risky_uint_max/base};
 	constexpr unsigned_char_type risky_digit(risky_uint_max%base);
-	constexpr std::size_t max_size{details::cal_max_int_size<unsigned_type,base>()-(risky_digit!=0)};
+	constexpr bool isspecialbase{base==2||base==4||base==16};
+	constexpr std::size_t max_size{details::cal_max_int_size<unsigned_type,base>()-(!isspecialbase)};
 	std::size_t const diff{static_cast<std::size_t>(last-first)};
 	std::size_t mn_val{max_size};
 	if(diff<mn_val)
@@ -408,11 +409,27 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	if(first!=last)[[likely]]
 	{
 		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-		if constexpr(risky_digit)
+		if constexpr(isspecialbase)
+		{
+			if(char_is_digit<base,char_type>(ch))
+			{
+				++first;
+				first=skip_digits<base>(first,last);
+				overflow=true;
+			}
+		}
+		else
 		{
 			if(!char_digit_to_literal<base,char_type>(ch))[[unlikely]]
 			{
-				overflow=res>risky_value||(risky_value==res&&ch>risky_digit);
+				if constexpr(risky_digit)
+				{
+					overflow=res>risky_value||(risky_value==res&&ch>risky_digit);
+				}
+				else
+				{
+					overflow=res>risky_value;
+				}
 				if(!overflow)
 				{
 					res*=base_char_type;
@@ -425,15 +442,6 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 					first=skip_digits<base>(first,last);
 					overflow=true;
 				}
-			}
-		}
-		else
-		{
-			if(char_is_digit<base,char_type>(ch))
-			{
-				++first;
-				first=skip_digits<base>(first,last);
-				overflow=true;
 			}
 		}
 	}
