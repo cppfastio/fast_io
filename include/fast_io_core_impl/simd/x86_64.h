@@ -541,7 +541,7 @@ inline constexpr unsigned vector_mask_countr_recursive_impl(T const& v2) noexcep
 		}
 		else
 		{
-			if(element!=mx)
+			if(element)
 			{
 				return vector_mask_countr_recursive_impl<ctzero,pos+1>(v2);
 			}
