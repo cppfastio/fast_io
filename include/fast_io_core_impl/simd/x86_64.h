@@ -85,21 +85,11 @@ struct simd_vector
 	{
 		__builtin_memcpy(address,__builtin_addressof(value),sizeof(value));
 	}
-	inline constexpr value_type const& front() const noexcept
+	inline constexpr value_type front() const noexcept
 	{
 		return value[0];
 	}
-	inline constexpr value_type const& back() const noexcept
-	{
-		constexpr std::size_t nm1{N-1};
-		return value[nm1];
-	}
-
-	inline constexpr value_type& front() noexcept
-	{
-		return value[0];
-	}
-	inline constexpr value_type& back() noexcept
+	inline constexpr value_type back() const noexcept
 	{
 		constexpr std::size_t nm1{N-1};
 		return value[nm1];
@@ -114,43 +104,9 @@ struct simd_vector
 		constexpr std::size_t v{static_cast<std::size_t>(-1)/sizeof(value_type)};
 		return v;
 	}
-	inline constexpr value_type const& operator[](std::size_t n) const noexcept
+	inline constexpr value_type operator[](std::size_t n) const noexcept
 	{
 		return value[n];
-	}
-	inline constexpr value_type& operator[](std::size_t n) noexcept
-	{
-		return value[n];
-	}
-	
-	inline constexpr value_type* begin() noexcept
-	{
-		return __builtin_addressof(value[0]);
-	}
-	
-	inline constexpr value_type* end() noexcept
-	{
-		return __builtin_addressof(value[0])+N;
-	}
-
-	inline constexpr value_type const* begin() const noexcept
-	{
-		return __builtin_addressof(value[0]);
-	}
-	
-	inline constexpr value_type const* end() const noexcept
-	{
-		return __builtin_addressof(value[0])+N;
-	}
-
-	inline constexpr value_type const* cbegin() const noexcept
-	{
-		return __builtin_addressof(value[0]);
-	}
-
-	inline constexpr value_type const* cend() const noexcept
-	{
-		return __builtin_addressof(value[0])+N;
 	}
 	
 	inline constexpr simd_vector<T,N>& operator+=(simd_vector<T,N> const& other) noexcept
@@ -557,6 +513,200 @@ simd_vector<T,N> wrap_add(simd_vector<T,N> a,simd_vector<T,N> b) noexcept
 	{
 		return a+b;
 	}
+}
+
+}
+
+namespace details
+{
+
+template<bool ctzero,unsigned pos,typename T>
+requires (std::same_as<typename ::std::remove_cvref_t<T>::value_type,std::uint_least64_t>)
+inline constexpr unsigned vector_mask_countr_recursive_impl(T const& v2) noexcept
+{
+	constexpr std::uint_least64_t mx{std::numeric_limits<std::uint_least64_t>::max()};
+	constexpr unsigned digits{std::numeric_limits<std::uint_least64_t>::digits};
+	constexpr unsigned digitspos{digits*pos};
+	constexpr std::size_t N{sizeof(T)/sizeof(std::uint_least64_t)};
+	static_assert(N!=0);
+	std::uint_least64_t element{v2[pos]};
+	if constexpr(pos!=N-1)
+	{
+		if constexpr(ctzero)
+		{
+			if(element==mx)
+			{
+				return vector_mask_countr_recursive_impl<ctzero,pos+1>(v2);
+			}
+		}
+		else
+		{
+			if(element!=mx)
+			{
+				return vector_mask_countr_recursive_impl<ctzero,pos+1>(v2);
+			}
+		}
+	}
+	if constexpr(pos)
+	{
+		if constexpr(ctzero)
+		{
+
+			return digitspos+static_cast<unsigned>(std::countr_zero(element));
+		}
+		else
+		{
+			return digitspos+static_cast<unsigned>(std::countr_one(element));
+		}
+	}
+	else
+	{
+		if constexpr(ctzero)
+		{
+
+			return static_cast<unsigned>(std::countr_zero(element));
+		}
+		else
+		{
+			return static_cast<unsigned>(std::countr_one(element));
+		}
+	}
+}
+
+template<typename T,std::size_t n>
+concept can_calculate_vector_mask_countr=(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==sizeof(std::uint_least64_t)*2||
+	sizeof(::fast_io::intrinsics::simd_vector<T,n>)==sizeof(std::uint_least64_t)*4||
+	sizeof(::fast_io::intrinsics::simd_vector<T,n>)==sizeof(std::uint_least64_t)*8)&&(sizeof(T)<=16);
+
+template<bool ctzero,std::integral T,std::size_t n>
+requires can_calculate_vector_mask_countr<T,n>
+inline constexpr unsigned vector_mask_countr_common_no_intrinsics_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexcept
+{
+	constexpr std::size_t N{sizeof(::fast_io::intrinsics::simd_vector<T,n>)/sizeof(std::uint_least64_t)};
+	unsigned d{vector_mask_countr_recursive_impl<ctzero,0>(static_cast<::fast_io::intrinsics::simd_vector<std::uint_least64_t,N>>(vec))};
+	constexpr int shift{std::bit_width(sizeof(T)*::std::numeric_limits<char>::digits)};
+	d>>=shift;
+#if __has_cpp_attribute(assume)
+	[[assume(d<=n)]];
+#endif
+	return d;
+}
+
+inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_t sizeofsimdvector) noexcept
+{
+	if(sizeofsimdvector==16)
+	{
+#if defined(__SSE4_1__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)
+		return true;
+#endif
+	}
+	else if(sizeofsimdvector==32)
+	{
+#if defined(__AVX__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb256)
+		return true;
+#endif
+	}
+	return false;
+}
+
+template<std::size_t sizeofsimdvector>
+inline constexpr bool can_intrinsics_accelerate_mask_countr
+{
+calculate_can_intrinsics_accelerate_mask_countr(sizeofsimdvector)
+};
+
+template<bool ctzero,std::integral T,std::size_t n>
+requires can_calculate_vector_mask_countr<T,n>
+inline
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+constexpr
+#endif
+unsigned vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexcept
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#elif __cpp_lib_is_constant_evaluated >= 201811L
+	if (std::is_constant_evaluated())
+#endif
+	{
+		return vector_mask_countr_common_no_intrinsics_impl<ctzero>(vec);
+	}
+#endif
+	constexpr std::size_t szofvec{sizeof(::fast_io::intrinsics::simd_vector<T,n>)};
+	unsigned d{};
+	if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==16)
+	{
+#if defined(__SSE4_1__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)
+		using x86_64_v16qi [[__gnu__::__vector_size__ (16)]] = char;
+		std::uint_least16_t const value{static_cast<std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)vec.value))};
+		if constexpr(ctzero)
+		{
+			d=static_cast<unsigned>(std::countr_zero(value));
+		}
+		else
+		{
+			d=static_cast<unsigned>(std::countr_one(value));
+		}
+#endif
+	}
+	else if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==32)
+	{
+#if defined(__AVX__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb256)
+		using x86_64_v32qi [[__gnu__::__vector_size__ (32)]] = char;
+		std::uint_least32_t const value{static_cast<std::uint_least32_t>(__builtin_ia32_pmovmskb256((x86_64_v32qi)vec.value))};
+		if constexpr(ctzero)
+		{
+			d=static_cast<unsigned>(std::countr_zero(value));
+		}
+		else
+		{
+			d=static_cast<unsigned>(std::countr_one(value));
+		}
+#endif
+	}
+	if constexpr(sizeof(T)==1)
+	{
+		return d;
+	}
+	else
+	{
+		constexpr int shift{std::bit_width(sizeof(T)*::std::numeric_limits<char>::digits)-3};
+		return d>>shift;
+	}
+}
+
+template<bool ctzero,std::integral T,std::size_t n>
+requires can_calculate_vector_mask_countr<T,n>
+inline constexpr unsigned vector_mask_countr_common_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexcept
+{
+	if constexpr(can_intrinsics_accelerate_mask_countr<sizeof(vec)>)
+	{
+		return vector_mask_countr_common_intrinsics_impl<ctzero>(vec);
+	}
+	else
+	{
+		return vector_mask_countr_common_no_intrinsics_impl<ctzero>(vec);
+	}
+}
+
+}
+
+namespace intrinsics
+{
+
+template<std::integral T,std::size_t n>
+requires ::fast_io::details::can_calculate_vector_mask_countr<T,n>
+inline constexpr auto vector_mask_countr_one(simd_vector<T,n> const& vec) noexcept
+{
+	return ::fast_io::details::vector_mask_countr_common_impl<false>(vec);
+}
+
+template<std::integral T,std::size_t n>
+requires ::fast_io::details::can_calculate_vector_mask_countr<T,n>
+inline constexpr auto vector_mask_countr_zero(simd_vector<T,n> const& vec) noexcept
+{
+	return ::fast_io::details::vector_mask_countr_common_impl<true>(vec);
 }
 
 }
