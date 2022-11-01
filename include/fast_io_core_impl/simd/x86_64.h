@@ -625,6 +625,8 @@ inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_
 	return false;
 }
 
+
+
 template<std::size_t sizeofsimdvector>
 inline constexpr bool can_simd_vector_run_with_cpu_instruction
 {
@@ -635,6 +637,14 @@ template<std::size_t sizeofsimdvector>
 inline constexpr bool can_intrinsics_accelerate_mask_countr
 {
 calculate_can_intrinsics_accelerate_mask_countr(sizeofsimdvector)
+};
+
+
+inline constexpr std::size_t optimal_simd_vector_run_with_cpu_instruction_size
+{
+can_simd_vector_run_with_cpu_instruction<64>?64:
+(can_simd_vector_run_with_cpu_instruction<32>?32:
+(can_simd_vector_run_with_cpu_instruction<16>?16:0))
 };
 
 template<bool ctzero,std::integral T,std::size_t n>

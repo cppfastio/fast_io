@@ -658,7 +658,7 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	iso8601_timestamp& t) noexcept
 {
 	using ::fast_io::char_literal_v;
-	begin = ::fast_io::find_non_c_space(begin, end);
+	begin = ::fast_io::find_none_c_space(begin, end);
 	if (end - begin < 20) [[unlikely]]
 		return { begin, parse_code::invalid };
 	[[maybe_unused]] bool sign{};
