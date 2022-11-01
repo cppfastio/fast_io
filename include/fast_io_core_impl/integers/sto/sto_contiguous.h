@@ -202,6 +202,9 @@ struct simd_parse_result
 	fast_io::parse_code code;
 };
 
+inline constexpr char unsigned simd16_shift_table[32]{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
 #if defined(__SSE4_1__) && defined(__x86_64__)
 
 template<bool char_execharset>
@@ -246,10 +249,6 @@ inline std::size_t sse_skip_long_overflow_digits(char unsigned const* buffer,cha
 	return static_cast<std::size_t>(buffer_end-buffer+detect_length<char_execharset>(buffer_end-16));
 }
 
-
-inline constexpr char unsigned sse_shift_table[32]{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-
 template<bool char_execharset,bool less_than_64_bits>
 #if __has_cpp_attribute(__gnu__::__hot__)
 [[__gnu__::__hot__]]
@@ -276,7 +275,7 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 		zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant};
 	chunk-=zeros;
 	x86_64_v16qi shuffle_mask;
-	__builtin_memcpy(__builtin_addressof(shuffle_mask),sse_shift_table+digits,sizeof(x86_64_v16qi));
+	__builtin_memcpy(__builtin_addressof(shuffle_mask),simd16_shift_table+digits,sizeof(x86_64_v16qi));
 	chunk=(x86_64_v16qu)__builtin_ia32_pshufb128((x86_64_v16qi)chunk,shuffle_mask);
 	chunk=(x86_64_v16qu)__builtin_ia32_pmaddubsw128((x86_64_v16qi)chunk,x86_64_v16qi{10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1});
 	chunk=(x86_64_v16qu)__builtin_ia32_pmaddwd128((x86_64_v8hi)chunk,x86_64_v8hi{100,1,100,1,100,1,100,1});
@@ -293,7 +292,7 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 	if(digits==0)
 		return {0,parse_code::invalid};
 	chunk = _mm_sub_epi8(chunk, _mm_set1_epi8(zero_constant));
-	chunk = _mm_shuffle_epi8(chunk,_mm_loadu_si128(reinterpret_cast<__m128i const*>(sse_shift_table+digits)));
+	chunk = _mm_shuffle_epi8(chunk,_mm_loadu_si128(reinterpret_cast<__m128i const*>(simd16_shift_table+digits)));
 	chunk = _mm_maddubs_epi16(chunk, _mm_set_epi8(1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10));
 	chunk = _mm_madd_epi16(chunk, _mm_set_epi16(1,100,1,100,1,100,1,100));
 	chunk = _mm_packus_epi32(chunk, chunk);
@@ -506,7 +505,8 @@ inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const
 	return {first,ongoing_parse_code};
 }
 
-#include"sto_hex_simd16.h"
+template<std::integral char_type>
+inline constexpr char_type const* skip_hexdigits(char_type const* first,char_type const* last) noexcept;
 
 template<char8_t base,bool shbase=false,bool skipzero=false,::std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_part_define_impl(char_type const* first,char_type const* last,T& t) noexcept
@@ -575,29 +575,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 	unsigned_type res{};
 	char_type const* it;
 #if defined(__SSE4_1__) && defined(__x86_64__)
-
-	if constexpr(base==16&&sizeof(char_type)==1&&sizeof(unsigned_type)==sizeof(std::uint_least64_t))
-	{
-		if(
-#if __cpp_lib_is_constant_evaluated >= 201811L
-		!std::is_constant_evaluated()&&
-#endif
-		last-first>=16)[[likely]]
-		{
-			auto [it2,ec]=sto_hex_simd16_impl(first,last,res);
-			if(ec!=parse_code::ok)
-				return {it2,ec};
-			it=it2;
-		}
-		else
-		{
-			auto [it2,ec]=scan_int_contiguous_none_simd_space_part_define_impl<base>(first,last,res);
-			if(ec!=parse_code::ok)
-				return {it2,ec};
-			it=it2;
-		}
-	}
-	else if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
+	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
 	{
 		if(
 #if __cpp_lib_is_constant_evaluated >= 201811L
