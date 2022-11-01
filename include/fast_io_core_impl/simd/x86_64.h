@@ -585,6 +585,29 @@ inline constexpr unsigned vector_mask_countr_common_no_intrinsics_impl(::fast_io
 	return d;
 }
 
+inline constexpr bool calculate_can_simd_vector_run_with_cpu_instruction(std::size_t sizeofsimdvector) noexcept
+{
+	if(sizeofsimdvector==16)
+	{
+#if (defined(__SSE__) && defined(__x86_64__)) || defined(__wasm_simd128__)
+		return true;
+#endif
+	}
+	else if(sizeofsimdvector==32)
+	{
+#if defined(__AVX__) && defined(__x86_64__)
+		return true;
+#endif
+	}
+	else if(sizeofsimdvector==64)
+	{
+#if defined(__AVX512F__) && defined(__x86_64__)
+		return true;
+#endif
+	}
+	return false;
+}
+
 inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_t sizeofsimdvector) noexcept
 {
 	if(sizeofsimdvector==16)
@@ -601,6 +624,12 @@ inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_
 	}
 	return false;
 }
+
+template<std::size_t sizeofsimdvector>
+inline constexpr bool can_simd_vector_run_with_cpu_instruction
+{
+calculate_can_simd_vector_run_with_cpu_instruction(sizeofsimdvector)
+};
 
 template<std::size_t sizeofsimdvector>
 inline constexpr bool can_intrinsics_accelerate_mask_countr
