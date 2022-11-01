@@ -403,4 +403,40 @@ inline constexpr Iter find_space_impl(Iter first,Iter last)
 	}
 }
 
+template<char8_t lfch,bool findnot,::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
+inline constexpr Iter find_ch_impl(Iter first,Iter last)
+{
+	using value_type = ::std::iter_value_t<Iter>;
+	if constexpr(!::std::is_volatile_v<value_type>&&::std::contiguous_iterator<Iter>)
+	{
+		if constexpr(::std::same_as<value_type,::std::remove_cvref_t<value_type> const>)
+		{
+			return ::fast_io::details::find_simd_constant_common_impl<lfch,findnot>(first,last);
+		}
+		else if constexpr(::std::is_pointer_v<Iter>)
+		{
+			::std::remove_cvref_t<value_type> const* first_const_ptr{first};
+			return ::fast_io::details::find_simd_constant_common_impl<lfch,findnot>(first_const_ptr,last)-first_const_ptr+first;
+		}
+		else
+		{
+			::std::remove_cvref_t<value_type> const* first_const_ptr{std::to_address(first)};
+			return ::fast_io::details::find_simd_constant_common_impl<lfch,findnot>(first_const_ptr,std::to_address(last))-first_const_ptr+first;
+		}
+	}
+	else
+	{
+		constexpr auto lfchct{char_literal_v<lfch,std::remove_cvref_t<value_type>>};
+		if constexpr(findnot)
+		{
+			return ::fast_io::freestanding::find_not(first,last,lfchct);
+		}
+		else
+		{
+			return ::fast_io::freestanding::find(first,last,lfchct);
+		}
+	}
+}
+
 }

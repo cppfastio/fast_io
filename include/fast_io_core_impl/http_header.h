@@ -71,7 +71,8 @@ inline constexpr parse_code determine_http_header_location(basic_http_header_buf
 	if(i!=e&&*i==char_literal_v<u8' ',ch_type>)
 		return parse_code::invalid;
 	{
-	for(;i!=e&&*i!=char_literal_v<u8' ',ch_type>;++i);
+	i=::fast_io::details::find_ch_impl<u8' ',false>(i,e);
+	//for(;i!=e&&*i!=char_literal_v<u8' ',ch_type>;++i);
 	if(i==e)
 	{
 		return parse_code::invalid;
@@ -79,21 +80,25 @@ inline constexpr parse_code determine_http_header_location(basic_http_header_buf
 	b.http_request_end_location=static_cast<std::size_t>(i-b.buffer);
 	}
 	++i;
-	for(;i!=e&&*i==char_literal_v<u8' ',ch_type>;++i);
+	i=::fast_io::details::find_ch_impl<u8' ',true>(i,e);
+	//for(;i!=e&&*i==char_literal_v<u8' ',ch_type>;++i);
 	if(i==e)
 		return parse_code::invalid;
 	b.http_status_code_start_location=static_cast<std::size_t>(i-b.buffer);
 	{
-	for(;i!=e&&*i!=char_literal_v<u8' ',ch_type>;++i);
+	i=::fast_io::details::find_ch_impl<u8' ',false>(i,e);
+	//for(;i!=e&&*i!=char_literal_v<u8' ',ch_type>;++i);
 	if(i==e)
 		return parse_code::invalid;
 	b.http_status_code_end_location=static_cast<std::size_t>(i-b.buffer);
 	}
-	for(;i!=e&&*i==char_literal_v<u8' ',ch_type>;++i);
+	i=::fast_io::details::find_ch_impl<u8' ',true>(i,e);
+	//for(;i!=e&&*i==char_literal_v<u8' ',ch_type>;++i);
 	if(i==e)
 		return parse_code::invalid;
 	b.http_status_reason_start_location=static_cast<std::size_t>(i-b.buffer);
-	for(;i!=e&&*i!=char_literal_v<u8'\r',ch_type>;++i);
+	i=::fast_io::details::find_ch_impl<u8'\r',false>(i,e);
+	//for(;i!=e&&*i!=char_literal_v<u8'\r',ch_type>;++i);
 	if(i==e)
 		return parse_code::invalid;
 	b.http_status_reason_end_location=static_cast<std::size_t>(i-b.buffer);
@@ -154,7 +159,8 @@ inline constexpr parse_result<char_type const*> http_header_scan_context_define_
 	state=0;
 	for(;;)
 	{
-		for(;first!=last&&*first!=char_literal_v<u8'\r',char_type>;++first);
+		first=::fast_io::details::find_ch_impl<u8'\r',false>(first,last);
+		//for(;first!=last&&*first!=char_literal_v<u8'\r',char_type>;++first);
 		if(first==last)
 		{
 			if(!::fast_io::details::try_copy_into_buffer(bufferref,first1,first))
@@ -259,21 +265,27 @@ inline constexpr basic_http_line_generator<char_type>& operator++(basic_http_lin
 		b.value_end=b.value_start=b.key_end=b.current=last;
 		return b;
 	}
-	for(;b.current!=last&&*b.current!=char_literal_v<u8'\n',char_type>;++b.current);
+	b.current = ::fast_io::details::find_ch_impl<u8'\n',false>(b.current,last);
+//	for(;b.current!=last&&*b.current!=char_literal_v<u8'\n',char_type>;++b.current);
 	if(b.current==last)
 	{
 		b.value_end=b.value_start=b.key_end=last;
 		return b;
 	}
 	auto line_last{b.current};
-	for(;line_last!=last&&*line_last!=char_literal_v<u8'\r',char_type>;++line_last);
-	for(++b.current;b.current!=line_last&&*b.current==char_literal_v<u8' ',char_type>;++b.current);
+	line_last = ::fast_io::details::find_ch_impl<u8'\r',false>(line_last,last);
+//	for(;line_last!=last&&*line_last!=char_literal_v<u8'\r',char_type>;++line_last);
+	++b.current;
+	b.current = ::fast_io::details::find_ch_impl<u8' ',true>(b.current,line_last);
+//	for(;b.current!=line_last&&*b.current==char_literal_v<u8' ',char_type>;++b.current);
 	auto curr{b.current};
-	for(;curr!=line_last&&*curr!=char_literal_v<u8':',char_type>;++curr);
+	curr = ::fast_io::details::find_ch_impl<u8':',false>(curr,line_last);
+//	for(;curr!=line_last&&*curr!=char_literal_v<u8':',char_type>;++curr);
 	b.key_end=curr;
 	if(curr!=line_last)
 		++curr;
-	for(;curr!=line_last&&*curr==char_literal_v<u8' ',char_type>;++curr);
+	curr = ::fast_io::details::find_ch_impl<u8' ',true>(curr,line_last);
+//	for(;curr!=line_last&&*curr==char_literal_v<u8' ',char_type>;++curr);
 	b.value_start=curr;
 	b.value_end=line_last;
 	return b;
