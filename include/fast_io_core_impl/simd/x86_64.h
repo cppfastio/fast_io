@@ -534,14 +534,14 @@ inline constexpr unsigned vector_mask_countr_recursive_impl(T const& v2) noexcep
 	{
 		if constexpr(ctzero)
 		{
-			if(element==mx)
+			if(!element)
 			{
 				return vector_mask_countr_recursive_impl<ctzero,pos+1>(v2);
 			}
 		}
 		else
 		{
-			if(element)
+			if(element==mx)
 			{
 				return vector_mask_countr_recursive_impl<ctzero,pos+1>(v2);
 			}
@@ -563,7 +563,6 @@ inline constexpr unsigned vector_mask_countr_recursive_impl(T const& v2) noexcep
 	{
 		if constexpr(ctzero)
 		{
-
 			return static_cast<unsigned>(std::countr_zero(element));
 		}
 		else
@@ -584,7 +583,7 @@ inline constexpr unsigned vector_mask_countr_common_no_intrinsics_impl(::fast_io
 {
 	constexpr std::size_t N{sizeof(::fast_io::intrinsics::simd_vector<T,n>)/sizeof(std::uint_least64_t)};
 	unsigned d{vector_mask_countr_recursive_impl<ctzero,0>(static_cast<::fast_io::intrinsics::simd_vector<std::uint_least64_t,N>>(vec))};
-	constexpr int shift{std::bit_width(sizeof(T)*::std::numeric_limits<char>::digits)};
+	constexpr unsigned shift{static_cast<unsigned>(std::bit_width(sizeof(T)*::std::numeric_limits<char>::digits))};
 	d>>=shift;
 #if __has_cpp_attribute(assume)
 	[[assume(d<=n)]];
@@ -671,7 +670,7 @@ unsigned vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_v
 	}
 	else
 	{
-		constexpr int shift{std::bit_width(sizeof(T)*::std::numeric_limits<char>::digits)-3};
+		constexpr unsigned shift{static_cast<unsigned>(std::bit_width(sizeof(T)*::std::numeric_limits<char>::digits)-3)};
 		return d>>shift;
 	}
 }
