@@ -96,7 +96,49 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 	constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
 
 #if (defined(__GNUC__) || defined(__clang__))
-	if constexpr(::fast_io::details::can_simd_vector_run_with_cpu_instruction<64>)
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if !consteval
+#else
+	if(!std::is_constant_evaluated())
+#endif
+	{
+	constexpr bool use_builtin_memchr{
+#if (__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1))
+#if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
+#if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
+//For glibc >= 2.26, we use glibc's memchr implementation under hosted environment
+	!findnot
+#endif
+#endif
+#endif
+	};
+	if constexpr(use_builtin_memchr&&(sizeof(char_type)==1||(sizeof(char_type)==4&&sizeof(wchar_t)==4)))
+	{
+		std::size_t diff{static_cast<std::size_t>(last-first)};
+		if(diff==0)
+#if __has_cpp_attribute(likely)
+		[[likely]]
+#endif
+		{
+			return first;
+		}
+		void* ret;
+		if constexpr(sizeof(char_type)==1)
+		{
+			ret = __builtin_memchr(first,lfchct,diff);
+		}
+		else
+		{
+			ret = __builtin_wmemchr(first,lfchct,diff);
+		}
+		if(ret==nullptr)
+		{
+			return last;
+		}
+		return reinterpret_cast<char_type const*>(ret);
+	}
+	else if constexpr(::fast_io::details::can_simd_vector_run_with_cpu_instruction<64>)
 	{
 		first=find_simd_constant_simd_common_impl<lfch,findnot,64>(first,last);
 	}
@@ -108,6 +150,8 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 	{
 		first=find_simd_constant_simd_common_impl<lfch,findnot,16>(first,last);
 	}
+	}
+#endif
 #endif
 	if constexpr(findnot)
 	{
