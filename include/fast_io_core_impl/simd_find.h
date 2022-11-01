@@ -174,7 +174,7 @@ ASCII: space (0x20, ' '), EBCDIC:64
 #else
 			simd_vector_type formfeeds,carriagereturns;
 			formfeeds.load(characters_array_impl<formfeed,char_type,N>.data());
-			carriagereturns.load(characters_array_impl<characters_array_impl,char_type,N>.data());
+			carriagereturns.load(characters_array_impl<carriagereturn,char_type,N>.data());
 #endif
 			return find_simd_common_all_impl<findnot,vec_size,single_round>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
