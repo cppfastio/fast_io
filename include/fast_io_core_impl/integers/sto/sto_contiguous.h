@@ -506,6 +506,8 @@ inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const
 	return {first,ongoing_parse_code};
 }
 
+#include"sto_hex_simd16.h"
+
 template<char8_t base,bool shbase=false,bool skipzero=false,::std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_part_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
@@ -573,7 +575,29 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 	unsigned_type res{};
 	char_type const* it;
 #if defined(__SSE4_1__) && defined(__x86_64__)
-	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
+
+	if constexpr(base==16&&sizeof(char_type)==1&&sizeof(unsigned_type)==sizeof(std::uint_least64_t))
+	{
+		if(
+#if __cpp_lib_is_constant_evaluated >= 201811L
+		!std::is_constant_evaluated()&&
+#endif
+		last-first>=16)[[likely]]
+		{
+			auto [it2,ec]=sto_hex_simd16_impl(first,last,res);
+			if(ec!=parse_code::ok)
+				return {it2,ec};
+			it=it2;
+		}
+		else
+		{
+			auto [it2,ec]=scan_int_contiguous_none_simd_space_part_define_impl<base>(first,last,res);
+			if(ec!=parse_code::ok)
+				return {it2,ec};
+			it=it2;
+		}
+	}
+	else if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
 	{
 		if(
 #if __cpp_lib_is_constant_evaluated >= 201811L

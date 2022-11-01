@@ -85,13 +85,24 @@ struct simd_vector
 	{
 		__builtin_memcpy(address,__builtin_addressof(value),sizeof(value));
 	}
-	inline constexpr value_type front() const noexcept
+	inline constexpr value_type const& front() const noexcept
 	{
 		return value[0];
 	}
-	inline constexpr value_type back() const noexcept
+	inline constexpr value_type const& back() const noexcept
 	{
-		return value[N-1];
+		constexpr std::size_t nm1{N-1};
+		return value[nm1];
+	}
+
+	inline constexpr value_type& front() noexcept
+	{
+		return value[0];
+	}
+	inline constexpr value_type& back() noexcept
+	{
+		constexpr std::size_t nm1{N-1};
+		return value[nm1];
 	}
 
 	inline static constexpr bool empty() noexcept
@@ -103,10 +114,45 @@ struct simd_vector
 		constexpr std::size_t v{static_cast<std::size_t>(-1)/sizeof(value_type)};
 		return v;
 	}
-	inline constexpr value_type operator[](std::size_t n) const noexcept
+	inline constexpr value_type const& operator[](std::size_t n) const noexcept
 	{
 		return value[n];
 	}
+	inline constexpr value_type& operator[](std::size_t n) noexcept
+	{
+		return value[n];
+	}
+	
+	inline constexpr value_type* begin() noexcept
+	{
+		return __builtin_addressof(value[0]);
+	}
+	
+	inline constexpr value_type* end() noexcept
+	{
+		return __builtin_addressof(value[0])+N;
+	}
+
+	inline constexpr value_type const* begin() const noexcept
+	{
+		return __builtin_addressof(value[0]);
+	}
+	
+	inline constexpr value_type const* end() const noexcept
+	{
+		return __builtin_addressof(value[0])+N;
+	}
+
+	inline constexpr value_type const* cbegin() const noexcept
+	{
+		return __builtin_addressof(value[0]);
+	}
+
+	inline constexpr value_type const* cend() const noexcept
+	{
+		return __builtin_addressof(value[0])+N;
+	}
+	
 	inline constexpr simd_vector<T,N>& operator+=(simd_vector<T,N> const& other) noexcept
 	{
 		value+=other.value;
@@ -405,6 +451,17 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 	return {a.value/b.value};
 }
 
+template<typename T,std::size_t N>
+inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
+{
+	return {a.value&b.value};
+}
+
+template<typename T,std::size_t N>
+inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
+{
+	return {a.value|b.value};
+}
 
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
