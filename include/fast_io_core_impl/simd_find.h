@@ -268,6 +268,8 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 //For glibc >= 2.26, we use glibc's memchr implementation under hosted environment
 	!findnot
 #endif
+#elif defined(__wasi__)
+	!findnot&&!::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size
 #endif
 #endif
 	};
