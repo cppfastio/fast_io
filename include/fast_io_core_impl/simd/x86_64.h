@@ -572,13 +572,7 @@ inline constexpr unsigned vector_mask_countr_recursive_impl(T const& v2) noexcep
 	}
 }
 
-template<typename T,std::size_t n>
-concept can_calculate_vector_mask_countr=(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==sizeof(std::uint_least64_t)*2||
-	sizeof(::fast_io::intrinsics::simd_vector<T,n>)==sizeof(std::uint_least64_t)*4||
-	sizeof(::fast_io::intrinsics::simd_vector<T,n>)==sizeof(std::uint_least64_t)*8)&&(sizeof(T)<=16);
-
 template<bool ctzero,std::integral T,std::size_t n>
-requires can_calculate_vector_mask_countr<T,n>
 inline constexpr unsigned vector_mask_countr_common_no_intrinsics_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexcept
 {
 	constexpr std::size_t N{sizeof(::fast_io::intrinsics::simd_vector<T,n>)/sizeof(std::uint_least64_t)};
@@ -615,7 +609,6 @@ calculate_can_intrinsics_accelerate_mask_countr(sizeofsimdvector)
 };
 
 template<bool ctzero,std::integral T,std::size_t n>
-requires can_calculate_vector_mask_countr<T,n>
 inline
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
@@ -676,7 +669,6 @@ unsigned vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_v
 }
 
 template<bool ctzero,std::integral T,std::size_t n>
-requires can_calculate_vector_mask_countr<T,n>
 inline constexpr unsigned vector_mask_countr_common_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexcept
 {
 	if constexpr(can_intrinsics_accelerate_mask_countr<sizeof(vec)>)
@@ -694,15 +686,13 @@ inline constexpr unsigned vector_mask_countr_common_impl(::fast_io::intrinsics::
 namespace intrinsics
 {
 
-template<std::integral T,std::size_t n>
-requires ::fast_io::details::can_calculate_vector_mask_countr<T,n>
+template<typename T,std::size_t n>
 inline constexpr auto vector_mask_countr_one(simd_vector<T,n> const& vec) noexcept
 {
 	return ::fast_io::details::vector_mask_countr_common_impl<false>(vec);
 }
 
-template<std::integral T,std::size_t n>
-requires ::fast_io::details::can_calculate_vector_mask_countr<T,n>
+template<typename T,std::size_t n>
 inline constexpr auto vector_mask_countr_zero(simd_vector<T,n> const& vec) noexcept
 {
 	return ::fast_io::details::vector_mask_countr_common_impl<true>(vec);
