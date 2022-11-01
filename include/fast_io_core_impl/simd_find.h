@@ -88,6 +88,53 @@ inline constexpr char_type const* find_simd_constant_simd_common_impl(char_type 
 	}
 	return first;
 }
+
+template<bool findnot,std::size_t vec_size,std::integral char_type>
+requires (sizeof(char_type)<=vec_size)&&(vec_size%sizeof(char_type)==0)
+inline constexpr char_type const* find_c_space_simd_common_impl(char_type const* first,char_type const* last) noexcept
+{
+	constexpr char_type lfchct{char_literal_v<u8' ',std::remove_cvref_t<char_type>>};
+
+	constexpr char_type five{5};
+	constexpr unsigned N{vec_size/sizeof(char_type)};
+	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
+#if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
+	constexpr
+		simd_vector_type spaces{
+			std::bit_cast<simd_vector_type>(characters_array_impl<lfch,char_type,N>)};
+	constexpr
+		simd_vector_type fives{
+			std::bit_cast<simd_vector_type>(characters_array_impl<five,char_type,N>)};
+#else
+	simd_vector_type zeros;
+	zeros.load(characters_array_impl<lfch,char_type,N>.data());
+	simd_vector_type fives;
+	fives.load(characters_array_impl<5,char_type,N>.data());
+#endif
+	simd_vector_type simdvec;
+	std::size_t diff{static_cast<std::size_t>(last-first)};
+	for(;N<=diff;diff-=N)
+	{
+		simdvec.load(first);
+		simd_vector_type chunk{zeros==simdvec};
+		unsigned incr;
+		if constexpr(findnot)
+		{
+			incr=vector_mask_countr_one(chunk);
+		}
+		else
+		{
+			incr=vector_mask_countr_zero(chunk);
+		}
+		if(incr!=N)
+		{
+			return first+incr;
+		}
+		first+=N;
+	}
+	return first;
+}
+
 #endif
 
 template<char8_t lfch,bool findnot,std::integral char_type>
@@ -164,6 +211,11 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 }
 
 
+template<char8_t lfch,bool findnot,std::integral char_type>
+inline constexpr char_type const* find_space_common_impl(char_type const* first,char_type const* last) noexcept
+{
+}
+
 template<std::integral char_type>
 inline constexpr char_type const* find_lf_simd_impl(char_type const* first,char_type const* last) noexcept
 {
@@ -174,6 +226,18 @@ template<std::integral char_type>
 inline constexpr char_type const* find_none_zero_simd_impl(char_type const* first,char_type const* last) noexcept
 {
 	return find_simd_constant_common_impl<u8'0',true>(first,last);
+}
+
+template<std::integral char_type>
+inline constexpr char_type const* find_none_c_space_simd_impl(char_type const* first,char_type const* last) noexcept
+{
+	return find_c_space_common_impl<u8'\n',false>(first,last);
+}
+
+template<std::integral char_type>
+inline constexpr char_type const* find_c_space_simd_impl(char_type const* first,char_type const* last) noexcept
+{
+	return find_c_space_common_impl<u8'\n',false>(first,last);
 }
 
 }
