@@ -612,7 +612,8 @@ inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_
 {
 	if(sizeofsimdvector==16)
 	{
-#if defined(__SSE4_1__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)
+#if (defined(__SSE4_1__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)) || \
+	(defined(__wasm_simd128__) && __has_builtin(__builtin_wasm_bitmask_i8x16))
 		return true;
 #endif
 	}
@@ -671,6 +672,17 @@ unsigned vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_v
 #if defined(__SSE4_1__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)
 		using x86_64_v16qi [[__gnu__::__vector_size__ (16)]] = char;
 		std::uint_least16_t const value{static_cast<std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)vec.value))};
+		if constexpr(ctzero)
+		{
+			d=static_cast<unsigned>(std::countr_zero(value));
+		}
+		else
+		{
+			d=static_cast<unsigned>(std::countr_one(value));
+		}
+#elif defined(__wasm_simd128__) && __has_builtin(__builtin_wasm_bitmask_i8x16)
+		using wasmsimd128_i8x16 [[__gnu__::__vector_size__ (16)]] = char;
+		::std::uint_least16_t const value{static_cast<::std::uint_least16_t>(__builtin_wasm_bitmask_i8x16(static_cast<wasmsimd128_i8x16>(vec.value)))};
 		if constexpr(ctzero)
 		{
 			d=static_cast<unsigned>(std::countr_zero(value));
