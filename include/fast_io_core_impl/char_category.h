@@ -398,6 +398,10 @@ namespace details
 {
 template<std::integral char_type>
 inline constexpr char_type const* find_lf_simd_impl(char_type const*,char_type const*) noexcept;
+
+template<bool ishtml,bool findnot,::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
+inline constexpr Iter find_space_impl(Iter,Iter);
 }
 
 template<::std::forward_iterator Iter>
@@ -415,31 +419,32 @@ inline constexpr Iter find_lf(Iter first, Iter last)
 	}
 }
 
-template<typename char_type>
-requires ::std::integral<::std::remove_const_t<char_type>>
-inline constexpr char_type* find_non_c_space(char_type* begin,char_type* end)
+template<::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
+inline constexpr Iter find_none_c_space(Iter begin,Iter end)
 {
-	for(;begin!=end&&fast_io::char_category::is_c_space(*begin);++begin);
-	return begin;
+	return ::fast_io::details::find_space_impl<false,true>(begin,end);
 }
 
-template<typename char_type>
-requires ::std::integral<::std::remove_const_t<char_type>>
-inline constexpr char_type* find_c_space(char_type* begin,char_type* end)
+template<::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
+inline constexpr Iter find_c_space(Iter begin,Iter end)
 {
-	for(;begin!=end&&!fast_io::char_category::is_c_space(*begin);++begin);
-	return begin;
+	return ::fast_io::details::find_space_impl<false,false>(begin,end);
 }
 
-/*
-deprecate this
-*/
-
-template<typename char_type>
-requires ::std::integral<::std::remove_const_t<char_type>>
-inline constexpr char_type* scan_skip_space(char_type* begin, char_type* end)
+template<::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
+inline constexpr Iter find_none_html_whitespace(Iter begin,Iter end)
 {
-	return find_non_c_space(begin,end);
+	return ::fast_io::details::find_space_impl<true,true>(begin,end);
+}
+
+template<::std::forward_iterator Iter>
+requires (::std::integral<::std::iter_value_t<Iter>>)
+inline constexpr Iter find_html_whitespace(Iter begin,Iter end)
+{
+	return ::fast_io::details::find_space_impl<true,false>(begin,end);
 }
 
 }

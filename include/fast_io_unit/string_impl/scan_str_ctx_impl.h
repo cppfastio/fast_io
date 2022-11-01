@@ -19,7 +19,7 @@ inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_s
 	{
 		if(!skip_space_done)
 		{
-			it=::fast_io::find_non_c_space(it,last);
+			it=::fast_io::find_none_c_space(it,last);
 			if(it==last)
 				return {it,::fast_io::parse_code::partial};
 			skip_space_done=true;
