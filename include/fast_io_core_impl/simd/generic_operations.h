@@ -80,7 +80,7 @@ inline constexpr void generic_simd_self_op_impl(T& selfval,Func func) noexcept
 }
 
 template<typename T,typename Func>
-inline constexpr void generic_simd_self_create_op_impl(T const& selfval,Func func) noexcept
+inline constexpr std::remove_cvref_t<T> generic_simd_self_create_op_impl(T const& selfval,Func func) noexcept
 {
 	std::remove_cvref_t<T> newval;
 	constexpr std::size_t N{std::remove_cvref_t<T>::size()};
@@ -94,8 +94,8 @@ inline constexpr void generic_simd_self_create_op_impl(T const& selfval,Func fun
 template<typename T,typename Func>
 inline constexpr std::remove_cvref_t<T> generic_simd_create_op_impl(T const& a,T const& b,Func func) noexcept
 {
-	std::remove_cvref_t<T> newval;
 	constexpr std::size_t N{std::remove_cvref_t<T>::size()};
+	std::remove_cvref_t<T> newval;
 	for(std::size_t i{};i!=N;++i)
 	{
 		newval.value[i]=func(a.value[i],b.value[i]);
@@ -122,12 +122,12 @@ inline constexpr T generic_simd_comparision_common_impl(T const& a,
 	return ::fast_io::details::generic_simd_create_op_impl(a,b,[&](value_type va,value_type vb)->value_type
 	{
 		bool t{func(va,vb)};
+		constexpr auto mx{create_value_mx<value_type>()};
 		if(t)
 		{
-			return {};
+			return mx;
 		}
-		constexpr auto mx{create_value_mx<value_type>()};
-		return mx;		
+		return {};	
 	});
 }
 
@@ -647,8 +647,11 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		{
 			if constexpr(std::integral<T>)
 			{
-#if defined(__GNUC__) || defined(__clang__)
-				return {a.value/b.value};
+#if __has_cpp_attribute(__gnu__::__vector_size__)
+				using vec2_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
+				vec2_type amm = __builtin_bit_cast(vec2_type,a);
+				vec2_type bmm = __builtin_bit_cast(vec2_type,b);
+				return __builtin_bit_cast(vec_type,(a/b));
 #else
 				__m128i amm = __builtin_bit_cast(__m128i,a);
 				__m128i bmm = __builtin_bit_cast(__m128i,b);
@@ -696,8 +699,11 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		{
 			if constexpr(std::integral<T>)
 			{
-#if defined(__GNUC__) || defined(__clang__)
-				return {a.value/b.value};
+#if __has_cpp_attribute(__gnu__::__vector_size__)
+				using vec2_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
+				vec2_type amm = __builtin_bit_cast(vec2_type,a);
+				vec2_type bmm = __builtin_bit_cast(vec2_type,b);
+				return __builtin_bit_cast(vec_type,(a/b));
 #else
 				__m256i amm = __builtin_bit_cast(__m256i,a);
 				__m256i bmm = __builtin_bit_cast(__m256i,b);
@@ -745,8 +751,11 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		{
 			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
-#if defined(__GNUC__) || defined(__clang__)
-				return {a.value/b.value};
+#if __has_cpp_attribute(__gnu__::__vector_size__)
+				using vec2_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
+				vec2_type amm = __builtin_bit_cast(vec2_type,a);
+				vec2_type bmm = __builtin_bit_cast(vec2_type,b);
+				return __builtin_bit_cast(vec_type,(a/b));
 #else
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
@@ -1019,6 +1028,48 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 #endif
 	{
 		using vec_type = simd_vector<T,N>;
+		if constexpr(sizeof(vec_type)==16)
+		{
+			__m128i amm = __builtin_bit_cast(__m128i,a);
+			__m128i bmm = __builtin_bit_cast(__m128i,b);
+			if constexpr(sizeof(T)==1)
+			{
+				return __builtin_bit_cast(vec_type,_mm_cmpeq_epi8(amm,bmm));
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				return __builtin_bit_cast(vec_type,_mm_cmpeq_epi16(amm,bmm));
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				return __builtin_bit_cast(vec_type,_mm_cmpeq_epi32(amm,bmm));
+			}
+			else if constexpr(sizeof(T)==8)
+			{
+				return __builtin_bit_cast(vec_type,_mm_cmpeq_epi64(amm,bmm));
+			}
+		}
+		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
+		{
+			__m256i amm = __builtin_bit_cast(__m256i,a);
+			__m256i bmm = __builtin_bit_cast(__m256i,b);
+			if constexpr(sizeof(T)==1)
+			{
+				return __builtin_bit_cast(vec_type,_mm256_cmpeq_epi8(amm,bmm));
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				return __builtin_bit_cast(vec_type,_mm256_cmpeq_epi16(amm,bmm));
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				return __builtin_bit_cast(vec_type,_mm256_cmpeq_epi32(amm,bmm));
+			}
+			else if constexpr(sizeof(T)==8)
+			{
+				return __builtin_bit_cast(vec_type,_mm256_cmpeq_epi64(amm,bmm));
+			}
+		}
 	}
 #endif
 	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept

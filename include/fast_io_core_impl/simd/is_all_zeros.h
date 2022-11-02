@@ -10,19 +10,19 @@ inline constexpr bool calculate_can_simd_vector_run_with_cpu_instruction(std::si
 {
 	if(sizeofsimdvector==16)
 	{
-#if (defined(__SSE__) && defined(__x86_64__)) || defined(__wasm_simd128__)
+#if (defined(__SSE__) || (defined(_MSC_VER)&&!defined(__clang__))) && (defined(__x86_64__) || defined(_M_X64)) || defined(__wasm_simd128__)
 		return true;
 #endif
 	}
 	else if(sizeofsimdvector==32)
 	{
-#if defined(__AVX__) && defined(__x86_64__)
+#if defined(__AVX__) && (defined(__x86_64__) || defined(_M_X64))
 		return true;
 #endif
 	}
 	else if(sizeofsimdvector==64)
 	{
-#if defined(__AVX512F__) && defined(__x86_64__)
+#if defined(__AVX512F__) && (defined(__x86_64__) || defined(_M_X64))
 		return true;
 #endif
 	}
@@ -87,29 +87,57 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 
 	if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==16)
 	{
-#if defined(__has_builtin)
+#if defined(__has_builtin) && __has_cpp_attribute(__gnu__::__vector_size__)
 #if defined(__x86_64__) && defined(__SSE4_1__) && __has_builtin(__builtin_ia32_pmovmskb128)
 		using x86_64_v2di [[__gnu__::__vector_size__ (16)]] = long long;
+#if __has_builtin(__builtin_bit_cast)
+		return __builtin_ia32_ptestz128(__builtin_bit_cast(x86_64_v2di,vec),__builtin_bit_cast(x86_64_v2di,vec));
+#else
 		return __builtin_ia32_ptestz128((x86_64_v2di)vec.value,(x86_64_v2di)vec.value);
+#endif
+
 #elif defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)
 		using x86_64_v16qi [[__gnu__::__vector_size__ (16)]] = char;
+#if __has_builtin(__builtin_bit_cast)
+		return !__builtin_ia32_pmovmskb128(__builtin_bit_cast(x86_64_v16qi,vec.value));
+#else
 		return !__builtin_ia32_pmovmskb128((x86_64_v16qi)vec.value);
+#endif
+
 #elif defined(__wasm_simd128__) && __has_builtin(__builtin_wasm_bitmask_i8x16)
 		using wasmsimd128_i8x16 [[__gnu__::__vector_size__ (16)]] = char;
 		return !__builtin_wasm_bitmask_i8x16(static_cast<wasmsimd128_i8x16>(vec.value));
 #endif
+#elif (defined(__x86_64__) || defined(_M_X64)) && defined(__SSE4_1__)
+		__m128i a = __builtin_bit_cast(__m128i,vec);
+		return _mm_testz_si128(a,a);
+#elif (defined(__x86_64__) || defined(_M_X64)) && (defined(__SSE2__)||(defined(_MSC_VER)&&!defined(__clang__)))
+		__m128i a = __builtin_bit_cast(__m128i,vec);
+		return !_mm_movemask_epi8(a);
 #endif
 	}
 	else if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==32)
 	{
-#if defined(__has_builtin)
+#if defined(__has_builtin) && __has_cpp_attribute(__gnu__::__vector_size__)
 #if defined(__AVX2__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_ptestz256)
 		using x86_64_v4di [[__gnu__::__vector_size__ (32)]] = long long;
+#if __has_builtin(__builtin_bit_cast)
+		return __builtin_ia32_ptestz256(__builtin_bit_cast(x86_64_v4di,vec),__builtin_bit_cast(x86_64_v4di,vec));
+#else
 		return __builtin_ia32_ptestz256((x86_64_v4di)vec.value,(x86_64_v4di)vec.value);
+#endif
 #elif defined(__AVX2__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb256)
 		using x86_64_v32qi [[__gnu__::__vector_size__ (32)]] = char;
+#if __has_builtin(__builtin_bit_cast)
+		return !__builtin_ia32_pmovmskb256(__builtin_bit_cast(x86_64_v32qi,vec.value));
+#else
 		return !__builtin_ia32_pmovmskb256((x86_64_v32qi)vec.value);
 #endif
+
+#endif
+#elif (defined(__x86_64__) || defined(_M_X64)) && defined(__AVX2__)
+		__m256i a = __builtin_bit_cast(__m256i,vec);
+		return _mm256_testz_si256(a,a);
 #endif
 	}
 	constexpr std::size_t N{sizeof(::fast_io::intrinsics::simd_vector<T,n>)/sizeof(std::uint_least64_t)};

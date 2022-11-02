@@ -14,11 +14,7 @@ __declspec(intrin_type) __declspec(align(sizeof(T)*N/2))
 simd_vector
 {
 	using value_type = T;
-#if __has_cpp_attribute(__gnu__::__vector_size__)
-	using vec_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
-#else
 	using vec_type = value_type[N];
-#endif
 	vec_type value;
 	constexpr T const* data() const noexcept
 	{
@@ -117,6 +113,13 @@ simd_vector
 #endif
 		return ::fast_io::details::wrap_minus_common(empty,*this);
 	}
+
+	template<typename T1,std::size_t N1>
+	requires (sizeof(T1)*N1==sizeof(T)*N&&!std::same_as<T1,value_type>)
+	explicit constexpr operator simd_vector<T1,N1>() const noexcept
+	{
+       		return __builtin_bit_cast(simd_vector<T1,N1>,*this);
+	}
 	inline constexpr simd_vector<T,N>& operator&=(simd_vector<T,N> const& other) noexcept
 	{
 		return *this=(*this)&other;
@@ -144,7 +147,7 @@ simd_vector
 			return ~v;
 		});
 	}
-	inline constexpr void swap_endian() noexcept requires(::std::integral<value_type>)
+	inline constexpr void swap_endian() noexcept requires(::std::integral<value_type>&&(N*sizeof(T)==16||N*sizeof(T)==32))
 	{
 		::fast_io::details::generic_simd_self_op_impl(*this,[](T& t)
 		{
