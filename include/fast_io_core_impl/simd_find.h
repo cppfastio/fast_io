@@ -372,6 +372,19 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 	}
 	}
 #endif
+#else
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if !consteval
+#else
+	if(!std::is_constant_evaluated())
+#endif
+	if constexpr(sizeof(char_type)==1)
+	{
+		char unsigned const* firstconstptr{reinterpret_cast<char unsigned const*>(first)};
+		return find_characters_musl<findnot>(firstconstptr,reinterpret_cast<char unsigned const*>(last),lfchct)-firstconstptr+first;
+	}
+#endif
 #endif
 
 	if constexpr(findnot)
