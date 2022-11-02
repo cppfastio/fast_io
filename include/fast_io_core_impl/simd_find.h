@@ -66,37 +66,18 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 	{
 		simdvec.load(first);
 		simd_vector_type chunk{func(simdvec)};
-		if constexpr(use_mask_implementation)
+		if constexpr(findnot)
 		{
-			unsigned incr;
-			if constexpr(findnot)
+			if(!is_all_zeros(chunk!=mask_vecs))
 			{
-				incr=vector_mask_countr_one(chunk);
-			}
-			else
-			{
-				incr=vector_mask_countr_zero(chunk);
-			}
-			if(incr!=N)
-			{
-				return first+incr;
+				break;
 			}
 		}
 		else
 		{
-			if constexpr(findnot)
+			if(!is_all_zeros(chunk!=zero_vecs))
 			{
-				if(chunk!=mask_vecs)
-				{
-					break;
-				}
-			}
-			else
-			{
-				if(chunk!=zero_vecs)
-				{
-					break;
-				}
+				break;
 			}
 		}
 	}
