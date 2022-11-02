@@ -6,7 +6,6 @@
 #include"generic_operations.h"
 #include"generic.h"
 #endif
-
 #include"x86_64.h"
 
 #include"prrsv.h"

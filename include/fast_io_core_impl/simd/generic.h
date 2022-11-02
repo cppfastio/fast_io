@@ -104,14 +104,7 @@ simd_vector
 	}
 	inline constexpr simd_vector<T,N> operator-() const noexcept
 	{
-		constexpr simd_vector<T,N> empty{};
-#if 0
-		return ::fast_io::details::generic_simd_self_create_op_impl(*this,[](T v)
-		{
-			return -v;
-		});
-#endif
-		return ::fast_io::details::wrap_minus_common(empty,*this);
+		return ::fast_io::details::wrap_minus_common(::fast_io::details::all_zero_simd_vector_mask<T,N>,*this);
 	}
 
 	template<typename T1,std::size_t N1>
@@ -142,13 +135,72 @@ simd_vector
 	}
 	inline constexpr simd_vector<T,N> operator~() const noexcept
 	{
-		return ::fast_io::details::generic_simd_self_create_op_impl(*this,[](T v) noexcept
+		constexpr bool using_simd{sizeof(vec_type)==16||(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
+		||(sizeof(vec_type)==64&&(::fast_io::details::cpu_flags::avx512dq_supported||::fast_io::details::cpu_flags::avx512f_supported))};
+		if constexpr(using_simd)
 		{
-			return ~v;
-		});
+			return (::fast_io::details::all_one_simd_vector_mask<T,N>)^(*this);
+		}
+		else
+		{
+			return ::fast_io::details::generic_simd_self_create_op_impl(*this,[](T v) noexcept
+			{
+				return ~v;
+			});
+		}
 	}
+
 	inline constexpr void swap_endian() noexcept requires(::std::integral<value_type>&&(N*sizeof(T)==16||N*sizeof(T)==32))
 	{
+		if constexpr(sizeof(vec_type)==1)
+		{
+			return;
+		}
+#if 0
+#if defined(__x86_64__) || defined(_M_X64)
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			if constexpr(sizeof(vec_type)==16)
+			{
+				__m128i amm = __builtin_bit_cast(__m128i,a);
+				
+				if constexpr(sizeof(T)==16)
+				{
+					constexpr temp_vec_type mask{15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0};
+					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
+				}
+				if constexpr(sizeof(T)==8)
+				{
+					constexpr temp_vec_type mask{7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
+					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
+				}
+				else if constexpr(sizeof(T)==4)
+				{
+					constexpr temp_vec_type mask{3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
+					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
+				}
+				else if constexpr(sizeof(T)==2)
+				{
+					constexpr temp_vec_type mask{1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
+					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
+				}
+				*this=__builtin_bit_cast(vec_type,amm);
+			}
+			else if constexpr(sizeof(vec_type)==32)
+			{
+
+			}
+			else
+			{
+
+			}
+		}
+#endif
+#endif
 		::fast_io::details::generic_simd_self_op_impl(*this,[](T& t)
 		{
 			t=::fast_io::byte_swap(t);

@@ -132,6 +132,12 @@ inline constexpr T generic_simd_comparision_common_impl(T const& a,
 }
 
 template<typename T,std::size_t N>
+inline constexpr ::fast_io::intrinsics::simd_vector<T,N> all_zero_simd_vector_mask{};
+
+template<typename T,std::size_t N>
+inline constexpr ::fast_io::intrinsics::simd_vector<T,N> all_one_simd_vector_mask{create_value_mx<::fast_io::intrinsics::simd_vector<T,N>>()};
+
+template<typename T,std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_io::intrinsics::simd_vector<T,N> const& a,::fast_io::intrinsics::simd_vector<T,N> const& b) noexcept
 {
 #if defined(__x86_64__) || defined(_M_X64)
@@ -1081,10 +1087,19 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+	using vec_type = simd_vector<T,N>;
+	constexpr bool using_simd{sizeof(vec_type)==16||(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)};
+	if constexpr(using_simd)
 	{
-		return va!=vb;
-	});
+		return (::fast_io::details::all_zero_simd_vector_mask<T,N>)==(a==b);
+	}
+	else
+	{
+		return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+		{
+			return va!=vb;
+		});
+	}
 }
 
 }
