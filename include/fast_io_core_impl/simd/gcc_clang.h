@@ -211,6 +211,7 @@ struct simd_vector
 	{
 		return value;
 	}
+	inline explicit constexpr operator bool() const noexcept;
 	inline constexpr simd_vector& operator=(vec_type const& b) noexcept
 	{
 		value=b;
@@ -732,6 +733,65 @@ inline constexpr unsigned vector_mask_countr_common_impl(::fast_io::intrinsics::
 	}
 }
 
+template<unsigned pos,typename T>
+inline constexpr bool vector_has_value_recursive_impl(T const& v2) noexcept
+{
+	constexpr std::uint_least64_t mx{std::numeric_limits<std::uint_least64_t>::max()};
+	constexpr unsigned digits{std::numeric_limits<std::uint_least64_t>::digits};
+	constexpr unsigned digitspos{digits*pos};
+	constexpr std::size_t N{sizeof(T)/sizeof(std::uint_least64_t)};
+	static_assert(N!=0);
+	std::uint_least64_t element{v2[pos]};
+	if constexpr(pos!=N-1)
+	{
+		return element||vector_has_value_recursive_impl<pos+1>(v2);
+	}
+	else
+	{
+		return element;
+	}
+}
+
+template<std::integral T,std::size_t n>
+inline
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+constexpr
+#endif
+bool vector_has_value_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexcept
+{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#elif __cpp_lib_is_constant_evaluated >= 201811L
+	if (std::is_constant_evaluated())
+#endif
+	{
+		return vector_has_value_recursive_impl<0>(vec);
+	}
+#endif
+	constexpr std::size_t szofvec{sizeof(::fast_io::intrinsics::simd_vector<T,n>)};
+
+	if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==16)
+	{
+#if defined(__SSE4_1__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)
+		using x86_64_v16qi [[__gnu__::__vector_size__ (16)]] = char;
+		return __builtin_ia32_pmovmskb128((x86_64_v16qi)vec.value);
+#elif defined(__wasm_simd128__) && __has_builtin(__builtin_wasm_bitmask_i8x16)
+		using wasmsimd128_i8x16 [[__gnu__::__vector_size__ (16)]] = char;
+		return __builtin_wasm_bitmask_i8x16(static_cast<wasmsimd128_i8x16>(vec.value));
+#endif
+	}
+	else if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==32)
+	{
+#if defined(__AVX__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb256)
+		using x86_64_v32qi [[__gnu__::__vector_size__ (32)]] = char;
+		return __builtin_ia32_pmovmskb256((x86_64_v32qi)vec.value);
+#endif
+	}
+	constexpr std::size_t N{sizeof(::fast_io::intrinsics::simd_vector<T,n>)/sizeof(std::uint_least64_t)};
+	return vector_has_value_recursive_impl<0>(static_cast<::fast_io::intrinsics::simd_vector<std::uint_least64_t,N>>(vec));
+}
+
 }
 
 namespace intrinsics
@@ -749,6 +809,11 @@ inline constexpr auto vector_mask_countr_zero(simd_vector<T,n> const& vec) noexc
 	return ::fast_io::details::vector_mask_countr_common_impl<true>(vec);
 }
 
+template<typename T,std::size_t N>
+inline constexpr ::fast_io::intrinsics::simd_vector<T,N>::operator bool() const noexcept
+{
+	return ::fast_io::details::vector_has_value_impl(*this);
+}
 }
 
 namespace details
