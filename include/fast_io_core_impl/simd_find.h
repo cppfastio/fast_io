@@ -24,8 +24,14 @@ inline constexpr
 	::fast_io::freestanding::array<char_type,N> characters_array_impl{
 		create_simd_vector_with_single_value<::fast_io::freestanding::array<char_type,N>>(lfch)};
 
+template<typename T>
+inline constexpr T create_simd_vector_with_all_masks() noexcept
+{
+	T t{};
+	return ~t;
+}
 
-template<bool findnot,std::size_t vec_size,bool single_round=false,std::integral char_type,typename Func>
+template<bool findnot,std::size_t vec_size,std::integral char_type,typename Func>
 requires (sizeof(char_type)<=vec_size)&&(vec_size%sizeof(char_type)==0)
 inline constexpr char_type const* find_simd_common_all_impl(char_type const* first,char_type const* last,Func func) noexcept
 {
@@ -33,12 +39,16 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	simd_vector_type simdvec;
 	std::size_t diff{static_cast<std::size_t>(last-first)};
-	if constexpr(single_round)
+
+	constexpr simd_vector_type mask_vecs{create_simd_vector_with_all_masks<simd_vector_type>()};
+	constexpr simd_vector_type zero_vecs{};
+	constexpr bool use_mask_implementation{};
+	for(;N<=static_cast<std::size_t>(last-first);first+=N)
 	{
-		if(N<=diff)
+		simdvec.load(first);
+		simd_vector_type chunk{func(simdvec)};
+		if constexpr(use_mask_implementation)
 		{
-			simdvec.load(first);
-			simd_vector_type chunk{func(simdvec)};
 			unsigned incr;
 			if constexpr(findnot)
 			{
@@ -52,45 +62,38 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 			{
 				return first+incr;
 			}
-			first+=N;
 		}
-		return first;
-	}
-	else
-	{
-		for(;N<=diff;diff-=N)
+		else
 		{
-			simdvec.load(first);
-			simd_vector_type chunk{func(simdvec)};
-			unsigned incr;
 			if constexpr(findnot)
 			{
-				incr=vector_mask_countr_one(chunk);
+				if(chunk!=mask_vecs)
+				{
+					break;
+				}
 			}
 			else
 			{
-				incr=vector_mask_countr_zero(chunk);
+				if(chunk!=zero_vecs)
+				{
+					break;
+				}
 			}
-			if(incr!=N)
-			{
-				return first+incr;
-			}
-			first+=N;
 		}
 	}
 	return first;
 }
 
-template<bool findnot,std::size_t vec_size,bool single_round=false,std::integral char_type,typename simd_vector_type>
+template<bool findnot,std::size_t vec_size,std::integral char_type,typename simd_vector_type>
 inline constexpr char_type const* find_simd_constant_simd_common_all_impl(char_type const* first,char_type const* last,simd_vector_type const& zeros) noexcept
 {
-	return find_simd_common_all_impl<findnot,vec_size,single_round>(first,last,[&](simd_vector_type const& simdvec) noexcept
+	return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 	{
 		return simdvec==zeros;
 	});
 }
 
-template<char8_t lfch,bool findnot,std::size_t vec_size,bool single_round=false,std::integral char_type>
+template<char8_t lfch,bool findnot,std::size_t vec_size,std::integral char_type>
 inline constexpr char_type const* find_simd_constant_simd_common_impl(char_type const* first,char_type const* last) noexcept
 {
 	constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
@@ -104,10 +107,10 @@ inline constexpr char_type const* find_simd_constant_simd_common_impl(char_type 
 	simd_vector_type zeros;
 	zeros.load(characters_array_impl<lfch,char_type,N>.data());
 #endif
-	return find_simd_constant_simd_common_all_impl<findnot,vec_size,single_round>(first,last,zeros);
+	return find_simd_constant_simd_common_all_impl<findnot,vec_size>(first,last,zeros);
 }
 
-template<bool ishtml,bool findnot,std::size_t vec_size,bool single_round=false,std::integral char_type>
+template<bool ishtml,bool findnot,std::size_t vec_size,std::integral char_type>
 inline constexpr char_type const* find_space_simd_common_impl(char_type const* first,char_type const* last) noexcept
 {
 	constexpr char_type spacech{char_literal_v<u8' ',std::remove_cvref_t<char_type>>};
@@ -176,7 +179,7 @@ ASCII: space (0x20, ' '), EBCDIC:64
 			formfeeds.load(characters_array_impl<formfeed,char_type,N>.data());
 			carriagereturns.load(characters_array_impl<carriagereturn,char_type,N>.data());
 #endif
-			return find_simd_common_all_impl<findnot,vec_size,single_round>(first,last,[&](simd_vector_type const& simdvec) noexcept
+			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
 				return (horizontaltabs==simdvec)+(formfeeds==simdvec)+(carriagereturns==simdvec)+
 					(ebcdic_specific_nls==simdvec)+(linefeeds==simdvec)+(spaces==simdvec);
@@ -196,7 +199,7 @@ ASCII: space (0x20, ' '), EBCDIC:64
 			threes.load(characters_array_impl<three,char_type,N>.data());
 			verticaltabs.load(characters_array_impl<verticaltab,char_type,N>.data());
 #endif
-			return find_simd_common_all_impl<findnot,vec_size,single_round>(first,last,[&](simd_vector_type const& simdvec) noexcept
+			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
 				return (horizontaltabs==simdvec)+((simdvec-verticaltabs)<threes)+(ebcdic_specific_nls==simdvec)+(linefeeds==simdvec)+(spaces==simdvec);
 			});
@@ -231,14 +234,14 @@ ASCII: space (0x20, ' '), EBCDIC:64
 			simd_vector_type verticaltabs;
 			verticaltabs.load(characters_array_impl<verticaltab,char_type,N>.data());
 #endif
-			return find_simd_common_all_impl<findnot,vec_size,single_round>(first,last,[&](simd_vector_type const& simdvec) noexcept
+			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
 				return (spaces==simdvec)+(((simdvec-horizontaltabs)<fives)&(simdvec!=verticaltabs));
 			});
 		}
 		else
 		{
-			return find_simd_common_all_impl<findnot,vec_size,single_round>(first,last,[&](simd_vector_type const& simdvec) noexcept
+			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
 				return (spaces==simdvec)+((simdvec-horizontaltabs)<fives);
 			});
@@ -268,7 +271,6 @@ inline constexpr char unsigned const* find_characters_musl(char unsigned const* 
 	constexpr std::size_t highsmask{ones*(ucharmx/2)};
 	constexpr unsigned udiff{static_cast<unsigned>(diff)};
 
-	constexpr bool use_bit_operation{};
 	if(first!=last&&*first!=ch)
 	{
 	for(std::size_t const constantk{ones*ch};last-first>diff;first+=diff)
@@ -286,17 +288,7 @@ inline constexpr char unsigned const* find_characters_musl(char unsigned const* 
 		{
 			if(v!=highs)
 			{
-				if constexpr(use_bit_operation)
-				{
-					v+=highsmask;
-					unsigned off{static_cast<unsigned>(std::countr_one(v))};
-					off/=udiff;
-					return first+off;
-				}
-				else
-				{
-					break;
-				}
+				break;
 			}
 
 		}
@@ -304,17 +296,7 @@ inline constexpr char unsigned const* find_characters_musl(char unsigned const* 
 		{
 			if(v)
 			{
-				if constexpr(use_bit_operation)
-				{
-					unsigned off{static_cast<unsigned>(std::countr_zero(v))};
-					constexpr unsigned udiff{static_cast<unsigned>(diff)};
-					off/=udiff;
-					return first+off;
-				}
-				else
-				{
-					break;
-				}
+				break;
 			}
 		}
 	}
@@ -379,7 +361,7 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 		}
 		return reinterpret_cast<char_type const*>(ret);
 	}
-	else if constexpr(::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size&&0)
+	else if constexpr(::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size)
 	{
 		first=find_simd_constant_simd_common_impl<lfch,findnot,::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size>(first,last);
 	}
