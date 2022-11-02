@@ -1,5 +1,9 @@
 #pragma once
 
+#if !defined(_MSC_VER)
+#include <immintrin.h>
+#endif
+
 namespace fast_io
 {
 
@@ -7,7 +11,7 @@ namespace intrinsics
 {
 template<typename T,std::size_t N>
 struct
-#if defined(_MSC_VER) && !defined(__clang__)
+#if defined(_MSC_VER)
 __declspec(intrin_type) __declspec(align(sizeof(T)*N/2))
 #endif
 simd_vector;
@@ -20,46 +24,36 @@ namespace cpu_flags
 
 inline constexpr bool avx_supported
 {
-#if defined(_M_X64)
 #if defined(__AVX__) || defined(__AVX2__)
 true
-#endif
 #endif
 };
 
 inline constexpr bool avx2_supported
 {
-#if defined(_M_X64)
 #if defined(__AVX2__)
 true
-#endif
 #endif
 };
 
 inline constexpr bool avx512bw_supported
 {
-#if defined(_M_X64)
 #if defined(__AVX512BW__)
 true
-#endif
 #endif
 };
 
 inline constexpr bool avx512dq_supported
 {
-#if defined(_M_X64)
 #if defined(__AVX512DQ__)
 true
-#endif
 #endif
 };
 
 inline constexpr bool avx512f_supported
 {
-#if defined(_M_X64)
 #if defined(__AVX512F__)
 true
-#endif
 #endif
 };
 
@@ -140,7 +134,7 @@ inline constexpr T generic_simd_comparision_common_impl(T const& a,
 template<typename T,std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_io::intrinsics::simd_vector<T,N> const& a,::fast_io::intrinsics::simd_vector<T,N> const& b) noexcept
 {
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64)
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
@@ -302,7 +296,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 template<typename T,std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fast_io::intrinsics::simd_vector<T,N> const& a,::fast_io::intrinsics::simd_vector<T,N> const& b) noexcept
 {
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64)
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
@@ -493,7 +487,7 @@ inline constexpr simd_vector<T,N> wrap_minus(simd_vector<T,N> const& a,simd_vect
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64)
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
@@ -641,7 +635,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64)
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
@@ -653,6 +647,9 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		{
 			if constexpr(std::integral<T>)
 			{
+#if defined(__GNUC__) || defined(__clang__)
+				return {a.value/b.value};
+#else
 				__m128i amm = __builtin_bit_cast(__m128i,a);
 				__m128i bmm = __builtin_bit_cast(__m128i,b);
 				if constexpr(sizeof(T)==1)
@@ -671,6 +668,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 				{
 					return __builtin_bit_cast(vec_type,_mm_div_epi64(amm,bmm));
 				}
+#endif
 			}
 			else if constexpr(std::floating_point<T>)
 			{
@@ -698,6 +696,9 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		{
 			if constexpr(std::integral<T>)
 			{
+#if defined(__GNUC__) || defined(__clang__)
+				return {a.value/b.value};
+#else
 				__m256i amm = __builtin_bit_cast(__m256i,a);
 				__m256i bmm = __builtin_bit_cast(__m256i,b);
 				if constexpr(sizeof(T)==1)
@@ -716,6 +717,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 				{
 					return __builtin_bit_cast(vec_type,_mm256_div_epi64(amm,bmm));
 				}
+#endif
 			}
 			else if constexpr(std::floating_point<T>)
 			{
@@ -743,6 +745,9 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		{
 			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
+#if defined(__GNUC__) || defined(__clang__)
+				return {a.value/b.value};
+#else
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
 				if constexpr(sizeof(T)==1)
@@ -761,6 +766,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 				{
 					return __builtin_bit_cast(vec_type,_mm512_div_epi64(amm,bmm));
 				}
+#endif
 			}
 			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
@@ -795,7 +801,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64)
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
@@ -841,7 +847,7 @@ inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vecto
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64)
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
@@ -887,7 +893,7 @@ inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vecto
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_X64)
+#if defined(__x86_64__) || defined(_M_X64)
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
@@ -1005,6 +1011,16 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
+#if defined(__x86_64__) || defined(_M_X64)
+#if __cpp_if_consteval >= 202106L
+	if !consteval
+#else
+	if (!__builtin_is_constant_evaluated())
+#endif
+	{
+		using vec_type = simd_vector<T,N>;
+	}
+#endif
 	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
 	{
 		return va==vb;

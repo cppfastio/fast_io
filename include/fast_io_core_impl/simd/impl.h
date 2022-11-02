@@ -7,5 +7,7 @@
 #include"generic.h"
 #endif
 
+#include"x86_64.h"
+
 #include"prrsv.h"
 #include"is_all_zeros.h"

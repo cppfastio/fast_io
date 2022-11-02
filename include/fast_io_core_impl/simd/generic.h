@@ -8,14 +8,26 @@ namespace intrinsics
 
 template<typename T,std::size_t N>
 struct
-#if defined(_MSC_VER) && !defined(__clang__)
+#if defined(_MSC_VER)
 __declspec(intrin_type) __declspec(align(sizeof(T)*N/2))
 #endif
 simd_vector
 {
 	using value_type = T;
+#if __has_cpp_attribute(__gnu__::__vector_size__)
+	using vec_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
+#else
 	using vec_type = value_type[N];
+#endif
 	vec_type value;
+	constexpr T const* data() const noexcept
+	{
+		return __builtin_addressof(value[0]);
+	}
+	constexpr T* data() noexcept
+	{
+		return __builtin_addressof(value[0]);
+	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #endif

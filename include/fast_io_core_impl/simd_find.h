@@ -30,7 +30,7 @@ inline constexpr T create_simd_vector_with_all_masks() noexcept
 	T t{};
 	return ~t;
 }
-#if 0
+
 template<std::size_t vec_size,std::integral char_type,typename Func>
 requires (sizeof(char_type)<=vec_size)&&(vec_size%sizeof(char_type)==0)
 inline constexpr char_type const* find_simd_common_condition_impl(char_type const* first,char_type const* last,Func func) noexcept
@@ -49,39 +49,30 @@ inline constexpr char_type const* find_simd_common_condition_impl(char_type cons
 	}
 	return first;
 }
-#endif
+
 template<bool findnot,std::size_t vec_size,std::integral char_type,typename Func>
 requires (sizeof(char_type)<=vec_size)&&(vec_size%sizeof(char_type)==0)
 inline constexpr char_type const* find_simd_common_all_impl(char_type const* first,char_type const* last,Func func) noexcept
 {
 	constexpr unsigned N{vec_size/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
-	simd_vector_type simdvec;
-	std::size_t diff{static_cast<std::size_t>(last-first)};
-
-	constexpr simd_vector_type mask_vecs{create_simd_vector_with_all_masks<simd_vector_type>()};
-	constexpr simd_vector_type zero_vecs{};
-	constexpr bool use_mask_implementation{};
-	for(;N<=static_cast<std::size_t>(last-first);first+=N)
+	if constexpr(findnot)
 	{
-		simdvec.load(first);
-		simd_vector_type chunk{func(simdvec)};
-		if constexpr(findnot)
+		constexpr simd_vector_type mask_vecs{create_simd_vector_with_all_masks<simd_vector_type>()};
+		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
 		{
-			if(!is_all_zeros(chunk!=mask_vecs))
-			{
-				break;
-			}
-		}
-		else
-		{
-			if(!is_all_zeros(chunk!=zero_vecs))
-			{
-				break;
-			}
-		}
+			simd_vector_type chunk=func(simdvec);
+			return !is_all_zeros(func(simdvec)!=mask_vecs);
+		});
 	}
-	return first;
+	else
+	{
+		constexpr simd_vector_type zero_vecs{};
+		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
+		{
+			return !is_all_zeros(func(simdvec)!=zero_vecs);
+		});
+	}
 }
 
 template<bool findnot,std::size_t vec_size,std::integral char_type,typename simd_vector_type>
