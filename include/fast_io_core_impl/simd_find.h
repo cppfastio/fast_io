@@ -247,6 +247,89 @@ ASCII: space (0x20, ' '), EBCDIC:64
 }
 
 #endif
+/*
+Referenced from musl libc but with extensions of findnot, __builtin_memcpy and C++20 <bit>
+https://github.com/bminor/musl/blob/master/src/string/memchr.c
+*/
+template<bool findnot>
+inline constexpr char unsigned const* find_characters_musl(char unsigned const* first,char unsigned const* last,char unsigned ch) noexcept
+{
+#if __cpp_if_consteval >= 202106L
+	if !consteval
+#else
+	if(!std::is_constant_evaluated())
+#endif
+	{
+	constexpr std::size_t diff{sizeof(std::size_t)};
+	
+	constexpr char unsigned ucharmx{std::numeric_limits<char unsigned>::max()};
+	constexpr std::size_t ones{std::numeric_limits<std::size_t>::max()/ucharmx};
+	constexpr std::size_t highs{ones*(ucharmx/2+1)};
+	constexpr std::size_t highsmask{ones*(ucharmx/2)};
+	constexpr unsigned udiff{static_cast<unsigned>(diff)};
+
+	constexpr bool use_bit_operation{};
+	if(first!=last&&*first!=ch)
+	{
+	for(std::size_t const constantk{ones*ch};last-first>diff;first+=diff)
+	{
+
+		std::size_t x;
+#if defined(_MSC_VER) && !defined(__clang__)
+		std::memcpy(__builtin_addressof(x),first,diff);
+#else
+		__builtin_memcpy(__builtin_addressof(x),first,diff);
+#endif
+		x^=constantk;
+		std::size_t v{(x-ones)&(~x)&highs};
+		if constexpr(findnot)
+		{
+			if(v!=highs)
+			{
+				if constexpr(use_bit_operation)
+				{
+					v+=highsmask;
+					unsigned off{static_cast<unsigned>(std::countr_one(v))};
+					off/=udiff;
+					return first+off;
+				}
+				else
+				{
+					break;
+				}
+			}
+
+		}
+		else
+		{
+			if(v)
+			{
+				if constexpr(use_bit_operation)
+				{
+					unsigned off{static_cast<unsigned>(std::countr_zero(v))};
+					constexpr unsigned udiff{static_cast<unsigned>(diff)};
+					off/=udiff;
+					return first+off;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+	}
+	}
+	}
+	if constexpr(findnot)
+	{
+		for(;first!=last&&*first==ch;++first);
+	}
+	else
+	{
+		for(;first!=last&&*first!=ch;++first);
+	}
+	return first;
+}
 
 template<char8_t lfch,bool findnot,std::integral char_type>
 inline constexpr char_type const* find_simd_constant_common_impl(char_type const* first,char_type const* last) noexcept
@@ -268,8 +351,6 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 //For glibc >= 2.26, we use glibc's memchr implementation under hosted environment
 	!findnot
 #endif
-#elif defined(__wasi__)
-	!findnot&&!::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size
 #endif
 #endif
 	};
@@ -298,13 +379,19 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 		}
 		return reinterpret_cast<char_type const*>(ret);
 	}
-	else if constexpr(::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size)
+	else if constexpr(::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size&&0)
 	{
 		first=find_simd_constant_simd_common_impl<lfch,findnot,::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size>(first,last);
 	}
+	else if constexpr(sizeof(char_type)==1)
+	{
+		char unsigned const* firstconstptr{reinterpret_cast<char unsigned const*>(first)};
+		return find_characters_musl<findnot>(firstconstptr,reinterpret_cast<char unsigned const*>(last),lfchct)-firstconstptr+first;
+	}
 	}
 #endif
 #endif
+
 	if constexpr(findnot)
 	{
 		return ::fast_io::freestanding::find_not(first,last,lfchct);
