@@ -2,26 +2,30 @@
 
 namespace fast_io::details
 {
-
-template<typename T>
-inline constexpr T create_simd_vector_with_single_value(typename T::value_type value) noexcept
+template<bool signed_disposition,
+	::std::integral char_type,
+	::std::size_t N>
+inline constexpr auto create_find_simd_vector_with_unsigned_toggle(char_type value) noexcept
 {
-	::fast_io::freestanding::array<typename T::value_type,T::size()> arr;
+	::fast_io::freestanding::array<char_type,N> arr;
+	using signed_char_type = ::std::make_signed_t<char_type>;
+	using unsigned_char_type = ::std::make_signed_t<char_type>;
+	constexpr unsigned_char_type signed_min_unsigned_val{static_cast<unsigned_char_type>(::std::numeric_limits<signed_char_type>::min())};
+	if constexpr(signed_disposition)
+	{
+		value=static_cast<char_type>(static_cast<unsigned_char_type>(value)+signed_min_unsigned_val);
+	}
 	for(auto& e : arr)
 	{
 		e=value;
 	}
-#if __cpp_lib_bit_cast >= 201806L
-	return std::bit_cast<T>(arr);
-#else
 	return arr;
-#endif
 }
 
-template<char8_t lfch,std::integral char_type,std::size_t N>
+template<char8_t lfch,std::integral char_type,std::size_t N,bool signed_disposition=false>
 inline constexpr
 	::fast_io::freestanding::array<char_type,N> characters_array_impl{
-		create_simd_vector_with_single_value<::fast_io::freestanding::array<char_type,N>>(lfch)};
+		create_find_simd_vector_with_unsigned_toggle<signed_disposition,char_type,N>(lfch)};
 
 template<typename T>
 inline constexpr T create_simd_vector_with_all_masks() noexcept
@@ -104,23 +108,28 @@ template<bool ishtml,bool findnot,std::size_t vec_size,std::integral char_type>
 inline constexpr char_type const* find_space_simd_common_impl(char_type const* first,char_type const* last) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<std::remove_cvref_t<char_type>>;
+	using signed_char_type = std::make_unsigned_t<unsigned_char_type>;
 	constexpr char_type spacech{char_literal_v<u8' ',std::remove_cvref_t<char_type>>};
 	constexpr char_type horizontaltab{char_literal_v<u8'\t',std::remove_cvref_t<char_type>>};
 	constexpr char_type verticaltab{char_literal_v<u8'\v',std::remove_cvref_t<char_type>>};
 	constexpr unsigned N{vec_size/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	using unsigned_simd_vector_type = ::fast_io::intrinsics::simd_vector<unsigned_char_type,N>;
+	using signed_simd_vector_type = ::fast_io::intrinsics::simd_vector<signed_char_type,N>;
+
+	constexpr bool use_signed_vector_type{true};
+//Change to architectures when they may have efficient unsigned comparison support. Although i do not know any of them.
+	using decision_simd_vector_type = std::conditional_t<use_signed_vector_type,signed_simd_vector_type,unsigned_simd_vector_type>;
+
+
+
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 		simd_vector_type spaces{
 		std::bit_cast<simd_vector_type>(characters_array_impl<spacech,char_type,N>)};
-	constexpr
-		simd_vector_type horizontaltabs{
-			std::bit_cast<simd_vector_type>(characters_array_impl<horizontaltab,char_type,N>)};
 #else
-	simd_vector_type spaces,horizontaltabs;
+	simd_vector_type spaces;
 	spaces.load(characters_array_impl<spacech,char_type,N>.data());
-	horizontaltabs.load(characters_array_impl<horizontaltab,char_type,N>.data());
 #endif
 	if constexpr(is_ebcdic<char_type>)
 	{
@@ -147,11 +156,15 @@ ASCII: space (0x20, ' '), EBCDIC:64
 		constexpr
 			simd_vector_type linefeeds{
 				std::bit_cast<simd_vector_type>(characters_array_impl<linefeed,char_type,N>)};
+		constexpr
+			simd_vector_type horizontaltabs{
+				std::bit_cast<simd_vector_type>(characters_array_impl<horizontaltab,char_type,N>)};
 #else
-		simd_vector_type threes,verticaltabs,ebcdic_specific_nls,spaces,linefeeds;
+		simd_vector_type verticaltabs,ebcdic_specific_nls,spaces,linefeeds,horizontaltabs;
 		ebcdic_specific_nls.load(characters_array_impl<ebcdic_specific_nl,char_type,N>.data());
 		spaces.load(characters_array_impl<spacech,char_type,N>.data());
 		linefeeds.load(characters_array_impl<linefeed,char_type,N>.data());
+		horizontaltabs.load(characters_array_impl<horizontaltab,char_type,N>.data());
 #endif
 
 		if constexpr(ishtml)
@@ -172,29 +185,29 @@ ASCII: space (0x20, ' '), EBCDIC:64
 #endif
 			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
-				return (horizontaltabs==simdvec)+(formfeeds==simdvec)+(carriagereturns==simdvec)+
-					(ebcdic_specific_nls==simdvec)+(linefeeds==simdvec)+(spaces==simdvec);
+				return (horizontaltabs==simdvec)^(formfeeds==simdvec)^(carriagereturns==simdvec)^
+					(ebcdic_specific_nls==simdvec)^(linefeeds==simdvec)^(spaces==simdvec);
 			});
 		}
 		else
 		{
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 			constexpr
-				unsigned_simd_vector_type threes{
-					std::bit_cast<unsigned_simd_vector_type>(characters_array_impl<three,char_type,N>)};
+				decision_simd_vector_type threes{
+					std::bit_cast<decision_simd_vector_type>(characters_array_impl<three,char_type,N,use_signed_vector_type>)};
 			constexpr
-				unsigned_simd_vector_type verticaltabs{
-					std::bit_cast<unsigned_simd_vector_type>(characters_array_impl<verticaltab,char_type,N>)};
+				decision_simd_vector_type verticaltabs{
+					std::bit_cast<decision_simd_vector_type>(characters_array_impl<verticaltab,char_type,N,use_signed_vector_type>)};
 #else
-			unsigned_simd_vector_type threes,verticaltabs;
-			threes.load(characters_array_impl<three,char_type,N>.data());
-			verticaltabs.load(characters_array_impl<verticaltab,char_type,N>.data());
+			decision_simd_vector_type threes,verticaltabs;
+			threes.load(characters_array_impl<three,char_type,N,use_signed_vector_type>.data());
+			verticaltabs.load(characters_array_impl<verticaltab,char_type,N,use_signed_vector_type>.data());
 #endif
 			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
-				return (horizontaltabs==simdvec)+
-				static_cast<simd_vector_type>((static_cast<unsigned_simd_vector_type>(simdvec)-verticaltabs)<threes)+
-				(ebcdic_specific_nls==simdvec)+(linefeeds==simdvec)+(spaces==simdvec);
+				return (horizontaltabs==simdvec)^
+				static_cast<simd_vector_type>((static_cast<decision_simd_vector_type>(simdvec)-verticaltabs)<threes)^
+				(ebcdic_specific_nls==simdvec)^(linefeeds==simdvec)^(spaces==simdvec);
 			});
 		}
 	
@@ -204,39 +217,39 @@ ASCII: space (0x20, ' '), EBCDIC:64
 		constexpr char_type five{5};
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 		constexpr
-			unsigned_simd_vector_type fives{
-				std::bit_cast<unsigned_simd_vector_type>(characters_array_impl<five,char_type,N>)};
+			decision_simd_vector_type fives{
+				std::bit_cast<decision_simd_vector_type>(characters_array_impl<five,char_type,N,use_signed_vector_type>)};
 		constexpr
-			unsigned_simd_vector_type horizontaltabs{
-				std::bit_cast<unsigned_simd_vector_type>(characters_array_impl<horizontaltab,char_type,N>)};
+			decision_simd_vector_type horizontaltabs{
+				std::bit_cast<decision_simd_vector_type>(characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>)};
 #else
 
-		unsigned_simd_vector_type fives;
-		fives.load(characters_array_impl<five,char_type,N>.data());
-		unsigned_simd_vector_type horizontaltabs;
-		horizontaltabs.load(characters_array_impl<horizontaltab,char_type,N>.data());
+		decision_simd_vector_type fives;
+		fives.load(characters_array_impl<five,char_type,N,use_signed_vector_type>.data());
+		decision_simd_vector_type horizontaltabs;
+		horizontaltabs.load(characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>.data());
 #endif
 
 		if constexpr(ishtml)
 		{
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 			constexpr
-			simd_vector_type verticaltabs{
-			std::bit_cast<simd_vector_type>(characters_array_impl<verticaltab,char_type,N>)};
+				decision_simd_vector_type verticaltabs{
+					std::bit_cast<decision_simd_vector_type>(characters_array_impl<verticaltab,char_type,N,use_signed_vector_type>)};
 #else
 			simd_vector_type verticaltabs;
 			verticaltabs.load(characters_array_impl<verticaltab,char_type,N>.data());
 #endif
 			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
-				return (spaces==simdvec)+(static_cast<simd_vector_type>((static_cast<unsigned_simd_vector_type>(simdvec)-horizontaltabs)<fives)&(simdvec!=verticaltabs));
+				return (spaces==simdvec)^(static_cast<simd_vector_type>((static_cast<decision_simd_vector_type>(simdvec)-horizontaltabs)<fives)&(simdvec!=verticaltabs));
 			});
 		}
 		else
 		{
 			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
-				return (spaces==simdvec)+static_cast<simd_vector_type>(((static_cast<unsigned_simd_vector_type>(simdvec)-horizontaltabs)<fives));
+				return (spaces==simdvec)^static_cast<simd_vector_type>(((static_cast<decision_simd_vector_type>(simdvec)-horizontaltabs)<fives));
 			});
 		}
 	}
