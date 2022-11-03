@@ -338,11 +338,15 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 			case 4:
 			{
 				constexpr std::uint_least64_t risky_value{UINT_LEAST64_MAX/UINT64_C(10000)};
-				constexpr std::uint_least32_t risky_mod{static_cast<std::uint_least32_t>(UINT_LEAST64_MAX%UINT64_C(10000))};
+				constexpr std::uint_fast16_t risky_mod{UINT_LEAST64_MAX%UINT64_C(10000)};
 				if(result>risky_value)
 					return {20,parse_code::overflow};
-				auto partial{(buffer[16]-zero_constant)*UINT16_C(1000)+(buffer[17]-zero_constant)*UINT16_C(100)
-				+(buffer[18]-zero_constant)*UINT16_C(10)+(buffer[19]-zero_constant)};
+				std::uint_fast16_t partial{
+				static_cast<std::uint_fast16_t>(
+				static_cast<std::uint_fast16_t>(buffer[16]-zero_constant)*UINT16_C(1000)+
+				static_cast<std::uint_fast8_t>(buffer[17]-zero_constant)*UINT16_C(100)+
+				static_cast<std::uint_fast8_t>(buffer[18]-zero_constant)*UINT16_C(10)+
+				static_cast<std::uint_fast8_t>(buffer[19]-zero_constant))};
 				if(result==risky_value&&risky_mod<partial)
 					return {20,parse_code::overflow};
 				res=result*UINT16_C(10000)+partial;

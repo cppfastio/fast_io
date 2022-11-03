@@ -41,7 +41,6 @@ inline constexpr char_type const* find_simd_common_condition_impl(char_type cons
 	constexpr unsigned N{vec_size/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	simd_vector_type simdvec;
-	std::size_t diff{static_cast<std::size_t>(last-first)};
 	for(;N<=static_cast<std::size_t>(last-first);first+=N)
 	{
 		simdvec.load(first);
@@ -64,7 +63,6 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 		constexpr simd_vector_type mask_vecs{create_simd_vector_with_all_masks<simd_vector_type>()};
 		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
 		{
-			simd_vector_type chunk=func(simdvec);
 			return !is_all_zeros(func(simdvec)!=mask_vecs);
 		});
 	}
@@ -151,18 +149,14 @@ ASCII: space (0x20, ' '), EBCDIC:64
 			simd_vector_type ebcdic_specific_nls{
 				std::bit_cast<simd_vector_type>(characters_array_impl<ebcdic_specific_nl,char_type,N>)};
 		constexpr
-			simd_vector_type spaces{
-				std::bit_cast<simd_vector_type>(characters_array_impl<spacech,char_type,N>)};
-		constexpr
 			simd_vector_type linefeeds{
 				std::bit_cast<simd_vector_type>(characters_array_impl<linefeed,char_type,N>)};
 		constexpr
 			simd_vector_type horizontaltabs{
 				std::bit_cast<simd_vector_type>(characters_array_impl<horizontaltab,char_type,N>)};
 #else
-		simd_vector_type verticaltabs,ebcdic_specific_nls,spaces,linefeeds,horizontaltabs;
+		simd_vector_type verticaltabs,ebcdic_specific_nls,linefeeds,horizontaltabs;
 		ebcdic_specific_nls.load(characters_array_impl<ebcdic_specific_nl,char_type,N>.data());
-		spaces.load(characters_array_impl<spacech,char_type,N>.data());
 		linefeeds.load(characters_array_impl<linefeed,char_type,N>.data());
 		horizontaltabs.load(characters_array_impl<horizontaltab,char_type,N>.data());
 #endif

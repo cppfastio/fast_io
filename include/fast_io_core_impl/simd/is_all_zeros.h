@@ -45,9 +45,6 @@ can_simd_vector_run_with_cpu_instruction<64>?64:
 template<unsigned pos,typename T>
 inline constexpr bool is_all_zeros_recursive_impl(T const& v2) noexcept
 {
-	constexpr std::uint_least64_t mx{std::numeric_limits<std::uint_least64_t>::max()};
-	constexpr unsigned digits{std::numeric_limits<std::uint_least64_t>::digits};
-	constexpr unsigned digitspos{digits*pos};
 	constexpr std::size_t N{sizeof(T)/sizeof(std::uint_least64_t)};
 	static_assert(N!=0);
 	std::uint_least64_t element{v2[pos]};
@@ -83,7 +80,6 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 		return is_all_zeros_recursive_impl<0>(vec);
 	}
 #endif
-	constexpr std::size_t szofvec{sizeof(::fast_io::intrinsics::simd_vector<T,n>)};
 
 	if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==16)
 	{
