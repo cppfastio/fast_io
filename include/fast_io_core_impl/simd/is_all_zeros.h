@@ -16,7 +16,7 @@ inline constexpr bool calculate_can_simd_vector_run_with_cpu_instruction(std::si
 	}
 	else if(sizeofsimdvector==32)
 	{
-#if defined(__AVX__) && (defined(__x86_64__) || defined(_M_X64))
+#if defined(__AVX2__) && (defined(__x86_64__) || defined(_M_X64))
 		return true;
 #endif
 	}
