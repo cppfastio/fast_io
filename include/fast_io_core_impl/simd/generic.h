@@ -8,7 +8,14 @@ namespace intrinsics
 
 template<typename T,std::size_t N>
 struct
-#if defined(_MSC_VER)
+#if defined(__has_declspec_attribute)
+#if __has_declspec_attribute(intrin_type)
+__declspec(intrin_type)
+#endif
+#if __has_declspec_attribute(align)
+__declspec(align(sizeof(T)*N/2))
+#endif
+#elif defined(_MSC_VER)
 __declspec(intrin_type) __declspec(align(sizeof(T)*N/2))
 #endif
 simd_vector

@@ -171,10 +171,10 @@ EBCDIC specific: NL:21
 
 namespace details
 {
-template<std::integral char_type>
+template<bool use_ebcdic,std::integral char_type>
 inline constexpr bool is_c_space_impl(char_type ch) noexcept
 {
-	if constexpr(::fast_io::details::is_ebcdic<char_type>)
+	if constexpr(use_ebcdic)
 	{
 		switch(ch)
 		{
@@ -199,43 +199,39 @@ inline constexpr bool is_c_space_impl(char_type ch) noexcept
 		}
 	}
 }
-#if 0
-template<std::integral char_type>
-inline constexpr ::fast_io::freestanding::array<bool,256> is_c_space_tb_impl() noexcept
+
+template<bool ebcdic,std::integral char_type>
+inline constexpr auto is_c_space_tb_impl() noexcept
 {
-	::fast_io::freestanding::array<bool,256> tb;
+	::fast_io::freestanding::array<bool,256u> tb;
 	for(std::size_t i{};i!=tb.size();++i)
-		tb[i]=is_c_space_impl(static_cast<char_type>(i));
+		tb[i]=is_c_space_impl<ebcdic>(static_cast<char_type>(i));
 	return tb;
 }
 
-template<std::integral char_type>
+template<bool ebcdic,std::integral char_type>
 requires (sizeof(char_type)==1)
-inline constexpr ::fast_io::freestanding::array<bool,256> is_c_space_tb{is_c_space_tb_impl<char_type>()};
-#endif
+inline constexpr auto is_c_space_tb{is_c_space_tb_impl<ebcdic,char_type>()};
 }
 
 template<std::integral char_type>
 inline constexpr bool is_c_space(char_type ch) noexcept
 {
-#if 0
-	if constexpr(sizeof(char_type)==1)
+	constexpr bool optimize_with_spacetb{sizeof(char_type)==1&&std::numeric_limits<std::uint_least8_t>::digits==8};
+	if constexpr(optimize_with_spacetb)
 	{
 		if constexpr(::fast_io::details::is_ebcdic<char_type>)
-			return details::is_c_space_tb<char_type>[static_cast<std::make_unsigned_t<char_type>>(ch)];
+			return details::is_c_space_tb<true,char8_t>[static_cast<std::make_unsigned_t<char_type>>(ch)];
 		else
-			return details::is_c_space_tb<char8_t>[static_cast<std::make_unsigned_t<char_type>>(ch)];
+			return details::is_c_space_tb<false,char8_t>[static_cast<std::make_unsigned_t<char_type>>(ch)];
 	}
 	else
 	{
-#endif
 	if constexpr(::fast_io::details::is_ebcdic<char_type>)
-		return details::is_c_space_impl(ch);
+		return details::is_c_space_impl<true>(ch);
 	else
-		return details::is_c_space_impl(static_cast<char32_t>(static_cast<std::make_unsigned_t<char_type>>(ch)));
-#if 0
+		return details::is_c_space_impl<false>(static_cast<char32_t>(static_cast<std::make_unsigned_t<char_type>>(ch)));
 	}
-#endif
 }
 
 /*
