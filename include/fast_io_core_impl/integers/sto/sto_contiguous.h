@@ -691,22 +691,9 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(
 {
 	if constexpr(!noskipws)
 	{
-		std::size_t diff{static_cast<std::size_t>(last-first)};
-		if(16<diff)
-		{
-			diff=16;
-		}
-		for(;diff&&::fast_io::char_category::is_c_space(*first);++first)
-			--diff;
-		if(!diff)
-		{
-			if(first!=last)
-			{
-				first=::fast_io::details::find_space_impl<false,true>(first,last);
-			}
-			if(first==last)
-				return {first,parse_code::end_of_file};
-		}
+		first=::fast_io::details::find_space_common_impl<false,true>(first,last);
+		if(first==last)
+			return {first,parse_code::end_of_file};
 	}
 	if constexpr(my_unsigned_integral<T>)
 	{
@@ -778,22 +765,9 @@ namespace details
 template<::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_space_phase(char_type const* first,char_type const* last) noexcept
 {
-	std::size_t diff{static_cast<std::size_t>(last-first)};
-	if(16<diff)
-	{
-		diff=16;
-	}
-	for(;diff&&::fast_io::char_category::is_c_space(*first);++first)
-		--diff;
-	if(!diff)
-	{
-		if(first!=last)
-		{
-			first=::fast_io::details::find_space_impl<false,true>(first,last);
-		}
-		if(first==last)
-			return {first,parse_code::partial};
-	}
+	first=::fast_io::details::find_space_common_impl<false,true>(first,last);
+	if(first==last)
+		return {first,parse_code::partial};
 	return {first,ongoing_parse_code};
 }
 
@@ -1309,22 +1283,9 @@ namespace details
 template<::std::integral char_type>
 inline constexpr parse_result<char_type const*> ch_get_context_impl(char_type const* first,char_type const* last,char_type& t) noexcept
 {
-	std::size_t diff{static_cast<std::size_t>(last-first)};
-	if(16<diff)
-	{
-		diff=16;
-	}
-	for(;diff&&::fast_io::char_category::is_c_space(*first);++first)
-		--diff;
-	if(!diff)
-	{
-		if(first!=last)
-		{
-			first=::fast_io::details::find_space_impl<false,true>(first,last);
-		}
-		if(first==last)
-			return {first,parse_code::partial};
-	}
+	first=::fast_io::details::find_space_common_impl<false,true>(first,last);
+	if(first==last)
+		return {first,parse_code::partial};
 	t=*first;
 	++first;
 	return {first,parse_code::ok};

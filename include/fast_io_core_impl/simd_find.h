@@ -318,10 +318,9 @@ inline constexpr char unsigned const* find_characters_musl(char unsigned const* 
 }
 
 template<char8_t lfch,bool findnot,std::integral char_type>
-inline constexpr char_type const* find_simd_constant_common_impl(char_type const* first,char_type const* last) noexcept
+inline constexpr char_type const* find_simd_constant_common_cold_impl(char_type const* first,char_type const* last) noexcept
 {
 	constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
-
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
 	if !consteval
@@ -385,6 +384,52 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 	}
 }
 
+template<bool secondlevelopt,std::integral char_type,typename Pred,typename Func>
+inline constexpr char_type const* find_simd_small_optimization_common_impl(char_type const* first,char_type const* last,Pred pred,Func func) noexcept
+{
+	constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size?
+		::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size:
+		(secondlevelopt?sizeof(std::size_t):0)};
+	if constexpr(sizeof(std::uint_least16_t)<initialdiffn)
+	{
+		std::size_t diff{static_cast<std::size_t>(last-first)};
+		if(initialdiffn<diff)
+		{
+			diff=initialdiffn;
+		}
+		for(;diff&&pred(*first);++first)
+			--diff;
+		if(diff)
+#if __has_cpp_attribute(likely)
+		[[likely]]
+#endif
+		{
+			return first;
+		}
+	}
+	return func(first,last);
+}
+
+template<char8_t lfch,bool findnot,std::integral char_type>
+inline constexpr char_type const* find_simd_constant_common_impl(char_type const* first,char_type const* last) noexcept
+{
+	return find_simd_small_optimization_common_impl<false>(first,last,[](char_type ch) noexcept
+	{
+		constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
+		if constexpr(findnot)
+		{
+			return ch==lfchct;
+		}
+		else
+		{
+			return ch!=lfchct;
+		}
+	},[](char_type const* first,char_type const* last) noexcept
+	{
+		return find_simd_constant_common_cold_impl<lfch,findnot>(first,last);
+	});
+}
+
 template<bool ishtml,bool findnot,::std::forward_iterator Iter>
 requires (::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_space_common_iterator_generic_impl(Iter begin,Iter end)
@@ -415,7 +460,7 @@ inline constexpr Iter find_space_common_iterator_generic_impl(Iter begin,Iter en
 }
 
 template<bool ishtml,bool findnot,std::integral char_type>
-inline constexpr char_type const* find_space_common_impl(char_type const* first,char_type const* last) noexcept
+inline constexpr char_type const* find_space_common_cold_impl(char_type const* first,char_type const* last) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -431,6 +476,39 @@ inline constexpr char_type const* find_space_common_impl(char_type const* first,
 	}
 #endif
 	return find_space_common_iterator_generic_impl<ishtml,findnot>(first,last);
+}
+
+template<bool ishtml,bool findnot,std::integral char_type>
+inline constexpr char_type const* find_space_common_impl(char_type const* first,char_type const* last) noexcept
+{
+	return find_simd_small_optimization_common_impl<false>(first,last,[](char_type ch) noexcept
+	{
+		if constexpr(ishtml)
+		{
+			if constexpr(findnot)
+			{
+				return fast_io::char_category::is_html_whitespace(ch);
+			}
+			else
+			{
+				return !fast_io::char_category::is_html_whitespace(ch);
+			}
+		}
+		else
+		{
+			if constexpr(findnot)
+			{
+				return fast_io::char_category::is_c_space(ch);
+			}
+			else
+			{
+				return !fast_io::char_category::is_c_space(ch);
+			}
+		}
+	},[](char_type const* first,char_type const* last) noexcept
+	{
+		return find_space_common_cold_impl<ishtml,findnot>(first,last);
+	});
 }
 
 template<std::integral char_type>
