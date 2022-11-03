@@ -10,7 +10,7 @@ inline constexpr bool calculate_can_simd_vector_run_with_cpu_instruction(std::si
 {
 	if(sizeofsimdvector==16)
 	{
-#if (defined(__SSE2__) || (defined(_MSC_VER)&&!defined(__clang__))) && (defined(__x86_64__) || defined(_M_X64)) || defined(__wasm_simd128__)
+#if (defined(__SSE2__) || (defined(_MSC_VER)&&!defined(__clang__)&&!defined(_KERNEL_MODE))) && (defined(__x86_64__) || defined(_M_X64)) || defined(__wasm_simd128__)
 		return true;
 #endif
 	}
