@@ -78,7 +78,6 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 template<bool findnot,std::size_t vec_size,std::integral char_type,typename simd_vector_type>
 inline constexpr char_type const* find_simd_constant_simd_common_all_impl(char_type const* first,char_type const* last,simd_vector_type const& charsvec) noexcept
 {
-	constexpr unsigned N{vec_size/sizeof(char_type)};
 	if constexpr(findnot)
 	{
 		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
@@ -103,13 +102,13 @@ inline constexpr char_type const* find_simd_constant_simd_common_impl(char_type 
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
-		simd_vector_type zeros{
-			std::bit_cast<simd_vector_type>(characters_array_impl<lfch,char_type,N>)};
+		simd_vector_type charsvec{
+			std::bit_cast<simd_vector_type>(characters_array_impl<lfchct,char_type,N>)};
 #else
-	simd_vector_type zeros;
-	zeros.load(characters_array_impl<lfch,char_type,N>.data());
+	simd_vector_type charsvec;
+	charsvec.load(characters_array_impl<lfchct,char_type,N>.data());
 #endif
-	return find_simd_constant_simd_common_all_impl<findnot,vec_size>(first,last,zeros);
+	return find_simd_constant_simd_common_all_impl<findnot,vec_size>(first,last,charsvec);
 }
 
 template<bool ishtml,bool findnot,std::size_t vec_size,std::integral char_type>
