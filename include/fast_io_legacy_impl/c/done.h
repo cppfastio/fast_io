@@ -7,7 +7,7 @@ namespace details
 {
 
 #if defined(__CYGWIN__)
-#if __has_cpp_attribute(__gnu__::__dllimport__)
+#if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__)
@@ -19,7 +19,7 @@ __cdecl
 #endif
 my_cygwin_fwrite_unlocked(void const* __restrict buffer,std::size_t size,std::size_t count,FILE* __restrict) noexcept __asm__("fwrite_unlocked");
 
-#if __has_cpp_attribute(__gnu__::__dllimport__)
+#if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__)

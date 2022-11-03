@@ -331,7 +331,7 @@ namespace details
 Warning! cygwin's _get_osfhandle has the same name as msvcrt or ucrt's name, but they are completely different functions. Also, it returns long, not std::intptr_t
 */
 #if defined(__CYGWIN__)
-#if __has_cpp_attribute(__gnu__::__dllimport__)
+#if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 extern long cygwin_get_osfhandle(int fd) noexcept
@@ -1032,7 +1032,7 @@ inline int my_posix_openat(int dirfd,char const* pathname,int flags,mode_t mode)
 
 #if defined(__CYGWIN__)
 
-#if __has_cpp_attribute(__gnu__::__dllimport__)
+#if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 extern int my_cygwin_attach_handle_to_fd(char const* name, int fd, void* handle, int bin, int access) noexcept
@@ -1344,7 +1344,7 @@ namespace details
 {
 
 #if defined(__CYGWIN__)
-#if __has_cpp_attribute(__gnu__::__dllimport__)
+#if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__)

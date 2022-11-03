@@ -16,14 +16,14 @@ char  **h_addr_list;
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern hostent*
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 gethostbyname(char const*) noexcept

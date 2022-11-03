@@ -5,14 +5,14 @@ namespace fast_io::win32::nt
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 rtl_nt_status_to_dos_error(std::uint_least32_t status) noexcept
@@ -31,14 +31,14 @@ __asm__("RtlNtStatusToDosError")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtClose(void*) noexcept
@@ -56,14 +56,14 @@ __asm__("NtClose")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwClose(void*) noexcept
@@ -91,14 +91,14 @@ inline std::uint_least32_t nt_close(void* handle) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
@@ -117,14 +117,14 @@ __asm__("NtCreateFile")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
@@ -154,14 +154,14 @@ inline std::uint_least32_t nt_create_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
@@ -180,14 +180,14 @@ __asm__("NtCreateSection")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
@@ -217,14 +217,14 @@ inline std::uint_least32_t nt_create_section(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtQueryInformationProcess(void* __restrict,
@@ -245,14 +245,14 @@ __asm__("NtQueryInformationProcess")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwQueryInformationProcess(void* __restrict,
@@ -283,14 +283,14 @@ inline std::uint_least32_t nt_query_information_process(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
@@ -309,14 +309,14 @@ __asm__("NtWriteFile")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
@@ -346,14 +346,14 @@ inline std::uint_least32_t nt_write_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
@@ -372,14 +372,14 @@ __asm__("NtReadFile")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
@@ -409,14 +409,14 @@ inline std::uint_least32_t nt_read_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
@@ -435,14 +435,14 @@ __asm__("NtQueryDirectoryFile")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
@@ -472,14 +472,14 @@ inline std::uint_least32_t nt_query_directory_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
@@ -498,14 +498,14 @@ __asm__("NtQuerySection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
@@ -535,14 +535,14 @@ inline std::uint_least32_t nt_query_section(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
@@ -560,14 +560,14 @@ __asm__("NtQueryInformationFile")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
@@ -597,14 +597,14 @@ inline std::uint_least32_t nt_query_information_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
@@ -622,14 +622,14 @@ __asm__("NtSetInformationFile")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
@@ -658,14 +658,14 @@ inline std::uint_least32_t nt_set_information_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
@@ -683,14 +683,14 @@ __asm__("NtDuplicateObject")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
@@ -719,14 +719,14 @@ inline std::uint_least32_t nt_duplicate_object(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
@@ -745,14 +745,14 @@ __asm__("NtWaitForSingleObject")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
@@ -781,14 +781,14 @@ inline std::uint_least32_t nt_wait_for_single_object(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
@@ -806,14 +806,14 @@ __asm__("NtSetSystemTime")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
@@ -842,14 +842,14 @@ inline std::uint_least32_t nt_set_system_time(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
@@ -868,14 +868,14 @@ __asm__("NtCreateProcess")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
@@ -904,14 +904,14 @@ inline std::uint_least32_t nt_create_process(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern char unsigned
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 rtl_dos_path_name_to_nt_path_name_u(char16_t const*,unicode_string*,char16_t const**,rtl_relative_name_u*) noexcept
@@ -930,14 +930,14 @@ __asm__("RtlDosPathNameToNtPathName_U")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 rtl_dos_path_name_to_nt_path_name_u_with_status(char16_t const*,unicode_string*,char16_t const**,rtl_relative_name_u*) noexcept
@@ -956,14 +956,14 @@ __asm__("RtlDosPathNameToNtPathName_U_WithStatus")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 rtl_free_unicode_string(unicode_string*) noexcept
@@ -983,14 +983,14 @@ __asm__("RtlFreeUnicodeString")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlInitializeCriticalSection(void*) noexcept
@@ -1009,14 +1009,14 @@ __asm__("RtlInitializeCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlEnterCriticalSection(void*) noexcept
@@ -1035,14 +1035,14 @@ __asm__("RtlEnterCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern int
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlTryEnterCriticalSection(void*) noexcept
@@ -1061,14 +1061,14 @@ __asm__("RtlTryEnterCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlLeaveCriticalSection(void*) noexcept
@@ -1087,14 +1087,14 @@ __asm__("RtlLeaveCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlDeleteCriticalSection(void*) noexcept
@@ -1113,14 +1113,14 @@ __asm__("RtlDeleteCriticalSection")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlCreateUserThread(void*,void*,int,std::uint_least32_t,std::size_t,std::size_t,void*,void*,void**,client_id*) noexcept
@@ -1139,14 +1139,14 @@ __asm__("RtlCreateUserThread")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtResumeThread(void*,std::uint_least32_t*) noexcept
@@ -1165,14 +1165,14 @@ __asm__("NtResumeThread")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwResumeThread(void*,std::uint_least32_t*) noexcept
@@ -1201,14 +1201,14 @@ inline std::uint_least32_t nt_resume_thread(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
@@ -1227,14 +1227,14 @@ __asm__("NtLockFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
@@ -1263,14 +1263,14 @@ inline std::uint_least32_t nt_lock_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
@@ -1289,14 +1289,14 @@ __asm__("NtUnlockFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
@@ -1331,14 +1331,14 @@ Actually this shows that it is available since the start of NT
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtFlushBuffersFile(void*,io_status_block*) noexcept
@@ -1357,14 +1357,14 @@ __asm__("NtFlushBuffersFile")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwFlushBuffersFile(void*,io_status_block*) noexcept
@@ -1393,14 +1393,14 @@ inline std::uint_least32_t nt_flush_buffers_file(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 NtFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
@@ -1419,14 +1419,14 @@ __asm__("NtFlushBuffersFileEx")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern std::uint_least32_t
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 ZwFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
@@ -1455,7 +1455,7 @@ inline std::uint_least32_t nt_flush_buffers_file_ex(Args... args) noexcept
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__)
@@ -1481,7 +1481,7 @@ __asm__("DbgPrint")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__)

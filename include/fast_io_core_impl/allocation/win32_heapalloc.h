@@ -7,17 +7,17 @@ namespace win32
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__malloc__)
 [[__gnu__::__malloc__]]
 #endif
 extern void*
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 HeapAlloc(void*,::std::uint_least32_t,::std::size_t) noexcept
@@ -36,14 +36,14 @@ __asm__("HeapAlloc")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern int
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 HeapFree(void*,::std::uint_least32_t,void*) noexcept
@@ -62,17 +62,17 @@ __asm__("HeapFree")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
 extern void*
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 GetProcessHeap() noexcept
@@ -91,14 +91,14 @@ __asm__("GetProcessHeap")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void*
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 HeapReAlloc(void*,::std::uint_least32_t,void*,::std::size_t) noexcept

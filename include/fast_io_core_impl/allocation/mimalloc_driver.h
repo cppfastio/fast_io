@@ -7,7 +7,7 @@ namespace mimalloc
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
@@ -35,7 +35,7 @@ __asm__("mi_malloc")
 ;
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
@@ -61,7 +61,7 @@ __asm__("mi_free")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
@@ -87,7 +87,7 @@ __asm__("mi_calloc")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__))
