@@ -1,10 +1,14 @@
 ﻿#pragma once
 
+#include"sto_generate_base_tb.h"
+
 namespace fast_io
 {
 
 namespace details
 {
+
+inline constexpr bool sto_use_table{true};
 
 template<char8_t base,std::integral char_type>
 requires (2<=base&&base<=36)
@@ -12,9 +16,9 @@ inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) n
 {
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
 	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
-	constexpr unsigned_char_type base_char_type(base);
 	if constexpr(base<=10)
 	{
+		constexpr unsigned_char_type base_char_type(base);
 		if constexpr(ebcdic)
 			ch-=static_cast<unsigned_char_type>(240);
 		else
@@ -23,7 +27,29 @@ inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) n
 	}
 	else
 	{
-		if constexpr(ebcdic)
+		if constexpr(sto_use_table)
+		{
+			constexpr char8_t mx{std::numeric_limits<char8_t>::max()};
+			constexpr bool use_partial{mx<(std::numeric_limits<unsigned_char_type>::max())||std::numeric_limits<char8_t>::digits!=8};
+			if constexpr(use_partial)
+			{
+				constexpr std::size_t n{sto_base_tb<ebcdic,use_partial,base>.size()};
+				static_assert(n<=mx);
+				constexpr char8_t v{static_cast<char8_t>(n)};
+				if(v<ch)
+				{
+					return true;
+				}
+			}
+			char8_t ret{sto_base_tb<ebcdic,use_partial,base>[static_cast<unsigned_char_type>(ch)]};
+			if(ret==mx)
+			{
+				return true;
+			}
+			ch=static_cast<unsigned_char_type>(ret);
+			return false;
+		}
+		else if constexpr(ebcdic)
 		{
 
 			if constexpr(base<=19)
@@ -135,7 +161,28 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 	}
 	else
 	{
-		if constexpr(ebcdic)
+		if constexpr(sto_use_table)
+		{
+			constexpr char8_t mx{std::numeric_limits<char8_t>::max()};
+			constexpr bool use_partial{mx<(std::numeric_limits<unsigned_char_type>::max())||std::numeric_limits<char8_t>::digits!=8};
+			if constexpr(use_partial)
+			{
+				constexpr std::size_t n{sto_base_tb<ebcdic,use_partial,base>.size()};
+				static_assert(n<=mx);
+				constexpr char8_t v{static_cast<char8_t>(n)};
+				if(v<ch)
+				{
+					return false;
+				}
+			}
+			auto ret{sto_base_tb<ebcdic,use_partial,base>[static_cast<unsigned_char_type>(ch)]};
+			if(ret==mx)
+			{
+				return false;
+			}
+			return true;
+		}
+		else if constexpr(ebcdic)
 		{
 			if constexpr(base<=19)
 			{
@@ -556,7 +603,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 			if constexpr(skipzero)
 			{
 				++first;
-				first=find_none_zero_simd_impl(first,last);
+				first=::fast_io::details::find_none_zero_simd_impl(first,last);
 				if(first==last)
 				{
 					t=0;
@@ -644,9 +691,22 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(
 {
 	if constexpr(!noskipws)
 	{
-		for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
-		if(first==last)
-			return {first,parse_code::end_of_file};
+		std::size_t diff{static_cast<std::size_t>(last-first)};
+		if(16<diff)
+		{
+			diff=16;
+		}
+		for(;diff&&::fast_io::char_category::is_c_space(*first);++first)
+			--diff;
+		if(!diff)
+		{
+			if(first!=last)
+			{
+				first=::fast_io::details::find_space_impl<false,true>(first,last);
+			}
+			if(first==last)
+				return {first,parse_code::end_of_file};
+		}
 	}
 	if constexpr(my_unsigned_integral<T>)
 	{
@@ -718,9 +778,22 @@ namespace details
 template<::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_space_phase(char_type const* first,char_type const* last) noexcept
 {
-	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
-	if(first==last)
-		return {first,parse_code::partial};
+	std::size_t diff{static_cast<std::size_t>(last-first)};
+	if(16<diff)
+	{
+		diff=16;
+	}
+	for(;diff&&::fast_io::char_category::is_c_space(*first);++first)
+		--diff;
+	if(!diff)
+	{
+		if(first!=last)
+		{
+			first=::fast_io::details::find_space_impl<false,true>(first,last);
+		}
+		if(first==last)
+			return {first,parse_code::partial};
+	}
 	return {first,ongoing_parse_code};
 }
 
@@ -1236,9 +1309,22 @@ namespace details
 template<::std::integral char_type>
 inline constexpr parse_result<char_type const*> ch_get_context_impl(char_type const* first,char_type const* last,char_type& t) noexcept
 {
-	for(;first!=last&&::fast_io::char_category::is_c_space(*first);++first);
-	if(first==last)[[unlikely]]
-		return {first,parse_code::partial};
+	std::size_t diff{static_cast<std::size_t>(last-first)};
+	if(16<diff)
+	{
+		diff=16;
+	}
+	for(;diff&&::fast_io::char_category::is_c_space(*first);++first)
+		--diff;
+	if(!diff)
+	{
+		if(first!=last)
+		{
+			first=::fast_io::details::find_space_impl<false,true>(first,last);
+		}
+		if(first==last)
+			return {first,parse_code::partial};
+	}
 	t=*first;
 	++first;
 	return {first,parse_code::ok};
