@@ -243,7 +243,13 @@ wsabuf Control;
 std::uint_least32_t dwflags;
 };
 
-using lpwsaoverlapped_completion_routine = void (__stdcall*)(std::uint_least32_t dwError,std::uint_least32_t cbTransferred,overlapped* lpOverlapped,std::uint_least32_t dwFlags) noexcept;
+using lpwsaoverlapped_completion_routine = void (
+#if defined(_MSC_VER) && !__has_cpp_attribute(__gnu__::__stdcall__)
+__stdcall
+#elif __has_cpp_attribute(__gnu__::__stdcall__)
+__attribute__((__stdcall__))
+#endif
+*)(std::uint_least32_t dwError,std::uint_least32_t cbTransferred,overlapped* lpOverlapped,std::uint_least32_t dwFlags) noexcept;
 
 struct flowspec
 {
@@ -265,7 +271,13 @@ wsabuf ProviderSpecific;
 };
 
 
-using lpconditionproc = void (__stdcall*)(wsabuf*,wsabuf*,qualityofservice*,qualityofservice*,wsabuf*,wsabuf*,std::uint_least32_t*,std::uintptr_t) noexcept;
+using lpconditionproc = void (
+#if defined(_MSC_VER) && !__has_cpp_attribute(__gnu__::__stdcall__)
+__stdcall
+#elif __has_cpp_attribute(__gnu__::__stdcall__)
+__attribute__((__stdcall__))
+#endif
+*)(wsabuf*,wsabuf*,qualityofservice*,qualityofservice*,wsabuf*,wsabuf*,std::uint_least32_t*,std::uintptr_t) noexcept;
 
 template<win32_family fam>
 requires (fam==win32_family::ansi_9x||fam==win32_family::wide_nt)
