@@ -122,7 +122,6 @@ unsigned vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_v
 		return vector_mask_countr_common_no_intrinsics_impl<ctzero>(vec);
 	}
 #endif
-	constexpr std::size_t szofvec{sizeof(::fast_io::intrinsics::simd_vector<T,n>)};
 	unsigned d{};
 	if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==16)
 	{

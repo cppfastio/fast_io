@@ -155,7 +155,8 @@ ASCII: space (0x20, ' '), EBCDIC:64
 			simd_vector_type horizontaltabs{
 				std::bit_cast<simd_vector_type>(characters_array_impl<horizontaltab,char_type,N>)};
 #else
-		simd_vector_type verticaltabs,ebcdic_specific_nls,linefeeds,horizontaltabs;
+		simd_vector_type ebcdic_specific_nls,linefeeds,horizontaltabs;
+
 		ebcdic_specific_nls.load(characters_array_impl<ebcdic_specific_nl,char_type,N>.data());
 		linefeeds.load(characters_array_impl<linefeed,char_type,N>.data());
 		horizontaltabs.load(characters_array_impl<horizontaltab,char_type,N>.data());
@@ -217,9 +218,9 @@ ASCII: space (0x20, ' '), EBCDIC:64
 			decision_simd_vector_type horizontaltabs{
 				std::bit_cast<decision_simd_vector_type>(characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>)};
 #else
-
 		decision_simd_vector_type fives;
 		fives.load(characters_array_impl<five,char_type,N,use_signed_vector_type>.data());
+
 		decision_simd_vector_type horizontaltabs;
 		horizontaltabs.load(characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>.data());
 #endif
@@ -228,9 +229,10 @@ ASCII: space (0x20, ' '), EBCDIC:64
 		{
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 			constexpr
-				decision_simd_vector_type verticaltabs{
-					std::bit_cast<decision_simd_vector_type>(characters_array_impl<verticaltab,char_type,N,use_signed_vector_type>)};
+				simd_vector_type verticaltabs{
+					std::bit_cast<simd_vector_type>(characters_array_impl<verticaltab,char_type,N>)};
 #else
+
 			simd_vector_type verticaltabs;
 			verticaltabs.load(characters_array_impl<verticaltab,char_type,N>.data());
 #endif
@@ -267,12 +269,9 @@ inline constexpr char unsigned const* find_characters_musl(char unsigned const* 
 	constexpr char unsigned ucharmx{std::numeric_limits<char unsigned>::max()};
 	constexpr std::size_t ones{std::numeric_limits<std::size_t>::max()/ucharmx};
 	constexpr std::size_t highs{ones*(ucharmx/2+1)};
-	constexpr std::size_t highsmask{ones*(ucharmx/2)};
-	constexpr unsigned udiff{static_cast<unsigned>(diff)};
-
 	if(first!=last&&*first!=ch)
 	{
-	for(std::size_t const constantk{ones*ch};last-first>diff;first+=diff)
+	for(std::size_t const constantk{ones*ch};diff<=static_cast<std::size_t>(last-first);first+=diff)
 	{
 
 		std::size_t x;

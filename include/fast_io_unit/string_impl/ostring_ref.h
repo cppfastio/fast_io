@@ -42,7 +42,7 @@ template<std::integral char_type,typename size_type>
 struct empty_string_set_ptr
 {
 	std::size_t realsize{};
-	inline constexpr std::size_t operator()(char_type const*,size_type n) noexcept
+	inline constexpr std::size_t operator()(char_type const*,size_type) noexcept
 	{
 		return realsize;
 	}

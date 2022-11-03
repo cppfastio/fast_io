@@ -1,6 +1,6 @@
 #pragma once
 
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) || defined(__clang__)
 #include <immintrin.h>
 #endif
 
@@ -11,7 +11,14 @@ namespace intrinsics
 {
 template<typename T,std::size_t N>
 struct
-#if defined(_MSC_VER)
+#if defined(__has_declspec_attribute)
+#if __has_declspec_attribute(intrin_type)
+__declspec(intrin_type)
+#endif
+#if __has_declspec_attribute(align)
+__declspec(align(sizeof(T)*N/2))
+#endif
+#elif defined(_MSC_VER)
 __declspec(intrin_type) __declspec(align(sizeof(T)*N/2))
 #endif
 simd_vector;
@@ -125,8 +132,8 @@ template<typename T,typename Func>
 inline constexpr T generic_simd_comparision_common_impl(T const& a,
 	T const& b,Func func) noexcept
 {
-	using value_type = std::remove_cvref_t<T>::value_type;
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[&](value_type va,value_type vb)->value_type
+	using value_type = typename std::remove_cvref_t<T>::value_type;
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[&](value_type va,value_type vb) noexcept ->value_type
 	{
 		bool t{func(va,vb)};
 		constexpr auto mx{create_value_mx<value_type>()};
@@ -180,13 +187,16 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m128h amm = __builtin_bit_cast(__m128h,a);
 					__m128h bmm = __builtin_bit_cast(__m128h,b);
 					return __builtin_bit_cast(vec_type,_mm_add_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m128 amm = __builtin_bit_cast(__m128,a);
 					__m128 bmm = __builtin_bit_cast(__m128,b);
@@ -225,13 +235,16 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m256h amm = __builtin_bit_cast(__m256h,a);
 					__m256h bmm = __builtin_bit_cast(__m256h,b);
 					return __builtin_bit_cast(vec_type,_mm256_add_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m256 amm = __builtin_bit_cast(__m256,a);
 					__m256 bmm = __builtin_bit_cast(__m256,b);
@@ -270,13 +283,16 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 			}
 			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m512h amm = __builtin_bit_cast(__m512h,a);
 					__m512h bmm = __builtin_bit_cast(__m512h,b);
 					return __builtin_bit_cast(vec_type,_mm512_add_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m512 amm = __builtin_bit_cast(__m512,a);
 					__m512 bmm = __builtin_bit_cast(__m512,b);
@@ -342,13 +358,16 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m128h amm = __builtin_bit_cast(__m128h,a);
 					__m128h bmm = __builtin_bit_cast(__m128h,b);
 					return __builtin_bit_cast(vec_type,_mm_sub_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m128 amm = __builtin_bit_cast(__m128,a);
 					__m128 bmm = __builtin_bit_cast(__m128,b);
@@ -387,13 +406,16 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m256h amm = __builtin_bit_cast(__m256h,a);
 					__m256h bmm = __builtin_bit_cast(__m256h,b);
 					return __builtin_bit_cast(vec_type,_mm256_sub_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m256 amm = __builtin_bit_cast(__m256,a);
 					__m256 bmm = __builtin_bit_cast(__m256,b);
@@ -432,13 +454,16 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 			}
 			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m512h amm = __builtin_bit_cast(__m512h,a);
 					__m512h bmm = __builtin_bit_cast(__m512h,b);
 					return __builtin_bit_cast(vec_type,_mm512_sub_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m512 amm = __builtin_bit_cast(__m512,a);
 					__m512 bmm = __builtin_bit_cast(__m512,b);
@@ -560,13 +585,16 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m128h amm = __builtin_bit_cast(__m128h,a);
 					__m128h bmm = __builtin_bit_cast(__m128h,b);
 					return __builtin_bit_cast(vec_type,_mm_mul_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m128 amm = __builtin_bit_cast(__m128,a);
 					__m128 bmm = __builtin_bit_cast(__m128,b);
@@ -603,13 +631,16 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m256h amm = __builtin_bit_cast(__m256h,a);
 					__m256h bmm = __builtin_bit_cast(__m256h,b);
 					return __builtin_bit_cast(vec_type,_mm256_mul_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m256 amm = __builtin_bit_cast(__m256,a);
 					__m256 bmm = __builtin_bit_cast(__m256,b);
@@ -646,13 +677,16 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 			}
 			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m512h amm = __builtin_bit_cast(__m512h,a);
 					__m512h bmm = __builtin_bit_cast(__m512h,b);
 					return __builtin_bit_cast(vec_type,_mm512_mul_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m512 amm = __builtin_bit_cast(__m512,a);
 					__m512 bmm = __builtin_bit_cast(__m512,b);
@@ -668,7 +702,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb)
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
 		return va*vb;
 	});
@@ -717,13 +751,16 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m128h amm = __builtin_bit_cast(__m128h,a);
 					__m128h bmm = __builtin_bit_cast(__m128h,b);
 					return __builtin_bit_cast(vec_type,_mm_div_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m128 amm = __builtin_bit_cast(__m128,a);
 					__m128 bmm = __builtin_bit_cast(__m128,b);
@@ -769,13 +806,16 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 			}
 			else if constexpr(std::floating_point<T>)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m256h amm = __builtin_bit_cast(__m256h,a);
 					__m256h bmm = __builtin_bit_cast(__m256h,b);
 					return __builtin_bit_cast(vec_type,_mm256_div_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m256 amm = __builtin_bit_cast(__m256,a);
 					__m256 bmm = __builtin_bit_cast(__m256,b);
@@ -821,13 +861,16 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 			}
 			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
+#if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
 				{
 					__m512h amm = __builtin_bit_cast(__m512h,a);
 					__m512h bmm = __builtin_bit_cast(__m512h,b);
 					return __builtin_bit_cast(vec_type,_mm512_div_ph(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==sizeof(float))
+				else
+#endif
+				if constexpr(sizeof(T)==sizeof(float))
 				{
 					__m512 amm = __builtin_bit_cast(__m512,a);
 					__m512 bmm = __builtin_bit_cast(__m512,b);
@@ -843,7 +886,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb)
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
 		return va/vb;
 	});
@@ -889,7 +932,7 @@ inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vecto
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb)
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
 		return va&vb;
 	});
@@ -935,7 +978,7 @@ inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vecto
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb)
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
 		return va|vb;
 	});
@@ -981,7 +1024,7 @@ inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vecto
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb)
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
 		return va^vb;
 	});
@@ -990,7 +1033,7 @@ inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vecto
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb)
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
 		return va<<vb;
 	});
@@ -999,7 +1042,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vect
 template<typename T,std::size_t N>
 inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
-	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb)
+	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
 		return va>>vb;
 	});
@@ -1092,7 +1135,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 						if constexpr(sizeof(T)==1)
 						{
 							constexpr auto mn{INT_LEAST8_MIN};
-							mask=_mm_set1_epi8(INT_LEAST8_MIN);
+							mask=_mm_set1_epi8(mn);
 						}
 						else if constexpr(sizeof(T)==2)
 						{
@@ -1195,7 +1238,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 						if constexpr(sizeof(T)==1)
 						{
 							constexpr auto mn{INT_LEAST8_MIN};
-							mask=_mm256_set1_epi8(INT_LEAST8_MIN);
+							mask=_mm256_set1_epi8(mn);
 						}
 						else if constexpr(sizeof(T)==2)
 						{
@@ -1218,17 +1261,17 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 					if constexpr(sizeof(T)==1)
 					{
 						alow = _mm_cmplt_epi8(alow,blow);
-						ahigh = _mm_cmplt_epi8(ahigh,blow);
+						ahigh = _mm_cmplt_epi8(ahigh,bhigh);
 					}
 					else if constexpr(sizeof(T)==2)
 					{
 						alow = _mm_cmplt_epi16(alow,blow);
-						ahigh = _mm_cmplt_epi16(ahigh,blow);
+						ahigh = _mm_cmplt_epi16(ahigh,bhigh);
 					}
 					else if constexpr(sizeof(T)==4)
 					{
 						alow = _mm_cmplt_epi32(alow,blow);
-						ahigh = _mm_cmplt_epi32(ahigh,blow);
+						ahigh = _mm_cmplt_epi32(ahigh,bhigh);
 					}
 					__m256i res = _mm256_castsi128_si256(alow);
 					res = _mm256_insertf128_si256(res,ahigh,1);
@@ -1314,7 +1357,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept -> bool
 	{
 		return va<vb;
 	});
@@ -1389,7 +1432,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 						if constexpr(sizeof(T)==1)
 						{
 							constexpr auto mn{INT_LEAST8_MIN};
-							mask=_mm_set1_epi8(INT_LEAST8_MIN);
+							mask=_mm_set1_epi8(mn);
 						}
 						else if constexpr(sizeof(T)==2)
 						{
@@ -1492,7 +1535,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 						if constexpr(sizeof(T)==1)
 						{
 							constexpr auto mn{INT_LEAST8_MIN};
-							mask=_mm256_set1_epi8(INT_LEAST8_MIN);
+							mask=_mm256_set1_epi8(mn);
 						}
 						else if constexpr(sizeof(T)==2)
 						{
@@ -1515,17 +1558,17 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 					if constexpr(sizeof(T)==1)
 					{
 						alow = _mm_cmpgt_epi8(alow,blow);
-						ahigh = _mm_cmpgt_epi8(ahigh,blow);
+						ahigh = _mm_cmpgt_epi8(ahigh,bhigh);
 					}
 					else if constexpr(sizeof(T)==2)
 					{
 						alow = _mm_cmpgt_epi16(alow,blow);
-						ahigh = _mm_cmpgt_epi16(ahigh,blow);
+						ahigh = _mm_cmpgt_epi16(ahigh,bhigh);
 					}
 					else if constexpr(sizeof(T)==4)
 					{
 						alow = _mm_cmpgt_epi32(alow,blow);
-						ahigh = _mm_cmpgt_epi32(ahigh,blow);
+						ahigh = _mm_cmpgt_epi32(ahigh,bhigh);
 					}
 					__m256i res = _mm256_castsi128_si256(alow);
 					res = _mm256_insertf128_si256(res,ahigh,1);
@@ -1611,7 +1654,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept -> bool
 	{
 		return va>vb;
 	});
@@ -1825,7 +1868,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept -> bool
 	{
 		return va<=vb;
 	});
@@ -2043,7 +2086,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept -> bool
 	{
 		return va>=vb;
 	});
@@ -2125,7 +2168,7 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 		}
 	}
 #endif
-	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept -> bool
 	{
 		return va==vb;
 	});
@@ -2218,7 +2261,7 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 		}
 	}
 #endif
-		return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept
+		return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept -> bool
 		{
 			return va!=vb;
 		});
