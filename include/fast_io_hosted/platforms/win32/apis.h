@@ -524,7 +524,13 @@ __asm__("FreeLibrary")
 #endif
 ;
 
-using farproc = intptr_t(__stdcall*)() noexcept;
+using farproc = intptr_t(
+#if defined(_MSC_VER) && !__has_cpp_attribute(__gnu__::__stdcall__)
+__stdcall
+#elif __has_cpp_attribute(__gnu__::__stdcall__)
+__attribute__((__stdcall__))
+#endif
+*)() noexcept;
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
