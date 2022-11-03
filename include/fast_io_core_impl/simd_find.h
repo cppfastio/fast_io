@@ -424,9 +424,9 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 		{
 			return ch!=lfchct;
 		}
-	},[](char_type const* first,char_type const* last) noexcept
+	},[](char_type const* first2,char_type const* last2) noexcept
 	{
-		return find_simd_constant_common_cold_impl<lfch,findnot>(first,last);
+		return find_simd_constant_common_cold_impl<lfch,findnot>(first2,last2);
 	});
 }
 
@@ -505,9 +505,9 @@ inline constexpr char_type const* find_space_common_impl(char_type const* first,
 				return !fast_io::char_category::is_c_space(ch);
 			}
 		}
-	},[](char_type const* first,char_type const* last) noexcept
+	},[](char_type const* first2,char_type const* last2) noexcept
 	{
-		return find_space_common_cold_impl<ishtml,findnot>(first,last);
+		return find_space_common_cold_impl<ishtml,findnot>(first2,last2);
 	});
 }
 
