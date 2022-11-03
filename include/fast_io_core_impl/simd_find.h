@@ -78,20 +78,17 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 template<bool findnot,std::size_t vec_size,std::integral char_type,typename simd_vector_type>
 inline constexpr char_type const* find_simd_constant_simd_common_all_impl(char_type const* first,char_type const* last,simd_vector_type const& charsvec) noexcept
 {
-	if constexpr(findnot)
+	return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
 	{
-		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
+		if constexpr(findnot)
 		{
 			return !is_all_zeros(simdvec!=charsvec);
-		});
-	}
-	else
-	{
-		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
+		}
+		else
 		{
 			return !is_all_zeros(simdvec==charsvec);
-		});
-	}
+		}
+	});
 }
 
 template<char8_t lfch,bool findnot,std::size_t vec_size,std::integral char_type>
