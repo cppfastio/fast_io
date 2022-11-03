@@ -7,30 +7,8 @@
 namespace fast_io
 {
 
-
 namespace intrinsics
 {
-using x86_64_m128 [[__gnu__::__vector_size__(16),__gnu__::__may_alias__]] = float ;
-using x86_64_m128i [[__gnu__::__vector_size__ (16),__gnu__::__may_alias__]] = long long;
-using x86_64_v16qi [[__gnu__::__vector_size__ (16)]] = char;
-using x86_64_v16qs [[__gnu__::__vector_size__ (16)]] = char signed;
-using x86_64_v16qu [[__gnu__::__vector_size__ (16)]] = char unsigned;
-using x86_64_v8hi [[__gnu__::__vector_size__ (16)]] = short;
-using x86_64_v8hu [[__gnu__::__vector_size__ (16)]] = short unsigned;
-using x86_64_v4si [[__gnu__::__vector_size__ (16)]] = int;
-using x86_64_v4su [[__gnu__::__vector_size__ (16)]] = int unsigned;
-
-using x86_64_m256 [[__gnu__::__vector_size__(32),__gnu__::__may_alias__]]  = float;
-using x86_64_m256i [[__gnu__::__vector_size__ (32),__gnu__::__may_alias__]] = long long;
-using x86_64_m512 [[__gnu__::__vector_size__(64),__gnu__::__may_alias__]]  = float ;
-using x86_64_m512i [[__gnu__::__vector_size__ (64),__gnu__::__may_alias__]] = long long;
-using x86_64_m1024 [[__gnu__::__vector_size__(128),__gnu__::__may_alias__]]  = float ;
-using x86_64_m1024i [[__gnu__::__vector_size__ (128),__gnu__::__may_alias__]] = long long;
-using x86_64_m2048 [[__gnu__::__vector_size__(256),__gnu__::__may_alias__]]  = float ;
-using x86_64_m2048i [[__gnu__::__vector_size__ (256),__gnu__::__may_alias__]] = long long;
-using x86_64_m4096 [[__gnu__::__vector_size__(512),__gnu__::__may_alias__]]  = float ;
-using x86_64_m4096i [[__gnu__::__vector_size__ (512),__gnu__::__may_alias__]] = long long;
-
 
 inline constexpr bool simd_shuffle_size_is_supported(std::size_t n) noexcept
 {
@@ -158,6 +136,35 @@ struct simd_vector
 			unsigned_vec_type bsv;
 			__builtin_memcpy(__builtin_addressof(bsv),__builtin_addressof(b),sizeof(unsigned_vec_type));
 			asv+=bsv;
+			__builtin_memcpy(this,__builtin_addressof(asv),sizeof(unsigned_vec_type));
+#endif
+		}
+	}
+
+	template<typename T2>
+	requires ((sizeof(T2)==sizeof(T)*N)&&std::is_trivially_copyable_v<T2>)
+	inline
+#if __has_builtin(__builtin_bit_cast)
+	constexpr
+#endif
+	void wrap_sub_assign(T2 const& b) noexcept requires(std::integral<value_type>)
+	{
+		if constexpr(std::same_as<simd_vector<T,N>,T2>&&std::unsigned_integral<value_type>)
+		{
+			value-=b.value;
+		}
+		else
+		{
+			using unsigned_type = std::make_unsigned_t<T>;
+			using unsigned_vec_type = typename simd_vector<unsigned_type,N>::vec_type;
+#if __has_builtin(__builtin_bit_cast)
+			this->value=__builtin_bit_cast(vec_type,__builtin_bit_cast(unsigned_vec_type,this->value)-__builtin_bit_cast(unsigned_vec_type,b));
+#else
+			unsigned_vec_type asv;
+			__builtin_memcpy(__builtin_addressof(asv),this,sizeof(unsigned_vec_type));
+			unsigned_vec_type bsv;
+			__builtin_memcpy(__builtin_addressof(bsv),__builtin_addressof(b),sizeof(unsigned_vec_type));
+			asv-=bsv;
 			__builtin_memcpy(this,__builtin_addressof(asv),sizeof(unsigned_vec_type));
 #endif
 		}
@@ -512,6 +519,36 @@ simd_vector<T,N> wrap_add(simd_vector<T,N> a,simd_vector<T,N> b) noexcept
 	else
 	{
 		return a+b;
+	}
+}
+
+template<std::integral T,std::size_t N>
+inline
+#if __has_builtin(__builtin_bit_cast)
+constexpr
+#endif
+simd_vector<T,N> wrap_sub(simd_vector<T,N> a,simd_vector<T,N> b) noexcept
+{
+	if constexpr(std::signed_integral<T>)
+	{
+		using unsigned_type = std::make_unsigned_t<T>;
+		using vec_type = typename simd_vector<unsigned_type,N>::vec_type;
+#if __has_builtin(__builtin_bit_cast)
+		return __builtin_bit_cast(simd_vector<T,N>,__builtin_bit_cast(vec_type,a)-__builtin_bit_cast(vec_type,b));
+#else
+		vec_type asv;
+		__builtin_memcpy(__builtin_addressof(asv),__builtin_addressof(a),sizeof(asv));
+		vec_type bsv;
+		__builtin_memcpy(__builtin_addressof(bsv),__builtin_addressof(b),sizeof(bsv));
+		asv-=bsv;
+		simd_vector<T,N> res;
+		__builtin_memcpy(__builtin_addressof(res),__builtin_addressof(asv),sizeof(asv));
+		return res;
+#endif
+	}
+	else
+	{
+		return a-b;
 	}
 }
 
