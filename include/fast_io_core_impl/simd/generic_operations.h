@@ -1185,6 +1185,55 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 						}
 					}
 				}
+				else if constexpr(sizeof(T)<=4)
+				{
+					__m256i amm = __builtin_bit_cast(__m256i,a);
+					__m256i bmm = __builtin_bit_cast(__m256i,b);
+					if constexpr(std::unsigned_integral<T>)
+					{
+						__m256i mask;
+						if constexpr(sizeof(T)==1)
+						{
+							constexpr auto mn{INT_LEAST8_MIN};
+							mask=_mm256_set1_epi8(INT_LEAST8_MIN);
+						}
+						else if constexpr(sizeof(T)==2)
+						{
+							constexpr auto mn{INT_LEAST16_MIN};
+							mask=_mm256_set1_epi16(mn);
+						}
+						else if constexpr(sizeof(T)==4)
+						{
+							constexpr auto mn{INT_LEAST32_MIN};
+							mask=_mm256_set1_epi32(mn);
+						}
+						amm=_mm256_xor_si256(amm,mask);
+						bmm=_mm256_xor_si256(bmm,mask);
+					}
+					__m128i alow = _mm256_castsi256_si128(amm);
+					__m128i blow = _mm256_castsi256_si128(bmm);
+					__m128i ahigh = _mm256_extractf128_si256(amm,1);
+					__m128i bhigh = _mm256_extractf128_si256(bmm,1);
+
+					if constexpr(sizeof(T)==1)
+					{
+						alow = _mm_cmplt_epi8(alow,blow);
+						ahigh = _mm_cmplt_epi8(ahigh,blow);
+					}
+					else if constexpr(sizeof(T)==2)
+					{
+						alow = _mm_cmplt_epi16(alow,blow);
+						ahigh = _mm_cmplt_epi16(ahigh,blow);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						alow = _mm_cmplt_epi32(alow,blow);
+						ahigh = _mm_cmplt_epi32(ahigh,blow);
+					}
+					__m256i res = _mm256_castsi128_si256(alow);
+					res = _mm256_insertf128_si256(res,ahigh,1);
+					return __builtin_bit_cast(vec_type,res);
+				}
 			}
 			else if constexpr(std::floating_point<T>)
 			{
@@ -1432,6 +1481,55 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 							return __builtin_bit_cast(vec_type,_mm256_movm_epi64(_mm256_cmpgt_epu64_mask(amm,bmm)));
 						}
 					}
+				}
+				else if constexpr(sizeof(T)<=4)
+				{
+					__m256i amm = __builtin_bit_cast(__m256i,a);
+					__m256i bmm = __builtin_bit_cast(__m256i,b);
+					if constexpr(std::unsigned_integral<T>)
+					{
+						__m256i mask;
+						if constexpr(sizeof(T)==1)
+						{
+							constexpr auto mn{INT_LEAST8_MIN};
+							mask=_mm256_set1_epi8(INT_LEAST8_MIN);
+						}
+						else if constexpr(sizeof(T)==2)
+						{
+							constexpr auto mn{INT_LEAST16_MIN};
+							mask=_mm256_set1_epi16(mn);
+						}
+						else if constexpr(sizeof(T)==4)
+						{
+							constexpr auto mn{INT_LEAST32_MIN};
+							mask=_mm256_set1_epi32(mn);
+						}
+						amm=_mm256_xor_si256(amm,mask);
+						bmm=_mm256_xor_si256(bmm,mask);
+					}
+					__m128i alow = _mm256_castsi256_si128(amm);
+					__m128i blow = _mm256_castsi256_si128(bmm);
+					__m128i ahigh = _mm256_extractf128_si256(amm,1);
+					__m128i bhigh = _mm256_extractf128_si256(bmm,1);
+
+					if constexpr(sizeof(T)==1)
+					{
+						alow = _mm_cmpgt_epi8(alow,blow);
+						ahigh = _mm_cmpgt_epi8(ahigh,blow);
+					}
+					else if constexpr(sizeof(T)==2)
+					{
+						alow = _mm_cmpgt_epi16(alow,blow);
+						ahigh = _mm_cmpgt_epi16(ahigh,blow);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						alow = _mm_cmpgt_epi32(alow,blow);
+						ahigh = _mm_cmpgt_epi32(ahigh,blow);
+					}
+					__m256i res = _mm256_castsi128_si256(alow);
+					res = _mm256_insertf128_si256(res,ahigh,1);
+					return __builtin_bit_cast(vec_type,res);
 				}
 			}
 			else if constexpr(std::floating_point<T>)
@@ -1860,6 +1958,10 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 							return __builtin_bit_cast(vec_type,_mm256_movm_epi64(_mm256_cmpge_epu64_mask(amm,bmm)));
 						}
 					}
+				}
+				else if constexpr(sizeof(T)<=4)
+				{
+					return b<a;
 				}
 			}
 			else if constexpr(std::floating_point<T>)

@@ -2,7 +2,6 @@
 
 namespace fast_io::details
 {
-#if (defined(__GNUC__) || defined(__clang__))
 
 template<typename T>
 inline constexpr T create_simd_vector_with_single_value(typename T::value_type value) noexcept
@@ -243,7 +242,6 @@ ASCII: space (0x20, ' '), EBCDIC:64
 	}
 }
 
-#endif
 /*
 Referenced from musl libc but with extensions of findnot, __builtin_memcpy and C++20 <bit>
 https://github.com/bminor/musl/blob/master/src/string/memchr.c
@@ -312,7 +310,6 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 {
 	constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
 
-#if (defined(__GNUC__) || defined(__clang__))
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
 	if !consteval
@@ -366,21 +363,6 @@ inline constexpr char_type const* find_simd_constant_common_impl(char_type const
 	}
 	}
 #endif
-#else
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if !consteval
-#else
-	if(!std::is_constant_evaluated())
-#endif
-	if constexpr(sizeof(char_type)==1)
-	{
-		char unsigned const* firstconstptr{reinterpret_cast<char unsigned const*>(first)};
-		return find_characters_musl<findnot>(firstconstptr,reinterpret_cast<char unsigned const*>(last),lfchct)-firstconstptr+first;
-	}
-#endif
-#endif
-
 	if constexpr(findnot)
 	{
 		return ::fast_io::freestanding::find_not(first,last,lfchct);
@@ -423,7 +405,6 @@ inline constexpr Iter find_space_common_iterator_generic_impl(Iter begin,Iter en
 template<bool ishtml,bool findnot,std::integral char_type>
 inline constexpr char_type const* find_space_common_impl(char_type const* first,char_type const* last) noexcept
 {
-#if (defined(__GNUC__) || defined(__clang__))
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
 	if !consteval
@@ -436,7 +417,6 @@ inline constexpr char_type const* find_space_common_impl(char_type const* first,
 			first=find_space_simd_common_impl<ishtml,findnot,::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size>(first,last);
 		}
 	}
-#endif
 #endif
 	return find_space_common_iterator_generic_impl<ishtml,findnot>(first,last);
 }
