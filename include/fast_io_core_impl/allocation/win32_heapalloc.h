@@ -10,10 +10,17 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
 #if __has_cpp_attribute(__gnu__::__malloc__)
 [[__gnu__::__malloc__]]
 #endif
-extern void* __stdcall HeapAlloc(void*,::std::uint_least32_t,::std::size_t) noexcept
+extern void*
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+HeapAlloc(void*,::std::uint_least32_t,::std::size_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -32,7 +39,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern int __stdcall HeapFree(void*,::std::uint_least32_t,void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern int
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+HeapFree(void*,::std::uint_least32_t,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -51,10 +65,17 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
-extern void* __stdcall GetProcessHeap() noexcept
+extern void*
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+GetProcessHeap() noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -73,7 +94,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void* __stdcall HeapReAlloc(void*,::std::uint_least32_t,void*,::std::size_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern void*
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+HeapReAlloc(void*,::std::uint_least32_t,void*,::std::size_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

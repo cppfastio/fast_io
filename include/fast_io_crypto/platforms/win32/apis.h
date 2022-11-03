@@ -8,7 +8,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern ::std::uint_least32_t __stdcall BCryptOpenAlgorithmProvider(void**,char16_t const*,char16_t const*,::std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+BCryptOpenAlgorithmProvider(void**,char16_t const*,char16_t const*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -27,7 +34,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern ::std::uint_least32_t __stdcall BCryptCloseAlgorithmProvider(void*,::std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+BCryptCloseAlgorithmProvider(void*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -46,7 +60,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern ::std::uint_least32_t __stdcall BCryptGetProperty(void*,char16_t const*,void*,::std::uint_least32_t,::std::uint_least32_t*,::std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+BCryptGetProperty(void*,char16_t const*,void*,::std::uint_least32_t,::std::uint_least32_t*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -65,7 +86,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern ::std::uint_least32_t __stdcall BCryptCreateHash(void*,void**,void*,::std::uint_least32_t,void*,::std::uint_least32_t,::std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+BCryptCreateHash(void*,void**,void*,::std::uint_least32_t,void*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -85,7 +113,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern ::std::uint_least32_t __stdcall BCryptHashData(void*,void const*,::std::uint_least32_t,::std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+BCryptHashData(void*,void const*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -104,7 +139,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern ::std::uint_least32_t __stdcall BCryptFinishHash(void*,void*,::std::uint_least32_t,::std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+BCryptFinishHash(void*,void*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -123,7 +165,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern ::std::uint_least32_t __stdcall BCryptDestroyHash(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+BCryptDestroyHash(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

@@ -12,7 +12,14 @@ https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a
 #if __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __cdecl _lock(int) noexcept
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern void
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
+__cdecl
+#endif
+_lock(int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -29,7 +36,14 @@ __asm__("_lock")
 #if __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __cdecl _unlock(int) noexcept
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern void
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
+__cdecl
+#endif
+_unlock(int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

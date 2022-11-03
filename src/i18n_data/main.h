@@ -16,15 +16,28 @@ inline constexpr bool compile_time_compare(char_type1 const (&a)[n1],char_type2 
 	return true;
 }
 
+#if (defined(_WIN32)||defined(__CYGWIN__)) && !defined(__WINE__)
+#if __has_cpp_attribute(__gnu__::__dllexport__)
+[[__gnu__::__dllexport__]]
+#endif
+#if __has_cpp_attribute(__gnu__::__fastcall__)
+[[__gnu__::__fastcall__]]
+#endif
+#endif
 extern "C" void
 #if (defined(_WIN32)||defined(__CYGWIN__)) && !defined(__WINE__)
-__declspec(dllexport) __fastcall
+#if !__has_cpp_attribute(__gnu__::__dllexport__)
+[[__gnu__::__dllexport__]]
+#endif
+#if !__has_cpp_attribute(__gnu__::__fastcall__)
+[[__gnu__::__fastcall__]]
+#endif
 #endif
 export_v0(lc_locale* lc_ptr) noexcept
 {
 	using lc_all_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= lc_all const*;
 	lc_all_ptr ptr;
@@ -37,8 +50,8 @@ export_v0(lc_locale* lc_ptr) noexcept
 	else
 		ptr=&lc_all_global;
 	using wlc_all_ptr
-#if __has_cpp_attribute(gnu::may_alias)
-	[[gnu::may_alias]]
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
 #endif
 	= wlc_all const*;
 	wlc_all_ptr wptr;
