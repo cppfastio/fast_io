@@ -11,14 +11,14 @@ namespace nt
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void*
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlAllocateHeap(void*,::std::uint_least32_t,::std::size_t) noexcept
@@ -37,14 +37,14 @@ __asm__("RtlAllocateHeap")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern char unsigned
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlFreeHeap(void*,::std::uint_least32_t,void*) noexcept
@@ -64,9 +64,9 @@ __asm__("RtlFreeHeap")
 struct peb_ldr_data;
 struct rtl_user_process_parameters;
 using pps_post_process_init_routine = void (
-#if defined(_MSC_VER) && !__has_cpp_attribute(__gnu__::__stdcall__)
+#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __stdcall
-#elif __has_cpp_attribute(__gnu__::__stdcall__)
+#elif (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __attribute__((__stdcall__))
 #endif
 *)(void)noexcept;
@@ -100,17 +100,17 @@ void* Reserved12[1];
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
 extern peb*
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlGetCurrentPeb() noexcept
@@ -129,14 +129,14 @@ __asm__("RtlGetCurrentPeb")
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
-#elif __has_cpp_attribute(__gnu__::__dllimport__)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
-#if __has_cpp_attribute(__gnu__::__stdcall__)
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
 extern void*
-#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 RtlReAllocateHeap(void*,::std::uint_least32_t,void*,::std::size_t) noexcept

@@ -244,9 +244,9 @@ std::uint_least32_t dwflags;
 };
 
 using lpwsaoverlapped_completion_routine = void (
-#if defined(_MSC_VER) && !__has_cpp_attribute(__gnu__::__stdcall__)
+#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __stdcall
-#elif __has_cpp_attribute(__gnu__::__stdcall__)
+#elif (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __attribute__((__stdcall__))
 #endif
 *)(std::uint_least32_t dwError,std::uint_least32_t cbTransferred,overlapped* lpOverlapped,std::uint_least32_t dwFlags) noexcept;
@@ -272,9 +272,9 @@ wsabuf ProviderSpecific;
 
 
 using lpconditionproc = void (
-#if defined(_MSC_VER) && !__has_cpp_attribute(__gnu__::__stdcall__)
+#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __stdcall
-#elif __has_cpp_attribute(__gnu__::__stdcall__)
+#elif (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __attribute__((__stdcall__))
 #endif
 *)(wsabuf*,wsabuf*,qualityofservice*,qualityofservice*,wsabuf*,wsabuf*,std::uint_least32_t*,std::uintptr_t) noexcept;

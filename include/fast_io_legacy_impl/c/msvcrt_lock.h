@@ -9,7 +9,7 @@ https://doxygen.reactos.org/d2/d1b/sdk_2lib_2crt_2stdio_2file_8c_source.html
 Referenced from MinGW-w64 CRT
 https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a46/mingw-w64-crt/stdio/mingw_lock.c#L36
 */
-#if __has_cpp_attribute(__gnu__::__dllimport__)
+#if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__)
@@ -33,7 +33,7 @@ __asm__("_lock")
 #endif
 ;
 
-#if __has_cpp_attribute(__gnu__::__dllimport__)
+#if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
 #endif
 #if __has_cpp_attribute(__gnu__::__cdecl__)
