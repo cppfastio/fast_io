@@ -17,7 +17,7 @@ __declspec(dllimport)
 [[__gnu__::__malloc__]]
 #endif
 extern void*
-#if defined(_MSC_VER) && !defined(__clang__)
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
 __cdecl
 #endif
 mi_malloc(::std::size_t size) noexcept
@@ -42,7 +42,7 @@ __declspec(dllimport)
 [[__gnu__::__cdecl__]]
 #endif
 extern void
-#if defined(_MSC_VER) && !defined(__clang__)
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
 __cdecl
 #endif
 mi_free(void* p) noexcept
@@ -68,7 +68,7 @@ __declspec(dllimport)
 [[__gnu__::__cdecl__]]
 #endif
 extern void*
-#if defined(_MSC_VER) && !defined(__clang__)
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
 __cdecl
 #endif
 mi_calloc(::std::size_t count,::std::size_t size) noexcept
@@ -94,7 +94,7 @@ __declspec(dllimport)
 [[__gnu__::__cdecl__]]
 #endif
 extern void*
-#if defined(_MSC_VER) && !defined(__clang__)
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
 __cdecl
 #endif
 mi_realloc(void* p, ::std::size_t newsize) noexcept

@@ -173,13 +173,41 @@ constexpr void print_define(output& out,win32_memory_basic_information const& in
 #endif
 namespace win32
 {
-extern "C" void* __stdcall OpenProcess(std::uint_least32_t,int,std::uint_least32_t);
-extern "C" int __stdcall WriteProcessMemory(void*,void*,void const*,std::size_t,std::size_t*);
-extern "C" int __stdcall ReadProcessMemory(void*,void const*,void*,std::size_t,std::size_t*);
-extern "C" int __stdcall VirtualQueryEx(void*,void const*,win32_memory_basic_information*,std::size_t);
-extern "C" int __stdcall VirtualProtectEx(void*,void const*,std::size_t,std::uint_least32_t,std::uint_least32_t*);
-extern "C" void* __stdcall FindWindowA(char const*,char const*);
-extern "C" std::uint_least32_t __stdcall GetWindowThreadProcessId(void*,std::uint_least32_t*);
+extern "C" void*
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+OpenProcess(std::uint_least32_t,int,std::uint_least32_t);
+extern "C" int
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+WriteProcessMemory(void*,void*,void const*,std::size_t,std::size_t*);
+extern "C" int
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ReadProcessMemory(void*,void const*,void*,std::size_t,std::size_t*);
+extern "C" int
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+VirtualQueryEx(void*,void const*,win32_memory_basic_information*,std::size_t);
+extern "C" int
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+VirtualProtectEx(void*,void const*,std::size_t,std::uint_least32_t,std::uint_least32_t*);
+extern "C" void*
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+FindWindowA(char const*,char const*);
+extern "C" std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+GetWindowThreadProcessId(void*,std::uint_least32_t*);
 }
 
 template<std::integral ch_type>

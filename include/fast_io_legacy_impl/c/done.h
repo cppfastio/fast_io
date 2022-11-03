@@ -7,8 +7,29 @@ namespace details
 {
 
 #if defined(__CYGWIN__)
-[[__gnu__::__dllimport__]] extern std::size_t __cdecl my_cygwin_fwrite_unlocked(void const* __restrict buffer,std::size_t size,std::size_t count,FILE* __restrict) noexcept __asm__("fwrite_unlocked");
-[[__gnu__::__dllimport__]] extern std::size_t __cdecl my_cygwin_fread_unlocked(void* __restrict buffer,std::size_t size,std::size_t count,FILE* __restrict) noexcept __asm__("fread_unlocked");
+#if __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
+#endif
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern std::size_t
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
+__cdecl
+#endif
+my_cygwin_fwrite_unlocked(void const* __restrict buffer,std::size_t size,std::size_t count,FILE* __restrict) noexcept __asm__("fwrite_unlocked");
+
+#if __has_cpp_attribute(__gnu__::__dllimport__)
+[[__gnu__::__dllimport__]]
+#endif
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern std::size_t 
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
+__cdecl
+#endif
+my_cygwin_fread_unlocked(void* __restrict buffer,std::size_t size,std::size_t count,FILE* __restrict) noexcept __asm__("fread_unlocked");
 #endif
 
 inline std::size_t c_fwrite_unlocked_impl(void const* __restrict begin,std::size_t type_size,std::size_t count,FILE* __restrict fp)

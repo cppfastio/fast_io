@@ -288,7 +288,16 @@ family==::fast_io::win32_family::wide_nt
 	*it=0;
 	auto p{buffer};
 	win32_family_dll_file<family> dllfile(::fast_io::mnp::os_c_str(p),::fast_io::dll_mode::none);
-	auto func{reinterpret_cast<void (__fastcall*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,
+	auto func{reinterpret_cast<
+void (
+#if defined(__CYGWIN__)
+#if !__has_cpp_attribute(__gnu__::__fastcall__)&&defined(_MSC_VER)
+__fastcall
+#elif __has_cpp_attribute(__gnu__::__fastcall__)
+__attribute__((__fastcall__))
+#endif
+#endif
+	*)(lc_locale*) noexcept>(dll_load_symbol(dllfile,
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 	u8"@export_v0@4"
 #else

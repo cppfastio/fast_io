@@ -19,7 +19,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern hostent* __stdcall gethostbyname(char const*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern hostent*
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+gethostbyname(char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

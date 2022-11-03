@@ -8,7 +8,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall rtl_nt_status_to_dos_error(std::uint_least32_t status) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+rtl_nt_status_to_dos_error(std::uint_least32_t status) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -27,7 +34,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtClose(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtClose(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -45,7 +59,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwClose(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwClose(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -73,7 +94,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
 			std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,void*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -92,7 +120,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwCreateFile(void**,std::uint_least32_t,object_attributes*,io_status_block*,std::int_least64_t*,
 			std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,void*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -122,7 +157,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
 		std::uint_least64_t*,std::uint_least32_t,std::uint_least32_t,void* __restrict) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -141,7 +183,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwCreateSection(void** __restrict,std::uint_least32_t,object_attributes* __restrict,
 		std::uint_least64_t*,std::uint_least32_t,std::uint_least32_t,void* __restrict) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -171,7 +220,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtQueryInformationProcess(void* __restrict,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtQueryInformationProcess(void* __restrict,
 		process_information_class,process_basic_information*,
 		std::uint_least32_t,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -192,7 +248,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwQueryInformationProcess(void* __restrict,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwQueryInformationProcess(void* __restrict,
 		process_information_class,process_basic_information*,
 		std::uint_least32_t,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -223,7 +286,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
 				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -242,7 +312,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwWriteFile(void*,void*,pio_apc_routine,void*,io_status_block*,
 				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -272,7 +349,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
 				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -291,7 +375,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwReadFile(void*,void*,pio_apc_routine,void*,io_status_block*,
 				void const*,std::uint_least32_t,std::int_least64_t*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -321,7 +412,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
 				void*,std::uint_least32_t,file_information_class,int,unicode_string*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -340,7 +438,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwQueryDirectoryFile(void*,void*,pio_apc_routine,void*,io_status_block*,
 				void*,std::uint_least32_t,file_information_class,int,unicode_string*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -370,7 +475,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -389,7 +501,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwQuerySection(void*,section_information_class,void*,std::size_t,std::size_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -419,7 +538,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -437,7 +563,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwQueryInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -467,7 +600,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -485,7 +625,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwSetInformationFile(void* __restrict,io_status_block* __restrict,void* __restrict,std::uint_least32_t,file_information_class) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -514,7 +661,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -532,7 +686,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwDuplicateObject(void*,void*,void*,void**,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -561,7 +722,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -580,7 +748,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwWaitForSingleObject(void*,int,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -609,7 +784,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -627,7 +809,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwSetSystemTime(std::uint_least64_t*,std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -656,7 +845,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-std::uint_least32_t __stdcall NtCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -675,7 +871,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-std::uint_least32_t __stdcall ZwCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwCreateProcess(void**,std::uint_least32_t,object_attributes*,void*,std::uint_least32_t,void*,void*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -704,7 +907,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern char unsigned __stdcall rtl_dos_path_name_to_nt_path_name_u(char16_t const*,unicode_string*,char16_t const**,rtl_relative_name_u*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern char unsigned
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+rtl_dos_path_name_to_nt_path_name_u(char16_t const*,unicode_string*,char16_t const**,rtl_relative_name_u*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -723,7 +933,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall rtl_dos_path_name_to_nt_path_name_u_with_status(char16_t const*,unicode_string*,char16_t const**,rtl_relative_name_u*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+rtl_dos_path_name_to_nt_path_name_u_with_status(char16_t const*,unicode_string*,char16_t const**,rtl_relative_name_u*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -742,7 +959,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __stdcall rtl_free_unicode_string(unicode_string*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern void
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+rtl_free_unicode_string(unicode_string*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -762,7 +986,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __stdcall RtlInitializeCriticalSection(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern void
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlInitializeCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -781,7 +1012,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __stdcall RtlEnterCriticalSection(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern void
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlEnterCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -800,7 +1038,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern int __stdcall RtlTryEnterCriticalSection(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern int
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlTryEnterCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -819,7 +1064,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __stdcall RtlLeaveCriticalSection(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern void
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlLeaveCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -838,7 +1090,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern void __stdcall RtlDeleteCriticalSection(void*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern void
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlDeleteCriticalSection(void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -857,7 +1116,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall RtlCreateUserThread(void*,void*,int,std::uint_least32_t,std::size_t,std::size_t,void*,void*,void**,client_id*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlCreateUserThread(void*,void*,int,std::uint_least32_t,std::size_t,std::size_t,void*,void*,void**,client_id*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -876,7 +1142,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtResumeThread(void*,std::uint_least32_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtResumeThread(void*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -895,7 +1168,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwResumeThread(void*,std::uint_least32_t*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwResumeThread(void*,std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -924,7 +1204,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -943,7 +1230,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwLockFile(void*,void*,pio_apc_routine,void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t,char unsigned,char unsigned) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -972,7 +1266,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -991,7 +1292,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwUnlockFile(void*,io_status_block*,std::int_least64_t*,std::int_least64_t*,std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1026,7 +1334,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtFlushBuffersFile(void*,io_status_block*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtFlushBuffersFile(void*,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1045,7 +1360,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwFlushBuffersFile(void*,io_status_block*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwFlushBuffersFile(void*,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1074,7 +1396,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall NtFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+NtFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1093,7 +1422,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __stdcall ZwFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
+#if __has_cpp_attribute(__gnu__::__stdcall__)
+[[__gnu__::__stdcall__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__stdcall__) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwFlushBuffersFileEx(void*,std::uint_least32_t,void*,std::uint_least32_t,io_status_block*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1122,7 +1458,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __cdecl DbgPrint(char const*,...) noexcept
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
+__cdecl
+#endif
+DbgPrint(char const*,...) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1141,7 +1484,14 @@ __declspec(dllimport)
 #elif __has_cpp_attribute(__gnu__::__dllimport__)
 [[__gnu__::__dllimport__]]
 #endif
-extern std::uint_least32_t __cdecl DbgPrintEx(std::uint_least32_t,std::uint_least32_t,char const*,...) noexcept
+#if __has_cpp_attribute(__gnu__::__cdecl__)
+[[__gnu__::__cdecl__]]
+#endif
+extern std::uint_least32_t
+#if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
+__cdecl
+#endif
+DbgPrintEx(std::uint_least32_t,std::uint_least32_t,char const*,...) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
