@@ -60,29 +60,39 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	if constexpr(findnot)
 	{
-		constexpr simd_vector_type mask_vecs{create_simd_vector_with_all_masks<simd_vector_type>()};
+		constexpr simd_vector_type zero_vecs{};
 		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
 		{
-			return !is_all_zeros(func(simdvec)!=mask_vecs);
+			return !is_all_zeros(func(simdvec)==zero_vecs);
 		});
 	}
 	else
 	{
-		constexpr simd_vector_type zero_vecs{};
 		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
 		{
-			return !is_all_zeros(func(simdvec)!=zero_vecs);
+			return !is_all_zeros(func(simdvec));
 		});
 	}
 }
 
 template<bool findnot,std::size_t vec_size,std::integral char_type,typename simd_vector_type>
-inline constexpr char_type const* find_simd_constant_simd_common_all_impl(char_type const* first,char_type const* last,simd_vector_type const& zeros) noexcept
+inline constexpr char_type const* find_simd_constant_simd_common_all_impl(char_type const* first,char_type const* last,simd_vector_type const& charsvec) noexcept
 {
-	return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
+	constexpr unsigned N{vec_size/sizeof(char_type)};
+	if constexpr(findnot)
 	{
-		return simdvec==zeros;
-	});
+		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
+		{
+			return !is_all_zeros(simdvec!=charsvec);
+		});
+	}
+	else
+	{
+		return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
+		{
+			return !is_all_zeros(simdvec==charsvec);
+		});
+	}
 }
 
 template<char8_t lfch,bool findnot,std::size_t vec_size,std::integral char_type>
