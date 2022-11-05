@@ -20,7 +20,7 @@ int main()
 		fast_io::u8obuf_file file(u8"general_float.txt");
 		for(auto const & e : vec)
 		{
-			println(file,e);
+			println(file,fast_io::mnp::general(e));
 		}
 	}
 }

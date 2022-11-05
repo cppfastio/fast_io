@@ -16,7 +16,7 @@ none,left,middle,right,internal
 
 enum class floating_format:char8_t
 {
-general,fixed,scientific,hexfloat
+fixed,general,scientific,decimal,hexfloat
 };
 
 enum class lc_time_flag:std::uint_least8_t
@@ -42,19 +42,24 @@ struct scalar_flags
 	bool uppercase_showbase{};
 	bool uppercase{};
 	bool uppercase_e{};
+#if 0
 	bool showpos_e{true};
+#endif
 	bool comma{};
 	bool full{};
 	scalar_placement placement{scalar_placement::none};
-	floating_format floating{floating_format::general};
+	floating_format floating{};
 	lc_time_flag time_flag{};
+#if 0
 	bool localeparse{};
+#endif
 	bool line{};
+
 };
 
-inline constexpr scalar_flags integral_default_scalar_flags{.floating=floating_format::fixed};
-inline constexpr scalar_flags floating_point_default_scalar_flags{};
-inline constexpr scalar_flags address_default_scalar_flags{.base=16,.showbase=true,.full=true,.floating=floating_format::fixed};
+inline constexpr scalar_flags integral_default_scalar_flags{};
+inline constexpr scalar_flags floating_point_default_scalar_flags{.floating=floating_format::decimal};
+inline constexpr scalar_flags address_default_scalar_flags{.base=16,.showbase=true,.full=true};
 
 template<scalar_flags flags,typename T>
 struct scalar_manip_t
@@ -76,7 +81,7 @@ struct scalar_manip_t
 namespace details
 {
 template<std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false>
-inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs==2||bs==3||bs==16)?upper:false),.uppercase=((bs<=10)?false:upper),.full=fll,.floating=::fast_io::manipulators::floating_format::fixed};
+inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs==2||bs==3||bs==16)?upper:false),.uppercase=((bs<=10)?false:upper),.full=fll};
 
 template<bool upper>
 inline constexpr ::fast_io::manipulators::scalar_flags boolalpha_mani_flags_cache{.alphabet=true,.uppercase=upper};
@@ -88,10 +93,10 @@ template<bool uppercase,bool comma,::fast_io::manipulators::floating_format fm>
 inline constexpr ::fast_io::manipulators::scalar_flags dcmfloat_mani_flags_cache{.uppercase=uppercase,.uppercase_e=uppercase,.comma=comma,.floating=fm};
 
 template<bool uppercase,bool shbase>
-inline constexpr ::fast_io::manipulators::scalar_flags cryptohash_mani_flags_cache{.base=16,.showbase=shbase,.uppercase_showbase=uppercase,.uppercase=uppercase,.floating=::fast_io::manipulators::floating_format::fixed};
+inline constexpr ::fast_io::manipulators::scalar_flags cryptohash_mani_flags_cache{.base=16,.showbase=shbase,.uppercase_showbase=uppercase,.uppercase=uppercase};
 
 template<std::size_t bs,bool noskipws,bool shbase,bool skipzero>
-inline constexpr ::fast_io::manipulators::scalar_flags base_scan_mani_flags_cache{.base=bs,.showbase=shbase,.noskipws=noskipws,.full=skipzero,.floating=::fast_io::manipulators::floating_format::fixed};
+inline constexpr ::fast_io::manipulators::scalar_flags base_scan_mani_flags_cache{.base=bs,.showbase=shbase,.noskipws=noskipws,.full=skipzero};
 
 template<typename inttype>
 struct unsigned_integer_alias_type_traits_helper
@@ -517,7 +522,6 @@ inline constexpr auto comma_hexfloat(scalar_type t) noexcept
 	return scalar_manip_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,float_alias_type>{static_cast<float_alias_type>(t)};
 }
 
-
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
 inline constexpr auto comma_hexfloat(scalar_type t,std::size_t n) noexcept
@@ -525,6 +529,39 @@ inline constexpr auto comma_hexfloat(scalar_type t,std::size_t n) noexcept
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,float_alias_type>{static_cast<float_alias_type>(t),n};
 }
+
+template<bool uppercase=false,typename scalar_type>
+requires (::fast_io::details::my_floating_point<scalar_type>)
+inline constexpr auto decimal(scalar_type t) noexcept
+{
+	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::decimal>,float_alias_type>{static_cast<float_alias_type>(t)};
+}
+
+template<bool uppercase=false,typename scalar_type>
+requires (::fast_io::details::my_floating_point<scalar_type>)
+inline constexpr auto comma_decimal(scalar_type t) noexcept
+{
+	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
+	return scalar_manip_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::decimal>,float_alias_type>{static_cast<float_alias_type>(t)};
+}
+
+template<bool uppercase=false,typename scalar_type>
+requires (::fast_io::details::my_floating_point<scalar_type>)
+inline constexpr auto decimal(scalar_type t,std::size_t n) noexcept
+{
+	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::decimal>,float_alias_type>{static_cast<float_alias_type>(t),n};
+}
+
+template<bool uppercase=false,typename scalar_type>
+requires (::fast_io::details::my_floating_point<scalar_type>)
+inline constexpr auto comma_decimal(scalar_type t,std::size_t n) noexcept
+{
+	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
+	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::decimal>,float_alias_type>{static_cast<float_alias_type>(t),n};
+}
+
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
