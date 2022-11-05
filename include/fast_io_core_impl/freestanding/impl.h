@@ -6,9 +6,14 @@ GCC provides more headers in freestanding environment than standard requires bec
 no std::array, std::copy and others
 
 */
-
+#if defined(__GLIBCXX__) &&__has_include(<bits/ranges_base.h>) && __has_include(<bits/stl_iterator.h>) && _GLIBCXX_RELEASE >= 12
+#include<initializer_list>
+#include<bits/stl_iterator.h>
+#include<bits/ranges_base.h>
+#else
 #include<iterator>
 #include<ranges>
+#endif
 
 #if defined(__GLIBCXX__) &&__has_include(<bits/move.h>)
 #include<bits/move.h>
