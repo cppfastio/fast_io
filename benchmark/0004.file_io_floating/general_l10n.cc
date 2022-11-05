@@ -21,6 +21,6 @@ int main()
 		fast_io::timer t(u8"general_l10n");
 		fast_io::u8obuf_file file(u8"general_l10n.txt");
 		for(auto const & e : vec)
-			println(imbue(l10n,file),e);
+			println(imbue(l10n,file),fast_io::mnp::general(e));
 	}
 }

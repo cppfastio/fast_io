@@ -1083,7 +1083,7 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 }
 
 template<bool comma,::std::integral char_type,my_unsigned_integral U>
-inline constexpr char_type* print_rsv_fp_general_scientific_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
+inline constexpr char_type* print_rsv_fp_decimal_scientific_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
 	auto itp1{iter+1};
 	::fast_io::details::jeaiii::jeaiii_main_len<true>(itp1,m10,m10len);
@@ -1093,7 +1093,7 @@ inline constexpr char_type* print_rsv_fp_general_scientific_common_impl(char_typ
 }
 
 template<bool comma,::std::integral char_type,my_unsigned_integral U>
-inline constexpr char_type* print_rsv_fp_general_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
+inline constexpr char_type* print_rsv_fp_decimal_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if(m10len==1)[[unlikely]]
@@ -1103,7 +1103,7 @@ inline constexpr char_type* print_rsv_fp_general_common_impl(char_type* iter,U m
 		return iter;
 	}
 	else
-		return print_rsv_fp_general_scientific_common_impl<comma>(iter,m10,m10len);
+		return print_rsv_fp_decimal_scientific_common_impl<comma>(iter,m10,m10len);
 }
 
 template<typename flt,bool uppercase_e,::std::integral char_type>
@@ -1231,7 +1231,15 @@ bool uppercase_e,
 inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
 {
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
-	if constexpr(mt==::fast_io::manipulators::floating_format::scientific)
+	if constexpr(mt==::fast_io::manipulators::floating_format::general)
+	{
+		if(-5<e10&&e10<7)
+		{
+			return print_rsv_fp_fixed_decision_impl<flt,comma>(iter,m10,e10);
+		}
+		return print_rsv_fp_decision_impl<flt,comma,uppercase_e,::fast_io::manipulators::floating_format::scientific>(iter,m10,e10);
+	}
+	else if constexpr(mt==::fast_io::manipulators::floating_format::scientific)
 	{
 		if(m10<10u)[[unlikely]]
 		{
@@ -1250,7 +1258,7 @@ inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename 
 		}
 		return print_rsv_fp_e_impl<flt,uppercase_e>(iter,e10);
 	}
-	else	//general
+	else	//decimal
 	{
 		std::int_least32_t olength{static_cast<std::int_least32_t>(chars_len<10,true>(m10))};
 		std::int_least32_t const real_exp{static_cast<std::int_least32_t>(e10 + olength - 1)};
@@ -1273,7 +1281,7 @@ inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename 
 		if(scientific_length<fixed_length)
 		{
 			//scientific decision
-			iter=print_rsv_fp_general_common_impl<comma>(iter,m10,static_cast<std::uint_least32_t>(olength));
+			iter=print_rsv_fp_decimal_common_impl<comma>(iter,m10,static_cast<std::uint_least32_t>(olength));
 			return print_rsv_fp_e_impl<flt,uppercase_e>(iter,real_exp);
 		}
 		//fixed decision
@@ -1352,7 +1360,7 @@ inline constexpr std::size_t print_rsvflt_size_impl() noexcept
 	}
 	else
 	{
-		//general's max length is equal to scientific's max length
+		//decimal and general's max lengths are equal to scientific's max length
 //(+/-)(significants+sep)(E/e)(+/-)e
 		std::size_t sum{1};//sign(+/-)
 		sum+=trait::m10digits;

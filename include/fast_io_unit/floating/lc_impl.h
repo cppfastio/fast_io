@@ -41,6 +41,7 @@ inline constexpr std::size_t lc_print_reserve_float_size_impl(basic_lc_all<char_
 	static_assert(manipulators::floating_format::general==flags.floating||
 		manipulators::floating_format::scientific==flags.floating||
 		manipulators::floating_format::fixed==flags.floating||
+		manipulators::floating_format::decimal==flags.floating||
 		manipulators::floating_format::hexfloat==flags.floating);
 	if constexpr(flags.floating==manipulators::floating_format::hexfloat)
 	{
@@ -55,7 +56,14 @@ inline constexpr std::size_t lc_print_reserve_float_size_impl(basic_lc_all<char_
 		{
 			return lc_print_rsv_iec559_size<char_type,double,flags.floating>(all);
 		}
-		static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>),"currently only support iec559 float32 and float64, sorry");
+		static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>
+#ifdef __STDCPP_FLOAT32_T__
+		||std::same_as<std::remove_cvref_t<flt>,_Float32>
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+		||std::same_as<std::remove_cvref_t<flt>,_Float64>
+#endif
+		),"currently only support iec559 float32 and float64, sorry");
 		return lc_print_rsv_iec559_size<char_type,std::remove_cvref_t<flt>,flags.floating>(all);
 	}
 }
@@ -76,6 +84,7 @@ inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* 
 	static_assert(manipulators::floating_format::general==flags.floating||
 		manipulators::floating_format::scientific==flags.floating||
 		manipulators::floating_format::fixed==flags.floating||
+		manipulators::floating_format::decimal==flags.floating||
 		manipulators::floating_format::hexfloat==flags.floating);
 
 	if constexpr(flags.floating==manipulators::floating_format::hexfloat)
@@ -106,7 +115,14 @@ inline constexpr char_type* print_reserve_define(basic_lc_all<char_type> const* 
 		else
 		{
 			//this is the case for every other platform, including xxx-windows-gnu
-			static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>),"currently only support iec559 float32 and float64, sorry");
+			static_assert((std::same_as<std::remove_cvref_t<flt>,double>||std::same_as<std::remove_cvref_t<flt>,float>
+#ifdef __STDCPP_FLOAT32_T__
+			||std::same_as<std::remove_cvref_t<flt>,_Float32>
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+			||std::same_as<std::remove_cvref_t<flt>,_Float64>
+#endif
+			),"currently only support iec559 float32 and float64, sorry");
 			return ::fast_io::details::lc_print_rsvflt_define_impl<flags.showpos,flags.uppercase,flags.uppercase_e,flags.floating>(all,iter,f.reference);
 		}
 		return iter;

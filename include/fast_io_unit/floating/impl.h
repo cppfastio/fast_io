@@ -14,6 +14,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,mani
 	static_assert(manipulators::floating_format::general==flags.floating||
 		manipulators::floating_format::scientific==flags.floating||
 		manipulators::floating_format::fixed==flags.floating||
+		manipulators::floating_format::decimal==flags.floating||
 		manipulators::floating_format::hexfloat==flags.floating);
 	using trait = ::fast_io::details::iec559_traits<flt>;
 	if constexpr(flags.floating==manipulators::floating_format::hexfloat)
@@ -59,6 +60,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,man
 	static_assert(manipulators::floating_format::general==flags.floating||
 		manipulators::floating_format::scientific==flags.floating||
 		manipulators::floating_format::fixed==flags.floating||
+		manipulators::floating_format::decimal==flags.floating||
 		manipulators::floating_format::hexfloat==flags.floating);
 	if constexpr(flags.floating==manipulators::floating_format::hexfloat)
 	{

@@ -16,9 +16,9 @@ int main()
 		vec.emplace_back(dis(eng));
 	}
 	{
-		fast_io::timer t(u8"general");
-		fast_io::u8obuf_file file(u8"general.txt");
+		fast_io::timer t(u8"decimal");
+		fast_io::u8obuf_file file(u8"decimal.txt");
 		for(auto const & e : vec)
-			println(file,fast_io::mnp::general(e));
+			println(file,e);
 	}
 }
