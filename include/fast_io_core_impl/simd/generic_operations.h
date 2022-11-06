@@ -1048,18 +1048,206 @@ inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,simd_vect
 	});
 }
 
-template<typename T,std::size_t N,std::integral I>
-inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,I i) noexcept
+template<typename T,std::size_t N>
+inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,unsigned i) noexcept
 {
+#if defined(__x86_64__) || defined(_M_X64)
+#if __cpp_if_consteval >= 202106L
+	if !consteval
+#else
+	if (!__builtin_is_constant_evaluated())
+#endif
+	{
+		using vec_type = simd_vector<T,N>;
+		if constexpr(2<=sizeof(T)&&sizeof(T)<=8)
+		{
+			if constexpr(sizeof(vec_type)==16)
+			{
+				__m128i amm = __builtin_bit_cast(__m128i,a);
+				if constexpr(sizeof(T)==2)
+				{
+					amm = _mm_slli_epi16(amm,i);
+				}
+				else if constexpr(sizeof(T)==4)
+				{
+					amm = _mm_slli_epi32(amm,i);
+				}
+				else if constexpr(sizeof(T)==8)
+				{
+					amm = _mm_slli_epi64(amm,i);
+				}
+				return __builtin_bit_cast(vec_type,amm);
+			}
+			else if constexpr(sizeof(vec_type)==32)
+			{
+				if constexpr(::fast_io::details::cpu_flags::avx2_supported)
+				{
+					__m256i amm = __builtin_bit_cast(__m256i,a);
+					if constexpr(sizeof(T)==2)
+					{
+						amm = _mm256_slli_epi16(amm,i);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						amm = _mm256_slli_epi32(amm,i);
+					}
+					else if constexpr(sizeof(T)==8)
+					{
+						amm = _mm256_slli_epi64(amm,i);
+					}
+					return __builtin_bit_cast(vec_type,amm);
+				}
+				else if constexpr(::fast_io::details::cpu_flags::avx_supported)
+				{
+					__m256i amm = __builtin_bit_cast(__m256i,a);
+					__m128i alow = _mm256_castsi256_si128(amm);
+					__m128i ahigh = _mm256_extractf128_si256(amm,1);
+					if constexpr(sizeof(T)==2)
+					{
+						alow = _mm_slli_epi16(alow,i);
+						ahigh = _mm_slli_epi16(ahigh,i);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						alow = _mm_slli_epi32(alow,i);
+						ahigh = _mm_slli_epi32(ahigh,i);
+					}
+					else if constexpr(sizeof(T)==8)
+					{
+						alow = _mm_slli_epi64(alow,i);
+						ahigh = _mm_slli_epi64(ahigh,i);
+					}
+					__m256i res = _mm256_castsi128_si256(alow);
+					res = _mm256_insertf128_si256(res,ahigh,1);
+					return __builtin_bit_cast(vec_type,res);
+				}
+			}
+			else if constexpr(sizeof(vec_type)==64)
+			{
+				if constexpr(::fast_io::details::cpu_flags::avx512bw_supported)
+				{
+					__m512i amm = __builtin_bit_cast(__m512i,a);
+					if constexpr(sizeof(T)==2)
+					{
+						amm = _mm512_slli_epi16(amm,i);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						amm = _mm512_slli_epi32(amm,i);
+					}
+					else if constexpr(sizeof(T)==8)
+					{
+						amm = _mm512_slli_epi64(amm,i);
+					}
+					return __builtin_bit_cast(vec_type,amm);
+				}
+			}
+		}
+	}
+#endif
 	return ::fast_io::details::generic_simd_self_create_op_impl(a,[i](T va)
 	{
 		return va<<i;
 	});
 }
 
-template<typename T,std::size_t N,std::integral I>
-inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,I i) noexcept
+template<typename T,std::size_t N>
+inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,unsigned i) noexcept
 {
+#if defined(__x86_64__) || defined(_M_X64)
+#if __cpp_if_consteval >= 202106L
+	if !consteval
+#else
+	if (!__builtin_is_constant_evaluated())
+#endif
+	{
+		using vec_type = simd_vector<T,N>;
+		if constexpr(2<=sizeof(T)&&sizeof(T)<=8)
+		{
+			if constexpr(sizeof(vec_type)==16)
+			{
+				__m128i amm = __builtin_bit_cast(__m128i,a);
+				if constexpr(sizeof(T)==2)
+				{
+					amm = _mm_srli_epi16(amm,i);
+				}
+				else if constexpr(sizeof(T)==4)
+				{
+					amm = _mm_srli_epi32(amm,i);
+				}
+				else if constexpr(sizeof(T)==8)
+				{
+					amm = _mm_srli_epi64(amm,i);
+				}
+				return __builtin_bit_cast(vec_type,amm);
+			}
+			else if constexpr(sizeof(vec_type)==32)
+			{
+				if constexpr(::fast_io::details::cpu_flags::avx2_supported)
+				{
+					__m256i amm = __builtin_bit_cast(__m256i,a);
+					if constexpr(sizeof(T)==2)
+					{
+						amm = _mm256_srli_epi16(amm,i);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						amm = _mm256_srli_epi32(amm,i);
+					}
+					else if constexpr(sizeof(T)==8)
+					{
+						amm = _mm256_srli_epi64(amm,i);
+					}
+					return __builtin_bit_cast(vec_type,amm);
+				}
+				else if constexpr(::fast_io::details::cpu_flags::avx_supported)
+				{
+					__m256i amm = __builtin_bit_cast(__m256i,a);
+					__m128i alow = _mm256_castsi256_si128(amm);
+					__m128i ahigh = _mm256_extractf128_si256(amm,1);
+					if constexpr(sizeof(T)==2)
+					{
+						alow = _mm_srli_epi16(alow,i);
+						ahigh = _mm_srli_epi16(ahigh,i);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						alow = _mm_srli_epi32(alow,i);
+						ahigh = _mm_srli_epi32(ahigh,i);
+					}
+					else if constexpr(sizeof(T)==8)
+					{
+						alow = _mm_srli_epi64(alow,i);
+						ahigh = _mm_srli_epi64(ahigh,i);
+					}
+					__m256i res = _mm256_castsi128_si256(alow);
+					res = _mm256_insertf128_si256(res,ahigh,1);
+					return __builtin_bit_cast(vec_type,res);
+				}
+			}
+			else if constexpr(sizeof(vec_type)==64)
+			{
+				if constexpr(::fast_io::details::cpu_flags::avx512bw_supported)
+				{
+					__m512i amm = __builtin_bit_cast(__m512i,a);
+					if constexpr(sizeof(T)==2)
+					{
+						amm = _mm512_srli_epi16(amm,i);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						amm = _mm512_srli_epi32(amm,i);
+					}
+					else if constexpr(sizeof(T)==8)
+					{
+						amm = _mm512_srli_epi64(amm,i);
+					}
+					return __builtin_bit_cast(vec_type,amm);
+				}
+			}
+		}
+	}
+#endif
 	return ::fast_io::details::generic_simd_self_create_op_impl(a,[i](T va)
 	{
 		return va>>i;
