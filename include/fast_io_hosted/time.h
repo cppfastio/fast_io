@@ -567,13 +567,13 @@ inline iso8601_timestamp to_iso8601_local_impl(std::int_least64_t seconds,std::u
 	long bias{};
 	if(dstadj)
 	{
-	#if defined(_MSC_VER) || defined(_UCRT)
+	#if (defined(_MSC_VER) || defined(_UCRT)) && (defined(_M_IX86) || defined(_M_X64) ||defined(__i386__) || defined(__x86_64__))
 	{
 		auto errn{noexcept_call(_get_dstbias,__builtin_addressof(bias))};
 		if(errn)
 			throw_posix_error(static_cast<int>(errn));
 	}
-	#elif defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
+	#elif defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)&& (defined(_M_IX86) || defined(_M_X64) ||defined(__i386__) || defined(__x86_64__))
 		bias=_dstbias;
 	#else
 		bias=daylight?-3600L:0;
@@ -601,7 +601,7 @@ inline iso8601_timestamp to_iso8601_local_impl(std::int_least64_t seconds,std::u
 	#endif
 	long unsigned ulong_tm_gmtoff{static_cast<long unsigned>(tm_gmtoff)};
 	long seconds{};
-#if defined(_MSC_VER) || defined(_UCRT)
+#if (defined(_MSC_VER) || defined(_UCRT))&& (defined(_M_IX86) || defined(_M_X64) ||defined(__i386__) || defined(__x86_64__))
 	{
 		auto errn{::fast_io::noexcept_call(_get_dstbias,__builtin_addressof(seconds))};
 		if(errn)
