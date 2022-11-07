@@ -140,6 +140,14 @@ simd_vector
 	{
 		return *this=(*this)>>other;
 	}
+	inline constexpr simd_vector<T,N>& operator<<=(unsigned v) noexcept
+	{
+		return *this=(*this)<<v;
+	}
+	inline constexpr simd_vector<T,N>& operator>>=(unsigned v) noexcept
+	{
+		return *this=(*this)>>v;
+	}
 	inline constexpr simd_vector<T,N> operator~() const noexcept
 	{
 		constexpr bool using_simd{sizeof(vec_type)==16||(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
