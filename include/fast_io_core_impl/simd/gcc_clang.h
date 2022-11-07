@@ -194,6 +194,19 @@ struct simd_vector
 		value<<=other.value;
 		return *this;
 	}
+
+	template<std::integral I>
+	inline constexpr simd_vector<T,N>& operator<<=(I other) noexcept
+	{
+		value<<=other;
+		return *this;
+	}
+	template<std::integral I>
+	inline constexpr simd_vector<T,N>& operator>>=(I other) noexcept
+	{
+		value>>=other;
+		return *this;
+	}
 	inline constexpr simd_vector<T,N> operator~() const noexcept
 	{
 		return {~value};
