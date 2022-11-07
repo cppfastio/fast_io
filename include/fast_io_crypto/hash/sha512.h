@@ -175,8 +175,8 @@ inline constexpr void sha512_do_constexpr_function(std::uint_least64_t* __restri
 }
 
 #if !(defined(_MSC_VER) && !defined(__clang__))
-#if 0
-#include"sha512_simd32.h"
+#if defined(__AVX2__)
+#include"sha512_simd32_shuffle.h"
 #elif defined(__SSE4_2__) || defined(__wasm_simd128__)
 #include"sha512_simd16.h"
 #else
