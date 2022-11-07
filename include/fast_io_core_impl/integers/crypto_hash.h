@@ -44,6 +44,17 @@ inline constexpr char_type* pr_rsv_uuid(char_type* iter,std::byte const* uuid) n
 	return crypto_hash_pr_df_impl<uppercase>(next_it,next_it+6,iter);
 }
 
+inline constexpr std::size_t hex_encoding_prv_size_cal(std::byte const* first,std::byte const* last) noexcept
+{
+	std::size_t n{static_cast<std::size_t>(last-first)};
+	constexpr std::size_t mxn{std::numeric_limits<std::size_t>::max()/2};
+	if(n>mxn)
+	{
+		::fast_io::fast_terminate();
+	}
+	return n<<1;
+}
+
 }
 
 template<bool uppercase>
@@ -59,13 +70,7 @@ inline constexpr std::size_t print_reserve_size(
 	io_reserve_type_t<char_type,::fast_io::basic_hex_encode<uppercase>>,
 	::fast_io::basic_hex_encode<uppercase> e) noexcept
 {
-	std::size_t n{static_cast<std::size_t>(e.last-e.first)};
-	constexpr std::size_t mxn{std::numeric_limits<std::size_t>::max()/2};
-	if(n>mxn)
-	{
-		::fast_io::fast_terminate();
-	}
-	return n<<1;
+	return ::fast_io::details::hex_encoding_prv_size_cal(e.reference,e.last);
 }
 
 template<std::integral char_type,bool uppercase>
@@ -74,7 +79,7 @@ inline constexpr char_type* print_reserve_define(
 	char_type* iter,
 	::fast_io::basic_hex_encode<uppercase> e) noexcept
 {
-	return ::fast_io::details::crypto_hash_pr_df_impl<uppercase>(iter,e.reference,e.last);
+	return ::fast_io::details::crypto_hash_pr_df_impl<uppercase>(e.reference,e.last,iter);
 }
 
 template<::std::integral ch_type,typename T>
