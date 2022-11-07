@@ -515,6 +515,24 @@ constexpr auto code_cvt(basic_io_scatter_t<char_type> t) noexcept
 template<
 encoding_scheme src_scheme=encoding_scheme::execution_charset,
 encoding_scheme dst_scheme=encoding_scheme::execution_charset,
+::std::integral char_type>
+constexpr auto code_cvt_os_c_str(char_type const* cstr) noexcept
+{
+	return ::fast_io::manipulators::code_cvt<src_scheme,dst_scheme>(::fast_io::manipulators::os_c_str(cstr));
+}
+
+template<
+encoding_scheme src_scheme=encoding_scheme::execution_charset,
+encoding_scheme dst_scheme=encoding_scheme::execution_charset,
+::std::integral char_type>
+constexpr auto code_cvt_os_c_str(char_type const* cstr,::std::size_t n) noexcept
+{
+	return ::fast_io::manipulators::code_cvt<src_scheme,dst_scheme>(::fast_io::mnp::os_c_str(cstr,n));
+}
+
+template<
+encoding_scheme src_scheme=encoding_scheme::execution_charset,
+encoding_scheme dst_scheme=encoding_scheme::execution_charset,
 std::integral src_char_type,
 std::integral dst_char_type>
 inline constexpr std::size_t print_reserve_size(
