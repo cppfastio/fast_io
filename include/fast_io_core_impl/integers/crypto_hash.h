@@ -46,6 +46,37 @@ inline constexpr char_type* pr_rsv_uuid(char_type* iter,std::byte const* uuid) n
 
 }
 
+template<bool uppercase>
+struct basic_hex_encode
+{
+	using manip_tag = manip_tag_t;
+	std::byte const* reference{};
+	std::byte const* last{};
+};
+
+template<std::integral char_type,bool uppercase>
+inline constexpr std::size_t print_reserve_size(
+	io_reserve_type_t<char_type,::fast_io::basic_hex_encode<uppercase>>,
+	::fast_io::basic_hex_encode<uppercase> e) noexcept
+{
+	std::size_t n{static_cast<std::size_t>(e.last-e.first)};
+	constexpr std::size_t mxn{std::numeric_limits<std::size_t>::max()/2};
+	if(n>mxn)
+	{
+		::fast_io::fast_terminate();
+	}
+	return n<<1;
+}
+
+template<std::integral char_type,bool uppercase>
+inline constexpr char_type* print_reserve_define(
+	io_reserve_type_t<char_type,::fast_io::basic_hex_encode<uppercase>>,
+	char_type* iter,
+	::fast_io::basic_hex_encode<uppercase> e) noexcept
+{
+	return ::fast_io::details::crypto_hash_pr_df_impl<uppercase>(iter,e.reference,e.last);
+}
+
 template<::std::integral ch_type,typename T>
 struct basic_crypto_hash_as_file
 {
@@ -96,6 +127,50 @@ inline void scatter_write(basic_crypto_hash_as_file<ch_type,T> t,io_scatters_t s
 
 namespace manipulators
 {
+
+template<::std::contiguous_iterator Iter>
+requires std::is_trivially_copyable_v<std::iter_value_t<Iter>>
+inline constexpr ::fast_io::basic_hex_encode<false> hex_encode(Iter first,Iter last) noexcept
+{
+	if constexpr(std::same_as<std::iter_value_t<Iter>,std::byte>)
+	{
+		return {std::to_address(first),std::to_address(last)};
+	}
+	else
+	{
+		return {reinterpret_cast<std::byte const*>(std::to_address(first)),
+		reinterpret_cast<std::byte const*>(std::to_address(last))};
+	}
+}
+
+template<::std::contiguous_iterator Iter>
+requires std::is_trivially_copyable_v<std::iter_value_t<Iter>>
+inline constexpr ::fast_io::basic_hex_encode<true> hex_encode_upper(Iter first,Iter last) noexcept
+{
+	if constexpr(std::same_as<std::iter_value_t<Iter>,std::byte>)
+	{
+		return {std::to_address(first),std::to_address(last)};
+	}
+	else
+	{
+		return {reinterpret_cast<std::byte const*>(std::to_address(first)),
+		reinterpret_cast<std::byte const*>(std::to_address(last))};
+	}
+}
+
+template<::std::ranges::contiguous_range rg>
+requires std::is_trivially_copyable_v<::std::ranges::range_value_t<rg>>
+inline constexpr ::fast_io::basic_hex_encode<false> hex_encode(rg&& r) noexcept
+{
+	return hex_encode(std::to_address(std::ranges::begin(r)),std::to_address(std::ranges::end(r)));
+}
+
+template<::std::ranges::contiguous_range rg>
+requires std::is_trivially_copyable_v<::std::ranges::range_value_t<rg>>
+inline constexpr ::fast_io::basic_hex_encode<true> hex_encode_upper(rg&& r) noexcept
+{
+	return hex_encode_upper(std::to_address(std::ranges::begin(r)),std::to_address(std::ranges::end(r)));
+}
 
 template<std::integral char_type,typename T>
 inline constexpr ::fast_io::basic_crypto_hash_as_file<char_type,T> basic_as_file(T& hashctx) noexcept
