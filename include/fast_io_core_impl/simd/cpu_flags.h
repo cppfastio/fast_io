@@ -79,7 +79,7 @@ true
 
 inline constexpr bool armneon_supported
 {
-#if defined(__ARM_NEON)
+#if defined(__ARM_NEON) && __has_cpp_attribute(__gnu__::__vector_size__)
 true
 #endif
 };
