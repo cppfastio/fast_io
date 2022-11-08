@@ -150,7 +150,7 @@ simd_vector
 	}
 	inline constexpr simd_vector<T,N> operator~() const noexcept
 	{
-		constexpr bool using_simd{sizeof(vec_type)==16||(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
+		constexpr bool using_simd{(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)||(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		||(sizeof(vec_type)==64&&(::fast_io::details::cpu_flags::avx512dq_supported||::fast_io::details::cpu_flags::avx512f_supported))};
 		if constexpr(using_simd)
 		{
@@ -175,14 +175,14 @@ simd_vector
 		}
 		else
 		{
-#if defined(__x86_64__) || defined(_M_X64)
+#if (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
 #if __cpp_if_consteval >= 202106L
 		if !consteval
 #else
 		if (!__builtin_is_constant_evaluated())
 #endif
 		{
-			if constexpr(sizeof(vec_type)==16)
+			if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 			{
 				if constexpr(::fast_io::details::cpu_flags::sse3_supported)
 				{

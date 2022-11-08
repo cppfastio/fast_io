@@ -73,27 +73,9 @@ inline constexpr unsigned vector_mask_countr_common_no_intrinsics_impl(::fast_io
 
 inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_t sizeofsimdvector) noexcept
 {
-	if(sizeofsimdvector==16)
+	if(sizeofsimdvector<=32)
 	{
-#if defined(__has_builtin)
-#if (defined(__SSE2__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb128)) || \
-	(defined(__wasm_simd128__) && __has_builtin(__builtin_wasm_bitmask_i8x16))
-		return true;
-#endif
-#elif (defined(__x86_64__) || defined(_M_X64)) && (defined(__SSE2__)||defined(_MSC_VER))
-		return true;
-#endif
-
-	}
-	else if(sizeofsimdvector==32)
-	{
-#if defined(__has_builtin)
-#if defined(__AVX__) && defined(__x86_64__) && __has_builtin(__builtin_ia32_pmovmskb256)
-		return true;
-#endif
-#elif (defined(__x86_64__) || defined(_M_X64)) && defined(__AVX2__)
-		return true;
-#endif
+		return ::fast_io::details::calculate_can_simd_vector_run_with_cpu_instruction(sizeofsimdvector);
 	}
 	return false;
 }
@@ -149,16 +131,19 @@ unsigned vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_v
 			d=static_cast<unsigned>(std::countr_one(value));
 		}
 #endif
-#elif (defined(__x86_64__) || defined(_M_X64)) && (defined(__SSE2__)||defined(_MSC_VER))
-		__m128i a = __builtin_bit_cast(__m128i,vec);
-		std::uint_least16_t const value{static_cast<std::uint_least16_t>(_mm_movemask_epi8(a,a))};
-		if constexpr(ctzero)
+#elif (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
+		if constexpr(::fast_io::details::cpu_flags::sse2_supported)
 		{
-			d=static_cast<unsigned>(std::countr_zero(value));
-		}
-		else
-		{
-			d=static_cast<unsigned>(std::countr_one(value));
+			__m128i a = __builtin_bit_cast(__m128i,vec);
+			std::uint_least16_t const value{static_cast<std::uint_least16_t>(_mm_movemask_epi8(a,a))};
+			if constexpr(ctzero)
+			{
+				d=static_cast<unsigned>(std::countr_zero(value));
+			}
+			else
+			{
+				d=static_cast<unsigned>(std::countr_one(value));
+			}
 		}
 #endif
 	}
@@ -177,16 +162,19 @@ unsigned vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_v
 			d=static_cast<unsigned>(std::countr_one(value));
 		}
 #endif
-#elif (defined(__x86_64__) || defined(_M_X64)) && defined(__AVX2__)
-		__m256i a = __builtin_bit_cast(__m256i,vec);
-		std::uint_least32_t const value{static_cast<std::uint_least32_t>(_mm256_movemask_epi8(a,a))};
-		if constexpr(ctzero)
+#elif (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
+		if constexpr(::fast_io::details::cpu_flags::avx2_supported)
 		{
-			d=static_cast<unsigned>(std::countr_zero(value));
-		}
-		else
-		{
-			d=static_cast<unsigned>(std::countr_one(value));
+			__m256i a = __builtin_bit_cast(__m256i,vec);
+			std::uint_least32_t const value{static_cast<std::uint_least32_t>(_mm256_movemask_epi8(a,a))};
+			if constexpr(ctzero)
+			{
+				d=static_cast<unsigned>(std::countr_zero(value));
+			}
+			else
+			{
+				d=static_cast<unsigned>(std::countr_one(value));
+			}
 		}
 #endif
 	}

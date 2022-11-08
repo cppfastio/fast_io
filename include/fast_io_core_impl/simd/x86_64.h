@@ -20,7 +20,7 @@ using x86_64_m256d [[__gnu__::__vector_size__(32),__gnu__::__may_alias__]] = dou
 using x86_64_m512 [[__gnu__::__vector_size__(64),__gnu__::__may_alias__]]  = float;
 using x86_64_m512i [[__gnu__::__vector_size__ (64),__gnu__::__may_alias__]] = long long;
 using x86_64_m512d [[__gnu__::__vector_size__(64),__gnu__::__may_alias__]] = double;
-#elif defined(__x86_64__) || defined(_M_X64)
+#elif (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
 using x86_64_m128 = __m128;
 using x86_64_m128i = __m128i;
 using x86_64_m128d = __m128d;

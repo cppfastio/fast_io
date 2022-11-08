@@ -193,8 +193,12 @@ inline constexpr void sha512_do_constexpr_function(std::uint_least64_t* __restri
 #include"sha512_scalar.h"
 #endif
 #else
-#if (defined(__SSE2__) || (defined(_MSC_VER)&&!defined(__clang__))) && !defined(_KERNEL_MODE) && defined(_M_X64)
+#if (defined(__SSE2__) ||defined(__AVX2__)) || ((defined(_MSC_VER)&&!defined(__clang__)) && !defined(_KERNEL_MODE) && defined(_M_X64))
 #include"sha512_simd16.h"
+#elif defined(_M_IX86_FP)
+#if _M_IX86_FP == 2
+#include"sha512_simd16.h"
+#endif
 #else
 #include"sha512_scalar.h"
 #endif
