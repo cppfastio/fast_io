@@ -10,21 +10,26 @@ inline constexpr bool calculate_can_simd_vector_run_with_cpu_instruction(std::si
 {
 	if(sizeofsimdvector==16)
 	{
-#if (defined(__SSE2__) || (defined(_MSC_VER)&&!defined(__clang__)&&!defined(_KERNEL_MODE))) && (defined(__x86_64__) || defined(_M_X64)) || defined(__wasm_simd128__)
+		if constexpr(
+			::fast_io::details::cpu_flags::wasmsimd128_supported||
+			::fast_io::details::cpu_flags::sse2_supported)
 		return true;
-#endif
 	}
 	else if(sizeofsimdvector==32)
 	{
-#if defined(__AVX2__) && (defined(__x86_64__) || defined(_M_X64))
-		return true;
-#endif
+		if constexpr(::fast_io::details::cpu_flags::avx2_supported)
+		{
+			return true;
+		}
 	}
 	else if(sizeofsimdvector==64)
 	{
-#if defined(__AVX512F__) && defined(__AVX512VL__) && defined(__AVX512BW__) && (defined(__x86_64__) || defined(_M_X64))
-		return true;
-#endif
+		if constexpr(::fast_io::details::cpu_flags::avx512f_supported
+			||::fast_io::details::cpu_flags::avx512vl_supported
+			||::fast_io::details::cpu_flags::avx512bw_supported)
+		{
+			return true;
+		}
 	}
 	return false;
 }
@@ -100,12 +105,17 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 		using wasmsimd128_i8x16 [[__gnu__::__vector_size__ (16)]] = char;
 		return !__builtin_wasm_bitmask_i8x16(static_cast<wasmsimd128_i8x16>(vec.value));
 #endif
-#elif (defined(__x86_64__) || defined(_M_X64)) && defined(__SSE4_1__)
-		__m128i a = __builtin_bit_cast(__m128i,vec);
-		return _mm_testz_si128(a,a);
-#elif (defined(__x86_64__) || defined(_M_X64)) && (defined(__SSE2__)||(defined(_MSC_VER)&&!defined(__clang__)))
-		__m128i a = __builtin_bit_cast(__m128i,vec);
-		return !_mm_movemask_epi8(a);
+#elif (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
+		if constexpr(::fast_io::details::cpu_flags::sse4_2_supported)
+		{
+			__m128i a = __builtin_bit_cast(__m128i,vec);
+			return _mm_testz_si128(a,a);
+		}
+		else if constexpr(::fast_io::details::cpu_flags::sse2_supported)
+		{
+			__m128i a = __builtin_bit_cast(__m128i,vec);
+			return !_mm_movemask_epi8(a);
+		}
 #endif
 	}
 	else if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==32)
@@ -127,30 +137,35 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 #endif
 
 #endif
-#elif (defined(__x86_64__) || defined(_M_X64)) && defined(__AVX2__)
-		__m256i a = __builtin_bit_cast(__m256i,vec);
-		return _mm256_testz_si256(a,a);
+#elif (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
+		if constexpr(::fast_io::details::cpu_flags::avx_supported)
+		{
+			__m256i a = __builtin_bit_cast(__m256i,vec);
+			return _mm256_testz_si256(a,a);
+		}
 #endif
 	}
 	else if constexpr(sizeof(::fast_io::intrinsics::simd_vector<T,n>)==64)
 	{
 #if defined(__has_builtin) && __has_cpp_attribute(__gnu__::__vector_size__)
-#if defined(__AVX512BW__)  && defined(__x86_64__) && __has_builtin(__builtin_ia32_ptestmb512)
-		using x86_64_v64qi [[__gnu__::__vector_size__ (64)]] = char;
-#if __has_builtin(__builtin_bit_cast)
-		return __builtin_ia32_ptestmb512(__builtin_bit_cast(x86_64_v64qi,vec),
-						__builtin_bit_cast(x86_64_v64qi,vec),
-						UINT_LEAST64_MAX);
-#else
-		return __builtin_ia32_ptestmb512((x86_64_v64qi)vec.value,
-						(x86_64_v64qi)vec.value,
-						UINT_LEAST64_MAX);
+	#if defined(__AVX512BW__)  && defined(__x86_64__) && __has_builtin(__builtin_ia32_ptestmb512)
+			using x86_64_v64qi [[__gnu__::__vector_size__ (64)]] = char;
+	#if __has_builtin(__builtin_bit_cast)
+			return __builtin_ia32_ptestmb512(__builtin_bit_cast(x86_64_v64qi,vec),
+							__builtin_bit_cast(x86_64_v64qi,vec),
+							UINT_LEAST64_MAX);
+	#else
+			return __builtin_ia32_ptestmb512((x86_64_v64qi)vec.value,
+							(x86_64_v64qi)vec.value,
+							UINT_LEAST64_MAX);
+	#endif
 #endif
-#endif
-
-#elif (defined(__x86_64__) || defined(_M_X64)) && defined(__AVX512BW__)
-		__m512i a = __builtin_bit_cast(__m512i,vec);
-		return _mm512_test_epi8_mask(a,a);
+#elif (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
+		if constexpr(::fast_io::details::cpu_flags::avx512bw_supported)
+		{
+			__m512i a = __builtin_bit_cast(__m512i,vec);
+			return _mm512_test_epi8_mask(a,a);
+		}
 #endif
 	}
 	}
@@ -169,6 +184,7 @@ inline constexpr bool is_all_zeros(simd_vector<T,N> const& vec) noexcept
 {
 	return ::fast_io::details::is_all_zeros_impl(vec);
 }
+
 }
 
 }
