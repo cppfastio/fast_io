@@ -32,4 +32,9 @@ inline ::winrt::hstring wconcatln_winrt_hstring(Args&& ...args)
 	return ::fast_io::basic_general_concat<true,wchar_t,::winrt::hstring>(::std::forward<Args>(args)...);
 }
 
+inline constexpr io_strlike_reference_wrapper<::winrt::hstring::value_type,::winrt::hstring> io_strlike_ref(::fast_io::io_alias_t,::winrt::hstring& hstr) noexcept
+{
+	return {__builtin_addressof(hstr)};
+}
+
 }

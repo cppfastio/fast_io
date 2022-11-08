@@ -119,4 +119,9 @@ inline QString u16concatln_qt_qstring(Args&& ...args)
 	return ::fast_io::basic_general_concat<true,char16_t,QString>(::std::forward<Args>(args)...);
 }
 
+inline constexpr io_strlike_reference_wrapper<char16_t,QString> io_strlike_ref(::fast_io::io_alias_t,QString& hstr) noexcept
+{
+	return {__builtin_addressof(hstr)};
+}
+
 }
