@@ -34,7 +34,7 @@ template<std::integral char_type,typename T>
 requires buffer_strlike<char_type,T>
 inline constexpr char_type* obuffer_begin(io_strlike_reference_wrapper<char_type,T> bref) noexcept
 {
-	return strlike_curr(io_strlike_type<char_type,T>,*bref.ptr);
+	return strlike_begin(io_strlike_type<char_type,T>,*bref.ptr);
 }
 
 template<std::integral char_type,typename T>

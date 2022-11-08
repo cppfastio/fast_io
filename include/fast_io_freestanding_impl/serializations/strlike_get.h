@@ -129,7 +129,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	using undefttype_char_type = typename std::remove_cvref_t<value_type>::char_type;
 	if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
 	{
-		return ::fast_io::details::scan_context_define_strlike_impl<flags.noskipws,flags.line>(ctx.copying,first,last,ref.reference);
+		return ::fast_io::details::scan_context_define_strlike_impl<flags.noskipws,flags.line>(ctx.copying,first,last,ref.reference.reference);
 	}
 	else
 	{
@@ -166,8 +166,7 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(
 	{
 		if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
 		{
-			if(strlike_begin(io_strlike_type<char_type,value_type>,ref.reference)==
-				strlike_curr(io_strlike_type<char_type,value_type>,ref.reference))
+			if(obuffer_begin(ref.reference.reference)==obuffer_curr(ref.reference.reference))
 			{
 				return ::fast_io::parse_code::end_of_file;
 			}
