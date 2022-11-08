@@ -12,8 +12,11 @@ inline constexpr bool calculate_can_simd_vector_run_with_cpu_instruction(std::si
 	{
 		if constexpr(
 			::fast_io::details::cpu_flags::wasmsimd128_supported||
-			::fast_io::details::cpu_flags::sse2_supported)
-		return true;
+			::fast_io::details::cpu_flags::sse2_supported||
+			::fast_io::details::cpu_flags::armneon_supported)
+		{
+			return true;
+		}
 	}
 	else if(sizeofsimdvector==32)
 	{

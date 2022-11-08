@@ -77,4 +77,11 @@ true
 #endif
 };
 
+inline constexpr bool armneon_supported
+{
+#if defined(__ARM_NEON)
+true
+#endif
+};
+
 }
