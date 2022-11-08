@@ -164,7 +164,9 @@ simd_vector
 			});
 		}
 	}
-
+#if __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 	inline constexpr void swap_endian() noexcept requires(::std::integral<value_type>&&(N*sizeof(T)==16||N*sizeof(T)==32))
 	{
 		if constexpr(sizeof(value_type)==1)
@@ -182,10 +184,47 @@ simd_vector
 		{
 			if constexpr(sizeof(vec_type)==16)
 			{
-				__m128i temp_vec = __builtin_bit_cast(__m128i,*this);
-				__m128i mask = __builtin_bit_cast(__m128i,::fast_io::details::simd_byte_swap_shuffle_mask<sizeof(value_type),N>);
-				temp_vec = _mm_shuffle_epi8(temp_vec,mask);
-				*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+				if constexpr(::fast_io::details::cpu_flags::sse3_supported)
+				{
+					__m128i temp_vec = __builtin_bit_cast(__m128i,*this);
+					__m128i mask = __builtin_bit_cast(__m128i,::fast_io::details::simd_byte_swap_shuffle_mask<sizeof(value_type),N>);
+					temp_vec = _mm_shuffle_epi8(temp_vec,mask);
+					*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+					return;
+				}
+				else
+				{
+					__m128i temp_vec = __builtin_bit_cast(__m128i,*this);
+					__m128i const zero{};
+					if constexpr(sizeof(T)==8)
+					{
+						auto res0{_mm_unpacklo_epi8(temp_vec,zero)};
+						auto res1{_mm_shuffle_epi32(res0,78)};
+						auto res2{_mm_shufflelo_epi16(res1,27)};
+						auto res3{_mm_shufflehi_epi16(res2,27)};
+						auto res4{_mm_unpackhi_epi8(temp_vec,zero)};
+						auto res5{_mm_shuffle_epi32(res4,78)};
+						auto res6{_mm_shufflelo_epi16(res5,27)};
+						auto res7{_mm_shufflehi_epi16(res6,27)};
+						temp_vec=_mm_packus_epi16(res3,res7);
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						auto res0{_mm_unpacklo_epi8(temp_vec,zero)};
+						auto res2{_mm_shufflelo_epi16(res0,27)};
+						auto res3{_mm_shufflehi_epi16(res2,27)};
+						auto res4{_mm_unpackhi_epi8(temp_vec,zero)};
+						auto res6{_mm_shufflelo_epi16(res4,27)};
+						auto res7{_mm_shufflehi_epi16(res6,27)};
+						temp_vec=_mm_packus_epi16(res3,res7);
+					}
+					else if constexpr(sizeof(T)==2)
+					{
+						temp_vec=(__m128i)_mm_or_ps((__m128)_mm_srli_epi16(temp_vec,8),(__m128)_mm_slli_epi16(temp_vec,8));
+					}
+					*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+					return;
+				}
 			}
 			else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 			{
@@ -193,6 +232,7 @@ simd_vector
 				__m256i mask = __builtin_bit_cast(__m256i,::fast_io::details::simd_byte_swap_shuffle_mask<sizeof(value_type),N>);
 				temp_vec = _mm256_shuffle_epi8(temp_vec,mask);
 				*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+				return;
 			}
 			else
 			{
@@ -200,8 +240,9 @@ simd_vector
 				__m512i mask = __builtin_bit_cast(__m512i,::fast_io::details::simd_byte_swap_shuffle_mask<sizeof(value_type),N>);
 				temp_vec = _mm512_shuffle_epi8(temp_vec,mask);
 				*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+				return;
 			}
-			return;
+			
 		}
 #endif
 		::fast_io::details::generic_simd_self_op_impl(*this,[](T& t)

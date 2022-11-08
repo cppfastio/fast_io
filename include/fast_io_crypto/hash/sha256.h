@@ -159,7 +159,7 @@ __has_builtin(__builtin_ia32_sha256msg1) && \
 __has_builtin(__builtin_ia32_sha256msg2) && \
 __has_builtin(__builtin_ia32_pshufb128) && (!defined(__clang__)||(defined(__SSE4_2__)&&defined(__SHA__)))
 #include"sha256_x86_sha_extensions.h"
-#elif defined(__SSE4_2__)  || defined(__wasm_simd128__)
+#elif defined(__SSE2__)  || defined(__wasm_simd128__)
 #include"sha256_simd16.h"
 #else
 #include"sha256_scalar.h"
