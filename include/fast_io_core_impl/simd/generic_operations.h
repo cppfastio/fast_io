@@ -29,6 +29,13 @@ namespace details
 namespace cpu_flags
 {
 
+inline constexpr bool sse3_supported
+{
+#if defined(__AVX__) || defined(__SSE3__) || defined(__SSE4_2__)
+true
+#endif
+};
+
 inline constexpr bool avx_supported
 {
 #if defined(__AVX__) || defined(__AVX2__)

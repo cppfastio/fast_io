@@ -50,10 +50,17 @@ inline constexpr std::uint_least64_t K512[]
 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
 };
 
+#if __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr auto Sigma0(auto x) noexcept
 {
 	return std::rotr(x,28)^std::rotr(x,34)^std::rotr(x,39);
 }
+
+#if __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr auto Sigma1(auto x) noexcept
 {
 	return std::rotr(x,14)^std::rotr(x,18)^std::rotr(x,41);
@@ -69,6 +76,9 @@ inline constexpr auto sigma1(auto x) noexcept
 	return std::rotr(x,19)^std::rotr(x,61)^(x>>6);
 }
 
+#if __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr auto Ch(auto x,auto y,auto z) noexcept
 {
 	return (x&(y^z))^z;
@@ -177,13 +187,17 @@ inline constexpr void sha512_do_constexpr_function(std::uint_least64_t* __restri
 #if !(defined(_MSC_VER) && !defined(__clang__))
 #if defined(__AVX2__) && __has_builtin(__builtin_shufflevector)
 #include"sha512_simd32_shuffle.h"
-#elif ((defined(__SSE2__)&&defined(__clang__)) || defined(__SSE4_2__)) || defined(__wasm_simd128__)
+#elif defined(__SSE2__) || defined(__wasm_simd128__)
 #include"sha512_simd16.h"
 #else
 #include"sha512_scalar.h"
 #endif
 #else
+#if (defined(__SSE2__) || (defined(_MSC_VER)&&!defined(__clang__))) && !defined(_KERNEL_MODE) && defined(_M_X64)
+#include"sha512_simd16.h"
+#else
 #include"sha512_scalar.h"
+#endif
 #endif
 
 class sha512

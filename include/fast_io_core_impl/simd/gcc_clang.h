@@ -236,138 +236,216 @@ struct simd_vector
 		value=b;
 		return *this;
 	}
-#if __has_builtin(__builtin_ia32_pshufb128) || __has_builtin(__builtin_shufflevector)
 	inline
 #if __has_builtin(__builtin_bit_cast)
 	constexpr
 #endif
-	void swap_endian() noexcept requires(::std::integral<value_type>&&(N*sizeof(T)==16||N*sizeof(T)==32))
+	void swap_endian() noexcept requires(::std::integral<value_type>&&(sizeof(value_type)<=sizeof(std::uint_least64_t))&&(N*sizeof(T)==16||N*sizeof(T)==32||N*sizeof(T)==64))
 	{
-		if constexpr(sizeof(T)!=1)
+		if constexpr(sizeof(T)==1)
 		{
-			if constexpr(N*sizeof(T)==32)
-			{
-				using temp_vec_type [[__gnu__::__vector_size__ (32)]] = char;
+			return;
+		}
+		else if constexpr(N*sizeof(T)==64)
+		{
+			using temp_vec_type [[__gnu__::__vector_size__ (64)]] = char;
 #if __has_builtin(__builtin_bit_cast)
-				auto temp_vec{__builtin_bit_cast(temp_vec_type,this->value)};
+			auto temp_vec{__builtin_bit_cast(temp_vec_type,this->value)};
 #else
-				temp_vec_type temp_vec;
-				__builtin_memcpy(__builtin_addressof(temp_vec),__builtin_addressof(this->value),sizeof(vec_type));
+			temp_vec_type temp_vec;
+			__builtin_memcpy(__builtin_addressof(temp_vec),__builtin_addressof(this->value),sizeof(vec_type));
+#endif
+
+#if __has_builtin(__builtin_shufflevector)
+			if constexpr(sizeof(T)==8)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
+					7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,
+					23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24,
+					39,38,37,36,35,34,33,32,47,46,45,44,43,42,41,40,
+					55,54,53,52,51,50,49,48,63,62,61,60,59,58,57,56);
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
+					3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
+					19,18,17,16,23,22,21,20,27,26,25,24,31,30,29,28,
+					35,34,33,32,39,38,37,36,43,42,41,40,47,46,45,44,
+					51,50,49,48,55,54,53,52,59,58,57,56,63,62,61,60);
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
+					1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14,
+					17,16,19,18,21,20,23,22,25,24,27,26,29,28,31,30,
+					33,32,35,34,37,36,39,38,41,40,43,42,45,44,47,46,
+					49,48,51,50,53,52,55,54,57,56,59,58,61,60,63,62);
+			}
+#elif __has_builtin(__builtin_ia32_pshufb512)
+			if constexpr(sizeof(T)==8)
+			{
+				constexpr temp_vec_type mask{7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,
+					23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24,
+					39,38,37,36,35,34,33,32,47,46,45,44,43,42,41,40,
+					55,54,53,52,51,50,49,48,63,62,61,60,59,58,57,56};
+				temp_vec=__builtin_ia32_pshufb512(temp_vec,mask);
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				constexpr temp_vec_type mask{3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
+					19,18,17,16,23,22,21,20,27,26,25,24,31,30,29,28,
+					35,34,33,32,39,38,37,36,43,42,41,40,47,46,45,44,
+					51,50,49,48,55,54,53,52,59,58,57,56,63,62,61,60};
+				temp_vec=__builtin_ia32_pshufb512(temp_vec,mask);
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				constexpr temp_vec_type mask{1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14,
+					17,16,19,18,21,20,23,22,25,24,27,26,29,28,31,30,
+					33,32,35,34,37,36,39,38,41,40,43,42,45,44,47,46,
+					49,48,51,50,53,52,55,54,57,56,59,58,61,60,63,62};
+				temp_vec=__builtin_ia32_pshufb512(temp_vec,mask);
+			}
+#endif
+#if __has_builtin(__builtin_bit_cast)
+			this->value=__builtin_bit_cast(vec_type,temp_vec);
+#else
+			__builtin_memcpy(__builtin_addressof(this->value),__builtin_addressof(temp_vec),sizeof(vec_type));
+#endif
+		}
+		else if constexpr(N*sizeof(T)==32)
+		{
+			using temp_vec_type [[__gnu__::__vector_size__ (32)]] = char;
+#if __has_builtin(__builtin_bit_cast)
+			auto temp_vec{__builtin_bit_cast(temp_vec_type,this->value)};
+#else
+			temp_vec_type temp_vec;
+			__builtin_memcpy(__builtin_addressof(temp_vec),__builtin_addressof(this->value),sizeof(vec_type));
 #endif
 #if __has_builtin(__builtin_shufflevector)
-				if constexpr(sizeof(T)==16)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
-						15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0,
-						31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16);
-				}
-				if constexpr(sizeof(T)==8)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
-						7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,
-						23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24);
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
-						3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
-						19,18,17,16,23,22,21,20,27,26,25,24,31,30,29,28);
-				}
-				else if constexpr(sizeof(T)==2)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
-						1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14,
-						17,16,19,18,21,20,23,22,25,24,27,26,29,28,31,30);
-				}
+			if constexpr(sizeof(T)==8)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
+					7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,
+					23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24);
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
+					3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
+					19,18,17,16,23,22,21,20,27,26,25,24,31,30,29,28);
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,
+					1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14,
+					17,16,19,18,21,20,23,22,25,24,27,26,29,28,31,30);
+			}
 #elif __has_builtin(__builtin_ia32_pshufb256)
-				if constexpr(sizeof(T)==16)
-				{
-					constexpr temp_vec_type mask{15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0,
-						31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16};
-					temp_vec=__builtin_ia32_pshufb256(temp_vec,mask);
-				}
-				if constexpr(sizeof(T)==8)
-				{
-					constexpr temp_vec_type mask{7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,
-						23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24};
-					temp_vec=__builtin_ia32_pshufb256(temp_vec,mask);
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					constexpr temp_vec_type mask{3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
-						19,18,17,16,23,22,21,20,27,26,25,24,31,30,29,28};
-					temp_vec=__builtin_ia32_pshufb256(temp_vec,mask);
-				}
-				else if constexpr(sizeof(T)==2)
-				{
-					constexpr temp_vec_type mask{1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14,
-						17,16,19,18,21,20,23,22,25,24,27,26,29,28,31,30};
-					temp_vec=__builtin_ia32_pshufb256(temp_vec,mask);
-				}
-#endif
-#if __has_builtin(__builtin_bit_cast)
-				this->value=__builtin_bit_cast(vec_type,temp_vec);
-#else
-				__builtin_memcpy(__builtin_addressof(this->value),__builtin_addressof(temp_vec),sizeof(vec_type));
-#endif
-			}
-			else
+			if constexpr(sizeof(T)==8)
 			{
-				using temp_vec_type [[__gnu__::__vector_size__ (16)]] = char;
-#if __has_builtin(__builtin_bit_cast)
-				auto temp_vec{__builtin_bit_cast(temp_vec_type,this->value)};
-#else
-				temp_vec_type temp_vec;
-				__builtin_memcpy(__builtin_addressof(temp_vec),__builtin_addressof(this->value),sizeof(vec_type));
-#endif
-#if __has_builtin(__builtin_shufflevector)
-				if constexpr(sizeof(T)==16)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0);
-				}
-				if constexpr(sizeof(T)==8)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8);
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12);
-				}
-				else if constexpr(sizeof(T)==2)
-				{
-					temp_vec=__builtin_shufflevector(temp_vec,temp_vec,1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14);
-				}
-#else
-				if constexpr(sizeof(T)==16)
-				{
-					constexpr temp_vec_type mask{15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0};
-					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
-				}
-				if constexpr(sizeof(T)==8)
-				{
-					constexpr temp_vec_type mask{7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
-					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					constexpr temp_vec_type mask{3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
-					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
-				}
-				else if constexpr(sizeof(T)==2)
-				{
-					constexpr temp_vec_type mask{1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
-					temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
-				}
-#endif
-#if __has_builtin(__builtin_bit_cast)
-				this->value=__builtin_bit_cast(vec_type,temp_vec);
-#else
-				__builtin_memcpy(__builtin_addressof(this->value),__builtin_addressof(temp_vec),sizeof(vec_type));
-#endif
+				constexpr temp_vec_type mask{7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8,
+					23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24};
+				temp_vec=__builtin_ia32_pshufb256(temp_vec,mask);
 			}
+			else if constexpr(sizeof(T)==4)
+			{
+				constexpr temp_vec_type mask{3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
+					19,18,17,16,23,22,21,20,27,26,25,24,31,30,29,28};
+				temp_vec=__builtin_ia32_pshufb256(temp_vec,mask);
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				constexpr temp_vec_type mask{1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14,
+					17,16,19,18,21,20,23,22,25,24,27,26,29,28,31,30};
+				temp_vec=__builtin_ia32_pshufb256(temp_vec,mask);
+			}
+#endif
+#if __has_builtin(__builtin_bit_cast)
+			this->value=__builtin_bit_cast(vec_type,temp_vec);
+#else
+			__builtin_memcpy(__builtin_addressof(this->value),__builtin_addressof(temp_vec),sizeof(vec_type));
+#endif
+		}
+		else
+		{
+			using temp_vec_type [[__gnu__::__vector_size__ (16)]] = char;
+#if __has_builtin(__builtin_bit_cast)
+			auto temp_vec{__builtin_bit_cast(temp_vec_type,this->value)};
+#else
+			temp_vec_type temp_vec;
+			__builtin_memcpy(__builtin_addressof(temp_vec),__builtin_addressof(this->value),sizeof(vec_type));
+#endif
+#if __has_builtin(__builtin_shufflevector) && ((!defined(__x86_64__)&&!defined(__i386__))||(!defined(__GNUC__)||defined(__clang__))||defined(__SSE4_2__))
+			if constexpr(sizeof(T)==8)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8);
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12);
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				temp_vec=__builtin_shufflevector(temp_vec,temp_vec,1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14);
+			}
+#elif __has_builtin(__builtin_ia32_pshufb128) && defined(__SSE3__)
+			if constexpr(sizeof(T)==8)
+			{
+				constexpr temp_vec_type mask{7,6,5,4,3,2,1,0,15,14,13,12,11,10,9,8};
+				temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				constexpr temp_vec_type mask{3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12};
+				temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				constexpr temp_vec_type mask{1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14};
+				temp_vec=__builtin_ia32_pshufb128(temp_vec,mask);
+			}
+#elif defined(__SSE2__) && __has_builtin(__builtin_ia32_punpcklbw128) && __has_builtin(__builtin_ia32_punpckhbw128)
+			using x86_64_v4si [[__gnu__::__vector_size__ (16)]] = int;
+			using x86_64_v16qi [[__gnu__::__vector_size__ (16)]] = char;
+			using x86_64_v8hi [[__gnu__::__vector_size__ (16)]] = short;
+			constexpr x86_64_v16qi zero{};
+			if constexpr(sizeof(T)==8)
+			{
+				auto res0{__builtin_ia32_punpcklbw128(temp_vec,zero)};
+				auto res1{__builtin_ia32_pshufd((x86_64_v4si)res0,78)};
+				auto res2{__builtin_ia32_pshuflw((x86_64_v8hi)res1,27)};
+				auto res3{__builtin_ia32_pshufhw(res2,27)};
+				auto res4{__builtin_ia32_punpckhbw128(temp_vec,zero)};
+				auto res5{__builtin_ia32_pshufd((x86_64_v4si)res4,78)};
+				auto res6{__builtin_ia32_pshuflw((x86_64_v8hi)res5,27)};
+				auto res7{__builtin_ia32_pshufhw(res6,27)};
+				temp_vec=__builtin_ia32_packuswb128(res3,res7);
+			}
+			else if constexpr(sizeof(T)==4)
+			{
+				auto res0{__builtin_ia32_punpcklbw128(temp_vec,zero)};
+				auto res2{__builtin_ia32_pshuflw((x86_64_v8hi)res0,27)};
+				auto res3{__builtin_ia32_pshufhw(res2,27)};
+				auto res4{__builtin_ia32_punpckhbw128(temp_vec,zero)};
+				auto res6{__builtin_ia32_pshuflw((x86_64_v8hi)res4,27)};
+				auto res7{__builtin_ia32_pshufhw(res6,27)};
+				temp_vec=__builtin_ia32_packuswb128(res3,res7);
+			}
+			else if constexpr(sizeof(T)==2)
+			{
+				using x86_64_v8hu [[__gnu__::__vector_size__ (16)]] = unsigned short;
+				auto res0{(x86_64_v8hu)temp_vec};
+				temp_vec=(x86_64_v16qi)((res0>>8)|(res0<<8));
+			}
+#endif
+#if __has_builtin(__builtin_bit_cast)
+			this->value=__builtin_bit_cast(vec_type,temp_vec);
+#else
+			__builtin_memcpy(__builtin_addressof(this->value),__builtin_addressof(temp_vec),sizeof(vec_type));
+#endif
 		}
 	}
-#endif
 	template<std::integral T1,std::size_t N1>
 	requires (simd_shuffle_size_is_supported(sizeof(vec_type))&&sizeof(simd_vector<T1,N1>)==sizeof(vec_type)&&sizeof(T1)==1)
 	inline constexpr void shuffle([[maybe_unused]] simd_vector<T1,N1> const& mask) noexcept
