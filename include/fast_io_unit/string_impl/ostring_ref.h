@@ -18,19 +18,19 @@ inline constexpr auto strlike_construct_single_character_define(io_strlike_type_
 #if (!defined(__GLIBCXX__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI))
 
 template<std::integral char_type,typename traits_type,typename allocator_type>
-inline constexpr char_type* strlike_begin(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>,::std::basic_string<char_type,traits_type,allocator_type>& str)
+inline constexpr char_type* strlike_begin(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>,::std::basic_string<char_type,traits_type,allocator_type>& str) noexcept
 {
 	return str.data();
 }
 
 template<std::integral char_type,typename traits_type,typename allocator_type>
-inline constexpr char_type* strlike_curr(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>,::std::basic_string<char_type,traits_type,allocator_type>& str)
+inline constexpr char_type* strlike_curr(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>,::std::basic_string<char_type,traits_type,allocator_type>& str) noexcept
 {
 	return str.data()+str.size();
 }
 
 template<std::integral char_type,typename traits_type,typename allocator_type>
-inline constexpr char_type* strlike_end(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>,::std::basic_string<char_type,traits_type,allocator_type>& str)
+inline constexpr char_type* strlike_end(io_strlike_type_t<char_type,::std::basic_string<char_type,traits_type,allocator_type>>,::std::basic_string<char_type,traits_type,allocator_type>& str) noexcept
 {
 	return str.data()+str.capacity();
 }
