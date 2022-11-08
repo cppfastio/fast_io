@@ -3,14 +3,19 @@
 #include<random>
 #include<fast_io_driver/timer.h>
 
-int main()
+int main(int argc, char** argv)
 {
+	std::size_t n{100000};
+	if(1<argc)
+	{
+		n=fast_io::to<std::size_t>(fast_io::mnp::os_c_str(argv[1]));
+	}
 	fast_io::timer tm(u8"ibuf_white_hole_engine");
 	fast_io::u8obuf_file obf(u"ibuf_white_hole_engine.txt");
 	fast_io::ibuf_white_hole_engine eng;
 	std::uniform_int_distribution<std::size_t> ud(0,61);
 	std::uniform_int_distribution<std::size_t> rlen(10000,20000);
-	for(std::size_t i(0);i!=100000;++i)
+	for(std::size_t i{};i!=n;++i)
 	{
 		for(std::size_t j(0),s(rlen(eng));j!=s;++j)
 		{
