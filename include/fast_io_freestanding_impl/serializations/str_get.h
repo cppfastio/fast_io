@@ -22,7 +22,7 @@ struct basic_str_get_all
 };
 
 template<typename T>
-inline constexpr auto str_get_all(T&& reference,std::size_t n) noexcept
+inline constexpr auto str_get_all(T& reference,std::size_t n) noexcept
 {
 	return basic_str_get_all<decltype(io_strlike_ref(io_alias,reference))>{io_strlike_ref(io_alias,reference),n};
 }
@@ -33,7 +33,7 @@ namespace details
 {
 struct str_get_all_context
 {
-	bool coping{};
+	bool copying{};
 };
 
 template<::std::integral char_type,typename T>
@@ -99,7 +99,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 {
 	if constexpr(::fast_io::buffer_strlike<char_type,T>)
 	{
-		return ::fast_io::details::scan_context_define_str_get_all_buffer_strlike_impl(first,last,str.reference,str.n,ctx.coping);
+		return ::fast_io::details::scan_context_define_str_get_all_buffer_strlike_impl(first,last,str.reference,str.n,ctx.copying);
 	}
 	else
 	{

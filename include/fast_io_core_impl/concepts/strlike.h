@@ -12,11 +12,30 @@ struct io_strlike_type_t
 template<std::integral char_type,typename T>
 inline constexpr io_strlike_type_t<char_type,T> io_strlike_type{};
 
+namespace details
+{
 template<typename char_type,typename T>
-concept strlike = std::integral<char_type>&&std::is_default_constructible_v<T>&&requires(char_type const* first)
+concept buffer_strlike_impl = requires(T& t)
+{
+	{strlike_begin(io_strlike_type<char_type,T>,t)};
+	{strlike_curr(io_strlike_type<char_type,T>,t)};
+	{strlike_end(io_strlike_type<char_type,T>,t)};
+	requires requires(decltype(strlike_begin(io_strlike_type<char_type,T>,t)) ptr)
+	{
+		{strlike_set_curr(io_strlike_type<char_type,T>,t,ptr)};
+	};
+	requires requires(std::size_t n)
+	{
+		{strlike_reserve(io_strlike_type<char_type,T>,t,n)};
+	};
+};
+}
+
+template<typename char_type,typename T>
+concept strlike = std::integral<char_type>&&std::is_default_constructible_v<T>&&(requires(char_type const* first)
 {
 	strlike_construct_define(io_strlike_type<char_type,T>,first,first);
-};
+}||::fast_io::details::buffer_strlike_impl<char_type,T>);
 
 template<typename char_type,typename T>
 concept single_character_constructible_strlike = strlike<char_type,T>&&requires(char_type ch)
