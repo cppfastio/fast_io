@@ -81,6 +81,10 @@ inline constexpr auto posix_clock_id_to_native_value(posix_clock_id pcid)
 	case posix_clock_id::monotonic_raw:
 	return CLOCK_MONOTONIC_RAW;
 	break;
+#elif defined(CLOCK_MONOTONIC)
+	case posix_clock_id::monotonic_raw:
+	return CLOCK_MONOTONIC;
+	break;
 #endif
 #ifdef CLOCK_MONOTONIC_RAW_APPROX
 	case posix_clock_id::monotonic_raw_approx:
