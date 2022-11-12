@@ -567,7 +567,7 @@ inline iso8601_timestamp to_iso8601_local_impl(std::int_least64_t seconds,std::u
 	long bias{};
 	if(dstadj)
 	{
-	#if (defined(_MSC_VER) || defined(_UCRT)) && (defined(_M_IX86) || defined(_M_X64) ||defined(__i386__) || defined(__x86_64__))
+	#if (defined(_MSC_VER) || defined(_UCRT))
 	{
 		auto errn{noexcept_call(_get_dstbias,__builtin_addressof(bias))};
 		if(errn)
