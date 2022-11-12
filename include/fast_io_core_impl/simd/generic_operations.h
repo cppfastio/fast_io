@@ -1319,7 +1319,7 @@ inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1484,7 +1484,7 @@ inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1649,7 +1649,7 @@ inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1786,7 +1786,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vect
 					}
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2016,7 +2016,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,unsigned 
 					}
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2222,7 +2222,7 @@ inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,unsigned 
 					}
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2634,7 +2634,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 #endif
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3058,7 +3058,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 #endif
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3399,7 +3399,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 #endif
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3744,7 +3744,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 #endif
 				}
 			}
-			else
+			else if constexpr(std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3890,126 +3890,129 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 		}
 #elif defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
 		using vec_type = simd_vector<T,N>;
-		if constexpr(std::signed_integral<T>)
+		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(sizeof(vec_type)==8)
+			if constexpr(std::signed_integral<T>)
 			{
-				if constexpr(sizeof(T)==1)
+				if constexpr(sizeof(vec_type)==8)
 				{
-					uint8x8_t amm = __builtin_bit_cast(uint8x8_t,a);
-					uint8x8_t bmm = __builtin_bit_cast(uint8x8_t,b);
-					return __builtin_bit_cast(vec_type,vceq_s8(amm,bmm));
-				}
-				else if constexpr(sizeof(T)==2)
-				{
-					uint16x4_t amm = __builtin_bit_cast(uint16x4_t,a);
-					uint16x4_t bmm = __builtin_bit_cast(uint16x4_t,b);
-					return __builtin_bit_cast(vec_type,vceq_s16(amm,bmm));
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					uint32x2_t amm = __builtin_bit_cast(uint32x2_t,a);
-					uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
-					return __builtin_bit_cast(vec_type,vceq_s32(amm,bmm));
-				}
+					if constexpr(sizeof(T)==1)
+					{
+						uint8x8_t amm = __builtin_bit_cast(uint8x8_t,a);
+						uint8x8_t bmm = __builtin_bit_cast(uint8x8_t,b);
+						return __builtin_bit_cast(vec_type,vceq_s8(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==2)
+					{
+						uint16x4_t amm = __builtin_bit_cast(uint16x4_t,a);
+						uint16x4_t bmm = __builtin_bit_cast(uint16x4_t,b);
+						return __builtin_bit_cast(vec_type,vceq_s16(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						uint32x2_t amm = __builtin_bit_cast(uint32x2_t,a);
+						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
+						return __builtin_bit_cast(vec_type,vceq_s32(amm,bmm));
+					}
 #if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
-				else if constexpr(sizeof(T)==8)
-				{
-					uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
-					uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
-					return __builtin_bit_cast(vec_type,vceq_s64(amm,bmm));
-				}
+					else if constexpr(sizeof(T)==8)
+					{
+						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
+						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
+						return __builtin_bit_cast(vec_type,vceq_s64(amm,bmm));
+					}
 #endif
+				}
+				else if constexpr(sizeof(vec_type)==16)
+				{
+					if constexpr(sizeof(T)==1)
+					{
+						uint8x16_t amm = __builtin_bit_cast(uint8x16_t,a);
+						uint8x16_t bmm = __builtin_bit_cast(uint8x16_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_s8(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==2)
+					{
+						uint16x8_t amm = __builtin_bit_cast(uint16x8_t,a);
+						uint16x8_t bmm = __builtin_bit_cast(uint16x8_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_s16(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						uint32x4_t amm = __builtin_bit_cast(uint32x4_t,a);
+						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_s32(amm,bmm));
+					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
+					else if constexpr(sizeof(T)==8)
+					{
+						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
+						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_s64(amm,bmm));
+					}
+#endif
+				}
 			}
-			else if constexpr(sizeof(vec_type)==16)
+			else if constexpr(std::unsigned_integral<T>)
 			{
-				if constexpr(sizeof(T)==1)
+				if constexpr(sizeof(vec_type)==8)
 				{
-					uint8x16_t amm = __builtin_bit_cast(uint8x16_t,a);
-					uint8x16_t bmm = __builtin_bit_cast(uint8x16_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_s8(amm,bmm));
-				}
-				else if constexpr(sizeof(T)==2)
-				{
-					uint16x8_t amm = __builtin_bit_cast(uint16x8_t,a);
-					uint16x8_t bmm = __builtin_bit_cast(uint16x8_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_s16(amm,bmm));
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					uint32x4_t amm = __builtin_bit_cast(uint32x4_t,a);
-					uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_s32(amm,bmm));
-				}
+					if constexpr(sizeof(T)==1)
+					{
+						uint8x8_t amm = __builtin_bit_cast(uint8x8_t,a);
+						uint8x8_t bmm = __builtin_bit_cast(uint8x8_t,b);
+						return __builtin_bit_cast(vec_type,vceq_u8(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==2)
+					{
+						uint16x4_t amm = __builtin_bit_cast(uint16x4_t,a);
+						uint16x4_t bmm = __builtin_bit_cast(uint16x4_t,b);
+						return __builtin_bit_cast(vec_type,vceq_u16(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						uint32x2_t amm = __builtin_bit_cast(uint32x2_t,a);
+						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
+						return __builtin_bit_cast(vec_type,vceq_u32(amm,bmm));
+					}
 #if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
-				else if constexpr(sizeof(T)==8)
-				{
-					uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
-					uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_s64(amm,bmm));
-				}
+					else if constexpr(sizeof(T)==8)
+					{
+						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
+						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
+						return __builtin_bit_cast(vec_type,vceq_u64(amm,bmm));
+					}
 #endif
-			}
-		}
-		else
-		{
-			if constexpr(sizeof(vec_type)==8)
-			{
-				if constexpr(sizeof(T)==1)
-				{
-					uint8x8_t amm = __builtin_bit_cast(uint8x8_t,a);
-					uint8x8_t bmm = __builtin_bit_cast(uint8x8_t,b);
-					return __builtin_bit_cast(vec_type,vceq_u8(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==2)
+				else if constexpr(sizeof(vec_type)==16)
 				{
-					uint16x4_t amm = __builtin_bit_cast(uint16x4_t,a);
-					uint16x4_t bmm = __builtin_bit_cast(uint16x4_t,b);
-					return __builtin_bit_cast(vec_type,vceq_u16(amm,bmm));
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					uint32x2_t amm = __builtin_bit_cast(uint32x2_t,a);
-					uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
-					return __builtin_bit_cast(vec_type,vceq_u32(amm,bmm));
-				}
+					if constexpr(sizeof(T)==1)
+					{
+						uint8x16_t amm = __builtin_bit_cast(uint8x16_t,a);
+						uint8x16_t bmm = __builtin_bit_cast(uint8x16_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_u8(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==2)
+					{
+						uint16x8_t amm = __builtin_bit_cast(uint16x8_t,a);
+						uint16x8_t bmm = __builtin_bit_cast(uint16x8_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_u16(amm,bmm));
+					}
+					else if constexpr(sizeof(T)==4)
+					{
+						uint32x4_t amm = __builtin_bit_cast(uint32x4_t,a);
+						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_u32(amm,bmm));
+					}
 #if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
-				else if constexpr(sizeof(T)==8)
-				{
-					uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
-					uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
-					return __builtin_bit_cast(vec_type,vceq_u64(amm,bmm));
-				}
+					else if constexpr(sizeof(T)==8)
+					{
+						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
+						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
+						return __builtin_bit_cast(vec_type,vceqq_u64(amm,bmm));
+					}
 #endif
-			}
-			else if constexpr(sizeof(vec_type)==16)
-			{
-				if constexpr(sizeof(T)==1)
-				{
-					uint8x16_t amm = __builtin_bit_cast(uint8x16_t,a);
-					uint8x16_t bmm = __builtin_bit_cast(uint8x16_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_u8(amm,bmm));
 				}
-				else if constexpr(sizeof(T)==2)
-				{
-					uint16x8_t amm = __builtin_bit_cast(uint16x8_t,a);
-					uint16x8_t bmm = __builtin_bit_cast(uint16x8_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_u16(amm,bmm));
-				}
-				else if constexpr(sizeof(T)==4)
-				{
-					uint32x4_t amm = __builtin_bit_cast(uint32x4_t,a);
-					uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_u32(amm,bmm));
-				}
-#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
-				else if constexpr(sizeof(T)==8)
-				{
-					uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
-					uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
-					return __builtin_bit_cast(vec_type,vceqq_u64(amm,bmm));
-				}
-#endif
 			}
 		}
 #endif
@@ -4168,7 +4171,7 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 #endif
 			}
 		}
-		else
+		else if constexpr(std::unsigned_integral<T>)
 		{
 			if constexpr(sizeof(vec_type)==8)
 			{
