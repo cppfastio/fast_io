@@ -334,12 +334,14 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 						float32x2_t bmm = __builtin_bit_cast(float32x2_t,b);
 						return __builtin_bit_cast(vec_type,vadd_f32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==sizeof(double))
 					{
 						float64x1_t amm = __builtin_bit_cast(float64x1_t,a);
 						float64x1_t bmm = __builtin_bit_cast(float64x1_t,b);
 						return __builtin_bit_cast(vec_type,vadd_f64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -349,12 +351,14 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 						float32x4_t bmm = __builtin_bit_cast(float32x4_t,b);
 						return __builtin_bit_cast(vec_type,vaddq_f32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==sizeof(double))
 					{
 						float64x2_t amm = __builtin_bit_cast(float64x2_t,a);
 						float64x2_t bmm = __builtin_bit_cast(float64x2_t,b);
 						return __builtin_bit_cast(vec_type,vaddq_f64(amm,bmm));
 					}
+#endif
 				}
 			}
 		}
@@ -601,12 +605,14 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 						float32x2_t bmm = __builtin_bit_cast(float32x2_t,b);
 						return __builtin_bit_cast(vec_type,vsub_f32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==sizeof(double))
 					{
 						float64x1_t amm = __builtin_bit_cast(float64x1_t,a);
 						float64x1_t bmm = __builtin_bit_cast(float64x1_t,b);
 						return __builtin_bit_cast(vec_type,vsub_f64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -616,12 +622,14 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 						float32x4_t bmm = __builtin_bit_cast(float32x4_t,b);
 						return __builtin_bit_cast(vec_type,vsubq_f32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==sizeof(double))
 					{
 						float64x2_t amm = __builtin_bit_cast(float64x2_t,a);
 						float64x2_t bmm = __builtin_bit_cast(float64x2_t,b);
 						return __builtin_bit_cast(vec_type,vsubq_f32(amm,bmm));
 					}
+#endif
 				}
 			}
 		}
@@ -952,12 +960,14 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 						float32x2_t bmm = __builtin_bit_cast(float32x2_t,b);
 						return __builtin_bit_cast(vec_type,vmul_f32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==sizeof(double))
 					{
 						float64x1_t amm = __builtin_bit_cast(float64x1_t,a);
 						float64x1_t bmm = __builtin_bit_cast(float64x1_t,b);
 						return __builtin_bit_cast(vec_type,vmul_f64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -967,12 +977,14 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 						float32x4_t bmm = __builtin_bit_cast(float32x4_t,b);
 						return __builtin_bit_cast(vec_type,vmulq_f32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==sizeof(double))
 					{
 						float64x2_t amm = __builtin_bit_cast(float64x2_t,a);
 						float64x2_t bmm = __builtin_bit_cast(float64x2_t,b);
 						return __builtin_bit_cast(vec_type,vmulq_f64(amm,bmm));
 					}
+#endif
 				}
 			}
 		}
@@ -1164,6 +1176,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 			if constexpr(std::floating_point<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
@@ -1197,6 +1210,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
+#endif
 		}
 #endif
 	}
@@ -2581,12 +2595,14 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vclt_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vclt_s64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -2608,12 +2624,14 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcltq_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcltq_s64(amm,bmm));
 					}
+#endif
 				}
 			}
 			else
@@ -2638,12 +2656,14 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vclt_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vclt_u64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -2665,12 +2685,14 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcltq_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcltq_u64(amm,bmm));
 					}
+#endif
 				}
 			}
 		}
@@ -2997,12 +3019,14 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vcgt_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vcgt_s64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -3024,12 +3048,14 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcgtq_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcgtq_s64(amm,bmm));
 					}
+#endif
 				}
 			}
 			else
@@ -3054,12 +3080,14 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vcgt_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vcgt_u64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -3081,12 +3109,14 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcgtq_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcgtq_u64(amm,bmm));
 					}
+#endif
 				}
 			}
 		}
@@ -3330,12 +3360,14 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vcle_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vcle_s64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -3357,12 +3389,14 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcleq_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcleq_s64(amm,bmm));
 					}
+#endif
 				}
 			}
 			else
@@ -3387,12 +3421,14 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vcle_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vcle_u64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -3414,12 +3450,14 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcleq_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcleq_u64(amm,bmm));
 					}
+#endif
 				}
 			}
 		}
@@ -3667,12 +3705,14 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vcge_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vcge_s64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -3694,12 +3734,14 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcgeq_s32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcgeq_s64(amm,bmm));
 					}
+#endif
 				}
 			}
 			else
@@ -3724,12 +3766,14 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 						return __builtin_bit_cast(vec_type,vcge_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 						return __builtin_bit_cast(vec_type,vcge_u64(amm,bmm));
 					}
+#endif
 				}
 				else if constexpr(sizeof(vec_type)==16)
 				{
@@ -3751,18 +3795,19 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 						return __builtin_bit_cast(vec_type,vcgeq_u32(amm,bmm));
 					}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 					else if constexpr(sizeof(T)==8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 						return __builtin_bit_cast(vec_type,vcgeq_u64(amm,bmm));
 					}
+#endif
 				}
 			}
 		}
 #endif
 	}
-
 	return ::fast_io::details::generic_simd_comparision_common_impl(a,b,[](T va,T vb) noexcept -> bool
 	{
 		return va>=vb;
@@ -3867,12 +3912,14 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 					uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 					return __builtin_bit_cast(vec_type,vceq_s32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 					uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 					return __builtin_bit_cast(vec_type,vceq_s64(amm,bmm));
 				}
+#endif
 			}
 			else if constexpr(sizeof(vec_type)==16)
 			{
@@ -3894,12 +3941,14 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 					uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 					return __builtin_bit_cast(vec_type,vceqq_s32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 					uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 					return __builtin_bit_cast(vec_type,vceqq_s64(amm,bmm));
 				}
+#endif
 			}
 		}
 		else
@@ -3924,12 +3973,14 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 					uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 					return __builtin_bit_cast(vec_type,vceq_u32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 					uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 					return __builtin_bit_cast(vec_type,vceq_u64(amm,bmm));
 				}
+#endif
 			}
 			else if constexpr(sizeof(vec_type)==16)
 			{
@@ -3951,12 +4002,14 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 					uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 					return __builtin_bit_cast(vec_type,vceqq_u32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 					uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 					return __builtin_bit_cast(vec_type,vceqq_u64(amm,bmm));
 				}
+#endif
 			}
 		}
 #endif
@@ -4076,12 +4129,14 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 					uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 					return __builtin_bit_cast(vec_type,vtst_s32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 					uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 					return __builtin_bit_cast(vec_type,vtst_s64(amm,bmm));
 				}
+#endif
 			}
 			else if constexpr(sizeof(vec_type)==16)
 			{
@@ -4103,12 +4158,14 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 					uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 					return __builtin_bit_cast(vec_type,vtstq_s32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 					uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 					return __builtin_bit_cast(vec_type,vtstq_s64(amm,bmm));
 				}
+#endif
 			}
 		}
 		else
@@ -4133,12 +4190,14 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 					uint32x2_t bmm = __builtin_bit_cast(uint32x2_t,b);
 					return __builtin_bit_cast(vec_type,vtst_u32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x1_t amm = __builtin_bit_cast(uint64x1_t,a);
 					uint64x1_t bmm = __builtin_bit_cast(uint64x1_t,b);
 					return __builtin_bit_cast(vec_type,vtst_u64(amm,bmm));
 				}
+#endif
 			}
 			else if constexpr(sizeof(vec_type)==16)
 			{
@@ -4160,12 +4219,14 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 					uint32x4_t bmm = __builtin_bit_cast(uint32x4_t,b);
 					return __builtin_bit_cast(vec_type,vtstq_u32(amm,bmm));
 				}
+#if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
 				else if constexpr(sizeof(T)==8)
 				{
 					uint64x2_t amm = __builtin_bit_cast(uint64x2_t,a);
 					uint64x2_t bmm = __builtin_bit_cast(uint64x2_t,b);
 					return __builtin_bit_cast(vec_type,vtstq_u64(amm,bmm));
 				}
+#endif
 			}
 		}
 #endif
