@@ -107,14 +107,20 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 #elif defined(__wasm_simd128__) && __has_builtin(__builtin_wasm_bitmask_i8x16)
 		using wasmsimd128_i8x16 [[__gnu__::__vector_size__ (16)]] = char;
 		return !__builtin_wasm_bitmask_i8x16(static_cast<wasmsimd128_i8x16>(vec.value));
+#elif (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)) && __has_builtin(__builtin_neon_vmaxvq_u32)
+		using armneon_uint32x4 [[__gnu__::__vector_size__ (16)]] = unsigned;
+		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
+		{
+			return __builtin_neon_vmaxvq_u32(__builtin_bit_cast(armneon_uint32x4,vec.value))==0;
+		}
 #elif (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)) && __has_builtin(__builtin_aarch64_reduc_umax_scal_v4si_uu)
 		using armneon_uint32x4 [[__gnu__::__vector_size__ (16)]] = unsigned;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
 #if __has_builtin(__builtin_bit_cast)
-			return __builtin_aarch64_reduc_umax_scal_v8hi_uu(__builtin_bit_cast(armneon_uint32x4,vec.value))==0;
+			return __builtin_aarch64_reduc_umax_scal_v4si_uu(__builtin_bit_cast(armneon_uint32x4,vec.value))==0;
 #else
-			return __builtin_aarch64_reduc_umax_scal_v8hi_uu((armneon_uint32x4)vec.value)==0;
+			return __builtin_aarch64_reduc_umax_scal_v4si_uu((armneon_uint32x4)vec.value)==0;
 #endif
 		}
 #endif
