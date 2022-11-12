@@ -11,7 +11,7 @@ struct timer
 	#if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 	#endif
-	explicit timer(std::u8string_view strvw):s(strvw),t0(posix_clock_gettime(posix_clock_id::monotonic)){}
+	explicit timer(std::u8string_view strvw):s(strvw),t0(posix_clock_gettime(posix_clock_id::monotonic_raw)){}
 	timer(timer const &)=delete;
 	timer& operator=(timer const &)=delete;
 	#if __has_cpp_attribute(__gnu__::__cold__)
@@ -19,7 +19,7 @@ struct timer
 	#endif
 	~timer()
 	{
-		perr(fast_io::u8err(),s, u8":", posix_clock_gettime(posix_clock_id::monotonic)-t0,u8"s\n");
+		perr(fast_io::u8err(),s, u8":", posix_clock_gettime(posix_clock_id::monotonic_raw)-t0,u8"s\n");
 	}
 };
 }

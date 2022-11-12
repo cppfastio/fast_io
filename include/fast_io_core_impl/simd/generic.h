@@ -175,13 +175,13 @@ simd_vector
 		}
 		else
 		{
-#if (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
 #if __cpp_if_consteval >= 202106L
 		if !consteval
 #else
 		if (!__builtin_is_constant_evaluated())
 #endif
 		{
+#if (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
 			if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 			{
 				if constexpr(::fast_io::details::cpu_flags::sse3_supported)
@@ -242,9 +242,31 @@ simd_vector
 				*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
 				return;
 			}
-			
-		}
+#elif defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
+			if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::armneon_supported)
+			{
+				if constexpr(sizeof(T)==8)
+				{
+					poly8x16_t temp_vec = __builtin_bit_cast(poly8x16_t,*this);
+					temp_vec=vrev64q_p8(temp_vec);
+					*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+				}
+				else if constexpr(sizeof(T)==4)
+				{
+					uint32x4_t temp_vec = __builtin_bit_cast(uint32x4_t,*this);
+					temp_vec=vrev32q_p8(temp_vec);
+					*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+				}
+				else if constexpr(sizeof(T)==2)
+				{
+					uint16x8_t temp_vec = __builtin_bit_cast(uint16x8_t,*this);
+					temp_vec=vrev16q_p8(temp_vec);
+					*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
+				}
+				return;
+			}
 #endif
+		}
 		::fast_io::details::generic_simd_self_op_impl(*this,[](T& t)
 		{
 			t=::fast_io::byte_swap(t);

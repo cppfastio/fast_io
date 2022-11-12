@@ -107,6 +107,16 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 #elif defined(__wasm_simd128__) && __has_builtin(__builtin_wasm_bitmask_i8x16)
 		using wasmsimd128_i8x16 [[__gnu__::__vector_size__ (16)]] = char;
 		return !__builtin_wasm_bitmask_i8x16(static_cast<wasmsimd128_i8x16>(vec.value));
+#elif (defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)) && __has_builtin(__builtin_aarch64_reduc_umax_scal_v4si_uu)
+		using armneon_uint32x4 [[__gnu__::__vector_size__ (16)]] = unsigned;
+		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
+		{
+#if __has_builtin(__builtin_bit_cast)
+			return __builtin_aarch64_reduc_umax_scal_v8hi_uu(__builtin_bit_cast(armneon_uint32x4,vec.value))==0;
+#else
+			return __builtin_aarch64_reduc_umax_scal_v8hi_uu((armneon_uint32x4)vec.value)==0;
+#endif
+		}
 #endif
 #elif (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
 		if constexpr(::fast_io::details::cpu_flags::sse4_2_supported)
@@ -118,6 +128,12 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 		{
 			__m128i a = __builtin_bit_cast(__m128i,vec);
 			return !_mm_movemask_epi8(a);
+		}
+#elif defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
+		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
+		{
+			uint32x4_t a = __builtin_bit_cast(uint32x4_t,vec);
+			return vmaxvq_u32(a)==0;
 		}
 #endif
 	}

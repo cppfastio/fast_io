@@ -150,4 +150,3 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwFlushBuffersFileEx@nt@win32@fast_io@@YAIPAXI0IPAUio_status_block@123@@Z=__imp_ZwFlushBuffersFileEx")
 #pragma comment(linker,"/alternatename:__imp_?DbgPrint@nt@win32@fast_io@@YAIPBDZZ=__imp_DbgPrint")
 #pragma comment(linker,"/alternatename:__imp_?DbgPrintEx@nt@win32@fast_io@@YAIIIPBDZZ=__imp_DbgPrintEx")
-#pragma comment(linker,"/alternatename:=")
