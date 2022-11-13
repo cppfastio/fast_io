@@ -171,6 +171,17 @@ EBCDIC specific: NL:21
 
 namespace details
 {
+inline constexpr bool is_c_space_wide_impl(wchar_t ch) noexcept
+{
+	switch(ch)
+	{
+		case L'\f':case L'\n':case L'\r':
+		case L'\t':case L'\v':case L' ':return true;
+		default:
+		return false;
+	};
+}
+
 template<bool use_ebcdic,std::integral char_type>
 inline constexpr bool is_c_space_impl(char_type ch) noexcept
 {
@@ -229,6 +240,8 @@ inline constexpr bool is_c_space(char_type ch) noexcept
 	{
 	if constexpr(::fast_io::details::is_ebcdic<char_type>)
 		return details::is_c_space_impl<true>(ch);
+	else if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+		return details::is_c_space_wide_impl(ch);
 	else
 		return details::is_c_space_impl<false>(static_cast<char32_t>(static_cast<std::make_unsigned_t<char_type>>(ch)));
 	}
@@ -280,6 +293,17 @@ inline constexpr bool is_html_whitespace_ebcdic_impl(char32_t ch) noexcept
 	};
 }
 
+inline constexpr bool is_html_whitespace_wide_impl(wchar_t ch) noexcept
+{
+	switch(ch)
+	{
+		case L'\f':case L'\n':case L'\r':
+		case L'\t':case L' ':return true;
+		default:
+		return false;
+	};
+}
+
 }
 
 template<std::integral char_type>
@@ -319,6 +343,14 @@ inline constexpr bool is_c_halfwidth(char_type ch) noexcept
 	{
 		return is_c_halfwidth(static_cast<unsigned_char_type>(ch));
 	}
+	else if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+	{
+		constexpr unsigned_char_type halfwidth_exclaimation_mark_val{u8'!'};
+		constexpr unsigned_char_type num{94};
+		unsigned_char_type cht{ch};
+		cht=::fast_io::byte_swap(cht);
+		return static_cast<unsigned_char_type>(cht-halfwidth_exclaimation_mark_val)<num;
+	}
 	else
 	{
 		constexpr unsigned_char_type halfwidth_exclaimation_mark_val{u8'!'};
@@ -342,6 +374,14 @@ inline constexpr bool is_c_fullwidth(char_type ch) noexcept
 	else if constexpr(std::signed_integral<char_type>)
 	{
 		return is_c_fullwidth(static_cast<unsigned_char_type>(ch));
+	}
+	else if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+	{
+		constexpr unsigned_char_type halfwidth_exclaimation_mark_val{0xFF01};
+		constexpr unsigned_char_type num{94};
+		unsigned_char_type cht{ch};
+		cht=::fast_io::byte_swap(cht);
+		return static_cast<unsigned_char_type>(cht-halfwidth_exclaimation_mark_val)<num;
 	}
 	else
 	{
@@ -371,6 +411,20 @@ inline constexpr char_type to_c_halfwidth(char_type ch) noexcept
 	else if constexpr(std::signed_integral<char_type>)
 	{
 		return static_cast<char_type>(to_c_halfwidth(static_cast<unsigned_char_type>(ch)));
+	}
+	else if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+	{
+		constexpr unsigned_char_type fullwidth_exclaimation_mark_val{0xFF01};
+		constexpr unsigned_char_type num{94};
+		constexpr unsigned_char_type halfwidth_exclaimation_mark_val{u8'!'};
+		unsigned_char_type cht{ch};
+		cht=::fast_io::byte_swap(cht);
+		unsigned_char_type const umav{static_cast<unsigned_char_type>(cht-fullwidth_exclaimation_mark_val)};
+		if(umav<num)
+		{
+			return static_cast<unsigned_char_type>(umav+halfwidth_exclaimation_mark_val);
+		}
+		return cht;
 	}
 	else
 	{
