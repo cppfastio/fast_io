@@ -674,7 +674,7 @@ inline constexpr auto generate_base_prefix_array() noexcept
 	//0[9]0000
 		using char_type_unsigned = std::make_unsigned_t<char_type>;
 		return ::fast_io::freestanding::array<char_type,4>{char_literal_v<u8'0',char_type>,char_literal_v<u8'[',char_type>,
-		static_cast<char_type>(static_cast<char_type_unsigned>(char_literal_v<u8'0',char_type>+static_cast<char8_t>(base))),char_literal_v<u8']',char_type>};
+		::fast_io::char_literal_add<char_type>(base),char_literal_v<u8']',char_type>};
 	}
 	else
 	{
@@ -682,8 +682,8 @@ inline constexpr auto generate_base_prefix_array() noexcept
 			unit{static_cast<char8_t>(static_cast<char8_t>(base)%static_cast<char8_t>(10u))};
 		using char_type_unsigned = std::make_unsigned_t<char_type>;
 		return ::fast_io::freestanding::array<char_type,5>{char_literal_v<u8'0',char_type>,char_literal_v<u8'[',char_type>,
-		static_cast<char_type>(static_cast<char_type_unsigned>(char_literal_v<u8'0',char_type>+static_cast<char8_t>(decade))),
-		static_cast<char_type>(static_cast<char_type_unsigned>(char_literal_v<u8'0',char_type>+static_cast<char8_t>(unit))),
+		::fast_io::char_literal_add<char_type>(decade),
+		::fast_io::char_literal_add<char_type>(unit),
 		char_literal_v<u8']',char_type>};
 	}
 }
@@ -833,15 +833,7 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 					{
 						T high{t/maxhighdigits};
 						t=t%maxhighdigits;
-						if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
-						{
-							using unsigned_char_type = std::make_unsigned_t<wchar_t>;
-							*(iter-basetdigits)=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(static_cast<char8_t>(high)+arithmetic_char_literal_v<u8'0',char_type>)));
-						}
-						else
-						{
-							*(iter-basetdigits)=static_cast<char_type>(static_cast<char8_t>(high)+char_literal_v<u8'0',char_type>);
-						}
+						*(iter-basetdigits)=::fast_io::char_literal_add<char_type>(high);
 						--len;
 					}
 				}
@@ -861,15 +853,7 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 						}
 						else
 						{
-							if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
-							{
-								using unsigned_char_type = std::make_unsigned_t<wchar_t>;
-								*(iter+1-basetdigits)=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(static_cast<char8_t>(high)+arithmetic_char_literal_v<u8'0',char_type>)));
-							}
-							else
-							{
-								*(iter+1-basetdigits)=static_cast<char_type>(static_cast<char8_t>(high)+arithmetic_char_literal_v<u8'0',char_type>);
-							}
+							*(iter+1-basetdigits)=::fast_io::char_literal_add<char_type>(high);
 							--len;
 						}
 					}
@@ -912,15 +896,7 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 			{
 				if constexpr(base<=10)
 				{
-					if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
-					{
-						using unsigned_char_type = std::make_unsigned_t<wchar_t>;
-						*--iter=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(t+arithmetic_char_literal_v<u8'0',char_type>)));
-					}
-					else
-					{
-						*--iter=static_cast<char_type>(t+arithmetic_char_literal_v<u8'0',char_type>);
-					}
+					*--iter=::fast_io::char_literal_add<char_type>(t);
 				}
 				else
 				{

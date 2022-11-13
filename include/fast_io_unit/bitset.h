@@ -41,7 +41,7 @@ inline constexpr char_type* pr_vs_iter_impl(char_type* first,::std::size_t bits,
 	auto last{first+bits};
 	for(auto i{last};i!=first;)
 	{
-		*(--i)=static_cast<char_type>(char_literal_v<u8'0',char_type>+(p&0x1u));
+		*(--i)=::fast_io::char_literal_add<char_type>(p&0x1u);
 		p>>=1;
 	}
 	return last;

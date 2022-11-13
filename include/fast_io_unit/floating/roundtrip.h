@@ -1095,10 +1095,9 @@ inline constexpr char_type* print_rsv_fp_decimal_scientific_common_impl(char_typ
 template<bool comma,::std::integral char_type,my_unsigned_integral U>
 inline constexpr char_type* print_rsv_fp_decimal_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if(m10len==1)[[unlikely]]
 	{
-		*iter=static_cast<char_type>(static_cast<unsigned_char_type>(m10)+char_literal_v<u8'0',char_type>);
+		*iter=::fast_io::char_literal_add<char_type>(m10);
 		++iter;
 		return iter;
 	}
@@ -1230,7 +1229,6 @@ bool uppercase_e,
 ::std::integral char_type>
 inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if constexpr(mt==::fast_io::manipulators::floating_format::general)
 	{
 		if(-5<e10&&e10<7)
@@ -1243,7 +1241,7 @@ inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename 
 	{
 		if(m10<10u)[[unlikely]]
 		{
-			*iter=static_cast<char_type>(static_cast<unsigned_char_type>(m10)+char_literal_v<u8'0',char_type>);
+			*iter=::fast_io::char_literal_add<char_type>(m10);
 			++iter;
 		}
 		else
