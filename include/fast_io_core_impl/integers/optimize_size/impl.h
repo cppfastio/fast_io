@@ -11,6 +11,7 @@ namespace with_length
 template<char8_t base=10,bool uppercase=false,::std::integral char_type,my_unsigned_integral U>
 inline constexpr void output_unsigned(char_type* str,U value,::std::size_t const len) noexcept
 {
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	str+=len;
 	for(std::size_t i{};i!=len;++i)
 	{
@@ -94,6 +95,10 @@ inline constexpr void output_unsigned(char_type* str,U value,::std::size_t const
 						*str=(u8'a'-10)+res;
 				}
 			}
+		}
+		if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+		{
+			*str=static_cast<char_type>(::fast_io::details::byte_swap(static_cast<unsigned_char_type>(*str)));
 		}
 		value = temp;
 	}
