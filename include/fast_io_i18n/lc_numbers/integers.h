@@ -80,7 +80,7 @@ inline constexpr char_type to_char_single_digit(T t) noexcept
 			}
 			else
 			{
-				return ::fast_io::char_literal_add<char_type>(t-ten);
+				return ::fast_io::char_literal_add<char_type,(uppercase?u8'A':u8'a')>(t-ten);
 			}
 		}
 	}
