@@ -59,7 +59,7 @@ inline constexpr void jeaiii_s(ch_type* iter,std::uint_least64_t t) noexcept
 	if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
 	{
 		using unsigned_char_type = std::make_unsigned_t<char_type>;
-		iter[n]=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(((ten*static_cast<std::uint_least32_t>(t))>>32u)+char_literal_v<u8'0',char_type>)));
+		iter[n]=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(((ten*static_cast<std::uint_least32_t>(t))>>32u)+arithmetic_char_literal_v<u8'0',char_type>)));
 	}
 	else
 	{

@@ -73,7 +73,7 @@ inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::iter_value_t<It
 {
 	return {::std::to_address(first),static_cast<std::size_t>(last-first)};
 }
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
+
 template<::std::ranges::contiguous_range rg>
 requires ::std::integral<::std::ranges::range_value_t<rg>>
 inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_value_t<rg>>> strvw(rg&& r) noexcept
@@ -88,7 +88,6 @@ inline constexpr basic_os_c_str_n<::std::remove_cvref_t<::std::ranges::range_val
 	auto p{::std::ranges::data(r)};
 	return {p,::fast_io::cstr_nlen(p,::std::ranges::size(r))};
 }
-#endif
 
 template<typename enumtype>
 requires (::std::is_enum_v<enumtype>)
