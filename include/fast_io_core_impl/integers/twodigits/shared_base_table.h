@@ -68,6 +68,15 @@ http://www.astrodigital.org/digital/ebcdic.html
 						e1+=0x61-10;
 				}
 	}
+	if constexpr(::std::same_as<char_type,wchar_t>&&wide_is_none_utf_endian)
+	{
+		using unsigned_char_type = std::make_unsigned_t<wchar_t>;
+		for(auto &e : vals)
+			for(auto &e1 : e)
+			{
+				e1=static_cast<wchar_t>(::fast_io::byte_swap(static_cast<unsigned_char_type>(e1)));
+			}
+	}
 	return vals;
 }
 
@@ -81,9 +90,9 @@ inline constexpr auto& get_shared_inline_constexpr_base_table() noexcept
 		return shared_inline_constexpr_base_table_tb<char_type,base,upper>;
 	else if constexpr(sizeof(char_type)==1)
 		return shared_inline_constexpr_base_table_tb<char8_t,base,upper>;
-	else if constexpr(sizeof(char_type)==2)
+	else if constexpr(sizeof(char_type)==2&&(!::std::same_as<char_type,wchar_t>||!wide_is_none_utf_endian))
 		return shared_inline_constexpr_base_table_tb<char16_t,base,upper>;
-	else if constexpr(sizeof(char_type)==4)
+	else if constexpr(sizeof(char_type)==4&&(!::std::same_as<char_type,wchar_t>||!wide_is_none_utf_endian))
 		return shared_inline_constexpr_base_table_tb<char32_t,base,upper>;
 	else
 		return shared_inline_constexpr_base_table_tb<char_type,base,upper>;

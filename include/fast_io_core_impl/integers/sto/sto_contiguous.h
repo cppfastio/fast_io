@@ -16,6 +16,10 @@ inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) n
 {
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
 	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
+	if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+	{
+		ch=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(ch)));
+	}
 	if constexpr(base<=10)
 	{
 		constexpr unsigned_char_type base_char_type(base);
@@ -151,6 +155,10 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 	using unsigned_char_type = my_make_unsigned_t<char_type>;
 	constexpr bool ebcdic{::fast_io::details::is_ebcdic<char_type>};
 	constexpr unsigned_char_type base_char_type(base);
+	if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+	{
+		ch=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(ch)));
+	}
 	if constexpr(base<=10)
 	{
 		if constexpr(ebcdic)
