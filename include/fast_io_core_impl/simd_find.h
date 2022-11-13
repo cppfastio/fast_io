@@ -114,7 +114,8 @@ inline constexpr char_type const* find_space_simd_common_impl(char_type const* f
 	using unsigned_char_type = std::make_unsigned_t<std::remove_cvref_t<char_type>>;
 	using signed_char_type = std::make_unsigned_t<unsigned_char_type>;
 	constexpr char_type spacech{char_literal_v<u8' ',std::remove_cvref_t<char_type>>};
-	constexpr char_type horizontaltab{char_literal_v<u8'\t',std::remove_cvref_t<char_type>>};
+	constexpr char_type horizontaltab{static_cast<char_type>(char_literal_v<u8'\t',
+	std::conditional_t<(std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian),char8_t,std::remove_cvref_t<char_type>>>)};
 	constexpr char_type verticaltab{char_literal_v<u8'\v',std::remove_cvref_t<char_type>>};
 	constexpr unsigned N{vec_size/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
@@ -244,14 +245,32 @@ ASCII: space (0x20, ' '), EBCDIC:64
 #endif
 			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
-				return (spaces==simdvec)^(static_cast<simd_vector_type>((static_cast<decision_simd_vector_type>(simdvec)-horizontaltabs)<fives)&(simdvec!=verticaltabs));
+				if constexpr(::std::same_as<wchar_t,char_type>&&wide_is_none_utf_endian)
+				{
+					simd_vector_type simdvec_reverse{simdvec};
+					simdvec_reverse.swap_endian();
+					return (spaces==simdvec)^(static_cast<simd_vector_type>((static_cast<decision_simd_vector_type>(simdvec_reverse)-horizontaltabs)<fives)&(simdvec!=verticaltabs));
+				}
+				else
+				{
+					return (spaces==simdvec)^(static_cast<simd_vector_type>((static_cast<decision_simd_vector_type>(simdvec)-horizontaltabs)<fives)&(simdvec!=verticaltabs));
+				}
 			});
 		}
 		else
 		{
 			return find_simd_common_all_impl<findnot,vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept
 			{
-				return (spaces==simdvec)^static_cast<simd_vector_type>(((static_cast<decision_simd_vector_type>(simdvec)-horizontaltabs)<fives));
+				if constexpr(::std::same_as<wchar_t,char_type>&&wide_is_none_utf_endian)
+				{
+					simd_vector_type simdvec_reverse{simdvec};
+					simdvec_reverse.swap_endian();
+					return (spaces==simdvec)^(static_cast<simd_vector_type>((static_cast<decision_simd_vector_type>(simdvec_reverse)-horizontaltabs)<fives));
+				}
+				else
+				{
+					return (spaces==simdvec)^(static_cast<simd_vector_type>((static_cast<decision_simd_vector_type>(simdvec)-horizontaltabs)<fives));
+				}
 			});
 		}
 	}
