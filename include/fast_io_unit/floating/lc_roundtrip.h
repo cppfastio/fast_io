@@ -29,7 +29,7 @@ inline constexpr char_type* lc_print_rsv_fp_decimal_common_impl(basic_io_scatter
 {
 	if(m10len==1)[[unlikely]]
 	{
-		*iter=::fast_io::char_literall_add<char_type>(m10);
+		*iter=::fast_io::char_literal_add<char_type>(m10);
 		++iter;
 		return iter;
 	}
@@ -252,7 +252,6 @@ bool uppercase_e,
 ::std::integral char_type>
 inline constexpr char_type* lc_print_rsv_fp_decision_impl(basic_lc_all<char_type> const* all,char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if constexpr(mt==::fast_io::manipulators::floating_format::general)
 	{
 		if(-5<e10&&e10<7)
@@ -265,7 +264,7 @@ inline constexpr char_type* lc_print_rsv_fp_decision_impl(basic_lc_all<char_type
 	{
 		if(m10<10u)[[unlikely]]
 		{
-			*iter=::fast_io::char_literall_add<char_type>(m10);
+			*iter=::fast_io::char_literal_add<char_type>(m10);
 			++iter;
 		}
 		else
