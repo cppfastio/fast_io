@@ -74,7 +74,15 @@ inline constexpr void jeaiii_c(char_type* iter,std::uint_least32_t u) noexcept
 {
 	if constexpr(n==0)
 	{
-		*iter=static_cast<char_type>(u)+char_literal_v<u8'0',char_type>;
+		if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
+		{
+			using unsigned_char_type = std::make_unsigned_t<char_type>;
+			*iter=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(static_cast<char_type>(u)+char_literal_v<u8'0',char_type>)));
+		}
+		else
+		{
+			*iter=static_cast<char_type>(u)+char_literal_v<u8'0',char_type>;
+		}
 	}
 	else if constexpr(n==1)
 	{
@@ -144,7 +152,15 @@ binary search tree
 		{
 			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,1>)
 			{
-				*iter=static_cast<char_type>(u)+char_literal_v<u8'0',char_type>;
+				if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
+				{
+					using unsigned_char_type = std::make_unsigned_t<char_type>;
+					*iter=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(static_cast<char_type>(u)+char_literal_v<u8'0',char_type>)));
+				}
+				else
+				{
+					*iter=static_cast<char_type>(u)+char_literal_v<u8'0',char_type>;
+				}
 				return iter+1;
 			}
 			else
