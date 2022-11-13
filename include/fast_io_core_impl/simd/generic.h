@@ -220,7 +220,11 @@ simd_vector
 					}
 					else if constexpr(sizeof(T)==2)
 					{
-						temp_vec=(__m128i)_mm_or_ps((__m128)_mm_srli_epi16(temp_vec,8),(__m128)_mm_slli_epi16(temp_vec,8));
+						__m128i a = _mm_srli_epi16(temp_vec,8);
+						__m128i b = _mm_slli_epi16(temp_vec,8);
+						__m128 aa = __builtin_bit_cast(__m128,a);
+						__m128 bb = __builtin_bit_cast(__m128,b);
+						temp_vec=__builtin_bit_cast(__m128i,_mm_or_ps(aa,bb));
 					}
 					*this=__builtin_bit_cast(simd_vector<T,N>,temp_vec);
 					return;
