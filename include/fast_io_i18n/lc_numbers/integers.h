@@ -18,13 +18,13 @@ inline constexpr char_type to_char_single_digit(T t) noexcept
 {
 	if constexpr(base<=10)
 	{
-		return static_cast<char_type>(t+char_literal_v<u8'0',char_type>);
+		return ::fast_io::char_literal_add<char_type>(t);
 	}
 	else
 	{
 		constexpr T ten{static_cast<T>(10u)};
 		if(t<ten)
-			return static_cast<char_type>(t+char_literal_v<u8'0',char_type>);
+			return ::fast_io::char_literal_add<char_type>(t);
 		else
 		{
 			if constexpr(is_ebcdic<char_type>)
@@ -80,8 +80,7 @@ inline constexpr char_type to_char_single_digit(T t) noexcept
 			}
 			else
 			{
-				t-=ten;
-				return static_cast<char_type>(t+char_literal_v<(uppercase?u8'A':u8'a'),char_type>);
+				return ::fast_io::char_literal_add<char_type>(t-ten);
 			}
 		}
 	}
