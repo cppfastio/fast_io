@@ -495,12 +495,11 @@ inline constexpr char_type* prt_rsv_hundred_flt_impl(char_type* iter,U u) noexce
 template<std::size_t mxdigits,bool indent,::std::integral char_type,my_unsigned_integral U>
 inline constexpr char_type* prt_rsv_exponent_impl(char_type* iter,U u) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	if constexpr(mxdigits==0)
 		return iter;
 	else if constexpr(mxdigits==1)
 	{
-		*iter=static_cast<char_type>(char_literal_v<u8'0',char_type>+static_cast<unsigned_char_type>(u));
+		*iter=::fast_io::char_literal_add<char_type>(u);
 		++iter;
 		return iter;
 	}
@@ -521,7 +520,7 @@ inline constexpr char_type* prt_rsv_exponent_impl(char_type* iter,U u) noexcept
 					return prt_rsv_hundred_flt_impl(iter,u);
 				else
 				{
-					*iter=static_cast<char_type>(char_literal_v<u8'0',char_type>+static_cast<unsigned_char_type>(u));
+					*iter=::fast_io::char_literal_add<char_type>(u);
 					++iter;
 					return iter;
 				}
@@ -535,7 +534,7 @@ inline constexpr char_type* prt_rsv_exponent_impl(char_type* iter,U u) noexcept
 				{
 					U div100{u/hundred};
 					U mod100{u%hundred};
-					*iter=static_cast<char_type>(char_literal_v<u8'0',char_type>+static_cast<unsigned_char_type>(div100));
+					*iter=::fast_io::char_literal_add<char_type>(div100);
 					++iter;
 					u=mod100;
 				}
@@ -547,13 +546,13 @@ inline constexpr char_type* prt_rsv_exponent_impl(char_type* iter,U u) noexcept
 				{
 					U div100{u/hundred};
 					U mod100{u%hundred};
-					*iter=static_cast<char_type>(char_literal_v<u8'0',char_type>+static_cast<unsigned_char_type>(div100));
+					*iter=::fast_io::char_literal_add<char_type>(div100);
 					++iter;
 					return prt_rsv_hundred_flt_impl(iter,mod100);
 				}
 				else if(u<ten)
 				{
-					*iter=static_cast<char_type>(char_literal_v<u8'0',char_type>+static_cast<unsigned_char_type>(u));
+					*iter=::fast_io::char_literal_add<char_type>(u);
 					++iter;
 					return iter;
 				}
