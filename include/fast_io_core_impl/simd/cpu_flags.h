@@ -7,7 +7,7 @@ inline constexpr bool sse2_supported
 {
 #if defined(__SSE2__) || (defined(_MSC_VER)&&!defined(__clang__)&&(((defined(__x86_64__) || defined(_M_AMD64))&&!defined(_KERNEL_MODE))||defined(__AVX__)))
 true
-#elif defined(_M_IX86_FP)
+#elif defined(_M_IX86_FP) && defined(_MSC_VER)&&!defined(__clang__)&&!defined(_KERNEL_MODE)
 #if _M_IX86_FP == 2
 true
 #endif
