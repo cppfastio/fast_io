@@ -33,7 +33,7 @@ inline constexpr ch_type arithmetic_char_literal(char8_t ch) noexcept
 	if constexpr(std::same_as<ch_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
 	{
 		using unsigned_t = ::std::make_unsigned_t<ch_type>;
-		return static_cast<ch_type>(static_cast<unsigned_t>(ch));
+		return static_cast<ch_type>(::fast_io::byte_swap(static_cast<unsigned_t>(ch)));
 	}
 	else
 	{
