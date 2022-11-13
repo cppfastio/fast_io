@@ -294,6 +294,17 @@ inline constexpr encoding_scheme execution_charset_encoding_scheme() noexcept
 			}
 			else
 			{
+				if constexpr(::fast_io::details::wide_is_none_utf_endian)
+				{
+					if constexpr(encoding_scheme::utf==encoding_scheme::utf_le)
+					{
+						return encoding_scheme::utf_be;
+					}
+					else
+					{
+						return encoding_scheme::utf_le;
+					}
+				}
 				return encoding_scheme::utf;
 			}
 #else
