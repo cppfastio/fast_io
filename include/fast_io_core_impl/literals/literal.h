@@ -42,6 +42,6 @@ inline constexpr ch_type arithmetic_char_literal(char8_t ch) noexcept
 }
 
 template<char8_t ch,std::integral ch_type>
-inline constexpr ch_type arithmetic_char_literal_v{char_literal_v<ch,ch_type>(ch)};
+inline constexpr ch_type arithmetic_char_literal_v{arithmetic_char_literal<ch_type>(ch)};
 
 }

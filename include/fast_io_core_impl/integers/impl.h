@@ -833,7 +833,15 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 					{
 						T high{t/maxhighdigits};
 						t=t%maxhighdigits;
-						*(iter-basetdigits)=static_cast<char_type>(static_cast<char8_t>(high)+char_literal_v<u8'0',char_type>);
+						if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
+						{
+							using unsigned_char_type = std::make_unsigned_t<wchar_t>;
+							*(iter-basetdigits)=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(static_cast<char8_t>(high)+arithmetic_char_literal_v<u8'0',char_type>)));
+						}
+						else
+						{
+							*(iter-basetdigits)=static_cast<char_type>(static_cast<char8_t>(high)+char_literal_v<u8'0',char_type>);
+						}
 						--len;
 					}
 				}
@@ -856,11 +864,11 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 							if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
 							{
 								using unsigned_char_type = std::make_unsigned_t<wchar_t>;
-								*(iter+1-basetdigits)=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(static_cast<char8_t>(high)+char_literal_v<u8'0',char_type>)));
+								*(iter+1-basetdigits)=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(static_cast<char8_t>(high)+arithmetic_char_literal_v<u8'0',char_type>)));
 							}
 							else
 							{
-								*(iter+1-basetdigits)=static_cast<char_type>(static_cast<char8_t>(high)+char_literal_v<u8'0',char_type>);
+								*(iter+1-basetdigits)=static_cast<char_type>(static_cast<char8_t>(high)+arithmetic_char_literal_v<u8'0',char_type>);
 							}
 							--len;
 						}
@@ -907,11 +915,11 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 					if constexpr(::std::same_as<wchar_t,char_type>&&::fast_io::details::wide_is_none_utf_endian)
 					{
 						using unsigned_char_type = std::make_unsigned_t<wchar_t>;
-						*--iter=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(t+char_literal_v<u8'0',char_type>)));
+						*--iter=static_cast<char_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(t+arithmetic_char_literal_v<u8'0',char_type>)));
 					}
 					else
 					{
-						*--iter=static_cast<char_type>(t+char_literal_v<u8'0',char_type>);
+						*--iter=static_cast<char_type>(t+arithmetic_char_literal_v<u8'0',char_type>);
 					}
 				}
 				else

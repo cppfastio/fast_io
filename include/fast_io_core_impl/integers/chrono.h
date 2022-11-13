@@ -18,7 +18,7 @@ inline constexpr char_type* chrono_one_digit_impl(char_type* it,U uv) noexcept
 		if(10u<=uv)[[unlikely]]
 			return print_reserve_integral_define<10>(it,uv);
 	}
-	*it=static_cast<char_type>(uv+char_literal_v<u8'0',char_type>);
+	*it=static_cast<char_type>(uv+arithmetic_char_literal_v<u8'0',char_type>);
 	++it;
 	return it;
 }
