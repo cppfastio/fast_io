@@ -14,6 +14,6 @@ case u8'\0':return L'\0';case u8'\n':return L'\n';case u8'\t':return L'\t';case 
 	else if constexpr(std::same_as<ch_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
 	{
 		using unsigned_char_type = std::make_unsigned_t<wchar_t>;
-		return static_cast<ch_type>(static_cast<unsigned_char_type>(ch));
+		return static_cast<ch_type>(::fast_io::byte_swap(static_cast<unsigned_char_type>(ch)));
 	}
 	else
