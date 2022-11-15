@@ -672,7 +672,6 @@ inline constexpr auto generate_base_prefix_array() noexcept
 	if constexpr(base<10)
 	{
 	//0[9]0000
-		using char_type_unsigned = std::make_unsigned_t<char_type>;
 		return ::fast_io::freestanding::array<char_type,4>{char_literal_v<u8'0',char_type>,char_literal_v<u8'[',char_type>,
 		::fast_io::char_literal_add<char_type>(base),char_literal_v<u8']',char_type>};
 	}
@@ -680,7 +679,6 @@ inline constexpr auto generate_base_prefix_array() noexcept
 	{
 		constexpr char8_t decade{static_cast<char8_t>(static_cast<char8_t>(base)/static_cast<char8_t>(10u))},
 			unit{static_cast<char8_t>(static_cast<char8_t>(base)%static_cast<char8_t>(10u))};
-		using char_type_unsigned = std::make_unsigned_t<char_type>;
 		return ::fast_io::freestanding::array<char_type,5>{char_literal_v<u8'0',char_type>,char_literal_v<u8'[',char_type>,
 		::fast_io::char_literal_add<char_type>(decade),
 		::fast_io::char_literal_add<char_type>(unit),
