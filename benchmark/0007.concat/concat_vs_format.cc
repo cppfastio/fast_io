@@ -1,7 +1,11 @@
 #include<string>
+#if __has_include(<fast_io.h>)
 #include<fast_io.h>
+#endif
+#include<version>
+#if __has_include(<format>)
 #include<format>
-#include<vector>
+#endif
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 #include <fmt/core.h>
 #if __has_include(<fmt/compile.h>)
@@ -26,22 +30,26 @@ inline benchmark_return benchmark(Func meth)
 		{
 			for(std::uint_least16_t b{};b!=256;++b)
 			{
-				total_size+=meth(r,g,b).size();
+				total_size+=meth(static_cast<::std::uint_least8_t>(r),static_cast<::std::uint_least8_t>(g),static_cast<::std::uint_least8_t>(b)).size();
 			}
 		}
 	}
 	return {total_size,fast_io::posix_clock_gettime(fast_io::posix_clock_id::monotonic_raw)-start};
 }
 
+#if __cpp_lib_format >= 201907L
 inline std::string color_format(std::uint_least8_t r,std::uint_least8_t g,std::uint_least8_t b)
 {
 	return std::format("Red: {}, Green: {}, Blue: {}",r,g,b);
 }
+#endif
 
+#if __has_include(<fast_io.h>)
 inline std::string color_concat(std::uint_least8_t r,std::uint_least8_t g,std::uint_least8_t b)
 {
 	return fast_io::concat("Red: ",r,", Green: ",g,", Blue: ",b);
 }
+#endif
 
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 
@@ -62,7 +70,9 @@ inline std::string color_fmt_format_compile(std::uint_least8_t r,std::uint_least
 
 int main()
 {
+#if __cpp_lib_format >= 201907L
 	auto format_time = benchmark(color_format);
+#endif
 	auto concat_time = benchmark(color_concat);
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 	auto fmt_format_time = benchmark(color_fmt_format);
@@ -71,8 +81,13 @@ int main()
 #endif
 #endif    
     
-	print("std::format (total size:",format_time.total_size,") took ",format_time.timestamp,"s.\n"
+	print(
+#if __cpp_lib_format >= 201907L
+		"std::format (total size:",format_time.total_size,") took ",format_time.timestamp,"s.\n"
+#endif
+#if __has_include(<fast_io.h>)
 		"fast_io::concat (total size: ",concat_time.total_size,") took ",concat_time.timestamp,"s.\n"
+#endif
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 		"fmt::format (total size:",fmt_format_time.total_size,") took ",fmt_format_time.timestamp,"s.\n"
 #if __has_include(<fmt/compile.h>)
