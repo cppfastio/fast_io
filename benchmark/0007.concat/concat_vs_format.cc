@@ -1,7 +1,5 @@
 #include<string>
-#if __has_include(<fast_io.h>)
 #include<fast_io.h>
-#endif
 #include<version>
 #if __has_include(<format>)
 #include<format>
@@ -44,12 +42,10 @@ inline std::string color_format(std::uint_least8_t r,std::uint_least8_t g,std::u
 }
 #endif
 
-#if __has_include(<fast_io.h>)
 inline std::string color_concat(std::uint_least8_t r,std::uint_least8_t g,std::uint_least8_t b)
 {
 	return fast_io::concat("Red: ",r,", Green: ",g,", Blue: ",b);
 }
-#endif
 
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 
@@ -85,9 +81,7 @@ int main()
 #if __cpp_lib_format >= 201907L
 		"std::format (total size:",format_time.total_size,") took ",format_time.timestamp,"s.\n"
 #endif
-#if __has_include(<fast_io.h>)
 		"fast_io::concat (total size: ",concat_time.total_size,") took ",concat_time.timestamp,"s.\n"
-#endif
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 		"fmt::format (total size:",fmt_format_time.total_size,") took ",fmt_format_time.timestamp,"s.\n"
 #if __has_include(<fmt/compile.h>)
