@@ -1,7 +1,7 @@
 #include<string>
 #include<fast_io.h>
 #include<version>
-#if __has_include(<format>)
+#if __has_include(<format>) && !defined(DISABLE_STD_FORMAT_BENCH)
 #include<format>
 #endif
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
@@ -35,7 +35,7 @@ inline benchmark_return benchmark(Func meth)
 	return {total_size,fast_io::posix_clock_gettime(fast_io::posix_clock_id::monotonic_raw)-start};
 }
 
-#if __cpp_lib_format >= 201907L
+#if __cpp_lib_format >= 201907L && !defined(DISABLE_STD_FORMAT_BENCH)
 inline std::string color_format(std::uint_least8_t r,std::uint_least8_t g,std::uint_least8_t b)
 {
 	return std::format("Red: {}, Green: {}, Blue: {}",r,g,b);
@@ -66,7 +66,7 @@ inline std::string color_fmt_format_compile(std::uint_least8_t r,std::uint_least
 
 int main()
 {
-#if __cpp_lib_format >= 201907L
+#if __cpp_lib_format >= 201907L && !defined(DISABLE_STD_FORMAT_BENCH)
 	auto format_time = benchmark(color_format);
 #endif
 	auto concat_time = benchmark(color_concat);
@@ -78,7 +78,7 @@ int main()
 #endif    
     
 	print(
-#if __cpp_lib_format >= 201907L
+#if __cpp_lib_format >= 201907L && !defined(DISABLE_STD_FORMAT_BENCH)
 		"std::format (total size:",format_time.total_size,") took ",format_time.timestamp,"s.\n"
 #endif
 		"fast_io::concat (total size: ",concat_time.total_size,") took ",concat_time.timestamp,"s.\n"
