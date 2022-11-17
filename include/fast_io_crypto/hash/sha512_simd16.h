@@ -60,7 +60,7 @@ inline void sha512_simd16_compute_message_2rounds(
 }
 
 
-#if __has_cpp_attribute(__gnu__::__target__) && defined(__SSE2__) && !defined(__AVX2__) && defined(__ELF__)
+#if __has_cpp_attribute(__gnu__::__target__) && __has_builtin(__builtin_shufflevector) && defined(__SSE2__) && !defined(__AVX2__) && defined(__ELF__)
 [[__gnu__::__target__("default")]]
 #elif __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]

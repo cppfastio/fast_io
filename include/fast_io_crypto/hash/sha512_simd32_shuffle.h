@@ -339,7 +339,7 @@ wt[r,r+1,r+2,r+3]=wt[r-16,r-15,r-14,r-13]+wt[r-7,r-6,r-5,r-4]
 	}
 }
 
-#if __has_cpp_attribute(__gnu__::__target__) && defined(__SSE2__) && !defined(__AVX2__) && defined(__ELF__)
+#if __has_cpp_attribute(__gnu__::__target__) && __has_builtin(__builtin_shufflevector) && defined(__SSE2__) && !defined(__AVX2__) && defined(__ELF__)
 [[__gnu__::__target__("avx2")]]
 #elif __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
