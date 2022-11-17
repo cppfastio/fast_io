@@ -59,7 +59,10 @@ inline void sha512_simd16_compute_message_2rounds(
 	s0.store(wt);
 }
 
-#if __has_cpp_attribute(__gnu__::__flatten__)
+
+#if __has_cpp_attribute(__gnu__::__target__) && defined(__SSE2__) && !defined(__AVX2__) && defined(__ELF__)
+[[__gnu__::__target__("default")]]
+#elif __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
 #endif
 inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
