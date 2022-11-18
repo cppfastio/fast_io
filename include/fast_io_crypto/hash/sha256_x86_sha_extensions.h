@@ -1,7 +1,7 @@
 #pragma once
 
 
-#if defined(__SSE2__) && (!defined(__SHA__) || !defined(__SSSE3__)) && __has_cpp_attribute(__gnu__::__target__) && !defined(__clang__) && defined(__ELF__)
+#if defined(__SSE2__) && (!defined(__SHA__) || !defined(__SSSE3__)) && __has_cpp_attribute(__gnu__::__target__) && !defined(__clang__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
 [[__gnu__::__target__("ssse3,sha")]]
 #elif __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]

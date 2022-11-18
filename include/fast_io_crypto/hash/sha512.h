@@ -185,7 +185,7 @@ inline constexpr void sha512_do_constexpr_function(std::uint_least64_t* __restri
 }
 
 #if !(defined(_MSC_VER) && !defined(__clang__))
-#if defined(__SSE2__) && !defined(__AVX2__) && __has_builtin(__builtin_shufflevector) && __has_cpp_attribute(__gnu__::__target__) && defined(__ELF__)
+#if defined(__SSE2__) && !defined(__AVX2__) && __has_builtin(__builtin_shufflevector) && __has_cpp_attribute(__gnu__::__target__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
 #include"sha512_simd32_shuffle.h"
 #include"sha512_simd16.h"
 #elif defined(__AVX2__) && __has_builtin(__builtin_shufflevector)

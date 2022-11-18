@@ -152,7 +152,7 @@ void sha256_do_constexpr_function(std::uint_least32_t* __restrict state,std::byt
 }
 
 #if (!defined(_MSC_VER) || defined(__clang__))
-#if defined(__SSE2__) && (!defined(__SHA__) || !defined(__SSSE3__)) && __has_cpp_attribute(__gnu__::__target__) && !defined(__clang__) && defined(__ELF__)
+#if defined(__SSE2__) && (!defined(__SHA__) || !defined(__SSSE3__)) && __has_cpp_attribute(__gnu__::__target__) && !defined(__clang__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
 #include"sha256_x86_sha_extensions.h"
 #include"sha256_simd16.h"
 #elif __has_builtin(__builtin_ia32_sha256rnds2)&& \
