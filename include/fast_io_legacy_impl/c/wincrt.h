@@ -32,39 +32,6 @@ the entire stdio on windows is too broken. I want to add tie semantics to stdin 
 
 #if defined(_MSC_VER) || defined(_UCRT)
 
-/*
-
-referenced from win10sdk ucrt
-C:\Program Files (x86)\Windows Kits\10\Source\10.0.19041.0\ucrt
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
-// Internal Stream Types (__crt_stdio_stream and friends)
-//
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-
-// Ensure that __crt_stdio_stream_data* and FILE* pointers are freely convertible:
-
-
-struct ucrt_stdio_stream_data
-{
-    union
-    {
-        FILE  public_file;
-        char* ptr;
-    };
-
-    char*            base;
-    int              cnt;
-    long             flags;
-    long             file;
-    int              charbuf;
-    int              bufsiz;
-    char*            tmpfname;
-};
-
-*/
 
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -74,8 +41,6 @@ ucrt_iobuf
 {
     char*	     _ptr;
     char*            _base;
-// this makes me very curious. Why is the file struct in UCRT in microsoft SDK different from mingw-w64's definition?
-// I guess it is probably MinGW-w64 CRT's bug?
     int              _cnt;
     long             _flag;
     long             _file;
@@ -91,11 +56,7 @@ inline constexpr std::size_t wincrt_internal_buffer_size{4096};
 template<typename fileptr>
 inline constexpr void wincrt_fp_set_flag_dirty_impl(fileptr* __restrict fp) noexcept
 {
-#if defined(_MSC_VER) || defined(_UCRT)
-	fp->_flag|=64;
-#else
-	fp->_flag|=8;
-#endif
+	fp->_flag|=0x0002;
 }
 
 template<typename fileptr>
@@ -111,13 +72,7 @@ inline constexpr void wincrt_fp_set_flag_mybuf_impl(fileptr* __restrict fp) noex
 template<typename fileptr>
 inline constexpr bool wincrt_fp_is_dirty_impl(fileptr* __restrict fp) noexcept
 {
-	constexpr unsigned mask{
-#if defined(_MSC_VER) || defined(_UCRT)
-	64
-#else
-	8
-#endif
-	};
+	constexpr unsigned mask{0x0002};
 	return (static_cast<unsigned>(fp->_flag)&mask)==mask;
 }
 
@@ -328,7 +283,8 @@ inline void wincrt_fp_flush_stdout_impl()
 	FILE* fp{::fast_io::win32::wincrt_acrt_iob_func(1)};
 #endif
 	std::size_t diff{static_cast<std::size_t>(fp->_ptr-fp->_base)};
-	if(diff==0||!wincrt_fp_is_dirty_impl(fp))
+//	if(diff==0||!wincrt_fp_is_dirty_impl(fp))
+	if(diff==0)
 		return;
 	posix_write_simple_impl(static_cast<int>(fp->_file),fp->_base,diff);
 	fp->_ptr=fp->_base;
@@ -473,6 +429,9 @@ T* ptr) noexcept
 	fp->_ptr=reinterpret_cast<char*>(ptr);
 }
 #if defined(_MSC_VER) || defined(_UCRT)
+/*
+WINE has not correctly implemented this yet. I am submitting patches.
+*/
 inline void ucrt_lock_file(FILE* __restrict fp) noexcept
 {
 	char* fp2{reinterpret_cast<char*>(fp)};
