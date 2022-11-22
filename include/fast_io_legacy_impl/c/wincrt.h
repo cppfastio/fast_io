@@ -472,7 +472,18 @@ T* ptr) noexcept
 	fp->_cnt-=static_cast<int>(static_cast<unsigned int>(static_cast<std::size_t>(reinterpret_cast<char*>(ptr)-fp->_ptr)/sizeof(T)));
 	fp->_ptr=reinterpret_cast<char*>(ptr);
 }
-
+#if defined(_MSC_VER) || defined(_UCRT)
+inline void ucrt_lock_file(FILE* __restrict fp) noexcept
+{
+	char* fp2{reinterpret_cast<char*>(fp)};
+	::fast_io::win32::EnterCriticalSection(fp2+sizeof(ucrt_iobuf));
+}
+inline void ucrt_unlock_file(FILE* __restrict fp) noexcept
+{
+	char* fp2{reinterpret_cast<char*>(fp)};
+	::fast_io::win32::LeaveCriticalSection(fp2+sizeof(ucrt_iobuf));
+}
+#endif
 }
 
 template<std::integral char_type>
