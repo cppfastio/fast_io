@@ -242,6 +242,11 @@ inline void my_cygwin_funlockfile(FILE* fp) noexcept
 
 #endif
 
+#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__WINE__) && !defined(__CYGWIN__)
+inline void ucrt_lock_file(FILE* fp) noexcept;
+inline void ucrt_unlock_file(FILE* fp) noexcept;
+#endif
+
 }
 
 
@@ -654,8 +659,15 @@ public:
 	inline void lock() const noexcept requires(family==c_family::standard||family==c_family::emulated)
 	{
 #if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__)
-	noexcept_call(_lock_file,fp);
-#elif (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+	if constexpr(false)
+	{
+		::fast_io::details::ucrt_lock_file(fp);
+	}
+	else
+	{
+		noexcept_call(_lock_file,fp);
+	}
+#elif (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__) && !defined(__WINE__)
 	win32::my_msvcrt_lock_file(fp);
 #elif !defined(__SINGLE_THREAD__)
 #if defined(__NEWLIB__)
@@ -672,8 +684,15 @@ public:
 	}
 	inline void unlock() const noexcept requires(family==c_family::standard||family==c_family::emulated)
 	{
-#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__)
-	noexcept_call(_unlock_file,fp);
+#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__) && !defined(__WINE__)
+	if constexpr(false)
+	{
+		::fast_io::details::ucrt_unlock_file(fp);
+	}
+	else
+	{
+		noexcept_call(_unlock_file,fp);
+	}
 #elif (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
 	win32::my_msvcrt_unlock_file(fp);
 #elif !defined(__SINGLE_THREAD__)
