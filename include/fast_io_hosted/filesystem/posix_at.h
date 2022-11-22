@@ -315,7 +315,7 @@ inline auto posix_deal_with22(int olddirfd,old_path_type const& oldpath,
 	{
 		return fast_io::posix_api_common(newpath,[&](char const* newpath_c_str)
 		{
-			return posix1x_api_dispatcher<dsp>(olddirfd,oldpath_c_str,newdirfd,newpath_c_str);
+			return posix22_api_dispatcher<dsp>(olddirfd,oldpath_c_str,newdirfd,newpath_c_str);
 		});
 	});
 }
@@ -368,7 +368,7 @@ inline void posix_renameat(posix_fs_dirent fs_dirent,
 	new_path_type const& newpath)
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(
-		fs_dirent.fd,fs_dirent.filename,
+		fs_dirent.fd,::fast_io::manipulators::os_c_str(fs_dirent.filename),
 		newent.fd,newpath);
 }
 
@@ -403,7 +403,7 @@ inline void native_renameat(posix_fs_dirent fs_dirent,
 	new_path_type const& newpath)
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(
-		fs_dirent.fd,fs_dirent.filename,
+		fs_dirent.fd,::fast_io::manipulators::os_c_str(fs_dirent.filename),
 		newent.fd,newpath);
 }
 
