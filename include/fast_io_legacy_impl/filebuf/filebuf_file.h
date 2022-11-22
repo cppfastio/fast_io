@@ -19,7 +19,7 @@ inline constexpr std::ios::openmode calculate_fstream_file_open_mode(open_mode o
 		ios_om=ios_om|std::ios::out;
 	if((om&open_mode::trunc)!=open_mode::none)
 		ios_om=ios_om|std::ios::trunc;
-#if __cpp_lib_ios_noreplace >= 202200L
+#if defined(__cpp_lib_ios_noreplace)
 	if((om&open_mode::noreplace)!=open_mode::noreplace)
 		ios_om=ios_om|std::ios::noreplace;
 #endif
