@@ -658,7 +658,7 @@ public:
 #endif
 	inline void lock() const noexcept requires(family==c_family::standard||family==c_family::emulated)
 	{
-#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__)
+#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__) && !defined(__WINE__)
 	if constexpr(false)
 	{
 		::fast_io::details::ucrt_lock_file(fp);
