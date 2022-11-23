@@ -204,66 +204,66 @@ enum class open_mode:std::uint_least32_t
 {
 none=0,
 //	*indicates that the open mode has not been evaluated yet
-app=static_cast<std::uint_least32_t>(1)<<0,
+app=UINT32_C(1)<<0,
 //	*["a"]seek to the end of stream before each write.
-archive=static_cast<std::uint_least32_t>(1)<<1,
+archive=UINT32_C(1)<<1,
 //	[Windows]FILE_ATTRIBUTE_ARCHIVE 0x20
-case_insensitive=static_cast<std::uint_least32_t>(1)<<2,
+case_insensitive=UINT32_C(1)<<2,
 //	[Windows]NT OBJ_CASE_INSENSITIVE 0x00000040L
-compressed=static_cast<std::uint_least32_t>(1)<<3,
+compressed=UINT32_C(1)<<3,
 //	[Windows]FILE_ATTRIBUTE_COMPRESSED 0x800
-creat=static_cast<std::uint_least32_t>(1)<<4,
+creat=UINT32_C(1)<<4,
 //	POSIX O_CREAT
-direct=static_cast<std::uint_least32_t>(1)<<5,
+direct=UINT32_C(1)<<5,
 //	*POSIX O_DIRECT
-directory=static_cast<std::uint_least32_t>(1)<<6,
+directory=UINT32_C(1)<<6,
 //	*POSIX O_DIRECTORY.
-encrypted=static_cast<std::uint_least32_t>(1)<<7,
+encrypted=UINT32_C(1)<<7,
 //	[Windows]FILE_ATTRIBUTE_ENCRYPTED 0x4000
-excl=static_cast<std::uint_least32_t>(1)<<8,
+excl=UINT32_C(1)<<8,
 noreplace=excl,
 //	*["x"]POSIX O_EXCL
-follow=static_cast<std::uint_least32_t>(1)<<9,
+follow=UINT32_C(1)<<9,
 //	*Inverse of POSIX O_NOFOLLOW.
-hidden=static_cast<std::uint_least32_t>(1)<<10,
+hidden=UINT32_C(1)<<10,
 //	[Windows]FILE_ATTRIBUTE_HIDDEN 0x2
-in=static_cast<std::uint_least32_t>(1)<<11,
+in=UINT32_C(1)<<11,
 //	*["r"]open for reading.
-inherit=static_cast<std::uint_least32_t>(1)<<12,
+inherit=UINT32_C(1)<<12,
 //	*Inverse of POSIX O_CLOEXEC.
-no_atime=static_cast<std::uint_least32_t>(1)<<13,
+no_atime=UINT32_C(1)<<13,
 //	[Linux]O_NOATIME
-no_block=static_cast<std::uint_least32_t>(1)<<14,
+no_block=UINT32_C(1)<<14,
 //	*POSIX O_NONBLOCK
-no_ctty=static_cast<std::uint_least32_t>(1)<<15,
+no_ctty=UINT32_C(1)<<15,
 //	[Linux]O_NOCTTY
-no_recall=static_cast<std::uint_least32_t>(1)<<16,
+no_recall=UINT32_C(1)<<16,
 //	[Windows]FILE_FLAG_OPEN_NO_RECALL 0x00100000
-normal=static_cast<std::uint_least32_t>(1)<<17,
+normal=UINT32_C(1)<<17,
 //	[Windows]FILE_ATTRIBUTE_NORMAL 0x80
-offline=static_cast<std::uint_least32_t>(1)<<18,
+offline=UINT32_C(1)<<18,
 //	[Windows]FILE_ATTRIBUTE_OFFLINE 0x1000
-out=static_cast<std::uint_least32_t>(1)<<19,
+out=UINT32_C(1)<<19,
 //	*["w"]open for writing.
-path=static_cast<std::uint_least32_t>(1)<<20,
+path=UINT32_C(1)<<20,
 //	[Linux]O_PATH
-random_access=static_cast<std::uint_least32_t>(1)<<21,
+random_access=UINT32_C(1)<<21,
 //	[Windows]FILE_FLAG_RANDOM_ACCESS 0x10000000
-search=static_cast<std::uint_least32_t>(1)<<22,
+search=UINT32_C(1)<<22,
 //	POSIX O_SEARCH
-session_aware=static_cast<std::uint_least32_t>(1)<<23,
+session_aware=UINT32_C(1)<<23,
 //	[Windows]FILE_FLAG_SESSION_AWARE 0x00800000
-sync=static_cast<std::uint_least32_t>(1)<<24,
+sync=UINT32_C(1)<<24,
 //	*POSIX O_SYNC
-system=static_cast<std::uint_least32_t>(1)<<25,
+system=UINT32_C(1)<<25,
 //	[Windows]FILE_ATTRIBUTE_SYSTEM 0x4
-temporary=static_cast<std::uint_least32_t>(1)<<26,
+temporary=UINT32_C(1)<<26,
 //	*[Linux]O_TMPFILE. [Windows]FILE_ATTRIBUTE_TEMPORARY 0x100 + FILE_FLAG_DELETE_ON_CLOSE 0x04000000
-text=static_cast<std::uint_least32_t>(1)<<27,
+text=UINT32_C(1)<<27,
 //	[inverse of "b"]open in text mode. native_file is always binary. The text mode is provided by the POSIX layer or C FILE layer. When native_file is win32_file or nt_file or zw_file or unsupported character type for C FILE* or C++ filebuf, throw invalid arguments eh.
-trunc=static_cast<std::uint_least32_t>(1)<<28,
+trunc=UINT32_C(1)<<28,
 //	*POSIX O_TRUNC
-tty_init=static_cast<std::uint_least32_t>(1)<<29,
+tty_init=UINT32_C(1)<<29,
 //	POSIX O_TTY_INIT
 };
 
