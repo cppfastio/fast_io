@@ -2,7 +2,7 @@
 
 #include"single.h"
 #ifdef __USING_MCFGTHREAD__
-#include <mcfgthread/gthr.h>
+#include <mcfgthread/mutex.h>
 #include "mcf_gthread_mutex.h"
 #endif
 #if defined(_WIN32) || defined(__CYGWIN__)
