@@ -7,7 +7,7 @@ struct gcc_gthread_mutex
 {
 	using native_handle_type = __gthread_mutex_t;
 	native_handle_type mutex{};
-	constexpr gcc_gthread_mutex() noexcept=default;
+	constexpr explicit gcc_gthread_mutex() noexcept=default;
 	gcc_gthread_mutex(gcc_gthread_mutex const&)=delete;
 	gcc_gthread_mutex& operator=(gcc_gthread_mutex const&)=delete;
 	void lock() noexcept
