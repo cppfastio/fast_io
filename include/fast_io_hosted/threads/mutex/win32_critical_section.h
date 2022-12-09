@@ -7,7 +7,7 @@ struct win32_critical_section
 {
 	using native_handle_type = ::fast_io::win32::nt::rtl_critical_section;
 	native_handle_type critical_section;
-	win32_critical_section() noexcept
+	explicit win32_critical_section() noexcept
 	{
 		::fast_io::win32::InitializeCriticalSection(__builtin_addressof(critical_section));
 	}

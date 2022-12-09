@@ -9,7 +9,7 @@ struct posix_pthread_mutex
 {
 	using native_handle_type = pthread_mutex_t;
 	native_handle_type mutex;
-	posix_pthread_mutex() noexcept:mutex(PTHREAD_MUTEX_INITIALIZER)
+	explicit posix_pthread_mutex() noexcept:mutex(PTHREAD_MUTEX_INITIALIZER)
 	{}
 	posix_pthread_mutex(posix_pthread_mutex const&)=delete;
 	posix_pthread_mutex& operator=(posix_pthread_mutex const&)=delete;
