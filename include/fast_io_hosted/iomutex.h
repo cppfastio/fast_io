@@ -63,66 +63,6 @@ struct basic_general_iomutex
 		io_lock_guard gd{mutex};
 		handle.reopen(::std::forward<Args>(args)...);
 	}
-	inline constexpr void close()
-		requires requires()
-		{
-			handle.close();
-		}
-	{
-		io_lock_guard gd{mutex};
-		handle.close();
-	}
-#ifdef __clang__
-#if __cpp_constexpr_dynamic_alloc >= 201907L
-	constexpr
-#endif
-	~basic_general_iomutex()
-	{
-		if constexpr(requires()
-		{
-			handle.close();
-		})
-		{
-#ifndef __cpp_exceptions
-			this->close();
-#else
-			try
-			{
-				this->close();
-			}
-			catch(...)
-			{
-			}
-#endif
-		}
-	}
-
-#else
-#if __cpp_constexpr_dynamic_alloc >= 201907L
-	constexpr
-#endif
-	~basic_general_iomutex() requires requires()
-		{
-			handle.close();
-		}
-	{
-#if !defined(__cpp_exceptions) || (defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0))
-		this->close();
-#else
-		try
-		{
-			this->close();
-		}
-		catch(...)
-		{
-		}
-#endif
-	}
-#if __cpp_constexpr_dynamic_alloc >= 201907L
-	constexpr
-#endif
-	~basic_general_iomutex() = default;
-#endif
 };
 
 template<input_stream T,typename mutex_type,std::input_or_output_iterator Iter>
