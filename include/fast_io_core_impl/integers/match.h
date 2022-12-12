@@ -67,7 +67,6 @@ inline constexpr manipulators::basic_matcher_t<basic_io_scatter_t<char_type>> sc
 	return {{s,n-1}};
 }
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
 #if 0
 namespace manipulators
 {
@@ -78,7 +77,6 @@ inline constexpr manipulators::basic_matcher_t<basic_io_scatter_t<std::ranges::r
 	return {{std::ranges::data(r),std::ranges::size(r)}};
 }
 }
-#endif
 #endif
 
 }

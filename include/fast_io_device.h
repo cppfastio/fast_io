@@ -10,7 +10,7 @@
 #include"fast_io_hosted.h"
 
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) &&!defined(__AVR__)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING) &&!defined(__AVR__)
 namespace fast_io
 {
 

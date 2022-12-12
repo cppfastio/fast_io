@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 
 #if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(__WINE__)
 #include"win32_heapalloc.h"
@@ -34,7 +34,7 @@ custom_global_allocator
 mimalloc_allocator
 #elif (defined(__linux__) && defined(__KERNEL__)) || defined(FAST_IO_USE_LINUX_KERNEL_ALLOCATOR)
 linux_kmalloc_allocator
-#elif __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#elif __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(FAST_IO_USE_C_MALLOC)
 win32_heapalloc_allocator
 #else

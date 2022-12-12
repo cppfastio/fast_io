@@ -423,7 +423,7 @@ inline constexpr char_type const* find_simd_constant_common_cold_impl(char_type 
 #endif
 	{
 	constexpr bool use_builtin_memchr{
-#if (__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1))
+#if (__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)) && !defined(_LIBCPP_FREESTANDING)
 #if defined(__GLIBC__) && defined(__GLIBC_MINOR__)
 #if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
 //For glibc >= 2.26, we use glibc's memchr implementation under hosted environment

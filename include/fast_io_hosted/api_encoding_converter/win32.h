@@ -52,14 +52,11 @@ inline auto nt_api_common(T const& t,Func callback)
 		{
 			if constexpr(has_size_overload)
 			{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
 				if constexpr(::std::ranges::contiguous_range<std::remove_cvref_t<T>>)
 				{
 					return callback(reinterpret_cast<char16_const_may_alias_ptr>(t.c_str()),::std::ranges::size(t));
 				}
-				else
-#endif
-				if constexpr(::fast_io::details::cxx_std_filesystem_pseudo_concept<std::remove_cvref_t<T>>)
+				else if constexpr(::fast_io::details::cxx_std_filesystem_pseudo_concept<std::remove_cvref_t<T>>)
 				{
 					auto const& native{t.native()};
 					return callback(reinterpret_cast<char16_const_may_alias_ptr>(native.c_str()),native.size());
@@ -75,15 +72,11 @@ inline auto nt_api_common(T const& t,Func callback)
 				return callback(reinterpret_cast<char16_const_may_alias_ptr>(t.c_str()));
 			}
 		}
-		else
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
-		if constexpr(::std::ranges::contiguous_range<std::remove_cvref_t<T>>)
+		else if constexpr(::std::ranges::contiguous_range<std::remove_cvref_t<T>>)
 		{
 			return ::fast_io::details::nt_api_common_code_cvt_impl<allocator_type>(::std::ranges::data(t),::std::ranges::size(t),callback);
 		}
-		else
-#endif
-		if constexpr(::fast_io::details::cxx_std_filesystem_pseudo_concept<std::remove_cvref_t<T>>)
+		else if constexpr(::fast_io::details::cxx_std_filesystem_pseudo_concept<std::remove_cvref_t<T>>)
 		{
 			auto const& native{t.native()};
 			return ::fast_io::details::nt_api_common_code_cvt_impl<allocator_type>(native.c_str(),native.size(),callback);

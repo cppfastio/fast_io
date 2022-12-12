@@ -13,7 +13,7 @@
 #pragma warning( disable : 4514 )
 #endif
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 #if __has_include(<stdio.h>)
 #include"fast_io_legacy_impl/c/impl.h"
 #endif
@@ -251,7 +251,7 @@ static_assert(type_error,"some types are not printable for print");
 	}
 	else
 	{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<stdio.h>)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING) && __has_include(<stdio.h>)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
 #if __has_include(<stdio.h>)		
 		::fast_io::c_io_observer
@@ -291,7 +291,7 @@ static_assert(type_error,"some types are not printable for println");
 	}
 	else
 	{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<stdio.h>)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING) && __has_include(<stdio.h>)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
 #if __has_include(<stdio.h>)		
 		::fast_io::c_io_observer
@@ -331,7 +331,7 @@ static_assert(type_error,"some types are not printable for perr");
 	}
 	else
 	{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
 #if defined(__AVR__)
 		::fast_io::c_io_observer
@@ -371,7 +371,7 @@ static_assert(type_error,"some types are not printable for perrln");
 	}
 	else
 	{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
 #if defined(__AVR__)
 		::fast_io::c_io_observer
@@ -448,7 +448,7 @@ static_assert(type_error,"some types are not printable for debug_print");
 	}
 	else
 	{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
 #if defined(__AVR__)
 		::fast_io::c_io_observer
@@ -488,7 +488,7 @@ static_assert(type_error,"some types are not printable for debug_println");
 	}
 	else
 	{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 		constexpr bool type_error{::fast_io::print_freestanding_okay<
 #if defined(__AVR__)
 		::fast_io::c_io_observer
@@ -542,7 +542,7 @@ inline constexpr std::conditional_t<report,bool,void> scan(input&& in,Args&& ...
 	}
 	else
 	{
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<stdio.h>)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING) && __has_include(<stdio.h>)
 		return fast_io::details::scan_after_io_scan_forward<report>(fast_io::io_scan_forward<char>(fast_io::io_scan_alias(in)),fast_io::io_scan_forward<char>(fast_io::io_scan_alias(args))...);
 #else
 static_assert(fast_io::input_stream<std::remove_cvref_t<input>>,"freestanding environment must provide IO device");

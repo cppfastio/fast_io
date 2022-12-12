@@ -15,7 +15,7 @@ For hosted implementations the set of standard library headers required by the C
 #error "fast_io requires at least C++20 standard compiler."
 #else
 #include"fast_io_freestanding.h"
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 #if __has_include(<bits/error_constants.h>)
 #include<bits/error_constants.h>
 #elif __has_include(<__errc>)
