@@ -9,9 +9,6 @@
 #error "fast_io requires at least C++20 standard compiler."
 #else
 #include"fast_io_concept.h"
-#include<version>
-#include<cstddef>
-#include<type_traits>
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push)
 #pragma warning( disable : 4711 )

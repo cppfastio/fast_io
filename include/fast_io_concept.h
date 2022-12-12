@@ -17,6 +17,9 @@
 #if !defined(__cpp_concepts)
 #error "fast_io requires at least a C++20 standard compiler."
 #else
+#include<version>
+#include<cstddef>
+#include<type_traits>
 #include<concepts>
 #include"fast_io_core_impl/freestanding/addressof.h"
 #include"fast_io_core_impl/concepts/impl.h"
