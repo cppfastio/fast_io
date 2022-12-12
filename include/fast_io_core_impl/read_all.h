@@ -199,12 +199,10 @@ inline constexpr void read_all(input&& in,Iter first,Iter last)
 	::fast_io::details::read_all_impl(io_ref(in),first,last);
 }
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
 template<typename input,::std::ranges::forward_range rg>
 inline constexpr void read_all(input&& in,rg&& r)
 {
 	::fast_io::details::read_all_impl(io_ref(in),::std::ranges::begin(r),::std::ranges::end(r));
 }
-#endif
 
 }

@@ -122,7 +122,6 @@ static_assert(not_char_literal,"The type is an array but not char array literal.
 	}
 }
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && __has_include(<ranges>)
 template<typename T>
 requires (::std::ranges::contiguous_range<T>&&requires(T&& t)
 {
@@ -132,7 +131,6 @@ inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_v
 {
 	return {::std::ranges::data(svw),::std::ranges::size(svw)};
 }
-#endif
 
 template<std::integral char_type,std::integral pchar_type>
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,manipulators::chvw_t<pchar_type>>) noexcept

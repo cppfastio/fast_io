@@ -20,7 +20,7 @@
 #endif
 #include"fast_io_i18n/lc.h"
 #include"fast_io_i18n/lc_print.h"
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 #include"fast_io_i18n/locale/impl.h"
 #endif
 #include"fast_io_i18n/imbuer.h"
@@ -28,7 +28,7 @@
 #include"fast_io_i18n/lc_numbers/impl.h"
 #include"fast_io_i18n/lc_unsafe_rt_fprint_status.h"
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
+#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
 #if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)
 #include"fast_io_unit/string.h"
 #include"fast_io_unit/string_impl/lc_concat.h"
