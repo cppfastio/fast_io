@@ -273,27 +273,6 @@ using u16utf_ebcdic_file = basic_utf_ebcdic_file<char16_t>;
 using u32utf_ebcdic_file = basic_utf_ebcdic_file<char32_t>;
 #endif
 
-
-template<std::integral char_type>
-using basic_iobuf_io_io_observer = basic_iobuf<basic_io_io_observer<char_type>>;
-template<std::integral char_type>
-using basic_iobuf_io_file = basic_iobuf<basic_io_file<char_type>>;
-
-using iobuf_io_io_observer = basic_iobuf_io_io_observer<char>;
-using iobuf_io_file = basic_iobuf_io_file<char>;
-
-using wiobuf_io_io_observer = basic_iobuf_io_io_observer<wchar_t>;
-using wiobuf_io_file = basic_iobuf_io_file<wchar_t>;
-
-using u8iobuf_io_io_observer = basic_iobuf_io_io_observer<char8_t>;
-using u8iobuf_io_file = basic_iobuf_io_file<char8_t>;
-
-using u16iobuf_io_io_observer = basic_iobuf_io_io_observer<char16_t>;
-using u16iobuf_io_file = basic_iobuf_io_file<char16_t>;
-
-using u32iobuf_io_io_observer = basic_iobuf_io_io_observer<char32_t>;
-using u32iobuf_io_file = basic_iobuf_io_file<char32_t>;
-
 #if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
 
 template<std::integral char_type>
