@@ -101,6 +101,7 @@ inline constexpr cross_code_cvt_t<char8_t> print_alias_define(::fast_io::io_alia
 	}
 }
 
+#ifndef __CYGWIN__
 using native_local_timezone = posix_local_timezone;
-
+#endif
 }
