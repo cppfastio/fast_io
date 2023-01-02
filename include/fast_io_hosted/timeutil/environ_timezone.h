@@ -29,7 +29,7 @@ inline environ_timezone_name environ_localtimezone_impl() noexcept
 #else
 	::std::getenv
 #endif
-	(reinterpret_cast<char const*>(u8"I18NTZ")))};
+	(reinterpret_cast<char const*>(u8"TZ")))};
 	if(ptr==nullptr)
 		return {};
 	return {ptr};
