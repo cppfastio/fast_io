@@ -400,7 +400,7 @@ inline constexpr bool my_compare_iter_n(input_iter first,std::size_t n,output_it
 	{
 		for(auto last{first+n};first!=last;++first)
 		{
-			if(*first!=outier)
+			if(*first!=*outier)
 			{
 				return false;
 			}
@@ -437,6 +437,55 @@ inline constexpr bool my_compare_iter_n(input_iter first,std::size_t n,output_it
 			return true;
 		}
 	}
+}
+
+
+template<::std::input_iterator InputIt1,::std::input_iterator InputIt2>
+inline constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+{
+	for (; (first1 != last1) && (first2 != last2); ++first2)
+	{
+		if (*first1 < *first2)
+			return true;
+		if (*first2 < *first1)
+			return false;
+		++first1;
+	}
+	return (first1 == last1) && (first2 != last2);
+}
+
+template<::std::input_iterator InputIt1,::std::input_iterator InputIt2>
+inline constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+{
+	for(;first1!=last1&&first2!=last2&&*first1==*first2;++first2)
+	{
+		++first1;
+	}
+	return first1==last1&&first2==last2;
+}
+
+template<std::forward_iterator ForwardIt, class T, class Compare>
+inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const& value, Compare comp)
+{
+	ForwardIt it;
+	typename ::std::iterator_traits<ForwardIt>::difference_type count, step;
+	count = std::distance(first, last);
+
+	while (count > 0)
+	{
+		it = first;
+		step = count / 2;
+		std::advance(it, step);
+
+		if (comp(*it, value))
+		{
+			first = ++it;
+			count -= step + 1;
+		}
+		else
+			count = step;
+	}
+	return first;
 }
 
 }

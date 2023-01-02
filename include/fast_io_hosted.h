@@ -45,8 +45,6 @@ For hosted implementations the set of standard library headers required by the C
 #undef __STRICT_ANSI__
 #endif
 
-#include"fast_io_hosted/io_io_file.h"
-
 #include"fast_io_hosted/api_encoding_converter/impl.h"
 #include"fast_io_hosted/mmap.h"
 #include"fast_io_hosted/posix_status.h"
@@ -61,7 +59,7 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/dbg/impl.h"
 #endif
 
-#include"fast_io_hosted/time.h"
+#include"fast_io_hosted/timeutil/impl.h"
 
 #include"fast_io_hosted/threads/mutex/impl.h"
 #include"fast_io_hosted/iomutex.h"
