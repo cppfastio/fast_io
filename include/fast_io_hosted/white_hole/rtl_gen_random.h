@@ -32,10 +32,10 @@ inline std::size_t rtl_gen_random_read(void* ptr,std::size_t sz)
 	std::byte *iter{base_ptr};
 	while(sz)
 	{
-		constexpr std::size_t uINT_LEAST32_MAX{static_cast<std::size_t>(UINT_LEAST32_MAX)};
+		constexpr std::size_t uintleast32mx{static_cast<std::size_t>(UINT_LEAST32_MAX)};
 		std::size_t mn{sz};
-		if(uINT_LEAST32_MAX<sz)
-			mn=uINT_LEAST32_MAX;
+		if(uintleast32mx<sz)
+			mn=uintleast32mx;
 		if(!SystemFunction036(iter,static_cast<std::uint_least32_t>(mn)))
 		{
 			if(base_ptr==iter)
