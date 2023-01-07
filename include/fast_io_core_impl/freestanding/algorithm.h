@@ -469,13 +469,13 @@ inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const&
 {
 	ForwardIt it;
 	typename ::std::iterator_traits<ForwardIt>::difference_type count, step;
-	count = std::distance(first, last);
+	count = last-first;
 
 	while (count > 0)
 	{
 		it = first;
 		step = count / 2;
-		std::advance(it, step);
+		it+= step;
 
 		if (comp(*it, value))
 		{
