@@ -14,13 +14,27 @@ inline constexpr std::ios::openmode calculate_fstream_file_open_mode(open_mode) 
 
 namespace streambuf_hack
 {
+
+template<typename CharT, typename Traits>
+class hack_libstdcxx_basic_filebuf : private ::std::basic_filebuf<CharT,Traits>
+{
+public:
+	using ::std::basic_filebuf<CharT,Traits>::_M_lock;
+	using ::std::basic_filebuf<CharT,Traits>::_M_file;
+	using ::std::basic_filebuf<CharT,Traits>::_M_mode;
+	using ::std::basic_filebuf<CharT,Traits>::_M_buf_size;
+	using ::std::basic_filebuf<CharT,Traits>::_M_set_buffer;
+	using ::std::basic_filebuf<CharT,Traits>::_M_reading;
+	using ::std::basic_filebuf<CharT,Traits>::_M_writing;
+	using ::std::basic_filebuf<CharT,Traits>::_M_allocate_internal_buffer;
+};
+
 template<typename char_type,typename traits_type>
 inline std::FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
-	std::FILE* fp{};
-	// we can only do this or ubsanitizer will complain. Do not do down_cast
-	::fast_io::details::my_memcpy(__builtin_addressof(fp),reinterpret_cast<std::byte*>(fbuf)+sizeof(std::basic_streambuf<char_type, traits_type>)+sizeof(std::__c_lock),sizeof(fp));
-	return fp;
+	using hack_filebuf_type = hack_libstdcxx_basic_filebuf<char_type,traits_type>;
+	auto pfbf{reinterpret_cast<char unsigned*>(fbuf)};
+	return reinterpret_cast<decltype(hack_filebuf_type::_M_file)*>(pfbf+__builtin_offsetof(hack_filebuf_type,_M_file))->file();
 }
 
 template<typename char_type,typename traits_type>
@@ -50,20 +64,6 @@ inline std::FILE* fp_hack([[maybe_unused]] T* cio) noexcept
 #endif
 	return nullptr;
 }
-
-template<typename CharT, typename Traits>
-class hack_libstdcxx_basic_filebuf : private ::std::basic_filebuf<CharT,Traits>
-{
-public:
-	using ::std::basic_filebuf<CharT,Traits>::_M_lock;
-	using ::std::basic_filebuf<CharT,Traits>::_M_file;
-	using ::std::basic_filebuf<CharT,Traits>::_M_mode;
-	using ::std::basic_filebuf<CharT,Traits>::_M_buf_size;
-	using ::std::basic_filebuf<CharT,Traits>::_M_set_buffer;
-	using ::std::basic_filebuf<CharT,Traits>::_M_reading;
-	using ::std::basic_filebuf<CharT,Traits>::_M_writing;
-	using ::std::basic_filebuf<CharT,Traits>::_M_allocate_internal_buffer;
-};
 
 template<typename CharT, typename Traits>
 struct libstdcxx_filebuf_guard
