@@ -93,7 +93,7 @@ template<typename T,std::integral char_type>
 inline constexpr void iobuf_overflow_impl(T handle,
 	basic_io_buffer_pointers<char_type>& pointers,char_type ch,std::size_t bfsz)
 {
-	iobuf_output_constant_flush_prepare_impl(pointers,bfsz);
+	iobuf_output_constant_flush_prepare_impl(handle,pointers,bfsz);
 	*pointers.buffer_curr=ch;
 	++pointers.buffer_curr;
 }
