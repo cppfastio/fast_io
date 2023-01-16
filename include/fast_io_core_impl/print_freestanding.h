@@ -252,33 +252,19 @@ inline constexpr void print_control(output out,T t)
 		{
 			if constexpr(buffer_output_stream<output>&&!asan_activated)
 			{
-				if constexpr(std::same_as<char_type*,decltype(obuffer_curr(out))>&&std::same_as<char_type*,decltype(obuffer_end(out))>)
+				char_type* bcurr{obuffer_curr(out)};
+				char_type* bend{obuffer_end(out)};
+				std::ptrdiff_t const diff(bend-bcurr);
+				bool smaller{static_cast<std::ptrdiff_t>(size)<diff};
+				if constexpr(constant_buffer_output_stream<output>)
 				{
-					char_type* bcurr{obuffer_curr(out)};
-					char_type* bend{obuffer_end(out)};
-					std::ptrdiff_t const diff(bend-bcurr);
-					char_type buffer[size];
-					bool smaller{static_cast<std::ptrdiff_t>(size)<diff};
-					if(!smaller)[[unlikely]]
-						bcurr=buffer;
-					bcurr=print_reserve_define(io_reserve_type<char_type,value_type>,bcurr,t);
-					if constexpr(line)
+					if constexpr(size<obuffer_constant_size(io_reserve_type<char_type,output>))
 					{
-						*bcurr=lfch;
-						++bcurr;
-					}
-					if(smaller)[[likely]]
-						obuffer_set_curr(out,bcurr);
-					else[[unlikely]]
-						write(out,buffer,bcurr);
-				}
-				else
-				{
-					auto bcurr{obuffer_curr(out)};
-					auto bend{obuffer_end(out)};
-					std::ptrdiff_t const diff(bend-bcurr);
-					if(static_cast<std::ptrdiff_t>(size)<diff)[[likely]]
-					{
+						if(!smaller)[[unlikely]]
+						{
+							obuffer_constant_flush_prepare(out);
+							bcurr=obuffer_curr(out);
+						}
 						bcurr=print_reserve_define(io_reserve_type<char_type,value_type>,bcurr,t);
 						if constexpr(line)
 						{
@@ -286,21 +272,22 @@ inline constexpr void print_control(output out,T t)
 							++bcurr;
 						}
 						obuffer_set_curr(out,bcurr);
-					}
-					else[[unlikely]]
-					{
-						char_type buffer[size];
-						auto it{buffer};
-						it=print_reserve_define(io_reserve_type<char_type,value_type>,it,t);
-						if constexpr(line)
-						{
-							*it=lfch;
-							++it;
-						}
-						auto start{buffer};
-						write(out,start,it);
+						return;
 					}
 				}
+				char_type buffer[size];
+				if(!smaller)[[unlikely]]
+					bcurr=buffer;
+				bcurr=print_reserve_define(io_reserve_type<char_type,value_type>,bcurr,t);
+				if constexpr(line)
+				{
+					*bcurr=lfch;
+					++bcurr;
+				}
+				if(smaller)[[likely]]
+					obuffer_set_curr(out,bcurr);
+				else[[unlikely]]
+					write(out,buffer,bcurr);
 			}
 			else
 			{
@@ -488,57 +475,47 @@ inline constexpr void print_controls_line_multi_impl(output out,T t,Args ...args
 						auto end_ptr{obuffer_end(out)};
 						std::ptrdiff_t diff{end_ptr-curr_ptr};
 						bool const on_io_buffer{static_cast<std::ptrdiff_t>(buffer_size)<diff};
-						if constexpr(std::same_as<char_type*,decltype(obuffer_curr(out))>&&std::same_as<char_type*,decltype(obuffer_end(out))>)
+						if constexpr(constant_buffer_output_stream<output>)
 						{
-							char_type stack_buffer[buffer_size];
-							char_type *ptr{curr_ptr};
-							if(!on_io_buffer)[[unlikely]]
-								ptr=stack_buffer;
-							ptr=print_reserve_define(io_reserve_type<char_type,T>,ptr,t);
-							ptr=partition_reserve_impl<reserve_paras_n>(ptr,args...);
-							if constexpr(need_output_lf)
+							if constexpr(buffer_size<obuffer_constant_size(io_reserve_type<char_type,output>))
 							{
-								*ptr=char_literal_v<u8'\n',char_type>;
-								++ptr;
-							}
-							if(on_io_buffer)[[likely]]
-							{
-								obuffer_set_curr(out,ptr);
-							}
-							else[[unlikely]]
-							{
-								auto start{stack_buffer};
-								write(out,start,ptr);
+								if(!on_io_buffer)[[unlikely]]
+								{
+									obuffer_constant_flush_prepare(out);
+									curr_ptr=obuffer_curr(out);
+								}
+								curr_ptr=print_reserve_define(io_reserve_type<char_type,T>,curr_ptr,t);
+								curr_ptr=partition_reserve_impl<reserve_paras_n>(curr_ptr,args...);
+								if constexpr(need_output_lf)
+								{
+									*curr_ptr=char_literal_v<u8'\n',char_type>;
+									++curr_ptr;
+								}
+								obuffer_set_curr(out,curr_ptr);
+								if constexpr(reserve_paras_info.n!=sizeof...(Args))
+									print_controls_line_multi_impl<line,reserve_paras_info.n>(out,args...);
+								return;
 							}
 						}
-						else
+						char_type stack_buffer[buffer_size];
+						char_type *ptr{curr_ptr};
+						if(!on_io_buffer)[[unlikely]]
+							ptr=stack_buffer;
+						ptr=print_reserve_define(io_reserve_type<char_type,T>,ptr,t);
+						ptr=partition_reserve_impl<reserve_paras_n>(ptr,args...);
+						if constexpr(need_output_lf)
 						{
-							if(on_io_buffer)[[likely]]
-							{
-								auto ptr{curr_ptr};
-								ptr=print_reserve_define(io_reserve_type<char_type,T>,ptr,t);
-								ptr=partition_reserve_impl<reserve_paras_n>(ptr,args...);
-								if constexpr(need_output_lf)
-								{
-									*ptr=char_literal_v<u8'\n',char_type>;
-									++ptr;
-								}
-								obuffer_set_curr(out,ptr);
-							}
-							else[[unlikely]]
-							{
-								char_type stack_buffer[buffer_size];
-								char_type *ptr{stack_buffer};
-								ptr=print_reserve_define(io_reserve_type<char_type,T>,ptr,t);
-								ptr=partition_reserve_impl<reserve_paras_n>(ptr,args...);
-								if constexpr(need_output_lf)
-								{
-									*ptr=char_literal_v<u8'\n',char_type>;
-									++ptr;
-								}
-								auto start{stack_buffer};
-								write(out,start,ptr);
-							}
+							*ptr=char_literal_v<u8'\n',char_type>;
+							++ptr;
+						}
+						if(on_io_buffer)[[likely]]
+						{
+							obuffer_set_curr(out,ptr);
+						}
+						else[[unlikely]]
+						{
+							auto start{stack_buffer};
+							write(out,start,ptr);
 						}
 					}
 					else
