@@ -40,6 +40,9 @@ template<typename T>
 concept buffer_output_stream = output_stream<T>&&details::buffer_output_stream_impl<T>;
 
 template<typename T>
+concept constant_buffer_output_stream = buffer_output_stream<T>&&details::constant_buffer_output_stream_impl<T>;
+
+template<typename T>
 concept contiguous_output_stream = buffer_output_stream<T>&&details::contiguous_output_stream_impl<T>;
 
 template<typename T>

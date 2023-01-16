@@ -83,6 +83,13 @@ concept buffer_output_stream_impl = requires(T&& out,typename std::remove_cvref_
 };
 
 template<typename T>
+concept constant_buffer_output_stream_impl = requires(T&& out)
+{
+	{obuffer_constant_size(io_reserve_type<typename std::remove_cvref_t<T>::char_type,std::remove_cvref_t<decltype(out)>>)}->std::same_as<std::size_t>;
+	obuffer_constant_flush_prepare(out);
+};
+
+template<typename T>
 concept flush_output_stream_impl = requires(T&& out)
 {
 	flush(out);

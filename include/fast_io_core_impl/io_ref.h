@@ -219,4 +219,18 @@ constexpr void flush(io_reference_wrapper<output> co)
 	flush(*co.ptr);
 }
 
+template<constant_buffer_output_stream output>
+inline constexpr std::size_t obuffer_constant_size(
+		io_reserve_type_t<typename io_reference_wrapper<output>::char_type,
+		io_reference_wrapper<output>>) noexcept
+{
+	return obuffer_constant_size(io_reserve_type<typename output::char_type,output>);
+}
+
+template<constant_buffer_output_stream output>
+inline constexpr void obuffer_constant_flush_prepare(io_reference_wrapper<output> co) noexcept
+{
+	obuffer_constant_flush_prepare(*co.ptr);
+}
+
 }
