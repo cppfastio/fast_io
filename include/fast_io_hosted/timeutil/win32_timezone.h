@@ -125,9 +125,6 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 template<win32_family family>
 struct basic_win32_local_timezone
 {
-#ifdef __cpp_static_call_operator
-	static
-#endif
 	inline win32_timezone_name operator()() noexcept
 	{
 		return ::fast_io::win32::details::win32_localtimezone_impl<family>();
