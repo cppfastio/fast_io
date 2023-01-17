@@ -4,7 +4,7 @@ namespace fast_io
 {
 
 
-inline constexpr std::uintptr_t domain_define(error_type_t<::std::errc>) noexcept
+inline constexpr std::uintptr_t domain_define(error_type_t<::fast_io::freestanding::errc>) noexcept
 {
 	if constexpr(sizeof(std::uintptr_t)<=sizeof(std::uint_least16_t))
 		return 52386u;
@@ -14,7 +14,7 @@ inline constexpr std::uintptr_t domain_define(error_type_t<::std::errc>) noexcep
 		return 11138730069487200664ULL;
 }
 
-inline constexpr std::uintptr_t posix_domain_value{domain_define(error_type<::std::errc>)};
+inline constexpr std::uintptr_t posix_domain_value{domain_define(error_type<::fast_io::freestanding::errc>)};
 
 [[noreturn]] inline void throw_posix_error()
 {
@@ -42,7 +42,7 @@ inline constexpr std::uintptr_t posix_domain_value{domain_define(error_type<::st
 }
 
 template<std::integral char_type>
-inline constexpr basic_io_scatter_t<char_type> status_io_print_forward(io_alias_type_t<char_type>,::std::errc perr) noexcept
+inline constexpr basic_io_scatter_t<char_type> status_io_print_forward(io_alias_type_t<char_type>,::fast_io::freestanding::errc perr) noexcept
 {
 	return get_posix_errno_scatter<char_type>(static_cast<int>(perr));
 }
@@ -80,21 +80,21 @@ inline constexpr int to_posix_code_impl(std::uintptr_t domain,std::uintptr_t cod
 
 }
 
-inline constexpr bool equivalent_define(error_type_t<::std::errc>,::fast_io::error e,::std::errc p)
+inline constexpr bool equivalent_define(error_type_t<::fast_io::freestanding::errc>,::fast_io::error e,::fast_io::freestanding::errc p)
 {
 	return ::fast_io::details::posix_code_equivalent_impl(e.domain,e.code,static_cast<int>(p));
 }
 
-inline constexpr ::std::errc to_code_define(error_type_t<::std::errc>,error e) noexcept
+inline constexpr ::fast_io::freestanding::errc to_code_define(error_type_t<::fast_io::freestanding::errc>,error e) noexcept
 {
-	return ::std::errc{::fast_io::details::to_posix_code_impl(e.domain,e.code)};
+	return ::fast_io::freestanding::errc{::fast_io::details::to_posix_code_impl(e.domain,e.code)};
 }
 
-using native_code = ::std::errc;
+using native_code = ::fast_io::freestanding::errc;
 
-inline constexpr ::std::errc print_alias_define(::fast_io::io_alias_t,::fast_io::error e) noexcept
+inline constexpr ::fast_io::freestanding::errc print_alias_define(::fast_io::io_alias_t,::fast_io::error e) noexcept
 {
-	return to_code_define(error_type<::std::errc>,e);
+	return to_code_define(error_type<::fast_io::freestanding::errc>,e);
 }
 
 #endif

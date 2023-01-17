@@ -20,14 +20,14 @@
 #endif
 #include"fast_io_i18n/lc.h"
 #include"fast_io_i18n/lc_print.h"
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
+#if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #include"fast_io_i18n/locale/impl.h"
 #endif
 #include"fast_io_i18n/imbuer.h"
 #include"fast_io_i18n/lc_print_status.h"
 #include"fast_io_i18n/lc_numbers/impl.h"
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
+#if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)
 #include"fast_io_unit/string.h"
 #include"fast_io_unit/string_impl/lc_concat.h"
