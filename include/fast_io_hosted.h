@@ -15,15 +15,24 @@ For hosted implementations the set of standard library headers required by the C
 #error "fast_io requires at least C++20 standard compiler."
 #else
 #include"fast_io_freestanding.h"
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
+
+#if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES))
+
+#if __has_include(<stdio.h>)
 #if __has_include(<bits/error_constants.h>)
 #include<bits/error_constants.h>
+#include"fast_io_hosted/platforms/errc_default_impl.h"
 #elif __has_include(<__errc>) && !defined(__clang__)
 #include<__errc>
+#include"fast_io_hosted/platforms/errc_default_impl.h"
 #elif __has_include(<xerrc.h>)
 #include<xerrc.h>
-#else
+#include"fast_io_hosted/platforms/errc_default_impl.h"
+#elif __has_include(<system_error>)
 #include<system_error>
+#include"fast_io_hosted/platforms/errc_default_impl.h"
+#else
+#include"fast_io_hosted/platforms/errc_impl.h"
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -48,8 +57,13 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/api_encoding_converter/impl.h"
 #include"fast_io_hosted/mmap.h"
 #include"fast_io_hosted/posix_status.h"
+#if __has_include(<ctime>)
 #include<ctime>
 #include"fast_io_unit/timespec.h"
+#elif __has_include(<time.h>)
+#include<time.h>
+#include"fast_io_unit/timespec.h"
+#endif
 
 #if !defined(__AVR__)
 #include"fast_io_hosted/platforms/native.h"
@@ -58,8 +72,9 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/white_hole/white_hole.h"
 #include"fast_io_hosted/dbg/impl.h"
 #endif
-
+#if __has_include(<ctime>) || __has_include(<time.h>)
 #include"fast_io_hosted/timeutil/impl.h"
+#endif
 
 #include"fast_io_hosted/threads/mutex/impl.h"
 #include"fast_io_hosted/iomutex.h"
@@ -103,6 +118,8 @@ For hosted implementations the set of standard library headers required by the C
 #if __has_include(<winrt/base.h>)
 #include"fast_io_driver/cppwinrt_impl/impl.h"
 #endif
+#endif
+
 #endif
 
 #endif

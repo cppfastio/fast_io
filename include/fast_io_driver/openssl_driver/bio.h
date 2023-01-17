@@ -38,9 +38,9 @@ struct bio_new_fp_flags
 };
 
 
-inline std::FILE* bio_to_fp(BIO* bio) noexcept
+inline FILE* bio_to_fp(BIO* bio) noexcept
 {
-	std::FILE* fp{};
+	FILE* fp{};
 	::fast_io::noexcept_call(BIO_ctrl,bio,BIO_C_GET_FILE_PTR,0,reinterpret_cast<char*>(__builtin_addressof(fp)));
 	return fp;
 }

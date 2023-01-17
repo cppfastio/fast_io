@@ -7,7 +7,7 @@
 #error "fast_io requires at least C++20 standard compiler."
 #else
 //fast_io_legacy.h deals with legacy C++ <iostream>/<fstream>/<sstream> interface
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)
+#if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push)

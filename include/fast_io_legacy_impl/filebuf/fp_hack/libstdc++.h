@@ -30,7 +30,7 @@ public:
 };
 
 template<typename char_type,typename traits_type>
-inline std::FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
 	using hack_filebuf_type = hack_libstdcxx_basic_filebuf<char_type,traits_type>;
 	auto pfbf{reinterpret_cast<char unsigned*>(fbuf)};
@@ -38,7 +38,7 @@ inline std::FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) 
 }
 
 template<typename char_type,typename traits_type>
-inline std::FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
 	if(fbuf==nullptr)
 		return nullptr;
@@ -47,7 +47,7 @@ inline std::FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexc
 
 template<typename T>
 requires (std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>)
-inline std::FILE* fp_hack([[maybe_unused]] T* cio) noexcept
+inline FILE* fp_hack([[maybe_unused]] T* cio) noexcept
 {
 #ifdef __cpp_rtti
 	using char_type = typename T::char_type;
