@@ -188,14 +188,14 @@ inline bool equivalent_define(error_type_t<nt_code>,error e,nt_code we) noexcept
 	return ::fast_io::details::nt_code_equivalent_impl(e.domain,e.code,we.ntstatus);
 }
 
-inline bool equivalent_define(error_type_t<::std::errc>,error e,::std::errc we) noexcept
+inline bool equivalent_define(error_type_t<::fast_io::freestanding::errc>,error e,::fast_io::freestanding::errc we) noexcept
 {
 	return ::fast_io::details::posix_code_equivalent_impl(e.domain,e.code,static_cast<int>(we));
 }
 
-inline ::std::errc to_code_define(error_type_t<::std::errc>,error e) noexcept
+inline ::fast_io::freestanding::errc to_code_define(error_type_t<::fast_io::freestanding::errc>,error e) noexcept
 {
-	return ::std::errc{::fast_io::details::to_posix_code_impl(e.domain,e.code)};
+	return ::fast_io::freestanding::errc{::fast_io::details::to_posix_code_impl(e.domain,e.code)};
 }
 
 inline win32_code to_code_define(error_type_t<win32_code>,error e) noexcept

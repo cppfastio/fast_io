@@ -25,7 +25,7 @@ For hosted implementations the set of standard library headers required by the C
 #elif __has_include(<__errc>) && !defined(__clang__)
 #include<__errc>
 #include"fast_io_hosted/platforms/errc_default_impl.h"
-#elif __has_include(<xerrc.h>)
+#elif __has_include(<xerrc.h>) && !defined(__BIONIC__)
 #include<xerrc.h>
 #include"fast_io_hosted/platforms/errc_default_impl.h"
 #elif __has_include(<system_error>)
