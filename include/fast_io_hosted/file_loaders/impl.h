@@ -1,5 +1,7 @@
 ﻿#pragma once
+#if !(defined(_WIN32)&&defined(__BIONIC__))
 #include"posix_file_loader.h"
+#endif
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include"win32_file_loader.h"
 #endif
