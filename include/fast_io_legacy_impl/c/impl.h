@@ -5,7 +5,7 @@
 #include<stdio.h>
 #endif
 
-#if defined(__MINGW32__) && !defined(_UCRT)
+#if defined(__MINGW32__) && !defined(_UCRT) && !defined(__BIONIC__)
 #include"msvcrt_lock.h"
 #endif
 
