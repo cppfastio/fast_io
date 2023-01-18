@@ -51,7 +51,7 @@ inline std::size_t c_fwrite_unlocked_impl(void const* __restrict begin,std::size
 	std::size_t written_count{
 #if defined(__CYGWIN__)
 	my_cygwin_fwrite_unlocked(begin,type_size,count,fp)
-#elif defined(__USE_MISC) || defined(__BSD_VISIBLE)
+#elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD) ))
 #if !defined(fwrite_unlocked) && defined(__has_builtin)
 #if __has_builtin(__builtin_fwrite_unlocked)
 	__builtin_fwrite_unlocked(begin,type_size,count,fp)
@@ -101,7 +101,7 @@ inline std::size_t c_fread_unlocked_impl(void* __restrict begin,std::size_t type
 	std::size_t read_count{
 #if defined(__CYGWIN__)
 	my_cygwin_fread_unlocked(begin,type_size,count,fp)
-#elif defined(__USE_MISC) || defined(__BSD_VISIBLE)
+#elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD) ))
 #if !defined(fread_unlocked) && defined(__has_builtin)
 #if __has_builtin(__builtin_fread_unlocked)
 	__builtin_fread_unlocked(begin,type_size,count,fp)

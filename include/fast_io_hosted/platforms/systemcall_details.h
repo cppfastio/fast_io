@@ -20,7 +20,7 @@ inline int sys_dup(int old_fd)
 	return fd;
 #else
 	auto fd{
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(__BIONIC__)
 		_dup
 #else
 		dup
@@ -41,7 +41,7 @@ inline int sys_dup2(int old_fd,int new_fd)
 	return fd;
 #else
 	auto fd{
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__BIONIC__)
 		_dup2
 #else
 		dup2
@@ -63,7 +63,7 @@ inline int sys_close(int fd) noexcept
 	return 
 #if defined(__linux__) && defined(__NR_close)
 	system_call<__NR_close,int>
-#elif defined(_WIN32) || defined(__MSDOS__)
+#elif (defined(_WIN32) && !defined(__BIONIC__)) || defined(__MSDOS__)
 		_close
 #else
 		close

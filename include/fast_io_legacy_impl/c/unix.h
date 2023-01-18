@@ -124,12 +124,8 @@ template<typename T,std::size_t num>
 inline T* bsd_get_buffer_ptr_impl(FILE* __restrict fpp) noexcept
 {
 	static_assert(num<4);
-#if defined(__MSDOS__) || defined(_WIN32)
-#if defined(_UCRT) || defined(_MSC_VER)
-	ucrt_iobuf* fp{reinterpret_cast<ucrt_iobuf*>(fpp)};
-#else
+#if defined(__MSDOS__)
 	FILE* fp{fpp};
-#endif
 	if constexpr(num==0)
 		return reinterpret_cast<T*>(fp->_base);
 	else if constexpr(num==1)
@@ -161,12 +157,8 @@ inline void bsd_set_buffer_curr_ptr_impl(FILE* __restrict fpp,
 #endif
 T* ptr) noexcept
 {
-#if defined(__MSDOS__) || defined(_WIN32)
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf* fp{reinterpret_cast<ucrt_iobuf*>(fpp)};
-#else
+#if defined(__MSDOS__)
 	FILE* fp{fpp};
-#endif
 	if constexpr(w)	//set dirty for output
 		fp->_flag|=0x010000;
 	fp->_cnt-=static_cast<int>(reinterpret_cast<char*>(ptr)-fp->_ptr);
@@ -195,8 +187,6 @@ extern int bsd_srget(FILE *) noexcept __asm__("__srget");
 #elif defined(__MSDOS__)
 extern int _filbuf(FILE *) noexcept __asm__("__filbuf");
 extern int _flsbuf(int, FILE*) noexcept __asm__("__flsbuf");
-#elif defined(_MSC_VER)
-//extern "C" int __cdecl __acrt_stdio_refill_and_read_narrow_nolock(FILE*);
 #endif
 
 inline bool bsd_underflow_impl(FILE* __restrict fp)
@@ -219,19 +209,6 @@ inline bool bsd_underflow_impl(FILE* __restrict fp)
 	--fp->_p;
 	return eof;
 #endif
-#elif defined(_MSC_VER) || defined(_UCRT)
-	if(_fgetc_nolock(fp)==EOF)[[unlikely]]
-		return false;
-	ucrt_iobuf* fpp{reinterpret_cast<ucrt_iobuf*>(fp)};
-	++fpp->_cnt;
-	--fpp->_ptr;
-	return true;
-#elif defined(__MSDOS__) || defined(_WIN32) 
-	if(_filbuf(fp)==EOF)[[unlikely]]
-		return false;
-	++fp->_cnt;
-	--fp->_ptr;
-	return true;
 #elif defined(__BIONIC__)
 	bool eof{getc_unlocked(fp)!=EOF};
 	if(!eof&&ferror_unlocked(fp))[[unlikely]]
@@ -262,10 +239,7 @@ bsd_srget(fp)
 
 inline void bsd_overflow(FILE* __restrict fp,char unsigned ch)
 {
-#if defined(_MSC_VER)
-	if(_fputc_nolock(static_cast<int>(static_cast<unsigned char>(ch)),fp)==EOF)[[unlikely]]
-		throw_posix_error();
-#elif defined(__MSDOS__) || defined(_WIN32)
+#if defined(__MSDOS__)
 	fp->_flag|=0x010000;
 	if(_flsbuf(static_cast<int>(static_cast<unsigned char>(ch)),fp)==EOF)[[unlikely]]
 		throw_posix_error();
