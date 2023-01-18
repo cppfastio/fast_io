@@ -67,6 +67,7 @@ See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/q
 - Consistent error handling; when available, exceptions as the **only** error reporting mechanism (no `std::error_code`, `std::system_error` or useless bounds checking)
 - Freestanding mode.
 - Address Sanitizer special code for protecting memory safety issues.
+- Dynamic Instrumentation Support
 
 - Supports POSIX iconv. You can use fast_io for your coding conversion.
 - Binary serialization for trivially copyable types and standard containers
