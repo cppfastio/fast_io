@@ -57,5 +57,4 @@ inline io_scatter_status_t scatter_write(basic_posix_io_observer<char_type> piob
 	return details::posix_scatter_write_impl_with_normal_write(piob.fd,scatters);
 }
 
-
 }

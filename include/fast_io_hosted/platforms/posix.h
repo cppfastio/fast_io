@@ -1707,7 +1707,7 @@ inline io_scatter_status_t posix_scatter_write_impl(int fd,io_scatters_t sp)
 #endif
 #endif
 
-#if defined(__CYGWIN__) || ((!defined(__NEWLIB__)|| defined(FAST_IO_USE_NEWLIB_CUSTOM_WRITEV)) && !defined(__MSDOS__) && !defined(_PICOLIBC__))
+#if defined(__CYGWIN__) || ((!defined(__NEWLIB__)|| defined(FAST_IO_USE_NEWLIB_CUSTOM_WRITEV)) && !(defined(__BIONIC__)&&defined(_WIN32)) && !defined(__MSDOS__) && !defined(_PICOLIBC__))
 
 template<std::integral ch_type>
 [[nodiscard]] inline io_scatter_status_t scatter_read(basic_posix_io_observer<ch_type> h,io_scatters_t sp)
@@ -1885,7 +1885,7 @@ struct is_trivially_relocatable<basic_posix_file<fm,char_type>>
 #endif
 }
 
-#if defined(__MSDOS__) || ((defined(__NEWLIB__)||defined(_PICOLIBC__))&&!defined(FAST_IO_USE_NEWLIB_CUSTOM_WRITEV)&&!defined(__CYGWIN__))
+#if defined(__MSDOS__) || (defined(__BIONIC__)&&defined(_WIN32)) || ((defined(__NEWLIB__)||defined(_PICOLIBC__))&&!defined(FAST_IO_USE_NEWLIB_CUSTOM_WRITEV)&&!defined(__CYGWIN__))
 #include"msdos.h"
 #endif
 

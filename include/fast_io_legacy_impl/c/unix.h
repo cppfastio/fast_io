@@ -62,61 +62,6 @@ sFILE {
 
 #endif
 
-#if defined(_MSC_VER) || defined(_UCRT)
-
-/*
-
-referenced from win10sdk ucrt
-C:\Program Files (x86)\Windows Kits\10\Source\10.0.19041.0\ucrt
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
-// Internal Stream Types (__crt_stdio_stream and friends)
-//
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-
-// Ensure that __crt_stdio_stream_data* and FILE* pointers are freely convertible:
-
-
-struct ucrt_stdio_stream_data
-{
-    union
-    {
-        FILE  public_file;
-        char* ptr;
-    };
-
-    char*            base;
-    int              cnt;
-    long             flags;
-    long             file;
-    int              charbuf;
-    int              bufsiz;
-    char*            tmpfname;
-};
-
-*/
-
-struct
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-[[__gnu__::__may_alias__]]
-#endif
-ucrt_iobuf
-{
-    char*	     _ptr;
-    char*            _base;
-// this makes me very curious. Why is the file struct in UCRT in microsoft SDK different from mingw-w64's definition?
-// I guess it is probably MinGW-w64 CRT's bug?
-    int              _cnt;
-    long             _flag;
-    long             _file;
-    int              _charbuf;
-    int              _bufsiz;
-    char*            _tmpfname;
-};
-#endif
-
 template<typename T,std::size_t num>
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
