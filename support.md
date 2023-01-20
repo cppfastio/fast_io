@@ -56,6 +56,7 @@
 - Windows Kernel Driver
 - Linux Kernel Module
 - wasm2lua (Compile fast_io to Lua!)
+- Intel PinTool (Dynamic Instrumentation)
 - Any other platform (if you want me to support it, tell me, including your own OS)
 
 ## Kernel Driver Support
@@ -141,3 +142,4 @@ On Windows 95 or 95 Plus! you can enable `-O3` but not `-Ofast`. You'll also nee
 ## Special Support
 - LLVM Address Sanitizer
 - Full freestanding support (which means we do not have any headers besides freestanding headers. Tested with GCC's --disable-hosted-libstdcxx without any libc, including newlib)
+- Pintool support
