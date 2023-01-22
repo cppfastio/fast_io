@@ -122,7 +122,7 @@ void _start(struct stivale2_struct *stivale2_struct) noexcept
 	auto& epoch{stivale2_get<stivale2_struct_tag_epoch>(stivale2_struct, STIVALE2_STRUCT_TAG_EPOCH_ID)};
 	fast_io::unix_timestamp tsp{static_cast<std::int_least64_t>(epoch.epoch)};
 	println(console,u8"Hello fast_io Kernel: stivale2_struct address:",stivale2_struct,u8"\n"
-	u8"Unix Tiemstamp:",tsp,u8"\n"
+	u8"Unix Timestamp:",tsp,u8"\n"
 	u8"UTC:",utc(tsp));
 
 	// We're done, just hang...
