@@ -7,9 +7,8 @@ template<std::integral ch_type>
 struct basic_qt_qdebug
 {
 	using char_type = ch_type;
-	QDebug* pqdbg{};
+	QDebug pqdbg;
 };
-
 
 using qt_qdebug = basic_qt_qdebug<char>;
 using wqt_qdebug = basic_qt_qdebug<wchar_t>;
@@ -20,29 +19,29 @@ using u32qt_qdebug = basic_qt_qdebug<char32_t>;
 namespace manipulators
 {
 
-inline constexpr ::fast_io::qt_qdebug qtdbg(QDebug& qdbg) noexcept
+inline constexpr ::fast_io::qt_qdebug qtdbg(QDebug qdbg) noexcept
 {
-	return {__builtin_addressof(qdbg)};
+	return {qdbg};
 }
 
-inline constexpr ::fast_io::wqt_qdebug wqtdbg(QDebug& qdbg) noexcept
+inline constexpr ::fast_io::wqt_qdebug wqtdbg(QDebug qdbg) noexcept
 {
-	return {__builtin_addressof(qdbg)};
+	return {qdbg};
 }
 
-inline constexpr ::fast_io::u8qt_qdebug u8qtdbg(QDebug& qdbg) noexcept
+inline constexpr ::fast_io::u8qt_qdebug u8qtdbg(QDebug qdbg) noexcept
 {
-	return {__builtin_addressof(qdbg)};
+	return {qdbg};
 }
 
-inline constexpr ::fast_io::u16qt_qdebug u16qtdbg(QDebug& qdbg) noexcept
+inline constexpr ::fast_io::u16qt_qdebug u16qtdbg(QDebug qdbg) noexcept
 {
-	return {__builtin_addressof(qdbg)};
+	return {qdbg};
 }
 
-inline constexpr ::fast_io::u32qt_qdebug u32qtdbg(QDebug& qdbg) noexcept
+inline constexpr ::fast_io::u32qt_qdebug u32qtdbg(QDebug qdbg) noexcept
 {
-	return {__builtin_addressof(qdbg)};
+	return {qdbg};
 }
 
 }
@@ -68,13 +67,13 @@ inline void qtdbg_scatter_write_impl(QDebug& qdb,io_scatter_t const* scatters,st
 template<std::integral char_type>
 inline void write(basic_qt_qdebug<char_type> qdbg,char_type const* first,char_type const* last)
 {
-	::fast_io::details::qtdbg_write_impl(*qdbg.pqdbg,reinterpret_cast<char const*>(first),reinterpret_cast<char const*>(last));
+	::fast_io::details::qtdbg_write_impl(qdbg.pqdbg,reinterpret_cast<char const*>(first),reinterpret_cast<char const*>(last));
 }
 
 template<std::integral char_type>
 inline void scatter_write(basic_qt_qdebug<char_type> qdbg,io_scatters_t scatters)
 {
-	::fast_io::details::qtdbg_scatter_write_impl(*qdbg.pqdbg,scatters.base,scatters.len);
+	::fast_io::details::qtdbg_scatter_write_impl(qdbg.pqdbg,scatters.base,scatters.len);
 }
 
 }
