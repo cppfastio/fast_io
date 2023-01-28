@@ -47,7 +47,7 @@ template<output_stream output>
 using basic_obuf = basic_io_buffer<output,buffer_mode::out>;
 template<io_stream strm>
 using basic_iobuf = basic_io_buffer<strm,buffer_mode::in|buffer_mode::out|buffer_mode::tie>;
-#if !(defined(FAST_IO_DISABLE_CODECVT)&&(__STDC_HOSTED__==0 || (defined(_GLIBCXX_HOSTED) && _GLIBCXX_HOSTED==0)) || (defined(_LIBCPP_VERSION)&&!defined(_LIBCPP_FREESTANDING)))
+#if !defined(FAST_IO_DISABLE_CODECVT)
 template<std::integral internal_char_type,
 	input_stream input,
 	encoding_scheme internal_scheme=encoding_scheme::execution_charset,
