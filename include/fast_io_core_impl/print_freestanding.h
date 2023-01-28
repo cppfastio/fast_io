@@ -144,6 +144,26 @@ inline constexpr void scatter_print_with_dynamic_reserve_recursive(io_scatter_t*
 		scatter_print_with_dynamic_reserve_recursive(arr+1,ptr,dynamic_buffer_ptr,args...);
 }
 
+template<std::integral char_type,typename T,typename... Args>
+inline constexpr void scatter_print_with_dynamic_only_reserve_recursive(io_scatter_t* __restrict arr,
+	[[maybe_unused]] char_type* __restrict dynamic_buffer_ptr,[[maybe_unused]] T t, Args ...args)
+{
+	static_assert(!reserve_printable<char_type,T>);
+	if constexpr(scatter_printable<char_type,T>)
+	{
+		auto sc{print_scatter_define(io_reserve_type<char_type,T>,t)};
+		*arr={sc.base,sc.len*sizeof(char_type)};
+	}
+	else if constexpr(dynamic_reserve_printable<char_type,T>)
+	{
+		auto end_ptr = print_reserve_define(io_reserve_type<char_type,T>,dynamic_buffer_ptr,t);
+		*arr={dynamic_buffer_ptr,(end_ptr-dynamic_buffer_ptr)*sizeof(*dynamic_buffer_ptr)};
+		if constexpr(sizeof...(Args)!=0)
+			dynamic_buffer_ptr = end_ptr;
+	}
+	if constexpr(sizeof...(Args)!=0)
+		scatter_print_with_dynamic_only_reserve_recursive(arr+1,dynamic_buffer_ptr,args...);
+}
 
 template<std::integral char_type,typename T>
 requires scatter_printable<char_type,T>
@@ -643,20 +663,40 @@ inline constexpr void print_fallback(output out,Args ...args)
 				else
 				{
 					constexpr std::size_t total_size{calculate_scatter_reserve_size<char_type,Args...>()};
-					char_type buffer[total_size];
-					local_operator_new_array_ptr<char_type> new_ptr(calculate_scatter_dynamic_reserve_size<char_type>(args...));
-					scatter_print_with_dynamic_reserve_recursive(scatters,buffer,new_ptr.ptr,args...);
-					if constexpr(line)
+					if constexpr(total_size!=0)
 					{
-						scatters[args_num]={__builtin_addressof(char_literal_v<u8'\n',char_type>),sizeof(char_type)};
-					}
-					if constexpr(scatter_constant_output_stream<output>)
-					{
-						scatter_constant_write<n>(out,scatters);
+						char_type buffer[total_size];
+						local_operator_new_array_ptr<char_type> new_ptr(calculate_scatter_dynamic_reserve_size<char_type>(args...));
+						scatter_print_with_dynamic_reserve_recursive(scatters,buffer,new_ptr.ptr,args...);
+						if constexpr(line)
+						{
+							scatters[args_num]={__builtin_addressof(char_literal_v<u8'\n',char_type>),sizeof(char_type)};
+						}
+						if constexpr(scatter_constant_output_stream<output>)
+						{
+							scatter_constant_write<n>(out,scatters);
+						}
+						else
+						{
+							scatter_write(out,{scatters,n});
+						}
 					}
 					else
 					{
-						scatter_write(out,{scatters,n});
+						local_operator_new_array_ptr<char_type> new_ptr(calculate_scatter_dynamic_reserve_size<char_type>(args...));
+						scatter_print_with_dynamic_only_reserve_recursive(scatters,new_ptr.ptr,args...);
+						if constexpr(line)
+						{
+							scatters[args_num]={__builtin_addressof(char_literal_v<u8'\n',char_type>),sizeof(char_type)};
+						}
+						if constexpr(scatter_constant_output_stream<output>)
+						{
+							scatter_constant_write<n>(out,scatters);
+						}
+						else
+						{
+							scatter_write(out,{scatters,n});
+						}
 					}
 				}
 			}

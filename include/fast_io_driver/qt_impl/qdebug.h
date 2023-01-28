@@ -19,27 +19,27 @@ using u32qt_qdebug = basic_qt_qdebug<char32_t>;
 namespace manipulators
 {
 
-inline ::fast_io::qt_qdebug qtdbg(QDebug qdbg) noexcept
+inline ::fast_io::qt_qdebug qtdbg(QDebug qdbg)
 {
 	return {qdbg};
 }
 
-inline ::fast_io::wqt_qdebug wqtdbg(QDebug qdbg) noexcept
+inline ::fast_io::wqt_qdebug wqtdbg(QDebug qdbg)
 {
 	return {qdbg};
 }
 
-inline ::fast_io::u8qt_qdebug u8qtdbg(QDebug qdbg) noexcept
+inline ::fast_io::u8qt_qdebug u8qtdbg(QDebug qdbg)
 {
 	return {qdbg};
 }
 
-inline ::fast_io::u16qt_qdebug u16qtdbg(QDebug qdbg) noexcept
+inline ::fast_io::u16qt_qdebug u16qtdbg(QDebug qdbg)
 {
 	return {qdbg};
 }
 
-inline ::fast_io::u32qt_qdebug u32qtdbg(QDebug qdbg) noexcept
+inline ::fast_io::u32qt_qdebug u32qtdbg(QDebug qdbg)
 {
 	return {qdbg};
 }
