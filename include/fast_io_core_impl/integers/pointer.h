@@ -69,7 +69,32 @@ template<::std::integral char_type,::std::size_t n>
 requires (n!=0)
 inline constexpr basic_os_c_str_n<char_type> os_c_str_arr(char_type const (&cstr)[n]) noexcept
 {
-        return os_c_str(cstr,n);
+	return os_c_str(cstr,n);
+}
+
+template<::std::integral char_type,::std::size_t n>
+requires (n!=0)
+inline constexpr auto small_scatter(char_type const (&s)[n]) noexcept
+{
+	constexpr bool not_char_literal{::std::is_const_v<char_type>};
+	if constexpr(not_char_literal)
+	{
+		constexpr std::size_t nm1{n-1};
+		constexpr std::size_t boundary{64},boundaryp1{boundary+1};
+		if constexpr(n==2)
+			return manipulators::chvw_t<std::remove_const_t<char_type>>{*s};
+		else if constexpr(n<boundaryp1)
+		{
+			return ::fast_io::manipulators::small_scatter_t<std::remove_const_t<char_type>,boundary>{s,nm1};
+		}
+		else
+			return basic_io_scatter_t<std::remove_const_t<char_type>>{s,nm1};
+	}
+	else
+	{
+static_assert(not_char_literal,"The type is an array but not char array literal. Reject.");
+		return;
+	}
 }
 
 template<std::integral T>
@@ -119,13 +144,8 @@ inline constexpr auto print_alias_define(io_alias_t,char_type (&s)[n]) noexcept
 	if constexpr(not_char_literal)
 	{
 		constexpr std::size_t nm1{n-1};
-		constexpr std::size_t boundary{64},boundaryp1{boundary+1};
 		if constexpr(n==2)
 			return manipulators::chvw_t<std::remove_const_t<char_type>>{*s};
-		else if constexpr(n<boundaryp1)
-		{
-			return ::fast_io::manipulators::small_scatter_t<std::remove_const_t<char_type>,boundary>{s,nm1};
-		}
 		else
 			return basic_io_scatter_t<std::remove_const_t<char_type>>{s,nm1};
 	}
