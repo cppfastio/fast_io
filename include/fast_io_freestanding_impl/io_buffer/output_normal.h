@@ -33,18 +33,41 @@ inline constexpr void iobuf_write_unhappy_nullptr_case_impl(basic_io_buffer_poin
 template<typename T,std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr void iobuf_write_unhappy_decay_no_alloc_impl(T t,basic_io_buffer_pointers<char_type>& pointers,Iter first,Iter last,std::size_t buffer_size)
 {
-	std::size_t const remain_space{static_cast<std::size_t>(pointers.buffer_end-pointers.buffer_curr)};
-	non_overlapped_copy_n(first,remain_space,pointers.buffer_curr);
-	first+=remain_space;
-	write(t,pointers.buffer_begin,pointers.buffer_end);
-	pointers.buffer_curr=pointers.buffer_begin;
-	std::size_t const new_remain_space{static_cast<std::size_t>(last-first)};
-	if(buffer_size<new_remain_space)
+	if constexpr(true)
 	{
-		write(t,first,last);
+		std::size_t const remain_space{static_cast<std::size_t>(pointers.buffer_end-pointers.buffer_curr)};
+		non_overlapped_copy_n(first,remain_space,pointers.buffer_curr);
+		first+=remain_space;
+		write(t,pointers.buffer_begin,pointers.buffer_end);
+		pointers.buffer_curr=pointers.buffer_begin;
+		std::size_t const new_remain_space{static_cast<std::size_t>(last-first)};
+		if(buffer_size<new_remain_space)
+		{
+			write(t,first,last);
+		}
+		else
+			pointers.buffer_curr=non_overlapped_copy_n(first,new_remain_space,pointers.buffer_begin);
 	}
 	else
-		pointers.buffer_curr=non_overlapped_copy_n(first,new_remain_space,pointers.buffer_begin);
+	{
+		if constexpr(scatter_output_stream<T>)
+		{
+			io_scatter_t scatters[2]{
+				{pointers.buffer_begin,
+				static_cast<std::size_t>(pointers.buffer_curr-pointers.buffer_begin)*sizeof(char_type)},
+				{
+				first,
+				static_cast<std::size_t>(last-first)*sizeof(char_type)
+				}};
+			scatter_write(t,io_scatters_t{scatters,2});
+		}
+		else
+		{
+			write(t,pointers.buffer_begin,pointers.buffer_curr);
+			write(t,first,last);
+		}
+		pointers.buffer_curr=pointers.buffer_begin;
+	}
 }
 
 template<std::size_t buffer_size,typename T,std::integral char_type,::std::random_access_iterator Iter>
