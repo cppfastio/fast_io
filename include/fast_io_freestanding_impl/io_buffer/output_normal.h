@@ -33,7 +33,7 @@ inline constexpr void iobuf_write_unhappy_nullptr_case_impl(basic_io_buffer_poin
 template<typename T,std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr void iobuf_write_unhappy_decay_no_alloc_impl(T t,basic_io_buffer_pointers<char_type>& pointers,Iter first,Iter last,std::size_t buffer_size)
 {
-	if constexpr(false)
+	if constexpr(true)
 	{
 		std::size_t const remain_space{static_cast<std::size_t>(pointers.buffer_end-pointers.buffer_curr)};
 		non_overlapped_copy_n(first,remain_space,pointers.buffer_curr);
