@@ -186,4 +186,18 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::f
 	return ::fast_io::details::small_scatter_print_reserve_define_impl(iter,scatter.base,scatter.len);
 }
 
+template<std::integral char_type,std::size_t N>
+inline constexpr std::size_t print_reserve_precise_size(io_reserve_type_t<char_type,::fast_io::manipulators::small_scatter_t<char_type,N>>,
+	::fast_io::manipulators::small_scatter_t<char_type,N> scatter) noexcept
+{
+	return scatter.len;
+}
+
+template<std::integral char_type,std::size_t N>
+inline constexpr char_type* print_reserve_precise_define(io_reserve_type_t<char_type,::fast_io::manipulators::small_scatter_t<char_type,N>>,
+	char_type* iter,::std::size_t,::fast_io::manipulators::small_scatter_t<char_type,N> scatter) noexcept
+{
+	return ::fast_io::details::small_scatter_print_reserve_define_impl(iter,scatter.base,scatter.len);
+}
+
 }
