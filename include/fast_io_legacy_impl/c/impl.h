@@ -5,7 +5,7 @@
 #include<stdio.h>
 #endif
 
-#if defined(__MINGW32__) && !defined(_UCRT)
+#if defined(__MINGW32__) && !defined(_UCRT) && !defined(__BIONIC__)
 #include"msvcrt_lock.h"
 #endif
 
@@ -14,7 +14,7 @@ namespace fast_io
 
 inline constexpr open_mode native_c_supported(open_mode m) noexcept
 {
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 using utype = typename std::underlying_type<open_mode>::type;
 constexpr auto c_supported_values{static_cast<utype>(open_mode::text)|
 	static_cast<utype>(open_mode::out)|
@@ -27,14 +27,14 @@ return c_supported(m);
 #endif
 }
 inline constexpr
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__) && !defined(_WIN32_WINDOWS)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__) && !defined(_WIN32_WINDOWS)
 wchar_t const*
 #else
 char const*
 #endif
 to_native_c_mode(open_mode m) noexcept
 {
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 /*
 https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/fdopen-wfdopen?view=vs-2019
 From microsoft's document. _fdopen only supports
@@ -302,7 +302,7 @@ inline int my_fileno_impl(FILE* fp) noexcept
 	if constexpr(family==c_family::standard)
 	{
 	return 
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 		noexcept_call(_fileno,fp)
 #elif defined(__NEWLIB__)
 		fp->_file
@@ -315,7 +315,7 @@ inline int my_fileno_impl(FILE* fp) noexcept
 	else
 	{
 	return 
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 		noexcept_call(_fileno,fp)
 #elif defined(__NEWLIB__) || defined(__DARWIN_C_LEVEL)
 		fp->_file
@@ -388,7 +388,7 @@ extern size_t glibc_fbufsize(FILE *stream) noexcept __asm__("__fbufsize");
 inline FILE* my_fdopen(int fd,char const* mode) noexcept
 {
 	auto fp{
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 		noexcept_call(_fdopen,fd,mode)
 #elif defined(__MSDOS__) || defined(__CYGWIN__)
 		fdopen(fd,mode)
@@ -409,7 +409,7 @@ For fstream for GNU libstdc++. We should no longer construct FILE* by ourself if
 
 inline FILE* my_c_file_open_impl(int fd,open_mode mode)
 {
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__) && !defined(_WIN32_WINDOWS)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__) && !defined(_WIN32_WINDOWS)
 
 /*
 Reference implementation from ReactOS shows that _fdopen will call MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,str,len,wstr,len); which is not thread-safe
@@ -470,7 +470,7 @@ inline void my_c_io_flush_impl(FILE* fp)
 	}
 	else
 	{
-#if defined(_MSC_VER) || defined(_UCRT)
+#if (defined(_MSC_VER) || defined(_UCRT)) && !defined(__BIONIC__)
 		if(noexcept_call(_fflush_nolock,fp))
 			throw_posix_error();
 #elif defined(__MISC_VISIBLE) && !defined(__NEWLIB__)&&!defined(_PICOLIBC__)
@@ -518,7 +518,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 */
 	if constexpr(family==c_family::unlocked||family==c_family::emulated_unlocked)
 	{
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 #if defined(_MSC_VER) || defined(_UCRT)  || __MSVCRT_VERSION__ >= 0x800
 		if(noexcept_call(_fseeki64_nolock,fp,offset,static_cast<int>(s)))
 			throw_posix_error();
@@ -564,7 +564,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 		return static_cast<std::uintmax_t>(static_cast<long unsigned>(val));
 #else
 		if(
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 		_fseeki64(fp,offset,static_cast<int>(s))
 #elif defined(__USE_LARGEFILE64)
 		noexcept_call(fseeko64,fp,offset,static_cast<int>(s))
@@ -580,7 +580,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 		)
 			throw_posix_error();
 		auto val{
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 		noexcept_call(_ftelli64,fp)
 #elif defined(__USE_LARGEFILE64)
 		noexcept_call(ftello64,fp)
@@ -643,7 +643,7 @@ public:
 	{
 		return basic_posix_io_observer<char_type>{details::my_fileno_impl<family>(fp)};
 	}
-#if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) || defined(__CYGWIN__)
 	template<win32_family fam>
 	explicit operator basic_win32_family_io_observer<fam,char_type>() const noexcept
 	{
@@ -658,7 +658,7 @@ public:
 #endif
 	inline void lock() const noexcept requires(family==c_family::standard||family==c_family::emulated)
 	{
-#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 	if constexpr(false)
 	{
 		::fast_io::details::ucrt_lock_file(fp);
@@ -667,7 +667,7 @@ public:
 	{
 		noexcept_call(_lock_file,fp);
 	}
-#elif (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__) && !defined(__WINE__)
+#elif (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__) && !defined(__WINE__)
 	win32::my_msvcrt_lock_file(fp);
 #elif !defined(__SINGLE_THREAD__)
 #if defined(__NEWLIB__)
@@ -684,7 +684,7 @@ public:
 	}
 	inline void unlock() const noexcept requires(family==c_family::standard||family==c_family::emulated)
 	{
-#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if (defined(_MSC_VER)||defined(_UCRT)) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 	if constexpr(false)
 	{
 		::fast_io::details::ucrt_unlock_file(fp);
@@ -693,7 +693,7 @@ public:
 	{
 		noexcept_call(_unlock_file,fp);
 	}
-#elif (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#elif (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 	win32::my_msvcrt_unlock_file(fp);
 #elif !defined(__SINGLE_THREAD__)
 #if defined(__NEWLIB__)
@@ -829,7 +829,7 @@ inline void my_c_clear_screen_impl(FILE* fp)
 	}
 	else
 	{
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 		void* handle{my_fp_to_win32_handle_impl<c_family::native_unlocked>(fp)};
 		if(!::fast_io::win32::details::win32_is_character_device(handle))
 			return;
@@ -987,7 +987,7 @@ public:
 	{
 		phd.fd=-1;
 	}
-#if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) || defined(__CYGWIN__)
 //windows specific. open posix file from win32 io handle
 	template<win32_family wfamily>
 	basic_c_family_file(basic_win32_family_file<wfamily,char_type>&& win32_handle,open_mode om):
@@ -1069,7 +1069,7 @@ struct is_zero_default_constructible<basic_c_family_file<fm,char_type>>
 
 }
 
-#if (defined(_WIN32)&&!defined(__WINE__)) && !defined(__CYGWIN__)
+#if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 #include"wincrt.h"
 #elif defined(__AVR__) || defined(_PICOLIBC__)
 #include"avrlibc.h"

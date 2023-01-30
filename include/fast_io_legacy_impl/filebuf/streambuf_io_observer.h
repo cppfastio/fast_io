@@ -193,7 +193,7 @@ inline void clear_screen(basic_general_streambuf_io_observer<T> other)
 	::fast_io::details::avr_libc_nosup_impl();
 #else
 	io_lock_guard guard{bciob};
-	std::FILE* fp{bciob.fp};
+	FILE* fp{bciob.fp};
 	int fd{details::fp_unlocked_to_fd(fp)};
 #if defined(_WIN32)&&!defined(__WINE__)
 	void* handle{details::my_get_osfile_handle(fd)};

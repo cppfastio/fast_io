@@ -300,4 +300,27 @@ win32_family_addrinfo<fam> *ai_next{};
 using win32_addrinfo_9xa = win32_family_addrinfo<win32_family::ansi_9x>;
 using win32_addrinfo_ntw = win32_family_addrinfo<win32_family::wide_nt>;
 
+struct systemtime
+{
+::std::uint_least16_t wYear;
+::std::uint_least16_t wMonth;
+::std::uint_least16_t wDayOfWeek;
+::std::uint_least16_t wDay;
+::std::uint_least16_t wHour;
+::std::uint_least16_t wMinute;
+::std::uint_least16_t wSecond;
+::std::uint_least16_t wMilliseconds;
+};
+
+struct time_zone_information
+{
+::std::int_least32_t       Bias;
+char16_t      StandardName[32];
+systemtime StandardDate;
+::std::int_least32_t       StandardBias;
+char16_t      DaylightName[32];
+systemtime DaylightDate;
+::std::int_least32_t       DaylightBias;
+};
+
 }

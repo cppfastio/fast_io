@@ -58,7 +58,7 @@ See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/q
 ## Features
 - As close to system call as possible.
 - Unicode support (UTF-8, UTF-16, UTF-32) + codecvt for GB18030 and UTF-EBCDIC (no libc correctly deals with it)
-- RAII for C `FILE*`, POSIX `fd` and win32 `HANDLE`
+- RAII for C `FILE*`, POSIX `fd` and win32/NT `HANDLE`
 - Interop with `<cstdio>` and `<iostream>` 
 - No easily misused stuff like `std::endl`
 - Static I/O manipulators instead of format strings.
@@ -67,6 +67,7 @@ See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/q
 - Consistent error handling; when available, exceptions as the **only** error reporting mechanism (no `std::error_code`, `std::system_error` or useless bounds checking)
 - Freestanding mode.
 - Address Sanitizer special code for protecting memory safety issues.
+- Dynamic Instrumentation Support
 
 - Supports POSIX iconv. You can use fast_io for your coding conversion.
 - Binary serialization for trivially copyable types and standard containers

@@ -10,7 +10,7 @@
 #include"fast_io_hosted.h"
 
 
-#if __STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING) &&!defined(__AVR__)
+#if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES)) &&!defined(__AVR__)
 namespace fast_io
 {
 
@@ -145,7 +145,7 @@ using u32ibuf_file_mutex = basic_ibuf_file_mutex<char32_t>;
 using u32obuf_file_mutex = basic_obuf_file_mutex<char32_t>;
 using u32iobuf_file_mutex = basic_iobuf_file_mutex<char32_t>;
 
-#if !(defined(FAST_IO_DISABLE_CODECVT)&&(__STDC_HOSTED__==0 || (defined(_GLIBCXX_HOSTED) && _GLIBCXX_HOSTED==0)))
+#ifndef FAST_IO_DISABLE_CODECVT
 /*
 code_cvt file template region
 */

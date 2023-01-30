@@ -13,7 +13,7 @@
 
 namespace fast_io
 {
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if (defined(_WIN32) && !defined(__BIONIC__)) || defined(__CYGWIN__)
 namespace win32::details
 {
 inline std::size_t win32_load_file_get_file_size(void* handle)
@@ -45,7 +45,7 @@ namespace details
 
 inline std::size_t posix_loader_get_file_size(int fd)
 {
-#if defined(_WIN32)&&!defined(__WINE__)
+#if defined(_WIN32) && !defined(__BIONIC__)&&!defined(__WINE__)
 //windows 95 and windows 98 msvcrt do not provide struct __stat64. Directly invoke win32 api
 	return ::fast_io::win32::details::win32_load_file_get_file_size(reinterpret_cast<void*>(noexcept_call(_get_osfhandle,fd)));
 #elif defined(__linux__) && defined(__NR_statx)
@@ -66,17 +66,13 @@ inline std::size_t posix_loader_get_file_size(int fd)
 	}
 	return static_cast<std::size_t>(statxbuf.stx_size);
 #else
-#ifdef _WIN32
-	struct __stat64 st;
-#elif defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
+#if defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
 	struct stat64 st;
 #else
 	struct stat st;
 #endif
 	if(
-#ifdef _WIN32
-_fstat64
-#elif defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
+#if defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
 fstat64
 #else
 fstat

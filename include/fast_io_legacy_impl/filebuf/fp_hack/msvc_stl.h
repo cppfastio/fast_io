@@ -39,10 +39,10 @@ public:
 };
 
 template<typename char_type,typename traits_type>
-inline std::FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
 	using filebuf_model_type = basic_filebuf_model<char_type,traits_type>;
-	std::FILE* fp{};
+	FILE* fp{};
 	static_assert(sizeof(filebuf_model_type)==sizeof(std::basic_filebuf<char_type,traits_type>),"unmatched std::basic_filebuf model");
 	// we can only do this or ubsanitizer will complain. Do not do down_cast
 	::fast_io::details::my_memcpy(__builtin_addressof(fp),reinterpret_cast<std::byte*>(fbuf)+offsetof(filebuf_model_type,_Myfile),sizeof(fp));
@@ -50,7 +50,7 @@ inline std::FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) 
 }
 
 template<typename char_type,typename traits_type>
-inline std::FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
 	if(fbuf==nullptr)
 		return nullptr;
@@ -59,7 +59,7 @@ inline std::FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexc
 
 template<typename T>
 requires (std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>)
-inline std::FILE* fp_hack([[maybe_unused]] T* cio) noexcept
+inline FILE* fp_hack([[maybe_unused]] T* cio) noexcept
 {
 #ifdef __cpp_rtti
 	if(cio)[[likely]]

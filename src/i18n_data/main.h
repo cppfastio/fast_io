@@ -16,19 +16,19 @@ inline constexpr bool compile_time_compare(char_type1 const (&a)[n1],char_type2 
 	return true;
 }
 
+extern "C"
 #if (defined(_WIN32)||defined(__CYGWIN__)) && !defined(__WINE__)
 #if __has_cpp_attribute(__gnu__::__dllexport__)
 [[__gnu__::__dllexport__]]
+#elif !__has_cpp_attribute(__gnu__::__dllexport__)
+__declspec(dllexport)
 #endif
 #if __has_cpp_attribute(__gnu__::__fastcall__)
 [[__gnu__::__fastcall__]]
 #endif
 #endif
-extern "C" void
+void
 #if (defined(_WIN32)||defined(__CYGWIN__)) && !defined(__WINE__)
-#if !__has_cpp_attribute(__gnu__::__dllexport__)
-__declspec(dllexport)
-#endif
 #if !__has_cpp_attribute(__gnu__::__fastcall__)
 __fastcall
 #endif

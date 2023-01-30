@@ -10,6 +10,7 @@
 #include <fmt/compile.h>
 #endif
 #endif
+#include<sstream>
 
 struct benchmark_return
 {
@@ -47,6 +48,13 @@ inline std::string color_concat(std::uint_least8_t r,std::uint_least8_t g,std::u
 	return fast_io::concat("Red: ",r,", Green: ",g,", Blue: ",b);
 }
 
+inline std::string color_ostringstream(std::uint_least8_t r,std::uint_least8_t g,std::uint_least8_t b)
+{
+	std::ostringstream oss;
+	oss<<"Red: "<<r<<", Green: "<<g<<", Blue: "<<b;
+	return std::move(oss.str());
+}
+
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 
 inline std::string color_fmt_format(std::uint_least8_t r,std::uint_least8_t g,std::uint_least8_t b)
@@ -70,6 +78,7 @@ int main()
 	auto format_time = benchmark(color_format);
 #endif
 	auto concat_time = benchmark(color_concat);
+	auto ostringstream_time = benchmark(color_ostringstream);
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 	auto fmt_format_time = benchmark(color_fmt_format);
 #if __has_include(<fmt/compile.h>)
@@ -82,6 +91,7 @@ int main()
 		"std::format (total size:",format_time.total_size,") took ",format_time.timestamp,"s.\n"
 #endif
 		"fast_io::concat (total size: ",concat_time.total_size,") took ",concat_time.timestamp,"s.\n"
+		"std::ostringstream (total size: ",ostringstream_time.total_size,") took ",ostringstream_time.timestamp,"s.\n"
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 		"fmt::format (total size:",fmt_format_time.total_size,") took ",fmt_format_time.timestamp,"s.\n"
 #if __has_include(<fmt/compile.h>)

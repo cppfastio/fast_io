@@ -1,5 +1,4 @@
 #pragma once
-
 #include"time.h"
 
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)

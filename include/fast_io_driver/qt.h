@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include"../fast_io.h"
 #if __has_include(<QIODevice>)
 #include<QIODevice>
 #else
@@ -25,3 +24,6 @@
 #include"qt_impl/qstring.h"
 #include"qt_impl/qiodevice.h"
 #include"qt_impl/qfile.h"
+#if defined(QDEBUG_H)
+#include"qt_impl/qdebug.h"
+#endif

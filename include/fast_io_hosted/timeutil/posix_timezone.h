@@ -80,9 +80,6 @@ inline posix_timezone_name posix_localtimezone_impl() noexcept
 
 struct posix_local_timezone
 {
-#ifdef __cpp_static_call_operator
-	static
-#endif
 	inline posix_timezone_name operator()() noexcept
 	{
 		return ::fast_io::details::posix_localtimezone_impl();

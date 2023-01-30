@@ -130,6 +130,48 @@ inline constexpr void lc_scatter_print_with_dynamic_reserve_recursive(
 	}
 }
 
+
+template<std::integral char_type,typename T,typename... Args>
+inline constexpr void lc_scatter_print_with_dynamic_only_reserve_recursive(
+	basic_lc_all<char_type> const* __restrict all,
+	io_scatter_t* __restrict arr,
+	char_type* __restrict dynamic_buffer_ptr,T t, Args ...args)
+{
+	static_assert(!reserve_printable<char_type,T>);
+	if constexpr(lc_scatter_printable<char_type,T>)
+	{
+		auto sc{print_scatter_define(all,t)};
+		*arr={sc.base,sc.len*sizeof(char_type)};
+	}
+	else if constexpr(lc_dynamic_reserve_printable<char_type,T>)
+	{
+		auto end_ptr = print_reserve_define(all,dynamic_buffer_ptr,t);
+		*arr={dynamic_buffer_ptr,(end_ptr-dynamic_buffer_ptr)*sizeof(*dynamic_buffer_ptr)};
+		if constexpr(sizeof...(Args)!=0)
+			dynamic_buffer_ptr = end_ptr;
+	}
+	else if constexpr(scatter_printable<char_type,T>)
+	{
+		auto sc{print_scatter_define(io_reserve_type<char_type,T>,t)};
+		*arr={sc.base,sc.len*sizeof(char_type)};
+	}
+	else
+	{
+		auto end_ptr = print_reserve_define(io_reserve_type<char_type,T>,dynamic_buffer_ptr,t);
+		*arr={dynamic_buffer_ptr,static_cast<std::size_t>(end_ptr-dynamic_buffer_ptr)*sizeof(*dynamic_buffer_ptr)};
+		if constexpr(sizeof...(Args)!=0)
+			dynamic_buffer_ptr = end_ptr;
+	}
+	if constexpr(sizeof...(Args)!=0)
+	{
+		if constexpr(((!lc_dynamic_reserve_printable<char_type,Args>&&!lc_scatter_printable<char_type,Args>)&&...))
+			scatter_print_with_dynamic_only_reserve_recursive(arr+1,dynamic_buffer_ptr,args...);
+		else
+			lc_scatter_print_with_dynamic_only_reserve_recursive(all,arr+1,dynamic_buffer_ptr,args...);
+	}
+}
+
+
 template<bool line,output_stream output,typename T>
 inline constexpr void lc_print_control_reserve_bad_path(basic_lc_all<typename output::char_type> const* __restrict lc,output out,T t,std::size_t size)
 {
@@ -294,20 +336,40 @@ inline constexpr void lc_print_fallback(basic_lc_all<typename output::char_type>
 		else
 		{
 			constexpr std::size_t arrayn{calculate_scatter_reserve_size<char_type,Args...>()};
-			char_type reserve_array[arrayn];
-			local_operator_new_array_ptr<char_type> new_ptr(calculate_lc_scatter_dynamic_reserve_size<char_type>(lc,args...));
-			lc_scatter_print_with_dynamic_reserve_recursive(lc,scatters,reserve_array,new_ptr.ptr,args...);
-			if constexpr(ln)
+			if constexpr(arrayn!=0)
 			{
-				scatters[args_num]={__builtin_addressof(char_literal_v<u8'\n',char_type>),sizeof(char_type)};
-			}
-			if constexpr(scatter_constant_output_stream<output>)
-			{
-				scatter_constant_write<scatters_num>(out,scatters);
+				char_type reserve_array[arrayn];
+				local_operator_new_array_ptr<char_type> new_ptr(calculate_lc_scatter_dynamic_reserve_size<char_type>(lc,args...));
+				lc_scatter_print_with_dynamic_reserve_recursive(lc,scatters,reserve_array,new_ptr.ptr,args...);
+				if constexpr(ln)
+				{
+					scatters[args_num]={__builtin_addressof(char_literal_v<u8'\n',char_type>),sizeof(char_type)};
+				}
+				if constexpr(scatter_constant_output_stream<output>)
+				{
+					scatter_constant_write<scatters_num>(out,scatters);
+				}
+				else
+				{
+					scatter_write(out,{scatters,scatters_num});
+				}
 			}
 			else
 			{
-				scatter_write(out,{scatters,scatters_num});
+				local_operator_new_array_ptr<char_type> new_ptr(calculate_lc_scatter_dynamic_reserve_size<char_type>(lc,args...));
+				lc_scatter_print_with_dynamic_only_reserve_recursive(lc,scatters,new_ptr.ptr,args...);
+				if constexpr(ln)
+				{
+					scatters[args_num]={__builtin_addressof(char_literal_v<u8'\n',char_type>),sizeof(char_type)};
+				}
+				if constexpr(scatter_constant_output_stream<output>)
+				{
+					scatter_constant_write<scatters_num>(out,scatters);
+				}
+				else
+				{
+					scatter_write(out,{scatters,scatters_num});
+				}
 			}
 		}
 	}

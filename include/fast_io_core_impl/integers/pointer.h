@@ -25,6 +25,14 @@ struct chvw_t
 	T reference;
 };
 
+template<::std::integral ch_type,::std::size_t N>
+struct small_scatter_t
+{
+	using manip_tag = manip_tag_t;
+	ch_type const* base{};
+	std::size_t len{};
+};
+
 template<std::integral T>
 inline constexpr chvw_t<T> chvw(T ch) noexcept
 {
@@ -61,7 +69,32 @@ template<::std::integral char_type,::std::size_t n>
 requires (n!=0)
 inline constexpr basic_os_c_str_n<char_type> os_c_str_arr(char_type const (&cstr)[n]) noexcept
 {
-        return os_c_str(cstr,n);
+	return os_c_str(cstr,n);
+}
+
+template<::std::integral char_type,::std::size_t n>
+requires (n!=0)
+inline constexpr auto small_scatter(char_type const (&s)[n]) noexcept
+{
+	constexpr bool not_char_literal{::std::is_const_v<char_type>};
+	if constexpr(not_char_literal)
+	{
+		constexpr std::size_t nm1{n-1};
+		constexpr std::size_t boundary{64},boundaryp1{boundary+1};
+		if constexpr(n==2)
+			return manipulators::chvw_t<std::remove_const_t<char_type>>{*s};
+		else if constexpr(n<boundaryp1)
+		{
+			return ::fast_io::manipulators::small_scatter_t<std::remove_const_t<char_type>,boundary>{s,nm1};
+		}
+		else
+			return basic_io_scatter_t<std::remove_const_t<char_type>>{s,nm1};
+	}
+	else
+	{
+static_assert(not_char_literal,"The type is an array but not char array literal. Reject.");
+		return;
+	}
 }
 
 template<std::integral T>
@@ -110,10 +143,11 @@ inline constexpr auto print_alias_define(io_alias_t,char_type (&s)[n]) noexcept
 	constexpr bool not_char_literal{::std::is_const_v<char_type>};
 	if constexpr(not_char_literal)
 	{
+		constexpr std::size_t nm1{n-1};
 		if constexpr(n==2)
 			return manipulators::chvw_t<std::remove_const_t<char_type>>{*s};
 		else
-			return basic_io_scatter_t<std::remove_const_t<char_type>>{s,n-1};
+			return basic_io_scatter_t<std::remove_const_t<char_type>>{s,nm1};
 	}
 	else
 	{
@@ -144,6 +178,46 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,man
 	using unsigned_char_type = std::make_unsigned_t<char_type>;
 	*iter=static_cast<char_type>(static_cast<unsigned_char_type>(ch.reference));
 	return ++iter;
+}
+
+template<std::integral char_type,std::size_t N>
+inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,::fast_io::manipulators::small_scatter_t<char_type,N>>) noexcept
+{
+	return N;
+}
+
+namespace details
+{
+
+template<std::integral char_type>
+inline constexpr char_type* small_scatter_print_reserve_define_impl(char_type* iter,char_type const* base,std::size_t len) noexcept
+{
+	return ::fast_io::details::non_overlapped_copy_n(base,len,iter);
+}
+
+}
+
+template<std::integral char_type,std::size_t N>
+inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io::manipulators::small_scatter_t<char_type,N>>,
+	char_type* iter,
+	::fast_io::manipulators::small_scatter_t<char_type,N> scatter) noexcept
+{
+	
+	return ::fast_io::details::small_scatter_print_reserve_define_impl(iter,scatter.base,scatter.len);
+}
+
+template<std::integral char_type,std::size_t N>
+inline constexpr std::size_t print_reserve_precise_size(io_reserve_type_t<char_type,::fast_io::manipulators::small_scatter_t<char_type,N>>,
+	::fast_io::manipulators::small_scatter_t<char_type,N> scatter) noexcept
+{
+	return scatter.len;
+}
+
+template<std::integral char_type,std::size_t N>
+inline constexpr char_type* print_reserve_precise_define(io_reserve_type_t<char_type,::fast_io::manipulators::small_scatter_t<char_type,N>>,
+	char_type* iter,::std::size_t,::fast_io::manipulators::small_scatter_t<char_type,N> scatter) noexcept
+{
+	return ::fast_io::details::small_scatter_print_reserve_define_impl(iter,scatter.base,scatter.len);
 }
 
 }

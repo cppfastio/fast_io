@@ -38,9 +38,6 @@ inline environ_timezone_name environ_localtimezone_impl() noexcept
 
 struct environ_local_timezone
 {
-#ifdef __cpp_static_call_operator
-	static
-#endif
 	inline environ_timezone_name operator()() noexcept
 	{
 		return ::fast_io::details::environ_localtimezone_impl();

@@ -70,7 +70,7 @@ public:
 	std::size_t __ebs_;
 	char_type* __intbuf_;
 	std::size_t __ibs_;
-	std::FILE* __file_;
+	FILE* __file_;
 	const std::codecvt<char_type, char, state_type>* __cv_;
 	state_type __st_;
 	state_type __st_last_;
@@ -89,16 +89,16 @@ template<typename char_type,typename traits_type>
 inline constexpr std::size_t libcxx_om_location{__builtin_offsetof(libcxx_basic_filebuf_model<char_type,traits_type>,__om_)};
 
 template<typename char_type,typename traits_type>
-inline std::FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
-	std::FILE* fp{};
+	FILE* fp{};
 	// we can only do this or ubsanitizer will complain. Do not do down_cast
 	::fast_io::details::my_memcpy(__builtin_addressof(fp),reinterpret_cast<std::byte*>(fbuf)+libcxx_fp_location<char_type,traits_type>,sizeof(fp));
 	return fp;
 }
 
 template<typename char_type,typename traits_type>
-inline std::FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
 	if(fbuf==nullptr)
 		return nullptr;
@@ -108,7 +108,7 @@ inline std::FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexc
 
 template<typename T>
 requires (std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>)
-inline std::FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
+inline FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
 {
 #ifdef __cpp_rtti
 	using char_type = typename T::char_type;
@@ -139,7 +139,7 @@ inline std::FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
 }
 
 template<typename char_type,typename traits_type>
-inline void fp_hack_open(std::basic_filebuf<char_type,traits_type>* fb,std::FILE* fp,std::ios::openmode mode) noexcept
+inline void fp_hack_open(std::basic_filebuf<char_type,traits_type>* fb,FILE* fp,std::ios::openmode mode) noexcept
 {
 	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+libcxx_om_location<char_type,traits_type>,__builtin_addressof(mode),sizeof(mode));
 	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+libcxx_fp_location<char_type,traits_type>,__builtin_addressof(fp),sizeof(fp));

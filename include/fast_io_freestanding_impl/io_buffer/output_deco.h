@@ -59,20 +59,28 @@ inline constexpr void iobuf_output_flush_impl_deco(T handle,decot deco,
 }
 
 template<typename T,typename decot,std::integral char_type>
-inline constexpr void iobuf_overflow_impl_deco(T handle,decot deco,
+inline constexpr void iobuf_output_constant_flush_prepare_impl_deco(T handle,decot deco,
 	basic_io_buffer_pointers<char_type>& pointers,
 	basic_io_buffer_pointers_no_curr<typename T::char_type>& external_buffer,
-	char_type ch,std::size_t bfsz)
+	std::size_t bfsz)
 {
 	if(pointers.buffer_begin==nullptr)
 	{
-		pointers.buffer_end=(pointers.buffer_curr=pointers.buffer_begin=
-		allocate_iobuf_space<char_type>(bfsz))+bfsz;
+		iobuf_write_allocate_buffer_impl(pointers,bfsz);
 	}
 	else
 	{
 		iobuf_output_flush_impl_deco(handle,deco,pointers,external_buffer,bfsz);
 	}
+}
+
+template<typename T,typename decot,std::integral char_type>
+inline constexpr void iobuf_overflow_impl_deco(T handle,decot deco,
+	basic_io_buffer_pointers<char_type>& pointers,
+	basic_io_buffer_pointers_no_curr<typename T::char_type>& external_buffer,
+	char_type ch,std::size_t bfsz)
+{
+	iobuf_output_constant_flush_prepare_impl_deco(handle,deco,pointers,external_buffer,bfsz);
 	*pointers.buffer_curr=ch;
 	++pointers.buffer_curr;
 }

@@ -8,6 +8,18 @@ struct win32_timezone_name
 	std::size_t position{183};
 };
 
+enum win32_timezone_family
+{
+registry,
+gettimezoneinformation,
+#ifdef __BIONIC__
+//Intel pintool does not support registry api
+native = gettimezoneinformation
+#else
+native = registry
+#endif
+};
+
 namespace win32::details
 {
 #include"win32_regtz_to_ianatz.h"
@@ -58,82 +70,97 @@ inline constexpr win32_timezone_name find_win32_regtz_position_impl(T const* str
 	return {static_cast<std::size_t>(it-first)};
 }
 
-template<win32_family family>
+template<win32_timezone_family tzfamily,win32_family family>
 inline win32_timezone_name win32_localtimezone_impl() noexcept
 {
 	using api_char_type = std::conditional_t<family==win32_family::ansi_9x,char8_t,char16_t>;
-	::std::uintptr_t k;
-	::std::int_least32_t win32retcode;
-	if constexpr(family==win32_family::ansi_9x)
+	if constexpr(tzfamily == win32_timezone_family::gettimezoneinformation)
 	{
-		win32retcode=::fast_io::win32::RegOpenKeyA(0x80000002 /*HKEY_LOCAL_MACHINE*/,u8"SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation",__builtin_addressof(k));
+		static_assert(tzfamily != win32_timezone_family::gettimezoneinformation
+			|| family!=win32_family::ansi_9x);
+		::fast_io::win32::time_zone_information tzi{};
+		::std::uint_least32_t retval{::fast_io::win32::GetTimeZoneInformation(__builtin_addressof(tzi))};
+		if(retval==UINT_LEAST32_MAX)
+		{
+			throw_win32_error();
+		}
+		std::size_t const standardnamesize{::fast_io::cstr_nlen(tzi.StandardName,sizeof(tzi.StandardName))};
+		return ::fast_io::win32::details::find_win32_regtz_position_impl(tzi.StandardName,standardnamesize);
 	}
 	else
 	{
-		win32retcode=::fast_io::win32::RegOpenKeyW(0x80000002 /*HKEY_LOCAL_MACHINE*/,u"SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation",__builtin_addressof(k));
-	}
-	if(win32retcode)
-	{
-		return {};
-	}
-	constexpr
-		::std::size_t n{128};
-	api_char_type buffer[n];
-	constexpr std::uint_least32_t bfbytes{n*sizeof(api_char_type)};
-	::std::uint_least32_t cbdata{bfbytes};
-	{
-		::fast_io::win32::details::win32_registry_guard guard(k);
+		::std::uintptr_t k;
+		::std::int_least32_t win32retcode;
 		if constexpr(family==win32_family::ansi_9x)
 		{
-			win32retcode=::fast_io::win32::RegQueryValueExA(k,u8"TimeZoneKeyName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
+			win32retcode=::fast_io::win32::RegOpenKeyA(0x80000002 /*HKEY_LOCAL_MACHINE*/,u8"SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation",__builtin_addressof(k));
 		}
 		else
 		{
-			win32retcode=::fast_io::win32::RegQueryValueExW(k,u"TimeZoneKeyName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
+			win32retcode=::fast_io::win32::RegOpenKeyW(0x80000002 /*HKEY_LOCAL_MACHINE*/,u"SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation",__builtin_addressof(k));
 		}
 		if(win32retcode)
 		{
-			cbdata=bfbytes;
+			return {};
+		}
+		constexpr
+			::std::size_t n{128};
+		api_char_type buffer[n];
+		constexpr std::uint_least32_t bfbytes{n*sizeof(api_char_type)};
+		::std::uint_least32_t cbdata{bfbytes};
+		{
+			::fast_io::win32::details::win32_registry_guard guard(k);
 			if constexpr(family==win32_family::ansi_9x)
 			{
-				win32retcode=::fast_io::win32::RegQueryValueExA(k,u8"StandardName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
+				win32retcode=::fast_io::win32::RegQueryValueExA(k,u8"TimeZoneKeyName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
 			}
 			else
 			{
-				win32retcode=::fast_io::win32::RegQueryValueExW(k,u"StandardName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
+				win32retcode=::fast_io::win32::RegQueryValueExW(k,u"TimeZoneKeyName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
 			}
 			if(win32retcode)
 			{
-				return {};
+				cbdata=bfbytes;
+				if constexpr(family==win32_family::ansi_9x)
+				{
+					win32retcode=::fast_io::win32::RegQueryValueExA(k,u8"StandardName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
+				}
+				else
+				{
+					win32retcode=::fast_io::win32::RegQueryValueExW(k,u"StandardName",nullptr,nullptr,buffer,__builtin_addressof(cbdata));
+				}
+				if(win32retcode)
+				{
+					return {};
+				}
 			}
 		}
+		if constexpr(sizeof(api_char_type)!=1u)
+		{
+			cbdata/=sizeof(api_char_type);
+		}
+		if(!cbdata)
+		{
+			return {};
+		}
+		std::size_t const stringlen{static_cast<std::size_t>(cbdata-1u)};
+		return ::fast_io::win32::details::find_win32_regtz_position_impl(buffer,stringlen);
 	}
-	if constexpr(sizeof(api_char_type)!=1u)
-	{
-		cbdata/=sizeof(api_char_type);
-	}
-	if(!cbdata)
-	{
-		return {};
-	}
-	std::size_t const stringlen{static_cast<std::size_t>(cbdata-1u)};
-	return ::fast_io::win32::details::find_win32_regtz_position_impl(buffer,stringlen);
 }
 
 }
 
-template<win32_family family>
-struct basic_win32_local_timezone
+template<win32_timezone_family tzfamily,win32_family family>
+struct basic_win32_family_local_timezone
 {
-#ifdef __cpp_static_call_operator
-	static
-#endif
 	inline win32_timezone_name operator()() noexcept
 	{
-		return ::fast_io::win32::details::win32_localtimezone_impl<family>();
+		return ::fast_io::win32::details::win32_localtimezone_impl<tzfamily,family>();
 	}
 };
 
+template<win32_family family>
+using basic_win32_local_timezone = basic_win32_family_local_timezone<win32_timezone_family::native,family>;
 using win32_local_timezone_9xa = basic_win32_local_timezone<::fast_io::win32_family::ansi_9x>;
 using win32_local_timezone_ntw = basic_win32_local_timezone<::fast_io::win32_family::wide_nt>;
 using win32_local_timezone = basic_win32_local_timezone<::fast_io::win32_family::native>;
