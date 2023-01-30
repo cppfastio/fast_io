@@ -1505,4 +1505,187 @@ __asm__("DbgPrintEx")
 #endif
 ;
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlCreateProcessParameters(rtl_user_process_parameters**,unicode_string*,unicode_string*,unicode_string*,unicode_string*,void*,unicode_string*,unicode_string*,unicode_string*,unicode_string*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlCreateProcessParameters@40")
+#else
+__asm__("_RtlCreateProcessParameters@40")
+#endif
+#else
+__asm__("RtlCreateProcessParameters")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlCreateProcessParametersEx(rtl_user_process_parameters**,unicode_string*,unicode_string*,unicode_string*,unicode_string*,void*,unicode_string*,unicode_string*,unicode_string*,unicode_string*,::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlCreateProcessParametersEx@44")
+#else
+__asm__("_RtlCreateProcessParametersEx@44")
+#endif
+#else
+__asm__("RtlCreateProcessParametersEx")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlDestroyProcessParameters(rtl_user_process_parameters*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlDestroyProcessParameters@4")
+#else
+__asm__("_RtlDestroyProcessParameters@4")
+#endif
+#else
+__asm__("RtlDestroyProcessParameters")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+NtCreateUserProcess(void*,void*,::std::uint_least32_t,::std::uint_least32_t,object_attributes*,object_attributes*,::std::uint_least32_t,::std::uint_least32_t,rtl_user_process_parameters*,ps_create_info*,ps_attribute_list*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("NtCreateUserProcess@44")
+#else
+__asm__("_NtCreateUserProcess@44")
+#endif
+#else
+__asm__("NtCreateUserProcess")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwCreateUserProcess(void*,void*,::std::uint_least32_t,::std::uint_least32_t,object_attributes*,object_attributes*,::std::uint_least32_t,::std::uint_least32_t,rtl_user_process_parameters*,ps_create_info*,ps_attribute_list*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwCreateUserProcess@44")
+#else
+__asm__("_ZwCreateUserProcess@44")
+#endif
+#else
+__asm__("ZwCreateUserProcess")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwCreateUserProcess(void*,void*,::std::uint_least32_t,::std::uint_least32_t,object_attributes*,object_attributes*,::std::uint_least32_t,::std::uint_least32_t,rtl_user_process_parameters*,ps_create_info*,ps_attribute_list*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwCreateUserProcess@44")
+#else
+__asm__("_ZwCreateUserProcess@44")
+#endif
+#else
+__asm__("ZwCreateUserProcess")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlCreateUserProcess(unicode_string*,::std::uint_least32_t,rtl_user_process_parameters*,security_descriptor*,security_descriptor*,void*,char unsigned,void*,void*,rtl_user_process_information*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlCreateUserProcess@40")
+#else
+__asm__("_RtlCreateUserProcess@40")
+#endif
+#else
+__asm__("RtlCreateUserProcess")
+#endif
+#endif
+;
+
+
 }

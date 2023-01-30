@@ -440,5 +440,138 @@ struct rtl_user_process_parameters
 	std::uint_least32_t ProcessGroupId;
 	std::uint_least32_t LoaderThreads;
 };
+enum class ps_create_state
+{
+PsCreateInitialState,
+PsCreateFailOnFileOpen,
+PsCreateFailOnSectionCreate,
+PsCreateFailExeFormat,
+PsCreateFailMachineMismatch,
+PsCreateFailExeName, // Debugger specified
+PsCreateSuccess,
+PsCreateMaximumStates
+};
+
+struct ps_create_info
+{
+	::std::size_t Size;
+	ps_create_state State;
+	union
+	{
+		// PsCreateInitialState
+		struct
+		{
+			union
+			{
+				::std::uint_least32_t InitFlags;
+				struct
+				{
+					::std::uint_least8_t WriteOutputOnExit : 1;
+					::std::uint_least8_t DetectManifest : 1;
+					::std::uint_least8_t IFEOSkipDebugger : 1;
+					::std::uint_least8_t IFEODoNotPropagateKeyState : 1;
+					::std::uint_least8_t SpareBits1 : 4;
+					::std::uint_least8_t SpareBits2 : 8;
+					::std::uint_least16_t ProhibitedImageCharacteristics : 16;
+				} s1;
+			} u1;
+			::std::uint_least32_t AdditionalFileAccess;
+		} InitState;
+
+		// PsCreateFailOnSectionCreate
+		struct
+		{
+			void* FileHandle;
+		} FailSection;
+
+		// PsCreateFailExeFormat
+		struct
+		{
+			::std::uint_least16_t DllCharacteristics;
+		} ExeFormat;
+
+		// PsCreateFailExeName
+		struct
+		{
+			void* IFEOKey;
+		} ExeName;
+
+		// PsCreateSuccess
+		struct
+		{
+			union
+			{
+				::std::uint_least32_t OutputFlags;
+				struct
+				{
+					::std::uint_least8_t ProtectedProcess : 1;
+					::std::uint_least8_t AddressSpaceOverride : 1;
+					::std::uint_least8_t DevOverrideEnabled : 1; // From Image File Execution Options
+					::std::uint_least8_t ManifestDetected : 1;
+					::std::uint_least8_t ProtectedProcessLight : 1;
+					::std::uint_least8_t SpareBits1 : 3;
+					::std::uint_least8_t SpareBits2 : 8;
+					::std::uint_least16_t SpareBits3 : 16;
+				} s2;
+			} u2;
+			void* FileHandle;
+			void* SectionHandle;
+			::std::uint_least64_t UserProcessParametersNative;
+			::std::uint_least32_t UserProcessParametersWow64;
+			::std::uint_least32_t CurrentParameterFlags;
+			::std::uint_least64_t PebAddressNative;
+			::std::uint_least32_t PebAddressWow64;
+			::std::uint_least64_t ManifestAddress;
+			::std::uint_least32_t ManifestSize;
+		} SuccessState;
+	};
+};
+
+struct ps_attribute
+{
+	::std::uintptr_t Attribute;                // PROC_THREAD_ATTRIBUTE_XXX | PROC_THREAD_ATTRIBUTE_XXX modifiers, see ProcThreadAttributeValue macro and Windows Internals 6 (372)
+	::std::size_t Size;                        // Size of Value or *ValuePtr
+	union
+	{
+		::std::uintptr_t Value;                // Reserve 8 bytes for data (such as a Handle or a data pointer)
+		void* ValuePtr;                 // data pointer
+	};
+	::std::size_t* ReturnLength;               // Either 0 or specifies size of data returned to caller via "ValuePtr"
+};
+
+struct ps_attribute_list
+{
+	::std::size_t TotalLength;                 // sizeof(PS_ATTRIBUTE_LIST)
+	ps_attribute Attributes[2];				   // Depends on how many attribute entries should be supplied to NtCreateUserProcess
+};
+
+struct rtl_user_process_information
+{
+::std::uint_least32_t Length;
+void* Process;
+void* Thread;
+client_id ClientId;
+section_image_information ImageInformation;
+};
+
+struct acl
+{
+char unsigned AclRevision;
+char unsigned Sbz1;
+::std::uint_least16_t AclSize;
+::std::uint_least16_t AceCount;
+::std::uint_least16_t Sbz2;
+};
+
+struct security_descriptor
+{
+char unsigned Revision;
+char unsigned Sbz1;
+::std::uint_least16_t Control;
+void* Owner;
+void* Group;
+acl* Sacl;
+acl* Dacl;
+};
 
 }
