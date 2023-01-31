@@ -80,7 +80,7 @@ inline constexpr basic_os_c_str_or_nullptr<char_type> os_c_str_or_nullptr(char_t
 }
 
 template<std::integral ch_type>
-struct basic_os_c_str_n
+struct basic_os_c_str_with_known_size
 {
 	using char_type = ch_type;
 	char_type const* ptr{};
@@ -108,15 +108,15 @@ struct basic_os_c_str_n
 };
 
 template<std::integral char_type>
-inline constexpr basic_os_c_str_n<char_type> os_c_str_n(char_type const* cstr,std::size_t n) noexcept
+inline constexpr basic_os_c_str_with_known_size<char_type> os_c_str_with_known_size(char_type const* cstr,std::size_t n) noexcept
 {
 	return {cstr,n};
 }
 
-inline constexpr void os_c_str_n(decltype(nullptr),std::size_t)=delete;
+inline constexpr void os_c_str_with_known_size(decltype(nullptr),std::size_t)=delete;
 
 template<std::integral ch_type>
-struct basic_os_not_c_str_n
+struct basic_os_str_known_size_without_null_terminated
 {
 	using char_type = ch_type;
 	char_type const* ptr{};
@@ -140,18 +140,18 @@ struct basic_os_not_c_str_n
 };
 
 template<std::integral char_type>
-inline constexpr basic_os_not_c_str_n<char_type> os_not_c_str_n(char_type const* cstr,std::size_t n) noexcept
+inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_str_known_size_without_null_terminated(char_type const* cstr,std::size_t n) noexcept
 {
 	return {cstr,n};
 }
 
 template<std::integral char_type>
-inline constexpr basic_os_not_c_str_n<char_type> os_not_c_str_n(char_type const* cstr, char_type const* end) noexcept
+inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_str_known_size_without_null_terminated(char_type const* cstr, char_type const* end) noexcept
 {
 	return {cstr,static_cast<::std::size_t>(end-cstr)};
 }
 
-inline constexpr void os_not_c_str_n(decltype(nullptr),std::size_t)=delete;
+inline constexpr void os_str_known_size_without_null_terminated(decltype(nullptr),std::size_t)=delete;
 
 }
 
