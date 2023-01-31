@@ -129,9 +129,20 @@ namespace fast_io
 
 namespace manipulators
 {
+
+inline constexpr ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t> os_c_str_with_known_size(QString const& hstr) noexcept
+{
+	using char16_may_alias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= char16_t const*;
+	return {reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
+}
+
 template<typename T>
-requires (::fast_io::details::qt_qstring_view_like_impl<T>)
-inline constexpr ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t> os_c_str_with_known_size(T const& hstr) noexcept
+requires (::fast_io::details::qt_convertible_to_qstring_impl<T>&&!::std::same_as<::std::remove_cvref_t<T>,QString>&&::std::ranges::contiguous_range<T>)
+inline constexpr ::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<char16_t> os_str_known_size_without_null_terminated(T const& hstr) noexcept
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
