@@ -19,8 +19,8 @@ inline constexpr char_type const* my_rfind_dot(char_type const* first,char_type 
 template<bool stem,std::integral return_char_type,std::integral char_type>
 requires (sizeof(return_char_type)==sizeof(char_type))
 inline constexpr std::conditional_t<stem,
-	::fast_io::manipulators::basic_os_not_c_str_n<return_char_type>,
-	::fast_io::manipulators::basic_os_c_str_n<return_char_type>>
+	::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<return_char_type>,
+	::fast_io::manipulators::basic_os_c_str_with_known_size<return_char_type>>
 	find_dot_and_sep(char_type const* beg_ptr,std::size_t namlen) noexcept
 {
 	if constexpr(std::same_as<return_char_type,char_type>)

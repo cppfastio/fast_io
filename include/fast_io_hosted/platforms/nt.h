@@ -523,7 +523,7 @@ struct nt_family_at_entry:nt_at_entry
 struct nt_fs_dirent
 {
 	void* handle{};
-	::fast_io::manipulators::basic_os_c_str_n<char16_t> filename{};
+	::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t> filename{};
 };
 
 using zw_at_entry=nt_family_at_entry<nt_family::zw>;
