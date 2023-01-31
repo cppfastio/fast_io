@@ -539,10 +539,30 @@ struct ps_attribute
 	::std::size_t* ReturnLength;               // Either 0 or specifies size of data returned to caller via "ValuePtr"
 };
 
-struct ps_attribute_list
+struct
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
+#endif
+ps_attribute_list
 {
 	::std::size_t TotalLength;                 // sizeof(PS_ATTRIBUTE_LIST)
 	ps_attribute Attributes[2];				   // Depends on how many attribute entries should be supplied to NtCreateUserProcess
+};
+
+template<::std::size_t n>
+requires (n!=0)
+struct ps_attribute_list_array
+{
+	::std::size_t TotalLength{sizeof(ps_attribute_list_array<n>)};                 // sizeof(PS_ATTRIBUTE_LIST)
+	ps_attribute Attributes[n]{};				   // Depends on how many attribute entries should be supplied to NtCreateUserProcess
+	ps_attribute_list const* list_ptr() const noexcept
+	{
+		return reinterpret_cast<ps_attribute_list const*>(this);
+	}
+	ps_attribute_list* list_ptr() noexcept
+	{
+		return reinterpret_cast<ps_attribute_list*>(this);
+	}
 };
 
 struct rtl_user_process_information
