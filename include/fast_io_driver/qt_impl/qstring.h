@@ -130,28 +130,23 @@ namespace fast_io
 namespace manipulators
 {
 
-template<typename T>
-requires (::std::same_as<::std::remove_cvref_t<T>,QString>)
-inline ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t> os_c_str_with_known_size(T const& hstr) noexcept
-{
-	using char16_may_alias_const_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-	[[__gnu__::__may_alias__]]
-#endif
-	= char16_t const*;
-	return {reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
-}
 
 template<typename T>
-requires (::fast_io::details::qt_convertible_to_qstring_impl<T>&&!::std::same_as<::std::remove_cvref_t<T>,QString>&&::std::ranges::contiguous_range<T>)
-inline ::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<char16_t> os_str_known_size_without_null_terminated(T const& hstr) noexcept
+inline auto qt_as_filename(T const& hstr) noexcept
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
 	= char16_t const*;
-	return {reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
+	if constexpr(::std::same_as<::std::remove_cvref_t<T>,QString>)
+	{
+		return ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t>{reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
+	}
+	else
+	{
+		return ::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<char16_t>{reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
+	}
 }
 
 }
