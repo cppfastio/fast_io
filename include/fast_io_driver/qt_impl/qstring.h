@@ -131,7 +131,7 @@ namespace manipulators
 {
 template<typename T>
 requires (::fast_io::details::qt_qstring_view_like_impl<T>)
-inline constexpr ::fast_io::manipulators::os_c_str_with_known_size<char16_t> os_c_str_with_known_size(T const& hstr) noexcept
+inline constexpr ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t> os_c_str_with_known_size(T const& hstr) noexcept
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
