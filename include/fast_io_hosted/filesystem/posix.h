@@ -172,12 +172,12 @@ inline posix_at_entry at(posix_directory_entry ndet) noexcept
 	return posix_at_entry{details::dirp_to_fd(ndet.dirp)};
 }
 
-inline constexpr ::fast_io::manipulators::basic_os_c_str_n<char> native_filename(posix_directory_entry pioe) noexcept
+inline constexpr ::fast_io::manipulators::basic_os_c_str_with_known_size<char> native_filename(posix_directory_entry pioe) noexcept
 {
 	return {pioe.entry->d_name,pioe.d_namlen};
 }
 
-inline ::fast_io::manipulators::basic_os_c_str_n<char8_t> u8filename(posix_directory_entry pioe) noexcept
+inline ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> u8filename(posix_directory_entry pioe) noexcept
 {
 	using char8_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)

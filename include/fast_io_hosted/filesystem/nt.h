@@ -199,7 +199,7 @@ inline constexpr nt_at_entry at(nt_directory_entry ndet) noexcept
 	return nt_at_entry{ndet.entry->d_handle};
 }
 
-inline constexpr ::fast_io::manipulators::basic_os_c_str_n<char16_t> native_filename(nt_directory_entry pioe) noexcept
+inline constexpr ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t> native_filename(nt_directory_entry pioe) noexcept
 {
 	auto& ent{*pioe.entry};
 	return {ent.native_d_name,ent.native_d_namlen};
@@ -211,7 +211,7 @@ inline constexpr nt_fs_dirent drt(nt_directory_entry pioe) noexcept
 	return nt_fs_dirent{ent.d_handle,{ent.native_d_name,ent.native_d_namlen}};
 }
 
-inline constexpr ::fast_io::manipulators::basic_os_c_str_n<char8_t> u8filename(nt_directory_entry pioe) noexcept
+inline constexpr ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> u8filename(nt_directory_entry pioe) noexcept
 {
 	auto& ent{*pioe.entry};
 	return {ent.u8d_name,ent.u8d_namlen};
@@ -408,7 +408,7 @@ inline basic_nt_family_recursive_directory_iterator<family,StackType>& operator+
 			if((native_d_namlen==1&&*native_d_name_ptr==u'.')||(native_d_namlen==2&&*native_d_name_ptr==u'.'&&native_d_name_ptr[1]==u'.'))
 				continue;
 			prdit.stack.emplace_back(nt_at_entry{prdit.stack.empty()?prdit.root_handle:prdit.stack.back().handle},
-				::fast_io::manipulators::basic_os_c_str_n<char16_t>{native_d_name_ptr,native_d_namlen},
+				::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t>{native_d_name_ptr,native_d_namlen},
 				open_mode::directory);
 		}
 		return prdit;
@@ -446,7 +446,7 @@ inline basic_nt_family_recursive_directory_iterator<family,StackType> begin(basi
 		else
 		{
 			prdit.stack.emplace_back(nt_at_entry{prdit.root_handle},
-				::fast_io::manipulators::basic_os_c_str_n<char16_t>{native_d_name_ptr,native_d_namlen},
+				::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t>{native_d_name_ptr,native_d_namlen},
 				open_mode::directory);
 		}
 	}

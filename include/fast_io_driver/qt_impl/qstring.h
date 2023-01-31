@@ -124,4 +124,27 @@ inline constexpr io_strlike_reference_wrapper<char16_t,QString> io_strlike_ref(:
 	return {__builtin_addressof(hstr)};
 }
 
+namespace manipulators
+{
+
+template<typename T>
+inline auto qt_as_filename(T const& hstr) noexcept
+{
+	using char16_may_alias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= char16_t const*;
+	if constexpr(::std::same_as<::std::remove_cvref_t<T>,QString>)
+	{
+		return ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t>{reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
+	}
+	else
+	{
+		return ::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<char16_t>{reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
+	}
+}
+
+}
+
 }
