@@ -124,12 +124,8 @@ inline constexpr io_strlike_reference_wrapper<char16_t,QString> io_strlike_ref(:
 	return {__builtin_addressof(hstr)};
 }
 
-namespace fast_io
-{
-
 namespace manipulators
 {
-
 
 template<typename T>
 inline auto qt_as_filename(T const& hstr) noexcept
@@ -147,8 +143,6 @@ inline auto qt_as_filename(T const& hstr) noexcept
 	{
 		return ::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<char16_t>{reinterpret_cast<char16_may_alias_const_ptr>(hstr.data()),static_cast<std::size_t>(hstr.size())};
 	}
-}
-
 }
 
 }
