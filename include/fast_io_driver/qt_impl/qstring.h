@@ -144,7 +144,7 @@ inline ::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t> os_c_st
 
 template<typename T>
 requires (::fast_io::details::qt_convertible_to_qstring_impl<T>&&!::std::same_as<::std::remove_cvref_t<T>,QString>&&::std::ranges::contiguous_range<T>)
-inline ::fast_io::manipulators::basic_str_known_size_without_null_terminated<char16_t> os_str_known_size_without_null_terminated(T const& hstr) noexcept
+inline ::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<char16_t> os_str_known_size_without_null_terminated(T const& hstr) noexcept
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
