@@ -231,6 +231,13 @@ struct basic_avio_buffer_context
 
 namespace details
 {
+
+template<typename T>
+concept has_file_status_impl = requires(T t)
+{
+	{status(t)}->std::same_as<::fast_io::posix_file_status>;
+};
+
 template<typename rftype>
 inline basic_avio_buffer_context<typename rftype::char_type> create_avio_context_impl(rftype rf)
 {
@@ -263,13 +270,13 @@ inline basic_avio_buffer_context<typename rftype::char_type> create_avio_context
 		::memcpy(__builtin_addressof(rft),__builtin_addressof(opaque),sizeof(rftype));
 		try
 		{
-			::fast_io::read_all(rft,reinterpret_cast<char_type_ptr>(ptr),reinterpret_cast<char_type_ptr>(ptr)+bufsize);
+			auto ret{read(rft,reinterpret_cast<char_type_ptr>(ptr),reinterpret_cast<char_type_ptr>(ptr)+bufsize)-reinterpret_cast<char_type_ptr>(ptr)};
+			return static_cast<int>(ret);
 		}
 		catch(...)
 		{
 			return -1;
 		}
-		return 0;
 	},
 	[](void* opaque,uint8_t* ptr,int bufsize) noexcept ->int
 	{
@@ -283,7 +290,7 @@ inline basic_avio_buffer_context<typename rftype::char_type> create_avio_context
 		{
 			return -1;
 		}
-		return 0;
+		return bufsize;
 	},
 	[](void* opaque,int64_t offset,int whence) noexcept ->::std::int64_t
 	{
@@ -291,6 +298,25 @@ inline basic_avio_buffer_context<typename rftype::char_type> create_avio_context
 		::memcpy(__builtin_addressof(rft),__builtin_addressof(opaque),sizeof(rftype));
 		try
 		{
+			if(whence==AVSEEK_SIZE)
+			{
+				if constexpr(has_file_status_impl<rftype>)
+				{
+					auto sz{status(rft).size};
+					if constexpr(std::numeric_limits<decltype(sz)>::max()>INT64_MAX)
+					{
+						if(sz>INT64_MAX)
+						{
+							return -1;
+						}
+					}
+					return static_cast<::std::int64_t>(sz);
+				}
+				else
+				{
+					return -1;
+				}
+			}
 			return seek(rft,offset,static_cast<::fast_io::seekdir>(whence));
 		}
 		catch(...)
@@ -319,5 +345,69 @@ using avio_context_io_observer = basic_avio_context_io_observer<char>;
 using u8avio_context_io_observer = basic_avio_context_io_observer<char8_t>;
 using avio_context_file = basic_avio_context_file<char>;
 using u8avio_context_file = basic_avio_context_file<char8_t>;
+
+struct avformat_context_guard
+{
+	::AVFormatContext* pFormatCtx{};
+
+	explicit constexpr avformat_context_guard(::AVFormatContext* p) noexcept:pFormatCtx{p}{}
+
+	avformat_context_guard(avformat_context_guard const&)=delete;
+	avformat_context_guard& operator=(avformat_context_guard const&)=delete;
+
+	constexpr ::AVFormatContext* release() noexcept
+	{
+		auto temp{this->pFormatCtx};
+		this->pFormatCtx=nullptr;
+		return temp;
+	}
+
+	void close() noexcept
+	{
+		if(this->pFormatCtx==nullptr)
+		{
+			return;
+		}
+		::fast_io::noexcept_call(avformat_free_context,pFormatCtx);
+		this->pFormatCtx=nullptr;
+	}
+
+	~avformat_context_guard()
+	{
+		this->close();
+	}	
+};
+
+struct avformat_input_guard
+{
+	::AVFormatContext** ppFormatCtx{};
+
+	explicit constexpr avformat_input_guard(::AVFormatContext** pp) noexcept:ppFormatCtx{pp}{}
+
+	avformat_input_guard(avformat_input_guard const&)=delete;
+	avformat_input_guard& operator=(avformat_input_guard const&)=delete;
+
+	constexpr ::AVFormatContext** release() noexcept
+	{
+		auto temp{this->ppFormatCtx};
+		this->ppFormatCtx=nullptr;
+		return temp;
+	}
+
+	void close() noexcept
+	{
+		if(ppFormatCtx==nullptr)
+		{
+			return;
+		}
+		::fast_io::noexcept_call(avformat_close_input,ppFormatCtx);
+		this->ppFormatCtx=nullptr;
+	}
+
+	~avformat_input_guard()
+	{
+		this->close();
+	}	
+};
 
 }
