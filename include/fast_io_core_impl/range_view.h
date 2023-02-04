@@ -73,53 +73,72 @@ inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<cha
 	}
 }
 
-namespace details {
-template <typename char_type, typename rg>
-concept dynamic_reserve_printable_range = ::std::integral<char_type> &&
-	(::fast_io::reserve_printable<char_type, ::std::ranges::range_value_t<rg>> || ::fast_io::dynamic_reserve_printable<char_type, ::std::ranges::range_value_t<rg>>) &&
-	(::std::ranges::contiguous_range<rg> || ::std::ranges::sized_range<rg>);
+namespace manipulators {
+template <::std::ranges::range rg, ::std::integral char_type>
+inline constexpr auto rgvw(rg&& r, char_type const (&sep)[2])
+{
+	using ::std::to_address;
+	using ::std::ranges::begin;
+	using ::std::ranges::end;
+	using ::std::ranges::size;
+	using ::fast_io::sized_range_view_t;
+	using ::fast_io::range_view_t;
+	using value_type = decltype(io_print_alias(*begin(r)));
+	constexpr bool is_contiguous_range = ::std::ranges::contiguous_range<rg>;
+	constexpr bool is_sized_range = ::std::ranges::sized_range<rg>;
+	auto printed = ::fast_io::basic_io_scatter_t<char_type>{ reinterpret_cast<char_type const*>(__builtin_addressof(sep)), 1 };
+	if constexpr (::fast_io::reserve_printable<char_type, value_type>)
+	{
+		if constexpr (is_contiguous_range && is_sized_range)
+			return sized_range_view_t{ printed, to_address(begin(r)), size(r) };
+		else if constexpr (is_contiguous_range)
+			return sized_range_view_t{ printed, to_address(begin(r)), to_address(end(r)) - to_address(begin(r)) };
+		else if constexpr (is_sized_range)
+			return sized_range_view_t{ printed, begin(r), size(r) };
+		else
+			return range_view_t{ printed, begin(r), end(r) };
+	}
+	else
+	{
+		if constexpr (is_contiguous_range)
+			return range_view_t{ printed, to_address(begin(r)), to_address(end(r)) };
+		else
+			return range_view_t{ printed, begin(r), end(r) };
+	}
 }
 
-namespace manipulators {
-template <typename rg, ::fast_io::constructible_to_os_c_str T>
-	requires ::fast_io::details::dynamic_reserve_printable_range<typename decltype(print_alias_define(io_alias, ::std::remove_cvref_t<T>{}))::value_type, rg>
+template <::std::ranges::range rg, ::fast_io::constructible_to_os_c_str T>
 inline constexpr auto rgvw(rg&& r, T&& sep)
 {
-	if constexpr (::std::ranges::contiguous_range<rg> && ::std::ranges::sized_range<rg>)
-		return ::fast_io::sized_range_view_t{ print_alias_define(io_alias, sep), ::std::to_address(::std::ranges::begin(r)), ::std::ranges::size(r) };
-	else if constexpr (::std::ranges::contiguous_range<rg>)
-		return ::fast_io::sized_range_view_t{ print_alias_define(io_alias, sep), ::std::to_address(::std::ranges::begin(r)), (::std::to_address(::std::ranges::end(r)) - ::std::to_address(::std::ranges::begin(r))) / sizeof(::std::ranges::range_value_t<rg>) };
+	using ::std::to_address;
+	using ::std::ranges::begin;
+	using ::std::ranges::end;
+	using ::std::ranges::size;
+	using ::fast_io::sized_range_view_t;
+	using ::fast_io::range_view_t;
+	using value_type = decltype(io_print_alias(*begin(r)));
+	constexpr bool is_contiguous_range = ::std::ranges::contiguous_range<rg>;
+	constexpr bool is_sized_range = ::std::ranges::sized_range<rg>;
+	decltype(auto) printed = print_alias_define(io_alias, sep);
+	using char_type = typename decltype(printed)::value_type;
+	if constexpr (::fast_io::reserve_printable<char_type, value_type>)
+	{
+		if constexpr (is_contiguous_range && is_sized_range)
+			return sized_range_view_t{ printed, to_address(begin(r)), size(r) };
+		else if constexpr (is_contiguous_range)
+			return sized_range_view_t{ printed, to_address(begin(r)), to_address(end(r)) - to_address(begin(r)) };
+		else if constexpr (is_sized_range)
+			return sized_range_view_t{ printed, begin(r), size(r) };
+		else
+			return range_view_t{ printed, begin(r), end(r) };
+	}
 	else
-		return ::fast_io::sized_range_view_t{ print_alias_define(io_alias, sep), ::std::ranges::begin(r), ::std::ranges::size(r) };
-}
-template <typename rg, ::fast_io::constructible_to_os_c_str T>
-	requires (!::fast_io::details::dynamic_reserve_printable_range<typename decltype(print_alias_define(io_alias, ::std::remove_cvref_t<T>{}))::value_type, rg>)
-inline constexpr auto rgvw(rg&& r, T&& sep)
-{
-	if constexpr (::std::ranges::contiguous_range<rg>)
-		return ::fast_io::range_view_t{ print_alias_define(io_alias, sep), ::std::to_address(::std::ranges::begin(r)), ::std::to_address(::std::ranges::end(r))};
-	else
-		return ::fast_io::range_view_t{ print_alias_define(io_alias, sep), ::std::ranges::begin(r), ::std::ranges::end(r) };
-}
-template <::std::integral char_type, typename rg>
-	requires ::fast_io::details::dynamic_reserve_printable_range<char_type, rg>
-inline constexpr auto rgvw(rg&& r, char_type const (&sep)[2])
-{
-	if constexpr (::std::ranges::contiguous_range<rg> && ::std::ranges::sized_range<rg>)
-		return ::fast_io::sized_range_view_t{ ::fast_io::basic_io_scatter_t<char_type>{reinterpret_cast<char_type const*>(__builtin_addressof(sep)), 1}, ::std::to_address(::std::ranges::begin(r)), ::std::ranges::size(r)};
-	else if constexpr (::std::ranges::contiguous_range<rg>)
-		return ::fast_io::sized_range_view_t{ ::fast_io::basic_io_scatter_t<char_type>{reinterpret_cast<char_type const*>(__builtin_addressof(sep)), 1}, ::std::to_address(::std::ranges::begin(r)), (::std::to_address(::std::ranges::end(r)) - ::std::to_address(::std::ranges::begin(r))) / sizeof(::std::ranges::range_value_t<rg>) };
-	else
-		return ::fast_io::sized_range_view_t{ ::fast_io::basic_io_scatter_t<char_type>{reinterpret_cast<char_type const*>(__builtin_addressof(sep)), 1}, ::std::ranges::begin(r), ::std::ranges::size(r) };
-}
-template <::std::integral char_type, typename rg>
-	requires (!::fast_io::details::dynamic_reserve_printable_range<char_type, rg>)
-inline constexpr auto rgvw(rg&& r, char_type const (&sep)[2])
-{
-	if constexpr (::std::ranges::contiguous_range<rg>)
-		return ::fast_io::range_view_t{ ::fast_io::basic_io_scatter_t<char_type>{reinterpret_cast<char_type const*>(__builtin_addressof(sep)), 1}, ::std::to_address(::std::ranges::begin(r)), ::std::to_address(::std::ranges::end(r)) };
-	else
-		return ::fast_io::range_view_t{ ::fast_io::basic_io_scatter_t<char_type>{reinterpret_cast<char_type const*>(__builtin_addressof(sep)), 1}, ::std::ranges::begin(r), ::std::ranges::end(r) };
+	{
+		if constexpr (is_contiguous_range)
+			return range_view_t{ printed, to_address(begin(r)), to_address(end(r)) };
+		else
+			return range_view_t{ printed, begin(r), end(r) };
+	}
 }
 
 }
