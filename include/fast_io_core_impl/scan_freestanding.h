@@ -259,7 +259,7 @@ template<buffer_input_stream input,typename T>
 			ibuffer_set_curr(in,curr_ptr+n);
 			return true;
 		}
-		else if constexpr(contiguous_scanable<char_type,T>)
+		else if constexpr(contiguous_scannable<char_type,T>)
 		{
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
@@ -280,7 +280,7 @@ template<buffer_input_stream input,typename T>
 			}
 			return true;
 		}
-		else if constexpr(context_scanable<char_type,T>)
+		else if constexpr(context_scannable<char_type,T>)
 		{
 			typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 			auto curr{ibuffer_curr(in)};
@@ -307,8 +307,8 @@ template<buffer_input_stream input,typename T>
 		}
 		else
 		{
-			constexpr bool not_scanable{context_scanable<char_type,T>};
-			static_assert(not_scanable,"type not scannable. need context_scanable");
+			constexpr bool not_scannable{context_scannable<char_type,T>};
+			static_assert(not_scannable,"type not scannable. need context_scannable");
 			return false;
 		}
 	}
@@ -383,7 +383,7 @@ template<buffer_input_stream input,typename T>
 			}
 			return true;
 		}
-		else if constexpr(contiguous_scanable<char_type,T>&&context_scanable<char_type,T>)
+		else if constexpr(contiguous_scannable<char_type,T>&&context_scannable<char_type,T>)
 		{
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
@@ -405,7 +405,7 @@ template<buffer_input_stream input,typename T>
 			}
 			return true;
 		}
-		else if constexpr(context_scanable<char_type,T>)
+		else if constexpr(context_scannable<char_type,T>)
 		{
 			for(typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;;)
 			{
@@ -438,8 +438,8 @@ template<buffer_input_stream input,typename T>
 		}
 		else
 		{
-			constexpr bool not_scanable{context_scanable<char_type,T>};
-			static_assert(not_scanable,"type not scannable. need context_scanable");
+			constexpr bool not_scannable{context_scannable<char_type,T>};
+			static_assert(not_scannable,"type not scannable. need context_scannable");
 			return false;
 		}
 	}

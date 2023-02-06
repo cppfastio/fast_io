@@ -37,7 +37,7 @@ template<typename T>
 inline constexpr auto io_scan_alias(T&& t) noexcept
 {
 	using no_ref_t = std::remove_reference_t<T>;
-	if constexpr(alias_scanable<no_ref_t>)
+	if constexpr(alias_scannable<no_ref_t>)
 		return scan_alias_define(io_alias,::std::forward<T>(t));
 	else if constexpr(manipulator<no_ref_t>)
 		return t;

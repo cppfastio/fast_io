@@ -134,11 +134,11 @@ inline constexpr ::fast_io::parse_result<char_type const*> parse_by_scan_impl(ch
 			return scan_precise_reserve_define(io_reserve_type<char_type,T>,first,t);
 		}
 	}
-	else if constexpr(::fast_io::contiguous_scanable<char_type,T>)
+	else if constexpr(::fast_io::contiguous_scannable<char_type,T>)
 	{
 		return scan_contiguous_define(io_reserve_type<char_type,T>,first,last,t);
 	}
-	else if constexpr(::fast_io::context_scanable<char_type,T>)
+	else if constexpr(::fast_io::context_scannable<char_type,T>)
 	{
 		typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 		auto [it,ec]=scan_context_define(io_reserve_type<char_type,T>,state,first,last,t);
@@ -151,8 +151,8 @@ inline constexpr ::fast_io::parse_result<char_type const*> parse_by_scan_impl(ch
 	}
 	else
 	{
-		constexpr bool not_scanable{context_scanable<char_type,T>};
-		static_assert(not_scanable,"type not scannable. need context_scanable");
+		constexpr bool not_scannable{context_scannable<char_type,T>};
+		static_assert(not_scannable,"type not scannable. need context_scannable");
 		return false;
 	}
 }
@@ -167,15 +167,15 @@ inline constexpr ::fast_io::parse_result<char_type const*> parse_by_scan(char_ty
 {
 	using mytype = decltype(io_scan_forward<char_type>(io_scan_alias(t)));
 	constexpr bool allscannable{::fast_io::precise_reserve_scannable<char_type,mytype>||
-		::fast_io::contiguous_scanable<char_type,mytype>||
-		::fast_io::context_scanable<char_type,mytype>};
+		::fast_io::contiguous_scannable<char_type,mytype>||
+		::fast_io::context_scannable<char_type,mytype>};
 	if constexpr(allscannable)
 	{
 		return ::fast_io::details::parse_by_scan_impl(first,last,io_scan_forward<char_type>(io_scan_alias(t)));
 	}
 	else
 	{
-static_assert(allscannable,"type not scannable. need context_scanable");
+static_assert(allscannable,"type not scannable. need context_scannable");
 	}
 }
 

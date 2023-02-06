@@ -4,13 +4,13 @@ namespace fast_io
 {
 
 template<typename char_type, typename T>
-concept contiguous_scanable = requires(char_type const* begin, char_type const* end, T t)
+concept contiguous_scannable = requires(char_type const* begin, char_type const* end, T t)
 {
 	{scan_contiguous_define(io_reserve_type<char_type,T>,begin,end,t)}->std::same_as<parse_result<char_type const*>>;
 };
 
 template<typename char_type, typename T>
-concept context_scanable = requires(char_type const* begin, char_type const* end, T t)
+concept context_scannable = requires(char_type const* begin, char_type const* end, T t)
 {
 	requires requires(typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type st)
 	{
@@ -59,7 +59,7 @@ concept scatter_printable=requires(char_type ch,T&& t)
 };
 
 template<typename T>
-concept alias_scanable=requires(T&& t)
+concept alias_scannable=requires(T&& t)
 {
 	scan_alias_define(io_alias,t);
 };
