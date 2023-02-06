@@ -230,7 +230,7 @@ inline constexpr std::size_t calculate_scatter_dynamic_reserve_size_with_scatter
 }
 
 template<typename char_type,typename T,typename ...Args>
-concept inplace_to_decay_detect = std::integral<char_type>&&(sizeof...(Args)!=0&&print_freestanding_decay_okay_character_type_no_status<char_type,Args...>&&(contiguous_scanable<char_type,T>||context_scanable<char_type,T>));
+concept inplace_to_decay_detect = std::integral<char_type>&&(sizeof...(Args)!=0&&print_freestanding_decay_okay_character_type_no_status<char_type,Args...>&&(contiguous_scannable<char_type,T>||context_scannable<char_type,T>));
 
 }
 
@@ -244,7 +244,7 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 		{
 			constexpr bool all_scatters{((scatter_printable<char_type,Args>)&&...)};
 			constexpr bool no_need_dynamic_reserve{((reserve_printable<char_type,Args>||scatter_printable<char_type,Args>)&&...)};
-			if constexpr(context_scanable<char_type,T>&&(!(contiguous_scanable<char_type,T>&&sizeof...(args)==1)))
+			if constexpr(context_scannable<char_type,T>&&(!(contiguous_scannable<char_type,T>&&sizeof...(args)==1)))
 			{
 				typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 				if constexpr(all_scatters)
@@ -264,7 +264,7 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 					::fast_io::details::inplace_to_decay_buffer_context_impl<char_type>(heap_buffer.ptr,state,t,args...);
 				}
 			}
-			else if constexpr(contiguous_scanable<char_type,T>)
+			else if constexpr(contiguous_scannable<char_type,T>)
 			{
 				if constexpr(all_scatters&&sizeof...(Args)==1)//crucial for performance
 				{
@@ -290,19 +290,19 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 		{
 			dynamic_io_buffer<char_type> buffer;
 			auto ref{io_ref(buffer)};
-			if constexpr(context_scanable<char_type,T>&&(!(contiguous_scanable<char_type,T>&&sizeof...(args)==1)))
+			if constexpr(context_scannable<char_type,T>&&(!(contiguous_scannable<char_type,T>&&sizeof...(args)==1)))
 			{
 				typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 				::fast_io::details::inplace_to_decay_context_impl(ref,state,t,args...);
 			}
-			else if constexpr(contiguous_scanable<char_type,T>)
+			else if constexpr(contiguous_scannable<char_type,T>)
 			{
 				::fast_io::print_freestanding_decay_no_status<false>(ref,args...);
 				::fast_io::details::deal_with_single_to<char_type>(buffer.buffer_begin,buffer.buffer_curr,t);
 			}
 			else
 			{
-				constexpr bool type_error{context_scanable<char_type,T>};
+				constexpr bool type_error{context_scannable<char_type,T>};
 				static_assert(type_error,"scan type error");
 			}
 		}
@@ -463,7 +463,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T to(Args&& ...args)
+[[nodiscard]] inline constexpr T to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char,T,Args...>};
 	if constexpr(failed)
@@ -478,7 +478,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T wto(Args&& ...args)
+[[nodiscard]] inline constexpr T wto(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<wchar_t,T,Args...>};
 	if constexpr(failed)
@@ -493,7 +493,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T u8to(Args&& ...args)
+[[nodiscard]] inline constexpr T u8to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char8_t,T,Args...>};
 	if constexpr(failed)
@@ -508,7 +508,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T u16to(Args&& ...args)
+[[nodiscard]] inline constexpr T u16to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char16_t,T,Args...>};
 	if constexpr(failed)
@@ -523,7 +523,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T u32to(Args&& ...args)
+[[nodiscard]] inline constexpr T u32to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char32_t,T,Args...>};
 	if constexpr(failed)
