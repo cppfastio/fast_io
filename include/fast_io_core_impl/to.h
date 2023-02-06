@@ -463,7 +463,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T to(Args&& ...args)
+[[nodiscard]] inline constexpr T to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char,T,Args...>};
 	if constexpr(failed)
@@ -478,7 +478,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T wto(Args&& ...args)
+[[nodiscard]] inline constexpr T wto(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<wchar_t,T,Args...>};
 	if constexpr(failed)
@@ -493,7 +493,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T u8to(Args&& ...args)
+[[nodiscard]] inline constexpr T u8to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char8_t,T,Args...>};
 	if constexpr(failed)
@@ -508,7 +508,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T u16to(Args&& ...args)
+[[nodiscard]] inline constexpr T u16to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char16_t,T,Args...>};
 	if constexpr(failed)
@@ -523,7 +523,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 }
 
 template<typename T,typename ...Args>
-inline constexpr T u32to(Args&& ...args)
+[[nodiscard]] inline constexpr T u32to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char32_t,T,Args...>};
 	if constexpr(failed)

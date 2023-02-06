@@ -4,7 +4,7 @@ namespace fast_io
 {
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -23,7 +23,7 @@ static_assert(type_error,"some types are not printable, so we cannot concat std:
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -42,7 +42,7 @@ static_assert(type_error,"some types are not printable, so we cannot concat std:
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -61,7 +61,7 @@ static_assert(type_error,"some types are not printable, so we cannot concat std:
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -80,7 +80,7 @@ static_assert(type_error,"some types are not printable, so we cannot concat std:
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -99,7 +99,7 @@ static_assert(type_error,"some types are not printable, so we cannot concat std:
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -118,7 +118,7 @@ static_assert(type_error,"some types are not printable, so we cannot concatln st
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -137,7 +137,7 @@ static_assert(type_error,"some types are not printable, so we cannot concatln st
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -156,7 +156,7 @@ static_assert(type_error,"some types are not printable, so we cannot concatln st
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
@@ -175,7 +175,7 @@ static_assert(type_error,"some types are not printable, so we cannot concatln st
 }
 
 template<typename ...Args>
-inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 constexpr
 #endif
