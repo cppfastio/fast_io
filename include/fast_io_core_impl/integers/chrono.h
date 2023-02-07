@@ -4,6 +4,7 @@
 
 Time output should strictly following ISO 8601
 2020-11-07T12:50:20Z
+2023-02-07T15:53:33+08:00
 
 */
 
@@ -62,7 +63,7 @@ inline constexpr char_type* chrono_two_digits_impl(char_type* it,I i) noexcept
 	}
 }
 
-template<::std::integral char_type,std::signed_integral integ>
+template<::std::integral char_type,::std::signed_integral integ>
 inline constexpr char_type* chrono_year_impl(char_type* it,integ i) noexcept
 {
 	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<integ>>;
@@ -82,5 +83,112 @@ inline constexpr char_type* chrono_year_impl(char_type* it,integ i) noexcept
 	return non_overlapped_copy_n(tb[rmd].element,2,it);
 }
 
+#if 0
+// ensure that end - begin >= 2
+template <::std::integral char_type, ::std::integral T>
+inline constexpr parse_code chrono_scan_two_digits_unsafe_impl(char_type const* begin, T& t) noexcept
+{
+	T retval{};
+	auto ch{ *begin };
+	if (!::fast_io::char_category::is_c_digit(ch)) [[unlikely]]
+		return parse_code::invalid;
+	retval += static_cast<T>(ch - char_literal_v<u8'0', char_type>) * 10;
+	++begin;
+	ch = *begin;
+	if (!::fast_io::char_category::is_c_digit(ch)) [[unlikely]]
+		return parse_code::invalid;
+	retval += static_cast<T>(ch - char_literal_v<u8'0', char_type>);
+	t = retval;
+	return parse_code::ok;
+}
+
+template <::std::integral char_type, ::std::signed_integral I>
+inline constexpr parse_result<char_type const*> chrono_scan_year_impl(char_type const* begin, char_type const* end, I& i) noexcept
+{
+	I retval{};
+	if (end - begin < 4) [[unlikely]]
+		return { end, parse_code::invalid };
+	[[maybe_unused]] bool sign{};
+	if (*begin == char_literal_v<u8'-', char_type>) [[unlikely]]
+	{
+		sign = true;
+		++begin;
+	}
+	if (::fast_io::char_category::is_c_digit(*(begin + 4))) [[unlikely]]
+	{
+		// if year is more than 4 digits
+		// then it's not allowed to have leading '0'
+		auto [itr, ec] = scan_int_contiguous_define_impl<10, true, false, false>(begin, end, retval);
+		if (ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else if (itr < begin + 4) [[unlikely]]
+			return { itr, parse_code::invalid };
+		else
+			begin = itr;
+	}
+	else
+	{
+		retval += static_cast<::std::int_least64_t>(*begin++ - char_literal_v<u8'0', char_type>) * 1000;
+		retval += static_cast<::std::int_least64_t>(*begin++ - char_literal_v<u8'0', char_type>) * 100;
+		retval += static_cast<::std::int_least64_t>(*begin++ - char_literal_v<u8'0', char_type>) * 10;
+		retval += static_cast<::std::int_least64_t>(*begin++ - char_literal_v<u8'0', char_type>);
+	}
+	i = sign ? -retval : retval;
+	return { begin, parse_code::ok };
+}
+
+template <::std::integral char_type>
+inline constexpr char_type const* find_none_c_digit(char_type const* begin, char_type const* end) noexcept
+{
+	// TODO
+	return begin;
+}
+
+template <::std::integral char_type, my_integral T>
+inline constexpr parse_result<char_type const*> chrono_scan_decimal_fraction_part_never_overflow_impl(char_type const* begin, char_type const* end, T& t) noexcept
+{
+	if (begin == end) [[unlikely]]
+		return { end, parse_code::invalid };
+	T retval{};
+	constexpr ::std::size_t digitsm1{ ::std::numeric_limits<T>::digits10 };
+	auto new_end{ begin + digitsm1 };
+	if (new_end > end) new_end = end;
+	auto [itr, ec] = scan_int_contiguous_define_impl<10, true, false, true>(begin, new_end, retval);
+	if (ec != parse_code::ok) [[unlikely]]
+		return { itr, ec };
+	if (begin == itr) [[unlikely]]
+		return { itr, parse_code::invalid };
+	::std::size_t zero_cnt{ digitsm1 - (itr - begin) };
+	for (::std::size_t i{}; i < zero_cnt; ++i)
+		retval *= 10;
+	if (itr != end && itr == new_end) [[unlikely]]
+	{
+		auto itr2 = find_none_c_digit(itr, end);
+		if (itr != itr2)
+		{
+			// need rounding
+			if (*itr < char_literal_v<u8'5', char_type>);
+			else if (*itr > char_literal_v<u8'5', char_type>)
+				++retval;
+			else
+			{
+				for (++itr; itr != itr2; ++itr)
+				{
+					if (*itr != char_literal_v<u8'0', char_type>)
+					{
+						++retval;
+						break;
+					}
+				}
+				if (retval % 2 == 1)
+					++retval;
+			}
+			itr = itr2;
+		}
+	}
+	t = retval;
+	return { itr, parse_code::ok };
+}
+#endif
 
 }
