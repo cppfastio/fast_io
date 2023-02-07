@@ -620,7 +620,7 @@ template<std::integral char_type>
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,iso8601_timestamp>) noexcept
 {
 //ISO 8601 timestamp example : 2021-01-03T10:29:56Z
-//ISO 8601 timestamp with timestamp : 2021-01-03T10:29:56.999999+99:99
+//ISO 8601 timestamp with timezone : 2021-01-03T10:29:56.999999+99:99
 	return print_reserve_size(io_reserve_type<char_type,std::int_least64_t>)+16+print_reserve_size(io_reserve_type<char_type,std::uint_least64_t>)+::fast_io::details::print_reserve_size_timezone_impl_v<char_type>+3+2;
 }
 
@@ -640,7 +640,6 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,iso
 	return details::print_reserve_iso8601_timestamp_impl(iter,timestamp);
 }
 
-
 inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t ftu64) noexcept
 {
 	::std::uint_least64_t seconds{ftu64/10000000ULL};
@@ -649,10 +648,35 @@ inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t 
 	return {static_cast<::std::int_least64_t>(seconds),static_cast<::std::uint_least64_t>(subseconds*mul_factor)};
 }
 #if 0
+enum class scan_iso8601_timestamp_context_phase : ::std::uint8_t
+{
+	year,
+	month,
+	day,
+	hours,
+	minutes,
+	seconds,
+	subseconds,
+	zone_hours,
+	zone_minutes,
+};
+
+enum class scan_integral_context_phase : ::std::uint_least8_t;
+
+template <::std::integral char_type>
+struct iso8601_timestamp_scan_state_t
+{
+	static inline constexpr ::std::size_t max_size{ ::std::max({::std::numeric_limits<int_least64_t>::digits10 + 1, ::std::numeric_limits<uint_least64_t>::digits10}) };
+	::fast_io::freestanding::array<char_type, max_size> buffer;
+	::std::uint_least8_t size{};
+	scan_iso8601_timestamp_context_phase tsp_phase{};
+	scan_integral_context_phase integral_phase{};
+};
+
 namespace details
 {
 
-template <::std::integral char_type, bool comma>
+template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	char_type const* begin, char_type const* end,
 	iso8601_timestamp& t) noexcept
@@ -667,33 +691,38 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 		return { end, parse_code::invalid };
 	if (*begin++ != char_literal_v<u8'-', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
-	if (chrono_scan_two_digits_unsafe_impl(begin, retval.month) != parse_code::ok ||
-		(retval.month > 12 || retval.month == 0)) [[unlikely]]
-		return { begin, parse_code::invalid };
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.month); ec != parse_code::ok) [[unlikely]]
+		return { begin, ec };
+	if (retval.month > 12 || retval.month == 0) [[unlikely]]
+		return { begin, parse_code::overflow };
 	begin += 2;
 	if (*begin++ != char_literal_v<u8'-', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
-	if (chrono_scan_two_digits_unsafe_impl(begin, retval.day) != parse_code::ok ||
-		(retval.day > 31 || retval.day == 0)) [[unlikely]]
-		return { begin, parse_code::invalid };
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.day); ec != parse_code::ok) [[unlikely]]
+		return { begin, ec };
+	if (retval.day > 31 || retval.day == 0) [[unlikely]]
+		return { begin, parse_code::overflow };
 	begin += 2;
 	if (*begin++ != char_literal_v<u8'T', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
-	if (chrono_scan_two_digits_unsafe_impl(begin, retval.hours) != parse_code::ok ||
-		(retval.hours >= 24)) [[unlikely]]
-		return { begin, parse_code::invalid };
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.hours); ec != parse_code::ok) [[unlikely]]
+		return { begin, ec };
+	if (retval.hours >= 24) [[unlikely]]
+		return { begin, parse_code::overflow };
 	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
-	if (chrono_scan_two_digits_unsafe_impl(begin, retval.minutes) != parse_code::ok ||
-		(retval.minutes >=60)) [[unlikely]]
-		return { begin, parse_code::invalid };
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.minutes); ec != parse_code::ok) [[unlikely]]
+		return { begin, ec };
+	if (retval.minutes >= 60) [[unlikely]]
+		return { begin, parse_code::overflow };
 	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
-	if (chrono_scan_two_digits_unsafe_impl(begin, retval.seconds) != parse_code::ok ||
-		(retval.seconds >= 60)) [[unlikely]]
-		return { begin, parse_code::invalid };
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.seconds); ec != parse_code::ok) [[unlikely]]
+		return { begin, ec };
+	if (retval.seconds >= 60) [[unlikely]]
+		return { begin, parse_code::overflow };
 	begin += 2;
 	bool sign{};
 	if (*begin == char_literal_v<u8'Z', char_type>)
@@ -725,26 +754,50 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	else [[unlikely]]
 		return { begin, parse_code::invalid };
 	// when control flow reaches here, it's to parse time-zone, format HH:MM
-	// TODO: logic error && memory overflow
-	retval.timezone = static_cast<::std::int_least32_t>(*begin++ - char_literal_v<u8'0', char_type>) * 10 * 3600;
-	retval.timezone += static_cast<::std::int_least32_t>(*begin++ - char_literal_v<u8'0', char_type>) * 3600;
-	if (retval.timezone >= 24 * 3600) [[unlikely]]
-		return { begin, parse_code::invalid };
+	if (end - begin < 5) [[unlikely]]
+		return { end, parse_code::invalid };
+	++begin;
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.timezone); ec != parse_code::ok) [[unlikely]]
+		return { begin, ec };
+	if (retval.timezone >= 24) [[unlikely]]
+		return { begin, parse_code::overflow };
+	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
 	{
-		::std::int_least32_t timezone_minutes{};
-		timezone_minutes += static_cast<::std::int_least32_t>(*begin++ - char_literal_v<u8'0', char_type>) * 10;
-		timezone_minutes += static_cast<::std::int_least32_t>(*begin++ - char_literal_v<u8'0', char_type>);
+		::std::uint8_t timezone_minutes{};
+		if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, timezone_minutes); ec != parse_code::ok) [[unlikely]]
+			return { begin, ec };
 		if (timezone_minutes >= 60) [[unlikely]]
-			return { begin, parse_code::invalid };
-		retval.timezone += timezone_minutes;
-		if (sign) retval.timezone = -retval.timezone;
+			return { begin, parse_code::overflow };
+		begin += 2;
+		retval.timezone *= 3600;
+		retval.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
 	}
+	if (sign) retval.timezone = -retval.timezone;
+	++begin;
 SUCCESS:
 	++begin;
 	t = retval;
 	return { begin, parse_code::ok };
+}
+
+template <bool comma, ::std::integral char_type>
+inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(iso8601_timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, iso8601_timestamp& t)
+{
+	switch (state.phase)
+	{
+	//case year:
+	//case month:
+	//case day:
+	//case hours:
+	//case minutes:
+	//case seconds:
+	//case subseconds:
+	//case zone_hours:
+	//case zone_minutes:
+	}
+	return {};
 }
 
 }
@@ -752,14 +805,14 @@ SUCCESS:
 template <::std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, char_type const* begin, char_type const* end, fast_io::parameter<iso8601_timestamp&> t) noexcept
 {
-	return details::scn_cnt_define_iso8601_impl<char_type, false>(begin, end, t.reference);
+	return details::scn_cnt_define_iso8601_impl<false>(begin, end, t.reference);
 }
 
 template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
 inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<basic_timestamp<off_to_epoch>&>>, char_type const* begin, char_type const* end, fast_io::parameter<basic_timestamp<off_to_epoch>&> t) noexcept
 {
 	iso8601_timestamp tsp;
-	auto result = details::scn_cnt_define_iso8601_impl<char_type, false>(begin, end, tsp);
+	auto result = details::scn_cnt_define_iso8601_impl<false>(begin, end, tsp);
 	if constexpr (off_to_epoch == 0)
 	{
 		t.reference = details::iso8601_to_unix_timestamp_impl(tsp);
@@ -774,11 +827,22 @@ inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserv
 }
 
 template <::std::integral char_type>
-inline constexpr io_type_t<int> scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>) noexcept { return{}; }
+inline constexpr io_type_t<iso8601_timestamp_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>) noexcept
+{
+	return {};
+}
+
 template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, int& state, char_type const* begin, char_type const* end, fast_io::parameter<iso8601_timestamp&> t) noexcept { return{}; }
+inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, iso8601_timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, fast_io::parameter<iso8601_timestamp&> t) noexcept
+{
+	return details::scn_ctx_define_iso8601_impl<false>(state, begin, end, t.reference);
+}
+
 template <::std::integral char_type>
-inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, int& state, fast_io::parameter<iso8601_timestamp&> t) noexcept { return{}; }
+inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, iso8601_timestamp_scan_state_t<char_type>& state, fast_io::parameter<iso8601_timestamp&> t) noexcept
+{
+	return parse_code::end_of_file;
+}
 
 #endif
 

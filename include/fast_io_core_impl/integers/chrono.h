@@ -137,13 +137,6 @@ inline constexpr parse_result<char_type const*> chrono_scan_year_impl(char_type 
 	return { begin, parse_code::ok };
 }
 
-template <::std::integral char_type>
-inline constexpr char_type const* find_none_c_digit(char_type const* begin, char_type const* end) noexcept
-{
-	// TODO
-	return begin;
-}
-
 template <::std::integral char_type, my_integral T>
 inline constexpr parse_result<char_type const*> chrono_scan_decimal_fraction_part_never_overflow_impl(char_type const* begin, char_type const* end, T& t) noexcept
 {
@@ -163,7 +156,7 @@ inline constexpr parse_result<char_type const*> chrono_scan_decimal_fraction_par
 		retval *= 10;
 	if (itr != end && itr == new_end) [[unlikely]]
 	{
-		auto itr2 = find_none_c_digit(itr, end);
+		auto itr2{ skip_digits<10>(itr, end) };
 		if (itr != itr2)
 		{
 			// need rounding
@@ -177,12 +170,13 @@ inline constexpr parse_result<char_type const*> chrono_scan_decimal_fraction_par
 					if (*itr != char_literal_v<u8'0', char_type>)
 					{
 						++retval;
-						break;
+						goto OUTOFLOOP;
 					}
 				}
 				if (retval % 2 == 1)
 					++retval;
 			}
+		OUTOFLOOP:
 			itr = itr2;
 		}
 	}
