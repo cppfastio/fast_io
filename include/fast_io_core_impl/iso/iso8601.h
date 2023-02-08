@@ -666,7 +666,7 @@ enum class scan_integral_context_phase : ::std::uint_least8_t;
 template <::std::integral char_type>
 struct iso8601_timestamp_scan_state_t
 {
-	static inline constexpr ::std::size_t max_size{ ::std::max({::std::numeric_limits<int_least64_t>::digits10 + 1, ::std::numeric_limits<uint_least64_t>::digits10}) };
+	static inline constexpr ::std::size_t max_size{ ::std::numeric_limits<uint_least64_t>::digits10 };
 	::fast_io::freestanding::array<char_type, max_size> buffer;
 	::std::uint_least8_t size{};
 	scan_iso8601_timestamp_context_phase tsp_phase{};
@@ -726,7 +726,11 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	begin += 2;
 	bool sign{};
 	if (*begin == char_literal_v<u8'Z', char_type>)
-		goto SUCCESS;
+	{
+		++begin;
+		t = retval;
+		return { begin, parse_code::ok };
+	}
 	else if (*begin == char_literal_v<u8'+', char_type>)
 		sign = false;
 	else if (*begin == char_literal_v<u8'-', char_type>)
@@ -743,7 +747,11 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 		if (begin == end) [[unlikely]]
 			return { end, parse_code::invalid };
 		if (*begin == char_literal_v<u8'Z', char_type>)
-			goto SUCCESS;
+		{
+			++begin;
+			t = retval;
+			return { begin, parse_code::ok };
+		}
 		else if (*begin == char_literal_v<u8'+', char_type>)
 			sign = false;
 		else if (*begin == char_literal_v<u8'-', char_type>)
@@ -775,9 +783,7 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 		retval.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
 	}
 	if (sign) retval.timezone = -retval.timezone;
-	++begin;
-SUCCESS:
-	++begin;
+	begin += 2;
 	t = retval;
 	return { begin, parse_code::ok };
 }

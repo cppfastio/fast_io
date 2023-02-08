@@ -167,16 +167,19 @@ inline constexpr parse_result<char_type const*> chrono_scan_decimal_fraction_par
 			{
 				for (++itr; itr != itr2; ++itr)
 				{
+					// xxxxx500000x0000, then round in
+					// originally it's a logic of for-else,
+					// but constexpr functions doesn't allow goto
 					if (*itr != char_literal_v<u8'0', char_type>)
 					{
-						++retval;
-						goto OUTOFLOOP;
+						t = retval + 1;
+						return { itr2, parse_code::ok };
 					}
 				}
+				// xxxx500000, then it depends on the digit before 5
 				if (retval % 2 == 1)
 					++retval;
 			}
-		OUTOFLOOP:
 			itr = itr2;
 		}
 	}
