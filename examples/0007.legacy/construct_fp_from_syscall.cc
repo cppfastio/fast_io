@@ -50,16 +50,16 @@ This potentially contains format string vuln.
 #else
 	"Unknown C++ standard library\n"
 #endif
-	"FILE*:",static_cast<fast_io::c_io_observer>(cf).fp,"\n"
+	"FILE*:",::fast_io::mnp::handlevw(static_cast<fast_io::c_io_observer>(cf).fp),"\n"
 	"fd:",static_cast<fast_io::posix_io_observer>(cf).fd
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 	,"\n"
-	"win32 HANDLE:",static_cast<fast_io::win32_io_observer>(cf).handle
+	"win32 HANDLE:",::fast_io::mnp::handlevw(static_cast<fast_io::win32_io_observer>(cf).handle)
 #ifndef _WIN32_WINDOWS
 //NT kernel
 	,"\n"
-	"zw HANDLE:",static_cast<fast_io::zw_io_observer>(cf).handle,"\n"
-	"nt HANDLE:",static_cast<fast_io::nt_io_observer>(cf).handle
+	"zw HANDLE:",::fast_io::mnp::handlevw(static_cast<fast_io::zw_io_observer>(cf).handle),"\n"
+	"nt HANDLE:",::fast_io::mnp::handlevw(static_cast<fast_io::nt_io_observer>(cf).handle)
 #endif
 #endif
 );

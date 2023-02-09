@@ -137,22 +137,44 @@ inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_t
 	return iosc;
 }
 
-template<std::integral char_type,std::size_t n>
-inline constexpr auto print_alias_define(io_alias_t,char_type (&s)[n]) noexcept
+namespace details
 {
-	constexpr bool not_char_literal{::std::is_const_v<char_type>};
-	if constexpr(not_char_literal)
+
+template<::std::integral char_type,::std::size_t n>
+inline consteval ::std::integral_constant<char_type,n> compute_char_literal_array_type(char_type (&s)[n]) noexcept
+{
+	return {};
+}
+
+}
+
+template<typename T>
+requires (::std::is_array_v<::std::remove_reference_t<T>>&&
+	::std::integral<::std::remove_extent_t<::std::remove_cvref_t<T>>>&&
+	requires(T const& s)
 	{
-		constexpr std::size_t nm1{n-1};
-		if constexpr(n==2)
-			return manipulators::chvw_t<std::remove_const_t<char_type>>{*s};
-		else
-			return basic_io_scatter_t<std::remove_const_t<char_type>>{s,nm1};
+		::fast_io::details::compute_char_literal_array_type(s);
+	})
+inline constexpr auto print_alias_define(io_alias_t,T const& s) noexcept
+{
+	using constanttype = decltype(::fast_io::details::compute_char_literal_array_type(s));
+	using char_type = typename constanttype::value_type;
+	using no_const_char_type = ::std::remove_const_t<char_type>;
+
+	constexpr bool not_char_literal{::std::is_const_v<char_type>};
+	constexpr
+		::std::size_t n{constanttype::value};
+	constexpr std::size_t nm1{n-1};
+static_assert(n!=0);
+static_assert(not_char_literal,"The type is an array but not char array literal. Reject.");
+
+	if constexpr(n==2)
+	{
+		return manipulators::chvw_t<no_const_char_type>{*s};
 	}
 	else
 	{
-static_assert(not_char_literal,"The type is an array but not char array literal. Reject.");
-		return;
+		return basic_io_scatter_t<no_const_char_type>{s,nm1};
 	}
 }
 
