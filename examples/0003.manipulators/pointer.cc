@@ -1,4 +1,5 @@
 #include<fast_io.h>
+#include<memory>
 
 class dummy_class
 {
@@ -10,7 +11,7 @@ int main()
 {
 	using namespace fast_io::mnp;
 	int fd{3};
-	int *ptr{&fd};
+	int *ptr{::std::addressof(fd)};
 
 	char const *ptr2="hello";
 
