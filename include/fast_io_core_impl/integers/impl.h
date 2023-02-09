@@ -505,7 +505,14 @@ requires ((::std::is_pointer_v<scalar_type>&&!::std::is_function_v<std::remove_c
 	::std::integral<scalar_type>)
 inline constexpr auto handlevw(scalar_type t) noexcept
 {
-	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(t);
+	if constexpr(::std::integral<scalar_type>)
+	{
+		return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<10,false,false,false,false>>(t);
+	}
+	else
+	{
+		return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(t);
+	}
 }
 
 template<typename scalar_type>
@@ -1506,7 +1513,7 @@ inline constexpr char_type* print_reserve_method_impl(char_type* iter,::fast_io:
 	{
 		iter=details::print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(iter,mfph.reference.front());
 		using myssizet = ::std::make_signed_t<::std::size_t>;
-		if constexpr(true)
+		if constexpr(::fast_io::details::method_ptr_hold_size==2)
 		{
 			::std::size_t backptr{mfph.reference.back()};
 			return details::print_reserve_integral_define<base,showbase,uppercase_showbase,true,uppercase,false>(iter,static_cast<myssizet>(backptr));
