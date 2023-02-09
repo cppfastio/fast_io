@@ -24,11 +24,11 @@ int main()
 }
 
 /*
-funcvw(main):0x0000559b0c26edf0
-pointervw(ptr):0x00007ffe6b3ab27c
-handlevw(fd):0x00000003
-handlevw(ptr):0x00007ffe6b3ab27c
-pointervw(ptr2):0x0000559b0c26d914
+funcvw(main):0x000056456b0ffdf0
+pointervw(ptr):0x00007fff97f226cc
+handlevw(fd):3
+handlevw(ptr):0x00007fff97f226cc
+pointervw(ptr2):0x000056456b0fe914
 os_c_str(ptr2):hello
-methodvw(&dummy_class::dummy_method):0x0000559b0c26f660+0x0
+methodvw(&dummy_class::dummy_method):0x000056456b100640+0x0
 */
