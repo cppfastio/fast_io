@@ -22,3 +22,13 @@ int main()
 		"os_c_str(ptr2):",os_c_str(ptr2),"\n"
 		"methodvw(&dummy_class::dummy_method):",methodvw(&dummy_class::dummy_method));
 }
+
+/*
+funcvw(main):0x0000559b0c26edf0
+pointervw(ptr):0x00007ffe6b3ab27c
+handlevw(fd):0x00000003
+handlevw(ptr):0x00007ffe6b3ab27c
+pointervw(ptr2):0x0000559b0c26d914
+os_c_str(ptr2):hello
+methodvw(&dummy_class::dummy_method):0x0000559b0c26f660+0x0
+*/
