@@ -93,12 +93,13 @@
 #include"fast_io_core_impl/source_location.h"
 #endif
 
-#include"fast_io_core_impl/iso/isos.h"
-#include"fast_io_core_impl/enums/impl.h"
-
 #include"fast_io_core_impl/simd/impl.h"
 #include"fast_io_core_impl/simd_find.h"
 #include"fast_io_core_impl/integers/sto/sto_contiguous.h"
+
+#include"fast_io_core_impl/integers/chrono.h"
+#include"fast_io_core_impl/iso/isos.h"
+#include"fast_io_core_impl/enums/impl.h"
 
 #ifndef FAST_IO_DISABLE_CODECVT
 #include"fast_io_core_impl/codecvt/impl.h"

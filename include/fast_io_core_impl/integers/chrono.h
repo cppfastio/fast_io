@@ -83,8 +83,7 @@ inline constexpr char_type* chrono_year_impl(char_type* it,integ i) noexcept
 	return non_overlapped_copy_n(tb[rmd].element,2,it);
 }
 
-#if 0
-// ensure that end - begin >= 2
+// assert(end - begin >= 2)
 template <::std::integral char_type, ::std::integral T>
 inline constexpr parse_code chrono_scan_two_digits_unsafe_impl(char_type const* begin, T& t) noexcept
 {
@@ -138,6 +137,29 @@ inline constexpr parse_result<char_type const*> chrono_scan_year_impl(char_type 
 }
 
 template <::std::integral char_type, my_integral T>
+inline constexpr void chrono_scan_decimal_fraction_part_rounding_impl(char_type const* begin, char_type const* end, T retval) noexcept
+{
+	if (*begin < char_literal_v<u8'5', char_type>);
+	else if (*begin > char_literal_v<u8'5', char_type>)
+		++retval;
+	else [[unlikely]]
+	{
+		for (++begin; begin != end; ++begin)
+		{
+			// xxxxx500000x0000, then round in
+			if (*begin != char_literal_v<u8'0', char_type>)
+			{
+				++retval;
+				return;
+			}
+		}
+		// xxxx500000, then it depends on the digit before 5
+		if (retval % 2 == 1)
+			++retval;
+	}
+}
+
+template <bool need_rounding = true, ::std::integral char_type, my_integral T>
 inline constexpr parse_result<char_type const*> chrono_scan_decimal_fraction_part_never_overflow_impl(char_type const* begin, char_type const* end, T& t) noexcept
 {
 	if (begin == end) [[unlikely]]
@@ -154,35 +176,20 @@ inline constexpr parse_result<char_type const*> chrono_scan_decimal_fraction_par
 	::std::size_t zero_cnt{ digitsm1 - (itr - begin) };
 	for (::std::size_t i{}; i < zero_cnt; ++i)
 		retval *= 10;
-	if (itr != end && itr == new_end) [[unlikely]]
+	if constexpr (need_rounding)
 	{
-		auto itr2{ skip_digits<10>(itr, end) };
-		if (itr != itr2)
+		if (itr != end && itr == new_end) [[unlikely]]
 		{
-			// need rounding
-			if (*itr < char_literal_v<u8'5', char_type>);
-			else if (*itr > char_literal_v<u8'5', char_type>)
-				++retval;
-			else
+			char_type const* digit_end{ skip_digits<10>(itr, end) };
+			if (itr != digit_end)
 			{
-				for (++itr; itr != itr2; ++itr)
-				{
-					if (*itr != char_literal_v<u8'0', char_type>)
-					{
-						++retval;
-						goto OUTOFLOOP;
-					}
-				}
-				if (retval % 2 == 1)
-					++retval;
+				chrono_scan_decimal_fraction_part_rounding_impl(itr, digit_end, retval);
+				itr = digit_end;
 			}
-		OUTOFLOOP:
-			itr = itr2;
 		}
 	}
 	t = retval;
 	return { itr, parse_code::ok };
 }
-#endif
 
 }
