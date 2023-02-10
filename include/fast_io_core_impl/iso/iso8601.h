@@ -647,30 +647,64 @@ inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t 
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
 	return {static_cast<::std::int_least64_t>(seconds),static_cast<::std::uint_least64_t>(subseconds*mul_factor)};
 }
-#if 0
-enum class scan_iso8601_timestamp_context_phase : ::std::uint8_t
+
+// warning: relies on the order of the items
+enum class scan_iso8601_timestamp_context_phase : ::std::uint_least8_t
 {
 	year,
+	after_year,
 	month,
+	after_month,
 	day,
+	after_day,
 	hours,
+	after_hours,
 	minutes,
+	after_minutes,
 	seconds,
+	timezone_marker,
+	after_subseconds_timezone_marker,
+	timezone_hours,
+	after_timezone_hours,
+	timezone_minutes,
 	subseconds,
-	zone_hours,
-	zone_minutes,
+	waiting_for_five,
+	waiting_for_numbers,
+	ok
 };
+
+inline constexpr scan_iso8601_timestamp_context_phase& operator++(scan_iso8601_timestamp_context_phase& e) noexcept
+{
+	return e = static_cast<scan_iso8601_timestamp_context_phase>(static_cast<::std::uint_least8_t>(e)+1);
+}
+inline constexpr scan_iso8601_timestamp_context_phase operator++(scan_iso8601_timestamp_context_phase& e, int) noexcept
+{
+	auto tmp{ e };
+	++e;
+	return tmp;
+}
 
 enum class scan_integral_context_phase : ::std::uint_least8_t;
 
-template <::std::integral char_type>
-struct iso8601_timestamp_scan_state_t
+struct iso8601_timestamp_scan_context_buffer_max_size_t
 {
-	static inline constexpr ::std::size_t max_size{ ::std::numeric_limits<uint_least64_t>::digits10 };
+private:
+	template <typename T>
+	static inline constexpr auto size_common{ ::fast_io::details::print_integer_reserved_size_cache<10, false, ::fast_io::details::my_signed_integral<T>, T> };
+public:
+	static inline constexpr auto year_size = size_common<::std::int_least64_t>;
+	static inline constexpr auto subs_size = size_common<::std::uint_least64_t>;
+	static inline constexpr ::std::size_t max_size{ year_size > subs_size ? year_size : subs_size };
+};
+
+template <::std::integral char_type>
+struct iso8601_timestamp_scan_state_t : private iso8601_timestamp_scan_context_buffer_max_size_t
+{
+	using iso8601_timestamp_scan_context_buffer_max_size_t::max_size;
 	::fast_io::freestanding::array<char_type, max_size> buffer;
 	::std::uint_least8_t size{};
 	scan_iso8601_timestamp_context_phase tsp_phase{};
-	scan_integral_context_phase integral_phase{};
+	scan_integral_context_phase integer_phase{};
 };
 
 namespace details
@@ -772,16 +806,14 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
-	{
-		::std::uint8_t timezone_minutes{};
-		if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, timezone_minutes); ec != parse_code::ok) [[unlikely]]
-			return { begin, ec };
-		if (timezone_minutes >= 60) [[unlikely]]
-			return { begin, parse_code::overflow };
-		begin += 2;
-		retval.timezone *= 3600;
-		retval.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
-	}
+	::std::uint8_t timezone_minutes;
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, timezone_minutes); ec != parse_code::ok) [[unlikely]]
+		return { begin, ec };
+	if (timezone_minutes >= 60) [[unlikely]]
+		return { begin, parse_code::overflow };
+	begin += 2;
+	retval.timezone *= 3600;
+	retval.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
 	if (sign) retval.timezone = -retval.timezone;
 	begin += 2;
 	t = retval;
@@ -789,21 +821,313 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 }
 
 template <bool comma, ::std::integral char_type>
-inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(iso8601_timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, iso8601_timestamp& t)
+inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(iso8601_timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, iso8601_timestamp& t) noexcept
 {
-	switch (state.phase)
+	// TODO: is it necessary to change macro to function to reuse code?
+	switch (state.tsp_phase)
 	{
-	//case year:
-	//case month:
-	//case day:
-	//case hours:
-	//case minutes:
-	//case seconds:
-	//case subseconds:
-	//case zone_hours:
-	//case zone_minutes:
+	case scan_iso8601_timestamp_context_phase::year:
+	{
+		t = {};
+		auto [itr, ec] = scan_context_define_parse_impl<10, false, false, true>(state, begin, end, t.year);
+		if (ec != parse_code::ok)
+			return { itr, ec };
+		else
+		{
+			begin = itr;
+			state.size = 0;
+			state.integer_phase = {};
+			state.tsp_phase = scan_iso8601_timestamp_context_phase::after_year;
+		}
+		[[fallthrough]];
 	}
-	return {};
+	case scan_iso8601_timestamp_context_phase::after_year:
+#define FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(TOK) \
+	{ \
+		if (begin == end) \
+			return { begin, parse_code::partial }; \
+		else \
+		{ \
+			if (*begin++ != char_literal_v<TOK, char_type>) [[unlikely]] \
+				return { begin, parse_code::invalid }; \
+			++state.tsp_phase; \
+		} \
+	} \
+
+		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'-');
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::month:
+#define FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(VAR, EXPR) \
+	{ \
+		auto diff{ end - begin }; \
+		if (diff == 0) \
+			return { begin, parse_code::partial }; \
+		auto buffer_begin{ state.buffer.begin() }; \
+		switch (state.size) \
+		{ \
+		case 0: \
+		{ \
+			if (diff >= 2) \
+			{ \
+				/*no copy to buffer*/ \
+				if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, VAR); ec != parse_code::ok) [[unlikely]] \
+					return { begin, ec }; \
+				if (EXPR) \
+					return { begin, parse_code::overflow }; \
+				++state.tsp_phase; \
+				begin += 2; \
+			} \
+			else /*diff == 1*/ \
+			{ \
+				::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin); \
+				state.size = 1; \
+				return { end, parse_code::partial }; \
+			} \
+			break; \
+		} \
+		case 1: \
+		{ \
+			::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin + 1); \
+			if (auto ec = chrono_scan_two_digits_unsafe_impl(buffer_begin, VAR); ec != parse_code::ok) [[unlikely]] \
+				return { begin,ec }; \
+			state.size = 0; \
+			if (EXPR) \
+				return { begin, parse_code::overflow }; \
+			++state.tsp_phase; \
+			++begin; \
+			break; \
+		} \
+		/* default: ::std::unreachable(); */ \
+		} \
+	} \
+
+		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.month, (t.month > 12 || t.month == 0));
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::after_month:
+		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'-');
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::day:
+		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.day, (t.day > 31 || t.day == 0));
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::after_day:
+		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'T');
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::hours:
+		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.hours, (t.hours >= 24));
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::after_hours:
+		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8':');
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::minutes:
+		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.minutes, (t.minutes >= 60));
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::after_minutes:
+		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8':');
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::seconds:
+		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.seconds, (t.seconds >= 60));
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::timezone_marker:
+	case scan_iso8601_timestamp_context_phase::after_subseconds_timezone_marker:
+	{
+		if (begin == end)
+			return { end, parse_code::partial };
+		switch (*begin)
+		{
+		case char_literal_v<u8'Z', char_type>:
+			t.timezone = 0;
+			state.tsp_phase = scan_iso8601_timestamp_context_phase::ok;
+			return { begin + 1, parse_code::ok };
+		case char_literal_v<u8'+', char_type>:
+			++begin;
+			state.tsp_phase = scan_iso8601_timestamp_context_phase::timezone_hours;
+			break;
+		case char_literal_v<u8'-', char_type>:
+			++begin;
+			state.size = 1;
+			state.tsp_phase = scan_iso8601_timestamp_context_phase::timezone_hours;
+			break;
+		case comma ? char_literal_v<u8',', char_type> : char_literal_v<u8'.', char_type>:
+			if (state.tsp_phase == scan_iso8601_timestamp_context_phase::timezone_marker)
+			{
+				state.tsp_phase = scan_iso8601_timestamp_context_phase::subseconds;
+				return scn_ctx_define_iso8601_impl<comma>(state, begin + 1, end, t);
+			}
+			else
+				[[fallthrough]];
+		default:
+			return { begin, parse_code::invalid };
+		}
+		[[fallthrough]];
+	}
+	case scan_iso8601_timestamp_context_phase::timezone_hours:
+		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.timezone, (t.timezone >= 24));
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::after_timezone_hours:
+		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8':');
+		[[fallthrough]];
+	case scan_iso8601_timestamp_context_phase::timezone_minutes:
+	{
+		::std::uint8_t timezone_minutes;
+		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(timezone_minutes, (timezone_minutes >= 60));
+		t.timezone *= 3600;
+		t.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
+		if (state.size)
+			t.timezone = -t.timezone;
+		state.tsp_phase = scan_iso8601_timestamp_context_phase::ok;
+		return { begin, parse_code::ok };
+	}
+	case scan_iso8601_timestamp_context_phase::subseconds:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		auto itr{ skip_digits<10, char_type>(begin, end) };
+		auto frag_length{ static_cast<::std::uint_least8_t>(itr - begin) };
+		constexpr auto digitsm1{ ::std::numeric_limits<::std::uint_least64_t>::digits10 };
+		auto buffer_begin{ state.buffer.begin() };
+		auto buffer_size{ state.size };
+		if (itr != end)
+		{
+			// know the end of the number
+			if (buffer_size == 0)
+			{
+				auto [itr2, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(begin, itr, t.subseconds);
+				if (ec != parse_code::ok) [[unlikely]]
+					return { itr, parse_code::invalid };
+				if (itr2 != itr)
+					chrono_scan_decimal_fraction_part_rounding_impl(itr2, itr, t.subseconds);
+				state.tsp_phase = scan_iso8601_timestamp_context_phase::after_subseconds_timezone_marker;
+				return scn_ctx_define_iso8601_impl<comma>(state, itr, end, t);
+			}
+			else
+			{
+				if (frag_length > digitsm1 - buffer_size)
+				{
+					auto itr_begin{ buffer_begin };
+					auto itr_end{ ::fast_io::freestanding::non_overlapped_copy_n(begin, digitsm1 - buffer_size, buffer_begin) };
+					auto digit_end{ begin + (digitsm1 - buffer_size) };
+					auto [_, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(itr_begin, itr_end, t.subseconds);
+					if (ec != parse_code::ok) [[unlikely]]
+						return { itr, parse_code::invalid };
+					chrono_scan_decimal_fraction_part_rounding_impl(digit_end, itr, t.subseconds);
+					state.tsp_phase = scan_iso8601_timestamp_context_phase::after_subseconds_timezone_marker;
+					return scn_ctx_define_iso8601_impl<comma>(state, itr, end, t);
+				}
+				else
+				{
+					auto itr_begin{ buffer_begin };
+					auto itr_end{ ::fast_io::freestanding::non_overlapped_copy_n(begin, frag_length, buffer_begin + buffer_size) };
+					auto [_, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(itr_begin, itr_end, t.subseconds);
+					if (ec != parse_code::ok) [[unlikely]]
+						return { itr, parse_code::invalid };
+					state.tsp_phase = scan_iso8601_timestamp_context_phase::after_subseconds_timezone_marker;
+					return scn_ctx_define_iso8601_impl<comma>(state, itr, end, t);
+				}
+			}
+		}
+		else if (frag_length > digitsm1 - buffer_size)
+		{
+			// longer than the number can hold, so parse
+			// parse and waiting for the rest of the numbers
+			char_type const* itr_begin, * itr_end, * digit_end;
+			if (buffer_size == 0)
+			{
+				itr_begin = begin;
+				itr_end = end;
+				digit_end = begin + digitsm1;
+			}
+			else
+			{
+				itr_begin = buffer_begin;
+				itr_end = ::fast_io::freestanding::non_overlapped_copy_n(begin, digitsm1 - buffer_size, buffer_begin + buffer_size);
+				digit_end = begin + (digitsm1 - buffer_size);
+			}
+			auto [_, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(itr_begin, itr_end, t.subseconds);
+			if (ec != parse_code::ok) [[unlikely]]
+				return { itr, parse_code::invalid };
+			if (*digit_end < char_literal_v<u8'5', char_type>)
+			{
+				state.size = 0;
+				state.tsp_phase = scan_iso8601_timestamp_context_phase::waiting_for_numbers;
+				return { end, parse_code::partial };
+			}
+			else if (*digit_end > char_literal_v<u8'5', char_type>)
+			{
+				++t.subseconds;
+				state.size = 0;
+				state.tsp_phase = scan_iso8601_timestamp_context_phase::waiting_for_numbers;
+				return { end, parse_code::partial };
+			}
+			else [[unlikely]]
+			{
+				for (++digit_end; digit_end != end; ++digit_end)
+				{
+					// xxxxx500000x0000, then round in
+					if (*digit_end != char_literal_v<u8'0', char_type>)
+					{
+						++t.subseconds;
+						state.size = 0;
+						state.tsp_phase = scan_iso8601_timestamp_context_phase::waiting_for_numbers;
+						return { end, parse_code::partial };
+					}
+				}
+				// xxxx500000....(unknown), then it depends on the rest
+				state.size = 0;
+				state.tsp_phase = scan_iso8601_timestamp_context_phase::waiting_for_five;
+				return { end, parse_code::partial };
+			}
+			
+		}
+		else
+		{
+			// do not know the end of the number
+			// neither overflow the buffer
+			// so put it into the buffer
+			::fast_io::freestanding::non_overlapped_copy_n(begin, frag_length, buffer_begin + buffer_size);
+			state.size += static_cast<::std::uint_least8_t>(frag_length);
+			return { end, parse_code::partial };
+		}
+	}
+	case scan_iso8601_timestamp_context_phase::waiting_for_five:
+	{
+		for (; begin != end; ++begin)
+		{
+			if (!::fast_io::char_category::is_c_digit(*begin))
+			{
+				if (t.subseconds % 2 == 1)
+					++t.subseconds;
+				state.tsp_phase = scan_iso8601_timestamp_context_phase::after_subseconds_timezone_marker;
+				return scn_ctx_define_iso8601_impl<comma>(state, begin, end, t);
+			}
+			if (*begin != char_literal_v<u8'0', char_type>)
+			{
+				++t.subseconds;
+				state.tsp_phase = scan_iso8601_timestamp_context_phase::waiting_for_numbers;
+				break;
+			}
+		}
+		[[fallthrough]];
+	}
+	case scan_iso8601_timestamp_context_phase::waiting_for_numbers:
+	{
+		if (begin == end)
+			return { end, parse_code::partial };
+		auto itr{ skip_digits<10>(begin, end) };
+		if (itr == end)
+			return { end, parse_code::partial };
+		state.tsp_phase = scan_iso8601_timestamp_context_phase::after_subseconds_timezone_marker;
+		return scn_ctx_define_iso8601_impl<comma>(state, itr, end, t);
+	}
+	case scan_iso8601_timestamp_context_phase::ok:
+		return { begin, parse_code::ok };
+	}
+#ifdef __has_builtin
+#if __has_builtin(__builtin_unreachable)
+	__builtin_unreachable();
+#endif
+#endif
+#undef FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE
+#undef FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE
 }
 
 }
@@ -847,9 +1171,10 @@ inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_t
 template <::std::integral char_type>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, iso8601_timestamp_scan_state_t<char_type>& state, fast_io::parameter<iso8601_timestamp&> t) noexcept
 {
-	return parse_code::end_of_file;
+	if (state.tsp_phase == scan_iso8601_timestamp_context_phase::ok)
+		return parse_code::ok;
+	else
+		return parse_code::end_of_file;
 }
-
-#endif
 
 }
