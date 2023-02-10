@@ -45,6 +45,13 @@ inline constexpr auto strlike_line_get(T& reference) noexcept
 	{{io_strlike_ref(io_alias,reference)}};
 }
 
+template<typename T>
+inline constexpr auto strlike_whole_get(T& reference) noexcept
+{
+	return ::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<decltype(io_strlike_ref(io_alias,reference))>>
+	{{io_strlike_ref(io_alias,reference)}};
+}
+
 }
 
 namespace details
@@ -91,6 +98,19 @@ inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_s
 	return {it_space,::fast_io::parse_code::ok};
 }
 
+template<bool ctxread=false,::std::integral char_type,typename T>
+inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_strlike_getall_impl(std::conditional_t<ctxread,bool,bool&> skip_space_done,char_type const* first,char_type const* last,
+	T ref)
+{
+	if(!skip_space_done)
+	{
+		obuffer_set_curr(ref,obuffer_begin(ref));
+		skip_space_done=true;
+	}
+	write(ref,first,last);
+	return {last,::fast_io::parse_code::partial};
+}
+
 inline constexpr ::fast_io::parse_code scan_context_eof_strlike_define_impl(bool skip_space_done) noexcept
 {
 	if(skip_space_done)
@@ -114,7 +134,6 @@ inline constexpr io_type_t<::std::conditional_t<
 {
 	return {};
 }
-
 
 template<::std::integral char_type,::fast_io::manipulators::scalar_flags flags,typename ctx_type,typename T>
 inline constexpr parse_result<char_type const*> scan_context_define(
@@ -225,4 +244,82 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(
 	}
 }
 
+
+template<std::integral char_type,typename T>
+inline constexpr io_type_t<::std::conditional_t<
+	(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>
+	&&::std::same_as<typename std::remove_cvref_t<T>::char_type,char_type>),
+	::fast_io::details::str_get_all_context,
+	::fast_io::details::basic_concat_buffer<char_type>>> scan_context_type(
+	io_reserve_type_t<char_type,
+	::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>>>) noexcept
+{
+	return {};
 }
+
+template<::std::integral char_type,typename ctx_type,typename T>
+inline constexpr parse_result<char_type const*> scan_context_define(
+	io_reserve_type_t<char_type,::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>>>,
+	ctx_type& ctx,
+	char_type const* first,char_type const* last,
+	::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>> ref)
+{
+	using value_type = std::remove_cvref_t<T>;
+	using undefttype_char_type = typename std::remove_cvref_t<value_type>::char_type;
+	if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
+	{
+		return ::fast_io::details::scan_context_define_strlike_getall_impl(ctx.copying,first,last,ref.reference.reference);
+	}
+	else
+	{
+		bool b{ctx.buffer_begin!=ctx.buffer_curr};
+		auto [it,ec]=::fast_io::details::scan_context_define_strlike_getall_impl<true>(b,
+			first,last,io_strlike_ref(io_alias,ctx));
+		if(ec==::fast_io::parse_code::ok)
+		{
+			using ioreftype = typename value_type::value_type;
+			if constexpr(::std::same_as<undefttype_char_type,char_type>)
+			{
+				*ref.reference.reference.ptr=strlike_construct_define(io_strlike_type<undefttype_char_type,ioreftype>,ctx.buffer_begin,ctx.buffer_curr);
+			}
+			else
+			{
+				*ref.reference.reference.ptr=::fast_io::basic_general_concat<false,undefttype_char_type,ioreftype>(::fast_io::manipulators::code_cvt(::fast_io::manipulators::strvw(ctx.buffer_begin,ctx.buffer_curr)));
+			}
+		}
+		return {it,ec};
+	}
+}
+
+template<std::integral char_type,typename ctx_type,typename T>
+inline constexpr ::fast_io::parse_code scan_context_eof_define(
+	io_reserve_type_t<char_type,::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>>>,
+	ctx_type& ctx,
+	::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>> ref)
+{
+
+	using value_type = std::remove_cvref_t<T>;
+	using undefttype_char_type = typename std::remove_cvref_t<value_type>::char_type;
+	if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
+	{
+		if(!ctx.copying)
+		{
+			obuffer_set_curr(ref.reference.reference,obuffer_begin(ref.reference.reference));
+		}
+	}
+	else
+	{
+		using ioreftype = typename value_type::value_type;
+		if constexpr(::std::same_as<undefttype_char_type,char_type>)
+		{
+			*ref.reference.reference.ptr=strlike_construct_define(io_strlike_type<undefttype_char_type,ioreftype>,ctx.buffer_begin,ctx.buffer_curr);
+		}
+		else
+		{	*ref.reference.reference.ptr=::fast_io::basic_general_concat<false,undefttype_char_type,ioreftype>(::fast_io::manipulators::code_cvt(::fast_io::manipulators::strvw(ctx.buffer_begin,ctx.buffer_curr)));
+		}
+	}
+	return ::fast_io::parse_code::ok;
+}
+
+}
+

@@ -104,6 +104,15 @@ struct member_function_pointer_holder_t
 	::fast_io::details::method_ptr_hold_size> reference;
 };
 
+
+template<typename T>
+struct whole_get_t
+{
+	using value_type = T;
+	using manip_tag = manip_tag_t;
+	value_type reference;
+};
+
 }
 
 namespace details
