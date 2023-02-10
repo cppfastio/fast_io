@@ -8,17 +8,21 @@ namespace fast_io
 
 namespace details
 {
-struct method_ptr_dummyclass
-{
-	void amethod() noexcept
-	{}
-};
 
-inline constexpr ::std::size_t method_ptr_size{sizeof(&method_ptr_dummyclass::amethod)};
+inline constexpr ::std::size_t method_ptr_size{sizeof(::std::size_t)*2};
 
 inline constexpr ::std::size_t method_ptr_hold_size{::fast_io::details::method_ptr_size%sizeof(::std::size_t)==0?
 	::fast_io::details::method_ptr_size/sizeof(::std::size_t):
 	::fast_io::details::method_ptr_size/sizeof(::std::size_t)+1};
+
+struct scalar_manip_detail_tag{};
+
+template<typename scalar_type>
+concept has_scalar_manip_detail_tag = requires(scalar_type)
+{
+	typename ::std::remove_cvref_t<scalar_type>::scalar_manip_detail_tag;
+};
+
 }
 
 namespace manipulators
@@ -79,8 +83,10 @@ inline constexpr scalar_flags address_default_scalar_flags{.base=16,.showbase=tr
 template<scalar_flags flags,typename T>
 struct scalar_manip_t
 {
+	using value_type = T;
 	using scalar_flags_type = scalar_flags;
 	using manip_tag = manip_tag_t;
+	using scalar_manip_detail_tag = ::fast_io::details::scalar_manip_detail_tag;
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
@@ -270,6 +276,10 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		{
 			return ::fast_io::manipulators::scalar_manip_t<cache,::fast_io::manipulators::member_function_pointer_holder_t>{t};
 		}
+		else if constexpr(::fast_io::details::has_scalar_manip_detail_tag<scalar_type>)
+		{
+			return ::fast_io::manipulators::scalar_manip_t<cache,typename scalar_type_nocvref::value_type>{t.reference};
+		}
 		else
 		{
 			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<std::uintptr_t>(::std::to_address(t)))};
@@ -305,6 +315,10 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		{
 			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<std::uintptr_t>(t))};
 		}
+		else if constexpr(::fast_io::details::has_scalar_manip_detail_tag<scalar_type>)
+		{
+			return ::fast_io::manipulators::scalar_manip_t<cache,typename scalar_type_nocvref::value_type>{t.reference};
+		}
 		else
 		{
 			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<std::uintptr_t>(::std::to_address(t)))};
@@ -315,9 +329,10 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 template<typename scalar_type>
 concept scalar_integrals = 
 ::fast_io::details::my_integral<scalar_type>||
-std::same_as<std::nullptr_t,std::remove_cvref_t<scalar_type>>||
-std::same_as<std::byte,std::remove_cvref_t<scalar_type>>||
-std::same_as<bool,std::remove_cvref_t<scalar_type>>;
+::std::same_as<::std::nullptr_t,::std::remove_cvref_t<scalar_type>>||
+::std::same_as<::std::byte,::std::remove_cvref_t<scalar_type>>||
+::std::same_as<bool,::std::remove_cvref_t<scalar_type>>||
+::fast_io::details::has_scalar_manip_detail_tag<scalar_type>;
 
 }
 
