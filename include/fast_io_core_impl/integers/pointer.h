@@ -140,8 +140,15 @@ inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_t
 namespace details
 {
 
+template<typename T, ::std::size_t N>
+struct my_constant_passer
+{
+	using value_type = T;
+	static inline constexpr ::std::size_t value{N};
+};
+
 template<::std::integral char_type,::std::size_t n>
-inline consteval ::std::integral_constant<char_type,n> compute_char_literal_array_type(char_type (&s)[n]) noexcept
+inline consteval my_constant_passer<char_type,n> compute_char_literal_array_type(char_type (&s)[n]) noexcept
 {
 	return {};
 }
