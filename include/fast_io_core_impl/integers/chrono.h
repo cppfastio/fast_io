@@ -137,7 +137,7 @@ inline constexpr parse_result<char_type const*> chrono_scan_year_impl(char_type 
 }
 
 template <::std::integral char_type, my_integral T>
-inline constexpr void chrono_scan_decimal_fraction_part_rounding_impl(char_type const* begin, char_type const* end, T retval) noexcept
+inline constexpr void chrono_scan_decimal_fraction_part_rounding_impl(char_type const* begin, char_type const* end, T& retval) noexcept
 {
 	if (*begin < char_literal_v<u8'5', char_type>);
 	else if (*begin > char_literal_v<u8'5', char_type>)
