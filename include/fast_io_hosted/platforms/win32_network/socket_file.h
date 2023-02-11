@@ -149,13 +149,13 @@ template<win32_family family,std::integral ch_type>
 [[nodiscard]]
 inline constexpr io_scatter_status_t scatter_read(basic_win32_family_socket_io_observer<family,ch_type> sockiob,io_scatters_t scatters)
 {
-	return win32::details::win32_socket_scatter_read_impl(sockiob.hsocket,scatters.base,scatters.len);
+	return win32::details::win32_socket_scatter_read_impl(sockiob.hsocket,const_cast<io_scatter_t*>(scatters.base),scatters.len);
 }
 
 template<win32_family family,std::integral ch_type>
 inline constexpr io_scatter_status_t scatter_write(basic_win32_family_socket_io_observer<family,ch_type> sockiob,io_scatters_t scatters)
 {
-	return win32::details::win32_socket_scatter_write_impl(sockiob.hsocket,scatters.base,scatters.len);
+	return win32::details::win32_socket_scatter_write_impl(sockiob.hsocket, const_cast<io_scatter_t*>(scatters.base),scatters.len);
 }
 
 template<win32_family family,std::integral ch_type>
