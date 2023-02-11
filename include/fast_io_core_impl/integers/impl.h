@@ -51,6 +51,35 @@ era_d_fmt,
 era_t_fmt
 };
 
+struct ip_flags
+{
+	bool v6notation{};
+	bool v6shorten{true};
+	bool v6full{};
+	bool uppercase{};
+	bool showport{true};
+};
+
+inline constexpr ip_flags ip_default_ip_flags{};
+
+template<ip_flags flags,typename T>
+struct ip_manip_t
+{
+	using value_type = T;
+	using manip_tag = manip_tag_t;
+#if 0
+	using scalar_manip_detail_tag = ::fast_io::details::scalar_manip_detail_tag;
+#endif
+#ifndef __INTELLISENSE__
+#if __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#endif
+#endif
+	T reference;
+};
+
 struct scalar_flags
 {
 	std::size_t base{10};
@@ -576,7 +605,7 @@ inline constexpr auto bin(scalar_type t) noexcept
 
 template<scalar_flags flags,typename scalar_type>
 requires (((2<=flags.base&&flags.base<=36&&(::fast_io::details::scalar_integrals<scalar_type>))||(flags.base==10&&::fast_io::details::my_floating_point<scalar_type>)))
-inline constexpr auto scalar(scalar_type t) noexcept
+inline constexpr auto scalar_generic(scalar_type t) noexcept
 {
 	if constexpr(::fast_io::details::my_floating_point<scalar_type>)
 	{
