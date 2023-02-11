@@ -980,10 +980,10 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 {
 	iso8601_timestamp retval{};
 	begin = ::fast_io::find_none_c_space(begin, end);
-	auto [itr, ec] = chrono_scan_year_impl(begin, end, retval.year);
-	if (ec != parse_code::ok) [[unlikely]]
+	if (auto [itr, ec] = chrono_scan_year_impl(begin, end, retval.year); ec != parse_code::ok) [[unlikely]]
 		return { itr, ec };
-	begin = itr;
+	else
+		begin = itr;
 	if (end - begin < 16) [[unlikely]]
 		return { end, parse_code::invalid };
 	if (*begin++ != char_literal_v<u8'-', char_type>) [[unlikely]]
