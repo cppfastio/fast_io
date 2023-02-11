@@ -148,7 +148,7 @@ struct my_constant_passer
 };
 
 template<::std::integral char_type,::std::size_t n>
-inline consteval my_constant_passer<char_type,n> compute_char_literal_array_type(char_type (&s)[n]) noexcept
+inline consteval my_constant_passer<char_type,n> compute_char_literal_array_type(char_type (&)[n]) noexcept
 {
 	return {};
 }
