@@ -58,7 +58,6 @@ struct ip_flags
 	bool v6bracket{true};
 	bool v6full{false};
 	bool showport{};
-	bool prefix{};
 };
 
 inline constexpr ip_flags ip_default_flags{.showport=true};
