@@ -282,17 +282,22 @@ inline constexpr ::std::size_t
 	constexpr
 		::std::size_t v4sizewithport{v4totalsize+portsize+1};
 
+	constexpr
+		::std::size_t prefixlength{v4intsize+portsize+1};
+
+	constexpr
+		::std::size_t prefixlengthdetermine{flags.prefix?prefixlength:0};
 
 	if constexpr(::std::same_as<nocvreftype,::fast_io::posix_in_addr>||
 			::std::same_as<nocvreftype,::fast_io::ipv4>)
 	{
 		if constexpr(flags.showport)
 		{
-			return v4sizewithport;
+			return v4sizewithport+prefixlengthdetermine;
 		}
 		else
 		{
-			return v4totalsize;
+			return v4totalsize+prefixlengthdetermine;
 		}
 	}
 	else
@@ -313,15 +318,15 @@ inline constexpr ::std::size_t
 
 		if constexpr(flags.showport)
 		{
-			return v6sizewithport;
+			return v6sizewithport+prefixlengthdetermine;
 		}
 		else if constexpr(flags.v6bracket)
 		{
-			return v6totalsizebracket;
+			return v6totalsizebracket+prefixlengthdetermine;
 		}
 		else
 		{
-			return v6totalsize;
+			return v6totalsize+prefixlengthdetermine;
 		}
 	}
 }
@@ -379,13 +384,13 @@ inline constexpr ip_manip_t<flags,::std::remove_cvref_t<iptype>> ip_generic(ipty
 {
 	return {ipaddr};
 }
-
+#if 0
 template<::fast_io::details::iptypesimpl iptype>
 inline constexpr ip_manip_t<::fast_io::details::base_ip_prefix_flags_cache<!::fast_io::details::inaddrimpl<iptype>>,::std::remove_cvref_t<iptype>> ip_prefix(iptype ipaddr) noexcept
 {
 	return {ipaddr};
 }
-
+#endif
 }
 
 }
