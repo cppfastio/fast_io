@@ -594,4 +594,13 @@ acl* Sacl;
 acl* Dacl;
 };
 
+enum class object_information_class
+{
+ObjectBasicInformation = 0,
+ObjectNameInformation = 1,
+ObjectTypeInformation = 2,
+ObjectAllTypesInformation = 3,
+ObjectHandleInformation = 4
+};
+
 }

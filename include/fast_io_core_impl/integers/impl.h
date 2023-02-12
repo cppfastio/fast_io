@@ -53,14 +53,14 @@ era_t_fmt
 
 struct ip_flags
 {
-	bool v6notation{};
 	bool v6shorten{true};
-	bool v6full{};
 	bool uppercase{};
-	bool showport{true};
+	bool showv6bracket{true};
+	bool showport{};
 };
 
-inline constexpr ip_flags ip_default_ip_flags{};
+inline constexpr ip_flags ip_default_flags{.showport=true};
+inline constexpr ip_flags ip_default_inaddr_flags{};
 
 template<ip_flags flags,typename T>
 struct ip_manip_t

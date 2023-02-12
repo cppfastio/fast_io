@@ -91,26 +91,30 @@ inline constexpr posix_dns_iterator operator++(posix_dns_iterator& d, int) noexc
 
 namespace details
 {
-inline constexpr ::fast_io::ip posix_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,std::uint_least16_t port) noexcept
+
+inline constexpr ::fast_io::ip_address posix_to_ip_address_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr) noexcept
 {
-	::fast_io::ip ret;
+	::fast_io::ip_address ret;
 	switch(ai_family)
 	{
-	case AF_INET:
-	{
-		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.v4),__builtin_addressof(reinterpret_cast<posix_sockaddr_in const*>(ai_addr)->sin_addr),sizeof(posix_in_addr));
-		ret.port = port;
-		ret.isv4=true;
-		break;
-	}
-	case AF_INET6:
-	{
-		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.v6),__builtin_addressof(reinterpret_cast<posix_sockaddr_in6 const*>(ai_addr)->sin6_addr),sizeof(posix_in6_addr));
-		ret.port = port;
-		break;
-	}
+		case AF_INET:
+		{
+			::fast_io::details::my_memcpy(__builtin_addressof(ret.address.v4.address),__builtin_addressof(reinterpret_cast<posix_sockaddr_in const*>(ai_addr)->sin_addr),sizeof(posix_in_addr));
+			ret.isv4=true;
+			break;
+		}
+		case AF_INET6:
+		{
+			::fast_io::details::my_memcpy(__builtin_addressof(ret.address.v6.address),__builtin_addressof(reinterpret_cast<posix_sockaddr_in6 const*>(ai_addr)->sin6_addr),sizeof(posix_in6_addr));
+			break;
+		}
 	}
 	return ret;
+}
+
+inline constexpr ::fast_io::ip posix_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,std::uint_least16_t port) noexcept
+{
+	return ::fast_io::ip{posix_to_ip_address_with_ai_addr_impl(ai_family,ai_addr),port};
 }
 
 inline posix_addrinfo* my_getaddrinfo_impl(char const* node,char const* service,posix_addrinfo const* hints)
@@ -145,9 +149,14 @@ inline constexpr auto posix_dns_open_impl(T const& t)
 
 }
 
-inline constexpr ::fast_io::ip to_ip(posix_dns_io_observer d,std::uint_least16_t port)
+inline constexpr ::fast_io::ip to_ip(posix_dns_io_observer d,std::uint_least16_t port) noexcept
 {
 	return fast_io::details::posix_to_ip_with_ai_addr_impl(d.res->ai_family,d.res->ai_addr,port);
+}
+
+inline constexpr ::fast_io::ip_address to_ip_address(posix_dns_io_observer d) noexcept
+{
+	return fast_io::details::posix_to_ip_address_with_ai_addr_impl(d.res->ai_family,d.res->ai_addr);
 }
 
 class

@@ -70,33 +70,43 @@ inline constexpr win32_family_dns_iterator<fam> operator++(win32_family_dns_iter
 
 namespace details
 {
-inline constexpr ::fast_io::ip win32_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip_address win32_to_ip_address_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr) noexcept
 {
-	::fast_io::ip ret;
+	::fast_io::ip_address ret;
 	switch(ai_family)
 	{
 	case 2:
 	{
 		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.v4),__builtin_addressof(reinterpret_cast<posix_sockaddr_in const*>(ai_addr)->sin_addr),sizeof(posix_in_addr));
-		ret.port = port;
 		ret.isv4=true;
 		break;
 	}
 	case 23:
 	{
 		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.v6),__builtin_addressof(reinterpret_cast<posix_sockaddr_in6 const*>(ai_addr)->sin6_addr),sizeof(posix_in6_addr));
-		ret.port = port;
 		break;
 	}
 	}
 	return ret;
 }
+
+inline constexpr ::fast_io::ip win32_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,std::uint_least16_t port) noexcept
+{
+	return ::fast_io::ip{win32_to_ip_address_with_ai_addr_impl(ai_family,ai_addr),port};
+}
+
 }
 
 template<win32_family fam>
-inline constexpr ::fast_io::ip to_ip(win32_family_dns_io_observer<fam> d,std::uint_least16_t port)
+inline constexpr ::fast_io::ip to_ip(win32_family_dns_io_observer<fam> d,std::uint_least16_t port) noexcept
 {
 	return ::fast_io::details::win32_to_ip_with_ai_addr_impl(d.res->ai_family,d.res->ai_addr,port);
+}
+
+template<win32_family fam>
+inline constexpr ::fast_io::ip_address to_ip_address(win32_family_dns_io_observer<fam> d) noexcept
+{
+	return ::fast_io::details::win32_to_ip_address_with_ai_addr_impl(d.res->ai_family,d.res->ai_addr);
 }
 
 namespace details
