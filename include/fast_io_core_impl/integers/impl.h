@@ -54,9 +54,11 @@ era_t_fmt
 struct ip_flags
 {
 	bool v6shorten{true};
-	bool uppercase{};
-	bool showv6bracket{true};
+	bool v6uppercase{};
+	bool v6bracket{true};
+	bool v6full{false};
 	bool showport{};
+	bool prefix{};
 };
 
 inline constexpr ip_flags ip_default_flags{.showport=true};
@@ -163,6 +165,9 @@ inline constexpr ::fast_io::manipulators::scalar_flags cryptohash_mani_flags_cac
 
 template<std::size_t bs,bool noskipws,bool shbase,bool skipzero>
 inline constexpr ::fast_io::manipulators::scalar_flags base_scan_mani_flags_cache{.base=bs,.showbase=shbase,.noskipws=noskipws,.full=skipzero};
+
+template<bool shport>
+inline constexpr ::fast_io::manipulators::ip_flags base_ip_prefix_flags_cache{.showport=shport};
 
 template<typename inttype>
 struct unsigned_integer_alias_type_traits_helper

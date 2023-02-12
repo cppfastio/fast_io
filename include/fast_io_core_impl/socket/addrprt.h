@@ -3,18 +3,6 @@
 namespace fast_io
 {
 
-#if 0
-namespace manipulators
-{
-
-template<ip_flags flags,typename iptype>
-inline constexpr ip_manip_t<flags,iptype> ip_generic(iptype ipaddr) noexcept
-{
-	return {};
-}
-
-}
-#endif
 
 namespace details
 {
@@ -34,14 +22,14 @@ inline constexpr char_type* prtrsv_inaddr_common_define_impl(char_type* it,char 
 	return it;
 }
 
-template<bool shorten,bool uppercase,bool showv6bracket,::std::integral char_type>
+template<bool shorten,bool uppercase,bool showv6bracket,bool full,::std::integral char_type>
 inline constexpr char_type* prtrsv_in6addr_common_define_impl(char_type *it,::std::uint_least16_t const * __restrict start) noexcept
 {
 	if constexpr(showv6bracket)
 	{
 		*it = ::fast_io::char_literal_v<u8'[',char_type>;
 		++it;
-		it = prtrsv_in6addr_common_define_impl<shorten,uppercase,false>(it,start);
+		it = prtrsv_in6addr_common_define_impl<shorten,uppercase,false,full>(it,start);
 		*it = ::fast_io::char_literal_v<u8']',char_type>;
 		++it;
 	}
@@ -105,7 +93,7 @@ inline constexpr char_type* prtrsv_in6addr_common_define_impl(char_type *it,::st
 					*it=::fast_io::char_literal_v<u8':',char_type>;
 					++it;
 				}
-				it=print_reserve_integral_define<16,false,false,false,uppercase,false>(it,::fast_io::big_endian(*i));
+				it=print_reserve_integral_define<16,false,false,false,uppercase,full>(it,::fast_io::big_endian(*i));
 				++i;
 			}
 		}
@@ -119,7 +107,7 @@ inline constexpr char_type* prtrsv_in6addr_common_define_impl(char_type *it,::st
 				*it=::fast_io::char_literal_v<u8':',char_type>;
 				++it;
 			}
-			it=print_reserve_integral_define<16,false,false,false,uppercase,false>(it,::fast_io::big_endian(*i));
+			it=print_reserve_integral_define<16,false,false,false,uppercase,full>(it,::fast_io::big_endian(*i));
 		}
 	}
 	return it;
@@ -180,10 +168,10 @@ inline constexpr char_type* prtrsv_ipv4_define_impl(char_type* it,::fast_io::ipv
 	return it;
 }
 
-template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,::std::integral char_type>
+template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,bool full,::std::integral char_type>
 inline constexpr char_type* prtrsv_inaddr6_define_impl(char_type* it,::fast_io::posix_in6_addr v) noexcept
 {
-	it = prtrsv_in6addr_common_define_impl<v6shorten,uppercase,showport?true:showv6bracket>(it,v.address);
+	it = prtrsv_in6addr_common_define_impl<v6shorten,uppercase,showport?true:showv6bracket,full>(it,v.address);
 	if constexpr(showport)
 	{
 		it = prtrsv_ipport_zero_define_impl(it);
@@ -191,10 +179,10 @@ inline constexpr char_type* prtrsv_inaddr6_define_impl(char_type* it,::fast_io::
 	return it;
 }
 
-template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,::std::integral char_type>
+template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,bool full,::std::integral char_type>
 inline constexpr char_type* prtrsv_ipv6_define_impl(char_type* it,::fast_io::ipv6 v) noexcept
 {
-	it = prtrsv_in6addr_common_define_impl<v6shorten,uppercase,showport?true:showv6bracket>(it,v.address.address);
+	it = prtrsv_in6addr_common_define_impl<v6shorten,uppercase,showport?true:showv6bracket,full>(it,v.address.address);
 	if constexpr(showport)
 	{
 		it = prtrsv_ipport_define_impl(it,v.port);
@@ -202,12 +190,12 @@ inline constexpr char_type* prtrsv_ipv6_define_impl(char_type* it,::fast_io::ipv
 	return it;
 }
 
-template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,::std::integral char_type>
+template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,bool full,::std::integral char_type>
 inline constexpr char_type* prtrsv_ip_address_define_impl(char_type *it,::fast_io::ip_address v) noexcept
 {
 	if constexpr(showport)
 	{
-		it = prtrsv_ip_address_define_impl<v6shorten,uppercase,showv6bracket,false>(it,v);
+		it = prtrsv_ip_address_define_impl<v6shorten,uppercase,showv6bracket,false,full>(it,v);
 		return prtrsv_ipport_zero_define_impl(it);
 	}
 	else
@@ -218,16 +206,16 @@ inline constexpr char_type* prtrsv_ip_address_define_impl(char_type *it,::fast_i
 		}
 		else
 		{
-			it = prtrsv_in6addr_common_define_impl<v6shorten,uppercase,showport?true:showv6bracket>(it,v.address.v6.address);
+			it = prtrsv_in6addr_common_define_impl<v6shorten,uppercase,showport?true:showv6bracket,full>(it,v.address.v6.address);
 		}
 		return it;
 	}
 }
 
-template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,::std::integral char_type>
+template<bool v6shorten,bool uppercase,bool showv6bracket,bool showport,bool full,::std::integral char_type>
 inline constexpr char_type* prtrsv_ip_define_impl(char_type* it,::fast_io::ip v) noexcept
 {
-	it = prtrsv_ip_address_define_impl<v6shorten,uppercase,(showport?true:showv6bracket),false>(it,v.address);
+	it = prtrsv_ip_address_define_impl<v6shorten,uppercase,(showport?true:showv6bracket),false,full>(it,v.address);
 	if constexpr(showport)
 	{
 		it = prtrsv_ipport_define_impl(it,v.port);
@@ -327,7 +315,7 @@ inline constexpr ::std::size_t
 		{
 			return v6sizewithport;
 		}
-		else if constexpr(flags.showv6bracket)
+		else if constexpr(flags.v6bracket)
 		{
 			return v6totalsizebracket;
 		}
@@ -358,28 +346,46 @@ inline constexpr char_type* print_reserve_define(::fast_io::io_reserve_type_t<ch
 	}
 	else if constexpr(::std::same_as<iptype,::fast_io::posix_in6_addr>)
 	{
-		return ::fast_io::details::prtrsv_inaddr6_define_impl<flags.v6shorten,flags.uppercase,
-			flags.showport?true:flags.showv6bracket,
+		return ::fast_io::details::prtrsv_inaddr6_define_impl<flags.v6shorten,flags.v6uppercase,
+			flags.showport?true:flags.v6bracket,flags.v6full,
 			flags.showport>(iter,val.reference);
 	}
 	else if constexpr(::std::same_as<iptype,::fast_io::ipv6>)
 	{
-		return ::fast_io::details::prtrsv_ipv6_define_impl<flags.v6shorten,flags.uppercase,
-			flags.showport?true:flags.showv6bracket,
+		return ::fast_io::details::prtrsv_ipv6_define_impl<flags.v6shorten,flags.v6uppercase,
+			flags.showport?true:flags.v6bracket,flags.v6full,
 			flags.showport>(iter,val.reference);
 	}
 	else if constexpr(::std::same_as<iptype,::fast_io::ip_address>)
 	{
-		return ::fast_io::details::prtrsv_ip_address_define_impl<flags.v6shorten,flags.uppercase,
-			flags.showport?true:flags.showv6bracket,
+		return ::fast_io::details::prtrsv_ip_address_define_impl<flags.v6shorten,flags.v6uppercase,
+			flags.showport?true:flags.v6bracket,flags.v6full,
 			flags.showport>(iter,val.reference);
 	}
 	else
 	{
-		return ::fast_io::details::prtrsv_ip_define_impl<flags.v6shorten,flags.uppercase,
-			flags.showport?true:flags.showv6bracket,
+		return ::fast_io::details::prtrsv_ip_define_impl<flags.v6shorten,flags.v6uppercase,
+			flags.showport?true:flags.v6bracket,flags.v6full,
 			flags.showport>(iter,val.reference);
 	}
+}
+
+
+namespace manipulators
+{
+
+template<ip_flags flags,::fast_io::details::iptypesimpl iptype>
+inline constexpr ip_manip_t<flags,::std::remove_cvref_t<iptype>> ip_generic(iptype ipaddr) noexcept
+{
+	return {ipaddr};
+}
+
+template<::fast_io::details::iptypesimpl iptype>
+inline constexpr ip_manip_t<::fast_io::details::base_ip_prefix_flags_cache<!::fast_io::details::inaddrimpl<iptype>>,::std::remove_cvref_t<iptype>> ip_prefix(iptype ipaddr) noexcept
+{
+	return {ipaddr};
+}
+
 }
 
 }
