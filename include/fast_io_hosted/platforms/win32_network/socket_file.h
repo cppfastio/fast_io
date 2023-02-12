@@ -18,11 +18,7 @@ public:
 		hsocket={};
 		return temp;
 	}
-	constexpr native_handle_type const& native_handle() const noexcept
-	{
-		return hsocket;
-	}
-	constexpr native_handle_type& native_handle() noexcept
+	constexpr native_handle_type native_handle() const noexcept
 	{
 		return hsocket;
 	}
@@ -571,17 +567,17 @@ inline std::uintptr_t win32_family_tcp_connect_v6_impl(ipv6 v6,open_mode m)
 template<win32_family family>
 inline std::uintptr_t win32_family_tcp_connect_ip_impl(ip v,open_mode m)
 {
-	basic_win32_family_socket_file<family,char> soc(v.isv4?sock_family::inet:sock_family::inet6,sock_type::stream,m,sock_protocol::tcp);
-	if(v.isv4)
+	basic_win32_family_socket_file<family,char> soc(v.address.isv4?sock_family::inet:sock_family::inet6,sock_type::stream,m,sock_protocol::tcp);
+	if(v.address.isv4)
 	{
 		constexpr auto inet{to_win32_sock_family(sock_family::inet)};
-		posix_sockaddr_in in{.sin_family=inet,.sin_port=big_endian(v.port),.sin_addr=v.address.v4};
+		posix_sockaddr_in in{.sin_family=inet,.sin_port=big_endian(v.port),.sin_addr=v.address.address.v4};
 		posix_connect(soc,__builtin_addressof(in),sizeof(in));
 	}
 	else
 	{
 		constexpr auto inet6{to_win32_sock_family(sock_family::inet6)};
-		posix_sockaddr_in6 in6{.sin6_family=inet6,.sin6_port=big_endian(v.port),.sin6_addr=v.address.v6};
+		posix_sockaddr_in6 in6{.sin6_family=inet6,.sin6_port=big_endian(v.port),.sin6_addr=v.address.address.v6};
 		posix_connect(soc,__builtin_addressof(in6),sizeof(in6));
 	}
 	return soc.release();
