@@ -55,12 +55,12 @@ struct ip_flags
 {
 	bool v6shorten{true};
 	bool v6uppercase{};
-	bool v6bracket{true};
+	bool v6bracket{};
 	bool v6full{false};
 	bool showport{};
 };
 
-inline constexpr ip_flags ip_default_flags{.showport=true};
+inline constexpr ip_flags ip_default_flags{.v6bracket=true,.showport=true};
 inline constexpr ip_flags ip_default_inaddr_flags{};
 
 template<ip_flags flags,typename T>
