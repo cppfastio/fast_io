@@ -44,27 +44,30 @@ __asm__("gethostbyname")
 namespace details
 {
 
-inline constexpr ::fast_io::ip hostent_to_ip_impl(::fast_io::win32::hostent* ent,std::size_t pos,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip_address hostent_to_ip_address_impl(::fast_io::win32::hostent* ent,std::size_t pos) noexcept
 {
-	::fast_io::ip ipaddr;
+	::fast_io::ip_address ipaddr;
 	if(ent->h_addrtype==2)
 	{
 		if(ent->h_length==sizeof(posix_in_addr))[[likely]]
 		{
-			ipaddr.port=port;
+			my_memcpy(__builtin_addressof(ipaddr.address.v4.address),ent->h_addr_list[pos],sizeof(posix_in_addr));
 			ipaddr.isv4=true;
-			my_memcpy(__builtin_addressof(ipaddr.address.v4),ent->h_addr_list[pos],sizeof(posix_in_addr));
 		}
 	}
 	else if(ent->h_addrtype==23)
 	{
 		if(ent->h_length==sizeof(posix_in6_addr))[[likely]]
 		{
-			ipaddr.port=port;
-			my_memcpy(__builtin_addressof(ipaddr.address.v6),ent->h_addr_list[pos],sizeof(posix_in6_addr));
+			my_memcpy(__builtin_addressof(ipaddr.address.v6.address),ent->h_addr_list[pos],sizeof(posix_in6_addr));
 		}
 	}
 	return ipaddr;
+}
+
+inline constexpr ::fast_io::ip hostent_to_ip_impl(::fast_io::win32::hostent* ent,std::size_t pos,std::uint_least16_t port) noexcept
+{
+	return ::fast_io::ip{hostent_to_ip_address_impl(ent,pos),port};
 }
 
 }
@@ -90,9 +93,14 @@ public:
 	}
 };
 
-inline constexpr ::fast_io::ip to_ip(win32_9x_dns_io_observer d,std::uint_least16_t port)
+inline constexpr ::fast_io::ip to_ip(win32_9x_dns_io_observer d,std::uint_least16_t port) noexcept
 {
 	return ::fast_io::details::hostent_to_ip_impl(d.res,0u,port);
+}
+
+inline constexpr ::fast_io::ip_address to_ip_address(win32_9x_dns_io_observer d,std::uint_least16_t port) noexcept
+{
+	return ::fast_io::details::hostent_to_ip_address_impl(d.res,0u);
 }
 
 struct win32_9x_dns_iterator
