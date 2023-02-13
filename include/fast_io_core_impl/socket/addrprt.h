@@ -385,4 +385,42 @@ inline constexpr ip_manip_t<flags,::std::remove_cvref_t<iptype>> ip_generic(ipty
 
 }
 
+#if 0
+namespace details {
+
+template <::std::integral char_type>
+inline constexpr parse_result<char_type const*> scn_cnt_define_ipv4_impl(char_type const* begin, char_type const* end, ipv4& t) noexcept
+{
+	
+}
+
+
+}
+
+template <::std::integral char_type>
+inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, parameter<ipv4&>>, char_type const* begin, char_type const* end, parameter<ipv4&> t) noexcept
+{
+
+}
+
+template <::std::integral char_type>
+inline constexpr io_type_t<int> scan_context_type(io_reserve_type_t<char_type, parameter<ipv4&>>) noexcept
+{
+	return {};
+}
+
+template <::std::integral char_type>
+inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, parameter<ipv4&>>, int& state, char_type const* begin, char_type const* end, parameter<ipv4&>) noexcept
+{
+
+}
+
+template <::std::integral char_type>
+inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, parameter<ipv4&>>, int& state, parameter<ipv4&>) noexcept
+{
+
+}
+
+#endif
+
 }
