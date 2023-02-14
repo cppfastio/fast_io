@@ -1083,6 +1083,53 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	return { begin, parse_code::ok };
 }
 
+template <::std::integral char_type, ::std::integral T>
+inline constexpr parse_result<char_type const*> scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, T& t) noexcept
+{
+	auto diff{ end - begin };
+	if (diff == 0)
+		return { begin, parse_code::partial };
+	auto buffer_begin{ state.buffer.begin() };
+	switch (state.size)
+	{
+	case 0:
+	{
+		if (diff >= 2)
+		{
+			/*no copy to buffer*/
+			if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, t); ec != parse_code::ok) [[unlikely]]
+				return { begin, ec };
+			++state.tsp_phase;
+			begin += 2;
+		}
+		else /*diff == 1*/
+		{
+			::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin);
+			state.size = 1;
+			return { end, parse_code::partial };
+		}
+		break;
+	}
+	case 1:
+	{
+		::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin + 1);
+		if (auto ec = chrono_scan_two_digits_unsafe_impl(buffer_begin, t); ec != parse_code::ok) [[unlikely]]
+			return { begin,ec };
+		state.size = 0;
+		++state.tsp_phase;
+		++begin;
+		break;
+	}
+	default:;
+#ifdef __has_builtin
+#if __has_builtin(__builtin_unreachable)
+		__builtin_unreachable();
+#endif
+#endif
+	}
+	return { begin, parse_code::ok };
+}
+
 template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, iso8601_timestamp& t) noexcept
 {
@@ -1117,75 +1164,66 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'-');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::month:
-#define FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(VAR, EXPR) \
-	{ \
-		auto diff{ end - begin }; \
-		if (diff == 0) \
-			return { begin, parse_code::partial }; \
-		auto buffer_begin{ state.buffer.begin() }; \
-		switch (state.size) \
-		{ \
-		case 0: \
-		{ \
-			if (diff >= 2) \
-			{ \
-				/*no copy to buffer*/ \
-				if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, VAR); ec != parse_code::ok) [[unlikely]] \
-					return { begin, ec }; \
-				if (EXPR) \
-					return { begin, parse_code::overflow }; \
-				++state.tsp_phase; \
-				begin += 2; \
-			} \
-			else /*diff == 1*/ \
-			{ \
-				::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin); \
-				state.size = 1; \
-				return { end, parse_code::partial }; \
-			} \
-			break; \
-		} \
-		case 1: \
-		{ \
-			::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin + 1); \
-			if (auto ec = chrono_scan_two_digits_unsafe_impl(buffer_begin, VAR); ec != parse_code::ok) [[unlikely]] \
-				return { begin,ec }; \
-			state.size = 0; \
-			if (EXPR) \
-				return { begin, parse_code::overflow }; \
-			++state.tsp_phase; \
-			++begin; \
-			break; \
-		} \
-		/* default: ::std::unreachable(); */ \
-		} \
-	} \
-
-		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.month, (t.month > 12 || t.month == 0));
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.month); ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else
+		{
+			if (t.month > 12 || t.month == 0) [[unlikely]]
+				return { itr, parse_code::overflow };
+			begin = itr;
+		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::after_month:
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'-');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::day:
-		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.day, (t.day > 31 || t.day == 0));
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.day); ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else
+		{
+			if (t.day > 31 || t.day == 0) [[unlikely]]
+				return { itr, parse_code::overflow };
+			begin = itr;
+		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::after_day:
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'T');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::hours:
-		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.hours, (t.hours >= 24));
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.hours); ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else
+		{
+			if (t.hours >= 24) [[unlikely]]
+				return { itr, parse_code::overflow };
+			begin = itr;
+		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::after_hours:
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8':');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::minutes:
-		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.minutes, (t.minutes >= 60));
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.minutes); ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else
+		{
+			if (t.minutes >= 60) [[unlikely]]
+				return { itr, parse_code::overflow };
+			begin = itr;
+		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::after_minutes:
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8':');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::seconds:
-		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.seconds, (t.seconds >= 60));
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.seconds); ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else
+		{
+			if (t.seconds >= 60) [[unlikely]]
+				return { itr, parse_code::overflow };
+			begin = itr;
+		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::timezone_marker:
 	case scan_timestamp_context_phase::after_subseconds_timezone_marker:
@@ -1221,7 +1259,14 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 		[[fallthrough]];
 	}
 	case scan_timestamp_context_phase::timezone_hours:
-		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(t.timezone, (t.timezone >= 24));
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.timezone); ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else
+		{
+			if (t.timezone >= 24) [[unlikely]]
+				return { itr, parse_code::overflow };
+			begin = itr;
+		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::after_timezone_hours:
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8':');
@@ -1229,7 +1274,14 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 	case scan_timestamp_context_phase::timezone_minutes:
 	{
 		::std::uint8_t timezone_minutes;
-		FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE(timezone_minutes, (timezone_minutes >= 60));
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, timezone_minutes); ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		else
+		{
+			if (timezone_minutes >= 60) [[unlikely]]
+				return { itr, parse_code::overflow };
+			begin = itr;
+		}
 		t.timezone *= 3600;
 		t.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
 		if (state.size)
@@ -1287,7 +1339,6 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 #endif
 #endif
 #undef FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE
-#undef FAST_IO_SCAN_ISO8601_CONTEXT_2_DIGITS_PHASE
 }
 
 }
