@@ -385,40 +385,222 @@ inline constexpr ip_manip_t<flags,::std::remove_cvref_t<iptype>> ip_generic(ipty
 
 }
 
-#if 0
+#if 1
+enum class scan_ipv4_context_phase : ::std::uint_least8_t
+{
+	addr0,
+	dot0,
+	addr1,
+	dot1,
+	addr2,
+	dot2,
+	addr3
+};
+
+enum class scan_integral_context_phase : ::std::uint_least8_t;
+template <::std::integral char_type>
+struct ipv4_scan_state_t
+{
+	// TODO: to find out why +1 is needed here
+	static inline constexpr auto max_size{ ::fast_io::details::print_integer_reserved_size_cache<10, false, false, ::std::uint_least8_t> + 1 };
+	::fast_io::freestanding::array<char_type, max_size> buffer;
+	scan_integral_context_phase integer_phase{};
+	::std::uint_least8_t size{};
+	scan_ipv4_context_phase ipv4_phase{};
+};
+
 namespace details {
 
 template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scn_cnt_define_ipv4_impl(char_type const* begin, char_type const* end, ipv4& t) noexcept
+inline constexpr parse_result<char_type const*> scn_cnt_define_ipv4_impl(char_type const* begin, char_type const* end, posix_in_addr& t) noexcept
 {
-	
+	auto [itr0, ec0] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[0]);
+	if (ec0 != parse_code::ok) [[unlikely]]
+		return { itr0, ec0 };
+	if constexpr (sizeof(decltype(t.address[0])) != 1)
+	{
+		if (t.address[0] >= 256u) [[unlikely]]
+			return { itr0, parse_code::overflow };
+	}
+	begin = itr0;
+	if (begin == end || *begin != char_literal_v<u8'.', char_type>) [[unlikely]]
+		return { begin, parse_code::invalid };
+	++begin;
+	auto [itr1, ec1] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[1]);
+	if (ec1 != parse_code::ok) [[unlikely]]
+		return { itr1, ec1 };
+	if constexpr (sizeof(decltype(t.address[1])) != 1)
+	{
+		if (t.address[1] >= 256u) [[unlikely]]
+			return { itr1, parse_code::overflow };
+	}
+	begin = itr1;
+	if (begin == end || *begin != char_literal_v<u8'.', char_type>) [[unlikely]]
+		return { begin, parse_code::invalid };
+	++begin;
+	auto [itr2, ec2] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[2]);
+	if (ec2 != parse_code::ok) [[unlikely]]
+		return { itr2, ec2 };
+	if constexpr (sizeof(decltype(t.address[2])) != 1)
+	{
+		if (t.address[2] >= 256u) [[unlikely]]
+			return { itr2, parse_code::overflow };
+	}
+	begin = itr2;
+	if (begin == end || *begin != char_literal_v<u8'.', char_type>) [[unlikely]]
+		return { begin, parse_code::invalid };
+	++begin;
+	auto [itr3, ec3] = scan_int_contiguous_define_impl<10, true, false, false>(begin, end, t.address[3]);
+	if (ec3 != parse_code::ok) [[unlikely]]
+		return { itr3, ec3 };
+	if constexpr (sizeof(decltype(t.address[3])) != 1)
+	{
+		if (t.address[3] >= 256u) [[unlikely]]
+			return { itr3, parse_code::overflow };
+	}
+	begin = itr3;
+	return { begin, parse_code::ok };
 }
 
+template <::std::integral char_type>
+inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, posix_in_addr& t) noexcept
+{
+	switch (state.ipv4_phase)
+	{
+	case scan_ipv4_context_phase::addr0:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		auto [itr, ec] = scan_context_define_parse_impl<10, false, false, false>(state, begin, end, t.address[0]);
+		if (ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		if constexpr (sizeof(decltype(t.address[0])) != 1)
+		{
+			if (t.address[0] >= 256) [[unlikely]]
+				return { itr, parse_code::overflow };
+		}
+		state.size = 0;
+		state.integer_phase = scan_integral_context_phase::zero;
+		begin = itr;
+		state.ipv4_phase = scan_ipv4_context_phase::dot0;
+		[[fallthrough]];
+	}
+	case scan_ipv4_context_phase::dot0:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
+			return { begin, parse_code::invalid };
+		++begin;
+		state.ipv4_phase = scan_ipv4_context_phase::addr1;
+		[[fallthrough]];
+	}
+	case scan_ipv4_context_phase::addr1:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		auto [itr, ec] = scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.address[1]);
+		if (ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		if constexpr (sizeof(decltype(t.address[1])) != 1)
+		{
+			if (t.address[1] >= 256) [[unlikely]]
+				return { itr, parse_code::overflow };
+		}
+		state.size = 0;
+		state.integer_phase = scan_integral_context_phase::zero;
+		begin = itr;
+		state.ipv4_phase = scan_ipv4_context_phase::dot1;
+		[[fallthrough]];
+	}
+	case scan_ipv4_context_phase::dot1:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
+			return { begin, parse_code::invalid };
+		++begin;
+		state.ipv4_phase = scan_ipv4_context_phase::addr2;
+		[[fallthrough]];
+	}
+	case scan_ipv4_context_phase::addr2:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		auto [itr, ec] = scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.address[2]);
+		if (ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		if constexpr (sizeof(decltype(t.address[2])) != 1)
+		{
+			if (t.address[2] >= 256) [[unlikely]]
+				return { itr, parse_code::overflow };
+		}
+		state.size = 0;
+		state.integer_phase = scan_integral_context_phase::zero;
+		begin = itr;
+		state.ipv4_phase = scan_ipv4_context_phase::dot2;
+		[[fallthrough]];
+	}
+	case scan_ipv4_context_phase::dot2:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
+			return { begin, parse_code::invalid };
+		++begin;
+		state.ipv4_phase = scan_ipv4_context_phase::addr3;
+		[[fallthrough]];
+	}
+	case scan_ipv4_context_phase::addr3:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		auto [itr, ec] = scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.address[3]);
+		if (ec != parse_code::ok) [[unlikely]]
+			return { itr, ec };
+		if constexpr (sizeof(decltype(t.address[3])) != 1)
+		{
+			if (t.address[3] >= 256) [[unlikely]]
+				return { itr, parse_code::overflow };
+		}
+		begin = itr;
+		return { begin, parse_code::ok };
+	}
+	}
+#ifdef __has_builtin
+#if __has_builtin(__builtin_unreachable)
+	__builtin_unreachable();
+#endif
+#endif
+}
 
 }
 
 template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, parameter<ipv4&>>, char_type const* begin, char_type const* end, parameter<ipv4&> t) noexcept
+inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, parameter<posix_in_addr&>>, char_type const* begin, char_type const* end, parameter<posix_in_addr&> t) noexcept
 {
-
+	return details::scn_cnt_define_ipv4_impl(begin, end, t.reference);
 }
 
 template <::std::integral char_type>
-inline constexpr io_type_t<int> scan_context_type(io_reserve_type_t<char_type, parameter<ipv4&>>) noexcept
+inline constexpr io_type_t<ipv4_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, parameter<posix_in_addr&>>) noexcept
 {
 	return {};
 }
 
 template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, parameter<ipv4&>>, int& state, char_type const* begin, char_type const* end, parameter<ipv4&>) noexcept
+inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, parameter<posix_in_addr&>>, ipv4_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, parameter<posix_in_addr&> t) noexcept
 {
-
+	return details::scn_ctx_define_ipv4_impl(state, begin, end, t.reference);
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, parameter<ipv4&>>, int& state, parameter<ipv4&>) noexcept
+inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, parameter<posix_in_addr&>>, ipv4_scan_state_t<char_type>& state, parameter<posix_in_addr&> t) noexcept
 {
-
+	if (state.ipv4_phase != scan_ipv4_context_phase::addr3)
+		return parse_code::end_of_file;
+	else
+		return details::scan_int_contiguous_none_space_part_define_impl<10>(state.buffer.data(), state.buffer.data() + state.size, t.reference.address[3]).code;
 }
 
 #endif
