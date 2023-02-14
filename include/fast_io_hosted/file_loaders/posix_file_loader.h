@@ -217,7 +217,7 @@ inline auto posix_load_file_impl(T const& str,open_mode om,perms pm)
 }
 
 template<bool allocation,::fast_io::constructible_to_os_c_str T>
-inline auto posix_load_file_impl(posix_at_entry ent,T const& str,open_mode om,perms pm)
+inline auto posix_load_file_impl(native_at_entry ent,T const& str,open_mode om,perms pm)
 {
 	posix_file pf(ent,str,om,pm);
 	return posix_load_address_impl<allocation>(pf.fd);
@@ -264,7 +264,7 @@ public:
 		address_end=ret.address_end;
 	}
 	template<::fast_io::constructible_to_os_c_str T>
-	inline explicit posix_file_loader_impl(posix_at_entry ent,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
+	inline explicit posix_file_loader_impl(native_at_entry ent,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
 		auto ret{posix_load_file_impl<allocation>(ent,filename,om,pm)};
 		address_begin=ret.address_begin;
