@@ -350,26 +350,26 @@ inline constexpr char_type* print_reserve_define(::fast_io::io_reserve_type_t<ch
 	else if constexpr(::std::same_as<iptype,::fast_io::posix_in6_addr>)
 	{
 		return ::fast_io::details::prtrsv_inaddr6_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 	else if constexpr(::std::same_as<iptype,::fast_io::ipv6>)
 	{
 		return ::fast_io::details::prtrsv_ipv6_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 	else if constexpr(::std::same_as<iptype,::fast_io::ip_address>)
 	{
 		return ::fast_io::details::prtrsv_ip_address_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 	else
 	{
 		return ::fast_io::details::prtrsv_ip_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 }
 
@@ -385,7 +385,7 @@ inline constexpr ip_manip_t<flags,::std::remove_cvref_t<iptype>> ip_generic(ipty
 
 }
 
-#if 1
+#if 0
 enum class scan_ipv4_context_phase : ::std::uint_least8_t
 {
 	addr0,
@@ -642,6 +642,11 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_port_type_general
 	return result;
 }
 
+template <bool v6shorten, bool v6uppercase, bool v6bracket, bool v6full, ::std::integral char_type>
+inline constexpr parse_result<char_type const*> scn_cnt_define_in6addr_impl(char_type const* begin, char_type const* end, posix_in6_addr& t) noexcept
+{
+}
+
 }
 
 namespace manipulators
@@ -727,10 +732,10 @@ inline constexpr parse_result<char_type const*> scan_contiguous_define(::fast_io
 }
 
 template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
-inline constexpr auto scan_context_type(io_reserve_type_t<char_type, ::fast_io::manipulators::ip_manip_t<flags, posix_in_addr*>>) noexcept
+inline constexpr io_type_t<ipv4_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, ::fast_io::manipulators::ip_manip_t<flags, posix_in_addr*>>) noexcept
 {
 	static_assert(flags.showport == false, "please use fast_io::ipv4 to store a port");
-	return io_type_t<ipv4_scan_state_t<char_type>>{};
+	return {};
 }
 
 template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
@@ -751,9 +756,9 @@ inline constexpr parse_code scan_context_eof_define(::fast_io::io_reserve_type_t
 }
 
 template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
-inline constexpr auto scan_context_type(io_reserve_type_t<char_type, ::fast_io::manipulators::ip_manip_t<flags, ipv4*>>) noexcept
+inline constexpr io_type_t<ipv4_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, ::fast_io::manipulators::ip_manip_t<flags, ipv4*>>) noexcept
 {
-	return io_type_t<ipv4_scan_state_t<char_type>>{};
+	return {};
 }
 
 template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
