@@ -350,26 +350,26 @@ inline constexpr char_type* print_reserve_define(::fast_io::io_reserve_type_t<ch
 	else if constexpr(::std::same_as<iptype,::fast_io::posix_in6_addr>)
 	{
 		return ::fast_io::details::prtrsv_inaddr6_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 	else if constexpr(::std::same_as<iptype,::fast_io::ipv6>)
 	{
 		return ::fast_io::details::prtrsv_ipv6_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 	else if constexpr(::std::same_as<iptype,::fast_io::ip_address>)
 	{
 		return ::fast_io::details::prtrsv_ip_address_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 	else
 	{
 		return ::fast_io::details::prtrsv_ip_define_impl<flags.v6shorten,flags.v6uppercase,
-			flags.showport?true:flags.v6bracket,flags.v6full,
-			flags.showport>(iter,val.reference);
+			flags.showport?true:flags.v6bracket,flags.showport,
+			flags.v6full>(iter,val.reference);
 	}
 }
 
@@ -385,7 +385,7 @@ inline constexpr ip_manip_t<flags,::std::remove_cvref_t<iptype>> ip_generic(ipty
 
 }
 
-#if 1
+#if 0
 enum class scan_ipv4_context_phase : ::std::uint_least8_t
 {
 	addr0,
@@ -397,23 +397,38 @@ enum class scan_ipv4_context_phase : ::std::uint_least8_t
 	addr3
 };
 
+enum class scan_ipv6_context_phase : ::std::uint_least8_t
+{
+	nothing,
+};
+
 enum class scan_integral_context_phase : ::std::uint_least8_t;
-template <::std::integral char_type>
-struct ipv4_scan_state_t
+template <typename phase_t, ::std::integral char_type>
+struct ip_scan_state_t
 {
 	// TODO: to find out why +1 is needed here
-	static inline constexpr auto max_size{ ::fast_io::details::print_integer_reserved_size_cache<10, false, false, ::std::uint_least8_t> + 1 };
+	static inline constexpr auto max_size{ ::fast_io::details::print_integer_reserved_size_cache<10, false, false, ::std::uint_least16_t> + 1 };
 	::fast_io::freestanding::array<char_type, max_size> buffer;
 	scan_integral_context_phase integer_phase{};
 	::std::uint_least8_t size{};
-	scan_ipv4_context_phase ipv4_phase{};
+	phase_t ip_phase{};
+	static inline constexpr ::std::uint_least8_t port_mark = -1;
+	static inline constexpr ::std::uint_least8_t port = -2;
 };
+template <::std::integral char_type>
+using ipv4_scan_state_t = ip_scan_state_t<scan_ipv4_context_phase, char_type>;
+template <::std::integral char_type>
+using ipv6_scan_state_t = ip_scan_state_t<scan_ipv6_context_phase, char_type>;
+template <::std::integral char_type>
+using ip_port_scan_state_t = ip_scan_state_t<::std::uint_least8_t, char_type>;
 
 namespace details {
 
 template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scn_cnt_define_ipv4_impl(char_type const* begin, char_type const* end, posix_in_addr& t) noexcept
+inline constexpr parse_result<char_type const*> scn_cnt_define_inaddr_impl(char_type const* begin, char_type const* end, posix_in_addr& t) noexcept
 {
+	if (end - begin < 7) [[unlikely]]
+		return { begin, parse_code::invalid };
 	auto [itr0, ec0] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[0]);
 	if (ec0 != parse_code::ok) [[unlikely]]
 		return { itr0, ec0 };
@@ -438,6 +453,8 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_ipv4_impl(char_ty
 	if (begin == end || *begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
 	++begin;
+	if (end - begin < 3) [[unlikely]]
+		return { begin, parse_code::invalid };
 	auto [itr2, ec2] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[2]);
 	if (ec2 != parse_code::ok) [[unlikely]]
 		return { itr2, ec2 };
@@ -463,9 +480,9 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_ipv4_impl(char_ty
 }
 
 template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, posix_in_addr& t) noexcept
+inline constexpr parse_result<char_type const*> scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, posix_in_addr& t) noexcept
 {
-	switch (state.ipv4_phase)
+	switch (state.ip_phase)
 	{
 	case scan_ipv4_context_phase::addr0:
 	{
@@ -482,7 +499,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_sc
 		state.size = 0;
 		state.integer_phase = scan_integral_context_phase::zero;
 		begin = itr;
-		state.ipv4_phase = scan_ipv4_context_phase::dot0;
+		state.ip_phase = scan_ipv4_context_phase::dot0;
 		[[fallthrough]];
 	}
 	case scan_ipv4_context_phase::dot0:
@@ -492,7 +509,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_sc
 		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 			return { begin, parse_code::invalid };
 		++begin;
-		state.ipv4_phase = scan_ipv4_context_phase::addr1;
+		state.ip_phase = scan_ipv4_context_phase::addr1;
 		[[fallthrough]];
 	}
 	case scan_ipv4_context_phase::addr1:
@@ -510,7 +527,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_sc
 		state.size = 0;
 		state.integer_phase = scan_integral_context_phase::zero;
 		begin = itr;
-		state.ipv4_phase = scan_ipv4_context_phase::dot1;
+		state.ip_phase = scan_ipv4_context_phase::dot1;
 		[[fallthrough]];
 	}
 	case scan_ipv4_context_phase::dot1:
@@ -520,7 +537,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_sc
 		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 			return { begin, parse_code::invalid };
 		++begin;
-		state.ipv4_phase = scan_ipv4_context_phase::addr2;
+		state.ip_phase = scan_ipv4_context_phase::addr2;
 		[[fallthrough]];
 	}
 	case scan_ipv4_context_phase::addr2:
@@ -538,7 +555,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_sc
 		state.size = 0;
 		state.integer_phase = scan_integral_context_phase::zero;
 		begin = itr;
-		state.ipv4_phase = scan_ipv4_context_phase::dot2;
+		state.ip_phase = scan_ipv4_context_phase::dot2;
 		[[fallthrough]];
 	}
 	case scan_ipv4_context_phase::dot2:
@@ -548,7 +565,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_sc
 		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 			return { begin, parse_code::invalid };
 		++begin;
-		state.ipv4_phase = scan_ipv4_context_phase::addr3;
+		state.ip_phase = scan_ipv4_context_phase::addr3;
 		[[fallthrough]];
 	}
 	case scan_ipv4_context_phase::addr3:
@@ -574,34 +591,229 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_ipv4_impl(ipv4_sc
 #endif
 }
 
+template <::std::integral char_type>
+inline constexpr parse_result<char_type const*> scn_cnt_define_port_impl(char_type const* begin, char_type const* end, ::std::uint_least16_t& t) noexcept
+{
+	if (begin == end) [[unlikely]]
+		return { begin, parse_code::invalid };
+	if (*begin != char_literal_v<u8':', char_type>) [[unlikely]]
+		return { begin, parse_code::invalid };
+	++begin;
+	return scan_int_contiguous_define_impl<10, true, false, false>(begin, end, t);
 }
 
 template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, parameter<posix_in_addr&>>, char_type const* begin, char_type const* end, parameter<posix_in_addr&> t) noexcept
+inline constexpr parse_result<char_type const*> scn_ctx_define_port_impl(ip_port_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, ::std::uint_least16_t& t) noexcept
 {
-	return details::scn_cnt_define_ipv4_impl(begin, end, t.reference);
+	switch (state.ip_phase)
+	{
+	case state.port_mark:
+		if (begin == end)
+			return { begin, parse_code::partial };
+		if (*begin != char_literal_v<u8':', char_type>) [[unlikely]]
+			return { begin, parse_code::invalid };
+		++begin;
+		state.ip_phase = state.port;
+		[[fallthrough]];
+	case state.port:
+		if (begin == end)
+			return { begin, parse_code::partial };
+		return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t);
+	default:;
+#ifdef __has_builtin
+#if __has_builtin(__builtin_unreachable)
+		__builtin_unreachable();
+#endif
+#endif
+	}
 }
 
-template <::std::integral char_type>
-inline constexpr io_type_t<ipv4_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, parameter<posix_in_addr&>>) noexcept
+template <typename state_t, ::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr parse_result<char_type const*> scn_ctx_define_port_type_general_impl(state_t& state, char_type const* begin, char_type const* end, ::std::uint_least16_t& t) noexcept
 {
+	auto new_state{ ::std::bit_cast<ip_port_scan_state_t<char_type>>(state) };
+	auto result{ scn_ctx_define_port_impl<char_type>(new_state, begin, end, t) };
+	state = ::std::bit_cast<state_t>(new_state);
+	return result;
+}
+
+template <bool v6shorten, bool v6uppercase, bool v6bracket, bool v6full, ::std::integral char_type>
+inline constexpr parse_result<char_type const*> scn_cnt_define_in6addr_impl(char_type const* begin, char_type const* end, posix_in6_addr& t) noexcept
+{
+}
+
+}
+
+namespace manipulators
+{
+
+inline constexpr ip_flags ip_default_scan_flags{.v6uppercase=true,.showport=true};
+inline constexpr ip_flags ip_default_scan_inaddr_flags{.v6uppercase=true};
+
+template<ip_flags flags, ::fast_io::details::iptypesimpl iptype>
+inline constexpr ip_manip_t<flags, ::std::remove_cvref_t<iptype>*> ip_scan_generic(iptype& ipaddr) noexcept
+{
+	return { __builtin_addressof(ipaddr) };
+}
+
+}
+
+template<::fast_io::details::iptypesimpl iptype>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr ::fast_io::manipulators::ip_manip_t<
+	::fast_io::details::inaddrimpl<iptype> ?
+	::fast_io::manipulators::ip_default_scan_inaddr_flags
+	:
+	::fast_io::manipulators::ip_default_scan_flags, ::std::remove_cvref_t<iptype>*> scan_alias_define(io_alias_t, iptype& t) noexcept
+{
+	return { __builtin_addressof(t) };
+}
+
+template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags, ::fast_io::details::iptypesimpl iptype>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr parse_result<char_type const*> scan_contiguous_define(::fast_io::io_reserve_type_t<char_type,
+	::fast_io::manipulators::ip_manip_t<flags, iptype*>>, char_type const* begin, char_type const* end, ::fast_io::manipulators::ip_manip_t<flags, iptype*> val) noexcept
+{
+	if constexpr (::std::same_as<iptype, ::fast_io::posix_in_addr>)
+	{
+		static_assert(flags.showport == false, "please use fast_io::ipv4 to store a port");
+		return ::fast_io::details::scn_cnt_define_inaddr_impl(begin, end, *val.reference);
+	}
+	else if constexpr (::std::same_as<iptype, ::fast_io::ipv4>)
+	{
+		auto result{ ::fast_io::details::scn_cnt_define_inaddr_impl(begin, end, val.reference->address) };
+		if (result.code != parse_code::ok) [[unlikely]]
+			return result;
+		begin = result.iter;
+		return ::fast_io::details::scn_cnt_define_port_impl(begin, end, val.reference->port);
+	}
+	else if constexpr (::std::same_as<iptype, ::fast_io::posix_in6_addr>)
+	{
+		static_assert(flags.showport == false, "please use fast_io::ipv6 to store a port");
+//		return ::fast_io::details::prtrsv_inaddr6_define_impl<flags.v6shorten, flags.v6uppercase,
+//			flags.showport ? true : flags.v6bracket, flags.v6full,
+//			flags.showport>(iter, val.reference);
+		return {};
+	}
+	else if constexpr (::std::same_as<iptype, ::fast_io::ipv6>)
+	{
+		//return ::fast_io::details::prtrsv_ipv6_define_impl<flags.v6shorten, flags.v6uppercase,
+		//	flags.showport ? true : flags.v6bracket, flags.v6full,
+		//	flags.showport>(iter, val.reference);
+		return {};
+	}
+	else if constexpr (::std::same_as<iptype, ::fast_io::ip_address>)
+	{
+		//return ::fast_io::details::prtrsv_ip_address_define_impl<flags.v6shorten, flags.v6uppercase,
+		//	flags.showport ? true : flags.v6bracket, flags.v6full,
+		//	flags.showport>(iter, val.reference);
+		return {};
+	}
+	else
+	{
+		//return ::fast_io::details::prtrsv_ip_define_impl<flags.v6shorten, flags.v6uppercase,
+		//	flags.showport ? true : flags.v6bracket, flags.v6full,
+		//	flags.showport>(iter, val.reference);
+		return {};
+	}
+}
+
+template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
+inline constexpr io_type_t<ipv4_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, ::fast_io::manipulators::ip_manip_t<flags, posix_in_addr*>>) noexcept
+{
+	static_assert(flags.showport == false, "please use fast_io::ipv4 to store a port");
 	return {};
 }
 
-template <::std::integral char_type>
-inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, parameter<posix_in_addr&>>, ipv4_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, parameter<posix_in_addr&> t) noexcept
+template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
+inline constexpr parse_result<char_type const*> scan_context_define(::fast_io::io_reserve_type_t<char_type,
+	::fast_io::manipulators::ip_manip_t<flags, posix_in_addr*>>, ipv4_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, ::fast_io::manipulators::ip_manip_t<flags, posix_in_addr*> t) noexcept
 {
-	return details::scn_ctx_define_ipv4_impl(state, begin, end, t.reference);
+	return details::scn_ctx_define_inaddr_impl(state, begin, end, *t.reference);
 }
 
-template <::std::integral char_type>
-inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, parameter<posix_in_addr&>>, ipv4_scan_state_t<char_type>& state, parameter<posix_in_addr&> t) noexcept
+template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
+inline constexpr parse_code scan_context_eof_define(::fast_io::io_reserve_type_t<char_type,
+	::fast_io::manipulators::ip_manip_t<flags, posix_in_addr*>>, ipv4_scan_state_t<char_type>& state, ::fast_io::manipulators::ip_manip_t<flags, posix_in_addr*> t) noexcept
 {
 	if (state.ipv4_phase != scan_ipv4_context_phase::addr3)
 		return parse_code::end_of_file;
 	else
-		return details::scan_int_contiguous_none_space_part_define_impl<10>(state.buffer.data(), state.buffer.data() + state.size, t.reference.address[3]).code;
+		return details::scan_int_contiguous_none_space_part_define_impl<10>(state.buffer.data(), state.buffer.data() + state.size, t.reference->address[3]).code;
 }
+
+template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
+inline constexpr io_type_t<ipv4_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, ::fast_io::manipulators::ip_manip_t<flags, ipv4*>>) noexcept
+{
+	return {};
+}
+
+template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
+inline constexpr parse_result<char_type const*> scan_context_define(::fast_io::io_reserve_type_t<char_type,
+	::fast_io::manipulators::ip_manip_t<flags, ipv4*>>, ipv4_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, ::fast_io::manipulators::ip_manip_t<flags, ipv4*> t) noexcept
+{
+	switch (state.ip_phase)
+	{
+	case scan_ipv4_context_phase::addr0:
+	case scan_ipv4_context_phase::dot0:
+	case scan_ipv4_context_phase::addr1:
+	case scan_ipv4_context_phase::dot1:
+	case scan_ipv4_context_phase::addr2:
+	case scan_ipv4_context_phase::dot2:
+	case scan_ipv4_context_phase::addr3:
+	{
+		auto result{ details::scn_ctx_define_inaddr_impl(state, begin, end, t.reference->address) };
+		if (result.code != parse_code::ok)
+			return result;
+		begin = result.iter;
+		state.integer_phase = scan_integral_context_phase::zero;
+		state.size = 0;
+		state.ip_phase = ::std::bit_cast<scan_ipv4_context_phase>(state.port_mark);
+		[[fallthrough]];
+	}
+	// clang bug for std::bit_cast is not a constexpr expression
+#if !defined(__clang__)
+	case ::std::bit_cast<scan_ipv4_context_phase>(state.port_mark):
+	case ::std::bit_cast<scan_ipv4_context_phase>(state.port):
+		return { details::scn_ctx_define_port_type_general_impl(state, begin, end, t.reference->port) };
+	default:;
+#else
+	default:
+		if (state.ip_phase == ::std::bit_cast<scan_ipv4_context_phase>(state.port_mark) ||
+			state.ip_phase == ::std::bit_cast<scan_ipv4_context_phase>(state.port)) [[likely]]
+			return { details::scn_ctx_define_port_type_general_impl(state, begin, end, t.reference->port) };
+#endif
+#ifdef __has_builtin
+#if __has_builtin(__builtin_unreachable)
+		__builtin_unreachable();
+#endif
+#endif
+	}
+}
+
+template<::std::integral char_type, ::fast_io::manipulators::ip_flags flags>
+inline constexpr parse_code scan_context_eof_define(::fast_io::io_reserve_type_t<char_type,
+	::fast_io::manipulators::ip_manip_t<flags, ipv4*>>, ipv4_scan_state_t<char_type>& state, ::fast_io::manipulators::ip_manip_t<flags, ipv4*> t) noexcept
+{
+	if (state.ip_phase != ::std::bit_cast<scan_ipv4_context_phase>(state.port))
+		return parse_code::end_of_file;
+	else
+		return details::scan_int_contiguous_none_space_part_define_impl<10>(state.buffer.data(), state.buffer.data() + state.size, t.reference->port).code;
+}
+
 
 #endif
 
