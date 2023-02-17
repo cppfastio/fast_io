@@ -105,7 +105,7 @@ template <::std::integral char_type, ::std::signed_integral I>
 inline constexpr parse_result<char_type const*> chrono_scan_year_impl(char_type const* begin, char_type const* end, I& i) noexcept
 {
 	I retval{};
-	if (end - begin < 4) [[unlikely]]
+	if (end - begin < 20) [[unlikely]]
 		return { end, parse_code::invalid };
 	[[maybe_unused]] bool sign{};
 	if (*begin == char_literal_v<u8'-', char_type>) [[unlikely]]
@@ -113,17 +113,16 @@ inline constexpr parse_result<char_type const*> chrono_scan_year_impl(char_type 
 		sign = true;
 		++begin;
 	}
-	if (::fast_io::char_category::is_c_digit(*(begin + 4))) [[unlikely]]
+	auto itr{ begin };
+	for (; itr < begin + 4; ++itr)
+		if (!details::char_is_digit<10, char_type>(*itr)) [[unlikely]]
+			return { itr, parse_code::invalid };
+	if (details::char_is_digit<10, char_type>(*itr)) [[unlikely]]
 	{
-		// if year is more than 4 digits
-		// then it's not allowed to have leading '0'
-		auto [itr, ec] = scan_int_contiguous_define_impl<10, true, false, false>(begin, end, retval);
+		auto [itr2, ec] = scan_int_contiguous_define_impl<10, true, false, false>(begin, end, retval);
 		if (ec != parse_code::ok) [[unlikely]]
 			return { itr, ec };
-		else if (itr < begin + 4) [[unlikely]]
-			return { itr, parse_code::invalid };
-		else
-			begin = itr;
+		begin = itr2;
 	}
 	else
 	{
