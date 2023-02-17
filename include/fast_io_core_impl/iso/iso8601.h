@@ -1084,12 +1084,22 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 }
 
 template <::std::integral char_type, ::std::integral T>
+inline constexpr parse_result<char_type const*> scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, T& t) noexcept
+{
+	// TODO
+	return {};
+}
+
+template <::std::integral char_type, ::std::integral T>
 inline constexpr parse_result<char_type const*> scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, T& t) noexcept
 {
 	auto diff{ end - begin };
 	if (diff == 0)
 		return { begin, parse_code::partial };
 	auto buffer_begin{ state.buffer.begin() };
+#if __has_cpp_attribute(assume)
+	[[assume(state.size == 0 || state.size == 1)]];
+#endif
 	switch (state.size)
 	{
 	case 0:
