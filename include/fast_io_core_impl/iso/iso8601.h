@@ -1238,11 +1238,14 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 			return { begin + 1, parse_code::ok };
 		case char_literal_v<u8'+', char_type>:
 			++begin;
+			state.integer_phase = static_cast<scan_integral_context_phase>(0);
+			state.size = 0;
 			state.tsp_phase = scan_timestamp_context_phase::timezone_hours;
 			break;
 		case char_literal_v<u8'-', char_type>:
 			++begin;
-			state.size = 1;
+			state.integer_phase = static_cast<scan_integral_context_phase>(1);
+			state.size = 0;
 			state.tsp_phase = scan_timestamp_context_phase::timezone_hours;
 			break;
 		case comma ? char_literal_v<u8',', char_type> : char_literal_v<u8'.', char_type>:
@@ -1284,7 +1287,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 		}
 		t.timezone *= 3600;
 		t.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
-		if (state.size)
+		if (state.integer_phase == static_cast<scan_integral_context_phase>(1))
 			t.timezone = -t.timezone;
 		state.tsp_phase = scan_timestamp_context_phase::ok;
 		return { begin, parse_code::ok };
