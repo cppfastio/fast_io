@@ -263,12 +263,12 @@ template <bool allowv6shorten, bool allowv6uppercase, bool allowv6bracket, ::std
 inline constexpr parse_result<char_type const*> scn_cnt_define_in6addr_impl(char_type const* begin, char_type const* end, posix_in6_addr& t) noexcept
 {
 	begin = ::fast_io::details::find_space_common_impl<false, true>(begin, end);
-	if constexpr (v6bracket)
+	if constexpr (allowv6bracket)
 	{
 		if (*begin != char_literal_v<u8'[', char_type>) [[unlikely]]
-			return scn_cnt_define_in6addr_impl<v6shorten, v6uppercase, false>(begin, end, t);
+			return scn_cnt_define_in6addr_impl<allowv6shorten, allowv6uppercase, false>(begin, end, t);
 		++begin;
-		auto result = scn_cnt_define_in6addr_impl<v6shorten, v6uppercase, false>(begin, end, t);
+		auto result = scn_cnt_define_in6addr_impl<allowv6shorten, allowv6uppercase, false>(begin, end, t);
 		if (result.code != parse_code::ok) [[unlikely]]
 			return result;
 		begin = result.iter;
