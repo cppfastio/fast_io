@@ -81,6 +81,32 @@ struct ip_manip_t
 	T reference;
 };
 
+struct ip_scan_flags
+{
+	bool allowv6shorten{true};
+	bool allowv6uppercase{true};
+	bool allowv6bracket{true};
+	bool requireport{false};
+};
+
+inline constexpr ip_scan_flags ip_scan_default_flags{.requireport=true};
+inline constexpr ip_scan_flags ip_scan_default_inaddr_flags{};
+
+template <ip_scan_flags flags, typename T>
+struct ip_scan_manip_t
+{
+	using value_type = T;
+	using manip_tag = manip_tag_t;
+#ifndef __INTELLISENSE__
+#if __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#endif
+#endif
+	T reference;
+};
+
 struct scalar_flags
 {
 	std::size_t base{10};
