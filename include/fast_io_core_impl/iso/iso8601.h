@@ -648,6 +648,7 @@ inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t 
 	return {static_cast<::std::int_least64_t>(seconds),static_cast<::std::uint_least64_t>(subseconds*mul_factor)};
 }
 
+#if 0
 // warning: relies on the order of the items
 enum class scan_timestamp_context_phase : ::std::uint_least8_t
 {
@@ -1078,7 +1079,6 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	retval.timezone *= 3600;
 	retval.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
 	if (sign) retval.timezone = -retval.timezone;
-	begin += 2;
 	t = retval;
 	return { begin, parse_code::ok };
 }
@@ -1086,8 +1086,42 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 template <::std::integral char_type, ::std::integral T>
 inline constexpr parse_result<char_type const*> scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, T& t) noexcept
 {
-	// TODO
-	return {};
+#if __has_cpp_attribute(assume)
+	[[assume(state.integer_phase != scan_integral_context_phase::prefix)]];
+#endif
+	switch (state.integer_phase)
+	{
+	case scan_integral_context_phase::space:
+	{
+		auto phase_ret = sc_int_ctx_space_phase(begin, end);
+		if (phase_ret.code != ongoing_parse_code)
+			return phase_ret;
+		begin = phase_ret.iter;
+		state.integer_phase = scan_integral_context_phase::sign;
+		[[fallthrough]];
+	}
+	case scan_integral_context_phase::sign:
+	{
+		if (begin == end)
+			return { begin,parse_code::partial };
+		if (*begin == char_literal_v<u8'-', char_type>)
+		{
+			*state.buffer.data() = char_literal_v<u8'-', char_type>;
+			state.size = 1;
+			++begin;
+		}
+		state.integer_phase = scan_integral_context_phase::zero;
+		[[fallthrough]];
+	}
+	case scan_integral_context_phase::zero:
+	{
+		if (begin == end)
+			return { begin, parse_code::partial };
+		if (end < begin + 4 - state.size)
+	}
+	default:
+		return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.year);
+	}
 }
 
 template <::std::integral char_type, ::std::integral T>
@@ -1424,5 +1458,6 @@ inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,
 	else
 		return parse_code::end_of_file;
 }
+#endif
 
 }
