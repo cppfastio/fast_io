@@ -98,7 +98,9 @@
 #include"fast_io_core_impl/integers/sto/sto_contiguous.h"
 
 #include"fast_io_core_impl/integers/chrono.h"
+#if 0
 #include"fast_io_core_impl/iso/isos.h"
+#endif
 #include"fast_io_core_impl/enums/impl.h"
 
 #ifndef FAST_IO_DISABLE_CODECVT
