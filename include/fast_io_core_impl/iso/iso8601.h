@@ -648,7 +648,6 @@ inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t 
 	return {static_cast<::std::int_least64_t>(seconds),static_cast<::std::uint_least64_t>(subseconds*mul_factor)};
 }
 
-#if 0
 // warning: relies on the order of the items
 enum class scan_timestamp_context_phase : ::std::uint_least8_t
 {
@@ -1106,10 +1105,12 @@ inline constexpr parse_result<char_type const*> scan_iso8601_context_year_phase(
 			return { begin,parse_code::partial };
 		if (*begin == char_literal_v<u8'-', char_type>)
 		{
-			*state.buffer.data() = char_literal_v<u8'-', char_type>;
+			state.buffer.front() = char_literal_v<u8'-', char_type>;
 			state.size = 1;
 			++begin;
 		}
+		else
+			state.buffer.front() = 0;
 		state.integer_phase = scan_integral_context_phase::zero;
 		[[fallthrough]];
 	}
@@ -1117,10 +1118,77 @@ inline constexpr parse_result<char_type const*> scan_iso8601_context_year_phase(
 	{
 		if (begin == end)
 			return { begin, parse_code::partial };
-		if (end < begin + 4 - state.size)
+		auto neg{ state.buffer.front() == char_literal_v<u8'-', char_type> };
+		if ((state.size == 0 || (neg && state.size == 1))
+			&& end - begin > 4)
+		{
+			auto itr{ begin };
+			for (; itr < begin + 4; ++itr)
+			{
+				if (!char_is_digit<10, char_type>(*itr)) [[unlikely]]
+					return { itr, parse_code::invalid };
+			}
+			if (char_is_digit<10, char_type>(*itr)) [[unlikely]]
+			{
+				state.integer_phase = scan_integral_context_phase::digit;
+				return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t);
+			}
+			else
+			{
+				t += static_cast<T>(*begin++ - char_literal_v<u8'0', char_type>) * 1000;
+				t += static_cast<T>(*begin++ - char_literal_v<u8'0', char_type>) * 100;
+				t += static_cast<T>(*begin++ - char_literal_v<u8'0', char_type>) * 10;
+				t += static_cast<T>(*begin++ - char_literal_v<u8'0', char_type>);
+				if (state.buffer.front() == '-')
+					t = -t;
+				return { begin, parse_code::ok };
+			}
+		}
+		else
+		{
+			auto remain_size{ (neg ? 1 : 0) + 5 - state.size };
+#if __has_cpp_attribute(assume)
+			[[assume(remain_size != 0)]];
+#endif
+			if (end - begin < remain_size)
+			{
+				for (; begin != end; ++begin)
+				{
+					if (!char_is_digit<10, char_type>(*begin)) [[unlikely]]
+						return { begin, parse_code::invalid };
+					state.buffer[state.size++] = *begin;
+				}
+				return { begin, parse_code::partial };
+			}
+			else
+			{
+				for (auto new_end{ begin + remain_size - 1}; begin != new_end; ++begin)
+				{
+					if (!char_is_digit<10, char_type>(*begin)) [[unlikely]]
+						return { begin, parse_code::invalid };
+					state.buffer[state.size++] = *begin;
+				}
+				if (char_is_digit<10, char_type>(*begin)) [[unlikely]]
+				{
+					state.integer_phase = scan_integral_context_phase::digit;
+					return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t);
+				}
+				else
+				{
+					auto buffer_begin{ state.buffer.begin() + (neg ? 1 : 0) };
+					t += static_cast<T>(*buffer_begin++ - char_literal_v<u8'0', char_type>) * 1000;
+					t += static_cast<T>(*buffer_begin++ - char_literal_v<u8'0', char_type>) * 100;
+					t += static_cast<T>(*buffer_begin++ - char_literal_v<u8'0', char_type>) * 10;
+					t += static_cast<T>(*buffer_begin++ - char_literal_v<u8'0', char_type>);
+					if (state.buffer.front() == '-')
+						t = -t;
+					return { begin, parse_code::ok };
+				}
+			}
+		}
 	}
 	default:
-		return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.year);
+		return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t);
 	}
 }
 
@@ -1183,7 +1251,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 	case scan_timestamp_context_phase::year:
 	{
 		t = {};
-		auto [itr, ec] = scan_context_define_parse_impl<10, false, false, true>(state, begin, end, t.year);
+		auto [itr, ec] = scan_iso8601_context_year_phase(state, begin, end, t.year);
 		if (ec != parse_code::ok)
 			return { itr, ec };
 		begin = itr;
@@ -1458,6 +1526,5 @@ inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,
 	else
 		return parse_code::end_of_file;
 }
-#endif
 
 }
