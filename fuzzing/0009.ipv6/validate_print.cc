@@ -1,7 +1,9 @@
 #include <cstring>
 #include <string>
 #include <fast_io.h>
-#include <tuple>
+#include <fast_io_device.h>
+
+thread_local fast_io::obuf_file obf("/dev/null");
 
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const* ptr, std::size_t n) noexcept
 {
@@ -22,18 +24,6 @@ extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const* ptr, std::size_t n) no
 	if (n < size_of_struct + 10)
 		return 0;
 	std::memcpy(&test_struct, ptr, size_of_struct);
-	auto buffer{ fast_io::concat(test_struct) };
-	auto buffer_size{ buffer.size() };
-	auto split_index{ ptr[size_of_struct + 1] };
-	split_index = split_index > buffer_size ? buffer_size : split_index;
-	std::string_view sv1{ buffer.c_str(), split_index };
-	std::string_view sv2{ buffer.c_str() + split_index, buffer_size - split_index };
-try
-{
-    	std::ignore = fast_io::to<decltype(test_struct)>(sv1, sv2);
-}
-catch(...)
-{
-}
+	print(obf,test_struct);
 	return 0;
 }
