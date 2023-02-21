@@ -5,8 +5,8 @@
 #include"sock_type.h"
 #include"posix_sockaddr.h"
 #include"ip.h"
-#include"addrprt.h"
 #if 0
+#include"addrprt.h"
 #include"addrscn.h"
 #endif
 
