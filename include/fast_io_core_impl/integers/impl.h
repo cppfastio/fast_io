@@ -86,6 +86,7 @@ struct ip_scan_flags
 	bool allowv6shorten{true};
 	bool allowv6uppercase{true};
 	bool allowv6bracket{true};
+	bool requirev6full{false};
 	bool requireport{false};
 };
 

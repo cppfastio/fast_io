@@ -1123,7 +1123,7 @@ inline constexpr parse_result<char_type const*> scan_iso8601_context_year_phase(
 			&& end - begin > 4)
 		{
 			auto itr{ begin };
-			for (; itr < begin + 4; ++itr)
+			for (; itr != begin + 4; ++itr)
 			{
 				if (!char_is_digit<10, char_type>(*itr)) [[unlikely]]
 					return { itr, parse_code::invalid };

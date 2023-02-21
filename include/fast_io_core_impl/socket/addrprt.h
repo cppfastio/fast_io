@@ -281,8 +281,8 @@ inline constexpr ::std::size_t
 	constexpr
 		::std::size_t v4sizewithport{v4totalsize+portsize+1};
 
-	constexpr
-		::std::size_t prefixlength{v4intsize+portsize+1};
+	//constexpr
+	//	::std::size_t prefixlength{v4intsize+portsize+1};
 
 
 	if constexpr(::std::same_as<nocvreftype,::fast_io::posix_in_addr>||
@@ -337,7 +337,7 @@ template<::std::integral char_type,::fast_io::manipulators::ip_flags flags,::fas
 inline constexpr char_type* print_reserve_define(::fast_io::io_reserve_type_t<char_type,
 		::fast_io::manipulators::ip_manip_t<flags,iptype>>,char_type* iter,::fast_io::manipulators::ip_manip_t<flags,iptype> val) noexcept
 {
-	using nocvreftype = ::std::remove_cvref_t<iptype>;
+	//using nocvreftype = ::std::remove_cvref_t<iptype>;
 	if constexpr(::std::same_as<iptype,::fast_io::posix_in_addr>)
 	{
 		return ::fast_io::details::prtrsv_inaddr_define_impl<flags.showport>(iter,val.reference);
