@@ -1,7 +1,10 @@
+#define FAST_IO_SANITIZE_IO_BUFFER
 #include <cstring>
 #include <string>
 #include <fast_io.h>
-#include <tuple>
+#include <fast_io_device.h>
+
+thread_local fast_io::obuf_file obf("/dev/null");
 
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const* ptr, std::size_t n) noexcept
 {
@@ -30,10 +33,11 @@ extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const* ptr, std::size_t n) no
 	std::string_view sv2{ buffer.c_str() + split_index, buffer_size - split_index };
 try
 {
-    	std::ignore = fast_io::to<decltype(test_struct)>(sv1, sv2);
+	println(obf, fast_io::to<decltype(test_struct)>(sv1, sv2));
 }
 catch(...)
 {
 }
 	return 0;
 }
+
