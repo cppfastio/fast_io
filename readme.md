@@ -1,12 +1,8 @@
 # fast_io
 
-fast_io is an extremely [fast](readme.md#Benchmarks) C++20 input/output library
-aiming to replace `<iostream>` and `<cstdio>`. 
+fast_io is a C++20 input/output library that provides [exceptional speed](readme.md#Benchmarks) and is designed to replace the commonly used `<iostream>` and `<cstdio>` libraries. It is a header-only library and is licensed under the [MIT license](license.txt), making it easy to include in any project. However, it requires a C++20 compiler that supports concepts.
 
-It is header only + [MIT licensed](license.txt) for easy inclusion in any
-project. It requires a capable C++20 compiler supporting concepts.
-
-*The old repository was archived due to git bloat over time;*
+*The original repository for fast_io has been archived due to git bloat over time, but older commits can still be found there.*
 *old commits were [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23).*
 
 ## Examples
@@ -41,9 +37,7 @@ This i18n repo stores the i18n source files.
 ## F.A.Q.
 ### What does "fast" mean in fast_io?
 
-It doesn't necessary mean it's faster than everything else (or it would be named `fastest_io`.)
-However, the "fast" in fast_io means that it's significantly faster than
-`<iostream>` and `<cstdio>` in every case.
+The term ```fast``` in ```fast_io``` does not necessarily imply that it is the fastest input/output library available (as it would have been named as ```fastest_io``` instead). Instead, the term refers to the fact that ```fast_io``` is notably faster than ```<iostream>``` and ```<cstdio>``` libraries in all cases.
 
 ### What are the supported platforms, compilers...?
 See [support.md](support.md) for a list of supported things and platform specific usage notes.
@@ -323,7 +317,7 @@ iconv test:
 
 ## Credits
 
-This project is made possible by referencing other open-source projects. (I don't take their code directly, they are reimplemented by myself to fit the purpose of this library or it might have integration issues.)
+The creation and development of this project were made possible thanks to the valuable contributions of various open-source projects. While the code was not copied directly from these projects, I used them as references and re-implemented them to suit the specific purposes of this library. In some cases, integration issues arose that required modifications to the original code. I am grateful to these projects and their developers for their commitment to making their code open and accessible to the wider community.
 
 |Project          | Url
 |-----------------|-----------------------------------------
