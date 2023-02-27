@@ -34,7 +34,7 @@ inline constexpr char_type* prtrsv_in6addr_common_define_impl(char_type *it,::st
 	}
 	else if constexpr(shorten)
 	{
-		auto e{start+8};
+		auto const e{start+8};
 		auto maxposition{e},maxposition_end{e};
 		for(auto i{start};i!=e;)
 		{
@@ -59,7 +59,7 @@ inline constexpr char_type* prtrsv_in6addr_common_define_impl(char_type *it,::st
 				++i;
 			}
 		}
-		for(auto i{start},e{start+8};i!=e;)
+		for(auto i{start};i!=e;)
 		{
 			if(maxposition==i)
 			{
