@@ -23,54 +23,58 @@ inline constexpr auto cal_content() noexcept
 		}
 		++val[j];
 	}
-	if constexpr(is_ebcdic<char_type>)
+	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	for(auto &e : vals)
 	{
+		for(auto &e1 : e)
+		{
+			unsigned_char_type val{};
+			if constexpr(::fast_io::details::is_ebcdic<char_type>)
+			{
 /*
 http://www.astrodigital.org/digital/ebcdic.html
 */
-		for(auto &e : vals)
-			for(auto &e1 : e)
 				if(e1<10)
-					e1+=0xF0;
+					val=0xF0;
 				else if(e1<19)
 				{
 					if constexpr(upper)
-						e1+=0xC1-10;
+						val=0xC1-10;
 					else
-						e1+=0x81-10;
+						val=0x81-10;
 				}
 				else if(e1<28)
 				{
 					if constexpr(upper)
-						e1+=0xD1-19;
+						val=0xD1-19;
 					else
-						e1+=0x91-19;
+						val=0x91-19;
 				}
 				else
 				{
 					if constexpr(upper)
-						e1+=0xE2-28;
+						val=0xE2-28;
 					else
-						e1+=0xA2-28;
+						val=0xA2-28;
 				}
-	}
-	else
-	{
-		for(auto &e : vals)
-			for(auto &e1 : e)
+			}
+			else
+			{
 				if(e1<10)
-					e1+=0x30;
+					val=0x30;
 				else
 				{
 					if constexpr(upper)
-						e1+=0x41-10;
+						val=0x41-10;
 					else
-						e1+=0x61-10;
+						val=0x61-10;
 				}
+			}
+			e1 = static_cast<char_type>(static_cast<unsigned_char_type>(static_cast<unsigned_char_type>(e1)+val));
+		}
 	}
 	if constexpr(::std::same_as<char_type,wchar_t>&&wide_is_none_utf_endian)
 	{
-		using unsigned_char_type = std::make_unsigned_t<wchar_t>;
 		for(auto &e : vals)
 			for(auto &e1 : e)
 			{
