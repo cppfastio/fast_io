@@ -350,7 +350,7 @@ inline constexpr std::uint_least32_t umul_least_32(std::uint_least32_t a,std::ui
 #endif
 	{
 		std::uint_least64_t v{static_cast<std::uint_least64_t>(a)*b};
-		high=static_cast<std::uint_least32_t>(v>>32u);
+		high=static_cast<std::uint_least32_t>(v>>(::std::numeric_limits<::std::uint_least32_t>::digits));
 		return static_cast<std::uint_least32_t>(v);
 	}
 }
