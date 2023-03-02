@@ -181,11 +181,11 @@ inline void* create_io_completion_port_impl()
 
 struct win32_open_mode
 {
-std::uint_least32_t dwDesiredAccess{};
-std::uint_least32_t dwShareMode{1|2};//FILE_SHARE_READ|FILE_SHARE_WRITE
+::std::uint_least32_t dwDesiredAccess{};
+::std::uint_least32_t dwShareMode{};
 bool inherit{};
-std::uint_least32_t dwCreationDisposition{};	//depends on EXCL
-std::uint_least32_t dwFlagsAndAttributes{};//=128|0x10000000;//FILE_ATTRIBUTE_NORMAL|FILE_FLAG_RANDOM_ACCESS
+::std::uint_least32_t dwCreationDisposition{};	//depends on EXCL
+::std::uint_least32_t dwFlagsAndAttributes{};//=128|0x10000000;//FILE_ATTRIBUTE_NORMAL|FILE_FLAG_RANDOM_ACCESS
 };
 
 template<win32_family family>
@@ -225,6 +225,12 @@ inline constexpr win32_open_mode calculate_win32_open_mode(open_mode_perms ompm)
 	open_mode value{ompm.om};
 	perms pm{ompm.pm};
 	win32_open_mode mode;
+	if((value&open_mode::no_shared_read)==open_mode::none)
+		mode.dwShareMode|=1;//FILE_SHARE_READ
+	if((value&open_mode::no_shared_write)==open_mode::none)
+		mode.dwShareMode|=2;//FILE_SHARE_DELETE
+	if((value&open_mode::shared_delete)!=open_mode::none)
+		mode.dwShareMode|=4;//FILE_SHARE_WRITE
 	if((value&open_mode::app)!=open_mode::none)
 		mode.dwDesiredAccess|=4;//FILE_APPEND_DATA
 	else if((value&open_mode::out)!=open_mode::none)
@@ -347,7 +353,7 @@ I tried this. Oh no. It cannot
 		mode.dwFlagsAndAttributes|=0x10;	//FILE_ATTRIBUTE_DIRECTORY
 		if(mode.dwCreationDisposition==0)
 		{
-			mode.dwDesiredAccess|=0x120116|0x120089;	//GENERIC_WRITE|GENERIC_READ
+			mode.dwDesiredAccess|=UINT32_C(0x120116)|UINT32_C(0x120089);	//GENERIC_WRITE|GENERIC_READ
 			mode.dwCreationDisposition=3;		//OPEN_EXISTING
 		}
 	}
