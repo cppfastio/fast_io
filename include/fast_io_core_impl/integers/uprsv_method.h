@@ -182,7 +182,7 @@ inline constexpr char_type* uprsv64_impl(char_type *iter,::std::uint_least64_t v
 
 	if(!lessthan1e16)
 	{
-		::std::uint_least64_t const f0{first16-first8*onee8};
+		::std::uint_least64_t const f0{first16%onee8};
 #if __has_cpp_attribute(assume)
 		[[assume(f0<UINT32_C(100000000))]];
 #endif
