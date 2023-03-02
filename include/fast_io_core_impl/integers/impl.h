@@ -1084,7 +1084,14 @@ constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,
 		{
 			if constexpr(base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
 			{
-				return ::fast_io::details::uprsv::uprsv_main<base,uppercase>(first,u);
+				if constexpr(false)
+				{
+					return ::fast_io::details::uprsv::uprsv_main<base,uppercase>(first,u);
+				}
+				else
+				{
+					return ::fast_io::details::jeaiii::jeaiii_main(first,u);
+				}
 			}
 			else
 			{
