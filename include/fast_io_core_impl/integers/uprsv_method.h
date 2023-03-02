@@ -10,6 +10,11 @@ namespace fast_io::details::uprsv
 {
 
 template<bool isfirst, ::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr char_type* uprsv_handle8_impl(char_type *iter,::std::uint_least32_t first8) noexcept
 {
 	constexpr

@@ -1084,7 +1084,7 @@ constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,
 		{
 			if constexpr(base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
 			{
-				return ::fast_io::details::jeaiii::jeaiii_main(first,u);
+				return ::fast_io::details::uprsv::uprsv_main(first,u);
 			}
 			else
 			{
