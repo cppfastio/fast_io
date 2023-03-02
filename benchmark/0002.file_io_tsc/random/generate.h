@@ -16,15 +16,11 @@ inline constexpr auto generate_vals() noexcept
 	return tb;
 }
 
-inline constexpr std::size_t N{UINT32_C(2000000)};
+inline constexpr std::size_t N{UINT32_C(10000000)};
 
 inline constexpr ::fast_io::vector<::std::uint_least64_t> generate_random_data()
 {
 	constexpr auto tb{generate_vals()};
-	for(auto const e : tb)
-	{
-		println(fast_io::out(),e);
-	}
 	::fast_io::vector<::std::uint_least64_t> vec(N);
 	::std::mt19937_64 eng;//we need deterministic output
 	::std::uniform_int_distribution<::std::size_t> dis(1,tb.size()-1);
