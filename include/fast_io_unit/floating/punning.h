@@ -488,7 +488,7 @@ template<::std::integral char_type,my_unsigned_integral U>
 #endif
 inline constexpr char_type* prt_rsv_hundred_flt_impl(char_type* iter,U u) noexcept
 {
-	return non_overlapped_copy_n(::fast_io::details::digits_table<char_type,10,uppercase>+(u<<1),2,iter);
+	return non_overlapped_copy_n(::fast_io::details::digits_table<char_type,10,false>+(u<<1),2,iter);
 }
 
 template<std::size_t mxdigits,bool indent,::std::integral char_type,my_unsigned_integral U>

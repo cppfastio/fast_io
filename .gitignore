@@ -9,3 +9,7 @@ benchmarks/*/*.txt
 .vscode
 build
 .vs/
+.*/*
+*.obj
+*.html
+*.txt
