@@ -207,7 +207,7 @@ template<std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_i
 requires (sizeof(T)>1)
 constexpr void lc_print_unsigned_with_3_seperator_len(char_type seperator_ch, char_type* iter,T value,std::size_t size) noexcept
 {
-	constexpr auto table(get_shared_inline_constexpr_base_table<char_type,base,uppercase>().element);
+	constexpr auto table(digits_table<char_type,base,uppercase>);
 	constexpr std::uint_least32_t cpow1{static_cast<std::uint_least32_t>(base)};
 	constexpr std::uint_least32_t cpow2{static_cast<std::uint_least32_t>(cpow1*cpow1)};
 	constexpr std::uint_least32_t cpow3{static_cast<std::uint_least32_t>(cpow2*cpow1)};
@@ -217,7 +217,7 @@ constexpr void lc_print_unsigned_with_3_seperator_len(char_type seperator_ch, ch
 		value/=cpow3;
 		T low2digits{static_cast<T>(low3digits%cpow2)};
 		T highdigit{static_cast<T>(low3digits/cpow2)};
-		non_overlapped_copy_n(table[low2digits].element,2u,iter-=2u);
+		non_overlapped_copy_n(table+(low2digits<<1),2u,iter-=2u);
 		*--iter=to_char_single_digit<char_type,base,uppercase>(highdigit);
 		size-=3u;
 	}
@@ -225,11 +225,11 @@ constexpr void lc_print_unsigned_with_3_seperator_len(char_type seperator_ch, ch
 	{
 		T low2digits{static_cast<T>(value%cpow2)};
 		T highdigit{static_cast<T>(value/cpow2)};
-		non_overlapped_copy_n(table[low2digits].element,2u,iter-=2u);
+		non_overlapped_copy_n(table+(low2digits<<1),2u,iter-=2u);
 		*--iter=to_char_single_digit<char_type,base,uppercase>(highdigit);
 	}
 	else if(size==2)
-		non_overlapped_copy_n(table[value].element,2u,iter-=2u);
+		non_overlapped_copy_n(table+(value<<1),2u,iter-=2u);
 	else
 	{
 		*--iter=to_char_single_digit<char_type,base,uppercase>(value);

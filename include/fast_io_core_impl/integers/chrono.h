@@ -58,8 +58,7 @@ inline constexpr char_type* chrono_two_digits_impl(char_type* it,I i) noexcept
 				return it;
 			}
 		}
-		constexpr auto tb{get_shared_inline_constexpr_base_table<char_type,10,false>().element};
-		return non_overlapped_copy_n(tb[i].element,2,it);
+		return non_overlapped_copy_n(digits_table<char_type,10,false>+(i<<1),2,it);
 	}
 }
 
@@ -78,9 +77,9 @@ inline constexpr char_type* chrono_year_impl(char_type* it,integ i) noexcept
 		return print_reserve_integral_define<10>(it,u);
 	unsigned_type dv(u/100u);
 	unsigned_type rmd(u%100u);
-	constexpr auto tb{get_shared_inline_constexpr_base_table<char_type,10,false>().element};
-	it=non_overlapped_copy_n(tb[dv].element,2,it);
-	return non_overlapped_copy_n(tb[rmd].element,2,it);
+	constexpr auto tb{digits_table<char_type,10,false>};
+	it=non_overlapped_copy_n(tb+(dv<<1),2,it);
+	return non_overlapped_copy_n(tb+(rmd<<1),2,it);
 }
 
 // assert(end - begin >= 2)

@@ -9,10 +9,10 @@ namespace details
 template<bool uppercase,::std::integral char_type>
 inline constexpr char_type* crypto_hash_pr_df_impl(std::byte const* first,std::byte const* last,char_type* iter) noexcept
 {
-	constexpr auto tb{::fast_io::details::get_shared_inline_constexpr_base_table<char_type,16,uppercase>().element};
+	constexpr auto tb{::fast_io::details::digits_table<char_type,16,uppercase>};
 	constexpr std::size_t two{2};
 	for(;first!=last;++first)
-		iter=non_overlapped_copy_n(tb[static_cast<std::uint_least8_t>(*first)].element,two,iter);
+		iter=non_overlapped_copy_n(tb+(static_cast<std::uint_least8_t>(*first)<<1),two,iter);
 	return iter;
 }
 
