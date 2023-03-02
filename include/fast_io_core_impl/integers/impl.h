@@ -1002,8 +1002,8 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 						std::uint_least8_t rem{static_cast<std::uint_least8_t>(high)};
 						if(len==basetdigits)
 						{
-							constexpr auto tb{::fast_io::details::get_shared_inline_constexpr_base_table<char_type,base,uppercase>().element};
-							non_overlapped_copy_n(tb[rem].element,2,iter-basetdigits);
+							constexpr auto tb{::fast_io::details::digits_table<char_type,base,uppercase>};
+							non_overlapped_copy_n(tb+(rem<<1),2,iter-basetdigits);
 							len-=2u;
 						}
 						else
@@ -1038,14 +1038,14 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 		}
 		else
 		{
-			constexpr auto tb{::fast_io::details::get_shared_inline_constexpr_base_table<char_type,base,uppercase>().element};
+			constexpr auto tb{::fast_io::details::digits_table<char_type,base,uppercase>};
 			constexpr T pw{static_cast<T>(base*base)};
 			std::size_t const len2{len>>static_cast<std::size_t>(1u)};
 			for(std::size_t i{};i!=len2;++i)
 			{
 				auto const rem{t%pw};
 				t/=pw;
-				non_overlapped_copy_n(tb[rem].element,2,iter-=2);
+				non_overlapped_copy_n(tb+(rem<<1),2,iter-=2);
 			}
 			if((len&1))
 			{
@@ -1055,7 +1055,7 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 				}
 				else
 				{
-					*--iter=static_cast<char_type>(tb[t].element[1]);
+					*--iter=static_cast<char_type>(tb[(t<<1)+1]);
 				}
 			}
 		}
@@ -1084,7 +1084,7 @@ constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,
 		{
 			if constexpr(base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
 			{
-				return ::fast_io::details::jeaiii::jeaiii_main(first,u);
+				return ::fast_io::details::uprsv::uprsv_main(first,u);
 			}
 			else
 			{
