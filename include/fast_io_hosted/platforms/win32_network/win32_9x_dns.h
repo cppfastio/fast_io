@@ -98,7 +98,7 @@ inline constexpr ::fast_io::ip to_ip(win32_9x_dns_io_observer d,std::uint_least1
 	return ::fast_io::details::hostent_to_ip_impl(d.res,0u,port);
 }
 
-inline constexpr ::fast_io::ip_address to_ip_address(win32_9x_dns_io_observer d,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip_address to_ip_address(win32_9x_dns_io_observer d) noexcept
 {
 	return ::fast_io::details::hostent_to_ip_address_impl(d.res,0u);
 }
