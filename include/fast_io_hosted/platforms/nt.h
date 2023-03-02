@@ -52,12 +52,12 @@ namespace win32::nt::details
 
 struct nt_open_mode
 {
-std::uint_least32_t DesiredAccess{};
-std::uint_least32_t FileAttributes{};
-std::uint_least32_t ShareAccess{1|2};
-std::uint_least32_t CreateDisposition{};
-std::uint_least32_t CreateOptions{};
-std::uint_least32_t ObjAttributes{};
+::std::uint_least32_t DesiredAccess{};
+::std::uint_least32_t FileAttributes{};
+::std::uint_least32_t ShareAccess{};
+::std::uint_least32_t CreateDisposition{};
+::std::uint_least32_t CreateOptions{};
+::std::uint_least32_t ObjAttributes{};
 };
 
 /*
@@ -69,6 +69,12 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	open_mode value{ompm.om};
 	perms pm{ompm.pm};
 	nt_open_mode mode;
+	if((value&open_mode::no_shared_read)==open_mode::none)
+		mode.ShareAccess|=1;//FILE_SHARE_READ
+	if((value&open_mode::no_shared_write)==open_mode::none)
+		mode.ShareAccess|=2;//FILE_SHARE_DELETE
+	if((value&open_mode::shared_delete)!=open_mode::none)
+		mode.ShareAccess|=4;//FILE_SHARE_WRITE
 	bool generic_write{};
 	if((value&open_mode::app)!=open_mode::none)
 		mode.DesiredAccess|=4;		//FILE_APPEND_DATA
@@ -212,7 +218,7 @@ does not exist
 		if(generic_write)
 			mode.CreateOptions |= 0x00000400;		//FILE_OPEN_REMOTE_INSTANCE
 		if((value&open_mode::creat)!=open_mode::none)
-			mode.DesiredAccess |= 0x120116|0x120089;	//GENERIC_READ | GENERIC_WRITE
+			mode.DesiredAccess |= UINT32_C(0x120116)|UINT32_C(0x120089);	//GENERIC_READ | GENERIC_WRITE
 	}
 	if((value&open_mode::no_block)==open_mode::none)
 		mode.CreateOptions|=0x00000020;	//FILE_SYNCHRONOUS_IO_NONALERT 0x00000020
