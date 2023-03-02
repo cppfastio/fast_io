@@ -456,10 +456,10 @@ struct ps_create_info
 {
 	::std::size_t Size;
 	ps_create_state State;
-	union
+	union unnamedunion
 	{
 		// PsCreateInitialState
-		struct
+		struct InitStateT
 		{
 			union
 			{
@@ -479,30 +479,30 @@ struct ps_create_info
 		} InitState;
 
 		// PsCreateFailOnSectionCreate
-		struct
+		struct FailSectionT
 		{
 			void* FileHandle;
 		} FailSection;
 
 		// PsCreateFailExeFormat
-		struct
+		struct ExeFormatT
 		{
 			::std::uint_least16_t DllCharacteristics;
 		} ExeFormat;
 
 		// PsCreateFailExeName
-		struct
+		struct ExeNameT
 		{
 			void* IFEOKey;
 		} ExeName;
 
 		// PsCreateSuccess
-		struct
+		struct SuccessStateT
 		{
 			union
 			{
 				::std::uint_least32_t OutputFlags;
-				struct
+				struct s2T
 				{
 					::std::uint_least8_t ProtectedProcess : 1;
 					::std::uint_least8_t AddressSpaceOverride : 1;

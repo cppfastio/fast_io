@@ -72,14 +72,13 @@ inline constexpr char_type* uprsv_handle8_impl(char_type *iter,::std::uint_least
 			else
 			{
 				::std::uint_least64_t const temp{(magic48*first8)>>16};
-				low = ::fast_io::details::intrinsics::unpack_ul64(temp,high);
+				low = ::fast_io::details::intrinsics::unpack_generic(temp,high);
 #if __has_cpp_attribute(assume)
 				[[assume(high<UINT32_C(100))]];
 #endif
 				bool const lessthan10{high < UINT32_C(10)};
 				::fast_io::details::intrinsics::typed_memcpy(iter,digitstb+lessthan10+(high<<1),tocopybytes);
 				iter+=1+(!lessthan10);
-				::std::uint_least32_t high;
 				low = ::fast_io::details::intrinsics::umul_least_32(low,UINT32_C(100),high);
 #if __has_cpp_attribute(assume)
 				[[assume(high<UINT32_C(100))]];
@@ -107,7 +106,7 @@ inline constexpr char_type* uprsv_handle8_impl(char_type *iter,::std::uint_least
 	{
 		::std::uint_least64_t temp{(magic48*first8)>>16};
 		::std::uint_least32_t high;
-		::std::uint_least32_t low{::fast_io::details::intrinsics::unpack_ul64(temp,high)};
+		::std::uint_least32_t low{::fast_io::details::intrinsics::unpack_generic(temp,high)};
 #if __has_cpp_attribute(assume)
 		[[assume(high<UINT32_C(100))]];
 #endif
@@ -164,10 +163,10 @@ inline constexpr char_type* uprsv64_impl(char_type *iter,::std::uint_least64_t v
 {
 	constexpr
 		::std::uint_least32_t onee8{UINT32_C(100000000)};
-
+#if 0
 	constexpr
 		::std::uint_least64_t onee16{static_cast<::std::uint_least64_t>(onee8)*static_cast<::std::uint_least64_t>(onee8)};
-
+#endif
 
 	bool const lessthan1e8{value<onee8};
 

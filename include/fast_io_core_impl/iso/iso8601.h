@@ -1519,7 +1519,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_t
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, timestamp_scan_state_t<char_type>& state, fast_io::parameter<iso8601_timestamp&> t) noexcept
+inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, timestamp_scan_state_t<char_type>& state, fast_io::parameter<iso8601_timestamp&>) noexcept
 {
 	if (state.tsp_phase == scan_timestamp_context_phase::ok)
 		return parse_code::ok;
