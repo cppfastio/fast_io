@@ -189,10 +189,6 @@ inline constexpr char_type* uprsv64_impl(char_type *iter,::std::uint_least64_t v
 			::std::uint_least32_t const f032{static_cast<::std::uint_least32_t>(f0)};
 			iter = uprsv_handle8_impl<false>(iter,f032);
 		}
-<<<<<<< HEAD
-
-=======
->>>>>>> 357f2371f991ca8f21fd58cf8652eef964107787
 		::std::uint_least64_t f0{value-first16*onee8};
 #if __has_cpp_attribute(assume)
 		[[assume(f0<UINT32_C(100000000))]];
