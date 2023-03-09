@@ -205,72 +205,72 @@ enum class open_mode:
 {
 none=0,
 //	*indicates that the open mode has not been evaluated yet
-app=UINT64_C(1)<<0,
+app=static_cast<::std::uint_least64_t>(1)<<0,
 //	*["a"]seek to the end of stream before each write.
-archive=UINT64_C(1)<<1,
+archive=static_cast<::std::uint_least64_t>(1)<<1,
 //	[Windows]FILE_ATTRIBUTE_ARCHIVE 0x20
-case_insensitive=UINT64_C(1)<<2,
+case_insensitive=static_cast<::std::uint_least64_t>(1)<<2,
 //	[Windows]NT OBJ_CASE_INSENSITIVE 0x00000040L
-compressed=UINT64_C(1)<<3,
+compressed=static_cast<::std::uint_least64_t>(1)<<3,
 //	[Windows]FILE_ATTRIBUTE_COMPRESSED 0x800
-creat=UINT64_C(1)<<4,
+creat=static_cast<::std::uint_least64_t>(1)<<4,
 //	POSIX O_CREAT
-direct=UINT64_C(1)<<5,
+direct=static_cast<::std::uint_least64_t>(1)<<5,
 //	*POSIX O_DIRECT
-directory=UINT64_C(1)<<6,
+directory=static_cast<::std::uint_least64_t>(1)<<6,
 //	*POSIX O_DIRECTORY.
-encrypted=UINT64_C(1)<<7,
+encrypted=static_cast<::std::uint_least64_t>(1)<<7,
 //	[Windows]FILE_ATTRIBUTE_ENCRYPTED 0x4000
-excl=UINT64_C(1)<<8,
+excl=static_cast<::std::uint_least64_t>(1)<<8,
 noreplace=excl,
 //	*["x"]POSIX O_EXCL
-follow=UINT64_C(1)<<9,
+follow=static_cast<::std::uint_least64_t>(1)<<9,
 //	*Inverse of POSIX O_NOFOLLOW.
-hidden=UINT64_C(1)<<10,
+hidden=static_cast<::std::uint_least64_t>(1)<<10,
 //	[Windows]FILE_ATTRIBUTE_HIDDEN 0x2
-in=UINT64_C(1)<<11,
+in=static_cast<::std::uint_least64_t>(1)<<11,
 //	*["r"]open for reading.
-inherit=UINT64_C(1)<<12,
+inherit=static_cast<::std::uint_least64_t>(1)<<12,
 //	*Inverse of POSIX O_CLOEXEC.
-no_atime=UINT64_C(1)<<13,
+no_atime=static_cast<::std::uint_least64_t>(1)<<13,
 //	[Linux]O_NOATIME
-no_block=UINT64_C(1)<<14,
+no_block=static_cast<::std::uint_least64_t>(1)<<14,
 //	*POSIX O_NONBLOCK
-no_ctty=UINT64_C(1)<<15,
+no_ctty=static_cast<::std::uint_least64_t>(1)<<15,
 //	[Linux]O_NOCTTY
-no_recall=UINT64_C(1)<<16,
+no_recall=static_cast<::std::uint_least64_t>(1)<<16,
 //	[Windows]FILE_FLAG_OPEN_NO_RECALL 0x00100000
-no_shared_read=UINT64_C(1)<<17,
+no_shared_read=static_cast<::std::uint_least64_t>(1)<<17,
 //	[WINDOWS]!FILE_SHARE_READ 0x00000001
-no_shared_write=UINT64_C(1)<<18,
+no_shared_write=static_cast<::std::uint_least64_t>(1)<<18,
 //	[WINDOWS]!FILE_SHARE_WRITE 0x00000002
-normal=UINT64_C(1)<<19,
+normal=static_cast<::std::uint_least64_t>(1)<<19,
 //	[Windows]FILE_ATTRIBUTE_NORMAL 0x80
-offline=UINT64_C(1)<<20,
+offline=static_cast<::std::uint_least64_t>(1)<<20,
 //	[Windows]FILE_ATTRIBUTE_OFFLINE 0x1000
-out=UINT64_C(1)<<21,
+out=static_cast<::std::uint_least64_t>(1)<<21,
 //	*["w"]open for writing.
-path=UINT64_C(1)<<22,
+path=static_cast<::std::uint_least64_t>(1)<<22,
 //	[Linux]O_PATH
-random_access=UINT64_C(1)<<23,
+random_access=static_cast<::std::uint_least64_t>(1)<<23,
 //	[Windows]FILE_FLAG_RANDOM_ACCESS 0x10000000
-search=UINT64_C(1)<<24,
+search=static_cast<::std::uint_least64_t>(1)<<24,
 //	POSIX O_SEARCH
-session_aware=UINT64_C(1)<<25,
+session_aware=static_cast<::std::uint_least64_t>(1)<<25,
 //	[Windows]FILE_FLAG_SESSION_AWARE 0x00800000
-shared_delete=UINT64_C(1)<<26,
+shared_delete=static_cast<::std::uint_least64_t>(1)<<26,
 //	[WINDOWS]FILE_SHARE_WRITE 0x00000004
-sync=UINT64_C(1)<<27,
+sync=static_cast<::std::uint_least64_t>(1)<<27,
 //	*POSIX O_SYNC
-system=UINT64_C(1)<<28,
+system=static_cast<::std::uint_least64_t>(1)<<28,
 //	[Windows]FILE_ATTRIBUTE_SYSTEM 0x4
-temporary=UINT64_C(1)<<29,
+temporary=static_cast<::std::uint_least64_t>(1)<<29,
 //	*[Linux]O_TMPFILE. [Windows]FILE_ATTRIBUTE_TEMPORARY 0x100 + FILE_FLAG_DELETE_ON_CLOSE 0x04000000
-text=UINT64_C(1)<<30,
+text=static_cast<::std::uint_least64_t>(1)<<30,
 //	[inverse of "b"]open in text mode. native_file is always binary. The text mode is provided by the POSIX layer or C FILE layer. When native_file is win32_file or nt_file or zw_file or unsupported character type for C FILE* or C++ filebuf, throw invalid arguments eh.
-trunc=UINT64_C(1)<<31,
+trunc=static_cast<::std::uint_least64_t>(1)<<31,
 //	*POSIX O_TRUNC
-tty_init=UINT64_C(1)<<32,
+tty_init=static_cast<::std::uint_least64_t>(1)<<32,
 //	POSIX O_TTY_INIT
 };
 
