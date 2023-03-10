@@ -12,6 +12,10 @@ int main(int argc,char** argv)
 	using namespace fast_io::mnp;
 	if(argc!=2)
 	{
+		if(argc==0)
+		{
+			return 1;
+		}
 		perr("Usage: ",os_c_str(*argv)," <file>\n");
 		return 1;
 	}
