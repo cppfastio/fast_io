@@ -10,7 +10,11 @@ int main(int argc,char const** argv)
 {
 	if(argc<2)
 	{
-		perr("Usage: ",::fast_io::mnp::os_env(argc,argv,0)," <dir path>\n");
+		if(argc==0)
+		{
+			return 1;
+		}
+		perr("Usage: ",::fast_io::mnp::os_c_str(*argv)," <dir path>\n");
 		return 1;
 	}
 	std::vector<std::u8string> names;

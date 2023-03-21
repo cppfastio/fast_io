@@ -11,28 +11,11 @@ namespace fast_io::details::jeaiii
 template<std::integral char_type>
 inline constexpr void jeaiii_w(char_type* iter,std::uint_fast32_t u) noexcept
 {
-	constexpr auto tb{::fast_io::details::get_shared_inline_constexpr_base_table<char_type,10,false>().element};
-#if __cpp_if_consteval > 202106L
-	if consteval
-#else
-	if(std::is_constant_evaluated())
-#endif
-	{
-		non_overlapped_copy_n(tb[u].element,2,iter);
-	}
-	else
-	{
-		constexpr std::size_t to_copy_bytes{2*sizeof(char_type)};
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
-		__builtin_memcpy(iter,tb[u].element,to_copy_bytes);
-#else
-		::std::memcpy(iter,tb[u].element,to_copy_bytes);
-#endif
-#else
-		::std::memcpy(iter,tb[u].element,to_copy_bytes);
-#endif
-	}
+	constexpr
+		auto const *digitstb{digits_table<char_type,10,false>};
+	constexpr
+		::std::size_t tocopybytes{sizeof(char_type)*2u};
+	::fast_io::details::intrinsics::typed_memcpy(iter,digitstb+(u<<1),tocopybytes);
 }
 
 template<std::size_t n,std::integral char_type>

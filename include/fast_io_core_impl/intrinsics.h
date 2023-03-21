@@ -9,6 +9,60 @@
 namespace fast_io::details::intrinsics
 {
 
+template<typename T1,typename T2>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
+constexpr
+#endif
+void typed_memcpy(T1 *dest, T2 const *src,::std::size_t bytes) noexcept
+{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if (__builtin_is_constant_evaluated())
+#endif
+	{
+		if(dest == nullptr || src == nullptr || sizeof(T1)!=sizeof(T2) || bytes%sizeof(T1)!=0)
+		{
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_trap)
+			__builtin_trap();
+#elif __has_builtin(__builtin_abort)
+			__builtin_abort();
+#else
+			::std::abort();
+#endif
+#else
+			::std::abort();
+#endif
+		}
+		::std::size_t n{bytes/sizeof(T1)};
+		for(::std::size_t i{};i!=n;++i)
+		{
+			dest[i] = __builtin_bit_cast(T1,src[i]);
+		}
+	}
+	else
+#endif
+	{
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memcpy)
+		__builtin_memcpy(dest,src,bytes);
+#else
+		memcpy(dest,src,bytes);
+#endif
+#else
+		memcpy(dest,src,bytes);
+#endif
+	}
+}
+
 template<typename T>
 #if __cpp_lib_concepts >= 202002L
 requires (std::unsigned_integral<T>)
@@ -350,8 +404,26 @@ inline constexpr std::uint_least32_t umul_least_32(std::uint_least32_t a,std::ui
 #endif
 	{
 		std::uint_least64_t v{static_cast<std::uint_least64_t>(a)*b};
-		high=static_cast<std::uint_least32_t>(v>>32u);
+		high=static_cast<std::uint_least32_t>(v>>(::std::numeric_limits<::std::uint_least32_t>::digits));
 		return static_cast<std::uint_least32_t>(v);
+	}
+}
+
+inline constexpr std::uint_least32_t umulh_least_32(std::uint_least32_t a,std::uint_least32_t b) noexcept
+{
+#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
+#if __has_builtin(__builtin_bit_cast)
+	if constexpr(std::endian::native==std::endian::little||std::endian::native==std::endian::big)
+	{
+		auto ret{__builtin_bit_cast(ul32x2,static_cast<std::uint_least64_t>(a)*b)};
+		return ret.high;
+	}
+	else
+#endif
+#endif
+	{
+		std::uint_least64_t v{static_cast<std::uint_least64_t>(a)*b};
+		return static_cast<std::uint_least32_t>(v>>(::std::numeric_limits<::std::uint_least32_t>::digits));
 	}
 }
 

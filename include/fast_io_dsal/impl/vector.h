@@ -328,7 +328,7 @@ public:
 			size_type mx{::std::numeric_limits<size_type>::max()/sizeof(value_type)};
 		return mx;
 	}
-	explicit constexpr vector() noexcept = default;
+	constexpr vector() noexcept = default;
 
 	constexpr void swap(vector& other) noexcept
 	{
