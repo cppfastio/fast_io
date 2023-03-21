@@ -12,6 +12,6 @@ int main()
 	::fast_io::vector<::fast_io::vector<metaindex>> vec;
 	vec.emplace_back(30);
 
-	auto& vec20{vec[20]};
+	auto& vec20{vec[0]};
 	vec20.push_back(metaindex{20,30});
 }

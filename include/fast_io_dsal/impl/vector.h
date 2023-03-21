@@ -32,7 +32,6 @@ inline void grow_to_size_common_impl(vector_model* m,::std::size_t newcap) noexc
 	auto begin_ptr{m->begin_ptr};
 
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr-begin_ptr)};
-
 	if constexpr(allocator::has_reallocate)
 	{
 		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate(begin_ptr,newcap));
@@ -305,7 +304,7 @@ public:
 	}
 	constexpr void clear() noexcept
 	{
-		if constexpr(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr(!::std::is_trivially_destructible_v<value_type>)
 		{
 			for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
 			{
@@ -398,7 +397,7 @@ public:
 				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
 				for (auto p{ begin_ptr }; p != e; ++p)
 				{
-					new (p) value_type();
+					new (p) value_type;
 				}
 			}
 			else
@@ -408,7 +407,7 @@ public:
 				run_destroy des(this);
 				for (; imp.curr_ptr != e; ++imp.curr_ptr)
 				{
-					new (imp.curr_ptr) value_type();
+					new (imp.curr_ptr) value_type;
 				}
 				des.thisvec = nullptr;
 			}
