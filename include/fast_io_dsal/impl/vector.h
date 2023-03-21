@@ -383,22 +383,38 @@ private:
 	};
 public:
 
-	explicit constexpr vector(size_type n) noexcept
-		requires(::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type> || ::std::is_nothrow_constructible_v<value_type>)
 	{
-		imp.begin_ptr = typed_allocator_type::allocate_zero(n);
-		imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+		{
+			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		}
+		else
+		{
+			auto begin_ptr{ typed_allocator_type::allocate(n) };
+			if constexpr (::std::is_nothrow_constructible_v<value_type>)
+			{
+				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
+				for (auto p{ begin_ptr }; p != e; ++p)
+				{
+					new (p) value_type();
+				}
+			}
+			else
+			{
+				imp.curr_ptr = imp.begin_ptr = begin_ptr;
+				auto e = imp.end_ptr = imp.begin_ptr + n;
+				run_destroy des(this);
+				for (; imp.curr_ptr != e; ++imp.curr_ptr)
+				{
+					new (imp.curr_ptr) value_type();
+				}
+				des.thisvec = nullptr;
+			}
+		}
 	}
-#if 0
-//WTF with this???
-	explicit constexpr vector(size_type n, value_type const& value) noexcept
-	{
-		imp.begin_ptr = typed_allocator_type::allocate_zero(n);
-		imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
-		::fast_io::freestanding::fill_n(imp.begin_ptr, n, value);
-	}
-#endif
-	explicit constexpr vector(size_type n, value_type const& value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	constexpr vector(size_type n, value_type const& value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		auto begin_ptr{typed_allocator_type::allocate(n)};
 		if constexpr(::std::is_nothrow_copy_constructible_v<value_type>)
@@ -421,7 +437,6 @@ public:
 			des.thisvec = nullptr;
 		}
 	}
-	explicit constexpr vector(size_type n) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) :vector(n,value_type()){}
 	template <::std::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept
 		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
