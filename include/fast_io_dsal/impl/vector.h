@@ -382,17 +382,17 @@ private:
 	};
 public:
 
-	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type> || ::std::is_nothrow_constructible_v<value_type>)
+	explicit constexpr vector(size_type n,::fast_io::for_overwrite_t) noexcept(::std::is_trivially_constructible_v<value_type> || ::std::is_nothrow_default_constructible_v<value_type>)
 	{
-		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+		if constexpr (::std::is_trivially_constructible_v<value_type>)
 		{
-			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			imp.begin_ptr = typed_allocator_type::allocate(n);
 			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
 		}
 		else
 		{
 			auto begin_ptr{ typed_allocator_type::allocate(n) };
-			if constexpr (::std::is_nothrow_constructible_v<value_type>)
+			if constexpr (::std::is_nothrow_default_constructible_v<value_type>)
 			{
 				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
 				for (auto p{ begin_ptr }; p != e; ++p)
@@ -408,6 +408,38 @@ public:
 				for (; imp.curr_ptr != e; ++imp.curr_ptr)
 				{
 					new (imp.curr_ptr) value_type;
+				}
+				des.thisvec = nullptr;
+			}
+		}
+	}
+
+	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type> || ::std::is_nothrow_default_constructible_v<value_type>)
+	{
+		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+		{
+			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		}
+		else
+		{
+			auto begin_ptr{ typed_allocator_type::allocate(n) };
+			if constexpr (::std::is_nothrow_default_constructible_v<value_type>)
+			{
+				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
+				for (auto p{ begin_ptr }; p != e; ++p)
+				{
+					new (p) value_type();
+				}
+			}
+			else
+			{
+				imp.curr_ptr = imp.begin_ptr = begin_ptr;
+				auto e = imp.end_ptr = imp.begin_ptr + n;
+				run_destroy des(this);
+				for (; imp.curr_ptr != e; ++imp.curr_ptr)
+				{
+					new (imp.curr_ptr) value_type();
 				}
 				des.thisvec = nullptr;
 			}
