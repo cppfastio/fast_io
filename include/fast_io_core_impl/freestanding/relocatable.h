@@ -22,3 +22,16 @@ template<typename T>
 inline constexpr bool is_zero_default_constructible_v = is_zero_default_constructible<T>::value;
 
 }
+
+namespace fast_io
+{
+
+struct for_overwrite_t
+{
+explicit constexpr for_overwrite_t() noexcept = default;
+};
+
+inline constexpr for_overwrite_t for_overwrite{};
+
+}
+
