@@ -565,4 +565,11 @@ struct posix_at_entry
 	explicit constexpr posix_at_entry(int mfd) noexcept:fd(mfd){}
 };
 
+struct file_loader_extra_bytes
+{
+	::std::size_t n{};
+	explicit constexpr file_loader_extra_bytes(::std::size_t nn) noexcept:n(nn) {}
+};
+
 }
+
