@@ -162,6 +162,39 @@ sys_mmap(nullptr,file_size,PROT_READ|PROT_WRITE,MAP_PRIVATE
 	}
 }
 
+inline char* posix_load_address_extra(int fd,std::size_t file_size,std::size_t exsz)
+{
+	::std::size_t mxsz{SIZE_MAX-exsz};
+	if(file_size>mxsz)
+	{
+		throw_posix_error(EINVAL);
+	}
+	load_file_allocation_guard guard{file_size+exsz};
+	posix_io_observer piob{fd};
+	auto addr{reinterpret_cast<char*>(guard.address)};
+	auto addr_ed{addr+file_size};
+	for(auto i{addr};i!=addr_ed;)
+	{
+		auto after{read(piob,i,addr_ed)};
+		if(after==i)
+			throw_posix_error();
+		i=after;
+	}
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memset)
+__builtin_memset
+#else
+memset
+#endif
+#else
+memset
+#endif
+	(addr_ed,0,exsz);
+	guard.address=nullptr;
+	return addr;
+}
+
+
 template<bool allocation>
 inline void posix_unload_address(void* address,[[maybe_unused]] std::size_t file_size) noexcept
 {
@@ -222,6 +255,35 @@ inline auto posix_load_file_impl(native_at_entry ent,T const& str,open_mode om,p
 	posix_file pf(ent,str,om,pm);
 	return posix_load_address_impl<allocation>(pf.fd);
 }
+
+
+inline posix_file_loader_return_value_t posix_load_address_allocation_extra_impl(::std::size_t exsz,int fd)
+{
+	std::size_t size{posix_loader_get_file_size(fd)};
+	auto add{posix_load_address_extra(fd,size,exsz)};
+	return {add,add+size};
+}
+
+inline auto posix_load_file_allocation_extra_impl(::std::size_t exsz,native_fs_dirent fsdirent,open_mode om,perms pm)
+{
+	posix_file pf(fsdirent,om,pm);
+	return posix_load_address_allocation_extra_impl(exsz,pf.fd);
+}
+
+template<::fast_io::constructible_to_os_c_str T>
+inline auto posix_load_file_allocation_extra_impl(::std::size_t exsz,T const& str,open_mode om,perms pm)
+{
+	posix_file pf(str,om,pm);
+	return posix_load_address_allocation_extra_impl(exsz,pf.fd);
+}
+
+template<::fast_io::constructible_to_os_c_str T>
+inline auto posix_load_file_allocation_extra_impl(::std::size_t exsz,native_at_entry ent,T const& str,open_mode om,perms pm)
+{
+	posix_file pf(ent,str,om,pm);
+	return posix_load_address_allocation_extra_impl(exsz,pf.fd);
+}
+
 
 
 template<bool allocation=false>
@@ -290,6 +352,35 @@ public:
 			other.address_end=other.address_begin=(char*)-1;
 		return *this;
 	}
+
+
+	inline explicit posix_file_loader_impl(file_loader_extra_bytes exb,posix_at_entry pate) requires(allocation)
+	{
+		auto ret{posix_load_address_allocation_extra_impl(exb.n,pate.fd)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+	inline explicit posix_file_loader_impl(file_loader_extra_bytes exb,native_fs_dirent fsdirent,open_mode om = open_mode::in, perms pm=static_cast<perms>(436)) requires(allocation)
+	{
+		auto ret{posix_load_file_allocation_extra_impl(exb.n,fsdirent,om,pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+	template<::fast_io::constructible_to_os_c_str T>
+	inline explicit posix_file_loader_impl(file_loader_extra_bytes exb,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436)) requires(allocation)
+	{
+		auto ret{posix_load_file_allocation_extra_impl(exb.n,filename,om,pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+	template<::fast_io::constructible_to_os_c_str T>
+	inline explicit posix_file_loader_impl(file_loader_extra_bytes exb,native_at_entry ent,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436)) requires(allocation)
+	{
+		auto ret{posix_load_file_allocation_extra_impl(exb.n,ent,filename,om,pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+
 	constexpr pointer data() const noexcept
 	{
 		return address_begin;
