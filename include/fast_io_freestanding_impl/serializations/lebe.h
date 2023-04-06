@@ -270,16 +270,78 @@ namespace fast_io
 namespace details
 {
 
+template<typename int_type>
+struct parse_lebeget_int_result
+{
+	bool failed;
+	int_type itp;
+};
+
 template<::std::endian endn,typename int_type,::std::integral char_type>
+requires (1<sizeof(char_type))
+inline
+#if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
+constexpr
+#endif
+parse_lebeget_int_result<int_type> scan_precise_reserve_define_integer_common_largechartype_impl(char_type const* iter) noexcept
+{
+	constexpr std::size_t n{sizeof(int_type)};
+	static_assert(n!=0);
+	int_type t;
+
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
+	constexpr
+		unsigned_char_type mx{static_cast<unsigned_char_type>(::std::numeric_limits<char unsigned>::max())};
+
+	char unsigned buffer[n];
+	for(auto bit{buffer},bie{buffer+n};bit!=bie;++bit)
+	{
+		auto val{static_cast<unsigned_char_type>(*iter)};
+		if(mx < val)
+		{
+			return {true,t};
+		}
+		*bit=static_cast<char unsigned>(val);
+		++iter;
+	}
+#if __cpp_lib_bit_cast >= 201806L
+	t=::std::bit_cast<int_type>(buffer);
+#elif !defined(__has_builtin)
+	::std::memcpy(__builtin_addressof(t),buffer,n);
+#elif __has_builtin(__builtin_memcpy)
+	__builtin_memcpy(__builtin_addressof(t),buffer,n);
+#else
+	::std::memcpy(__builtin_addressof(t),buffer,n);
+#endif
+	if constexpr(::std::endian::native!=endn)
+	{
+		if constexpr(::fast_io::details::my_unsigned_integral<int_type>)
+		{
+			t=::fast_io::byte_swap(t);
+		}
+		else
+		{
+			::std::uint_least64_t low{t.low};
+			::std::uint_least64_t high{t.high};
+			t.low=::fast_io::byte_swap(high);
+			t.high=::fast_io::byte_swap(low);
+		}
+	}
+	return {false,t};
+}
+
+template<::std::endian endn,typename int_type,::std::integral char_type>
+requires (sizeof(char_type)==1)
 inline
 #if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
 constexpr
 #endif
 auto scan_precise_reserve_define_integer_common_impl(char_type const* iter) noexcept
 {
-	constexpr std::size_t n{sizeof(int_type)/sizeof(char_type)};
+	constexpr std::size_t n{sizeof(int_type)};
 	static_assert(n!=0);
 	int_type t;
+
 #if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
 #if __cpp_if_consteval >= 202106L
 	if consteval
@@ -320,7 +382,7 @@ auto scan_precise_reserve_define_integer_common_impl(char_type const* iter) noex
 }
 
 template<::std::endian endn,std::size_t n,::fast_io::details::my_integral int_type,::std::integral char_type>
-inline constexpr auto scan_precise_reserve_define_integer_impl(char_type const* iter,int_type& t) noexcept
+inline constexpr ::std::conditional_t<(1<sizeof(char_type)),::fast_io::parse_code,void> scan_precise_reserve_define_integer_impl(char_type const* iter,int_type& t) noexcept
 {
 	static_assert(n<=128);
 	using proxy_type =
@@ -329,7 +391,20 @@ inline constexpr auto scan_precise_reserve_define_integer_impl(char_type const* 
 		::std::conditional_t<(n==32),::std::uint_least32_t,
 		::std::conditional_t<(n==16),::std::uint_least16_t,
 		::std::conditional_t<(n==8),::std::uint_least8_t,void>>>>>;
-	proxy_type const temp{scan_precise_reserve_define_integer_common_impl<endn,proxy_type>(iter)};
+	proxy_type temp;
+	if constexpr(1<sizeof(char_type))
+	{
+		auto [cd,tp] = scan_precise_reserve_define_integer_common_largechartype_impl<endn,proxy_type>(iter);
+		if(cd)
+		{
+			return parse_code::invalid;
+		}
+		temp = tp;
+	}
+	else
+	{
+		temp = scan_precise_reserve_define_integer_common_impl<endn,proxy_type>(iter);
+	}
 	using my_unsigned_type = ::fast_io::details::my_make_unsigned_t<int_type>;
 	constexpr std::size_t digits{::std::numeric_limits<my_unsigned_type>::digits};
 	if constexpr(digits<n)
@@ -346,10 +421,14 @@ inline constexpr auto scan_precise_reserve_define_integer_impl(char_type const* 
 	{
 		t=static_cast<int_type>(static_cast<my_unsigned_type>(temp));
 	}
+	if constexpr(1<sizeof(char_type))
+	{
+		return parse_code::ok;
+	}
 }
 
 template<::std::endian endn,::std::floating_point flttypef,::std::integral char_type>
-inline constexpr auto scan_precise_reserve_define_lebe_float_get_impl(char_type const* iter,flttypef& t) noexcept
+inline constexpr ::std::conditional_t<(1<sizeof(char_type)),::fast_io::parse_code,void> scan_precise_reserve_define_lebe_float_get_impl(char_type const* iter,flttypef& t) noexcept
 {
 	using flttype =
 		::std::remove_cvref_t<flttypef>;
@@ -361,7 +440,20 @@ inline constexpr auto scan_precise_reserve_define_lebe_float_get_impl(char_type 
 		::std::conditional_t<(n==32),::std::uint_least32_t,
 		::std::conditional_t<(n==16),::std::uint_least16_t,
 		::std::conditional_t<(n==8),::std::uint_least8_t,void>>>>>;
-	proxy_type const temp{scan_precise_reserve_define_integer_common_impl<endn,proxy_type>(iter)};
+	proxy_type temp;
+	if constexpr(1<sizeof(char_type))
+	{
+		auto [cd,tp] = scan_precise_reserve_define_integer_common_largechartype_impl<endn,proxy_type>(iter);
+		if(cd)
+		{
+			return parse_code::invalid;
+		}
+		temp = tp;
+	}
+	else
+	{
+		temp = scan_precise_reserve_define_integer_common_impl<endn,proxy_type>(iter);
+	}
 	constexpr
 		bool isiec559{::std::numeric_limits<flttype>::is_iec559};
 	if constexpr(::std::same_as<flttype,float>)
@@ -421,6 +513,10 @@ static_assert(sizeof(double)!=sizeof(long)&&isiec559,"long double is not iec6055
 	{
 		t=static_cast<flttypef>(std::bit_cast<flttype>(temp));
 	}
+	if constexpr(1<sizeof(char_type))
+	{
+		return parse_code::ok;
+	}
 }
 
 template<::std::endian endn,typename uint_type,::std::integral char_type>
@@ -430,7 +526,7 @@ constexpr
 #endif
 char_type* print_reserve_define_integer_lebe_common_impl(char_type* iter,uint_type u) noexcept
 {
-	constexpr std::size_t n{sizeof(uint_type)/sizeof(char_type)};
+	constexpr std::size_t n{sizeof(uint_type)};
 	static_assert(n!=0);
 	if constexpr(::std::endian::native!=endn)
 	{
@@ -446,6 +542,7 @@ char_type* print_reserve_define_integer_lebe_common_impl(char_type* iter,uint_ty
 			u.high=::fast_io::byte_swap(low);
 		}
 	}
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 #if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
 #if __cpp_if_consteval >= 202106L
 	if consteval
@@ -453,19 +550,27 @@ char_type* print_reserve_define_integer_lebe_common_impl(char_type* iter,uint_ty
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
-		::fast_io::freestanding::array<char_type,n> buffer{::std::bit_cast<::fast_io::freestanding::array<char_type,n>>(u)};
+		::fast_io::freestanding::array<char unsigned,n> buffer{::std::bit_cast<::fast_io::freestanding::array<char unsigned,n>>(u)};
 		non_overlapped_copy_n(buffer.data(),n,iter);
 	}
 	else
 #endif
 	{
+		if constexpr(1<sizeof(uint_type))
+		{
+			auto buffer{::std::bit_cast<::fast_io::freestanding::array<char unsigned,n>>(u)};
+			non_overlapped_copy_n(buffer.data(),n,iter);
+		}
+		else
+		{
 #if !defined(__has_builtin)
-		::std::memcpy(iter,__builtin_addressof(u),sizeof(uint_type));
+		::std::memcpy(iter,__builtin_addressof(u),n);
 #elif __has_builtin(__builtin_memcpy)
-		__builtin_memcpy(iter,__builtin_addressof(u),sizeof(uint_type));
+		__builtin_memcpy(iter,__builtin_addressof(u),n);
 #else
-		::std::memcpy(iter,__builtin_addressof(u),sizeof(uint_type));
+		::std::memcpy(iter,__builtin_addressof(u),n);
 #endif
+		}
 	}
 	return iter+n;
 }
@@ -480,8 +585,7 @@ requires (((sz%(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits
 inline constexpr std::size_t scan_precise_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_lebe_get_put<end,::fast_io::manipulators::basic_lebe_get_integral<sz,int_type>>>) noexcept
 {
-	constexpr std::size_t cache{sz/(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits)};
-	return cache;
+	return sz;
 }
 
 template<::std::endian en,::std::size_t sz,::std::integral char_type,typename int_type>
@@ -509,8 +613,7 @@ requires (((sz%(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_lebe_get_put<end,::fast_io::manipulators::basic_lebe_put_integral<sz,int_type>>>) noexcept
 {
-	constexpr std::size_t cache{sz/(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits)};
-	return cache;
+	return sz;
 }
 
 template<::std::integral char_type,::std::endian end,::std::size_t sz,typename int_type>
