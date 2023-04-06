@@ -31,23 +31,23 @@ inline constexpr ::std::size_t cal_size_lebe_floatsize() noexcept
 	{
 		return 128;
 	}
-	else if constexpr(::std::same_as<nocvref,::std::uint_least8_t>)
+	else if constexpr(sizeof(nocvref)==sizeof(::std::uint_least8_t))
 	{
 		return 8;
 	}
-	else if constexpr(::std::same_as<nocvref,::std::uint_least16_t>)
+	else if constexpr(sizeof(nocvref)==sizeof(::std::uint_least16_t))
 	{
 		return 16;
 	}
-	else if constexpr(::std::same_as<nocvref,::std::uint_least32_t>)
+	else if constexpr(sizeof(nocvref)==sizeof(::std::uint_least32_t))
 	{
 		return 32;
 	}
-	else if constexpr(::std::same_as<nocvref,::std::uint_least64_t>)
+	else if constexpr(sizeof(nocvref)==sizeof(::std::uint_least64_t))
 	{
 		return 64;
 	}
-	else if constexpr(::std::same_as<nocvref,pesudo_int128type>)
+	else if constexpr(sizeof(nocvref)==sizeof(pesudo_int128type))
 	{
 		return 128;
 	}
@@ -197,7 +197,8 @@ static_assert(isiec559,"double is not iec60559");
 	else if constexpr(::std::same_as<nocvref,long double>)
 	{
 #if __STDCPP_FLOAT128_T__
-		return ::fast_io::manipulators::lebe_put<en,128>(::std::bit_cast<::fast_io::details::pesudo_int128type>(static_cast<_Float128>(t)));
+		using proxy_type = ::fast_io::details::pesudo_int128type;
+		return ::fast_io::manipulators::basic_lebe_get_put<en,basic_lebe_put_integral<128,proxy_type>>{{::std::bit_cast<::fast_io::details::pesudo_int128type>(static_cast<_Float128>(t))}};
 #else
 static_assert(sizeof(double)!=sizeof(long)&&isiec559,"long double is not iec60559 or sizeof(double) == sizeof(long double)");
 #endif
@@ -220,7 +221,8 @@ static_assert(sizeof(double)!=sizeof(long)&&isiec559,"long double is not iec6055
 	}
 	else if constexpr(sizeof(T)==sizeof(::fast_io::details::pesudo_int128type))
 	{
-		return ::fast_io::manipulators::lebe_put<en,128>(::std::bit_cast<::fast_io::details::pesudo_int128type>(static_cast<nocvref>(t)));
+		using proxy_type = ::fast_io::details::pesudo_int128type;
+		return ::fast_io::manipulators::basic_lebe_get_put<en,basic_lebe_put_integral<128,proxy_type>>{{::std::bit_cast<::fast_io::details::pesudo_int128type>(static_cast<nocvref>(t))}};
 	}
 }
 
@@ -360,7 +362,6 @@ inline constexpr auto scan_precise_reserve_define_lebe_float_get_impl(char_type 
 		::std::conditional_t<(n==16),::std::uint_least16_t,
 		::std::conditional_t<(n==8),::std::uint_least8_t,void>>>>>;
 	proxy_type const temp{scan_precise_reserve_define_integer_common_impl<endn,proxy_type>(iter)};
-
 	constexpr
 		bool isiec559{::std::numeric_limits<flttype>::is_iec559};
 	if constexpr(::std::same_as<flttype,float>)
@@ -494,7 +495,7 @@ inline constexpr auto scan_precise_reserve_define(io_reserve_type_t<char_type,
 {
 	if constexpr(::std::floating_point<int_type>)
 	{
-		return ::fast_io::details::scan_precise_reserve_define_lebe_float_get_impl<en,sz>(iter,*t.reference.pointer);
+		return ::fast_io::details::scan_precise_reserve_define_lebe_float_get_impl<en>(iter,*t.reference.pointer);
 	}
 	else
 	{
