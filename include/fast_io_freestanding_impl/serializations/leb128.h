@@ -169,7 +169,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 		t = 0;
 	for (; begin != end; cnt += 7)
 	{
-		if constexpr(7<::std::numeric_limits<unsigned_char_type>::digits)
+		if constexpr(8<::std::numeric_limits<unsigned_char_type>::digits)
 		{
 			constexpr unsigned_char_type digits256{static_cast<unsigned_char_type>(256)};
 			if(digits256<=static_cast<unsigned_char_type>(*begin))
@@ -222,7 +222,7 @@ inline constexpr parse_result<char_type const*>
 	t = 0;
 	for (; begin != end; cnt += 7)
 	{
-		if constexpr(7<::std::numeric_limits<unsigned_char_type>::digits)
+		if constexpr(8<::std::numeric_limits<unsigned_char_type>::digits)
 		{
 			constexpr unsigned_char_type digits256{static_cast<unsigned_char_type>(256)};
 			if(digits256<=static_cast<unsigned_char_type>(*begin))
