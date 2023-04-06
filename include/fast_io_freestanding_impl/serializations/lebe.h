@@ -579,17 +579,18 @@ char_type* print_reserve_define_integer_lebe_common_impl(char_type* iter,uint_ty
 }
 
 template<::std::integral char_type,::std::endian end,::std::size_t sz,typename int_type>
-requires (((sz%(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits))==0)&&!::std::is_const_v<int_type>
+requires (((sz%(::std::numeric_limits<char unsigned>::digits))==0)&&!::std::is_const_v<int_type>
 	&&(::fast_io::details::my_integral<int_type>||
 	(::std::floating_point<int_type>&&(::fast_io::details::size_lebe_float_size<int_type>)==sz)))
 inline constexpr std::size_t scan_precise_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_lebe_get_put<end,::fast_io::manipulators::basic_lebe_get_integral<sz,int_type>>>) noexcept
 {
-	return sz;
+	constexpr std::size_t cache{sz/(::std::numeric_limits<char unsigned>::digits)};
+	return cache;
 }
 
 template<::std::endian en,::std::size_t sz,::std::integral char_type,typename int_type>
-requires (((sz%(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits))==0)&&!::std::is_const_v<int_type>
+requires (((sz%(::std::numeric_limits<char unsigned>::digits))==0)&&!::std::is_const_v<int_type>
 	&&(::fast_io::details::my_integral<int_type>||
 	(::std::floating_point<int_type>&&(::fast_io::details::size_lebe_float_size<int_type>)==sz)))
 inline constexpr auto scan_precise_reserve_define(io_reserve_type_t<char_type,
@@ -608,16 +609,17 @@ inline constexpr auto scan_precise_reserve_define(io_reserve_type_t<char_type,
 }
 
 template<::std::integral char_type,::std::endian end,::std::size_t sz,typename int_type>
-requires (((sz%(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits))==0)&&
+requires (((sz%(::std::numeric_limits<char unsigned>::digits))==0)&&
 	(::fast_io::details::my_unsigned_integral<int_type>||::std::same_as<int_type,::fast_io::details::pesudo_int128type>))
 inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_lebe_get_put<end,::fast_io::manipulators::basic_lebe_put_integral<sz,int_type>>>) noexcept
 {
-	return sz;
+	constexpr std::size_t cache{sz/(::std::numeric_limits<char unsigned>::digits)};
+	return cache;
 }
 
 template<::std::integral char_type,::std::endian end,::std::size_t sz,typename int_type>
-requires (((sz%(::std::numeric_limits<::std::make_unsigned_t<char_type>>::digits))==0)&&
+requires (((sz%(::std::numeric_limits<char unsigned>::digits))==0)&&
 	(::fast_io::details::my_unsigned_integral<int_type>||::std::same_as<int_type,::fast_io::details::pesudo_int128type>))
 inline constexpr auto print_reserve_define(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_lebe_get_put<end,::fast_io::manipulators::basic_lebe_put_integral<sz,int_type>>>,char_type* iter,
