@@ -44,10 +44,6 @@ int main()
 	test(124.4264bf16);
 #endif
 
-#if __STDCPP_FLOAT8_T__
-	test(124.4264f8);
-#endif
-
 #if __STDCPP_FLOAT16_T__
 	test(124.4264f16);
 #endif
