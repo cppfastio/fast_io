@@ -51,10 +51,11 @@ inline posix_timezone_name posix_localtimezone_impl() noexcept
 	{
 		return {};
 	}
+	using unsignedtype = ::std::make_unsigned_t<decltype(st.st_size)>;
 	if constexpr(sizeof(decltype(st.st_size))>sizeof(std::size_t))
 	{
 		constexpr std::size_t mx{::std::numeric_limits<std::size_t>::max()};
-		if(st.st_size>mx)
+		if(mx<static_cast<unsignedtype>(st.st_size))
 		{
 			return {};
 		}
@@ -63,7 +64,7 @@ inline posix_timezone_name posix_localtimezone_impl() noexcept
 	char8_t* bufptr{::fast_io::typed_generic_allocator_adapter<::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator>,char8_t>::allocate(real_size)};
 	posix_timezone_name nm;
 	nm.ptr=bufptr;
-	nm.n=st.st_size;
+	nm.n=static_cast<std::size_t>(static_cast<unsignedtype>(st.st_size));
 	std::ptrdiff_t symret{::fast_io::posix::libc_readlink(u8"/etc/localtime",bufptr,real_size)};
 	if(ret==-1||static_cast<std::size_t>(symret)!=real_size||real_size<=localtimezoneinfo_string_len)
 	{
