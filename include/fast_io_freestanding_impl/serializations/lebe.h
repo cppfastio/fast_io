@@ -542,7 +542,6 @@ char_type* print_reserve_define_integer_lebe_common_impl(char_type* iter,uint_ty
 			u.high=::fast_io::byte_swap(low);
 		}
 	}
-	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 #if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
 #if __cpp_if_consteval >= 202106L
 	if consteval
