@@ -163,7 +163,7 @@ template<::std::integral char_type,typename T>
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard("NEVER discard return pointer and parse code from parse_by_scan")]]
 #endif
-inline constexpr ::fast_io::parse_result<char_type const*> parse_by_scan(char_type const* first,char_type const* last,T& t) noexcept
+inline constexpr ::fast_io::parse_result<char_type const*> parse_by_scan(char_type const* first,char_type const* last,T&& t) noexcept
 {
 	using mytype = decltype(io_scan_forward<char_type>(io_scan_alias(t)));
 	constexpr bool allscannable{::fast_io::precise_reserve_scannable<char_type,mytype>||
