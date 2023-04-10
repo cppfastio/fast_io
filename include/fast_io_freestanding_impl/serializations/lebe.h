@@ -479,21 +479,6 @@ static_assert(isiec559,"float is not iec60559");
 		}
 		else
 		{
-#if __STDCPP_FLOAT32_T__
-			t=static_cast<flttypef>(std::bit_cast<_Float64>(temp));
-#else
-static_assert(isiec559,"float is not iec60559");
-#endif
-		}
-	}
-	else if constexpr(::std::same_as<flttype,double>)
-	{
-		if constexpr(isiec559)
-		{
-			t=static_cast<flttypef>(std::bit_cast<double>(temp));
-		}
-		else
-		{
 #if __STDCPP_FLOAT64_T__
 			t=static_cast<flttypef>(std::bit_cast<_Float64>(temp));
 #else
@@ -542,7 +527,6 @@ char_type* print_reserve_define_integer_lebe_common_impl(char_type* iter,uint_ty
 			u.high=::fast_io::byte_swap(low);
 		}
 	}
-	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 #if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
 #if __cpp_if_consteval >= 202106L
 	if consteval
