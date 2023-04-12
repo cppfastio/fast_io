@@ -531,7 +531,7 @@ public:
 		else
 		{
 			auto const size{ ilist.size() };
-			imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(size);
+			imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocate(size);
 			auto e = imp.end_ptr = imp.begin_ptr + size;
 			run_destroy des{ this };
 			assign_common_impl(ilist.begin(), ilist.end());
