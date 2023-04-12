@@ -474,20 +474,25 @@ public:
 	{
 		if constexpr (::std::contiguous_iterator<InputIt>)
 		{
+			using char8_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char8_t const*;
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 			{
 				::fast_io::containers::details::check_size_and_construct<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t const*>(::std::to_address(first)),
-					reinterpret_cast<char8_t const*>(::std::to_address(last)));
+					reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+					reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
 			}
 			else
 			{
 				::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 					alignof(value_type),
-					reinterpret_cast<char8_t const*>(::std::to_address(first)),
-					reinterpret_cast<char8_t const*>(::std::to_address(last)));
+					reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+					reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
 			}
 		}
 		else
@@ -512,31 +517,35 @@ public:
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
+			using char8_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char8_t const*;
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 			{
 				::fast_io::containers::details::check_size_and_construct<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t const*>(ilist.begin()),
-					reinterpret_cast<char8_t const*>(ilist.end()));
+					reinterpret_cast<char8_const_ptr>(ilist.begin()),
+					reinterpret_cast<char8_const_ptr>(ilist.end()));
 			}
 			else
 			{
 				::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 					alignof(value_type),
-					reinterpret_cast<char8_t const*>(ilist.begin()),
-					reinterpret_cast<char8_t const*>(ilist.end()));
+					reinterpret_cast<char8_const_ptr>(ilist.begin()),
+					reinterpret_cast<char8_const_ptr>(ilist.end()));
 			}
 		}
 		else
 		{
 			auto const size{ ilist.size() };
 			imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocate(size);
-			auto e = imp.end_ptr = imp.begin_ptr + size;
+			imp.end_ptr = imp.begin_ptr + size;
 			run_destroy des{ this };
 			assign_common_impl(ilist.begin(), ilist.end());
 			des.thisvec = nullptr;
-
 		}
 	}
 
@@ -748,17 +757,22 @@ public:
 	{
 		if constexpr (::std::contiguous_iterator<InputIt>)
 		{
+			using char8_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char8_t*;
 			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 				::fast_io::containers::details::check_size_and_assign<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t*>(::std::to_address(first)),
-					reinterpret_cast<char8_t*>(::std::to_address(last)));
+					reinterpret_cast<char8_ptr>(::std::to_address(first)),
+					reinterpret_cast<char8_ptr>(::std::to_address(last)));
 			else
 				::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 					alignof(value_type),
-					reinterpret_cast<char8_t*>(::std::to_address(first)),
-					reinterpret_cast<char8_t*>(::std::to_address(last)));
+					reinterpret_cast<char8_ptr>(::std::to_address(first)),
+					reinterpret_cast<char8_ptr>(::std::to_address(last)));
 		}
 		else
 		{
@@ -787,17 +801,22 @@ public:
 	constexpr void assign(::std::initializer_list<T> ilist) noexcept
 		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
+		using char8_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= char8_t*;
 		if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 			::fast_io::containers::details::check_size_and_assign<allocator_type>(
 				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-				reinterpret_cast<char8_t*>(ilist.begin()),
-				reinterpret_cast<char8_t*>(ilist.end()));
+				reinterpret_cast<char8_ptr>(ilist.begin()),
+				reinterpret_cast<char8_ptr>(ilist.end()));
 		else
 			::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
 				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
 				alignof(value_type),
-				reinterpret_cast<char8_t*>(ilist.begin()),
-				reinterpret_cast<char8_t*>(ilist.end()));
+				reinterpret_cast<char8_ptr>(ilist.begin()),
+				reinterpret_cast<char8_ptr>(ilist.end()));
 	}
 	constexpr void assign(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
@@ -817,9 +836,14 @@ public:
 		{
 			if (n <= static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
 			{
+				using char8_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+				[[__gnu__::__may_alias__]]
+#endif
+				= char8_t*;
 				::fast_io::containers::details::add_zero_towards(
 					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t*>(imp.begin_ptr + n));
+					reinterpret_cast<char8_ptr>(imp.begin_ptr + n));
 				return;
 			}
 			// else (n > capacity())
@@ -925,9 +949,14 @@ public:
 #endif
 #endif
 			{
+				using char8_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+				[[__gnu__::__may_alias__]]
+#endif
+				= char8_t*;
 				erase_impl(reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t*>(mut_pos),
-					reinterpret_cast<char8_t*>(mut_pos + 1));
+					reinterpret_cast<char8_ptr>(mut_pos),
+					reinterpret_cast<char8_ptr>(mut_pos + 1));
 				return mut_pos;
 			}
 		}
@@ -955,9 +984,14 @@ public:
 #endif
 #endif
 			{
+				using char8_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+				[[__gnu__::__may_alias__]]
+#endif
+				= char8_t*;
 				erase_impl(reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_t*>(mut_first),
-					reinterpret_cast<char8_t*>(mut_last));
+					reinterpret_cast<char8_ptr>(mut_first),
+					reinterpret_cast<char8_ptr>(mut_last));
 				return mut_first;
 			}
 		}
