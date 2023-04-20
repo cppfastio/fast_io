@@ -1,7 +1,7 @@
 ## Compiler Support
-- GCC >= 13
+- GCC >= 14
 - VS >= 19.29.29917
-- Clang >= 15
+- Clang >= 17
 - Winegcc
 
 ## C++ standard library support
