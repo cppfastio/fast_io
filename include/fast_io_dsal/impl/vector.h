@@ -1103,7 +1103,7 @@ private:
 				}
 				this->grow_to_size_nearest_impl(sum);
 			}
-			this->imp.curr_ptr=::std::uninitialized_copy(first,last,this->imp.curr_ptr);
+			this->imp.curr_ptr=::fast_io::freestanding::uninitialized_copy(first,last,this->imp.curr_ptr);
 		}
 		else
 		{
