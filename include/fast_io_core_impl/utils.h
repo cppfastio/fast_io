@@ -475,14 +475,13 @@ inline constexpr T compile_time_pow(T base,std::size_t pow) noexcept
 }
 
 template<my_integral T,std::size_t pow>
-inline constexpr T compile_pow10{compile_time_pow(std::remove_cvref_t<T>(10),pow)};
+inline constexpr T compile_pow10{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(10,pow)};
 
 template<my_integral T,std::size_t pow>
-inline constexpr auto compile_pow5() noexcept
-{
-	constexpr auto value{compile_time_pow(std::remove_cvref_t<T>(5),pow)};
-	return value;
-}
+inline constexpr T compile_pow5{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(5,pow)};
+
+template<my_integral T,std::size_t pow>
+inline constexpr T compile_pow2{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(2,pow)};
 
 #if 0
 inline constexpr std::uint_least64_t fast_lup_table[]{

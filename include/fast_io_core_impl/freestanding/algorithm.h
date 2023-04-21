@@ -520,11 +520,9 @@ constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThr
 	{
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
-	if !consteval
+		if !consteval
 #else
-	if (!__builtin_is_constant_evaluated())
-#endif
-
+		if (!__builtin_is_constant_evaluated())
 #endif
 		{
 			std::size_t count{ static_cast<std::size_t>(last - first) };
@@ -532,6 +530,7 @@ constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThr
 				my_memmove(::std::to_address(d_first), ::std::to_address(first), sizeof(input_value_type) * count);
 			return d_first += count;
 		}
+#endif
 	}
 	destroyer d{d_first,d_first};
 	for(;first!=last;++first)
