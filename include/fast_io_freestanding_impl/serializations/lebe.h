@@ -479,21 +479,6 @@ static_assert(isiec559,"float is not iec60559");
 		}
 		else
 		{
-#if __STDCPP_FLOAT32_T__
-			t=static_cast<flttypef>(std::bit_cast<_Float64>(temp));
-#else
-static_assert(isiec559,"float is not iec60559");
-#endif
-		}
-	}
-	else if constexpr(::std::same_as<flttype,double>)
-	{
-		if constexpr(isiec559)
-		{
-			t=static_cast<flttypef>(std::bit_cast<double>(temp));
-		}
-		else
-		{
 #if __STDCPP_FLOAT64_T__
 			t=static_cast<flttypef>(std::bit_cast<_Float64>(temp));
 #else
