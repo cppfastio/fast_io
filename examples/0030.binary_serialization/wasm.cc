@@ -39,7 +39,6 @@ inline void testuint32(T u1)
 
 int main()
 {
-
 #if __STDCPP_BFLOAT16_T__
 	test(124.4264bf16);
 #endif
@@ -69,7 +68,7 @@ int main()
 	testvarint(UINT64_C(124212351253253253));
 	testvarint(UINT32_C(5235252));
 	testvarint(INT64_C(-50));
-
 	testuint32(UINT32_C(3253));
 }
+
 
