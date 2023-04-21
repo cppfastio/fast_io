@@ -700,6 +700,34 @@ private:
 		std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
 		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type),false>(cap));
 	}
+	inline constexpr void grow_to_size_nearest_impl(size_type leastcap) noexcept
+	{
+		constexpr 
+			::std::size_t mx_value2{(::std::numeric_limits<::std::size_t>::max()/sizeof(value_type))};
+		constexpr 
+			::std::size_t mx_value{mx_value2>>1};
+		std::size_t cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
+		if(mx_value<cap)
+		{
+			cap=mx_value2;
+		}
+		else
+		{
+			cap<<=1;
+		}
+		if(cap<leastcap)
+		{
+			cap=leastcap;
+		}
+		if constexpr(1<sizeof(value_type))
+		{
+			if(mx_value2<cap)
+			{
+				::fast_io::fast_terminate();
+			}
+		}
+		grow_to_size_impl(cap);
+	}
 	template <typename InputIt>
 		requires(::std::input_iterator<InputIt>)
 	inline constexpr void assign_common_impl(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
@@ -1018,6 +1046,48 @@ public:
 	{
 		this->emplace_back_unchecked(::std::move(value));
 	}
+
+private:
+
+	template<::std::input_or_output_iterator Iter>
+	constexpr void append_impl(Iter first, Iter last) noexcept(noexcept(this->push_back(*this)))
+	{
+		if constexpr(::std::forward_iterator<Iter>)
+		{
+			auto dis{::std::distance(first,last)};
+			::std::size_t const remain_space{static_cast<size_type>(imp.end_ptr-imp.curr_ptr)};
+			auto sum{remain_space + static_cast<::std::size_t>(dis)};
+			::std::size_t const capcty{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
+			if(capcty < sum)
+			{
+				if constexpr(SIZE_MAX<::std::numeric_limits<decltype(sum)>::max())
+				{
+					if(SIZE_MAX<sum)
+					{
+						::fast_io::fast_terminate();
+					}
+				}
+				this->grow_to_size_nearest_impl(sum);
+			}
+			this->imp.curr_ptr=::std::uninitialized_copy(first,last,this->imp.curr_ptr);
+		}
+		else
+		{
+			for(;first!=last;++first)
+			{
+				this->push_back(*first);
+			}
+		}
+	}
+
+public:
+
+	template<::std::ranges::input_range R>
+	constexpr void append_range(R && rg) noexcept(noexcept(this->append_impl(::std::ranges::begin(rg),::std::ranges::end(rg))))
+	{
+		this->append_impl(::std::ranges::begin(rg),::std::ranges::end(rg));
+	}
+
 	[[nodiscard]] constexpr const_reference back() const noexcept
 	{
 		return imp.curr_ptr[-1];
