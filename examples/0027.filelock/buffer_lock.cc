@@ -1,6 +1,8 @@
 ﻿#include<fast_io.h>
 #include<fast_io_device.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::obuf_file pf(u8"example.txt",fast_io::open_mode::app);

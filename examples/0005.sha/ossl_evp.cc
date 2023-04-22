@@ -2,6 +2,8 @@
 #include<fast_io_device.h>
 #include<fast_io_hosted_crypto.h>
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 try
 {

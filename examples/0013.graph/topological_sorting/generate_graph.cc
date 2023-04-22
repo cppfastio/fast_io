@@ -2,6 +2,8 @@
 #include<fast_io_device.h>
 #include<random>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::u8obuf_file obf(u8"directed_graph.txt");

@@ -2,6 +2,8 @@
 #include<fast_io_device.h>
 #include<random>
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	std::size_t n{100};

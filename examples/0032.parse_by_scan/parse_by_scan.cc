@@ -1,5 +1,7 @@
 #include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	constexpr char8_t const testbuffer[]{u8"412741298414 1235321525"};

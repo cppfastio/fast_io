@@ -1,6 +1,8 @@
 #include <string>
 #include <fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	auto tsp1 = fast_io::to<fast_io::win32_timestamp>("1231232.23423423423423423435");

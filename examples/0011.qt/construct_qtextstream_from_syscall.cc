@@ -2,6 +2,8 @@
 #include<fast_io_driver/qt.h>
 #include<QtCore/QTextStream>
 
+using namespace fast_io::io;
+
 int main()
 {
 /*

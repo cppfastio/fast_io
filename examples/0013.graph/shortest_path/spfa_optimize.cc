@@ -8,6 +8,8 @@ struct node
 	std::size_t to,weight;
 };
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::ibuf_file ibf("graph.txt");

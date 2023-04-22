@@ -38,6 +38,8 @@ inline constexpr Iter print_reserve_define(fast_io::io_reserve_type_t<char8_t,ne
 
 static_assert(fast_io::dynamic_reserve_printable<char8_t,new_type>);
 
+using namespace fast_io::io;
+
 int main()
 {
 	foo f;

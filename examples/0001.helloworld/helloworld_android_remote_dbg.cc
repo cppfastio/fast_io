@@ -1,6 +1,8 @@
 ﻿#include<fast_io.h>
 #include<android/log.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	print(fast_io::dbg(ANDROID_LOG_FATAL,"fast_io"),

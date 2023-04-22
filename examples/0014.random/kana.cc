@@ -4,6 +4,8 @@
 #include<array>
 #include<string_view>
 
+using namespace fast_io::io;
+
 int main()
 {
 	constexpr std::array hiragana{

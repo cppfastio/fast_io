@@ -7,6 +7,8 @@
 https://github.com/sunfishcode/wasm-reference-manual/blob/master/WebAssembly.md#primitive-encoding-types
 */
 
+using namespace fast_io::io;
+
 template<typename T>
 inline void test(T u1)
 {

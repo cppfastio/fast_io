@@ -1,6 +1,8 @@
 ﻿#include<fast_io.h>
 #include<random>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::ibuf_white_hole_engine eng;

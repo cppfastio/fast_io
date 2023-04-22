@@ -3,6 +3,8 @@
 #include<fast_io_legacy.h>
 #include<fstream>
 
+using namespace fast_io::io;
+
 int main()
 {
 	using namespace fast_io::mnp;

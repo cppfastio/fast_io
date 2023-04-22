@@ -1,5 +1,7 @@
 ﻿#include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::native_file file(fast_io::io_temp);

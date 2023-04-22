@@ -6,6 +6,8 @@
 This is just for demo purpose. You should avoid crc32 families in general because it is not even a crypto hash function.
 */
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	using namespace fast_io::mnp;

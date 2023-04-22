@@ -9,6 +9,8 @@ thread_local fast_io::u8obuf_file u8obf(u8"/dev/null");
 thread_local fast_io::u16obuf_file u16obf(u8"/dev/null");
 thread_local fast_io::u32obuf_file u32obf(u8"/dev/null");
 
+using namespace fast_io::io;
+
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const* ptr,std::size_t n) noexcept
 {
 	std::string_view v(reinterpret_cast<char const*>(ptr),n);

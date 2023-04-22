@@ -10,6 +10,8 @@ So why do you use iostream?? It is just a garbage quality of RAII wrapper for FI
 https://github.com/expnkx/fast_io/wiki/0014.-How-does-std::fstream-work-internally%3F
 */
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::streambuf_io_observer siob{std::cout.rdbuf()};

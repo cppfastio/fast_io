@@ -4,6 +4,8 @@
 #include<algorithm>
 #include<functional>
 
+using namespace fast_io::io;
+
 int main(int argc,char **argv)
 {
 	if(argc<2)

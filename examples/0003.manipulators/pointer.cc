@@ -18,6 +18,8 @@ struct B
 
 struct C : A, B {};
 
+using namespace fast_io::io;
+
 int main()
 {
 	using namespace fast_io::mnp;

@@ -1,5 +1,7 @@
 ﻿#include<fast_io_legacy.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::filebuf_file fbf("filebuf_file.txt",fast_io::open_mode::out);

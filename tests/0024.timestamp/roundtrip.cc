@@ -1,6 +1,8 @@
 #include <string>
 #include <fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	std::string s1{"2022-12-01T01:23:45.0000000000000000002500000000000000000000-00:00"};

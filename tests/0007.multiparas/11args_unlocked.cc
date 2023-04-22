@@ -1,6 +1,8 @@
 ﻿#include<fast_io.h>
 #include<climits>
 
+using namespace fast_io::io;
+
 int main()
 {
 	auto cst{fast_io::c_stdout()};

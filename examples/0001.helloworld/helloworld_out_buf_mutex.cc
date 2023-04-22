@@ -1,5 +1,7 @@
 ﻿#include<fast_io.h>
 
+using namespace fast_io::io;
+
 fast_io::out_buf_type_mutex globalstdout{fast_io::out()};
 
 int main()

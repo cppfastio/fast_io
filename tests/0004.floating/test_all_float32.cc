@@ -3,6 +3,8 @@
 #include<fast_io_crypto.h>
 #include<fast_io_driver/timer.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	using namespace fast_io::mnp;

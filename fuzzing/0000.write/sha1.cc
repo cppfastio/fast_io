@@ -5,6 +5,8 @@
 thread_local fast_io::sha1_context ctx;
 thread_local fast_io::u32obuf_file obf(u8"/dev/null");
 
+using namespace fast_io::io;
+
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const* ptr,std::size_t n) noexcept
 {
 	ctx.reset();

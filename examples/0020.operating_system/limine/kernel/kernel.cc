@@ -4,6 +4,8 @@
 #include "../../../include/fast_io.h"
 #include "../../../include/fast_io_driver/limine/kernel_console.h"
 
+using namespace fast_io::io;
+
 namespace fast_io_kernel_demo
 {
 // We need to tell the stivale bootloader where we want our stack to be.

@@ -3,6 +3,8 @@
 #include<fast_io_device.h>
 #include<fast_io_crypto.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::net_service serivce;

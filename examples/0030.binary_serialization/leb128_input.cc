@@ -2,6 +2,8 @@
 #include <limits>
 #include <fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	std::uint64_t u1, u2;

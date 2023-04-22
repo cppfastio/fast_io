@@ -1,6 +1,8 @@
 ﻿#include<string_view>
 #include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	std::string_view str;
