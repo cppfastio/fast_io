@@ -488,6 +488,61 @@ inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const&
 	return first;
 }
 
+template<::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
+constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first)
+{
+    using T = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+	struct destroyer
+	{
+		NoThrowForwardIt d_first;
+		NoThrowForwardIt current;
+		constexpr
+			~destroyer()
+		{
+			for (;d_first != current;++d_first)
+			{
+				d_first->~T();
+			}
+		}
+	};
+	using input_iter = InputIt;
+	using output_iter = NoThrowForwardIt;
+	using input_value_type = ::std::iter_value_t<input_iter>;
+	using output_value_type = ::std::iter_value_t<output_iter>;
+	if constexpr
+		(::std::contiguous_iterator<input_iter> &&
+			::std::contiguous_iterator<output_iter> &&
+			std::is_trivially_copyable_v<input_value_type> &&
+			std::is_trivially_copyable_v<output_value_type> &&
+			(std::same_as<input_value_type, output_value_type> ||
+				(std::integral<input_value_type> && std::integral<output_value_type> &&
+					sizeof(input_value_type) == sizeof(output_value_type))))
+	{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			std::size_t count{ static_cast<std::size_t>(last - first) };
+			if (count)	//to avoid nullptr UB
+				my_memmove(::std::to_address(d_first), ::std::to_address(first), sizeof(input_value_type) * count);
+			return d_first += count;
+		}
+#endif
+	}
+	destroyer d{d_first,d_first};
+	for(;first!=last;++first)
+	{
+		::new (__builtin_addressof(*d.current)) T(*first);
+		++d.current;
+	}
+	NoThrowForwardIt current = d.current;
+	d.current = d.d_first;
+	return current;
+}
+
 }
 
 namespace fast_io::details
@@ -500,6 +555,7 @@ using ::fast_io::freestanding::non_overlapped_copy;
 using ::fast_io::freestanding::my_copy;
 using ::fast_io::freestanding::my_copy_backward;
 using ::fast_io::freestanding::my_copy_n;
+
 }
 
 #if defined(_MSC_VER) && !defined(__clang__)

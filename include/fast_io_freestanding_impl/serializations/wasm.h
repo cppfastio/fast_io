@@ -44,4 +44,16 @@ inline constexpr auto wasm_uint32_get(T& t)
 	return ::fast_io::manipulators::le_get<32>(t);
 }
 
+template<::fast_io::details::my_integral T>
+inline constexpr auto wasm_uint64_put(T t)
+{
+	return ::fast_io::manipulators::le_put<64>(t);
+}
+
+template<::fast_io::details::my_integral T>
+inline constexpr auto wasm_uint64_get(T& t)
+{
+	return ::fast_io::manipulators::le_get<64>(t);
+}
+
 }
