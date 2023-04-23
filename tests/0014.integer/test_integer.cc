@@ -4,6 +4,8 @@
 #include<cassert>
 #include<cstring>
 
+using namespace fast_io::io;
+
 inline void test(std::uint_least64_t s)
 {
 	char buffer[fast_io::pr_rsv_size<char,std::uint_least64_t>];

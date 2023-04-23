@@ -1,6 +1,8 @@
 ﻿#include<array>
 #include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	std::array<char,20> buffer;

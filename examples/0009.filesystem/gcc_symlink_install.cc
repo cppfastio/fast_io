@@ -6,6 +6,8 @@
 #include<algorithm>
 #include<ranges>
 
+using namespace fast_io::io;
+
 int main(int argc,char const** argv)
 {
 	if(argc<2)

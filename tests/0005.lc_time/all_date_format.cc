@@ -4,6 +4,8 @@
 #include<fast_io_i18n.h>
 #include<fast_io_device.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::u8obuf_file f("u8out.txt");

@@ -3,6 +3,8 @@
 #include<random>
 #include<fast_io_dsal/vector.h>
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	std::size_t n{100};

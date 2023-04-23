@@ -2,6 +2,8 @@
 #include<string_view>
 #include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	std::u16string u16str=fast_io::u16concat(u"The fart is ",18);

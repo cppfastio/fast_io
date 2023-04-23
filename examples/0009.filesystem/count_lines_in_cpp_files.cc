@@ -3,6 +3,8 @@
 #include<fast_io_device.h>
 #include<algorithm>
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	if(argc<2)

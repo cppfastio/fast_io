@@ -1,6 +1,8 @@
 #include<string>
 #include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	std::string str=fast_io::concat("The "

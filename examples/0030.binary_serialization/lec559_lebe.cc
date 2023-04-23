@@ -3,6 +3,8 @@
 #include <source_location>
 #include <fast_io.h>
 
+using namespace fast_io::io;
+
 template<typename T>
 inline void test(T u1)
 {

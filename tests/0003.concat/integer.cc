@@ -2,6 +2,8 @@
 #include<fast_io.h>
 #include<climits>
 
+using namespace fast_io::io;
+
 int main()
 {
 	print(fast_io::concat(stdout),"\n",

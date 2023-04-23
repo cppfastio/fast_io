@@ -1,6 +1,8 @@
 #include<string>
 #include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::ipv6 v6{{0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF,0xFFFF},0xFFFF};

@@ -1,6 +1,8 @@
 ﻿#include<string>
 #include<fast_io_legacy.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::filebuf_file fbf(u8"test.txt",fast_io::open_mode::in);

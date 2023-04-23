@@ -1,5 +1,7 @@
 #include <fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	//auto tsp = fast_io::to<fast_io::iso8601_timestamp>("2022-12-01T01:59:57.19283039544444434545344820394932342434234222366+08:00");

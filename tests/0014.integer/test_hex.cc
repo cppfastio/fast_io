@@ -1,5 +1,7 @@
 ﻿#include<fast_io.h>
 
+using namespace fast_io::io;
+
 template<typename U,std::size_t n>
 inline void test_type()
 {

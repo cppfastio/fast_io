@@ -1,5 +1,7 @@
 ﻿#include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	char buffer[::fast_io::pr_rsv_size<char,double>];

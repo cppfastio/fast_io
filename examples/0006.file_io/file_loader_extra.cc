@@ -1,5 +1,7 @@
 ﻿#include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	if(argc!=2)

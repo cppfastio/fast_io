@@ -1,5 +1,7 @@
 ﻿#include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	println("rigstr\t",fast_io::mnp::internal("asf",10),"\n"

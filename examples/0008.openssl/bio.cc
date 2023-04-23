@@ -1,6 +1,8 @@
 ﻿#include<fast_io.h>
 #include<fast_io_driver/openssl_driver.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::bio_file bf("bio.txt",fast_io::open_mode::out);

@@ -2,6 +2,8 @@
 #include<fstream>
 #include<fast_io_i18n.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 /*

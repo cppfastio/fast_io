@@ -2,6 +2,8 @@
 #include<fast_io.h>
 #include<string_view>
 
+using namespace fast_io::io;
+
 int main(int argc,char const** argv)
 try
 {

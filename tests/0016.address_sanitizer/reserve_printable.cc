@@ -18,6 +18,8 @@ inline constexpr char* print_reserve_define(::fast_io::io_reserve_type_t<char,fo
 
 static_assert(fast_io::reserve_printable<char,foo>);
 
+using namespace fast_io::io;
+
 int main()
 {
 	foo f;

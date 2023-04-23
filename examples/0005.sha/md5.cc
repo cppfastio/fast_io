@@ -6,6 +6,8 @@
 This is just for demo purpose. You should avoid md5 in general because it is insecure.
 */
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	using namespace fast_io::mnp;

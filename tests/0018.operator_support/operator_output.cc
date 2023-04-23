@@ -8,6 +8,8 @@ inline std::ostream& operator<<(std::ostream& out,my_custom_type)
 	return out<<"custom type";
 }
 
+using namespace fast_io::io;
+
 int main()
 {
 	my_custom_type m;

@@ -1,5 +1,7 @@
 ﻿#include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::c_file cfl("c_file.txt",fast_io::open_mode::out);

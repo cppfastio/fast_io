@@ -5,6 +5,8 @@
 
 thread_local fast_io::obuf_file obf("/dev/null");
 
+using namespace fast_io::io;
+
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const* ptr, std::size_t n) noexcept
 {
 	fast_io::

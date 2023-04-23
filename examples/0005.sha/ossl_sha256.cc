@@ -6,6 +6,8 @@
 Need to install OpenSSL first
 */
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	using namespace fast_io::mnp;

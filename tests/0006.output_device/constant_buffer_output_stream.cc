@@ -1,6 +1,8 @@
 #include<fast_io_device.h>
 #include<fast_io.h>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::obuf_file obf(u8"constant.txt");

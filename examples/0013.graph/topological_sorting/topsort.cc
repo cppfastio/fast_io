@@ -2,6 +2,8 @@
 #include<fast_io_device.h>
 #include<queue>
 
+using namespace fast_io::io;
+
 int main()
 {
 	fast_io::u8ibuf_file ibf(u8"directed_graph.txt");

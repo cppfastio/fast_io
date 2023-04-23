@@ -7,6 +7,8 @@ This is just for demo purpose. You should avoid sha1 in general because it is in
 Need to install OpenSSL first
 */
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	using namespace fast_io::mnp;

@@ -83,6 +83,8 @@ void run()
 
 };
 
+using namespace fast_io::io;
+
 int main()
 {
 	gabow_ctx ctx;

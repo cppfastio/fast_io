@@ -8,6 +8,8 @@ fast_io's own implementation. No need to install anything.
 Probably need -march=native to enable sha intrinsics
 */
 
+using namespace fast_io::io;
+
 int main(int argc,char** argv)
 {
 	using namespace fast_io::mnp;

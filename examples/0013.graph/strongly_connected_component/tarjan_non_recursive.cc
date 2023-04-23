@@ -91,6 +91,8 @@ void run()
 
 };
 
+using namespace fast_io::io;
+
 int main()
 {
 	tarjan_ctx ctx;
