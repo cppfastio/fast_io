@@ -431,7 +431,7 @@ requires (sizeof...(Args)!=0)
 }
 
 //Allow debug print
-// #if !defined(NDEBUG) || defined(FAST_IO_ENABLE_DEBUG_PRINT)
+#if !defined(FAST_IO_DISABLE_DEBUG_PRINT)
 //With debugging. We output to POSIX fd or Win32 Handle directly instead of C's stdout.
 template<typename T,typename... Args>
 inline constexpr void debug_print(T&& t,Args&& ...args)
@@ -527,7 +527,7 @@ inline constexpr void debug_perrln(Args&&... args)
 	::perrln(::std::forward<Args>(args)...);
 }
 
-// #endif
+#endif
 
 template<bool report=false,typename input,typename... Args>
 inline constexpr std::conditional_t<report,bool,void> scan(input&& in,Args&& ...args)
