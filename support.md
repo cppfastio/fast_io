@@ -1,7 +1,7 @@
 ## Compiler Support
 - GCC >= 14
-- VS >= 19.36.32522
 - Clang >= 17
+- Microsoft Visual C++ cl >= 19.36.32522
 
 ## C++ standard library support
 - GCC libstdc++
