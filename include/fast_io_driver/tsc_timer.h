@@ -29,7 +29,7 @@ struct tsc_timer
 	#endif
 	~tsc_timer()
 	{
-		perr(fast_io::u8err(),s, u8":", current_tsc()-t0,u8" cycles\n");
+		::fast_io::io::perr(fast_io::u8err(),s, u8":", current_tsc()-t0,u8" cycles\n");
 	}
 };
 
