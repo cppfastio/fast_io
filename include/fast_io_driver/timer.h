@@ -19,7 +19,7 @@ struct timer
 	#endif
 	~timer()
 	{
-		perr(fast_io::u8err(),s, u8":", posix_clock_gettime(posix_clock_id::monotonic_raw)-t0,u8"s\n");
+		::fast_io::io::perr(fast_io::u8err(),s, u8":", posix_clock_gettime(posix_clock_id::monotonic_raw)-t0,u8"s\n");
 	}
 };
 }
