@@ -10,14 +10,27 @@ namespace streamreflect
 {
 
 template<typename T>
-concept has_obuffer_ops = requires(T outstm,typename T::char_type *ptr,typename T::char_type const *cptr)
+concept has_obuffer_all_ops = requires(T outstm,typename T::char_type *ptr,typename T::char_type const *cptr)
 {
 	obuffer_begin(outstm);
 	obuffer_curr(outstm);
 	obuffer_end(outstm);
 	obuffer_set_curr(outstm,ptr);
-	obuffer_write_overflow(outstm,cptr,cptr);
+	obuffer_write_all_overflow_define(outstm,cptr,cptr);
 };
+
+template<typename T>
+concept has_obuffer_some_ops = requires(T outstm,typename T::char_type *ptr,typename T::char_type const *cptr)
+{
+	obuffer_begin(outstm);
+	obuffer_curr(outstm);
+	obuffer_end(outstm);
+	obuffer_set_curr(outstm,ptr);
+	obuffer_write_some_overflow_define(outstm,cptr,cptr);
+};
+
+template<typename T>
+concept has_obuffer_ops = has_obuffer_all_ops<T>||has_obuffer_some_ops<T>;
 
 template<typename T>
 concept has_write_some_define = requires(T outstm,typename T::char_type const* ptr)
@@ -88,11 +101,60 @@ inline constexpr ::std::byte const* write_some_common_chtypeptr_impl(F outstm,
 }
 
 template<typename F,typename value_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr value_type const* write_obf_some_overflow_impl(F outstm,value_type const* first,value_type const* last)
+{
+	if constexpr(::fast_io::details::streamreflect::has_obuffer_some_ops<F>)
+	{
+		return obuffer_write_some_overflow_define(outstm,first,last);
+	}
+	else
+	{
+		obuffer_write_all_overflow_define(outstm,first,last);
+		return last;
+	}
+}
+
+template<typename F,typename value_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void write_obf_all_overflow_impl(F outstm,value_type const* first,value_type const* last)
+{
+	if constexpr(::fast_io::details::streamreflect::has_obuffer_all_ops<F>)
+	{
+		obuffer_write_all_overflow_define(outstm,first,last);
+	}
+	else
+	{
+		while((first=obuffer_write_some_overflow_define(outstm,first,last))!=last);
+	}
+}
+
+template<typename F,typename value_type>
 inline constexpr value_type const* write_some_common_chtypeptr_impl(F outstm,value_type const* first,value_type const* last)
 {
 	using char_type = typename F::char_type;
 	constexpr bool smtp{::std::same_as<char_type,value_type>};
-	if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_some_define<F>))
+	if constexpr(smtp&&(::fast_io::details::streamreflect::has_obuffer_ops<F>))
+	{
+		char_type *curr{obuffer_curr(outstm)};
+		char_type *ed{obuffer_end(outstm)};
+		auto bufferremain{ed-curr};
+		auto itdf{last-first};
+		if(itdf<bufferremain)
+#if __has_cpp_attribute(likely)
+			[[likely]]
+#endif
+		{
+			obuffer_set_curr(outstm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdf),curr));
+			return last;
+		}
+		return ::fast_io::details::write_obf_some_overflow_impl(outstm,first,last);
+	}
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_some_define<F>))
 	{
 		return write_some_define(outstm,first,last);
 	}
@@ -174,7 +236,22 @@ inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const*
 {
 	using char_type = typename F::char_type;
 	constexpr bool smtp{::std::same_as<char_type,value_type>};
-	if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_all_define<F>))
+	if constexpr(smtp&&(::fast_io::details::streamreflect::has_obuffer_ops<F>))
+	{
+		char_type *curr{obuffer_curr(outstm)};
+		char_type *ed{obuffer_end(outstm)};
+		auto bufferremain{ed-curr};
+		auto itdf{last-first};
+		if(itdf<bufferremain)
+#if __has_cpp_attribute(likely)
+			[[likely]]
+#endif
+		{
+			obuffer_set_curr(outstm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdf),curr));
+		}
+		::fast_io::details::write_obf_all_overflow_impl(outstm,first,last);
+	}
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_all_define<F>))
 	{
 		write_all_define(outstm,first,last);
 	}
