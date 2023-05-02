@@ -3,53 +3,223 @@
 namespace fast_io
 {
 
-struct rw_type_tag_t
-{
-explicit inline constexpr rw_type_tag_t() noexcept = default;
-};
-
-inline constexpr rw_type_tag_t rw_type_tag{};
-
 namespace details
 {
 
+namespace streamreflect
+{
+
+template<typename T>
+concept has_obuffer_ops = requires(T outstm,typename T::char_type *ptr,typename T::char_type const *cptr)
+{
+	obuffer_begin(outstm);
+	obuffer_curr(outstm);
+	obuffer_end(outstm);
+	obuffer_set_curr(outstm,ptr);
+	obuffer_write_overflow(outstm,cptr,cptr);
+};
+
+template<typename T>
+concept has_write_some_define = requires(T outstm,typename T::char_type const* ptr)
+{
+	write_some_define(outstm,ptr,ptr);
+};
+
+template<typename T>
+concept has_write_all_define = requires(T outstm,typename T::char_type const* ptr)
+{
+	write_all_define(outstm,ptr,ptr);
+};
+
+template<typename T>
+concept has_write_some_bytes_define = requires(T outstm,::std::byte const* ptr)
+{
+	write_some_bytes_define(outstm,ptr,ptr);
+};
+
+template<typename T>
+concept has_write_all_bytes_define = requires(T outstm,::std::byte const* ptr)
+{
+	write_all_bytes_define(outstm,ptr,ptr);
+};
+
+template<typename T>
+concept has_scatter_write_some_bytes_define = requires(T outstm,::fast_io::io_scatter_t scatter)
+{
+	scatter_write_some_bytes_define(outstm,scatter);
+};
+
+template<typename T>
+concept has_scatter_write_all_bytes_define = requires(T outstm,::fast_io::io_scatter_t scatter)
+{
+	scatter_write_all_bytes_define(outstm,scatter);
+};
+
+
+template<typename T>
+concept has_scatter_write_some_define = requires(T outstm,::fast_io::io_scatter_t scatter)
+{
+	scatter_write_some_define(outstm,scatter);
+};
+
+template<typename T>
+concept has_scatter_write_all_define = requires(T outstm,::fast_io::basic_io_scatter_t<typename T::char_type> scatter)
+{
+	scatter_write_all_define(outstm,scatter);
+};
+
+}
+
 template<typename F>
-inline constexpr char const* write_some_contiguous_common_charptr_impl(F outstm,char const* first,char const* last)
+inline constexpr ::std::byte const* write_some_common_chtypeptr_impl(F outstm,
+	::std::byte const* firstbyteptr,::std::byte const* lastbyteptr,::std::size_t n)
+{
+	auto it{firstbyteptr};
+	while((it=write_some_bytes_define(outstm,
+			it,lastbyteptr))!=lastbyteptr)
+	{
+		::std::size_t diff{static_cast<::std::size_t>(it-firstbyteptr)};
+		if(!(diff%n))
+		{
+			break;
+		}
+	}
+	return it;
+}
+
+template<typename F,typename value_type>
+inline constexpr value_type const* write_some_common_chtypeptr_impl(F outstm,value_type const* first,value_type const* last)
 {
 	using char_type = typename F::char_type;
-	if constexpr(requires()
-	{
-		write_some_define(outstm,first,last);
-	})
+	constexpr bool smtp{::std::same_as<char_type,value_type>};
+	if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_some_define<F>))
 	{
 		return write_some_define(outstm,first,last);
 	}
-	else if constexpr(requires()
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_all_define<F>))
 	{
-		write_some_bytes_define(outstm,first,last);
-	})
+		write_all_define(outstm,first,last);
+		return last;
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_define<F>)
 	{
-		return write_some_bytes_define(outstm,first,last);
+		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
+		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
+		if constexpr(sizeof(char_type)==sizeof(::std::byte))
+		{
+			auto p{write_some_bytes_define(outstm,
+				firstbyteptr,
+				lastbyteptr)};
+			return p-firstbyteptr+first;
+		}
+		else
+		{
+			::std::size_t n{static_cast<::std::size_t>(::fast_io::details::write_some_common_chtypeptr_impl(
+			outstm,firstbyteptr,lastbyteptr,sizeof(value_type))-firstbyteptr)};
+			return first+(n/sizeof(value_type));
+		}
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_define<F>)
+	{
+		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
+		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
+		write_all_bytes_define(outstm,firstbyteptr,lastbyteptr);
+		return last;
+	}
+	else
+	{
+		return first;
 	}
 }
 
-template<typename F,typename char_type>
-inline constexpr char_type* write_some_contiguous_common_chtypeptr_impl(F outstm,char_type* first,char_type* last)
+template<typename outputtype,::std::forward_iterator Iter>
+inline constexpr Iter write_some_common_iter_impl(outputtype outstm,Iter first,Iter last)
+{
+	using char_type = typename outputtype::char_type;
+	using value_type = ::std::iter_value_t<Iter>;
+	if constexpr(::std::contiguous_iterator<Iter>)
+	{
+		return ::fast_io::details::write_some_common_chtypeptr_impl(
+			outstm,
+			::std::to_address(first),
+			::std::to_address(last))-::std::to_address(first)+first;
+	}
+	else
+	{
+		for(;first!=last;++first)
+		{
+			auto fptr{__builtin_addressof(*first)};
+			auto fptrp1{fptr+1};
+			if(::fast_io::details::write_some_common_chtypeptr_impl(
+				outstm,fptr,fptrp1)!=fptrp1)
+			{
+				break;
+			}
+		}
+		return first;
+	}
+}
+
+
+template<typename F>
+inline constexpr void write_all_bytes_common_chtypeptr_impl(F outstm,::std::byte const* firstbyteptr,::std::byte const* lastbyteptr)
+{
+	while((firstbyteptr=write_some_bytes_define(outstm,
+		firstbyteptr,
+		lastbyteptr))!=lastbyteptr);
+}
+
+template<typename F,typename value_type>
+inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const* first,value_type const* last)
 {
 	using char_type = typename F::char_type;
-	if constexpr(requires()
+	constexpr bool smtp{::std::same_as<char_type,value_type>};
+	if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_all_define<F>))
 	{
-		write_some_define(outstm,first,last);
-	})
-	{
-		return write_some_define(outstm,first,last);
+		write_all_define(outstm,first,last);
 	}
-	else if constexpr(requires()
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_some_define<F>))
 	{
-		
-	})
+		while((first=write_some_define(outstm,first,last))!=last);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_define<F>)
 	{
-		
+		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
+		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
+		write_all_bytes_define(outstm,firstbyteptr,lastbyteptr);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_define<F>)
+	{
+		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
+		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
+		write_all_bytes_common_chtypeptr_impl(outstm,firstbyteptr,lastbyteptr);
+	}
+}
+
+template<typename outputtype,::std::forward_iterator Iter>
+inline constexpr void write_all_common_iter_impl(outputtype outstm,Iter first,Iter last)
+{
+	using char_type = typename outputtype::char_type;
+	using value_type = ::std::iter_value_t<Iter>;
+	if constexpr(::std::contiguous_iterator<Iter>)
+	{
+		::fast_io::details::write_all_common_chtypeptr_impl(
+			outstm,
+			::std::to_address(first),
+			::std::to_address(last));
+	}
+	else
+	{
+		for(;first!=last;++first)
+		{
+			auto fptr{__builtin_addressof(*first)};
+			auto fptrp1{fptr+1};
+			::fast_io::details::write_all_common_chtypeptr_impl(
+				outstm,
+				fptr,
+				fptrp1);
+		}
+		return first;
 	}
 }
 
@@ -58,57 +228,13 @@ inline constexpr char_type* write_some_contiguous_common_chtypeptr_impl(F outstm
 template<typename F,::std::forward_iterator Iter>
 inline constexpr Iter write_some(F&& foo,Iter first, Iter last)
 {
-	if constexpr(::std::contiguous_iterator<Iter>)
-	{
-		
-	}
-	else
-	{
-		if constexpr(requires()
-		{
-			write_some_define(io_ref(foo),first,last);
-		})
-		{
-			return write_some_define(io_ref(foo),first,last);
-		}
-		else if constexpr(requires()
-		{
-			
-		})
-		{
-		}
-		else if constexpr(requires()
-		{
-			write_all_define(io_ref(foo),first,last);
-		})	
-		{
-			write_all_define(io_ref(foo),first,last);
-			return last;
-		}
-		else if constexpr(requires(::std::byte const* ptr)
-		{
-			write_some_bytes_define(io_ref(foo),ptr,ptr);
-		})
-		{
-			return write_some_bytes_define(io_ref(foo),first,last);
-		}
-		else if constexpr(requires(::std::byte const* ptr)
-		{
-			write_all_bytes_define(io_ref(foo),ptr,ptr);
-		})
-		{
-			return write_all_bytes_define(io_ref(foo),first,last);
-		}
-	}
-//	io_ref()
+	return ::fast_io::details::write_some_common_iter_impl(io_ref(foo),first,last);
 }
-/*
-template<typename Iter>
-//requires 
-inline constexpr void write_all(Iter first,Iter last)
+
+template<typename F,::std::forward_iterator Iter>
+inline constexpr void write_all(F&& foo,Iter first,Iter last)
 {
-	
+	::fast_io::details::write_all_common_iter_impl(io_ref(foo),first,last);
 }
-*/
 
 }
