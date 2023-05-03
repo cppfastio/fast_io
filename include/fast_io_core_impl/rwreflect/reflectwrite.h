@@ -221,9 +221,26 @@ inline constexpr value_type const* write_some_common_chtypeptr_impl(F outstm,val
 		}
 		else
 		{
-			::std::size_t n{static_cast<::std::size_t>(::fast_io::details::write_some_common_chtypeptr_impl(
-			outstm,firstbyteptr,lastbyteptr,sizeof(value_type))-firstbyteptr)};
-			return first+(n/sizeof(value_type));
+			auto it{firstbyteptr};
+			::std::size_t n{};
+			do
+			{
+				it=::fast_io::details::write_some_common_chtypeptr_impl(
+					outstm,it,lastbyteptr,sizeof(value_type));
+				n=static_cast<::std::size_t>(it-firstbyteptr);
+				if(n%sizeof(value_type)==0)
+				{
+					break;
+				}
+			}
+			while(it!=lastbyteptr);
+			::std::size_t const diff{n/sizeof(value_type)};
+
+			auto retv{first+diff};
+#if __has_cpp_attribute(assume)
+			[[assume(reinterpret_cast<::std::byte const*>(retv)==it)]];
+#endif
+			return retv;
 		}
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_define<F>)
@@ -385,7 +402,7 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(F outstm,io_s
 		for(auto ed{base+len};i!=ed;++i)
 		{
 			auto ele{*i};
-			auto basebg{ele.base};
+			auto basebg{reinterpret_cast<::std::byte const*>(ele.base)};
 			auto baseed{basebg+ele.len};
 			auto ret{write_some_bytes_define(outstm,
 			reinterpret_cast<::std::byte const*>(basebg),
@@ -486,8 +503,7 @@ inline constexpr io_scatter_status_t scatter_write_some_impl(F outstm,basic_io_s
 #endif
 		= io_scatter_t const *;
 		return ::fast_io::details::scatter_write_some_bytes_impl(outstm,
-			reinterpret_cast<scatterbyteptr_constaliasptr>(base),
-			len);
+			reinterpret_cast<scatterbyteptr_constaliasptr>(base),len);
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_some_define<F>)
 	{
@@ -525,7 +541,6 @@ inline constexpr io_scatter_status_t scatter_write_some_impl(F outstm,basic_io_s
 		}
 		return {written,len,0};
 	}
-#if 0
 	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_define<F>)
 	{
 		::std::size_t written{};
@@ -536,7 +551,7 @@ inline constexpr io_scatter_status_t scatter_write_some_impl(F outstm,basic_io_s
 			auto ele{*i};
 			auto basebg{ele.base};
 			auto baseed{basebg+ele.len};
-			auto ret{write_some_define(outstm,basebg,baseed)};
+			auto ret{::fast_io::details::write_some_common_chtypeptr_impl(outstm,basebg,baseed)};
 			::std::size_t diff{static_cast<::std::size_t>(ret-basebg)};
 			written+=diff;
 			if(ret!=baseed)
@@ -562,7 +577,6 @@ inline constexpr io_scatter_status_t scatter_write_some_impl(F outstm,basic_io_s
 		}
 		return {written,len,0};
 	}
-#endif
 }
 
 template<typename F>
@@ -626,18 +640,33 @@ inline constexpr void scatter_write_all_impl(F outstm,basic_io_scatter_t<typenam
 }
 
 template<typename F,::std::forward_iterator Iter>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr Iter write_some(F&& foo,Iter first, Iter last)
 {
 	return ::fast_io::details::write_some_common_iter_impl(io_ref(foo),first,last);
 }
 
 template<typename F,::std::forward_iterator Iter>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void write_all(F&& foo,Iter first,Iter last)
 {
 	::fast_io::details::write_all_common_iter_impl(io_ref(foo),first,last);
 }
 
 template<typename F>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr io_scatter_status_t scatter_write_some_bytes(F&& foo,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
@@ -645,6 +674,11 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes(F&& foo,
 }
 
 template<typename F>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void scatter_write_all_bytes(F&& foo,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
@@ -653,6 +687,11 @@ inline constexpr void scatter_write_all_bytes(F&& foo,
 
 
 template<typename F>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr io_scatter_status_t scatter_write_some(F&& foo,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
@@ -660,6 +699,11 @@ inline constexpr io_scatter_status_t scatter_write_some(F&& foo,
 }
 
 template<typename F,::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void scatter_write_all(F&& foo,
 	basic_io_scatter_t<char_type> const* pscatter,::std::size_t len)
 {
