@@ -70,7 +70,7 @@ concept has_scatter_write_all_bytes_define = requires(T outstm,::fast_io::io_sca
 
 
 template<typename T>
-concept has_scatter_write_some_define = requires(T outstm,::fast_io::io_scatter_t scatter)
+concept has_scatter_write_some_define = requires(T outstm,::fast_io::basic_io_scatter_t<typename T::char_type> scatter)
 {
 	scatter_write_some_define(outstm,scatter);
 };
@@ -158,9 +158,29 @@ inline constexpr value_type const* write_some_common_chtypeptr_impl(F outstm,val
 	{
 		return write_some_define(outstm,first,last);
 	}
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_write_some_define<F>))
+	{
+		basic_io_scatter_t<value_type> scatter
+		{
+			first,
+			static_cast<::std::size_t>(last-first)
+		};
+		auto ret{scatter_write_some_define(outstm,__builtin_addressof(scatter),__builtin_addressof(scatter)+1)};
+		return ret.total_size+first;
+	}
 	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_all_define<F>))
 	{
 		write_all_define(outstm,first,last);
+		return last;
+	}
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_write_all_define<F>))
+	{
+		basic_io_scatter_t<value_type> scatter
+		{
+			first,
+			static_cast<::std::size_t>(last-first)
+		};
+		auto ret{scatter_write_all_define(outstm,__builtin_addressof(scatter),__builtin_addressof(scatter)+1)};
 		return last;
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_define<F>)
@@ -255,9 +275,32 @@ inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const*
 	{
 		write_all_define(outstm,first,last);
 	}
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_write_all_define<F>))
+	{
+		basic_io_scatter_t<value_type> scatter
+		{
+			first,
+			static_cast<::std::size_t>(last-first)
+		};
+		scatter_write_all_define(outstm,__builtin_addressof(scatter),__builtin_addressof(scatter)+1);
+	}
 	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_some_define<F>))
 	{
 		while((first=write_some_define(outstm,first,last))!=last);
+	}
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_write_some_define<F>))
+	{
+		do
+		{
+			basic_io_scatter_t<value_type> scatter
+			{
+				first,
+				static_cast<::std::size_t>(last-first)
+			};
+			auto ret{scatter_write_some_define(outstm,__builtin_addressof(scatter),__builtin_addressof(scatter)+1)};
+			first+=ret.total_size;
+		}
+		while(first!=last);
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_define<F>)
 	{
