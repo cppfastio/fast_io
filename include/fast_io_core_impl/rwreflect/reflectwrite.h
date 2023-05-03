@@ -84,13 +84,13 @@ concept has_write_all_bytes_define = requires(T outstm,::std::byte const* ptr)
 template<typename T>
 concept has_scatter_write_some_bytes_define = requires(T outstm,::fast_io::io_scatter_t const *scatter,::std::size_t len)
 {
-	scatter_write_some_bytes_define(outstm,scatter);
+	scatter_write_some_bytes_define(outstm,scatter,len);
 };
 
 template<typename T>
 concept has_scatter_write_all_bytes_define = requires(T outstm,::fast_io::io_scatter_t const *scatter,::std::size_t len)
 {
-	scatter_write_all_bytes_define(outstm,scatter);
+	scatter_write_all_bytes_define(outstm,scatter,len);
 };
 
 
@@ -385,11 +385,11 @@ template<typename F>
 inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(F outstm,io_scatter_t const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_define<F>)
+	if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_define<F>)
 	{
 		return scatter_write_some_bytes_define(outstm,base,len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_define<F>)
 	{
 		scatter_write_all_bytes_define(outstm,base,len);
 		return {scatter_total_size(base,len),len,0};
@@ -438,11 +438,11 @@ template<typename F>
 inline constexpr void scatter_write_all_bytes_impl(F outstm,io_scatter_t const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_define<F>)
+	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_define<F>)
 	{
 		scatter_write_all_bytes_define(outstm,base,len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_define<F>)
 	{
 		while(len)
 		{
