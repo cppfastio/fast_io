@@ -289,7 +289,7 @@ inline constexpr void read_all_common_chtypeptr_impl(F instm,value_type* first,v
 			non_overlapped_copy_n(curr,static_cast<::std::size_t>(itdf),first);
 			ibuffer_set_curr(instm,curr+itdf);
 		}
-		::fast_io::details::read_obf_all_overflow_impl(instm,first,last);
+		::fast_io::details::read_ibf_all_underflow_impl(instm,first,last);
 	}
 	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_all_define<F>))
 	{
@@ -380,11 +380,11 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(F instm,io_sca
 		for(auto ed{base+len};i!=ed;++i)
 		{
 			auto ele{*i};
-			auto basebg{reinterpret_cast<::std::byte*>(ele.base)};
+			auto basebg{reinterpret_cast<::std::byte*>(const_cast<void*>(ele.base))};
 			auto baseed{basebg+ele.len};
 			auto ret{read_some_bytes_define(instm,
-			reinterpret_cast<::std::byte*>(basebg),
-			reinterpret_cast<::std::byte*>(baseed))};
+			basebg,
+			baseed)};
 			::std::size_t diff{static_cast<::std::size_t>(ret-basebg)};
 			readedn+=diff;
 			if(ret!=baseed)
@@ -402,7 +402,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(F instm,io_sca
 		for(auto ed{base+len};i!=ed;++i)
 		{
 			auto ele{*i};
-			auto basebg{reinterpret_cast<::std::byte*>(ele.base)};
+			auto basebg{reinterpret_cast<::std::byte*>(const_cast<void*>(ele.base))};
 			auto baseed{basebg+ele.len};
 			read_all_bytes_define(instm,basebg,baseed);
 			::std::size_t diff{static_cast<::std::size_t>(baseed-basebg)};
@@ -413,7 +413,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(F instm,io_sca
 }
 
 template<typename F>
-inline constexpr void scatter_read_all_bytes_impl(F instm,io_scatter_t *base,::std::size_t len)
+inline constexpr void scatter_read_all_bytes_impl(F instm,io_scatter_t const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
 	if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_define<F>)
@@ -440,7 +440,7 @@ inline constexpr void scatter_read_all_bytes_impl(F instm,io_scatter_t *base,::s
 			{
 				continue;
 			}
-			auto b{reinterpret_cast<::std::byte*>(base->base)};
+			auto b{reinterpret_cast<::std::byte*>(const_cast<void*>(base->base))};
 			::fast_io::details::read_all_common_chtypeptr_impl(instm,
 				b+position_in_scatter,b+base->len);
 			++base;
@@ -453,7 +453,7 @@ inline constexpr void scatter_read_all_bytes_impl(F instm,io_scatter_t *base,::s
 		for(auto i{base},ed{base+len};i!=ed;++i)
 		{
 			auto ele{*i};
-			auto basebg{reinterpret_cast<::std::byte*>(ele.base)};
+			auto basebg{reinterpret_cast<::std::byte*>(const_cast<void*>(ele.base))};
 			auto baseed{basebg+ele.len};
 			::fast_io::details::read_all_common_chtypeptr_impl(instm,basebg,baseed);
 		}
@@ -461,7 +461,7 @@ inline constexpr void scatter_read_all_bytes_impl(F instm,io_scatter_t *base,::s
 }
 
 template<typename F>
-inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_scatter_t<typename F::char_type> *base,::std::size_t len)
+inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_scatter_t<typename F::char_type> const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
 	if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_define<F>)
@@ -558,7 +558,7 @@ inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_sca
 }
 
 template<typename F>
-inline constexpr void scatter_read_all_impl(F instm,basic_io_scatter_t<typename F::char_type> *base,::std::size_t len)
+inline constexpr void scatter_read_all_impl(F instm,basic_io_scatter_t<typename F::char_type>  const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
 	if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_define<F>)
@@ -623,7 +623,7 @@ template<typename F,::std::forward_iterator Iter>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr Iter read_some(F&& foo,Iter first, Iter last)
+inline constexpr Iter reads_some(F&& foo,Iter first, Iter last)
 {
 	return ::fast_io::details::read_some_common_iter_impl(io_ref(foo),first,last);
 }
@@ -634,7 +634,7 @@ template<typename F,::std::forward_iterator Iter>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void read_all(F&& foo,Iter first,Iter last)
+inline constexpr void reads_all(F&& foo,Iter first,Iter last)
 {
 	::fast_io::details::read_all_common_iter_impl(io_ref(foo),first,last);
 }
@@ -646,7 +646,7 @@ template<typename F>
 [[msvc::forceinline]]
 #endif
 inline constexpr io_scatter_status_t scatter_read_some_bytes(F&& foo,
-	io_scatter_t* pscatter,::std::size_t len)
+	io_scatter_t const* pscatter,::std::size_t len)
 {
 	return ::fast_io::details::scatter_read_some_bytes_impl(io_ref(foo),pscatter,len);
 }
@@ -658,7 +658,7 @@ template<typename F>
 [[msvc::forceinline]]
 #endif
 inline constexpr void scatter_read_all_bytes(F&& foo,
-	io_scatter_t* pscatter,::std::size_t len)
+	io_scatter_t const* pscatter,::std::size_t len)
 {
 	::fast_io::details::scatter_read_all_bytes_impl(io_ref(foo),pscatter,len);
 }
@@ -671,7 +671,7 @@ template<typename F>
 [[msvc::forceinline]]
 #endif
 inline constexpr io_scatter_status_t scatter_read_some(F&& foo,
-	io_scatter_t* pscatter,::std::size_t len)
+	io_scatter_t const* pscatter,::std::size_t len)
 {
 	return ::fast_io::details::scatter_read_some_impl(io_ref(foo),pscatter,len);
 }
@@ -683,7 +683,7 @@ template<typename F,::std::integral char_type>
 [[msvc::forceinline]]
 #endif
 inline constexpr void scatter_read_all(F&& foo,
-	basic_io_scatter_t<char_type>* pscatter,::std::size_t len)
+	basic_io_scatter_t<char_type> const* pscatter,::std::size_t len)
 {
 	return ::fast_io::details::scatter_read_all_impl(io_ref(foo),pscatter,len);
 }
