@@ -93,7 +93,6 @@ concept has_scatter_write_all_bytes_define = requires(T outstm,::fast_io::io_sca
 	scatter_write_all_bytes_define(outstm,scatter,len);
 };
 
-
 template<typename T>
 concept has_scatter_write_some_define = requires(T outstm,::fast_io::basic_io_scatter_t<typename T::char_type> const *pscatter,::std::size_t len)
 {
@@ -104,6 +103,30 @@ template<typename T>
 concept has_scatter_write_all_define = requires(T outstm,::fast_io::basic_io_scatter_t<typename T::char_type> const *pscatter,::std::size_t len)
 {
 	scatter_write_all_define(outstm,pscatter,len);
+};
+
+template<typename T>
+concept has_seek_define = requires(T outstm)
+{
+	seek_define(outstm,0,::fast_io::seekdir::cur);
+};
+
+template<typename T>
+concept outputstreamdef = 
+has_obuffer_ops<T>||
+has_write_some_define<T>||
+has_write_all_define<T>||
+has_write_some_bytes_define<T>||
+has_write_all_bytes_define<T>||
+has_scatter_write_some_bytes_define<T>||
+has_scatter_write_all_bytes_define<T>||
+has_scatter_write_some_define<T>||
+has_scatter_write_all_define<T>;
+
+template<typename T>
+concept outputstreamdefref = requires(T&& t)
+{
+	requires outputstreamdef<decltype(io_ref(t))>;
 };
 
 }
@@ -639,7 +662,7 @@ inline constexpr void scatter_write_all_impl(F outstm,basic_io_scatter_t<typenam
 
 }
 
-template<typename F,::std::forward_iterator Iter>
+template<::fast_io::details::streamreflect::outputstreamdefref F,::std::forward_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -650,7 +673,7 @@ inline constexpr Iter write_some(F&& foo,Iter first, Iter last)
 	return ::fast_io::details::write_some_common_iter_impl(io_ref(foo),first,last);
 }
 
-template<typename F,::std::forward_iterator Iter>
+template<::fast_io::details::streamreflect::outputstreamdefref F,::std::forward_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -661,7 +684,7 @@ inline constexpr void write_all(F&& foo,Iter first,Iter last)
 	::fast_io::details::write_all_common_iter_impl(io_ref(foo),first,last);
 }
 
-template<typename F>
+template<::fast_io::details::streamreflect::outputstreamdefref F>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -673,7 +696,7 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes(F&& foo,
 	return ::fast_io::details::scatter_write_some_bytes_impl(io_ref(foo),pscatter,len);
 }
 
-template<typename F>
+template<::fast_io::details::streamreflect::outputstreamdefref F>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -686,7 +709,7 @@ inline constexpr void scatter_write_all_bytes(F&& foo,
 }
 
 
-template<typename F>
+template<::fast_io::details::streamreflect::outputstreamdefref F>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -698,7 +721,7 @@ inline constexpr io_scatter_status_t scatter_write_some(F&& foo,
 	return ::fast_io::details::scatter_write_some_impl(io_ref(foo),pscatter,len);
 }
 
-template<typename F,::std::integral char_type>
+template<::fast_io::details::streamreflect::outputstreamdefref F,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)

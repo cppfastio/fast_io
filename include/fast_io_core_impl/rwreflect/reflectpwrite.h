@@ -144,7 +144,6 @@ inline constexpr void scatter_pwrite_all_impl(F outstm,basic_io_scatter_t<typena
 	});
 }
 
-
 }
 
 template<typename F,::std::forward_iterator Iter>
