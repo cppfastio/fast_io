@@ -130,9 +130,9 @@ concept outputstreamdefref = requires(T&& t)
 };
 
 }
-
+#if 0
 template<typename F>
-inline constexpr ::std::byte const* write_some_common_chtypeptr_impl(F outstm,
+inline constexpr ::std::byte const* write_some_common_chtypeptr_n_impl(F outstm,
 	::std::byte const* firstbyteptr,::std::byte const* lastbyteptr,::std::size_t n)
 {
 	auto it{firstbyteptr};
@@ -147,7 +147,7 @@ inline constexpr ::std::byte const* write_some_common_chtypeptr_impl(F outstm,
 	}
 	return it;
 }
-
+#endif
 template<typename F,typename value_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
@@ -316,6 +316,22 @@ inline constexpr void write_all_bytes_common_chtypeptr_impl(F outstm,::std::byte
 		lastbyteptr))!=lastbyteptr);
 }
 
+template<typename F>
+inline constexpr void write_all_bytes_scatter_byteptr_impl(F outstm,::std::byte const* first,::std::byte const* last)
+{
+	do
+	{
+		io_scatter_t scatter
+		{
+			first,
+			static_cast<::std::size_t>(last-first)
+		};
+		auto ret{scatter_write_some_bytes_define(outstm,__builtin_addressof(scatter),1)};
+		first+=ret.total_size;
+	}
+	while(first!=last);
+}
+
 template<typename F,typename value_type>
 inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const* first,value_type const* last)
 {
@@ -378,6 +394,23 @@ inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const*
 		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
 		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
 		write_all_bytes_common_chtypeptr_impl(outstm,firstbyteptr,lastbyteptr);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_define<F>)
+	{
+		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
+		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
+		basic_io_scatter_t<value_type> scatter
+		{
+			firstbyteptr,
+			static_cast<::std::size_t>(lastbyteptr-firstbyteptr)
+		};
+		scatter_write_all_bytes_define(outstm,__builtin_addressof(scatter),1);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_define<F>)
+	{
+		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
+		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
+		write_all_bytes_scatter_byteptr_impl(outstm,firstbyteptr,lastbyteptr);
 	}
 }
 

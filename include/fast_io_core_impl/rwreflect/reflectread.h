@@ -270,6 +270,22 @@ inline constexpr void read_all_bytes_common_chtypeptr_impl(F instm,::std::byte* 
 		lastbyteptr))!=lastbyteptr);
 }
 
+template<typename F>
+inline constexpr void read_all_bytes_scatter_byteptr_impl(F instm,::std::byte* first,::std::byte* last)
+{
+	do
+	{
+		io_scatter_t scatter
+		{
+			first,
+			static_cast<::std::size_t>(last-first)
+		};
+		auto ret{scatter_read_some_bytes_define(instm,__builtin_addressof(scatter),1)};
+		first+=ret.total_size;
+	}
+	while(first!=last);
+}
+
 template<typename F,typename value_type>
 inline constexpr void read_all_common_chtypeptr_impl(F instm,value_type* first,value_type* last)
 {
@@ -333,6 +349,23 @@ inline constexpr void read_all_common_chtypeptr_impl(F instm,value_type* first,v
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
 		read_all_bytes_common_chtypeptr_impl(instm,firstbyteptr,lastbyteptr);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_define<F>)
+	{
+		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
+		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
+		basic_io_scatter_t<value_type> scatter
+		{
+			firstbyteptr,
+			static_cast<::std::size_t>(lastbyteptr-firstbyteptr)
+		};
+		scatter_read_all_bytes_define(instm,__builtin_addressof(scatter),1);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_define<F>)
+	{
+		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
+		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
+		read_all_bytes_scatter_byteptr_impl(instm,firstbyteptr,lastbyteptr);
 	}
 }
 
