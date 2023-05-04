@@ -27,7 +27,7 @@ concept has_ibuffer_all_ops = has_ibuffer_basic_ops<T>&&(requires(T instm,typena
 template<typename T>
 concept has_ibuffer_some_ops = has_ibuffer_basic_ops<T>&&(requires(T instm,typename T::char_type *cptr)
 {
-	ibuffer_read_all_underflow_define(instm,cptr,cptr);
+	ibuffer_read_some_underflow_define(instm,cptr,cptr);
 });
 
 template<typename T>
@@ -80,6 +80,24 @@ template<typename T>
 concept has_scatter_read_all_define = requires(T instm,::fast_io::basic_io_scatter_t<typename T::char_type> *pscatter,::std::size_t len)
 {
 	scatter_read_all_define(instm,pscatter,len);
+};
+
+template<typename T>
+concept inputstreamdef = 
+has_ibuffer_ops<T>||
+has_read_some_define<T>||
+has_read_all_define<T>||
+has_read_some_bytes_define<T>||
+has_read_all_bytes_define<T>||
+has_scatter_read_some_bytes_define<T>||
+has_scatter_read_all_bytes_define<T>||
+has_scatter_read_some_define<T>||
+has_scatter_read_all_define<T>;
+
+template<typename T>
+concept inputstreamdefref = requires(T&& t)
+{
+	requires inputstreamdef<decltype(io_ref(t))>;
 };
 
 }
