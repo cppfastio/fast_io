@@ -130,6 +130,7 @@ concept outputstreamdefref = requires(T&& t)
 };
 
 }
+
 #if 0
 template<typename F>
 inline constexpr ::std::byte const* write_some_common_chtypeptr_n_impl(F outstm,
@@ -148,6 +149,7 @@ inline constexpr ::std::byte const* write_some_common_chtypeptr_n_impl(F outstm,
 	return it;
 }
 #endif
+
 template<typename F,typename value_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]

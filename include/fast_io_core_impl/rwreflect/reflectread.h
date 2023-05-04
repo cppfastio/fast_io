@@ -102,6 +102,7 @@ concept inputstreamdefref = requires(T&& t)
 
 }
 
+#if 0
 template<typename F>
 inline constexpr ::std::byte* read_some_common_chtypeptr_impl(F instm,
 	::std::byte* firstbyteptr,::std::byte* lastbyteptr,::std::size_t n)
@@ -118,6 +119,7 @@ inline constexpr ::std::byte* read_some_common_chtypeptr_impl(F instm,
 	}
 	return it;
 }
+#endif
 
 template<typename F,typename value_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
