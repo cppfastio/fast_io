@@ -3,6 +3,7 @@
 namespace fast_io
 {
 
+#if 0
 template<typename T>
 concept stream = details::input_stream_impl<T>||details::output_stream_impl<T>;
 
@@ -11,6 +12,19 @@ concept input_stream = stream<T>&&details::input_stream_impl<T>;
 
 template<typename T>
 concept output_stream = stream<T>&&details::output_stream_impl<T>;
+
+
+#else
+template<typename T>
+concept stream = ::fast_io::details::streamreflect::inputstreamdefref<T>||
+	::fast_io::details::streamreflect::outputstreamdefref<T>;
+
+template<typename T>
+concept input_stream = stream<T>&&::fast_io::details::streamreflect::inputstreamdefref<T>;
+
+template<typename T>
+concept output_stream = stream<T>&&::fast_io::details::streamreflect::outputstreamdefref<T>;
+#endif
 
 template<typename T>
 concept output_stream_with_writeln = output_stream<T>&&requires(T&& t,typename std::remove_cvref_t<T>::char_type const* p)
