@@ -399,7 +399,7 @@ inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const*
 	{
 		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
 		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
-		basic_io_scatter_t<value_type> scatter
+		io_scatter_t scatter
 		{
 			firstbyteptr,
 			static_cast<::std::size_t>(lastbyteptr-firstbyteptr)

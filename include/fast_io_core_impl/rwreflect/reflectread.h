@@ -354,7 +354,7 @@ inline constexpr void read_all_common_chtypeptr_impl(F instm,value_type* first,v
 	{
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
-		basic_io_scatter_t<value_type> scatter
+		io_scatter_t scatter
 		{
 			firstbyteptr,
 			static_cast<::std::size_t>(lastbyteptr-firstbyteptr)
