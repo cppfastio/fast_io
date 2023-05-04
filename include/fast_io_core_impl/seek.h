@@ -3,13 +3,6 @@
 namespace fast_io
 {
 
-enum class seekdir:std::uint_fast8_t
-{
-beg = 0,				//SEEK_SET
-cur = 1,				//SEEK_CUR
-end = 2,				//SEEK_END
-};
-
 template<typename T>
 struct seek_type_t
 {
