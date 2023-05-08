@@ -77,7 +77,9 @@
 #include"fast_io_core_impl/seek.h"
 
 #include"fast_io_core_impl/igenerator.h"
+#if 0
 #include"fast_io_core_impl/io_ref.h"
+#endif
 #include"fast_io_core_impl/print_freestanding.h"
 #include"fast_io_core_impl/read_all.h"
 #include"fast_io_core_impl/scan_freestanding.h"

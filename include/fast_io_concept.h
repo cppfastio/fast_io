@@ -21,6 +21,7 @@
 #include<cstddef>
 #include<type_traits>
 #include<concepts>
+#include<cstdint>
 #include"fast_io_core_impl/freestanding/addressof.h"
 #include"fast_io_core_impl/concepts/impl.h"
 #endif
