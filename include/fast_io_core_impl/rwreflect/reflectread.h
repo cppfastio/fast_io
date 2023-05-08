@@ -555,16 +555,8 @@ inline constexpr void scatter_read_all_impl(F instm,basic_io_scatter_t<typename 
 
 }
 
-template<typename F,::std::forward_iterator Iter>
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
-inline constexpr Iter reads_some(F&& foo,Iter first, Iter last)
+namespace operations
 {
-	return ::fast_io::details::read_some_common_iter_impl(io_ref(foo),first,last);
-}
 
 template<typename F,::std::forward_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -572,9 +564,20 @@ template<typename F,::std::forward_iterator Iter>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void reads_all(F&& foo,Iter first,Iter last)
+inline constexpr Iter read_some(F&& instm,Iter first, Iter last)
 {
-	::fast_io::details::read_all_common_iter_impl(io_ref(foo),first,last);
+	return ::fast_io::details::read_some_common_iter_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
+}
+
+template<typename F,::std::forward_iterator Iter>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void read_all(F&& instm,Iter first,Iter last)
+{
+	::fast_io::details::read_all_common_iter_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
 
 template<typename F>
@@ -583,10 +586,10 @@ template<typename F>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr io_scatter_status_t scatter_read_some_bytes(F&& foo,
+inline constexpr io_scatter_status_t scatter_read_some_bytes(F&& instm,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
-	return ::fast_io::details::scatter_read_some_bytes_impl(io_ref(foo),pscatter,len);
+	return ::fast_io::details::scatter_read_some_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 }
 
 template<typename F>
@@ -595,10 +598,10 @@ template<typename F>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void scatter_read_all_bytes(F&& foo,
+inline constexpr void scatter_read_all_bytes(F&& instm,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
-	::fast_io::details::scatter_read_all_bytes_impl(io_ref(foo),pscatter,len);
+	::fast_io::details::scatter_read_all_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 }
 
 
@@ -608,10 +611,10 @@ template<typename F>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr io_scatter_status_t scatter_read_some(F&& foo,
+inline constexpr io_scatter_status_t scatter_read_some(F&& instm,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
-	return ::fast_io::details::scatter_read_some_impl(io_ref(foo),pscatter,len);
+	return ::fast_io::details::scatter_read_some_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 }
 
 template<typename F,::std::integral char_type>
@@ -620,10 +623,12 @@ template<typename F,::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void scatter_read_all(F&& foo,
+inline constexpr void scatter_read_all(F&& instm,
 	basic_io_scatter_t<char_type> const* pscatter,::std::size_t len)
 {
-	return ::fast_io::details::scatter_read_all_impl(io_ref(foo),pscatter,len);
+	return ::fast_io::details::scatter_read_all_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
+}
+
 }
 
 }

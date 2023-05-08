@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-#if 0
+#if 1
 template<typename T>
 concept stream = details::input_stream_impl<T>||details::output_stream_impl<T>;
 
@@ -16,14 +16,14 @@ concept output_stream = stream<T>&&details::output_stream_impl<T>;
 
 #else
 template<typename T>
-concept stream = ::fast_io::details::streamreflect::inputstreamdefref<T>||
-	::fast_io::details::streamreflect::outputstreamdefref<T>;
+concept stream = ::fast_io::details::streamreflect::inputstreamdef<T>||
+	::fast_io::details::streamreflect::outputstreamdeff<T>;
 
 template<typename T>
-concept input_stream = stream<T>&&::fast_io::details::streamreflect::inputstreamdefref<T>;
+concept input_stream = stream<T>&&::fast_io::details::streamreflect::inputstreamdef<T>;
 
 template<typename T>
-concept output_stream = stream<T>&&::fast_io::details::streamreflect::outputstreamdefref<T>;
+concept output_stream = stream<T>&&::fast_io::details::streamreflect::outputstreamdef<T>;
 #endif
 
 template<typename T>
