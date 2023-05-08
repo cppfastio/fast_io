@@ -94,6 +94,12 @@ concept has_ibuffer_underflow_never_define = requires(T&& instm)
 };
 
 template<typename T>
+concept has_zero_copy_in_handle = requires(T&& instm)
+{
+	zero_copy_in_handle(::fast_io::manipulators::output_stream_ref(instm));
+};
+
+template<typename T>
 concept inputstreamdef = requires(T&& instm)
 {
 	{::fast_io::manipulators::input_stream_ref(instm)} noexcept;
