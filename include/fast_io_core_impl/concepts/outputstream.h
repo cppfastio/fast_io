@@ -102,10 +102,11 @@ concept has_scatter_write_all_define = requires(T&& outstm,::fast_io::basic_io_s
 	scatter_write_all_define(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 };
 
+
 template<typename T>
-concept has_seek_define = requires(T&& outstm)
+concept has_obuffer_overflow_never_define_impl = requires(T&& outstm)
 {
-	seek_define(::fast_io::manipulators::output_stream_ref(outstm),0,::fast_io::seekdir::cur);
+	obuffer_overflow_never_define(::fast_io::manipulators::output_stream_ref(outstm));
 };
 
 template<typename T>

@@ -88,6 +88,12 @@ concept has_scatter_read_all_define = requires(T &&instm,::fast_io::basic_io_sca
 };
 
 template<typename T>
+concept has_ibuffer_underflow_never_define_impl = requires(T&& instm)
+{
+	ibuffer_underflow_never_define(::fast_io::manipulators::output_stream_ref(instm));
+};
+
+template<typename T>
 concept inputstreamdef = requires(T&& instm)
 {
 	{::fast_io::manipulators::input_stream_ref(instm)} noexcept;
