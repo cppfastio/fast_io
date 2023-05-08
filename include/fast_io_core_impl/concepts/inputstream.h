@@ -75,7 +75,6 @@ concept has_scatter_read_all_bytes_define = requires(T &&instm,::fast_io::io_sca
 	scatter_read_all_bytes_define(::fast_io::manipulators::input_stream_ref(instm),scatter,len);
 };
 
-
 template<typename T>
 concept has_scatter_read_some_define = requires(T &&instm,::fast_io::basic_io_scatter_t<typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type> *pscatter,::std::size_t len)
 {

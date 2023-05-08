@@ -37,6 +37,21 @@ concept has_obuffer_some_ops = has_obuffer_basic_ops<T>&&(requires(T&& outstm,ty
 });
 
 template<typename T>
+concept has_obuffer_constant_size = requires(T&& outstm)
+{
+	{obuffer_constant_size_define(io_reserve_type<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type,
+		std::remove_cvref_t<decltype(::fast_io::manipulators::output_stream_ref(outstm))>>)}->std::same_as<std::size_t>;
+	obuffer_constant_flush_prepare_define(::fast_io::manipulators::output_stream_ref(outstm));
+};
+
+template<typename T>
+concept has_obuffer_reserve_define = requires(T&& outstm,::std::size_t size)
+{
+	obuffer_reserve_define(::fast_io::manipulators::output_stream_ref(outstm),size);
+	obuffer_shrink_to_fit_define(::fast_io::manipulators::output_stream_ref(outstm));
+};
+
+template<typename T>
 concept has_obuffer_ops = has_obuffer_all_ops<T>||has_obuffer_some_ops<T>;
 
 template<typename T>
