@@ -88,7 +88,7 @@ concept has_scatter_read_all_define = requires(T &&instm,::fast_io::basic_io_sca
 };
 
 template<typename T>
-concept has_ibuffer_underflow_never_define_impl = requires(T&& instm)
+concept has_ibuffer_underflow_never_define = requires(T&& instm)
 {
 	ibuffer_underflow_never_define(::fast_io::manipulators::output_stream_ref(instm));
 };

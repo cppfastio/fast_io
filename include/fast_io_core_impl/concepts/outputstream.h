@@ -104,7 +104,7 @@ concept has_scatter_write_all_define = requires(T&& outstm,::fast_io::basic_io_s
 
 
 template<typename T>
-concept has_obuffer_overflow_never_define_impl = requires(T&& outstm)
+concept has_obuffer_overflow_never_define = requires(T&& outstm)
 {
 	obuffer_overflow_never_define(::fast_io::manipulators::output_stream_ref(outstm));
 };
