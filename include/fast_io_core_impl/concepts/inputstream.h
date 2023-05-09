@@ -10,6 +10,12 @@ concept has_input_stream_seek = requires(T&& instm)
 };
 
 template<typename T>
+concept has_input_stream_seek_bytes = requires(T&& iostm)
+{
+	::fast_io::details::input_stream_seek_bytes_impl(::fast_io::manipulators::input_stream_ref(iostm),0,::fast_io::seekdir::cur);
+};
+
+template<typename T>
 concept has_input_stream_mutex_ref = requires(T&& instm)
 {
 	::fast_io::details::input_stream_mutex_ref_impl(::fast_io::manipulators::input_stream_ref(instm));

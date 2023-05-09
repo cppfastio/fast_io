@@ -248,6 +248,78 @@ inline constexpr intfpos_t io_stream_seek_impl(T t,intfpos_t off,::fast_io::seek
 	return io_stream_seek_define(t,off,skd);
 }
 
+
+
+template<typename T>
+concept has_input_stream_seek_bytes_define = requires(T t)
+{
+input_stream_seek_bytes_define(t,0,::fast_io::seekdir::cur);
+};
+
+template<typename T>
+concept has_output_stream_seek_bytes_define = requires(T t)
+{
+output_stream_seek_bytes_define(t,0,::fast_io::seekdir::cur);
+};
+
+template<typename T>
+concept has_io_stream_seek_bytes_define = requires(T t)
+{
+io_stream_seek_bytes_define(t,0,::fast_io::seekdir::cur);
+};
+
+template<typename T>
+requires (::fast_io::details::has_io_stream_seek_bytes_define<T>
+	||::fast_io::details::has_input_stream_seek_bytes_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr intfpos_t input_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
+{
+	if constexpr(::fast_io::details::has_input_stream_seek_define<T>)
+	{
+		return input_stream_seek_bytes_define(t,off,skd);
+	}
+	else
+	{
+		return io_stream_seek_bytes_define(t,off,skd);
+	}
+}
+
+template<typename T>
+requires (::fast_io::details::has_io_stream_seek_bytes_define<T>
+	||::fast_io::details::has_output_stream_seek_bytes_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr intfpos_t output_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
+{
+	if constexpr(::fast_io::details::has_output_stream_seek_bytes_define<T>)
+	{
+		return output_stream_seek_bytes_define(t,off,skd);
+	}
+	else
+	{
+		return io_stream_seek_bytes_define(t,off,skd);
+	}
+}
+
+template<typename T>
+requires (::fast_io::details::has_io_stream_seek_bytes_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr intfpos_t io_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
+{
+	return io_stream_seek_bytes_define(t,off,skd);
+}
+
 template<typename T>
 concept has_input_stream_mutex_ref_define = requires(T t)
 {

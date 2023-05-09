@@ -10,9 +10,21 @@ concept has_output_stream_seek = requires(T&& outstm)
 };
 
 template<typename T>
+concept has_output_stream_seek_bytes = requires(T&& iostm)
+{
+	::fast_io::details::output_stream_seek_bytes_impl(::fast_io::manipulators::output_stream_ref(iostm),0,::fast_io::seekdir::cur);
+};
+
+template<typename T>
 concept has_output_stream_mutex_ref = requires(T&& outstm)
 {
 	::fast_io::details::output_stream_mutex_ref_impl(::fast_io::manipulators::output_stream_ref(outstm));
+};
+
+template<typename T>
+concept has_output_stream_char_put_overflow_define = requires(T&& outstm,typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type ch)
+{
+	output_stream_char_put_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),ch);
 };
 
 template<typename T>
