@@ -695,7 +695,7 @@ To do:
 template<typename F>
 inline constexpr void scatter_write_all_bytes_impl(F outstm,io_scatter_t const *base,::std::size_t len)
 {
-	using char_type = typename F::char_type;
+	using char_type = typename F::output_char_type;
 	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<F>)
 	{
 		scatter_write_all_bytes_overflow_define(outstm,base,len);
