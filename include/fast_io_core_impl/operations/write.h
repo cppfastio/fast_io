@@ -285,7 +285,7 @@ template<typename F>
 [[__gnu__::__cold__]]
 #endif
 inline constexpr void char_put_impl(F outstm,
-	typename decltype(::fast_io::manipulators::output_stream_ref(outsm))::output_char_type ch)
+	typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type ch)
 {
 	if constexpr(::fast_io::details::streamreflect::has_output_stream_char_put_overflow_define<F>)
 	{
