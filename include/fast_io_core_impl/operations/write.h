@@ -30,46 +30,47 @@ inline constexpr ::std::size_t scatter_total_size(basic_io_scatter_t<T> const *b
 namespace details
 {
 
-template<typename F,typename value_type>
-#if __has_cpp_attribute(__gnu__::__cold__)
-[[__gnu__::__cold__]]
-#endif
-inline constexpr value_type const* write_obf_some_overflow_impl(F outstm,value_type const* first,value_type const* last)
+namespace writebasics
 {
-	if constexpr(::fast_io::details::streamreflect::has_obuffer_some_ops<F>)
+#if 0
+namespace writecommmon
+{
+template<typename outstmtype>
+inline constexpr ::std::byte const* write_some_bytes_impl_common(
+	outstmtype outstm,
+	::std::byte const* first,
+	::std::byte const* last)
+{
+	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outstmtype>)
 	{
-		return obuffer_write_some_overflow_define(outstm,first,last);
+//		if()
 	}
-	else
-	{
-		obuffer_write_all_overflow_define(outstm,first,last);
-		return last;
-	}
+	return write_some_bytes_overflow_define(outstm,first,last);
 }
+#if 0
+template<typename outstmtype>
+inline constexpr ::std::byte const* write_some_bytes_impl_n(
+	outstmtype outstm,
+	::std::byte const* first,
+	::std::byte const* last,
+	::std::size_t n)
+{
+
+}
+#endif
+}
+#endif
+
+namespace writenobuffer
+{
 
 template<typename F,typename value_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr void write_obf_all_overflow_impl(F outstm,value_type const* first,value_type const* last)
+inline constexpr value_type const* write_some_impl(F outstm,value_type const* first,value_type const* last)
 {
-	if constexpr(::fast_io::details::streamreflect::has_obuffer_all_ops<F>)
-	{
-		obuffer_write_all_overflow_define(outstm,first,last);
-	}
-	else
-	{
-		while((first=obuffer_write_some_overflow_define(outstm,first,last))!=last);
-	}
-}
-
-template<typename F,typename value_type>
-#if __has_cpp_attribute(__gnu__::__cold__)
-[[__gnu__::__cold__]]
-#endif
-inline constexpr value_type const* write_some_common_chtypeptr_overflow_impl(F outstm,value_type const* first,value_type const* last)
-{
-	using char_type = typename F::char_type;
+	using char_type = typename F::output_char_type;
 	constexpr bool smtp{::std::same_as<char_type,value_type>};
 	if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_some_overflow_define<F>))
 	{
@@ -117,8 +118,7 @@ inline constexpr value_type const* write_some_common_chtypeptr_overflow_impl(F o
 			::std::size_t n{};
 			do
 			{
-				it=::fast_io::details::write_some_common_chtypeptr_overflow_impl(
-					outstm,it,lastbyteptr,sizeof(value_type));
+				it=write_some_bytes_overflow_define(outstm,it,lastbyteptr);
 				n=static_cast<::std::size_t>(it-firstbyteptr);
 				if(n%sizeof(value_type)==0)
 				{
@@ -142,110 +142,94 @@ inline constexpr value_type const* write_some_common_chtypeptr_overflow_impl(F o
 		write_all_bytes_overflow_define(outstm,firstbyteptr,lastbyteptr);
 		return last;
 	}
-	else
+	else if constexpr(::fast_io::details::streamreflect::has_output_stream_seek<F>||
+		::fast_io::details::streamreflect::has_output_stream_seek_bytes<F>)
 	{
-		return first;
-	}
-}
-
-template<typename F,typename value_type>
-inline constexpr value_type const* write_some_common_chtypeptr_impl(F outstm,value_type const* first,value_type const* last)
-{
-	using char_type = typename F::char_type;
-	constexpr bool smtp{::std::same_as<char_type,value_type>};
-	if constexpr(smtp&&(::fast_io::details::streamreflect::has_obuffer_ops<F>))
-	{
-		char_type *curr{obuffer_curr(outstm)};
-		char_type *ed{obuffer_end(outstm)};
-		auto bufferremain{ed-curr};
-		auto itdf{last-first};
-		if(itdf<bufferremain)
-#if __has_cpp_attribute(likely)
-			[[likely]]
-#endif
+		constexpr
+			::std::ptrdiff_t ptrdiffsizeofvaluetype{sizeof(value_type)};
+		if constexpr(smtp)
 		{
-			obuffer_set_curr(outstm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdf),curr));
+			if constexpr(::fast_io::details::streamreflect::has_pwrite_some_overflow_define<F>)
+			{
+				last=pwrite_some_overflow_define(outstm,first,last,0);
+			}
+			else if constexpr(::fast_io::details::streamreflect::has_scatter_pwrite_some_overflow_define<F>)
+			{
+				basic_io_scatter_t<value_type> scatter
+				{
+					first,
+					static_cast<::std::size_t>(last-first)
+				};
+				auto ret{scatter_pwrite_some_overflow_define(outstm,__builtin_addressof(scatter),1,0)};
+				last=ret.total_size+first;
+			}
+/*
+Todo:
+*/
+			if constexpr(::fast_io::details::streamreflect::has_output_stream_seek<F>)
+			{
+			::fast_io::details::output_stream_seek_impl(outstm,last-first,::fast_io::seekdir::cur);
+			}
+			else
+			{
+			::fast_io::details::output_stream_seek_bytes_impl(outstm,
+				(reinterpret_cast<::std::byte const*>(last)-
+				reinterpret_cast<::std::byte const*>(first)),
+				::fast_io::seekdir::cur);
+			}
 			return last;
 		}
-		return ::fast_io::details::write_obf_some_overflow_impl(outstm,first,last);
 	}
-	return write_some_common_chtypeptr_overflow_impl(outstm,first,last);
-}
-
-template<typename outputtype,::std::forward_iterator Iter>
-inline constexpr Iter write_some_common_iter_impl(outputtype outstm,Iter first,Iter last)
-{
-	using char_type = typename outputtype::char_type;
-	using value_type = ::std::iter_value_t<Iter>;
-	if constexpr(::std::contiguous_iterator<Iter>)
-	{
-		return ::fast_io::details::write_some_common_chtypeptr_impl(
-			outstm,
-			::std::to_address(first),
-			::std::to_address(last))-::std::to_address(first)+first;
-	}
-	else
-	{
-		for(;first!=last;++first)
-		{
-			auto fptr{__builtin_addressof(*first)};
-			auto fptrp1{fptr+1};
-			if(::fast_io::details::write_some_common_chtypeptr_impl(
-				outstm,fptr,fptrp1)!=fptrp1)
-			{
-				break;
-			}
-		}
-		return first;
-	}
-}
-
-
-template<typename F>
-inline constexpr void write_all_bytes_common_chtypeptr_impl(F outstm,::std::byte const* firstbyteptr,::std::byte const* lastbyteptr)
-{
-	while((firstbyteptr=write_some_bytes_overflow_define(outstm,
-		firstbyteptr,
-		lastbyteptr))!=lastbyteptr);
+	return first;
 }
 
 template<typename F>
-inline constexpr void write_all_bytes_scatter_byteptr_impl(F outstm,::std::byte const* first,::std::byte const* last)
+inline constexpr void write_all_bytes_with_write_some_or_all_bytes(F outstm,::std::byte const* first,::std::byte const* last)
 {
-	do
+	if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<F>)
+	{
+		write_all_bytes_overflow_define(outstm,first,last);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<F>)
 	{
 		io_scatter_t scatter
 		{
 			first,
 			static_cast<::std::size_t>(last-first)
 		};
-		auto ret{scatter_write_some_bytes_overflow_define(outstm,__builtin_addressof(scatter),1)};
-		first+=ret.total_size;
+		scatter_write_all_bytes_overflow_define(outstm,__builtin_addressof(scatter),1);
 	}
-	while(first!=last);
+	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<F>)
+	{
+		while((first=write_some_bytes_overflow_define(outstm,
+			first,
+			last))!=last);
+	}
+	else
+	{
+		do
+		{
+			io_scatter_t scatter
+			{
+				first,
+				static_cast<::std::size_t>(last-first)
+			};
+			auto ret{scatter_write_some_bytes_overflow_define(outstm,__builtin_addressof(scatter),1)};
+			first+=ret.total_size;
+		}
+		while(first!=last);
+	}
 }
 
 template<typename F,typename value_type>
-inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const* first,value_type const* last)
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void write_all_impl(F outstm,value_type const* first,value_type const* last)
 {
 	using char_type = typename F::char_type;
 	constexpr bool smtp{::std::same_as<char_type,value_type>};
-	if constexpr(smtp&&(::fast_io::details::streamreflect::has_obuffer_ops<F>))
-	{
-		char_type *curr{obuffer_curr(outstm)};
-		char_type *ed{obuffer_end(outstm)};
-		auto bufferremain{ed-curr};
-		auto itdf{last-first};
-		if(itdf<bufferremain)
-#if __has_cpp_attribute(likely)
-			[[likely]]
-#endif
-		{
-			obuffer_set_curr(outstm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdf),curr));
-		}
-		::fast_io::details::write_obf_all_overflow_impl(outstm,first,last);
-	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_all_overflow_define<F>))
+	if constexpr(smtp&&(::fast_io::details::streamreflect::has_write_all_overflow_define<F>))
 	{
 		write_all_overflow_define(outstm,first,last);
 	}
@@ -276,46 +260,170 @@ inline constexpr void write_all_common_chtypeptr_impl(F outstm,value_type const*
 		}
 		while(first!=last);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<F>)
+	else if constexpr(
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<F>||
+		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<F>||
+		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<F>||
+		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<F>)
 	{
 		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
 		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
-		write_all_bytes_overflow_define(outstm,firstbyteptr,lastbyteptr);
+		write_all_bytes_with_write_some_or_all_bytes(outstm,firstbyteptr,lastbyteptr);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<F>)
+	else if constexpr(smtp&&::fast_io::details::streamreflect::has_output_stream_char_put_overflow_define<F>)
 	{
-		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
-		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
-		write_all_bytes_common_chtypeptr_impl(outstm,firstbyteptr,lastbyteptr);
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<F>)
-	{
-		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
-		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
-		io_scatter_t scatter
+		for(;first!=last;++first)
 		{
-			firstbyteptr,
-			static_cast<::std::size_t>(lastbyteptr-firstbyteptr)
-		};
-		scatter_write_all_bytes_overflow_define(outstm,__builtin_addressof(scatter),1);
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<F>)
-	{
-		::std::byte const *firstbyteptr{reinterpret_cast<::std::byte const*>(first)};
-		::std::byte const *lastbyteptr{reinterpret_cast<::std::byte const*>(last)};
-		write_all_bytes_scatter_byteptr_impl(outstm,firstbyteptr,lastbyteptr);
+			output_stream_char_put_overflow_define(outstm,*first);
+		}
 	}
 }
 
-template<typename outputtype,::std::forward_iterator Iter>
-inline constexpr void write_all_common_iter_impl(outputtype outstm,Iter first,Iter last)
+
+template<typename F>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void char_put_impl(F outstm,
+	typename decltype(::fast_io::manipulators::output_stream_ref(outsm))::output_char_type ch)
 {
-	using char_type = typename outputtype::char_type;
-	using value_type = ::std::iter_value_t<Iter>;
-	if constexpr(::std::contiguous_iterator<Iter>)
+	if constexpr(::fast_io::details::streamreflect::has_output_stream_char_put_overflow_define<F>)
 	{
-		::fast_io::details::write_all_common_chtypeptr_impl(
-			outstm,::std::to_address(first),::std::to_address(last));
+		output_stream_char_put_overflow_define(outstm,ch);
+	}
+	else
+	{
+		::fast_io::details::writebasics::writenobuffer::write_all_impl(
+			outstm,__builtin_addressof(ch),__builtin_addressof(ch)+1);
+	}
+}
+
+}
+
+namespace writebuffer
+{
+template<typename F,typename value_type>
+inline constexpr value_type const* write_some_impl(F outstm,value_type const* first,value_type const* last)
+{
+	using char_type = typename F::output_char_type;
+	constexpr bool smtp{::std::same_as<char_type,value_type>};
+	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<F>)
+	{
+		if constexpr(smtp)
+		{
+			char_type *curr{obuffer_curr(outstm)};
+			char_type *ed{obuffer_end(outstm)};
+			auto bufferremain{ed-curr};
+			auto itdf{last-first};
+			if(itdf<bufferremain)
+#if __has_cpp_attribute(likely)
+			[[likely]]
+#endif
+			{
+				obuffer_set_curr(outstm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdf),curr));
+				return last;
+			}
+		}
+		else
+		{
+			using char_type_const_ptr =
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			char_type const*;
+static_assert(sizeof(char_type)==sizeof(value_type)||sizeof(char_type)==1);
+			auto firstptr = reinterpret_cast<char_type_const_ptr>(first);
+			auto lastptr = reinterpret_cast<char_type_const_ptr>(last);
+			if constexpr(sizeof(char_type)==sizeof(value_type))
+			{
+				return ::fast_io::details::writebasics::writebuffer::write_some_impl(
+					outstm,firstptr,lastptr)-firstptr+first;
+			}
+			else
+			{
+				do
+				{
+					auto newfirstptr =
+					::fast_io::details::writebasics::writebuffer::write_some_impl(
+					outstm,firstptr,lastptr);
+					::std::size_t n{static_cast<::std::size_t>(newfirstptr-firstptr)};
+					if(n%sizeof(value_type)==0)
+					{
+						using value_type_const_ptr =
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+						[[__gnu__::__may_alias__]]
+#endif
+						value_type const*;
+						return reinterpret_cast<value_type_const_ptr>(newfirstptr);
+					}
+				}
+				while(firstptr!=lastptr);
+				return last;
+			}
+		}
+	}
+	return ::fast_io::details::writebasics::writenobuffer::write_some_impl(outstm,first,last);
+}
+
+
+template<typename F,typename value_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void write_all_impl(F outstm,value_type const* first,value_type const* last)
+{
+	using char_type = typename F::output_char_type;
+	constexpr bool smtp{::std::same_as<char_type,value_type>};
+	if constexpr(smtp)
+	{
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<F>)
+		{
+		char_type *curr{obuffer_curr(outstm)};
+		char_type *ed{obuffer_end(outstm)};
+		auto bufferremain{ed-curr};
+		auto itdf{last-first};
+		if(itdf<bufferremain)
+#if __has_cpp_attribute(likely)
+		[[likely]]
+#endif
+		{
+			obuffer_set_curr(outstm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdf),curr));
+			return;
+		}
+		}
+		::fast_io::details::writebasics::writenobuffer::write_all_impl(outstm,first,last);
+	}
+	else
+	{
+		using char_type_const_ptr =
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		char_type const*;
+static_assert(sizeof(char_type)==sizeof(value_type)||sizeof(char_type)==1);
+		auto firstptr = reinterpret_cast<char_type_const_ptr>(first);
+		auto lastptr = reinterpret_cast<char_type_const_ptr>(last);
+		::fast_io::details::writebasics::writebuffer::write_all_impl(outstm,firstptr,lastptr);
+	}
+}
+
+}
+
+}
+
+
+template<typename outstm,::std::forward_iterator Iter>
+inline constexpr Iter write_some_impl(outstm outsm,Iter first, Iter last)
+{
+	if constexpr(::std::is_pointer_v<Iter>)
+	{
+		return ::fast_io::details::writebasics::writebuffer::write_some_impl(first,last);
+	}
+	else if constexpr(::std::contiguous_iterator<Iter>)
+	{
+		return ::fast_io::details::writebasics::writebuffer::write_some_impl(
+			::std::to_address(first),
+			::std::to_address(last))-::std::to_address(first)+first;
 	}
 	else
 	{
@@ -323,274 +431,72 @@ inline constexpr void write_all_common_iter_impl(outputtype outstm,Iter first,It
 		{
 			auto fptr{__builtin_addressof(*first)};
 			auto fptrp1{fptr+1};
-			::fast_io::details::write_all_common_chtypeptr_impl(
-				outstm,fptr,fptrp1);
+			if(::fast_io::details::writebasics::writebuffer::write_some_impl(
+				outsm,fptr,fptrp1)!=fptrp1)
+			{
+				break;
+			}
 		}
 		return first;
 	}
 }
 
-template<typename F>
-inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(F outstm,io_scatter_t const *base,::std::size_t len)
+template<typename outstm,::std::forward_iterator Iter>
+inline constexpr void write_all_impl(outstm outsm,Iter first, Iter last)
 {
-	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<F>)
+	if constexpr(::std::contiguous_iterator<Iter>)
 	{
-		return scatter_write_some_bytes_overflow_define(outstm,base,len);
+		::fast_io::details::writebasics::writebuffer::write_all_impl(
+			::std::to_address(first),
+			::std::to_address(last));
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<F>)
+	else
 	{
-		scatter_write_all_bytes_overflow_define(outstm,base,len);
-		return {scatter_total_size(base,len),len,0};
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<F>)
-	{
-		::std::size_t written{};
-		auto i{base};
-		::std::size_t posinsp{};
-		for(auto ed{base+len};i!=ed;++i)
+		for(;first!=last;++first)
 		{
-			auto ele{*i};
-			auto basebg{reinterpret_cast<::std::byte const*>(ele.base)};
-			auto baseed{basebg+ele.len};
-			auto ret{write_some_bytes_overflow_define(outstm,
-			reinterpret_cast<::std::byte const*>(basebg),
-			reinterpret_cast<::std::byte const*>(baseed))};
-			::std::size_t diff{static_cast<::std::size_t>(ret-basebg)};
-			written+=diff;
-			if(ret!=baseed)
-			{
-				posinsp=diff;
-				break;
-			}
+			auto fptr{__builtin_addressof(*first)};
+			auto fptrp1{fptr+1};
+			::fast_io::details::writebasics::writebuffer::write_all_impl(
+				outsm,fptr,fptrp1);
 		}
-		return {written,static_cast<::std::size_t>(i-base),posinsp};
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<F>)
-	{
-		::std::size_t written{};
-		auto i{base};
-		for(auto ed{base+len};i!=ed;++i)
-		{
-			auto ele{*i};
-			auto basebg{reinterpret_cast<::std::byte const*>(ele.base)};
-			auto baseed{basebg+ele.len};
-			write_all_bytes_overflow_define(outstm,basebg,baseed);
-			::std::size_t diff{static_cast<::std::size_t>(baseed-basebg)};
-			written+=diff;
-		}
-		return {written,len,0};
 	}
 }
 
-template<typename F>
-inline constexpr void scatter_write_all_bytes_impl(F outstm,io_scatter_t const *base,::std::size_t len)
+template<typename outstm>
+inline constexpr void char_put_impl(outstm outsm,
+	typename decltype(::fast_io::manipulators::output_stream_ref(outsm))::output_char_type ch)
 {
-	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<F>)
+	using char_type = typename outstm::output_char_type;
+	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outstm>)
 	{
-		scatter_write_all_bytes_overflow_define(outstm,base,len);
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<F>)
-	{
-		while(len)
+		char_type *curr{obuffer_curr(outsm)};
+		char_type *ed{obuffer_end(outsm)};
+		bool condition;
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstm>)
 		{
-			auto ret{scatter_write_some_bytes_overflow_define(outstm,base,len)};
-			::std::size_t position{ret.position};
-			::std::size_t position_in_scatter{ret.position_in_scatter};
-			if(position==len)
+			condition=curr<ed;
+		}
+		else
+		{
+			condition=curr!=ed;
+		}
+		if(condition)
 #if __has_cpp_attribute(likely)
-			[[likely]]
+		[[likely]]
 #endif
-			{
-				return;
-			}
-			base+=position;
-			len-=position;
-			if(!position_in_scatter)
-			{
-				continue;
-			}
-			auto b{reinterpret_cast<::std::byte const*>(base->base)};
-			::fast_io::details::write_all_common_chtypeptr_impl(outstm,
-				b+position_in_scatter,b+base->len);
-			++base;
-			--len;
-		}
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<F>
-		||::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<F>)
-	{
-		for(auto i{base},ed{base+len};i!=ed;++i)
-		{
-			auto ele{*i};
-			auto basebg{reinterpret_cast<::std::byte const*>(ele.base)};
-			auto baseed{basebg+ele.len};
-			::fast_io::details::write_all_common_chtypeptr_impl(outstm,basebg,baseed);
-		}
-	}
-}
 
-template<typename F>
-inline constexpr io_scatter_status_t scatter_write_some_impl(F outstm,basic_io_scatter_t<typename F::char_type> const *base,::std::size_t len)
-{
-	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<F>)
-	{
-		return scatter_write_some_overflow_define(outstm,base,len);
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<F>)
-	{
-		scatter_write_all_overflow_define(outstm,base,len);
-		return {scatter_total_size(base,len),len,0};
-	}
-	else if constexpr(sizeof(char_type)==sizeof(::std::byte))
-	{
-		using scatterbyteptr_constaliasptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-
-#endif
-		= io_scatter_t const *;
-		return ::fast_io::details::scatter_write_some_bytes_impl(outstm,
-			reinterpret_cast<scatterbyteptr_constaliasptr>(base),len);
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_some_overflow_define<F>)
-	{
-		::std::size_t written{};
-		auto i{base};
-		::std::size_t posinsp{};
-		for(auto ed{base+len};i!=ed;++i)
 		{
-			auto ele{*i};
-			auto basebg{ele.base};
-			auto baseed{basebg+ele.len};
-			auto ret{write_some_overflow_define(outstm,basebg,baseed)};
-			::std::size_t diff{static_cast<::std::size_t>(ret-basebg)};
-			written+=diff;
-			if(ret!=baseed)
-			{
-				posinsp=diff;
-				break;
-			}
-		}
-		return {written,static_cast<::std::size_t>(i-base),posinsp};
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_all_overflow_define<F>)
-	{
-		::std::size_t written{};
-		auto i{base};
-		for(auto ed{base+len};i!=ed;++i)
-		{
-			auto ele{*i};
-			auto basebg{ele.base};
-			auto baseed{basebg+ele.len};
-			write_all_overflow_define(outstm,basebg,baseed);
-			::std::size_t diff{static_cast<::std::size_t>(baseed-basebg)};
-			written+=diff;
-		}
-		return {written,len,0};
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<F>)
-	{
-		::std::size_t written{};
-		auto i{base};
-		::std::size_t posinsp{};
-		for(auto ed{base+len};i!=ed;++i)
-		{
-			auto ele{*i};
-			auto basebg{ele.base};
-			auto baseed{basebg+ele.len};
-			auto ret{::fast_io::details::write_some_common_chtypeptr_impl(outstm,basebg,baseed)};
-			::std::size_t diff{static_cast<::std::size_t>(ret-basebg)};
-			written+=diff;
-			if(ret!=baseed)
-			{
-				posinsp=diff;
-				break;
-			}
-		}
-		return {written,static_cast<::std::size_t>(i-base),posinsp};
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_all_overflow_define<F>)
-	{
-		::std::size_t written{};
-		auto i{base};
-		for(auto ed{base+len};i!=ed;++i)
-		{
-			auto ele{*i};
-			auto basebg{ele.base};
-			auto baseed{basebg+ele.len};
-			write_all_overflow_define(outstm,basebg,baseed);
-			::std::size_t diff{static_cast<::std::size_t>(baseed-basebg)};
-			written+=diff;
-		}
-		return {written,len,0};
-	}
-}
-
-template<typename F>
-inline constexpr void scatter_write_all_impl(F outstm,basic_io_scatter_t<typename F::char_type> const *base,::std::size_t len)
-{
-	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<F>)
-	{
-		scatter_write_all_overflow_define(outstm,base,len);
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<F>)
-	{
-		while(len)
-		{
-			auto ret{scatter_write_define(outstm,base,len)};
-			::std::size_t position{ret.position};
-			::std::size_t position_in_scatter{ret.position_in_scatter};
-			if(position==len)
-#if __has_cpp_attribute(likely)
-			[[likely]]
-#endif
-			{
-				return;
-			}
-			base+=position;
-			len-=position;
-			if(!position_in_scatter)
-			{
-				continue;
-			}
-			auto b{base->base};
-			::fast_io::details::write_all_common_chtypeptr_impl(outstm,
-				b+position_in_scatter,b+base->len);
-			++base;
-			--len;
+			*curr=ch;
+			obuffer_set_curr(outsm,curr+1);
+			return;
 		}
 	}
-	else if constexpr(sizeof(char_type)==sizeof(::std::byte))
-	{
-		using scatterbyteptr_constaliasptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-
-#endif
-		= io_scatter_t const *;
-		::fast_io::details::scatter_write_all_bytes_impl(outstm,
-			reinterpret_cast<scatterbyteptr_constaliasptr>(base),
-			len);
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_all_overflow_define<F>||
-		::fast_io::details::streamreflect::has_write_some_overflow_define<F>)
-	{
-		for(auto i{base},e{base+len};i!=e;++i)
-		{
-			auto [bibs,bilen]{*i};
-			::fast_io::details::write_all_common_chtypeptr_impl(outstm,
-			bibs,bibs+bilen);
-		}
-	}
+	::fast_io::details::writebasics::writenobuffer::char_put_impl(outsm,ch);
 }
 
 }
 
-}
-
-namespace fast_io::operations
+namespace operations
 {
 
 template<::fast_io::output_stream F,::std::forward_iterator Iter>
@@ -601,7 +507,7 @@ template<::fast_io::output_stream F,::std::forward_iterator Iter>
 #endif
 inline constexpr Iter write_some(F&& outstm,Iter first, Iter last)
 {
-	return ::fast_io::details::write_some_common_iter_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
+	return ::fast_io::details::write_some_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
 }
 
 template<::fast_io::output_stream F,::std::forward_iterator Iter>
@@ -612,9 +518,10 @@ template<::fast_io::output_stream F,::std::forward_iterator Iter>
 #endif
 inline constexpr void write_all(F&& outstm,Iter first,Iter last)
 {
-	::fast_io::details::write_all_common_iter_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
+	::fast_io::details::write_all_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
 }
 
+#if 0
 template<::fast_io::output_stream F>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -664,6 +571,9 @@ inline constexpr void scatter_write_all(F&& outstm,
 	return ::fast_io::details::scatter_write_all_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 }
 
+#endif
+
+
 template<::fast_io::output_stream stmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -674,6 +584,8 @@ inline constexpr void char_put(stmtype&& outstm,
 	typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type ch)
 {
 	::fast_io::details::char_put_impl(::fast_io::manipulators::output_stream_ref(outstm),ch);
+}
+
 }
 
 }
