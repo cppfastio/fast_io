@@ -152,6 +152,10 @@ using output_stream_unlocked_ref_type = decltype(::fast_io::details::output_stre
 	*static_cast<T*>(nullptr)
 ));
 
+template<typename T>
+concept mutex_unlocked_buffer_output_stream_impl = ::fast_io::details::has_output_stream_mutex_ref_define<T>&&
+	::fast_io::details::streamreflect::has_obuffer_ops<output_stream_unlocked_ref_type<T>>;
+
 template<typename outstmtype,typename Func>
 inline constexpr decltype(auto) lock_input_stream_callback(outstmtype outstm,Func fnc)
 {
@@ -163,6 +167,11 @@ template<::fast_io::details::has_input_stream_mutex_ref_define T>
 using input_stream_unlocked_ref_type = decltype(::fast_io::details::input_stream_unlocked_ref_impl(
 	*static_cast<T*>(nullptr)
 ));
+
+template<typename T>
+concept mutex_unlocked_buffer_input_stream_impl = ::fast_io::details::has_input_stream_mutex_ref_define<T>&&
+	::fast_io::details::streamreflect::has_ibuffer_ops<input_stream_unlocked_ref_type<T>>;
+
 
 template<typename outstmtype,typename Func>
 inline constexpr decltype(auto) lock_io_stream_callback(outstmtype outstm,Func fnc)
