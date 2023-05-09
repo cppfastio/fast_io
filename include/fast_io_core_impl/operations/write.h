@@ -499,6 +499,20 @@ inline constexpr void char_put_impl(outstm outsm,
 namespace operations
 {
 
+/**
+ * @brief Writes a range of values to an output stream, returning an iterator to the end of the written range.
+ * 
+ * This function writes a range of values to an output stream using the `write_some` operation,
+ * returning an iterator to the end of the written range. If an error occurs during the write operation,
+ * the function will return an iterator to the point at which the error occurred. 
+ * 
+ * @tparam F The output stream type, which satisfies the `output_stream` concept.
+ * @tparam Iter The type of the iterator representing the range of values to be written.
+ * @param outstm The output stream object to which values will be written.
+ * @param first An iterator representing the start of the range of values to be written.
+ * @param last An iterator representing the end of the range of values to be written.
+ * @return An iterator pointing to the end of the written range, or an iterator pointing to the location of an error.
+ */
 template<::fast_io::output_stream F,::std::forward_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -510,6 +524,21 @@ inline constexpr Iter write_some(F&& outstm,Iter first, Iter last)
 	return ::fast_io::details::write_some_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
 }
 
+
+
+/**
+ * @brief Writes a range of values to an output stream, throwing an exception if the entire range cannot be written.
+ * 
+ * This function writes a range of values to an output stream using the `write_some` operation,
+ * and will throw an exception if the entire range cannot be written.
+ * 
+ * @tparam F The output stream type, which satisfies the `output_stream` concept.
+ * @tparam Iter The type of the iterator representing the range of values to be written.
+ * @param outstm The output stream object to which values will be written.
+ * @param first An iterator representing the start of the range of values to be written.
+ * @param last An iterator representing the end of the range of values to be written.
+ * @throws An exception if the entire range cannot be written.
+ */
 template<::fast_io::output_stream F,::std::forward_iterator Iter>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -573,7 +602,13 @@ inline constexpr void scatter_write_all(F&& outstm,
 
 #endif
 
-
+/**
+ * @brief Writes a single character to the output stream.
+ * @tparam stmtype The type of the output stream to write to, which should satisfy the output_stream concept.
+ * @param outstm The output stream to write to.
+ * @param ch The character to write to the output stream.
+ * @note This function is marked constexpr, allowing its invocation in constant expressions.
+ */
 template<::fast_io::output_stream stmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
