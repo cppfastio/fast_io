@@ -57,8 +57,8 @@ inline constexpr decltype(auto) io_stream_mutex_ref(T&& t)
 
 
 template<typename T>
-requires (::fast_io::details::has_io_stream_mutex_define<T>
-	||::fast_io::details::has_input_stream_mutex_define<T>)
+requires (::fast_io::details::has_io_stream_mutex_ref_define<T>
+	||::fast_io::details::has_input_stream_mutex_ref_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -66,7 +66,7 @@ requires (::fast_io::details::has_io_stream_mutex_define<T>
 #endif
 inline constexpr auto input_stream_unlocked_ref(T&& t)
 {
-	if constexpr(::fast_io::details::has_input_stream_mutex_define<T>)
+	if constexpr(::fast_io::details::has_input_stream_mutex_ref_define<T>)
 	{
 		return input_stream_unlocked_ref_define(::fast_io::freestanding::forward<T>(t));
 	}
@@ -77,8 +77,8 @@ inline constexpr auto input_stream_unlocked_ref(T&& t)
 }
 
 template<typename T>
-requires (::fast_io::details::has_io_stream_mutex_define<T>
-	||::fast_io::details::has_output_stream_mutex_define<T>)
+requires (::fast_io::details::has_io_stream_mutex_ref_define<T>
+	||::fast_io::details::has_output_stream_mutex_ref_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -86,7 +86,7 @@ requires (::fast_io::details::has_io_stream_mutex_define<T>
 #endif
 inline constexpr auto output_stream_unlocked_ref(T&& t)
 {
-	if constexpr(::fast_io::details::has_output_stream_mutex_define<T>)
+	if constexpr(::fast_io::details::has_output_stream_mutex_ref_define<T>)
 	{
 		return output_stream_unlocked_ref_define(::fast_io::freestanding::forward<T>(t));
 	}
@@ -97,7 +97,7 @@ inline constexpr auto output_stream_unlocked_ref(T&& t)
 }
 
 template<typename T>
-requires (::fast_io::details::has_io_stream_mutex_define<T>)
+requires (::fast_io::details::has_io_stream_mutex_ref_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -118,7 +118,7 @@ struct stream_ref_lock_guard
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-	explicit constexpr stream_ref_lock_guard(device d): device(d)
+	explicit constexpr stream_ref_lock_guard(mutex_type d): device(d)
 	{
 		device.lock();
 	}
