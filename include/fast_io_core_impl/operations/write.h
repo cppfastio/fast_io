@@ -30,68 +30,6 @@ inline constexpr ::std::size_t scatter_total_size(basic_io_scatter_t<T> const *b
 namespace details
 {
 
-#if 0
-template<typename outstmtypeunctiontype>
-struct final_guard
-{
-	functiontype f;
-	explicit constexpr final_guard(functiontype ff) noexcept:f{ff}{}
-
-	final_guard(final_guard const&)=delete;
-	final_guard& operator=(final_guard const&)=delete;
-
-
-	constexpr ~final_guard()
-	{
-		if constexpr(noexcept(f()))
-		{
-			f();
-		}
-		else
-		{
-#ifdef __cpp_exceptions
-			try
-			{
-#endif
-				f();
-#ifdef __cpp_exceptions
-			}
-			catch(...){}
-#endif
-		}
-	}
-};
-#endif
-
-#if 0
-namespace writecommmon
-{
-template<typename outstmtype>
-inline constexpr ::std::byte const* write_some_bytes_impl_common(
-	outstmtype outstm,
-	::std::byte const* first,
-	::std::byte const* last)
-{
-	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outstmtype>)
-	{
-//		if()
-	}
-	return write_some_bytes_overflow_define(outstm,first,last);
-}
-#if 0
-template<typename outstmtype>
-inline constexpr ::std::byte const* write_some_bytes_impl_n(
-	outstmtype outstm,
-	::std::byte const* first,
-	::std::byte const* last,
-	::std::size_t n)
-{
-
-}
-#endif
-}
-#endif
-
 template<typename outstmtype,typename value_type>
 inline constexpr value_type const* nobuffer_write_some_impl(outstmtype outstm,value_type const* first,value_type const* last);
 
@@ -542,7 +480,6 @@ inline constexpr void buffer_write_all_impl(outstmtype outstm,value_type const* 
 {
 	if constexpr(::fast_io::details::has_output_stream_mutex_ref_define<outstmtype>)
 	{
-		//using unlocked_ref_type = decltype(io_stream_unlocked_ref_define(outstm));
 		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outstm)};
 		::fast_io::details::buffer_write_all_impl(output_stream_unlocked_ref_define(outstm),first,last);
 	}
@@ -689,37 +626,40 @@ template<typename outstm>
 inline constexpr void char_put_impl(outstm outsm,
 	typename decltype(::fast_io::manipulators::output_stream_ref(outsm))::output_char_type ch)
 {
-	using char_type = typename outstm::output_char_type;
 	if constexpr(::fast_io::details::has_output_stream_mutex_ref_define<outstm>)
 	{
-		using unlocked_ref_type = decltype(output_stream_unlocked_ref_define(outsm));
-		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
-		::fast_io::details::char_put_impl(output_stream_unlocked_ref_define(outsm),ch);
-		return;
+		using unlockedtype = ::fast_io::details::output_stream_unlocked_ref_type<outstm>;
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<unlockedtype>)
+		{
+			::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
+			return ::fast_io::details::char_put_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),ch);
+		}
 	}
 	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outstm>)
 	{
-		char_type *curr{obuffer_curr(outsm)};
-		char_type *ed{obuffer_end(outsm)};
-		bool condition;
-		if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstm>)
-		{
-			condition=curr<ed;
-		}
-		else
-		{
-			condition=curr!=ed;
-		}
-		if(condition)
+
+			using char_type = typename outstm::output_char_type;
+			char_type *curr{obuffer_curr(outsm)};
+			char_type *ed{obuffer_end(outsm)};
+			bool condition;
+			if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstm>)
+			{
+				condition=curr<ed;
+			}
+			else
+			{
+				condition=curr!=ed;
+			}
+			if(condition)
 #if __has_cpp_attribute(likely)
 		[[likely]]
 #endif
 
-		{
-			*curr=ch;
-			obuffer_set_curr(outsm,curr+1);
-			return;
-		}
+			{
+				*curr=ch;
+				obuffer_set_curr(outsm,curr+1);
+				return;
+			}
 	}
 	::fast_io::details::nobuffer_char_put_impl(outsm,ch);
 }
@@ -811,7 +751,7 @@ inline constexpr io_scatter_status_t scatter_write_some_impl(outstmtype outstm,b
 
 #endif
 		= io_scatter_t const *;
-		return ::fast_io::details::scatter_write_some_bytes_impl(outstm,
+		return ::fast_io::details::nobuffer_scatter_write_some_bytes_impl(outstm,
 			reinterpret_cast<scatterbyteptr_constaliasptr>(base),len);
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>)
@@ -889,7 +829,9 @@ inline constexpr io_scatter_status_t scatter_write_some_impl(outstmtype outstm,b
 }
 
 template<typename outstmtype>
-inline constexpr void scatter_write_all_impl(outstmtype outstm,basic_io_scatter_t<typename outstmtype::output_char_type> const *base,::std::size_t len)
+inline constexpr void scatter_write_all_impl(outstmtype outstm,
+	basic_io_scatter_t<typename outstmtype::output_char_type> const *base,
+	::std::size_t len)
 {
 	using char_type = typename outstmtype::output_char_type;
 	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>)
@@ -945,7 +887,6 @@ inline constexpr void scatter_write_all_impl(outstmtype outstm,basic_io_scatter_
 		}
 	}
 }
-
 
 }
 

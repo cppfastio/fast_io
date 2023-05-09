@@ -136,3 +136,44 @@ struct stream_ref_lock_guard
 };
 
 }
+
+namespace fast_io::details
+{
+
+template<typename outstmtype,typename Func>
+inline constexpr decltype(auto) lock_output_stream_callback(outstmtype outstm,Func fnc)
+{
+	::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outstm)};
+	return fnc(::fast_io::details::output_stream_unlocked_ref_impl(outstm));
+};
+
+template<::fast_io::details::has_output_stream_mutex_ref_define T>
+using output_stream_unlocked_ref_type = decltype(::fast_io::details::output_stream_unlocked_ref_impl(
+	*static_cast<T*>(nullptr)
+));
+
+template<typename outstmtype,typename Func>
+inline constexpr decltype(auto) lock_input_stream_callback(outstmtype outstm,Func fnc)
+{
+	::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(outstm)};
+	return fnc(::fast_io::details::input_stream_unlocked_ref_impl(outstm));
+};
+
+template<::fast_io::details::has_input_stream_mutex_ref_define T>
+using input_stream_unlocked_ref_type = decltype(::fast_io::details::input_stream_unlocked_ref_impl(
+	*static_cast<T*>(nullptr)
+));
+
+template<typename outstmtype,typename Func>
+inline constexpr decltype(auto) lock_io_stream_callback(outstmtype outstm,Func fnc)
+{
+	::fast_io::operations::stream_ref_lock_guard lg{io_stream_mutex_ref_impl(outstm)};
+	return fnc(::fast_io::details::io_stream_unlocked_ref_impl(outstm));
+};
+
+template<::fast_io::details::has_io_stream_mutex_ref_define T>
+using io_stream_unlocked_ref_type = decltype(::fast_io::details::io_stream_unlocked_ref_impl(
+	*static_cast<T*>(nullptr)
+));
+
+}
