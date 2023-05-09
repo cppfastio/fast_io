@@ -73,9 +73,7 @@
 //#include"fast_io_core_impl/manip/impl.h"
 #include"fast_io_core_impl/mode.h"
 #include"fast_io_core_impl/perms.h"
-#if 0
 #include"fast_io_core_impl/operations/impl.h"
-#endif
 #include"fast_io_core_impl/igenerator.h"
 
 #if 0

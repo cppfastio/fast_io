@@ -754,9 +754,8 @@ inline constexpr void print_freestanding_decay_no_status(output outstm,Args ...a
 		return;
 	else if constexpr(mutex_output_stream<output>)
 	{
-		io_lock_guard lg{out};
-		decltype(auto) dout{out.unlocked_handle()};
-		print_freestanding_decay_no_status<line>(io_ref(dout),args...);
+		stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outstm)};
+		print_freestanding_decay_no_status<line>(output_stream_unlocked_ref_impl(outstm),args...);
 	}
 	else if constexpr(buffer_output_stream<output>)
 	{

@@ -61,42 +61,42 @@ inline constexpr value_type* read_some_common_chtypeptr_impl(F instm,value_type 
 		}
 		return ::fast_io::details::read_ibf_all_underflow_impl(instm,first,last);
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_some_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_some_underflow_define<F>))
 	{
-		return read_some_define(instm,first,last);
+		return read_some_underflow_define(instm,first,last);
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_some_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<F>))
 	{
 		basic_io_scatter_t<value_type> scatter
 		{
 			first,
 			static_cast<::std::size_t>(last-first)
 		};
-		auto ret{scatter_read_some_define(instm,__builtin_addressof(scatter),1)};
+		auto ret{scatter_read_some_underflow_define(instm,__builtin_addressof(scatter),1)};
 		return ret.total_size+first;
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_all_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_all_underflow_define<F>))
 	{
-		read_all_define(instm,first,last);
+		read_all_underflow_define(instm,first,last);
 		return last;
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_all_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<F>))
 	{
 		basic_io_scatter_t<value_type> scatter
 		{
 			first,
 			static_cast<::std::size_t>(last-first)
 		};
-		auto ret{scatter_read_all_define(instm,__builtin_addressof(scatter),1)};
+		auto ret{scatter_read_all_underflow_define(instm,__builtin_addressof(scatter),1)};
 		return last;
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<F>)
 	{
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
 		if constexpr(sizeof(char_type)==sizeof(::std::byte))
 		{
-			auto p{read_some_bytes_define(instm,
+			auto p{read_some_bytes_underflow_define(instm,
 				firstbyteptr,
 				lastbyteptr)};
 			return p-firstbyteptr+first;
@@ -125,11 +125,11 @@ inline constexpr value_type* read_some_common_chtypeptr_impl(F instm,value_type 
 			return retv;
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<F>)
 	{
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
-		read_all_bytes_define(instm,firstbyteptr,lastbyteptr);
+		read_all_bytes_underflow_define(instm,firstbyteptr,lastbyteptr);
 		return last;
 	}
 	else
@@ -170,7 +170,7 @@ inline constexpr Iter read_some_common_iter_impl(outputtype instm,Iter first,Ite
 template<typename F>
 inline constexpr void read_all_bytes_common_chtypeptr_impl(F instm,::std::byte* firstbyteptr,::std::byte* lastbyteptr)
 {
-	while((firstbyteptr=read_some_bytes_define(instm,
+	while((firstbyteptr=read_some_bytes_underflow_define(instm,
 		firstbyteptr,
 		lastbyteptr))!=lastbyteptr);
 }
@@ -185,7 +185,7 @@ inline constexpr void read_all_bytes_scatter_byteptr_impl(F instm,::std::byte* f
 			first,
 			static_cast<::std::size_t>(last-first)
 		};
-		auto ret{scatter_read_some_bytes_define(instm,__builtin_addressof(scatter),1)};
+		auto ret{scatter_read_some_bytes_underflow_define(instm,__builtin_addressof(scatter),1)};
 		first+=ret.total_size;
 	}
 	while(first!=last);
@@ -212,24 +212,24 @@ inline constexpr void read_all_common_chtypeptr_impl(F instm,value_type* first,v
 		}
 		::fast_io::details::read_ibf_all_underflow_impl(instm,first,last);
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_all_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_all_underflow_define<F>))
 	{
-		read_all_define(instm,first,last);
+		read_all_underflow_define(instm,first,last);
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_all_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<F>))
 	{
 		basic_io_scatter_t<value_type> scatter
 		{
 			first,
 			static_cast<::std::size_t>(last-first)
 		};
-		scatter_read_all_define(instm,__builtin_addressof(scatter),1);
+		scatter_read_all_underflow_define(instm,__builtin_addressof(scatter),1);
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_some_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_read_some_underflow_define<F>))
 	{
-		while((first=read_some_define(instm,first,last))!=last);
+		while((first=read_some_underflow_define(instm,first,last))!=last);
 	}
-	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_some_define<F>))
+	else if constexpr(smtp&&(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<F>))
 	{
 		do
 		{
@@ -238,24 +238,24 @@ inline constexpr void read_all_common_chtypeptr_impl(F instm,value_type* first,v
 				first,
 				static_cast<::std::size_t>(last-first)
 			};
-			auto ret{scatter_read_some_define(instm,__builtin_addressof(scatter),1)};
+			auto ret{scatter_read_some_underflow_define(instm,__builtin_addressof(scatter),1)};
 			first+=ret.total_size;
 		}
 		while(first!=last);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<F>)
 	{
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
-		read_all_bytes_define(instm,firstbyteptr,lastbyteptr);
+		read_all_bytes_underflow_define(instm,firstbyteptr,lastbyteptr);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<F>)
 	{
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
 		read_all_bytes_common_chtypeptr_impl(instm,firstbyteptr,lastbyteptr);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_underflow_define<F>)
 	{
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
@@ -264,9 +264,9 @@ inline constexpr void read_all_common_chtypeptr_impl(F instm,value_type* first,v
 			firstbyteptr,
 			static_cast<::std::size_t>(lastbyteptr-firstbyteptr)
 		};
-		scatter_read_all_bytes_define(instm,__builtin_addressof(scatter),1);
+		scatter_read_all_bytes_underflow_define(instm,__builtin_addressof(scatter),1);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<F>)
 	{
 		::std::byte *firstbyteptr{reinterpret_cast<::std::byte*>(first)};
 		::std::byte *lastbyteptr{reinterpret_cast<::std::byte*>(last)};
@@ -301,16 +301,16 @@ template<typename F>
 inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(F instm,io_scatter_t *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_define<F>)
+	if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<F>)
 	{
-		return scatter_read_some_bytes_define(instm,base,len);
+		return scatter_read_some_bytes_underflow_define(instm,base,len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_underflow_define<F>)
 	{
-		scatter_read_all_bytes_define(instm,base,len);
+		scatter_read_all_bytes_underflow_define(instm,base,len);
 		return {scatter_total_size(base,len),len,0};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<F>)
 	{
 		::std::size_t readedn{};
 		auto i{base};
@@ -320,7 +320,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(F instm,io_sca
 			auto ele{*i};
 			auto basebg{reinterpret_cast<::std::byte*>(const_cast<void*>(ele.base))};
 			auto baseed{basebg+ele.len};
-			auto ret{read_some_bytes_define(instm,
+			auto ret{read_some_bytes_underflow_define(instm,
 			basebg,
 			baseed)};
 			::std::size_t diff{static_cast<::std::size_t>(ret-basebg)};
@@ -333,7 +333,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(F instm,io_sca
 		}
 		return {readedn,static_cast<::std::size_t>(i-base),posinsp};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<F>)
 	{
 		::std::size_t readedn{};
 		auto i{base};
@@ -342,7 +342,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(F instm,io_sca
 			auto ele{*i};
 			auto basebg{reinterpret_cast<::std::byte*>(const_cast<void*>(ele.base))};
 			auto baseed{basebg+ele.len};
-			read_all_bytes_define(instm,basebg,baseed);
+			read_all_bytes_underflow_define(instm,basebg,baseed);
 			::std::size_t diff{static_cast<::std::size_t>(baseed-basebg)};
 			readedn+=diff;
 		}
@@ -354,15 +354,15 @@ template<typename F>
 inline constexpr void scatter_read_all_bytes_impl(F instm,io_scatter_t const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_define<F>)
+	if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_underflow_define<F>)
 	{
-		scatter_read_all_bytes_define(instm,base,len);
+		scatter_read_all_bytes_underflow_define(instm,base,len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<F>)
 	{
 		while(len)
 		{
-			auto ret{scatter_read_some_bytes_define(instm,base,len)};
+			auto ret{scatter_read_some_bytes_underflow_define(instm,base,len)};
 			::std::size_t position{ret.position};
 			::std::size_t position_in_scatter{ret.position_in_scatter};
 			if(position==len)
@@ -385,8 +385,8 @@ inline constexpr void scatter_read_all_bytes_impl(F instm,io_scatter_t const *ba
 			--len;
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_define<F>
-		||::fast_io::details::streamreflect::has_read_all_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<F>
+		||::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<F>)
 	{
 		for(auto i{base},ed{base+len};i!=ed;++i)
 		{
@@ -402,13 +402,13 @@ template<typename F>
 inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_scatter_t<typename F::char_type> const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_define<F>)
+	if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<F>)
 	{
-		return scatter_read_some_define(instm,base,len);
+		return scatter_read_some_underflow_define(instm,base,len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<F>)
 	{
-		scatter_read_all_define(instm,base,len);
+		scatter_read_all_underflow_define(instm,base,len);
 		return {scatter_total_size(base,len),len,0};
 	}
 	else if constexpr(sizeof(char_type)==sizeof(::std::byte))
@@ -421,7 +421,7 @@ inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_sca
 		return ::fast_io::details::scatter_read_some_bytes_impl(instm,
 			reinterpret_cast<scatterbyteptr_constaliasptr>(base),len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<F>)
 	{
 		::std::size_t readedn{};
 		auto i{base};
@@ -431,7 +431,7 @@ inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_sca
 			auto ele{*i};
 			auto basebg{ele.base};
 			auto baseed{basebg+ele.len};
-			auto ret{read_some_define(instm,basebg,baseed)};
+			auto ret{read_some_underflow_define(instm,basebg,baseed)};
 			::std::size_t diff{static_cast<::std::size_t>(ret-basebg)};
 			readedn+=diff;
 			if(ret!=baseed)
@@ -442,7 +442,7 @@ inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_sca
 		}
 		return {readedn,static_cast<::std::size_t>(i-base),posinsp};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_underflow_define<F>)
 	{
 		::std::size_t readedn{};
 		auto i{base};
@@ -451,13 +451,13 @@ inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_sca
 			auto ele{*i};
 			auto basebg{ele.base};
 			auto baseed{basebg+ele.len};
-			read_all_define(instm,basebg,baseed);
+			read_all_underflow_define(instm,basebg,baseed);
 			::std::size_t diff{static_cast<::std::size_t>(baseed-basebg)};
 			readedn+=diff;
 		}
 		return {readedn,len,0};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<F>)
 	{
 		::std::size_t readedn{};
 		auto i{base};
@@ -478,7 +478,7 @@ inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_sca
 		}
 		return {readedn,static_cast<::std::size_t>(i-base),posinsp};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_underflow_define<F>)
 	{
 		::std::size_t readedn{};
 		auto i{base};
@@ -487,7 +487,7 @@ inline constexpr io_scatter_status_t scatter_read_some_impl(F instm,basic_io_sca
 			auto ele{*i};
 			auto basebg{ele.base};
 			auto baseed{basebg+ele.len};
-			read_all_define(instm,basebg,baseed);
+			read_all_underflow_define(instm,basebg,baseed);
 			::std::size_t diff{static_cast<::std::size_t>(baseed-basebg)};
 			readedn+=diff;
 		}
@@ -499,11 +499,11 @@ template<typename F>
 inline constexpr void scatter_read_all_impl(F instm,basic_io_scatter_t<typename F::char_type>  const *base,::std::size_t len)
 {
 	using char_type = typename F::char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_define<F>)
+	if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<F>)
 	{
-		scatter_read_all_define(instm,base,len);
+		scatter_read_all_underflow_define(instm,base,len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<F>)
 	{
 		while(len)
 		{
@@ -541,8 +541,8 @@ inline constexpr void scatter_read_all_impl(F instm,basic_io_scatter_t<typename 
 			reinterpret_cast<scatterbyteptr_constaliasptr>(base),
 			len);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_define<F>||
-		::fast_io::details::streamreflect::has_read_some_define<F>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_underflow_define<F>||
+		::fast_io::details::streamreflect::has_read_some_underflow_define<F>)
 	{
 		for(auto i{base},e{base+len};i!=e;++i)
 		{

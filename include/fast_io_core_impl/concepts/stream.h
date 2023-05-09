@@ -53,7 +53,7 @@ concept io_stream = output_stream<stmtype>&&input_stream<stmtype>&&::fast_io::de
  * A type satisfies the requirements of a buffered output stream if it has member functions for writing data to
  * a buffer and flushing the buffer to the output stream, and can be used as an argument for output functions.
  * The concept checks if the given type meets these requirements by using the `has_output_or_io_stream_ref_define`
- * and `has_obuffer_basic_ops` traits defined in the `::fast_io::details` and `::fast_io::details::streamreflect` namespaces,
+ * and `has_obuffer_ops` traits defined in the `::fast_io::details` and `::fast_io::details::streamreflect` namespaces,
  * respectively.
  *
  * @tparam stmtype The type to check for buffered output stream requirements.
@@ -61,7 +61,7 @@ concept io_stream = output_stream<stmtype>&&input_stream<stmtype>&&::fast_io::de
  * @returns `true` if the given type satisfies the requirements of a buffered output stream, `false` otherwise.
  */
 template<typename stmtype>
-concept buffer_output_stream = output_stream<stmtype>&&::fast_io::details::streamreflect::has_obuffer_basic_ops<stmtype>;
+concept buffer_output_stream = output_stream<stmtype>&&::fast_io::details::streamreflect::has_obuffer_ops<stmtype>;
 
 /**
  * A concept that determines if a given type satisfies the requirements of a non-line-buffered output stream.
@@ -90,14 +90,14 @@ concept noline_buffer_output_stream = buffer_output_stream<stmtype>&&!::fast_io:
  * A type satisfies the requirements of a buffered input stream if it has member functions for reading data from
  * a buffer, filling the buffer from the input stream, and resetting the buffer pointer, and can be used as an argument
  * for input functions. The concept checks if the given type meets these requirements by using the `input_stream`
- * concept and the `has_ibuffer_basic_ops` trait defined in the `::fast_io::details::streamreflect` namespace.
+ * concept and the `has_ibuffer_ops` trait defined in the `::fast_io::details::streamreflect` namespace.
  *
  * @tparam stmtype The type to check for buffered input stream requirements.
  *
  * @returns `true` if the given type satisfies the requirements of a buffered input stream, `false` otherwise.
  */
 template<typename stmtype>
-concept buffer_input_stream = input_stream<stmtype>&&::fast_io::details::streamreflect::has_ibuffer_basic_ops<stmtype>;
+concept buffer_input_stream = input_stream<stmtype>&&::fast_io::details::streamreflect::has_ibuffer_ops<stmtype>;
 
 /**
  * A concept that determines if a given type satisfies the requirements of a buffered I/O stream.
@@ -220,7 +220,7 @@ concept random_access_io_stream = io_stream<stmtype>&&
  * @tparam T The type to be checked.
  */
 template<typename stmtype>
-concept mutex_output_stream = output_stream<stmtype>&&::fast_io::details::streamreflect::has_output_stream_lock<stmtype>;
+concept mutex_output_stream = output_stream<stmtype>&&::fast_io::details::streamreflect::has_output_stream_mutex_ref<stmtype>;
 
 /**
  * @brief A concept for input streams that have a lock mechanism to ensure thread-safety.
@@ -232,7 +232,7 @@ concept mutex_output_stream = output_stream<stmtype>&&::fast_io::details::stream
  * @tparam T The type to be checked.
  */
 template<typename stmtype>
-concept mutex_input_stream = input_stream<stmtype>&&::fast_io::details::streamreflect::has_input_stream_lock<stmtype>;
+concept mutex_input_stream = input_stream<stmtype>&&::fast_io::details::streamreflect::has_input_stream_mutex_ref<stmtype>;
 
 /**
  * @brief A concept for I/O streams that have a lock mechanism to ensure thread-safety.
@@ -248,7 +248,7 @@ template<typename stmtype>
 concept mutex_io_stream = io_stream<stmtype>&&
 	mutex_input_stream<stmtype>&&
 	mutex_output_stream<stmtype>&&
-	::fast_io::details::streamreflect::has_io_stream_lock<stmtype>;
+	::fast_io::details::streamreflect::has_io_stream_mutex_ref<stmtype>;
 
 /**
  * @brief Concept for determining if a stream provides byte-addressed output operations. 
@@ -282,14 +282,6 @@ concept byte_io_stream =
 	byte_input_stream<stmtype>&&
 	byte_output_stream<stmtype>;
 
-template<typename stmtype>
-concept zero_copy_input_stream =
-input_stream<stmtype>&&::fast_io::details::streamreflect::has_zero_copy_in_handle<stmtype>;
-
-template<typename stmtype>
-concept zero_copy_output_stream =
-output_stream<stmtype>&&::fast_io::details::streamreflect::has_zero_copy_out_handle<stmtype>;
-
 /**
  * Concept for a stream that provides status operations for input.
  * This allows users to override the behaviors for scan functions for custom behaviors at compile time.
@@ -319,5 +311,16 @@ concept status_io_stream = status_input_stream<stmtype>&&
 			status_input_stream<stmtype>&&
 			::fast_io::details::streamreflect::statusiostreamdef<stmtype>;
 
+
+/*
+Zero copy needs better design
+*/
+template<typename stmtype>
+concept zero_copy_input_stream =
+input_stream<stmtype>&&::fast_io::details::streamreflect::has_zero_copy_in_handle<stmtype>;
+
+template<typename stmtype>
+concept zero_copy_output_stream =
+output_stream<stmtype>&&::fast_io::details::streamreflect::has_zero_copy_out_handle<stmtype>;
 
 }

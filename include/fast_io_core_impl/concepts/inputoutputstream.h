@@ -10,9 +10,9 @@ concept has_io_stream_seek = requires(T&& iostm)
 };
 
 template<typename T>
-concept has_io_stream_lock = requires(T&& iostm)
+concept has_io_stream_mutex_ref = requires(T&& iostm)
 {
-	::fast_io::details::io_stream_lock_impl(::fast_io::manipulators::io_stream_ref(iostm));
+	::fast_io::details::io_stream_mutex_ref_impl(::fast_io::manipulators::io_stream_ref(iostm));
 };
 
 template<typename T>
