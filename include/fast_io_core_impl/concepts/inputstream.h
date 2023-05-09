@@ -93,6 +93,13 @@ concept has_ibuffer_underflow_never_define = requires(T&& instm)
 	ibuffer_underflow_never_define(::fast_io::manipulators::output_stream_ref(instm));
 };
 
+template<typename stmtype>
+concept has_any_of_byte_read_operations =
+	::fast_io::details::streamreflect::has_read_some_bytes_define<stmtype>||
+	::fast_io::details::streamreflect::has_read_all_bytes_define<stmtype>||
+	::fast_io::details::streamreflect::has_scatter_read_some_bytes_define<stmtype>||
+	::fast_io::details::streamreflect::has_scatter_read_all_bytes_define<stmtype>;
+
 template<typename T>
 concept has_zero_copy_in_handle = requires(T&& instm)
 {
@@ -103,6 +110,12 @@ template<typename T>
 concept inputstreamdef = requires(T&& instm)
 {
 	{::fast_io::manipulators::input_stream_ref(instm)} noexcept;
+};
+
+template<typename T>
+concept statusinputstreamdef = requires(T&& instm)
+{
+	{::fast_io::manipulators::status_input_stream_ref(instm)} noexcept;
 };
 
 }

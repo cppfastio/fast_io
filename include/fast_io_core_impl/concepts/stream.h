@@ -3,269 +3,321 @@
 namespace fast_io
 {
 
-template<typename T>
-concept output_stream = ::fast_io::details::has_output_or_io_stream_ref_define<T>;
+/**
+ * A concept that determines if a given type satisfies the requirements of an output stream.
+ *
+ * A type satisfies the requirements of an output stream if it has a member function for writing data to it
+ * and can be used as an argument for output functions. The concept checks if the given type meets these 
+ * requirements by using the `has_output_or_io_stream_ref_define` trait defined in the `::fast_io::details` namespace.
+ *
+ * @tparam stmtype The type to check for output stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of an output stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept output_stream = ::fast_io::details::has_output_or_io_stream_ref_define<stmtype>;
 
-template<typename T>
-concept input_stream = ::fast_io::details::has_input_or_io_stream_ref_define<T>;
+/**
+ * A concept that determines if a given type satisfies the requirements of an input stream.
+ *
+ * A type satisfies the requirements of an input stream if it has a member function for reading data from it
+ * and can be used as an argument for input functions. The concept checks if the given type meets these
+ * requirements by using the `has_input_or_io_stream_ref_define` trait defined in the `::fast_io::details` namespace.
+ *
+ * @tparam stmtype The type to check for input stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of an input stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept input_stream = ::fast_io::details::has_input_or_io_stream_ref_define<stmtype>;
 
-template<typename T>
-concept io_stream = output_stream<T>&&input_stream<T>&&::fast_io::details::has_io_stream_ref_define<T>;
-
-template<typename T>
-concept buffer_output_stream = output_stream<T>&&::fast_io::details::streamreflect::has_obuffer_basic_ops<T>;
-
-template<typename T>
-concept noline_buffer_output_stream = buffer_output_stream<T>;
-
-template<typename T>
-concept buffer_input_stream = input_stream<T>&&::fast_io::details::streamreflect::has_ibuffer_basic_ops<T>;
-
-template<typename T>
-concept buffer_io_stream = io_stream<T>&&buffer_input_stream<T>&&buffer_output_stream<T>;
-
-template<typename T>
-concept contiguous_input_stream = buffer_input_stream<T>&&::fast_io::details::streamreflect::has_ibuffer_underflow_never_define<T>;
-
-template<typename T>
-concept constant_size_buffer_output_stream = buffer_output_stream<T>&&::fast_io::details::streamreflect::has_obuffer_constant_size<T>;
-
-template<typename T>
-concept dynamic_output_stream = buffer_output_stream<T>&&::fast_io::details::streamreflect::has_obuffer_reserve_define<T>;
-
-template<typename T>
-concept random_access_output_stream = output_stream<T>&&::fast_io::details::streamreflect::has_output_stream_seek<T>;
-
-template<typename T>
-concept random_access_input_stream = input_stream<T>&&::fast_io::details::streamreflect::has_input_stream_seek<T>;
-
-template<typename T>
-concept random_access_io_stream = io_stream<T>&&
-	random_access_input_stream<T>&&
-	random_access_output_stream<T>&&
-	::fast_io::details::streamreflect::has_io_stream_seek<T>;
-
-template<typename T>
-concept mutex_output_stream = output_stream<T>&&::fast_io::details::streamreflect::has_output_stream_lock<T>;
-
-template<typename T>
-concept mutex_input_stream = input_stream<T>&&::fast_io::details::streamreflect::has_input_stream_lock<T>;
-
-template<typename T>
-concept mutex_io_stream = io_stream<T>&&
-	mutex_input_stream<T>&&
-	mutex_output_stream<T>&&
-	::fast_io::details::streamreflect::has_io_stream_lock<T>;
+/**
+ * A concept that determines if a given type satisfies the requirements of an input/output stream.
+ *
+ * A type satisfies the requirements of an input/output stream if it has member functions for both reading and
+ * writing data to it, and can be used as an argument for both input and output functions. The concept checks if
+ * the given type meets these requirements by using the `has_input_or_io_stream_ref_define`, `has_output_or_io_stream_ref_define`,
+ * and `has_io_stream_ref_define` traits defined in the `::fast_io::details` namespace.
+ *
+ * @tparam stmtype The type to check for input/output stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of an input/output stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept io_stream = output_stream<stmtype>&&input_stream<stmtype>&&::fast_io::details::has_io_stream_ref_define<stmtype>;
 
 
-template<typename T>
+/**
+ * A concept that determines if a given type satisfies the requirements of a buffered output stream.
+ *
+ * A type satisfies the requirements of a buffered output stream if it has member functions for writing data to
+ * a buffer and flushing the buffer to the output stream, and can be used as an argument for output functions.
+ * The concept checks if the given type meets these requirements by using the `has_output_or_io_stream_ref_define`
+ * and `has_obuffer_basic_ops` traits defined in the `::fast_io::details` and `::fast_io::details::streamreflect` namespaces,
+ * respectively.
+ *
+ * @tparam stmtype The type to check for buffered output stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a buffered output stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept buffer_output_stream = output_stream<stmtype>&&::fast_io::details::streamreflect::has_obuffer_basic_ops<stmtype>;
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a non-line-buffered output stream.
+ *
+ * A type satisfies the requirements of a non-line-buffered output stream if it has member functions for writing
+ * data to a buffer and flushing the buffer to the output stream without any special handling for line buffering,
+ * and can be used as an argument for output functions. The concept checks if the given type meets these requirements
+ * by using the `buffer_output_stream` concept and the `has_obuffer_is_line_buffering_define` trait defined in the
+ * `::fast_io::details::streamreflect` namespace.
+ *
+ * The reason the `noline_buffer_output_stream` concept exists is because the GNU C library's `stdio`'s `FILE*` has
+ * a weird way of describing the output buffer pointer. The current buffer pointer may exceed the end buffer pointer
+ * for output due to line buffering. For over 99% of `buffer_output_stream` types, they satisfy the requirements of
+ * `noline_buffer_output_stream`, meaning the current buffer pointer cannot surpass the end buffer pointer.
+ *
+ * @tparam stmtype The type to check for non-line-buffered output stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a non-line-buffered output stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept noline_buffer_output_stream = buffer_output_stream<stmtype>&&!::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<stmtype>;
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a buffered input stream.
+ *
+ * A type satisfies the requirements of a buffered input stream if it has member functions for reading data from
+ * a buffer, filling the buffer from the input stream, and resetting the buffer pointer, and can be used as an argument
+ * for input functions. The concept checks if the given type meets these requirements by using the `input_stream`
+ * concept and the `has_ibuffer_basic_ops` trait defined in the `::fast_io::details::streamreflect` namespace.
+ *
+ * @tparam stmtype The type to check for buffered input stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a buffered input stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept buffer_input_stream = input_stream<stmtype>&&::fast_io::details::streamreflect::has_ibuffer_basic_ops<stmtype>;
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a buffered I/O stream.
+ *
+ * A type satisfies the requirements of a buffered I/O stream if it has member functions for reading and writing
+ * data from/to a buffer, filling the buffer from the input stream, resetting the buffer pointer, and flushing the
+ * buffer to the output stream, and can be used as an argument for I/O functions. The concept checks if the given type
+ * meets these requirements by using the `io_stream`, `buffer_input_stream`, and `buffer_output_stream` concepts.
+ *
+ * @tparam stmtype The type to check for buffered I/O stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a buffered I/O stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept buffer_io_stream = io_stream<stmtype>&&buffer_input_stream<stmtype>&&buffer_output_stream<stmtype>;
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a contiguous input stream.
+ *
+ * A type satisfies the requirements of a contiguous input stream if it has member functions for reading data from
+ * a contiguous memory buffer, and can be used as an argument for I/O functions. The concept checks if the given type
+ * meets these requirements by using the `buffer_input_stream` concept, and by checking if the input buffer is never
+ * underflowed by using the `has_ibuffer_underflow_never_define` trait.
+ *
+ * @tparam stmtype The type to check for contiguous input stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a contiguous input stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept contiguous_input_stream = buffer_input_stream<stmtype>&&::fast_io::details::streamreflect::has_ibuffer_underflow_never_define<stmtype>;
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a constant size buffer output stream.
+ *
+ * A type satisfies the requirements of a constant size buffer output stream if it has member functions for writing
+ * data to a fixed-size buffer, and can be used as an argument for I/O functions. The concept checks if the given type
+ * meets these requirements by using the `buffer_output_stream` concept, and by checking if the output buffer has a
+ * fixed size by using the `has_obuffer_constant_size` trait.
+ *
+ * @tparam stmtype The type to check for constant size buffer output stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a constant size buffer output stream, `false`
+ * otherwise.
+ */
+template<typename stmtype>
+concept constant_size_buffer_output_stream = buffer_output_stream<stmtype>&&::fast_io::details::streamreflect::has_obuffer_constant_size<stmtype>;
+
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a dynamic output stream.
+ *
+ * A type satisfies the requirements of a dynamic output stream if it has member functions for writing data to a dynamic
+ * buffer that can resize as necessary, and can be used as an argument for I/O functions. The concept checks if the given
+ * type meets these requirements by using the `buffer_output_stream` concept, and by checking if the output buffer can
+ * resize as necessary by using the `has_obuffer_reserve_define` trait.
+ *
+ * @tparam stmtype The type to check for dynamic output stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a dynamic output stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept dynamic_output_stream = buffer_output_stream<stmtype>&&::fast_io::details::streamreflect::has_obuffer_reserve_define<stmtype>;
+
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a random-access output stream.
+ *
+ * A type satisfies the requirements of a random-access output stream if it has member functions for writing data to an
+ * output buffer, and can seek to a specified position in the output buffer. The concept checks if the given type meets
+ * these requirements by using the `output_stream` concept, and by checking if the type has the `has_output_stream_seek`
+ * trait.
+ *
+ * @tparam stmtype The type to check for random-access output stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a random-access output stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept random_access_output_stream = output_stream<stmtype>&&::fast_io::details::streamreflect::has_output_stream_seek<stmtype>;
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a random-access input stream.
+ *
+ * A type satisfies the requirements of a random-access input stream if it has member functions for reading data from an
+ * input buffer, and can seek to a specified position in the input buffer. The concept checks if the given type meets
+ * these requirements by using the `input_stream` concept, and by checking if the type has the `has_input_stream_seek`
+ * trait.
+ *
+ * @tparam stmtype The type to check for random-access input stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a random-access input stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept random_access_input_stream = input_stream<stmtype>&&::fast_io::details::streamreflect::has_input_stream_seek<stmtype>;
+
+/**
+ * A concept that determines if a given type satisfies the requirements of a random-access I/O stream.
+ *
+ * A type satisfies the requirements of a random-access I/O stream if it has member functions for reading and writing
+ * data to and from an input/output buffer, and can seek to a specified position in the input/output buffer. The concept
+ * checks if the given type meets these requirements by using the `io_stream` concept, and by checking if the type has
+ * the `has_io_stream_seek` trait.
+ *
+ * @tparam stmtype The type to check for random-access I/O stream requirements.
+ *
+ * @returns `true` if the given type satisfies the requirements of a random-access I/O stream, `false` otherwise.
+ */
+template<typename stmtype>
+concept random_access_io_stream = io_stream<stmtype>&&
+	random_access_input_stream<stmtype>&&
+	random_access_output_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_io_stream_seek<stmtype>;
+
+/**
+ * @brief A concept for output streams that have a lock mechanism to ensure thread-safety.
+ * 
+ * A type T satisfies the `mutex_output_stream` concept if it is an output stream and
+ * has a lock mechanism for thread-safe operations. This concept is useful when multiple
+ * threads may be accessing the same output stream and there is a possibility of data races.
+ *
+ * @tparam T The type to be checked.
+ */
+template<typename stmtype>
+concept mutex_output_stream = output_stream<stmtype>&&::fast_io::details::streamreflect::has_output_stream_lock<stmtype>;
+
+/**
+ * @brief A concept for input streams that have a lock mechanism to ensure thread-safety.
+ * 
+ * A type T satisfies the `mutex_input_stream` concept if it is an input stream and
+ * has a lock mechanism for thread-safe operations. This concept is useful when multiple
+ * threads may be accessing the same input stream and there is a possibility of data races.
+ *
+ * @tparam T The type to be checked.
+ */
+template<typename stmtype>
+concept mutex_input_stream = input_stream<stmtype>&&::fast_io::details::streamreflect::has_input_stream_lock<stmtype>;
+
+/**
+ * @brief A concept for I/O streams that have a lock mechanism to ensure thread-safety.
+ * 
+ * A type T satisfies the `mutex_io_stream` concept if it is an I/O stream and
+ * has a lock mechanism for thread-safe operations on both input and output. This concept
+ * is useful when multiple threads may be accessing the same I/O stream and there is a
+ * possibility of data races.
+ *
+ * @tparam T The type to be checked.
+ */
+template<typename stmtype>
+concept mutex_io_stream = io_stream<stmtype>&&
+	mutex_input_stream<stmtype>&&
+	mutex_output_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_io_stream_lock<stmtype>;
+
+/**
+ * @brief Concept for determining if a stream provides byte-addressed output operations. 
+ * This may allow a direct interaction with Unix writev(2) and pwritev(2) syscalls.
+ * 
+ * @tparam stmtype The type to check for byte output operations.
+ */
+template<typename stmtype>
 concept byte_output_stream =
-output_stream<T>&&
-(::fast_io::details::streamreflect::has_write_some_bytes_define<T>||
-::fast_io::details::streamreflect::has_write_all_bytes_define<T>||
-::fast_io::details::streamreflect::has_scatter_write_some_bytes_define<T>||
-::fast_io::details::streamreflect::has_scatter_write_all_bytes_define<T>);
+	output_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_any_of_byte_write_operations<stmtype>;
 
-template<typename T>
+/**
+ * Concept for determining if a stream provides byte-addressed input operations.
+ * This may allow a direct interaction with UNIX readv(2) preadv(2) syscalls.
+ * @tparam stmtype The type to check for byte input operations.
+ */
+template<typename stmtype>
 concept byte_input_stream =
-input_stream<T>&&
-(::fast_io::details::streamreflect::has_read_some_bytes_define<T>||
-::fast_io::details::streamreflect::has_read_all_bytes_define<T>||
-::fast_io::details::streamreflect::has_scatter_read_some_bytes_define<T>||
-::fast_io::details::streamreflect::has_scatter_read_all_bytes_define<T>);
+	input_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_any_of_byte_read_operations<stmtype>;
 
-template<typename T>
-concept byte_io_stream = io_stream<T>&&byte_input_stream<T>&&byte_output_stream<T>;
+/**
+ * Concept for determining if a stream provides byte-addressed input operations.
+ * This may allow a direct interaction with UNIX readv(2) preadv(2) syscalls.
+ * @tparam stmtype The type to check for byte input operations.
+ */
+template<typename stmtype>
+concept byte_io_stream =
+	io_stream<stmtype>&&
+	byte_input_stream<stmtype>&&
+	byte_output_stream<stmtype>;
 
-template<typename T>
+template<typename stmtype>
 concept zero_copy_input_stream =
-input_stream<T>&&::fast_io::details::streamreflect::has_zero_copy_in_handle<T>;
+input_stream<stmtype>&&::fast_io::details::streamreflect::has_zero_copy_in_handle<stmtype>;
 
-template<typename T>
+template<typename stmtype>
 concept zero_copy_output_stream =
-output_stream<T>&&::fast_io::details::streamreflect::has_zero_copy_out_handle<T>;
+output_stream<stmtype>&&::fast_io::details::streamreflect::has_zero_copy_out_handle<stmtype>;
 
-#if 0
-#if 1
-template<typename T>
-concept stream = details::input_stream_impl<T>||details::output_stream_impl<T>;
+/**
+ * Concept for a stream that provides status operations for input.
+ * This allows users to override the behaviors for scan functions for custom behaviors at compile time.
+ * A typical example would be to support fast_io's locale system.
+ * @tparam stmtype The type to check for status input operations.
+ */
+template<typename stmtype>
+concept status_input_stream = ::fast_io::details::streamreflect::statusinputstreamdef<stmtype>;
 
-template<typename T>
-concept input_stream = stream<T>&&details::input_stream_impl<T>;
+/**
+ * Concept for a stream that provides status operations for output.
+ * This allows users to override the behaviors for print functions for custom behaviors at compile time.
+ * A typical example would be to support fast_io's locale system.
+ * @tparam stmtype The type to check for status output operations.
+ */
+template<typename stmtype>
+concept status_output_stream = ::fast_io::details::streamreflect::statusoutputstreamdef<stmtype>;
 
-template<typename T>
-concept output_stream = stream<T>&&details::output_stream_impl<T>;
+/**
+ * Concept for a stream that provides status operations for both input and output.
+ * This allows users to override the behaviors for print and scan functions for custom behaviors at compile time.
+ * A typical example would be to support fast_io's locale system.
+ * @tparam stmtype The type to check for status input and output operations.
+ */
+template<typename stmtype>
+concept status_io_stream = status_input_stream<stmtype>&&
+			status_input_stream<stmtype>&&
+			::fast_io::details::streamreflect::statusiostreamdef<stmtype>;
 
-
-#else
-template<typename T>
-concept stream = ::fast_io::details::streamreflect::inputstreamdef<T>||
-	::fast_io::details::streamreflect::outputstreamdeff<T>;
-
-template<typename T>
-concept input_stream = stream<T>&&::fast_io::details::streamreflect::inputstreamdef<T>;
-
-template<typename T>
-concept output_stream = stream<T>&&::fast_io::details::streamreflect::outputstreamdef<T>;
-#endif
-
-template<typename T>
-concept output_stream_with_writeln = output_stream<T>&&requires(T&& t,typename std::remove_cvref_t<T>::char_type const* p)
-{
-	writeln(t,p,p);
-};
-
-template<typename T>
-concept mutex_stream = stream<T>&&details::mutex_stream_impl<T>;
-
-template<typename T>
-concept random_access_stream = stream<T>&&details::random_access_stream_impl<T>;
-
-template<typename T>
-concept io_stream = input_stream<T>&&output_stream<T>;
-
-template<typename T>
-concept flush_output_stream = output_stream<T>&&details::flush_output_stream_impl<T>;
-
-template<typename T>
-concept buffer_input_stream = input_stream<T>&&details::buffer_input_stream_impl<T>;
-
-template<typename T>
-concept contiguous_input_stream = buffer_input_stream<T>&&details::contiguous_input_stream_impl<T>;
-
-template<typename T>
-concept buffer_output_stream = output_stream<T>&&details::buffer_output_stream_impl<T>;
-
-template<typename T>
-concept constant_buffer_output_stream = buffer_output_stream<T>&&details::constant_buffer_output_stream_impl<T>;
-
-template<typename T>
-concept contiguous_output_stream = buffer_output_stream<T>&&details::contiguous_output_stream_impl<T>;
-
-template<typename T>
-concept buffer_io_stream = buffer_input_stream<T>&&buffer_output_stream<T>&&io_stream<T>;
-
-template<typename T>
-concept dynamic_output_stream = buffer_output_stream<T>&&details::dynamic_output_stream_impl<T>;
-
-/*
-noline_buffer_output_stream ensures obuffer_begin(out)<=obuffer_curr(out)<=obuffer_end(out)
-line_buffer_output_stream may end up a situation obuffer_curr(out)>obuffer_end(out), triggering overflow.
-That is how glibc implements FILE*.
-In fast_io, all fast_io directly supported stream ensures noline_buffer_output_stream
-*/
-template<typename T>
-concept noline_buffer_output_stream = buffer_output_stream<T>&&!requires(T t)
-{
-	{obuffer_is_line_buffering(t)}->std::convertible_to<bool>;
-};
-
-template<typename T>
-concept zero_copy_input_stream = input_stream<T>&&details::zero_copy_input_stream_impl<T>;
-
-template<typename T>
-concept zero_copy_output_stream = output_stream<T>&&details::zero_copy_output_stream_impl<T>;
-
-template<typename T>
-concept zero_copy_io_stream = zero_copy_input_stream<T>&&zero_copy_output_stream<T>;
-
-template<typename T>
-concept scatter_input_stream = input_stream<T>&&details::scatter_input_stream_impl<T>;
-
-template<typename T>
-concept scatter_output_stream = output_stream<T>&&details::scatter_output_stream_impl<T>;
-
-template<typename T>
-concept scatter_constant_output_stream = output_stream<T>&&details::scatter_constant_output_stream_impl<T>;
-
-#if 0
-
-template<typename T>
-concept async_stream = details::async_input_stream_impl<T>||details::async_output_stream_impl<T>;
-
-template<typename T>
-concept async_input_stream = async_stream<T>&&details::async_input_stream_impl<T>;
-
-template<typename T>
-concept async_output_stream = async_stream<T>&&details::async_output_stream_impl<T>;
-
-template<typename T>
-concept async_io_stream = async_input_stream<T>&&async_output_stream<T>;
-
-template<typename T>
-concept async_scatter_input_stream = async_stream<T>&&details::async_scatter_input_stream_impl<T>;
-
-template<typename T>
-concept async_scatter_output_stream = async_stream<T>&&details::async_scatter_output_stream_impl<T>;
-
-template<typename T>
-concept async_scatter_io_stream = async_input_stream<T>&&async_scatter_output_stream<T>;
-
-#endif
-
-template<typename T>
-concept closable_stream = stream<T>&&requires(T t)
-{
-	{t.close()}->std::same_as<void>;
-};
-
-template<typename T>
-concept secure_clear_requirement_stream = stream<T>&&requires(T stm)
-{
-	require_secure_clear(stm);
-};
-
-template<typename T>
-concept redirect_stream = stream<T>&&details::redirect_stream_impl<T>;
-
-template<typename T>
-concept capacity_available_buffer_input_stream = buffer_input_stream<T>&&requires(T stm)
-{
-	{ibuffer_cap(stm)}->std::convertible_to<typename std::remove_cvref_t<T>::char_type*>;
-};
-
-template<typename T>
-concept value_based_stream = requires(T t)
-{
-	{io_value_handle(t)};
-}&&
-(std::is_trivially_copyable_v<T> ||
-requires(T t)
-{
-	typename T::native_handle_type;
-	t.release();
-	t.native_handle();
-	requires std::is_trivially_copyable_v<typename T::native_handle_type>;
-});
-
-template<typename T>
-concept try_get_input_stream=input_stream<T>&&requires(T in)
-{
-	{try_get(in)}->std::convertible_to<try_get_result<typename T::char_type>>;
-};
-
-/*
-status streams deal with special stream types like streams which need locale
-You can define your own behavior with it
-*/
-
-template<typename T>
-concept status_output_stream = requires(T out)
-{
-	print_status_define<false>(out,1,1,1,1,1,1,1,1,1,1);
-	print_status_define<true>(out,1,1,1,1,1,1,1,1,1,1);
-};
-
-/*
-input requires a whole overhual because C++ exception is horrible.
-*/
-
-template<typename T>
-concept status_input_stream = requires(T in)
-{
-	{scan_status_define(in)}->std::convertible_to<bool>;
-};
-
-#endif
 
 }

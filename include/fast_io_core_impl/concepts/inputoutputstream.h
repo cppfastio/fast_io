@@ -15,4 +15,10 @@ concept has_io_stream_lock = requires(T&& iostm)
 	::fast_io::details::io_stream_lock_impl(::fast_io::manipulators::io_stream_ref(iostm));
 };
 
+template<typename T>
+concept statusiostreamdef = requires(T&& instm)
+{
+	{::fast_io::manipulators::status_io_stream_ref(instm)} noexcept;
+};
+
 }

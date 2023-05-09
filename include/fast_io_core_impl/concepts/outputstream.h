@@ -31,6 +31,12 @@ concept has_obuffer_all_ops = has_obuffer_basic_ops<T>&&(requires(T&& outstm,typ
 });
 
 template<typename T>
+concept has_obuffer_is_line_buffering_define = requires(T&& outstm)
+{
+	{obuffer_is_line_buffering_define(::fast_io::manipulators::output_stream_ref(outstm))}->std::convertible_to<bool>;
+};
+
+template<typename T>
 concept has_obuffer_some_ops = has_obuffer_basic_ops<T>&&(requires(T&& outstm,typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type const *cptr)
 {
 	obuffer_write_some_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),cptr,cptr);
@@ -110,6 +116,13 @@ concept has_obuffer_overflow_never_define = requires(T&& outstm)
 };
 
 template<typename T>
+concept has_any_of_byte_write_operations =
+::fast_io::details::streamreflect::has_write_some_bytes_define<T>||
+::fast_io::details::streamreflect::has_write_all_bytes_define<T>||
+::fast_io::details::streamreflect::has_scatter_write_some_bytes_define<T>||
+::fast_io::details::streamreflect::has_scatter_write_all_bytes_define<T>;
+
+template<typename T>
 concept has_zero_copy_out_handle = requires(T&& instm)
 {
 	zero_copy_out_handle(::fast_io::manipulators::output_stream_ref(instm));
@@ -119,6 +132,12 @@ template<typename T>
 concept outputstreamdef = requires(T&& instm)
 {
 	{::fast_io::manipulators::output_stream_ref(instm)} noexcept;
+};
+
+template<typename T>
+concept statusoutputstreamdef = requires(T&& instm)
+{
+	{::fast_io::manipulators::status_output_stream_ref(instm)} noexcept;
 };
 
 }

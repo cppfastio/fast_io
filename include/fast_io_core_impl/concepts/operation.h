@@ -82,12 +82,6 @@ concept status_io_print_forwardable=std::integral<char_type>&&requires(T&& t)
 	status_io_print_forward(io_alias_type<char_type>,::fast_io::freestanding::forward<T>(t));
 };
 
-template<typename io_device,typename... Args>
-concept io_controllable=requires(io_device device,Args&& ...args)
-{
-	io_control(device,::fast_io::freestanding::forward<Args>(args)...);
-};
-
 struct manip_tag_t{};
 
 template<typename T>

@@ -68,27 +68,30 @@
 #include"fast_io_core_impl/secure_clear_guard.h"
 #include"fast_io_core_impl/local_new_array_ptr.h"
 #include"fast_io_core_impl/dynamic_io_buffer.h"
-#include"fast_io_core_impl/temporary_buffer.h"
 // Although std::ranges is not freestanding, you can use the function by constructing a range_view_t, which relies on iterators not ranges
 #include"fast_io_core_impl/range_view.h"
 //#include"fast_io_core_impl/manip/impl.h"
 #include"fast_io_core_impl/mode.h"
 #include"fast_io_core_impl/perms.h"
-#include"fast_io_core_impl/seek.h"
-
-#include"fast_io_core_impl/igenerator.h"
 #if 0
-#include"fast_io_core_impl/io_ref.h"
+#include"fast_io_core_impl/operations/impl.h"
 #endif
+#include"fast_io_core_impl/igenerator.h"
+
+#if 0
+#include"fast_io_core_impl/seek.h"
 #include"fast_io_core_impl/print_freestanding.h"
 #include"fast_io_core_impl/read_all.h"
+
 #include"fast_io_core_impl/scan_freestanding.h"
+
+#include"fast_io_core_impl/transmit/impl.h"
+#endif
 // This should provide an option macro to disable any generation for table in freestanding environments.
 #include"fast_io_core_impl/integers/integer.h"
 
 #include"fast_io_core_impl/black_hole.h"
 #include"fast_io_core_impl/buffer_view.h"
-#include"fast_io_core_impl/transmit/impl.h"
 
 #ifdef __cpp_lib_source_location
 #include<source_location>
@@ -111,8 +114,11 @@
 #include"fast_io_core_impl/timestamp_counter.h"
 #include"fast_io_core_impl/dll_mode.h"
 #include"fast_io_core_impl/socket/impl.h"
+#if 0
 #include"fast_io_core_impl/to.h"
 #include"fast_io_core_impl/concat/impl.h"
+#endif
+
 #include"fast_io_core_impl/http_header.h"
 
 #if defined(_MSC_VER) && !defined(__clang__)

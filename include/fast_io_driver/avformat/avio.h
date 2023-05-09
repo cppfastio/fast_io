@@ -271,6 +271,10 @@ inline basic_avio_buffer_context<typename rftype::char_type> create_avio_context
 		try
 		{
 			auto ret{read(rft,reinterpret_cast<char_type_ptr>(ptr),reinterpret_cast<char_type_ptr>(ptr)+bufsize)-reinterpret_cast<char_type_ptr>(ptr)};
+			if(ret==0)
+			{
+				return AVERROR_EOF;
+			}
 			return static_cast<int>(ret);
 		}
 		catch(...)
