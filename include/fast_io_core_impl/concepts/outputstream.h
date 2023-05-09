@@ -93,11 +93,58 @@ concept has_scatter_write_all_overflow_define = requires(T&& outstm,::fast_io::b
 	scatter_write_all_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 };
 
-
 template<typename T>
 concept has_obuffer_overflow_never_define = requires(T&& outstm)
 {
 	obuffer_overflow_never_define(::fast_io::manipulators::output_stream_ref(outstm));
+};
+
+template<typename T>
+concept has_pwrite_some_overflow_define = requires(T&& outstm,typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type const* ptr)
+{
+	pwrite_some_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),ptr,ptr,0);
+};
+
+template<typename T>
+concept has_pwrite_all_overflow_define = requires(T&& outstm,typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type const* ptr)
+{
+	pwrite_all_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),ptr,ptr,0);
+};
+
+template<typename T>
+concept has_pwrite_some_bytes_overflow_define = requires(T&& outstm,::std::byte const* ptr)
+{
+	pwrite_some_bytes_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),ptr,ptr,0);
+};
+
+template<typename T>
+concept has_pwrite_all_bytes_overflow_define = requires(T&& outstm,::std::byte const* ptr)
+{
+	pwrite_all_bytes_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),ptr,ptr,0);
+};
+
+template<typename T>
+concept has_scatter_pwrite_some_bytes_overflow_define = requires(T&& outstm,::fast_io::io_scatter_t const *scatter,::std::size_t len)
+{
+	scatter_pwrite_some_bytes_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),scatter,len,0);
+};
+
+template<typename T>
+concept has_scatter_pwrite_all_bytes_overflow_define = requires(T&& outstm,::fast_io::io_scatter_t const *scatter,::std::size_t len)
+{
+	scatter_pwrite_all_bytes_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),scatter,len,0);
+};
+
+template<typename T>
+concept has_scatter_pwrite_some_overflow_define = requires(T&& outstm,::fast_io::basic_io_scatter_t<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type> const *pscatter,::std::size_t len)
+{
+	scatter_pwrite_some_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len,0);
+};
+
+template<typename T>
+concept has_scatter_pwrite_all_overflow_define = requires(T&& outstm,::fast_io::basic_io_scatter_t<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type> const *pscatter,::std::size_t len)
+{
+	scatter_pwrite_all_overflow_define(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len,0);
 };
 
 template<typename T>
@@ -106,6 +153,13 @@ concept has_any_of_byte_write_operations =
 ::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<T>||
 ::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<T>||
 ::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<T>;
+
+template<typename T>
+concept has_any_of_byte_pwrite_operations =
+::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<T>||
+::fast_io::details::streamreflect::has_pwrite_all_bytes_overflow_define<T>||
+::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<T>||
+::fast_io::details::streamreflect::has_scatter_pwrite_all_bytes_overflow_define<T>;
 
 template<typename T>
 concept has_zero_copy_out_handle = requires(T&& instm)

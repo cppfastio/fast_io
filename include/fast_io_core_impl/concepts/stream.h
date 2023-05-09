@@ -259,7 +259,9 @@ concept mutex_io_stream = io_stream<stmtype>&&
 template<typename stmtype>
 concept byte_output_stream =
 	output_stream<stmtype>&&
-	::fast_io::details::streamreflect::has_any_of_byte_write_operations<stmtype>;
+	(::fast_io::details::streamreflect::has_any_of_byte_write_operations<stmtype>
+	||(random_access_output_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_any_of_byte_pwrite_operations<stmtype>));
 
 /**
  * Concept for determining if a stream provides byte-addressed input operations.
@@ -269,7 +271,9 @@ concept byte_output_stream =
 template<typename stmtype>
 concept byte_input_stream =
 	input_stream<stmtype>&&
-	::fast_io::details::streamreflect::has_any_of_byte_read_operations<stmtype>;
+	(::fast_io::details::streamreflect::has_any_of_byte_read_operations<stmtype>||
+	((random_access_input_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_any_of_byte_pread_operations<stmtype>)));
 
 /**
  * Concept for determining if a stream provides byte-addressed input operations.
