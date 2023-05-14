@@ -6,7 +6,7 @@ struct sized_range_view_t
 {
 	using char_type = ch_type;
 	using iterator = It;
-	using value_type = typename ::std::iterator_traits<It>::value_type;
+	using value_type = decltype(io_print_alias(*(It{})));
 	basic_io_scatter_t<char_type> sep;
 	iterator begin;
 	::std::size_t size;
@@ -19,7 +19,6 @@ struct range_view_t
 {
 	using char_type = ch_type;
 	using iterator = It;
-	using value_type = typename ::std::iterator_traits<It>::value_type;
 	basic_io_scatter_t<char_type> sep;
 	iterator begin;
 	iterator end;
@@ -40,7 +39,8 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, s
 		::std::size_t retval{ t.sep.len * t.size - 1 };
 		auto curr_ptr{ t.begin };
 		for (::std::size_t i{}; i != t.size; ++i, ++curr_ptr)
-			retval += print_reserve_size(io_reserve_type<char_type, typename T::value_type>, *curr_ptr);
+			retval += print_reserve_size(io_reserve_type<char_type, typename T::value_type>,
+				::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(*curr_ptr)));
 		return retval;
 	}
 }
@@ -50,13 +50,15 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type, si
 	if (t.size == 0) return ptr;
 	using value_type = typename sized_range_view_t<char_type, It>::value_type;
 	auto curr_ptr{ t.begin };
-	ptr = print_reserve_define(io_reserve_type<char_type, value_type>, ptr, *curr_ptr);
+	ptr = print_reserve_define(io_reserve_type<char_type, value_type>, ptr,
+		::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(*curr_ptr)));
 	++curr_ptr;
 	for (::std::size_t i{}; i != t.size - 1; ++i, ++curr_ptr)
 	{
 		::fast_io::freestanding::non_overlapped_copy_n(t.sep.base, t.sep.len, ptr);
 		ptr += t.sep.len;
-		ptr = print_reserve_define(io_reserve_type<char_type, value_type>, ptr, *curr_ptr);
+		ptr = print_reserve_define(io_reserve_type<char_type, value_type>, ptr,
+			::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(*curr_ptr)));
 	}
 	return ptr;
 }
