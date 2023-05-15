@@ -129,6 +129,10 @@ concept buffer_io_stream = io_stream<stmtype>&&buffer_input_stream<stmtype>&&buf
 template<typename stmtype>
 concept contiguous_input_stream = buffer_input_stream<stmtype>&&::fast_io::details::streamreflect::has_ibuffer_underflow_never_define<stmtype>;
 
+template<typename stmtype>
+concept contiguous_output_stream = buffer_output_stream<stmtype>&&::fast_io::details::streamreflect::has_obuffer_overflow_never_define<stmtype>;
+
+
 /**
  * A concept that determines if a given type satisfies the requirements of a constant size buffer output stream.
  *
@@ -260,7 +264,7 @@ template<typename stmtype>
 concept byte_output_stream =
 	output_stream<stmtype>&&
 	(::fast_io::details::streamreflect::has_any_of_byte_write_operations<stmtype>
-	||(random_access_output_stream<stmtype>&&
+	||(::fast_io::details::streamreflect::has_output_stream_seek_bytes<stmtype>&&
 	::fast_io::details::streamreflect::has_any_of_byte_pwrite_operations<stmtype>));
 
 /**
@@ -272,7 +276,7 @@ template<typename stmtype>
 concept byte_input_stream =
 	input_stream<stmtype>&&
 	(::fast_io::details::streamreflect::has_any_of_byte_read_operations<stmtype>||
-	((random_access_input_stream<stmtype>&&
+	((::fast_io::details::streamreflect::has_input_stream_seek_bytes<stmtype>&&
 	::fast_io::details::streamreflect::has_any_of_byte_pread_operations<stmtype>)));
 
 /**
@@ -285,6 +289,39 @@ concept byte_io_stream =
 	io_stream<stmtype>&&
 	byte_input_stream<stmtype>&&
 	byte_output_stream<stmtype>;
+
+/**
+ * @brief Concept for determining if a stream provides byte-addressed output operations with random access capability.
+ * This may allow direct interaction with unix writev(2), pwritev(2), syscalls, and seek operations.
+ * 
+ * @tparam stmtype The type to check for byte output operations with random access capability.
+ */
+template<typename stmtype>
+concept random_access_byte_output_stream = byte_output_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_output_stream_seek_bytes<stmtype>;
+
+/**
+ * @brief Concept for determining if a stream provides byte-addressed input operations with random access capability.
+ * This may allow direct interaction with unix readv(2), preadv(2), syscalls, and seek operations.
+ * 
+ * @tparam stmtype The type to check for byte input operations with random access capability.
+ */
+template<typename stmtype>
+concept random_access_byte_input_stream = byte_input_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_input_stream_seek_bytes<stmtype>;
+
+/**
+ * @brief Concept for determining if a stream provides byte-addressed input/output operations with random access capability.
+ * This may allow direct interaction with unix readv(2), preadv(2), writev(2), pwritev(2), syscalls, and seek operations.
+ * 
+ * @tparam stmtype The type to check for byte input/output operations with random access capability.
+ */
+template<typename stmtype>
+concept random_access_byte_io_stream = byte_io_stream<stmtype>&&
+	random_access_byte_input_stream<stmtype>&&
+	random_access_byte_output_stream<stmtype>&&
+	::fast_io::details::streamreflect::has_io_stream_seek_bytes<stmtype>;
+
 
 /**
  * Concept for a stream that provides status operations for input.

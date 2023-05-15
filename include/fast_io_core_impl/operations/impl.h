@@ -8,5 +8,6 @@
 #include"pwrite.h"
 #include"pread.h"
 
-#include"print_freestanding.h"
 #endif
+#include"print_freestanding.h"
+
