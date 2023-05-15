@@ -505,7 +505,7 @@ inline constexpr void next_continuous_scatters_next_n(
 		fn();
 		if constexpr(sizeof...(Args)!=0)
 		{
-//			print_controls_impl<line>(optstm,args...);
+			print_controls_impl<line>(optstm,args...);
 		}
 	}
 	}
