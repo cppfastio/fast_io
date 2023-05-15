@@ -702,6 +702,10 @@ template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
+
+#if __has_cpp_attribute(__gnu__::__noinline__)
+[[__gnu__::__noinline__]]
+#endif
 inline constexpr void nobuffer_scatter_write_all_bytes_impl(outstmtype outstm,io_scatter_t const *base,::std::size_t len)
 {
 	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>)
@@ -795,7 +799,7 @@ inline constexpr io_scatter_status_t nobuffer_scatter_write_some_impl(outstmtype
 	{
 		using scatterbyteptr_constaliasptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
-
+[[__gnu__::__may_alias__]]
 #endif
 		= io_scatter_t const *;
 		return ::fast_io::details::nobuffer_scatter_write_some_bytes_impl(outstm,
@@ -919,7 +923,7 @@ inline constexpr void nobuffer_scatter_write_all_impl(outstmtype outstm,
 	{
 		using scatterbyteptr_constaliasptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
-
+		[[__gnu__::__may_alias__]]
 #endif
 		= io_scatter_t const *;
 		::fast_io::details::scatter_write_all_bytes_impl(outstm,
