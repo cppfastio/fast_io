@@ -516,13 +516,13 @@ inline constexpr ::std::size_t ndynamic_print_reserve_size(T t,Args ...args)
 	}
 }
 
-template<::std::size_t n,::std::integral char_type,typename scattertype,typename T,typename ...Args>
+template<bool needprintlf,::std::size_t n,::std::integral char_type,typename scattertype,typename T,typename ...Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void print_n_scatters_reserve(basic_io_scatter_t<scattertype> *pscatters,
+inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *pscatters,
 	char_type *ptr,T t,Args ...args)
 {
 	if constexpr(n!=0)
@@ -578,7 +578,7 @@ inline constexpr void print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 		}
 		if constexpr(1<n)
 		{
-			print_n_scatters_reserve<n-1,char_type>(pscatters,ptr,args...);
+			print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptr,args...);
 		}
 	}
 }
@@ -642,8 +642,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 		else
 		{
 			constexpr
-				::std::size_t mxsize{SIZE_MAX-
-				static_cast<::std::size_t>(res.neededspace+static_cast<::std::size_t>(needprintlf))};
+				::std::size_t mxsize{static_cast<::std::size_t>(res.neededspace+static_cast<::std::size_t>(needprintlf))};
 			if constexpr(!res.hasscatters)
 			{
 				static_assert(!needprintlf||res.neededspace!=SIZE_MAX);
@@ -692,7 +691,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					::std::size_t scatterscount{res.position+static_cast<::std::size_t>(line&&res.position==n)};
 				scatter_type scatters[scatterscount];
 				char_type buffer[res.neededspace];
-				::fast_io::details::decay::print_n_scatters_reserve<res.position,char_type>(scatters,buffer,t,args...);
+				::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...);
 				if constexpr(n==res.position&&line)
 				{
 					scatters[n]=::fast_io::details::decay::line_scatter_common<char_type,
@@ -716,7 +715,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 				::fast_io::details::local_operator_new_array_ptr<char_type> newptr(totalsz);
 				scatter_type scatters[scatterscount];
 				char_type *buffer{newptr.ptr};
-				::fast_io::details::decay::print_n_scatters_reserve<res.position,char_type>(scatters,buffer,t,args...);
+				::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...);
 				if constexpr(n==res.position&&line)
 				{
 					scatters[n]=::fast_io::details::decay::line_scatter_common<char_type,
