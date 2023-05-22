@@ -138,11 +138,6 @@ inline constexpr ::std::byte const* write_some_bytes_cold_impl(outstmtype outsm,
 	else if constexpr(sizeof(char_type)==1&&
 		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>)
 	{
-		using char_type_const_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-		[[__gnu__::__may_alias__]]
-#endif
-		= char_type const*;
 		io_scatter_t sc{first,static_cast<::std::size_t>(last-first)};
 		scatter_write_all_bytes_overflow_define(outsm,__builtin_addressof(sc),1);
 		return last;
