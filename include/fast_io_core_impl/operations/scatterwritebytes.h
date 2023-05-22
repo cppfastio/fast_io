@@ -73,56 +73,68 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(outstmtype ou
 	io_scatter_t const *pscatters,
 	::std::size_t n)
 {
-	using char_type = typename outstmtype::output_char_type;
-	char_type *curr{obuffer_curr(outsm)};
-	char_type *ed{obuffer_end(outsm)};
-
-	::std::size_t buffptrdiff;	
-	if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
+	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
 	{
-		::std::ptrdiff_t pptrdf{ed-curr};
-		if(pptrdf<0)
-		{
-			pptrdf=0;
-		}
-		buffptrdiff=static_cast<::std::size_t>(pptrdf);
+		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
+		return ::fast_io::details::scatter_write_some_bytes_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),pscatters,n);
 	}
-	else
+	else if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outstmtype>)
 	{
-		buffptrdiff=static_cast<::std::size_t>(ed-curr);
-	}
+		using char_type = typename outstmtype::output_char_type;
+		char_type *curr{obuffer_curr(outsm)};
+		char_type *ed{obuffer_end(outsm)};
 
-	::std::size_t total_len{};
-	auto i{pscatters},e{pscatters+n};
-	for(;i!=e;++i)
-	{
-		auto [base,len] = *i;
-		if(len<buffptrdiff)
-#if __has_cpp_attribute(likely)
-		[[likely]]
-#endif
+		::std::size_t buffptrdiff;	
+		if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
 		{
-			curr=::fast_io::details::non_overlapped_copy_n(base,len,curr);
-			buffptrdiff-=len;
-			total_len+=len;
+			::std::ptrdiff_t pptrdf{ed-curr};
+			if(pptrdf<0)
+			{
+				pptrdf=0;
+			}
+			buffptrdiff=static_cast<::std::size_t>(pptrdf);
 		}
 		else
 		{
-			break;
+			buffptrdiff=static_cast<::std::size_t>(ed-curr);
 		}
-	}
-	obuffer_set_curr(outsm,curr);
-	if(i!=e)
-#if __has_cpp_attribute(unlikely)
-[[unlikely]]
+
+		::std::size_t total_len{};
+		auto i{pscatters},e{pscatters+n};
+		for(;i!=e;++i)
+		{
+			auto [base,len] = *i;
+			if(len<buffptrdiff)
+#if __has_cpp_attribute(likely)
+		[[likely]]
 #endif
-	{
-		auto ret{::fast_io::details::scatter_write_some_bytes_cold_impl(outsm,i,static_cast<::std::size_t>(e-i))};
-		ret.total_len=::fast_io::details::intrinsics::add_or_overflow_die(total_len,ret.total_len);
-		ret.position+=static_cast<::std::size_t>(i-pscatters);
-		return ret;
+			{
+				curr=::fast_io::details::non_overlapped_copy_n(base,len,curr);
+				buffptrdiff-=len;
+				total_len+=len;
+			}
+			else
+			{
+				break;
+			}
+		}
+		obuffer_set_curr(outsm,curr);
+		if(i!=e)
+#if __has_cpp_attribute(unlikely)
+		[[unlikely]]
+#endif
+		{
+			auto ret{::fast_io::details::scatter_write_some_bytes_cold_impl(outsm,i,static_cast<::std::size_t>(e-i))};
+			ret.total_len=::fast_io::details::intrinsics::add_or_overflow_die(total_len,ret.total_len);
+			ret.position+=static_cast<::std::size_t>(i-pscatters);
+			return ret;
+		}
+		return {total_len,n,0};
 	}
-	return {total_len,n,0};
+	else
+	{
+		return ::fast_io::details::scatter_write_some_bytes_cold_impl(outsm,pscatters,n);
+	}
 }
 
 template<typename outstmtype>
@@ -199,49 +211,61 @@ inline constexpr void scatter_write_all_bytes_impl(outstmtype outsm,
 	io_scatter_t const *pscatters,
 	::std::size_t n)
 {
-	using char_type = typename outstmtype::output_char_type;
-	char_type *curr{obuffer_curr(outsm)};
-	char_type *ed{obuffer_end(outsm)};
-
-	::std::size_t buffptrdiff;	
-	if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
+	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
 	{
-		::std::ptrdiff_t pptrdf{ed-curr};
-		if(pptrdf<0)
-		{
-			pptrdf=0;
-		}
-		buffptrdiff=static_cast<::std::size_t>(pptrdf);
+		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
+		return ::fast_io::details::scatter_write_all_bytes_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),pscatters,n);
 	}
-	else
+	else if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outstmtype>)
 	{
-		buffptrdiff=static_cast<::std::size_t>(ed-curr);
-	}
+		using char_type = typename outstmtype::output_char_type;
+		char_type *curr{obuffer_curr(outsm)};
+		char_type *ed{obuffer_end(outsm)};
 
-	auto i{pscatters},e{pscatters+n};
-	for(;i!=e;++i)
-	{
-		auto [base,len] = *i;
-		if(len<buffptrdiff)
-#if __has_cpp_attribute(likely)
-		[[likely]]
-#endif
+		::std::size_t buffptrdiff;	
+		if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
 		{
-			curr=::fast_io::details::non_overlapped_copy_n(base,len,curr);
-			buffptrdiff-=len;
+			::std::ptrdiff_t pptrdf{ed-curr};
+			if(pptrdf<0)
+			{
+				pptrdf=0;
+			}
+			buffptrdiff=static_cast<::std::size_t>(pptrdf);
 		}
 		else
 		{
-			break;
+			buffptrdiff=static_cast<::std::size_t>(ed-curr);
+		}
+
+		auto i{pscatters},e{pscatters+n};
+		for(;i!=e;++i)
+		{
+			auto [base,len] = *i;
+			if(len<buffptrdiff)
+#if __has_cpp_attribute(likely)
+			[[likely]]
+#endif
+			{
+				curr=::fast_io::details::non_overlapped_copy_n(base,len,curr);
+				buffptrdiff-=len;
+			}
+			else
+			{
+				break;
+			}
+		}
+		obuffer_set_curr(outsm,curr);
+		if(i!=e)
+#if __has_cpp_attribute(unlikely)
+		[[unlikely]]
+#endif
+		{
+			return ::fast_io::details::scatter_write_all_bytes_cold_impl(outsm,i,static_cast<::std::size_t>(e-i));
 		}
 	}
-	obuffer_set_curr(outsm,curr);
-	if(i!=e)
-#if __has_cpp_attribute(unlikely)
-	[[unlikely]]
-#endif
+	else
 	{
-		return ::fast_io::details::scatter_write_all_bytes_cold_impl(outsm,i,static_cast<::std::size_t>(e-i));
+		return ::fast_io::details::scatter_write_all_bytes_cold_impl(outsm,pscatters,n);
 	}
 }
 
