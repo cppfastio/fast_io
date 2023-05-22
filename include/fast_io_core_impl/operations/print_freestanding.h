@@ -60,31 +60,48 @@ inline constexpr contiguous_scatter_result find_continuous_scatters_n()
 	return ret;
 }
 
-#if 0
-template<::std::integral char_type,typename Arg,typename ...Args>
-inline constexpr bool know_last_is_lf_n()
+struct scatter_rsv_result
 {
-	if constexpr(sizeof...(Args)!=0)
+::std::size_t position{};
+::std::size_t neededspace{};
+};
+
+template<bool findscatter,::std::integral char_type,typename Arg,typename ...Args>
+inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
+{
+	if constexpr(::fast_io::reserve_printable<char_type,Arg>&&!findscatter)
 	{
-		return know_last_is_lf_n<char_type,Args...>();
-	}
-	else
-	{
-		if constexpr(::fast_io::reserve_printable<char_type,Arg>)
+		constexpr
+			::std::size_t sz{print_reserve_size(::fast_io::io_reserve_type<char_type,Arg>)};
+		if constexpr(sizeof...(Args)==0)
 		{
-			return true;
-		}
-		else if constexpr(::fast_io::dynamic_reserve_printable<char_type,Arg>)
-		{
-			return true;
+			return {1,sz};
 		}
 		else
 		{
-			return false;
+			auto res{find_continuous_scatters_reserve_n<findscatter,char_type,Args...>()};
+			return {res.position+1,
+			::fast_io::details::intrinsics::add_or_overflow_die_chain(res.neededspace,sz)};
 		}
 	}
+	else if constexpr(::fast_io::scatter_printable<char_type,Arg>&&findscatter)
+	{
+		if constexpr(sizeof...(Args)==0)
+		{
+			return {1,0};
+		}
+		else
+		{
+			auto res{find_continuous_scatters_reserve_n<findscatter,char_type,Args...>()};
+			return {res.position+1,0};
+		}
+	}
+	else
+	{
+		return {0,0};
+	}
 }
-#endif
+
 template<typename output,std::size_t N>
 inline constexpr bool constant_buffer_output_stream_require_size_constant_impl =
 	(N<obuffer_constant_size(::fast_io::io_reserve_type<typename output::output_char_type,output>));
@@ -630,7 +647,6 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 			::fast_io::dynamic_reserve_printable<char_type,nocvreft>)
 		{
 			auto ptred{print_reserve_define(::fast_io::io_reserve_type<char_type,nocvreft>,ptr,t)};
-			
 			if constexpr(sizeof...(Args)!=0&&::fast_io::details::decay::print_next_is_reserve<char_type,Args...>())
 			{
 				return ::fast_io::details::decay::print_n_scatters_reserve_cont<needprintlf,n-1,char_type>(pscatters,ptr,ptred,args...);
@@ -889,6 +905,111 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 	}
 }
 
+template<bool line,typename outputstmtype,::std::size_t skippings=0,typename T,typename ...Args>
+inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args ...args)
+{
+	if constexpr(skippings!=0)
+	{
+		::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,skippings-1>(optstm,args...);
+	}
+	else
+	{
+		using char_type = typename outputstmtype::output_char_type;
+		static_assert(SIZE_MAX!=sizeof...(Args));
+		constexpr
+			::std::size_t n{sizeof...(Args)+static_cast<::std::size_t>(1)};
+		constexpr auto scatters_result{::fast_io::details::decay::find_continuous_scatters_reserve_n<true,char_type>()};
+		using scatter_type = ::std::conditional_t<byte_output_stream<outputstmtype>,
+			io_scatter_t,basic_io_scatter_t<char_type>>;
+		if constexpr(scatters_result.position!=0)
+		{
+			if constexpr(line)
+			{
+				static_assert(scatters_result.position!=SIZE_MAX);
+			}
+			constexpr
+				bool needprintlf{n==scatters_result.position&&line};
+			constexpr
+				::std::size_t scatterscount{scatters_result.position+static_cast<::std::size_t>(needprintlf)};
+			scatter_type scatters[scatterscount];
+			::fast_io::details::decay::print_n_scatters<needprintlf,scatters_result.position,char_type>(scatters,t,args...);
+			if constexpr(::fast_io::byte_output_stream<outputstmtype>)
+			{
+				::fast_io::operations::scatter_write_all_bytes(optstm,scatters,scatterscount);
+			}
+			else
+			{
+				::fast_io::operations::scatter_write_all(optstm,scatters,scatterscount);
+			}
+			if constexpr(scatters_result.position!=n)
+			{
+				::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position>(optstm,args...);
+			}
+		}
+		else
+		{
+			constexpr auto rsvresult{::fast_io::details::decay::find_continuous_scatters_reserve_n<false,char_type>()};
+			if constexpr(rsvresult.position!=0)
+			{
+				constexpr
+					bool needprintlf{n==rsvresult.position&&line};
+				constexpr
+					::std::size_t buffersize{rsvresult.neededspace+
+					static_cast<::std::size_t>(needprintlf)};
+				char_type* bcurr{obuffer_curr(optstm)};
+				char_type* bend{obuffer_end(optstm)};
+				std::ptrdiff_t const diff(bend-bcurr);
+				bool smaller{static_cast<std::ptrdiff_t>(buffersize)<diff};
+				if constexpr(constant_buffer_output_stream_require_size_impl<outputstmtype,buffersize>)
+				{
+					if(!smaller)[[unlikely]]
+					{
+						obuffer_constant_flush_prepare(optstm);
+						bcurr=obuffer_curr(optstm);
+					}
+					bcurr=::fast_io::details::decay::print_n_reserve<rsvresult.position,char_type>(bcurr,t,args...);
+					if constexpr(needprintlf)
+					{
+						*bcurr=::fast_io::char_literal_v<u8'\n',char_type>;;
+						++bcurr;
+					}
+					obuffer_set_curr(optstm,bcurr);
+				}
+				else
+				{
+					char_type buffer[buffersize];
+					if(!smaller)[[unlikely]]
+						bcurr=buffer;
+					bcurr=::fast_io::details::decay::print_n_reserve<rsvresult.position,char_type>(bcurr,t,args...);
+					if constexpr(needprintlf)
+					{
+						*bcurr=::fast_io::char_literal_v<u8'\n',char_type>;
+						++bcurr;
+					}
+					if(smaller)[[likely]]
+						obuffer_set_curr(optstm,bcurr);
+					else[[unlikely]]
+					{
+						::fast_io::operations::write_all(optstm,buffer,bcurr);
+					}
+				}
+				if constexpr(scatters_result.position!=n)
+				{
+					::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position>(optstm,args...);
+				}
+			}
+			else
+			{
+				::fast_io::details::decay::print_control_single<line&&sizeof...(args)==0>(optstm,t);
+				if constexpr(sizeof...(args)!=0)
+				{
+					::fast_io::details::decay::print_controls_buffer_impl<line>(optstm,args...);
+				}
+			}
+		}
+	}
+}
+
 }
 
 namespace operations
@@ -928,17 +1049,13 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 	}
 #endif
 	using output_char_type = typename outputstmtype::output_char_type;
-	if constexpr(!::fast_io::buffer_output_stream<outputstmtype>)
+	if constexpr(::fast_io::buffer_output_stream<outputstmtype>)
 	{
-		return ::fast_io::details::decay::print_controls_impl<line>(optstm,args...);
-	}
-	else if constexpr(line)
-	{
-		::fast_io::details::decay::print_controls_line<line>(optstm,args...);
+		return ::fast_io::details::decay::print_controls_buffer_impl(optstm,args...);
 	}
 	else
 	{
-		(::fast_io::details::decay::print_control_single<false>(optstm,args),...);
+		return ::fast_io::details::decay::print_controls_impl<line>(optstm,args...);
 	}
 }
 
