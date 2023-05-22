@@ -19,7 +19,6 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>)
 	{
-		::std::size_t total_len{};
 		for(::std::size_t i{};i!=n;++i)
 		{
 			auto [baseb,len] = pscatters[i];
@@ -27,30 +26,18 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 			auto ed{base+len};
 			auto written{::fast_io::details::write_some_bytes_impl(outsm,base,ed)};
 			::std::size_t sz{static_cast<::std::size_t>(written-base)};
-			total_len+=sz;
 			if(sz!=len)
 			{
-				return {total_len,i,sz};
+				return {i,sz};
 			}
 		}
-		return {total_len,n,0};
+		return {n,0};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>)
 	{
-		scatter_write_all_bytes_overflow_define(outsm,pscatters,n);
-		return {::fast_io::scatter_total_size(pscatters,n),n,0};
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>)
-	{
-		::std::size_t total_len{};
-		for(::std::size_t i{};i!=n;++i)
-		{
-			auto [baseb,len] = pscatters[i];
-			::std::byte const *base{reinterpret_cast<::std::byte const*>(baseb)};
-			::fast_io::details::write_all_bytes_impl(outsm,base,base+len);
-			total_len+=len;
-		}
-		return {total_len,n,0};
+		::fast_io::details::scatter_write_all_bytes_cold_impl(outsm,pscatters,n);
+		return {n,0};
 	}
 	else if constexpr(sizeof(char_type)==1&&
 	(
@@ -101,8 +88,6 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(outstmtype ou
 		{
 			buffptrdiff=static_cast<::std::size_t>(ed-curr);
 		}
-
-		::std::size_t total_len{};
 		auto i{pscatters},e{pscatters+n};
 		for(;i!=e;++i)
 		{
@@ -114,7 +99,6 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(outstmtype ou
 			{
 				curr=::fast_io::details::non_overlapped_copy_n(base,len,curr);
 				buffptrdiff-=len;
-				total_len+=len;
 			}
 			else
 			{
@@ -128,11 +112,10 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(outstmtype ou
 #endif
 		{
 			auto ret{::fast_io::details::scatter_write_some_bytes_cold_impl(outsm,i,static_cast<::std::size_t>(e-i))};
-			ret.total_len=::fast_io::details::intrinsics::add_or_overflow_die(total_len,ret.total_len);
 			ret.position+=static_cast<::std::size_t>(i-pscatters);
 			return ret;
 		}
-		return {total_len,n,0};
+		return {n,0};
 	}
 	else
 	{
@@ -176,7 +159,8 @@ inline constexpr void scatter_write_all_bytes_cold_impl(outstmtype outsm,
 			if(pisc)
 			{
 				auto pi = pscatters[ret.position];
-				::fast_io::details::write_all_bytes_impl(outsm,pi.base+pisc,pi.len);
+				::std::byte const *base{reinterpret_cast<::std::byte const*>(pi.base)};
+				::fast_io::details::write_all_bytes_impl(outsm,base+pisc,base+pi.len);
 				++retpos;
 			}
 			pscatters+=retpos;

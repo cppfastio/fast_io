@@ -7,8 +7,10 @@
 #include"noscatterwrite.h"
 #include"scatterwrite.h"
 #include"scatterwritebytes.h"
+#include"pwrite.h"
 #include"write.h"
-
+#include"scatterpwrite.h"
+#include"scatterpwritebytes.h"
 #include"print_freestanding.h"
 
 

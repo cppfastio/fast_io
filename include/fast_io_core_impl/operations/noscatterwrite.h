@@ -31,8 +31,9 @@ inline constexpr typename outstmtype::output_char_type const* write_some_cold_im
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>)
 	{
-		basic_io_scatter_t<char_type> sc{first,static_cast<::std::size_t>(last-first)};
-		return scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1).total_size+first;		
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		basic_io_scatter_t<char_type> sc{first,len};
+		return ::fast_io::scatter_status_one_size(scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1),len)+first;
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>)
 	{
@@ -41,8 +42,9 @@ inline constexpr typename outstmtype::output_char_type const* write_some_cold_im
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>)
 	{
-		basic_io_scatter_t<char_type> sc{first,static_cast<::std::size_t>(last-first)};
-		return scatter_write_all_overflow_define(outsm,__builtin_addressof(sc),1).total_size+first;
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		basic_io_scatter_t<char_type> sc{first,len};
+		return ::fast_io::scatter_status_one_size(scatter_write_all_overflow_define(outsm,__builtin_addressof(sc),1),len)+first;
 	}
 	else
 	{
@@ -83,8 +85,9 @@ inline constexpr ::std::byte const* write_some_bytes_cold_impl(outstmtype outsm,
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>)
 	{
-		io_scatter_t sc{first,static_cast<::std::size_t>(last-first)};
-		return scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1).total_size+first;
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		io_scatter_t sc{first,len};
+		return ::fast_io::scatter_status_one_size(scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1),len)+first;
 	}
 	else if constexpr(sizeof(char_type)==1&&
 		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>)
@@ -107,8 +110,9 @@ inline constexpr ::std::byte const* write_some_bytes_cold_impl(outstmtype outsm,
 		[[__gnu__::__may_alias__]]
 #endif
 		= char_type const*;
-		basic_io_scatter_t<char_type> sc{reinterpret_cast<char_type_const_ptr>(first),static_cast<::std::size_t>(last-first)};
-		return scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1).total_size+first;
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		basic_io_scatter_t<char_type> sc{reinterpret_cast<char_type_const_ptr>(first),len};
+		return ::fast_io::scatter_status_one_size(scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1),len)+first;
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>)
 	{
@@ -196,8 +200,9 @@ inline constexpr void write_all_cold_impl(outstmtype outsm,typename outstmtype::
 		{
 			for(;;)
 			{
-				basic_io_scatter_t<char_type> sc{first,static_cast<::std::size_t>(last-first)};
-				first+=scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1).total_size;
+				::std::size_t len{static_cast<::std::size_t>(last-first)};
+				basic_io_scatter_t<char_type> sc{first,len};
+				first+=::fast_io::scatter_status_one_size(scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1),len);
 				if(first!=last)
 				{
 					return;
@@ -217,8 +222,9 @@ inline constexpr void write_all_cold_impl(outstmtype outsm,typename outstmtype::
 		{
 			for(;;)
 			{
-				basic_io_scatter_t<char_type> sc{first,static_cast<::std::size_t>(last-first)};
-				first+=scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1).total_size;
+				::std::size_t len{static_cast<::std::size_t>(last-first)};
+				basic_io_scatter_t<char_type> sc{first,len};
+				first+=::fast_io::scatter_status_one_size(scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1),len);
 				if(first!=last)
 				{
 					return;
@@ -282,8 +288,9 @@ inline constexpr void write_all_bytes_cold_impl(outstmtype outsm,::std::byte con
 		{
 			for(;;)
 			{
-				io_scatter_t sc{first,static_cast<::std::size_t>(last-first)};
-				first+=scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1).total_size;
+				::std::size_t len{static_cast<::std::size_t>(last-first)};
+				io_scatter_t sc{first,len};
+				first+=::fast_io::scatter_status_one_size(scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1),len);
 				if(first!=last)
 				{
 					return;
@@ -303,8 +310,9 @@ inline constexpr void write_all_bytes_cold_impl(outstmtype outsm,::std::byte con
 		{
 			for(;;)
 			{
-				io_scatter_t sc{first,static_cast<::std::size_t>(last-first)};
-				first+=scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1).total_size;
+				::std::size_t len{static_cast<::std::size_t>(last-first)};
+				io_scatter_t sc{first,len};
+				first+=::fast_io::scatter_status_one_size(scatter_write_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1),len);
 				if(first!=last)
 				{
 					return;
