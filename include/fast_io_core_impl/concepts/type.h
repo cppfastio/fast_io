@@ -18,7 +18,6 @@ using io_scatters_t = basic_io_scatter_t<io_scatter_t>;
 
 struct io_scatter_status_t
 {
-	std::size_t total_size;
 	std::size_t position;
 	std::size_t position_in_scatter;
 };
