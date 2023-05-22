@@ -130,7 +130,7 @@ inline constexpr io_scatter_status_t scatter_write_some_impl(outstmtype outsm,
 		char_type *ed{obuffer_end(outsm)};
 
 		::std::size_t buffptrdiff;	
-		if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstmtype>)
 		{
 			::std::ptrdiff_t pptrdf{ed-curr};
 			if(pptrdf<0)
@@ -279,7 +279,7 @@ inline constexpr void scatter_write_all_impl(outstmtype outsm,
 		char_type *ed{obuffer_end(outsm)};
 
 		::std::size_t buffptrdiff;	
-		if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstmtype>)
 		{
 			::std::ptrdiff_t pptrdf{ed-curr};
 			if(pptrdf<0)

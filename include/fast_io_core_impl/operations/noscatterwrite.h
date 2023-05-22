@@ -441,6 +441,61 @@ inline constexpr void write_all_bytes_impl(outstmtype outsm,
 	::fast_io::details::write_all_bytes_cold_impl(outsm,first,last);
 }
 
+template<typename outstmtype>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void char_put_cold_impl(outstmtype outstm,
+	typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type ch)
+{
+	if constexpr(::fast_io::details::streamreflect::has_output_stream_char_put_overflow_define<outstmtype>)
+	{
+		output_stream_char_put_overflow_define(outstm,ch);
+	}
+	else
+	{
+		::fast_io::details::write_all_impl(
+			outstm,__builtin_addressof(ch),__builtin_addressof(ch)+1);
+	}
+}
+
+template<typename outstm>
+inline constexpr void char_put_impl(outstm outsm,
+	typename decltype(::fast_io::manipulators::output_stream_ref(outsm))::output_char_type ch)
+{
+	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstm>)
+	{
+		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
+		return ::fast_io::details::char_put_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),ch);
+	}
+	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outstm>)
+	{
+		using char_type = typename outstm::output_char_type;
+		char_type *curr{obuffer_curr(outsm)};
+		char_type *ed{obuffer_end(outsm)};
+		bool condition;
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstm>)
+		{
+			condition=curr<ed;
+		}
+		else
+		{
+			condition=curr!=ed;
+		}
+		if(condition)
+#if __has_cpp_attribute(likely)
+			[[likely]]
+#endif
+
+		{
+			*curr=ch;
+			obuffer_set_curr(outsm,curr+1);
+			return;
+		}
+	}
+	::fast_io::details::char_put_cold_impl(outsm,ch);
+}
+
 }
 
 }

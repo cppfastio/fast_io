@@ -1042,16 +1042,9 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 		return print_freestanding_decay(
 			::fast_io::details::output_stream_unlocked_ref_impl(optstm),args...);
 	}
-#if 0
 	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outputstmtype>)
 	{
-		::fast_io::details::decay::printrsvcontiguousimpl();
-	}
-#endif
-	using output_char_type = typename outputstmtype::output_char_type;
-	if constexpr(::fast_io::buffer_output_stream<outputstmtype>)
-	{
-		return ::fast_io::details::decay::print_controls_buffer_impl(optstm,args...);
+		return ::fast_io::details::decay::print_controls_buffer_impl<line>(optstm,args...);
 	}
 	else
 	{

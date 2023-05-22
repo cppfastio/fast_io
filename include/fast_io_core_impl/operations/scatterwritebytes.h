@@ -12,6 +12,7 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 	io_scatter_t const *pscatters,
 	::std::size_t n)
 {
+	using char_type = typename outstmtype::output_char_type;
 	if constexpr(::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>)
 	{
 		return scatter_write_some_bytes_overflow_define(outsm,pscatters,n);
@@ -21,7 +22,8 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 		::std::size_t total_len{};
 		for(::std::size_t i{};i!=n;++i)
 		{
-			auto [base,len] = pscatters[i];
+			auto [baseb,len] = pscatters[i];
+			::std::byte const *base{reinterpret_cast<::std::byte const*>(baseb)};
 			auto ed{base+len};
 			auto written{::fast_io::details::write_some_bytes_impl(outsm,base,ed)};
 			::std::size_t sz{static_cast<::std::size_t>(written-base)};
@@ -43,7 +45,8 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 		::std::size_t total_len{};
 		for(::std::size_t i{};i!=n;++i)
 		{
-			auto [base,len] = pscatters[i];
+			auto [baseb,len] = pscatters[i];
+			::std::byte const *base{reinterpret_cast<::std::byte const*>(baseb)};
 			::fast_io::details::write_all_bytes_impl(outsm,base,base+len);
 			total_len+=len;
 		}
@@ -85,7 +88,7 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_impl(outstmtype ou
 		char_type *ed{obuffer_end(outsm)};
 
 		::std::size_t buffptrdiff;	
-		if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstmtype>)
 		{
 			::std::ptrdiff_t pptrdf{ed-curr};
 			if(pptrdf<0)
@@ -154,7 +157,8 @@ inline constexpr void scatter_write_all_bytes_cold_impl(outstmtype outsm,
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{
-			auto [base,len] = *i;
+			auto [basep,len] = *i;
+			::std::byte const *base{reinterpret_cast<::std::byte const*>(basep)};
 			::fast_io::details::write_all_bytes_impl(outsm,base,base+len);
 		}
 	}
@@ -183,7 +187,8 @@ inline constexpr void scatter_write_all_bytes_cold_impl(outstmtype outsm,
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{
-			auto [base,len] = *i;
+			auto [basep,len] = *i;
+			::std::byte const *base{reinterpret_cast<::std::byte const*>(basep)};
 			::fast_io::details::write_all_bytes_impl(outsm,base,base+len);
 		}
 	}
@@ -223,7 +228,7 @@ inline constexpr void scatter_write_all_bytes_impl(outstmtype outsm,
 		char_type *ed{obuffer_end(outsm)};
 
 		::std::size_t buffptrdiff;	
-		if constexpr(!::fast_io::noline_buffer_output_stream<outstmtype>)
+		if constexpr(::fast_io::details::streamreflect::has_obuffer_is_line_buffering_define<outstmtype>)
 		{
 			::std::ptrdiff_t pptrdf{ed-curr};
 			if(pptrdf<0)

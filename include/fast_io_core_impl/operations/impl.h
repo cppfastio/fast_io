@@ -3,8 +3,16 @@
 #include"lockguard.h"
 
 #include"scattercommon.h"
-#if 0
+
+#include"noscatterwrite.h"
+#include"scatterwrite.h"
+#include"scatterwritebytes.h"
 #include"write.h"
+
+#include"print_freestanding.h"
+
+
+#if 0
 
 #include"read.h"
 
@@ -12,10 +20,6 @@
 #include"pread.h"
 
 #endif
-#include"writerevamp.h"
-#include"scatterwrite.h"
 
-#if 0
-#include"print_freestanding.h"
-#endif
+
 
