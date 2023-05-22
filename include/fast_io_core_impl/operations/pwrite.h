@@ -9,18 +9,6 @@ template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr ::std::byte const* pwrite_some_bytes_cold_impl(outstmtype outsm,::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t);
-
-template<typename outstmtype>
-#if __has_cpp_attribute(__gnu__::__cold__)
-[[__gnu__::__cold__]]
-#endif
-inline constexpr void pwrite_all_bytes_cold_impl(outstmtype outsm,::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t);
-
-template<typename outstmtype>
-#if __has_cpp_attribute(__gnu__::__cold__)
-[[__gnu__::__cold__]]
-#endif
 inline constexpr typename outstmtype::output_char_type const* pwrite_some_cold_impl(outstmtype outsm,
 	typename outstmtype::output_char_type const *first,typename outstmtype::output_char_type const *last,::fast_io::intfpos_t off)
 {
@@ -151,7 +139,7 @@ inline constexpr ::std::byte const* pwrite_some_bytes_cold_impl(outstmtype outsm
 #if 0
 	else if constexpr(::fast_io::details::has_output_stream_seek_bytes_define<outstmtype>)
 	{
-		::std::byte const* ret{::fast_io::details::ppwrite_some_bytes_cold_impl(outsm,first,last,off)};
+		::std::byte const* ret{::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last,off)};
 		output_stream_seek_bytes_define(outsm,ret-first,::fast_io::seekdir::cur);
 		return ret;
 	}

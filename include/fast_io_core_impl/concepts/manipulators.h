@@ -38,7 +38,6 @@ concept has_output_or_io_stream_ref_define =
 	::fast_io::details::has_io_stream_ref_define<T>;
 
 
-
 template<typename T>
 concept has_status_input_stream_ref_define = requires(T&& t)
 {
@@ -66,6 +65,7 @@ template<typename T>
 concept has_status_output_or_io_stream_ref_define =
 	::fast_io::details::has_status_output_stream_ref_define<T>||
 	::fast_io::details::has_status_io_stream_ref_define<T>;
+
 
 }
 
@@ -197,6 +197,70 @@ io_stream_seek_define(t,0,::fast_io::seekdir::cur);
 };
 
 template<typename T>
+concept has_input_stream_buffer_flush_define = requires(T&& t)
+{
+input_stream_buffer_flush_define(::fast_io::freestanding::forward<T>(t));
+};
+
+template<typename T>
+concept has_output_stream_buffer_flush_define = requires(T&& t)
+{
+output_stream_buffer_flush_define(::fast_io::freestanding::forward<T>(t));
+};
+
+template<typename T>
+concept has_io_stream_buffer_flush_define = requires(T t)
+{
+io_stream_buffer_flush_define(t,0,::fast_io::seekdir::cur);
+};
+
+template<typename T>
+concept has_input_or_io_stream_buffer_flush_define = ::fast_io::details::has_io_stream_buffer_flush_define<T>
+	||::fast_io::details::has_input_stream_buffer_flush_define<T>;
+
+template<typename T>
+concept has_output_or_io_stream_buffer_flush_define = ::fast_io::details::has_io_stream_buffer_flush_define<T>
+	||::fast_io::details::has_output_stream_buffer_flush_define<T>;
+
+template<typename T>
+requires (::fast_io::details::has_output_or_io_stream_buffer_flush_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void input_stream_buffer_flush_impl(T t)
+{
+	if constexpr(::fast_io::details::has_input_stream_buffer_flush_define<T>)
+	{
+		return input_stream_buffer_flush_define(t);
+	}
+	else
+	{
+		return io_stream_buffer_flush_define(t);
+	}
+}
+
+template<typename T>
+requires (::fast_io::details::has_output_or_io_stream_buffer_flush_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void output_stream_buffer_flush_impl(T t)
+{
+	if constexpr(::fast_io::details::has_output_stream_buffer_flush_define<T>)
+	{
+		return output_stream_buffer_flush_define(t);
+	}
+	else
+	{
+		return io_stream_buffer_flush_define(t);
+	}
+}
+
+template<typename T>
 requires (::fast_io::details::has_io_stream_seek_define<T>
 	||::fast_io::details::has_input_stream_seek_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -206,6 +270,10 @@ requires (::fast_io::details::has_io_stream_seek_define<T>
 #endif
 inline constexpr intfpos_t input_stream_seek_impl(T t,intfpos_t off,::fast_io::seekdir skd)
 {
+	if constexpr(::fast_io::details::has_input_or_io_stream_buffer_flush_define<T>)
+	{
+		::fast_io::details::input_stream_buffer_flush_impl(t);
+	}
 	if constexpr(::fast_io::details::has_input_stream_seek_define<T>)
 	{
 		return input_stream_seek_define(t,off,skd);
@@ -216,9 +284,17 @@ inline constexpr intfpos_t input_stream_seek_impl(T t,intfpos_t off,::fast_io::s
 	}
 }
 
+
 template<typename T>
-requires (::fast_io::details::has_io_stream_seek_define<T>
-	||::fast_io::details::has_output_stream_seek_define<T>)
+concept has_input_or_io_stream_seek_define = ::fast_io::details::has_io_stream_seek_define<T>
+	||::fast_io::details::has_input_stream_seek_define<T>;
+
+template<typename T>
+concept has_output_or_io_stream_seek_define = ::fast_io::details::has_io_stream_seek_define<T>
+	||::fast_io::details::has_output_stream_seek_define<T>;
+
+template<typename T>
+requires (::fast_io::details::has_output_or_io_stream_seek_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -226,6 +302,10 @@ requires (::fast_io::details::has_io_stream_seek_define<T>
 #endif
 inline constexpr intfpos_t output_stream_seek_impl(T t,intfpos_t off,::fast_io::seekdir skd)
 {
+	if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<T>)
+	{
+		::fast_io::details::output_stream_buffer_flush_impl(t);
+	}
 	if constexpr(::fast_io::details::has_output_stream_seek_define<T>)
 	{
 		return output_stream_seek_define(t,off,skd);
@@ -245,6 +325,10 @@ requires (::fast_io::details::has_io_stream_seek_define<T>)
 #endif
 inline constexpr intfpos_t io_stream_seek_impl(T t,intfpos_t off,::fast_io::seekdir skd)
 {
+	if constexpr(::fast_io::details::has_io_stream_buffer_flush_define<T>)
+	{
+		io_stream_buffer_flush_define(t);
+	}
 	return io_stream_seek_define(t,off,skd);
 }
 
@@ -269,8 +353,11 @@ io_stream_seek_bytes_define(t,0,::fast_io::seekdir::cur);
 };
 
 template<typename T>
-requires (::fast_io::details::has_io_stream_seek_bytes_define<T>
-	||::fast_io::details::has_input_stream_seek_bytes_define<T>)
+concept has_input_or_io_stream_seek_bytes_define = ::fast_io::details::has_io_stream_seek_bytes_define<T>
+	||::fast_io::details::has_input_stream_seek_bytes_define<T>;
+
+template<typename T>
+requires (::fast_io::details::has_input_or_io_stream_seek_bytes_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -278,6 +365,10 @@ requires (::fast_io::details::has_io_stream_seek_bytes_define<T>
 #endif
 inline constexpr intfpos_t input_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
 {
+	if constexpr(::fast_io::details::has_input_or_io_stream_buffer_flush_define<T>)
+	{
+		::fast_io::details::input_stream_buffer_flush_impl(t);
+	}
 	if constexpr(::fast_io::details::has_input_stream_seek_define<T>)
 	{
 		return input_stream_seek_bytes_define(t,off,skd);
@@ -289,8 +380,11 @@ inline constexpr intfpos_t input_stream_seek_bytes_impl(T t,intfpos_t off,::fast
 }
 
 template<typename T>
-requires (::fast_io::details::has_io_stream_seek_bytes_define<T>
-	||::fast_io::details::has_output_stream_seek_bytes_define<T>)
+concept has_output_or_io_stream_seek_bytes_define = ::fast_io::details::has_io_stream_seek_bytes_define<T>
+	||::fast_io::details::has_output_stream_seek_bytes_define<T>;
+
+template<typename T>
+requires (has_output_or_io_stream_seek_bytes_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -298,6 +392,10 @@ requires (::fast_io::details::has_io_stream_seek_bytes_define<T>
 #endif
 inline constexpr intfpos_t output_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
 {
+	if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<T>)
+	{
+		::fast_io::details::output_stream_buffer_flush_impl(t);
+	}
 	if constexpr(::fast_io::details::has_output_stream_seek_bytes_define<T>)
 	{
 		return output_stream_seek_bytes_define(t,off,skd);
@@ -317,6 +415,10 @@ requires (::fast_io::details::has_io_stream_seek_bytes_define<T>)
 #endif
 inline constexpr intfpos_t io_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
 {
+	if constexpr(::fast_io::details::has_io_stream_buffer_flush_define<T>)
+	{
+		io_stream_buffer_flush_define(t);
+	}
 	return io_stream_seek_bytes_define(t,off,skd);
 }
 

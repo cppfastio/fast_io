@@ -37,6 +37,12 @@ concept has_obuffer_ops = requires(T&& outstm,typename decltype(::fast_io::manip
 };
 
 template<typename T>
+concept has_output_stream_buffer_flush = requires(T&& outstm)
+{
+	::fast_io::details::output_stream_buffer_flush_impl(::fast_io::manipulators::output_stream_ref(outstm));
+};
+
+template<typename T>
 concept has_obuffer_is_line_buffering_define = requires(T&& outstm)
 {
 	{obuffer_is_line_buffering_define(::fast_io::manipulators::output_stream_ref(outstm))}->std::convertible_to<bool>;
