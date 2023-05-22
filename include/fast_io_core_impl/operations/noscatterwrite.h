@@ -101,10 +101,8 @@ inline constexpr typename outstmtype::output_char_type const* write_some_cold_im
 		::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>
 	))
 	{
-		auto firstbptr{reinterpret_cast<::std::byte const*>(first)};
-		auto lastbptr{reinterpret_cast<::std::byte const*>(last)};
-		auto ret{::fast_io::details::pwrite_some_bytes_cold_impl(outsm,firstbptr,lastbptr)};
-		::fast_io::details::output_stream_seek_bytes_impl(outsm,ret-firstbptr,::fast_io::seekdir::cur);
+		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm,first,last)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,(ret-first)*sizeof(char_type),::fast_io::seekdir::cur);
 		return ret;
 	}
 }
@@ -203,16 +201,9 @@ inline constexpr ::std::byte const* write_some_bytes_cold_impl(outstmtype outsm,
 		::fast_io::details::streamreflect::has_scatter_pwrite_some_overflow_define<outstmtype>
 	))
 	{
-		using char_type_const_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-		[[__gnu__::__may_alias__]]
-#endif
-		=
-		char_type const*;
-		auto firstbptr{reinterpret_cast<char_type_const_ptr>(first)};
-		auto lastbptr{reinterpret_cast<char_type_const_ptr>(last)};
-		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm,firstbptr,lastbptr)};
-		::fast_io::details::output_stream_seek_impl(outsm,ret-firstbptr,::fast_io::seekdir::cur);
+
+		auto ret{::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last)};
+		::fast_io::details::output_stream_seek_impl(outsm,ret-first,::fast_io::seekdir::cur);
 		return ret;
 	}
 }
