@@ -731,6 +731,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 	}
 	else if constexpr(res.position==0)
 	{
+		print_control_single<false>(optstm,t);
 		print_controls_impl<line>(optstm,args...);
 	}
 	else
@@ -898,7 +899,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 #endif
 			if constexpr(res.position!=n)
 			{
-				print_controls_impl<line,res.position-1>(optstm,args...);
+				print_controls_impl<line,outputstmtype,res.position-1>(optstm,args...);
 			}
 		}
 	}
