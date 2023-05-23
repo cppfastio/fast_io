@@ -9,13 +9,16 @@ namespace details::decay
 template<::std::integral char_type,typename T=char_type>
 inline constexpr basic_io_scatter_t<T> line_scatter_common{__builtin_addressof(char_literal_v<u8'\n',char_type>),
 	::std::same_as<T,void>?sizeof(char_type):1};
+
 struct contiguous_scatter_result
 {
 ::std::size_t position{};
+::std::size_t neededscatters{};
 ::std::size_t neededspace{};
-bool needextraspacefordynamic{};
 bool lastisreserve{};
 bool hasscatters{};
+bool hasreserve{};
+bool hasdynamicreserve{};
 };
 
 template<::std::integral char_type,typename Arg,typename ...Args>
@@ -28,37 +31,60 @@ inline constexpr contiguous_scatter_result find_continuous_scatters_n()
 		{
 			ret = find_continuous_scatters_n<char_type,Args...>();
 		}
-		return {ret.position+1,ret.neededspace,ret.needextraspacefordynamic,false,true};
+		++ret.position;
+		ret.hasscatters = true;
+		ret.neededscatters=::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededscatters,static_cast<::std::size_t>(1));
 	}
 	else if constexpr(::fast_io::reserve_printable<char_type,Arg>)
 	{
-		bool rv{};
 		if constexpr(sizeof...(Args)!=0)
 		{
 			ret = find_continuous_scatters_n<char_type,Args...>();
 		}
 		else
 		{
-			rv = true;
+			ret.lastisreserve=true;
 		}
 		constexpr
 			::std::size_t sz{print_reserve_size(::fast_io::io_reserve_type<char_type,Arg>)};
-		return {ret.position+1,
-			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededspace,sz),
-			ret.needextraspacefordynamic,rv,false};
+		static_assert(sz!=0);
+		++ret.position;
+		ret.neededscatters=
+			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededscatters,static_cast<::std::size_t>(1));
+		ret.neededspace=
+			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededspace,sz);
+		ret.hasreserve=true;
 	}
 	else if constexpr(::fast_io::dynamic_reserve_printable<char_type,Arg>)
 	{
-		bool rv{};
 		if constexpr(sizeof...(Args)!=0)
 		{
 			ret = find_continuous_scatters_n<char_type,Args...>();
 		}
 		else
 		{
-			rv = true;
+			ret.lastisreserve=true;
 		}
-		return {ret.position+1,ret.neededspace,true,rv,false};
+		++ret.position;
+		ret.neededscatters=
+			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededscatters,static_cast<::std::size_t>(1));
+		ret.hasdynamicreserve=true;
+	}
+	else if constexpr(::fast_io::reserve_scatters_printable<char_type,Arg>)
+	{
+		if constexpr(sizeof...(Args)!=0)
+		{
+			ret = find_continuous_scatters_n<char_type,Args...>();
+		}
+		constexpr auto scatszres{print_reserve_scatters_size(::fast_io::io_reserve_type<char_type,Arg>)};
+		static_assert(scatszres.scatters_size!=0);
+		ret.hasscatters=true;
+		ret.hasreserve=true;
+		++ret.position;
+		ret.neededspace=
+			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededspace,scatszres.reserve_size);
+		ret.neededscatters=
+			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededscatters,scatszres.scatters_size);
 	}
 	return ret;
 }
@@ -123,8 +149,15 @@ inline constexpr void scatter_rsv_update_times(::fast_io::io_scatter_t *first,::
 	}
 }
 
+template<::std::integral char_type>
+struct basic_reserve_scatters_define_byte_result
+{
+	io_scatter_t *scatters_pos_ptr;
+	char_type *reserve_pos_ptr;
+};
+
 template<::std::integral char_type,typename T>
-inline io_scatter_t* prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type const* buffer,T t)
+inline ::fast_io::details::decay::basic_reserve_scatters_define_byte_result<char_type> prrsvsct_byte_common_rsvsc_impl(io_scatter_t* pscatters,char_type const* buffer,T t)
 {
 	using basicioscattertypealiasptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -136,14 +169,21 @@ inline io_scatter_t* prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type
 	[[__gnu__::__may_alias__]]
 #endif
 	= io_scatter_t*;
-	auto ptr{reinterpret_cast<scatterioscattertypealiasptr>(
-		print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,
-		reinterpret_cast<basicioscattertypealiasptr>(pscatters),buffer))};
+	auto result{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,
+		reinterpret_cast<basicioscattertypealiasptr>(pscatters),buffer,t)};
+	auto ptr{reinterpret_cast<scatterioscattertypealiasptr>(result.scatters_pos_ptr)};
 	if constexpr(sizeof(char_type)!=1)
 	{
 		scatter_rsv_update_times<sizeof(char_type)>(pscatters,ptr);
 	}
-	return ptr;
+	return {ptr,result.reserve_pos_ptr};
+}
+
+
+template<::std::integral char_type,typename T>
+inline auto prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type const* buffer,T t)
+{
+	return ::fast_io::details::decay::prrsvsct_byte_common_rsvsc_impl(pscatters,buffer,t).scatters_pos_ptr;
 }
 
 template<bool line=false,output_stream output,typename T>
@@ -423,7 +463,7 @@ inline constexpr void print_control_single(output outstm,T t)
 		}
 		::fast_io::basic_io_scatter_t<char_type> scattersbuffer[scattersnum];
 		char_type buffer[sz.reserve_size];
-		auto ptr{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,scattersbuffer,buffer,t)};
+		auto ptr{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,scattersbuffer,buffer,t).scatters_pos_ptr};
 		if constexpr(line)
 		{
 			*ptr=::fast_io::details::decay::line_scatter_common<char_type>;
@@ -454,7 +494,7 @@ inline constexpr char_type* printrsvcontiguousimpl(char_type* iter,Arg arg,Args.
 	}
 	if constexpr(::fast_io::scatter_printable<char_type,Arg>)
 	{
-		return {ret.position+1,ret.neededspace,ret.needextraspacefordynamic};
+		return {ret.position+1,ret.neededspace,ret.hasdynamicreserve};
 	}
 	else if constexpr(::fast_io::reserve_printable<char_type,Arg>)
 	{
@@ -462,7 +502,7 @@ inline constexpr char_type* printrsvcontiguousimpl(char_type* iter,Arg arg,Args.
 			::std::size_t sz{print_reserve_size(::fast_io::io_reserve_type<char_type,Arg>)};
 		return {ret.position+1,
 			::fast_io::details::add_overflow(ret.neededspace,sz),
-			ret.needextraspacefordynamic};
+			ret.hasdynamicreserve};
 	}
 	else if constexpr(::fast_io::dynamic_reserve_printable<char_type,Arg>)
 	{
@@ -674,7 +714,7 @@ inline constexpr auto print_n_scatters_reserve_cont(basic_io_scatter_t<scatterty
 				++pscatters;
 				if constexpr(1<n)
 				{
-					return print_n_scatters_reserve_cont<needprintlf,n-1,char_type>(pscatters,base,ptr,args...);
+					return ::fast_io::details::decay::print_n_scatters_reserve_cont<needprintlf,n-1,char_type>(pscatters,base,ptr,args...);
 				}
 			}
 
@@ -693,7 +733,7 @@ inline constexpr auto print_n_scatters_reserve_cont(basic_io_scatter_t<scatterty
 			++pscatters;
 			if constexpr(1<n)
 			{
-				return print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptr,t,args...);
+				return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptr,t,args...);
 			}
 		}
 	}
@@ -739,11 +779,11 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 				++pscatters;
 				if constexpr(1<n)
 				{
-					return print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptred,args...);
+					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptred,args...);
 				}
 			}
 		}
-		else
+		else if constexpr(::fast_io::scatter_printable<char_type,nocvreft>)
 		{
 			if constexpr(::std::same_as<nocvreft,basic_io_scatter_t<scattertype>>)
 			{
@@ -776,7 +816,36 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 			}
 			if constexpr(1<n)
 			{
-				return print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptr,args...);
+				return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptr,args...);
+			}
+		}
+		else if constexpr(::fast_io::reserve_scatters_printable<char_type,nocvreft>)
+		{
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if(!__builtin_is_constant_evaluated())
+#endif
+			{
+				if constexpr(::std::same_as<scattertype,void>)
+				{
+					auto pit{::fast_io::details::decay::prrsvsct_byte_common_rsvsc_impl(pscatters,ptr,t)};
+					if constexpr(1<n)
+					{
+						return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pit.scatters_pos_ptr,pit.reserve_pos_ptr,args...);
+					}
+					else
+					{
+						return pscatters;
+					}
+				}
+			}
+			
+			auto pit{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,nocvreft>,
+				pscatters,ptr,t)};
+			if constexpr(1<n)
+			{
+				return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pit.scatters_pos_ptr,pit.reserve_pos_ptr,args...);
 			}
 		}
 	}
@@ -807,17 +876,17 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 	{
 		if constexpr(line)
 		{
-			static_assert(res.position!=SIZE_MAX);
+			static_assert(res.neededscatters!=SIZE_MAX);
 		}
 		static_assert(SIZE_MAX!=sizeof...(Args));
 		constexpr
 			::std::size_t n{sizeof...(Args)+static_cast<::std::size_t>(1)};
 		constexpr
 			bool needprintlf{n==res.position&&line};
-		if constexpr(res.neededspace==0&&res.hasscatters&&!res.needextraspacefordynamic)
+		if constexpr(res.hasscatters&&!res.hasreserve&&!res.hasdynamicreserve)
 		{
 			constexpr
-				::std::size_t scatterscount{res.position+static_cast<::std::size_t>(needprintlf)};
+				::std::size_t scatterscount{res.neededscatters+static_cast<::std::size_t>(needprintlf)};
 			{
 				scatter_type scatters[scatterscount];
 				::fast_io::details::decay::print_n_scatters<res.position,char_type>(scatters,t,args...);
@@ -843,7 +912,21 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 			if constexpr(!res.hasscatters)
 			{
 				static_assert(!needprintlf||res.neededspace!=SIZE_MAX);
-				if constexpr(!res.needextraspacefordynamic)
+				if constexpr(res.hasdynamicreserve)
+				{
+					::std::size_t dynsz{::fast_io::details::decay::ndynamic_print_reserve_size<res.position,char_type>(t,args...)};
+					::std::size_t totalsz{::fast_io::details::intrinsics::add_or_overflow_die(mxsize,dynsz)};
+					::fast_io::details::local_operator_new_array_ptr<char_type> newptr(totalsz);
+					char_type *buffer{newptr.ptr};
+					char_type *ptred{::fast_io::details::decay::print_n_reserve<res.position,char_type>(buffer,t,args...)};
+					if constexpr(needprintlf)
+					{
+						*ptred=::fast_io::char_literal_v<u8'\n',char_type>;
+						++ptred;
+					}
+					::fast_io::operations::write_all(optstm,buffer,ptred);
+				}
+				else if constexpr(res.hasreserve)
 				{
 					if constexpr(res.neededspace==0)
 					{
@@ -867,25 +950,11 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 						::fast_io::operations::write_all(optstm,buffer,ptred);
 					}
 				}
-				else if constexpr(res.needextraspacefordynamic)
-				{
-					::std::size_t dynsz{::fast_io::details::decay::ndynamic_print_reserve_size<res.position,char_type>(t,args...)};
-					::std::size_t totalsz{::fast_io::details::intrinsics::add_or_overflow_die(mxsize,dynsz)};
-					::fast_io::details::local_operator_new_array_ptr<char_type> newptr(totalsz);
-					char_type *buffer{newptr.ptr};
-					char_type *ptred{::fast_io::details::decay::print_n_reserve<res.position,char_type>(buffer,t,args...)};
-					if constexpr(needprintlf)
-					{
-						*ptred=::fast_io::char_literal_v<u8'\n',char_type>;
-						++ptred;
-					}
-					::fast_io::operations::write_all(optstm,buffer,ptred);
-				}
 			}
-			else if constexpr(res.neededspace!=0&&!res.needextraspacefordynamic)
+			else if constexpr(res.hasreserve&&!res.hasdynamicreserve)
 			{
 				constexpr
-					::std::size_t scatterscount{res.position+static_cast<::std::size_t>(line&&res.position==n)};
+					::std::size_t scatterscount{res.neededscatters+static_cast<::std::size_t>(line&&res.position==n)};
 				scatter_type scatters[scatterscount];
 				char_type buffer[res.neededspace];
 				auto ptr{::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...)};
@@ -899,10 +968,10 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					::fast_io::operations::scatter_write_all(optstm,scatters,diff);
 				}
 			}
-			else if constexpr(res.needextraspacefordynamic)
+			else if constexpr(res.hasdynamicreserve)
 			{
 				constexpr
-					::std::size_t scatterscount{res.position+static_cast<::std::size_t>(line&&res.position==n)};
+					::std::size_t scatterscount{res.neededscatters+static_cast<::std::size_t>(line&&res.position==n)};
 				::std::size_t dynsz{::fast_io::details::decay::ndynamic_print_reserve_size<res.position,char_type>(t,args...)};
 				::std::size_t totalsz{::fast_io::details::intrinsics::add_or_overflow_die(mxsize,dynsz)};
 				::fast_io::details::local_operator_new_array_ptr<char_type> newptr(totalsz);
@@ -919,53 +988,6 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					::fast_io::operations::scatter_write_all(optstm,scatters,diff);
 				}
 			}
-#if 0
-			else if constexpr(res.neededspace!=0&&!res.needextraspacefordynamic)
-			{
-				constexpr
-					::std::size_t scatterscount{res.position+static_cast<::std::size_t>(line&&res.position==n)};
-				scatter_type scatters[scatterscount];
-				char_type buffer[res.neededspace];
-				::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...);
-				if constexpr(n==res.position&&line)
-				{
-					scatters[n]=::fast_io::details::decay::line_scatter_common<char_type,
-						::std::conditional_t<::std::same_as<scatter_type,io_scatter_t>,void,char_type>>;
-				}
-				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
-				{
-					::fast_io::operations::scatter_write_all_bytes(optstm,scatters,scatterscount);
-				}
-				else
-				{
-					::fast_io::operations::scatter_write_all(optstm,scatters,scatterscount);
-				}
-			}
-			else if constexpr(res.needextraspacefordynamic)
-			{
-				constexpr
-					::std::size_t scatterscount{res.position+static_cast<::std::size_t>(line&&res.position==n)};
-				::std::size_t dynsz{::fast_io::details::decay::ndynamic_print_reserve_size<res.position,char_type>(t,args...)};
-				::std::size_t totalsz{::fast_io::details::intrinsics::add_or_overflow_die(mxsize,dynsz)};
-				::fast_io::details::local_operator_new_array_ptr<char_type> newptr(totalsz);
-				scatter_type scatters[scatterscount];
-				char_type *buffer{newptr.ptr};
-				::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...);
-				if constexpr(n==res.position&&line)
-				{
-					scatters[n]=::fast_io::details::decay::line_scatter_common<char_type,
-						::std::conditional_t<::std::same_as<scatter_type,io_scatter_t>,void,char_type>>;
-				}
-				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
-				{
-					::fast_io::operations::scatter_write_all_bytes(optstm,scatters,scatterscount);
-				}
-				else
-				{
-					::fast_io::operations::scatter_write_all(optstm,scatters,scatterscount);
-				}
-			}
-#endif
 			if constexpr(res.position!=n)
 			{
 				print_controls_impl<line,outputstmtype,res.position-1>(optstm,args...);
