@@ -20,7 +20,7 @@ requires ::fast_io::details::read_write_can_allow_this_type<instmtype,char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr char_type* read_some(instmtype&& instm,char_type const *first, char_type const *last)
+inline constexpr char_type* read_some(instmtype&& instm,char_type *first, char_type *last)
 {
 	return ::fast_io::details::read_some_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
@@ -32,7 +32,7 @@ requires ::fast_io::details::read_write_can_allow_this_type<instmtype,char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void read_all(instmtype&& instm,char_type const *first, char_type const *last)
+inline constexpr void read_all(instmtype&& instm,char_type *first, char_type *last)
 {
 	return ::fast_io::details::read_all_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
@@ -108,7 +108,7 @@ requires ::fast_io::details::read_write_can_allow_this_type<instmtype,char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr char_type* pread_some(instmtype&& instm,char_type const *first, char_type const *last,::fast_io::intfpos_t off)
+inline constexpr char_type* pread_some(instmtype&& instm,char_type *first, char_type *last,::fast_io::intfpos_t off)
 {
 	return ::fast_io::details::pread_some_impl(::fast_io::manipulators::input_stream_ref(instm),first,last,off);
 }
@@ -120,7 +120,7 @@ requires ::fast_io::details::read_write_can_allow_this_type<instmtype,char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void pread_all(instmtype&& instm,char_type const *first, char_type const *last,::fast_io::intfpos_t off)
+inline constexpr void pread_all(instmtype&& instm,char_type *first, char_type *last,::fast_io::intfpos_t off)
 {
 	return ::fast_io::details::pread_all_impl(::fast_io::manipulators::input_stream_ref(instm),first,last,off);
 }
