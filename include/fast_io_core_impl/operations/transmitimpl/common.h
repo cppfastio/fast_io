@@ -85,4 +85,27 @@ struct transmit_result
 	}
 };
 
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(::fast_io::io_reserve_type_t<char_type,transmit_result>)
+{
+	constexpr
+		::std::size_t sz{print_reserve_size(::fast_io::io_reserve_type<char_type,::fast_io::uintfpos_t>)+1};
+	return sz;
+}
+
+template<::std::integral char_type>
+inline constexpr char_type* print_reserve_define(::fast_io::io_reserve_type_t<char_type,transmit_result>,char_type* iter,transmit_result r)
+{
+	::fast_io::uintfpos_t transmittedsz{r.transmitted};
+	constexpr
+		auto mxval{::std::numeric_limits<::fast_io::uintfpos_t>::max()};
+	iter=print_reserve_define(::fast_io::io_reserve_type<char_type,::fast_io::uintfpos_t>,iter,transmittedsz);
+	if(transmittedsz==mxval)
+	{
+		*iter=::fast_io::char_literal_v<u8'+',char_type>;
+		++iter;
+	}
+	return iter;
+}
+
 }

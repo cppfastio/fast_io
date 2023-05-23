@@ -264,7 +264,7 @@ inline constexpr void print_control_single(output outstm,T t)
 				{{t.base,t.len*sizeof(char_type)},
 				{__builtin_addressof(char_literal_v<u8'\n',char_type>),
 				sizeof(char_type)}};
-				::fast_io::operations::scatter_write_all_bytes(outstm,scatters,2);
+				::fast_io::operations::decay::scatter_write_all_bytes_decay(outstm,scatters,2);
 			}
 			else
 			{
@@ -272,12 +272,12 @@ inline constexpr void print_control_single(output outstm,T t)
 				{t,
 				{__builtin_addressof(char_literal_v<u8'\n',char_type>),
 				1}};
-				::fast_io::operations::scatter_write_all(outstm,scatters,2);
+				::fast_io::operations::decay::scatter_write_all_decay(outstm,scatters,2);
 			}
 		}
 		else
 		{
-			::fast_io::operations::write_all(outstm,t.base,t.base+t.len);
+			::fast_io::operations::decay::write_all_decay(outstm,t.base,t.base+t.len);
 		}
 	}
 	else if constexpr(reserve_printable<char_type,value_type>)
@@ -337,7 +337,7 @@ inline constexpr void print_control_single(output outstm,T t)
 					if(smaller)[[likely]]
 						obuffer_set_curr(outstm,bcurr);
 					else[[unlikely]]
-						::fast_io::operations::write_all(outstm,buffer,bcurr);
+						::fast_io::operations::decay::write_all_decay(outstm,buffer,bcurr);
 				}
 			}
 			else
@@ -349,7 +349,7 @@ inline constexpr void print_control_single(output outstm,T t)
 					*i=lfch;
 					++i;
 				}
-				::fast_io::operations::write_all(outstm,buffer,i);
+				::fast_io::operations::decay::write_all_decay(outstm,buffer,i);
 			}
 		}
 	}
@@ -420,7 +420,7 @@ inline constexpr void print_control_single(output outstm,T t)
 				[[unlikely]]
 #endif
 				{
-					::fast_io::operations::write_all(outstm,toptr,it);
+					::fast_io::operations::decay::write_all_decay(outstm,toptr,it);
 				}
 			}
 			else
@@ -432,7 +432,7 @@ inline constexpr void print_control_single(output outstm,T t)
 					*it=lfch;
 					++it;
 				}
-				::fast_io::operations::write_all(outstm,newptr.ptr,it);
+				::fast_io::operations::decay::write_all_decay(outstm,newptr.ptr,it);
 			}
 		}
 	}
@@ -458,7 +458,7 @@ inline constexpr void print_control_single(output outstm,T t)
 					*ptr=::fast_io::details::decay::line_scatter_common<char_type,void>;
 					++ptr;
 				}
-				::fast_io::operations::scatter_write_all_bytes(outstm,scattersbuffer,ptr);
+				::fast_io::operations::decay::scatter_write_all_bytes_decay(outstm,scattersbuffer,ptr);
 				return;
 			}
 		}
@@ -470,13 +470,13 @@ inline constexpr void print_control_single(output outstm,T t)
 			*ptr=::fast_io::details::decay::line_scatter_common<char_type>;
 			++ptr;
 		}
-		::fast_io::operations::scatter_write_all(outstm,scattersbuffer,ptr);
+		::fast_io::operations::decay::scatter_write_all_decay(outstm,scattersbuffer,ptr);
 	}
 	else if constexpr(printable<char_type,value_type>)
 	{
 		print_define(::fast_io::io_reserve_type<char_type,value_type>,outstm,t);
 		if constexpr(line)
-			::fast_io::operations::char_put(outstm,lfch);
+			::fast_io::operations::decay::char_put_decay(outstm,lfch);
 	}
 	else
 	{
@@ -893,11 +893,11 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 				}
 				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 				{
-					::fast_io::operations::scatter_write_all_bytes(optstm,scatters,scatterscount);
+					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,scatterscount);
 				}
 				else
 				{
-					::fast_io::operations::scatter_write_all(optstm,scatters,scatterscount);
+					::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,scatterscount);
 				}
 			}
 		}
@@ -920,7 +920,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 						*ptred=::fast_io::char_literal_v<u8'\n',char_type>;
 						++ptred;
 					}
-					::fast_io::operations::write_all(optstm,buffer,ptred);
+					::fast_io::operations::decay::write_all_decay(optstm,buffer,ptred);
 				}
 				else if constexpr(res.hasreserve)
 				{
@@ -928,7 +928,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					{
 						if constexpr(needprintlf)
 						{
-							::fast_io::operations::char_put(optstm,::fast_io::char_literal_v<u8'\n',char_type>);
+							::fast_io::operations::decay::char_put_decay(optstm,::fast_io::char_literal_v<u8'\n',char_type>);
 						}
 					}
 					else
@@ -943,7 +943,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 							*ptred=::fast_io::char_literal_v<u8'\n',char_type>;
 							++ptred;
 						}
-						::fast_io::operations::write_all(optstm,buffer,ptred);
+						::fast_io::operations::decay::write_all_decay(optstm,buffer,ptred);
 					}
 				}
 			}
@@ -957,11 +957,11 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 				::std::size_t diff{static_cast<::std::size_t>(ptr-scatters)};
 				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 				{
-					::fast_io::operations::scatter_write_all_bytes(optstm,scatters,diff);
+					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,diff);
 				}
 				else
 				{
-					::fast_io::operations::scatter_write_all(optstm,scatters,diff);
+					::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,diff);
 				}
 			}
 			else if constexpr(res.hasdynamicreserve)
@@ -977,11 +977,11 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 				::std::size_t diff{static_cast<::std::size_t>(ptr-scatters)};
 				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 				{
-					::fast_io::operations::scatter_write_all_bytes(optstm,scatters,diff);
+					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,diff);
 				}
 				else
 				{
-					::fast_io::operations::scatter_write_all(optstm,scatters,diff);
+					::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,diff);
 				}
 			}
 			if constexpr(res.position!=n)
@@ -1022,11 +1022,11 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 			::fast_io::details::decay::print_n_scatters<needprintlf,scatters_result.position,char_type>(scatters,t,args...);
 			if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 			{
-				::fast_io::operations::scatter_write_all_bytes(optstm,scatters,scatterscount);
+				::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,scatterscount);
 			}
 			else
 			{
-				::fast_io::operations::scatter_write_all(optstm,scatters,scatterscount);
+				::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,scatterscount);
 			}
 			if constexpr(scatters_result.position!=n)
 			{
@@ -1077,7 +1077,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 						obuffer_set_curr(optstm,bcurr);
 					else[[unlikely]]
 					{
-						::fast_io::operations::write_all(optstm,buffer,bcurr);
+						::fast_io::operations::decay::write_all_decay(optstm,buffer,bcurr);
 					}
 				}
 				if constexpr(scatters_result.position!=n)
@@ -1119,7 +1119,7 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 		if constexpr(line)
 		{
 			using char_type = typename outputstmtype::output_char_type;
-			return ::fast_io::operations::char_put(optstm,char_literal_v<u8'\n',char_type>);
+			return ::fast_io::operations::decay::char_put_decay(optstm,char_literal_v<u8'\n',char_type>);
 		}
 		else
 		{
