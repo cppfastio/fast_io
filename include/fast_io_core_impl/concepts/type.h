@@ -64,10 +64,17 @@ explicit constexpr io_reserve_type_t() noexcept =default;
 template<std::integral char_type,typename T>
 inline constexpr io_reserve_type_t<char_type,T> io_reserve_type{};
 
-struct reserve_scatters_result_t
+struct reserve_scatters_size_result
 {
-::std::size_t reserve_size;
 ::std::size_t scatters_size;
+::std::size_t reserve_size;
+};
+
+template<::std::integral char_type>
+struct basic_reserve_scatters_define_result
+{
+basic_io_scatter_t<char_type> *scatters_pos_ptr;
+char_type *reserve_pos_ptr;
 };
 
 struct io_alias_t

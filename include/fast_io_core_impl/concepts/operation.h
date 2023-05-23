@@ -59,8 +59,8 @@ concept precise_reserve_printable=std::integral<char_type>&&(reserve_printable<c
 template<typename char_type,typename T>
 concept reserve_scatters_printable=std::integral<char_type>&&requires(T t,::fast_io::basic_io_scatter_t<char_type>* scatters,char_type* ptr)
 {
-	{print_reserve_scatters_size(io_reserve_type<char_type,std::remove_cvref_t<T>>)}->std::convertible_to<reserve_scatters_result_t>;
-	{print_reserve_scatters_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,scatters,ptr,t)}->std::convertible_to<::fast_io::basic_io_scatter_t<char_type> const*>;
+	{print_reserve_scatters_size(io_reserve_type<char_type,std::remove_cvref_t<T>>)}->::std::same_as<reserve_scatters_size_result>;
+	{print_reserve_scatters_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,scatters,ptr,t)}->::std::same_as<::fast_io::basic_reserve_scatters_define_result<char_type>>;
 };
 
 template<typename char_type,typename T>
