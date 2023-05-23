@@ -119,7 +119,8 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(instmtype insm
 		[[likely]]
 #endif
 			{
-				curr=::fast_io::details::non_overlapped_copy_n(base,len,curr);
+				::fast_io::details::non_overlapped_copy_n(curr,len,base);
+				curr+=len;
 				buffptrdiff-=len;
 			}
 			else
@@ -277,7 +278,8 @@ inline constexpr void scatter_read_all_bytes_impl(instmtype insm,
 			[[likely]]
 #endif
 			{
-				curr=::fast_io::details::non_overlapped_copy_n(base,len,curr);
+				::fast_io::details::non_overlapped_copy_n(curr,len,base);
+				curr+=len;
 				buffptrdiff-=len;
 			}
 			else
