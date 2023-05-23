@@ -177,7 +177,7 @@ template<typename T>
 #endif
 inline constexpr ::fast_io::intfpos_t fposoffadd_scatters_impl(::fast_io::intfpos_t off,basic_io_scatter_t<T> const *base,::std::size_t position,::std::size_t position_in_scatter) noexcept
 {
-	auto res{::fast_io::details::basic_scatter_total_size_overflow_result<::fast_io::uintfpos_t>(base,position)};
+	auto res{::fast_io::details::find_scatter_total_size_overflow_impl<::fast_io::uintfpos_t>(base,position)};
 	constexpr
 		::fast_io::intfpos_t mxv{::std::numeric_limits<::fast_io::intfpos_t>::max()};
 	if(res.position!=position)
