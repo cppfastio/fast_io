@@ -6,6 +6,9 @@ namespace fast_io
 namespace details::decay
 {
 
+template<::std::integral char_type,typename T=char_type>
+inline constexpr basic_io_scatter_t<T> line_scatter_common{__builtin_addressof(char_literal_v<u8'\n',char_type>),
+	::std::same_as<T,void>?sizeof(char_type):1};
 struct contiguous_scatter_result
 {
 ::std::size_t position{};
@@ -109,6 +112,39 @@ inline constexpr bool constant_buffer_output_stream_require_size_constant_impl =
 template<typename output,std::size_t N>
 concept constant_buffer_output_stream_require_size_impl = constant_size_buffer_output_stream<output>
 	&& constant_buffer_output_stream_require_size_constant_impl<output,N>;
+
+template<::std::size_t sz>
+requires (sz!=0)
+inline constexpr void scatter_rsv_update_times(::fast_io::io_scatter_t *first,::fast_io::io_scatter_t *last) noexcept
+{
+	if constexpr(sz!=1)
+	{
+		for(;first!=last;first->len*=sz);
+	}
+}
+
+template<::std::integral char_type,typename T>
+inline io_scatter_t* prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type const* buffer,T t)
+{
+	using basicioscattertypealiasptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= basic_io_scatter_t<char_type>*;
+	using scatterioscattertypealiasptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= io_scatter_t*;
+	auto ptr{reinterpret_cast<scatterioscattertypealiasptr>(
+		print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,
+		reinterpret_cast<basicioscattertypealiasptr>(pscatters),buffer))};
+	if constexpr(sizeof(char_type)!=1)
+	{
+		scatter_rsv_update_times<sizeof(char_type)>(pscatters,ptr);
+	}
+	return ptr;
+}
 
 template<bool line=false,output_stream output,typename T>
 requires (std::is_trivially_copyable_v<output>&&std::is_trivially_copyable_v<T>)
@@ -357,6 +393,43 @@ inline constexpr void print_control_single(output outstm,T t)
 				::fast_io::operations::write_all(outstm,newptr.ptr,it);
 			}
 		}
+	}
+	else if constexpr(reserve_scatters_printable<char_type,value_type>)
+	{
+		constexpr auto sz{print_reserve_scatters_size(::fast_io::io_reserve_type<char_type,value_type>)};
+		static_assert(!line||sz.scatters_size!=SIZE_MAX);
+		constexpr
+			::std::size_t scattersnum{sz.scatters_size+static_cast<::std::size_t>(line)};
+		using char_type = typename output::output_char_type;
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if(!__builtin_is_constant_evaluated())
+#endif
+		{
+			if constexpr(::fast_io::byte_output_stream<output>)
+			{
+				::fast_io::io_scatter_t scattersbuffer[scattersnum];
+				char_type buffer[sz.reserve_size];
+				::fast_io::io_scatter_t *ptr{::fast_io::details::decay::prrsvsct_byte_common_impl(scattersbuffer,buffer,t)};
+				if constexpr(line)
+				{
+					*ptr=::fast_io::details::decay::line_scatter_common<char_type,void>;
+					++ptr;
+				}
+				::fast_io::operations::scatter_write_all_bytes(outstm,scattersbuffer,ptr);
+				return;
+			}
+		}
+		::fast_io::basic_io_scatter_t<char_type> scattersbuffer[scattersnum];
+		char_type buffer[sz.reserve_size];
+		auto ptr{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,scattersbuffer,buffer,t)};
+		if constexpr(line)
+		{
+			*ptr=::fast_io::details::decay::line_scatter_common<char_type>;
+			++ptr;
+		}
+		::fast_io::operations::scatter_write_all(outstm,scattersbuffer,ptr);
 	}
 	else if constexpr(printable<char_type,value_type>)
 	{
@@ -626,10 +699,6 @@ inline constexpr auto print_n_scatters_reserve_cont(basic_io_scatter_t<scatterty
 	}
 	return pscatters;
 }
-
-template<::std::integral char_type,typename T=char_type>
-inline constexpr basic_io_scatter_t<T> line_scatter_common{__builtin_addressof(char_literal_v<u8'\n',char_type>),
-	::std::same_as<T,void>?sizeof(char_type):1};
 
 template<bool needprintlf,::std::size_t n,::std::integral char_type,typename scattertype,typename T,typename ...Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
