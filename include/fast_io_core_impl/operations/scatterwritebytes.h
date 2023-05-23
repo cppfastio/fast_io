@@ -56,6 +56,41 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 		return ::fast_io::details::scatter_write_some_cold_impl(
 			outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n);
 	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_pwrite_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>
+	))
+	{
+		auto ret{scatter_pwrite_some_bytes_cold_impl(outsm,pscatters,n,0)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,
+			::fast_io::fposoffadd_scatters(0,pscatters,ret),
+			::fast_io::seekdir::cur);
+		return ret;
+	}
+	else if constexpr(sizeof(char_type)==1&&
+		::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_pwrite_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_some_overflow_define<outstmtype>
+	))
+	{
+		using scattermayalias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		=
+		basic_io_scatter_t<char_type> const*;
+		auto ret{scatter_pwrite_some_cold_impl(outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n,0)};
+		::fast_io::details::output_stream_seek_impl(outsm,
+			::fast_io::fposoffadd_scatters(0,pscatters,ret),
+			::fast_io::seekdir::cur);
+		return ret;
+	}
 }
 
 template<typename outstmtype>
@@ -192,6 +227,39 @@ inline constexpr void scatter_write_all_bytes_cold_impl(outstmtype outsm,
 		basic_io_scatter_t<char_type> const*;
 		::fast_io::details::scatter_write_all_impl(
 			outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n);
+	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_pwrite_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>
+	))
+	{
+		scatter_pwrite_all_bytes_cold_impl(outsm,pscatters,n,0);
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,
+			::fast_io::fposoffadd_scatters(0,pscatters,{n,0}),
+			::fast_io::seekdir::cur);
+	}
+	else if constexpr(sizeof(char_type)==1&&
+		::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_pwrite_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_some_overflow_define<outstmtype>
+	))
+	{
+		using scattermayalias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		=
+		basic_io_scatter_t<char_type> const*;
+		scatter_pwrite_all_cold_impl(outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n,0);
+		::fast_io::details::output_stream_seek_impl(outsm,
+			::fast_io::fposoffadd_scatters(0,pscatters,{n,0}),
+			::fast_io::seekdir::cur);
 	}
 }
 

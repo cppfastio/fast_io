@@ -225,6 +225,7 @@ inline constexpr void scatter_write_all_cold_impl(outstmtype outsm,
 	basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 	::std::size_t n)
 {
+	using char_type = typename outstmtype::output_char_type;
 	if constexpr(::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>)
 	{
 		scatter_write_all_overflow_define(outsm,pscatters,n);
@@ -271,7 +272,6 @@ inline constexpr void scatter_write_all_cold_impl(outstmtype outsm,
 		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
 		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>))
 	{
-		using char_type = typename outstmtype::output_char_type;
 		if constexpr(sizeof(char_type)==1)
 		{
 			using scattermayalias_const_ptr
@@ -304,9 +304,7 @@ inline constexpr void scatter_write_all_cold_impl(outstmtype outsm,
 	))
 	{
 		scatter_pwrite_all_cold_impl(outsm,pscatters,n,0);
-#if 0
-		::fast_io::details::output_stream_seek_impl(outsm,fposoffadd_scatters(0,pscatters,ret),::fast_io::seekdir::cur);
-#endif
+		::fast_io::details::output_stream_seek_impl(outsm,::fast_io::fposoffadd_scatters(0,pscatters,{n,0}),::fast_io::seekdir::cur);
 	}
 	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
 	(
@@ -316,13 +314,10 @@ inline constexpr void scatter_write_all_cold_impl(outstmtype outsm,
 		::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>
 	))
 	{
-		auto ret{scatter_pwrite_some_cold_impl(outsm,pscatters,n,0)};
-#if 0
+		scatter_pwrite_all_cold_impl(outsm,pscatters,n,0);
 		::fast_io::details::output_stream_seek_bytes_impl(outsm,
-			::fast_io::details::scatter_fpos_mul<char_type>(::fast_io::fposoffadd_scatters(0,pscatters,ret)),
+			::fast_io::details::scatter_fpos_mul<char_type>(::fast_io::fposoffadd_scatters(0,pscatters,{n,0})),
 			::fast_io::seekdir::cur);
-#endif
-		return ret;
 	}
 }
 

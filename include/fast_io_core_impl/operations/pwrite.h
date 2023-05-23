@@ -34,7 +34,10 @@ inline constexpr typename outstmtype::output_char_type const* pwrite_some_cold_i
 		basic_io_scatter_t<char_type> sc{first,len};
 		return ::fast_io::scatter_status_one_size(scatter_pwrite_all_overflow_define(outsm,__builtin_addressof(sc),1,off),len)+first;
 	}
-	else
+	else if constexpr(::fast_io::details::streamreflect::has_pwrite_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>)
 	{
 		if constexpr(sizeof(typename outstmtype::output_char_type)==1)
 		{
@@ -59,6 +62,34 @@ inline constexpr typename outstmtype::output_char_type const* pwrite_some_cold_i
 			}
 			return first+v;
 		}
+	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_impl(outsm,off,::fast_io::seekdir::cur);
+		auto ret{::fast_io::details::write_some_impl(outsm,first,last)};
+		::fast_io::details::output_stream_seek_impl(outsm,oldoff,::fast_io::seekdir::beg);
+		return ret;
+	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_bytes_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,off,::fast_io::seekdir::cur);
+		auto ret{::fast_io::details::write_some_impl(outsm,first,last)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,oldoff,::fast_io::seekdir::beg);
+		return ret;
 	}
 }
 
@@ -136,14 +167,34 @@ inline constexpr ::std::byte const* pwrite_some_bytes_cold_impl(outstmtype outsm
 		scatter_pwrite_all_bytes_overflow_define(outsm,__builtin_addressof(sc),1,off);
 		return last;
 	}
-#if 0
-	else if constexpr(::fast_io::details::has_output_stream_seek_bytes_define<outstmtype>)
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+	))
 	{
-		::std::byte const* ret{::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last,off)};
-		output_stream_seek_bytes_define(outsm,ret-first,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::details::output_stream_seek_bytes_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,off,::fast_io::seekdir::cur);
+		auto ret{::fast_io::details::write_some_bytes_impl(outsm,first,last)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,oldoff,::fast_io::seekdir::beg);
 		return ret;
 	}
-#endif
+	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_impl(outsm,off,::fast_io::seekdir::cur);
+		auto ret{::fast_io::details::write_some_impl(outsm,first,last)};
+		::fast_io::details::output_stream_seek_impl(outsm,oldoff,::fast_io::seekdir::beg);
+		return ret;
+	}
 }
 
 template<typename outstmtype>
@@ -198,6 +249,32 @@ inline constexpr void pwrite_all_cold_impl(outstmtype outsm,typename outstmtype:
 			reinterpret_cast<::std::byte const*>(first),
 			reinterpret_cast<::std::byte const*>(last),off);
 	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_impl(outsm,off,::fast_io::seekdir::cur);
+		::fast_io::details::write_all_bytes_impl(outsm,first,last);
+		::fast_io::details::output_stream_seek_impl(outsm,oldoff,::fast_io::seekdir::beg);
+	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_bytes_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,off,::fast_io::seekdir::cur);
+		::fast_io::details::write_all_bytes_impl(outsm,first,last);
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,oldoff,::fast_io::seekdir::beg);
+	}
 }
 
 template<typename outstmtype>
@@ -251,6 +328,32 @@ inline constexpr void pwrite_all_bytes_cold_impl(outstmtype outsm,::std::byte co
 		char_type_const_ptr firstcptr{reinterpret_cast<char_type_const_ptr>(first)};
 		char_type_const_ptr lastcptr{reinterpret_cast<char_type_const_ptr>(last)};
 		::fast_io::details::pwrite_all_cold_impl(outsm,firstcptr,lastcptr,off);
+	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_bytes_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,off,::fast_io::seekdir::cur);
+		::fast_io::details::write_all_bytes_impl(outsm,first,last);
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,oldoff,::fast_io::seekdir::beg);
+	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_impl(outsm,off,::fast_io::seekdir::cur);
+		::fast_io::details::write_all_bytes_impl(outsm,first,last);
+		::fast_io::details::output_stream_seek_impl(outsm,oldoff,::fast_io::seekdir::beg);
 	}
 }
 

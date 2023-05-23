@@ -302,7 +302,7 @@ inline constexpr void write_all_cold_impl(outstmtype outsm,typename outstmtype::
 		::fast_io::details::streamreflect::has_scatter_pwrite_some_overflow_define<outstmtype>
 	))
 	{
-		::fast_io::details::pwrite_all_cold_impl(outsm,first,last);
+		::fast_io::details::pwrite_all_bytes_cold_impl(outsm,first,last);
 		::fast_io::details::output_stream_seek_impl(outsm,last-first,::fast_io::seekdir::cur);
 	}
 	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&

@@ -93,7 +93,9 @@ inline constexpr ::std::size_t scatter_status_one_size(io_scatter_status_t statu
 template<::std::integral dftype>
 inline constexpr ::fast_io::intfpos_t fposoffadd_nonegative(::fast_io::intfpos_t off,dftype df) noexcept
 {
+#if __has_cpp_attribute(assume)
 	[[assume(0<=df)]];
+#endif
 
 	constexpr
 		::fast_io::intfpos_t mxv{::std::numeric_limits<::fast_io::intfpos_t>::max()};

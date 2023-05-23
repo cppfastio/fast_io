@@ -66,6 +66,34 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_cold_impl(outstmt
 		return ::fast_io::details::scatter_pwrite_some_cold_impl(
 			outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n,off);
 	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_bytes_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,off,::fast_io::seekdir::cur);
+		auto ret{::fast_io::details::scatter_write_some_bytes_cold_impl(outsm,pscatters,n)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,oldoff,::fast_io::seekdir::beg);
+		return ret;
+	}
+	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_impl(outsm,off,::fast_io::seekdir::cur);
+		auto ret{::fast_io::details::scatter_write_some_bytes_cold_impl(outsm,pscatters,n)};
+		::fast_io::details::output_stream_seek_impl(outsm,oldoff,::fast_io::seekdir::beg);
+		return ret;
+	}
 }
 
 template<typename outstmtype>
@@ -156,6 +184,32 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm,
 		basic_io_scatter_t<char_type> const*;
 		::fast_io::details::scatter_pwrite_all_impl(
 			outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n,off);
+	}
+	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_bytes_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,off,::fast_io::seekdir::cur);
+		::fast_io::details::scatter_write_all_bytes_impl(outsm,pscatters,n);
+		::fast_io::details::output_stream_seek_bytes_impl(outsm,oldoff,::fast_io::seekdir::beg);
+	}
+	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
+	(
+		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
+		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+	))
+	{
+		auto oldoff{::fast_io::details::output_stream_seek_impl(outsm,0,::fast_io::seekdir::cur)};
+		::fast_io::details::output_stream_seek_impl(outsm,off,::fast_io::seekdir::cur);
+		::fast_io::details::scatter_write_all_bytes_impl(outsm,pscatters,n);
+		::fast_io::details::output_stream_seek_impl(outsm,oldoff,::fast_io::seekdir::beg);
 	}
 }
 
