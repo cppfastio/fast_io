@@ -578,7 +578,7 @@ inline constexpr auto print_n_scatters_reserve_cont(basic_io_scatter_t<scatterty
 			dynamic_reserve_printable<char_type,nocvreft>)
 		{
 			ptr=print_reserve_define(::fast_io::io_reserve_type<char_type,nocvreft>,ptr,t);
-			if constexpr(n<1&&::fast_io::details::decay::print_next_is_reserve<char_type,Args...>())
+			if constexpr(::fast_io::details::decay::print_next_is_reserve<char_type,Args...>())
 			{
 				return ::fast_io::details::decay::print_n_scatters_reserve_cont<needprintlf,n-1,char_type>(pscatters,base,ptr,args...);
 			}
@@ -812,7 +812,6 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					::fast_io::operations::write_all(optstm,buffer,ptred);
 				}
 			}
-
 			else if constexpr(res.neededspace!=0&&!res.needextraspacefordynamic)
 			{
 				constexpr
