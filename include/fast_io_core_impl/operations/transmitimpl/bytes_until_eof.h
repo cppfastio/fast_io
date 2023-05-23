@@ -18,8 +18,8 @@ A dummy placeholder implementation
 	::fast_io::details::local_operator_new_array_ptr<input_char_type> newptr(
 		::fast_io::details::transmit_buffer_size_cache<sizeof(input_char_type)>
 	);
-	input_char_type *const buffer_start{newptr.ptr};
-	input_char_type *const buffer_end{newptr.ptr+newptr.size};
+	input_char_type *buffer_start{newptr.ptr};
+	input_char_type *buffer_end{newptr.ptr+newptr.size};
 	for(input_char_type *iter;(iter=::fast_io::operations::read_some(instm,buffer_start,buffer_end))!=buffer_start;)
 	{
 		auto bufferstartpbyte{reinterpret_cast<::std::byte const*>(buffer_start)};

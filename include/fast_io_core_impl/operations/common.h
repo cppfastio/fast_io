@@ -215,15 +215,24 @@ namespace details
 {
 
 template<typename outstmtype,typename char_type>
-concept read_write_can_allow_this_type = 
+concept write_can_allow_this_type = 
 ::fast_io::output_stream<outstmtype>&&::std::integral<char_type>&&
 	::std::same_as<char_type,typename outstmtype::output_char_type>;
 
 template<typename outstmtype>
-concept read_write_bytes_can_allowing =
+concept write_bytes_can_allowing =
 ::fast_io::output_stream<outstmtype>&&(::fast_io::byte_output_stream<outstmtype>
 ||sizeof(typename outstmtype::output_char_type)==1);
 
+template<typename instmtype,typename char_type>
+concept read_can_allow_this_type = 
+::fast_io::input_stream<instmtype>&&::std::integral<char_type>&&
+	::std::same_as<char_type,typename instmtype::input_char_type>;
+
+template<typename instmtype>
+concept read_bytes_can_allowing =
+::fast_io::input_stream<instmtype>&&(::fast_io::byte_input_stream<instmtype>
+||sizeof(typename instmtype::input_char_type)==1);
 
 template<::std::integral char_type>
 inline constexpr ::fast_io::intfpos_t scatter_fpos_mul(::fast_io::intfpos_t ofd) noexcept
