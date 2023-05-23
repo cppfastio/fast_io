@@ -37,9 +37,9 @@ concept has_read_some_underflow_define = requires(T &&instm,typename decltype(::
 };
 
 template<typename T>
-concept has_read_underflow_define = requires(T &&instm,typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type* ptr)
+concept has_read_all_underflow_define = requires(T &&instm,typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type* ptr)
 {
-	read_underflow_define(::fast_io::manipulators::input_stream_ref(instm),ptr,ptr);
+	read_all_underflow_define(::fast_io::manipulators::input_stream_ref(instm),ptr,ptr);
 };
 
 template<typename T>
@@ -73,7 +73,7 @@ concept has_scatter_read_some_underflow_define = requires(T &&instm,::fast_io::b
 };
 
 template<typename T>
-concept has_scatter_read_underflow_define = requires(T &&instm,::fast_io::basic_io_scatter_t<typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type> *pscatter,::std::size_t len)
+concept has_scatter_read_all_underflow_define = requires(T &&instm,::fast_io::basic_io_scatter_t<typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type> *pscatter,::std::size_t len)
 {
 	scatter_read_underflow_define(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 };
@@ -100,9 +100,9 @@ concept has_pread_some_underflow_define = requires(T &&instm,typename decltype(:
 };
 
 template<typename T>
-concept has_pread_underflow_define = requires(T &&instm,typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type* ptr)
+concept has_pread_all_underflow_define = requires(T &&instm,typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type* ptr)
 {
-	pread_underflow_define(::fast_io::manipulators::input_stream_ref(instm),ptr,ptr,0);
+	pread_all_underflow_define(::fast_io::manipulators::input_stream_ref(instm),ptr,ptr,0);
 };
 
 template<typename T>
@@ -136,9 +136,9 @@ concept has_scatter_pread_some_underflow_define = requires(T &&instm,::fast_io::
 };
 
 template<typename T>
-concept has_scatter_pread_underflow_define = requires(T &&instm,::fast_io::basic_io_scatter_t<typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type> *pscatter,::std::size_t len)
+concept has_scatter_pread_all_underflow_define = requires(T &&instm,::fast_io::basic_io_scatter_t<typename decltype(::fast_io::manipulators::input_stream_ref(instm))::input_char_type> *pscatter,::std::size_t len)
 {
-	scatter_pread_underflow_define(::fast_io::manipulators::input_stream_ref(instm),pscatter,len,0);
+	scatter_pread_all_underflow_define(::fast_io::manipulators::input_stream_ref(instm),pscatter,len,0);
 };
 
 template<typename stmtype>

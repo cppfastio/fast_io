@@ -211,4 +211,37 @@ using io_scatter_alias_ptr
 	}
 }
 
+namespace details
+{
+
+template<typename outstmtype,typename char_type>
+concept read_write_can_allow_this_type = 
+::fast_io::output_stream<outstmtype>&&::std::integral<char_type>&&
+	::std::same_as<char_type,typename outstmtype::output_char_type>;
+
+template<typename outstmtype>
+concept read_write_bytes_can_allowing =
+::fast_io::output_stream<outstmtype>&&(::fast_io::byte_output_stream<outstmtype>
+||sizeof(typename outstmtype::output_char_type)==1);
+
+
+template<::std::integral char_type>
+inline constexpr ::fast_io::intfpos_t scatter_fpos_mul(::fast_io::intfpos_t ofd) noexcept
+{
+	constexpr
+		::fast_io::intfpos_t mx{::std::numeric_limits<::fast_io::intfpos_t>::max()};
+	constexpr
+		::fast_io::intfpos_t ofs{mx/sizeof(char_type)};
+	if(ofd>ofs)
+	{
+		return mx;
+	}
+	else
+	{
+		return ofd*static_cast<intfpos_t>(sizeof(char_type));
+	}
+}
+
+}
+
 }

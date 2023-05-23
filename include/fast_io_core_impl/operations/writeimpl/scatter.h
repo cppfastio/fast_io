@@ -29,24 +29,6 @@ inline constexpr void scatter_write_all_cold_impl(outstmtype outsm,
 	basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 	::std::size_t n);
 
-
-template<::std::integral char_type>
-inline constexpr ::fast_io::intfpos_t scatter_fpos_mul(::fast_io::intfpos_t ofd) noexcept
-{
-	constexpr
-		::fast_io::intfpos_t mx{::std::numeric_limits<::fast_io::intfpos_t>::max()};
-	constexpr
-		::fast_io::intfpos_t ofs{mx/sizeof(char_type)};
-	if(ofd>ofs)
-	{
-		return mx;
-	}
-	else
-	{
-		return ofd*static_cast<intfpos_t>(sizeof(char_type));
-	}
-}
-
 template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]

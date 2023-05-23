@@ -1,21 +1,14 @@
 #pragma once
 
+#include"basis.h"
+#include"scatter.h"
+#include"scatterbytes.h"
+#include"pbasis.h"
+#include"scatterp.h"
+#include"scatterpbytes.h"
+
 namespace fast_io
 {
-
-namespace details
-{
-template<typename outstmtype,typename char_type>
-concept read_write_can_allow_this_type = 
-::fast_io::output_stream<outstmtype>&&::std::integral<char_type>&&
-	::std::same_as<char_type,typename outstmtype::output_char_type>;
-
-template<typename outstmtype>
-concept read_write_bytes_can_allowing =
-::fast_io::output_stream<outstmtype>&&(::fast_io::byte_output_stream<outstmtype>
-||sizeof(typename outstmtype::output_char_type)==1);
-
-}
 
 namespace operations
 {
@@ -107,26 +100,6 @@ inline constexpr void scatter_write_all(outstmtype&& outstm,
 {
 	return ::fast_io::details::scatter_write_all_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 }
-
-/**
- * @brief Writes a single character to the output stream.
- * @tparam outstmtype The type of the output stream to write to, which should satisfy the output_stream concept.
- * @param outstm The output stream to write to.
- * @param ch The character to write to the output stream.
- * @note This function is marked constexpr, allowing its invocation in constant expressions.
- */
-template<::fast_io::output_stream outstmtype>
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
-inline constexpr void char_put(outstmtype&& outstm,
-	typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type ch)
-{
-	::fast_io::details::char_put_impl(::fast_io::manipulators::output_stream_ref(outstm),ch);
-}
-
 
 template<::fast_io::output_stream outstmtype,::std::integral char_type>
 requires ::fast_io::details::read_write_can_allow_this_type<outstmtype,char_type>
@@ -224,6 +197,25 @@ inline constexpr void scatter_pwrite_all(outstmtype&& outstm,
 	basic_io_scatter_t<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type> const* pscatter,::std::size_t len,::fast_io::intfpos_t off)
 {
 	return ::fast_io::details::scatter_pwrite_all_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len,off);
+}
+
+/**
+ * @brief Writes a single character to the output stream.
+ * @tparam outstmtype The type of the output stream to write to, which should satisfy the output_stream concept.
+ * @param outstm The output stream to write to.
+ * @param ch The character to write to the output stream.
+ * @note This function is marked constexpr, allowing its invocation in constant expressions.
+ */
+template<::fast_io::output_stream outstmtype>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void char_put(outstmtype&& outstm,
+	typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type ch)
+{
+	::fast_io::details::char_put_impl(::fast_io::manipulators::output_stream_ref(outstm),ch);
 }
 
 }
