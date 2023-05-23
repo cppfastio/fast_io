@@ -154,14 +154,18 @@ concept scatter_constant_output_stream_impl = requires(T&& out,io_scatter_t cons
 template<std::integral ch_type>
 struct dummy_buffer_output_stream
 {
-	using char_type = ch_type;
+	using output_char_type = ch_type;
 };
 
 template<std::integral char_type>
-inline constexpr dummy_buffer_output_stream<char_type> io_value_handle(dummy_buffer_output_stream<char_type>) noexcept
+inline constexpr dummy_buffer_output_stream<char_type> output_stream_ref_define(dummy_buffer_output_stream<char_type>) noexcept
 {
 	return {};
 }
+
+template<std::integral char_type>
+inline constexpr void write_all_overflow_define(dummy_buffer_output_stream<char_type>,char_type const* first,char_type const* last) noexcept;
+
 
 template<std::integral char_type>
 inline constexpr char_type* obuffer_begin(dummy_buffer_output_stream<char_type>) noexcept
@@ -184,20 +188,14 @@ inline constexpr char_type* obuffer_end(dummy_buffer_output_stream<char_type>) n
 template<std::integral char_type>
 inline constexpr void obuffer_set_curr(dummy_buffer_output_stream<char_type>,char_type*) noexcept{}
 
-template<std::integral char_type>
-inline constexpr void obuffer_overflow(dummy_buffer_output_stream<char_type>,char_type) noexcept{}
-
-template<std::integral char_type>
-inline constexpr void write(dummy_buffer_output_stream<char_type>,char_type const*,char_type const*) noexcept{}
-
 template<std::integral ch_type>
 struct dummy_buffer_input_stream
 {
-	using char_type = ch_type;
+	using input_char_type = ch_type;
 };
 
 template<std::integral char_type>
-inline constexpr dummy_buffer_input_stream<char_type> io_value_handle(dummy_buffer_input_stream<char_type>) noexcept
+inline constexpr dummy_buffer_input_stream<char_type> input_stream_ref_define(dummy_buffer_input_stream<char_type>) noexcept
 {
 	return {};
 }
@@ -230,9 +228,8 @@ inline constexpr bool ibuffer_underflow(dummy_buffer_input_stream<char_type>) no
 }
 
 template<std::integral char_type>
-inline constexpr char_type* read(dummy_buffer_input_stream<char_type>,char_type* first,char_type*) noexcept
+inline constexpr void read_all_overflow_define(dummy_buffer_input_stream<char_type>,char_type*,char_type*) noexcept
 {
-	return first;
 }
 
 #if 0
