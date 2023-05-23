@@ -157,7 +157,7 @@ struct basic_reserve_scatters_define_byte_result
 };
 
 template<::std::integral char_type,typename T>
-inline ::fast_io::details::decay::basic_reserve_scatters_define_byte_result<char_type> prrsvsct_byte_common_rsvsc_impl(io_scatter_t* pscatters,char_type const* buffer,T t)
+inline ::fast_io::details::decay::basic_reserve_scatters_define_byte_result<char_type> prrsvsct_byte_common_rsvsc_impl(io_scatter_t* pscatters,char_type* buffer,T t)
 {
 	using basicioscattertypealiasptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -171,14 +171,13 @@ inline ::fast_io::details::decay::basic_reserve_scatters_define_byte_result<char
 	= io_scatter_t*;
 	auto result{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,
 		reinterpret_cast<basicioscattertypealiasptr>(pscatters),buffer,t)};
-	auto ptr{reinterpret_cast<scatterioscattertypealiasptr>(result.scatters_pos_ptr)};
+	scatterioscattertypealiasptr ptr{reinterpret_cast<scatterioscattertypealiasptr>(result.scatters_pos_ptr)};
 	if constexpr(sizeof(char_type)!=1)
 	{
 		scatter_rsv_update_times<sizeof(char_type)>(pscatters,ptr);
 	}
 	return {ptr,result.reserve_pos_ptr};
 }
-
 
 template<::std::integral char_type,typename T>
 inline auto prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type const* buffer,T t)
@@ -821,31 +820,26 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 		}
 		else if constexpr(::fast_io::reserve_scatters_printable<char_type,nocvreft>)
 		{
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if(!__builtin_is_constant_evaluated())
-#endif
+			if constexpr(::std::same_as<scattertype,void>)
 			{
-				if constexpr(::std::same_as<scattertype,void>)
+				auto pit{::fast_io::details::decay::prrsvsct_byte_common_rsvsc_impl(pscatters,ptr,t)};
+				if constexpr(1<n)
 				{
-					auto pit{::fast_io::details::decay::prrsvsct_byte_common_rsvsc_impl(pscatters,ptr,t)};
-					if constexpr(1<n)
-					{
-						return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pit.scatters_pos_ptr,pit.reserve_pos_ptr,args...);
-					}
-					else
-					{
-						return pscatters;
-					}
+					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pit.scatters_pos_ptr,pit.reserve_pos_ptr,args...);
+				}
+				else
+				{
+					return pscatters;
 				}
 			}
-			
-			auto pit{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,nocvreft>,
-				pscatters,ptr,t)};
-			if constexpr(1<n)
+			else
 			{
-				return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pit.scatters_pos_ptr,pit.reserve_pos_ptr,args...);
+				auto pit{print_reserve_scatters_define(::fast_io::io_reserve_type<char_type,nocvreft>,
+					pscatters,ptr,t)};
+				if constexpr(1<n)
+				{
+					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pit.scatters_pos_ptr,pit.reserve_pos_ptr,args...);
+				}
 			}
 		}
 	}
