@@ -145,6 +145,10 @@ inline constexpr void scatter_pread_all_bytes_cold_impl(instmtype insm,
 			{
 				return;
 			}
+			if(!retpos)
+			{
+				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+			}
 			::std::size_t pisc{ret.position_in_scatter};
 			off=::fast_io::fposoffadd_scatters(off,pscatters,ret);
 			if(pisc)

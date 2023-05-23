@@ -228,8 +228,13 @@ inline constexpr void read_all_cold_impl(instmtype insm,typename instmtype::inpu
 	{
 		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
 		{
-			while((first=read_some_underflow_define(insm,first,last))!=last)
+			for(decltype(first) it;(it=read_some_underflow_define(insm,first,last))!=last;)
 			{
+				if(it==first)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+				}
+				first=it;
 				char_type *curr{ibuffer_curr(insm)};
 				char_type *ed{ibuffer_end(insm)};
 				::std::ptrdiff_t bfddiff{ed-curr};
@@ -244,7 +249,13 @@ inline constexpr void read_all_cold_impl(instmtype insm,typename instmtype::inpu
 		}
 		else
 		{
-			while((first=read_some_underflow_define(insm,first,last))!=last);
+			for(decltype(first) it;(it=read_some_underflow_define(insm,first,last))!=last;first=it)
+			{
+				if(it==first)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+				}
+			}
 		}
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>)
@@ -255,10 +266,15 @@ inline constexpr void read_all_cold_impl(instmtype insm,typename instmtype::inpu
 			{
 				::std::size_t len{static_cast<::std::size_t>(last-first)};
 				basic_io_scatter_t<char_type> sc{first,len};
-				first+=::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len);
-				if(first!=last)
+				::std::size_t sz{::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len)};
+				first+=sz;
+				if(first==last)
 				{
 					return;
+				}
+				if(!sz)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
 				}
 				char_type *curr{ibuffer_curr(insm)};
 				char_type *ed{ibuffer_end(insm)};
@@ -278,10 +294,15 @@ inline constexpr void read_all_cold_impl(instmtype insm,typename instmtype::inpu
 			{
 				::std::size_t len{static_cast<::std::size_t>(last-first)};
 				basic_io_scatter_t<char_type> sc{first,len};
-				first+=::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len);
-				if(first!=last)
+				::std::size_t sz{::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len)};
+				first+=sz;
+				if(first==last)
 				{
 					return;
+				}
+				if(!sz)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
 				}
 			}
 		}
@@ -342,8 +363,13 @@ inline constexpr void read_all_bytes_cold_impl(instmtype insm,::std::byte *first
 	{
 		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>&&sizeof(char_type)==1)
 		{
-			while((first=read_some_bytes_underflow_define(insm,first,last))!=last)
+			for(decltype(first) it;(it=read_some_bytes_underflow_define(insm,first,last))!=last;)
 			{
+				if(it==first)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+				}
+				first=it;
 				char_type *curr{ibuffer_curr(insm)};
 				char_type *ed{ibuffer_end(insm)};
 				::std::ptrdiff_t bfddiff{ed-curr};
@@ -358,7 +384,13 @@ inline constexpr void read_all_bytes_cold_impl(instmtype insm,::std::byte *first
 		}
 		else
 		{
-			while((first=read_some_bytes_underflow_define(insm,first,last))!=last);
+			for(decltype(first) it;(it=read_some_bytes_underflow_define(insm,first,last))!=last;first=it)
+			{
+				if(it==first)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+				}
+			}
 		}
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>)
@@ -369,10 +401,15 @@ inline constexpr void read_all_bytes_cold_impl(instmtype insm,::std::byte *first
 			{
 				::std::size_t len{static_cast<::std::size_t>(last-first)};
 				io_scatter_t sc{first,len};
-				first+=::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len);
-				if(first!=last)
+				::std::size_t sz{::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len)};
+				first+=sz;
+				if(first==last)
 				{
 					return;
+				}
+				if(!sz)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
 				}
 				char_type *curr{ibuffer_curr(insm)};
 				char_type *ed{ibuffer_end(insm)};
@@ -392,10 +429,15 @@ inline constexpr void read_all_bytes_cold_impl(instmtype insm,::std::byte *first
 			{
 				::std::size_t len{static_cast<::std::size_t>(last-first)};
 				io_scatter_t sc{first,len};
-				first+=::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len);
-				if(first!=last)
+				::std::size_t sz{::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len)};
+				first+=sz;
+				if(first==last)
 				{
 					return;
+				}
+				if(!sz)
+				{
+					::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
 				}
 			}
 		}

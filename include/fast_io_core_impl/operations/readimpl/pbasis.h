@@ -216,12 +216,20 @@ inline constexpr void pread_all_cold_impl(instmtype insm,typename instmtype::inp
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>)
 	{
-		do
+		for(;;)
 		{
 			auto nit{pread_some_underflow_define(insm,first,last,off)};
 			off=::fast_io::fposoffadd_nonegative(off,nit-first);
+			if(nit==last)
+			{
+				return;
+			}
+			if(nit==first)
+			{
+				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+			}
 			first=nit;
-		} while (first!=last);
+		}
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_pread_some_underflow_define<instmtype>)
 	{
@@ -232,9 +240,13 @@ inline constexpr void pread_all_cold_impl(instmtype insm,typename instmtype::inp
 			auto ret{scatter_pread_some_bytes_underflow_define(insm,__builtin_addressof(sc),1,off)};
 			auto nit{first+::fast_io::scatter_status_one_size(ret,len)};
 			off=::fast_io::fposoffadd_nonegative(off,nit-first);
-			if(nit!=last)
+			if(nit==last)
 			{
 				return;
+			}
+			if(nit==first)
+			{
+				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
 			}
 			first=nit;
 		}
@@ -295,23 +307,40 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm,::std::byte *firs
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_pread_some_bytes_underflow_define<instmtype>)
 	{
-		do
+		while(first!=last)
 		{
 			auto nit{pread_some_bytes_underflow_define(insm,first,last,off)};
+			if(nit==last)
+			{
+				return;
+			}
+			if(nit==first)
+			{
+				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+			}
 			off=::fast_io::fposoffadd_nonegative(off,nit-first);
 			first=nit;
-		} while (first!=last);
+		}
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_pread_some_bytes_underflow_define<instmtype>)
 	{
-		do
+		for(;;)
 		{
 			::std::size_t len{static_cast<::std::size_t>(last-first)};
 			io_scatter_t sc{first,len};
-			auto nit=first+::fast_io::scatter_status_one_size(scatter_pread_some_bytes_underflow_define(insm,__builtin_addressof(sc),1,off),len);
-			off=::fast_io::fposoffadd_nonegative(off,nit-first);
+			::std::size_t sz{::fast_io::scatter_status_one_size(scatter_pread_some_bytes_underflow_define(insm,__builtin_addressof(sc),1,off),len)};
+			auto nit=first+sz;
+			if(nit==last)
+			{
+				return;
+			}
+			if(nit==first)
+			{
+				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+			}
+			off=::fast_io::fposoffadd_nonegative(off,sz);
 			first=nit;
-		} while (first!=last);
+		}
 	}
 	else if constexpr(sizeof(char_type)==1&&
 		(::fast_io::details::streamreflect::has_pread_all_underflow_define<instmtype>||
