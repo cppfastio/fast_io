@@ -45,6 +45,9 @@ inline constexpr ::fast_io::transmit_result transmit_bytes_until_eof_main_impl(o
 namespace operations
 {
 
+namespace decay
+{
+
 template<typename optstmtype,
 	typename instmtype,
 	typename T>
@@ -63,12 +66,12 @@ inline constexpr decltype(auto) transmit_bytes_until_eof_generic_decay(optstmtyp
 	else if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<optstmtype>)
 	{
 		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(optstm)};
-		return ::fast_io::operations::transmit_bytes_until_eof_generic_decay(optstm,instm,resultint);
+		return ::fast_io::operations::decay::transmit_bytes_until_eof_generic_decay(optstm,instm,resultint);
 	}
 	else if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
 	{
 		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(instm)};
-		return ::fast_io::operations::transmit_bytes_until_eof_generic_decay(optstm,instm,resultint);
+		return ::fast_io::operations::decay::transmit_bytes_until_eof_generic_decay(optstm,instm,resultint);
 	}
 	else
 	{
@@ -91,12 +94,12 @@ inline constexpr decltype(auto) transmit_bytes_until_eof_decay(optstmtype optstm
 	else if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<optstmtype>)
 	{
 		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(optstm)};
-		return ::fast_io::operations::transmit_bytes_until_eof_decay(optstm,instm);
+		return ::fast_io::operations::decay::transmit_bytes_until_eof_decay(optstm,instm);
 	}
 	else if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
 	{
 		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(instm)};
-		return ::fast_io::operations::transmit_bytes_until_eof_decay(optstm,instm);
+		return ::fast_io::operations::decay::transmit_bytes_until_eof_decay(optstm,instm);
 	}
 	else
 	{
@@ -104,17 +107,19 @@ inline constexpr decltype(auto) transmit_bytes_until_eof_decay(optstmtype optstm
 	}
 }
 
+}
+
 template<typename optstmtype,typename instmtype,typename T>
 inline constexpr decltype(auto) transmit_bytes_until_eof_generic(optstmtype &&optstm,instmtype &&instm,T resultint)
 {
-	return ::fast_io::operations::transmit_bytes_until_eof_generic_decay(::fast_io::manipulators::output_stream_ref(optstm),
+	return ::fast_io::operations::decay::transmit_bytes_until_eof_generic_decay(::fast_io::manipulators::output_stream_ref(optstm),
 		::fast_io::manipulators::input_stream_ref(instm),resultint);
 }
 
 template<typename optstmtype,typename instmtype>
 inline constexpr decltype(auto) transmit_bytes_until_eof(optstmtype &&optstm,instmtype &&instm)
 {
-	return ::fast_io::operations::transmit_bytes_until_eof_decay(::fast_io::manipulators::output_stream_ref(optstm),
+	return ::fast_io::operations::decay::transmit_bytes_until_eof_decay(::fast_io::manipulators::output_stream_ref(optstm),
 		::fast_io::manipulators::input_stream_ref(instm));
 }
 
