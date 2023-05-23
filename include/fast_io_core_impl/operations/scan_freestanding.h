@@ -173,7 +173,7 @@ template<typename input,typename T>
 			if constexpr(::fast_io::details::asan_state::current==::fast_io::details::asan_state::activate)
 			{
 				char_type const* p{buffer};
-				::fast_io::operations::read_all(in,buffer,buffer+n);
+				::fast_io::operations::decay::read_all_decay(in,buffer,buffer+n);
 				if constexpr(precise_reserve_scannable_no_error<char_type,T>)
 				{
 					scan_precise_reserve_define(io_reserve_type<char_type,T>,p,arg);
@@ -201,7 +201,7 @@ template<typename input,typename T>
 				bool inbuffer{diff<n};
 				if(inbuffer)[[unlikely]]
 				{
-					::fast_io::operations::read_all(in,buffer,buffer+n);
+					::fast_io::operations::decay::read_all_decay(in,buffer,buffer+n);
 					p=buffer;
 				}
 				if constexpr(precise_reserve_scannable_no_error<char_type,T>)
