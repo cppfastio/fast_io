@@ -1102,6 +1102,9 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 namespace operations
 {
 
+namespace decay
+{
+
 template<bool line,typename outputstmtype,typename... Args>
 requires (::fast_io::output_stream<outputstmtype>||
 	::fast_io::status_output_stream<outputstmtype>)
@@ -1126,7 +1129,7 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 	else if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outputstmtype>)
 	{
 		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(optstm)};
-		return print_freestanding_decay(
+		return ::fast_io::operations::decay::print_freestanding_decay<line>(
 			::fast_io::details::output_stream_unlocked_ref_impl(optstm),args...);
 	}
 	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outputstmtype>)
@@ -1139,6 +1142,7 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 	}
 }
 
+}
 
 template<typename output,typename ...Args>
 #if 0
@@ -1151,7 +1155,7 @@ requires print_freestanding_okay<output,Args...>
 #endif
 inline constexpr void print_freestanding(output&& outstm,Args&& ...args)
 {
-	print_freestanding_decay<false>(::fast_io::manipulators::output_stream_ref(outstm),
+	::fast_io::operations::decay::print_freestanding_decay<false>(::fast_io::manipulators::output_stream_ref(outstm),
 	io_print_forward<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
 }
 
@@ -1166,7 +1170,7 @@ requires print_freestanding_okay<output,Args...>
 #endif
 inline constexpr void println_freestanding(output&& outstm,Args&& ...args)
 {
-	print_freestanding_decay<true>(::fast_io::manipulators::output_stream_ref(outstm),
+	::fast_io::operations::decay::print_freestanding_decay<true>(::fast_io::manipulators::output_stream_ref(outstm),
 	io_print_forward<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
 }
 

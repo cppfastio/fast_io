@@ -6,6 +6,7 @@
 #include"pbasis.h"
 #include"scatterp.h"
 #include"scatterpbytes.h"
+#include"decay.h"
 
 namespace fast_io
 {
