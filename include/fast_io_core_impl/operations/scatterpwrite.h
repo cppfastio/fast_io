@@ -113,7 +113,7 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_impl(outstmtype outsm,
 	}
 	else
 	{
-		return scatter_pwrite_some_cold_impl(outsm,pscatters,n);
+		return ::fast_io::details::scatter_pwrite_some_cold_impl(outsm,pscatters,n,off);
 	}
 }
 

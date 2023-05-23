@@ -47,7 +47,7 @@ struct bar
 {};
 
 template<::fast_io::output_stream optstmtype>
-inline constexpr void print_define(::fast_io::io_reserve_type_t<char8_t,bar>,optstmtype opt,bar b)
+inline constexpr void print_define(::fast_io::io_reserve_type_t<char8_t,bar>,optstmtype opt,bar)
 {
 	::fast_io::operations::print_freestanding(opt,u8"\nbar",1,u8"\nbar2\n",u8"bar3\n");
 }

@@ -115,7 +115,7 @@ inline constexpr ::fast_io::intfpos_t fposoffadd_nonegative(::fast_io::intfpos_t
 	}
 	else
 	{
-		return off+df;
+		return off+static_cast<::fast_io::intfpos_t>(df);
 	}
 }
 

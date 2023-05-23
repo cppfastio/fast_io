@@ -145,7 +145,10 @@ inline constexpr void scatter_rsv_update_times(::fast_io::io_scatter_t *first,::
 {
 	if constexpr(sz!=1)
 	{
-		for(;first!=last;first->len*=sz);
+		for(;first!=last;++first)
+		{
+			first->len*=sz;
+		}
 	}
 }
 
@@ -439,7 +442,6 @@ inline constexpr void print_control_single(output outstm,T t)
 		static_assert(!line||sz.scatters_size!=SIZE_MAX);
 		constexpr
 			::std::size_t scattersnum{sz.scatters_size+static_cast<::std::size_t>(line)};
-		using char_type = typename output::output_char_type;
 #if __cpp_if_consteval >= 202106L
 		if !consteval
 #else

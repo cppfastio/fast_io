@@ -360,7 +360,6 @@ inline constexpr void pwrite_all_bytes_cold_impl(outstmtype outsm,::std::byte co
 template<typename outstmtype>
 inline constexpr typename outstmtype::output_char_type const* pwrite_some_impl(outstmtype outsm,typename outstmtype::output_char_type const *first,typename outstmtype::output_char_type const *last,::fast_io::intfpos_t off)
 {
-	using char_type = typename outstmtype::output_char_type;
 	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
 	{
 		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
@@ -386,7 +385,6 @@ inline constexpr void pwrite_all_impl(outstmtype outsm,
 template<typename outstmtype>
 inline constexpr ::std::byte const* pwrite_some_bytes_impl(outstmtype outsm,::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t off)
 {
-	using char_type = typename outstmtype::output_char_type;
 	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
 	{
 		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
