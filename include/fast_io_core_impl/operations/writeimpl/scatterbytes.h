@@ -309,7 +309,6 @@ inline constexpr void scatter_write_all_bytes_impl(outstmtype outsm,
 			[[likely]]
 #endif
 			{
-		{
 				using char_type_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 				[[__gnu__::__may_alias__]]
