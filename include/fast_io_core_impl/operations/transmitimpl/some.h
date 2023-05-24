@@ -72,14 +72,14 @@ inline constexpr decltype(auto) transmit_some_decay(optstmtype optstm,instmtype 
 	{
 		return status_transmit_some_define(optstm,instm,totransmit);
 	}
-	else if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<optstmtype>)
+	else if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<optstmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(optstm)};
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(optstm)};
 		return ::fast_io::operations::decay::transmit_some_decay(optstm,instm,totransmit);
 	}
-	else if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	else if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(instm)};
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
 		return ::fast_io::operations::decay::transmit_some_decay(optstm,instm,totransmit);
 	}
 	else

@@ -494,11 +494,13 @@ template<typename instmtype>
 inline constexpr typename instmtype::input_char_type* read_some_impl(instmtype insm,typename instmtype::input_char_type *first,typename instmtype::input_char_type *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::read_some_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::read_some_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
 	}
+	else
+	{
 	if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
 	{
 		char_type *curr{ibuffer_curr(insm)};
@@ -516,6 +518,7 @@ inline constexpr typename instmtype::input_char_type* read_some_impl(instmtype i
 		}
 	}
 	return ::fast_io::details::read_some_cold_impl(insm,first,last);
+	}
 }
 
 template<typename instmtype>
@@ -523,11 +526,13 @@ inline constexpr void read_all_impl(instmtype insm,
 	typename instmtype::input_char_type *first,
 	typename instmtype::input_char_type *last)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::read_all_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::read_all_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
 	}
+	else
+	{
 	using char_type = typename instmtype::input_char_type;
 	if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
 	{
@@ -546,17 +551,20 @@ inline constexpr void read_all_impl(instmtype insm,
 		}
 	}
 	::fast_io::details::read_all_cold_impl(insm,first,last);
+	}
 }
 
 template<typename instmtype>
 inline constexpr ::std::byte* read_some_bytes_impl(instmtype insm,::std::byte *first,::std::byte *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::read_some_bytes_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::read_some_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
 	}
+	else
+	{
 	if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>&&sizeof(char_type)==1)
 	{
 		char_type *curr{ibuffer_curr(insm)};
@@ -580,17 +588,20 @@ inline constexpr ::std::byte* read_some_bytes_impl(instmtype insm,::std::byte *f
 		}
 	}
 	return ::fast_io::details::read_some_bytes_cold_impl(insm,first,last);
+	}
 }
 
 template<typename instmtype>
 inline constexpr void read_all_bytes_impl(instmtype insm,
 	::std::byte *first,::std::byte *last)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::read_all_bytes_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::read_all_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
 	}
+	else
+	{
 	using char_type = typename instmtype::input_char_type;
 	if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>&&sizeof(char_type)==1)
 	{
@@ -615,6 +626,7 @@ inline constexpr void read_all_bytes_impl(instmtype insm,
 		}
 	}
 	::fast_io::details::read_all_bytes_cold_impl(insm,first,last);
+	}
 }
 
 }

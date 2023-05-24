@@ -1126,11 +1126,11 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 			return;
 		}
 	}
-	else if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outputstmtype>)
+	else if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<outputstmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(optstm)};
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(optstm)};
 		return ::fast_io::operations::decay::print_freestanding_decay<line>(
-			::fast_io::details::output_stream_unlocked_ref_impl(optstm),args...);
+			::fast_io::operations::decay::output_stream_unlocked_ref_decay(optstm),args...);
 	}
 	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outputstmtype>)
 	{

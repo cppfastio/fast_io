@@ -389,12 +389,15 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm,::std::byte *firs
 template<typename instmtype>
 inline constexpr typename instmtype::input_char_type* pread_some_impl(instmtype insm,typename instmtype::input_char_type *first,typename instmtype::input_char_type *last,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::pread_some_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::pread_some_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last,off);
 	}
-	return ::fast_io::details::pread_some_cold_impl(insm,first,last,off);
+	else
+	{
+		return ::fast_io::details::pread_some_cold_impl(insm,first,last,off);
+	}
 }
 
 template<typename instmtype>
@@ -403,35 +406,44 @@ inline constexpr void pread_all_impl(instmtype insm,
 	typename instmtype::input_char_type *last,
 	::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::pread_all_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::pread_all_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last,off);
 	}
-	::fast_io::details::pread_all_cold_impl(insm,first,last,off);
+	else
+	{
+		::fast_io::details::pread_all_cold_impl(insm,first,last,off);
+	}
 }
 
 template<typename instmtype>
 inline constexpr ::std::byte* pread_some_bytes_impl(instmtype insm,::std::byte *first,::std::byte *last,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::pread_some_bytes_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::pread_some_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last,off);
 	}
-	return ::fast_io::details::pread_some_bytes_cold_impl(insm,first,last,off);
+	else
+	{
+		return ::fast_io::details::pread_some_bytes_cold_impl(insm,first,last,off);
+	}
 }
 
 template<typename instmtype>
 inline constexpr void pread_all_bytes_impl(instmtype insm,
 	::std::byte *first,::std::byte *last,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::pread_all_bytes_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::pread_all_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last,off);
 	}
-	::fast_io::details::pread_all_bytes_cold_impl(insm,first,last,off);
+	else
+	{
+		::fast_io::details::pread_all_bytes_cold_impl(insm,first,last,off);
+	}
 }
 
 

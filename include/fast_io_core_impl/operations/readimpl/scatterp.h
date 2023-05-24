@@ -106,10 +106,10 @@ inline constexpr io_scatter_status_t scatter_pread_some_impl(instmtype insm,
 	basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters,
 	::std::size_t n,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::scatter_pread_some_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),pscatters,n);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::scatter_pread_some_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),pscatters,n);
 	}
 	else
 	{
@@ -211,10 +211,10 @@ inline constexpr void scatter_pread_all_impl(instmtype insm,
 	basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters,
 	::std::size_t n,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_input_stream_impl<instmtype>)
+	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(insm)};
-		return ::fast_io::details::scatter_pread_all_impl(::fast_io::details::input_stream_unlocked_ref_impl(insm),pscatters,n);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
+		return ::fast_io::details::scatter_pread_all_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),pscatters,n);
 	}
 	else
 	{

@@ -298,11 +298,11 @@ requires (status_input_stream<input>||input_stream<input>)
 {
 	if constexpr(::fast_io::status_input_stream<input>)
 		return status_scan_define(instm,args...);
-	else if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<input>)
+	else if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<input>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{input_stream_mutex_ref_impl(instm)};
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
 		return scan_freestanding_decay(
-			::fast_io::details::input_stream_unlocked_ref_impl(instm),args...);
+			::fast_io::operations::decay::input_stream_unlocked_ref_decay(instm),args...);
 	}
 	else if constexpr(buffer_input_stream<input>)
 	{
