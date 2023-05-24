@@ -40,7 +40,7 @@ inline constexpr io_scatter_status_t scatter_write_some_decay(outstmtype outsm,
 
 template<typename outstmtype>
 inline constexpr io_scatter_status_t scatter_write_some_bytes_decay(outstmtype outsm,
-	basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
+	io_scatter_t const *pscatters,
 	::std::size_t n)
 {
 	return ::fast_io::details::scatter_write_some_bytes_impl(outsm,pscatters,n);
@@ -56,7 +56,7 @@ inline constexpr void scatter_write_all_decay(outstmtype outsm,
 
 template<typename outstmtype>
 inline constexpr void scatter_write_all_bytes_decay(outstmtype outsm,
-	basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
+	io_scatter_t const *pscatters,
 	::std::size_t n)
 {
 	::fast_io::details::scatter_write_all_bytes_impl(outsm,pscatters,n);
@@ -100,7 +100,7 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_decay(outstmtype outsm,
 
 template<typename outstmtype>
 inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_decay(outstmtype outsm,
-	basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
+	io_scatter_t const *pscatters,
 	::std::size_t n,::fast_io::intfpos_t off)
 {
 	return ::fast_io::details::scatter_pwrite_some_bytes_impl(outsm,pscatters,n,off);
@@ -116,7 +116,7 @@ inline constexpr void scatter_pwrite_all_decay(outstmtype outsm,
 
 template<typename outstmtype>
 inline constexpr void scatter_pwrite_all_bytes_decay(outstmtype outsm,
-	basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
+	io_scatter_t const *pscatters,
 	::std::size_t n,::fast_io::intfpos_t off)
 {
 	::fast_io::details::scatter_pwrite_all_bytes_impl(outsm,pscatters,n,off);

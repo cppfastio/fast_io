@@ -17,7 +17,6 @@ A dummy placeholder implementation
 		::std::size_t bfsz{::fast_io::details::transmit_buffer_size_cache<1>};
 	::fast_io::details::local_operator_new_array_ptr<::std::byte> newptr(bfsz);
 	::std::byte *buffer_start{newptr.ptr};
-	::std::byte *buffer_end{newptr.ptr+newptr.size};
 	::fast_io::uintfpos_t totransmit{needtransmit};
 	while(totransmit)
 	{
