@@ -658,7 +658,7 @@ inline ::std::byte const* pwrite_some_bytes_impl(void* __restrict handle,
 	return ::fast_io::win32::details::write_or_pwrite_some_bytes_common_impl(handle,first,last,__builtin_addressof(overlap));
 }
 
-inline ::fast_io::uintfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,seekdir s)
+inline ::fast_io::intfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,seekdir s)
 {
 #if (defined(_WIN32_WINNT)&&_WIN32_WINNT <= 0x0500) || defined(_WIN32_WINDOWS)
 	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least32_t))
@@ -674,7 +674,7 @@ inline ::fast_io::uintfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,
 	{
 		throw_win32_error();
 	}
-	return static_cast<::fast_io::uintfpos_t>(static_cast<std::uint_least32_t>(distance_to_move_high));
+	return static_cast<::fast_io::intfpos_t>(static_cast<std::uint_least32_t>(distance_to_move_high));
 #else
 	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least64_t))
 	{
@@ -688,24 +688,31 @@ inline ::fast_io::uintfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,
 	{
 		throw_win32_error();
 	}
-	return static_cast<::fast_io::uintfpos_t>(static_cast<std::uint_least64_t>(distance_to_move_high));
+	return static_cast<::fast_io::intfpos_t>(static_cast<std::uint_least64_t>(distance_to_move_high));
 #endif
 }
 
 }
 
 template<win32_family family,std::integral ch_type>
-inline ::std::byte* read_some_bytes_underflow_define(basic_win32_family_io_observer<family,ch_type> niob,
+inline ::std::byte* read_some_bytes_underflow_define(basic_win32_family_io_observer<family,ch_type> wiob,
 	::std::byte* first, ::std::byte* last)
 {
-	return ::fast_io::win32::details::read_some_bytes_impl(niob.handle,first,last);
+	return ::fast_io::win32::details::read_some_bytes_impl(wiob.handle,first,last);
 }
 
 template<win32_family family,std::integral ch_type>
-inline ::std::byte const* write_some_bytes_overflow_define(basic_win32_family_io_observer<family,ch_type> niob,
+inline ::std::byte const* write_some_bytes_overflow_define(basic_win32_family_io_observer<family,ch_type> wiob,
 	::std::byte const *first, ::std::byte const *last)
 {
-	return ::fast_io::win32::details::write_some_bytes_impl(niob.handle,first,last);
+	return ::fast_io::win32::details::write_some_bytes_impl(wiob.handle,first,last);
+}
+
+template<win32_family family,::std::integral ch_type>
+inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_win32_family_io_observer<family,ch_type> wiob,
+	::fast_io::intfpos_t off,::fast_io::seekdir sdir)
+{
+	return ::fast_io::win32::details::seek_impl(wiob.handle,off,sdir);
 }
 
 #if 0
