@@ -16,9 +16,9 @@ inline ::fast_io::io_scatter_status_t posix_scatter_read_bytes_impl(int fd,
 #endif
 	= __wasi_iovec_t const*;
 	::std::size_t ret;
-	auto val{noexcept_call(__wasi_fd_read,
+	auto val{noexcept_call(__wasi_fd_read,fd,
 		reinterpret_cast<iovec_may_alias_const_ptr>(pscatter),
-		static_cast<::std::size_t>(last-first),__builtin_addressof(ret))};
+		n,__builtin_addressof(ret))};
 	if(val)
 	{
 		::fast_io::throw_posix_error(val);
@@ -30,9 +30,9 @@ inline ::fast_io::io_scatter_status_t posix_scatter_read_bytes_impl(int fd,
 #endif
 	= struct iovec const*;
 
-	auto ret{::fast_io::noexcept_call(::readv,
+	auto ret{::fast_io::noexcept_call(::readv,fd,
 		reinterpret_cast<iovec_may_alias_const_ptr>(pscatter),
-		static_cast<::std::size_t>(last-first))};
+		n)};
 	if(ret<0)
 	{
 		::fast_io::throw_posix_error();
@@ -52,9 +52,9 @@ inline ::fast_io::io_scatter_status_t posix_scatter_write_bytes_impl(int fd,
 #endif
 	= __wasi_iovec_t const*;
 	::std::size_t ret;
-	auto val{noexcept_call(__wasi_fd_write,
+	auto val{noexcept_call(__wasi_fd_write,fd,
 		reinterpret_cast<iovec_may_alias_const_ptr>(pscatter),
-		static_cast<::std::size_t>(last-first),__builtin_addressof(ret))};
+		n,__builtin_addressof(ret))};
 	if(val)
 	{
 		::fast_io::throw_posix_error(val);
@@ -66,9 +66,9 @@ inline ::fast_io::io_scatter_status_t posix_scatter_write_bytes_impl(int fd,
 #endif
 	= struct iovec const*;
 
-	auto ret{::fast_io::noexcept_call(::writev,
+	auto ret{::fast_io::noexcept_call(::writev,fd,
 		reinterpret_cast<iovec_may_alias_const_ptr>(pscatter),
-		static_cast<::std::size_t>(last-first))};
+		n)};
 	if(ret<0)
 	{
 		::fast_io::throw_posix_error();

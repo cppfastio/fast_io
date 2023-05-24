@@ -146,64 +146,6 @@ inline constexpr posix_at_entry at(basic_filebuf_io_observer<char_type,traits_ty
 	return posix_at_entry{details::fp_to_fd(details::streambuf_hack::fp_hack(other.fb))};
 }
 
-template<typename T>
-requires (std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>||
-std::derived_from<T,std::basic_filebuf<typename T::char_type,typename T::traits_type>>)
-inline bool is_character_device(basic_general_streambuf_io_observer<T> other)
-{
-	using char_type  = typename T::char_type;
-	basic_c_io_observer<char_type> bciob{static_cast<basic_c_io_observer<char_type>>(other)};
-	if constexpr(std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>)
-	{
-		if(bciob.fp==nullptr)
-#ifdef EBADF
-			throw_posix_error(EBADF);
-#else
-			throw_posix_error(EINVAL);
-#endif
-	}
-	return is_character_device(bciob);
-
-}
-
-template<typename T>
-requires (std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>||
-std::derived_from<T,std::basic_filebuf<typename T::char_type,typename T::traits_type>>)
-inline void clear_screen(basic_general_streambuf_io_observer<T> other)
-{
-	using char_type  = typename T::char_type;
-	basic_c_io_observer<char_type> bciob{static_cast<basic_c_io_observer<char_type>>(other)};
-	if constexpr(std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>)
-	{
-		if(bciob.fp==nullptr)
-#ifdef EBADF
-			throw_posix_error(EBADF);
-#else
-			throw_posix_error(EINVAL);
-#endif
-	}
-#if defined(__AVR__)
-	::fast_io::details::avr_libc_nosup_impl();
-#else
-	io_lock_guard guard{bciob};
-	FILE* fp{bciob.fp};
-	int fd{details::fp_unlocked_to_fd(fp)};
-#if defined(_WIN32)&&!defined(__WINE__)
-	void* handle{details::my_get_osfile_handle(fd)};
-	if(!win32::details::win32_is_character_device(handle))
-		return;
-	other.fb->pubsync();
-	details::c_flush_unlocked_impl(fp);
-	win32::details::win32_clear_screen_main(handle);
-#else
-	if(!details::posix_is_character_device(fd))
-		return;
-	other.fb->pubsync();
-	details::c_flush_unlocked_impl(fp);
-	details::posix_clear_screen_main(fd);
-#endif
-#endif
-}
 #endif
 }
 
