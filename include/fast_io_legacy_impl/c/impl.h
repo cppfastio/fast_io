@@ -732,6 +732,21 @@ inline constexpr basic_c_family_io_observer<family,char> io_bytes_stream_ref_def
 	return {other.fp};
 }
 
+template<c_family family,std::integral ch_type>
+requires (family==c_family::standard||family==c_family::emulated)
+inline constexpr basic_c_family_io_observer<c_family::native_unlocked,ch_type> io_stream_mutex_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
+{
+	return {other.fp};
+}
+
+template<c_family family,std::integral ch_type>
+requires (family==c_family::standard||family==c_family::emulated)
+inline constexpr basic_c_family_io_observer<c_family::native_unlocked,ch_type> io_stream_unlocked_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
+{
+	return {other.fp};
+}
+
+
 #if defined(__AVR__)
 template<c_family family,std::integral ch_type>
 inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_type> ciob)
