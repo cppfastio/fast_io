@@ -547,7 +547,7 @@ inline void obuffer_overflow(basic_c_io_observer_unlocked<char_type> ciob,char_t
 }
 
 template<::std::integral char_type>
-inline ::std::byte* read_all_bytes_underflow_define(
+inline ::std::byte* read_some_bytes_underflow_define(
 ::fast_io::basic_c_io_observer_unlocked<char_type> ciob,
 ::std::byte* first,::std::byte* last)
 {
