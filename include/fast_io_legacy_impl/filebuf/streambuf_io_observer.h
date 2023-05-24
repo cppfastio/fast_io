@@ -120,13 +120,6 @@ inline auto seek(basic_filebuf_io_observer<ch_type,Traits> h,std::intmax_t offse
 	return seek(static_cast<basic_c_io_observer<ch_type>>(h),offset,s);
 }
 
-template<std::integral ch_type,typename traits_type,typename... Args>
-requires io_controllable<basic_c_io_observer<ch_type>,Args...>
-inline decltype(auto) io_control(basic_filebuf_io_observer<ch_type,traits_type> h,Args&& ...args)
-{
-	return io_control(static_cast<basic_c_io_observer<ch_type>>(h),::std::forward<Args>(args)...);
-}
-
 template<std::integral ch_type,typename traits_type>
 requires requires(basic_c_io_observer<ch_type> piob)
 {
@@ -294,5 +287,5 @@ inline Iter write(basic_general_streambuf_io_observer<T> t,Iter begin,Iter end)
 		return begin+details::streambuf_write_impl(basic_streambuf_io_observer<char_type,traits_type>{t.fb},
 			reinterpret_cast<char const*>(::std::to_address(begin)),static_cast<std::size_t>(end-begin)*sizeof(*begin))/(*begin);
 }
-//static_assert(value_based_stream<filebuf_io_observer>);
+
 }

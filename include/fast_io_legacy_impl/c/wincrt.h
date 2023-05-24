@@ -162,7 +162,12 @@ inline void wincrt_fp_write_cold_malloc_case_impl(FILE* __restrict fpp,char cons
 	}
 	if(diff>=allocated_buffer_size)
 	{
+#if 0
 		posix_write_nolock_impl(static_cast<int>(fp->_file),first,diff);
+#else
+		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		::fast_io::operations::decay::write_all_decay(piob,first,first+diff);
+#endif
 		return;
 	}
 	auto newbuffer{my_malloc_crt(allocated_buffer_size)};
@@ -188,10 +193,21 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE* __restrict fpp,char cons
 	fp->_ptr+=remain;
 	fp->_cnt=0;
 	wincrt_fp_set_flag_dirty_impl(fp);
+	::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+#if 0
 	posix_write_simple_impl(static_cast<int>(fp->_file),fp->_base,static_cast<std::size_t>(fp->_ptr-fp->_base));
+#else
+	::fast_io::operations::decay::write_all_decay(piob,fp->_base,fp->_ptr);
+#endif
 	std::size_t const bufsiz{static_cast<std::size_t>(static_cast<unsigned int>(fp->_bufsiz))};	
 	if(diff>=bufsiz)
+	{
+#if 0
 		posix_write_nolock_impl(static_cast<int>(fp->_file),first,diff);
+#else
+		::fast_io::operations::decay::write_all_decay(piob,first,first+diff);
+#endif
+	}
 	else
 	{
 		fp->_ptr=non_overlapped_copy_n(first,diff,fp->_base);
@@ -264,7 +280,14 @@ inline void wincrt_fp_overflow_impl(FILE* __restrict fpp,char_type ch)
 	if(fp->_base==nullptr)
 		wincrt_fp_allocate_buffer_impl(fpp);
 	else
+	{
+#if 0
 		posix_write_simple_impl(static_cast<int>(fp->_file),fp->_base,static_cast<std::size_t>(static_cast<unsigned>(fp->_bufsiz)));
+#else
+		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		::fast_io::operations::decay::write_all_decay(piob,fp->_base,fp->_base+fp->_bufsiz);
+#endif
+	}
 	fp->_ptr=fp->_base;
 	my_memcpy(fp->_ptr,__builtin_addressof(ch),sizeof(ch));
 	fp->_ptr+=sizeof(ch);
@@ -282,18 +305,27 @@ inline void wincrt_fp_flush_stdout_impl()
 #else
 	FILE* fp{::fast_io::win32::wincrt_acrt_iob_func(1)};
 #endif
+#if 1
+	if(fp->_ptr==fp->_base)
+	{
+		return;
+	}
+	::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+	::fast_io::operations::decay::write_all_decay(piob,fp->_base,fp->_ptr);
+#else
 	std::size_t diff{static_cast<std::size_t>(fp->_ptr-fp->_base)};
 //	if(diff==0||!wincrt_fp_is_dirty_impl(fp))
 	if(diff==0)
 		return;
 	posix_write_simple_impl(static_cast<int>(fp->_file),fp->_base,diff);
+#endif
 	fp->_ptr=fp->_base;
 }
 
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std::size_t diff)
+inline char* wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std::size_t diff)
 {
 	if(fpp==::fast_io::win32::wincrt_acrt_iob_func(0))
 		wincrt_fp_flush_stdout_impl();
@@ -304,7 +336,6 @@ inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std
 #endif
 	std::size_t cnt{static_cast<std::size_t>(static_cast<unsigned int>(fp->_cnt))};
 	non_overlapped_copy_n(fp->_ptr,cnt,first);
-	auto first_temp{first};
 	first+=cnt;
 	diff-=cnt;
 	std::size_t allocated_buffer_size{static_cast<std::size_t>(static_cast<unsigned int>(fp->_bufsiz))};
@@ -312,7 +343,14 @@ inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std
 		allocated_buffer_size=wincrt_internal_buffer_size;
 
 	if(diff>=allocated_buffer_size)
+	{
+#if 0
 		return posix_read_impl(static_cast<int>(fp->_file),first,diff);
+#else
+		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		return ::fast_io::operations::decay::read_some_decay(piob,first,first+diff);
+#endif
+	}
 	else
 	{
 		if(fp->_base==nullptr)
@@ -323,7 +361,16 @@ inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std
 			fp->_bufsiz=static_cast<int>(static_cast<unsigned int>(allocated_buffer_size));
 			wincrt_fp_set_flag_mybuf_impl(fp);
 		}
+
+#if 0
 		std::size_t readed{posix_read_impl(static_cast<int>(fp->_file),fp->_base,static_cast<std::size_t>(static_cast<unsigned int>(fp->_bufsiz)))};
+#else
+		::std::size_t readed;
+		{
+			::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+			readed=static_cast<::std::size_t>(::fast_io::operations::decay::read_some_decay(piob,fp->_base,fp->_base+fp->_bufsiz)-fp->_base);
+		}
+#endif
 		fp->_cnt=static_cast<int>(static_cast<unsigned int>(readed));
 		fp->_ptr=fp->_base;
 		if(readed<diff)
@@ -331,40 +378,7 @@ inline std::size_t wincrt_fp_read_cold_impl(FILE* __restrict fpp,char* first,std
 		non_overlapped_copy_n(fp->_base,diff,first);
 		fp->_ptr+=diff;
 		fp->_cnt-=static_cast<int>(static_cast<unsigned int>(diff));
-		return static_cast<std::size_t>(first+diff-first_temp);
-	}
-}
-
-template<c_family family,std::integral char_type>
-inline char_type* wincrt_fp_read_impl(FILE* __restrict fpp,char_type* first,char_type* last)
-{
-	if constexpr(family==c_family::standard)
-	{
-		c_io_observer ciob{fpp};
-		io_lock_guard guard{ciob};
-		return wincrt_fp_read_impl<c_family::unlocked,char_type>(fpp,first,last);
-	}
-	else
-	{
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf* fp{reinterpret_cast<ucrt_iobuf*>(fpp)};
-#else
-	FILE* fp{fpp};
-#endif
-	std::size_t diff{static_cast<std::size_t>(last-first)*sizeof(char_type)};
-	std::size_t remain{static_cast<std::size_t>(static_cast<unsigned int>(fp->_cnt))};
-	if(diff<remain)[[likely]]
-	{
-		if(diff)[[likely]]
-		{
-			my_memcpy(first,fp->_ptr,diff);
-			auto intdiff{static_cast<int>(static_cast<unsigned int>(diff))};
-			fp->_cnt-=intdiff;
-			fp->_ptr+=intdiff;
-		}
-		return last;
-	}
-	return first+wincrt_fp_read_cold_impl(fpp,reinterpret_cast<char*>(first),diff)/sizeof(char_type);
+		return first+diff;
 	}
 }
 
@@ -383,7 +397,15 @@ inline bool wincrt_fp_underflow_impl(FILE* __restrict fpp)
 #endif
 	if(fp->_base==nullptr)
 		wincrt_fp_allocate_buffer_impl(fpp);
+#if 0
 	std::size_t size{posix_read_impl(static_cast<int>(fp->_file),fp->_base,static_cast<std::size_t>(static_cast<unsigned>(fp->_bufsiz)))};
+#else
+	::std::size_t size;
+	{
+		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		size=static_cast<::std::size_t>(::fast_io::operations::decay::read_some_decay(piob,fp->_base,fp->_base+fp->_bufsiz)-fp->_base);
+	}
+#endif
 	fp->_ptr=fp->_base;
 	fp->_cnt=static_cast<int>(static_cast<unsigned int>(size));
 	if constexpr(sizeof(char_type)==1)
@@ -524,28 +546,24 @@ inline void obuffer_overflow(basic_c_io_observer_unlocked<char_type> ciob,char_t
 	details::wincrt_fp_overflow_impl(ciob.fp,ch);
 }
 
-template<c_family family,std::integral char_type,::std::contiguous_iterator Iter>
-requires (std::same_as<char_type,char>||std::same_as<::std::iter_value_t<Iter>,char_type>)
-inline Iter read(basic_c_family_io_observer<family,char_type> ciob,Iter bg,Iter ed)
+template<::std::integral char_type>
+inline ::std::byte* read_all_bytes_underflow_define(
+::fast_io::basic_c_io_observer_unlocked<char_type> ciob,
+::std::byte* first,::std::byte* last)
 {
-	if constexpr(!std::same_as<::std::iter_value_t<Iter>,char_type>||!std::is_pointer_v<Iter>)
-		return read(ciob,reinterpret_cast<char_type*>(::std::to_address(bg)),
-				reinterpret_cast<char_type*>(::std::to_address(ed)))-
-				reinterpret_cast<char_type*>(::std::to_address(bg))+bg;
-	else
-		return details::wincrt_fp_read_impl<family>(ciob.fp,bg,ed);
+	return ::fast_io::details::wincrt_fp_read_cold_impl(ciob.fp,
+		reinterpret_cast<char*>(first),
+		reinterpret_cast<char*>(last));
 }
 
-
-template<c_family family,std::integral char_type,::std::contiguous_iterator Iter>
-requires (std::same_as<char_type,char>||std::same_as<::std::iter_value_t<Iter>,char_type>)
-inline void write(basic_c_family_io_observer<family,char_type> ciob,Iter bg,Iter ed)
+template<::std::integral char_type>
+inline void write_all_bytes_overflow_define(
+::fast_io::basic_c_io_observer_unlocked<char_type> ciob,
+::std::byte const* first,::std::byte const* last)
 {
-	if constexpr(!std::same_as<::std::iter_value_t<Iter>,char_type>||!std::is_pointer_v<Iter>)
-		write(ciob,reinterpret_cast<char_type*>(::std::to_address(bg)),
-				reinterpret_cast<char_type*>(::std::to_address(ed)));
-	else
-		details::wincrt_fp_write_impl<family>(ciob.fp,bg,ed);
+	::fast_io::details::wincrt_fp_write_impl(ciob.fp,
+		reinterpret_cast<char const*>(first),
+		reinterpret_cast<char const*>(last));
 }
 
 inline c_io_observer c_stdin() noexcept

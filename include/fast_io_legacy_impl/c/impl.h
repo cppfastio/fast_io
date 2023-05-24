@@ -622,6 +622,8 @@ class basic_c_family_io_observer
 {
 public:
 	using char_type = ch_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using native_handle_type = FILE*;
 	native_handle_type fp{};
 	constexpr native_handle_type native_handle() const noexcept
@@ -719,19 +721,20 @@ public:
 };
 
 template<c_family family,std::integral ch_type>
-inline constexpr basic_c_family_io_observer<family,ch_type> io_value_handle(basic_c_family_io_observer<family,ch_type> other) noexcept
+inline constexpr basic_c_family_io_observer<family,ch_type> io_stream_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
 {
 	return other;
 }
+
+template<c_family family,std::integral ch_type>
+inline constexpr basic_c_family_io_observer<family,char> io_bytes_stream_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
+{
+	return {other.fp};
+}
+
 #if defined(__AVR__)
 template<c_family family,std::integral ch_type>
 inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_type> ciob)
-{
-	details::avr_libc_nosup_impl();
-}
-
-template<c_family family,std::integral ch_type,typename... Args>
-inline void io_control(basic_c_family_io_observer<family,ch_type> h,Args&& ...args)
 {
 	details::avr_libc_nosup_impl();
 }
@@ -752,13 +755,6 @@ requires requires(basic_posix_io_observer<ch_type> piob)
 inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_type> ciob)
 {
 	return status(static_cast<basic_posix_io_observer<ch_type>>(ciob));
-}
-
-template<c_family family,std::integral ch_type,typename... Args>
-requires io_controllable<basic_posix_io_observer<ch_type>,Args...>
-inline decltype(auto) io_control(basic_c_family_io_observer<family,ch_type> h,Args&& ...args)
-{
-	return io_control(static_cast<basic_posix_io_observer<ch_type>>(h),::std::forward<Args>(args)...);
 }
 #endif
 
@@ -915,6 +911,8 @@ class basic_c_family_file:public basic_c_family_io_observer<family,ch_type>
 {
 public:
 	using char_type = ch_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using native_handle_type = FILE*;
 	constexpr basic_c_family_file() noexcept=default;
 	template<typename native_hd>

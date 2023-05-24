@@ -3,10 +3,12 @@
 namespace fast_io
 {
 
-template<stream T,open_mode interface_mode>
+template<typename T,open_mode interface_mode>
 struct basic_file_wrapper:public T
 {
 	using typename T::char_type;
+	using typename T::input_char_type;
+	using typename T::output_char_type;
 	using typename T::native_handle_type;
 	using typename T::file_factory_type;
 	constexpr basic_file_wrapper() noexcept=default;
@@ -25,12 +27,12 @@ struct basic_file_wrapper:public T
 	explicit constexpr basic_file_wrapper(io_temp_t):T(io_temp){}
 };
 
-template<input_stream T>
+template<typename T>
 using input_file_wrapper = basic_file_wrapper<T,open_mode::in>;
-template<output_stream T>
+template<typename T>
 using output_file_wrapper = basic_file_wrapper<T,open_mode::out>;
 
-template<stream T>
+template<typename T>
 using directory_file_wrapper = basic_file_wrapper<T,open_mode::directory>;
 
 

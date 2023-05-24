@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include"util.h"
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include"win32/impl.h"
 namespace fast_io

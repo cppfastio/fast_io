@@ -69,7 +69,9 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/platforms/native.h"
 #include"fast_io_hosted/file_loaders/impl.h"
 #include"fast_io_hosted/wrapper.h"
+#if 0
 #include"fast_io_hosted/white_hole/white_hole.h"
+#endif
 #include"fast_io_hosted/dbg/impl.h"
 #endif
 #if __has_include(<ctime>) || __has_include(<time.h>)
@@ -95,7 +97,9 @@ For hosted implementations the set of standard library headers required by the C
 #endif
 
 #if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)
+#if 0
 #include"fast_io_unit/string.h"
+#endif
 #endif
 
 #if defined(_GLIBCXX_CHRONO) || defined(_LIBCPP_CHRONO) || defined(_CHRONO_)

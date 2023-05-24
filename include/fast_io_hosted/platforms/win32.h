@@ -484,6 +484,8 @@ class basic_win32_family_io_observer
 public:
 	using native_handle_type = void*;
 	using char_type = ch_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	native_handle_type handle{};
 	constexpr native_handle_type native_handle() const noexcept
 	{
@@ -531,12 +533,6 @@ template<win32_family family,std::integral ch_type>
 inline constexpr nt_at_entry at(basic_win32_family_io_observer<family,ch_type> wiob) noexcept
 {
 	return nt_at_entry{wiob.handle};
-}
-
-template<win32_family family,std::integral ch_type>
-inline constexpr basic_win32_family_io_observer<family,ch_type> io_value_handle(basic_win32_family_io_observer<family,ch_type> other) noexcept
-{
-	return other;
 }
 
 template<win32_family family,std::integral ch_type>
@@ -603,169 +599,72 @@ inline void data_sync(basic_win32_family_io_observer<family,char_type> wiob,data
 namespace win32::details
 {
 
-inline std::size_t read_impl(void* __restrict handle,void* __restrict begin,std::size_t to_read)
+inline ::std::byte* read_or_pread_some_bytes_common_impl(void* __restrict handle,::std::byte *first,
+	::std::byte *last,::fast_io::win32::overlapped *lpoverlapped)
 {
-	std::uint_least32_t number_of_bytes_read{};
-	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_read)
-			to_read=static_cast<std::size_t>(UINT_LEAST32_MAX);
-	if(!win32::ReadFile(handle,begin,static_cast<std::uint_least32_t>(to_read),__builtin_addressof(number_of_bytes_read),nullptr))
+	::std::uint_least32_t number_of_bytes{};
+	if(!win32::ReadFile(handle,first,
+		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
+		__builtin_addressof(number_of_bytes),lpoverlapped))
 	{
 		auto err(win32::GetLastError());
 		if(err==109)
-			return 0;
+			return first;
 		throw_win32_error(err);
 	}
-	return number_of_bytes_read;
+	return first+number_of_bytes;
 }
 
-inline std::size_t pread_impl(void* __restrict handle,void* __restrict begin,std::size_t to_read,std::uintmax_t u64off)
+inline ::std::byte* read_some_bytes_impl(void* __restrict handle,::std::byte *first,
+	::std::byte *last)
 {
-	std::uint_least32_t number_of_bytes_read{};
-	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_read)
-			to_read=static_cast<std::size_t>(UINT_LEAST32_MAX);
-	win32::overlapped overlap{};
+	return ::fast_io::win32::details::read_or_pread_some_bytes_common_impl(handle,first,last,nullptr);
+}
+
+inline ::std::byte* pread_some_bytes_impl(void* __restrict handle,::std::byte *first,::std::byte *last,::fast_io::intfpos_t off)
+{
+	::fast_io::win32::overlapped overlap{};
+	::std::uint_least64_t u64off{static_cast<::std::uint_least64_t>(off)};
 	overlap.dummy_union_name.dummy_struct_name={static_cast<std::uint_least32_t>(u64off),static_cast<std::uint_least32_t>(u64off>>32)};
-	if(!win32::ReadFile(handle,begin,static_cast<std::uint_least32_t>(to_read),__builtin_addressof(number_of_bytes_read),__builtin_addressof(overlap)))
-	{
-		auto err(win32::GetLastError());
-		if(err==109)
-			return 0;
-		throw_win32_error(err);
-	}
-	return number_of_bytes_read;
+	return ::fast_io::win32::details::read_or_pread_some_bytes_common_impl(handle,first,last,__builtin_addressof(overlap));
 }
 
-inline io_scatter_status_t scatter_read_impl(void* __restrict handle,io_scatter_t const* scatters,std::size_t n)
+inline ::std::byte const* write_or_pwrite_some_bytes_common_impl(void* __restrict handle,
+	::std::byte const *first,
+	::std::byte const *last,::fast_io::win32::overlapped *lpoverlapped)
 {
-	std::size_t total_size{};
-	for(std::size_t i{};i!=n;++i)
+	::std::uint_least32_t number_of_bytes{};
+	if(!win32::WriteFile(handle,first,
+		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
+		__builtin_addressof(number_of_bytes),lpoverlapped))
 	{
-		std::size_t pos_in_span{read_impl(handle,const_cast<void*>(scatters[i].base),scatters[i].len)};
-		total_size+=pos_in_span;
-		if(pos_in_span<scatters[i].len)[[unlikely]]
-			return {total_size,i,pos_in_span};
-	}
-	return {total_size,n,0};
-}
-
-inline std::uint_least32_t write_simple_impl(void* __restrict handle,void const* __restrict cbegin,std::size_t to_write)
-{
-	std::uint_least32_t number_of_bytes_written{};
-	if(!win32::WriteFile(handle,cbegin,static_cast<std::uint_least32_t>(to_write),__builtin_addressof(number_of_bytes_written),nullptr))
 		throw_win32_error();
-	return number_of_bytes_written;
+	}
+	return first+number_of_bytes;
 }
 
-inline io_scatter_status_t scatter_pread_impl(void* __restrict handle,io_scatters_t sp,std::uintmax_t offset)
+inline ::std::byte const* write_some_bytes_impl(void* __restrict handle,::std::byte const *first,
+	::std::byte const *last)
 {
-	std::size_t total_size{};
-	for(std::size_t i{};i!=sp.len;++i)
-	{
-		std::size_t pos_in_span{pread_impl(handle,const_cast<void*>(sp.base[i].base),sp.base[i].len,offset)};
-		total_size+=pos_in_span;
-		offset+=pos_in_span;
-		if(pos_in_span<sp.base[i].len)[[unlikely]]
-			return {total_size,i,pos_in_span};
-	}
-	return {total_size,sp.len,0};
+	return ::fast_io::win32::details::write_or_pwrite_some_bytes_common_impl(handle,first,last,nullptr);
 }
 
-inline std::uint_least32_t pwrite_simple_impl(void* __restrict handle,void const* __restrict cbegin,std::size_t to_write,std::uintmax_t offset)
+inline ::std::byte const* pwrite_some_bytes_impl(void* __restrict handle,
+	::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t off)
 {
-	std::uint_least64_t u64off(static_cast<std::uint_least64_t>(offset));
-	if constexpr(sizeof(std::uintmax_t)>sizeof(std::uint_least64_t))
-	{
-		if(static_cast<std::uintmax_t>(std::numeric_limits<std::uint_least64_t>::max())<offset)
-			throw_win32_error(0x00000057);
-	}
-	std::uint_least32_t number_of_bytes_written{};
-	win32::overlapped overlap{};
+	::fast_io::win32::overlapped overlap{};
+	::std::uint_least64_t u64off{static_cast<::std::uint_least64_t>(off)};
 	overlap.dummy_union_name.dummy_struct_name={static_cast<std::uint_least32_t>(u64off),static_cast<std::uint_least32_t>(u64off>>32)};
-	if(!win32::WriteFile(handle,cbegin,static_cast<std::uint_least32_t>(to_write),__builtin_addressof(number_of_bytes_written),__builtin_addressof(overlap)))
-		throw_win32_error();
-	return number_of_bytes_written;
+	return ::fast_io::win32::details::write_or_pwrite_some_bytes_common_impl(handle,first,last,__builtin_addressof(overlap));
 }
 
-inline std::size_t pwrite_impl(void* __restrict handle,void const* __restrict cbegin,std::size_t to_write,std::uintmax_t offset)
-{
-	if constexpr(4<sizeof(std::size_t))
-	{
-		std::size_t written{};
-		for(;to_write;)
-		{
-			std::uint_least32_t to_write_this_round{UINT_LEAST32_MAX};
-			if(to_write<static_cast<std::size_t>(UINT_LEAST32_MAX))
-				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
-			std::uint_least32_t number_of_bytes_written{pwrite_simple_impl(handle,cbegin,to_write_this_round,offset)};
-			written+=number_of_bytes_written;
-			offset+=number_of_bytes_written;
-			if(number_of_bytes_written<to_write_this_round)
-				break;
-			to_write-=to_write_this_round;
-		}
-		return written;
-	}
-	else
-		return pwrite_simple_impl(handle,cbegin,to_write,offset);
-}
-
-inline io_scatter_status_t scatter_pwrite_impl(void* __restrict handle,io_scatters_t sp,std::uintmax_t offset)
-{
-	std::size_t total_size{};
-	for(std::size_t i{};i!=sp.len;++i)
-	{
-		std::size_t written{pwrite_impl(handle,sp.base[i].base,sp.base[i].len,offset)};
-		total_size+=written;
-		offset+=written;
-		if(sp.base[i].len<written)[[unlikely]]
-			return {total_size,i,written};
-	}
-	return {total_size,sp.len,0};
-}
-
-inline std::size_t write_nolock_impl(void* __restrict handle,void const* __restrict cbegin,std::size_t to_write)
-{
-	if constexpr(4<sizeof(std::size_t))		//above the size of std::uint_least32_t, unfortunately, we cannot guarantee the atomicity of syscall
-	{
-		std::size_t written{};
-		for(;to_write;)
-		{
-			std::uint_least32_t to_write_this_round{UINT_LEAST32_MAX};
-			if(to_write<static_cast<std::size_t>(UINT_LEAST32_MAX))
-				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
-			std::uint_least32_t number_of_bytes_written{write_simple_impl(handle,cbegin,to_write_this_round)};
-			written+=number_of_bytes_written;
-			if(number_of_bytes_written<to_write_this_round)
-				break;
-			to_write-=to_write_this_round;
-		}
-		return written;
-	}
-	else
-	{
-		return write_simple_impl(handle,cbegin,to_write);
-	}
-}
-
-inline std::size_t write_impl(void* __restrict handle,void const* __restrict cbegin,std::size_t to_write)
-{
-	if constexpr(4<sizeof(std::size_t))
-	{
-		return write_nolock_impl(handle,cbegin,to_write);
-	}
-	else
-		return write_simple_impl(handle,cbegin,to_write);
-}
-
-inline std::uintmax_t seek_impl(void* handle,std::intmax_t offset,seekdir s)
+inline ::fast_io::uintfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,seekdir s)
 {
 #if (defined(_WIN32_WINNT)&&_WIN32_WINNT <= 0x0500) || defined(_WIN32_WINDOWS)
-	if constexpr(sizeof(std::intmax_t)>sizeof(std::int_least32_t))
+	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least32_t))
 	{
-		constexpr std::intmax_t l32mx{INT_LEAST32_MAX};
-		constexpr std::intmax_t l32mn{INT_LEAST32_MIN};
+		constexpr ::fast_io::intfpos_t l32mx{INT_LEAST32_MAX};
+		constexpr ::fast_io::intfpos_t l32mn{INT_LEAST32_MIN};
 		if(offset>l32mx||offset<l32mn)
 			throw_win32_error(0x00000057);
 	}
@@ -775,12 +674,12 @@ inline std::uintmax_t seek_impl(void* handle,std::intmax_t offset,seekdir s)
 	{
 		throw_win32_error();
 	}
-	return static_cast<std::uintmax_t>(static_cast<std::uint_least32_t>(distance_to_move_high));
+	return static_cast<::fast_io::uintfpos_t>(static_cast<std::uint_least32_t>(distance_to_move_high));
 #else
-	if constexpr(sizeof(std::intmax_t)>sizeof(std::int_least64_t))
+	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least64_t))
 	{
-		constexpr std::intmax_t l64mx{INT_LEAST64_MAX};
-		constexpr std::intmax_t l64mn{INT_LEAST64_MIN};
+		constexpr ::fast_io::intfpos_t l64mx{INT_LEAST64_MAX};
+		constexpr ::fast_io::intfpos_t l64mn{INT_LEAST64_MIN};
 		if(offset>l64mx||offset<l64mn)
 			throw_win32_error(0x00000057);
 	}
@@ -789,53 +688,58 @@ inline std::uintmax_t seek_impl(void* handle,std::intmax_t offset,seekdir s)
 	{
 		throw_win32_error();
 	}
-	return static_cast<std::uintmax_t>(static_cast<std::uint_least64_t>(distance_to_move_high));
+	return static_cast<::fast_io::uintfpos_t>(static_cast<std::uint_least64_t>(distance_to_move_high));
 #endif
 }
 
-inline io_scatter_status_t scatter_write_impl(void* __restrict handle,io_scatter_t const* scatters,std::size_t n)
-{
-	std::size_t total_size{};
-	for(std::size_t i{};i!=n;++i)
-	{
-		std::size_t written{write_nolock_impl(handle,scatters[i].base,scatters[i].len)};
-		total_size+=written;
-		if(scatters[i].len<written)[[unlikely]]
-			return {total_size,i,written};
-	}
-	return {total_size,n,0};
-}
-
 }
 
 template<win32_family family,std::integral ch_type>
-inline std::uintmax_t seek(basic_win32_family_io_observer<family,ch_type> handle,std::intmax_t offset=0,seekdir s=seekdir::cur)
+inline ::std::byte* read_some_bytes_underflow_define(basic_win32_family_io_observer<family,ch_type> niob,
+	::std::byte* first, ::std::byte* last)
 {
-	return win32::details::seek_impl(handle.handle,offset,s);
-}
-
-template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
-[[nodiscard]] inline Iter read(basic_win32_family_io_observer<family,ch_type> handle,Iter begin,Iter end)
-{
-	return begin+win32::details::read_impl(handle.handle,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
-}
-
-template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
-inline Iter write(basic_win32_family_io_observer<family,ch_type> handle,Iter cbegin,Iter cend)
-{
-	return cbegin+win32::details::write_impl(handle.handle,::std::to_address(cbegin),static_cast<std::size_t>(cend-cbegin)*sizeof(*cbegin))/sizeof(*cbegin);
+	return ::fast_io::win32::details::read_some_bytes_impl(niob.handle,first,last);
 }
 
 template<win32_family family,std::integral ch_type>
-inline io_scatter_status_t scatter_read(basic_win32_family_io_observer<family,ch_type> handle,io_scatters_t sp)
+inline ::std::byte const* write_some_bytes_overflow_define(basic_win32_family_io_observer<family,ch_type> niob,
+	::std::byte const *first, ::std::byte const *last)
 {
-	return win32::details::scatter_read_impl(handle.handle,sp.base,sp.len);
+	return ::fast_io::win32::details::write_some_bytes_impl(niob.handle,first,last);
+}
+
+#if 0
+
+/*
+I am not confident that i understand semantics correctly. Disabled first and test it later
+*/
+
+template<win32_family family,std::integral ch_type>
+inline ::std::byte* pread_some_bytes_underflow_define(basic_win32_family_io_observer<family,ch_type> niob,
+	::std::byte* first, ::std::byte* last, ::fast_io::intfpos_t off)
+{
+	return ::fast_io::win32::details::read_some_bytes_impl(niob.handle,first,last,off);
 }
 
 template<win32_family family,std::integral ch_type>
-inline io_scatter_status_t scatter_write(basic_win32_family_io_observer<family,ch_type> handle,io_scatters_t sp)
+inline ::std::byte const* pwrite_some_bytes_underflow_define(basic_win32_family_io_observer<family,ch_type> niob,
+	::std::byte const *first, ::std::byte const *last, ::fast_io::intfpos_t off)
 {
-	return win32::details::scatter_write_impl(handle.handle,sp.base,sp.len);
+	return ::fast_io::win32::details::write_some_bytes_impl(niob.handle,first,last,off);
+}
+
+#endif
+
+template<win32_family family,std::integral ch_type>
+inline constexpr basic_win32_family_io_observer<family,ch_type> io_stream_ref_define(basic_win32_family_io_observer<family,ch_type> other) noexcept
+{
+	return other;
+}
+
+template<win32_family family,std::integral ch_type>
+inline constexpr basic_win32_family_io_observer<family,char> io_bytes_stream_ref_define(basic_win32_family_io_observer<family,ch_type> other) noexcept
+{
+	return {other.handle};
 }
 
 template<win32_family family,::std::integral char_type>
@@ -849,116 +753,6 @@ inline constexpr ::std::conditional_t<family==win32_family::ansi_9x,nop_file_loc
 	{
 		return {wiob.handle};
 	}
-}
-
-#if 0
-namespace details
-{
-
-struct iocp_overlapped_base:public ::fast_io::win32::overlapped
-{
-#if __cpp_constexpr >= 201907L
-	constexpr
-#endif
-	virtual void invoke(std::size_t) = 0;
-#if __cpp_constexpr >= 201907L
-	constexpr
-#endif
-	virtual ~iocp_overlapped_base() noexcept=default;
-};
-
-template<typename Func>
-struct iocp_overlapped_derived:iocp_overlapped_base
-{
-	Func func;
-	template<typename... Args>
-	requires std::constructible_from<Func,Args...>
-	iocp_overlapped_derived(Args&& ...args):func(::std::forward<Args>(args)...){}
-#if __cpp_constexpr >= 201907L
-	constexpr
-#endif
-	void invoke(std::size_t value) override
-	{
-		func(value);
-	}
-};
-
-inline void iocp_async_write_define_impl(void* handle,void const* data,std::size_t to_write,std::ptrdiff_t offset,iocp_overlapped_base* callback)
-{
-
-	if constexpr(4<sizeof(std::size_t))
-		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_write)
-			to_write=static_cast<std::size_t>(UINT_LEAST32_MAX);
-	if constexpr(4<sizeof(std::size_t))
-	{
-		callback->dummy_union_name.dummy_struct_name.Offset=static_cast<std::size_t>(offset)&std::numeric_limits<std::uint_least32_t>::max();
-		callback->dummy_union_name.dummy_struct_name.OffsetHigh=static_cast<std::size_t>(offset)>>static_cast<std::size_t>(32);
-	}
-	else
-	{
-		callback->dummy_union_name.dummy_struct_name.Offset=static_cast<std::uint_least32_t>(offset);
-		callback->dummy_union_name.dummy_struct_name.OffsetHigh=0;
-	}
-	if(!win32::WriteFile(handle,data,static_cast<std::uint_least32_t>(to_write),nullptr,callback))[[likely]]
-	{
-		auto err(win32::GetLastError());
-		if(err==997)[[likely]]
-			return;
-		delete callback;
-		throw_win32_error(err);
-	}
-}
-
-template<typename Func>
-inline void iocp_async_write_define(void* handle,void const* data,std::size_t bytes,std::ptrdiff_t offset,Func callback)
-{
-	iocp_async_write_define_impl(handle,data,bytes,offset,new iocp_overlapped_derived<Func>{callback});
-}
-
-inline void iocp_set_async_context(void* iocp_handle,void* filehandle)
-{
-	if(iocp_handle==nullptr||filehandle==nullptr)
-		throw_win32_error(0x000000A0);
-	create_io_completion_port(filehandle,iocp_handle,0,0);
-}
-
-inline void iocp_async_wait_impl(void* handle)
-{
-	std::uint_least32_t transferred{};
-	std::uintptr_t completionkey{};
-	::fast_io::win32::overlapped *over{};
-	if(!::fast_io::win32::GetQueuedCompletionStatus(handle,__builtin_addressof(transferred),__builtin_addressof(completionkey),
-		over,std::numeric_limits<std::uint_least32_t>::max()))
-		throw_win32_error();
-	static_cast<iocp_overlapped_base*>(over)->invoke(static_cast<std::size_t>(transferred));
-}
-
-}
-
-template<win32_family fam,typename Func>
-inline void async_write_define(basic_win32_family_io_observer<fam,char>,nt_at_entry h,void const* data,std::size_t bytes,std::ptrdiff_t offset,Func callback)
-{
-	::fast_io::details::iocp_async_write_define(h.handle,data,bytes,offset,std::move(callback));
-}
-
-template<win32_family fam>
-inline void set_async_context(basic_win32_family_io_observer<fam,char> iocp,nt_at_entry h)
-{
-	::fast_io::details::iocp_set_async_context(iocp.handle,h.handle);
-}
-
-template<win32_family fam>
-inline void io_async_wait(basic_win32_family_io_observer<fam,char> iocp)
-{
-	::fast_io::details::iocp_async_wait_impl(iocp.handle);
-}
-#endif
-
-template<win32_family family,std::integral ch_type>
-inline void cancel(basic_win32_family_io_observer<family,ch_type> h)
-{
-	if(!fast_io::win32::CancelIo(h.handle))
-		throw_win32_error();
 }
 
 template<win32_family family,std::integral ch_type,typename... Args>
@@ -995,6 +789,8 @@ class basic_win32_family_file:public basic_win32_family_io_observer<family,ch_ty
 {
 public:
 	using typename basic_win32_family_io_observer<family,ch_type>::char_type;
+	using typename basic_win32_family_io_observer<family,ch_type>::input_char_type;
+	using typename basic_win32_family_io_observer<family,ch_type>::output_char_type;
 	using typename basic_win32_family_io_observer<family,ch_type>::native_handle_type;
 	using basic_win32_family_io_observer<family,ch_type>::native_handle;
 	using file_factory_type = win32_file_factory;
@@ -1073,38 +869,15 @@ public:
 	}
 };
 
+#if 0
 template<win32_family family,std::integral ch_type>
-inline void truncate(basic_win32_family_io_observer<family,ch_type> handle,std::uintmax_t size)
+inline void truncate(basic_win32_family_io_observer<family,ch_type> handle,::fast_io::uintfpos_t size)
 {
-	seek(handle,size,seekdir::beg);
+	io_stream_seek_bytes_define(handle,size,seekdir::beg);
 	if(!win32::SetEndOfFile(handle.handle))
 		throw_win32_error();
 }
-
-template<win32_family family,std::integral char_type,::std::contiguous_iterator Iter>
-inline constexpr Iter pwrite(basic_win32_family_io_observer<family,char_type> wpioent,Iter begin,Iter end,std::intmax_t offset)
-{
-	return begin+win32::details::pwrite_impl(wpioent.handle,::std::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
-}
-
-template<win32_family family,std::integral ch_type>
-inline io_scatter_status_t scatter_pwrite(basic_win32_family_io_observer<family,ch_type> wpioent,io_scatters_t sp,std::intmax_t offset)
-{
-	return win32::details::scatter_pwrite_impl(wpioent.handle,sp,offset);
-}
-
-template<win32_family family,std::integral char_type,::std::contiguous_iterator Iter>
-inline constexpr Iter pread(basic_win32_family_io_observer<family,char_type> wpioent,Iter begin,Iter end,std::intmax_t offset)
-{
-	return begin+win32::details::pread_impl(wpioent.handle,::std::to_address(begin),(end-begin)*sizeof(*begin),offset)/sizeof(*begin);
-}
-
-template<win32_family family,std::integral ch_type>
-inline io_scatter_status_t scatter_pread(basic_win32_family_io_observer<family,ch_type> wpioent,io_scatters_t sp,std::intmax_t offset)
-{
-	return win32::details::scatter_pread_impl(wpioent.handle,sp,offset);
-}
-
+#endif
 namespace win32::details
 {
 
@@ -1252,35 +1025,14 @@ public:
 	}
 };
 
-template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
-inline Iter read(basic_win32_family_pipe<family,ch_type>& h,Iter begin,Iter end)
-{
-	return read(h.in(),begin,end);
-}
 
-template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
-inline Iter write(basic_win32_family_pipe<family,ch_type>& h,Iter begin,Iter end)
-{
-	return write(h.out(),begin,end);
-}
-
-template<win32_family family,std::integral ch_type>
-inline io_scatter_status_t scatter_read(basic_win32_family_pipe<family,ch_type>& h,io_scatters_t sp)
-{
-	return scatter_read(h.in(),sp);
-}
-
-template<win32_family family,std::integral ch_type>
-inline io_scatter_status_t scatter_write(basic_win32_family_pipe<family,ch_type>& h,io_scatters_t sp)
-{
-	return scatter_write(h.out(),sp);
-}
-
+#if 0
 template<win32_family family,std::integral ch_type>
 inline ::fast_io::freestanding::array<void*,2> redirect(basic_win32_family_pipe<family,ch_type>& hd)
 {
 	return {hd.in().handle,hd.out().handle};
 }
+#endif
 
 template<win32_family family,std::integral ch_type>
 inline void clear_screen(basic_win32_family_io_observer<family,ch_type> wiob)
@@ -1306,11 +1058,28 @@ inline bool is_character_device(basic_nt_family_io_observer<family,ch_type> niob
 	return win32::details::win32_is_character_device(niob.handle);
 }
 
-template<win32_family family,std::integral char_type>
-inline void flush(basic_win32_family_pipe<family,char_type>& pipe)
+template<win32_family family,std::integral ch_type>
+inline constexpr basic_win32_family_io_observer<family,ch_type> input_stream_ref_define(basic_win32_family_pipe<family,ch_type>& pp) noexcept
 {
-	::fast_io::win32::details::win32_flush_impl(pipe.out().handle);
-	::fast_io::win32::details::win32_flush_impl(pipe.in().handle);
+	return {pp.in().handle};
+}
+
+template<win32_family family,std::integral ch_type>
+inline constexpr basic_win32_family_io_observer<family,char> input_bytes_stream_ref_define(basic_win32_family_pipe<family,ch_type>& pp) noexcept
+{
+	return {pp.in().handle};
+}
+
+template<win32_family family,std::integral ch_type>
+inline constexpr basic_win32_family_io_observer<family,ch_type> output_stream_ref_define(basic_win32_family_pipe<family,ch_type>& pp) noexcept
+{
+	return {pp.out().handle};
+}
+
+template<win32_family family,std::integral ch_type>
+inline constexpr basic_win32_family_io_observer<family,char> output_bytes_stream_ref_define(basic_win32_family_pipe<family,ch_type>& pp) noexcept
+{
+	return {pp.out().handle};
 }
 
 template<std::integral char_type>

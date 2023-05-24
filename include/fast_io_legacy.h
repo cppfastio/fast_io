@@ -22,7 +22,12 @@
 #include<fstream>
 #include<sstream>
 
+#if 0
 #include"fast_io.h"
+#else
+#include"fast_io_hosted.h"
+#include"fast_io_legacy_impl/c/impl.h"
+#endif
 
 #include"fast_io_legacy_impl/filebuf/streambuf_io_observer.h"
 #include"fast_io_legacy_impl/filebuf/filebuf_file.h"

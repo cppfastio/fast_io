@@ -135,13 +135,9 @@ inline char* posix_load_address(int fd,std::size_t file_size)
 		posix_io_observer piob{fd};
 		auto addr{reinterpret_cast<char*>(guard.address)};
 		auto addr_ed{addr+file_size};
-		for(auto i{addr};i!=addr_ed;)
-		{
-			auto after{read(piob,i,addr_ed)};
-			if(after==i)
-				throw_posix_error();
-			i=after;
-		}
+		::fast_io::operations::decay::read_all_bytes_decay(piob,
+			reinterpret_cast<::std::byte*>(addr),
+			reinterpret_cast<::std::byte*>(addr_ed));
 		guard.address=nullptr;
 		return addr;
 	}
@@ -173,13 +169,10 @@ inline char* posix_load_address_extra(int fd,std::size_t file_size,std::size_t e
 	posix_io_observer piob{fd};
 	auto addr{reinterpret_cast<char*>(guard.address)};
 	auto addr_ed{addr+file_size};
-	for(auto i{addr};i!=addr_ed;)
-	{
-		auto after{read(piob,i,addr_ed)};
-		if(after==i)
-			throw_posix_error();
-		i=after;
-	}
+	::fast_io::operations::decay::read_all_bytes_decay(piob,
+		reinterpret_cast<::std::byte*>(addr),
+		reinterpret_cast<::std::byte*>(addr_ed)
+	);
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memset)
 __builtin_memset

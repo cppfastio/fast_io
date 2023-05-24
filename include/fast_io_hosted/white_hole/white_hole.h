@@ -64,9 +64,13 @@ basic_linux_getrandom<char_type>;
 posix_dev_urandom<basic_native_file<char_type>>;
 #endif
 
+#if 0
 template<std::integral char_type>
 using basic_ibuf_white_hole = basic_io_buffer<basic_native_white_hole<char_type>,buffer_mode::in|buffer_mode::secure_clear,basic_decorators<char_type>,4096u>;
-
+#else
+template<std::integral char_type>
+using basic_ibuf_white_hole = basic_native_white_hole<char_type>;
+#endif
 using native_white_hole = basic_native_white_hole<char>;
 using ibuf_white_hole = basic_ibuf_white_hole<char>;
 
@@ -112,10 +116,12 @@ struct basic_white_hole_engine
 			return 0.0;
 		}
 	}
-	inline constexpr result_type operator()()
+	inline result_type operator()()
 	{
 		result_type type;
-		::fast_io::read_all(handle,__builtin_addressof(type),__builtin_addressof(type)+1);
+		::fast_io::operations::read_all_bytes(handle,
+			reinterpret_cast<::std::byte*>(__builtin_addressof(type)),
+			reinterpret_cast<::std::byte*>(__builtin_addressof(type)+1));
 		return type;
 	}
 };

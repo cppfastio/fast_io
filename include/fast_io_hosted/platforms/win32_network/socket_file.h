@@ -10,6 +10,8 @@ class basic_win32_family_socket_io_observer
 {
 public:
 	using char_type = ch_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using native_handle_type = std::uintptr_t;
 	native_handle_type hsocket{};
 	constexpr native_handle_type release() noexcept
@@ -25,79 +27,38 @@ public:
 };
 
 template<win32_family family,std::integral char_type>
-inline constexpr basic_win32_family_socket_io_observer<family,char_type> io_value_handle(basic_win32_family_socket_io_observer<family,char_type> value) noexcept
+inline constexpr basic_win32_family_socket_io_observer<family,char_type> io_stream_ref_define(basic_win32_family_socket_io_observer<family,char_type> value) noexcept
 {
 	return value;
 }
 
+template<win32_family family,std::integral char_type>
+inline constexpr basic_win32_family_socket_io_observer<family,char> io_bytes_stream_ref_define(basic_win32_family_socket_io_observer<family,char_type> value) noexcept
+{
+	return {value.hsocket};
+}
+
 namespace win32::details
 {
-inline std::uint_least32_t win32_socket_write_simple_impl(std::uintptr_t socket, void const* data,std::uint_least32_t len)
+inline ::std::byte const* win32_socket_write_bytes_impl(std::uintptr_t socket, ::std::byte const *first,::std::byte const *last)
 {
-	wsabuf buffer{len,const_cast<char*>(reinterpret_cast<char const*>(data))};
+	wsabuf buffer{
+		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
+		const_cast<char*>(reinterpret_cast<char const*>(first))};
 	std::uint_least32_t sent{};
 	if(::fast_io::win32::WSASend(socket,__builtin_addressof(buffer),1,__builtin_addressof(sent),0,nullptr,nullptr))
 		throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
-	return sent;
+	return first+sent;
 }
 
-inline std::size_t win32_socket_write_impl(std::uintptr_t socket, void const* data,std::size_t to_write)
+inline ::std::byte* win32_socket_read_bytes_impl(std::uintptr_t socket, ::std::byte *first,::std::byte *last)
 {
-	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
-	{
-		std::size_t written{};
-		for(;to_write;)
-		{
-			std::uint_least32_t to_write_this_round{UINT_LEAST32_MAX};
-			if(to_write<static_cast<std::size_t>(UINT_LEAST32_MAX))
-				to_write_this_round=static_cast<std::uint_least32_t>(to_write);
-			std::uint_least32_t number_of_bytes_written{win32_socket_write_simple_impl(socket,data,to_write_this_round)};
-			written+=number_of_bytes_written;
-			if(number_of_bytes_written<to_write_this_round)
-				break;
-			to_write-=to_write_this_round;
-		}
-		return written;
-	}
-	else
-	{
-		return win32_socket_write_simple_impl(socket,data,static_cast<std::uint_least32_t>(to_write));
-	}
-}
-inline std::size_t win32_socket_read_impl(std::uintptr_t socket, void* data,std::size_t to_read)
-{
-	if constexpr(sizeof(int)<sizeof(std::size_t)||(sizeof(int)==sizeof(std::size_t)))
-	{
-		constexpr std::size_t intmax{static_cast<std::size_t>(static_cast<unsigned>(std::numeric_limits<int>::max()))};
-		if(intmax<to_read)
-			to_read=intmax;
-	}
-	int recved{::fast_io::win32::recv(socket,reinterpret_cast<char*>(data),static_cast<int>(static_cast<unsigned>(to_read)),0)};
+	int recved{::fast_io::win32::recv(socket,
+		reinterpret_cast<char*>(first),
+		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),0)};
 	if(recved==-1)
 		throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
-	return static_cast<std::size_t>(static_cast<int>(recved));
-}
-
-inline io_scatter_status_t win32_socket_scatter_read_impl(std::uintptr_t socket,io_scatter_t* scatter,std::size_t len)
-{
-	if(len==0)
-		return {0,0,0};
-	io_scatter_t sc0{*scatter};
-	return {win32_socket_read_impl(socket,const_cast<void*>(sc0.base),sc0.len),1,0};
-}
-
-inline io_scatter_status_t win32_socket_scatter_write_impl(std::uintptr_t socket,io_scatter_t* scatter,std::size_t len)
-{
-	std::size_t written{};
-	for(std::size_t i{};i!=len;++i)
-	{
-		io_scatter_t sc{scatter[i]};
-		std::size_t written_this_round{win32_socket_write_impl(socket,sc.base,sc.len)};
-		written+=written_this_round;
-		if(written_this_round!=sc.len)[[unlikely]]
-			return {written,i,written_this_round};
-	}
-	return {written,len,0};
+	return first+recved;
 }
 
 inline void posix_connect_win32_socket_impl(std::uintptr_t hsocket,void const* addr,int addrlen)
@@ -128,30 +89,18 @@ inline std::uintptr_t posix_accept_win32_socket_impl(std::uintptr_t hsocket,void
 
 }
 
-template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
-[[nodiscard]]
-inline constexpr Iter read(basic_win32_family_socket_io_observer<family,ch_type> sockiob,Iter first,Iter last) 
+template<win32_family family,std::integral ch_type>
+inline ::std::byte* read_some_bytes_underflow_define(basic_win32_family_socket_io_observer<family,ch_type> wiob,
+	::std::byte* first, ::std::byte* last)
 {
-	return win32::details::win32_socket_read_impl(sockiob.hsocket,::std::to_address(first),sizeof(*first)*static_cast<std::size_t>(::std::to_address(last)-::std::to_address(first)))/sizeof(*first)+first;
-}
-
-template<win32_family family,std::integral ch_type,::std::contiguous_iterator Iter>
-inline constexpr Iter write(basic_win32_family_socket_io_observer<family,ch_type> sockiob,Iter first,Iter last)
-{
-	return win32::details::win32_socket_write_impl(sockiob.hsocket,::std::to_address(first),sizeof(*first)*static_cast<std::size_t>(::std::to_address(last)-::std::to_address(first)))/sizeof(*first)+first;
+	return ::fast_io::win32::details::win32_socket_read_bytes_impl(wiob.hsocket,first,last);
 }
 
 template<win32_family family,std::integral ch_type>
-[[nodiscard]]
-inline constexpr io_scatter_status_t scatter_read(basic_win32_family_socket_io_observer<family,ch_type> sockiob,io_scatters_t scatters)
+inline ::std::byte const* write_some_bytes_overflow_define(basic_win32_family_socket_io_observer<family,ch_type> wiob,
+	::std::byte const *first, ::std::byte const *last)
 {
-	return win32::details::win32_socket_scatter_read_impl(sockiob.hsocket,const_cast<io_scatter_t*>(scatters.base),scatters.len);
-}
-
-template<win32_family family,std::integral ch_type>
-inline constexpr io_scatter_status_t scatter_write(basic_win32_family_socket_io_observer<family,ch_type> sockiob,io_scatters_t scatters)
-{
-	return win32::details::win32_socket_scatter_write_impl(sockiob.hsocket, const_cast<io_scatter_t*>(scatters.base),scatters.len);
+	return ::fast_io::win32::details::win32_socket_write_bytes_impl(wiob.hsocket,first,last);
 }
 
 template<win32_family family,std::integral ch_type>
@@ -474,8 +423,10 @@ basic_win32_family_socket_file : public basic_win32_family_socket_io_observer<fa
 {
 public:
 	using typename basic_win32_family_socket_io_observer<family,ch_type>::char_type;
+	using typename basic_win32_family_socket_io_observer<family,ch_type>::input_char_type;
+	using typename basic_win32_family_socket_io_observer<family,ch_type>::output_char_type;
 	using typename basic_win32_family_socket_io_observer<family,ch_type>::native_handle_type;
-	constexpr basic_win32_family_socket_file() noexcept=default;
+	explicit constexpr basic_win32_family_socket_file() noexcept=default;
 
 	constexpr basic_win32_family_socket_file(basic_win32_family_socket_io_observer<family,ch_type>) noexcept=delete;
 	constexpr basic_win32_family_socket_file& operator=(basic_win32_family_socket_io_observer<family,ch_type>) noexcept=delete;

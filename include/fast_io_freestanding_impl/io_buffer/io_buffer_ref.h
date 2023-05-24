@@ -3,6 +3,10 @@
 namespace fast_io
 {
 
-template<typename >
+template<typename T>
+class basic_io_buffer_ref
+{
+public:
+};
 
 }
