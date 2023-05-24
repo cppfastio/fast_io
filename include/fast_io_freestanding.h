@@ -31,13 +31,15 @@
 #include"fast_io_freestanding_impl/serializations/impl.h"
 #include"fast_io_freestanding_impl/space_reserve.h"
 #include"fast_io_freestanding_impl/width.h"
+#if 0
 #include"fast_io_freestanding_impl/scanners/impl.h"
+#endif
 #include"fast_io_freestanding_impl/cond.h"
 
 #if defined(_GLIBCXX_BITSET)
 #include"fast_io_unit/bitset.h"
 #endif
-
+#if 0
 namespace fast_io
 {
 
@@ -80,7 +82,7 @@ using basic_iobuf_code_cvt = basic_io_buffer<input_output,
 #endif
 
 }
-
+#endif
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
 #endif

@@ -76,15 +76,6 @@
 #include"fast_io_core_impl/operations/impl.h"
 #include"fast_io_core_impl/igenerator.h"
 
-#if 0
-#include"fast_io_core_impl/seek.h"
-#include"fast_io_core_impl/print_freestanding.h"
-#include"fast_io_core_impl/read_all.h"
-
-#include"fast_io_core_impl/scan_freestanding.h"
-
-#include"fast_io_core_impl/transmit/impl.h"
-#endif
 // This should provide an option macro to disable any generation for table in freestanding environments.
 #include"fast_io_core_impl/integers/integer.h"
 
@@ -112,10 +103,12 @@
 #include"fast_io_core_impl/timestamp_counter.h"
 #include"fast_io_core_impl/dll_mode.h"
 #include"fast_io_core_impl/socket/impl.h"
+
 #if 0
 #include"fast_io_core_impl/to.h"
-#include"fast_io_core_impl/concat/impl.h"
 #endif
+#include"fast_io_core_impl/concat/impl.h"
+
 
 #include"fast_io_core_impl/http_header.h"
 
