@@ -568,7 +568,13 @@ inline constexpr ::std::byte* read_some_bytes_impl(instmtype insm,::std::byte *f
 [[likely]]
 #endif
 		{
-			non_overlapped_copy_n(curr,static_cast<::std::size_t>(itdiff),first);
+			using char_type_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char_type*;
+			non_overlapped_copy_n(curr,static_cast<::std::size_t>(itdiff),
+				reinterpret_cast<char_type_ptr>(first));
 			ibuffer_set_curr(insm,curr+itdiff);
 			return last;
 		}
@@ -597,7 +603,14 @@ inline constexpr void read_all_bytes_impl(instmtype insm,
 [[likely]]
 #endif
 		{
-			non_overlapped_copy_n(curr,static_cast<::std::size_t>(itdiff),first);
+		{
+			using char_type_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char_type*;
+			non_overlapped_copy_n(curr,static_cast<::std::size_t>(itdiff),
+				reinterpret_cast<char_type_ptr>(first));
 			ibuffer_set_curr(insm,curr+itdiff);
 			return;
 		}

@@ -218,8 +218,9 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE* __restrict fpp,char cons
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline void wincrt_fp_write_cold_impl(FILE* __restrict fp,char const* __restrict first,std::size_t diff)
+inline void wincrt_fp_write_cold_impl(FILE* __restrict fp,char const *first,char const *last)
 {
+	::std::size_t diff{static_cast<::std::size_t>(last-first)};
 #if defined(_MSC_VER) || defined(_UCRT)
 	ucrt_iobuf* fpp{reinterpret_cast<ucrt_iobuf*>(fp)};
 #else
@@ -231,38 +232,6 @@ inline void wincrt_fp_write_cold_impl(FILE* __restrict fp,char const* __restrict
 		wincrt_fp_write_cold_normal_case_impl(fp,first,diff);
 }
 
-template<c_family family,std::integral char_type>
-inline void wincrt_fp_write_impl(FILE* __restrict fpp,char_type const* first,char_type const* last)
-{
-	if constexpr(family==c_family::standard)
-	{
-		c_io_observer ciob{fpp};
-		io_lock_guard guard{ciob};
-		wincrt_fp_write_impl<c_family::unlocked,char_type>(fpp,first,last);
-	}
-	else
-	{
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf* fp{reinterpret_cast<ucrt_iobuf*>(fpp)};
-#else
-	FILE* fp{fpp};
-#endif
-	std::size_t diff{static_cast<std::size_t>(last-first)*sizeof(char_type)};
-	std::size_t remain{static_cast<std::size_t>(static_cast<unsigned int>(fp->_cnt))};
-	if(diff<remain)[[likely]]
-	{
-		if(diff)[[likely]]
-		{
-			my_memcpy(fp->_ptr,first,diff);
-			auto intdiff{static_cast<int>(static_cast<unsigned int>(diff))};
-			fp->_cnt-=intdiff;
-			fp->_ptr+=intdiff;
-		}
-		return;
-	}
-	wincrt_fp_write_cold_impl(fpp,reinterpret_cast<char const*>(first),diff);
-	}
-}
 
 
 template<std::integral char_type>
@@ -561,7 +530,7 @@ inline void write_all_bytes_overflow_define(
 ::fast_io::basic_c_io_observer_unlocked<char_type> ciob,
 ::std::byte const* first,::std::byte const* last)
 {
-	::fast_io::details::wincrt_fp_write_impl(ciob.fp,
+	::fast_io::details::wincrt_fp_write_cold_impl(ciob.fp,
 		reinterpret_cast<char const*>(first),
 		reinterpret_cast<char const*>(last));
 }

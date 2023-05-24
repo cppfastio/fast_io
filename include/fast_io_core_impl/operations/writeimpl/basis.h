@@ -520,7 +520,13 @@ inline constexpr ::std::byte const* write_some_bytes_impl(outstmtype outsm,::std
 [[likely]]
 #endif
 		{
-			obuffer_set_curr(outsm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdiff),curr));
+			using char_type_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char_type const*;
+			obuffer_set_curr(outsm,non_overlapped_copy_n(reinterpret_cast<char_type_const_ptr>(first),
+				static_cast<::std::size_t>(itdiff),curr));
 			return last;
 		}
 	}
@@ -548,7 +554,13 @@ inline constexpr void write_all_bytes_impl(outstmtype outsm,
 [[likely]]
 #endif
 		{
-			obuffer_set_curr(outsm,non_overlapped_copy_n(first,static_cast<::std::size_t>(itdiff),curr));
+			using char_type_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char_type const*;
+			obuffer_set_curr(outsm,non_overlapped_copy_n(reinterpret_cast<char_type_const_ptr>(first),
+				static_cast<::std::size_t>(itdiff),curr));
 			return;
 		}
 	}
