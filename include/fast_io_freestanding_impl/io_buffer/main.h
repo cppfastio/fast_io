@@ -124,7 +124,7 @@ concept iobuffer_reopenable_impl =  requires(handle_type handle,Args&& ...args)
 
 }
 
-template<stream handletype,
+template<typename handletype,
 buffer_mode mde=buffer_mode::io|buffer_mode::secure_clear|buffer_mode::construct_decorator,
 typename decoratorstypr=
 basic_decorators<typename handletype::char_type>,

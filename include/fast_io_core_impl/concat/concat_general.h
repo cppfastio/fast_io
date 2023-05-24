@@ -3,6 +3,33 @@
 namespace fast_io::details::decay
 {
 
+template<std::integral char_type,typename T>
+inline constexpr std::size_t calculate_scatter_reserve_size_unit()
+{
+	using real_type = std::remove_cvref_t<T>;
+	if constexpr(reserve_printable<char_type,real_type>)
+	{
+		constexpr std::size_t sz{print_reserve_size(io_reserve_type<char_type,real_type>)};
+		return sz;
+	}
+	else
+		return 0;
+}
+
+template<std::integral char_type,typename T,typename... Args>
+inline constexpr std::size_t calculate_scatter_reserve_size()
+{
+	if constexpr(sizeof...(Args)==0)
+	{
+		return calculate_scatter_reserve_size_unit<char_type,T>();
+	}
+	else
+	{
+		return ::fast_io::details::intrinsics::add_or_overflow_die(calculate_scatter_reserve_size_unit<char_type,T>(),
+			calculate_scatter_reserve_size<char_type,Args...>());
+	}
+}
+
 template<bool line,::std::integral char_type,typename T,typename... Args>
 inline constexpr char_type* print_reserve_define_chain_impl(char_type* p,T t,Args ...args)
 {
@@ -170,7 +197,7 @@ inline constexpr T basic_general_concat_decay_impl(Args ...args)
 	{
 		T str;
 		auto oref{io_strlike_ref(fast_io::io_alias,str)};
-		::fast_io::print_freestanding_decay_no_status<line>(oref,args...);
+		::fast_io::operations::decay::print_freestanding_decay<line>(oref,args...);
 		return str;
 	}
 }
@@ -241,7 +268,7 @@ inline constexpr void basic_general_concat_decay_ref_impl(T& str,Args ...args)
 	else
 	{
 		auto oref{io_strlike_ref(fast_io::io_alias,str)};
-		::fast_io::print_freestanding_decay_no_status<line>(oref,args...);
+		::fast_io::operations::decay::print_freestanding_decay<line>(oref,args...);
 	}
 }
 

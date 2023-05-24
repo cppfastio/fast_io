@@ -85,7 +85,7 @@ struct basic_io_buffer_pointers_no_curr
 
 namespace details
 {
-template<stream handle_type>
+template<typename handle_type>
 inline 
 #if __cpp_consteval >= 201811L
 consteval
@@ -94,11 +94,11 @@ constexpr
 #endif
 bool constraint_buffer_mode(buffer_mode mode) noexcept
 {
-	if(((mode&buffer_mode::in)==buffer_mode::in)&&(!input_stream<handle_type>))
+	if(((mode&buffer_mode::in)==buffer_mode::in)&&(!::fast_io::input_stream<handle_type>))
 		return false;
-	if(((mode&buffer_mode::out)==buffer_mode::out)&&(!output_stream<handle_type>))
+	if(((mode&buffer_mode::out)==buffer_mode::out)&&(!::fast_io::output_stream<handle_type>))
 		return false;
-	if constexpr(secure_clear_requirement_stream<handle_type>)
+//	if constexpr(secure_clear_requirement_stream<handle_type>)
 		if((mode&buffer_mode::secure_clear)!=buffer_mode::secure_clear)
 			return false;
 	return true;
