@@ -14,8 +14,7 @@ namespace fast_io
 namespace operations
 {
 
-template<::fast_io::output_stream outstmtype,::std::integral char_type>
-requires ::fast_io::details::write_can_allow_this_type<outstmtype,char_type>
+template<typename outstmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -26,8 +25,7 @@ inline constexpr char_type const* write_some(outstmtype&& outstm,char_type const
 	return ::fast_io::details::write_some_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
 }
 
-template<::fast_io::output_stream outstmtype,::std::integral char_type>
-requires ::fast_io::details::write_can_allow_this_type<outstmtype,char_type>
+template<typename outstmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -38,8 +36,7 @@ inline constexpr void write_all(outstmtype&& outstm,char_type const *first, char
 	return ::fast_io::details::write_all_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -50,8 +47,7 @@ inline constexpr ::std::byte const* write_some_bytes(outstmtype&& outstm,::std::
 	return ::fast_io::details::write_some_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -62,23 +58,21 @@ inline constexpr void write_all_bytes(outstmtype&& outstm,::std::byte const *fir
 	return ::fast_io::details::write_all_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 inline constexpr io_scatter_status_t scatter_write_some_bytes(outstmtype&& outstm,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
 	return ::fast_io::details::scatter_write_some_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 inline constexpr void scatter_write_all_bytes(outstmtype&& outstm,
 	io_scatter_t const* pscatter,::std::size_t len)
 {
 	::fast_io::details::scatter_write_all_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 }
 
-template<::fast_io::output_stream outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -90,7 +84,7 @@ inline constexpr io_scatter_status_t scatter_write_some(outstmtype&& outstm,
 	return ::fast_io::details::scatter_write_some_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 }
 
-template<::fast_io::output_stream outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -102,8 +96,7 @@ inline constexpr void scatter_write_all(outstmtype&& outstm,
 	return ::fast_io::details::scatter_write_all_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len);
 }
 
-template<::fast_io::output_stream outstmtype,::std::integral char_type>
-requires ::fast_io::details::write_can_allow_this_type<outstmtype,char_type>
+template<typename outstmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -114,8 +107,7 @@ inline constexpr char_type const* pwrite_some(outstmtype&& outstm,char_type cons
 	return ::fast_io::details::pwrite_some_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last,off);
 }
 
-template<::fast_io::output_stream outstmtype,::std::integral char_type>
-requires ::fast_io::details::write_can_allow_this_type<outstmtype,char_type>
+template<typename outstmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -126,8 +118,7 @@ inline constexpr void pwrite_all(outstmtype&& outstm,char_type const *first, cha
 	return ::fast_io::details::pwrite_all_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last,off);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -138,8 +129,7 @@ inline constexpr ::std::byte const* pwrite_some_bytes(outstmtype&& outstm,::std:
 	return ::fast_io::details::pwrite_some_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last,off);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -150,8 +140,7 @@ inline constexpr void pwrite_all_bytes(outstmtype&& outstm,::std::byte const *fi
 	return ::fast_io::details::pwrite_all_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),first,last,off);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -163,8 +152,7 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes(outstmtype&& outs
 	return ::fast_io::details::scatter_pwrite_some_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len,off);
 }
 
-template<::fast_io::output_stream outstmtype>
-requires ::fast_io::details::write_bytes_can_allowing<outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -176,7 +164,7 @@ inline constexpr void scatter_pwrite_all_bytes(outstmtype&& outstm,
 	::fast_io::details::scatter_pwrite_all_bytes_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len,off);
 }
 
-template<::fast_io::output_stream outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -188,7 +176,7 @@ inline constexpr io_scatter_status_t scatter_pwrite_some(outstmtype&& outstm,
 	return ::fast_io::details::scatter_pwrite_some_impl(::fast_io::manipulators::output_stream_ref(outstm),pscatter,len,off);
 }
 
-template<::fast_io::output_stream outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -207,7 +195,7 @@ inline constexpr void scatter_pwrite_all(outstmtype&& outstm,
  * @param ch The character to write to the output stream.
  * @note This function is marked constexpr, allowing its invocation in constant expressions.
  */
-template<::fast_io::output_stream outstmtype>
+template<typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)

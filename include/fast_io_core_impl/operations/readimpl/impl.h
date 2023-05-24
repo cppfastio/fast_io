@@ -14,8 +14,7 @@ namespace fast_io
 namespace operations
 {
 
-template<::fast_io::input_stream instmtype,::std::integral char_type>
-requires ::fast_io::details::read_can_allow_this_type<instmtype,char_type>
+template<typename instmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -26,8 +25,7 @@ inline constexpr char_type* read_some(instmtype&& instm,char_type *first, char_t
 	return ::fast_io::details::read_some_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
 
-template<::fast_io::input_stream instmtype,::std::integral char_type>
-requires ::fast_io::details::read_can_allow_this_type<instmtype,char_type>
+template<typename instmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -38,8 +36,7 @@ inline constexpr void read_all(instmtype&& instm,char_type *first, char_type *la
 	return ::fast_io::details::read_all_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -50,8 +47,7 @@ inline constexpr ::std::byte* read_some_bytes(instmtype&& instm,::std::byte *fir
 	return ::fast_io::details::read_some_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -62,23 +58,21 @@ inline constexpr void read_all_bytes(instmtype&& instm,::std::byte *first, ::std
 	return ::fast_io::details::read_all_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 inline constexpr io_scatter_status_t scatter_read_some_bytes(instmtype&& instm,
 	io_scatter_t* pscatter,::std::size_t len)
 {
 	return ::fast_io::details::scatter_read_some_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 inline constexpr void scatter_read_all_bytes(instmtype&& instm,
 	io_scatter_t* pscatter,::std::size_t len)
 {
 	::fast_io::details::scatter_read_all_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 }
 
-template<::fast_io::input_stream instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -90,7 +84,7 @@ inline constexpr io_scatter_status_t scatter_read_some(instmtype&& instm,
 	return ::fast_io::details::scatter_read_some_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 }
 
-template<::fast_io::input_stream instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -102,8 +96,7 @@ inline constexpr void scatter_read_all(instmtype&& instm,
 	return ::fast_io::details::scatter_read_all_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
 }
 
-template<::fast_io::input_stream instmtype,::std::integral char_type>
-requires ::fast_io::details::read_can_allow_this_type<instmtype,char_type>
+template<typename instmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -114,8 +107,7 @@ inline constexpr char_type* pread_some(instmtype&& instm,char_type *first, char_
 	return ::fast_io::details::pread_some_impl(::fast_io::manipulators::input_stream_ref(instm),first,last,off);
 }
 
-template<::fast_io::input_stream instmtype,::std::integral char_type>
-requires ::fast_io::details::read_can_allow_this_type<instmtype,char_type>
+template<typename instmtype,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -126,8 +118,7 @@ inline constexpr void pread_all(instmtype&& instm,char_type *first, char_type *l
 	return ::fast_io::details::pread_all_impl(::fast_io::manipulators::input_stream_ref(instm),first,last,off);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -138,8 +129,7 @@ inline constexpr ::std::byte* pread_some_bytes(instmtype&& instm,::std::byte *fi
 	return ::fast_io::details::pread_some_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),first,last,off);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -150,8 +140,7 @@ inline constexpr void pread_all_bytes(instmtype&& instm,::std::byte *first, ::st
 	return ::fast_io::details::pread_all_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),first,last,off);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -163,8 +152,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes(instmtype&& instm,
 	return ::fast_io::details::scatter_pread_some_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len,off);
 }
 
-template<::fast_io::input_stream instmtype>
-requires ::fast_io::details::read_bytes_can_allowing<instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -176,7 +164,7 @@ inline constexpr void scatter_pread_all_bytes(instmtype&& instm,
 	::fast_io::details::scatter_pread_all_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len,off);
 }
 
-template<::fast_io::input_stream instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -188,7 +176,7 @@ inline constexpr io_scatter_status_t scatter_pread_some(instmtype&& instm,
 	return ::fast_io::details::scatter_pread_some_impl(::fast_io::manipulators::input_stream_ref(instm),pscatter,len,off);
 }
 
-template<::fast_io::input_stream instmtype>
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
