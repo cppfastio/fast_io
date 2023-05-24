@@ -266,7 +266,7 @@ extern int glibc_flbf(FILE* fp) noexcept __asm__("__flbf");
 }
 
 template<std::integral ch_type>
-inline bool obuffer_is_line_buffering(basic_c_io_observer_unlocked<ch_type> ciou) noexcept
+inline bool obuffer_is_line_buffering_define(basic_c_io_observer_unlocked<ch_type> ciou) noexcept
 {
 	return details::glibc_flbf(ciou.fp);
 }

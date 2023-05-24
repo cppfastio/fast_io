@@ -734,9 +734,9 @@ inline constexpr basic_c_family_io_observer<family,char> io_bytes_stream_ref_def
 
 template<c_family family,std::integral ch_type>
 requires (family==c_family::standard||family==c_family::emulated)
-inline constexpr basic_c_family_io_observer<c_family::native_unlocked,ch_type> io_stream_mutex_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
+inline constexpr basic_c_family_io_observer<family,ch_type> io_stream_mutex_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
 {
-	return {other.fp};
+	return other;
 }
 
 template<c_family family,std::integral ch_type>

@@ -360,12 +360,15 @@ inline constexpr void pwrite_all_bytes_cold_impl(outstmtype outsm,::std::byte co
 template<typename outstmtype>
 inline constexpr typename outstmtype::output_char_type const* pwrite_some_impl(outstmtype outsm,typename outstmtype::output_char_type const *first,typename outstmtype::output_char_type const *last,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
+	if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
-		return ::fast_io::details::pwrite_some_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(outsm)};
+		return ::fast_io::details::pwrite_some_impl(::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm),first,last,off);
 	}
-	return ::fast_io::details::pwrite_some_cold_impl(outsm,first,last,off);
+	else
+	{
+		return ::fast_io::details::pwrite_some_cold_impl(outsm,first,last,off);
+	}
 }
 
 template<typename outstmtype>
@@ -374,35 +377,44 @@ inline constexpr void pwrite_all_impl(outstmtype outsm,
 	typename outstmtype::output_char_type const *last,
 	::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
+	if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
-		return ::fast_io::details::pwrite_all_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(outsm)};
+		return ::fast_io::details::pwrite_all_impl(::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm),first,last,off);
 	}
-	::fast_io::details::pwrite_all_cold_impl(outsm,first,last,off);
+	else
+	{
+		::fast_io::details::pwrite_all_cold_impl(outsm,first,last,off);
+	}
 }
 
 template<typename outstmtype>
 inline constexpr ::std::byte const* pwrite_some_bytes_impl(outstmtype outsm,::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
+	if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
-		return ::fast_io::details::pwrite_some_bytes_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(outsm)};
+		return ::fast_io::details::pwrite_some_bytes_impl(::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm),first,last,off);
 	}
-	return ::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last,off);
+	else
+	{
+		return ::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last,off);
+	}
 }
 
 template<typename outstmtype>
 inline constexpr void pwrite_all_bytes_impl(outstmtype outsm,
 	::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::mutex_unlocked_buffer_output_stream_impl<outstmtype>)
+	if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
-		::fast_io::operations::stream_ref_lock_guard lg{output_stream_mutex_ref_impl(outsm)};
-		return ::fast_io::details::pwrite_all_bytes_impl(::fast_io::details::output_stream_unlocked_ref_impl(outsm),first,last,off);
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(outsm)};
+		return ::fast_io::details::pwrite_all_bytes_impl(::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm),first,last,off);
 	}
-	::fast_io::details::pwrite_all_bytes_cold_impl(outsm,first,last,off);
+	else
+	{
+		::fast_io::details::pwrite_all_bytes_cold_impl(outsm,first,last,off);
+	}
 }
 
 
