@@ -65,7 +65,7 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 	))
 	{
 		auto ret{scatter_pwrite_some_bytes_cold_impl(outsm,pscatters,n,0)};
-		::fast_io::details::output_stream_seek_bytes_impl(outsm,
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,
 			::fast_io::fposoffadd_scatters(0,pscatters,ret),
 			::fast_io::seekdir::cur);
 		return ret;
@@ -86,7 +86,7 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_cold_impl(outstmty
 		=
 		basic_io_scatter_t<char_type> const*;
 		auto ret{scatter_pwrite_some_cold_impl(outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n,0)};
-		::fast_io::details::output_stream_seek_impl(outsm,
+		::fast_io::operations::decay::output_stream_seek_decay(outsm,
 			::fast_io::fposoffadd_scatters(0,pscatters,ret),
 			::fast_io::seekdir::cur);
 		return ret;
@@ -243,7 +243,7 @@ inline constexpr void scatter_write_all_bytes_cold_impl(outstmtype outsm,
 	))
 	{
 		scatter_pwrite_all_bytes_cold_impl(outsm,pscatters,n,0);
-		::fast_io::details::output_stream_seek_bytes_impl(outsm,
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,
 			::fast_io::fposoffadd_scatters(0,pscatters,{n,0}),
 			::fast_io::seekdir::cur);
 	}
@@ -263,7 +263,7 @@ inline constexpr void scatter_write_all_bytes_cold_impl(outstmtype outsm,
 		=
 		basic_io_scatter_t<char_type> const*;
 		scatter_pwrite_all_cold_impl(outsm,reinterpret_cast<scattermayalias_const_ptr>(pscatters),n,0);
-		::fast_io::details::output_stream_seek_impl(outsm,
+		::fast_io::operations::decay::output_stream_seek_decay(outsm,
 			::fast_io::fposoffadd_scatters(0,pscatters,{n,0}),
 			::fast_io::seekdir::cur);
 	}

@@ -104,7 +104,7 @@ inline constexpr decltype(auto) transmit_bytes_until_eof_decay(optstmtype optstm
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
 		return ::fast_io::operations::decay::transmit_bytes_until_eof_decay(optstm,
-			::fast_io::operations::decay::output_stream_unlocked_ref_decay(instm));
+			::fast_io::operations::decay::input_stream_unlocked_ref_decay(instm));
 	}
 	else
 	{

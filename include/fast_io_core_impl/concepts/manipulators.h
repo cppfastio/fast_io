@@ -440,13 +440,13 @@ requires (::fast_io::details::has_input_or_io_stream_seek_bytes_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr intfpos_t input_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
+inline constexpr ::fast_io::intfpos_t input_stream_seek_bytes_impl(T t,intfpos_t off,::fast_io::seekdir skd)
 {
 	if constexpr(::fast_io::details::has_input_or_io_stream_buffer_flush_define<T>)
 	{
 		::fast_io::details::input_stream_buffer_flush_impl(t);
 	}
-	if constexpr(::fast_io::details::has_input_stream_seek_define<T>)
+	if constexpr(::fast_io::details::has_input_stream_seek_bytes_define<T>)
 	{
 		return input_stream_seek_bytes_define(t,off,skd);
 	}

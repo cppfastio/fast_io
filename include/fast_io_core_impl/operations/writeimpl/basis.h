@@ -90,7 +90,7 @@ inline constexpr typename outstmtype::output_char_type const* write_some_cold_im
 	))
 	{
 		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm,first,last)};
-		::fast_io::details::output_stream_seek_impl(outsm,ret-first,::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_decay(outsm,ret-first,::fast_io::seekdir::cur);
 		return ret;
 	}
 	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
@@ -102,7 +102,7 @@ inline constexpr typename outstmtype::output_char_type const* write_some_cold_im
 	))
 	{
 		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm,first,last)};
-		::fast_io::details::output_stream_seek_bytes_impl(outsm,(ret-first)*sizeof(char_type),::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,(ret-first)*sizeof(char_type),::fast_io::seekdir::cur);
 		return ret;
 	}
 }
@@ -190,7 +190,7 @@ inline constexpr ::std::byte const* write_some_bytes_cold_impl(outstmtype outsm,
 	))
 	{
 		auto ret{::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last)};
-		::fast_io::details::output_stream_seek_bytes_impl(outsm,ret-first,::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,ret-first,::fast_io::seekdir::cur);
 		return ret;
 	}
 	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
@@ -203,7 +203,7 @@ inline constexpr ::std::byte const* write_some_bytes_cold_impl(outstmtype outsm,
 	{
 
 		auto ret{::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last)};
-		::fast_io::details::output_stream_seek_impl(outsm,ret-first,::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_decay(outsm,ret-first,::fast_io::seekdir::cur);
 		return ret;
 	}
 }
@@ -303,7 +303,7 @@ inline constexpr void write_all_cold_impl(outstmtype outsm,typename outstmtype::
 	))
 	{
 		::fast_io::details::pwrite_all_bytes_cold_impl(outsm,first,last);
-		::fast_io::details::output_stream_seek_impl(outsm,last-first,::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_decay(outsm,last-first,::fast_io::seekdir::cur);
 	}
 	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
 	(
@@ -316,7 +316,7 @@ inline constexpr void write_all_cold_impl(outstmtype outsm,typename outstmtype::
 		auto firstbptr{reinterpret_cast<::std::byte const*>(first)};
 		auto lastbptr{reinterpret_cast<::std::byte const*>(last)};
 		::fast_io::details::pwrite_all_bytes_cold_impl(outsm,firstbptr,lastbptr);
-		::fast_io::details::output_stream_seek_bytes_impl(outsm,lastbptr-firstbptr,::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,lastbptr-firstbptr,::fast_io::seekdir::cur);
 	}
 }
 
@@ -421,7 +421,7 @@ inline constexpr void write_all_bytes_cold_impl(outstmtype outsm,::std::byte con
 	))
 	{
 		::fast_io::details::pwrite_all_bytes_cold_impl(outsm,first,last);
-		::fast_io::details::output_stream_seek_bytes_impl(outsm,last-first,::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,last-first,::fast_io::seekdir::cur);
 	}
 	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
 	(
@@ -440,7 +440,7 @@ inline constexpr void write_all_bytes_cold_impl(outstmtype outsm,::std::byte con
 		char_type_const_ptr firstcptr{reinterpret_cast<char_type_const_ptr>(first)};
 		char_type_const_ptr lastcptr{reinterpret_cast<char_type_const_ptr>(last)};
 		::fast_io::details::pwrite_all_cold_impl(outsm,firstcptr,lastcptr);
-		::fast_io::details::output_stream_seek_impl(outsm,lastcptr-firstcptr,::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_decay(outsm,lastcptr-firstcptr,::fast_io::seekdir::cur);
 	}
 }
 

@@ -496,14 +496,14 @@ inline void c_flush_unlocked_impl(FILE* fp)
 }
 
 template<c_family family>
-inline std::uintmax_t my_c_io_seek_impl(FILE*,std::intmax_t,seekdir)
+inline ::fast_io::intfpos_t my_c_io_seek_impl(FILE*,::fast_io::intfpos_t,seekdir)
 {
 	avr_libc_nosup_impl();
 }
 
 #else
 template<c_family family>
-inline std::uintmax_t my_c_io_seek_impl(FILE* fp,std::intmax_t offset,seekdir s)
+inline ::fast_io::intfpos_t my_c_io_seek_impl(FILE* fp,::fast_io::intfpos_t offset,seekdir s)
 {
 
 /*
@@ -532,7 +532,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 		auto val{noexcept_call(ftello64,fp)};
 		if(val<0)
 			throw_posix_error();
-		return static_cast<std::uintmax_t>(val);
+		return static_cast<::fast_io::intfpos_t>(val);
 #endif
 #else
 		return my_c_io_seek_impl<c_family::standard>(fp,offset,s);
@@ -551,9 +551,9 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 			throw_posix_error(ent._errno);
 		return val;
 #elif defined(__MSDOS__) || defined(__CYGWIN__) || defined(_PICOLIBC__) || (defined(__MINGW32__)&&!__has_include(<_mingw_stat64.h>))
-		if constexpr(sizeof(long)<sizeof(std::intmax_t))
+		if constexpr(sizeof(long)<sizeof(::fast_io::intfpos_t))
 		{
-			if(offset<static_cast<std::intmax_t>(std::numeric_limits<long>::min())||offset>static_cast<std::intmax_t>(std::numeric_limits<long>::max()))
+			if(offset<static_cast<::fast_io::intfpos_t>(std::numeric_limits<long>::min())||offset>static_cast<::fast_io::intfpos_t>(std::numeric_limits<long>::max()))
 				throw_posix_error(EINVAL);
 		}
 		if(noexcept_call(::fseek,fp,static_cast<long>(offset),static_cast<int>(s)))
@@ -561,7 +561,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 		auto val{noexcept_call(::ftell,fp)};
 		if(val<0)
 			throw_posix_error();
-		return static_cast<std::uintmax_t>(static_cast<long unsigned>(val));
+		return static_cast<::fast_io::intfpos_t>(static_cast<long unsigned>(val));
 #else
 		if(
 #if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
@@ -596,7 +596,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 		};
 		if(val<0)
 			throw_posix_error();
-		return static_cast<std::uintmax_t>(val);
+		return static_cast<::fast_io::intfpos_t>(val);
 #endif
 	}
 }
@@ -780,7 +780,7 @@ inline void flush(basic_c_family_io_observer<family,ch_type> cfhd)
 }
 
 template<c_family family,std::integral ch_type>
-inline std::uintmax_t seek(basic_c_family_io_observer<family,ch_type> cfhd,std::intmax_t offset=0,seekdir s=seekdir::cur)
+inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_c_family_io_observer<family,ch_type> cfhd,::fast_io::intfpos_t offset,seekdir s)
 {
 	return details::my_c_io_seek_impl<family>(cfhd.fp,offset,s);
 }

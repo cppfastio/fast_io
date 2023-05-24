@@ -1,7 +1,7 @@
 #pragma once
 
 #include"lockguard.h"
-
+#include"seek.h"
 #include"common.h"
 
 #include"writeimpl/impl.h"

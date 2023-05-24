@@ -4,8 +4,7 @@ namespace fast_io::operations::decay
 {
 
 template<typename T>
-requires (::fast_io::details::has_io_stream_mutex_ref_define<T>
-	||::fast_io::details::has_input_stream_mutex_ref_define<T>)
+requires (::fast_io::details::has_input_or_io_stream_mutex_ref_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)

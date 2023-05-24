@@ -71,10 +71,10 @@ inline constexpr typename instmtype::input_char_type* pread_some_cold_impl(instm
 		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_decay(insm,off,::fast_io::seekdir::cur);
 		auto ret{::fast_io::details::read_some_impl(insm,first,last)};
-		::fast_io::details::input_stream_seek_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_decay(insm,oldoff,::fast_io::seekdir::beg);
 		return ret;
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
@@ -85,10 +85,10 @@ inline constexpr typename instmtype::input_char_type* pread_some_cold_impl(instm
 		::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_bytes_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,off,::fast_io::seekdir::cur);
 		auto ret{::fast_io::details::read_some_impl(insm,first,last)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,oldoff,::fast_io::seekdir::beg);
 		return ret;
 	}
 }
@@ -175,10 +175,10 @@ inline constexpr ::std::byte* pread_some_bytes_cold_impl(instmtype insm,::std::b
 		::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_bytes_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,off,::fast_io::seekdir::cur);
 		auto ret{::fast_io::details::read_some_bytes_impl(insm,first,last)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,oldoff,::fast_io::seekdir::beg);
 		return ret;
 	}
 	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
@@ -189,10 +189,10 @@ inline constexpr ::std::byte* pread_some_bytes_cold_impl(instmtype insm,::std::b
 		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_decay(insm,off,::fast_io::seekdir::cur);
 		auto ret{::fast_io::details::read_some_impl(insm,first,last)};
-		::fast_io::details::input_stream_seek_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_decay(insm,oldoff,::fast_io::seekdir::beg);
 		return ret;
 	}
 }
@@ -269,10 +269,10 @@ inline constexpr void pread_all_cold_impl(instmtype insm,typename instmtype::inp
 		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_decay(insm,off,::fast_io::seekdir::cur);
 		::fast_io::details::read_all_bytes_impl(insm,first,last);
-		::fast_io::details::input_stream_seek_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_decay(insm,oldoff,::fast_io::seekdir::beg);
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(
@@ -282,10 +282,10 @@ inline constexpr void pread_all_cold_impl(instmtype insm,typename instmtype::inp
 		::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_bytes_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,off,::fast_io::seekdir::cur);
 		::fast_io::details::read_all_bytes_impl(insm,first,last);
-		::fast_io::details::input_stream_seek_bytes_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,oldoff,::fast_io::seekdir::beg);
 	}
 }
 
@@ -366,10 +366,10 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm,::std::byte *firs
 		::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_bytes_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,off,::fast_io::seekdir::cur);
 		::fast_io::details::read_all_bytes_impl(insm,first,last);
-		::fast_io::details::input_stream_seek_bytes_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,oldoff,::fast_io::seekdir::beg);
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
 	(
@@ -379,10 +379,10 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm,::std::byte *firs
 		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>
 	))
 	{
-		auto oldoff{::fast_io::details::input_stream_seek_impl(insm,0,::fast_io::seekdir::cur)};
-		::fast_io::details::input_stream_seek_impl(insm,off,::fast_io::seekdir::cur);
+		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm,0,::fast_io::seekdir::cur)};
+		::fast_io::operations::decay::input_stream_seek_decay(insm,off,::fast_io::seekdir::cur);
 		::fast_io::details::read_all_bytes_impl(insm,first,last);
-		::fast_io::details::input_stream_seek_impl(insm,oldoff,::fast_io::seekdir::beg);
+		::fast_io::operations::decay::input_stream_seek_decay(insm,oldoff,::fast_io::seekdir::beg);
 	}
 }
 
