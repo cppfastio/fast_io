@@ -14,24 +14,14 @@ template<typename instmtype>
 inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(instmtype insm,typename instmtype::input_char_type *first,typename instmtype::input_char_type *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_read_all_underflow_define<instmtype>)
-	{
-		read_all_underflow_define(insm,first,last);
-		return last;
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<instmtype>)
-	{
-		basic_io_scatter_t<char_type> sc{first,static_cast<::std::size_t>(last-first)};
-		scatter_read_all_underflow_define(insm,__builtin_addressof(sc),1);
-		return last;
-	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>)
+	if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>)
 	{
 		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
 		{
-			for(decltype(first) it;(it=read_some_underflow_define(insm,first,last))!=last;)
+			while(first!=last)
 			{
-				if(it==first)
+				auto it{read_some_underflow_define(insm,first,last)};
+				if(first==it)
 				{
 					return it;
 				}
@@ -51,12 +41,14 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 		}
 		else
 		{
-			for(decltype(first) it;(it=read_some_underflow_define(insm,first,last))!=last;first=it)
+			while(first!=last)
 			{
-				if(it==first)
+				auto it{read_some_underflow_define(insm,first,last)};
+				if(first==it)
 				{
 					return it;
 				}
+				first=it;
 			}
 			return last;
 		}
@@ -65,7 +57,7 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 	{
 		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
 		{
-			for(;;)
+			while(first!=last)
 			{
 				::std::size_t len{static_cast<::std::size_t>(last-first)};
 				basic_io_scatter_t<char_type> sc{first,len};
@@ -111,6 +103,17 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 			return last;
 		}
 	}
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_underflow_define<instmtype>)
+	{
+		read_all_underflow_define(insm,first,last);
+		return last;
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<instmtype>)
+	{
+		basic_io_scatter_t<char_type> sc{first,static_cast<::std::size_t>(last-first)};
+		scatter_read_all_underflow_define(insm,__builtin_addressof(sc),1);
+		return last;
+	}
 	else if constexpr(
 		(::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<instmtype>||
 		::fast_io::details::streamreflect::has_scatter_read_all_bytes_underflow_define<instmtype>||
@@ -131,8 +134,8 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 	))
 	{
 		auto ret{::fast_io::details::pread_until_eof_bytes_cold_impl(insm,first,last)};
-		::fast_io::operations::decay::input_stream_seek_decay(insm,last-first,::fast_io::seekdir::cur);
-
+		::fast_io::operations::decay::input_stream_seek_decay(insm,ret-first,::fast_io::seekdir::cur);
+		return ret;
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(
@@ -147,10 +150,6 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 		return ret;
 	}
 }
-
-
-
-
 
 template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
