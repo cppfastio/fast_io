@@ -367,6 +367,10 @@ inline constexpr typename outstmtype::output_char_type const* pwrite_some_impl(o
 	}
 	else
 	{
+		if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<outstmtype>)
+		{
+			::fast_io::details::output_stream_buffer_flush_impl(outsm);
+		}
 		return ::fast_io::details::pwrite_some_cold_impl(outsm,first,last,off);
 	}
 }
@@ -384,6 +388,10 @@ inline constexpr void pwrite_all_impl(outstmtype outsm,
 	}
 	else
 	{
+		if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<outstmtype>)
+		{
+			::fast_io::details::output_stream_buffer_flush_impl(outsm);
+		}
 		::fast_io::details::pwrite_all_cold_impl(outsm,first,last,off);
 	}
 }
@@ -398,6 +406,10 @@ inline constexpr ::std::byte const* pwrite_some_bytes_impl(outstmtype outsm,::st
 	}
 	else
 	{
+		if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<outstmtype>)
+		{
+			::fast_io::details::output_stream_buffer_flush_impl(outsm);
+		}
 		return ::fast_io::details::pwrite_some_bytes_cold_impl(outsm,first,last,off);
 	}
 }
@@ -413,6 +425,10 @@ inline constexpr void pwrite_all_bytes_impl(outstmtype outsm,
 	}
 	else
 	{
+		if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<outstmtype>)
+		{
+			::fast_io::details::output_stream_buffer_flush_impl(outsm);
+		}
 		::fast_io::details::pwrite_all_bytes_cold_impl(outsm,first,last,off);
 	}
 }

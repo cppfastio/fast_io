@@ -113,6 +113,10 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_impl(outstmtype outsm,
 	}
 	else
 	{
+		if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<outstmtype>)
+		{
+			::fast_io::details::output_stream_buffer_flush_impl(outsm);
+		}
 		return ::fast_io::details::scatter_pwrite_some_cold_impl(outsm,pscatters,n,off);
 	}
 }
@@ -214,6 +218,10 @@ inline constexpr void scatter_pwrite_all_impl(outstmtype outsm,
 	}
 	else
 	{
+		if constexpr(::fast_io::details::has_output_or_io_stream_buffer_flush_define<outstmtype>)
+		{
+			::fast_io::details::output_stream_buffer_flush_impl(outsm);
+		}
 		return ::fast_io::details::scatter_pwrite_all_cold_impl(outsm,pscatters,n,off);
 	}
 }
