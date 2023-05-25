@@ -14,8 +14,8 @@ class basic_general_streambuf_io_observer
 public:
 	using streambuf_type = T;
 	using char_type = typename streambuf_type::char_type;
-	using input_char_type = typename streambuf_type::input_char_type;
-	using output_char_type = typename streambuf_type::output_char_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using traits_type = typename streambuf_type::traits_type;
 	using native_handle_type = streambuf_type*;
 	native_handle_type fb{};
