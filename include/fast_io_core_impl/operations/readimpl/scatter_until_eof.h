@@ -152,7 +152,11 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(instmtype 
 	::std::size_t n)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>)
+	if constexpr(::fast_io::details::streamreflect::has_scatter_read_until_eof_underflow_define<instmtype>)
+	{
+		return scatter_read_until_eof_underflow_define(insm,pscatters,n);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>)
 	{
 		::std::size_t const ni{n};
 		for(auto psstart{pscatters};n;)
@@ -181,7 +185,8 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(instmtype 
 			n-=retpos;
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>)
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>||
+		::fast_io::details::streamreflect::has_read_until_eof_underflow_define<instmtype>)
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{

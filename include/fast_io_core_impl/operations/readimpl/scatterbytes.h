@@ -17,7 +17,12 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 	{
 		return scatter_read_some_bytes_underflow_define(insm,pscatters,n);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_until_eof_underflow_define<instmtype>)
+	{
+		return scatter_read_until_eof_bytes_underflow_define(insm,pscatters,n);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<instmtype>||
+		::fast_io::details::streamreflect::has_scatter_read_until_eof_bytes_underflow_define<instmtype>)
 	{
 		for(::std::size_t i{};i!=n;++i)
 		{
@@ -39,13 +44,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 		::fast_io::details::scatter_read_all_bytes_cold_impl(insm,pscatters,n);
 		return {n,0};
 	}
-	else if constexpr(sizeof(char_type)==1&&
-	(
-		::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_read_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>
-	))
+	else if constexpr(sizeof(char_type)==1&&::fast_io::details::streamreflect::has_any_of_read_operations<instmtype>)
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -164,6 +163,24 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			::fast_io::details::read_all_bytes_impl(insm,base,base+len);
 		}
 	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_until_eof_bytes_underflow_define<instmtype>||
+			::fast_io::details::streamreflect::has_read_until_eof_bytes_underflow_define<instmtype>)
+	{
+		auto [pos,scpos]{scatter_read_until_eof_bytes_cold_impl(insm,pscatters,n)};
+		if(!pos)
+		{
+			throw_parse_code(::fast_io::parse_code::end_of_file);
+		}
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<instmtype>)
+	{
+		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
+		{
+			auto [basep,len] = *i;
+			::std::byte *base{reinterpret_cast<::std::byte*>(const_cast<void*>(basep))};
+			::fast_io::details::read_all_bytes_impl(insm,base,base+len);
+		}
+	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>)
 	{
 		for(;;)
@@ -199,13 +216,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			::fast_io::details::read_all_bytes_impl(insm,base,base+len);
 		}
 	}
-	else if constexpr(sizeof(char_type)==1&&
-	(
-		::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_read_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>
-	))
+	else if constexpr(sizeof(char_type)==1&&::fast_io::details::streamreflect::has_any_of_read_operations<instmtype>)
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)

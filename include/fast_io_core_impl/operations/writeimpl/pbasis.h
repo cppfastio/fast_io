@@ -21,7 +21,7 @@ inline constexpr typename outstmtype::output_char_type const* pwrite_some_cold_i
 	{
 		::std::size_t len{static_cast<::std::size_t>(last-first)};
 		basic_io_scatter_t<char_type> sc{first,len};
-		return ::fast_io::scatter_status_one_size(scatter_pwrite_some_bytes_overflow_define(outsm,__builtin_addressof(sc),1,off),len)+first;
+		return ::fast_io::scatter_status_one_size(scatter_pwrite_some_overflow_define(outsm,__builtin_addressof(sc),1,off),len)+first;
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_pwrite_all_overflow_define<outstmtype>)
 	{
