@@ -1,231 +1,173 @@
-﻿#pragma once
-#include"output_normal.h"
-#include"output_deco.h"
+#pragma once
 
 namespace fast_io
 {
 
-namespace details
+namespace details::io_buffer
 {
 
-template<typename T,::std::random_access_iterator Iter>
-#if __has_cpp_attribute(__gnu__::__cold__)
-[[__gnu__::__cold__]]
-#endif
-inline constexpr void iobuf_write_unhappy_impl(T& t,Iter first,Iter last)
+template<::std::integral char_type,
+	typename allocator_type,
+	::std::size_t buffersize>
+inline constexpr void write_nullptr_case(
+	basic_io_buffer_pointers<char_type>& __restrict pointers,
+	char_type const *first,char_type const *last)
 {
-	if constexpr(has_external_decorator_impl<typename T::decorators_type>)
-		iobuf_write_unhappy_decay_impl_deco<T::buffer_size>(io_ref(t.handle),
-		external_decorator(t.decorators),
-		t.obuffer,
-		t.obuffer_external,
-		first,last);
-	else
-		iobuf_write_unhappy_decay_impl<T::buffer_size>(io_ref(t.handle),t.obuffer,first,last);
+	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,char_type>;
+	char_type *begin_ptr = typed_allocator_type::allocate(buffersize);
+	char_type *curr_ptr = non_overlapped_copy(first,last,begin);
+	pointers.begin_ptr=begin_ptr;
+	pointers.curr_ptr=curr_ptr;
+	pointers.end_ptr=begin_ptr+buffersize;
 }
 
-}
-
-template<stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs,::std::random_access_iterator Iter>
-requires (((mde&buffer_mode::out)==buffer_mode::out)&&details::allow_iobuf_punning<typename decorators::internal_type,Iter>)
-inline constexpr void write(basic_io_buffer<handletype,mde,decorators,bfs>& bios,Iter first,Iter last)
+template<::std::integral char_type,
+	typename optstmtype>
+inline constexpr char_type const* write_some_nullptr_case(
+	optstmtype optstm,
+	basic_io_buffer_pointers<char_type>& __restrict pointers,
+	char_type const *first,char_type const *last)
 {
-	using iter_char_type = ::std::iter_value_t<Iter>;
-	using char_type = typename decorators::internal_type;
-	if constexpr(std::same_as<iter_char_type,char_type>)
+	basic_io_scatter_t<char_type> const scatters[2]
 	{
-		if constexpr(::std::contiguous_iterator<Iter>&&!std::is_pointer_v<Iter>)
-			write(bios,::std::to_address(first),::std::to_address(last));
-		else
-		{
-			if constexpr((mde&buffer_mode::deco_out_no_internal)==buffer_mode::deco_out_no_internal)
-			{
-				details::write_with_deco(io_ref(bios.handle),
-					external_decorator(bios.decorators),
-					first,last,
-					bios.obuffer_external,bfs);
-			}
-			else
-			{
-				std::size_t diff{static_cast<std::size_t>(last-first)};
-				std::size_t remain_space{static_cast<std::size_t>(bios.obuffer.buffer_end-bios.obuffer.buffer_curr)};
-				if(remain_space<diff)[[unlikely]]
-				{
-					details::iobuf_write_unhappy_impl(bios,first,last);
-					return;
-				}
-				bios.obuffer.buffer_curr=details::non_overlapped_copy_n(first,diff,bios.obuffer.buffer_curr);
-			}
-		}
-/*
-To do : forward_iterator. Support std::forward_list, std::list, std::set and std::unordered_set
-*/
+	{pointers.begin_ptr,static_cast<::std::size_t>(pointers.curr_ptr-pointers.begin_ptr)},
+	{first,static_cast<::std::size_t>(last-first)}
+	};
+	auto status{::fast_io::operations::decay::scatter_write_some(pointers,scatters,2)};
+	auto position{status.position};
+	if(position==2)
+	{
+		pointers.curr_ptr=pointers.begin_ptr;
+		return last;
+	}
+	else if(position==1)
+	{
+		pointers.curr_ptr=pointers.begin_ptr;
+		return first+status.position_in_scatter;
 	}
 	else
-		write(bios,reinterpret_cast<char const*>(::std::to_address(first)),
-			reinterpret_cast<char const*>(::std::to_address(last)));
-}
-
-
-template<stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-requires ((mde&buffer_mode::out)==buffer_mode::out&&
-(mde&buffer_mode::deco_out_no_internal)!=buffer_mode::deco_out_no_internal)
-inline constexpr auto obuffer_begin(basic_io_buffer<handletype,mde,decorators,bfs>& bios) noexcept
-{
-	return bios.obuffer.buffer_begin;
-}
-
-
-template<stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-requires ((mde&buffer_mode::out)==buffer_mode::out&&
-(mde&buffer_mode::deco_out_no_internal)!=buffer_mode::deco_out_no_internal)
-inline constexpr auto obuffer_curr(basic_io_buffer<handletype,mde,decorators,bfs>& bios) noexcept
-{
-	return bios.obuffer.buffer_curr;
-}
-
-template<stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-requires ((mde&buffer_mode::out)==buffer_mode::out)
-inline constexpr auto obuffer_end(basic_io_buffer<handletype,mde,decorators,bfs>& bios) noexcept
-{
-	return bios.obuffer.buffer_end;
-}
-
-template<stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-requires ((mde&buffer_mode::out)==buffer_mode::out&&
-(mde&buffer_mode::deco_out_no_internal)!=buffer_mode::deco_out_no_internal)
-inline constexpr void obuffer_set_curr(basic_io_buffer<handletype,mde,decorators,bfs>& bios,typename basic_io_buffer<handletype,mde,decorators,bfs>::char_type* ptr) noexcept
-{
-	bios.obuffer.buffer_curr=ptr;
-}
-
-template<stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-requires ((mde&buffer_mode::out)==buffer_mode::out&&
-(mde&buffer_mode::deco_out_no_internal)!=buffer_mode::deco_out_no_internal)
-inline constexpr void obuffer_overflow(basic_io_buffer<handletype,mde,decorators,bfs>& bios,
-	typename basic_io_buffer<handletype,mde,decorators,bfs>::char_type ch)
-{
-	if constexpr(details::has_external_decorator_impl<decorators>)
-		details::iobuf_overflow_impl_deco(io_ref(bios.handle),external_decorator(bios.decorators),bios.obuffer,bios.obuffer_external,ch,bfs);
-	else
-		details::iobuf_overflow_impl(io_ref(bios.handle),bios.obuffer,ch,bfs);
-}
-
-template<zero_copy_output_stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-requires ((mde&buffer_mode::out)==buffer_mode::out&&!details::has_external_decorator_impl<decorators>)
-inline constexpr decltype(auto) zero_copy_out_handle(basic_io_buffer<handletype,mde,decorators,bfs>& bios)
-{
-	return zero_copy_out_handle(bios.handle);
-}
-
-namespace details
-{
-
-template<typename T>
-concept has_file_lock_type_impl = requires(T t)
-{
-	file_lock(io_ref(t));
-};
-
-}
-
-template<typename handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-struct basic_io_buffer_file_lock
-{
-	basic_io_buffer<handletype,mde,decorators,bfs>* ptr{};
-	template<typename RequestType>
-	constexpr void lock(RequestType& req)
 	{
-		flush(*ptr);
-		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
-		{
-			file_lock(io_ref(ptr->handle)).lock(req);
-		}
+		pointers.curr_ptr=::fast_io::freestanding::copy_n(pointers.curr_ptr-status.position_in_scatter,
+			status.position_in_scatter,pointers.begin_ptr);
+		return first;
 	}
-	template<typename RequestType>
-	constexpr void unlock(RequestType& req) noexcept
+}
+
+template<::std::integral char_type,
+	typename allocator_type,
+	::std::size_t buffersize,
+	typename optstmtype>
+inline constexpr char_type const* write_some_overflow_impl(
+	optstmtype optstm,
+	basic_io_buffer_pointers<char_type>& pointers,
+	char_type const* first, char_type const* last)
+{
+	constexpr
+		::std::size_t buffersize{io_buffer_type::buffer_size};
+	std::size_t const diff{static_cast<std::size_t>(last-first)};
+	if(pointers.buffer_begin==nullptr)
 	{
-#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
-#if __cpp_exceptions
-		try
+		if(diff<buffer_size)
 		{
-#endif
-#endif
-			flush(*ptr);
-#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
-#if __cpp_exceptions
-		}
-		catch(...)
-		{
-		}
-#endif
-#endif
-		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
-		{
-			file_lock(io_ref(ptr->handle)).unlock(req);
-		}
-	}
-	template<typename RequestType>
-	constexpr bool try_lock(RequestType& req)
-	{
-#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
-#if __cpp_exceptions
-		try
-		{
-#endif
-#endif
-			flush(*ptr);
-#if (defined(_MSC_VER)&&_HAS_EXCEPTIONS!=0) || (!defined(_MSC_VER)&&__cpp_exceptions)
-#if __cpp_exceptions
-		}
-		catch(...)
-		{
-			return false;
-		}
-#endif
-#endif
-		if constexpr(::fast_io::details::has_file_lock_type_impl<handletype>)
-		{
-			return file_lock(io_ref(ptr->handle)).try_lock(req);
+			write_nullptr_case<char_type,allocator_type,buffersize>(pointers,first,last);
+			return last;
 		}
 		else
 		{
-			return true;
+			return ::fast_io::operations::decay::write_some_decay(optstm,first,last);
 		}
 	}
-};
+	return write_some_typical_case<char_type>(optstm,pointers,first,last);
+}
 
-template<stream handletype,
-buffer_mode mde,
-typename decorators,
-std::size_t bfs>
-inline constexpr decltype(auto) file_lock(basic_io_buffer<handletype,mde,decorators,bfs>& bios)
+template<::std::integral char_type,
+	typename optstmtype>
+inline constexpr void write_all_nullptr_case(
+	optstmtype optstm,
+	basic_io_buffer_pointers<char_type>& __restrict pointers,
+	char_type const *first,char_type const *last)
 {
-	return basic_io_buffer_file_lock<handletype,mde,decorators,bfs>{__builtin_addressof(bios)};
+	basic_io_scatter_t<char_type> const scatters[2]
+	{
+	{pointers.begin_ptr,static_cast<::std::size_t>(pointers.curr_ptr-pointers.begin_ptr)},
+	{first,static_cast<::std::size_t>(last-first)}
+	};
+	::fast_io::operations::decay::scatter_write_all(pointers,scatters,2);
+	pointers.curr_ptr=pointers.begin_ptr;
+}
+
+template<::std::integral char_type,
+	typename allocator_type,
+	::std::size_t buffersize,
+	typename optstmtype>
+inline constexpr void write_all_overflow_impl(
+	optstmtype optstm,
+	basic_io_buffer_pointers<char_type>& pointers,
+	char_type const* first, char_type const* last)
+{
+	constexpr
+		::std::size_t buffersize{io_buffer_type::buffer_size};
+	std::size_t const diff{static_cast<std::size_t>(last-first)};
+	if(pointers.buffer_begin==nullptr)
+	{
+		if(diff<buffer_size)
+		{
+			write_nullptr_case<char_type,allocator_type,buffersize>(pointers,first,last);
+		}
+		else
+		{
+			::fast_io::operations::decay::write_all_decay(optstm,first,last);
+		}
+		return;
+	}
+	write_all_typical_case<char_type>(optstm,pointers,first,last);
+}
+
+template<::std::integral char_type,typename optstmtype>
+inline constexpr void output_stream_buffer_flush_impl(optstmtype optstm,
+	basic_io_buffer_pointers<char_type>& pointers)
+{
+	if(pointers.begin_ptr==pointers.curr_ptr)
+	{
+		return;
+	}
+	::fast_io::operations::decay::write_all_decay(optstm,pointers.begin_ptr,pointers.curr_ptr);
+	pointers.curr_ptr=pointers.begin_ptr;
+}
+
+}
+
+template<typename io_buffer_type>
+inline constexpr typename io_buffer_type::output_char_type const* write_some_overflow_define(
+	basic_io_buffer_ref<io_buffer_type> ref,
+	typename io_buffer_type::output_char_type const* first,
+	typename io_buffer_type::output_char_type const* last)
+{
+	return ::fast_io::details::io_buffer::write_some_overflow_impl<
+		typename io_buffer_type::output_char_type,
+		typename io_buffer_type::allocator_type,
+		io_buffer_type::buffer_size>(::fast_io::manipulators::output_stream_ref(ref.iobptr),first,last);
+}
+
+template<typename io_buffer_type>
+inline constexpr void write_all_overflow_define(
+	basic_io_buffer_ref<io_buffer_type> ref,
+	typename io_buffer_type::output_char_type const* first,
+	typename io_buffer_type::output_char_type const* last)
+{
+	return ::fast_io::details::io_buffer::write_all_overflow_impl<
+		typename io_buffer_type::output_char_type,
+		typename io_buffer_type::allocator_type,
+		io_buffer_type::buffer_size>(::fast_io::manipulators::output_stream_ref(ref.iobptr),first,last);
+}
+
+
+template<typename io_buffer_type>
+inline constexpr void output_stream_buffer_flush_define(
+	basic_io_buffer_ref<io_buffer_type> ref)
+{
+	::fast_io::details::io_buffer::output_stream_buffer_flush_define_impl<
+		typename io_buffer_type::output_char_type>(::fast_io::manipulators::output_stream_ref(ref.iobptr));
 }
 
 }
