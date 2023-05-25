@@ -80,16 +80,16 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_cold_impl(outstmtype ou
 				::std::byte const *base{reinterpret_cast<::std::byte const*>(basef)};
 				::std::byte const *ed{reinterpret_cast<::std::byte const*>(edf)};
 				auto written{::fast_io::details::pwrite_some_bytes_impl(outsm,base,ed,off)};
-				::std::size_t sz{static_cast<::std::size_t>(written-base)};
-				off=::fast_io::fposoffadd_nonegative(off,sz);
-				::std::size_t md{sz%sizeof(char_type)};
+				::std::size_t diff{static_cast<::std::size_t>(written-base)};
+				off=::fast_io::fposoffadd_nonegative(off,diff);
+				::std::size_t md{diff%sizeof(char_type)};
+				::std::size_t sz{diff/sizeof(char_type)};
 				if(md)
 				{
 					::std::size_t dfd{sizeof(char_type)-md};
 					::fast_io::details::pwrite_all_bytes_impl(outsm,written,written+dfd,off);
 					off=::fast_io::fposoffadd_nonegative(off,dfd);
-					written+=dfd;
-					sz+=dfd;
+					++sz;
 				}
 				if(sz!=len)
 				{

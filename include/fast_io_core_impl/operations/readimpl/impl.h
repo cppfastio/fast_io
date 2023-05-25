@@ -6,6 +6,10 @@
 #include"pbasis.h"
 #include"scatterp.h"
 #include"scatterpbytes.h"
+#include"until_eof.h"
+#include"puntil_eof.h"
+#include"scatter_until_eof.h"
+#include"scatter_until_eofp.h"
 #include"decay.h"
 
 namespace fast_io

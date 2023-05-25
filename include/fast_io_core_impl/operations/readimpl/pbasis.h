@@ -58,7 +58,13 @@ inline constexpr typename instmtype::input_char_type* pread_some_cold_impl(instm
 			if(remain!=0)
 			{
 				off=::fast_io::fposoffadd_nonegative(off,ptdf);
-				pread_all_bytes_cold_impl(insm,ptr,ptr+remain,off);
+				auto ptred{ptr+remain};
+				auto ptrit{::fast_io::operations::decay::pread_until_eof_bytes_decay(insm,ptr,ptred,off)};
+				if(ptrit==ptred)
+				{
+					++v; 
+				}
+//				pread_all_bytes_cold_impl(insm,ptr,ptr+remain,off);
 			}
 			return first+v;
 		}

@@ -3,6 +3,15 @@
 namespace fast_io
 {
 
+namespace operations::decay
+{
+template<typename instmtype>
+inline constexpr ::std::byte* read_until_eof_bytes_decay(instmtype insm,::std::byte *first,::std::byte *last);
+
+template<typename instmtype>
+inline constexpr ::std::byte* pread_until_eof_bytes_decay(instmtype insm,::std::byte *first,::std::byte *last,::fast_io::intfpos_t);
+}
+
 namespace details
 {
 template<typename instmtype>
@@ -87,15 +96,19 @@ inline constexpr io_scatter_status_t scatter_read_some_cold_impl(instmtype insm,
 				auto edf{basef+len};
 				::std::byte *base{reinterpret_cast<::std::byte*>(const_cast<void*>(basef))};
 				::std::byte *ed{reinterpret_cast<::std::byte*>(edf)};
-				auto written{::fast_io::details::read_some_bytes_impl(insm,base,ed)};
-				::std::size_t sz{static_cast<::std::size_t>(written-base)};
-				::std::size_t md{sz%sizeof(char_type)};
+				auto readed{::fast_io::details::read_some_bytes_impl(insm,base,ed)};
+				::std::size_t diff{static_cast<::std::size_t>(readed-base)};
+				::std::size_t md{diff%sizeof(char_type)};
+				::std::size_t sz{diff/sizeof(char_type)};
 				if(md)
 				{
 					::std::size_t dfd{sizeof(char_type)-md};
-					::fast_io::details::read_all_bytes_impl(insm,written,written+dfd);
-					written+=dfd;
-					sz+=dfd;
+					auto readedend{readed+dfd};
+					auto it{::fast_io::operations::decay::read_until_eof_bytes_decay(insm,readed,readedend)};
+					if(it==readedend)
+					{
+						++sz;
+					}
 				}
 				if(sz!=len)
 				{
