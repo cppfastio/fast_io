@@ -274,21 +274,21 @@ io_stream_seek_define(t,0,::fast_io::seekdir::cur);
 };
 
 template<typename T>
-concept has_input_stream_buffer_flush_define = requires(T&& t)
+concept has_input_stream_buffer_flush_define = requires(T t)
 {
-input_stream_buffer_flush_define(::fast_io::freestanding::forward<T>(t));
+input_stream_buffer_flush_define(t);
 };
 
 template<typename T>
-concept has_output_stream_buffer_flush_define = requires(T&& t)
+concept has_output_stream_buffer_flush_define = requires(T t)
 {
-output_stream_buffer_flush_define(::fast_io::freestanding::forward<T>(t));
+output_stream_buffer_flush_define(t);
 };
 
 template<typename T>
 concept has_io_stream_buffer_flush_define = requires(T t)
 {
-io_stream_buffer_flush_define(t,0,::fast_io::seekdir::cur);
+io_stream_buffer_flush_define(t);
 };
 
 template<typename T>
