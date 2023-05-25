@@ -57,12 +57,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 			insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n);
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
-	(
-		::fast_io::details::streamreflect::has_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_pread_some_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_some_bytes_underflow_define<instmtype>
-	))
+	(::fast_io::details::streamreflect::has_any_of_byte_pread_operations<instmtype>))
 	{
 		auto ret{scatter_pread_some_bytes_cold_impl(insm,pscatters,n,0)};
 		::fast_io::details::input_stream_seek_bytes_impl(insm,
@@ -72,12 +67,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 	}
 	else if constexpr(sizeof(char_type)==1&&
 		::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
-	(
-		::fast_io::details::streamreflect::has_pread_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_some_underflow_define<instmtype>
-	))
+	(::fast_io::details::streamreflect::has_any_of_pread_operations<instmtype>))
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -227,12 +217,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n);
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
-	(
-		::fast_io::details::streamreflect::has_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_pread_some_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_some_bytes_underflow_define<instmtype>
-	))
+	(::fast_io::details::streamreflect::has_any_of_byte_pread_operations<instmtype>))
 	{
 		scatter_pread_all_bytes_cold_impl(insm,pscatters,n,0);
 		::fast_io::details::input_stream_seek_bytes_impl(insm,
@@ -241,12 +226,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 	}
 	else if constexpr(sizeof(char_type)==1&&
 		::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
-	(
-		::fast_io::details::streamreflect::has_pread_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_some_underflow_define<instmtype>
-	))
+	(::fast_io::details::streamreflect::has_any_of_pread_operations<instmtype>))
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
