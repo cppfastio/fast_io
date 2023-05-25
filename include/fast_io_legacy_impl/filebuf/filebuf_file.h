@@ -41,6 +41,8 @@ class basic_filebuf_file:public basic_filebuf_io_observer<CharT,Traits>
 {
 public:
 	using char_type = CharT;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using traits_type = Traits;
 	using native_handle_type = std::basic_filebuf<char_type,traits_type>*;
 	constexpr basic_filebuf_file() noexcept=default;
