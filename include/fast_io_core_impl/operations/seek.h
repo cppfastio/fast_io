@@ -110,7 +110,10 @@ inline constexpr ::fast_io::intfpos_t io_stream_seek_bytes_decay(T t,::fast_io::
 	}
 	else
 	{
-		io_stream_buffer_flush_define(t);
+		if constexpr(::fast_io::details::has_io_stream_buffer_flush_define<T>)
+		{
+			io_stream_buffer_flush_define(t);
+		}
 		return io_stream_seek_bytes_define(t,off,skd);
 	}
 }
@@ -231,7 +234,10 @@ inline constexpr ::fast_io::intfpos_t io_stream_seek_decay(T t,::fast_io::intfpo
 	}
 	else
 	{
-		io_stream_buffer_flush_define(t);
+		if constexpr(::fast_io::details::has_io_stream_buffer_flush_define<T>)
+		{
+			io_stream_buffer_flush_define(t);
+		}
 		return io_stream_seek_define(t,off,skd);
 	}
 }
