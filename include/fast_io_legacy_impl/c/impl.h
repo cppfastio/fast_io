@@ -774,7 +774,7 @@ inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_t
 #endif
 
 template<c_family family,std::integral ch_type>
-inline void flush(basic_c_family_io_observer<family,ch_type> cfhd)
+inline void io_stream_buffer_flush_define(basic_c_family_io_observer<family,ch_type> cfhd)
 {
 	details::my_c_io_flush_impl<family>(cfhd.fp);
 }
