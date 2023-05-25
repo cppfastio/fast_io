@@ -277,10 +277,7 @@ inline constexpr ::std::byte* read_until_eof_bytes_cold_impl(instmtype insm,::st
 		scatter_read_all_bytes_underflow_define(insm,__builtin_addressof(sc),1);
 	}
 	else if constexpr(sizeof(char_type)==1&&
-		(::fast_io::details::streamreflect::has_read_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<instmtype>))
+		::fast_io::details::streamreflect::has_any_of_read_operations<instmtype>)
 	{
 		using char_type_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
