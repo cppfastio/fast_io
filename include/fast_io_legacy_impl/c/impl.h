@@ -1052,3 +1052,4 @@ struct is_zero_default_constructible<basic_c_family_file<fm,char_type>>
 #include"macros_general.h"
 #endif
 
+#include"preadwrite.h"

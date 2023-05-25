@@ -399,8 +399,30 @@ inline void* nt_create_file_at_impl(void* directory_handle,T const& t,open_mode_
 	return nt_api_common(t,nt_family_open_file_at_parameter<zw,kernel>{directory_handle,op});
 }
 
+template<::fast_io::nt_family family>
+inline ::std::uint_least64_t nt_calculate_current_file_offset(void* __restrict handle)
+{
+	win32::nt::io_status_block block;
+	std::uint_least64_t fps{};
+	auto status{win32::nt::nt_query_information_file<family==::fast_io::nt_family::zw>(handle,
+		__builtin_addressof(block),
+		__builtin_addressof(fps),
+		static_cast<::std::uint_least32_t>(sizeof(std::uint_least64_t)),
+		win32::nt::file_information_class::FilePositionInformation)};
+	if(status)
+		throw_nt_error(status);
+	return fps;
+}
+
+template<::fast_io::nt_family family>
+inline ::std::int_least64_t nt_calculate_offset_impl(void* __restrict handle,::fast_io::intfpos_t off)
+{
+	return ::fast_io::details::nt_fpos_offset_addition(
+		::fast_io::win32::nt::details::nt_calculate_current_file_offset<family>(handle),off);
+}
+
 template<nt_family family>
-inline ::std::byte* nt_read_some_bytes_impl(void* __restrict handle,::std::byte *first,::std::byte *last)
+inline ::std::byte* nt_read_pread_some_bytes_common_impl(void* __restrict handle,::std::byte *first,::std::byte *last,::std::int_least64_t *pbyteoffset)
 {
 //some poeple in zwclose7 forum said we do not need to initialize io_status_block
 	win32::nt::io_status_block block;
@@ -408,7 +430,34 @@ inline ::std::byte* nt_read_some_bytes_impl(void* __restrict handle,::std::byte 
 		handle,nullptr,nullptr,nullptr,
 		__builtin_addressof(block), first,
 		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
-		nullptr, nullptr)};
+		pbyteoffset, nullptr)};
+	if(status)
+		throw_nt_error(status);
+	return first+block.Information;
+}
+
+template<nt_family family>
+inline ::std::byte* nt_read_some_bytes_impl(void* __restrict handle,::std::byte *first,::std::byte *last)
+{
+	return ::fast_io::win32::nt::details::nt_read_pread_some_bytes_common_impl<family>(handle,first,last,nullptr);
+}
+
+template<nt_family family>
+inline ::std::byte* nt_pread_some_bytes_impl(void* __restrict handle,::std::byte *first,::std::byte *last,::fast_io::intfpos_t off)
+{
+	::std::int_least64_t offs{nt_calculate_offset_impl<family>(handle,off)};
+	return ::fast_io::win32::nt::details::nt_read_pread_some_bytes_common_impl<family>(handle,first,last,__builtin_addressof(offs));
+}
+
+template<nt_family family>
+inline ::std::byte const* nt_write_pwrite_some_bytes_common_impl(void* __restrict handle,::std::byte const *first,::std::byte const *last,::std::int_least64_t *pbyteoffset)
+{
+	win32::nt::io_status_block block;
+	auto const status{win32::nt::nt_write_file<family==::fast_io::nt_family::zw>(
+		handle,nullptr,nullptr,nullptr,
+		__builtin_addressof(block), first,
+		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
+		pbyteoffset, nullptr)};
 	if(status)
 		throw_nt_error(status);
 	return first+block.Information;
@@ -417,15 +466,14 @@ inline ::std::byte* nt_read_some_bytes_impl(void* __restrict handle,::std::byte 
 template<nt_family family>
 inline ::std::byte const* nt_write_some_bytes_impl(void* __restrict handle,::std::byte const* first,::std::byte const* last)
 {
-	win32::nt::io_status_block block;
-	auto const status{win32::nt::nt_write_file<family==::fast_io::nt_family::zw>(
-		handle,nullptr,nullptr,nullptr,
-		__builtin_addressof(block), first,
-		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
-		nullptr, nullptr)};
-	if(status)
-		throw_nt_error(status);
-	return first+block.Information;
+	return ::fast_io::win32::nt::details::nt_write_pwrite_some_bytes_common_impl<family>(handle,first,last,nullptr);
+}
+
+template<nt_family family>
+inline ::std::byte const* nt_pwrite_some_bytes_impl(void* __restrict handle,::std::byte const* first,::std::byte const* last,::fast_io::intfpos_t off)
+{
+	::std::int_least64_t offs{nt_calculate_offset_impl<family>(handle,off)};
+	return ::fast_io::win32::nt::details::nt_write_pwrite_some_bytes_common_impl<family>(handle,first,last,__builtin_addressof(offs));
 }
 
 }
@@ -538,6 +586,20 @@ inline ::std::byte const* write_some_bytes_overflow_define(basic_nt_family_io_ob
 	::std::byte const *first, ::std::byte const *last)
 {
 	return ::fast_io::win32::nt::details::nt_write_some_bytes_impl<family>(niob.handle,first,last);
+}
+
+template<nt_family family,std::integral ch_type>
+inline ::std::byte* pread_some_bytes_underflow_define(basic_nt_family_io_observer<family,ch_type> niob,
+	::std::byte* first, ::std::byte* last, ::fast_io::intfpos_t off)
+{
+	return ::fast_io::win32::nt::details::nt_read_some_bytes_impl<family>(niob.handle,first,last,off);
+}
+
+template<nt_family family,std::integral ch_type>
+inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_nt_family_io_observer<family,ch_type> niob,
+	::std::byte const *first, ::std::byte const *last, ::fast_io::intfpos_t off)
+{
+	return ::fast_io::win32::nt::details::nt_write_some_bytes_impl<family>(niob.handle,first,last,off);
 }
 
 #if __cpp_lib_three_way_comparison >= 201907L
@@ -668,7 +730,7 @@ inline nt_file_position_status nt_get_file_position_impl(void* __restrict handle
 }
 
 template<bool zw>
-inline std::uint_least64_t nt_seek64_impl(void* __restrict handle,std::int_least64_t offset,seekdir s)
+inline std::int_least64_t nt_seek64_impl(void* __restrict handle,std::int_least64_t offset,seekdir s)
 {
 	auto [status,file_position]=nt_get_file_position_impl<zw>(handle,offset,s);
 	if(status)
@@ -685,9 +747,9 @@ inline std::uint_least64_t nt_seek64_impl(void* __restrict handle,std::int_least
 }
 
 template<bool zw>
-inline ::fast_io::uintfpos_t nt_seek_impl(void* __restrict handle,::fast_io::intfpos_t offset,seekdir s)
+inline ::fast_io::intfpos_t nt_seek_impl(void* __restrict handle,::fast_io::intfpos_t offset,seekdir s)
 {
-	return static_cast<::fast_io::uintfpos_t>(nt_seek64_impl<zw>(handle,static_cast<std::int_least64_t>(offset),s));
+	return static_cast<::fast_io::intfpos_t>(nt_seek64_impl<zw>(handle,static_cast<std::int_least64_t>(offset),s));
 }
 
 template<bool zw>
@@ -846,7 +908,7 @@ inline bool nt_family_file_try_lock_impl(void* __restrict handle,basic_flock_req
 }
 
 template<nt_family family,std::integral ch_type>
-inline ::fast_io::uintfpos_t io_stream_seek_bytes_define(basic_nt_family_io_observer<family,ch_type> handle,::fast_io::intfpos_t offset=0,seekdir s=seekdir::cur)
+inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_nt_family_io_observer<family,ch_type> handle,::fast_io::intfpos_t offset,seekdir s)
 {
 	return win32::nt::details::nt_seek_impl<family==nt_family::zw>(handle.handle,offset,s);
 }

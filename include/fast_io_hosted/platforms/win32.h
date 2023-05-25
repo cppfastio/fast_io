@@ -599,6 +599,88 @@ inline void data_sync(basic_win32_family_io_observer<family,char_type> wiob,data
 namespace win32::details
 {
 
+
+inline ::fast_io::intfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,seekdir s)
+{
+#if (defined(_WIN32_WINNT)&&_WIN32_WINNT <= 0x0500) || defined(_WIN32_WINDOWS)
+	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least32_t))
+	{
+		constexpr ::fast_io::intfpos_t l32mx{INT_LEAST32_MAX};
+		constexpr ::fast_io::intfpos_t l32mn{INT_LEAST32_MIN};
+		if(offset>l32mx||offset<l32mn)
+			throw_win32_error(0x00000057);
+	}
+	std::int_least32_t distance_to_move_high{};
+	constexpr std::uint_least32_t invalid{UINT_LEAST32_MAX};
+	if(win32::SetFilePointer(handle,static_cast<std::int_least32_t>(offset),__builtin_addressof(distance_to_move_high),static_cast<std::uint_least32_t>(s))==invalid)
+	{
+		throw_win32_error();
+	}
+	return static_cast<::fast_io::intfpos_t>(distance_to_move_high);
+#else
+	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least64_t))
+	{
+		constexpr ::fast_io::intfpos_t l64mx{INT_LEAST64_MAX};
+		constexpr ::fast_io::intfpos_t l64mn{INT_LEAST64_MIN};
+		if(offset>l64mx||offset<l64mn)
+			throw_win32_error(0x00000057);
+	}
+	std::int_least64_t distance_to_move_high{};
+	if(!win32::SetFilePointerEx(handle,static_cast<std::int_least64_t>(offset),__builtin_addressof(distance_to_move_high),static_cast<std::uint_least32_t>(s)))
+	{
+		throw_win32_error();
+	}
+	return static_cast<::fast_io::intfpos_t>(distance_to_move_high);
+#endif
+}
+
+inline void win32_calculate_offset_impl(void* __restrict handle,::fast_io::win32::overlapped& overlap,::fast_io::intfpos_t off)
+{
+#if defined(_WIN32_WINDOWS) || _WIN32_WINNT <=0x0500
+	::fast_io::intfpos_t currentoff{
+		static_cast<::std::int_least64_t>(::fast_io::win32::details::seek_impl(handle,0,::fast_io::seekdir::cur))};
+	::std::int_least64_t u64off{static_cast<::std::int_least64_t>(currentoff)};
+	constexpr
+		auto ul64mx{::std::numeric_limits<::std::uint_least64_t>::max()};
+	if(off<0)
+	{
+		constexpr
+			auto mx{::std::numeric_limits<::fast_io::uintfpos_t>::max()};
+		::fast_io::uintfpos_t offabs{static_cast<::fast_io::uintfpos_t>(static_cast<::fast_io::uintfpos_t>(0)-static_cast<::fast_io::uintfpos_t>(off))};
+		if(u64off<offabs)
+		{
+			u64off=0;
+		}
+		else
+		{
+			u64off-=static_cast<::std::uint_least64_t>(offabs);
+		}
+	}
+	else
+	{
+		constexpr
+			::std::uint_least64_t l64mx{static_cast<::std::uint_least64_t>(INT_LEAST64_MAX)};
+		::fast_io::uintfpos_t offabs{static_cast<::fast_io::uintfpos_t>(off)};
+		auto const mxval{l64mx-u64off};
+		if(mxval<offabs)
+		{
+			u64off=l64mx;
+		}
+		else
+		{
+			u64off+=static_cast<::std::uint_least64_t>(offabs);
+		}
+	}
+
+#else
+	::std::uint_least64_t u64off{
+		static_cast<::std::uint_least64_t>(
+		::fast_io::win32::nt::details::nt_calculate_offset_impl<::fast_io::nt_family::nt>(handle,off))};
+#endif
+	overlap.dummy_union_name.dummy_struct_name={static_cast<std::uint_least32_t>(u64off),
+		static_cast<std::uint_least32_t>(u64off>>32)};
+}
+
 inline ::std::byte* read_or_pread_some_bytes_common_impl(void* __restrict handle,::std::byte *first,
 	::std::byte *last,::fast_io::win32::overlapped *lpoverlapped)
 {
@@ -624,8 +706,7 @@ inline ::std::byte* read_some_bytes_impl(void* __restrict handle,::std::byte *fi
 inline ::std::byte* pread_some_bytes_impl(void* __restrict handle,::std::byte *first,::std::byte *last,::fast_io::intfpos_t off)
 {
 	::fast_io::win32::overlapped overlap{};
-	::std::uint_least64_t u64off{static_cast<::std::uint_least64_t>(off)};
-	overlap.dummy_union_name.dummy_struct_name={static_cast<std::uint_least32_t>(u64off),static_cast<std::uint_least32_t>(u64off>>32)};
+	::fast_io::win32::details::win32_calculate_offset_impl(handle,overlap,off);
 	return ::fast_io::win32::details::read_or_pread_some_bytes_common_impl(handle,first,last,__builtin_addressof(overlap));
 }
 
@@ -653,43 +734,8 @@ inline ::std::byte const* pwrite_some_bytes_impl(void* __restrict handle,
 	::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t off)
 {
 	::fast_io::win32::overlapped overlap{};
-	::std::uint_least64_t u64off{static_cast<::std::uint_least64_t>(off)};
-	overlap.dummy_union_name.dummy_struct_name={static_cast<std::uint_least32_t>(u64off),static_cast<std::uint_least32_t>(u64off>>32)};
+	::fast_io::win32::details::win32_calculate_offset_impl(handle,overlap,off);
 	return ::fast_io::win32::details::write_or_pwrite_some_bytes_common_impl(handle,first,last,__builtin_addressof(overlap));
-}
-
-inline ::fast_io::intfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,seekdir s)
-{
-#if (defined(_WIN32_WINNT)&&_WIN32_WINNT <= 0x0500) || defined(_WIN32_WINDOWS)
-	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least32_t))
-	{
-		constexpr ::fast_io::intfpos_t l32mx{INT_LEAST32_MAX};
-		constexpr ::fast_io::intfpos_t l32mn{INT_LEAST32_MIN};
-		if(offset>l32mx||offset<l32mn)
-			throw_win32_error(0x00000057);
-	}
-	std::int_least32_t distance_to_move_high{};
-	constexpr std::uint_least32_t invalid{UINT_LEAST32_MAX};
-	if(win32::SetFilePointer(handle,static_cast<std::int_least32_t>(offset),__builtin_addressof(distance_to_move_high),static_cast<std::uint_least32_t>(s))==invalid)
-	{
-		throw_win32_error();
-	}
-	return static_cast<::fast_io::intfpos_t>(static_cast<std::uint_least32_t>(distance_to_move_high));
-#else
-	if constexpr(sizeof(::fast_io::intfpos_t)>sizeof(std::int_least64_t))
-	{
-		constexpr ::fast_io::intfpos_t l64mx{INT_LEAST64_MAX};
-		constexpr ::fast_io::intfpos_t l64mn{INT_LEAST64_MIN};
-		if(offset>l64mx||offset<l64mn)
-			throw_win32_error(0x00000057);
-	}
-	std::int_least64_t distance_to_move_high{};
-	if(!win32::SetFilePointerEx(handle,static_cast<std::int_least64_t>(offset),__builtin_addressof(distance_to_move_high),static_cast<std::uint_least32_t>(s)))
-	{
-		throw_win32_error();
-	}
-	return static_cast<::fast_io::intfpos_t>(static_cast<std::uint_least64_t>(distance_to_move_high));
-#endif
 }
 
 }
@@ -715,8 +761,6 @@ inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_win32_family_io_ob
 	return ::fast_io::win32::details::seek_impl(wiob.handle,off,sdir);
 }
 
-#if 0
-
 /*
 I am not confident that i understand semantics correctly. Disabled first and test it later
 */
@@ -725,17 +769,15 @@ template<win32_family family,std::integral ch_type>
 inline ::std::byte* pread_some_bytes_underflow_define(basic_win32_family_io_observer<family,ch_type> niob,
 	::std::byte* first, ::std::byte* last, ::fast_io::intfpos_t off)
 {
-	return ::fast_io::win32::details::read_some_bytes_impl(niob.handle,first,last,off);
+	return ::fast_io::win32::details::pread_some_bytes_impl(niob.handle,first,last,off);
 }
 
 template<win32_family family,std::integral ch_type>
-inline ::std::byte const* pwrite_some_bytes_underflow_define(basic_win32_family_io_observer<family,ch_type> niob,
+inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_win32_family_io_observer<family,ch_type> niob,
 	::std::byte const *first, ::std::byte const *last, ::fast_io::intfpos_t off)
 {
-	return ::fast_io::win32::details::write_some_bytes_impl(niob.handle,first,last,off);
+	return ::fast_io::win32::details::pwrite_some_bytes_impl(niob.handle,first,last,off);
 }
-
-#endif
 
 template<win32_family family,std::integral ch_type>
 inline constexpr basic_win32_family_io_observer<family,ch_type> io_stream_ref_define(basic_win32_family_io_observer<family,ch_type> other) noexcept

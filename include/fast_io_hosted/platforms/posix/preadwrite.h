@@ -17,7 +17,7 @@ inline ::std::byte* posix_pread_bytes_impl(int fd,::std::byte *first,::std::byte
 	return first+ret;
 }
 
-inline ::std::byte const* posix_write_bytes_impl(int fd,::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t off)
+inline ::std::byte const* posix_pwrite_bytes_impl(int fd,::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t off)
 {
 	auto ret{::fast_io::noexcept_call(::pwrite,fd,first,static_cast<::std::size_t>(last-first),off)};
 	if(ret<0)
@@ -107,7 +107,7 @@ inline ::std::byte* pread_some_bytes_underflow_define(
 ::fast_io::basic_posix_io_observer<char_type> piob,
 ::std::byte *first,::std::byte *last,::fast_io::intfpos_t off)
 {
-	return ::fast_io::details::posix_read_bytes_impl(piob.fd,first,last,off);
+	return ::fast_io::details::posix_pread_bytes_impl(piob.fd,first,last,off);
 }
 
 template<::std::integral char_type>
@@ -115,7 +115,7 @@ inline ::std::byte const* pwrite_some_bytes_overflow_define(
 ::fast_io::basic_posix_io_observer<char_type> piob,
 ::std::byte const* first,::std::byte const* last,::fast_io::intfpos_t off)
 {
-	return ::fast_io::details::posix_write_bytes_impl(piob.fd,first,last,off);
+	return ::fast_io::details::posix_pwrite_bytes_impl(piob.fd,first,last,off);
 }
 
 #endif
@@ -123,7 +123,7 @@ inline ::std::byte const* pwrite_some_bytes_overflow_define(
 template<::std::integral char_type>
 inline ::fast_io::io_scatter_status_t scatter_pread_some_bytes_underflow_define(
 ::fast_io::basic_posix_io_observer<char_type> piob,
-::fast_io::io_scatter_t const *pscatters,::std::size_t n,::fast_io::uintfpos_t fpos)
+::fast_io::io_scatter_t const *pscatters,::std::size_t n,::fast_io::intfpos_t fpos)
 {
 	return ::fast_io::details::posix_scatter_pread_bytes_impl(piob.fd,pscatters,n,fpos);
 }
@@ -131,7 +131,7 @@ inline ::fast_io::io_scatter_status_t scatter_pread_some_bytes_underflow_define(
 template<::std::integral char_type>
 inline ::fast_io::io_scatter_status_t scatter_pwrite_some_bytes_overflow_define(
 ::fast_io::basic_posix_io_observer<char_type> piob,
-::fast_io::io_scatter_t const *pscatters,::std::size_t n,::fast_io::uintfpos_t fpos)
+::fast_io::io_scatter_t const *pscatters,::std::size_t n,::fast_io::intfpos_t fpos)
 {
 	return ::fast_io::details::posix_scatter_pwrite_bytes_impl(piob.fd,pscatters,n,fpos);
 }
