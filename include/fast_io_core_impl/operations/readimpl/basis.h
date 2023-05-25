@@ -406,11 +406,7 @@ inline constexpr void read_all_bytes_cold_impl(instmtype insm,::std::byte *first
 			}
 		}
 	}
-	else if constexpr(sizeof(char_type)==1&&
-		(::fast_io::details::streamreflect::has_read_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_read_all_underflow_define<instmtype>))
+	else if constexpr(sizeof(char_type)==1&&::fast_io::details::streamreflect::has_any_of_read_operations<instmtype>)
 	{
 		using char_type_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)

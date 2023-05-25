@@ -23,6 +23,16 @@ inline constexpr typename instmtype::input_char_type* pread_some_cold_impl(instm
 		basic_io_scatter_t<char_type> sc{first,len};
 		return ::fast_io::scatter_status_one_size(scatter_pread_some_bytes_underflow_define(insm,__builtin_addressof(sc),1,off),len)+first;
 	}
+	else if constexpr(::fast_io::details::streamreflect::has_pread_until_eof_underflow_define<instmtype>)
+	{
+		return pread_until_eof_underflow_define(insm,first,last,off);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_pread_until_eof_underflow_define<instmtype>)
+	{
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		basic_io_scatter_t<char_type> sc{first,len};
+		return ::fast_io::scatter_status_one_size(scatter_pread_until_eof_bytes_underflow_define(insm,__builtin_addressof(sc),1,off),len)+first;
+	}
 	else if constexpr(::fast_io::details::streamreflect::has_pread_all_underflow_define<instmtype>)
 	{
 		pread_all_underflow_define(insm,first,last,off);
@@ -109,7 +119,8 @@ inline constexpr ::std::byte* pread_some_bytes_cold_impl(instmtype insm,::std::b
 		return ::fast_io::scatter_status_one_size(scatter_pread_some_bytes_underflow_define(insm,__builtin_addressof(sc),1,off),len)+first;
 	}
 	else if constexpr(sizeof(char_type)==1&&
-		::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>)
+		(::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>||
+		::fast_io::details::streamreflect::has_pread_until_eof_underflow_define<instmtype>))
 	{
 		using char_type_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -117,7 +128,7 @@ inline constexpr ::std::byte* pread_some_bytes_cold_impl(instmtype insm,::std::b
 #endif
 		=
 		char_type*;
-		return pread_some_underflow_define(insm,
+		return ::fast_io::details::pread_some_cold_impl(insm,
 			reinterpret_cast<char_type_ptr>(first),
 			reinterpret_cast<char_type_ptr>(last),off);
 	}
@@ -203,6 +214,23 @@ inline constexpr void pread_all_cold_impl(instmtype insm,typename instmtype::inp
 		::std::size_t len{static_cast<::std::size_t>(last-first)};
 		basic_io_scatter_t<char_type> sc{first,len};
 		scatter_pread_all_underflow_define(insm,__builtin_addressof(sc),1,off);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_pread_until_eof_underflow_define<instmtype>)
+	{
+		if(pread_until_eof_underflow_define(insm,first,last,off)!=last)
+		{
+			::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+		}
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_pread_until_eof_underflow_define<instmtype>)
+	{
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		basic_io_scatter_t<char_type> sc{first,len};
+		auto status{scatter_pread_until_eof_underflow_define(insm,__builtin_addressof(sc),1,off)};
+		if(!status.position)
+		{
+			::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+		}
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>)
 	{
@@ -325,10 +353,7 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm,::std::byte *firs
 		}
 	}
 	else if constexpr(sizeof(char_type)==1&&
-		(::fast_io::details::streamreflect::has_pread_all_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_some_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_all_underflow_define<instmtype>))
+		::fast_io::details::streamreflect::has_any_of_pread_operations<instmtype>)
 	{
 		using char_type_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -341,9 +366,7 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm,::std::byte *firs
 		::fast_io::details::pread_all_cold_impl(insm,firstcptr,lastcptr,off);
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
-	(
-		::fast_io::details::streamreflect::has_any_of_byte_read_operations<instmtype>
-	))
+		::fast_io::details::streamreflect::has_any_of_byte_read_operations<instmtype>)
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,0,::fast_io::seekdir::cur)};
 		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,off,::fast_io::seekdir::cur);

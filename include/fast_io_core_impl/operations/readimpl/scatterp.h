@@ -34,18 +34,24 @@ inline constexpr io_scatter_status_t scatter_pread_some_cold_impl(instmtype insm
 	{
 		return scatter_pread_some_underflow_define(insm,pscatters,n);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>)
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_pread_until_eof_underflow_define<instmtype>)
+	{
+		return scatter_pread_until_eof_underflow_define(insm,pscatters,n);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_pread_some_underflow_define<instmtype>||
+		::fast_io::details::streamreflect::has_scatter_pread_until_eof_underflow_define<instmtype>)
 	{
 		for(::std::size_t i{};i!=n;++i)
 		{
 			auto [base,len] = pscatters[i];
 			auto ed{base+len};
-			auto written{::fast_io::details::pread_some_impl(insm,base,ed)};
-			::std::size_t sz{static_cast<::std::size_t>(written-base)};
-			if(sz!=len)
+			char_type *it{::fast_io::details::pread_some_impl(insm,base,ed,off)};
+			if(it!=ed)
 			{
-				return {i,sz};
+				return {static_cast<::std::size_t>(i-pscatters),
+					static_cast<::std::size_t>(it-base)};
 			}
+			off=::fast_io::fposoffadd_nonegative(off,len);
 		}
 		return {n,0};
 	}
@@ -55,10 +61,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_cold_impl(instmtype insm
 		::fast_io::details::scatter_pread_all_bytes_cold_impl(insm,pscatters,n,off);
 		return {n,0};
 	}
-	else if constexpr((::fast_io::details::streamreflect::has_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_pread_some_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_some_bytes_underflow_define<instmtype>))
+	else if constexpr(::fast_io::details::streamreflect::has_any_of_byte_pread_operations<instmtype>)
 	{
 		if constexpr(sizeof(char_type)==1)
 		{
@@ -204,10 +207,7 @@ inline constexpr void scatter_pread_all_cold_impl(instmtype insm,
 			off=::fast_io::fposoffadd_nonegative(off,len);
 		}
 	}
-	else if constexpr((::fast_io::details::streamreflect::has_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_pread_some_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_pread_some_bytes_underflow_define<instmtype>))
+	else if constexpr(::fast_io::details::streamreflect::has_any_of_byte_pread_operations<instmtype>)
 	{
 		using char_type = typename instmtype::input_char_type;
 		if constexpr(sizeof(char_type)==1)
