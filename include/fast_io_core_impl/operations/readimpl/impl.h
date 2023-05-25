@@ -35,6 +35,17 @@ template<typename instmtype,::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
+inline constexpr char_type* read_until_eof(instmtype&& instm,char_type *first, char_type *last)
+{
+	return ::fast_io::operations::decay::read_until_eof_decay(::fast_io::manipulators::input_stream_ref(instm),first,last);
+}
+
+template<typename instmtype,::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void read_all(instmtype&& instm,char_type *first, char_type *last)
 {
 	return ::fast_io::details::read_all_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
@@ -51,6 +62,17 @@ inline constexpr ::std::byte* read_some_bytes(instmtype&& instm,::std::byte *fir
 	return ::fast_io::details::read_some_bytes_impl(::fast_io::manipulators::input_stream_ref(instm),first,last);
 }
 
+template<typename instmtype,::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr ::std::byte* read_until_eof_bytes(instmtype&& instm,::std::byte *first, ::std::byte *last)
+{
+	return ::fast_io::operations::decay::read_until_eof_bytes_decay(::fast_io::manipulators::input_stream_ref(instm),first,last);
+}
+
 template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -63,6 +85,11 @@ inline constexpr void read_all_bytes(instmtype&& instm,::std::byte *first, ::std
 }
 
 template<typename instmtype>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr io_scatter_status_t scatter_read_some_bytes(instmtype&& instm,
 	io_scatter_t* pscatter,::std::size_t len)
 {
@@ -70,6 +97,23 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes(instmtype&& instm,
 }
 
 template<typename instmtype>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr io_scatter_status_t scatter_read_until_eof_bytes(instmtype&& instm,
+	io_scatter_t* pscatter,::std::size_t len)
+{
+	return ::fast_io::operations::decay::scatter_read_until_eof_bytes_decay(::fast_io::manipulators::input_stream_ref(instm),pscatter,len);
+}
+
+template<typename instmtype>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void scatter_read_all_bytes(instmtype&& instm,
 	io_scatter_t* pscatter,::std::size_t len)
 {
