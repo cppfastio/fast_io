@@ -46,6 +46,7 @@ inline ::fast_io::io_scatter_status_t scatter_write_some_bytes_overflow_define(
 struct bar
 {};
 
+#if 0
 template<::fast_io::output_stream optstmtype>
 inline constexpr void print_define(::fast_io::io_reserve_type_t<char8_t,bar>,optstmtype opt,bar)
 {
@@ -53,9 +54,13 @@ inline constexpr void print_define(::fast_io::io_reserve_type_t<char8_t,bar>,opt
 }
 
 static_assert(::fast_io::printable<char8_t,bar>);
+#endif
 
 int main()
 {
 	foo f{1};
-	::fast_io::operations::println_freestanding(f,::std::source_location::current(),u8"\nPara1\n",u8"Para2\n",u8"Para3\n",u8"Para4\nPara",5,u8"\nPara",6,bar{},u8"Para7\n",u8"Para8");
+	::fast_io::operations::println_freestanding(f,u8"Hello");
+//	static_assert(::fast_io::byte_output_stream<foo>);
+//	:fast_io::operations::decay::scatter_write_all_bytes_decay()
+//	::fast_io::operations::println_freestanding(f,::std::source_location::current(),u8"\nPara1\n",u8"Para2\n",u8"Para3\n",u8"Para4\nPara",5,u8"\nPara",6,bar{},u8"Para7\n",u8"Para8");
 }

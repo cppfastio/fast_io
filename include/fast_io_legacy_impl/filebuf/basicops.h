@@ -97,6 +97,13 @@ inline ::fast_io::intfpos_t streambuf_seek_io(
 		::std::ios_base::in|::std::ios_base::out);
 }
 
+template<std::integral char_type,typename traits_type>
+inline void streambuf_flush_impl(std::basic_streambuf<char_type,traits_type>* fb)
+{
+	if(fb->pubsync()==-1)
+		throw_posix_error(EIO);
+}
+
 }
 
 template<typename T>
@@ -149,6 +156,13 @@ inline constexpr ::fast_io::basic_general_streambuf_io_observer<T> io_stream_ref
 	::fast_io::basic_general_streambuf_io_observer<T> other) noexcept
 {
 	return other;
+}
+
+template<typename T>
+inline constexpr void io_stream_buffer_flush_define(
+	::fast_io::basic_general_streambuf_io_observer<T> other)
+{
+	::fast_io::details::streambuf_flush_impl(other.fb);
 }
 
 }
