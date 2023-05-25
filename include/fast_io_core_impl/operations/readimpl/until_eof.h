@@ -19,7 +19,22 @@ template<typename instmtype>
 inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(instmtype insm,typename instmtype::input_char_type *first,typename instmtype::input_char_type *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>)
+	if constexpr(::fast_io::details::streamreflect::has_read_until_eof_underflow_define<instmtype>)
+	{
+		return read_until_eof_underflow_define(insm,first,last);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_until_eof_underflow_define<instmtype>)
+	{
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		basic_io_scatter_t<char_type> sc{first,len};
+		auto [position,position_in_scatter]{scatter_read_until_eof_underflow_define(insm,__builtin_addressof(sc),1)};
+		if(position)
+		{
+			return last;
+		}
+		return first+position_in_scatter;
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>)
 	{
 		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
 		{
@@ -151,7 +166,22 @@ template<typename instmtype>
 inline constexpr ::std::byte* read_until_eof_bytes_cold_impl(instmtype insm,::std::byte *first,::std::byte *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<instmtype>)
+	if constexpr(::fast_io::details::streamreflect::has_read_until_eof_bytes_underflow_define<instmtype>)
+	{
+		return read_until_eof_bytes_underflow_define(insm,first,last);
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_until_eof_bytes_underflow_define<instmtype>)
+	{
+		::std::size_t len{static_cast<::std::size_t>(last-first)};
+		basic_io_scatter_t<char_type> sc{first,len};
+		auto [position,position_in_scatter]{scatter_read_until_eof_bytes_underflow_define(insm,__builtin_addressof(sc),1)};
+		if(position)
+		{
+			return last;
+		}
+		return first+position_in_scatter;
+	}
+	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<instmtype>)
 	{
 		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>&&sizeof(char_type)==1)
 		{
