@@ -17,6 +17,13 @@ inline constexpr ::fast_io::intfpos_t input_stream_seek_bytes_decay(T t,::fast_i
 {
 	if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<T>)
 	{
+		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<T>)
+		{
+			if(skd==::fast_io::seekdir::cur)
+			{
+				off=::fast_io::details::adjust_instm_offset(ibuffer_end(t)-ibuffer_curr(t));
+			}
+		}
 		if constexpr(::fast_io::details::has_input_or_io_stream_buffer_flush_define<T>)
 		{
 			::fast_io::details::input_stream_buffer_flush_impl(t);
@@ -110,6 +117,13 @@ inline constexpr ::fast_io::intfpos_t io_stream_seek_bytes_decay(T t,::fast_io::
 	}
 	else
 	{
+		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<T>)
+		{
+			if(skd==::fast_io::seekdir::cur)
+			{
+				off=::fast_io::details::adjust_instm_offset(ibuffer_end(t)-ibuffer_curr(t));
+			}
+		}
 		if constexpr(::fast_io::details::has_io_stream_buffer_flush_define<T>)
 		{
 			io_stream_buffer_flush_define(t);
@@ -140,6 +154,13 @@ inline constexpr ::fast_io::intfpos_t input_stream_seek_decay(T t,::fast_io::int
 {
 	if constexpr(::fast_io::details::has_input_or_io_stream_seek_define<T>)
 	{
+		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<T>)
+		{
+			if(skd==::fast_io::seekdir::cur)
+			{
+				off=::fast_io::details::adjust_instm_offset(ibuffer_end(t)-ibuffer_curr(t));
+			}
+		}
 		if constexpr(::fast_io::details::has_input_or_io_stream_buffer_flush_define<T>)
 		{
 			::fast_io::details::input_stream_buffer_flush_impl(t);
@@ -234,6 +255,13 @@ inline constexpr ::fast_io::intfpos_t io_stream_seek_decay(T t,::fast_io::intfpo
 	}
 	else
 	{
+		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<T>)
+		{
+			if(skd==::fast_io::seekdir::cur)
+			{
+				off=::fast_io::details::adjust_instm_offset(ibuffer_end(t)-ibuffer_curr(t));
+			}
+		}
 		if constexpr(::fast_io::details::has_io_stream_buffer_flush_define<T>)
 		{
 			io_stream_buffer_flush_define(t);

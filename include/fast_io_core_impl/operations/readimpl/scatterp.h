@@ -113,6 +113,10 @@ inline constexpr io_scatter_status_t scatter_pread_some_impl(instmtype insm,
 	}
 	else
 	{
+		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+		{
+			off=::fast_io::details::adjust_instm_offset(ibuffer_end(insm)-ibuffer_curr(insm));
+		}
 		return ::fast_io::details::scatter_pread_some_cold_impl(insm,pscatters,n,off);
 	}
 }
@@ -218,6 +222,10 @@ inline constexpr void scatter_pread_all_impl(instmtype insm,
 	}
 	else
 	{
+		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+		{
+			off=::fast_io::details::adjust_instm_offset(ibuffer_end(insm)-ibuffer_curr(insm));
+		}
 		return ::fast_io::details::scatter_pread_all_cold_impl(insm,pscatters,n,off);
 	}
 }

@@ -61,13 +61,6 @@ public:
 #endif
 };
 
-template<typename T>
-inline void flush(basic_general_streambuf_io_observer<T> h)
-{
-	if(h.fb->pubsync()==-1)
-		throw_posix_error(EIO);
-}
-
 #if __cpp_lib_three_way_comparison >= 201907L
 
 template<typename T>
@@ -113,13 +106,6 @@ requires zero_copy_output_stream<basic_c_io_observer<ch_type>>
 inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<ch_type,Traits> h)
 {
 	return zero_copy_out_handle(static_cast<basic_c_io_observer<ch_type>>(h));
-}
-
-template<std::integral ch_type,typename Traits>
-inline auto seek(basic_filebuf_io_observer<ch_type,Traits> h,std::intmax_t offset=0,seekdir s=seekdir::cur)
-{
-	h.fb->pubsync();
-	return seek(static_cast<basic_c_io_observer<ch_type>>(h),offset,s);
 }
 
 template<std::integral ch_type,typename traits_type>
