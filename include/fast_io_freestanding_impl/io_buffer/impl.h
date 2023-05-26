@@ -1,8 +1,7 @@
 ﻿#pragma once
 
 #include"mode.h"
-#if 0
+#include"io_buffer.h"
+#include"io_buffer_ref.h"
 #include"output.h"
 #include"input.h"
-#include"general.h"
-#endif
