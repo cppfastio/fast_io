@@ -173,26 +173,26 @@ inline constexpr void output_stream_buffer_flush_define(
 template<typename io_buffer_type>
 inline constexpr auto obuffer_begin(basic_io_buffer_ref<io_buffer_type> iobref) noexcept
 {
-	return iobref.iobptr->output_buffer.pointers.buffer_begin;
+	return iobref.iobptr->output_buffer.buffer_begin;
 }
 
 template<typename io_buffer_type>
 inline constexpr auto obuffer_curr(basic_io_buffer_ref<io_buffer_type> iobref) noexcept
 {
-	return iobref.iobptr->output_buffer.pointers.buffer_curr;
+	return iobref.iobptr->output_buffer.buffer_curr;
 }
 
 template<typename io_buffer_type>
 inline constexpr auto obuffer_end(basic_io_buffer_ref<io_buffer_type> iobref) noexcept
 {
-	return iobref.iobptr->output_buffer.pointers.buffer_end;
+	return iobref.iobptr->output_buffer.buffer_end;
 }
 
 template<typename io_buffer_type>
 inline constexpr void obuffer_set_curr(basic_io_buffer_ref<io_buffer_type> iobref,
 	typename basic_io_buffer_ref<io_buffer_type>::output_char_type* ptr) noexcept
 {
-	iobref.iobptr->output_buffer.pointers.buffer_curr = ptr;
+	iobref.iobptr->output_buffer.buffer_curr = ptr;
 }
 
 }

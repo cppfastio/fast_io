@@ -141,26 +141,26 @@ inline constexpr bool ibuffer_underflow(basic_io_buffer_ref<io_buffer_type> iobr
 template<typename io_buffer_type>
 inline constexpr auto ibuffer_begin(basic_io_buffer_ref<io_buffer_type> iobref) noexcept
 {
-	return iobref.iobptr->input_buffer.pointers.buffer_begin;
+	return iobref.iobptr->input_buffer.buffer_begin;
 }
 
 template<typename io_buffer_type>
 inline constexpr auto ibuffer_curr(basic_io_buffer_ref<io_buffer_type> iobref) noexcept
 {
-	return iobref.iobptr->input_buffer.pointers.buffer_curr;
+	return iobref.iobptr->input_buffer.buffer_curr;
 }
 
 template<typename io_buffer_type>
 inline constexpr auto ibuffer_end(basic_io_buffer_ref<io_buffer_type> iobref) noexcept
 {
-	return iobref.iobptr->input_buffer.pointers.buffer_end;
+	return iobref.iobptr->input_buffer.buffer_end;
 }
 
 template<typename io_buffer_type>
 inline constexpr void ibuffer_set_curr(basic_io_buffer_ref<io_buffer_type> iobref,
 	typename basic_io_buffer_ref<io_buffer_type>::input_char_type* ptr) noexcept
 {
-	iobref.iobptr->input_buffer.pointers.buffer_curr = ptr;
+	iobref.iobptr->input_buffer.buffer_curr = ptr;
 }
 
 }
