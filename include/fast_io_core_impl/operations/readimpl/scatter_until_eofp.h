@@ -222,7 +222,7 @@ inline constexpr io_scatter_status_t scatter_pread_until_eof_bytes_cold_impl(ins
 			auto [basep,len] = *i;
 			::std::byte *base{reinterpret_cast<::std::byte*>(const_cast<void*>(basep))};
 			::std::byte *baseed{base+len};
-			::fast_io::details::pread_all_bytes_impl(insm,base,base+len,off);
+			::fast_io::details::pread_all_bytes_impl(insm,base,baseed,off);
 			off=::fast_io::fposoffadd_nonegative(off,len);
 		}
 		return {n,0};

@@ -184,6 +184,7 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(instmtype 
 			pscatters+=retpos;
 			n-=retpos;
 		}
+		return {ni,0};
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>||
 		::fast_io::details::streamreflect::has_read_until_eof_underflow_define<instmtype>)

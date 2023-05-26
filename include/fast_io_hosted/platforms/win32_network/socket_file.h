@@ -55,7 +55,7 @@ inline ::std::byte* win32_socket_read_bytes_impl(std::uintptr_t socket, ::std::b
 {
 	int recved{::fast_io::win32::recv(socket,
 		reinterpret_cast<char*>(first),
-		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),0)};
+		::fast_io::details::read_write_bytes_compute<::std::int_least32_t>(first,last),0)};
 	if(recved==-1)
 		throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	return first+recved;
