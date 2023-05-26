@@ -10,7 +10,7 @@ inline ::std::byte* posix_read_bytes_impl(int fd,::std::byte *first,::std::byte 
 {
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
 	auto ret{::fast_io::noexcept_call(::_read,fd,first,
-		::fast_io::details::read_write_bytes_compute<::std::int_least32_t>(first,last))};
+		static_cast<::std::uint_least32_t>(::fast_io::details::read_write_bytes_compute<::std::int_least32_t>(first,last)))};
 #else
 	auto ret{::fast_io::noexcept_call(::read,fd,first,static_cast<::std::size_t>(last-first))};
 #endif
@@ -25,7 +25,7 @@ inline ::std::byte const* posix_write_bytes_impl(int fd,::std::byte const *first
 {
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
 	auto ret{::fast_io::noexcept_call(::_write,fd,first,
-		::fast_io::details::read_write_bytes_compute<::std::int_least32_t>(first,last))};
+		static_cast<::std::uint_least32_t>(::fast_io::details::read_write_bytes_compute<::std::int_least32_t>(first,last)))};
 #else
 	auto ret{::fast_io::noexcept_call(::write,fd,first,static_cast<::std::size_t>(last-first))};
 #endif
