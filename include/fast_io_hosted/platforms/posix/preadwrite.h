@@ -31,7 +31,10 @@ inline ::std::byte const* posix_pwrite_bytes_impl(int fd,::std::byte const *firs
 inline ::fast_io::io_scatter_status_t posix_scatter_pread_bytes_impl(int fd,
 	::fast_io::io_scatter_t const *pscatter,::std::size_t n,::fast_io::intfpos_t off)
 {
-#if defined(__wasi__)
+#if defined(__linux__) && defined(__NR_preadv)
+	auto ret{system_call<__NR_preadv,::std::ptrdiff_t>(fd,pscatter,n,off)};
+	::fast_io::linux_system_call_throw_error(ret);
+#elif defined(__wasi__)
 	using iovec_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
@@ -66,7 +69,10 @@ inline ::fast_io::io_scatter_status_t posix_scatter_pread_bytes_impl(int fd,
 inline ::fast_io::io_scatter_status_t posix_scatter_pwrite_bytes_impl(int fd,
 	::fast_io::io_scatter_t const *pscatter,::std::size_t n,::fast_io::intfpos_t off)
 {
-#if defined(__wasi__)
+#if defined(__linux__) && defined(__NR_pwritev)
+	auto ret{system_call<__NR_pwritev,::std::ptrdiff_t>(fd,pscatter,n,off)};
+	::fast_io::linux_system_call_throw_error(ret);
+#elif defined(__wasi__)
 	using iovec_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
