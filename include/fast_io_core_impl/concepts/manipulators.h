@@ -12,37 +12,37 @@ namespace details
 template<typename T>
 concept has_input_stream_ref_define = requires(T&& t)
 {
-	{input_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{input_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
 concept has_input_bytes_stream_ref_define = requires(T&& t)
 {
-	{input_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{input_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
 concept has_output_stream_ref_define = requires(T&& t)
 {
-	{output_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{output_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
 concept has_output_bytes_stream_ref_define = requires(T&& t)
 {
-	{output_bytes_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{output_bytes_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
 concept has_io_stream_ref_define = requires(T&& t)
 {
-	{io_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{io_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
 concept has_io_bytes_stream_ref_define = requires(T&& t)
 {
-	{io_bytes_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{io_bytes_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
@@ -68,19 +68,19 @@ concept has_output_or_io_bytes_stream_ref_define =
 template<typename T>
 concept has_status_input_stream_ref_define = requires(T&& t)
 {
-	{status_input_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{status_input_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
 concept has_status_output_stream_ref_define = requires(T&& t)
 {
-	{status_output_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{status_output_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
 concept has_status_io_stream_ref_define = requires(T&& t)
 {
-	{status_io_stream_ref_define(::fast_io::freestanding::forward<T>(t))} noexcept;
+	{status_io_stream_ref_define(::fast_io::freestanding::forward<T>(t))};
 };
 
 template<typename T>
@@ -107,7 +107,7 @@ requires (::fast_io::details::has_input_or_io_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) input_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) input_stream_ref(T &&t)
 {
 	if constexpr(::fast_io::details::has_input_stream_ref_define<T>)
 	{
@@ -126,7 +126,7 @@ requires (::fast_io::details::has_output_or_io_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) output_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) output_stream_ref(T &&t)
 {
 	if constexpr(::fast_io::details::has_output_stream_ref_define<T>)
 	{
@@ -145,7 +145,7 @@ requires (::fast_io::details::has_io_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) io_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) io_stream_ref(T &&t)
 {
 	return io_stream_ref_define(::fast_io::freestanding::forward<T>(t));
 }
@@ -157,7 +157,7 @@ requires (::fast_io::details::has_input_or_io_bytes_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) input_bytes_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) input_bytes_stream_ref(T &&t)
 {
 	if constexpr(::fast_io::details::has_input_bytes_stream_ref_define<T>)
 	{
@@ -176,7 +176,7 @@ requires (::fast_io::details::has_output_or_io_bytes_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) output_bytes_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) output_bytes_stream_ref(T &&t)
 {
 	if constexpr(::fast_io::details::has_output_bytes_stream_ref_define<T>)
 	{
@@ -195,7 +195,7 @@ requires (::fast_io::details::has_io_bytes_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) io_bytes_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) io_bytes_stream_ref(T &&t)
 {
 	return io_bytes_stream_ref_define(::fast_io::freestanding::forward<T>(t));
 }
@@ -207,7 +207,7 @@ requires (::fast_io::details::has_status_input_or_io_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) status_input_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) status_input_stream_ref(T &&t)
 {
 	if constexpr(::fast_io::details::has_status_input_stream_ref_define<T>)
 	{
@@ -226,7 +226,7 @@ requires (::fast_io::details::has_status_output_or_io_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) status_output_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) status_output_stream_ref(T &&t)
 {
 	if constexpr(::fast_io::details::has_output_stream_ref_define<T>)
 	{
@@ -245,7 +245,7 @@ requires (::fast_io::details::has_status_io_stream_ref_define<T>)
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr decltype(auto) status_io_stream_ref(T &&t) noexcept
+inline constexpr decltype(auto) status_io_stream_ref(T &&t)
 {
 	return status_io_stream_ref_define(::fast_io::freestanding::forward<T>(t));
 }
