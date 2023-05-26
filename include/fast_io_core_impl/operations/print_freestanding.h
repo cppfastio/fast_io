@@ -1106,8 +1106,10 @@ namespace decay
 {
 
 template<bool line,typename outputstmtype,typename... Args>
+#if 0
 requires (::fast_io::output_stream<outputstmtype>||
 	::fast_io::status_output_stream<outputstmtype>)
+#endif
 inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Args... args)
 {
 	if constexpr(::fast_io::status_output_stream<outputstmtype>)
