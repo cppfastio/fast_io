@@ -156,7 +156,7 @@ inline constexpr void write_all_overflow_define(
 	return ::fast_io::details::io_buffer::write_all_overflow_impl<
 		typename io_buffer_type::output_char_type,
 		typename io_buffer_type::traits_type::allocator_type,
-		io_buffer_type::traits_type::output_buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr),first,last);
+		io_buffer_type::traits_type::output_buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),first,last);
 }
 
 template<typename io_buffer_type>
@@ -164,7 +164,8 @@ inline constexpr void output_stream_buffer_flush_define(
 	basic_io_buffer_ref<io_buffer_type> iobref)
 {
 	::fast_io::details::io_buffer::output_stream_buffer_flush_impl<
-		typename io_buffer_type::output_char_type>(::fast_io::manipulators::output_stream_ref(iobref.iobptr));
+		typename io_buffer_type::output_char_type>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
+		iobref.iobptr->output_buffer);
 }
 
 

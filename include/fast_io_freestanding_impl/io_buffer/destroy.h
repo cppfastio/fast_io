@@ -10,7 +10,8 @@ inline constexpr void close_basic_io_buffer(T& t)
 	constexpr auto mode{traits_type::mode};
 	if constexpr((mode&buffer_mode::out)==buffer_mode::out)
 	{
-		output_stream_buffer_flush_define(::fast_io::manipulators::output_stream_ref(t));
+		output_stream_buffer_flush_define(
+		basic_io_buffer_ref<T>{__builtin_addressof(t)});
 	}
 }
 
@@ -53,7 +54,7 @@ inline constexpr void destroy_basic_io_buffer(T& t) noexcept
 		{
 			::fast_io::typed_generic_allocator_adapter<allocator_type,
 			typename traits_type::output_char_type>::deallocate_n(buffer_begin,
-			buffer_begin+traits_type::output_buffer_size);
+			traits_type::output_buffer_size);
 		}
 	}
 
@@ -64,7 +65,7 @@ inline constexpr void destroy_basic_io_buffer(T& t) noexcept
 		{
 			::fast_io::typed_generic_allocator_adapter<allocator_type,
 			typename traits_type::output_char_type>::deallocate_n(buffer_begin,
-			buffer_begin+traits_type::input_buffer_size);
+			traits_type::input_buffer_size);
 		}
 	}
 }

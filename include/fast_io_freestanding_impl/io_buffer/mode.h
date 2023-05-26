@@ -130,14 +130,16 @@ requires (input_buf_size!=0&&output_buf_size!=0)
 struct basic_io_buffer_traits
 {
 	using allocator_type = allocatortype;
+	using input_char_type = input_chtype;
+	using output_char_type = output_chtype;
 	static inline constexpr buffer_mode mode = mde;
 	static inline constexpr bool input_buffer_on_stack = false;
 	static inline constexpr bool output_buffer_on_stack = false;
 	static inline constexpr bool input_buffer_size_is_fixed = true;
 	static inline constexpr bool output_buffer_size_is_fixed = true;
 	static inline constexpr bool allocator_is_object = false;
-	static inline constexpr ::std::size_t input_buffer_minimum_size = input_buf_size;
-	static inline constexpr ::std::size_t output_buffer_minimum_size = output_buf_size;
+	static inline constexpr ::std::size_t input_buffer_size = input_buf_size;
+	static inline constexpr ::std::size_t output_buffer_size = output_buf_size;
 };
 
 }

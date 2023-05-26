@@ -69,8 +69,7 @@ public:
 
 	inline explicit constexpr basic_io_buffer() = default;
 	template<typename ...Args>
-	requires (::std::constructible_from<handle_type,Args...>&&
-		!::std::constructible_from<basic_io_buffer,Args...>)
+	requires (::std::constructible_from<handle_type,Args...>)
 	inline explicit constexpr basic_io_buffer(Args&& ...args) : handle(::std::forward<Args>(args)...)
 	{
 	}
