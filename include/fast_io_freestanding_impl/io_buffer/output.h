@@ -23,32 +23,92 @@ inline constexpr void write_nullptr_case(
 
 template<::std::integral char_type,
 	typename optstmtype>
-inline constexpr char_type const* write_all_typical_case(
+inline constexpr char_type const* write_some_typical_case(
 	optstmtype optstm,
 	basic_io_buffer_pointers<char_type>& __restrict pointers,
 	char_type const *first,char_type const *last)
 {
-	basic_io_scatter_t<char_type> const scatters[2]
+	if constexpr(::fast_io::byte_output_stream<optstmtype>)
 	{
-	{(pointers.buffer_begin?pointers.buffer_begin:first),static_cast<::std::size_t>(pointers.buffer_curr-pointers.buffer_begin)},
-	{first,static_cast<::std::size_t>(last-first)}
-	};
-	auto [position,scpos]{::fast_io::operations::decay::scatter_write_some_decay(optstm,scatters,2)};
-	if(position==2)
-	{
-		pointers.buffer_curr=pointers.buffer_begin;
-		return last;
-	}
-	else if(position==1)
-	{
-		pointers.buffer_curr=pointers.buffer_begin;
-		return first+scpos;
+		io_scatter_t const scatters[2]
+		{
+		{pointers.buffer_begin,static_cast<::std::size_t>(reinterpret_cast<::std::byte const*>(pointers.buffer_curr)-
+			reinterpret_cast<::std::byte const*>(pointers.buffer_begin))},
+		{first,static_cast<::std::size_t>(reinterpret_cast<::std::byte const*>(last)-
+			reinterpret_cast<::std::byte const*>(first))}
+		};
+		auto [position,scpos]{::fast_io::operations::decay::scatter_write_some_bytes_decay(optstm,scatters,2)};
+		if(position==2)
+		{
+			pointers.buffer_curr=pointers.buffer_begin;
+			return last;
+		}
+		else if(position==1)
+		{
+			pointers.buffer_curr=pointers.buffer_begin;
+			return first+scpos/sizeof(char_type);
+		}
+		else
+		{
+			scpos/=sizeof(char_type);
+			pointers.buffer_curr=::fast_io::freestanding::copy_n(pointers.buffer_curr-scpos,
+				scpos,pointers.buffer_begin);
+			return first;
+		}
 	}
 	else
 	{
-		pointers.buffer_curr=::fast_io::freestanding::copy_n(pointers.buffer_curr-scpos,
-			scpos,pointers.buffer_begin);
-		return first;
+		basic_io_scatter_t<char_type> const scatters[2]
+		{
+		{pointers.buffer_begin,static_cast<::std::size_t>(pointers.buffer_curr-pointers.buffer_begin)},
+		{first,static_cast<::std::size_t>(last-first)}
+		};
+		auto [position,scpos]{::fast_io::operations::decay::scatter_write_some_decay(optstm,scatters,2)};
+		if(position==2)
+		{
+			pointers.buffer_curr=pointers.buffer_begin;
+			return last;
+		}
+		else if(position==1)
+		{
+			pointers.buffer_curr=pointers.buffer_begin;
+			return first+scpos;
+		}
+		else
+		{
+			pointers.buffer_curr=::fast_io::freestanding::copy_n(pointers.buffer_curr-scpos,
+				scpos,pointers.buffer_begin);
+			return first;
+		}
+	}
+}
+
+template<::std::integral char_type,
+	typename optstmtype>
+inline constexpr void write_all_typical_case(
+	optstmtype optstm,
+	basic_io_buffer_pointers<char_type>& __restrict pointers,
+	char_type const *first,char_type const *last)
+{
+	if constexpr(::fast_io::byte_output_stream<optstmtype>)
+	{
+		io_scatter_t const scatters[2]
+		{
+		{pointers.buffer_begin,static_cast<::std::size_t>(reinterpret_cast<::std::byte const*>(pointers.buffer_curr)-
+			reinterpret_cast<::std::byte const*>(pointers.buffer_begin))},
+		{first,static_cast<::std::size_t>(reinterpret_cast<::std::byte const*>(last)-
+			reinterpret_cast<::std::byte const*>(first))}
+		};
+		::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,2);
+	}
+	else
+	{
+		basic_io_scatter_t<char_type> const scatters[2]
+		{
+		{pointers.buffer_begin,static_cast<::std::size_t>(pointers.buffer_curr-pointers.buffer_begin)},
+		{first,static_cast<::std::size_t>(last-first)}
+		};
+		::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,2);
 	}
 }
 
@@ -139,8 +199,8 @@ inline constexpr typename io_buffer_type::output_char_type const* write_some_ove
 {
 	return ::fast_io::details::io_buffer::write_some_overflow_impl<
 		typename io_buffer_type::output_char_type,
-		typename io_buffer_type::allocator_type,
-		io_buffer_type::buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
+		typename io_buffer_type::traits_type::allocator_type,
+		io_buffer_type::traits_type::output_buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
 			iobref.iobptr->output_buffer,first,last);
 }
 
