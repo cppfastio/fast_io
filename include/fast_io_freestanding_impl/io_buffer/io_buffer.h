@@ -7,7 +7,23 @@ namespace details
 {
 
 template<typename T>
+inline constexpr void close_basic_io_buffer(T&);
+template<typename T>
+inline constexpr void clear_basic_io_buffer_pointers(T&) noexcept;
+template<typename T>
 inline constexpr void destroy_basic_io_buffer(T&) noexcept;
+
+template<typename T,typename... Args>
+concept has_reopen_impl = requires(T&& t,Args&& ...args)
+{
+	t.reopen(::std::forward<Args>(args)...);
+};
+
+template<typename T>
+concept has_close_impl = requires(T&& t)
+{
+	t.close();
+};
 
 }
 
@@ -67,7 +83,35 @@ public:
 		other.input_buffer={};
 		other.output_buffer={};
 	}
+	template<typename ...Args>
+	requires (::std::constructible_from<handle_type,Args...>)
+	inline constexpr void reopen(Args&& ...args)
+	{
+		::fast_io::details::close_basic_io_buffer(*this);
+		::fast_io::details::clear_basic_io_buffer_pointers(*this);
+		if constexpr(::fast_io::details::has_reopen_impl<handle_type,Args...>)
+		{
+			handle.reopen(std::forward<Args>(args)...);
+		}
+		else
+		{
+			handle=handle_type(std::forward<Args>(args)...);
+		}
+	}
 
+	inline constexpr void close()
+	{
+		::fast_io::details::close_basic_io_buffer(*this);
+		::fast_io::details::clear_basic_io_buffer_pointers(*this);
+		if constexpr(::fast_io::details::has_close_impl<handle_type>)
+		{
+			handle.close();
+		}
+		else
+		{
+			handle=handle_type();
+		}
+	}
 	constexpr basic_io_buffer& operator=(basic_io_buffer&& __restrict other) noexcept
 	{
 		::fast_io::details::destroy_basic_io_buffer(*this);
