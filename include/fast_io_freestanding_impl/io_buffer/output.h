@@ -15,7 +15,7 @@ inline constexpr void write_nullptr_case(
 {
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,char_type>;
 	char_type *buffer_begin = typed_allocator_type::allocate(buffersize);
-	char_type *buffer_curr = non_overlapped_copy(first,last,begin);
+	char_type *buffer_curr = non_overlapped_copy(first,last,buffer_begin);
 	pointers.buffer_begin=buffer_begin;
 	pointers.buffer_curr=buffer_curr;
 	pointers.buffer_end=buffer_begin+buffersize;
@@ -33,10 +33,6 @@ inline constexpr char_type const* write_all_typical_case(
 	{(pointers.buffer_begin?pointers.buffer_begin:first),static_cast<::std::size_t>(pointers.buffer_curr-pointers.buffer_begin)},
 	{first,static_cast<::std::size_t>(last-first)}
 	};
-	if(pointers.buffer_begin==nullptr)
-	{
-		scatters->base=first;
-	}
 	auto [position,scpos]{::fast_io::operations::decay::scatter_write_some_decay(optstm,scatters,2)};
 	if(position==2)
 	{
@@ -110,7 +106,7 @@ inline constexpr void write_all_overflow_impl(
 	{
 		if(diff<buffer_size)
 		{
-			write_nullptr_case<buffer_size>(pointers,first,last);
+			write_nullptr_case<char_type,allocator_type,buffer_size>(pointers,first,last);
 		}
 		else
 		{
@@ -137,14 +133,15 @@ inline constexpr void output_stream_buffer_flush_impl(optstmtype optstm,
 
 template<typename io_buffer_type>
 inline constexpr typename io_buffer_type::output_char_type const* write_some_overflow_define(
-	basic_io_buffer_ref<io_buffer_type> ref,
+	basic_io_buffer_ref<io_buffer_type> iobref,
 	typename io_buffer_type::output_char_type const* first,
 	typename io_buffer_type::output_char_type const* last)
 {
 	return ::fast_io::details::io_buffer::write_some_overflow_impl<
 		typename io_buffer_type::output_char_type,
 		typename io_buffer_type::allocator_type,
-		io_buffer_type::buffer_size>(::fast_io::manipulators::output_stream_ref(ref.iobptr),first,last);
+		io_buffer_type::buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
+			iobref.iobptr->output_buffer,first,last);
 }
 
 template<typename io_buffer_type>
@@ -156,7 +153,8 @@ inline constexpr void write_all_overflow_define(
 	return ::fast_io::details::io_buffer::write_all_overflow_impl<
 		typename io_buffer_type::output_char_type,
 		typename io_buffer_type::traits_type::allocator_type,
-		io_buffer_type::traits_type::output_buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),first,last);
+		io_buffer_type::traits_type::output_buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
+			iobref.iobptr->output_buffer,first,last);
 }
 
 template<typename io_buffer_type>
