@@ -3,6 +3,14 @@
 namespace fast_io
 {
 
+namespace details
+{
+
+template<typename T>
+inline constexpr void destroy_basic_io_buffer(T&) noexcept;
+
+}
+
 template<typename handletype,
 	typename iobuffertraits>
 class basic_io_buffer
@@ -42,6 +50,39 @@ public:
 #endif
 #endif
 	handle_type handle;
+
+	inline explicit constexpr basic_io_buffer() = default;
+	template<typename ...Args>
+	requires (::std::constructible_from<handle_type,Args...>&&
+		!::std::constructible_from<basic_io_buffer,Args...>)
+	inline explicit constexpr basic_io_buffer(Args&& ...args) : handle(::std::forward<Args>(args)...)
+	{
+	}
+	basic_io_buffer& operator=(basic_io_buffer const&)=delete;
+	basic_io_buffer(basic_io_buffer const&)=delete;
+	constexpr basic_io_buffer(basic_io_buffer&& __restrict other) noexcept:
+		input_buffer(::std::move(other.input_buffer)),
+		output_buffer(::std::move(other.output_buffer)),handle(::std::move(other.handle))
+	{
+		other.input_buffer={};
+		other.output_buffer={};
+	}
+
+	constexpr basic_io_buffer& operator=(basic_io_buffer&& __restrict other) noexcept
+	{
+		::fast_io::details::destroy_basic_io_buffer(*this);
+		input_buffer=::std::move(other.input_buffer);
+		output_buffer=::std::move(other.output_buffer);
+		handle=::std::move(other.handle);
+		other.input_buffer={};
+		other.output_buffer={};
+		return *this;
+	}
+
+	constexpr ~basic_io_buffer()
+	{
+		::fast_io::details::destroy_basic_io_buffer(*this);
+	}
 };
 
 }

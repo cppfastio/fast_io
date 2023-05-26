@@ -60,6 +60,8 @@ struct basic_io_buffer_pointers
 	pointer buffer_begin{},buffer_curr{},buffer_end{};
 };
 
+#if 0
+
 template<typename T,::std::size_t N>
 struct basic_io_buffer_pointers_on_stack
 {
@@ -68,8 +70,6 @@ struct basic_io_buffer_pointers_on_stack
 	pointer buffer_curr{},buffer_end{};
 	value_type buffer[N];
 };
-
-#if 0
 
 template<typename T>
 struct basic_io_buffer_pointers_with_cap
