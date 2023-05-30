@@ -55,6 +55,68 @@ public:
 #endif
 #endif
 	decorators_type decorators;
+
+
+	inline explicit constexpr basic_io_deco_filter() = default;
+	template<typename ...Args>
+	requires (::std::constructible_from<handle_type,Args...>)
+	inline explicit constexpr basic_io_deco_filter(Args&& ...args) : handle(::std::forward<Args>(args)...)
+	{
+	}
+	basic_io_deco_filter& operator=(basic_io_deco_filter const&)=delete;
+	basic_io_deco_filter(basic_io_deco_filter const&)=delete;
+	constexpr basic_io_deco_filter(basic_io_deco_filter&& __restrict other) noexcept:
+		input_buffer(::std::move(other.input_buffer)),
+		output_buffer(::std::move(other.output_buffer)),
+		handle(::std::move(other.handle)),
+		decorators(::std::move(other.decorators))
+	{
+		other.input_buffer={};
+		other.output_buffer={};
+	}
+	template<typename ...Args>
+	requires (::std::constructible_from<handle_type,Args...>)
+	inline constexpr void reopen(Args&& ...args)
+	{
+		::fast_io::details::clear_basic_io_filter_pointers(*this);
+		if constexpr(::fast_io::details::has_reopen_impl<handle_type,Args...>)
+		{
+			handle.reopen(std::forward<Args>(args)...);
+		}
+		else
+		{
+			handle=handle_type(std::forward<Args>(args)...);
+		}
+	}
+
+	inline constexpr void close()
+	{
+		::fast_io::details::clear_basic_io_filter_pointers(*this);
+		if constexpr(::fast_io::details::has_close_impl<handle_type>)
+		{
+			handle.close();
+		}
+		else
+		{
+			handle=handle_type();
+		}
+	}
+	constexpr basic_io_deco_filter& operator=(basic_io_deco_filter&& __restrict other) noexcept
+	{
+		::fast_io::details::destroy_basic_io_filter(*this);
+		input_buffer=::std::move(other.input_buffer);
+		output_buffer=::std::move(other.output_buffer);
+		handle=::std::move(other.handle);
+		decorators=::std::move(other.decorators);
+		other.input_buffer={};
+		other.output_buffer={};
+		return *this;
+	}
+
+	constexpr ~basic_io_deco_filter()
+	{
+		::fast_io::details::destroy_basic_io_filter(*this);
+	}
 };
 
 };
