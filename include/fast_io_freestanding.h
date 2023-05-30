@@ -27,6 +27,7 @@
 #include"fast_io_unit/floating/impl.h"
 #endif
 #include"fast_io_freestanding_impl/io_buffer/impl.h"
+#include"fast_io_freestanding_impl/io_deco_filter/impl.h"
 #include"fast_io_freestanding_impl/auto_indent.h"
 #include"fast_io_freestanding_impl/serializations/impl.h"
 #include"fast_io_freestanding_impl/space_reserve.h"
