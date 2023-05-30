@@ -7,8 +7,9 @@ template<typename T>
 class basic_io_deco_filter_ref
 {
 public:
-	using handle_type = handletype;
-	using traits_type = iobuffertraits;
+	using io_buffer_type = T;
+	using handle_type = typename io_buffer_type::handle_type;
+	using traits_type = typename io_buffer_type::traits_type;
 	using input_char_type = typename traits_type::input_char_type;
 	using output_char_type = typename traits_type::output_char_type;
 	using input_buffer_type = std::conditional_t<(traits_type::mode&buffer_mode::in)==buffer_mode::in,
@@ -16,9 +17,9 @@ public:
 	using output_buffer_type = std::conditional_t<(traits_type::mode&buffer_mode::out)==buffer_mode::out,
 		basic_io_buffer_pointers<output_char_type>,empty_buffer_pointers>;
 
-	using decorators_type = decorators;
+	using decorators_type = typename io_buffer_type::decorators_type;
 
-	basic_io_deco_filter<handletype,iobuffertraits,decorators> *idoptr{};
+	io_buffer_type *idoptr{};
 };
 
 template<typename handletype,

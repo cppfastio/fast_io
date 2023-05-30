@@ -5,7 +5,7 @@ namespace fast_io
 
 template<typename handletype,
 	typename iobuffertraits,
-	typename decorators>
+	typename decoratorstp>
 class basic_io_deco_filter
 {
 public:
@@ -18,7 +18,7 @@ public:
 	using output_buffer_type = std::conditional_t<(traits_type::mode&buffer_mode::out)==buffer_mode::out,
 		basic_io_buffer_pointers<output_char_type>,empty_buffer_pointers>;
 
-	using decorators_type = decorators
+	using decorators_type = decoratorstp;
 
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -27,7 +27,7 @@ public:
 [[no_unique_address]]
 #endif
 #endif
-	input_buffer_type ibuffer;
+	input_buffer_type input_buffer;
 
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
@@ -36,7 +36,7 @@ public:
 [[no_unique_address]]
 #endif
 #endif
-	output_buffer_type obuffer;
+	output_buffer_type output_buffer;
 
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
