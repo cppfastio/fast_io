@@ -1144,6 +1144,28 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 	}
 }
 
+namespace defines
+{
+
+template<typename char_type,typename ...Args>
+concept print_freestanding_params_decay_okay =
+::std::integral<char_type>&&((::fast_io::printable<char_type,Args>||
+	::fast_io::reserve_printable<char_type,Args>||
+	::fast_io::dynamic_reserve_printable<char_type,Args>||
+	::fast_io::scatter_printable<char_type,Args>||
+	::fast_io::reserve_scatters_printable<char_type,Args>)&&...);
+
+}
+
+}
+
+namespace defines
+{
+template<typename output,typename ...Args>
+concept print_freestanding_okay = ::fast_io::details::has_output_or_io_stream_ref_define<output>&&
+	fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
+	typename decltype(::fast_io::manipulators::output_stream_ref(*static_cast<output*>(nullptr)))::output_char_type,
+	Args...>;
 }
 
 template<typename output,typename ...Args>

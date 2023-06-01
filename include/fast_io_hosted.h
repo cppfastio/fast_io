@@ -69,9 +69,7 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/platforms/native.h"
 #include"fast_io_hosted/file_loaders/impl.h"
 #include"fast_io_hosted/wrapper.h"
-#if 1
 #include"fast_io_hosted/white_hole/white_hole.h"
-#endif
 #include"fast_io_hosted/dbg/impl.h"
 #endif
 #if __has_include(<ctime>) || __has_include(<time.h>)
