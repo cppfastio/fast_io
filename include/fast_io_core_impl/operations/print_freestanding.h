@@ -999,13 +999,17 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 	{
 		::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,skippings-1>(optstm,args...);
 	}
+	else if constexpr(sizeof...(Args)==0)
+	{
+		print_control_single<line>(optstm,t);
+	}
 	else
 	{
 		using char_type = typename outputstmtype::output_char_type;
 		static_assert(SIZE_MAX!=sizeof...(Args));
 		constexpr
 			::std::size_t n{sizeof...(Args)+static_cast<::std::size_t>(1)};
-		constexpr auto scatters_result{::fast_io::details::decay::find_continuous_scatters_reserve_n<true,char_type>()};
+		constexpr auto scatters_result{::fast_io::details::decay::find_continuous_scatters_reserve_n<true,char_type,T,Args...>()};
 		using scatter_type = ::std::conditional_t<byte_output_stream<outputstmtype>,
 			io_scatter_t,basic_io_scatter_t<char_type>>;
 		if constexpr(scatters_result.position!=0)
@@ -1019,13 +1023,15 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 			constexpr
 				::std::size_t scatterscount{scatters_result.position+static_cast<::std::size_t>(needprintlf)};
 			scatter_type scatters[scatterscount];
-			::fast_io::details::decay::print_n_scatters<needprintlf,scatters_result.position,char_type>(scatters,t,args...);
+			::fast_io::details::decay::print_n_scatters<scatters_result.position,char_type>(scatters,t,args...);
 			if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 			{
+				scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type,void>;
 				::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,scatterscount);
 			}
 			else
 			{
+				scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type>;
 				::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,scatterscount);
 			}
 			if constexpr(scatters_result.position!=n)
@@ -1035,7 +1041,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 		}
 		else
 		{
-			constexpr auto rsvresult{::fast_io::details::decay::find_continuous_scatters_reserve_n<false,char_type>()};
+			constexpr auto rsvresult{::fast_io::details::decay::find_continuous_scatters_reserve_n<false,char_type,T,Args...>()};
 			if constexpr(rsvresult.position!=0)
 			{
 				constexpr
@@ -1168,10 +1174,7 @@ concept print_freestanding_okay = ::fast_io::details::has_output_or_io_stream_re
 	Args...>;
 }
 
-template<typename output,typename ...Args>
-#if 0
-requires print_freestanding_okay<output,Args...>
-#endif
+template<bool line,typename output,typename ...Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -1179,22 +1182,7 @@ requires print_freestanding_okay<output,Args...>
 #endif
 inline constexpr void print_freestanding(output&& outstm,Args&& ...args)
 {
-	::fast_io::operations::decay::print_freestanding_decay<false>(::fast_io::manipulators::output_stream_ref(outstm),
-	io_print_forward<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
-}
-
-template<output_stream output,typename ...Args>
-#if 0
-requires print_freestanding_okay<output,Args...>
-#endif
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
-inline constexpr void println_freestanding(output&& outstm,Args&& ...args)
-{
-	::fast_io::operations::decay::print_freestanding_decay<true>(::fast_io::manipulators::output_stream_ref(outstm),
+	::fast_io::operations::decay::print_freestanding_decay<line>(::fast_io::manipulators::output_stream_ref(outstm),
 	io_print_forward<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
 }
 

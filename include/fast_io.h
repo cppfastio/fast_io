@@ -172,9 +172,9 @@ template<bool line,typename... Args>
 inline constexpr void print_after_io_print_forward(Args ...args)
 {
 #if __has_include(<stdio.h>)
-	print_freestanding_decay<line>(c_stdout(),args...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(c_stdout(),args...);
 #else
-	print_freestanding_decay<line>(out(),args...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(out(),args...);
 #endif
 }
 
@@ -185,9 +185,9 @@ template<bool line,typename... Args>
 inline constexpr void perr_after_io_print_forward(Args ...args)
 {
 #if defined(__AVR__)
-	print_freestanding_decay<line>(c_stderr(),args...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(c_stderr(),args...);
 #else
-	print_freestanding_decay<line>(err(),args...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(err(),args...);
 #endif
 }
 
@@ -198,36 +198,35 @@ template<bool line,typename... Args>
 inline constexpr void debug_print_after_io_print_forward(Args ...args)
 {
 #if defined(__AVR__)
-	print_freestanding_decay<line>(c_stdout(),args...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(c_stdout(),args...);
 #else
-	print_freestanding_decay<line>(out(),args...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(out(),args...);
 #endif
 }
 
-
+#if 0
 template<bool report,typename... Args>
 inline constexpr std::conditional_t<report,bool,void> scan_after_io_scan_forward(Args ...args)
 {
 #if __has_include(<stdio.h>)
 	if constexpr(report)
-		return scan_freestanding_decay(c_stdin(),args...);
+		return ::fast_io::operations::decay::scan_freestanding_decay(c_stdin(),args...);
 	else
 	{
-		if(!scan_freestanding_decay(c_stdin(),args...))
+		if(!::fast_io::operations::decay::scan_freestanding_decay(c_stdin(),args...))
 			::fast_io::throw_parse_code(fast_io::parse_code::end_of_file);
 	}
 #else
 	if constexpr(report)
-		return scan_freestanding_decay(in(),args...);
+		return ::fast_io::operations::decay::scan_freestanding_decay(in(),args...);
 	else
 	{
-		if(!scan_freestanding_decay(in(),args...))
+		if(!::fast_io::operations::decay::scan_freestanding_decay(in(),args...))
 			::fast_io::throw_parse_code(fast_io::parse_code::end_of_file);
 	}
 #endif
 }
-
-
+#endif
 }
 
 }
@@ -237,15 +236,23 @@ namespace fast_io::io
 {
 
 template<typename T,typename... Args>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void print(T&& t,Args&& ...args)
 {
-	constexpr bool device_error{fast_io::output_stream<std::remove_cvref_t<T>>||fast_io::status_output_stream<std::remove_cvref_t<T>>};
+	constexpr bool device_error{::fast_io::operations::defines::has_output_stream_ref_define<T>};
 	if constexpr(device_error)
 	{
-		constexpr bool type_error{::fast_io::print_freestanding_okay<T,Args...>};
+		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
+		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<char_type,
+			decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
 		if constexpr(type_error)
 		{
-			::fast_io::print_freestanding_decay<false>(fast_io::io_ref(t),::fast_io::io_print_forward<typename ::std::remove_cvref_t<T>::char_type>(::fast_io::io_print_alias(args))...);
+			::fast_io::operations::decay::print_freestanding_decay<false>(::fast_io::operations::output_stream_ref(t),
+				::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
 		}
 		else
 		{
@@ -255,13 +262,9 @@ static_assert(type_error,"some types are not printable for print");
 	else
 	{
 #if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES)) && __has_include(<stdio.h>)
-		constexpr bool type_error{::fast_io::print_freestanding_okay<
-#if __has_include(<stdio.h>)
-		::fast_io::c_io_observer
-#else
-		::fast_io::native_io_observer
-#endif
-		,T,Args...>};
+		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay
+		<char,decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
+		decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
 		if constexpr(type_error)
 		{
 			::fast_io::details::print_after_io_print_forward<false>(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t)),::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args))...);
@@ -275,7 +278,7 @@ static_assert(device_error,"freestanding environment must provide IO device for 
 #endif
 	}
 }
-
+#if 0
 template<typename T,typename... Args>
 inline constexpr void println(T&& t,Args&& ...args)
 {
@@ -552,7 +555,7 @@ static_assert(::fast_io::input_stream<std::remove_cvref_t<input>>,"freestanding 
 #endif
 	}
 }
-
+#endif
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
 #endif

@@ -145,12 +145,6 @@ using u32ibuf_file_mutex = basic_ibuf_file_mutex<char32_t>;
 using u32obuf_file_mutex = basic_obuf_file_mutex<char32_t>;
 using u32iobuf_file_mutex = basic_iobuf_file_mutex<char32_t>;
 
-#ifndef FAST_IO_DISABLE_CODECVT
-/*
-code_cvt file template region
-*/
-
-
 #if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
 
 template<std::integral char_type>
