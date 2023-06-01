@@ -18,7 +18,6 @@ concept has_output_decorators_ref_define = requires(T&& t)
 	output_decorators_ref_define(t);
 };
 
-
 template<typename T>
 concept has_io_decorators_ref_define = requires(T&& t)
 {

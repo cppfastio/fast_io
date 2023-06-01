@@ -28,6 +28,17 @@ inline constexpr bool linux_system_call_fails(int_type v) noexcept
 	return static_cast<unsigned_t>(static_cast<unsigned_t>(v)+static_cast<unsigned_t>(4096))<static_cast<unsigned_t>(4096);
 }
 
+template<std::integral I>
+requires(sizeof(I)>=1)
+inline void linux_system_call_throw_error(I v)
+{
+	using unsigned_t = std::make_unsigned_t<I>;
+	if(static_cast<unsigned_t>(static_cast<unsigned_t>(v)+static_cast<unsigned_t>(4096))<static_cast<unsigned_t>(4096))
+	{
+		throw_posix_error(static_cast<int>(-v));
+	}
+}
+
 #endif
 
 template<bool always_terminate=false,std::integral I>

@@ -55,7 +55,7 @@ inline ::fast_io::io_scatter_status_t posix_scatter_write_bytes_impl(int fd,
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	= __wasi_iovec_t const*;
+	= __wasi_ciovec_t const*;
 	::std::size_t ret;
 	auto val{noexcept_call(__wasi_fd_write,fd,
 		reinterpret_cast<iovec_may_alias_const_ptr>(pscatter),

@@ -118,15 +118,77 @@ bool constraint_buffer_mode(buffer_mode mode) noexcept
 	return true;
 }
 
+template<typename char_type>
+constexpr ::std::size_t compute_default_buffer_size() noexcept
+{
+	if constexpr(::std::same_as<char_type,void>)
+	{
+		return 0;
+	}
+	else if constexpr(sizeof(char_type)==0)
+	{
+		return 0;
+	}
+	else
+	{
+		constexpr
+			::std::size_t buffersize{
+#ifdef FAST_IO_BUFFER_SIZE
+	(FAST_IO_BUFFER_SIZE<sizeof(char_type))?FAST_IO_BUFFER_SIZE:sizeof(char_type)
+#elif SIZE_MAX<=UINT_LEAST16_MAX
+	128
+#elif SIZE_MAX<=UINT_LEAST32_MAX
+	8192
+#else
+	131072
+#endif
+			};
+		return buffersize/sizeof(char_type);
+	}
 }
+
+template<typename chtype>
+inline constexpr ::std::size_t compute_default_input_output_buf_size(::fast_io::buffer_mode req,::fast_io::buffer_mode m) noexcept
+{
+	if((m&req)==req)
+	{
+		return ::fast_io::details::compute_default_buffer_size<chtype>();
+	}
+	return 0;
+}
+
+template<typename chtype>
+inline constexpr bool compute_whether_possible_flag_for_buffer_mode(::fast_io::buffer_mode req,::fast_io::buffer_mode m,::std::size_t buffersize) noexcept
+{
+	if((m&req)==req)
+	{
+		return buffersize!=0&&::std::integral<chtype>;
+	}
+	else
+	{
+		return buffersize==0&&::std::same_as<chtype,void>;
+	}
+}
+
+}
+
+template<typename char_type>
+inline constexpr
+	::std::size_t default_buffer_size{::fast_io::details::compute_default_buffer_size<char_type>()};
 
 template<buffer_mode mde,
 	typename allocatortype,
 	typename input_chtype,
-	::std::size_t input_buf_size,
 	typename output_chtype,
-	::std::size_t output_buf_size>
-requires (input_buf_size!=0&&output_buf_size!=0)
+	::std::size_t input_buf_size=
+		::fast_io::details::compute_default_input_output_buf_size<input_chtype>(::fast_io::buffer_mode::in,mde),
+	::std::size_t output_buf_size=
+		::fast_io::details::compute_default_input_output_buf_size<output_chtype>(::fast_io::buffer_mode::out,mde)>
+requires (
+	::fast_io::details::compute_whether_possible_flag_for_buffer_mode<input_chtype>(::fast_io::buffer_mode::in,mde,input_buf_size)
+	&&
+	::fast_io::details::compute_whether_possible_flag_for_buffer_mode<output_chtype>(::fast_io::buffer_mode::out,mde,output_buf_size)
+	)
 struct basic_io_buffer_traits
 {
 	using allocator_type = allocatortype;

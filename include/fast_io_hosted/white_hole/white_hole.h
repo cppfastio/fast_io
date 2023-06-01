@@ -61,12 +61,13 @@ basic_wasi_random_get<char_type>;
 #elif (defined(__linux__) && defined(__NR_getrandom)) || (!defined(__linux__)&&__has_include(<sys/random.h>)) && !defined(__DARWIN_C_LEVEL)
 basic_linux_getrandom<char_type>;
 #else
-posix_dev_urandom<basic_native_file<char_type>>;
+basic_posix_dev_urandom<char_type>;
 #endif
 
 #if 0
-template<std::integral char_type>
-using basic_ibuf_white_hole = basic_io_buffer<basic_native_white_hole<char_type>,buffer_mode::in|buffer_mode::secure_clear,basic_decorators<char_type>,4096u>;
+template<std::integral char_type,typename allocator_type=::fast_io::native_global_allocator>
+using basic_ibuf_white_hole = basic_io_buffer<basic_native_white_hole<char_type>,
+	::fast_io::basic_io_buffer_traits<buffer_mode::in|buffer_mode::secure_clear,allocator_type,char_type,void,4096u,0>;
 #else
 template<std::integral char_type>
 using basic_ibuf_white_hole = basic_native_white_hole<char_type>;
@@ -86,12 +87,11 @@ using u16ibuf_white_hole = basic_ibuf_white_hole<char16_t>;
 using u32native_white_hole = basic_native_white_hole<char32_t>;
 using u32ibuf_white_hole = basic_ibuf_white_hole<char32_t>;
 
-template<input_stream handletype>
-requires std::same_as<std::remove_cvref_t<typename handletype::char_type>,char>
+template<typename handletype>
 struct basic_white_hole_engine
 {
 	using handle_type = handletype;
-	using result_type = std::size_t;
+	using result_type = ::std::size_t;
 	handle_type handle;
 	static inline constexpr result_type min() noexcept
 	{
