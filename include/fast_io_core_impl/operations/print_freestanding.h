@@ -1156,6 +1156,18 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 	}
 }
 
+template<bool line,typename outputstmtype,typename... Args>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr decltype(auto) print_freestanding_decay_cold(outputstmtype optstm,Args... args)
+{
+#if !__has_cpp_attribute(__gnu__::__cold__)&&__has_cpp_attribute(unlikely)
+	if(true)[[unlikely]]
+#endif
+	return ::fast_io::operations::decay::print_freestanding_decay(optstm,args...);
+}
+
 namespace defines
 {
 

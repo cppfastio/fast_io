@@ -90,7 +90,7 @@ For hosted implementations the set of standard library headers required by the C
 #endif
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && 0
 #include"fast_io_hosted/box.h"
 #endif
 

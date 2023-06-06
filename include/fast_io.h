@@ -89,82 +89,6 @@ using out_buf_type_mutex = basic_iomutex<out_buf_type>;
 using u8in_buf_type_mutex = basic_iomutex<u8in_buf_type>;
 using u8out_buf_type_mutex = basic_iomutex<u8out_buf_type>;
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-
-inline constexpr basic_win32_box_t<char> box() noexcept
-{
-	return basic_win32_box_t<char>{};
-}
-
-inline constexpr basic_win32_box_t<wchar_t> wbox() noexcept
-{
-	return basic_win32_box_t<wchar_t>{};
-}
-
-inline constexpr basic_win32_box_t<char8_t> u8box() noexcept
-{
-	return basic_win32_box_t<char8_t>{};
-}
-
-inline constexpr basic_win32_box_t<char16_t> u16box() noexcept
-{
-	return basic_win32_box_t<char16_t>{};
-}
-
-inline constexpr basic_win32_box_t<char32_t> u32box() noexcept
-{
-	return basic_win32_box_t<char32_t>{};
-}
-#else
-
-inline
-#ifndef _WIN32
-constexpr
-#endif
-decltype(auto) box() noexcept
-{
-	return native_stdout<char>();
-}
-
-inline
-#ifndef _WIN32
-constexpr
-#endif
-decltype(auto) wbox() noexcept
-{
-	return native_stdout<wchar_t>();
-}
-
-inline
-#ifndef _WIN32
-constexpr
-#endif
-decltype(auto) u8box() noexcept
-{
-	return native_stdout<char8_t>();
-}
-
-inline
-#ifndef _WIN32
-constexpr
-#endif
-decltype(auto) u16box() noexcept
-{
-	return native_stdout<char16_t>();
-}
-
-inline
-#ifndef _WIN32
-constexpr
-#endif
-decltype(auto) u32box() noexcept
-{
-	return native_stdout<char32_t>();
-}
-
-#endif
-#endif
-
 namespace details
 {
 
@@ -204,29 +128,37 @@ inline constexpr void debug_print_after_io_print_forward(Args ...args)
 #endif
 }
 
-#if 0
+
 template<bool report,typename... Args>
 inline constexpr std::conditional_t<report,bool,void> scan_after_io_scan_forward(Args ...args)
 {
 #if __has_include(<stdio.h>)
 	if constexpr(report)
+	{
 		return ::fast_io::operations::decay::scan_freestanding_decay(c_stdin(),args...);
+	}
 	else
 	{
 		if(!::fast_io::operations::decay::scan_freestanding_decay(c_stdin(),args...))
+		{
 			::fast_io::throw_parse_code(fast_io::parse_code::end_of_file);
+		}
 	}
 #else
 	if constexpr(report)
+	{
 		return ::fast_io::operations::decay::scan_freestanding_decay(in(),args...);
+	}
 	else
 	{
 		if(!::fast_io::operations::decay::scan_freestanding_decay(in(),args...))
+		{
 			::fast_io::throw_parse_code(fast_io::parse_code::end_of_file);
+		}
 	}
 #endif
 }
-#endif
+
 }
 
 }
@@ -243,7 +175,7 @@ template<typename T,typename... Args>
 #endif
 inline constexpr void print(T&& t,Args&& ...args)
 {
-	constexpr bool device_error{::fast_io::operations::defines::has_output_stream_ref_define<T>};
+	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr(device_error)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
@@ -278,17 +210,25 @@ static_assert(device_error,"freestanding environment must provide IO device for 
 #endif
 	}
 }
-#if 0
+
 template<typename T,typename... Args>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void println(T&& t,Args&& ...args)
 {
-	constexpr bool device_error{fast_io::output_stream<std::remove_cvref_t<T>>||fast_io::status_output_stream<std::remove_cvref_t<T>>};
+	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr(device_error)
 	{
-		constexpr bool type_error{::fast_io::print_freestanding_okay<T,Args...>};
+		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
+		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<char_type,
+			decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
 		if constexpr(type_error)
 		{
-			::fast_io::print_freestanding_decay<true>(fast_io::io_ref(t),fast_io::io_print_forward<typename std::remove_cvref_t<T>::char_type>(fast_io::io_print_alias(args))...);
+			::fast_io::operations::decay::print_freestanding_decay<true>(::fast_io::operations::output_stream_ref(t),
+				::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
 		}
 		else
 		{
@@ -298,26 +238,25 @@ static_assert(type_error,"some types are not printable for println");
 	else
 	{
 #if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES)) && __has_include(<stdio.h>)
-		constexpr bool type_error{::fast_io::print_freestanding_okay<
-#if __has_include(<stdio.h>)		
-		::fast_io::c_io_observer
-#else
-		::fast_io::native_io_observer
-#endif
-		,T,Args...>};
+		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay
+		<char,decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
+		decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
 		if constexpr(type_error)
 		{
-			::fast_io::details::print_after_io_print_forward<true>(fast_io::io_print_forward<char>(fast_io::io_print_alias(t)),fast_io::io_print_forward<char>(fast_io::io_print_alias(args))...);
+			::fast_io::details::print_after_io_print_forward<true>(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t)),::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args))...);
 		}
 		else
 		{
-static_assert(type_error,"some types are not printable for println on default C's stdout");
+static_assert(type_error,"some types are not printable for print on default C's stdout");
 		}
 #else
-static_assert(device_error,"freestanding environment must provide IO device for println");
+static_assert(device_error,"freestanding environment must provide IO device for print");
 #endif
 	}
 }
+
+
+#if 0
 
 template<typename T,typename... Args>
 inline constexpr void perr(T&& t,Args&&... args)
@@ -531,19 +470,27 @@ inline constexpr void debug_perrln(Args&&... args)
 }
 
 #endif
+#endif
 
 template<bool report=false,typename input,typename... Args>
 inline constexpr ::std::conditional_t<report,bool,void> scan(input&& in,Args&& ...args)
 {
-	if constexpr(fast_io::input_stream<std::remove_cvref_t<input>>)
+	constexpr bool device_error{::fast_io::operations::defines::has_input_or_io_stream_ref_define<input>};
+	if constexpr(device_error)
 	{
+		using char_type = typename decltype(::fast_io::operations::input_stream_ref(in))::input_char_type;
 		if constexpr(report)
-			return ::fast_io::scan_freestanding_decay(::fast_io::io_ref(in),fast_io::io_scan_forward<typename ::std::remove_cvref_t<input>::char_type>(::fast_io::io_scan_alias(args))...);
+		{
+			return ::fast_io::operations::decay::scan_freestanding_decay(::fast_io::operations::input_stream_ref(in),
+				fast_io::io_scan_forward<char_type>(::fast_io::io_scan_alias(args))...);
+		}
 		else
 		{
-
-			if(!::fast_io::scan_freestanding_decay(::fast_io::io_ref(in),::fast_io::io_scan_forward<typename ::std::remove_cvref_t<input>::char_type>(::fast_io::io_scan_alias(args))...))
+			if(!::fast_io::operations::decay::scan_freestanding_decay(::fast_io::operations::input_stream_ref(in),
+				::fast_io::io_scan_forward<char_type>(::fast_io::io_scan_alias(args))...))
+			{
 				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+			}
 		}
 	}
 	else
@@ -551,11 +498,11 @@ inline constexpr ::std::conditional_t<report,bool,void> scan(input&& in,Args&& .
 #if ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES)) && __has_include(<stdio.h>)
 		return ::fast_io::details::scan_after_io_scan_forward<report>(::fast_io::io_scan_forward<char>(::fast_io::io_scan_alias(in)),::fast_io::io_scan_forward<char>(::fast_io::io_scan_alias(args))...);
 #else
-static_assert(::fast_io::input_stream<std::remove_cvref_t<input>>,"freestanding environment must provide IO device");
+static_assert(device_error,"freestanding environment must provide IO device");
 #endif
 	}
 }
-#endif
+
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
 #endif
