@@ -188,7 +188,7 @@ inline auto prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type const* b
 	return ::fast_io::details::decay::prrsvsct_byte_common_rsvsc_impl(pscatters,buffer,t).scatters_pos_ptr;
 }
 
-template<bool line=false,output_stream output,typename T>
+template<bool line=false,typename output,typename T>
 requires (std::is_trivially_copyable_v<output>&&std::is_trivially_copyable_v<T>)
 inline constexpr void print_control_single(output outstm,T t)
 {
@@ -1118,10 +1118,6 @@ namespace decay
 {
 
 template<bool line,typename outputstmtype,typename... Args>
-#if 0
-requires (::fast_io::output_stream<outputstmtype>||
-	::fast_io::status_output_stream<outputstmtype>)
-#endif
 inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Args... args)
 {
 	if constexpr(::fast_io::status_output_stream<outputstmtype>)
