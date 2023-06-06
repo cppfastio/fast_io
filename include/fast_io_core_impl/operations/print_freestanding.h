@@ -556,7 +556,7 @@ inline constexpr char_type* print_n_reserve(char_type *ptr,T t,Args ...args)
 	else
 	{
 		ptr=print_reserve_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,ptr,t);
-		if constexpr(sizeof...(Args)==0||1<n)
+		if constexpr(sizeof...(Args)==0||n<2)
 		{
 			return ptr;
 		}
@@ -1094,7 +1094,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 				}
 				if constexpr(rsvresult.position!=n)
 				{
-					::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,rsvresult.position>(optstm,args...);
+					::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,rsvresult.position-1>(optstm,args...);
 				}
 			}
 			else
