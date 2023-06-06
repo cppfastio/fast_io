@@ -1026,17 +1026,23 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 			::fast_io::details::decay::print_n_scatters<scatters_result.position,char_type>(scatters,t,args...);
 			if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 			{
-				scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type,void>;
+				if constexpr(needprintlf)
+				{
+					scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type,void>;
+				}
 				::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,scatterscount);
 			}
 			else
 			{
-				scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type>;
+				if constexpr(needprintlf)
+				{
+					scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type>;
+				}
 				::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,scatterscount);
 			}
 			if constexpr(scatters_result.position!=n)
 			{
-				::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position>(optstm,args...);
+				::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position-1>(optstm,args...);
 			}
 		}
 		else
@@ -1086,9 +1092,9 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 						::fast_io::operations::decay::write_all_decay(optstm,buffer,bcurr);
 					}
 				}
-				if constexpr(scatters_result.position!=n)
+				if constexpr(rsvresult.position!=n)
 				{
-					::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position>(optstm,args...);
+					::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,rsvresult.position>(optstm,args...);
 				}
 			}
 			else
