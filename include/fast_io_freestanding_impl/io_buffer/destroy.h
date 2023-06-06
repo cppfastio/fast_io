@@ -64,7 +64,7 @@ inline constexpr void destroy_basic_io_buffer(T& t) noexcept
 		if(buffer_begin)
 		{
 			::fast_io::typed_generic_allocator_adapter<allocator_type,
-			typename traits_type::output_char_type>::deallocate_n(buffer_begin,
+			typename traits_type::input_char_type>::deallocate_n(buffer_begin,
 			traits_type::input_buffer_size);
 		}
 	}
