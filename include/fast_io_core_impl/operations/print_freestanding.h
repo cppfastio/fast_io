@@ -1165,7 +1165,7 @@ inline constexpr decltype(auto) print_freestanding_decay_cold(outputstmtype opts
 #if !__has_cpp_attribute(__gnu__::__cold__)&&__has_cpp_attribute(unlikely)
 	if(true)[[unlikely]]
 #endif
-	return ::fast_io::operations::decay::print_freestanding_decay(optstm,args...);
+	return ::fast_io::operations::decay::print_freestanding_decay<line>(optstm,args...);
 }
 
 namespace defines
