@@ -78,7 +78,7 @@ inline constexpr bool type_not_scannable=false;
 template<typename input,typename T>
 [[nodiscard]] inline constexpr bool scan_single_impl(input in,T arg)
 {
-	using char_type = typename input::char_type;
+	using char_type = typename input::input_char_type;
 	if constexpr(contiguous_input_stream<input>)
 	{
 		if constexpr(precise_reserve_scannable<char_type,T>)
@@ -282,8 +282,10 @@ template<typename input,typename T>
 		}
 		else
 		{
+#if 0
 			constexpr bool not_scannable{context_scannable<char_type,T>};
 			static_assert(not_scannable,"type not scannable. need context_scannable");
+#endif
 			return false;
 		}
 	}

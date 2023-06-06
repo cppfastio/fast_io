@@ -313,7 +313,7 @@ inline constexpr ::std::conditional_t<report,bool,void> scan(input&& in,Args&& .
 		if constexpr(report)
 		{
 			return ::fast_io::operations::decay::scan_freestanding_decay(::fast_io::operations::input_stream_ref(in),
-				fast_io::io_scan_forward<char_type>(::fast_io::io_scan_alias(args))...);
+				::fast_io::io_scan_forward<char_type>(::fast_io::io_scan_alias(args))...);
 		}
 		else
 		{
