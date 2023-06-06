@@ -110,6 +110,7 @@ inline constexpr void write_all_typical_case(
 		};
 		::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,2);
 	}
+	pointers.buffer_curr=pointers.buffer_begin;
 }
 
 template<::std::integral char_type,
