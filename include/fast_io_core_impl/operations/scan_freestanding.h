@@ -300,7 +300,7 @@ template<typename input,typename... Args>
 	{
 		return status_scan_define(instm,args...);
 	}
-	else if constexpr(::fast_io::operations::decay::::has_input_or_io_stream_mutex_ref_define<input>)
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<input>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg
 			{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
