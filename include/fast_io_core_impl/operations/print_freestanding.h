@@ -1065,7 +1065,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 				{
 					if(!smaller)[[unlikely]]
 					{
-						obuffer_constant_flush_prepare(optstm);
+						obuffer_constant_flush_prepare_define(optstm);
 						bcurr=obuffer_curr(optstm);
 					}
 					bcurr=::fast_io::details::decay::print_n_reserve<rsvresult.position,char_type>(bcurr,t,args...);
