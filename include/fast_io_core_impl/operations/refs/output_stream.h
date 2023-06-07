@@ -102,7 +102,7 @@ concept has_scatter_write_until_eof_overflow_define = requires(T instm,::fast_io
 template<typename T>
 concept has_obuffer_overflow_never_define = requires(T instm)
 {
-	obuffer_overflow_never_define(::fast_io::manipulators::output_stream_ref(instm));
+	obuffer_overflow_never_define(instm);
 };
 
 

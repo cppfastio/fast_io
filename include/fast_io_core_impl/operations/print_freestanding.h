@@ -225,7 +225,7 @@ inline constexpr void print_control_single(output outstm,T t)
 				++curr;
 				obuffer_set_curr(outstm,curr);
 			}
-			else if constexpr(buffer_output_stream<output>)
+			else if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>)
 			{
 				auto curr=obuffer_curr(out);
 				auto end=obuffer_end(out);
@@ -302,7 +302,7 @@ inline constexpr void print_control_single(output outstm,T t)
 		}
 		else
 		{
-			if constexpr(buffer_output_stream<output>&&!asan_activated)
+			if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>&&!asan_activated)
 			{
 				char_type* bcurr{obuffer_curr(outstm)};
 				char_type* bend{obuffer_end(outstm)};
@@ -386,7 +386,7 @@ inline constexpr void print_control_single(output outstm,T t)
 		}
 		else
 		{
-			if constexpr(buffer_output_stream<output>&&!asan_activated)
+			if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>&&!asan_activated)
 			{
 				auto curr{obuffer_curr(outstm)};
 				auto ed{obuffer_end(outstm)};
@@ -715,7 +715,7 @@ inline constexpr auto print_n_scatters_reserve_cont(basic_io_scatter_t<scatterty
 				++pscatters;
 				if constexpr(1<n)
 				{
-					return ::fast_io::details::decay::print_n_scatters_reserve_cont<needprintlf,n-1,char_type>(pscatters,base,ptr,args...);
+					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptr,args...);
 				}
 			}
 
@@ -953,8 +953,10 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					::std::size_t scatterscount{res.neededscatters+static_cast<::std::size_t>(line&&res.position==n)};
 				scatter_type scatters[scatterscount];
 				char_type buffer[res.neededspace];
+
 				auto ptr{::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...)};
 				::std::size_t diff{static_cast<::std::size_t>(ptr-scatters)};
+
 				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 				{
 					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,diff);
@@ -1184,7 +1186,7 @@ namespace defines
 template<typename output,typename ...Args>
 concept print_freestanding_okay = ::fast_io::details::has_output_or_io_stream_ref_define<output>&&
 	fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-	typename decltype(::fast_io::manipulators::output_stream_ref(*static_cast<output*>(nullptr)))::output_char_type,
+	typename decltype(::fast_io::operations::output_stream_ref(*static_cast<output*>(nullptr)))::output_char_type,
 	Args...>;
 }
 
@@ -1196,8 +1198,8 @@ template<bool line,typename output,typename ...Args>
 #endif
 inline constexpr void print_freestanding(output&& outstm,Args&& ...args)
 {
-	::fast_io::operations::decay::print_freestanding_decay<line>(::fast_io::manipulators::output_stream_ref(outstm),
-	io_print_forward<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(::fast_io::operations::output_stream_ref(outstm),
+	io_print_forward<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
 }
 
 }
