@@ -11,7 +11,7 @@ template<std::integral ch_type>
 class basic_rtl_gen_random
 {
 public:
-	using char_type = ch_type;
+	using input_char_type = ch_type;
 	constexpr void close() noexcept{}
 };
 

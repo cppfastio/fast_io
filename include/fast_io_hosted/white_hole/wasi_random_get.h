@@ -78,7 +78,7 @@ template<std::integral ch_type>
 class basic_wasi_random_get
 {
 public:
-	using char_type = ch_type;
+	using input_char_type = ch_type;
 	constexpr void close() noexcept{}
 };
 

@@ -8,7 +8,7 @@ class basic_win32_crypt_gen_random_io_observer
 {
 public:
 	using native_handle_type = std::uintptr_t;
-	using char_type = ch_type;
+	using input_char_type = ch_type;
 	native_handle_type hprov{};
 	inline constexpr native_handle_type native_handle() const noexcept
 	{
@@ -97,7 +97,7 @@ class basic_win32_family_crypt_gen_random_file:public basic_win32_crypt_gen_rand
 {
 public:
 	using native_handle_type = std::uintptr_t;
-	using char_type = ch_type;
+	using input_char_type = ch_type;
 	basic_win32_family_crypt_gen_random_file():basic_win32_crypt_gen_random_io_observer<ch_type>{::fast_io::details::win32::crypt_acquire_context_fallback<family>()}{}
 	explicit constexpr basic_win32_family_crypt_gen_random_file(::std::nullptr_t):basic_win32_crypt_gen_random_io_observer<ch_type>{}
 	{}
