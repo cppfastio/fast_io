@@ -39,7 +39,7 @@ template<buffer_input_stream input,typename P>
 #endif
 inline constexpr bool scan_context_status_impl(input in,P arg)
 {
-	using char_type = typename input::char_type;
+	using char_type = typename input::input_char_type;
 	for(typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,P>))>::type state;;)
 	{
 		auto curr{ibuffer_curr(in)};

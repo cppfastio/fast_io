@@ -1126,7 +1126,7 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 	{
 		return status_print_define<line>(optstm,args...);
 	}
-	if constexpr(sizeof...(Args)==0)
+	else if constexpr(sizeof...(Args)==0)
 	{
 		if constexpr(line)
 		{
@@ -1138,13 +1138,13 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 			return;
 		}
 	}
-	else if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<outputstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outputstmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(optstm)};
 		return ::fast_io::operations::decay::print_freestanding_decay<line>(
 			::fast_io::operations::decay::output_stream_unlocked_ref_decay(optstm),args...);
 	}
-	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outputstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<outputstmtype>)
 	{
 		return ::fast_io::details::decay::print_controls_buffer_impl<line>(optstm,args...);
 	}

@@ -18,7 +18,7 @@ inline constexpr bool ibuffer_underflow_rl_size_impl(instmtype insm,
 	return ibuffer.buffer_begin!=ibuffer.buffer_end;
 }
 
-template<::std::size_t bfsz,typename allocator_type,std::integral char_type,typename instmtype>
+template<::std::size_t bfsz,std::integral char_type,typename allocator_type,typename instmtype>
 inline constexpr bool ibuffer_underflow_rl_impl(instmtype insm,
 	basic_io_buffer_pointers<char_type>& ibuffer)
 {
@@ -115,10 +115,10 @@ inline constexpr char_type* read_until_eof_underflow(
 		output_stream_buffer_flush_define(iobref);
 	}
 	return ::fast_io::details::io_buffer::read_until_eof_underflow_impl<
-		io_buffer_type::traits_type::buffer_size,
+		io_buffer_type::traits_type::input_buffer_size,
 		typename io_buffer_type::traits_type::allocator_type>(
-		::fast_io::manipulators::input_stream_ref(iobref.iobptr->handle),
-		iobref.iobptr->pointers,first,last);
+		::fast_io::operations::input_stream_ref(iobref.iobptr->handle),
+		iobref.iobptr->input_buffer,first,last);
 }
 
 template<typename io_buffer_type>
@@ -131,11 +131,11 @@ inline constexpr bool ibuffer_underflow(basic_io_buffer_ref<io_buffer_type> iobr
 		output_stream_buffer_flush_define(iobref);
 	}
 	return ::fast_io::details::io_buffer::ibuffer_underflow_rl_impl<
-		io_buffer_type::traits_type::buffer_size,
+		io_buffer_type::traits_type::input_buffer_size,
 		typename io_buffer_type::traits_type::input_char_type,
 		typename io_buffer_type::traits_type::allocator_type>(
-		::fast_io::manipulators::input_stream_ref(iobref.iobptr->handle),
-		iobref.iobptr->pointers);
+		::fast_io::operations::input_stream_ref(iobref.iobptr->handle),
+		iobref.iobptr->input_buffer);
 }
 
 template<typename io_buffer_type>

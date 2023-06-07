@@ -56,14 +56,14 @@ template<typename handletype,
 	typename iobuffertraits>
 requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
 inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> input_stream_ref_define(
-	basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> &r) noexcept
+	basic_io_buffer<handletype,iobuffertraits> &r) noexcept
 {
 	return {__builtin_addressof(r)};
 }
 
 template<typename handletype,
 	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
 inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
 	input_stream_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
 {
