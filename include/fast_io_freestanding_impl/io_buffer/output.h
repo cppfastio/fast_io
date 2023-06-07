@@ -190,6 +190,30 @@ inline constexpr void output_stream_buffer_flush_impl(optstmtype optstm,
 	pointers.buffer_curr=pointers.buffer_begin;
 }
 
+template<::std::integral char_type,
+	typename allocator_type,
+	::std::size_t buffer_size,
+	typename optstmtype>
+inline constexpr void obuffer_constant_flush_prepare_impl(optstmtype optstm,
+	basic_io_buffer_pointers<char_type>& pointers)
+{
+	if(pointers.buffer_begin==pointers.buffer_curr)
+	{
+		if(pointers.buffer_begin==nullptr)
+		{
+			using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,char_type>;
+			pointers.buffer_end=((pointers.buffer_curr=
+				pointers.buffer_begin=typed_allocator_type::allocate(buffer_size))+buffer_size);
+		}
+	}
+	else
+	{
+		::fast_io::operations::decay::write_all_decay(optstm,pointers.buffer_begin,pointers.buffer_curr);
+		pointers.buffer_curr=pointers.buffer_begin;
+	}
+}
+
+
 }
 
 template<typename io_buffer_type>
@@ -201,7 +225,7 @@ inline constexpr typename io_buffer_type::output_char_type const* write_some_ove
 	return ::fast_io::details::io_buffer::write_some_overflow_impl<
 		typename io_buffer_type::output_char_type,
 		typename io_buffer_type::traits_type::allocator_type,
-		io_buffer_type::traits_type::output_buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
+		io_buffer_type::traits_type::output_buffer_size>(::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
 			iobref.iobptr->output_buffer,first,last);
 }
 
@@ -214,7 +238,7 @@ inline constexpr void write_all_overflow_define(
 	return ::fast_io::details::io_buffer::write_all_overflow_impl<
 		typename io_buffer_type::output_char_type,
 		typename io_buffer_type::traits_type::allocator_type,
-		io_buffer_type::traits_type::output_buffer_size>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
+		io_buffer_type::traits_type::output_buffer_size>(::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
 			iobref.iobptr->output_buffer,first,last);
 }
 
@@ -223,7 +247,7 @@ inline constexpr void output_stream_buffer_flush_define(
 	basic_io_buffer_ref<io_buffer_type> iobref)
 {
 	::fast_io::details::io_buffer::output_stream_buffer_flush_impl<
-		typename io_buffer_type::output_char_type>(::fast_io::manipulators::output_stream_ref(iobref.iobptr->handle),
+		typename io_buffer_type::output_char_type>(::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
 		iobref.iobptr->output_buffer);
 }
 
@@ -252,6 +276,24 @@ inline constexpr void obuffer_set_curr(basic_io_buffer_ref<io_buffer_type> iobre
 	typename basic_io_buffer_ref<io_buffer_type>::output_char_type* ptr) noexcept
 {
 	iobref.iobptr->output_buffer.buffer_curr = ptr;
+}
+
+template<typename io_buffer_type>
+inline constexpr ::std::size_t obuffer_constant_size_define(::fast_io::io_reserve_type_t<typename io_buffer_type::output_char_type,io_buffer_type>)
+{
+	return io_buffer_type::traits_type::output_buffer_size;
+}
+
+template<typename io_buffer_type>
+inline constexpr void obuffer_constant_flush_prepare_define(basic_io_buffer_ref<io_buffer_type> iobref)
+{
+	::fast_io::details::io_buffer::obuffer_constant_flush_prepare_impl<
+		typename io_buffer_type::output_char_type,
+		typename io_buffer_type::traits_type::allocator_type,
+		io_buffer_type::traits_type::output_buffer_size>(
+			::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
+			iobref.iobptr->output_buffer);
+
 }
 
 }

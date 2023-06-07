@@ -133,10 +133,10 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 
 template<typename output,std::size_t N>
 inline constexpr bool constant_buffer_output_stream_require_size_constant_impl =
-	(N<obuffer_constant_size(::fast_io::io_reserve_type<typename output::output_char_type,output>));
+	(N<obuffer_constant_size_define(::fast_io::io_reserve_type<typename output::output_char_type,output>));
 
 template<typename output,std::size_t N>
-concept constant_buffer_output_stream_require_size_impl = constant_size_buffer_output_stream<output>
+concept constant_buffer_output_stream_require_size_impl = ::fast_io::operations::decay::defines::has_obuffer_constant_size_operations<output>
 	&& constant_buffer_output_stream_require_size_constant_impl<output,N>;
 
 template<::std::size_t sz>
@@ -312,7 +312,7 @@ inline constexpr void print_control_single(output outstm,T t)
 				{
 					if(!smaller)[[unlikely]]
 					{
-						obuffer_constant_flush_prepare(outstm);
+						obuffer_constant_flush_prepare_define(outstm);
 						bcurr=obuffer_curr(outstm);
 					}
 					bcurr=print_reserve_define(::fast_io::io_reserve_type<char_type,value_type>,bcurr,t);
