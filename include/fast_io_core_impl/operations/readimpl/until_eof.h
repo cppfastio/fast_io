@@ -13,6 +13,9 @@ template<typename instmtype>
 inline constexpr void pread_until_eof_bytes_cold_impl(instmtype insm,::std::byte *first,::std::byte *last,::fast_io::intfpos_t off);
 
 template<typename instmtype>
+inline constexpr ::std::byte* read_until_eof_bytes_cold_impl(instmtype insm,::std::byte *first,::std::byte *last);
+
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -137,10 +140,15 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 	else if constexpr(
 		(::fast_io::details::streamreflect::has_any_of_byte_read_operations<instmtype>))
 	{
-		read_all_bytes_cold_impl(insm,
+		using char_type_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		=
+		char_type*;
+		return reinterpret_cast<char_type_ptr>(read_until_eof_bytes_cold_impl(insm,
 			reinterpret_cast<::std::byte*>(first),
-			reinterpret_cast<::std::byte*>(last));
-		return last;
+			reinterpret_cast<::std::byte*>(last)));
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
 	(::fast_io::details::streamreflect::has_any_of_pread_operations<instmtype>))
