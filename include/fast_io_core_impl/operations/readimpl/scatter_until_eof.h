@@ -57,7 +57,7 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_bytes_cold_impl(inst
 			if(pisc)
 			{
 				auto pi = pscatters[ret.position];
-				::std::byte *base{reinterpret_cast<::std::byte*>(pi.base)};
+				::std::byte *base{reinterpret_cast<::std::byte*>(const_cast<void*>(pi.base))};
 				auto pistart{base+pisc};
 				auto piend{base+pi.len};
 				auto piit{::fast_io::operations::decay::read_until_eof_bytes_decay(insm,pistart,piend)};
