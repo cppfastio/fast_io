@@ -574,7 +574,14 @@ template<::std::size_t n,::std::integral char_type,typename scattertype,typename
 [[msvc::forceinline]]
 #endif
 inline constexpr void print_n_scatters(basic_io_scatter_t<scattertype> *pscatters,
-	T t,Args ...args)
+#if __has_cpp_attribute(maybe_unused)
+	[[maybe_unused]]
+#endif
+	T t,
+#if __has_cpp_attribute(maybe_unused)
+	[[maybe_unused]]
+#endif
+	Args ...args)
 {
 	if constexpr(n!=0)
 	{
