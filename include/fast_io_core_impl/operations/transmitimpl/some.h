@@ -30,7 +30,7 @@ A dummy placeholder implementation
 			this_round=static_cast<::std::size_t>(totransmit);
 		}
 		input_char_type *iter{::fast_io::operations::decay::read_some_decay(instm,buffer_start,buffer_start+this_round)};
-		if(iter!=buffer_start)
+		if(iter==buffer_start)
 			break;
 		if constexpr(::std::same_as<output_char_type,input_char_type>)
 		{
