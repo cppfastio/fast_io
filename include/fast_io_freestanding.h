@@ -41,19 +41,6 @@
 #include"fast_io_unit/bitset.h"
 #endif
 
-#if 0
-namespace fast_io
-{
-
-template<input_stream input>
-using basic_ibuf = basic_io_buffer<input,buffer_mode::in>;
-template<output_stream output>
-using basic_obuf = basic_io_buffer<output,buffer_mode::out>;
-template<io_stream strm>
-using basic_iobuf = basic_io_buffer<strm,buffer_mode::in|buffer_mode::out|buffer_mode::tie>;
-
-}
-#endif
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
 #endif
