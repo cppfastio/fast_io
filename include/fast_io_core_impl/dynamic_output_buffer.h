@@ -166,17 +166,4 @@ inline constexpr void obuffer_overflow(basic_dynamic_output_buffer_ref<basic_gen
 	++bdobr.dob_ptr->curr_ptr;
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
-inline constexpr ::std::size_t obuffer_constant_size_define(::fast_io::io_reserve_type_t<char_type,
-		basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>>>)
-{
-	return buffersize;
-}
-
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
-inline constexpr void obuffer_constant_flush_prepare_define(
-	basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> bdobr)
-{
-}
-
 }
