@@ -33,7 +33,7 @@ inline constexpr char_type* read_until_eof_underflow_size_impl(
 	char_type *first,char_type *last,::std::size_t bfsz)
 {
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,char_type>;
-	first=::fast_io::details::non_overlapped_copy(pointers.ibuffer.buffer_curr,pointers.ibuffer.buffer_end,first);
+	first=::fast_io::details::non_overlapped_copy(pointers.buffer_curr,pointers.buffer_end,first);
 	if(pointers.buffer_begin==nullptr)
 	{
 		pointers.buffer_end=pointers.buffer_curr=pointers.buffer_begin=typed_allocator_type::allocate(bfsz);
@@ -104,7 +104,7 @@ inline constexpr char_type* read_until_eof_underflow_impl(
 }
 
 template<typename io_buffer_type,::std::integral char_type>
-inline constexpr char_type* read_until_eof_underflow(
+inline constexpr char_type* read_until_eof_underflow_define(
 	basic_io_buffer_ref<io_buffer_type> iobref,
 	char_type *first,char_type *last)
 {
