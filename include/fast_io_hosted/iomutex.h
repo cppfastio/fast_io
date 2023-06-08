@@ -54,14 +54,14 @@ template<typename T,typename mutex_type=native_mutex>
 using basic_iomutex_ref = basic_general_iomutex_ref<T,mutex_type>;
 
 template<typename T,typename Mutex>
-requires ::fast_io::operations::defines::has_output_stream_ref_define<T>
+requires ::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>
 inline constexpr basic_general_iomutex_ref<T,Mutex> output_stream_ref_define(basic_general_iomutex<T,Mutex>& m) noexcept
 {
 	return {__builtin_addressof(m)};
 }
 
 template<typename T,typename Mutex>
-requires ::fast_io::operations::defines::has_input_stream_ref_define<T>
+requires ::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>
 inline constexpr basic_general_iomutex_ref<T,Mutex> input_stream_ref_define(basic_general_iomutex<T,Mutex>& m) noexcept
 {
 	return {__builtin_addressof(m)};

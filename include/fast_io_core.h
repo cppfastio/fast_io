@@ -67,7 +67,7 @@
 
 #include"fast_io_core_impl/secure_clear_guard.h"
 #include"fast_io_core_impl/local_new_array_ptr.h"
-#include"fast_io_core_impl/dynamic_io_buffer.h"
+#include"fast_io_core_impl/dynamic_output_buffer.h"
 // Although std::ranges is not freestanding, you can use the function by constructing a range_view_t, which relies on iterators not ranges
 #include"fast_io_core_impl/range_view.h"
 //#include"fast_io_core_impl/manip/impl.h"
@@ -104,10 +104,9 @@
 #include"fast_io_core_impl/dll_mode.h"
 #include"fast_io_core_impl/socket/impl.h"
 
-#if 0
-#include"fast_io_core_impl/to.h"
-#endif
+
 #include"fast_io_core_impl/concat/impl.h"
+#include"fast_io_core_impl/to.h"
 
 
 #include"fast_io_core_impl/http_header.h"

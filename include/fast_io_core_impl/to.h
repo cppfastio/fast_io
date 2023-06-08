@@ -12,9 +12,9 @@ template<std::integral char_type,typename state,typename T,typename Arg1,typenam
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void inplace_to_decay_context_impl(io_reference_wrapper<dynamic_io_buffer<char_type>> buffer,state& s,T t,Arg1 arg,Args... args)
+inline constexpr void inplace_to_decay_context_impl(basic_dynamic_output_buffer_ref<basic_dynamic_output_buffer<char_type>> buffer,state& s,T t,Arg1 arg,Args... args)
 {
-	::fast_io::details::decay::print_control<false>(buffer,arg);
+	::fast_io::details::decay::print_control_single<false>(buffer,arg);
 	char_type *buffer_beg{buffer.ptr->buffer_begin};
 	char_type const *buffer_begin{buffer_beg};
 	char_type const *buffer_curr{buffer.ptr->buffer_curr};
@@ -230,7 +230,7 @@ inline constexpr std::size_t calculate_scatter_dynamic_reserve_size_with_scatter
 }
 
 template<typename char_type,typename T,typename ...Args>
-concept inplace_to_decay_detect = std::integral<char_type>&&(sizeof...(Args)!=0&&print_freestanding_decay_okay_character_type_no_status<char_type,Args...>&&(contiguous_scannable<char_type,T>||context_scannable<char_type,T>));
+concept inplace_to_decay_detect = std::integral<char_type>&&(sizeof...(Args)!=0&&::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<char_type,Args...>&&(contiguous_scannable<char_type,T>||context_scannable<char_type,T>));
 
 }
 
@@ -288,8 +288,8 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 		}
 		else
 		{
-			dynamic_io_buffer<char_type> buffer;
-			auto ref{io_ref(buffer)};
+			basic_dynamic_output_buffer<char_type> buffer;
+			auto ref{::fast_io::operations::output_stream_ref(buffer)};
 			if constexpr(context_scannable<char_type,T>&&(!(contiguous_scannable<char_type,T>&&sizeof...(args)==1)))
 			{
 				typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
@@ -297,7 +297,7 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 			}
 			else if constexpr(contiguous_scannable<char_type,T>)
 			{
-				::fast_io::print_freestanding_decay_no_status<false>(ref,args...);
+				::fast_io::operations::decay::print_freestanding_decay<false>(ref,args...);
 				::fast_io::details::deal_with_single_to<char_type>(buffer.buffer_begin,buffer.buffer_curr,t);
 			}
 			else
@@ -417,6 +417,9 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 	}
 }
 
+namespace decay
+{
+
 template<std::integral char_type,typename T,typename ...Args>
 inline constexpr T basic_to_decay(Args... args)
 {
@@ -447,13 +450,15 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 	}
 }
 
+}
+
 template<std::integral char_type,typename T,typename ...Args>
 inline constexpr T basic_to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char_type,T,Args...>};
 	if constexpr(failed)
 	{
-		return ::fast_io::basic_to_decay<char_type,T>(io_print_forward<char_type>(io_print_alias(args))...);
+		return ::fast_io::decay::basic_to_decay<char_type,T>(io_print_forward<char_type>(io_print_alias(args))...);
 	}
 	else
 	{
@@ -468,7 +473,7 @@ template<typename T,typename ...Args>
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char,T,Args...>};
 	if constexpr(failed)
 	{
-		return ::fast_io::basic_to_decay<char,T>(io_print_forward<char>(io_print_alias(args))...);
+		return ::fast_io::decay::basic_to_decay<char,T>(io_print_forward<char>(io_print_alias(args))...);
 	}
 	else
 	{
@@ -483,7 +488,7 @@ template<typename T,typename ...Args>
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<wchar_t,T,Args...>};
 	if constexpr(failed)
 	{
-		return ::fast_io::basic_to_decay<wchar_t,T>(io_print_forward<wchar_t>(io_print_alias(args))...);
+		return ::fast_io::decay::basic_to_decay<wchar_t,T>(io_print_forward<wchar_t>(io_print_alias(args))...);
 	}
 	else
 	{
@@ -498,7 +503,7 @@ template<typename T,typename ...Args>
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char8_t,T,Args...>};
 	if constexpr(failed)
 	{
-		return ::fast_io::basic_to_decay<char8_t,T>(io_print_forward<char8_t>(io_print_alias(args))...);
+		return ::fast_io::decay::basic_to_decay<char8_t,T>(io_print_forward<char8_t>(io_print_alias(args))...);
 	}
 	else
 	{
@@ -513,7 +518,7 @@ template<typename T,typename ...Args>
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char16_t,T,Args...>};
 	if constexpr(failed)
 	{
-		return ::fast_io::basic_to_decay<char16_t,T>(io_print_forward<char16_t>(io_print_alias(args))...);
+		return ::fast_io::decay::basic_to_decay<char16_t,T>(io_print_forward<char16_t>(io_print_alias(args))...);
 	}
 	else
 	{
@@ -528,7 +533,7 @@ template<typename T,typename ...Args>
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char32_t,T,Args...>};
 	if constexpr(failed)
 	{
-		return ::fast_io::basic_to_decay<char32_t,T>(io_print_forward<char32_t>(io_print_alias(args))...);
+		return ::fast_io::decay::basic_to_decay<char32_t,T>(io_print_forward<char32_t>(io_print_alias(args))...);
 	}
 	else
 	{
