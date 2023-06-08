@@ -26,7 +26,7 @@ int main(int argc,char** argv)
 	auto t0{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	fast_io::ibuf_file ibf(os_c_str(argv[1]));
 	fast_io::cryptopp::iterated_hash_context<CryptoPP::Weak::MD5> ctx;
-	auto transmitted{transmit64(as_file(ctx),ibf)};
+	auto transmitted{::fast_io::operations::transmit_bytes_until_eof(as_file(ctx),ibf)};
 	ctx.do_final();
 	println(hash_digest(ctx)," *",os_c_str(argv[1]),"\nTransmitted:",transmitted," bytes\tElapsed Time:",fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)-t0);
 }

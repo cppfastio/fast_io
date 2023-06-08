@@ -23,7 +23,7 @@ int main(int argc,char** argv)
 	auto t0{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	fast_io::crc32_context crc;
 	fast_io::ibuf_file ibf(os_c_str(argv[1]));
-	auto transmitted{transmit(as_file(crc),ibf)};
+	auto transmitted{::fast_io::operations::transmit_bytes_until_eof(as_file(crc),ibf)};
 	crc.do_final();
 	println(hash_digest(crc)," *",os_c_str(argv[1]),"\nTransmitted:",transmitted," bytes\tElapsed Time:",fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)-t0);
 }
