@@ -85,13 +85,13 @@ public:
 
 template<std::integral char_type>
 requires (sizeof(__wasi_size_t)<sizeof(::std::size_t))
-inline ::std::byte* read_some_bytes_define(basic_wasi_random_get<char_type>,::std::byte* first,::std::byte* last)
+inline ::std::byte* read_some_bytes_underflow_define(basic_wasi_random_get<char_type>,::std::byte* first,::std::byte* last)
 {
 	return ::fast_io::details::wasi_random_get_some_impl(first,last);
 }
 
 template<std::integral char_type>
-inline void read_all_bytes_define(basic_wasi_random_get<char_type>,::std::byte* first,::std::byte* last)
+inline void read_all_bytes_underflow_define(basic_wasi_random_get<char_type>,::std::byte* first,::std::byte* last)
 {
 	::fast_io::details::wasi_random_get_all_impl(first,last);
 }

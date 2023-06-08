@@ -39,7 +39,7 @@ inline ::std::byte* linux_getrandom_read_some_bytes_define_impl(unsigned flags,:
 }
 
 template<std::integral char_type>
-inline ::std::byte* read_some_bytes_define(basic_linux_getrandom<char_type> g,::std::byte* first,::std::byte* last)
+inline ::std::byte* read_some_bytes_underflow_define(basic_linux_getrandom<char_type> g,::std::byte* first,::std::byte* last)
 {
 	return ::fast_io::details::linux_getrandom_read_some_bytes_define_impl(g.flags,first,last);
 }

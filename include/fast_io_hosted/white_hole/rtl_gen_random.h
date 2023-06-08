@@ -67,13 +67,13 @@ inline void rtl_gen_random_all_impl(::std::byte *first,::std::byte *last)
 
 template<std::integral char_type>
 requires (sizeof(::std::uint_least32_t)<sizeof(::std::size_t))
-inline ::std::byte* read_some_bytes_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
+inline ::std::byte* read_some_bytes_underflow_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
 {
 	return ::fast_io::win32::details::rtl_gen_random_some_impl(first,last);
 }
 
 template<std::integral char_type>
-inline void read_all_bytes_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
+inline void read_all_bytes_underflow_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
 {
 	::fast_io::win32::details::rtl_gen_random_all_impl(first,last);
 }

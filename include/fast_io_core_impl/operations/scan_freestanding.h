@@ -320,6 +320,10 @@ template<typename input,typename... Args>
 		return scan_freestanding_decay(io_ref(in_buffer),args...);
 	}
 #endif
+	else
+	{
+		return false;
+	}
 }
 
 }

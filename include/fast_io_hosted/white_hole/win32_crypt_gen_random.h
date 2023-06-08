@@ -81,13 +81,13 @@ inline void win32_crypt_gen_random_all_impl(::std::uintptr_t hprov,::std::byte *
 
 template<std::integral char_type>
 requires (sizeof(::std::uint_least32_t)<sizeof(::std::size_t))
-inline ::std::byte* read_some_bytes_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,::std::byte* first,::std::byte* last)
+inline ::std::byte* read_some_bytes_underflow_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,::std::byte* first,::std::byte* last)
 {
 	return ::fast_io::win32::details::win32_crypt_gen_random_some_impl(bcgiob.hprov,first,last);
 }
 
 template<std::integral char_type>
-inline void read_all_bytes_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,::std::byte* first,::std::byte* last)
+inline void read_all_bytes_underflow_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,::std::byte* first,::std::byte* last)
 {
 	::fast_io::win32::details::win32_crypt_gen_random_all_impl(bcgiob.hprov,first,last);
 }
