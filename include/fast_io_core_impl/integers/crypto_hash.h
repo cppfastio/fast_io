@@ -101,7 +101,7 @@ template<std::integral char_type,typename T>
 inline constexpr void require_secure_clear(basic_crypto_hash_as_file<char_type,T>) noexcept{}
 
 template<::std::integral ch_type,typename T>
-inline constexpr void write_bytes_overflow_define(basic_crypto_hash_as_file<ch_type,T> t,::std::byte const *first,::std::byte const *last) noexcept
+inline constexpr void write_all_bytes_overflow_define(basic_crypto_hash_as_file<ch_type,T> t,::std::byte const *first,::std::byte const *last) noexcept
 {
 	t.ptr->update(first,last);
 }
