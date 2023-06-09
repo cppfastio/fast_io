@@ -10,11 +10,9 @@ https://github.com/llvm/llvm-project/blob/main/libcxx/src/std_stream.h
 
 _LIBCPP_BEGIN_NAMESPACE_STD
 template <class _CharT>
-class _LIBCPP_HIDDEN __stdinbuf :
-public basic_streambuf<_CharT, char_traits<_CharT> >;
+class _LIBCPP_HIDDEN __stdinbuf;
 template <class _CharT>
-class _LIBCPP_HIDDEN __stdoutbuf :
-public basic_streambuf<_CharT, char_traits<_CharT> >;
+class _LIBCPP_HIDDEN __stdoutbuf;
 _LIBCPP_END_NAMESPACE_STD
 
 namespace fast_io::details::streambuf_hack
