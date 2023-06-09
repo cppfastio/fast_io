@@ -47,7 +47,7 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_bytes_cold_impl(inst
 		::std::size_t const ni{n};
 		for(auto psstart{pscatters};n;)
 		{
-			auto ret{::fast_io::details::scatter_read_some_bytes_impl(insm,pscatters,n)};
+			auto ret{scatter_read_some_bytes_underflow_define(insm,pscatters,n)};
 			::std::size_t retpos{ret.position};
 			if(retpos==n||(!retpos&&!ret.position_in_scatter))
 			{
@@ -64,7 +64,7 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_bytes_cold_impl(inst
 				if(piit!=piend)
 				{
 					return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+retpos),
-						static_cast<::std::size_t>(piit-pistart)};
+						static_cast<::std::size_t>(piit-base)};
 				}
 				++retpos;
 			}
@@ -177,7 +177,7 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(instmtype 
 				if(piit!=piend)
 				{
 					return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+retpos),
-						static_cast<::std::size_t>(piit-pistart)};
+						static_cast<::std::size_t>(piit-base)};
 				}
 				++retpos;
 			}
