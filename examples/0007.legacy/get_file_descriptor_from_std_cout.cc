@@ -18,7 +18,7 @@ int main()
 //This is done by hacking C++ standard library implementation in fast_io.
 // I hacked ALL c++ standard library implementation, including libstdc++, libc++ and MSVC stl
 	using namespace fast_io::mnp;
-	println("std::cout.rdbuf():",siob.fb,"\n"
+	println("std::cout.rdbuf():",handlevw(siob.fb),"\n"
 	"FILE*:",handlevw(static_cast<fast_io::c_io_observer>(siob).fp),"\n"
 	"fd:",handlevw(static_cast<fast_io::posix_io_observer>(siob).fd)
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
