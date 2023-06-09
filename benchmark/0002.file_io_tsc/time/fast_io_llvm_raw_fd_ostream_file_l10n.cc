@@ -4,6 +4,7 @@
 #include<fast_io_driver/timer.h>
 #include<fast_io_i18n.h>
 #include<vector>
+using namespace fast_io::io;
 
 int main()
 {

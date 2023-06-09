@@ -2,6 +2,8 @@
 #include<fast_io_driver/timer.h>
 #include<fast_io_device.h>
 #include<iostream>
+using namespace fast_io::io;
+
 inline void test()
 {
 	for(std::size_t i{};i!=1000000;++i)

@@ -5,6 +5,7 @@
 #include<vector>
 #include<format>
 #include<locale>
+using namespace fast_io::io;
 
 int main()
 {

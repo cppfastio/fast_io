@@ -3,6 +3,7 @@
 #include<fast_io_driver/timer.h>
 #include<vector>
 #include"longspaces.h"
+using namespace fast_io::io;
 
 int main()
 {
