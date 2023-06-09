@@ -131,10 +131,10 @@ inline FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
 			{
 				char const* my_type{typeid(*stdbuf).name()};
 				::std::size_t mytypelen{static_cast<::std::size_t>(::std::strlen(my_type))};
-				if((mytypelen==::fast_io::details::libcxx_stdinoutbufname<false,char_type>.len()&&
+				if((mytypelen==::fast_io::details::libcxx_stdinoutbufname<false,char_type>.size()&&
 					::std::memcmp(my_type,mytypelen,
 					::fast_io::details::libcxx_stdinoutbufname<false,char_type>.data())==0)||
-				(mytypelen==::fast_io::details::libcxx_stdinoutbufname<true,char_type>.len()&&
+				(mytypelen==::fast_io::details::libcxx_stdinoutbufname<true,char_type>.size()&&
 					::std::memcmp(my_type,mytypelen,
 					::fast_io::details::libcxx_stdinoutbufname<true,char_type>.data())==0))
 				{
