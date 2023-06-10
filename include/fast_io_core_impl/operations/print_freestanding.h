@@ -133,7 +133,7 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 
 template<typename output,std::size_t N>
 inline constexpr bool minimum_buffer_output_stream_require_size_constant_impl =
-	(N<obuffer_constant_size_define(::fast_io::io_reserve_type<typename output::output_char_type,output>));
+	(N<obuffer_minimum_size_define(::fast_io::io_reserve_type<typename output::output_char_type,output>));
 
 template<typename output,std::size_t N>
 concept minimum_buffer_output_stream_require_size_impl = ::fast_io::operations::decay::defines::has_obuffer_minimum_size_operations<output>

@@ -26,7 +26,7 @@ inline constexpr bool ibuffer_underflow_rl_impl(instmtype insm,
 }
 
 template<typename allocator_type,std::integral char_type,typename instmtype>
-inline constexpr bool ibuffer_minimum_size_underflow_all_prepare_rl_size_impl(instmtype insm,
+inline constexpr void ibuffer_minimum_size_underflow_all_prepare_rl_size_impl(instmtype insm,
 	basic_io_buffer_pointers<char_type>& ibuffer,::std::size_t bfsz)
 {
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,char_type>;
@@ -44,10 +44,13 @@ inline constexpr bool ibuffer_minimum_size_underflow_all_prepare_rl_size_impl(in
 }
 
 template<::std::size_t bfsz,std::integral char_type,typename allocator_type,typename instmtype>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
 inline constexpr void ibuffer_minimum_size_underflow_all_prepare_impl(instmtype insm,
 	basic_io_buffer_pointers<char_type>& ibuffer)
 {
-	return ::fast_io::details::io_buffer::ibuffer_minimum_size_underflow_all_prepare_rl_size_impl<allocator_type>(insm,ibuffer,bfsz);
+	::fast_io::details::io_buffer::ibuffer_minimum_size_underflow_all_prepare_rl_size_impl<allocator_type>(insm,ibuffer,bfsz);
 }
 
 template<typename allocator_type,::std::integral char_type,

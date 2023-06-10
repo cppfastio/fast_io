@@ -14,6 +14,15 @@ concept has_entroy_method_impl = requires(T&& handle)
 {
 	{random_entropy(handle)}->std::convertible_to<double>;
 };
+
+template<typename input,std::size_t N>
+inline constexpr bool minimum_buffer_input_stream_require_size_constant_impl =
+	(N<ibuffer_minimum_size_define(::fast_io::io_reserve_type<typename input::input_char_type,input>));
+
+template<typename input,std::size_t N>
+concept minimum_buffer_input_stream_require_size_impl = ::fast_io::operations::decay::defines::has_ibuffer_minimum_size_operations<input>
+	&& minimum_buffer_input_stream_require_size_constant_impl<input,N>;
+
 }
 #if ((defined(__linux__) && defined(__NR_getrandom)) || (!defined(__linux__)&&__has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__DARWIN_C_LEVEL)
 #include"linux_getrandom.h"
@@ -121,9 +130,30 @@ struct basic_white_hole_engine
 	inline result_type operator()()
 	{
 		result_type type;
-		::fast_io::operations::read_all_bytes(handle,
-			reinterpret_cast<::std::byte*>(__builtin_addressof(type)),
-			reinterpret_cast<::std::byte*>(__builtin_addressof(type)+1));
+		auto instmref{::fast_io::operations::input_stream_ref(handle)};
+		if constexpr(::fast_io::details::minimum_buffer_input_stream_require_size_impl<decltype(instmref),sizeof(result_type)>)
+		{
+			auto currptr{ibuffer_curr(instmref)},edptr{ibuffer_end(instmref)};
+			::std::size_t diff{static_cast<::std::size_t>(edptr-currptr)};
+			constexpr
+				::std::size_t objsz{sizeof(result_type)};
+			if(diff<=objsz)
+#if __has_cpp_attribute(unlikely)
+			[[unlikely]]
+#endif
+			{
+				ibuffer_minimum_size_underflow_all_prepare_define(instmref);
+				currptr=ibuffer_curr(instmref);
+			}
+			::fast_io::freestanding::my_memcpy(__builtin_addressof(type),currptr,objsz);
+			ibuffer_set_curr(instmref,currptr+objsz);
+		}
+		else
+		{
+			::fast_io::operations::decay::read_all_bytes_decay(instmref,
+				reinterpret_cast<::std::byte*>(__builtin_addressof(type)),
+				reinterpret_cast<::std::byte*>(__builtin_addressof(type)+1));
+		}
 		return type;
 	}
 };

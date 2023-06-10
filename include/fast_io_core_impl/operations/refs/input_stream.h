@@ -234,7 +234,6 @@ concept has_any_of_read_or_seek_pread_operations =
 	(::fast_io::operations::decay::defines::has_input_stream_seek_define<stmtype>&&
 	::fast_io::operations::decay::defines::has_any_of_pread_operations<stmtype>);
 
-
 template<typename T>
 concept has_ibuffer_minimum_size_operations = requires(T instm)
 {
