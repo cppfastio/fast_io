@@ -32,14 +32,10 @@ inline constexpr void ibuffer_minimum_size_underflow_all_prepare_rl_size_impl(in
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,char_type>;
 	if(ibuffer.buffer_begin==nullptr)
 		ibuffer.buffer_end=ibuffer.buffer_curr=ibuffer.buffer_begin=typed_allocator_type::allocate(bfsz);
-	auto ed{ibuffer.buffer_begin+bfsz};
-	auto toreadstart{ibuffer.buffer_curr};
-	if(toreadstart==ed)
-	{
-		toreadstart=ibuffer.buffer_begin;
-	}
-	::fast_io::operations::decay::read_all_decay(insm,toreadstart,ed);
-	ibuffer.buffer_curr=toreadstart;
+	auto bg{ibuffer.buffer_begin};
+	auto ed{bg+bfsz};
+	::fast_io::operations::decay::read_all_decay(insm,bg,ed);
+	ibuffer.buffer_curr=bg;
 	ibuffer.buffer_end=ed;
 }
 
