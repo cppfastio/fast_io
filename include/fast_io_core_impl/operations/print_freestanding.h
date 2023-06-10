@@ -132,12 +132,12 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 }
 
 template<typename output,std::size_t N>
-inline constexpr bool constant_buffer_output_stream_require_size_constant_impl =
+inline constexpr bool minimum_buffer_output_stream_require_size_constant_impl =
 	(N<obuffer_constant_size_define(::fast_io::io_reserve_type<typename output::output_char_type,output>));
 
 template<typename output,std::size_t N>
-concept constant_buffer_output_stream_require_size_impl = ::fast_io::operations::decay::defines::has_obuffer_constant_size_operations<output>
-	&& constant_buffer_output_stream_require_size_constant_impl<output,N>;
+concept minimum_buffer_output_stream_require_size_impl = ::fast_io::operations::decay::defines::has_obuffer_minimum_size_operations<output>
+	&& minimum_buffer_output_stream_require_size_constant_impl<output,N>;
 
 template<::std::size_t sz>
 requires (sz!=0)
@@ -308,11 +308,11 @@ inline constexpr void print_control_single(output outstm,T t)
 				char_type* bend{obuffer_end(outstm)};
 				std::ptrdiff_t const diff(bend-bcurr);
 				bool smaller{static_cast<std::ptrdiff_t>(size)<diff};
-				if constexpr(constant_buffer_output_stream_require_size_impl<output,size>)
+				if constexpr(minimum_buffer_output_stream_require_size_impl<output,size>)
 				{
 					if(!smaller)[[unlikely]]
 					{
-						obuffer_constant_flush_prepare_define(outstm);
+						obuffer_minimum_size_flush_prepare_define(outstm);
 						bcurr=obuffer_curr(outstm);
 					}
 					bcurr=print_reserve_define(::fast_io::io_reserve_type<char_type,value_type>,bcurr,t);
@@ -1068,11 +1068,11 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 				char_type* bend{obuffer_end(optstm)};
 				std::ptrdiff_t const diff(bend-bcurr);
 				bool smaller{static_cast<std::ptrdiff_t>(buffersize)<diff};
-				if constexpr(constant_buffer_output_stream_require_size_impl<outputstmtype,buffersize>)
+				if constexpr(minimum_buffer_output_stream_require_size_impl<outputstmtype,buffersize>)
 				{
 					if(!smaller)[[unlikely]]
 					{
-						obuffer_constant_flush_prepare_define(optstm);
+						obuffer_minimum_size_flush_prepare_define(optstm);
 						bcurr=obuffer_curr(optstm);
 					}
 					bcurr=::fast_io::details::decay::print_n_reserve<rsvresult.position,char_type>(bcurr,t,args...);

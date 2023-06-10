@@ -194,7 +194,7 @@ template<::std::integral char_type,
 	typename allocator_type,
 	::std::size_t buffer_size,
 	typename optstmtype>
-inline constexpr void obuffer_constant_flush_prepare_impl(optstmtype optstm,
+inline constexpr void obuffer_minimum_size_flush_prepare_impl(optstmtype optstm,
 	basic_io_buffer_pointers<char_type>& pointers)
 {
 	if(pointers.buffer_begin==pointers.buffer_curr)
@@ -278,16 +278,17 @@ inline constexpr void obuffer_set_curr(basic_io_buffer_ref<io_buffer_type> iobre
 	iobref.iobptr->output_buffer.buffer_curr = ptr;
 }
 
-template<typename io_buffer_type>
-inline constexpr ::std::size_t obuffer_constant_size_define(::fast_io::io_reserve_type_t<typename io_buffer_type::output_char_type,io_buffer_type>)
+template<::std::integral char_type,typename io_buffer_type>
+requires (::std::same_as<char_type,typename basic_io_buffer_ref<io_buffer_type>::output_char_type>)
+inline constexpr ::std::size_t obuffer_minimum_size_define(::fast_io::io_reserve_type_t<char_type,basic_io_buffer_ref<io_buffer_type>>)
 {
 	return io_buffer_type::traits_type::output_buffer_size;
 }
 
 template<typename io_buffer_type>
-inline constexpr void obuffer_constant_flush_prepare_define(basic_io_buffer_ref<io_buffer_type> iobref)
+inline constexpr void obuffer_minimum_size_flush_prepare_define(basic_io_buffer_ref<io_buffer_type> iobref)
 {
-	::fast_io::details::io_buffer::obuffer_constant_flush_prepare_impl<
+	::fast_io::details::io_buffer::obuffer_minimum_size_flush_prepare_impl<
 		typename io_buffer_type::output_char_type,
 		typename io_buffer_type::traits_type::allocator_type,
 		io_buffer_type::traits_type::output_buffer_size>(

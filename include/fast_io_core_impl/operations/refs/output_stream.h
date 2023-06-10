@@ -235,12 +235,12 @@ concept has_any_of_write_or_seek_pwrite_operations =
 	::fast_io::operations::decay::defines::has_any_of_pwrite_operations<stmtype>);
 
 template<typename T>
-concept has_obuffer_constant_size_operations = requires(T outstm)
+concept has_obuffer_minimum_size_operations = requires(T outstm)
 {
-	{obuffer_constant_size_define(::fast_io::io_reserve_type<
+	{obuffer_minimum_size_define(::fast_io::io_reserve_type<
 		typename T::output_char_type,
 		T>)}->std::same_as<::std::size_t>;
-	obuffer_constant_flush_prepare_define(outstm);
+	obuffer_minimum_size_flush_prepare_define(outstm);
 };
 
 }

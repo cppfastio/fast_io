@@ -25,6 +25,31 @@ inline constexpr bool ibuffer_underflow_rl_impl(instmtype insm,
 	return ::fast_io::details::io_buffer::ibuffer_underflow_rl_size_impl<allocator_type>(insm,ibuffer,bfsz);
 }
 
+template<typename allocator_type,std::integral char_type,typename instmtype>
+inline constexpr bool ibuffer_minimum_size_underflow_all_prepare_rl_size_impl(instmtype insm,
+	basic_io_buffer_pointers<char_type>& ibuffer,::std::size_t bfsz)
+{
+	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,char_type>;
+	if(ibuffer.buffer_begin==nullptr)
+		ibuffer.buffer_end=ibuffer.buffer_curr=ibuffer.buffer_begin=typed_allocator_type::allocate(bfsz);
+	auto ed{ibuffer.buffer_begin+bfsz};
+	auto toreadstart{ibuffer.buffer_curr};
+	if(toreadstart==ed)
+	{
+		toreadstart=ibuffer.buffer_begin;
+	}
+	::fast_io::operations::decay::read_all_decay(insm,toreadstart,ed);
+	ibuffer.buffer_curr=toreadstart;
+	ibuffer.buffer_end=ed;
+}
+
+template<::std::size_t bfsz,std::integral char_type,typename allocator_type,typename instmtype>
+inline constexpr void ibuffer_minimum_size_underflow_all_prepare_impl(instmtype insm,
+	basic_io_buffer_pointers<char_type>& ibuffer)
+{
+	return ::fast_io::details::io_buffer::ibuffer_minimum_size_underflow_all_prepare_rl_size_impl<allocator_type>(insm,ibuffer,bfsz);
+}
+
 template<typename allocator_type,::std::integral char_type,
 	typename instmtype>
 inline constexpr char_type* read_until_eof_underflow_size_impl(
@@ -161,6 +186,26 @@ inline constexpr void ibuffer_set_curr(basic_io_buffer_ref<io_buffer_type> iobre
 	typename basic_io_buffer_ref<io_buffer_type>::input_char_type* ptr) noexcept
 {
 	iobref.iobptr->input_buffer.buffer_curr = ptr;
+}
+
+template<::std::integral char_type,typename io_buffer_type>
+requires (::std::same_as<char_type,typename basic_io_buffer_ref<io_buffer_type>::input_char_type>)
+inline constexpr ::std::size_t ibuffer_minimum_size_define(::fast_io::io_reserve_type_t<char_type,
+	basic_io_buffer_ref<io_buffer_type>>)
+{
+	return io_buffer_type::traits_type::input_buffer_size;
+}
+
+template<typename io_buffer_type>
+inline constexpr void ibuffer_minimum_size_underflow_all_prepare_define(basic_io_buffer_ref<io_buffer_type> iobref)
+{
+	::fast_io::details::io_buffer::ibuffer_minimum_size_underflow_all_prepare_impl<
+		io_buffer_type::traits_type::input_buffer_size,
+		typename io_buffer_type::traits_type::input_char_type,
+		typename io_buffer_type::traits_type::allocator_type>(
+			::fast_io::operations::input_stream_ref(iobref.iobptr->handle),
+			iobref.iobptr->input_buffer);
+
 }
 
 }
