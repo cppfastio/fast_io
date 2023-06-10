@@ -73,16 +73,12 @@ basic_linux_getrandom<char_type>;
 basic_posix_dev_urandom<char_type>;
 #endif
 
-#if 1
 template<std::integral char_type,typename allocator_type=::fast_io::native_global_allocator>
 using basic_ibuf_white_hole = basic_io_buffer<basic_native_white_hole<char_type>,
 	::fast_io::basic_io_buffer_traits<buffer_mode::in|buffer_mode::secure_clear,
 		allocator_type,char_type,
-		void,4096u,0>>;
-#else
-template<std::integral char_type>
-using basic_ibuf_white_hole = basic_native_white_hole<char_type>;
-#endif
+		void,8192u,0>>;
+
 using native_white_hole = basic_native_white_hole<char>;
 using ibuf_white_hole = basic_ibuf_white_hole<char>;
 
