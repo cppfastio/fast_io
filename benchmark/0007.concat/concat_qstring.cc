@@ -3,6 +3,7 @@
 #include<fast_io_driver/qt.h>
 #include<vector>
 #include<fast_io_driver/timer.h>
+using namespace fast_io::io;
 
 int main()
 {

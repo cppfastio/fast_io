@@ -2,6 +2,8 @@
 #include<fast_io_legacy.h>
 #include<fast_io_driver/timer.h>
 #include<fast_io_device.h>
+using namespace fast_io::io;
+
 inline void test()
 {
 	fast_io::nt_file wf(fast_io::io_dup,fast_io::nt_stdout());
