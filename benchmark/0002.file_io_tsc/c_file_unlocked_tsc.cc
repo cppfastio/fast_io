@@ -2,6 +2,7 @@
 #include<fast_io_device.h>
 #include<fast_io_driver/tsc_timer.h>
 #include<vector>
+using namespace fast_io::io;
 
 int main()
 {
