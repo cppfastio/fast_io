@@ -19,7 +19,7 @@ inline constexpr input_char_type* decoread_until_eof_underflow_define_sz_impl(
 	if(input_buffer.buffer_begin==nullptr)
 	{
 		input_buffer.buffer_end=((input_buffer.buffer_curr=input_buffer.buffer_begin=
-			typed_allocator_type(sz))+sz);
+			typed_allocator_type::allocate(sz))+sz);
 	}
 	auto curr_ptr{input_buffer.buffer_curr},ed_ptr{input_buffer.buffer_end};
 	while(first!=last)

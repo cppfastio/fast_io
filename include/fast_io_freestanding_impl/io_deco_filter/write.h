@@ -28,7 +28,7 @@ inline constexpr void decowrite_all_overflow_define_impl(
 			curr_ptr,ed_ptr);
 		::fast_io::operations::decay::write_all_decay(
 			::fast_io::manipulators::output_stream_ref(outstm),
-			curr_ptr,ed_ptr);
+			curr_ptr,bufferit);
 		output_buffer.buffer_curr=output_buffer.buffer_begin;
 		first=it;
 	}
