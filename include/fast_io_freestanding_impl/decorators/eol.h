@@ -113,8 +113,8 @@ struct basic_eol_converter
 };	
 
 template<eol_scheme internalscheme,eol_scheme externalscheme,::std::integral char_type>
-using basic_eol = basic_bidirectional_decorator_adaptor<basic_eol_converter<internalscheme,externalscheme,char_type>,
-		basic_eol_converter<externalscheme,internalscheme,char_type>>;
+using basic_eol = basic_bidirectional_decorator_adaptor<basic_eol_converter<externalscheme,internalscheme,char_type>,
+		basic_eol_converter<internalscheme,externalscheme,char_type>>;
 
 template<::std::integral char_type>
 using basic_lf_crlf = basic_eol<eol_scheme::lf,eol_scheme::crlf,char_type>;
