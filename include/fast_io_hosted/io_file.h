@@ -360,6 +360,50 @@ public:
 	}
 };
 
+template<typename T>
+class basic_general_io_file_ref
+{
+public:
+	using general_io_file_type = T;
+	using input_char_type = typename general_io_file_type::input_char_type;
+	using output_char_type = typename general_io_file_type::output_char_type;
+	general_io_file_type *giofptr{};
+};
+
+template<::std::integral inchar_type,
+	::std::integral outchar_type,
+	typename allocatortype>
+constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>>
+	io_stream_deco_filter_define(
+		basic_general_io_file<inchar_type,outchar_type,allocatortype>& t) noexcept
+{
+	return {__builtin_addressof(t)};
+}
+
+template<::std::integral inchar_type,
+	::std::integral outchar_type,
+	typename allocatortype>
+constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>>
+	io_stream_deco_filter_define(
+		basic_general_io_file<inchar_type,outchar_type,allocatortype>&& t) noexcept
+{
+	return {__builtin_addressof(t)};
+}
+
+template<::std::integral inchar_type,
+	::std::integral outchar_type,
+	typename allocatortype,
+	typename dectref>
+inline constexpr void add_deco_filter_define(
+	basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>> rf,
+	dectref)
+{
+	*rf.giofptr=basic_general_io_file<inchar_type,outchar_type,allocatortype>(
+		::fast_io::io_place_type<basic_iodecfilt<
+		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectref>>,
+		::fast_io::freestanding::move(*rf.giofptr));
+}
+
 template<::std::integral char_type>
 using basic_io_io_observer=basic_general_io_io_observer<char_type,char_type>;
 
