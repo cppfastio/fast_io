@@ -84,6 +84,9 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/filesystem/native.h"
 #include"fast_io_hosted/dll/dll.h"
 #include"fast_io_hosted/process_revamp/native.h"
+
+#include"fast_io_hosted/io_file.h"
+
 #if defined(_MSVC_EXECUTION_CHARACTER_SET)
 #if _MSVC_EXECUTION_CHARACTER_SET == 936 || _MSVC_EXECUTION_CHARACTER_SET == 54936
 #include"fast_io_unit/gb18030.h"

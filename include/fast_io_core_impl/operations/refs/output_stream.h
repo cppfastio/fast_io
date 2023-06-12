@@ -234,6 +234,32 @@ concept has_any_of_write_or_seek_pwrite_operations =
 	(::fast_io::operations::decay::defines::has_output_stream_seek_define<stmtype>&&
 	::fast_io::operations::decay::defines::has_any_of_pwrite_operations<stmtype>);
 
+template<typename stmtype>
+concept has_any_of_pwrite_or_seek_write_operations =
+	::fast_io::operations::decay::defines::has_any_of_pwrite_operations<stmtype>||
+	(::fast_io::operations::decay::defines::has_output_stream_seek_define<stmtype>&&
+	::fast_io::operations::decay::defines::has_any_of_write_operations<stmtype>);
+
+template<typename stmtype>
+concept writable = has_any_of_write_or_seek_pwrite_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_write_or_seek_pwrite_bytes_operations<stmtype>);
+
+template<typename stmtype>
+concept bytes_writable = has_any_of_write_or_seek_pwrite_bytes_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_write_or_seek_pwrite_operations<stmtype>);
+
+template<typename stmtype>
+concept pwritable = has_any_of_pwrite_or_seek_write_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_pwrite_or_seek_write_bytes_operations<stmtype>);
+
+template<typename stmtype>
+concept bytes_pwritable = has_any_of_pwrite_or_seek_write_bytes_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_pwrite_or_seek_write_operations<stmtype>);
+
 template<typename T>
 concept has_obuffer_minimum_size_operations = requires(T outstm)
 {

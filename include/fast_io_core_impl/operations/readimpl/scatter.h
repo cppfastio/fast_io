@@ -95,7 +95,7 @@ inline constexpr io_scatter_status_t scatter_read_some_cold_impl(instmtype insm,
 			[[__gnu__::__may_alias__]]
 #endif
 			=
-			io_scatter_t*;
+			io_scatter_t const*;
 			return ::fast_io::details::scatter_read_some_bytes_cold_impl(insm,
 				reinterpret_cast<scattermayalias_ptr>(pscatters),n);
 		}

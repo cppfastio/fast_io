@@ -234,6 +234,32 @@ concept has_any_of_read_or_seek_pread_operations =
 	(::fast_io::operations::decay::defines::has_input_stream_seek_define<stmtype>&&
 	::fast_io::operations::decay::defines::has_any_of_pread_operations<stmtype>);
 
+template<typename stmtype>
+concept has_any_of_pread_or_seek_read_operations =
+	::fast_io::operations::decay::defines::has_any_of_pread_operations<stmtype>||
+	(::fast_io::operations::decay::defines::has_input_stream_seek_define<stmtype>&&
+	::fast_io::operations::decay::defines::has_any_of_read_operations<stmtype>);
+
+template<typename stmtype>
+concept readable = has_any_of_read_or_seek_pread_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_read_or_seek_pread_bytes_operations<stmtype>);
+
+template<typename stmtype>
+concept bytes_readable = has_any_of_read_or_seek_pread_bytes_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_read_or_seek_pread_operations<stmtype>);
+
+template<typename stmtype>
+concept preadable = has_any_of_pread_or_seek_read_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_pread_or_seek_read_bytes_operations<stmtype>);
+
+template<typename stmtype>
+concept bytes_preadable = has_any_of_pread_or_seek_read_bytes_operations<stmtype>||
+			(sizeof(typename stmtype::output_char_type)==1&&
+				has_any_of_pread_or_seek_read_operations<stmtype>);
+
 template<typename T>
 concept has_ibuffer_minimum_size_operations = requires(T instm)
 {
