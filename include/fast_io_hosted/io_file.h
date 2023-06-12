@@ -56,7 +56,7 @@ public:
 		value(::fast_io::freestanding::forward<Args>(args)...)
 	{}
 	virtual constexpr ::fast_io::io_scatter_status_t scatter_read_some_underflow_def(
-		::fast_io::basic_io_scatter_t<inchar_type> const* base,::std::size_t n)
+		::fast_io::basic_io_scatter_t<inchar_type> const* base,::std::size_t n) override
 	{
 		if constexpr(::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
 		{
@@ -79,7 +79,7 @@ public:
 		}
 	}
 	virtual constexpr ::fast_io::io_scatter_status_t scatter_pread_some_underflow_def(
-		::fast_io::basic_io_scatter_t<inchar_type> const* base,::std::size_t n,::fast_io::intfpos_t off)
+		::fast_io::basic_io_scatter_t<inchar_type> const* base,::std::size_t n,::fast_io::intfpos_t off) override
 	{
 		if constexpr(::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
 		{
@@ -101,7 +101,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t off,::fast_io::seekdir sdir)
+	virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t off,::fast_io::seekdir sdir) override
 	{
 		if constexpr(::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
 		{
@@ -126,7 +126,7 @@ public:
 	}
 
 	virtual constexpr ::fast_io::io_scatter_status_t scatter_write_some_overflow_def(
-		::fast_io::basic_io_scatter_t<outchar_type> const* base,::std::size_t n)
+		::fast_io::basic_io_scatter_t<outchar_type> const* base,::std::size_t n) override
 	{
 		if constexpr(::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
 		{
@@ -149,7 +149,7 @@ public:
 		}
 	}
 	virtual constexpr ::fast_io::io_scatter_status_t scatter_pwrite_some_overflow_def(
-		::fast_io::basic_io_scatter_t<outchar_type> const* base,::std::size_t n,::fast_io::intfpos_t off)
+		::fast_io::basic_io_scatter_t<outchar_type> const* base,::std::size_t n,::fast_io::intfpos_t off) override
 	{
 		if constexpr(::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
 		{
@@ -171,7 +171,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t off,::fast_io::seekdir sdir)
+	virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t off,::fast_io::seekdir sdir) override
 	{
 		if constexpr(::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
 		{
