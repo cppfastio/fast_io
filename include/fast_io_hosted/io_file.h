@@ -380,7 +380,7 @@ using u32io_file = basic_io_file<char32_t>;
 
 template<::std::integral char_type,
 	typename allocatortype=::fast_io::native_thread_local_allocator>
-using basic_iobuf_io_file=basic_iobuf<basic_io_file<char_type,allocatortype>>;
+using basic_iobuf_io_file=basic_iobuf<basic_io_file<char_type,allocatortype>,allocatortype>;
 
 using iobuf_io_file = basic_iobuf_io_file<char>;
 using wiobuf_io_file = basic_iobuf_io_file<wchar_t>;
