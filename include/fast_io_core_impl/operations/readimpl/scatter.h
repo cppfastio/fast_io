@@ -69,9 +69,11 @@ inline constexpr io_scatter_status_t scatter_read_some_cold_impl(instmtype insm,
 	{
 		for(::std::size_t i{};i!=n;++i)
 		{
-			auto [base,len] = pscatters[i];
+			auto [basec,len] = pscatters[i];
+			char_type *base{const_cast<char_type*>(basec)};
 			auto ed{base+len};
-			auto written{::fast_io::details::read_some_impl(insm,base,ed)};
+			auto written{::fast_io::details::read_some_impl(insm,
+				base,ed)};
 			::std::size_t sz{static_cast<::std::size_t>(written-base)};
 			if(sz!=len)
 			{
@@ -103,7 +105,8 @@ inline constexpr io_scatter_status_t scatter_read_some_cold_impl(instmtype insm,
 		{
 			for(::std::size_t i{};i!=n;++i)
 			{
-				auto [basef,len] = pscatters[i];
+				auto [basefd,len] = pscatters[i];
+				char_type *basef{const_cast<char_type*>(basefd)};
 				auto edf{basef+len};
 				::std::byte *base{reinterpret_cast<::std::byte*>(const_cast<void*>(basef))};
 				::std::byte *ed{reinterpret_cast<::std::byte*>(edf)};
