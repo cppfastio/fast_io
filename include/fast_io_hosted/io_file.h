@@ -24,15 +24,15 @@ template<::std::integral inchar_type,
 class basic_io_io_base
 {
 public:
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_read_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_read_some_underflow_def(
 		::fast_io::basic_io_scatter_t<inchar_type> const*,::std::size_t) = 0;
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_pread_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_pread_some_underflow_def(
 		::fast_io::basic_io_scatter_t<inchar_type> const*,::std::size_t,::fast_io::intfpos_t) = 0;
 	virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t,::fast_io::seekdir) = 0;
 
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_write_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_write_some_overflow_def(
 		::fast_io::basic_io_scatter_t<outchar_type> const*,::std::size_t) = 0;
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_pwrite_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_pwrite_some_overflow_def(
 		::fast_io::basic_io_scatter_t<outchar_type> const*,::std::size_t,::fast_io::intfpos_t) = 0;
 	virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t,::fast_io::seekdir) = 0;
 	virtual constexpr ~basic_io_io_base() = default;
@@ -55,7 +55,7 @@ public:
 	constexpr basic_io_io_derived(io_place_t,Args&& ...args):
 		value(::fast_io::freestanding::forward<Args>(args)...)
 	{}
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_read_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_read_some_underflow_def(
 		::fast_io::basic_io_scatter_t<inchar_type> const* base,::std::size_t n)
 	{
 		if constexpr(::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
@@ -78,7 +78,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_pread_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_pread_some_underflow_def(
 		::fast_io::basic_io_scatter_t<inchar_type> const* base,::std::size_t n,::fast_io::intfpos_t off)
 	{
 		if constexpr(::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
@@ -125,7 +125,7 @@ public:
 		}
 	}
 
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_write_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_write_some_overflow_def(
 		::fast_io::basic_io_scatter_t<outchar_type> const* base,::std::size_t n)
 	{
 		if constexpr(::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
@@ -148,7 +148,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::io_scatter_status_t scatter_pwrite_some_def(
+	virtual constexpr ::fast_io::io_scatter_status_t scatter_pwrite_some_overflow_def(
 		::fast_io::basic_io_scatter_t<outchar_type> const* base,::std::size_t n,::fast_io::intfpos_t off)
 	{
 		if constexpr(::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
@@ -226,18 +226,18 @@ inline constexpr basic_general_io_io_observer<inchar_type,outchar_type> io_strea
 
 template<::std::integral inchar_type,
 	::std::integral outchar_type>
-inline constexpr ::fast_io::io_scatter_status_t scatter_read_some_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
+inline constexpr ::fast_io::io_scatter_status_t scatter_read_some_underflow_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
 		::fast_io::basic_io_scatter_t<inchar_type> const* pst,::std::size_t n)
 {
-	return biob.handle->scatter_read_some_def(pst,n);
+	return biob.handle->scatter_read_some_underflow_def(pst,n);
 }
 
 template<::std::integral inchar_type,
 	::std::integral outchar_type>
-inline constexpr ::fast_io::io_scatter_status_t scatter_pread_some_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
+inline constexpr ::fast_io::io_scatter_status_t scatter_pread_some_underflow_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
 		::fast_io::basic_io_scatter_t<inchar_type> const* pst,::std::size_t n,intfpos_t off)
 {
-	return biob.handle->scatter_pread_some_def(pst,n,off);
+	return biob.handle->scatter_pread_some_underflow_def(pst,n,off);
 }
 
 template<::std::integral inchar_type,
@@ -249,18 +249,18 @@ inline constexpr ::fast_io::intfpos_t input_stream_seek_define(basic_general_io_
 
 template<::std::integral inchar_type,
 	::std::integral outchar_type>
-inline constexpr ::fast_io::io_scatter_status_t scatter_write_some_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
+inline constexpr ::fast_io::io_scatter_status_t scatter_write_some_overflow_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
 		::fast_io::basic_io_scatter_t<inchar_type> const* pst,::std::size_t n)
 {
-	return biob.handle->scatter_write_some_def(pst,n);
+	return biob.handle->scatter_write_some_overflow_def(pst,n);
 }
 
 template<::std::integral inchar_type,
 	::std::integral outchar_type>
-inline constexpr ::fast_io::io_scatter_status_t scatter_pwrite_some_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
+inline constexpr ::fast_io::io_scatter_status_t scatter_pwrite_some_overflow_define(basic_general_io_io_observer<inchar_type,outchar_type> biob,
 		::fast_io::basic_io_scatter_t<inchar_type> const* pst,::std::size_t n,intfpos_t off)
 {
-	return biob.handle->scatter_pwrite_some_def(pst,n,off);
+	return biob.handle->scatter_pwrite_some_overflow_def(pst,n,off);
 }
 
 template<::std::integral inchar_type,
