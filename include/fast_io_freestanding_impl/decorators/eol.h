@@ -124,6 +124,14 @@ using basic_eol = basic_bidirectional_decorator_adaptor<basic_eol_converter<exte
 using lf_crlf = basic_eol<eol_scheme::lf,eol_scheme::crlf>;
 using crlf_lf = basic_eol<eol_scheme::crlf,eol_scheme::lf>;
 
+using native_eol =
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSDOS__)
+lf_crlf
+#else
+::fast_io::decorators::no_op_decorators
+#endif
+;
+
 }
 
 }
