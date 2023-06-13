@@ -60,7 +60,8 @@ public:
 	inline explicit constexpr basic_io_deco_filter() = default;
 	template<typename ...Args>
 	requires (::std::constructible_from<handle_type,Args...>)
-	inline explicit constexpr basic_io_deco_filter(Args&& ...args) : handle(::std::forward<Args>(args)...)
+	inline explicit constexpr basic_io_deco_filter(decorators_type d,Args&& ...args) : handle(::std::forward<Args>(args)...),
+		decorators(::fast_io::freestanding::forward<decorators_type>(d))
 	{
 	}
 	basic_io_deco_filter& operator=(basic_io_deco_filter const&)=delete;

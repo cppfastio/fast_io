@@ -386,12 +386,12 @@ template<::std::integral inchar_type,
 	typename dectref>
 inline constexpr void io_stream_add_deco_filter_define(
 	basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>> rf,
-	dectref)
+	dectref deco)
 {
 	*rf.giofptr=basic_general_io_file<inchar_type,outchar_type,allocatortype>(
 		::fast_io::io_place_type<basic_iodecfilt<
 		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectref>>,
-		::fast_io::freestanding::move(*rf.giofptr));
+		deco,::fast_io::freestanding::move(*rf.giofptr));
 }
 
 template<::std::integral char_type>
