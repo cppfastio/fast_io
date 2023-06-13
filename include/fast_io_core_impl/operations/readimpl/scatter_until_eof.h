@@ -161,29 +161,27 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(instmtype 
 		::std::size_t const ni{n};
 		for(auto psstart{pscatters};n;)
 		{
-			auto ret{::fast_io::details::scatter_read_some_impl(insm,pscatters,n)};
-			::std::size_t retpos{ret.position};
-			if(retpos==n||(!retpos&&!ret.position_in_scatter))
+			auto [position,position_in_scatter]{::fast_io::details::scatter_read_some_impl(insm,pscatters,n)};
+			if(position==n||(!position&&!position_in_scatter))
 			{
-				return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+retpos),0};
+				return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+position),0};
 			}
-			::std::size_t pisc{ret.position_in_scatter};
-			if(pisc)
+			if(position_in_scatter)
 			{
-				auto [base2,len] = pscatters[ret.position];
+				auto [base2,len] = pscatters[position];
 				auto base{const_cast<char_type*>(base2)};
-				auto pistart{base+pisc};
+				auto pistart{base+position_in_scatter};
 				auto piend{base+len};
 				auto piit{::fast_io::operations::decay::read_until_eof_decay(insm,pistart,piend)};
 				if(piit!=piend)
 				{
-					return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+retpos),
+					return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+position),
 						static_cast<::std::size_t>(piit-base)};
 				}
-				++retpos;
+				++position;
 			}
-			pscatters+=retpos;
-			n-=retpos;
+			pscatters+=position;
+			n-=position;
 		}
 		return {ni,0};
 	}
