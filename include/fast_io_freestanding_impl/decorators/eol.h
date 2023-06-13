@@ -122,6 +122,7 @@ using basic_eol = basic_bidirectional_decorator_adaptor<basic_eol_converter<exte
 
 
 using lf_crlf = basic_eol<eol_scheme::lf,eol_scheme::crlf>;
+using crlf_lf = basic_eol<eol_scheme::crlf,eol_scheme::lf>;
 
 }
 

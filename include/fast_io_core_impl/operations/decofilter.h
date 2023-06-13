@@ -20,19 +20,19 @@ template<typename T,typename P>
 concept has_output_stream_add_deco_filter_define = requires(T t,P p)
 {
 	output_stream_add_deco_filter_define(t,p);
-};
+}||(::std::same_as<::std::remove_cvref_t<P>,::fast_io::decorators::no_op_decorators>);
 
 template<typename T,typename P>
 concept has_input_stream_add_deco_filter_define = requires(T t,P p)
 {
 	input_stream_add_deco_filter_define(t,p);
-};
+}||(::std::same_as<::std::remove_cvref_t<P>,::fast_io::decorators::no_op_decorators>);
 
 template<typename T,typename P>
 concept has_io_stream_add_deco_filter_define = requires(T t,P p)
 {
 	io_stream_add_deco_filter_define(t,p);
-};
+}||(::std::same_as<::std::remove_cvref_t<P>,::fast_io::decorators::no_op_decorators>);
 
 template<typename T,typename P>
 concept has_output_or_io_stream_add_deco_filter_define =
@@ -44,39 +44,70 @@ concept has_input_or_io_stream_add_deco_filter_define =
 
 }
 
+template<typename T,typename P>
+requires (::fast_io::operations::decay::defines::has_output_stream_add_deco_filter_define<T,P>)
+inline constexpr void output_stream_add_deco_filter_decay(T t,P p)
+{
+	if constexpr(!::std::same_as<::std::remove_cvref_t<P>,::fast_io::decorators::no_op_decorators>)
+	{
+		if constexpr(::fast_io::operations::decay::defines::has_output_stream_add_deco_filter_define<T,P>)
+		{
+			output_stream_add_deco_filter_define(t,p);
+		}
+		else
+		{
+			io_stream_add_deco_filter_define(t,p);
+		}
+	}
+}
+
+template<typename T,typename P>
+requires (::fast_io::operations::decay::defines::has_input_stream_add_deco_filter_define<T,P>)
+inline constexpr void input_stream_add_deco_filter_decay(T t,P p)
+{
+	if constexpr(!::std::same_as<::std::remove_cvref_t<P>,::fast_io::decorators::no_op_decorators>)
+	{
+		if constexpr(::fast_io::operations::decay::defines::has_input_stream_add_deco_filter_define<T,P>)
+		{
+			input_stream_add_deco_filter_define(t,p);
+		}
+		else
+		{
+			io_stream_add_deco_filter_define(t,p);
+		}
+	}
+}
+
+template<typename T,typename P>
+requires (::fast_io::operations::decay::defines::has_io_stream_add_deco_filter_define<T,P>)
+inline constexpr void io_stream_add_deco_filter_decay(T t,P p)
+{
+	if constexpr(!::std::same_as<::std::remove_cvref_t<P>,::fast_io::decorators::no_op_decorators>)
+	{
+		io_stream_add_deco_filter_define(t,p);
+	}
+}
+
+
 template<typename T,typename... Args>
 requires (::fast_io::operations::decay::defines::has_output_stream_add_deco_filter_define<T,Args>&&...)
 inline constexpr void add_output_decos_decay(T t,Args ...args)
 {
-	if constexpr((::fast_io::operations::decay::defines::has_output_stream_add_deco_filter_define<T,Args>&&...))
-	{
-		(output_stream_add_deco_filter_define(t,args),...);
-	}
-	else
-	{
-		(io_stream_add_deco_filter_define(t,args),...);
-	}
+	(output_stream_add_deco_filter_decay(t,args),...);
 }
 
 template<typename T,typename... Args>
 requires (::fast_io::operations::decay::defines::has_input_stream_add_deco_filter_define<T,Args>&&...)
 inline constexpr void add_input_decos_decay(T t,Args ...args)
 {
-	if constexpr((::fast_io::operations::decay::defines::has_input_stream_add_deco_filter_define<T,Args>&&...))
-	{
-		(input_stream_add_deco_filter_define(t,args),...);
-	}
-	else
-	{
-		(io_stream_add_deco_filter_define(t,args),...);
-	}
+	(input_stream_add_deco_filter_decay(t,args),...);
 }
 
 template<typename T,typename... Args>
 requires (::fast_io::operations::decay::defines::has_io_stream_add_deco_filter_define<T,Args>&&...)
 inline constexpr void add_io_decos_decay(T t,Args ...args)
 {
-	(io_stream_add_deco_filter_define(t,args),...);
+	(io_stream_add_deco_filter_decay(t,args),...);
 }
 
 }
