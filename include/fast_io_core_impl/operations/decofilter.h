@@ -2,6 +2,13 @@
 
 namespace fast_io
 {
+namespace decorators
+{
+
+struct no_op_decorators
+{};
+
+}
 
 namespace operations::decay
 {
@@ -111,6 +118,11 @@ concept has_output_or_io_stream_deco_filter_ref_define = has_output_stream_deco_
 
 template<typename T>
 requires (::fast_io::operations::defines::has_input_or_io_stream_deco_filter_ref_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr decltype(auto) input_stream_deco_filter_ref(T &&t)
 {
 	if constexpr(::fast_io::operations::defines::has_input_or_io_stream_deco_filter_ref_define<T>)
@@ -125,6 +137,11 @@ inline constexpr decltype(auto) input_stream_deco_filter_ref(T &&t)
 
 template<typename T>
 requires (::fast_io::operations::defines::has_output_or_io_stream_deco_filter_ref_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr decltype(auto) output_stream_deco_filter_ref(T &&t)
 {
 	if constexpr(::fast_io::operations::defines::has_output_or_io_stream_deco_filter_ref_define<T>)
@@ -139,12 +156,22 @@ inline constexpr decltype(auto) output_stream_deco_filter_ref(T &&t)
 
 template<typename T>
 requires (::fast_io::operations::defines::has_io_stream_deco_filter_ref_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr decltype(auto) io_stream_deco_filter_ref(T &&t)
 {
 	return io_stream_deco_filter_ref_define(t);
 }
 
 template<typename T,typename... Args>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void add_output_decos(T&& t,Args ...args)
 {
 	::fast_io::operations::decay::add_output_decos_decay(
@@ -152,6 +179,11 @@ inline constexpr void add_output_decos(T&& t,Args ...args)
 }
 
 template<typename T,typename... Args>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void add_input_decos(T&& t,Args ...args)
 {
 	::fast_io::operations::decay::add_input_decos_decay(
@@ -159,6 +191,11 @@ inline constexpr void add_input_decos(T&& t,Args ...args)
 }
 
 template<typename T,typename... Args>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline constexpr void add_io_decos(T&& t,Args ...args)
 {
 	::fast_io::operations::decay::add_io_decos_decay(
