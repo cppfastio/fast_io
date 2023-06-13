@@ -65,11 +65,7 @@ struct basic_eol_converter
 		{
 			if(last_unfinished)
 			{
-				if(tofirst==tolast)
-				{
-					return {fromfirst,tofirst};
-				}
-				if(fromfirst==fromlast)
+				if(tofirst==tolast||fromfirst==fromlast)
 				{
 					return {fromfirst,tofirst};
 				}
@@ -78,6 +74,7 @@ struct basic_eol_converter
 				{
 					*tofirst=char_literal_v<u8'\n',output_char_type>;
 					++tofirst;
+					++fromfirst;
 				}
 				else
 				{
@@ -90,17 +87,16 @@ struct basic_eol_converter
 				auto ch{*fromfirst};
 				if(ch==char_literal_v<u8'\r',output_char_type>)
 				{
-					++fromfirst;
-					if(fromfirst==fromlast)
+					if(fromfirst+1==fromlast)
 					{
 						last_unfinished=true;
-						break;
+						return {fromlast,tofirst};
 					}
-					if(*fromfirst==char_literal_v<u8'\n',output_char_type>)
+					auto tch{fromfirst[1]};
+					if(tch==char_literal_v<u8'\n',output_char_type>)
 					{
-						*tofirst=char_literal_v<u8'\n',output_char_type>;
-						++tofirst;
-						continue;
+						ch=tch;
+						++fromfirst;
 					}
 				}
 				*tofirst=ch;
