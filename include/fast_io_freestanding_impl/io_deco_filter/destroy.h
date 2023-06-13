@@ -42,6 +42,11 @@ inline constexpr void destroy_basic_io_filter(T& t) noexcept
 		auto buffer_begin{t.output_buffer.buffer_begin};
 		if(buffer_begin)
 		{
+			if constexpr((mode&buffer_mode::secure_clear)==buffer_mode::secure_clear)
+			{
+				secure_clear(buffer_begin,
+				traits_type::output_buffer_size*sizeof(typename traits_type::output_char_type));
+			}
 			::fast_io::typed_generic_allocator_adapter<allocator_type,
 			typename traits_type::output_char_type>::deallocate_n(buffer_begin,
 			traits_type::output_buffer_size);
@@ -53,6 +58,11 @@ inline constexpr void destroy_basic_io_filter(T& t) noexcept
 		auto buffer_begin{t.input_buffer.buffer_begin};
 		if(buffer_begin)
 		{
+			if constexpr((mode&buffer_mode::secure_clear)==buffer_mode::secure_clear)
+			{
+				secure_clear(buffer_begin,
+				traits_type::input_buffer_size*sizeof(typename traits_type::input_char_type));
+			}
 			::fast_io::typed_generic_allocator_adapter<allocator_type,
 			typename traits_type::output_char_type>::deallocate_n(buffer_begin,
 			traits_type::input_buffer_size);
