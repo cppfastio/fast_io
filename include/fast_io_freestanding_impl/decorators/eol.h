@@ -105,6 +105,16 @@ struct basic_eol_converter
 			}
 			return {fromfirst,tofirst};
 		}
+		else /*For debugging purposes*/
+		{
+			for(;fromfirst!=fromlast&&tofirst!=tolast;)
+			{
+				*tofirst=*fromfirst;
+				++fromfirst;
+				++tofirst;
+			}
+			return {fromfirst,tofirst};
+		}
 	}
 };	
 
