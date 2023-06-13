@@ -233,8 +233,8 @@ inline constexpr void pread_all_cold_impl(instmtype insm,typename instmtype::inp
 	{
 		::std::size_t len{static_cast<::std::size_t>(last-first)};
 		basic_io_scatter_t<char_type> sc{first,len};
-		auto status{scatter_pread_until_eof_underflow_define(insm,__builtin_addressof(sc),1,off)};
-		if(!status.position)
+		auto [pos,scpos]{scatter_pread_until_eof_underflow_define(insm,__builtin_addressof(sc),1,off)};
+		if(!pos&&!scpos)
 		{
 			::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
 		}
