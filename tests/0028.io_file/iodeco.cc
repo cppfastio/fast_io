@@ -4,9 +4,7 @@ int main()
 {
 	::fast_io::u8iobuf_io_file file(::fast_io::io_place_type<::fast_io::u8native_file>,u8"io_file_deco.txt",::fast_io::open_mode::out);
 
-	auto deco{io_stream_deco_filter_define(file.handle)};
-
-	add_deco_filter_define(deco,::fast_io::decorators::u8lf_crlf{});
+	::fast_io::operations::add_io_decos(file,::fast_io::decorators::u8lf_crlf{});
 
 	using namespace ::fast_io::io;
 
