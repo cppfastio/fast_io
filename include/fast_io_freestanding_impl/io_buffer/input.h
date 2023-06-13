@@ -95,7 +95,7 @@ inline constexpr char_type* read_until_eof_underflow_size_impl(
 		basic_io_scatter_t<char_type> scatters[2]
 		{
 		{first,static_cast<::std::size_t>(last-first)},
-		{pointers.buffer_begin,pointers.buffer_end-pointers.buffer_begin}
+		{pointers.buffer_begin,static_cast<::std::size_t>(pointers.buffer_end-pointers.buffer_begin)}
 		};
 		auto [pos,scpos]{::fast_io::operations::decay::scatter_read_until_eof_decay(instm,scatters,2)};
 		if(pos==2)

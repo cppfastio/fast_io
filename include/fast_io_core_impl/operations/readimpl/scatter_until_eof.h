@@ -170,7 +170,8 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(instmtype 
 			::std::size_t pisc{ret.position_in_scatter};
 			if(pisc)
 			{
-				auto [base,len] = pscatters[ret.position];
+				auto [base2,len] = pscatters[ret.position];
+				auto base{const_cast<char_type*>(base2)};
 				auto pistart{base+pisc};
 				auto piend{base+len};
 				auto piit{::fast_io::operations::decay::read_until_eof_decay(insm,pistart,piend)};
@@ -321,7 +322,7 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_decay(instmtype insm
 	}
 	else
 	{
-		return scatter_read_until_eof_cold_impl(insm,pscatters,n);
+		return ::fast_io::details::scatter_read_until_eof_cold_impl(insm,pscatters,n);
 	}
 }
 
