@@ -22,39 +22,30 @@ inline constexpr input_char_type* decoread_until_eof_underflow_define_sz_impl(
 		input_buffer.buffer_end=input_buffer.buffer_curr=input_buffer.buffer_begin=
 			bufbg=typed_allocator_type::allocate(sz);
 	}
-
 	auto bufcur{input_buffer.buffer_curr};
 	auto bufed{input_buffer.buffer_end};
-	if(bufcur!=bufed)
-	{
-		auto [bufferit,it] = indeco.input_process_chars(bufcur,bufed,first,last);
-		input_buffer.buffer_curr = bufferit-bufcur+bufcur;
-		first=it;
-		if(first==last)
-		{
-			return first;
-		}
-	}
 	for(;;)
 	{
+		if(bufcur!=bufed)
+		{
+			auto [bufferit,it] = indeco.input_process_chars(bufcur,bufed,first,last);
+			input_buffer.buffer_curr = bufferit-bufcur+bufcur;
+			first=it;
+			if(first==last)
+			{
+				return first;
+			}
+		}
 		auto ret{::fast_io::operations::decay::read_until_eof_decay(
 			instm,
 			bufbg,bufbg+sz)};
-		input_buffer.buffer_curr=bufbg;
-		input_buffer.buffer_end=ret;
+		input_buffer.buffer_curr=bufcur=bufbg;
+		input_buffer.buffer_end=bufed=ret;
 		if(ret==bufbg)
-		{
-			break;
-		}
-		auto [bufferit,it] = indeco.input_process_chars(bufbg,ret,first,last);
-		input_buffer.buffer_curr = bufferit-bufbg+bufbg;
-		first=it;
-		if(first==last)
 		{
 			return first;
 		}
 	}
-	return first;
 }
 
 template<typename allocator_type,::std::size_t sz,typename instmtype,

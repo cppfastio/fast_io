@@ -41,7 +41,7 @@ inline constexpr typename instmtype::input_char_type* read_some_cold_impl(instmt
 	{
 		::std::size_t len{static_cast<::std::size_t>(last-first)};
 		basic_io_scatter_t<char_type> sc{first,len};
-		auto [pos,scpos]{scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1)};
+		auto [pos,scpos]{scatter_read_some_underflow_define(insm,__builtin_addressof(sc),1)};
 		if(!pos)
 		{
 			return first+scpos;
