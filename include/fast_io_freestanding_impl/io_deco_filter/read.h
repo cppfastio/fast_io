@@ -16,25 +16,43 @@ inline constexpr input_char_type* decoread_until_eof_underflow_define_sz_impl(
 			input_char_type* last,::std::size_t sz)
 {
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,input_char_type>;
-	if(input_buffer.buffer_begin==nullptr)
+	auto bufbg{input_buffer.buffer_begin};
+	if(bufbg==nullptr)
 	{
-		input_buffer.buffer_end=((input_buffer.buffer_curr=input_buffer.buffer_begin=
-			typed_allocator_type::allocate(sz))+sz);
+		input_buffer.buffer_end=input_buffer.buffer_curr=input_buffer.buffer_begin=
+			bufbg=typed_allocator_type::allocate(sz);
 	}
-	auto curr_ptr{input_buffer.buffer_curr},ed_ptr{input_buffer.buffer_end};
-	while(first!=last)
+
+	auto bufcur{input_buffer.buffer_curr};
+	auto bufed{input_buffer.buffer_end};
+	if(bufcur!=bufed)
+	{
+		auto [bufferit,it] = indeco.input_process_chars(bufcur,bufed,first,last);
+		input_buffer.buffer_curr = bufferit-bufcur+bufcur;
+		first=it;
+		if(first==last)
+		{
+			return first;
+		}
+	}
+	for(;;)
 	{
 		auto ret{::fast_io::operations::decay::read_until_eof_decay(
 			instm,
-			curr_ptr,ed_ptr)};
-		if(ret==curr_ptr)
+			bufbg,bufbg+sz)};
+		input_buffer.buffer_curr=bufbg;
+		input_buffer.buffer_end=ret;
+		if(ret==bufbg)
 		{
-			input_buffer.buffer_curr=input_buffer.buffer_begin;
 			break;
 		}
-		auto [it,bufferit] = indeco.input_process_chars(curr_ptr,ret,
-					first,last);
-		first=bufferit;
+		auto [bufferit,it] = indeco.input_process_chars(bufbg,ret,first,last);
+		input_buffer.buffer_curr = bufferit-bufbg+bufbg;
+		first=it;
+		if(first==last)
+		{
+			return first;
+		}
 	}
 	return first;
 }
