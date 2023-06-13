@@ -7,9 +7,6 @@ template<typename inputdeco,
 	typename outputdeco>
 struct basic_bidirectional_decorator_adaptor
 {
-	using output_char_type = typename outputdeco::output_char_type;
-	using input_char_type = typename inputdeco::output_char_type;
-
 	using input_decorator_type = inputdeco;
 	using output_decorator_type = outputdeco;
 	input_decorator_type idecorator;
@@ -20,16 +17,15 @@ template<typename T>
 struct basic_bidirectional_decorator_adaptor_ref
 {
 	using bidirectional_decorator_adaptor_type = T;
-	using output_char_type = typename bidirectional_decorator_adaptor_type::output_char_type;
-	using input_char_type = typename bidirectional_decorator_adaptor_type::output_char_type;
 	bidirectional_decorator_adaptor_type *bdoaptr{};
+	template<::std::integral input_char_type,::std::integral output_char_type>
 	inline constexpr deco_result<input_char_type,output_char_type>
 		output_process_chars(input_char_type const *fromfirst,input_char_type const *fromlast,
 				output_char_type *tofirst,output_char_type *tolast)
 	{
 		return bdoaptr->odecorator.process_chars(fromfirst,fromlast,tofirst,tolast);
 	}
-
+	template<::std::integral input_char_type,::std::integral output_char_type>
 	inline constexpr deco_result<output_char_type,input_char_type>
 		input_process_chars(output_char_type const *fromfirst,output_char_type const *fromlast,
 				input_char_type *tofirst,input_char_type *tolast)
