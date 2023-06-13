@@ -493,7 +493,7 @@ template<typename instmtype>
 inline constexpr typename instmtype::input_char_type* read_some_impl(instmtype insm,typename instmtype::input_char_type *first,typename instmtype::input_char_type *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::read_some_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
@@ -525,7 +525,7 @@ inline constexpr void read_all_impl(instmtype insm,
 	typename instmtype::input_char_type *first,
 	typename instmtype::input_char_type *last)
 {
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::read_all_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
@@ -557,7 +557,7 @@ template<typename instmtype>
 inline constexpr ::std::byte* read_some_bytes_impl(instmtype insm,::std::byte *first,::std::byte *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::read_some_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
@@ -594,7 +594,7 @@ template<typename instmtype>
 inline constexpr void read_all_bytes_impl(instmtype insm,
 	::std::byte *first,::std::byte *last)
 {
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::read_all_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
