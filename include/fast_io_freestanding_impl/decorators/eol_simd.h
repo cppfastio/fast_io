@@ -12,7 +12,6 @@ inline constexpr deco_result<char_type,char_type>
 			char_type *tofirst,char_type *tolast) noexcept
 {
 	constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
-	constexpr std::size_t initialdiffndf{initialdiffn+1u};
 	constexpr unsigned N{initialdiffn/sizeof(char_type)};
 	constexpr unsigned Np1{N+1u};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
@@ -137,8 +136,6 @@ inline constexpr deco_result<char_type,char_type>
 	simd_vector_type threevec;
 	threevec.load(characters_array_impl<3,char_type,N>.data());
 #endif
-	::std::size_t fromdiff{static_cast<::std::size_t>(fromlast-fromfirst)};
-	::std::size_t todiff{static_cast<::std::size_t>(tolast-tofirst)};
 
 	for(simd_vector_type vec;;)
 	{
