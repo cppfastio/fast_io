@@ -26,6 +26,8 @@ struct basic_eol_converter
 		process_chars(char_type const *fromfirst,char_type const *fromlast,
 				char_type *tofirst,char_type *tolast) noexcept
 	{
+
+		constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
 		if constexpr(fromscheme==eol_scheme::lf&&toscheme==eol_scheme::crlf)
 		{
 			if(last_unfinished)
@@ -37,7 +39,14 @@ struct basic_eol_converter
 				*tofirst=char_literal_v<u8'\n',char_type>;
 				++tofirst;
 			}
-			for(last_unfinished=false;fromfirst!=fromlast&&tofirst!=tolast;)
+			last_unfinished=false;
+			if constexpr(0<initialdiffn)
+			{
+				auto [fromit,toit]{::fast_io::details::simd_lf_crlf_process_chars(fromfirst,fromlast,tofirst,tolast)};
+				fromfirst=fromit;
+				tofirst=toit;
+			}
+			for(;fromfirst!=fromlast&&tofirst!=tolast;)
 			{
 				auto ch{*fromfirst};
 				if(ch==char_literal_v<u8'\n',char_type>)
@@ -80,7 +89,14 @@ struct basic_eol_converter
 					++tofirst;
 				}
 			}
-			for(last_unfinished=false;fromfirst!=fromlast&&tofirst!=tolast;)
+			last_unfinished=false;
+			if constexpr(0<initialdiffn)
+			{
+				auto [fromit,toit]{::fast_io::details::simd_crlf_lf_process_chars(fromfirst,fromlast,tofirst,tolast)};
+				fromfirst=fromit;
+				tofirst=toit;
+			}
+			for(;fromfirst!=fromlast&&tofirst!=tolast;)
 			{
 				auto ch{*fromfirst};
 				if(ch==char_literal_v<u8'\r',char_type>)
