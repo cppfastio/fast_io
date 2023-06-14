@@ -11,9 +11,11 @@ enum class eol_scheme
 lf,
 crlf,
 cr,
-lfcr,
 nl,	/*EBCDIC*/
+#if 0
+lfcr,
 newline
+#endif
 };
 
 template<eol_scheme fromscheme,
@@ -66,7 +68,6 @@ struct basic_eol_converter
 				++fromfirst;
 				++tofirst;
 			}
-			return {fromfirst,tofirst};
 		}
 		else if constexpr(fromscheme==eol_scheme::crlf&&toscheme==eol_scheme::lf)
 		{
@@ -117,7 +118,28 @@ struct basic_eol_converter
 				++fromfirst;
 				++tofirst;
 			}
-			return {fromfirst,tofirst};
+		}
+		else if constexpr((fromscheme==eol_scheme::lf&&toscheme==eol_scheme::cr)||
+			(fromscheme==eol_scheme::cr&&toscheme==eol_scheme::lf))
+		{
+			constexpr bool cr{(fromscheme==eol_scheme::cr&&toscheme==eol_scheme::lf)};
+			if constexpr(0<initialdiffn)
+			{
+				auto [fromit,toit]{::fast_io::details::simd_lf_cr_process_chars<cr>(fromfirst,fromlast,tofirst,tolast)};
+				fromfirst=fromit;
+				tofirst=toit;
+			}
+			for(;fromfirst!=fromlast&&tofirst!=tolast;)
+			{
+				auto ch{*fromfirst};
+				if(ch==char_literal_v<(cr?u8'\r':u8'\n'),char_type>)
+				{
+					ch=char_literal_v<(cr?u8'\n':u8'\r'),char_type>;
+				}
+				*tofirst=ch;
+				++fromfirst;
+				++tofirst;
+			}
 		}
 		else /*For debugging purposes*/
 		{
@@ -127,8 +149,8 @@ struct basic_eol_converter
 				++fromfirst;
 				++tofirst;
 			}
-			return {fromfirst,tofirst};
 		}
+		return {fromfirst,tofirst};
 	}
 };	
 
@@ -139,6 +161,9 @@ using basic_eol = basic_bidirectional_decorator_adaptor<basic_eol_converter<exte
 
 using lf_crlf = basic_eol<eol_scheme::lf,eol_scheme::crlf>;
 using crlf_lf = basic_eol<eol_scheme::crlf,eol_scheme::lf>;
+
+using lf_cr = basic_eol<eol_scheme::lf,eol_scheme::cr>;
+using cr_lf = basic_eol<eol_scheme::cr,eol_scheme::lf>;
 
 using native_eol =
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSDOS__)
