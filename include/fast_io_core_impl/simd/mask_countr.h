@@ -75,7 +75,14 @@ inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_
 {
 	if(sizeofsimdvector<=32)
 	{
-		return ::fast_io::details::calculate_can_simd_vector_run_with_cpu_instruction(sizeofsimdvector);
+		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
+		{
+			return false;
+		}
+		else
+		{
+			return ::fast_io::details::calculate_can_simd_vector_run_with_cpu_instruction(sizeofsimdvector);
+		}
 	}
 	return false;
 }
