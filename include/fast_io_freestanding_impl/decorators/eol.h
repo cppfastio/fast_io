@@ -69,7 +69,8 @@ struct basic_eol_converter
 				++tofirst;
 			}
 		}
-		else if constexpr(fromscheme==eol_scheme::crlf&&toscheme==eol_scheme::lf)
+		else if constexpr(fromscheme==eol_scheme::crlf&&
+				toscheme==eol_scheme::lf)
 		{
 			if(last_unfinished)
 			{
