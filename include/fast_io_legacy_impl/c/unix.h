@@ -154,6 +154,12 @@ inline bool bsd_underflow_impl(FILE* __restrict fp)
 	--fp->_p;
 	return eof;
 #endif
+#elif defined(__MSDOS__)
+	if(_filbuf(fp)==EOF)[[unlikely]]
+		return false;
+	++fp->_cnt;
+	--fp->_ptr;
+	return true;
 #elif defined(__BIONIC__)
 	bool eof{getc_unlocked(fp)!=EOF};
 	if(!eof&&ferror_unlocked(fp))[[unlikely]]
