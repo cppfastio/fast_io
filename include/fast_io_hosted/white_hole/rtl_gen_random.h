@@ -11,7 +11,7 @@ template<std::integral ch_type>
 class basic_rtl_gen_random
 {
 public:
-	using char_type = ch_type;
+	using input_char_type = ch_type;
 	constexpr void close() noexcept{}
 };
 
@@ -20,53 +20,66 @@ namespace win32
 
 namespace details
 {
-inline void rtl_gen_random_read_u32(void* ptr,std::size_t sz)
-{
-	if(!SystemFunction036(ptr,static_cast<std::uint_least32_t>(sz)))
-		throw_win32_error();
-}
 
-inline std::size_t rtl_gen_random_read(void* ptr,std::size_t sz)
+inline ::std::byte* rtl_gen_random_some_impl(::std::byte *first,::std::byte *last)
 {
-	std::byte *base_ptr{reinterpret_cast<std::byte*>(ptr)};
-	std::byte *iter{base_ptr};
-	while(sz)
+	if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least32_t))
 	{
-		constexpr std::size_t uintleast32mx{static_cast<std::size_t>(UINT_LEAST32_MAX)};
-		std::size_t mn{sz};
-		if(uintleast32mx<sz)
-			mn=uintleast32mx;
-		if(!SystemFunction036(iter,static_cast<std::uint_least32_t>(mn)))
+		::std::size_t sz{static_cast<::std::size_t>(last-first)};
+		if(!::fast_io::win32::SystemFunction036(first,static_cast<std::uint_least32_t>(sz)))
 		{
-			if(base_ptr==iter)
-				throw_win32_error();
-			break;
+			throw_win32_error();
 		}
-		sz-=mn;
-		iter+=mn;
-	}
-	return static_cast<std::size_t>(iter-base_ptr);
-}
-}
-}
-
-template<std::integral char_type,::std::contiguous_iterator Iter>
-inline Iter read(basic_rtl_gen_random<char_type>,Iter bg,Iter ed)
-{
-	if constexpr(sizeof(std::uint_least32_t)<sizeof(std::size_t))
-	{
-		auto ret{win32::details::rtl_gen_random_read(::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg))};
-		return bg+(ret/sizeof(*bg));
+		return last;
 	}
 	else
 	{
-		win32::details::rtl_gen_random_read_u32(::std::to_address(bg),static_cast<std::size_t>(ed-bg)*sizeof(*bg));
-		return ed;
+		constexpr std::size_t uintleast32mx{static_cast<std::size_t>(::std::numeric_limits<::std::uint_least32_t>::max())};
+		while(first!=last)
+		{
+			::std::size_t toreadthisround{static_cast<::std::size_t>(last-first)};
+			if(uintleast32mx<toreadthisround)
+				toreadthisround=uintleast32mx;
+			if(!::fast_io::win32::SystemFunction036(first,static_cast<std::uint_least32_t>(toreadthisround)))
+			{
+				return first;
+			}
+			first+=toreadthisround;
+		}
+		return last;
 	}
 }
 
+inline void rtl_gen_random_all_impl(::std::byte *first,::std::byte *last)
+{
+	auto ret{rtl_gen_random_some_impl(first,last)};
+	if constexpr(sizeof(::std::uint_least32_t)<sizeof(::std::size_t))
+	{
+		if(ret!=last)
+		{
+			throw_win32_error();
+		}
+	}
+}
+
+}
+}
+
 template<std::integral char_type>
-inline constexpr basic_rtl_gen_random<char_type> io_value_handle(basic_rtl_gen_random<char_type> brg) noexcept
+requires (sizeof(::std::uint_least32_t)<sizeof(::std::size_t))
+inline ::std::byte* read_some_bytes_underflow_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
+{
+	return ::fast_io::win32::details::rtl_gen_random_some_impl(first,last);
+}
+
+template<std::integral char_type>
+inline void read_all_bytes_underflow_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
+{
+	::fast_io::win32::details::rtl_gen_random_all_impl(first,last);
+}
+
+template<std::integral char_type>
+inline constexpr basic_rtl_gen_random<char_type> input_stream_ref_define(basic_rtl_gen_random<char_type> brg) noexcept
 {
 	return brg;	
 }
@@ -74,6 +87,6 @@ inline constexpr basic_rtl_gen_random<char_type> io_value_handle(basic_rtl_gen_r
 using rtl_gen_random = basic_rtl_gen_random<char>;
 
 template<std::integral char_type>
-inline constexpr void require_secure_clear(basic_rtl_gen_random<char_type>) noexcept{}
+inline constexpr void input_stream_require_secure_clear_define(basic_rtl_gen_random<char_type>) noexcept{}
 
 }

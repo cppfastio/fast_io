@@ -640,14 +640,10 @@ inline void win32_calculate_offset_impl(void* __restrict handle,::fast_io::win32
 	::fast_io::intfpos_t currentoff{
 		static_cast<::std::int_least64_t>(::fast_io::win32::details::seek_impl(handle,0,::fast_io::seekdir::cur))};
 	::std::int_least64_t u64off{static_cast<::std::int_least64_t>(currentoff)};
-	constexpr
-		auto ul64mx{::std::numeric_limits<::std::uint_least64_t>::max()};
 	if(off<0)
 	{
-		constexpr
-			auto mx{::std::numeric_limits<::fast_io::uintfpos_t>::max()};
 		::fast_io::uintfpos_t offabs{static_cast<::fast_io::uintfpos_t>(static_cast<::fast_io::uintfpos_t>(0)-static_cast<::fast_io::uintfpos_t>(off))};
-		if(u64off<offabs)
+		if(static_cast<::std::uint_least64_t>(u64off)<offabs)
 		{
 			u64off=0;
 		}

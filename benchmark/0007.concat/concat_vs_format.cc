@@ -84,8 +84,8 @@ int main()
 #if __has_include(<fmt/compile.h>)
 	auto fmt_format_compile_time = benchmark(color_fmt_format_compile);
 #endif
-#endif    
-    
+#endif
+	using namespace fast_io::io;
 	print(
 #if __cpp_lib_format >= 201907L && !defined(DISABLE_STD_FORMAT_BENCH)
 		"std::format (total size:",format_time.total_size,") took ",format_time.timestamp,"s.\n"
@@ -98,6 +98,6 @@ int main()
 		"fmt::format compile (total size:",fmt_format_compile_time.total_size,") took ",fmt_format_compile_time.timestamp,"s.\n"
 #endif
 #endif
-    	);
+		);
 }
 

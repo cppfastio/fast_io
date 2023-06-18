@@ -26,7 +26,7 @@ A dummy placeholder implementation
 			this_round=static_cast<::std::size_t>(totransmit);
 		}
 		::std::byte *iter{::fast_io::operations::decay::read_some_bytes_decay(instm,buffer_start,buffer_start+this_round)};
-		if(iter!=buffer_start)
+		if(iter==buffer_start)
 			break;
 		::fast_io::operations::decay::write_all_bytes_decay(optstm,buffer_start,iter);
 		totransmit-=static_cast<::std::size_t>(iter-buffer_start);

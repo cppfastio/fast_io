@@ -22,7 +22,7 @@
 #include<fstream>
 #include<sstream>
 
-#if 0
+#if 1
 #include"fast_io.h"
 #else
 #include"fast_io_hosted.h"

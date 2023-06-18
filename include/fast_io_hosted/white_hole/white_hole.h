@@ -14,6 +14,15 @@ concept has_entroy_method_impl = requires(T&& handle)
 {
 	{random_entropy(handle)}->std::convertible_to<double>;
 };
+
+template<typename input,std::size_t N>
+inline constexpr bool minimum_buffer_input_stream_require_size_constant_impl =
+	(N<ibuffer_minimum_size_define(::fast_io::io_reserve_type<typename input::input_char_type,input>));
+
+template<typename input,std::size_t N>
+concept minimum_buffer_input_stream_require_size_impl = ::fast_io::operations::decay::defines::has_ibuffer_minimum_size_operations<input>
+	&& minimum_buffer_input_stream_require_size_constant_impl<input,N>;
+
 }
 #if ((defined(__linux__) && defined(__NR_getrandom)) || (!defined(__linux__)&&__has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__DARWIN_C_LEVEL)
 #include"linux_getrandom.h"
@@ -61,16 +70,15 @@ basic_wasi_random_get<char_type>;
 #elif (defined(__linux__) && defined(__NR_getrandom)) || (!defined(__linux__)&&__has_include(<sys/random.h>)) && !defined(__DARWIN_C_LEVEL)
 basic_linux_getrandom<char_type>;
 #else
-posix_dev_urandom<basic_native_file<char_type>>;
+basic_posix_dev_urandom<char_type>;
 #endif
 
-#if 0
-template<std::integral char_type>
-using basic_ibuf_white_hole = basic_io_buffer<basic_native_white_hole<char_type>,buffer_mode::in|buffer_mode::secure_clear,basic_decorators<char_type>,4096u>;
-#else
-template<std::integral char_type>
-using basic_ibuf_white_hole = basic_native_white_hole<char_type>;
-#endif
+template<std::integral char_type,typename allocator_type=::fast_io::native_global_allocator>
+using basic_ibuf_white_hole = basic_io_buffer<basic_native_white_hole<char_type>,
+	::fast_io::basic_io_buffer_traits<buffer_mode::in|buffer_mode::secure_clear,
+		allocator_type,char_type,
+		void,8192u,0>>;
+
 using native_white_hole = basic_native_white_hole<char>;
 using ibuf_white_hole = basic_ibuf_white_hole<char>;
 
@@ -86,12 +94,11 @@ using u16ibuf_white_hole = basic_ibuf_white_hole<char16_t>;
 using u32native_white_hole = basic_native_white_hole<char32_t>;
 using u32ibuf_white_hole = basic_ibuf_white_hole<char32_t>;
 
-template<input_stream handletype>
-requires std::same_as<std::remove_cvref_t<typename handletype::char_type>,char>
+template<typename handletype>
 struct basic_white_hole_engine
 {
 	using handle_type = handletype;
-	using result_type = std::size_t;
+	using result_type = ::std::size_t;
 	handle_type handle;
 	static inline constexpr result_type min() noexcept
 	{
@@ -119,9 +126,30 @@ struct basic_white_hole_engine
 	inline result_type operator()()
 	{
 		result_type type;
-		::fast_io::operations::read_all_bytes(handle,
-			reinterpret_cast<::std::byte*>(__builtin_addressof(type)),
-			reinterpret_cast<::std::byte*>(__builtin_addressof(type)+1));
+		auto instmref{::fast_io::operations::input_stream_ref(handle)};
+		if constexpr(::fast_io::details::minimum_buffer_input_stream_require_size_impl<decltype(instmref),sizeof(result_type)>)
+		{
+			auto currptr{ibuffer_curr(instmref)},edptr{ibuffer_end(instmref)};
+			::std::size_t diff{static_cast<::std::size_t>(edptr-currptr)};
+			constexpr
+				::std::size_t objsz{sizeof(result_type)};
+			if(diff<=objsz)
+#if __has_cpp_attribute(unlikely)
+			[[unlikely]]
+#endif
+			{
+				ibuffer_minimum_size_underflow_all_prepare_define(instmref);
+				currptr=ibuffer_curr(instmref);
+			}
+			::fast_io::freestanding::my_memcpy(__builtin_addressof(type),currptr,objsz);
+			ibuffer_set_curr(instmref,currptr+objsz);
+		}
+		else
+		{
+			::fast_io::operations::decay::read_all_bytes_decay(instmref,
+				reinterpret_cast<::std::byte*>(__builtin_addressof(type)),
+				reinterpret_cast<::std::byte*>(__builtin_addressof(type)+1));
+		}
 		return type;
 	}
 };

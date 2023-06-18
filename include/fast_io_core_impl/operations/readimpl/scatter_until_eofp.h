@@ -53,7 +53,7 @@ inline constexpr io_scatter_status_t scatter_pread_until_eof_cold_impl(instmtype
 				if(piit!=piend)
 				{
 					return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+retpos),
-						static_cast<::std::size_t>(piit-pistart)};
+						static_cast<::std::size_t>(piit-pi.base)};
 				}
 				off=::fast_io::fposoffadd_nonegative(off,pi.len-pisc);
 				++retpos;
@@ -182,7 +182,8 @@ inline constexpr io_scatter_status_t scatter_pread_until_eof_bytes_cold_impl(ins
 				auto piit{::fast_io::operations::decay::pread_until_eof_bytes_decay(insm,pistart,piend,off)};
 				if(piit!=piend)
 				{
-					return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+retpos),piit-pistart};
+					return {static_cast<::std::size_t>(static_cast<::std::size_t>(pscatters-psstart)+retpos),
+						piit-pi.base};
 				}
 				off=::fast_io::fposoffadd_nonegative(off,pi.len-pisc);
 				++retpos;

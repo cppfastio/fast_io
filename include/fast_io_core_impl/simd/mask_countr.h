@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace fast_io
 {
@@ -63,7 +63,7 @@ inline constexpr unsigned vector_mask_countr_common_no_intrinsics_impl(::fast_io
 {
 	constexpr std::size_t N{sizeof(::fast_io::intrinsics::simd_vector<T,n>)/sizeof(std::uint_least64_t)};
 	unsigned d{vector_mask_countr_recursive_impl<ctzero,0>(static_cast<::fast_io::intrinsics::simd_vector<std::uint_least64_t,N>>(vec))};
-	constexpr unsigned shift{static_cast<unsigned>(std::bit_width(sizeof(T)*::std::numeric_limits<char>::digits))};
+	constexpr unsigned shift{static_cast<unsigned>(std::bit_width(sizeof(T)*(::std::numeric_limits<char unsigned>::digits-1u)))};
 	d>>=shift;
 #if __has_cpp_attribute(assume)
 	[[assume(d<=n)]];
@@ -73,7 +73,9 @@ inline constexpr unsigned vector_mask_countr_common_no_intrinsics_impl(::fast_io
 
 inline constexpr bool calculate_can_intrinsics_accelerate_mask_countr(std::size_t sizeofsimdvector) noexcept
 {
-	if(sizeofsimdvector<=32)
+	if((sizeofsimdvector==16&&(::fast_io::details::cpu_flags::sse2_supported||
+			::fast_io::details::cpu_flags::wasmsimd128_supported))||
+		(sizeofsimdvector==32&&(::fast_io::details::cpu_flags::avx2_supported)))
 	{
 		return ::fast_io::details::calculate_can_simd_vector_run_with_cpu_instruction(sizeofsimdvector);
 	}

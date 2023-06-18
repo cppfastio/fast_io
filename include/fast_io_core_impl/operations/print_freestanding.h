@@ -132,12 +132,12 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 }
 
 template<typename output,std::size_t N>
-inline constexpr bool constant_buffer_output_stream_require_size_constant_impl =
-	(N<obuffer_constant_size(::fast_io::io_reserve_type<typename output::output_char_type,output>));
+inline constexpr bool minimum_buffer_output_stream_require_size_constant_impl =
+	(N<obuffer_minimum_size_define(::fast_io::io_reserve_type<typename output::output_char_type,output>));
 
 template<typename output,std::size_t N>
-concept constant_buffer_output_stream_require_size_impl = constant_size_buffer_output_stream<output>
-	&& constant_buffer_output_stream_require_size_constant_impl<output,N>;
+concept minimum_buffer_output_stream_require_size_impl = ::fast_io::operations::decay::defines::has_obuffer_minimum_size_operations<output>
+	&& minimum_buffer_output_stream_require_size_constant_impl<output,N>;
 
 template<::std::size_t sz>
 requires (sz!=0)
@@ -188,7 +188,7 @@ inline auto prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type const* b
 	return ::fast_io::details::decay::prrsvsct_byte_common_rsvsc_impl(pscatters,buffer,t).scatters_pos_ptr;
 }
 
-template<bool line=false,output_stream output,typename T>
+template<bool line=false,typename output,typename T>
 requires (std::is_trivially_copyable_v<output>&&std::is_trivially_copyable_v<T>)
 inline constexpr void print_control_single(output outstm,T t)
 {
@@ -225,7 +225,7 @@ inline constexpr void print_control_single(output outstm,T t)
 				++curr;
 				obuffer_set_curr(outstm,curr);
 			}
-			else if constexpr(buffer_output_stream<output>)
+			else if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>)
 			{
 				auto curr=obuffer_curr(out);
 				auto end=obuffer_end(out);
@@ -302,17 +302,17 @@ inline constexpr void print_control_single(output outstm,T t)
 		}
 		else
 		{
-			if constexpr(buffer_output_stream<output>&&!asan_activated)
+			if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>&&!asan_activated)
 			{
 				char_type* bcurr{obuffer_curr(outstm)};
 				char_type* bend{obuffer_end(outstm)};
 				std::ptrdiff_t const diff(bend-bcurr);
 				bool smaller{static_cast<std::ptrdiff_t>(size)<diff};
-				if constexpr(constant_buffer_output_stream_require_size_impl<output,size>)
+				if constexpr(minimum_buffer_output_stream_require_size_impl<output,size>)
 				{
 					if(!smaller)[[unlikely]]
 					{
-						obuffer_constant_flush_prepare(outstm);
+						obuffer_minimum_size_flush_prepare_define(outstm);
 						bcurr=obuffer_curr(outstm);
 					}
 					bcurr=print_reserve_define(::fast_io::io_reserve_type<char_type,value_type>,bcurr,t);
@@ -386,7 +386,7 @@ inline constexpr void print_control_single(output outstm,T t)
 		}
 		else
 		{
-			if constexpr(buffer_output_stream<output>&&!asan_activated)
+			if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>&&!asan_activated)
 			{
 				auto curr{obuffer_curr(outstm)};
 				auto ed{obuffer_end(outstm)};
@@ -556,7 +556,7 @@ inline constexpr char_type* print_n_reserve(char_type *ptr,T t,Args ...args)
 	else
 	{
 		ptr=print_reserve_define(::fast_io::io_reserve_type<char_type,::std::remove_cvref_t<T>>,ptr,t);
-		if constexpr(sizeof...(Args)==0||1<n)
+		if constexpr(sizeof...(Args)==0||n<2)
 		{
 			return ptr;
 		}
@@ -574,7 +574,14 @@ template<::std::size_t n,::std::integral char_type,typename scattertype,typename
 [[msvc::forceinline]]
 #endif
 inline constexpr void print_n_scatters(basic_io_scatter_t<scattertype> *pscatters,
-	T t,Args ...args)
+#if __has_cpp_attribute(maybe_unused)
+	[[maybe_unused]]
+#endif
+	T t,
+#if __has_cpp_attribute(maybe_unused)
+	[[maybe_unused]]
+#endif
+	Args ...args)
 {
 	if constexpr(n!=0)
 	{
@@ -715,7 +722,7 @@ inline constexpr auto print_n_scatters_reserve_cont(basic_io_scatter_t<scatterty
 				++pscatters;
 				if constexpr(1<n)
 				{
-					return ::fast_io::details::decay::print_n_scatters_reserve_cont<needprintlf,n-1,char_type>(pscatters,base,ptr,args...);
+					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf,n-1,char_type>(pscatters,ptr,args...);
 				}
 			}
 
@@ -953,8 +960,10 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					::std::size_t scatterscount{res.neededscatters+static_cast<::std::size_t>(line&&res.position==n)};
 				scatter_type scatters[scatterscount];
 				char_type buffer[res.neededspace];
+
 				auto ptr{::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...)};
 				::std::size_t diff{static_cast<::std::size_t>(ptr-scatters)};
+
 				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 				{
 					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,diff);
@@ -999,13 +1008,17 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 	{
 		::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,skippings-1>(optstm,args...);
 	}
+	else if constexpr(sizeof...(Args)==0)
+	{
+		print_control_single<line>(optstm,t);
+	}
 	else
 	{
 		using char_type = typename outputstmtype::output_char_type;
 		static_assert(SIZE_MAX!=sizeof...(Args));
 		constexpr
 			::std::size_t n{sizeof...(Args)+static_cast<::std::size_t>(1)};
-		constexpr auto scatters_result{::fast_io::details::decay::find_continuous_scatters_reserve_n<true,char_type>()};
+		constexpr auto scatters_result{::fast_io::details::decay::find_continuous_scatters_reserve_n<true,char_type,T,Args...>()};
 		using scatter_type = ::std::conditional_t<byte_output_stream<outputstmtype>,
 			io_scatter_t,basic_io_scatter_t<char_type>>;
 		if constexpr(scatters_result.position!=0)
@@ -1019,23 +1032,31 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 			constexpr
 				::std::size_t scatterscount{scatters_result.position+static_cast<::std::size_t>(needprintlf)};
 			scatter_type scatters[scatterscount];
-			::fast_io::details::decay::print_n_scatters<needprintlf,scatters_result.position,char_type>(scatters,t,args...);
+			::fast_io::details::decay::print_n_scatters<scatters_result.position,char_type>(scatters,t,args...);
 			if constexpr(::fast_io::byte_output_stream<outputstmtype>)
 			{
+				if constexpr(needprintlf)
+				{
+					scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type,void>;
+				}
 				::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,scatterscount);
 			}
 			else
 			{
+				if constexpr(needprintlf)
+				{
+					scatters[scatterscount-1]=::fast_io::details::decay::line_scatter_common<char_type>;
+				}
 				::fast_io::operations::decay::scatter_write_all_decay(optstm,scatters,scatterscount);
 			}
 			if constexpr(scatters_result.position!=n)
 			{
-				::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position>(optstm,args...);
+				::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position-1>(optstm,args...);
 			}
 		}
 		else
 		{
-			constexpr auto rsvresult{::fast_io::details::decay::find_continuous_scatters_reserve_n<false,char_type>()};
+			constexpr auto rsvresult{::fast_io::details::decay::find_continuous_scatters_reserve_n<false,char_type,T,Args...>()};
 			if constexpr(rsvresult.position!=0)
 			{
 				constexpr
@@ -1047,11 +1068,11 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 				char_type* bend{obuffer_end(optstm)};
 				std::ptrdiff_t const diff(bend-bcurr);
 				bool smaller{static_cast<std::ptrdiff_t>(buffersize)<diff};
-				if constexpr(constant_buffer_output_stream_require_size_impl<outputstmtype,buffersize>)
+				if constexpr(minimum_buffer_output_stream_require_size_impl<outputstmtype,buffersize>)
 				{
 					if(!smaller)[[unlikely]]
 					{
-						obuffer_constant_flush_prepare(optstm);
+						obuffer_minimum_size_flush_prepare_define(optstm);
 						bcurr=obuffer_curr(optstm);
 					}
 					bcurr=::fast_io::details::decay::print_n_reserve<rsvresult.position,char_type>(bcurr,t,args...);
@@ -1080,9 +1101,9 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 						::fast_io::operations::decay::write_all_decay(optstm,buffer,bcurr);
 					}
 				}
-				if constexpr(scatters_result.position!=n)
+				if constexpr(rsvresult.position!=n)
 				{
-					::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,scatters_result.position>(optstm,args...);
+					::fast_io::details::decay::print_controls_buffer_impl<line,outputstmtype,rsvresult.position-1>(optstm,args...);
 				}
 			}
 			else
@@ -1106,17 +1127,13 @@ namespace decay
 {
 
 template<bool line,typename outputstmtype,typename... Args>
-#if 0
-requires (::fast_io::output_stream<outputstmtype>||
-	::fast_io::status_output_stream<outputstmtype>)
-#endif
 inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Args... args)
 {
 	if constexpr(::fast_io::status_output_stream<outputstmtype>)
 	{
 		return status_print_define<line>(optstm,args...);
 	}
-	if constexpr(sizeof...(Args)==0)
+	else if constexpr(sizeof...(Args)==0)
 	{
 		if constexpr(line)
 		{
@@ -1128,13 +1145,13 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 			return;
 		}
 	}
-	else if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<outputstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outputstmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(optstm)};
 		return ::fast_io::operations::decay::print_freestanding_decay<line>(
 			::fast_io::operations::decay::output_stream_unlocked_ref_decay(optstm),args...);
 	}
-	if constexpr(::fast_io::details::streamreflect::has_obuffer_ops<outputstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<outputstmtype>)
 	{
 		return ::fast_io::details::decay::print_controls_buffer_impl<line>(optstm,args...);
 	}
@@ -1144,12 +1161,43 @@ inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Ar
 	}
 }
 
+template<bool line,typename outputstmtype,typename... Args>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr decltype(auto) print_freestanding_decay_cold(outputstmtype optstm,Args... args)
+{
+#if !__has_cpp_attribute(__gnu__::__cold__)&&__has_cpp_attribute(unlikely)
+	if(true)[[unlikely]]
+#endif
+	return ::fast_io::operations::decay::print_freestanding_decay<line>(optstm,args...);
 }
 
+namespace defines
+{
+
+template<typename char_type,typename ...Args>
+concept print_freestanding_params_decay_okay =
+::std::integral<char_type>&&((::fast_io::printable<char_type,Args>||
+	::fast_io::reserve_printable<char_type,Args>||
+	::fast_io::dynamic_reserve_printable<char_type,Args>||
+	::fast_io::scatter_printable<char_type,Args>||
+	::fast_io::reserve_scatters_printable<char_type,Args>)&&...);
+
+}
+
+}
+
+namespace defines
+{
 template<typename output,typename ...Args>
-#if 0
-requires print_freestanding_okay<output,Args...>
-#endif
+concept print_freestanding_okay = ::fast_io::details::has_output_or_io_stream_ref_define<output>&&
+	fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
+	typename decltype(::fast_io::operations::output_stream_ref(*static_cast<output*>(nullptr)))::output_char_type,
+	Args...>;
+}
+
+template<bool line,typename output,typename ...Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -1157,23 +1205,8 @@ requires print_freestanding_okay<output,Args...>
 #endif
 inline constexpr void print_freestanding(output&& outstm,Args&& ...args)
 {
-	::fast_io::operations::decay::print_freestanding_decay<false>(::fast_io::manipulators::output_stream_ref(outstm),
-	io_print_forward<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
-}
-
-template<output_stream output,typename ...Args>
-#if 0
-requires print_freestanding_okay<output,Args...>
-#endif
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
-inline constexpr void println_freestanding(output&& outstm,Args&& ...args)
-{
-	::fast_io::operations::decay::print_freestanding_decay<true>(::fast_io::manipulators::output_stream_ref(outstm),
-	io_print_forward<typename decltype(::fast_io::manipulators::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
+	::fast_io::operations::decay::print_freestanding_decay<line>(::fast_io::operations::output_stream_ref(outstm),
+	io_print_forward<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
 }
 
 }

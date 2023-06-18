@@ -5,6 +5,7 @@
 #include<fast_io_legacy.h>
 #include<locale>
 #include<iomanip>
+using namespace fast_io::io;
 
 int main()
 {

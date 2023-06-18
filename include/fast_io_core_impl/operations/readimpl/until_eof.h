@@ -13,6 +13,9 @@ template<typename instmtype>
 inline constexpr void pread_until_eof_bytes_cold_impl(instmtype insm,::std::byte *first,::std::byte *last,::fast_io::intfpos_t off);
 
 template<typename instmtype>
+inline constexpr ::std::byte* read_until_eof_bytes_cold_impl(instmtype insm,::std::byte *first,::std::byte *last);
+
+template<typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -77,20 +80,20 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 	{
 		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
 		{
-			while(first!=last)
+			for(;;)
 			{
 				::std::size_t len{static_cast<::std::size_t>(last-first)};
 				basic_io_scatter_t<char_type> sc{first,len};
-				::std::size_t sz{::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len)};
-				first+=sz;
-				if(first==last)
+				auto [position,position_io_scatter]{scatter_read_some_underflow_define(insm,__builtin_addressof(sc),1)};
+				if(position==1)
+				{
+					return last;
+				}
+				if(position_io_scatter==0)
 				{
 					return first;
 				}
-				if(!sz)
-				{
-					return first;
-				}
+				first+=position_io_scatter;
 				char_type *curr{ibuffer_curr(insm)};
 				char_type *ed{ibuffer_end(insm)};
 				::std::ptrdiff_t bfddiff{ed-curr};
@@ -102,6 +105,7 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 					return first;
 				}
 			}
+			return last;
 		}
 		else
 		{
@@ -109,16 +113,16 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 			{
 				::std::size_t len{static_cast<::std::size_t>(last-first)};
 				basic_io_scatter_t<char_type> sc{first,len};
-				::std::size_t sz{::fast_io::scatter_status_one_size(scatter_read_some_bytes_underflow_define(insm,__builtin_addressof(sc),1),len)};
-				first+=sz;
-				if(first==last)
+				auto [position,position_io_scatter]{scatter_read_some_underflow_define(insm,__builtin_addressof(sc),1)};
+				if(position==1)
+				{
+					return last;
+				}
+				if(position_io_scatter==0)
 				{
 					return first;
 				}
-				if(!sz)
-				{
-					return first;
-				}
+				first+=position_io_scatter;
 			}
 			return last;
 		}
@@ -137,10 +141,15 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 	else if constexpr(
 		(::fast_io::details::streamreflect::has_any_of_byte_read_operations<instmtype>))
 	{
-		read_all_bytes_cold_impl(insm,
+		using char_type_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		=
+		char_type*;
+		return reinterpret_cast<char_type_ptr>(read_until_eof_bytes_cold_impl(insm,
 			reinterpret_cast<::std::byte*>(first),
-			reinterpret_cast<::std::byte*>(last));
-		return last;
+			reinterpret_cast<::std::byte*>(last)));
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
 	(::fast_io::details::streamreflect::has_any_of_pread_operations<instmtype>))

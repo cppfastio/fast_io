@@ -69,9 +69,7 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/platforms/native.h"
 #include"fast_io_hosted/file_loaders/impl.h"
 #include"fast_io_hosted/wrapper.h"
-#if 0
 #include"fast_io_hosted/white_hole/white_hole.h"
-#endif
 #include"fast_io_hosted/dbg/impl.h"
 #endif
 #if __has_include(<ctime>) || __has_include(<time.h>)
@@ -86,13 +84,16 @@ For hosted implementations the set of standard library headers required by the C
 #include"fast_io_hosted/filesystem/native.h"
 #include"fast_io_hosted/dll/dll.h"
 #include"fast_io_hosted/process_revamp/native.h"
+
+#include"fast_io_hosted/io_file.h"
+
 #if defined(_MSVC_EXECUTION_CHARACTER_SET)
 #if _MSVC_EXECUTION_CHARACTER_SET == 936 || _MSVC_EXECUTION_CHARACTER_SET == 54936
 #include"fast_io_unit/gb18030.h"
 #endif
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && 0
 #include"fast_io_hosted/box.h"
 #endif
 

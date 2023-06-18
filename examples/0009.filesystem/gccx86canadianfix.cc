@@ -95,12 +95,14 @@ int main(int argc,char **argv)
 			for(auto it{loader.data()},ed{it+loader.size()};;)
 			{
 				auto retit{std::search(it,ed,searcher)};
-				write(obf,it,retit);
+				::fast_io::operations::write_all(obf,it,retit);
 				if(retit==ed)
 				{
 					break;
 				}
-				write(obf,newvw.cbegin(),newvw.cend());
+				::fast_io::operations::write_all_bytes(obf,
+					reinterpret_cast<::std::byte const*>(newvw.data()),
+					reinterpret_cast<::std::byte const*>(newvw.data()+newvw.size()));
 				it=retit+vw.size();
 			}
 		}

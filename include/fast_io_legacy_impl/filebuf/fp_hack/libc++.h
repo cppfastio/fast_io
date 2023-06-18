@@ -4,7 +4,11 @@
 #pragma GCC system_header
 #endif
 
-#include<__std_stream>
+/*
+https://github.com/llvm/llvm-project/blob/main/libcxx/src/std_stream.h
+*/
+
+#include"libc++symbol.h"
 
 namespace fast_io::details::streambuf_hack
 {
@@ -119,16 +123,31 @@ inline FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
 #endif
 		if(stdbuf)[[likely]]
 		{
-			char const* stdinbuf_type{typeid(std::__stdinbuf<char_type>).name()};
-			char const* my_type{typeid(*stdbuf).name()};
-			if(std::strcmp(stdinbuf_type,my_type)==0)
-				return stdinbuf_stdoutbuf_fp_hack(stdbuf);
-			char const* stdoutbuf_type{typeid(std::__stdoutbuf<char_type>).name()};
-			if(std::strcmp(stdoutbuf_type,my_type)==0)
-				return stdinbuf_stdoutbuf_fp_hack(stdbuf);
+			if constexpr(
+				::std::same_as<char_type,char>||::std::same_as<char_type,wchar_t>||
+				::std::same_as<char_type,char8_t>||::std::same_as<char_type,char16_t>||
+				::std::same_as<char_type,char32_t>
+			)
+			{
+				char const* my_type{typeid(*stdbuf).name()};
+				::std::size_t mytypelen{::std::strlen(my_type)};
+				if((mytypelen==::fast_io::details::libcxx_stdinoutbufname<false,char_type>.size()&&
+					::std::memcmp(my_type,
+					::fast_io::details::libcxx_stdinoutbufname<false,char_type>.data(),
+					mytypelen)==0)||
+				(mytypelen==::fast_io::details::libcxx_stdinoutbufname<true,char_type>.size()&&
+					::std::memcmp(my_type,
+					::fast_io::details::libcxx_stdinoutbufname<true,char_type>.data(),
+					mytypelen)==0))
+				{
+					return stdinbuf_stdoutbuf_fp_hack(stdbuf);
+				}
+			}
 			auto fbf{dynamic_cast<std::basic_filebuf<char_type,traits_type>*>(stdbuf)};
 			if(fbf)
+			{
 				return fp_hack_impl(fbf);
+			}
 		}
 #ifdef __cpp_exceptions
 	}

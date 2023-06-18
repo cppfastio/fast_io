@@ -36,9 +36,26 @@ inline constexpr Iter find_if(Iter first,Iter last,predicate q)
 template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter copy_n(input_iter first,std::size_t count,output_iter result)
 {
+	using input_value_type = ::std::iter_value_t<input_iter>;
+	using output_value_type = ::std::iter_value_t<output_iter>;
 	for (std::size_t i{}; i != count; ++i)
 	{
-		*result = *first;
+		if constexpr(sizeof(input_value_type)==1&&
+			(::std::same_as<input_value_type,::std::byte>)&&
+			(::std::integral<output_value_type>))
+		{
+			*result = static_cast<output_value_type>(*first);
+		}
+		else if constexpr(sizeof(output_value_type)==1&&
+			(::std::same_as<output_value_type,::std::byte>)&&
+			(::std::integral<input_value_type>))
+		{
+			*result = static_cast<::std::byte>(*first);
+		}
+		else
+		{
+			*result = *first;
+		}
 		++first;
 		++result;
 	}
@@ -48,9 +65,22 @@ inline constexpr output_iter copy_n(input_iter first,std::size_t count,output_it
 template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
 inline constexpr output_iter copy(input_iter first,input_iter last,output_iter result)
 {
+	using input_value_type = ::std::iter_value_t<input_iter>;
+	using output_value_type = ::std::iter_value_t<output_iter>;
 	for(;first!=last;)
 	{
-		*result=*first;
+		if constexpr(sizeof(input_value_type)==1&&
+			(::std::same_as<input_value_type,::std::byte>)&&
+			(::std::integral<output_value_type>))
+		{
+			*result = static_cast<output_value_type>(*first);
+		}
+		else if constexpr(sizeof(output_value_type)==1&&
+			(::std::same_as<output_value_type,::std::byte>)&&
+			(::std::integral<input_value_type>))
+		{
+			*result = static_cast<::std::byte>(*first);
+		}
 		++first;
 		++result;
 	}
@@ -248,7 +278,8 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t
 				std::is_trivially_copyable_v<input_value_type> &&
 				std::is_trivially_copyable_v<output_value_type> &&
 				(std::same_as<input_value_type, output_value_type> ||
-					(std::integral<input_value_type> && std::integral<output_value_type> &&
+					((std::integral<input_value_type>||::std::same_as<::std::byte,input_value_type>)
+					&& (std::integral<output_value_type>||::std::same_as<::std::byte,output_value_type>) &&
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			if (count)	//to avoid nullptr UB
@@ -283,7 +314,8 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 				std::is_trivially_copyable_v<input_value_type> &&
 				std::is_trivially_copyable_v<output_value_type> &&
 				(std::same_as<input_value_type, output_value_type> ||
-					(std::integral<input_value_type> && std::integral<output_value_type> &&
+					((std::integral<input_value_type>||::std::same_as<::std::byte,input_value_type>)
+					&& (std::integral<output_value_type>||::std::same_as<::std::byte,output_value_type>) &&
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			std::size_t count{ static_cast<std::size_t>(last - first) };

@@ -81,6 +81,28 @@ public:
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
+	
+	inline explicit basic_allocation_file_loader(file_loader_extra_bytes ext,native_fs_dirent fsdirent,open_mode om = open_mode::in, perms pm=static_cast<perms>(436))
+	{
+		auto ret{posix_load_file_impl<allocation>(fsdirent,om,pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+	template<::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_allocation_file_loader(file_loader_extra_bytes ext,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
+	{
+		auto ret{posix_load_file_impl<allocation>(filename,om,pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+	template<::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_allocation_file_loader(file_loader_extra_bytes ext,posix_at_entry ent,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
+	{
+		auto ret{posix_load_file_impl<allocation>(ent,filename,om,pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+
 	basic_allocation_file_loader(basic_allocation_file_loader const&)=delete;
 	basic_allocation_file_loader& operator=(basic_allocation_file_loader const&)=delete;
 	constexpr basic_allocation_file_loader(posix_file_loader_impl&& __restrict other) noexcept:address_begin(other.address_begin),address_end(other.address_end)

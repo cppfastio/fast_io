@@ -42,7 +42,7 @@ inline constexpr auto unit(auto const x,auto const y,auto const z) noexcept
 }
 
 template<operation op>
-inline constexpr void uu(auto& a,auto b,auto c,auto d,auto x,auto s,auto ac) noexcept
+inline constexpr void uu(auto& a,auto b,auto c,auto d,auto x,int s,auto ac) noexcept
 {
 	x+=ac;
 	x+=a;
@@ -51,7 +51,7 @@ inline constexpr void uu(auto& a,auto b,auto c,auto d,auto x,auto s,auto ac) noe
 }
 
 template<operation op>
-inline constexpr void uutmp(auto& tmp,auto& a,auto b,auto d,auto x,auto s,auto ac) noexcept
+inline constexpr void uutmp(auto& tmp,auto& a,auto b,auto d,auto x,int s,auto ac) noexcept
 {
 	x+=ac;
 	x+=a;

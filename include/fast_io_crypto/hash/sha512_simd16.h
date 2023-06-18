@@ -60,10 +60,15 @@ inline void sha512_simd16_compute_message_2rounds(
 }
 
 
-#if __has_cpp_attribute(__gnu__::__target__) && __has_builtin(__builtin_shufflevector) && defined(__SSE2__) && !defined(__AVX2__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
+#if defined(__has_builtin)
+#if __has_cpp_attribute(__gnu__::__target__) && __has_builtin(__builtin_shufflevector) && \
+	defined(__SSE2__) && !defined(__AVX2__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
 [[__gnu__::__target__("default")]]
 #elif __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
+#endif
+#elif __has_cpp_attribute(msvc::flatten)
+[[msvc::flatten]]
 #endif
 inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
 {

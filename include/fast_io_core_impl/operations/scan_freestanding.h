@@ -39,7 +39,7 @@ template<buffer_input_stream input,typename P>
 #endif
 inline constexpr bool scan_context_status_impl(input in,P arg)
 {
-	using char_type = typename input::char_type;
+	using char_type = typename input::input_char_type;
 	for(typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,P>))>::type state;;)
 	{
 		auto curr{ibuffer_curr(in)};
@@ -78,7 +78,7 @@ inline constexpr bool type_not_scannable=false;
 template<typename input,typename T>
 [[nodiscard]] inline constexpr bool scan_single_impl(input in,T arg)
 {
-	using char_type = typename input::char_type;
+	using char_type = typename input::input_char_type;
 	if constexpr(contiguous_input_stream<input>)
 	{
 		if constexpr(precise_reserve_scannable<char_type,T>)
@@ -282,29 +282,34 @@ template<typename input,typename T>
 		}
 		else
 		{
+#if 0
 			constexpr bool not_scannable{context_scannable<char_type,T>};
 			static_assert(not_scannable,"type not scannable. need context_scannable");
+#endif
 			return false;
 		}
 	}
 }
 }
 
+namespace operations::decay
+{
+
 template<typename input,typename... Args>
-#if 0
-requires (status_input_stream<input>||input_stream<input>)
-#endif
 [[nodiscard]] inline constexpr decltype(auto) scan_freestanding_decay(input instm,Args... args)
 {
 	if constexpr(::fast_io::status_input_stream<input>)
-		return status_scan_define(instm,args...);
-	else if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<input>)
 	{
-		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
+		return status_scan_define(instm,args...);
+	}
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<input>)
+	{
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg
+			{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
 		return scan_freestanding_decay(
 			::fast_io::operations::decay::input_stream_unlocked_ref_decay(instm),args...);
 	}
-	else if constexpr(buffer_input_stream<input>)
+	else if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<input>)
 	{
 		return (::fast_io::details::scan_single_impl(instm,args)&&...);
 	}
@@ -315,13 +320,12 @@ requires (status_input_stream<input>||input_stream<input>)
 		return scan_freestanding_decay(io_ref(in_buffer),args...);
 	}
 #endif
+	else
+	{
+		return false;
+	}
 }
 
-template<typename input,typename ...Args>
-requires (status_input_stream<input>||input_stream<input>)
-[[nodiscard("scan does not require checking return value but scan_freestanding requires")]] inline constexpr bool scan_freestanding(input&& in,Args&& ...args)
-{
-	return scan_freestanding_decay(io_ref(in),io_scan_forward<typename std::remove_cvref_t<input>::char_type>(io_scan_alias(args))...);
 }
 
 }

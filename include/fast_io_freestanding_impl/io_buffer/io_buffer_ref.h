@@ -21,6 +21,15 @@ template<typename handletype,
 	typename iobuffertraits>
 requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
 inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
+	io_stream_ref_define(basic_io_buffer<handletype,iobuffertraits> &&r) noexcept
+{
+	return {__builtin_addressof(r)};
+}
+
+template<typename handletype,
+	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
 	io_stream_ref_define(basic_io_buffer<handletype,iobuffertraits> &r) noexcept
 {
 	return {__builtin_addressof(r)};
@@ -37,6 +46,32 @@ inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
 
 template<typename handletype,
 	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+inline constexpr decltype(auto)
+	io_stream_deco_filter_ref_define(basic_io_buffer<handletype,iobuffertraits> &r) noexcept
+{
+	return io_stream_deco_filter_ref_define(r.handle);
+}
+
+template<typename handletype,
+	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+inline constexpr decltype(auto)
+	io_stream_deco_filter_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
+{
+	return io_stream_deco_filter_ref_define(r.iobptr->handle);
+}
+
+template<typename handletype,
+	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
+inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> output_stream_ref_define(basic_io_buffer<handletype,iobuffertraits> &&r) noexcept
+{
+	return {__builtin_addressof(r)};
+}
+
+template<typename handletype,
+	typename iobuffertraits>
 requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
 inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> output_stream_ref_define(basic_io_buffer<handletype,iobuffertraits> &r) noexcept
 {
@@ -45,7 +80,7 @@ inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
 
 template<typename handletype,
 	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
 inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
 	output_stream_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
 {
@@ -54,20 +89,65 @@ inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
 
 template<typename handletype,
 	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
+inline constexpr decltype(auto)
+	output_stream_deco_filter_ref_define(basic_io_buffer<handletype,iobuffertraits> &r) noexcept
+{
+	return output_stream_deco_filter_ref_define(r.handle);
+}
+
+template<typename handletype,
+	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
+inline constexpr decltype(auto)
+	output_stream_deco_filter_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
+{
+	return output_stream_deco_filter_ref_define(r.iobptr->handle);
+}
+
+template<typename handletype,
+	typename iobuffertraits>
 requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
 inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> input_stream_ref_define(
-	basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> &r) noexcept
+	basic_io_buffer<handletype,iobuffertraits> &&r) noexcept
 {
 	return {__builtin_addressof(r)};
 }
 
 template<typename handletype,
 	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> input_stream_ref_define(
+	basic_io_buffer<handletype,iobuffertraits> &r) noexcept
+{
+	return {__builtin_addressof(r)};
+}
+
+template<typename handletype,
+	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
 inline constexpr basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>>
 	input_stream_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
 {
 	return r;
+}
+
+template<typename handletype,
+	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+inline constexpr decltype(auto)
+	input_stream_deco_filter_ref_define(basic_io_buffer<handletype,iobuffertraits> &r) noexcept
+{
+	return input_stream_deco_filter_ref_define(r.handle);
+}
+
+template<typename handletype,
+	typename iobuffertraits>
+requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
+inline constexpr decltype(auto)
+	input_stream_deco_filter_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
+{
+	return input_stream_deco_filter_ref_define(r.iobptr->handle);
 }
 
 }

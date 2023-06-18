@@ -234,7 +234,7 @@ inline constexpr void scatter_write_all_cold_impl(outstmtype outsm,
 			if(pisc)
 			{
 				auto pi = pscatters[ret.position];
-				::fast_io::details::write_all_impl(outsm,pi.base+pisc,pi.len);
+				::fast_io::details::write_all_impl(outsm,pi.base+pisc,pi.base+pi.len);
 				++retpos;
 			}
 			pscatters+=retpos;

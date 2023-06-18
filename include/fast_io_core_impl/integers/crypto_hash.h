@@ -85,14 +85,14 @@ inline constexpr char_type* print_reserve_define(
 template<::std::integral ch_type,typename T>
 struct basic_crypto_hash_as_file
 {
-	using char_type = ch_type;
+	using output_char_type = ch_type;
 	using manip_tag = manip_tag_t;
 	using native_handle_type = T*;
 	T* ptr{};
 };
 
 template<::std::integral ch_type,typename T>
-inline constexpr basic_crypto_hash_as_file<ch_type,T> io_value_handle(basic_crypto_hash_as_file<ch_type,T> t) noexcept
+inline constexpr basic_crypto_hash_as_file<ch_type,T> output_stream_ref_define(basic_crypto_hash_as_file<ch_type,T> t) noexcept
 {
 	return t;
 }
@@ -100,34 +100,10 @@ inline constexpr basic_crypto_hash_as_file<ch_type,T> io_value_handle(basic_cryp
 template<std::integral char_type,typename T>
 inline constexpr void require_secure_clear(basic_crypto_hash_as_file<char_type,T>) noexcept{}
 
-template<::std::integral ch_type,typename T,::std::integral char_type>
-inline constexpr void write(basic_crypto_hash_as_file<ch_type,T> t,char_type const* first,char_type const* last) noexcept
-{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
-	{
-		for(;first!=last;++first)
-		{
-			auto a{::std::bit_cast<::fast_io::freestanding::array<::std::byte,sizeof(*first)>>(*first)};
-			t.ptr->update(a.data(),a.data()+sizeof(*first));
-		}
-	}
-	else
-#endif
-	{
-		t.ptr->update(reinterpret_cast<std::byte const*>(first),
-			reinterpret_cast<std::byte const*>(last));
-	}
-}
-
 template<::std::integral ch_type,typename T>
-inline void scatter_write(basic_crypto_hash_as_file<ch_type,T> t,io_scatters_t scatters) noexcept
+inline constexpr void write_all_bytes_overflow_define(basic_crypto_hash_as_file<ch_type,T> t,::std::byte const *first,::std::byte const *last) noexcept
 {
-	::fast_io::details::update_multiple_blocks(t.ptr,scatters.base,scatters.len);
+	t.ptr->update(first,last);
 }
 
 namespace manipulators

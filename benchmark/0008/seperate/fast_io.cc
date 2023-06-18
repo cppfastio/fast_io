@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 #include <cfloat>
+using namespace fast_io::io;
 
 constexpr int buf_size = 25;
 
