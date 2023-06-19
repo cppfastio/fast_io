@@ -46,7 +46,7 @@ inline ::std::byte const* filebuf_scatter_pwrite_bytes_impl(
 }
 
 template<std::integral char_type,typename traits_type>
-requires ::fast_io::details::streamreflect::has_pread_some_bytes_underflow_define<
+requires ::fast_io::operations::decay::defines::has_pread_some_bytes_underflow_define<
 	::fast_io::basic_c_io_observer_unlocked<char_type>>
 inline ::std::byte* pread_some_bytes_underflow_define(
 ::fast_io::basic_filebuf_io_observer<char_type,traits_type> fiob,
@@ -56,7 +56,7 @@ inline ::std::byte* pread_some_bytes_underflow_define(
 }
 
 template<std::integral char_type,typename traits_type>
-requires ::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<
+requires ::fast_io::operations::decay::defines::has_pwrite_some_bytes_overflow_define<
 	::fast_io::basic_c_io_observer_unlocked<char_type>>
 inline ::std::byte const* pwrite_some_bytes_overflow_define(
 ::fast_io::basic_filebuf_io_observer<char_type,traits_type> fiob,
@@ -66,7 +66,7 @@ inline ::std::byte const* pwrite_some_bytes_overflow_define(
 }
 
 template<std::integral char_type,typename traits_type>
-requires ::fast_io::details::streamreflect::has_scatter_pread_some_bytes_underflow_define<
+requires ::fast_io::operations::decay::defines::has_scatter_pread_some_bytes_underflow_define<
 	::fast_io::basic_c_io_observer_unlocked<char_type>>
 inline ::fast_io::io_scatter_status_t scatter_pread_some_bytes_underflow_define(
 ::fast_io::basic_filebuf_io_observer<char_type,traits_type> fiob,
@@ -76,7 +76,7 @@ inline ::fast_io::io_scatter_status_t scatter_pread_some_bytes_underflow_define(
 }
 
 template<std::integral char_type,typename traits_type>
-requires ::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<
+requires ::fast_io::operations::decay::defines::has_scatter_pwrite_some_bytes_overflow_define<
 	::fast_io::basic_c_io_observer_unlocked<char_type>>
 inline ::fast_io::io_scatter_status_t scatter_pwrite_some_bytes_overflow_define(
 ::fast_io::basic_filebuf_io_observer<char_type,traits_type> fiob,
