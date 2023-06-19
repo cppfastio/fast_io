@@ -73,7 +73,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_cold_impl(instmtyp
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(
-		::fast_io::details::streamreflect::has_any_of_byte_read_operations<instmtype>
+		::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>
 	))
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,0,::fast_io::seekdir::cur)};
@@ -98,14 +98,14 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_impl(instmtype ins
 	io_scatter_t const *pscatters,
 	::std::size_t n,::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::scatter_pread_some_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),pscatters,n,off);
 	}
 	else
 	{
-		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+		if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 		{
 			off=::fast_io::details::adjust_instm_offset(ibuffer_end(insm)-ibuffer_curr(insm));
 		}
@@ -186,7 +186,7 @@ inline constexpr void scatter_pread_all_bytes_cold_impl(instmtype insm,
 	}
 	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(
-		::fast_io::details::streamreflect::has_any_of_byte_read_operations<instmtype>
+		::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>
 	))
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,0,::fast_io::seekdir::cur)};
@@ -210,14 +210,14 @@ inline constexpr void scatter_pread_all_bytes_impl(instmtype insm,
 	::std::size_t n,
 	::fast_io::intfpos_t off)
 {
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::scatter_pread_all_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),pscatters,n,off);
 	}
 	else
 	{
-		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+		if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 		{
 			off=::fast_io::details::adjust_instm_offset(ibuffer_end(insm)-ibuffer_curr(insm));
 		}

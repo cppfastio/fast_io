@@ -41,7 +41,7 @@ inline ::std::byte const* c_scatter_pwrite_bytes_impl(FILE *fp,
 }
 
 template<::fast_io::c_family family,::std::integral char_type>
-requires ::fast_io::details::streamreflect::has_pread_some_bytes_underflow_define<::fast_io::basic_posix_io_observer<char_type>>
+requires ::fast_io::operations::decay::defines::has_pread_some_bytes_underflow_define<::fast_io::basic_posix_io_observer<char_type>>
 inline ::std::byte* pread_some_bytes_underflow_define(
 ::fast_io::basic_c_family_io_observer<family,char_type> piob,
 ::std::byte *first,::std::byte *last,::fast_io::intfpos_t off)
@@ -50,7 +50,7 @@ inline ::std::byte* pread_some_bytes_underflow_define(
 }
 
 template<::fast_io::c_family family,::std::integral char_type>
-requires ::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<::fast_io::basic_posix_io_observer<char_type>>
+requires ::fast_io::operations::decay::defines::has_pwrite_some_bytes_overflow_define<::fast_io::basic_posix_io_observer<char_type>>
 inline ::std::byte const* pwrite_some_bytes_overflow_define(
 ::fast_io::basic_c_family_io_observer<family,char_type> piob,
 ::std::byte const* first,::std::byte const* last,::fast_io::intfpos_t off)
@@ -59,7 +59,7 @@ inline ::std::byte const* pwrite_some_bytes_overflow_define(
 }
 
 template<::fast_io::c_family family,::std::integral char_type>
-requires ::fast_io::details::streamreflect::has_scatter_pread_some_bytes_underflow_define<::fast_io::basic_posix_io_observer<char_type>>
+requires ::fast_io::operations::decay::defines::has_scatter_pread_some_bytes_underflow_define<::fast_io::basic_posix_io_observer<char_type>>
 inline ::fast_io::io_scatter_status_t scatter_pread_some_bytes_underflow_define(
 ::fast_io::basic_c_family_io_observer<family,char_type> piob,
 ::fast_io::io_scatter_t const *pscatters,::std::size_t n,::fast_io::intfpos_t fpos)
@@ -68,7 +68,7 @@ inline ::fast_io::io_scatter_status_t scatter_pread_some_bytes_underflow_define(
 }
 
 template<::fast_io::c_family family,::std::integral char_type>
-requires ::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<::fast_io::basic_posix_io_observer<char_type>>
+requires ::fast_io::operations::decay::defines::has_scatter_pwrite_some_bytes_overflow_define<::fast_io::basic_posix_io_observer<char_type>>
 inline ::fast_io::io_scatter_status_t scatter_pwrite_some_bytes_overflow_define(
 ::fast_io::basic_c_family_io_observer<family,char_type> piob,
 ::fast_io::io_scatter_t const *pscatters,::std::size_t n,::fast_io::intfpos_t fpos)

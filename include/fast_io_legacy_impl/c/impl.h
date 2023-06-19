@@ -810,7 +810,7 @@ inline decltype(auto) redirect_handle(basic_c_family_io_observer<family,ch_type>
 {
 	return redirect_handle(static_cast<basic_posix_io_observer<ch_type>>(h));
 }
-
+#if 0
 template<c_family family,std::integral ch_type>
 requires zero_copy_input_stream<basic_posix_io_observer<ch_type>>
 inline decltype(auto) zero_copy_in_handle(basic_c_family_io_observer<family,ch_type> h)
@@ -824,6 +824,7 @@ inline decltype(auto) zero_copy_out_handle(basic_c_family_io_observer<family,ch_
 {
 	return zero_copy_out_handle(static_cast<basic_posix_io_observer<ch_type>>(h));
 }
+#endif
 #endif
 
 template<c_family family>

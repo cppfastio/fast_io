@@ -21,11 +21,11 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_cold_impl(outstmt
 	::std::size_t n,intfpos_t off)
 {
 	using char_type = typename outstmtype::output_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>)
 	{
 		return scatter_pwrite_some_bytes_overflow_define(outsm,pscatters,n,off);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<outstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_pwrite_some_bytes_overflow_define<outstmtype>)
 	{
 		for(::std::size_t i{};i!=n;++i)
 		{
@@ -43,18 +43,18 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_cold_impl(outstmt
 		}
 		return {n,0};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>
-		||::fast_io::details::streamreflect::has_pwrite_all_bytes_overflow_define<outstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>
+		||::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype>)
 	{
 		::fast_io::details::scatter_pwrite_all_bytes_cold_impl(outsm,pscatters,n,off);
 		return {n,0};
 	}
 	else if constexpr(sizeof(char_type)==1&&
 	(
-		::fast_io::details::streamreflect::has_scatter_pwrite_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_pwrite_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_pwrite_some_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_pwrite_some_overflow_define<outstmtype>
+		::fast_io::operations::decay::defines::has_scatter_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_pwrite_some_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_pwrite_some_overflow_define<outstmtype>
 	))
 	{
 		using scattermayalias_const_ptr
@@ -68,10 +68,10 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_cold_impl(outstmt
 	}
 	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
 	(
-		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+		::fast_io::operations::decay::defines::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_some_bytes_overflow_define<outstmtype>
 	))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,0,::fast_io::seekdir::cur)};
@@ -82,10 +82,10 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_cold_impl(outstmt
 	}
 	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
 	(
-		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+		::fast_io::operations::decay::defines::has_write_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_write_some_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_some_overflow_define<outstmtype>
 	))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_decay(outsm,0,::fast_io::seekdir::cur)};
@@ -125,11 +125,11 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm,
 	::std::size_t n,::fast_io::intfpos_t off)
 {
 	using char_type = typename outstmtype::output_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>)
 	{
 		scatter_pwrite_all_bytes_overflow_define(outsm,pscatters,n,off);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_pwrite_all_bytes_overflow_define<outstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype>)
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{
@@ -139,7 +139,7 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm,
 			off=::fast_io::fposoffadd_nonegative(off,len);
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_scatter_pwrite_some_bytes_overflow_define<outstmtype>)
 	{
 		for(;;)
 		{
@@ -162,7 +162,7 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm,
 			n-=retpos;
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_pwrite_some_bytes_overflow_define<outstmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_pwrite_some_bytes_overflow_define<outstmtype>)
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{
@@ -174,10 +174,10 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm,
 	}
 	else if constexpr(sizeof(char_type)==1&&
 	(
-		::fast_io::details::streamreflect::has_scatter_pwrite_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_pwrite_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_pwrite_some_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_pwrite_some_overflow_define<outstmtype>
+		::fast_io::operations::decay::defines::has_scatter_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_pwrite_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_pwrite_some_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_pwrite_some_overflow_define<outstmtype>
 	))
 	{
 		using scattermayalias_const_ptr
@@ -191,10 +191,10 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm,
 	}
 	else if constexpr(::fast_io::details::has_output_or_io_stream_seek_bytes_define<outstmtype>&&
 	(
-		::fast_io::details::streamreflect::has_write_all_bytes_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_all_bytes_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_write_some_bytes_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_some_bytes_overflow_define<outstmtype>
+		::fast_io::operations::decay::defines::has_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_all_bytes_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_write_some_bytes_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_some_bytes_overflow_define<outstmtype>
 	))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm,0,::fast_io::seekdir::cur)};
@@ -204,10 +204,10 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm,
 	}
 	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_output_or_io_stream_seek_define<outstmtype>&&
 	(
-		::fast_io::details::streamreflect::has_write_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_all_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_write_some_overflow_define<outstmtype>||
-		::fast_io::details::streamreflect::has_scatter_write_some_overflow_define<outstmtype>
+		::fast_io::operations::decay::defines::has_write_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_all_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_write_some_overflow_define<outstmtype>||
+		::fast_io::operations::decay::defines::has_scatter_write_some_overflow_define<outstmtype>
 	))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_decay(outsm,0,::fast_io::seekdir::cur)};

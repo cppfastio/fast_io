@@ -39,7 +39,7 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_read_some_underflow_define<instmtype>)
 	{
-		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+		if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 		{
 			while(first!=last)
 			{
@@ -78,7 +78,7 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_underflow_define<instmtype>)
 	{
-		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+		if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 		{
 			for(;;)
 			{
@@ -139,7 +139,7 @@ inline constexpr typename instmtype::input_char_type* read_until_eof_cold_impl(i
 		return last;
 	}
 	else if constexpr(
-		(::fast_io::details::streamreflect::has_any_of_byte_read_operations<instmtype>))
+		(::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>))
 	{
 		using char_type_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -192,7 +192,7 @@ inline constexpr ::std::byte* read_until_eof_bytes_cold_impl(instmtype insm,::st
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<instmtype>)
 	{
-		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>&&sizeof(char_type)==1)
+		if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>&&sizeof(char_type)==1)
 		{
 			while(first!=last)
 			{
@@ -235,7 +235,7 @@ inline constexpr ::std::byte* read_until_eof_bytes_cold_impl(instmtype insm,::st
 	}
 	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>)
 	{
-		if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+		if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 		{
 			while(first!=last)
 			{
@@ -331,14 +331,14 @@ template<typename instmtype>
 inline constexpr typename instmtype::input_char_type* read_until_eof_decay(instmtype insm,typename instmtype::input_char_type *first,typename instmtype::input_char_type *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::operations::decay::read_until_eof_decay(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
 	}
 	else
 	{
-	if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 	{
 		char_type *curr{ibuffer_curr(insm)};
 		char_type *ed{ibuffer_end(insm)};
@@ -362,14 +362,14 @@ template<typename instmtype>
 inline constexpr ::std::byte* read_until_eof_bytes_decay(instmtype insm,::std::byte *first,::std::byte *last)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::operations::decay::read_until_eof_bytes_decay(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),first,last);
 	}
 	else
 	{
-	if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>&&sizeof(char_type)==1)
+	if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>&&sizeof(char_type)==1)
 	{
 		char_type *curr{ibuffer_curr(insm)};
 		char_type *ed{ibuffer_end(insm)};

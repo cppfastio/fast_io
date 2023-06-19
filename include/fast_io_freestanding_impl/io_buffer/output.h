@@ -28,7 +28,7 @@ inline constexpr char_type const* write_some_typical_case(
 	basic_io_buffer_pointers<char_type>& __restrict pointers,
 	char_type const *first,char_type const *last)
 {
-	if constexpr(::fast_io::byte_output_stream<optstmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<optstmtype>)
 	{
 		io_scatter_t const scatters[2]
 		{
