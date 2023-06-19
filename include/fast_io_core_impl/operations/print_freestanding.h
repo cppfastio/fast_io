@@ -210,9 +210,7 @@ inline constexpr void print_control_single(output outstm,T t)
 		}
 		if constexpr(line)
 		{
-			if constexpr(output_stream_with_writeln<output>)
-				writeln(outstm,scatter.base,scatter.base+scatter.len);
-			else if constexpr(contiguous_output_stream<output>)
+			if constexpr(contiguous_output_stream<output>)
 			{
 				auto curr=obuffer_curr(out);
 				auto end=obuffer_end(out);
@@ -258,7 +256,7 @@ inline constexpr void print_control_single(output outstm,T t)
 #endif
 		if constexpr(line)
 		{
-			if constexpr(byte_output_stream<output>)
+			if constexpr(::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<output>)
 			{
 				::fast_io::io_scatter_t scatters[2]
 				{{t.base,t.len*sizeof(char_type)},
@@ -285,6 +283,7 @@ inline constexpr void print_control_single(output outstm,T t)
 		constexpr std::size_t real_size{print_reserve_size(::fast_io::io_reserve_type<char_type,value_type>)};
 		constexpr std::size_t size{real_size+static_cast<std::size_t>(line)};
 		static_assert(real_size<PTRDIFF_MAX);
+#if 0
 		if constexpr(contiguous_output_stream<output>)
 		{
 			auto bcurr{obuffer_curr(outstm)};
@@ -301,6 +300,7 @@ inline constexpr void print_control_single(output outstm,T t)
 			obuffer_set_curr(outstm,it);
 		}
 		else
+#endif
 		{
 			if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>&&!asan_activated)
 			{
@@ -369,6 +369,7 @@ inline constexpr void print_control_single(output outstm,T t)
 			if(mx<size)
 				fast_terminate();
 		}
+#if 0
 		if constexpr(contiguous_output_stream<output>)
 		{
 			auto bcurr{obuffer_curr(outstm)};
@@ -385,6 +386,7 @@ inline constexpr void print_control_single(output outstm,T t)
 			obuffer_set_curr(outstm,it);
 		}
 		else
+#endif
 		{
 			if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>&&!asan_activated)
 			{
@@ -448,7 +450,7 @@ inline constexpr void print_control_single(output outstm,T t)
 		if(!__builtin_is_constant_evaluated())
 #endif
 		{
-			if constexpr(::fast_io::byte_output_stream<output>)
+			if constexpr(::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<output>)
 			{
 				::fast_io::io_scatter_t scattersbuffer[scattersnum];
 				char_type buffer[sz.reserve_size];
@@ -512,7 +514,7 @@ inline constexpr char_type* printrsvcontiguousimpl(char_type* iter,Arg arg,Args.
 }
 #endif
 
-template<bool ln,output_stream output,typename T,typename... Args>
+template<bool ln,typename output,typename T,typename... Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -859,7 +861,7 @@ template<bool line,typename outputstmtype,::std::size_t skippings=0,typename T,t
 inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 {
 	using char_type = typename outputstmtype::output_char_type;
-	using scatter_type = ::std::conditional_t<byte_output_stream<outputstmtype>,
+	using scatter_type = ::std::conditional_t<::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outputstmtype>,
 		io_scatter_t,basic_io_scatter_t<char_type>>;
 	constexpr contiguous_scatter_result res{::fast_io::details::decay::find_continuous_scatters_n<char_type,T,Args...>()};
 	if constexpr(skippings!=0)
@@ -898,7 +900,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					scatters[n]=::fast_io::details::decay::line_scatter_common<char_type,
 						::std::conditional_t<::std::same_as<scatter_type,io_scatter_t>,void,char_type>>;
 				}
-				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
+				if constexpr(::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outputstmtype>)
 				{
 					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,scatterscount);
 				}
@@ -964,7 +966,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 				auto ptr{::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...)};
 				::std::size_t diff{static_cast<::std::size_t>(ptr-scatters)};
 
-				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
+				if constexpr(::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outputstmtype>)
 				{
 					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,diff);
 				}
@@ -984,7 +986,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 				char_type *buffer{newptr.ptr};
 				auto ptr{::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...)};
 				::std::size_t diff{static_cast<::std::size_t>(ptr-scatters)};
-				if constexpr(::fast_io::byte_output_stream<outputstmtype>)
+				if constexpr(::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outputstmtype>)
 				{
 					::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm,scatters,diff);
 				}
@@ -1019,7 +1021,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 		constexpr
 			::std::size_t n{sizeof...(Args)+static_cast<::std::size_t>(1)};
 		constexpr auto scatters_result{::fast_io::details::decay::find_continuous_scatters_reserve_n<true,char_type,T,Args...>()};
-		using scatter_type = ::std::conditional_t<byte_output_stream<outputstmtype>,
+		using scatter_type = ::std::conditional_t<::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outputstmtype>,
 			io_scatter_t,basic_io_scatter_t<char_type>>;
 		if constexpr(scatters_result.position!=0)
 		{
@@ -1033,7 +1035,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 				::std::size_t scatterscount{scatters_result.position+static_cast<::std::size_t>(needprintlf)};
 			scatter_type scatters[scatterscount];
 			::fast_io::details::decay::print_n_scatters<scatters_result.position,char_type>(scatters,t,args...);
-			if constexpr(::fast_io::byte_output_stream<outputstmtype>)
+			if constexpr(::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outputstmtype>)
 			{
 				if constexpr(needprintlf)
 				{
@@ -1129,7 +1131,7 @@ namespace decay
 template<bool line,typename outputstmtype,typename... Args>
 inline constexpr decltype(auto) print_freestanding_decay(outputstmtype optstm,Args... args)
 {
-	if constexpr(::fast_io::status_output_stream<outputstmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_status_print_define<outputstmtype>)
 	{
 		return status_print_define<line>(optstm,args...);
 	}

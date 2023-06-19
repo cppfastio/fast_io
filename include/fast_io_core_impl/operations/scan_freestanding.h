@@ -6,7 +6,7 @@ namespace fast_io
 namespace details
 {
 #if 0
-template<buffer_input_stream input,typename T,typename P>
+template<typename input,typename T,typename P>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -33,7 +33,7 @@ inline constexpr bool scan_single_status_impl(input in,T& state_machine,P arg)
 }
 #endif
 
-template<buffer_input_stream input,typename P>
+template<typename input,typename P>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -79,6 +79,7 @@ template<typename input,typename T>
 [[nodiscard]] inline constexpr bool scan_single_impl(input in,T arg)
 {
 	using char_type = typename input::input_char_type;
+#if 0
 	if constexpr(contiguous_input_stream<input>)
 	{
 		if constexpr(precise_reserve_scannable<char_type,T>)
@@ -165,6 +166,7 @@ template<typename input,typename T>
 		}
 	}
 	else
+#endif
 	{
 		if constexpr(precise_reserve_scannable<char_type,T>)
 		{
@@ -298,7 +300,7 @@ namespace operations::decay
 template<typename input,typename... Args>
 [[nodiscard]] inline constexpr decltype(auto) scan_freestanding_decay(input instm,Args... args)
 {
-	if constexpr(::fast_io::status_input_stream<input>)
+	if constexpr(::fast_io::operations::decay::defines::has_status_scan_define<input>)
 	{
 		return status_scan_define(instm,args...);
 	}

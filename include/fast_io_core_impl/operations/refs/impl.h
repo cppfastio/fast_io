@@ -1,5 +1,6 @@
 #pragma once
 
+#include"seek.h"
 #include"base.h"
 #include"input_stream.h"
 #include"output_stream.h"

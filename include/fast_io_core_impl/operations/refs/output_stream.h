@@ -7,24 +7,18 @@ namespace operations::decay::defines
 {
 
 template<typename T>
-concept has_output_stream_seek_define = requires(T instm,::fast_io::intfpos_t pos,::fast_io::seekdir sdir)
-{
-	{output_stream_seek_define(instm,pos,sdir)}->::std::same_as<::fast_io::intfpos_t>;
-};
-
-template<typename T>
-concept has_output_stream_seek_bytes_define = requires(T instm,::fast_io::intfpos_t pos,::fast_io::seekdir sdir)
-{
-	{output_stream_seek_bytes_define(instm,pos,sdir)}->::std::same_as<::fast_io::intfpos_t>;
-};
-
-template<typename T>
 concept has_obuffer_basic_operations = requires(T instm,typename decltype(instm)::output_char_type *ptr)
 {
 	obuffer_begin(instm);
 	obuffer_curr(instm);
 	obuffer_end(instm);
 	obuffer_set_curr(instm,ptr);
+};
+
+template<typename T>
+concept has_status_print_define = requires(T optstm)
+{
+	status_print_define<true>(optstm,0);
 };
 
 template<typename T>

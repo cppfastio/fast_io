@@ -155,7 +155,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::f
 	}
 }
 
-template<::std::integral char_type,typename T1,typename T2,::fast_io::buffer_output_stream bop>
+template<::std::integral char_type,typename T1,typename T2,typename bop>
 requires ((details::cond_ok_printable_impl<char_type,T1>&&details::cond_ok_printable_impl<char_type,T2>)
 	&&(!(details::cond_ok_dynamic_rsv_printable_impl<char_type,T1>&&
 		details::cond_ok_dynamic_rsv_printable_impl<char_type,T2>)))
