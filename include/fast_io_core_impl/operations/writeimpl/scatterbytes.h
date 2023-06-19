@@ -299,7 +299,6 @@ inline constexpr void scatter_write_all_bytes_impl(outstmtype outsm,
 		{
 			buffptrdiff=static_cast<::std::size_t>(ed-curr);
 		}
-
 		auto i{pscatters},e{pscatters+n};
 		for(;i!=e;++i)
 		{

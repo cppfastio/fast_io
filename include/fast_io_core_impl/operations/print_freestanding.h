@@ -327,7 +327,9 @@ inline constexpr void print_control_single(output outstm,T t)
 				{
 					char_type buffer[size];
 					if(!smaller)[[unlikely]]
+					{
 						bcurr=buffer;
+					}
 					bcurr=print_reserve_define(::fast_io::io_reserve_type<char_type,value_type>,bcurr,t);
 					if constexpr(line)
 					{
@@ -1059,7 +1061,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 		else
 		{
 			constexpr auto rsvresult{::fast_io::details::decay::find_continuous_scatters_reserve_n<false,char_type,T,Args...>()};
-			if constexpr(rsvresult.position!=0)
+			if constexpr(1<rsvresult.position)
 			{
 				constexpr
 					bool needprintlf{n==rsvresult.position&&line};
