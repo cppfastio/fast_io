@@ -96,7 +96,7 @@ concept has_scatter_read_until_eof_underflow_define = requires(T instm,::fast_io
 template<typename T>
 concept has_ibuffer_underflow_never_define = requires(T instm)
 {
-	ibuffer_underflow_never_define(::fast_io::manipulators::output_stream_ref(instm));
+	ibuffer_underflow_never_define(::fast_io::operations::output_stream_ref(instm));
 };
 
 

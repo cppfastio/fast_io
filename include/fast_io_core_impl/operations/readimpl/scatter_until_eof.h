@@ -116,17 +116,17 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_bytes_cold_impl(inst
 		return ::fast_io::details::scatter_read_until_eof_cold_impl(
 			insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 		::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>)
 	{
 		auto status{::fast_io::details::scatter_pread_until_eof_cold_impl(insm,pscatters,n,0)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,
 			::fast_io::fposoffadd_scatters(0,pscatters,status),
 			::fast_io::seekdir::cur);
 		return status;
 	}
 	else if constexpr(sizeof(char_type)==1&&
-		::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
+		::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
 		::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>)
 	{
 		using scattermayalias_ptr
@@ -136,7 +136,7 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_bytes_cold_impl(inst
 		=
 		basic_io_scatter_t<char_type>*;
 		auto status{scatter_pread_until_eof_cold_impl(insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n,0)};
-		::fast_io::details::input_stream_seek_impl(insm,
+		::fast_io::operations::decay::input_stream_seek_decay(insm,
 			::fast_io::fposoffadd_scatters(0,pscatters,status),
 			::fast_io::seekdir::cur);
 		return status;
@@ -246,14 +246,14 @@ inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(instmtype 
 		}
 		return {n,0};
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>))
 	{
 		auto status{::fast_io::details::scatter_pread_until_eof_cold_impl(insm,pscatters,n,0)};
 		::fast_io::operations::decay::input_stream_seek_decay(insm,::fast_io::fposoffadd_scatters(0,pscatters,status),::fast_io::seekdir::cur);
 		return status;
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
 	{
 		auto status{::fast_io::details::scatter_pread_until_eof_cold_impl(insm,pscatters,n,0)};

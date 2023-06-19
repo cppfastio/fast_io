@@ -74,7 +74,7 @@ inline constexpr typename io_buffer_type::input_char_type* read_until_eof_underf
 	return ::fast_io::details::decoread_until_eof_underflow_define_impl<
 		typename traits_type::allocator_type,
 		traits_type::input_buffer_size>(
-		::fast_io::manipulators::input_stream_ref(idoref.handle),
+		::fast_io::operations::input_stream_ref(idoref.handle),
 		::fast_io::operations::refs::input_decorators_ref(idoref.decorators),
 		idoref.input_buffer,first,last);
 }

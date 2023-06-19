@@ -27,7 +27,7 @@ inline constexpr void decowrite_all_overflow_define_impl(
 		auto [it,bufferit] = outdeco.output_process_chars(first,last,
 			curr_ptr,ed_ptr);
 		::fast_io::operations::decay::write_all_decay(
-			::fast_io::manipulators::output_stream_ref(outstm),
+			::fast_io::operations::output_stream_ref(outstm),
 			curr_ptr,bufferit);
 		output_buffer.buffer_curr=output_buffer.buffer_begin;
 		first=it;
@@ -47,7 +47,7 @@ inline constexpr void write_all_overflow_define(
 	::fast_io::details::decowrite_all_overflow_define_impl<
 		typename traits_type::allocator_type,
 		traits_type::output_buffer_size>(
-		::fast_io::manipulators::output_stream_ref(idoref.handle),
+		::fast_io::operations::output_stream_ref(idoref.handle),
 		::fast_io::operations::refs::output_decorators_ref(idoref.decorators),
 		idoref.output_buffer,first,last);
 }

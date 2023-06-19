@@ -78,8 +78,8 @@ inline constexpr decltype(auto) transmit_bytes_some_decay(optstmtype optstm,inst
 template<typename optstmtype,typename instmtype>
 inline constexpr decltype(auto) transmit_bytes_some(optstmtype &&optstm,instmtype &&instm,::fast_io::uintfpos_t totransmit)
 {
-	return ::fast_io::operations::decay::transmit_bytes_some_decay(::fast_io::manipulators::output_stream_ref(optstm),
-		::fast_io::manipulators::input_stream_ref(instm),totransmit);
+	return ::fast_io::operations::decay::transmit_bytes_some_decay(::fast_io::operations::output_stream_ref(optstm),
+		::fast_io::operations::input_stream_ref(instm),totransmit);
 }
 
 }

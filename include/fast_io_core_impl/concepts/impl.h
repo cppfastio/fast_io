@@ -2,7 +2,6 @@
 
 #include"type.h"
 #include"parse_code.h"
-#include"manipulators.h"
 #include"details.h"
 #include"operation_details.h"
 #include"operation.h"

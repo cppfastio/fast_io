@@ -138,15 +138,15 @@ inline constexpr decltype(auto) transmit_until_eof_decay(optstmtype optstm,instm
 template<typename optstmtype,typename instmtype,typename T>
 inline constexpr decltype(auto) transmit_until_eof_generic(optstmtype &&optstm,instmtype &&instm,T resultint)
 {
-	return ::fast_io::operations::decay::transmit_until_eof_generic_decay(::fast_io::manipulators::output_stream_ref(optstm),
-		::fast_io::manipulators::input_stream_ref(instm),resultint);
+	return ::fast_io::operations::decay::transmit_until_eof_generic_decay(::fast_io::operations::output_stream_ref(optstm),
+		::fast_io::operations::input_stream_ref(instm),resultint);
 }
 
 template<typename optstmtype,typename instmtype>
 inline constexpr decltype(auto) transmit_until_eof(optstmtype &&optstm,instmtype &&instm)
 {
-	return ::fast_io::operations::decay::transmit_until_eof_decay(::fast_io::manipulators::output_stream_ref(optstm),
-		::fast_io::manipulators::input_stream_ref(instm));
+	return ::fast_io::operations::decay::transmit_until_eof_decay(::fast_io::operations::output_stream_ref(optstm),
+		::fast_io::operations::input_stream_ref(instm));
 }
 
 }

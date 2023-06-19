@@ -114,4 +114,7 @@ cur = 1,				//SEEK_CUR
 end = 2,				//SEEK_END
 };
 
+using uintfpos_t = ::std::uintmax_t;
+using intfpos_t = ::std::intmax_t;
+
 }

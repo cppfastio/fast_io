@@ -8,7 +8,7 @@ class basic_generic_posix_dev_urandom
 {
 public:
 	using handle_type = handletype;
-	using observer_type = decltype(::fast_io::manipulators::io_stream_ref(*((handle_type*)nullptr)));
+	using observer_type = decltype(::fast_io::operations::io_stream_ref(*((handle_type*)nullptr)));
 	using input_char_type = chtype;
 	handle_type handle;
 	template<typename... Args>
