@@ -196,7 +196,7 @@ inline void bsd_overflow(FILE* __restrict fp,char unsigned ch)
 		throw_posix_error();
 #elif defined(__NEWLIB__)
 	struct _reent rent;
-	if(__sputc_r(&rent,static_cast<int>(static_cast<char unsigned>(ch)),fp)==EOF)[[unlikely]]
+	if(__sputc_r(__builtin_addressof(rent),static_cast<int>(static_cast<char unsigned>(ch)),fp)==EOF)[[unlikely]]
 		throw_posix_error(rent._errno);
 #elif defined(__BIONIC__)
 	if(putc_unlocked(static_cast<int>(static_cast<char unsigned>(ch)),fp)==EOF)[[unlikely]]
