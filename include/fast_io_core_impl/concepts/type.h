@@ -104,7 +104,7 @@ template<typename in_char_type,typename out_char_type>
 FAST_IO_MODULE_EXPORT struct deco_result
 {
 	in_char_type const * input_result_ptr{};
-	in_char_type * output_result_ptr{};
+	out_char_type * output_result_ptr{};
 };
 
 FAST_IO_MODULE_EXPORT enum class seekdir
