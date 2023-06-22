@@ -944,10 +944,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 					}
 					else
 					{
-						constexpr
-							::std::size_t buffersize{res.neededspace+
-							static_cast<::std::size_t>(needprintlf)};
-						char_type buffer[buffersize];
+						char_type buffer[mxsize];
 						char_type *ptred{::fast_io::details::decay::print_n_reserve<res.position,char_type>(buffer,t,args...)};
 						if constexpr(needprintlf)
 						{
@@ -963,7 +960,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm,T t,Args ...args)
 				constexpr
 					::std::size_t scatterscount{res.neededscatters+static_cast<::std::size_t>(line&&res.position==n)};
 				scatter_type scatters[scatterscount];
-				char_type buffer[res.neededspace];
+				char_type buffer[mxsize];
 
 				auto ptr{::fast_io::details::decay::print_n_scatters_reserve<needprintlf,res.position,char_type>(scatters,buffer,t,args...)};
 				::std::size_t diff{static_cast<::std::size_t>(ptr-scatters)};
