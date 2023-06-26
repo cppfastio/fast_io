@@ -214,11 +214,6 @@ using io_scatter_alias_ptr
 namespace details
 {
 
-template<typename instmtype>
-concept read_bytes_can_allowing =
-::fast_io::input_stream<instmtype>&&(::fast_io::byte_input_stream<instmtype>
-||sizeof(typename instmtype::input_char_type)==1);
-
 template<::std::integral char_type>
 inline constexpr ::fast_io::intfpos_t scatter_fpos_mul(::fast_io::intfpos_t ofd) noexcept
 {

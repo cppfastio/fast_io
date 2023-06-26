@@ -154,6 +154,12 @@ inline bool bsd_underflow_impl(FILE* __restrict fp)
 	--fp->_p;
 	return eof;
 #endif
+#elif defined(__MSDOS__)
+	if(_filbuf(fp)==EOF)[[unlikely]]
+		return false;
+	++fp->_cnt;
+	--fp->_ptr;
+	return true;
 #elif defined(__BIONIC__)
 	bool eof{getc_unlocked(fp)!=EOF};
 	if(!eof&&ferror_unlocked(fp))[[unlikely]]
@@ -190,7 +196,7 @@ inline void bsd_overflow(FILE* __restrict fp,char unsigned ch)
 		throw_posix_error();
 #elif defined(__NEWLIB__)
 	struct _reent rent;
-	if(__sputc_r(&rent,static_cast<int>(static_cast<char unsigned>(ch)),fp)==EOF)[[unlikely]]
+	if(__sputc_r(__builtin_addressof(rent),static_cast<int>(static_cast<char unsigned>(ch)),fp)==EOF)[[unlikely]]
 		throw_posix_error(rent._errno);
 #elif defined(__BIONIC__)
 	if(putc_unlocked(static_cast<int>(static_cast<char unsigned>(ch)),fp)==EOF)[[unlikely]]
@@ -329,4 +335,11 @@ inline bool ibuffer_underflow(u8c_io_observer_unlocked cio)
 	return details::bsd_underflow_impl(cio.fp);
 }
 
+#if defined(__MSDOS__)
+template<std::integral ch_type>
+inline bool obuffer_is_line_buffering_define(basic_c_io_observer_unlocked<ch_type> ciou) noexcept
+{
+	return details::bsd_get_buffer_ptr_impl<char8_t,2>(ciou.fp)<details::bsd_get_buffer_ptr_impl<char8_t,1>(ciou.fp);
+}
+#endif
 }

@@ -95,6 +95,8 @@ using filebuf_io_observer = basic_filebuf_io_observer<char>;
 using wstreambuf_io_observer = basic_streambuf_io_observer<wchar_t>;
 using wfilebuf_io_observer = basic_filebuf_io_observer<wchar_t>;
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
+
+#if 0
 template<std::integral ch_type,typename Traits>
 requires zero_copy_input_stream<basic_c_io_observer<ch_type>>
 inline constexpr decltype(auto) zero_copy_in_handle(basic_filebuf_io_observer<ch_type,Traits> h)
@@ -107,6 +109,7 @@ inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<c
 {
 	return zero_copy_out_handle(static_cast<basic_c_io_observer<ch_type>>(h));
 }
+#endif
 
 template<std::integral ch_type,typename traits_type>
 requires requires(basic_c_io_observer<ch_type> piob)

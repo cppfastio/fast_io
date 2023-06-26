@@ -213,7 +213,7 @@ requires (sizeof...(Args)!=0)
 template<typename T,typename... Args>
 inline constexpr void debug_print(T&& t,Args&& ...args)
 {
-	constexpr bool device_error{fast_io::output_stream<std::remove_cvref_t<T>>||fast_io::status_output_stream<std::remove_cvref_t<T>>};
+	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr(device_error)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
@@ -252,7 +252,7 @@ static_assert(device_error,"freestanding environment must provide IO device");
 template<typename T,typename... Args>
 inline constexpr void debug_println(T&& t,Args&& ...args)
 {
-	constexpr bool device_error{fast_io::output_stream<std::remove_cvref_t<T>>||fast_io::status_output_stream<std::remove_cvref_t<T>>};
+	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr(device_error)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;

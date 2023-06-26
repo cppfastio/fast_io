@@ -7,24 +7,18 @@ namespace operations::decay::defines
 {
 
 template<typename T>
-concept has_input_stream_seek_define = requires(T instm,::fast_io::intfpos_t pos,::fast_io::seekdir sdir)
-{
-	{input_stream_seek_define(instm,pos,sdir)}->::std::same_as<::fast_io::intfpos_t>;
-};
-
-template<typename T>
-concept has_input_stream_seek_bytes_define = requires(T instm,::fast_io::intfpos_t pos,::fast_io::seekdir sdir)
-{
-	{input_stream_seek_bytes_define(instm,pos,sdir)}->::std::same_as<::fast_io::intfpos_t>;
-};
-
-template<typename T>
 concept has_ibuffer_basic_operations = requires(T instm,typename decltype(instm)::input_char_type *ptr)
 {
 	ibuffer_begin(instm);
 	ibuffer_curr(instm);
 	ibuffer_end(instm);
 	ibuffer_set_curr(instm,ptr);
+};
+
+template<typename T>
+concept has_status_scan_define = requires(T optstm)
+{
+	status_scan_define<true>(optstm,0);
 };
 
 template<typename T>
@@ -102,7 +96,7 @@ concept has_scatter_read_until_eof_underflow_define = requires(T instm,::fast_io
 template<typename T>
 concept has_ibuffer_underflow_never_define = requires(T instm)
 {
-	ibuffer_underflow_never_define(::fast_io::manipulators::output_stream_ref(instm));
+	ibuffer_underflow_never_define(::fast_io::operations::output_stream_ref(instm));
 };
 
 

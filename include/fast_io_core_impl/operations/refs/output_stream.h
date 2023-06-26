@@ -7,24 +7,18 @@ namespace operations::decay::defines
 {
 
 template<typename T>
-concept has_output_stream_seek_define = requires(T instm,::fast_io::intfpos_t pos,::fast_io::seekdir sdir)
-{
-	{output_stream_seek_define(instm,pos,sdir)}->::std::same_as<::fast_io::intfpos_t>;
-};
-
-template<typename T>
-concept has_output_stream_seek_bytes_define = requires(T instm,::fast_io::intfpos_t pos,::fast_io::seekdir sdir)
-{
-	{output_stream_seek_bytes_define(instm,pos,sdir)}->::std::same_as<::fast_io::intfpos_t>;
-};
-
-template<typename T>
 concept has_obuffer_basic_operations = requires(T instm,typename decltype(instm)::output_char_type *ptr)
 {
 	obuffer_begin(instm);
 	obuffer_curr(instm);
 	obuffer_end(instm);
 	obuffer_set_curr(instm,ptr);
+};
+
+template<typename T>
+concept has_status_print_define = requires(T optstm)
+{
+	status_print_define<true>(optstm,0);
 };
 
 template<typename T>
@@ -105,7 +99,11 @@ concept has_obuffer_overflow_never_define = requires(T instm)
 	obuffer_overflow_never_define(instm);
 };
 
-
+template<typename T>
+concept has_output_stream_char_put_overflow_define = requires(T instm,typename T::output_char_type ch)
+{
+	output_stream_char_put_overflow_define(instm,ch);
+};
 
 template<typename T>
 concept has_pwrite_some_bytes_overflow_define = requires(T instm,::std::byte* ptr)
@@ -178,6 +176,12 @@ template<typename T>
 concept has_scatter_pwrite_until_eof_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type>* scatter,::std::size_t len)
 {
 	scatter_pwrite_until_eof_overflow_define(instm,scatter,len,0);
+};
+
+template<typename T>
+concept has_obuffer_is_line_buffering_define = requires(T outstm)
+{
+	obuffer_is_line_buffering_define(outstm);
 };
 
 template<typename stmtype>

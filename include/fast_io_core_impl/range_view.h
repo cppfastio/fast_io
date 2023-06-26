@@ -63,7 +63,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type, si
 	return ptr;
 }
 
-template <::std::integral char_type, ::std::input_iterator It, output_stream output>
+template <::std::integral char_type, ::std::input_iterator It, typename output>
 inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<char_type, It>>, output out, range_view_t<char_type, It> t)
 {
 	if (t.begin == t.end) return;

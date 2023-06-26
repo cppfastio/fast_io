@@ -13,16 +13,16 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 	::std::size_t n)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_scatter_read_some_bytes_underflow_define<instmtype>)
 	{
 		return scatter_read_some_bytes_underflow_define(insm,pscatters,n);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_until_eof_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_scatter_read_until_eof_underflow_define<instmtype>)
 	{
 		return scatter_read_until_eof_bytes_underflow_define(insm,pscatters,n);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_scatter_read_until_eof_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_read_some_bytes_underflow_define<instmtype>||
+		::fast_io::operations::decay::defines::has_scatter_read_until_eof_bytes_underflow_define<instmtype>)
 	{
 		for(::std::size_t i{};i!=n;++i)
 		{
@@ -38,13 +38,13 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 		}
 		return {n,0};
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_underflow_define<instmtype>||
-		::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_scatter_read_all_bytes_underflow_define<instmtype>||
+		::fast_io::operations::decay::defines::has_read_all_bytes_underflow_define<instmtype>)
 	{
 		::fast_io::details::scatter_read_all_bytes_cold_impl(insm,pscatters,n);
 		return {n,0};
 	}
-	else if constexpr(sizeof(char_type)==1&&::fast_io::details::streamreflect::has_any_of_read_operations<instmtype>)
+	else if constexpr(sizeof(char_type)==1&&::fast_io::operations::decay::defines::has_any_of_read_operations<instmtype>)
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -55,18 +55,18 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 		return ::fast_io::details::scatter_read_some_cold_impl(
 			insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
-	(::fast_io::details::streamreflect::has_any_of_byte_pread_operations<instmtype>))
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	(::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
 	{
 		auto ret{scatter_pread_some_bytes_cold_impl(insm,pscatters,n,0)};
-		::fast_io::details::input_stream_seek_bytes_impl(insm,
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,
 			::fast_io::fposoffadd_scatters(0,pscatters,ret),
 			::fast_io::seekdir::cur);
 		return ret;
 	}
 	else if constexpr(sizeof(char_type)==1&&
-		::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
-	(::fast_io::details::streamreflect::has_any_of_pread_operations<instmtype>))
+		::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
+	(::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>))
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -75,7 +75,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 		=
 		basic_io_scatter_t<char_type>*;
 		auto ret{scatter_pread_some_cold_impl(insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n,0)};
-		::fast_io::details::input_stream_seek_impl(insm,
+		::fast_io::operations::decay::input_stream_seek_decay(insm,
 			::fast_io::fposoffadd_scatters(0,pscatters,ret),
 			::fast_io::seekdir::cur);
 		return ret;
@@ -87,12 +87,12 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(instmtype insm
 	io_scatter_t const *pscatters,
 	::std::size_t n)
 {
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::scatter_read_some_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),pscatters,n);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 	{
 		using char_type = typename instmtype::input_char_type;
 		char_type *curr{ibuffer_curr(insm)};
@@ -150,11 +150,11 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 	::std::size_t n)
 {
 	using char_type = typename instmtype::input_char_type;
-	if constexpr(::fast_io::details::streamreflect::has_scatter_read_all_bytes_underflow_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_scatter_read_all_bytes_underflow_define<instmtype>)
 	{
 		scatter_read_all_bytes_underflow_define(insm,pscatters,n);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_read_all_bytes_underflow_define<instmtype>)
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{
@@ -163,8 +163,8 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			::fast_io::details::read_all_bytes_impl(insm,base,base+len);
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_until_eof_bytes_underflow_define<instmtype>||
-			::fast_io::details::streamreflect::has_read_until_eof_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_scatter_read_until_eof_bytes_underflow_define<instmtype>||
+			::fast_io::operations::decay::defines::has_read_until_eof_bytes_underflow_define<instmtype>)
 	{
 		auto [pos,scpos]{scatter_read_until_eof_bytes_cold_impl(insm,pscatters,n)};
 		if(!pos)
@@ -172,7 +172,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			throw_parse_code(::fast_io::parse_code::end_of_file);
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_all_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_read_all_bytes_underflow_define<instmtype>)
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{
@@ -181,7 +181,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			::fast_io::details::read_all_bytes_impl(insm,base,base+len);
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_scatter_read_some_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_scatter_read_some_bytes_underflow_define<instmtype>)
 	{
 		for(;;)
 		{
@@ -207,7 +207,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			n-=retpos;
 		}
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_read_some_bytes_underflow_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_read_some_bytes_underflow_define<instmtype>)
 	{
 		for(auto i{pscatters},e{pscatters+n};i!=e;++i)
 		{
@@ -216,7 +216,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 			::fast_io::details::read_all_bytes_impl(insm,base,base+len);
 		}
 	}
-	else if constexpr(sizeof(char_type)==1&&::fast_io::details::streamreflect::has_any_of_read_operations<instmtype>)
+	else if constexpr(sizeof(char_type)==1&&::fast_io::operations::decay::defines::has_any_of_read_operations<instmtype>)
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -227,17 +227,17 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 		::fast_io::details::scatter_read_all_impl(
 			insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
-	(::fast_io::details::streamreflect::has_any_of_byte_pread_operations<instmtype>))
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	(::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
 	{
 		scatter_pread_all_bytes_cold_impl(insm,pscatters,n,0);
-		::fast_io::details::input_stream_seek_bytes_impl(insm,
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,
 			::fast_io::fposoffadd_scatters(0,pscatters,{n,0}),
 			::fast_io::seekdir::cur);
 	}
 	else if constexpr(sizeof(char_type)==1&&
-		::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
-	(::fast_io::details::streamreflect::has_any_of_pread_operations<instmtype>))
+		::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
+	(::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>))
 	{
 		using scattermayalias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -246,7 +246,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm,
 		=
 		basic_io_scatter_t<char_type>*;
 		scatter_pread_all_cold_impl(insm,reinterpret_cast<scattermayalias_ptr>(pscatters),n,0);
-		::fast_io::details::input_stream_seek_impl(insm,
+		::fast_io::operations::decay::input_stream_seek_decay(insm,
 			::fast_io::fposoffadd_scatters(0,pscatters,{n,0}),
 			::fast_io::seekdir::cur);
 	}
@@ -257,12 +257,12 @@ inline constexpr void scatter_read_all_bytes_impl(instmtype insm,
 	io_scatter_t const *pscatters,
 	::std::size_t n)
 {
-	if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::scatter_read_all_bytes_impl(::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm),pscatters,n);
 	}
-	else if constexpr(::fast_io::details::streamreflect::has_ibuffer_ops<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 	{
 		using char_type = typename instmtype::input_char_type;
 		char_type *curr{ibuffer_curr(insm)};

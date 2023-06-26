@@ -6,8 +6,8 @@ namespace fast_io
 namespace details
 {
 
-template<::fast_io::output_stream optstmtype,
-	::fast_io::input_stream instmtype>
+template<typename optstmtype,
+	typename instmtype>
 inline constexpr ::fast_io::uintfpos_t transmit_bytes_some_main_impl(optstmtype optstm,instmtype instm,::fast_io::uintfpos_t needtransmit)
 {
 /*
@@ -42,10 +42,11 @@ namespace operations
 namespace decay
 {
 
-template<::fast_io::output_stream optstmtype,
-	::fast_io::input_stream instmtype>
+template<typename optstmtype,
+	typename instmtype>
 inline constexpr decltype(auto) transmit_bytes_some_decay(optstmtype optstm,instmtype instm,::fast_io::uintfpos_t totransmit)
 {
+#if 0
 	if constexpr(::fast_io::status_output_stream<optstmtype>)
 	{
 		return status_transmit_bytes_some_define(optstm,instm,totransmit);
@@ -54,12 +55,14 @@ inline constexpr decltype(auto) transmit_bytes_some_decay(optstmtype optstm,inst
 	{
 		return status_transmit_bytes_some_define(optstm,instm,totransmit);
 	}
-	else if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<optstmtype>)
+	else
+#endif
+	if constexpr(::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<optstmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(optstm)};
 		return ::fast_io::operations::decay::transmit_bytes_some_decay(::fast_io::operations::decay::output_stream_unlocked_ref_decay(optstm),instm,totransmit);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
 		return ::fast_io::operations::decay::transmit_bytes_some_decay(optstm,::fast_io::operations::decay::input_stream_unlocked_ref_decay(instm),totransmit);
@@ -75,8 +78,8 @@ inline constexpr decltype(auto) transmit_bytes_some_decay(optstmtype optstm,inst
 template<typename optstmtype,typename instmtype>
 inline constexpr decltype(auto) transmit_bytes_some(optstmtype &&optstm,instmtype &&instm,::fast_io::uintfpos_t totransmit)
 {
-	return ::fast_io::operations::decay::transmit_bytes_some_decay(::fast_io::manipulators::output_stream_ref(optstm),
-		::fast_io::manipulators::input_stream_ref(instm),totransmit);
+	return ::fast_io::operations::decay::transmit_bytes_some_decay(::fast_io::operations::output_stream_ref(optstm),
+		::fast_io::operations::input_stream_ref(instm),totransmit);
 }
 
 }

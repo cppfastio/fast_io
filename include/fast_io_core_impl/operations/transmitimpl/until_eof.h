@@ -6,8 +6,8 @@ namespace fast_io
 namespace details
 {
 
-template<::fast_io::output_stream optstmtype,
-	::fast_io::input_stream instmtype,
+template<typename optstmtype,
+	typename instmtype,
 	typename T>
 requires (sizeof(typename optstmtype::output_char_type)==sizeof(typename instmtype::input_char_type))
 inline constexpr void transmit_until_eof_generic_main_impl(optstmtype optstm,instmtype instm,T resultint)
@@ -44,8 +44,8 @@ A dummy placeholder implementation
 	}
 }
 
-template<::fast_io::output_stream optstmtype,
-	::fast_io::input_stream instmtype>
+template<typename optstmtype,
+	typename instmtype>
 inline constexpr ::fast_io::transmit_result transmit_until_eof_main_impl(optstmtype optstm,instmtype instm)
 {
 	::fast_io::uintfpos_t transmitted{};
@@ -67,6 +67,7 @@ template<typename optstmtype,
 	typename T>
 inline constexpr decltype(auto) transmit_until_eof_generic_decay(optstmtype optstm,instmtype instm,T resultint)
 {
+#if 0
 	if constexpr(::fast_io::status_output_stream<optstmtype>)
 	{
 		return status_transmit_until_eof_generic_define(
@@ -77,13 +78,15 @@ inline constexpr decltype(auto) transmit_until_eof_generic_decay(optstmtype opts
 		return status_transmit_until_eof_generic_define(
 			optstm,instm,resultint);
 	}
-	else if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<optstmtype>)
+	else
+#endif
+	if constexpr(::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<optstmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(optstm)};
 		return ::fast_io::operations::decay::transmit_until_eof_generic_decay(::fast_io::operations::decay::output_stream_unlocked_ref_decay(optstm),
 			instm,resultint);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
 		return ::fast_io::operations::decay::transmit_until_eof_generic_decay(optstm,
@@ -96,10 +99,11 @@ inline constexpr decltype(auto) transmit_until_eof_generic_decay(optstmtype opts
 	}
 }
 
-template<::fast_io::output_stream optstmtype,
-	::fast_io::input_stream instmtype>
+template<typename optstmtype,
+	typename instmtype>
 inline constexpr decltype(auto) transmit_until_eof_decay(optstmtype optstm,instmtype instm)
 {
+#if 0
 	if constexpr(::fast_io::status_output_stream<optstmtype>)
 	{
 		return status_transmit_until_eof_define(optstm,instm);
@@ -108,14 +112,16 @@ inline constexpr decltype(auto) transmit_until_eof_decay(optstmtype optstm,instm
 	{
 		return status_transmit_until_eof_define(optstm,instm);
 	}
-	else if constexpr(::fast_io::details::has_output_or_io_stream_mutex_ref_define<optstmtype>)
+	else
+#endif
+	if constexpr(::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<optstmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(optstm)};
 		return ::fast_io::operations::decay::transmit_until_eof_decay(
 			::fast_io::operations::decay::output_stream_unlocked_ref_decay(optstm),
 			instm);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_mutex_ref_define<instmtype>)
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::input_stream_mutex_ref_decay(instm)};
 		return ::fast_io::operations::decay::transmit_until_eof_decay(optstm,
@@ -132,15 +138,15 @@ inline constexpr decltype(auto) transmit_until_eof_decay(optstmtype optstm,instm
 template<typename optstmtype,typename instmtype,typename T>
 inline constexpr decltype(auto) transmit_until_eof_generic(optstmtype &&optstm,instmtype &&instm,T resultint)
 {
-	return ::fast_io::operations::decay::transmit_until_eof_generic_decay(::fast_io::manipulators::output_stream_ref(optstm),
-		::fast_io::manipulators::input_stream_ref(instm),resultint);
+	return ::fast_io::operations::decay::transmit_until_eof_generic_decay(::fast_io::operations::output_stream_ref(optstm),
+		::fast_io::operations::input_stream_ref(instm),resultint);
 }
 
 template<typename optstmtype,typename instmtype>
 inline constexpr decltype(auto) transmit_until_eof(optstmtype &&optstm,instmtype &&instm)
 {
-	return ::fast_io::operations::decay::transmit_until_eof_decay(::fast_io::manipulators::output_stream_ref(optstm),
-		::fast_io::manipulators::input_stream_ref(instm));
+	return ::fast_io::operations::decay::transmit_until_eof_decay(::fast_io::operations::output_stream_ref(optstm),
+		::fast_io::operations::input_stream_ref(instm));
 }
 
 }

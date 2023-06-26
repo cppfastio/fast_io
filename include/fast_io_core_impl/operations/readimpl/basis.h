@@ -99,14 +99,14 @@ inline constexpr typename instmtype::input_char_type* read_some_cold_impl(instmt
 			return first+v;
 		}
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>))
 	{
 		auto ret{::fast_io::details::pread_some_cold_impl(insm,first,last)};
 		::fast_io::operations::decay::input_stream_seek_decay(insm,ret-first,::fast_io::seekdir::cur);
 		return ret;
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
 	{
 		auto ret{::fast_io::details::pread_some_cold_impl(insm,first,last)};
@@ -184,14 +184,14 @@ inline constexpr ::std::byte* read_some_bytes_cold_impl(instmtype insm,::std::by
 			reinterpret_cast<char_type_ptr>(first),
 			reinterpret_cast<char_type_ptr>(last)));
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 		(::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
 	{
 		auto ret{::fast_io::details::pread_some_bytes_cold_impl(insm,first,last)};
 		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,ret-first,::fast_io::seekdir::cur);
 		return ret;
 	}
-	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
+	else if constexpr(sizeof(char_type)==1&&::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
 		(::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>))
 	{
 
@@ -323,13 +323,13 @@ inline constexpr void read_all_cold_impl(instmtype insm,typename instmtype::inpu
 			reinterpret_cast<::std::byte*>(first),
 			reinterpret_cast<::std::byte*>(last));
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>))
 	{
 		::fast_io::details::pread_all_bytes_cold_impl(insm,first,last);
 		::fast_io::operations::decay::input_stream_seek_decay(insm,last-first,::fast_io::seekdir::cur);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
 	{
 		auto firstbptr{reinterpret_cast<::std::byte*>(first)};
@@ -467,13 +467,13 @@ inline constexpr void read_all_bytes_cold_impl(instmtype insm,::std::byte *first
 		char_type_ptr lastcptr{reinterpret_cast<char_type_ptr>(last)};
 		::fast_io::details::read_all_cold_impl(insm,firstcptr,lastcptr);
 	}
-	else if constexpr(::fast_io::details::has_input_or_io_stream_seek_bytes_define<instmtype>&&
+	else if constexpr(::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
 	{
 		::fast_io::details::pread_all_bytes_cold_impl(insm,first,last);
 		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm,last-first,::fast_io::seekdir::cur);
 	}
-	else if constexpr(sizeof(char_type)==1&&::fast_io::details::has_input_or_io_stream_seek_define<instmtype>&&
+	else if constexpr(sizeof(char_type)==1&&::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype>&&
 	(::fast_io::operations::decay::defines::has_any_of_pread_operations<instmtype>))
 	{
 		using char_type_ptr
