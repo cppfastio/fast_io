@@ -27,8 +27,8 @@ inline constexpr deco_result<char_type,char_type>
 	simd_vector_type charsvec;
 	charsvec.load(characters_array_impl<tofdch,char_type,N>.data());
 #endif
-
-	for(simd_vector_type vec;fromfirst!=fromlast&&tofirst!=tolast;)
+	simd_vector_type vec;
+	for(;fromfirst!=fromlast&&tofirst!=tolast;++fromfirst)
 	{
 		if(*fromfirst!=tofdch)
 		{
@@ -41,6 +41,7 @@ inline constexpr deco_result<char_type,char_type>
 			{
 				fromdiff=todiff;
 			}
+			fromdiff/=N;
 			for(;fromdiff;--fromdiff)
 			{
 				vec.load(fromfirst);
@@ -66,10 +67,11 @@ inline constexpr deco_result<char_type,char_type>
 			for(;fromdiff2;--fromdiff2)
 			{
 				auto ch{*fromfirst};
-				if(ch!=tofdch)
+				if(ch==tofdch)
 				{
 					break;
 				}
+				*tofirst=ch;
 				++fromfirst;
 				++tofirst;
 			}
@@ -80,16 +82,16 @@ inline constexpr deco_result<char_type,char_type>
 		}
 		if constexpr(cr)
 		{
-			*tofirst=lfchr;
-			++tofirst;
 			*tofirst=lfchct;
+			++tofirst;
+			*tofirst=lfchr;
 			++tofirst;
 		}
 		else
 		{
-			*tofirst=lfchct;
-			++tofirst;
 			*tofirst=lfchr;
+			++tofirst;
+			*tofirst=lfchct;
 			++tofirst;
 		}
 	}
