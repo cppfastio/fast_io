@@ -122,7 +122,106 @@ inline constexpr std::size_t lookup_uni_to_gb18030(char32_t cdpt, T* p_dst) noex
 
 template<typename T>
 requires (sizeof(T)==1)
-inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t u32, T* p_dst) noexcept
+inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t cdpt, T* p_dst) noexcept
+{
+	if(u32<0x110000)[[likely]]
+	{
+		if(u32<0x0452)
+			return lookup_uni_to_gb18030(cdpt-128,p_dst);
+		char32_t sum{128};
+		for(std::size_t i{};i!=13;++i)
+		{
+			auto const& e{gb18030_ranges[i]};
+			auto const e0{e[0]};
+			auto const e1{e[1]};
+			char32_t diff{static_cast<char32_t>(e1-e0)};
+			sum+=diff;
+			if(static_cast<char32_t>(cdpt-e0)<diff)
+			{
+				char32_t e2{e[2]};
+				char32_t gb{cdpt-e0+e2};
+				gb-=linear_18030_base;
+				p_dst[3]=static_cast<T>(0x30+gb%10); gb/=10;
+				p_dst[2]=static_cast<T>(0x81+gb%126); gb/=126;
+				p_dst[1]=static_cast<T>(0x30+gb%10); gb/=10;
+				*p_dst=static_cast<T>(0x81+gb);
+				return 4;
+			}
+			else if(static_cast<char32_t>(cdpt-e1)<static_cast<char32_t>(gb18030_ranges[i+1][0]-e1))
+				return lookup_uni_to_gb18030(cdpt-sum,p_dst);
+		}
+	}
+	return get_gb18030_invalid_code_units(p_dst);
+}
+
+template<typename T>
+requires (sizeof(T)==1)
+inline constexpr std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T* p_dst, ::std::size_t pdstsz) noexcept
+{
+	char32_t v{lookup_uni_to_gb18030_tb[cdpt]};
+	char16_t v2{static_cast<char16_t>(v)};
+	if(static_cast<char32_t>(v2)==v)
+	{
+		if(pdstsz<2)
+		{
+			return 0;
+		}
+		if constexpr((!std::is_volatile_v<T>)&&(std::endian::native==std::endian::little||std::endian::native==std::endian::big))
+		{
+#if __cpp_lib_is_constant_evaluated>=201811L
+			if(!std::is_constant_evaluated())
+			{
+				if constexpr(std::endian::native==std::endian::big)
+					v2=byte_swap(v2);
+				::fast_io::details::my_memcpy(p_dst,&v2,2);
+			}
+			else
+#endif
+			{
+				p_dst[0]=static_cast<T>(v2&0xFF);
+				p_dst[1]=static_cast<T>(v2>>8);
+			}
+		}
+		else
+		{
+			p_dst[0]=static_cast<T>(v2&0xFF);
+			p_dst[1]=static_cast<T>(v2>>8);
+		}
+		return 2;
+	}
+	if(pdstsz<4)
+	{
+		return 0;
+	}
+	if constexpr((!std::is_volatile_v<T>)&&(std::endian::native==std::endian::little||std::endian::native==std::endian::big))
+	{
+#if __cpp_lib_is_constant_evaluated>=201811L
+		if(!std::is_constant_evaluated())
+		{
+			if constexpr(std::endian::native==std::endian::big)
+				v=byte_swap(v);
+			::fast_io::details::my_memcpy(p_dst,&v,4);
+		}
+		else
+#endif
+		{
+			p_dst[0]=static_cast<T>(v&0xFF);
+			p_dst[1]=static_cast<T>((v>>8)&0xFF);
+			p_dst[2]=static_cast<T>((v>>16)&0xFF);
+			p_dst[3]=static_cast<T>(v>>24);
+		}
+	}
+	else
+	{
+		p_dst[0]=static_cast<T>(v&0xFF);
+		p_dst[1]=static_cast<T>((v>>8)&0xFF);
+		p_dst[2]=static_cast<T>((v>>16)&0xFF);
+		p_dst[3]=static_cast<T>(v>>24);
+	}
+	return 4;
+}
+
+inline constexpr ::std::size_t get_gb18030_code_units_unhappy_pdstsz(char32_t u32, char* p_dst, ::std::size_t pdstsz) noexcept
 {
 	if(u32<0x110000)[[likely]]
 	{
@@ -141,6 +240,10 @@ inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t u32, T* p_d
 				char32_t e2{e[2]};
 				char32_t gb{u32-e0+e2};
 				gb-=linear_18030_base;
+				if(pdstsz<4)
+				{
+					return 0;
+				}
 				p_dst[3]=static_cast<T>(0x30+gb%10); gb/=10;
 				p_dst[2]=static_cast<T>(0x81+gb%126); gb/=126;
 				p_dst[1]=static_cast<T>(0x30+gb%10); gb/=10;
@@ -150,6 +253,10 @@ inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t u32, T* p_d
 			else if(static_cast<char32_t>(u32-e1)<static_cast<char32_t>(gb18030_ranges[i+1][0]-e1))
 				return lookup_uni_to_gb18030(u32-sum,p_dst);
 		}
+	}
+	if(pdstsz<4)
+	{
+		return 0;
 	}
 	return get_gb18030_invalid_code_units(p_dst);
 }
