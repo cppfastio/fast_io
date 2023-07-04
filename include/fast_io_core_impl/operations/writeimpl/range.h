@@ -59,49 +59,57 @@ inline constexpr bytes_copy_punning_result<FromItbg,ToIter> bytes_copy_punning_i
 template<typename outstmtype,typename Iter,typename Iterlast>
 inline constexpr void write_all_iterator_decay_impl(outstmtype outsm,Iter first,Iterlast last)
 {
-	using output_char_type = typename outstmtype::output_char_type;
-	using itvt = ::std::iter_value_t<Iter>;
-	constexpr
-		::std::size_t bfsz{(::std::numeric_limits<::std::size_t>::digits<=16u?
-		64u:512u)/sizeof(output_char_type)};
-	if constexpr(sizeof(output_char_type)*bfsz<sizeof(itvt))
+	if constexpr(::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
-		output_char_type buffer[bfsz];
-		for(;first!=last;)
-		{
-			auto [fromiter,toiter]=::fast_io::details::bytes_copy_punning_impl(first,last,buffer,buffer+bfsz);
-			::fast_io::operations::decay::write_all_decay(outsm,buffer,toiter);
-			first=fromiter;
-		}
+		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{::fast_io::operations::decay::output_stream_mutex_ref_decay(outsm)};
+		return ::fast_io::details::write_all_iterator_decay_impl(::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm),first,last);
 	}
 	else
 	{
-		for(;first!=last;++first)
+		using output_char_type = typename outstmtype::output_char_type;
+		using itvt = ::std::iter_value_t<Iter>;
+		constexpr
+			::std::size_t bfsz{(::std::numeric_limits<::std::size_t>::digits<=16u?
+			64u:512u)/sizeof(output_char_type)};
+		if constexpr(sizeof(output_char_type)*bfsz<sizeof(itvt))
 		{
-			decltype(::std::addressof(*first)) firstaddr;
-			if constexpr(::std::contiguous_iterator<Iter>)
+			output_char_type buffer[bfsz];
+			for(;first!=last;)
 			{
-				firstaddr=::std::to_address(first);
+				auto [fromiter,toiter]=::fast_io::details::bytes_copy_punning_impl(first,last,buffer,buffer+bfsz);
+				::fast_io::operations::decay::write_all_decay(outsm,buffer,toiter);
+				first=fromiter;
 			}
-			else
+		}
+		else
+		{
+			for(;first!=last;++first)
 			{
-				firstaddr=::std::addressof(*first);
-			}
-			if constexpr(::std::same_as<output_char_type,itvt>)
-			{
-				::fast_io::operations::decay::write_all_decay(outsm,
-					firstaddr,firstaddr+1);
-			}
-			else
-			{
-				using type_const_ptr
+				decltype(::std::addressof(*first)) firstaddr;
+				if constexpr(::std::contiguous_iterator<Iter>)
+				{
+					firstaddr=::std::to_address(first);
+				}
+				else
+				{
+					firstaddr=::std::addressof(*first);
+				}
+				if constexpr(::std::same_as<output_char_type,itvt>)
+				{
+					::fast_io::operations::decay::write_all_decay(outsm,
+						firstaddr,firstaddr+1);
+				}
+				else
+				{
+					using type_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 				[[__gnu__::__may_alias__]]
 #endif
-				=output_char_type const*;
-				::fast_io::operations::decay::write_all_decay(outsm,
-				reinterpret_cast<type_const_ptr>(firstaddr),
-				reinterpret_cast<type_const_ptr>(firstaddr+1));
+					=output_char_type const*;
+					::fast_io::operations::decay::write_all_decay(outsm,
+					reinterpret_cast<type_const_ptr>(firstaddr),
+					reinterpret_cast<type_const_ptr>(firstaddr+1));
+				}
 			}
 		}
 	}
