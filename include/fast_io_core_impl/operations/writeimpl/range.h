@@ -80,7 +80,7 @@ constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype outsm,
 			::std::size_t multiplier{
 			hasbytesop?sizeof(nocref):sizeof(nocref)/sizeof(output_char_type)};
 		constexpr
-			::std::size_t scatternum{32};
+			::std::size_t scatternum{64};
 		static_assert(1<scatternum);
 		constexpr
 			::std::size_t blockszbytes{blocksize*multiplier};
