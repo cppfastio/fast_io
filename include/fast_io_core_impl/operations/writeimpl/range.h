@@ -87,7 +87,7 @@ constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype outsm,
 		scattertype scatters[scatternum];
 		*scatters=scattertype{firstblock_curr,static_cast<::std::size_t>(firstblock_end-firstblock_curr)*multiplier};
 		scattertype *scatterit{scatters+1},*scattered{scatters+scatternum};
-		for(;controller_first!=controller_last;++controller_first)
+		for(++controller_first;controller_first!=controller_last;++controller_first)
 		{
 			*scatterit={*controller_first,blockszbytes};
 			++scatterit;
@@ -101,6 +101,7 @@ constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype outsm,
 				{
 					::fast_io::operations::decay::scatter_write_all_decay(outsm,scatters,scatternum);
 				}
+				scatterit=scatters;
 			}
 		}
 		*scatterit=scattertype{lastblock_first,static_cast<::std::size_t>(lastblock_curr-lastblock_first)*multiplier};
