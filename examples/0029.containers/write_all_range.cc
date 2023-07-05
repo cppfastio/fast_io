@@ -8,7 +8,6 @@ int main()
 {
 	{
 	::std::deque<::std::size_t> deq{1,2,3,4,5,6,7,8};
-	static_assert(::fast_io::multiblock_view_iterator<::std::deque<::std::size_t>::iterator>);
 	::fast_io::obuf_file obf("rangedeq.txt");
 	::fast_io::operations::write_all_range(obf,deq);
 	}
