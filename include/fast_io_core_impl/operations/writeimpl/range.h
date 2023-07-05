@@ -56,6 +56,93 @@ inline constexpr bytes_copy_punning_result<FromItbg,ToIter> bytes_copy_punning_i
 	return {fromfirst,tofirst};
 }
 
+template<::std::size_t blocksize,typename outstmtype,typename T1,typename T>
+constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype outsm,
+	T1 ** controller_first,
+	T const * firstblock_curr,
+	T const * firstblock_end,
+	T1 ** controller_last,
+	T const * lastblock_first,
+	T const * lastblock_curr)
+{
+	using output_char_type = typename outstmtype::output_char_type;
+	using nocref=::std::remove_cvref_t<T>;
+	constexpr bool hasbytesop{fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outstmtype>};
+	if constexpr(::std::same_as<nocref,output_char_type>||::std::same_as<nocref,::std::byte>)
+	{
+		if(controller_first==controller_last)
+		{
+			::fast_io::operations::decay::write_all_decay(outsm,firstblock_curr,lastblock_curr);
+			return;
+		}
+		using scattertype = ::std::conditional_t<hasbytesop,io_scatter_t,basic_io_scatter_t<output_char_type>>;
+		constexpr
+			::std::size_t multiplier{
+			hasbytesop?sizeof(nocref):sizeof(nocref)/sizeof(output_char_type)};
+		constexpr
+			::std::size_t scatternum{16};
+		static_assert(1<scatternum);
+		constexpr
+			::std::size_t blockszbytes{blocksize*multiplier};
+		scattertype scatters[scatternum];
+		*scatters=scattertype{firstblock_curr,static_cast<::std::size_t>(firstblock_end-firstblock_curr)*multiplier};
+		scattertype *scatterit{scatters+1},*scattered{scatters+scatternum};
+		for(;controller_first!=controller_last;++controller_first)
+		{
+			*scatterit={*controller_first,blockszbytes};
+			++scatterit;
+			if(scatterit==scattered)
+			{
+				if constexpr(hasbytesop)
+				{
+					::fast_io::operations::decay::scatter_write_all_bytes_decay(outsm,scatters,scatternum);
+				}
+				else
+				{
+					::fast_io::operations::decay::scatter_write_all_decay(outsm,scatters,scatternum);
+				}
+			}
+		}
+		*scatterit=scattertype{lastblock_first,static_cast<::std::size_t>(lastblock_curr-lastblock_first)*multiplier};
+		++scatterit;
+		if constexpr(hasbytesop)
+		{
+			::fast_io::operations::decay::scatter_write_all_bytes_decay(outsm,scatters,
+				static_cast<::std::size_t>(scatterit-scatters));
+		}
+		else
+		{
+			::fast_io::operations::decay::scatter_write_all_decay(outsm,scatters,
+				static_cast<::std::size_t>(scatterit-scatters));
+		}
+	}
+	else
+	{
+		using type_ptr_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		=::std::conditional_t<hasbytesop,::std::byte,output_char_type>**;
+		using type_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		=::std::conditional_t<hasbytesop,::std::byte,output_char_type> const*;
+		using type_const_ptr_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		=type_const_ptr*;
+		write_all_iterator_decay_multiblock_common_impl<blocksize>(outsm,
+		const_cast<type_const_ptr_ptr>(reinterpret_cast<type_ptr_ptr>(controller_first)),
+		reinterpret_cast<type_const_ptr>(firstblock_curr),
+		reinterpret_cast<type_const_ptr>(firstblock_end),
+		const_cast<type_const_ptr_ptr>(reinterpret_cast<type_ptr_ptr>(controller_last)),
+		reinterpret_cast<type_const_ptr>(lastblock_first),
+		reinterpret_cast<type_const_ptr>(lastblock_curr));
+	}
+}
+
 template<typename outstmtype,typename Iter,typename Iterlast>
 inline constexpr void write_all_iterator_decay_impl(outstmtype outsm,Iter first,Iterlast last)
 {
@@ -68,47 +155,58 @@ inline constexpr void write_all_iterator_decay_impl(outstmtype outsm,Iter first,
 	{
 		using output_char_type = typename outstmtype::output_char_type;
 		using itvt = ::std::iter_value_t<Iter>;
-		constexpr
-			::std::size_t bfsz{(::std::numeric_limits<::std::size_t>::digits<=16u?
-			64u:512u)/sizeof(output_char_type)};
-		if constexpr(sizeof(output_char_type)*bfsz<sizeof(itvt))
+		if constexpr(::fast_io::multiblock_view_iterator<Iter>)	//Optimize for std::deque
 		{
-			output_char_type buffer[bfsz];
-			for(;first!=last;)
-			{
-				auto [fromiter,toiter]=::fast_io::details::bytes_copy_punning_impl(first,last,buffer,buffer+bfsz);
-				::fast_io::operations::decay::write_all_decay(outsm,buffer,toiter);
-				first=fromiter;
-			}
+			auto firstvit{multiblock_iterator_view_ref_define(first)};
+			auto lastvit{multiblock_iterator_view_ref_define(last)};
+			::fast_io::details::write_all_iterator_decay_multiblock_common_impl<decltype(firstvit)::block_size>(
+				outsm,firstvit.controller_ptr,firstvit.block_curr_ptr,firstvit.block_end_ptr,
+				lastvit.controller_ptr,lastvit.block_begin_ptr,lastvit.block_curr_ptr);
 		}
 		else
 		{
-			for(;first!=last;++first)
+			constexpr
+				::std::size_t bfsz{(::std::numeric_limits<::std::size_t>::digits<=16u?
+				64u:512u)/sizeof(output_char_type)};
+			if constexpr(sizeof(output_char_type)*bfsz<sizeof(itvt))
 			{
-				decltype(::std::addressof(*first)) firstaddr;
-				if constexpr(::std::contiguous_iterator<Iter>)
+				output_char_type buffer[bfsz];
+				for(;first!=last;)
 				{
-					firstaddr=::std::to_address(first);
+					auto [fromiter,toiter]=::fast_io::details::bytes_copy_punning_impl(first,last,buffer,buffer+bfsz);
+					::fast_io::operations::decay::write_all_decay(outsm,buffer,toiter);
+					first=fromiter;
 				}
-				else
+			}
+			else
+			{
+				for(;first!=last;++first)
 				{
-					firstaddr=::std::addressof(*first);
-				}
-				if constexpr(::std::same_as<output_char_type,itvt>)
-				{
-					::fast_io::operations::decay::write_all_decay(outsm,
-						firstaddr,firstaddr+1);
-				}
-				else
-				{
-					using type_const_ptr
+					decltype(::std::addressof(*first)) firstaddr;
+					if constexpr(::std::contiguous_iterator<Iter>)
+					{
+						firstaddr=::std::to_address(first);
+					}
+					else
+					{
+						firstaddr=::std::addressof(*first);
+					}
+					if constexpr(::std::same_as<output_char_type,itvt>)
+					{
+						::fast_io::operations::decay::write_all_decay(outsm,
+							firstaddr,firstaddr+1);
+					}
+					else
+					{
+						using type_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
-				[[__gnu__::__may_alias__]]
+						[[__gnu__::__may_alias__]]
 #endif
-					=output_char_type const*;
-					::fast_io::operations::decay::write_all_decay(outsm,
-					reinterpret_cast<type_const_ptr>(firstaddr),
-					reinterpret_cast<type_const_ptr>(firstaddr+1));
+						=output_char_type const*;
+						::fast_io::operations::decay::write_all_decay(outsm,
+						reinterpret_cast<type_const_ptr>(firstaddr),
+						reinterpret_cast<type_const_ptr>(firstaddr+1));
+					}
 				}
 			}
 		}
