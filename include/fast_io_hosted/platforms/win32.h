@@ -657,7 +657,7 @@ inline void win32_calculate_offset_impl(void* __restrict handle,::fast_io::win32
 		constexpr
 			::std::uint_least64_t l64mx{static_cast<::std::uint_least64_t>(INT_LEAST64_MAX)};
 		::fast_io::uintfpos_t offabs{static_cast<::fast_io::uintfpos_t>(off)};
-		auto const mxval{l64mx-u64off};
+		auto const mxval{l64mx-static_cast<::fast_io::uintfpos_t>(u64off)};
 		if(mxval<offabs)
 		{
 			u64off=l64mx;

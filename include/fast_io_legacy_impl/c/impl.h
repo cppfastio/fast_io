@@ -956,6 +956,9 @@ public:
 	basic_c_family_file(native_at_entry nate,T const& file,open_mode om,perms pm=static_cast<perms>(436)):
 		basic_c_family_file(basic_posix_file<char_type>(nate,file,om,pm),om)
 	{}
+	explicit constexpr basic_c_family_file(io_construct_t,basic_posix_io_observer<ch_type> piob,open_mode om) noexcept:
+		basic_c_family_io_observer<family,char_type>{::fast_io::details::my_c_file_open_impl(piob.fd,om)}
+	{}
 #endif
 	basic_c_family_file(io_temp_t):basic_c_family_io_observer<family,ch_type>{::fast_io::details::my_c_open_tmp_file()}
 	{}

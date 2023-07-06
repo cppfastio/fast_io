@@ -1017,7 +1017,7 @@ public:
 	explicit basic_nt_family_file(io_kernel_t,T const& t,open_mode om,perms pm=static_cast<perms>(436)):basic_nt_family_io_observer<family,ch_type>{::fast_io::win32::nt::details::nt_create_file_kernel_impl<family==nt_family::zw>(t,{om,pm})}{}
 	template<::fast_io::constructible_to_os_c_str T>
 	explicit basic_nt_family_file(io_kernel_t,nt_at_entry ent,T const& t,open_mode om,perms pm=static_cast<perms>(436)):basic_nt_family_io_observer<family,ch_type>{::fast_io::win32::nt::details::nt_create_file_at_impl<family==nt_family::zw,true>(ent.handle,t,{om,pm})}{}
-	
+
 	template<::fast_io::constructible_to_os_c_str T>
 	constexpr bool open(nt_family_file_factory<family>&& hd) noexcept
 	{
