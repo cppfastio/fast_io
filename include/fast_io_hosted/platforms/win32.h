@@ -491,9 +491,9 @@ public:
 	{
 		return handle;
 	}
-	explicit constexpr operator bool() const noexcept
+	explicit operator bool() const noexcept
 	{
-		return handle!=nullptr;
+		return handle!=nullptr&&handle!=reinterpret_cast<void*>(static_cast<::std::intptr_t>(-1));
 	}
 	template<nt_family family2>
 	explicit constexpr operator basic_nt_family_io_observer<family2,char_type>() const noexcept
@@ -855,7 +855,7 @@ public:
 	{}
 	basic_win32_family_file& operator=(basic_win32_family_file&& __restrict b) noexcept
 	{
-		if(this->handle)[[likely]]
+		if(*this)[[likely]]
 			::fast_io::win32::CloseHandle(this->handle);
 		this->handle = b.handle;
 		b.handle=nullptr;
@@ -863,13 +863,13 @@ public:
 	}
 	void reset(native_handle_type newhandle=nullptr) noexcept
 	{
-		if(this->handle)[[likely]]
+		if(*this)[[likely]]
 			::fast_io::win32::CloseHandle(this->handle);
 		this->handle=newhandle;
 	}
 	void close()
 	{
-		if(this->handle)[[likely]]
+		if(*this)[[likely]]
 		{
 			auto error{::fast_io::win32::CloseHandle(this->handle)};
 			this->handle=nullptr;//POSIX standard says we should never call close(2) again even close syscall fails
@@ -909,8 +909,10 @@ public:
 	}
 	~basic_win32_family_file()
 	{
-		if(this->handle)[[likely]]
+		if(*this)[[likely]]
+		{
 			::fast_io::win32::CloseHandle(this->handle);
+		}
 	}
 };
 
