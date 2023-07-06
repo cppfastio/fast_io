@@ -1083,22 +1083,51 @@ using u16nt_file=basic_nt_file<char16_t>;
 using u32nt_io_observer=basic_nt_io_observer<char32_t>;
 using u32nt_file=basic_nt_file<char32_t>;
 
+namespace details
+{
+
+template<int fd>
+inline void* nt_get_stdhandle() noexcept
+{
+	using prtl_user_process_parameters
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
+#endif
+	=
+	::fast_io::win32::nt::rtl_user_process_parameters*;
+	auto ppeb{reinterpret_cast<prtl_user_process_parameters>(::fast_io::nt::RtlGetCurrentPeb()->ProcessParameters)};
+	if constexpr(fd==0)
+	{
+		return ppeb->StandardInput;
+	}
+	else if constexpr(fd==1)
+	{
+		return ppeb->StandardOutput;
+	}
+	else
+	{
+		return ppeb->StandardError;
+	}
+}
+
+}
+
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-10))};
+	return {::fast_io::details::nt_get_stdhandle<0>()};
 }
 
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-11))};
+	return {::fast_io::details::nt_get_stdhandle<1>()};
 }
 
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-12))};
+	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
 
