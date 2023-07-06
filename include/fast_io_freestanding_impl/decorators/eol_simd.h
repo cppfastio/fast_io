@@ -13,7 +13,6 @@ inline constexpr deco_result<char_type,char_type>
 {
 	constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
 	constexpr unsigned N{initialdiffn/sizeof(char_type)};
-	constexpr unsigned Np1{N+1u};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	constexpr char_type lfchct{char_literal_v<u8'\n',std::remove_cvref_t<char_type>>};
 	constexpr char_type lfchr{char_literal_v<u8'\r',std::remove_cvref_t<char_type>>};

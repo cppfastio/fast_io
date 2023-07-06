@@ -7,6 +7,7 @@
 #include"scatterp.h"
 #include"scatterpbytes.h"
 #include"decay.h"
+#include"range.h"
 
 namespace fast_io
 {

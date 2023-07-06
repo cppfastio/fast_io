@@ -951,7 +951,14 @@ public:
 	basic_posix_file(nt_at_entry nate,T const& file,open_mode om,perms pm=static_cast<perms>(436)):
 		basic_posix_file(basic_win32_file<char_type>(nate,file,om,pm),om)
 	{}
-
+	template<nt_family family>
+	explicit constexpr basic_posix_file(io_construct_t,basic_nt_family_io_observer<family,char_type> hd,open_mode m) noexcept:
+		basic_posix_io_observer<char_type>{details::open_fd_from_handle<ch_type>(hd.handle,m)}
+	{}
+	template<win32_family family>
+	explicit constexpr basic_posix_file(io_construct_t,basic_win32_family_io_observer<family,char_type> hd,open_mode m) noexcept:
+		basic_posix_io_observer<char_type>{details::open_fd_from_handle<ch_type>(hd.handle,m)}
+	{}
 #else
 
 #if defined(__CYGWIN__)

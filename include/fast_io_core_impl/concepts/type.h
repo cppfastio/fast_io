@@ -117,4 +117,11 @@ end = 2,				//SEEK_END
 using uintfpos_t = ::std::uintmax_t;
 using intfpos_t = ::std::intmax_t;
 
+struct io_construct_t
+{
+explicit constexpr io_construct_t() noexcept = default;
+};
+
+inline constexpr io_construct_t io_construct{};
+
 }

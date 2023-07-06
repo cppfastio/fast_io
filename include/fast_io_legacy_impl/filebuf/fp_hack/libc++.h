@@ -164,4 +164,28 @@ inline void fp_hack_open(std::basic_filebuf<char_type,traits_type>* fb,FILE* fp,
 	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+libcxx_fp_location<char_type,traits_type>,__builtin_addressof(fp),sizeof(fp));
 }
 
+template<typename CharT, typename Traits>
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
+#endif
+inline std::basic_filebuf<CharT, Traits>* open_libcxx_hacked_basic_filebuf_impl(FILE* fp, ::std::ios::openmode mode)
+{
+	filebuf_guard<CharT, Traits> guard(new std::basic_filebuf<CharT, Traits>);
+	std::basic_filebuf<CharT, Traits> *fb{guard.new_filebuf};
+	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+
+		libcxx_fp_location<CharT,Traits>,__builtin_addressof(fp),sizeof(fp));
+	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+
+		libcxx_om_location<CharT,Traits>,__builtin_addressof(mode),sizeof(mode));
+	return guard.release();
+}
+
+template<typename CharT, typename Traits>
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
+#endif
+inline std::basic_filebuf<CharT, Traits>* open_hacked_basic_filebuf(FILE* fp, ::fast_io::open_mode mode)
+{
+	return open_libcxx_hacked_basic_filebuf_impl<CharT,Traits>(fp,::fast_io::details::calculate_fstream_file_open_mode(mode));
+}
+
 }

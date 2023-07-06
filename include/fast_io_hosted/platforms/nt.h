@@ -922,7 +922,7 @@ inline void truncate(basic_nt_family_io_observer<family,ch_type> handle,std::uin
 template<nt_family family,std::integral ch_type>
 inline posix_file_status status(basic_nt_family_io_observer<family,ch_type> handle)
 {
-	return win32::win32::details::nt_status_impl<family==nt_family::zw>(handle.handle);
+	return win32::nt::details::nt_status_impl<family==nt_family::zw>(handle.handle);
 }
 #endif
 
@@ -1017,76 +1017,7 @@ public:
 	explicit basic_nt_family_file(io_kernel_t,T const& t,open_mode om,perms pm=static_cast<perms>(436)):basic_nt_family_io_observer<family,ch_type>{::fast_io::win32::nt::details::nt_create_file_kernel_impl<family==nt_family::zw>(t,{om,pm})}{}
 	template<::fast_io::constructible_to_os_c_str T>
 	explicit basic_nt_family_file(io_kernel_t,nt_at_entry ent,T const& t,open_mode om,perms pm=static_cast<perms>(436)):basic_nt_family_io_observer<family,ch_type>{::fast_io::win32::nt::details::nt_create_file_at_impl<family==nt_family::zw,true>(ent.handle,t,{om,pm})}{}
-	
-	template<::fast_io::constructible_to_os_c_str T>
-	constexpr bool open(nt_family_file_factory<family>&& hd) noexcept
-	{
-		bool ok{this->handle==nullptr};
-		if(ok)
-		{
-			this->handle=hd.handle;
-			hd.handle=nullptr;
-		}
-		return ok;
-	}
-	bool open(io_dup_t,basic_nt_family_io_observer<family,ch_type> wiob)
-	{
-		bool ok{this->handle==nullptr};
-		if(ok)
-		{
-			this->handle=win32::nt::details::nt_dup_impl<family==nt_family::zw>(wiob.handle);
-		}
-		return ok;
-	}
-	bool open(nt_fs_dirent fsdirent,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		bool ok{this->handle==nullptr};
-		if(ok)
-		{
-			this->handle=win32::nt::details::nt_family_create_file_fs_dirent_impl<family==nt_family::zw>(fsdirent.handle,fsdirent.filename.c_str(),fsdirent.filename.size(),{om,pm});
-		}
-		return ok;
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	bool open(T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		bool ok{this->handle==nullptr};
-		if(ok)
-		{
-			this->handle=::fast_io::win32::nt::details::nt_create_file_impl<family==nt_family::zw>(t,{om,pm});
-		}
-		return ok;
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	bool open(nt_at_entry ent,T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		bool ok{this->handle==nullptr};
-		if(ok)
-		{
-			this->handle=::fast_io::win32::nt::details::nt_create_file_at_impl<family==nt_family::zw>(ent.handle,t,{om,pm});
-		}
-		return ok;
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	bool open(io_kernel_t,T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		bool ok{this->handle==nullptr};
-		if(ok)
-		{
-			this->handle=::fast_io::win32::nt::details::nt_create_file_kernel_impl<family==nt_family::zw>(t,{om,pm});
-		}
-		return ok;
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	bool open(io_kernel_t,nt_at_entry ent,T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		bool ok{this->handle==nullptr};
-		if(ok)
-		{
-			this->handle=::fast_io::win32::nt::details::nt_create_file_at_impl<family==nt_family::zw,true>(ent.handle,t,{om,pm});
-		}
-		return ok;
-	}
+
 	void close()
 	{
 		if(this->handle)[[likely]]
@@ -1102,42 +1033,6 @@ public:
 		if(this->handle)[[likely]]
 			win32::nt::nt_close<family==nt_family::zw>(this->handle);
 		this->handle=newhandle;
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	constexpr void reopen(nt_family_file_factory<family>&& hd) noexcept
-	{
-		if(this->handle)[[likely]]
-			win32::nt::nt_close<family==nt_family::zw>(this->handle);
-		this->handle=hd.handle;
-		hd.handle=nullptr;
-	}
-	void reopen(io_dup_t,basic_nt_family_io_observer<family,ch_type> wiob)
-	{
-		this->reset(win32::nt::details::nt_dup_impl<family==nt_family::zw>(wiob.handle));
-	}
-	void reopen(nt_fs_dirent fsdirent,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		this->reset(win32::nt::details::nt_family_create_file_fs_dirent_impl<family==nt_family::zw>(fsdirent.handle,fsdirent.filename.c_str(),fsdirent.filename.size(),{om,pm}));
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	void reopen(T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		this->reset(::fast_io::win32::nt::details::nt_create_file_impl<family==nt_family::zw>(t,{om,pm}));
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	void reopen(nt_at_entry ent,T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		this->reset(::fast_io::win32::nt::details::nt_create_file_at_impl<family==nt_family::zw>(ent.handle,t,{om,pm}));
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	void reopen(io_kernel_t,T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		this->reset(::fast_io::win32::nt::details::nt_create_file_kernel_impl<family==nt_family::zw>(t,{om,pm}));
-	}
-	template<::fast_io::constructible_to_os_c_str T>
-	void reopen(io_kernel_t,nt_at_entry ent,T const& t,open_mode om,perms pm=static_cast<perms>(436))
-	{
-		this->reset(::fast_io::win32::nt::details::nt_create_file_at_impl<family==nt_family::zw,true>(ent.handle,t,{om,pm}));
 	}
  	basic_nt_family_file(basic_nt_family_file const& other):
 		basic_nt_family_io_observer<family,ch_type>(win32::nt::details::nt_dup_impl<family==nt_family::zw>(other.handle))
@@ -1188,22 +1083,51 @@ using u16nt_file=basic_nt_file<char16_t>;
 using u32nt_io_observer=basic_nt_io_observer<char32_t>;
 using u32nt_file=basic_nt_file<char32_t>;
 
+namespace details
+{
+
+template<int fd>
+inline void* nt_get_stdhandle() noexcept
+{
+	using prtl_user_process_parameters
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+[[__gnu__::__may_alias__]]
+#endif
+	=
+	::fast_io::win32::nt::rtl_user_process_parameters*;
+	auto ppeb{reinterpret_cast<prtl_user_process_parameters>(::fast_io::nt::RtlGetCurrentPeb()->ProcessParameters)};
+	if constexpr(fd==0)
+	{
+		return ppeb->StandardInput;
+	}
+	else if constexpr(fd==1)
+	{
+		return ppeb->StandardOutput;
+	}
+	else
+	{
+		return ppeb->StandardError;
+	}
+}
+
+}
+
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-10))};
+	return {::fast_io::details::nt_get_stdhandle<0>()};
 }
 
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-11))};
+	return {::fast_io::details::nt_get_stdhandle<1>()};
 }
 
 template<std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-12))};
+	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
 
@@ -1231,19 +1155,19 @@ using u32zw_file=basic_zw_file<char32_t>;
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-10))};
+	return {::fast_io::details::nt_get_stdhandle<0>()};
 }
 
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-11))};
+	return {::fast_io::details::nt_get_stdhandle<1>()};
 }
 
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-12))};
+	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
 #if 0
