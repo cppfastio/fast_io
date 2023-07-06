@@ -1155,19 +1155,19 @@ using u32zw_file=basic_zw_file<char32_t>;
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-10))};
+	return {::fast_io::details::nt_get_stdhandle<0>()};
 }
 
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-11))};
+	return {::fast_io::details::nt_get_stdhandle<1>()};
 }
 
 template<std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(static_cast<std::uint_least32_t>(-12))};
+	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
 #if 0
