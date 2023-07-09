@@ -163,11 +163,11 @@ inline constexpr void print_define(io_reserve_type_t<char_type,::fast_io::manipu
 {
 	if(c.pred)
 	{
-		::fast_io::io::operations::print_freestanding<false>(b,c.t1);
+		::fast_io::operations::print_freestanding<false>(b,c.t1);
 	}
 	else
 	{
-		::fast_io::io::operations::print_freestanding<false>(b,c.t2);
+		::fast_io::operations::print_freestanding<false>(b,c.t2);
 	}
 }
 
