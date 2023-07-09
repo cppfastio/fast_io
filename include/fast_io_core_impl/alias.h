@@ -11,6 +11,10 @@ struct cannot_output_type
 inline explicit constexpr cannot_output_type() noexcept = default;
 };
 
+template <typename T>
+concept alias_return_lvalue_ref = !(::std::is_function_v<::std::remove_cvref_t<T>> || alias_printable<::std::remove_cvref_t<T>>) &&
+	std::is_lvalue_reference_v<T>;
+
 }
 
 template<typename T>
@@ -37,7 +41,13 @@ inline constexpr auto io_print_forward(T&& t) noexcept
 	}
 	else if constexpr(status_io_print_forwardable<char_type,T>)
 		return status_io_print_forward(io_alias_type<char_type>,::std::forward<T>(t));
-	else if constexpr(std::is_trivially_copyable_v<no_cvref_t>&&sizeof(no_cvref_t)<=sizeof(std::size_t)*2)
+	else if constexpr (std::is_trivially_copyable_v<no_cvref_t> &&
+#if defined(_MSC_VER) || (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+		sizeof(no_cvref_t) <= 8u
+#else
+		sizeof(no_cvref_t) <= sizeof(std::uintptr_t) * 2
+#endif	
+		)
 		return static_cast<no_cvref_t>(t);
 	else
 		return parameter<std::remove_reference_t<T> const&>{t};
