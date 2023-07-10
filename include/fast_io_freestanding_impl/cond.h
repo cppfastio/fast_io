@@ -51,6 +51,19 @@ inline constexpr auto cond(bool pred, T1&& t1, T2&& t2) noexcept {
 
 }  // namespace manipulators
 
+namespace details {
+
+	template <typename T1, typename T2>
+	concept cond_transferable_value =
+		::std::is_trivially_copyable_v<::fast_io::manipulators::condition<T1, T2>> &&
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+		sizeof(::fast_io::manipulators::condition<T1, T2>) <= 8u
+#else
+		sizeof(::fast_io::manipulators::condition<T1, T2>) <= (sizeof(std::uintptr_t) * 2)
+#endif
+		;
+}
+
 template <std::integral char_type, typename T1, typename T2>
 	requires(reserve_printable<char_type, T1> && reserve_printable<char_type, T2>)
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>) noexcept {
@@ -64,7 +77,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, :
 }
 
 template <std::integral char_type, typename T1, typename T2>
-	requires(scatter_printable<char_type, T1> && scatter_printable<char_type, T2>)
+	requires(scatter_printable<char_type, T1> && scatter_printable<char_type, T2> && details::cond_transferable_value<T1, T2>)
 inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>, ::fast_io::manipulators::condition<T1, T2> c) {
 	if (c.pred) {
 		return {print_scatter_define(io_reserve_type<char_type, T1>, c.t1)};
@@ -73,17 +86,17 @@ inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_t
 	}
 }
 
-namespace details {
+template <std::integral char_type, typename T1, typename T2>
+	requires(scatter_printable<char_type, T1> && scatter_printable<char_type, T2> && !details::cond_transferable_value<T1, T2>)
+inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>, ::fast_io::manipulators::condition<T1, T2> const& c) {
+	if (c.pred) {
+		return {print_scatter_define(io_reserve_type<char_type, T1>, c.t1)};
+	} else {
+		return {print_scatter_define(io_reserve_type<char_type, T2>, c.t2)};
+	}
+}
 
-template <typename T1, typename T2>
-concept cond_transferable_value =
-	::std::is_trivially_copyable_v<::fast_io::manipulators::condition<T1, T2>> &&
-#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-	sizeof(::fast_io::manipulators::condition<T1, T2>) <= 8u
-#else
-	sizeof(::fast_io::manipulators::condition<T1, T2>) <= (sizeof(std::uintptr_t) * 2)
-#endif
-	;
+namespace details {
 
 template <typename char_type, typename T1>
 concept cond_ok_dynamic_rsv_printable_impl =
