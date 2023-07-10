@@ -94,23 +94,48 @@ concept cond_ok_printable_impl =
 	cond_ok_dynamic_rsv_printable_impl<char_type, T1> || printable<char_type, T1>;
 
 template <std::integral char_type, typename T1>
-inline constexpr ::std::size_t cond_print_reserve_size_impl(T1&& t1) {
+	requires(cond_value_transferable_value<T1>)
+inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 t1) {
 	if constexpr (scatter_printable<char_type, T1>) {
-		return print_scatter_define(io_reserve_type<char_type, T1>, ::std::forward<T1>(t1)).len;
+		return print_scatter_define(io_reserve_type<char_type, T1>, t1).len;
 	} else if constexpr (reserve_printable<char_type, T1>) {
 		constexpr std::size_t sz{print_reserve_size(io_reserve_type<char_type, T1>)};
 		return sz;
 	} else {
-		return print_reserve_size(io_reserve_type<char_type, T1>, ::std::forward<T1>(t1));
+		return print_reserve_size(io_reserve_type<char_type, T1>, t1);
 	}
 }
 
 template <std::integral char_type, typename T1>
-inline constexpr char_type* cond_print_reserve_define_impl(char_type* iter, T1&& t1) {
+	requires(!cond_value_transferable_value<T1>)
+inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 const& t1) {
 	if constexpr (scatter_printable<char_type, T1>) {
-		return copy_scatter(print_scatter_define(io_reserve_type<char_type, T1>, ::std::forward<T1>(t1)), iter);
+		return print_scatter_define(io_reserve_type<char_type, T1>, t1).len;
+	} else if constexpr (reserve_printable<char_type, T1>) {
+		constexpr std::size_t sz{print_reserve_size(io_reserve_type<char_type, T1>)};
+		return sz;
 	} else {
-		return print_reserve_define(io_reserve_type<char_type, T1>, iter, ::std::forward<T1>(t1));
+		return print_reserve_size(io_reserve_type<char_type, T1>, t1);
+	}
+}
+
+template <std::integral char_type, typename T1>
+	requires(cond_value_transferable_value<T1>)
+inline constexpr char_type* cond_print_reserve_define_impl(char_type* iter, T1 t1) {
+	if constexpr (scatter_printable<char_type, T1>) {
+		return copy_scatter(print_scatter_define(io_reserve_type<char_type, T1>, t1), iter);
+	} else {
+		return print_reserve_define(io_reserve_type<char_type, T1>, iter, t1);
+	}
+}
+
+template <std::integral char_type, typename T1>
+	requires(!cond_value_transferable_value<T1>)
+inline constexpr char_type* cond_print_reserve_define_impl(char_type* iter, T1 const& t1) {
+	if constexpr (scatter_printable<char_type, T1>) {
+		return copy_scatter(print_scatter_define(io_reserve_type<char_type, T1>, t1), iter);
+	} else {
+		return print_reserve_define(io_reserve_type<char_type, T1>, iter, t1);
 	}
 }
 
