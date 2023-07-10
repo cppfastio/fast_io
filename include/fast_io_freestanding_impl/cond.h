@@ -5,7 +5,7 @@ namespace details {
 template <typename T1>
 concept cond_value_transferable_value =
 	::std::is_trivially_copyable_v<T1> &&
-#if defined(_MSC_VER) || (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	sizeof(T1) <= 8u
 #else
 	sizeof(T1) <= (sizeof(std::uintptr_t) * 2)
@@ -78,7 +78,7 @@ namespace details {
 template <typename T1, typename T2>
 concept cond_transferable_value =
 	::std::is_trivially_copyable_v<::fast_io::manipulators::condition<T1, T2>> &&
-#if defined(_MSC_VER) || (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	sizeof(::fast_io::manipulators::condition<T1, T2>) <= 8u
 #else
 	sizeof(::fast_io::manipulators::condition<T1, T2>) <= (sizeof(std::uintptr_t) * 2)
