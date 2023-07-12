@@ -69,8 +69,9 @@ inline constexpr auto left(T&& t,std::size_t n) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
-
-		return width_t<scalar_placement::left,noref>{t,n};defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
+	{
+		return width_t<scalar_placement::left,noref>{t,n};
+	}
 	else
 	{
 		return width_t<scalar_placement::left,noref const&>{t,n};
