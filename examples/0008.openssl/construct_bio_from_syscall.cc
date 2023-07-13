@@ -27,6 +27,7 @@ This is an example to explain how fast_io's files work with each other, and how 
 	print(bf,"Hello World from fast_io::bio_file\n");
 	fast_io::posix_tzset();
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
+	using namespace ::fast_io::mnp;
 	println(
 	"Unix Timestamp:",unix_ts,"\n"
 	"Universe Timestamp:",static_cast<fast_io::universe_timestamp>(unix_ts),"\n"
@@ -50,17 +51,17 @@ This is an example to explain how fast_io's files work with each other, and how 
 #else
 	"Unknown C++ standard library\n"
 #endif
-	"BIO*:",bf.bio,"\n"
-	"FILE*:",static_cast<fast_io::c_io_observer>(bf).fp,"\n"
-	"fd:",static_cast<fast_io::posix_io_observer>(bf).fd
+	"BIO*:",handlevw(bf.bio),"\n"
+	"FILE*:",handlevw(static_cast<fast_io::c_io_observer>(bf).fp),"\n"
+	"fd:",handlevw(static_cast<fast_io::posix_io_observer>(bf).fd)
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	,"\n"
-	"win32 HANDLE:",static_cast<fast_io::win32_io_observer>(bf).handle
+	"win32 HANDLE:",handlevw(static_cast<fast_io::win32_io_observer>(bf).handle)
 #ifndef _WIN32_WINDOWS
 //NT kernel
 	,"\n"
-	"zw HANDLE:",static_cast<fast_io::zw_io_observer>(bf).handle,"\n"
-	"nt HANDLE:",static_cast<fast_io::nt_io_observer>(bf).handle
+	"zw HANDLE:",handlevw(static_cast<fast_io::zw_io_observer>(bf).handle),"\n"
+	"nt HANDLE:",handlevw(static_cast<fast_io::nt_io_observer>(bf).handle)
 #endif
 #endif
 );
