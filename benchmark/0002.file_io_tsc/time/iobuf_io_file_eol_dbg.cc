@@ -19,8 +19,9 @@ int main()
 	fast_io::timer t(u8"input");
 	fast_io::iobuf_io_file ibf(::fast_io::io_cookie_type<::fast_io::native_file>,"iobuf_io_file_eol.txt",::fast_io::open_mode::in);
 	fast_io::operations::add_io_decos(ibf,::fast_io::decorators::native_eol{});
-	for(std::size_t i{};i!=N;++i)
-		scan(ibf,vec[i]);
+
+	fast_io::iobuf_io_file obf(::fast_io::io_cookie_type<::fast_io::native_file>,"iobuf_io_file_eol_dbg.txt",::fast_io::open_mode::out);
+	::fast_io::operations::transmit_bytes_until_eof(obf,ibf);
 	}
 }
 
