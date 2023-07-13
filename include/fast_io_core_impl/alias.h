@@ -41,13 +41,7 @@ inline constexpr auto io_print_forward(T&& t) noexcept
 	}
 	else if constexpr(status_io_print_forwardable<char_type,T>)
 		return status_io_print_forward(io_alias_type<char_type>,::std::forward<T>(t));
-	else if constexpr (std::is_trivially_copyable_v<no_cvref_t> &&
-#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-		sizeof(no_cvref_t) <= 8u
-#else
-		sizeof(no_cvref_t) <= sizeof(std::uintptr_t) * 2
-#endif	
-		)
+	else if constexpr (std::is_trivially_copyable_v<no_cvref_t>)
 		return static_cast<no_cvref_t>(t);
 	else
 		return parameter<std::remove_reference_t<T> const&>{t};
