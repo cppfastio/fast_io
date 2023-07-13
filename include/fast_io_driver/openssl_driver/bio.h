@@ -103,7 +103,12 @@ struct bio_io_cookie_functions_t
 				try
 				{
 #endif
-					*readd=static_cast<::std::size_t>(::fast_io::operations::read_some_bytes(::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),buf,buf+size)-buf);
+					*readd=static_cast<::std::size_t>(
+						::fast_io::operations::read_some_bytes(
+						::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),
+						reinterpret_cast<::std::byte*>(buf),
+						reinterpret_cast<::std::byte*>(buf)+size)-
+						reinterpret_cast<::std::byte*>(buf));
 					return 1;
 #ifdef __cpp_exceptions
 				}
@@ -122,8 +127,11 @@ struct bio_io_cookie_functions_t
 				try
 				{
 #endif
-					decltype(auto) v{::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio)};
-					*written=static_cast<::std::size_t>(::fast_io::operations::write_some_bytes(v,buf,buf+size)-buf);
+					*written=static_cast<::std::size_t>(::fast_io::operations::write_some_bytes(
+						::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),
+						reinterpret_cast<::std::byte const*>(buf),
+						reinterpret_cast<::std::byte const*>(buf)+size)-
+						reinterpret_cast<::std::byte const*>(buf));
 					return 1;
 #ifdef __cpp_exceptions
 				}
@@ -135,11 +143,13 @@ struct bio_io_cookie_functions_t
 			};
 		}
 		if constexpr(!std::is_reference_v<stm>&&!std::is_trivially_copyable_v<value_type>)
+		{
 			functions.destroy=[](BIO* bbio) noexcept -> int
 			{
 				delete reinterpret_cast<value_type*>(noexcept_call(BIO_get_data,bbio));
 				return 1;
 			};
+		}
 #if __cpp_rtti
 		functions.name=typeid(stm).name();
 		constexpr int value(BIO_TYPE_DESCRIPTOR-BIO_TYPE_START);
@@ -172,7 +182,13 @@ inline BIO* bio_new_stream_type(bio_method_st const* methods)
 template<typename stm>
 inline BIO* construct_bio_by_t(void* ptr)
 {
-	auto bp{bio_new_stream_type(__builtin_addressof(bio_io_cookie_functions<stm>.functions))};
+	using bio_method_st_const_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= bio_method_st const*;
+	auto bp{bio_new_stream_type(reinterpret_cast<bio_method_st_const_may_alias_ptr>(
+		__builtin_addressof(bio_io_cookie_functions<stm>.functions)))};
 	::fast_io::noexcept_call(BIO_set_data,bp,ptr);
 	return bp;
 }
