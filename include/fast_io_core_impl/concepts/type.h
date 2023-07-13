@@ -124,4 +124,20 @@ explicit constexpr io_construct_t() noexcept = default;
 
 inline constexpr io_construct_t io_construct{};
 
+template<typename T>
+struct io_cookie_type_t
+{
+	explicit inline constexpr io_cookie_type_t() noexcept = default;
+};
+
+template<typename T>
+inline constexpr io_cookie_type_t<T> io_cookie_type{};
+
+struct io_cookie_t
+{
+	explicit inline constexpr io_cookie_t() noexcept = default;
+};
+
+inline constexpr io_cookie_t io_cookie{};
+
 }
