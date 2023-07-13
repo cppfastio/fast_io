@@ -133,6 +133,7 @@ struct bio_io_cookie_functions_t
 						reinterpret_cast<::std::byte const*>(buf),
 						reinterpret_cast<::std::byte const*>(buf)+size)-
 						reinterpret_cast<::std::byte const*>(buf));
+					*written=size;
 					return 1;
 #ifdef __cpp_exceptions
 				}
@@ -221,7 +222,10 @@ struct bio_stm_scope_ptr
 	bio_stm_scope_ptr& operator=(bio_stm_scope_ptr const&)=delete;
 	~bio_stm_scope_ptr()
 	{
-		delete s;
+		if(s)
+		{
+			delete s;
+		}
 	}
 };
 
@@ -229,7 +233,9 @@ template<typename stream>
 inline BIO* construct_bio_by_phase2(stream* smptr)
 {
 	bio_stm_scope_ptr<stream> s(smptr);
-	return construct_bio_by_t<stream>(smptr);
+	auto bio{construct_bio_by_t<stream>(smptr)};
+	s.s=nullptr;
+	return bio;
 }
 
 template<typename stm,typename... Args>
