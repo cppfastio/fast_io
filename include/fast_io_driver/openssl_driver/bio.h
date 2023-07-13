@@ -95,8 +95,7 @@ struct bio_io_cookie_functions_t
 	explicit bio_io_cookie_functions_t()
 	{
 		using value_type = std::remove_reference_t<stm>;
-#if 0
-		if constexpr(input_stream<value_type>)
+		if constexpr(::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<value_type>)
 		{
 			functions.bread=[](BIO* bbio,char* buf,std::size_t size,std::size_t* readd) noexcept->int
 			{
@@ -104,7 +103,7 @@ struct bio_io_cookie_functions_t
 				try
 				{
 #endif
-					*readd=::fast_io::operations::read_some(::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),buf,buf+size)-buf;
+					*readd=static_cast<::std::size_t>(::fast_io::operations::read_some_bytes(::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),buf,buf+size)-buf);
 					return 1;
 #ifdef __cpp_exceptions
 				}
@@ -115,7 +114,7 @@ struct bio_io_cookie_functions_t
 #endif
 			};
 		}
-		if constexpr(output_stream<value_type>)
+		if constexpr(::fast_io::operations::decay::defines::has_any_of_write_bytes_operations<value_type>)
 		{
 			functions.bwrite=[](BIO* bbio,char const* buf,std::size_t size,std::size_t* written) noexcept->int
 			{
@@ -124,7 +123,7 @@ struct bio_io_cookie_functions_t
 				{
 #endif
 					decltype(auto) v{::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio)};
-					*written=::fast_io::operations::write_some(v,buf,buf+size)-buf;
+					*written=static_cast<::std::size_t>(::fast_io::operations::write_some_bytes(v,buf,buf+size)-buf);
 					return 1;
 #ifdef __cpp_exceptions
 				}
@@ -135,7 +134,6 @@ struct bio_io_cookie_functions_t
 #endif
 			};
 		}
-#endif
 		if constexpr(!std::is_reference_v<stm>&&!std::is_trivially_copyable_v<value_type>)
 			functions.destroy=[](BIO* bbio) noexcept -> int
 			{
@@ -310,14 +308,12 @@ public:
 	constexpr basic_bio_file(basic_bio_io_observer<ch_type>) noexcept=delete;
 	constexpr basic_bio_file& operator=(basic_bio_io_observer<ch_type>) noexcept=delete;
 
-#if 0
 	template<typename stm,typename ...Args>
 	requires (!std::is_reference_v<stm>&&std::constructible_from<stm,Args...>)
 	basic_bio_file(::fast_io::io_cookie_type_t<stm>,Args&& ...args):
 		basic_bio_io_observer<char_type>{details::construct_bio_by_args<stm>(::std::forward<Args>(args)...)}
 	{
 	}
-#endif
 
 	template<c_family family>
 	basic_bio_file(basic_c_family_file<family,char_type>&& bmv,fast_io::open_mode om):
@@ -541,10 +537,8 @@ inline void print_define_openssl_error(output out)
 	}
 	else
 	{
-#if 0
 		bio_file bf(io_cookie_type<output>,out);
-		::fast_io::noexcept_call(ERR_print_errors,bf.bio);		
-#endif
+		::fast_io::noexcept_call(ERR_print_errors,bf.bio);
 	}
 }
 
