@@ -127,7 +127,8 @@ struct bio_io_cookie_functions_t
 				try
 				{
 #endif
-					*written=static_cast<::std::size_t>(::fast_io::operations::write_some_bytes(
+					*written=static_cast<::std::size_t>(
+						::fast_io::operations::write_some_bytes(
 						::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),
 						reinterpret_cast<::std::byte const*>(buf),
 						reinterpret_cast<::std::byte const*>(buf)+size)-
