@@ -447,13 +447,13 @@ inline constexpr auto operator<=>(basic_bio_io_observer<ch_type> a,basic_bio_io_
 #endif
 
 template<std::integral ch_type>
-inline constexpr basic_bio_io_observer<ch_type> io_stream_ref_deine(basic_bio_io_observer<ch_type> other) noexcept
+inline constexpr basic_bio_io_observer<ch_type> io_stream_ref_define(basic_bio_io_observer<ch_type> other) noexcept
 {
 	return other;
 }
 
 template<std::integral ch_type>
-inline constexpr basic_bio_io_observer<char> io_bytes_stream_ref_deine(basic_bio_io_observer<ch_type> other) noexcept
+inline constexpr basic_bio_io_observer<char> io_bytes_stream_ref_define(basic_bio_io_observer<ch_type> other) noexcept
 {
 	return other;
 }
