@@ -133,7 +133,6 @@ struct bio_io_cookie_functions_t
 						reinterpret_cast<::std::byte const*>(buf),
 						reinterpret_cast<::std::byte const*>(buf)+size)-
 						reinterpret_cast<::std::byte const*>(buf));
-					*written=size;
 					return 1;
 #ifdef __cpp_exceptions
 				}
