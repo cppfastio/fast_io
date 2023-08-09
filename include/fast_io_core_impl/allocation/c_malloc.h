@@ -1,4 +1,8 @@
 ﻿#pragma once
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:6308)
+#endif
 
 namespace fast_io
 {
@@ -102,3 +106,7 @@ public:
 };
 
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
