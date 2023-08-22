@@ -851,7 +851,7 @@ inline constexpr U shiftright(U low_part,U high_part,std::uint_least8_t shift) n
 /*
 https://code.woboq.org/llvm/compiler-rt/lib/builtins/udivmodti4.c.html#__udivmodti4
 */
-template<std::unsigned_integral U>
+template<typename U>
 inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noexcept
 {
 	// special cases, X is unknown, K != 0
@@ -889,13 +889,16 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 		{
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-			return {n_high >> __builtin_ctzll(d_high),0,n_low,n_high & (d_high - 1)};
-#else
-			return {n_high >> static_cast<std::uint_least32_t>(std::countl_zero(d_high)),0,n_low,n_high & (d_high - 1)};
+			if constexpr(sizeof(d_high)==sizeof(unsigned long long))
+			{
+				return {n_high >> __builtin_ctzll(d_high),0,n_low,n_high & (d_high - 1)};
+			}
+			else
 #endif
-#else
-			return {n_high >> static_cast<std::uint_least32_t>(std::countl_zero(d_high)),0,n_low,n_high & (d_high - 1)};
 #endif
+			{
+				return {n_high >> static_cast<std::uint_least32_t>(std::countl_zero(d_high)),0,n_low,n_high & (d_high - 1)};
+			}
 
 		}
 		// K K
@@ -903,14 +906,16 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 		// K 0
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-		sr=static_cast<std::uint_least32_t>(__builtin_clzll(d_high) - __builtin_clzll(n_high));
-#else
-		sr=static_cast<std::uint_least32_t>(std::countl_zero(d_high) - std::countl_zero(n_high));
+		if constexpr(sizeof(d_high)==sizeof(unsigned long long))
+		{
+			sr=static_cast<std::uint_least32_t>(__builtin_clzll(d_high) - __builtin_clzll(n_high));
+		}
+		else
 #endif
-#else
-		sr=static_cast<std::uint_least32_t>(std::countl_zero(d_high) - std::countl_zero(n_high));
 #endif
-
+		{
+			sr=static_cast<std::uint_least32_t>(std::countl_zero(d_high) - std::countl_zero(n_high));
+		}
 		// 0 <= sr <= n_udword_bits - 2 or sr large
 		if (sr > n_udword_bits_m2)
 			return {0,0,n_low,n_high};
@@ -937,13 +942,16 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 					return {n_low,n_high,rem,0};
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-				sr = static_cast<std::uint_least32_t>(__builtin_ctzll(d_low));
-#else
-				sr = static_cast<std::uint_least32_t>(std::countl_zero(d_low));
+				if constexpr(sizeof(d_low)==sizeof(unsigned long long))
+				{
+					sr = static_cast<std::uint_least32_t>(__builtin_ctzll(d_low));
+				}
+				else
 #endif
-#else
-				sr = static_cast<std::uint_least32_t>(std::countl_zero(d_low));
 #endif
+				{
+					sr = static_cast<std::uint_least32_t>(std::countl_zero(d_low));
+				}
 				q_high = n_high >> sr;
 				q_low = (n_high << (n_udword_bits - sr)) | (n_low >> sr);
 				return {q_low,q_high,rem,0};
@@ -953,13 +961,16 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 			// 0 K
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-			sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(__builtin_clzll(d_low)) - static_cast<std::uint_least32_t>(__builtin_clzll(n_high));
-#else
-			sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(std::countl_zero(d_low)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
+			if constexpr(sizeof(d_low)==sizeof(unsigned long long))
+			{
+				sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(__builtin_clzll(d_low)) - static_cast<std::uint_least32_t>(__builtin_clzll(n_high));
+			}
+			else
 #endif
-#else
-			sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(std::countl_zero(d_low)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
 #endif
+			{
+				sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(std::countl_zero(d_low)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
+			}
 			// 2 <= sr <= n_utword_bits - 1
 			// q.all = n.all << (n_utword_bits - sr);
 			// r.all = n.all >> sr;
@@ -993,13 +1004,17 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 			// K K
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ctzll)
-			sr = static_cast<std::uint_least32_t>(__builtin_clzll(d_high)) - static_cast<std::uint_least32_t>(__builtin_clzll(n_high));
-#else
-			sr = static_cast<std::uint_least32_t>(std::countl_zero(d_high)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
+			if constexpr(sizeof(d_high)==sizeof(unsigned long long))
+			{
+				sr = static_cast<std::uint_least32_t>(__builtin_clzll(d_high)) - static_cast<std::uint_least32_t>(__builtin_clzll(n_high));
+			}
+			else
 #endif
-#else
-			sr = static_cast<std::uint_least32_t>(std::countl_zero(d_high)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
 #endif
+			{
+
+				sr = static_cast<std::uint_least32_t>(std::countl_zero(d_high)) - static_cast<std::uint_least32_t>(std::countl_zero(n_high));
+			}
 			// 0 <= sr <= n_udword_bits - 1 or sr large
 			if (sr > n_udword_bits_m1)
 				return {0,0,n_low,n_high};
