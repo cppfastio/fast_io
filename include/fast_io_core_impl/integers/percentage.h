@@ -33,7 +33,7 @@ inline constexpr auto percentage_conventional(T num,U deno) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
 	::fast_io::details::base_mani_flags_cache<10,false,false,showpos,false>,
-	::fast_io::manipulators::percentage_precision_t<
+	::fast_io::manipulators::percentage_conventional_t<
 	typename ::fast_io::details::integer_alias_type_traits<T>::alias_type,
 	typename ::fast_io::details::integer_alias_type_traits<U>::alias_type>>{{num,deno}};
 }
@@ -44,7 +44,7 @@ inline constexpr auto comma_percentage_conventional(T num,U deno) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
 	::fast_io::details::base_mani_flags_cache<10,false,false,showpos,true>,
-	::fast_io::manipulators::percentage_precision_t<
+	::fast_io::manipulators::percentage_conventional_t<
 	typename ::fast_io::details::integer_alias_type_traits<T>::alias_type,
 	typename ::fast_io::details::integer_alias_type_traits<U>::alias_type>>{{num,deno}};
 }
@@ -61,6 +61,24 @@ inline constexpr ::std::size_t print_reserve_size(::fast_io::io_reserve_type_t<c
 
 namespace details
 {
+
+template<::std::size_t base,typename T>
+requires (2<=base&&base<=36)
+inline constexpr
+	T compute_base_ul64_max_val() noexcept
+{
+	constexpr
+		T ul64max{static_cast<T>(-1)};
+	constexpr
+		T ulmxdv{ul64max/base};
+	T val{1u};
+	for(;val<=ulmxdv;val*=base);
+	return val;
+}
+
+template<::std::size_t base,typename T>
+requires (2<=base&&base<=36)
+inline constexpr T base_ul64_max_val{::fast_io::details::compute_base_ul64_max_val<base,T>()};
 
 template<::std::size_t base,bool uppercase,bool showpos,::std::integral chartype,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
@@ -88,14 +106,14 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 		}
 		if constexpr(showpos)
 		{
-			char_type sign;
+			chartype sign;
 			if(isnegative)
 			{
-				sign=::fast_io::details::char_literal_v<u8'-',chartype>
+				sign=::fast_io::char_literal_v<u8'-',chartype>;
 			}
 			else
 			{
-				sign=::fast_io::details::char_literal_v<u8'+',chartype>;
+				sign=::fast_io::char_literal_v<u8'+',chartype>;
 			}
 			*iter=sign;
 			++iter;
@@ -104,7 +122,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 		{
 			if(isnegative)
 			{
-				*iter=::fast_io::details::char_literal_v<u8'-',chartype>;
+				*iter=::fast_io::char_literal_v<u8'-',chartype>;
 				++iter;
 			}
 		}
@@ -112,87 +130,219 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 	}
 	else if constexpr(sizeof(T)<sizeof(::std::uint_least32_t))
 	{
-		return prrsv_percentage_conventional_impl(iter,static_cast<::std::uint_least32_t>(numerator),denominator) noexcept
+		return prrsv_percentage_conventional_impl(iter,static_cast<::std::uint_least32_t>(numerator),denominator);
 	}
 	else
 	{
 		if(denominator==0)	//denominator cannot be zero. so we print out nan
 		{
-			if constexpr(uppercase)
+			if constexpr(23u<base)
 			{
-				if constexpr(::std::same_as<chartype,char>)
+				if constexpr(uppercase)
 				{
-					iter=::fast_io::details::copy_string_literal("NAN",iter);
+					if constexpr(::std::same_as<chartype,char>)
+					{
+						iter=::fast_io::details::copy_string_literal("#NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,wchar_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(L"#NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char16_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u"#NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char32_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(U"#NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char8_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u8"#NAN",iter);
+					}
 				}
-				else if constexpr(::std::same_as<chartype,wchar_t>)
+				else
 				{
-					iter=::fast_io::details::copy_string_literal(L"NAN",iter);
-				}
-				else if constexpr(::std::same_as<chartype,char16_t>)
-				{
-					iter=::fast_io::details::copy_string_literal(u"NAN",iter);
-				}
-				else if constexpr(::std::same_as<chartype,char32_t>)
-				{
-					iter=::fast_io::details::copy_string_literal(U"NAN",iter);
-				}
-				else if constexpr(::std::same_as<chartype,char8_t>)
-				{
-					iter=::fast_io::details::copy_string_literal(u8"NAN",iter);
+					if constexpr(::std::same_as<chartype,char>)
+					{
+						iter=::fast_io::details::copy_string_literal("#nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,wchar_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(L"#nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char16_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u"#nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char32_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(U"#nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char8_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u8"#nan",iter);
+					}
 				}
 			}
 			else
 			{
-				if constexpr(::std::same_as<chartype,char>)
+				if constexpr(uppercase)
 				{
-					iter=::fast_io::details::copy_string_literal("nan",iter);
+					if constexpr(::std::same_as<chartype,char>)
+					{
+						iter=::fast_io::details::copy_string_literal("NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,wchar_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(L"NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char16_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u"NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char32_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(U"NAN",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char8_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u8"NAN",iter);
+					}
 				}
-				else if constexpr(::std::same_as<chartype,wchar_t>)
+				else
 				{
-					iter=::fast_io::details::copy_string_literal(L"nan",iter);
-				}
-				else if constexpr(::std::same_as<chartype,char16_t>)
-				{
-					iter=::fast_io::details::copy_string_literal(u"nan",iter);
-				}
-				else if constexpr(::std::same_as<chartype,char32_t>)
-				{
-					iter=::fast_io::details::copy_string_literal(U"nan",iter);
-				}
-				else if constexpr(::std::same_as<chartype,char8_t>)
-				{
-					iter=::fast_io::details::copy_string_literal(u8"nan",iter);
+					if constexpr(::std::same_as<chartype,char>)
+					{
+						iter=::fast_io::details::copy_string_literal("nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,wchar_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(L"nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char16_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u"nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char32_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(U"nan",iter);
+					}
+					else if constexpr(::std::same_as<chartype,char8_t>)
+					{
+						iter=::fast_io::details::copy_string_literal(u8"nan",iter);
+					}
 				}
 			}
 		}
+
 		constexpr
-			T highu{static_cast<T>(base)*static_cast<T>(base)};
-		T numerator10000high;
-		auto numerator10000low{::fast_io::intrinsics::umulh(T,highu,high)};
-		auto denominatordiv2{denominator>>1u};
-		bool denominatorisodd{denominator&1u};
-		if(numerator10000high==0u)
-#if __has_cpp_attribute(likely)
-		[[likely]]
-#endif
+			T twodigits{static_cast<T>(base)*static_cast<T>(base)};
+		constexpr
+			T highu{twodigits*twodigits};
+		constexpr auto tb{::fast_io::details::digits_table<chartype,base,uppercase>};
+		if constexpr(sizeof(T)<sizeof(::std::uint_least64_t))
 		{
+			::std::uint_least64_t numerator10000low{numerator*static_cast<::std::uint_least64_t>(highu)};
+			auto denominatordiv2{denominator>>1u};
+			bool denominatoriseven{!(denominator&1u)};
+
 			auto quotient{numerator10000low/denominator};
 			auto remainder{numerator10000low%denominator};
-			if(remainder)
+			if((denominatordiv2<remainder)||
+				(remainder==denominatordiv2&&denominatoriseven&&
+				((quotient&1u)!=0u)))	//round 
+			{	
+				++quotient;//should be okay
+			}
+			auto quotientdiv100{quotient/twodigits};
+			unsigned quotientmod100{static_cast<unsigned>(quotient%twodigits)};
+			iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientdiv100);
+			*iter=::fast_io::char_literal_v<u8'.',chartype>;
+			++iter;
+			::fast_io::details::non_overlapped_copy_n(tb+(quotientmod100<<1u),2u,iter);
+			iter+=2u;
 		}
 		else
 		{
-
-		}
-		return iter;
-#if 0
-		constexpr
-			unsignednumeratortype un100max{static_cast<unsignednumeratortype>(::std::numeric_limits<U>::max()/static_cast<U>(100u))};
-		decltype(numerator*100u) numerator100;
-
-		numerator100=numerator*100u;//pesudo code
-		auto quotient{numerator100/denominator};
+			T numerator10000high;
+			auto numerator10000low{::fast_io::details::intrinsics::umul(numerator,highu,numerator10000high)};
+			auto denominatordiv2{denominator>>1u};
+			bool denominatoriseven{!(denominator&1u)};
+			unsigned quotientmod100;
+			if(numerator10000high==0u)
+#if __has_cpp_attribute(likely)
+			[[likely]]
 #endif
+			{
+				auto quotient{numerator10000low/denominator};
+				auto remainder{numerator10000low%denominator};
+				if((denominatordiv2<remainder)||
+					(remainder==denominatordiv2&&denominatoriseven&&
+					((quotient&1u)!=0u)))	//round 
+				{	
+					++quotient;//should be okay
+				}
+				auto quotientdiv100{quotient/twodigits};
+				quotientmod100=static_cast<unsigned>(quotient%twodigits);
+				iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientdiv100);
+			}
+			else
+			{
+				using udivmodtype = decltype(numerator10000low+denominator);
+
+				auto [quotientlow,quotienthigh,remainderlow,remainderhigh] =
+					::fast_io::details::intrinsics::udivmod<udivmodtype>(numerator10000low,numerator10000high,denominator,0u);
+#if __has_cpp_attribute(assume)
+				[[assume(remainderhigh==0)]];
+#endif
+				if((denominatordiv2<remainderlow)||
+					(remainderlow==denominatordiv2&&denominatoriseven&&
+					((quotientlow&1u)!=0u)))	//round 
+				{
+					constexpr
+						decltype(quotientlow) zero{},one{1u};
+					bool carry{::fast_io::details::intrinsics::add_carry(false,quotientlow,one,quotientlow)};
+					::fast_io::details::intrinsics::add_carry(carry,quotienthigh,zero,quotienthigh);
+				}
+				if(quotienthigh==0u)
+				{
+					auto quotientdiv100{quotientlow/twodigits};
+					quotientmod100=static_cast<unsigned>(quotientlow%twodigits);
+					iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientdiv100);
+				}
+				else
+				{
+					constexpr
+						auto mxval{::fast_io::details::base_ul64_max_val<base,T>};
+					auto [quotientlowlow,quotientlowhigh,remainderlowlow,remainderlowhigh] =
+						::fast_io::details::intrinsics::udivmod<udivmodtype>(quotientlow,quotienthigh,mxval,0u);
+
+				//__builtin_printf("quotientlowlow=%zu quotientlowhigh=%zu quotientlow=%zu quotienthigh=%zu mxval=%zu\n",
+				//	quotientlowlow,quotientlowhigh,quotientlow,quotienthigh,mxval);
+
+					//__builtin_printf("quotientlowlow:%zu\n",quotientlowlow);
+#if __has_cpp_attribute(assume)
+					[[assume(quotientlowhigh==0)]];
+					[[assume(remainderlowhigh==0)]];
+#endif
+					iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientlowlow);
+
+					auto quotientdiv100{remainderlowlow/twodigits};
+					quotientmod100=static_cast<unsigned>(remainderlowlow%twodigits);
+
+					constexpr std::size_t tdigitsm2{::fast_io::details::cal_max_int_size<T,base>()-2u};
+					::fast_io::details::print_reserve_integral_main_impl<base,uppercase>(iter+=tdigitsm2,quotientdiv100,tdigitsm2);
+				}
+			}
+			*iter=::fast_io::char_literal_v<u8'.',chartype>;
+			++iter;
+			::fast_io::details::non_overlapped_copy_n(tb+(quotientmod100<<1u),2u,iter);
+			iter+=2u;
+		}
+		*iter=::fast_io::char_literal_v<u8'%',chartype>;
+		++iter;
+		return iter;
 	}
 }
 	
@@ -205,7 +355,7 @@ inline constexpr chartype* print_reserve_define(::fast_io::io_reserve_type_t<cha
 	chartype* iter,
 	::fast_io::manipulators::scalar_manip_t<flags,::fast_io::manipulators::percentage_conventional_t<T,U>> v) noexcept
 {
-	return iter;
+	return ::fast_io::details::prrsv_percentage_conventional_impl<flags.base,flags.uppercase,flags.showpos>(iter,v.reference.numerator,v.reference.denominator);
 }
 
 }
