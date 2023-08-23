@@ -78,7 +78,7 @@ requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>
 inline constexpr ::std::size_t print_reserve_size(::fast_io::io_reserve_type_t<chartype,
 	::fast_io::manipulators::scalar_manip_t<flags,::fast_io::manipulators::percentage_conventional_t<T,U>>>) noexcept
 {
-	return ::fast_io::details::print_integer_reserved_size_cache<flags.base,flags.showbase,flags.showpos,T> + 5u;
+	return ::fast_io::details::print_integer_reserved_size_cache<flags.base,flags.showbase,flags.showpos,T> + 6u;
 }
 
 namespace details
