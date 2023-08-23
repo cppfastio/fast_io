@@ -82,7 +82,7 @@ inline constexpr T shiftleft(T low,T high,unsigned shift) noexcept
 		return high;
 	}
 	unsigned lowshifter{n_udword_bits-shift};
-	return (high<<shift)+(low>>lowshifter);
+	return (high<<shift)|(low>>lowshifter);
 }
 
 template<typename T>
@@ -94,7 +94,7 @@ inline constexpr T shiftright(T low,T high,unsigned shift) noexcept
 		return low;
 	}
 	unsigned lowshifter{n_udword_bits-shift};
-	return (high<<lowshifter)+(low>>shift);
+	return (high<<lowshifter)|(low>>shift);
 }
 
 template<typename T>
