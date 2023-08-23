@@ -234,6 +234,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					}
 				}
 			}
+			return iter;
 		}
 
 		constexpr
