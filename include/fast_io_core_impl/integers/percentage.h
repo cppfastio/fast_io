@@ -126,7 +126,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 				++iter;
 			}
 		}
-		return prrsv_percentage_conventional_impl(iter,unsignednum,unsignedden);
+		return prrsv_percentage_conventional_impl<base,uppercase,showpos>(iter,unsignednum,unsignedden);
 	}
 	else if constexpr(sizeof(T)<sizeof(::std::uint_least32_t))
 	{
