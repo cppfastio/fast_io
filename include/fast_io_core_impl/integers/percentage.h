@@ -320,8 +320,13 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 				constexpr
 					::std::uint_least64_t zero{};
 
+				::std::uint_least64_t carry{};
+				numhl=::fast_io::intrinsics::addc(numlh,numhl,carry,carry);
+				numhh=::fast_io::intrinsics::addc(numhh,zero,carry,carry);
+				#if 0
 				bool carry{::fast_io::details::intrinsics::add_carry(false,numlh,numhl,numhl)};
 				::fast_io::details::intrinsics::add_carry(carry,numhh,zero,numhh);
+				#endif
 				numerator10000low=(static_cast<T>(numhl)<<64u)|numll;
 				numerator10000high=static_cast<T>(numhh);
 			}
@@ -359,9 +364,9 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					(remainderlow==denominatordiv2&&denominatoriseven&&
 					((quotientlow&1u)!=0u)))	//round 
 				{
-
-					bool carry{::fast_io::details::intrinsics::add_carry(false,quotientlow,one,quotientlow)};
-					::fast_io::details::intrinsics::add_carry(carry,quotienthigh,zero,quotienthigh);
+					udivmodtype carry{};
+					quotientlow=::fast_io::intrinsics::addc(quotientlow,one,carry,carry);
+					quotienthigh=::fast_io::intrinsics::addc(quotienthigh,one,carry,carry);
 				}
 				if(quotienthigh==0u)
 				{
