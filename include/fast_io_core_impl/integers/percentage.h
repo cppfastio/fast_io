@@ -150,7 +150,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 		}
 		return prrsv_percentage_conventional_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,unsignednum,unsignedden);
 	}
-	else if constexpr(sizeof(T)<sizeof(::std::uint_least32_t))
+	else if constexpr(sizeof(T)<sizeof(::std::uint_least32_t)&&!full)
 	{
 		return prrsv_percentage_conventional_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,static_cast<::std::uint_least32_t>(numerator),denominator);
 	}
@@ -284,7 +284,16 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 			}
 			auto quotientdiv100{quotient/twodigits};
 			unsigned quotientmod100{static_cast<unsigned>(quotient%twodigits)};
-			iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,full>(iter,quotientdiv100);
+			if constexpr(full)
+			{
+				constexpr
+					::std::size_t toprint{::fast_io::details::cal_max_int_size<T,base>()};
+				::fast_io::details::print_reserve_integral_main_impl<base,uppercase>(iter+=toprint,quotientdiv100,toprint);
+			}
+			else
+			{
+				iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,full>(iter,quotientdiv100);
+			}
 			*iter=::fast_io::char_literal_v<(comma?u8',':u8'.'),chartype>;
 			++iter;
 			::fast_io::details::non_overlapped_copy_n(tb+(quotientmod100<<1u),2u,iter);
@@ -371,12 +380,20 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					[[assume(quotientlowhigh==0)]];
 					[[assume(remainderlowhigh==0)]];
 #endif
-			 		iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,full>(iter,quotientlowlow);
-
+					constexpr
+						::std::size_t toprint{4u};
+					if constexpr(full)
+					{
+						::fast_io::details::print_reserve_integral_main_impl<base,uppercase>(iter+=toprint,quotientlowlow,toprint);
+					}
+					else
+					{
+			 			iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,full>(iter,quotientlowlow);
+					}
 					auto quotientdiv100{remainderlowlow/twodigits};
 					quotientmod100=static_cast<unsigned>(remainderlowlow%twodigits);
 
-					constexpr std::size_t tdigitsm2{::fast_io::details::cal_max_int_size<T,base>()-4u};
+					constexpr std::size_t tdigitsm2{::fast_io::details::cal_max_int_size<T,base>()-toprint};
 					::fast_io::details::print_reserve_integral_main_impl<base,uppercase>(iter+=tdigitsm2,quotientdiv100,tdigitsm2);
 				}
 			}
