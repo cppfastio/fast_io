@@ -77,27 +77,29 @@ template<typename T>
 inline constexpr T shiftleft(T low,T high,unsigned shift) noexcept
 {
 	constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
-#if __has_cpp_attribute(assume)
-	[[assume(shift<n_udword_bits)]];
-#endif
+	if(shift==0u)
+	{
+		return high;
+	}
 	unsigned lowshifter{n_udword_bits-shift};
-	return (high<<shift)+(lowshifter>>lowshifter);
+	return (high<<shift)+(low>>lowshifter);
 }
 
 template<typename T>
 inline constexpr T shiftright(T low,T high,unsigned shift) noexcept
 {
 	constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
-#if __has_cpp_attribute(assume)
-	[[assume(shift<n_udword_bits)]];
-#endif
+	if(shift==0u)
+	{
+		return low;
+	}
 	unsigned lowshifter{n_udword_bits-shift};
 	return (high<<lowshifter)+(low>>shift);
 }
 
 template<typename T>
 inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
-		T divisorlow, T divisorhigh)
+		T divisorlow, T divisorhigh) noexcept
 {
 	constexpr unsigned n_utword_bits = ::std::numeric_limits<T>::digits*2u;
 
@@ -147,7 +149,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		{
 			quotientlow<<=1;
 			if(dividendhigh>divisorhigh||
-				dividendhigh==dividendhigh&&dividendlow>divisorlow)
+				dividendhigh==dividendhigh&&dividendlow>=divisorlow)
 			{
 				carry=0;
 				dividendlow=::fast_io::intrinsics::subc(dividendlow,divisorlow,carry,carry);
@@ -157,17 +159,17 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		}
 		else
 		{
-		carry=0;
-		dividendlow=::fast_io::intrinsics::subc(dividendlow,divisorlow,carry,carry);
-		dividendhigh=::fast_io::intrinsics::subc(dividendhigh,divisorhigh,carry,carry);
-		constexpr T zero{};
-		T mask{zero-carry};
-		T templow{divisorlow&mask},temphigh{divisorhigh&mask};
-		carry=!carry;
-		quotientlow=::fast_io::intrinsics::addc(quotientlow,quotientlow,carry,carry);
-		carry=0;
-		dividendlow=::fast_io::intrinsics::addc(dividendlow,templow,carry,carry);
-		dividendhigh=::fast_io::intrinsics::addc(dividendhigh,temphigh,carry,carry);
+			carry=0;
+			dividendlow=::fast_io::intrinsics::subc(dividendlow,divisorlow,carry,carry);
+			dividendhigh=::fast_io::intrinsics::subc(dividendhigh,divisorhigh,carry,carry);
+			constexpr T zero{};
+			T mask{zero-carry};
+			T templow{divisorlow&mask},temphigh{divisorhigh&mask};
+			carry=!carry;
+			quotientlow=::fast_io::intrinsics::addc(quotientlow,quotientlow,carry,carry);
+			carry=0;
+			dividendlow=::fast_io::intrinsics::addc(dividendlow,templow,carry,carry);
+			dividendhigh=::fast_io::intrinsics::addc(dividendhigh,temphigh,carry,carry);
 		}
 		divisorlow = shiftright(divisorlow,divisorhigh,1u);
 		divisorhigh >>= 1u;
