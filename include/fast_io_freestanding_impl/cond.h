@@ -3,12 +3,12 @@
 namespace fast_io {
 namespace details {
 template <typename T1>
-concept cond_value_transferable_value =
-	::std::is_trivially_copyable_v<T1> &&
+concept cond_value_transferable =
+	::std::is_trivially_copyable_v<::std::remove_cvref_t<T1>> &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-	sizeof(T1) <= 8u
+	sizeof(::std::remove_cvref_t<T1>) <= 8u
 #else
-	sizeof(T1) <= (sizeof(std::uintptr_t) * 2)
+	sizeof(::std::remove_cvref_t<T1>) <= (sizeof(std::uintptr_t) * 2)
 #endif
 	;
 }
@@ -28,10 +28,10 @@ struct condition {
 template <typename T1, typename T2>
 inline constexpr auto cond(bool pred, T1&& t1, T2&& t2) noexcept {
 	using t1aliastype = ::std::conditional_t<::fast_io::details::alias_return_lvalue_ref<T1>,
-		  ::std::conditional_t<::fast_io::details::cond_value_transferable_value<T1>, ::std::remove_cvref_t<T1>, T1>,
+		  ::std::conditional_t<::fast_io::details::cond_value_transferable<T1>, ::std::remove_cvref_t<T1>, ::std::remove_cvref_t<T1> const&>,
 		  ::std::remove_cvref_t<decltype(fast_io::io_print_alias(::std::forward<T1>(t1)))>>;
 	using t2aliastype = ::std::conditional_t<::fast_io::details::alias_return_lvalue_ref<T2>,
-		  ::std::conditional_t<::fast_io::details::cond_value_transferable_value<T2>, ::std::remove_cvref_t<T2>, T2>,
+		  ::std::conditional_t<::fast_io::details::cond_value_transferable<T2>, ::std::remove_cvref_t<T2>, ::std::remove_cvref_t<T2> const&>,
 		  ::std::remove_cvref_t<decltype(fast_io::io_print_alias(::std::forward<T2>(t2)))>>;
 	constexpr bool type_match{::std::same_as<t1aliastype, t2aliastype>};
 	if constexpr (type_match) {
@@ -107,7 +107,7 @@ concept cond_ok_printable_impl =
 	cond_ok_dynamic_rsv_printable_impl<char_type, T1> || printable<char_type, T1>;
 
 template <std::integral char_type, typename T1>
-	requires(cond_value_transferable_value<T1>)
+	requires(cond_value_transferable<T1>)
 inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 t1) {
 	if constexpr (scatter_printable<char_type, T1>) {
 		return print_scatter_define(io_reserve_type<char_type, T1>, t1).len;
@@ -120,7 +120,7 @@ inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 t1) {
 }
 
 template <std::integral char_type, typename T1>
-	requires(!cond_value_transferable_value<T1>)
+	requires(!cond_value_transferable<T1>)
 inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 const& t1) {
 	if constexpr (scatter_printable<char_type, T1>) {
 		return print_scatter_define(io_reserve_type<char_type, T1>, t1).len;
@@ -133,7 +133,7 @@ inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 const& t1) {
 }
 
 template <std::integral char_type, typename T1>
-	requires(cond_value_transferable_value<T1>)
+	requires(cond_value_transferable<T1>)
 inline constexpr char_type* cond_print_reserve_define_impl(char_type* iter, T1 t1) {
 	if constexpr (scatter_printable<char_type, T1>) {
 		return copy_scatter(print_scatter_define(io_reserve_type<char_type, T1>, t1), iter);
@@ -143,7 +143,7 @@ inline constexpr char_type* cond_print_reserve_define_impl(char_type* iter, T1 t
 }
 
 template <std::integral char_type, typename T1>
-	requires(!cond_value_transferable_value<T1>)
+	requires(!cond_value_transferable<T1>)
 inline constexpr char_type* cond_print_reserve_define_impl(char_type* iter, T1 const& t1) {
 	if constexpr (scatter_printable<char_type, T1>) {
 		return copy_scatter(print_scatter_define(io_reserve_type<char_type, T1>, t1), iter);

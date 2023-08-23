@@ -1,19 +1,4 @@
 ﻿#pragma once
-struct bio_method_st
-{
-int type;
-char const *name;
-int (*bwrite) (BIO *, const char *, size_t, size_t *) noexcept;
-int (*bwrite_old) (BIO *, const char *, int) noexcept;
-int (*bread) (BIO *, char *, size_t, size_t *) noexcept;
-int (*bread_old) (BIO *, char *, int) noexcept;
-int (*bputs) (BIO *, const char *) noexcept;
-int (*bgets) (BIO *, char *, int) noexcept;
-long (*ctrl) (BIO *, int, long, void *) noexcept;
-int (*create) (BIO *) noexcept;
-int (*destroy) (BIO *) noexcept;
-long (*callback_ctrl) (BIO *, int, BIO_info_cb *) noexcept;
-};
 
 namespace fast_io
 {
@@ -86,16 +71,31 @@ inline decltype(auto) get_cookie_data_from_bio_data(BIO* bio) noexcept
 
 }
 
+struct bio_method_st_model
+{
+int type;
+char const *name;
+int (*bwrite) (BIO *, const char *, size_t, size_t *) noexcept;
+int (*bwrite_old) (BIO *, const char *, int) noexcept;
+int (*bread) (BIO *, char *, size_t, size_t *) noexcept;
+int (*bread_old) (BIO *, char *, int) noexcept;
+int (*bputs) (BIO *, const char *) noexcept;
+int (*bgets) (BIO *, char *, int) noexcept;
+long (*ctrl) (BIO *, int, long, void *) noexcept;
+int (*create) (BIO *) noexcept;
+int (*destroy) (BIO *) noexcept;
+long (*callback_ctrl) (BIO *, int, BIO_info_cb *) noexcept;
+};
+
 template<typename stm>
-requires (stream<std::remove_reference_t<stm>>)
 struct bio_io_cookie_functions_t
 {
-	using native_functions_type = bio_method_st;
+	using native_functions_type = bio_method_st_model;
 	native_functions_type functions{};
 	explicit bio_io_cookie_functions_t()
 	{
 		using value_type = std::remove_reference_t<stm>;
-		if constexpr(input_stream<value_type>)
+		if constexpr(::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<value_type>)
 		{
 			functions.bread=[](BIO* bbio,char* buf,std::size_t size,std::size_t* readd) noexcept->int
 			{
@@ -103,7 +103,12 @@ struct bio_io_cookie_functions_t
 				try
 				{
 #endif
-					*readd=read(::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),buf,buf+size)-buf;
+					*readd=static_cast<::std::size_t>(
+						::fast_io::operations::read_some_bytes(
+						::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),
+						reinterpret_cast<::std::byte*>(buf),
+						reinterpret_cast<::std::byte*>(buf)+size)-
+						reinterpret_cast<::std::byte*>(buf));
 					return 1;
 #ifdef __cpp_exceptions
 				}
@@ -114,7 +119,7 @@ struct bio_io_cookie_functions_t
 #endif
 			};
 		}
-		if constexpr(output_stream<value_type>)
+		if constexpr(::fast_io::operations::decay::defines::has_any_of_write_bytes_operations<value_type>)
 		{
 			functions.bwrite=[](BIO* bbio,char const* buf,std::size_t size,std::size_t* written) noexcept->int
 			{
@@ -122,14 +127,12 @@ struct bio_io_cookie_functions_t
 				try
 				{
 #endif
-					decltype(auto) v{::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio)};
-					if constexpr(std::same_as<decltype(write(v,buf,buf+size)),void>)
-					{
-						write(v,buf,buf+size);
-						*written=size;
-					}
-					else
-						*written=write(v,buf,buf+size)-buf;
+					*written=static_cast<::std::size_t>(
+						::fast_io::operations::write_some_bytes(
+						::fast_io::details::get_cookie_data_from_bio_data<value_type>(bbio),
+						reinterpret_cast<::std::byte const*>(buf),
+						reinterpret_cast<::std::byte const*>(buf)+size)-
+						reinterpret_cast<::std::byte const*>(buf));
 					return 1;
 #ifdef __cpp_exceptions
 				}
@@ -141,11 +144,13 @@ struct bio_io_cookie_functions_t
 			};
 		}
 		if constexpr(!std::is_reference_v<stm>&&!std::is_trivially_copyable_v<value_type>)
+		{
 			functions.destroy=[](BIO* bbio) noexcept -> int
 			{
 				delete reinterpret_cast<value_type*>(noexcept_call(BIO_get_data,bbio));
 				return 1;
 			};
+		}
 #if __cpp_rtti
 		functions.name=typeid(stm).name();
 		constexpr int value(BIO_TYPE_DESCRIPTOR-BIO_TYPE_START);
@@ -175,15 +180,21 @@ inline BIO* bio_new_stream_type(bio_method_st const* methods)
 }
 
 
-template<stream stm>
+template<typename stm>
 inline BIO* construct_bio_by_t(void* ptr)
 {
-	auto bp{bio_new_stream_type(__builtin_addressof(bio_io_cookie_functions<stm>.functions))};
+	using bio_method_st_const_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= bio_method_st const*;
+	auto bp{bio_new_stream_type(reinterpret_cast<bio_method_st_const_may_alias_ptr>(
+		__builtin_addressof(bio_io_cookie_functions<stm>.functions)))};
 	::fast_io::noexcept_call(BIO_set_data,bp,ptr);
 	return bp;
 }
 
-template<stream stm,typename... Args>
+template<typename stm,typename... Args>
 requires (std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
 inline void* construct_cookie_by_args_trivial(Args&& ...args)
 {
@@ -210,7 +221,10 @@ struct bio_stm_scope_ptr
 	bio_stm_scope_ptr& operator=(bio_stm_scope_ptr const&)=delete;
 	~bio_stm_scope_ptr()
 	{
-		delete s;
+		if(s)
+		{
+			delete s;
+		}
 	}
 };
 
@@ -218,10 +232,12 @@ template<typename stream>
 inline BIO* construct_bio_by_phase2(stream* smptr)
 {
 	bio_stm_scope_ptr<stream> s(smptr);
-	return construct_bio_by_t<stream>(smptr);
+	auto bio{construct_bio_by_t<stream>(smptr)};
+	s.s=nullptr;
+	return bio;
 }
 
-template<stream stm,typename... Args>
+template<typename stm,typename... Args>
 inline BIO* construct_bio_by_args(Args&&... args)
 {
 	if constexpr(std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
@@ -255,6 +271,8 @@ class basic_bio_io_observer
 public:
 	using native_handle_type = BIO*;
 	using char_type = ch_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	native_handle_type bio{};
 	explicit constexpr operator bool() const noexcept
 	{
@@ -300,7 +318,9 @@ class basic_bio_file:public basic_bio_io_observer<ch_type>
 public:
 	using native_handle_type = BIO*;
 	using char_type = ch_type;
-	constexpr basic_bio_file()=default;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
+	constexpr basic_bio_file() noexcept=default;
 	template<typename native_hd>
 	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_bio_file(native_hd bio) noexcept:basic_bio_io_observer<char_type>{bio}{}
@@ -310,12 +330,13 @@ public:
 	constexpr basic_bio_file(basic_bio_io_observer<ch_type>) noexcept=delete;
 	constexpr basic_bio_file& operator=(basic_bio_io_observer<ch_type>) noexcept=delete;
 
-	template<stream stm,typename ...Args>
+	template<typename stm,typename ...Args>
 	requires (!std::is_reference_v<stm>&&std::constructible_from<stm,Args...>)
 	basic_bio_file(::fast_io::io_cookie_type_t<stm>,Args&& ...args):
 		basic_bio_io_observer<char_type>{details::construct_bio_by_args<stm>(::std::forward<Args>(args)...)}
 	{
 	}
+
 	template<c_family family>
 	basic_bio_file(basic_c_family_file<family,char_type>&& bmv,fast_io::open_mode om):
 		basic_bio_io_observer<char_type>{::fast_io::details::open_bio_with_fp(bmv.fp,om)}
@@ -394,20 +415,20 @@ using u32bio_file =  basic_bio_file<char32_t>;
 
 namespace details
 {
-inline std::size_t bio_read_impl(BIO* bio,void* address,std::size_t size)
+inline std::byte* bio_read_impl(BIO *bio,std::byte *first,std::byte *last)
 {
 	std::size_t read_bytes{};
-	if(::fast_io::noexcept_call(BIO_read_ex,bio,address,size,__builtin_addressof(read_bytes))==-1)
+	if(::fast_io::noexcept_call(BIO_read_ex,bio,first,static_cast<::std::size_t>(last-first),__builtin_addressof(read_bytes))==-1)
 		throw_openssl_error();
-	return read_bytes;
+	return read_bytes+first;
 }
 
-inline std::size_t bio_write_impl(BIO* bio,void const* address,std::size_t size)
+inline std::byte const* bio_write_impl(BIO *bio,std::byte const *first,std::byte const *last)
 {
 	std::size_t written_bytes{};
-	if(::fast_io::noexcept_call(BIO_write_ex,bio,address,size,__builtin_addressof(written_bytes))==-1)
+	if(::fast_io::noexcept_call(BIO_write_ex,bio,first,static_cast<::std::size_t>(last-first),__builtin_addressof(written_bytes))==-1)
 		throw_openssl_error();
-	return written_bytes;
+	return written_bytes+first;
 }
 #if 0
 inline posix_file_status bio_status_impl(BIO* bio)
@@ -417,16 +438,16 @@ inline posix_file_status bio_status_impl(BIO* bio)
 #endif
 }
 
-template<std::integral ch_type,::std::contiguous_iterator Iter>
-inline Iter read(basic_bio_io_observer<ch_type> iob,Iter begin,Iter end)
+template<std::integral ch_type>
+inline ::std::byte* read_some_bytes_underflow_define(basic_bio_io_observer<ch_type> iob,::std::byte* first,::std::byte* last)
 {
-	return begin+details::bio_read_impl(iob.bio,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
+	return ::fast_io::details::bio_read_impl(iob.bio,first,last);
 }
 
-template<std::integral ch_type,::std::contiguous_iterator Iter>
-inline Iter write(basic_bio_io_observer<ch_type> iob,Iter begin,Iter end)
+template<std::integral ch_type>
+inline ::std::byte const* write_some_bytes_overflow_define(basic_bio_io_observer<ch_type> iob,::std::byte const* first,::std::byte const* last)
 {
-	return begin+details::bio_write_impl(iob.bio,::std::to_address(begin),static_cast<std::size_t>(end-begin)*sizeof(*begin))/sizeof(*begin);
+	return ::fast_io::details::bio_write_impl(iob.bio,first,last);
 }
 
 #if __cpp_lib_three_way_comparison >= 201907L
@@ -444,7 +465,13 @@ inline constexpr auto operator<=>(basic_bio_io_observer<ch_type> a,basic_bio_io_
 #endif
 
 template<std::integral ch_type>
-inline constexpr basic_bio_io_observer<ch_type> io_value_handle(basic_bio_io_observer<ch_type> other) noexcept
+inline constexpr basic_bio_io_observer<ch_type> io_stream_ref_define(basic_bio_io_observer<ch_type> other) noexcept
+{
+	return other;
+}
+
+template<std::integral ch_type>
+inline constexpr basic_bio_io_observer<char> io_bytes_stream_ref_define(basic_bio_io_observer<ch_type> other) noexcept
 {
 	return other;
 }
@@ -454,6 +481,65 @@ inline constexpr posix_at_entry at(basic_bio_io_observer<ch_type> bio) noexcept
 {
 	return posix_at_entry{details::bio_to_fd(bio.bio)};
 }
+
+
+namespace details
+{
+
+inline ::fast_io::intfpos_t bio_io_seekbytes_impl(BIO* bio,::fast_io::intfpos_t offset,seekdir s)
+{
+	auto fd{bio_to_fd(bio)};
+	if(fd==-1)
+	{
+		throw_posix_error(EINVAL);
+	}
+	return ::fast_io::operations::decay::io_stream_seek_bytes_decay(::fast_io::posix_io_observer{fd},offset,s);
+}
+
+inline ::std::byte* bio_pread_impl(BIO *bio,::std::byte *first,::std::byte *last,::fast_io::intfpos_t offset)
+{
+	auto fd{bio_to_fd(bio)};
+	if(fd==-1)
+	{
+		throw_posix_error(EINVAL);
+	}
+	::fast_io::posix_io_observer piob{fd};
+	return ::fast_io::operations::decay::pread_some_bytes_decay(piob,first,last,offset);
+}
+
+inline ::std::byte const* bio_pwrite_impl(BIO *bio,::std::byte const *first,::std::byte const *last,::fast_io::intfpos_t offset)
+{
+	auto fd{bio_to_fd(bio)};
+	if(fd==-1)
+	{
+		throw_posix_error(EINVAL);
+	}
+	::fast_io::posix_io_observer piob{fd};
+	return ::fast_io::operations::decay::pwrite_some_bytes_decay(piob,first,last,offset);
+}
+
+}
+
+template<std::integral ch_type>
+inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_bio_io_observer<ch_type> iob,::fast_io::intfpos_t offset,seekdir s)
+{
+	return ::fast_io::details::bio_io_seekbytes_impl(iob.bio,offset,s);
+}
+
+
+template<std::integral ch_type>
+inline ::std::byte* pread_some_bytes_underflow_define(basic_bio_io_observer<ch_type> iob,::std::byte* first,::std::byte* last,::fast_io::intfpos_t offset)
+{
+	return ::fast_io::details::bio_pread_impl(iob.bio,first,last,offset);
+}
+
+template<std::integral ch_type>
+inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_bio_io_observer<ch_type> iob,::std::byte const* first,::std::byte const* last,::fast_io::intfpos_t offset)
+{
+	return ::fast_io::details::bio_pwrite_impl(iob.bio,first,last,offset);
+}
+
+
 #if 0
 template<std::integral ch_type>
 inline constexpr posix_file_status status(basic_bio_io_observer<ch_type> bio)
@@ -464,7 +550,7 @@ inline constexpr posix_file_status status(basic_bio_io_observer<ch_type> bio)
 namespace details
 {
 
-template<output_stream output>
+template<typename output>
 inline void print_define_openssl_error(output out)
 {
 	if constexpr(std::same_as<output,bio_io_observer>)
@@ -474,13 +560,13 @@ inline void print_define_openssl_error(output out)
 	else
 	{
 		bio_file bf(io_cookie_type<output>,out);
-		::fast_io::noexcept_call(ERR_print_errors,bf.bio);		
+		::fast_io::noexcept_call(ERR_print_errors,bf.bio);
 	}
 }
 
 }
 
-template<output_stream output>
+template<typename output>
 requires (std::is_trivially_copyable_v<output>&&std::same_as<typename output::char_type,char>)
 inline void print_define(io_reserve_type_t<char,openssl_error>,output out,openssl_error)
 {

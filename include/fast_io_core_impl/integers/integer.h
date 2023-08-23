@@ -7,3 +7,4 @@
 #include"impl.h"
 #include"pointer.h"
 #include"crypto_hash.h"
+#include"percentage.h"

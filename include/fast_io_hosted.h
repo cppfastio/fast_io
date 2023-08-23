@@ -98,7 +98,7 @@ For hosted implementations the set of standard library headers required by the C
 #endif
 
 #if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)
-#if 0
+#if 1
 #include"fast_io_unit/string.h"
 #endif
 #endif

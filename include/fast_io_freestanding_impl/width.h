@@ -69,8 +69,9 @@ inline constexpr auto left(T&& t,std::size_t n) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
-
-		return width_t<scalar_placement::left,noref>{t,n};defined(_MSC_VER) || (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
+	{
+		return width_t<scalar_placement::left,noref>{t,n};
+	}
 	else
 	{
 		return width_t<scalar_placement::left,noref const&>{t,n};
@@ -92,8 +93,9 @@ inline constexpr auto middle(T&& t,std::size_t n) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
-
+	{
 		return width_t<scalar_placement::middle,noref>{t,n};
+	}
 	else
 	{
 		return width_t<scalar_placement::middle,noref const&>{t,n};
@@ -115,8 +117,9 @@ inline constexpr auto right(T&& t,std::size_t n) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
-
+	{
 		return width_t<scalar_placement::right,noref>{t,n};
+	}
 	else
 	{
 		return width_t<scalar_placement::right,noref const&>{t,n};
@@ -139,8 +142,9 @@ inline constexpr auto internal(T&& t,std::size_t n) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
-
+	{
 		return width_t<scalar_placement::internal,noref>{t,n};
+	}
 	else
 	{
 		return width_t<scalar_placement::internal,noref const&>{t,n};
@@ -163,8 +167,9 @@ inline constexpr auto left(T&& t,std::size_t n,char_type ch) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
-
+	{
 		return width_ch_t<scalar_placement::left,noref,char_type>{t,n,ch};
+	}
 	else
 	{
 		return width_ch_t<scalar_placement::left,noref const&,char_type>{t,n};
@@ -186,7 +191,9 @@ inline constexpr auto middle(T&& t,std::size_t n,char_type ch) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
+	{
 		return width_ch_t<scalar_placement::middle,noref,char_type>{t,n,ch};
+	}
 	else
 	{
 		return width_ch_t<scalar_placement::middle,noref const&,char_type>{t,n,ch};
@@ -208,7 +215,9 @@ inline constexpr auto right(T&& t,std::size_t n,char_type ch) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
+	{
 		return width_ch_t<scalar_placement::right,noref,char_type>{t,n,ch};
+	}
 	else
 	{
 		return width_ch_t<scalar_placement::right,noref const&,char_type>{t,n,ch};
@@ -230,7 +239,9 @@ inline constexpr auto internal(T&& t,std::size_t n,char_type ch) noexcept
 		sizeof(noref)<=(sizeof(std::uintptr_t)*2)
 #endif	
 		)
+	{
 		return width_ch_t<scalar_placement::internal,noref,char_type>{t,n,ch};
+	}
 	else
 	{
 		return width_ch_t<scalar_placement::internal,noref const&,char_type>{t,n,ch};

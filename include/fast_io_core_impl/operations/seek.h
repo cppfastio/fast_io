@@ -139,7 +139,9 @@ inline constexpr void output_stream_rewind_bytes_decay(T t)
 }
 
 template<typename T>
+#if 0
 requires (::fast_io::operations::decay::defines::has_io_stream_mutex_ref_define<T>)
+#endif
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)

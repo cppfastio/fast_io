@@ -266,7 +266,7 @@ inline constexpr void print_control_single(output outstm,T t)
 			}
 			else
 			{
-				::fast_io::basic_io_scatter_t<T> scatters[2]
+				::fast_io::basic_io_scatter_t<char_type> scatters[2]
 				{t,
 				{__builtin_addressof(char_literal_v<u8'\n',char_type>),
 				1}};

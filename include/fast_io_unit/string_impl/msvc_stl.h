@@ -16,9 +16,14 @@ model
 {
 	using _Alty        = std::_Rebind_alloc_t<_Alloc, _Elem>;
 	using _Alty_traits = std::allocator_traits<_Alty>;
-	using _Scary_val = std::_String_val<std::conditional_t<std::_Is_simple_alloc_v<_Alty>, std::_Simple_types<_Elem>,
+	using _Scary_val = std::_String_val<std::conditional_t<
+		std::_Is_simple_alloc_v<_Alty>, std::_Simple_types<_Elem>,
 		std::_String_iter_types<_Elem, typename _Alty_traits::size_type, typename _Alty_traits::difference_type,
-		typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Elem&, _Elem const&>>>;	
+		typename _Alty_traits::pointer, typename _Alty_traits::const_pointer
+#if _MSVC_STL_UPDATE < 202306L
+		, _Elem &, _Elem const &
+#endif
+		>>>;
 	using compress_pair_type = std::_Compressed_pair<_Alty, _Scary_val>;
 	compress_pair_type _Mypair;
 };

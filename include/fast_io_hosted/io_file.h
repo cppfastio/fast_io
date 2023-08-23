@@ -3,22 +3,6 @@
 namespace fast_io
 {
 
-template<typename T>
-struct io_place_type_t
-{
-	explicit inline constexpr io_place_type_t() noexcept = default;
-};
-
-template<typename T>
-inline constexpr io_place_type_t<T> io_place_type{};
-
-struct io_place_t
-{
-	explicit inline constexpr io_place_t() noexcept = default;
-};
-
-inline constexpr io_place_t io_place{};
-
 template<::std::integral inchar_type,
 	::std::integral outchar_type>
 class basic_io_io_base
@@ -52,7 +36,7 @@ public:
 		allocatortype::deallocate_n(ptr,n);
 	}
 	template<typename... Args>
-	constexpr basic_io_io_derived(io_place_t,Args&& ...args):
+	constexpr basic_io_io_derived(io_cookie_t,Args&& ...args):
 		value(::fast_io::freestanding::forward<Args>(args)...)
 	{}
 	virtual constexpr ::fast_io::io_scatter_status_t scatter_read_some_underflow_def(
@@ -304,7 +288,7 @@ inline constexpr ::fast_io::basic_io_io_base<inchartype,outchartype>*
 		type>;
 	type *ptr{typedallocator::allocate(1)};
 	::fast_io::details::biobd_allocate_guard<allocatortype,type> g(ptr);
-	::new (ptr) type(::fast_io::io_place,::fast_io::freestanding::forward<Args>(args)...);
+	::new (ptr) type(::fast_io::io_cookie,::fast_io::freestanding::forward<Args>(args)...);
 	g.ptr=nullptr;
 	return ptr;
 }
@@ -322,7 +306,7 @@ public:
 	using native_handle_type = basic_io_io_base<inchar_type,outchar_type>*;
 	explicit constexpr basic_general_io_file() noexcept = default;
 	template<typename T,typename ...Args>
-	explicit constexpr basic_general_io_file(io_place_type_t<T>,Args&& ...args):
+	explicit constexpr basic_general_io_file(io_cookie_type_t<T>,Args&& ...args):
 		basic_general_io_io_observer<inchar_type,outchar_type>{
 			::fast_io::details::create_io_file_handle_impl<
 				inchar_type,outchar_type,allocatortype,
@@ -330,7 +314,7 @@ public:
 	{
 	}
 	template<typename P>
-	constexpr basic_general_io_file(io_place_t,P&& p):
+	constexpr basic_general_io_file(io_cookie_t,P&& p):
 		basic_general_io_io_observer<inchar_type,outchar_type>{
 			::fast_io::details::create_io_file_handle_impl<
 				inchar_type,outchar_type,allocatortype,::std::remove_reference_t<P>>(
@@ -389,7 +373,7 @@ inline constexpr void io_stream_add_deco_filter_define(
 	dectref deco)
 {
 	*rf.giofptr=basic_general_io_file<inchar_type,outchar_type,allocatortype>(
-		::fast_io::io_place_type<basic_iodecfilt<
+		::fast_io::io_cookie_type<basic_iodecfilt<
 		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectref>>,
 		deco,::fast_io::freestanding::move(*rf.giofptr));
 }

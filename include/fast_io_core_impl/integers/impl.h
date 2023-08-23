@@ -161,7 +161,6 @@ struct member_function_pointer_holder_t
 	::fast_io::details::method_ptr_hold_size> reference;
 };
 
-
 template<typename T>
 struct whole_get_t
 {
@@ -174,8 +173,8 @@ struct whole_get_t
 
 namespace details
 {
-template<std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false>
-inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs==2||bs==3||bs==16)?upper:false),.uppercase=((bs<=10)?false:upper),.full=fll};
+template<std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false,bool comma=false>
+inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs==2||bs==3||bs==16)?upper:false),.uppercase=((bs<=10)?false:upper),.comma=comma,.full=fll};
 
 template<bool upper>
 inline constexpr ::fast_io::manipulators::scalar_flags boolalpha_mani_flags_cache{.alphabet=true,.uppercase=upper};
@@ -815,6 +814,12 @@ inline constexpr auto comma_scientific(scalar_type t,std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,float_alias_type>{static_cast<float_alias_type>(t),n};
+}
+
+template<::std::integral inttype>
+inline constexpr ::std::remove_cvref_t<inttype> bitfieldvw(inttype v) noexcept
+{
+	return v;
 }
 
 }

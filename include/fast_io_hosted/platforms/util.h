@@ -52,7 +52,8 @@ inline ::std::int_least64_t nt_fpos_offset_addition(::std::uint_least64_t ucurre
 	else
 	{
 		::std::uint_least64_t l64abs{static_cast<::std::uint_least64_t>(l64off)};
-		::std::uint_least64_t l64mx{::std::numeric_limits<::std::int_least64_t>::max()};
+		constexpr
+			::std::uint_least64_t l64mx{static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max())};
 		::std::uint_least64_t diff{static_cast<::std::uint_least64_t>(l64mx-l64abs)};
 		if(diff<ucurrent)
 		{
