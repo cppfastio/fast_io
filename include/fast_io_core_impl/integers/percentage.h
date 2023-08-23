@@ -70,7 +70,7 @@ inline constexpr
 	constexpr
 		T ul64max{static_cast<T>(-1)};
 	constexpr
-		T ulmxdv{ul64max/base};
+		T ulmxdv{ul64max/base/base};
 	T val{1u};
 	for(;val<=ulmxdv;val*=base);
 	return val;
@@ -237,9 +237,9 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 		}
 
 		constexpr
-			T twodigits{static_cast<T>(base)*static_cast<T>(base)};
+			::std::uint_least64_t twodigits{static_cast<T>(base)*static_cast<T>(base)};
 		constexpr
-			T highu{twodigits*twodigits};
+			::std::uint_least64_t highu{twodigits*twodigits};
 		constexpr auto tb{::fast_io::details::digits_table<chartype,base,uppercase>};
 		if constexpr(sizeof(T)<sizeof(::std::uint_least64_t))
 		{
@@ -266,7 +266,29 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 		else
 		{
 			T numerator10000high;
-			auto numerator10000low{::fast_io::details::intrinsics::umul(numerator,highu,numerator10000high)};
+			T numerator10000low;
+			if constexpr(sizeof(T)<=sizeof(::std::uint_least64_t))
+			{
+				numerator10000low=::fast_io::details::intrinsics::umul(numerator,highu,numerator10000high);
+			}
+			else
+			{
+				::std::uint_least64_t numeratorhigh;
+				auto numeratorlow{::fast_io::details::intrinsics::unpack_generic(numerator,numeratorhigh)};
+
+				::std::uint_least64_t numlh;
+				auto numll=::fast_io::details::intrinsics::umul(numeratorlow,highu,numlh);
+				
+				::std::uint_least64_t numhl;
+				auto numhh=::fast_io::details::intrinsics::umul(numeratorhigh,highu,numhl);
+				constexpr
+					::std::uint_least64_t zero{};
+
+				bool carry{::fast_io::details::intrinsics::add_carry(false,numlh,numhl,numhl)};
+				::fast_io::details::intrinsics::add_carry(carry,numhh,zero,numhh);
+				numerator10000low=(static_cast<T>(numhl)<<64u)|numll;
+				numerator10000high=static_cast<T>(numhh);
+			}
 			auto denominatordiv2{denominator>>1u};
 			bool denominatoriseven{!(denominator&1u)};
 			unsigned quotientmod100;
@@ -290,9 +312,10 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 			else
 			{
 				using udivmodtype = decltype(numerator10000low+denominator);
-
+				constexpr
+					T zero{},one{1u};
 				auto [quotientlow,quotienthigh,remainderlow,remainderhigh] =
-					::fast_io::details::intrinsics::udivmod<udivmodtype>(numerator10000low,numerator10000high,denominator,0u);
+					::fast_io::details::intrinsics::udivmod<udivmodtype>(numerator10000low,numerator10000high,denominator,zero);
 #if __has_cpp_attribute(assume)
 				[[assume(remainderhigh==0)]];
 #endif
@@ -300,8 +323,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					(remainderlow==denominatordiv2&&denominatoriseven&&
 					((quotientlow&1u)!=0u)))	//round 
 				{
-					constexpr
-						decltype(quotientlow) zero{},one{1u};
+
 					bool carry{::fast_io::details::intrinsics::add_carry(false,quotientlow,one,quotientlow)};
 					::fast_io::details::intrinsics::add_carry(carry,quotienthigh,zero,quotienthigh);
 				}
@@ -316,22 +338,18 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					constexpr
 						auto mxval{::fast_io::details::base_ul64_max_val<base,T>};
 					auto [quotientlowlow,quotientlowhigh,remainderlowlow,remainderlowhigh] =
-						::fast_io::details::intrinsics::udivmod<udivmodtype>(quotientlow,quotienthigh,mxval,0u);
+						::fast_io::details::intrinsics::udivmod<udivmodtype>(quotientlow,quotienthigh,mxval,zero);
 
-				//__builtin_printf("quotientlowlow=%zu quotientlowhigh=%zu quotientlow=%zu quotienthigh=%zu mxval=%zu\n",
-				//	quotientlowlow,quotientlowhigh,quotientlow,quotienthigh,mxval);
-
-					//__builtin_printf("quotientlowlow:%zu\n",quotientlowlow);
 #if __has_cpp_attribute(assume)
 					[[assume(quotientlowhigh==0)]];
 					[[assume(remainderlowhigh==0)]];
 #endif
-					iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientlowlow);
+			 		iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientlowlow);
 
 					auto quotientdiv100{remainderlowlow/twodigits};
 					quotientmod100=static_cast<unsigned>(remainderlowlow%twodigits);
 
-					constexpr std::size_t tdigitsm2{::fast_io::details::cal_max_int_size<T,base>()-2u};
+					constexpr std::size_t tdigitsm2{::fast_io::details::cal_max_int_size<T,base>()-4u};
 					::fast_io::details::print_reserve_integral_main_impl<base,uppercase>(iter+=tdigitsm2,quotientdiv100,tdigitsm2);
 				}
 			}

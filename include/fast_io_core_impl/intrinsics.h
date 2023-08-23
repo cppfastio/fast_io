@@ -74,12 +74,135 @@ inline constexpr bool add_carry_naive(bool carry,T a,T b,T& out) noexcept
 	return (out < b) | (temp < a);
 }
 
+
+template<typename U>
+struct ul_generic_x2_little_endian
+{
+	U low,high;
+};
+template<typename U>
+struct ul_generic_x2_big_endian
+{
+	U high,low;
+};
+
+template<typename U>
+using ul_generic_x2 = std::conditional_t<std::endian::native==std::endian::big,ul_generic_x2_big_endian<U>,ul_generic_x2_little_endian<U>>;
+
+using ul32x2_little_endian=ul_generic_x2_little_endian<std::uint_least32_t>;
+using ul32x2_big_endian=ul_generic_x2_big_endian<std::uint_least32_t>;
+using ul32x2 = ul_generic_x2<std::uint_least32_t>;
+
+inline constexpr std::uint_least32_t umul_least_32(std::uint_least32_t a,std::uint_least32_t b,std::uint_least32_t& high) noexcept
+{
+#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
+#if __has_builtin(__builtin_bit_cast)
+	if constexpr(std::endian::native==std::endian::little||std::endian::native==std::endian::big)
+	{
+		auto ret{__builtin_bit_cast(ul32x2,static_cast<std::uint_least64_t>(a)*b)};
+		high=ret.high;
+		return ret.low;
+	}
+	else
+#endif
+#endif
+	{
+		std::uint_least64_t v{static_cast<std::uint_least64_t>(a)*b};
+		high=static_cast<std::uint_least32_t>(v>>(::std::numeric_limits<::std::uint_least32_t>::digits));
+		return static_cast<std::uint_least32_t>(v);
+	}
+}
+
+inline constexpr std::uint_least32_t umulh_least_32(std::uint_least32_t a,std::uint_least32_t b) noexcept
+{
+#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
+#if __has_builtin(__builtin_bit_cast)
+	if constexpr(std::endian::native==std::endian::little||std::endian::native==std::endian::big)
+	{
+		auto ret{__builtin_bit_cast(ul32x2,static_cast<std::uint_least64_t>(a)*b)};
+		return ret.high;
+	}
+	else
+#endif
+#endif
+	{
+		std::uint_least64_t v{static_cast<std::uint_least64_t>(a)*b};
+		return static_cast<std::uint_least32_t>(v>>(::std::numeric_limits<::std::uint_least32_t>::digits));
+	}
+}
+
+inline constexpr std::uint_least32_t unpack_ul64(std::uint_least64_t a,std::uint_least32_t& high) noexcept
+{
+#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
+#if __has_builtin(__builtin_bit_cast)
+	if constexpr(std::endian::native==std::endian::little)
+	{
+		auto [a0,a1]=__builtin_bit_cast(ul32x2_little_endian,a);	//get around gcc bug
+		high=a1;
+		return a0;
+	}
+	else if constexpr(std::endian::native==std::endian::big)
+	{
+		auto [a1,a0]=__builtin_bit_cast(ul32x2_big_endian,a);
+		high=a1;
+		return a0;
+	}
+	else
+#endif
+#endif
+	{
+		high=static_cast<std::uint_least32_t>(a>>std::numeric_limits<std::uint_least32_t>::digits);
+		return static_cast<std::uint_least32_t>(a);
+	}
+}
+
+template<typename T,typename U>
+requires (sizeof(T)==sizeof(U)*2)
+inline constexpr U unpack_generic(T a,U& high) noexcept
+{
+#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
+#if __has_builtin(__builtin_bit_cast)
+	if constexpr(std::endian::native==std::endian::little)
+	{
+		auto [a0,a1]=__builtin_bit_cast(ul_generic_x2_little_endian<U>,a);	//get around gcc bug
+		high=a1;
+		return a0;
+	}
+	else if constexpr(std::endian::native==std::endian::big)
+	{
+		auto [a1,a0]=__builtin_bit_cast(ul_generic_x2_big_endian<U>,a);
+		high=a1;
+		return a0;
+	}
+	else
+#endif
+#endif
+	{
+		high=static_cast<U>(a>>std::numeric_limits<U>::digits);
+		return static_cast<U>(a);
+	}
+}
+
 template<typename T>
 #if __cpp_lib_concepts >= 202002L
 requires (std::unsigned_integral<T>)
 #endif
 inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 {
+
+	if constexpr(sizeof(T)>sizeof(::std::uint_least64_t))
+	{
+		::std::uint_least64_t ahigh;
+		auto alow=unpack_generic(a,ahigh);
+		::std::uint_least64_t bhigh;
+		auto blow=unpack_generic(b,bhigh);
+		carry=add_carry(carry,alow,blow,alow);
+		carry=add_carry(carry,ahigh,bhigh,ahigh);
+		out=static_cast<T>(ahigh)<<64u|alow;
+		return carry;
+	}
+	else
+	{
 #if __cpp_if_consteval >= 202106L
 	if consteval
 	{
@@ -213,6 +336,7 @@ inline constexpr bool add_carry(bool carry,T a,T b,T& out) noexcept
 	return add_carry_naive(carry,a,b,out);
 #endif
 	}
+	}
 }
 
 template<typename T>
@@ -227,11 +351,22 @@ inline constexpr bool sub_borrow_naive(bool carry,T a,T b,T& out) noexcept
 }
 
 template<typename T>
-#if __cpp_lib_concepts >= 202002L
-requires (std::unsigned_integral<T>)
-#endif
+requires (sizeof(T)<=sizeof(::std::uint_least64_t)*2)
 inline constexpr bool sub_borrow(bool borrow,T a,T b,T& out) noexcept
 {
+	if constexpr(sizeof(T)>sizeof(::std::uint_least64_t))
+	{
+		::std::uint_least64_t ahigh;
+		auto alow=unpack_generic(a,ahigh);
+		::std::uint_least64_t bhigh;
+		auto blow=unpack_generic(b,bhigh);
+		borrow=sub_borrow(borrow,alow,blow,alow);
+		borrow=sub_borrow(borrow,ahigh,bhigh,ahigh);
+		out=static_cast<T>(ahigh)<<64u|alow;
+		return borrow;
+	}
+	else
+	{
 #if __cpp_if_consteval >= 202106L
 	if consteval
 	{
@@ -369,113 +504,6 @@ inline constexpr bool sub_borrow(bool borrow,T a,T b,T& out) noexcept
 	return sub_borrow_naive(borrow,a,b,out);
 #endif
 	}
-}
-
-template<typename U>
-struct ul_generic_x2_little_endian
-{
-	U low,high;
-};
-template<typename U>
-struct ul_generic_x2_big_endian
-{
-	U high,low;
-};
-
-template<typename U>
-using ul_generic_x2 = std::conditional_t<std::endian::native==std::endian::big,ul_generic_x2_big_endian<U>,ul_generic_x2_little_endian<U>>;
-
-using ul32x2_little_endian=ul_generic_x2_little_endian<std::uint_least32_t>;
-using ul32x2_big_endian=ul_generic_x2_big_endian<std::uint_least32_t>;
-using ul32x2 = ul_generic_x2<std::uint_least32_t>;
-
-inline constexpr std::uint_least32_t umul_least_32(std::uint_least32_t a,std::uint_least32_t b,std::uint_least32_t& high) noexcept
-{
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
-	if constexpr(std::endian::native==std::endian::little||std::endian::native==std::endian::big)
-	{
-		auto ret{__builtin_bit_cast(ul32x2,static_cast<std::uint_least64_t>(a)*b)};
-		high=ret.high;
-		return ret.low;
-	}
-	else
-#endif
-#endif
-	{
-		std::uint_least64_t v{static_cast<std::uint_least64_t>(a)*b};
-		high=static_cast<std::uint_least32_t>(v>>(::std::numeric_limits<::std::uint_least32_t>::digits));
-		return static_cast<std::uint_least32_t>(v);
-	}
-}
-
-inline constexpr std::uint_least32_t umulh_least_32(std::uint_least32_t a,std::uint_least32_t b) noexcept
-{
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
-	if constexpr(std::endian::native==std::endian::little||std::endian::native==std::endian::big)
-	{
-		auto ret{__builtin_bit_cast(ul32x2,static_cast<std::uint_least64_t>(a)*b)};
-		return ret.high;
-	}
-	else
-#endif
-#endif
-	{
-		std::uint_least64_t v{static_cast<std::uint_least64_t>(a)*b};
-		return static_cast<std::uint_least32_t>(v>>(::std::numeric_limits<::std::uint_least32_t>::digits));
-	}
-}
-
-inline constexpr std::uint_least32_t unpack_ul64(std::uint_least64_t a,std::uint_least32_t& high) noexcept
-{
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
-	if constexpr(std::endian::native==std::endian::little)
-	{
-		auto [a0,a1]=__builtin_bit_cast(ul32x2_little_endian,a);	//get around gcc bug
-		high=a1;
-		return a0;
-	}
-	else if constexpr(std::endian::native==std::endian::big)
-	{
-		auto [a1,a0]=__builtin_bit_cast(ul32x2_big_endian,a);
-		high=a1;
-		return a0;
-	}
-	else
-#endif
-#endif
-	{
-		high=static_cast<std::uint_least32_t>(a>>std::numeric_limits<std::uint_least32_t>::digits);
-		return static_cast<std::uint_least32_t>(a);
-	}
-}
-
-template<typename T,typename U>
-requires (sizeof(T)==sizeof(U)*2)
-inline constexpr U unpack_generic(T a,U& high) noexcept
-{
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
-	if constexpr(std::endian::native==std::endian::little)
-	{
-		auto [a0,a1]=__builtin_bit_cast(ul_generic_x2_little_endian<U>,a);	//get around gcc bug
-		high=a1;
-		return a0;
-	}
-	else if constexpr(std::endian::native==std::endian::big)
-	{
-		auto [a1,a0]=__builtin_bit_cast(ul_generic_x2_big_endian<U>,a);
-		high=a1;
-		return a0;
-	}
-	else
-#endif
-#endif
-	{
-		high=static_cast<U>(a>>std::numeric_limits<U>::digits);
-		return static_cast<U>(a);
 	}
 }
 
@@ -807,7 +835,7 @@ inline constexpr std::size_t cal_allocation_size_or_die(std::size_t size) noexce
 #endif
 }
 
-template<std::unsigned_integral U>
+template<typename U>
 struct udiv_result
 {
 	using unsigned_type = U;
