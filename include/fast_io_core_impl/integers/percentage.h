@@ -27,23 +27,23 @@ struct percentage_precision_t
 };
 #endif
 
-template<bool showpos=false,typename T,typename U>
+template<bool upper=false,bool shbase=false,bool fll=false,bool showpos=false,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
 inline constexpr auto percentage_conventional(T num,U deno) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
-	::fast_io::details::base_mani_flags_cache<10,false,false,showpos,false>,
+	::fast_io::details::base_mani_flags_cache<10,upper,shbase,fll,showpos,false>,
 	::fast_io::manipulators::percentage_conventional_t<
 	typename ::fast_io::details::integer_alias_type_traits<T>::alias_type,
 	typename ::fast_io::details::integer_alias_type_traits<U>::alias_type>>{{num,deno}};
 }
 
-template<bool showpos=false,typename T,typename U>
+template<bool upper=false,bool shbase=false,bool fll=false,bool showpos=false,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
 inline constexpr auto comma_percentage_conventional(T num,U deno) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
-	::fast_io::details::base_mani_flags_cache<10,false,false,showpos,true>,
+	::fast_io::details::base_mani_flags_cache<10,upper,shbase,fll,showpos,true>,
 	::fast_io::manipulators::percentage_conventional_t<
 	typename ::fast_io::details::integer_alias_type_traits<T>::alias_type,
 	typename ::fast_io::details::integer_alias_type_traits<U>::alias_type>>{{num,deno}};
@@ -80,7 +80,7 @@ template<::std::size_t base,typename T>
 requires (2<=base&&base<=36)
 inline constexpr T base_ul64_max_val{::fast_io::details::compute_base_ul64_max_val<base,T>()};
 
-template<::std::size_t base,bool uppercase,bool showpos,::std::integral chartype,typename T,typename U>
+template<::std::size_t base,bool uppercase,bool showbase,bool uppercase_showbase,bool full,bool showpos,bool comma,::std::integral chartype,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
 inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T numerator,U denominator) noexcept
 {
@@ -126,16 +126,20 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 				++iter;
 			}
 		}
-		return prrsv_percentage_conventional_impl<base,uppercase,showpos>(iter,unsignednum,unsignedden);
+		return prrsv_percentage_conventional_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,unsignednum,unsignedden);
 	}
 	else if constexpr(sizeof(T)<sizeof(::std::uint_least32_t))
 	{
-		return prrsv_percentage_conventional_impl(iter,static_cast<::std::uint_least32_t>(numerator),denominator);
+		return prrsv_percentage_conventional_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,static_cast<::std::uint_least32_t>(numerator),denominator);
 	}
 	else
 	{
 		if(denominator==0)	//denominator cannot be zero. so we print out nan
 		{
+			if constexpr(showbase)
+			{
+				iter=print_reserve_show_base_impl<base,uppercase_showbase>(iter);
+			}
 			if constexpr(23u<base)
 			{
 				if constexpr(uppercase)
@@ -258,8 +262,8 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 			}
 			auto quotientdiv100{quotient/twodigits};
 			unsigned quotientmod100{static_cast<unsigned>(quotient%twodigits)};
-			iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientdiv100);
-			*iter=::fast_io::char_literal_v<u8'.',chartype>;
+			iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,false>(iter,quotientdiv100);
+			*iter=::fast_io::char_literal_v<(comma?u8',':u8'.'),chartype>;
 			++iter;
 			::fast_io::details::non_overlapped_copy_n(tb+(quotientmod100<<1u),2u,iter);
 			iter+=2u;
@@ -308,7 +312,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 				}
 				auto quotientdiv100{quotient/twodigits};
 				quotientmod100=static_cast<unsigned>(quotient%twodigits);
-				iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientdiv100);
+				iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,false>(iter,quotientdiv100);
 			}
 			else
 			{
@@ -332,7 +336,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 				{
 					auto quotientdiv100{quotientlow/twodigits};
 					quotientmod100=static_cast<unsigned>(quotientlow%twodigits);
-					iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientdiv100);
+					iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,false>(iter,quotientdiv100);
 				}
 				else
 				{
@@ -345,7 +349,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					[[assume(quotientlowhigh==0)]];
 					[[assume(remainderlowhigh==0)]];
 #endif
-			 		iter=::fast_io::details::print_reserve_integral_define<base,false,false,false,uppercase,false>(iter,quotientlowlow);
+			 		iter=::fast_io::details::print_reserve_integral_define<base,showbase,uppercase_showbase,false,uppercase,false>(iter,quotientlowlow);
 
 					auto quotientdiv100{remainderlowlow/twodigits};
 					quotientmod100=static_cast<unsigned>(remainderlowlow%twodigits);
@@ -354,7 +358,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					::fast_io::details::print_reserve_integral_main_impl<base,uppercase>(iter+=tdigitsm2,quotientdiv100,tdigitsm2);
 				}
 			}
-			*iter=::fast_io::char_literal_v<u8'.',chartype>;
+			*iter=::fast_io::char_literal_v<(comma?u8',':u8'.'),chartype>;
 			++iter;
 			::fast_io::details::non_overlapped_copy_n(tb+(quotientmod100<<1u),2u,iter);
 			iter+=2u;
@@ -374,7 +378,7 @@ inline constexpr chartype* print_reserve_define(::fast_io::io_reserve_type_t<cha
 	chartype* iter,
 	::fast_io::manipulators::scalar_manip_t<flags,::fast_io::manipulators::percentage_conventional_t<T,U>> v) noexcept
 {
-	return ::fast_io::details::prrsv_percentage_conventional_impl<flags.base,flags.uppercase,flags.showpos>(iter,v.reference.numerator,v.reference.denominator);
+	return ::fast_io::details::prrsv_percentage_conventional_impl<flags.base,flags.uppercase,flags.showbase,flags.uppercase_showbase,flags.full,flags.showpos,flags.comma>(iter,v.reference.numerator,v.reference.denominator);
 }
 
 }
