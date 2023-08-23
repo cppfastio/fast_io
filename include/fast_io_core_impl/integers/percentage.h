@@ -356,7 +356,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 				constexpr
 					T zero{},one{1u};
 				auto [quotientlow,quotienthigh,remainderlow,remainderhigh] =
-					::fast_io::details::intrinsics::udivmod<udivmodtype>(numerator10000low,numerator10000high,denominator,zero);
+					::fast_io::intrinsics::udivmod<udivmodtype>(numerator10000low,numerator10000high,denominator,zero);
 #if __has_cpp_attribute(assume)
 				[[assume(remainderhigh==0)]];
 #endif
@@ -379,7 +379,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 					constexpr
 						auto mxval{::fast_io::details::base_ul64_max_val<base,T>};
 					auto [quotientlowlow,quotientlowhigh,remainderlowlow,remainderlowhigh] =
-						::fast_io::details::intrinsics::udivmod<udivmodtype>(quotientlow,quotienthigh,mxval,zero);
+						::fast_io::intrinsics::udivmod<udivmodtype>(quotientlow,quotienthigh,mxval,zero);
 
 #if __has_cpp_attribute(assume)
 					[[assume(quotientlowhigh==0)]];
