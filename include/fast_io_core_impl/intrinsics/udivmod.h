@@ -143,7 +143,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 
 	quotientlow = 0;
 	T carry;
-	for (++shift;shift--;)
+	do
 	{
 		if constexpr(false)
 		{
@@ -174,6 +174,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		divisorlow = shiftright(divisorlow,divisorhigh,1u);
 		divisorhigh >>= 1u;
 	}
+	while(shift--);
 	return {quotientlow,0,dividendlow,dividendhigh};
 }
 
