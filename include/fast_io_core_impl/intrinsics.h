@@ -876,6 +876,18 @@ inline constexpr U shiftright(U low_part,U high_part,std::uint_least8_t shift) n
 	}
 }
 
+template<typename T>
+inline constexpr ::std::uint_least32_t udivmod_special_countr_zero(T t) noexcept
+{
+	return static_cast<::std::uint_least32_t>(::std::countr_zero(t));
+}
+
+template<typename T>
+inline constexpr ::std::uint_least32_t udivmod_special_countl_zero(T t) noexcept
+{
+	return static_cast<::std::uint_least32_t>(::std::countl_zero(t));
+}
+
 /*
 https://code.woboq.org/llvm/compiler-rt/lib/builtins/udivmodti4.c.html#__udivmodti4
 */
@@ -925,7 +937,7 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 #endif
 #endif
 			{
-				return {n_high >> static_cast<std::uint_least32_t>(::std::countr_zero(d_high)),0,n_low,n_high & (d_high - 1)};
+				return {n_high >> ::fast_io::details::intrinsics::udivmod_special_countr_zero(d_high),0,n_low,n_high & (d_high - 1)};
 			}
 
 		}
@@ -942,7 +954,7 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 #endif
 #endif
 		{
-			sr=static_cast<std::uint_least32_t>(::std::countr_zero(d_high) - ::std::countr_zero(n_high));
+			sr=::fast_io::details::intrinsics::udivmod_special_countl_zero(d_high) - ::fast_io::details::intrinsics::udivmod_special_countl_zero(n_high);
 		}
 		// 0 <= sr <= n_udword_bits - 2 or sr large
 		if (sr > n_udword_bits_m2)
@@ -978,7 +990,7 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 #endif
 #endif
 				{
-					sr = static_cast<std::uint_least32_t>(::std::countr_zero(d_low));
+					sr = ::fast_io::details::intrinsics::udivmod_special_countr_zero(d_low);
 				}
 				q_high = n_high >> sr;
 				q_low = (n_high << (n_udword_bits - sr)) | (n_low >> sr);
@@ -997,8 +1009,9 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 #endif
 #endif
 			{
-				sr = 1 + n_udword_bits + static_cast<std::uint_least32_t>(::std::countr_zero(d_low)) - static_cast<std::uint_least32_t>(std::countr_zero(n_high));
+				sr = 1 + n_udword_bits + ::fast_io::details::intrinsics::udivmod_special_countl_zero(d_low) - ::fast_io::details::intrinsics::udivmod_special_countl_zero(n_high);
 			}
+
 			// 2 <= sr <= n_utword_bits - 1
 			// q.all = n.all << (n_utword_bits - sr);
 			// r.all = n.all >> sr;
@@ -1041,7 +1054,7 @@ inline constexpr udiv_result<U> udivmod(U n_low, U n_high,U d_low,U d_high) noex
 #endif
 			{
 
-				sr = static_cast<std::uint_least32_t>(::std::countr_zero(d_high)) - static_cast<std::uint_least32_t>(::std::countr_zero(n_high));
+				sr = ::fast_io::details::intrinsics::udivmod_special_countl_zero(d_high) -::fast_io::details::intrinsics::udivmod_special_countl_zero(n_high);
 			}
 			// 0 <= sr <= n_udword_bits - 1 or sr large
 			if (sr > n_udword_bits_m1)
