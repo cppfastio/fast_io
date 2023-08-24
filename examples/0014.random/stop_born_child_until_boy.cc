@@ -36,13 +36,10 @@ int main(int argc,char** argv)
 	fast_io::out_buf_type obf(fast_io::out());
 	for(auto const &e : map)
 	{
-		print(obf,e.first," ",e.second," (",static_cast<double>(e.second)/n,")\n");
+		print(obf,e.first," ",e.second," (",percentage_conventional(e.second,n),")\n");
 	}
 	::std::uint_least64_t const females{total_population-n};
 	println(obf,"males:",n,"\tfemales:",females,"\n"
-		"total population:",total_population);
-	if(females)
-	{
-		println(obf,"Male To Female Ratio:",static_cast<double>(n)/females);
-	}
+		"total population:",total_population,"\n"
+		"Sex Ratio:",sex_ratio(n,females));
 }
