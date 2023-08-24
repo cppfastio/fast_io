@@ -806,7 +806,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 				constexpr
 					unsigneddenominatortype zero{};
 				unsignedden=zero-unsignedden;
-				if constexpr(percent==::fast_io::manipulators::percentage_flag::sexratio)
+				if constexpr(percent!=::fast_io::manipulators::percentage_flag::sexratio)
 				{
 					isnegative=!isnegative;
 				}

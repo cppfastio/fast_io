@@ -4,6 +4,7 @@ int main()
 {
 	using namespace ::fast_io::mnp;
 	::fast_io::io::println(
+
 		"UINT64_MAX/0u=",percentage_sex_ratio(UINT64_MAX,0u),"\n"
 		"UINT64_MAX/0u=",percentage_sex_ratio<true>(UINT64_MAX,0u),"\n"
 		"UINT64_MAX/1u=",percentage_sex_ratio(UINT64_MAX,1u),"\n"
@@ -17,8 +18,8 @@ int main()
 		"99984999u/-100000000=",percentage_sex_ratio(99984999u,-100000000),"\n"
 		"99984999/-100000000=",percentage_sex_ratio(99984999,-100000000),"\n"
 		"99985000/-100000000=",percentage_sex_ratio(99985000,-100000000),"\n"
-		"-99985000/-100000000=",percentage_sex_ratio(99985000,-100000000),"\n"
-		"-99985000/100000000=",percentage_sex_ratio(99985000,-100000000),"\n"
+		"-99985000/-100000000=",percentage_sex_ratio(-99985000,-100000000),"\n"
+		"99985000/-100000000=",percentage_sex_ratio(99985000,-100000000),"\n"
 		"850308345/971424125=",percentage_sex_ratio(850308345,971424125),"\n"
 		"comma: -99985000/-100000000=",comma_percentage_sex_ratio(-99985000,-100000000),"\n"
 		"99985000/100000000=",percentage_sex_ratio<false,false,true>(99985000,100000000),"\n"
@@ -28,3 +29,4 @@ int main()
 		"INT64_MIN/UINT64_MAX=",percentage_sex_ratio(INT64_MIN,UINT64_MAX)
 		);
 }
+
