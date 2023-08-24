@@ -671,7 +671,7 @@ inline constexpr chartype* prrsv_percentage_sexratio_signed_impl(chartype *iter,
 	}
 	else
 	{
-		iter=prrsv_percentage_main_common_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,
+		iter=prrsv_percentage_main_common_impl<base,uppercase,showbase,uppercase_showbase,full,comma>(iter,
 			numerator,denominator);
 		*iter=::fast_io::char_literal_v<u8':',chartype>;
 		++iter;
@@ -725,7 +725,7 @@ template<::std::size_t base,bool uppercase,bool showbase,bool uppercase_showbase
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
 inline constexpr chartype* prrsv_percentage_sexratio_unsigned_impl(chartype *iter,T numerator,U denominator) noexcept
 {
-	iter=prrsv_percentage_main_common_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,
+	iter=prrsv_percentage_main_common_impl<base,uppercase,showbase,uppercase_showbase,full,comma>(iter,
 		numerator,denominator);
 	*iter=::fast_io::char_literal_v<u8':',chartype>;
 	++iter;
@@ -768,19 +768,19 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 {
 	using unsignednumeratortype = ::fast_io::details::my_make_unsigned_t<T>;
 	using unsigneddenominatortype = ::fast_io::details::my_make_unsigned_t<U>;
+	if(denominator==0)
+	{
+		if constexpr(::fast_io::manipulators::percentage_flag::sexratio == percent)
+		{
+			return prrsv_percentage_denominatorzero_sexratio_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,numerator);
+		}
+		else
+		{
+			return prrsv_percentage_denominatorzero_impl<base,uppercase>(iter);
+		}
+	}
 	if constexpr(::fast_io::details::my_signed_integral<T>||::fast_io::details::my_signed_integral<U>)
 	{
-		if(denominator==0)
-		{
-			if constexpr(::fast_io::manipulators::percentage_flag::sexratio == percent)
-			{
-				return prrsv_percentage_denominatorzero_sexratio_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,numerator);
-			}
-			else
-			{
-				return prrsv_percentage_denominatorzero_impl<base,uppercase>(iter);
-			}
-		}
 		bool isnegative,denominatorisnegative;
 		unsignednumeratortype unsignednum{static_cast<unsignednumeratortype>(numerator)};
 		if constexpr(::fast_io::details::my_signed_integral<T>)
@@ -836,7 +836,7 @@ inline constexpr chartype* prrsv_percentage_conventional_impl(chartype *iter,T n
 		}
 		if constexpr(percent==::fast_io::manipulators::percentage_flag::sexratio&&::fast_io::details::my_signed_integral<U>)
 		{
-			return prrsv_percentage_sexratio_signed_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma,percent>(iter,unsignednum,unsignedden,denominatorisnegative);
+			return prrsv_percentage_sexratio_signed_impl<base,uppercase,showbase,uppercase_showbase,full,showpos,comma>(iter,unsignednum,unsignedden,denominatorisnegative);
 		}
 		else
 		{
