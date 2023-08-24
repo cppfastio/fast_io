@@ -22,6 +22,7 @@ template<typename T>
 inline constexpr tuint<T> udivbigbysmalltosmalldefault(T u1, T u0, T v) noexcept
 {
 constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
+constexpr unsigned n_udword_bitsdv2 = n_udword_bits/2;
 constexpr T one{1u};
 constexpr T b = (one << (n_udword_bits / 2)); // Number base (32 bits)
 constexpr T mask = (b-one);
@@ -30,12 +31,12 @@ T vn1, vn0;                                // Norm. divisor digits
 T q1, q0;                                  // Quotient digits
 T un64, un21, un10;                        // Dividend digit pairs
 T rhat;                                    // A remainder
-int s;                                       // Shift amount for normalization
-s = ::std::countl_zero(v);
-if (s > 0) {
+                                      
+unsigned s = static_cast<unsigned>(::std::countl_zero(v)); 	// Shift amount for normalization
+if (s) {
 // Normalize the divisor.
 v = v << s;
-un64 = (u1 << s) | (u0 >> (n_udword_bits - s));
+un64 = (u1 << s) | (u0 >> (n_udword_bits - static_cast<unsigned>(s)));
 un10 = u0 << s; // Shift dividend left
 } else {
 // Avoid undefined behavior of (u0 >> 64).
@@ -43,10 +44,10 @@ un64 = u1;
 un10 = u0;
 }
 // Break divisor up into two 32-bit digits.
-vn1 = v >> (n_udword_bits / 2);
+vn1 = v >> n_udword_bitsdv2;
 vn0 = v & mask;
 // Break right half of dividend into two digits.
-un1 = un10 >> (n_udword_bits / 2);
+un1 = un10 >> n_udword_bitsdv2;
 un0 = un10 & mask;
 // Compute the first quotient digit, q1.
 q1 = un64 / vn1;
@@ -101,8 +102,6 @@ template<typename T>
 inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		T divisorlow, T divisorhigh) noexcept
 {
-	constexpr unsigned n_utword_bits = ::std::numeric_limits<T>::digits*2u;
-
 	if (divisorhigh>dividendhigh||
 		(divisorhigh==dividendhigh&&divisorlow>dividendlow))
 	{
@@ -136,7 +135,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		return {quotientlow,quotienthigh,remainderlow,remainderhigh};
 	}
 	// 0 <= shift <= 63.
-	auto shift = ::std::countl_zero(divisorhigh) - ::std::countl_zero(dividendhigh);
+	auto shift = static_cast<unsigned>(::std::countl_zero(divisorhigh) - ::std::countl_zero(dividendhigh));
 
 	divisorhigh = shiftleft(divisorlow,divisorhigh,shift);
 	divisorlow <<= shift;
