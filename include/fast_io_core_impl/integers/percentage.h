@@ -80,7 +80,7 @@ Idpols are reactionary anti-scientific trash.
 
 template<bool upper=false,bool fll=false,bool showpos=false,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
-inline constexpr auto sex_ratio(T male,U female) noexcept
+inline constexpr auto percentage_sex_ratio(T male,U female) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
 	::fast_io::details::base_mani_flags_cache<10,upper,false,fll,showpos,false,::fast_io::manipulators::percentage_flag::sexratio>,
@@ -91,7 +91,7 @@ inline constexpr auto sex_ratio(T male,U female) noexcept
 
 template<bool upper=false,bool fll=false,bool showpos=false,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
-inline constexpr auto comma_sex_ratio(T male,U female) noexcept
+inline constexpr auto comma_percentage_sex_ratio(T male,U female) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
 	::fast_io::details::base_mani_flags_cache<10,upper,false,fll,showpos,true,::fast_io::manipulators::percentage_flag::sexratio>,
@@ -102,7 +102,7 @@ inline constexpr auto comma_sex_ratio(T male,U female) noexcept
 
 template<::std::size_t base,bool upper=false,bool shbase=false,bool fll=false,bool showpos=false,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
-inline constexpr auto base_sex_ratio(T male,U female) noexcept
+inline constexpr auto base_percentage_sex_ratio(T male,U female) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
 	::fast_io::details::base_mani_flags_cache<base,upper,shbase,fll,showpos,false,::fast_io::manipulators::percentage_flag::sexratio>,
@@ -113,7 +113,7 @@ inline constexpr auto base_sex_ratio(T male,U female) noexcept
 
 template<::std::size_t base,bool upper=false,bool shbase=false,bool fll=false,bool showpos=false,typename T,typename U>
 requires (::fast_io::details::my_integral<T>&&::fast_io::details::my_integral<U>)
-inline constexpr auto comma_base_sex_ratio(T male,U female) noexcept
+inline constexpr auto comma_base_percentage_sex_ratio(T male,U female) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_t<
 	::fast_io::details::base_mani_flags_cache<base,upper,shbase,fll,showpos,true,::fast_io::manipulators::percentage_flag::sexratio>,

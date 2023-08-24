@@ -44,7 +44,7 @@ int main(int argc,char** argv)
 		
 		if(girls!=0)
 		{
-			println(obf,u8"Sex Ratio is ",sex_ratio(boys,girls));
+			println(obf,u8"Sex Ratio is ",percentage_sex_ratio(boys,girls));
 		}
 		print(obf,u8"Male Ratio in Entire Population:",percentage_conventional(boys,boys+girls),u8"\n\n");
 	}

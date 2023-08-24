@@ -41,5 +41,5 @@ int main(int argc,char** argv)
 	::std::uint_least64_t const females{total_population-n};
 	println(obf,"males:",n,"\tfemales:",females,"\n"
 		"total population:",total_population,"\n"
-		"Sex Ratio:",sex_ratio(n,females));
+		"Sex Ratio:",percentage_sex_ratio(n,females));
 }
