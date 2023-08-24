@@ -51,6 +51,14 @@ era_d_fmt,
 era_t_fmt
 };
 
+enum class percentage_flag:
+	::std::uint_least8_t
+{
+none,
+percent,
+sexratio
+};
+
 struct ip_flags
 {
 	bool v6shorten{true};
@@ -130,7 +138,7 @@ struct scalar_flags
 	bool localeparse{};
 #endif
 	bool line{};
-
+	percentage_flag percentage{};
 };
 
 inline constexpr scalar_flags integral_default_scalar_flags{};
@@ -173,8 +181,8 @@ struct whole_get_t
 
 namespace details
 {
-template<std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false,bool comma=false>
-inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs==2||bs==3||bs==16)?upper:false),.uppercase=((bs<=10)?false:upper),.comma=comma,.full=fll};
+template<std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false,bool comma=false,::fast_io::manipulators::percentage_flag perflag=::fast_io::manipulators::percentage_flag::none>
+inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs==2||bs==3||bs==16)?upper:false),.uppercase=((bs<=10)?false:upper),.comma=comma,.full=fll,.percentage=perflag};
 
 template<bool upper>
 inline constexpr ::fast_io::manipulators::scalar_flags boolalpha_mani_flags_cache{.alphabet=true,.uppercase=upper};
@@ -1283,8 +1291,25 @@ constexpr void print_reserve_integral_define_precise(char_type* start,std::size_
 	}
 }
 
+inline constexpr
+	::std::size_t compute_print_showbase_length(::std::size_t base) noexcept
+{
+	if (base==2||base==3||base==16)
+		return 2;	//0b 0t 0x
+	else if (base==8)
+		return 1;	//0
+	else if (base<10)
+		return 4;	//0[9]
+	else if (10<base)
+		return 5;	//0[36]
+	return 0;
+}
+
+template<::std::size_t base>
+inline constexpr ::std::size_t print_showbase_length{compute_print_showbase_length(base)};
+
 template<
-std::size_t base=10,
+::std::size_t base=10,
 bool showbase=false,
 bool showpos=false,
 my_integral T>
@@ -1295,15 +1320,7 @@ inline constexpr std::size_t print_reserve_scalar_size_impl()
 		++total_sum;
 	if constexpr(showbase)
 	{
-		if constexpr(base==2||base==3||base==16)
-			total_sum+=2;	//0b 0t 0x
-		else if constexpr(base==8)
-			++total_sum;	//0
-		else if constexpr(base<10)
-			total_sum+=4;	//0[9]
-		else if constexpr(10<base)
-			total_sum+=5;	//0[36]
-		//base==10 does not have showbase
+		total_sum+=::fast_io::details::print_showbase_length<base>;
 	}
 	if constexpr(std::same_as<std::remove_cvref_t<T>,bool>)
 		++total_sum;
@@ -1712,6 +1729,7 @@ requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>||
 #endif
 constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,T>>, char_type* iter,::fast_io::manipulators::scalar_manip_t<flags,T> t) noexcept
 {
+	static_assert(flags.percentage==::fast_io::manipulators::percentage_flag::none);
 	if constexpr(flags.alphabet)
 	{
 		static_assert((std::same_as<std::remove_cvref_t<T>,bool>||std::same_as<std::remove_cvref_t<T>,std::nullptr_t>),"only bool and std::nullptr_t support alphabet output");

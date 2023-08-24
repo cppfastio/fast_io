@@ -47,6 +47,7 @@
 #include"fast_io_core_impl/asan_support.h"
 //fast_io core
 #include"fast_io_core_impl/utils.h"
+#include"fast_io_core_impl/intrinsics/impl.h"
 #include"fast_io_core_impl/intrinsics.h"
 #include"fast_io_core_impl/parse_code.h"
 

@@ -118,13 +118,22 @@ inline constexpr basic_timestamp<0> div_uint(std::int_least64_t rseconds,std::ui
 	constexpr std::uint_least64_t one{1};
 	std::uint_least64_t total_seconds_high;
 	std::uint_least64_t total_seconds_low{intrinsics::umul(seconds,uint_least64_subseconds_per_second,total_seconds_high)};
-	intrinsics::add_carry(intrinsics::add_carry(false,total_seconds_low,subseconds,total_seconds_low),total_seconds_high,zero,total_seconds_high);
+	
+	::std::uint_least64_t carry{};
+	
+	total_seconds_low=::fast_io::intrinsics::addc(total_seconds_low,subseconds,carry,carry);
+	total_seconds_high=::fast_io::intrinsics::addc(total_seconds_high,zero,carry,carry);
+
 	std::uint_least64_t mid{d>>1};
-	auto [q_low,q_high,r,r_high]=intrinsics::udivmod(total_seconds_low,total_seconds_high,d,zero);
+	auto [q_low,q_high,r,r_high]=::fast_io::intrinsics::udivmod(total_seconds_low,total_seconds_high,d,zero);
 	if(mid<r||(mid==r&&(q_low&1)==1))
-		intrinsics::add_carry(intrinsics::add_carry(false,q_low,one,q_low),q_high,zero,q_high);
+	{
+		carry=0u;
+		q_low=::fast_io::intrinsics::addc(q_low,one,carry,carry);
+		q_high=::fast_io::intrinsics::addc(q_high,zero,carry,carry);
+	}
 	auto [result_seconds_low,result_seconds_high,result_subseconds_low,result_subseconds_high]
-		=intrinsics::udivmod(q_low,q_high,uint_least64_subseconds_per_second,zero);
+		=::fast_io::intrinsics::udivmod(q_low,q_high,uint_least64_subseconds_per_second,zero);
 	if(minus)
 		result_seconds_low=zero-result_seconds_low;
 	return {static_cast<std::int_least64_t>(result_seconds_low),result_subseconds_low};
