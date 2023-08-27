@@ -124,9 +124,9 @@ template<typename T>
 requires (sizeof(T)==1)
 inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t cdpt, T* p_dst) noexcept
 {
-	if(u32<0x110000)[[likely]]
+	if(cdpt<0x110000)[[likely]]
 	{
-		if(u32<0x0452)
+		if(cdpt<0x0452)
 			return lookup_uni_to_gb18030(cdpt-128,p_dst);
 		char32_t sum{128};
 		for(std::size_t i{};i!=13;++i)
