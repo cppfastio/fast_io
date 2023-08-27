@@ -244,10 +244,10 @@ inline constexpr ::std::size_t get_gb18030_code_units_unhappy_pdstsz(char32_t u3
 				{
 					return 0;
 				}
-				p_dst[3]=static_cast<T>(0x30+gb%10); gb/=10;
-				p_dst[2]=static_cast<T>(0x81+gb%126); gb/=126;
-				p_dst[1]=static_cast<T>(0x30+gb%10); gb/=10;
-				*p_dst=static_cast<T>(0x81+gb);
+				p_dst[3]=static_cast<char>(0x30+gb%10); gb/=10;
+				p_dst[2]=static_cast<char>(0x81+gb%126); gb/=126;
+				p_dst[1]=static_cast<char>(0x30+gb%10); gb/=10;
+				*p_dst=static_cast<char>(0x81+gb);
 				return 4;
 			}
 			else if(static_cast<char32_t>(u32-e1)<static_cast<char32_t>(gb18030_ranges[i+1][0]-e1))
