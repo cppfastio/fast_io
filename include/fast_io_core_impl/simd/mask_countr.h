@@ -209,6 +209,18 @@ inline constexpr unsigned vector_mask_countr_common_impl(::fast_io::intrinsics::
 namespace intrinsics
 {
 
+template<std::size_t sizeofsimdvector>
+inline constexpr bool can_intrinsics_accelerate_mask_countr{
+::fast_io::details::can_intrinsics_accelerate_mask_countr<sizeofsimdvector>
+};
+
+inline constexpr std::size_t optimal_simd_vector_run_with_cpu_instruction_size_with_mask_countr
+{
+::fast_io::intrinsics::can_intrinsics_accelerate_mask_countr<64>?64:
+(::fast_io::intrinsics::can_intrinsics_accelerate_mask_countr<32>?32:
+(::fast_io::intrinsics::can_intrinsics_accelerate_mask_countr<16>?16:0))
+};
+
 template<typename T,std::size_t n>
 inline constexpr auto vector_mask_countr_one(simd_vector<T,n> const& vec) noexcept
 {

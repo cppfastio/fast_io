@@ -124,9 +124,9 @@ template<typename T>
 requires (sizeof(T)==1)
 inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t cdpt, T* p_dst) noexcept
 {
-	if(u32<0x110000)[[likely]]
+	if(cdpt<0x110000)[[likely]]
 	{
-		if(u32<0x0452)
+		if(cdpt<0x0452)
 			return lookup_uni_to_gb18030(cdpt-128,p_dst);
 		char32_t sum{128};
 		for(std::size_t i{};i!=13;++i)
@@ -244,10 +244,10 @@ inline constexpr ::std::size_t get_gb18030_code_units_unhappy_pdstsz(char32_t u3
 				{
 					return 0;
 				}
-				p_dst[3]=static_cast<T>(0x30+gb%10); gb/=10;
-				p_dst[2]=static_cast<T>(0x81+gb%126); gb/=126;
-				p_dst[1]=static_cast<T>(0x30+gb%10); gb/=10;
-				*p_dst=static_cast<T>(0x81+gb);
+				p_dst[3]=static_cast<char>(0x30+gb%10); gb/=10;
+				p_dst[2]=static_cast<char>(0x81+gb%126); gb/=126;
+				p_dst[1]=static_cast<char>(0x30+gb%10); gb/=10;
+				*p_dst=static_cast<char>(0x81+gb);
 				return 4;
 			}
 			else if(static_cast<char32_t>(u32-e1)<static_cast<char32_t>(gb18030_ranges[i+1][0]-e1))
@@ -261,13 +261,11 @@ inline constexpr ::std::size_t get_gb18030_code_units_unhappy_pdstsz(char32_t u3
 	return get_gb18030_invalid_code_units(p_dst);
 }
 
-template<typename T>
-requires (sizeof(T)==1)
-inline constexpr std::size_t get_gb18030_code_units(char32_t cdpt, T* p_dst) noexcept
+inline constexpr std::size_t get_gb18030_code_units(char32_t cdpt, char* p_dst) noexcept
 {
 	if(cdpt<0x80)[[likely]]
 	{
-		*p_dst=static_cast<T>(static_cast<std::make_unsigned_t<T>>(cdpt));
+		*p_dst=static_cast<char unsigned>(static_cast<char unsigned>(cdpt));
 		return 1;
 	}
 	return get_gb18030_code_units_unhappy(cdpt,p_dst);

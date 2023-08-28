@@ -18,9 +18,37 @@ struct tuints
 T quotientlow,quotienthigh,remainderlow,remainderhigh;
 };
 
+/*
+Referenced from
+https://github.com/llvm/llvm-project/blob/main/compiler-rt/lib/builtins/udivmodti4.c
+*/
+
 template<typename T>
 inline constexpr tuint<T> udivbigbysmalltosmalldefault(T u1, T u0, T v) noexcept
 {
+#if defined(__x86_64__) || defined(_M_AMD64)
+	if constexpr(sizeof(T)==sizeof(::std::uint_least64_t))
+	{
+#if defined(__cpp_if_consteval)
+		if !consteval
+#else
+		if(!__builtin_is_constant_evaluated())
+#endif
+		{
+#if defined(_MSC_VER) && !defined(__clang__)
+			long long unsigned remainder;
+			auto quotient{_udiv128(u1,u0,v,__builtin_addressof(remainder))};
+#else
+			T quotient,remainder;
+			__asm__("{divq\t%[v]|div\t%[v]}" :
+				"=a"(quotient), "=d"(remainder)
+				: [ v ] "r"(v), "a"(u0), "d"(u1));
+#endif
+			return {quotient,remainder};
+		}
+	}
+#endif
+
 constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
 constexpr unsigned n_udword_bitsdv2 = n_udword_bits/2;
 constexpr T one{1u};
@@ -77,6 +105,19 @@ return {q1 * b + q0,((un21 * b + un0 - q0 * v) >> s)};
 template<typename T>
 inline constexpr T shiftleft(T low,T high,unsigned shift) noexcept
 {
+#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_AMD64)
+	if constexpr(sizeof(T)==sizeof(long long unsigned))
+	{
+#if defined(__cpp_if_consteval)
+		if !consteval
+#else
+		if(!__builtin_is_constant_evaluated())
+#endif
+		{
+			return __shiftleft128(low,high,static_cast<char unsigned>(shift));
+		}
+	}
+#endif
 	constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
 	if(shift==0u)
 	{
@@ -89,6 +130,19 @@ inline constexpr T shiftleft(T low,T high,unsigned shift) noexcept
 template<typename T>
 inline constexpr T shiftright(T low,T high,unsigned shift) noexcept
 {
+#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_AMD64)
+	if constexpr(sizeof(T)==sizeof(long long unsigned))
+	{
+#if defined(__cpp_if_consteval)
+		if !consteval
+#else
+		if(!__builtin_is_constant_evaluated())
+#endif
+		{
+			return __shiftright128(low,high,static_cast<char unsigned>(shift));
+		}
+	}
+#endif
 	constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
 	if(shift==0u)
 	{
@@ -99,7 +153,7 @@ inline constexpr T shiftright(T low,T high,unsigned shift) noexcept
 }
 
 template<typename T>
-inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
+inline constexpr ::fast_io::intrinsics::tuints<T> udivmod(T dividendlow, T dividendhigh,
 		T divisorlow, T divisorhigh) noexcept
 {
 	if (divisorhigh>dividendhigh||
@@ -115,7 +169,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		if (dividendhigh < divisorlow)
 		{
 		// The result fits in 64 bits.
-		auto temp = udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
+		auto temp = ::fast_io::intrinsics::udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
 						divisorlow);
 		quotientlow=temp.quotient;
 		remainderlow=temp.remainder;
@@ -127,7 +181,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		// After that dividendhigh < divisorlow.
 		quotienthigh = dividendhigh / divisorlow;
 		dividendhigh = dividendhigh % divisorlow;
-		auto temp = udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
+		auto temp = ::fast_io::intrinsics::udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
 						divisorlow);
 		quotientlow=temp.quotient;
 		remainderlow=temp.remainder;
@@ -137,11 +191,11 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 	// 0 <= shift <= 63.
 	auto shift = static_cast<unsigned>(::std::countl_zero(divisorhigh) - ::std::countl_zero(dividendhigh));
 
-	divisorhigh = shiftleft(divisorlow,divisorhigh,shift);
+	divisorhigh = ::fast_io::intrinsics::shiftleft(divisorlow,divisorhigh,shift);
 	divisorlow <<= shift;
 
 	quotientlow = 0;
-	T carry;
+	bool carry;
 	do
 	{
 		carry=0;
@@ -155,7 +209,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		carry=0;
 		dividendlow=::fast_io::intrinsics::addc(dividendlow,templow,carry,carry);
 		dividendhigh=::fast_io::intrinsics::addc(dividendhigh,temphigh,carry,carry);
-		divisorlow = shiftright(divisorlow,divisorhigh,1u);
+		divisorlow = ::fast_io::intrinsics::shiftright(divisorlow,divisorhigh,1u);
 		divisorhigh >>= 1u;
 	}
 	while(shift--);
