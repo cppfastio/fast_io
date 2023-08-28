@@ -14,7 +14,7 @@ namespace intrinsics
 {
 
 template<typename T>
-inline constexpr T addc(T a,T b,T carryin,T& carryout) noexcept
+inline constexpr T addc(T a,T b,bool carryin,bool& carryout) noexcept
 {
 #if __has_cpp_attribute(assume)
 	[[assume(carryin==0||carryin==1)]];
@@ -78,12 +78,12 @@ inline constexpr T addc(T a,T b,T carryin,T& carryout) noexcept
 	a+=b;
 	carryout=a<b;
 	a+=carryin;
-	carryout|=a<carryin;
+	carryout|=a<static_cast<T>(carryin);
 	return a;
 }
 
 template<typename T>
-inline constexpr T subc(T a,T b,T carryin,T& carryout) noexcept
+inline constexpr T subc(T a,T b,bool carryin,bool& carryout) noexcept
 {
 #if __has_cpp_attribute(assume)
 	[[assume(carryin==0||carryin==1)]];

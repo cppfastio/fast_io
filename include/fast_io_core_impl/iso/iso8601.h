@@ -119,8 +119,8 @@ inline constexpr basic_timestamp<0> div_uint(std::int_least64_t rseconds,std::ui
 	std::uint_least64_t total_seconds_high;
 	std::uint_least64_t total_seconds_low{intrinsics::umul(seconds,uint_least64_subseconds_per_second,total_seconds_high)};
 	
-	::std::uint_least64_t carry{};
-	
+	bool carry{};
+
 	total_seconds_low=::fast_io::intrinsics::addc(total_seconds_low,subseconds,carry,carry);
 	total_seconds_high=::fast_io::intrinsics::addc(total_seconds_high,zero,carry,carry);
 

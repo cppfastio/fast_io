@@ -167,7 +167,7 @@ inline constexpr ::fast_io::intrinsics::tuints<T> udivmod(T dividendlow, T divid
 	divisorlow <<= shift;
 
 	quotientlow = 0;
-	T carry;
+	bool carry;
 	do
 	{
 		carry=0;
