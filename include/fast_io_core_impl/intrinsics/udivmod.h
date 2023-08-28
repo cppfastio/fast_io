@@ -77,6 +77,19 @@ return {q1 * b + q0,((un21 * b + un0 - q0 * v) >> s)};
 template<typename T>
 inline constexpr T shiftleft(T low,T high,unsigned shift) noexcept
 {
+#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_AMD64)
+	if constexpr(sizeof(T)==sizeof(long long unsigned))
+	{
+#if defined(__cpp_if_consteval)
+		if !consteval
+#else
+		if(!__builtin_is_constant_evaluated())
+#endif
+		{
+			return __shiftleft128(low,high,static_cast<char unsigned>(shift));
+		}
+	}
+#endif
 	constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
 	if(shift==0u)
 	{
@@ -89,6 +102,19 @@ inline constexpr T shiftleft(T low,T high,unsigned shift) noexcept
 template<typename T>
 inline constexpr T shiftright(T low,T high,unsigned shift) noexcept
 {
+#if defined(_MSC_VER) && !defined(__clang__) && defined(_M_AMD64)
+	if constexpr(sizeof(T)==sizeof(long long unsigned))
+	{
+#if defined(__cpp_if_consteval)
+		if !consteval
+#else
+		if(!__builtin_is_constant_evaluated())
+#endif
+		{
+			return __shiftright128(low,high,static_cast<char unsigned>(shift));
+		}
+	}
+#endif
 	constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
 	if(shift==0u)
 	{
