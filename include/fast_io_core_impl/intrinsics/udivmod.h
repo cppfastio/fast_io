@@ -115,7 +115,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		if (dividendhigh < divisorlow)
 		{
 		// The result fits in 64 bits.
-		auto temp = udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
+		auto temp = ::fast_io::intrinsics::udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
 						divisorlow);
 		quotientlow=temp.quotient;
 		remainderlow=temp.remainder;
@@ -127,7 +127,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		// After that dividendhigh < divisorlow.
 		quotienthigh = dividendhigh / divisorlow;
 		dividendhigh = dividendhigh % divisorlow;
-		auto temp = udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
+		auto temp = ::fast_io::intrinsics::udivbigbysmalltosmalldefault(dividendhigh, dividendlow,
 						divisorlow);
 		quotientlow=temp.quotient;
 		remainderlow=temp.remainder;
@@ -137,7 +137,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 	// 0 <= shift <= 63.
 	auto shift = static_cast<unsigned>(::std::countl_zero(divisorhigh) - ::std::countl_zero(dividendhigh));
 
-	divisorhigh = shiftleft(divisorlow,divisorhigh,shift);
+	divisorhigh = ::fast_io::intrinsics::shiftleft(divisorlow,divisorhigh,shift);
 	divisorlow <<= shift;
 
 	quotientlow = 0;
@@ -155,7 +155,7 @@ inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
 		carry=0;
 		dividendlow=::fast_io::intrinsics::addc(dividendlow,templow,carry,carry);
 		dividendhigh=::fast_io::intrinsics::addc(dividendhigh,temphigh,carry,carry);
-		divisorlow = shiftright(divisorlow,divisorhigh,1u);
+		divisorlow = ::fast_io::intrinsics::shiftright(divisorlow,divisorhigh,1u);
 		divisorhigh >>= 1u;
 	}
 	while(shift--);
