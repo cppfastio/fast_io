@@ -99,7 +99,7 @@ inline constexpr T shiftright(T low,T high,unsigned shift) noexcept
 }
 
 template<typename T>
-inline constexpr tuints<T> udivmod(T dividendlow, T dividendhigh,
+inline constexpr ::fast_io::intrinsics::tuints<T> udivmod(T dividendlow, T dividendhigh,
 		T divisorlow, T divisorhigh) noexcept
 {
 	if (divisorhigh>dividendhigh||
