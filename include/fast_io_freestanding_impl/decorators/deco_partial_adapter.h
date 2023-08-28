@@ -21,7 +21,7 @@ struct deco_partial_adapter
 	T deco;
 	::std::size_t remained{};
 	input_char_type remained_buffer[remained_max];
-	inline constexpr deco_result<input_char_type,char_type>
+	inline constexpr deco_result<input_char_type,output_char_type>
 		process_chars(input_char_type const *fromfirst,input_char_type const *fromlast,
 				output_char_type *tofirst,output_char_type *tolast) noexcept(noexcept(deco.process_chars(fromfirst,fromlast,tofirst,tolast)))
 	{
