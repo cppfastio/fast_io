@@ -78,7 +78,7 @@ inline constexpr T addc(T a,T b,T carryin,T& carryout) noexcept
 	a+=b;
 	carryout=a<b;
 	a+=carryin;
-	carryout+=a<carryin;
+	carryout|=a<carryin;
 	return a;
 }
 
@@ -147,7 +147,7 @@ inline constexpr T subc(T a,T b,T carryin,T& carryout) noexcept
 	b=a-b;
 	carryout=a<b;
 	a=b-carryin;
-	carryout+=b<a;
+	carryout|=b<a;
 	return a;
 }
 
