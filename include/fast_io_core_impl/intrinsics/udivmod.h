@@ -40,7 +40,7 @@ inline constexpr tuint<T> udivbigbysmalltosmalldefault(T u1, T u0, T v) noexcept
 			auto quotient{_udiv128(u1,u0,v,__builtin_addressof(remainder))};
 #else
 			T quotient,remainder;
-			__asm__("{divq %[v]|div %[v]}" :
+			__asm__("{divq\t%[v]|div\t%[v]}" :
 				"=a"(quotient), "=d"(remainder)
 				: [ v ] "r"(v), "a"(u0), "d"(u1));
 #endif
