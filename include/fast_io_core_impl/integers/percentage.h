@@ -295,7 +295,7 @@ inline constexpr chartype* prrsv_percentage_main_common_impl(chartype *iter,T nu
 					(remainderlow==denominatordiv2&&denominatoriseven&&
 					((quotientlow&1u)!=0u)))	//round 
 				{
-					udivmodtype carry{};
+					bool carry{};
 					quotientlow=::fast_io::intrinsics::addc(quotientlow,one,carry,carry);
 					quotienthigh=::fast_io::intrinsics::addc(quotienthigh,zero,carry,carry);
 				}
