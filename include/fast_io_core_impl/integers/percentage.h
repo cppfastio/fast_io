@@ -250,7 +250,7 @@ inline constexpr chartype* prrsv_percentage_main_common_impl(chartype *iter,T nu
 				constexpr
 					::std::uint_least64_t zero{};
 
-				::std::uint_least64_t carry{};
+				bool carry{};
 				numhl=::fast_io::intrinsics::addc(numlh,numhl,carry,carry);
 				numhh=::fast_io::intrinsics::addc(numhh,zero,carry,carry);
 				#if 0

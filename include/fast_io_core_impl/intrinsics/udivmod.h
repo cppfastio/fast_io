@@ -18,9 +18,37 @@ struct tuints
 T quotientlow,quotienthigh,remainderlow,remainderhigh;
 };
 
+/*
+Referenced from
+https://github.com/llvm/llvm-project/blob/main/compiler-rt/lib/builtins/udivmodti4.c
+*/
+
 template<typename T>
 inline constexpr tuint<T> udivbigbysmalltosmalldefault(T u1, T u0, T v) noexcept
 {
+#if defined(__x86_64__) || defined(_M_AMD64)
+	if constexpr(sizeof(T)==sizeof(::std::uint_least64_t))
+	{
+#if defined(__cpp_if_consteval)
+		if !consteval
+#else
+		if(!__builtin_is_constant_evaluated())
+#endif
+		{
+#if defined(_MSC_VER) && !defined(__clang__)
+			long long unsigned remainder;
+			auto quotient{_udiv128(u1,u0,v,__builtin_addressof(remainder))};
+#else
+			T quotient,remainder;
+			__asm__("{divq %[v]|div %[v]}" :
+				"=a"(quotient), "=d"(remainder)
+				: [ v ] "r"(v), "a"(u0), "d"(u1));
+#endif
+			return {quotient,remainder};
+		}
+	}
+#endif
+
 constexpr unsigned n_udword_bits = ::std::numeric_limits<T>::digits;
 constexpr unsigned n_udword_bitsdv2 = n_udword_bits/2;
 constexpr T one{1u};
