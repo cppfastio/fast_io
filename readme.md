@@ -1,12 +1,12 @@
 # fast_io
 
-fast_io is a C++20 input/output library that provides [exceptional speed](readme.md#Benchmarks) and is designed to replace the commonly used `<iostream>` and `<cstdio>` libraries. It is a header-only library and is licensed under the [MIT license](license.txt), making it easy to include in any project. However, it requires a C++20 compiler that supports concepts.
+fast_io represents a cutting-edge input/output (I/O) library for C++20, designed to achieve [exceptional speed](readme.md#Benchmarks). Its primary purpose is to supersede the widely used `<iostream>` and `<cstdio>` libraries. This header-only library is distributed under the permissive [MIT license](license.txt), simplifying integration into any project. However, its utilization mandates a C++20 compiler with support for concepts.
 
-*The original repository for fast_io has been archived due to git bloat over time, but older commits can still be found there.*
-*old commits were [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23).*
+*Although the original fast_io repository has been archived due to accumulated git data, historical commits remain accessible.*
+*Past commits were stored [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23).*
 
-## Examples
-### Print to `stdout`
+## Illustrations
+### Output to `stdout`
 ```cpp
 #include <fast_io.h>
 
@@ -14,7 +14,7 @@ int main() {
 	print("Hello, fast_io world!\n");
 }
 ```
-### Memory map file
+### Memory-Mapped File
 ```cpp
 #include <fast_io.h>
 
@@ -23,80 +23,78 @@ int main() {
 	// file_data satisfies std::ranges::contiguous_range
 }
 ```
-### Other examples
+### Additional Samples
 
-For other up-to-date examples, please look in the [`examples/`](examples/) folder.
+For up-to-date examples, refer to the [`examples/`](examples/) directories.
 
-Deprecated examples are [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_deprecated)
-but they might not work anymore.
+Outdated examples are retained [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_deprecated)
+though they might no longer be functional.
 
-This i18n repo stores the i18n source files.
+The i18n repository houses the i18n source files.
 
 [https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n](https://bitbucket.org/ejsvifq_mabmip/fast_io_i18n)
 
 ## F.A.Q.
 ### What does "fast" mean in fast_io?
 
-The term ```fast``` in ```fast_io``` does not necessarily imply that it is the fastest input/output library available (as it would have been named as ```fastest_io``` instead). Instead, the term refers to the fact that ```fast_io``` is notably faster than ```<iostream>``` and ```<cstdio>``` libraries in all cases.
+The term ```fast``` within ```fast_io``` does not strictly denote the absolute fastest I/O library available (which might have prompted the name ```fastest_io```). Instead, it signifies that ```fast_io``` consistently surpasses the performance of both the ```<iostream>``` and ```<cstdio>``` libraries.
 
 ### What are the supported platforms, compilers...?
-See [support.md](support.md) for a list of supported things and platform specific usage notes.
 
-### Other questions?
+For a comprehensive list of supported elements and platform-specific usage instructions, consult [support.md](support.md).
+
+### Have further questions?
 You can ask questions on the [fast_io discord server](https://discord.gg/wYfh8kk)
-or QQ group: `801441303`.
+or the QQ group: `801441303`.
 
 ## Documentation
-See either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/qabeowjbtkwb/fast_io/wikis.
+Refer to either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.com/qabeowjbtkwb/fast_io/wikis.
 
 ## Features
-- As close to system call as possible.
-- Unicode support (UTF-8, UTF-16, UTF-32) + codecvt for GB18030 and UTF-EBCDIC (no libc correctly deals with it)
-- RAII for C `FILE*`, POSIX `fd` and win32/NT `HANDLE`
-- Interop with `<cstdio>` and `<iostream>` 
-- No easily misused stuff like `std::endl`
-- Static I/O manipulators instead of format strings.
-- Optional locale.
-- Stateless I/O manipulation.
-- Consistent error handling; when available, exceptions as the **only** error reporting mechanism (no `std::error_code`, `std::system_error` or useless bounds checking)
-- Freestanding mode.
-- Address Sanitizer special code for protecting memory safety issues.
-- Dynamic Instrumentation Support
-
-- Supports POSIX iconv. You can use fast_io for your coding conversion.
-- Binary serialization for trivially copyable types and standard containers
-- Plays well with C++ containers (e.g. `std::vector<fast_io::obuf_file>` is valid)
-- Basic/Lua/Python/etc format (print, scan). No support for C and C++ since they are security hazards.
-- Provide APIs to expose the internal implementation of `FILE*` and C++ streams.
-
+- Utilizing system calls directly, bypassing intermediary layers for enhanced efficiency.
+- Embraces Unicode (UTF-8, UTF-16, UTF-32) with codecvt for GB18030 and UTF-EBCDIC (as these aren't properly addressed by libcs).
+- RImplements RAII for C `FILE*`, POSIX `fd`, and win32/NT `HANDLE`.
+- Facilitates interoperation with `<cstdio>` and `<iostream>`.
+- Minimizes misuse potential, unlike `std::endl`.
+- Employs static I/O manipulators in lieu of format strings.
+- Offers optional locale support.
+- Implements stateless I/O manipulation.
+- Maintains consistent error handling, favoring `exceptions`` as the sole error reporting mechanism (excluding std::error_code, std::system_error, and redundant bounds checking).
+- Accommodates freestanding mode.
+- Incorporates Address Sanitizer code for memory safety.
+- Provides support for Dynamic Instrumentation.
+- Supports POSIX iconv for transcoding.
+- Provides binary serialization for trivially copyable types and standard containers.
+- Integrates seamlessly with C++ containers (e.g., `std::vector<fast_io::obuf_file>` is valid).
+- Supplies basic/Lua/Python/etc. formatting (print, scan), omitting C and C++ due to security concerns.
 - Native Handle Interface
-- Extremely easy to support custom devices
-- C and C++ style compile time open mode parsing.
-- No `traits_type` and `EOF`
-- Dynamic Type Support
-- Multi Process
-- Memory mapping
-- debugging IO (optionally with GUI)
-- Round-trip floating point algorithm
-- Hash algorithms support: intrinsic SHA-1, intrinsic HMAC-SHA1, intrinsic SHA-256, intrinsic HMAC-SHA256, SHA-512, HMAC-SHA512 as well as non crypto hash algorithms, such as Jenkins Hash.
-- zlib compression/decompression
-- Filesystem
+- Exposes APIs for the internal implementation of `FILE*` and C++ streams.
+- Abstains from using traits_type and EOF.
+- Encompasses Dynamic Type Support
+- Facilitates Multi-Process functionality
+- Supports memory mapping
+- Features debugging I/O (with optional GUI)
+- Employs a round-trip floating-point algorithm
+- Supports hash algorithms: intrinsic SHA-1, intrinsic HMAC-SHA1, intrinsic SHA-256, intrinsic HMAC-SHA256, SHA-512, HMAC-SHA512, as well as non-crypto hash algorithms like Jenkins Hash.
+- Provides zlib compression/decompression
+- Offers Filesystem capabilities
 - OpenSSL BIO, Qt QFile, MFC CFile support
 
 ### Post C++20
   1. Module support
-  2. Coroutine support for async IO
-  3. Improve and refactor code once [Zero-overhead deterministic exceptions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0709r0.pdf) are added to the standard
+  2. Coroutine support for asynchronous I/O
+  3. Code improvement and refactoring following the integration of [Zero-overhead deterministic exceptions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0709r0.pdf) into the standard
 
 ## Benchmarks
 
-1. I/O 10M integers
+1. I/O for 10 Million Integers
 
-Goal: Print out ten million integers from 0 to 10M to file. Then reopen that file to scan back.
+Objective: Output ten million integers from 0 to 10M to a file and subsequently read them back from the same file.
 
-All benchmarks are in benchmarks/0000.10m_size_t/unit.
+All benchmark details are located in benchmarks/0000.10m_size_t/unit.
 
-Notice: I modified libstdc++'s BUFSIZ 1048576 due to BUFSIZ is too small (512 bytes) for MinGW-W64, or it performs horribly.
+Note: I adjusted libstdc++'s BUFSIZ to 1048576 due to MinGW-W64's poor performance with the default BUFSIZ of 512 bytes.
+(Update: GCC has rectified this by further increasing the size to 4096)
 
 
 | Platform                       |        Windows          |MinGW-W64 GCC 11.0.0   |   MSVCRT + libstdc++                                 |
