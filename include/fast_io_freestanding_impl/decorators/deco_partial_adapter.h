@@ -62,7 +62,7 @@ struct deco_partial_adapter
 				auto [fromit,toit]=deco.process_chars(remained_buffer,remainedstop,tofirst,tolast);
 				tofirst=toit;
 				fromfirst+=fromdiff;
-				remained=static_cast<::std::size_t>(::fast_io::freestanding::copy(fromit,remainedstop,remained_buffer)-remained_buffer);
+				remained=static_cast<::std::size_t>(::fast_io::freestanding::copy_n(fromit,static_cast<::std::size_t>(remainedstop-fromit),remained_buffer)-remained_buffer);
 				return {fromfirst,tofirst};
 			}
 			
