@@ -53,7 +53,7 @@ Refer to either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.
 ## Features
 - Utilizing system calls directly, bypassing intermediary layers for enhanced efficiency.
 - Embraces Unicode (UTF-8, UTF-16, UTF-32) with codecvt for GB18030 and UTF-EBCDIC (as these aren't properly addressed by libcs).
-- RImplements RAII for C `FILE*`, POSIX `fd`, and win32/NT `HANDLE`.
+- Implements RAII for C `FILE*`, POSIX `fd`, and win32/NT `HANDLE`.
 - Facilitates interoperation with `<cstdio>` and `<iostream>`.
 - Minimizes misuse potential, unlike `std::endl`.
 - Employs static I/O manipulators in lieu of format strings.
