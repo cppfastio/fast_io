@@ -59,7 +59,7 @@ Refer to either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.
 - Employs static I/O manipulators in lieu of format strings.
 - Offers optional locale support.
 - Implements stateless I/O manipulation.
-- Maintains consistent error handling, favoring `exceptions`` as the sole error reporting mechanism (excluding std::error_code, std::system_error, and redundant bounds checking).
+- Maintains consistent error handling, favoring `exceptions` as the sole error reporting mechanism (excluding `std::error_code`, `std::system_error`, and redundant bounds checking).
 - Accommodates freestanding mode.
 - Incorporates Address Sanitizer code for memory safety.
 - Provides support for Dynamic Instrumentation.
