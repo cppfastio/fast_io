@@ -21,38 +21,73 @@ struct deco_partial_adapter
 	T deco;
 	::std::size_t remained{};
 	input_char_type remained_buffer[remained_max];
-	inline constexpr deco_result<input_char_type,output_char_type>
-		process_chars(input_char_type const *fromfirst,input_char_type const *fromlast,
-				output_char_type *tofirst,output_char_type *tolast) noexcept(noexcept(deco.process_chars(fromfirst,fromlast,tofirst,tolast)))
+	template<::std::integral char_type>
+	requires (sizeof(char_type) == sizeof(input_char_type))
+	inline constexpr deco_result<char_type,output_char_type>
+		process_chars(char_type const *fromfirst,char_type const *fromlast,
+				output_char_type *tofirst,output_char_type *tolast)
 	{
-		::std::size_t fromdiff{static_cast<::std::size_t>(fromlast-fromfirst)};
-		::std::size_t diff{remained_max-remained};
-		::std::size_t tocopy{diff};
-		bool smaller{fromdiff<tocopy};
-		if(smaller)
+		if constexpr(!::std::same_as<char_type,input_char_type>)
 		{
-			tocopy = fromdiff;
+#if defined(__cpp_if_consteval)
+			if consteval
+
+#else
+			if(__builtin_is_constant_evaluated())
+#endif
+			{
+				::std::size_t fromdiff{static_cast<::std::size_t>(fromlast-fromfirst)};
+				::fast_io::details::local_operator_new_array_ptr<input_char_type> fromptr(fromdiff);
+				::fast_io::details::non_overlapped_copy_n(fromfirst,fromdiff,fromptr.ptr);
+				auto [fromit,toit]=this->process_chars(fromptr.ptr,fromptr.ptr+fromdiff,tofirst,tolast);
+				return {(fromit-fromptr.ptr)+fromfirst,toit};
+			}
+			using may_alias_input_char_ptr
+			#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+			#endif
+			= input_char_type const*;
+			auto [fromit,toit]=this->process_chars(reinterpret_cast<may_alias_input_char_ptr>(fromfirst),reinterpret_cast<may_alias_input_char_ptr>(fromlast),tofirst,tolast);
+			return {(fromit-reinterpret_cast<may_alias_input_char_ptr>(fromfirst))+fromfirst,toit};
 		}
-		::fast_io::details::non_overlapped_copy_n(fromfirst,tocopy,remained_buffer);
-		if(fromdiff<diff)
+		else
 		{
-			remained+=tocopy;
-			return {fromlast,tofirst};
+			::std::size_t fromdiff{static_cast<::std::size_t>(fromlast-fromfirst)};
+			::std::size_t diff{remained_max-remained};
+			auto remainedend{remained_buffer+remained_max};
+			auto remainedit{remained_buffer+remained};
+			if(fromdiff<diff)
+			{
+				auto remainedstop{::fast_io::details::non_overlapped_copy_n(fromfirst,fromdiff,remainedit)};
+				auto [fromit,toit]=deco.process_chars(remained_buffer,remainedstop,tofirst,tolast);
+				tofirst=toit;
+				fromfirst+=fromdiff;
+				remained=static_cast<::std::size_t>(::fast_io::freestanding::copy(fromit,remainedstop,remained_buffer)-remained_buffer);
+				return {fromfirst,tofirst};
+			}
+			
+			if(remained)
+			{
+				::fast_io::details::non_overlapped_copy_n(fromfirst,diff,remainedit);
+				auto [fromit,toit]=deco.process_chars(remained_buffer,remainedend,tofirst,tolast);
+				fromfirst+=fromit-remainedit;
+				tofirst=toit;
+			}
+			auto [fromit,toit]=deco.process_chars(fromfirst,fromlast,tofirst,tolast);
+			remained=0;
+			if(fromit!=fromlast&&toit!=tolast)
+			{
+				remained=static_cast<::std::size_t>(fromlast-fromit);
+				::fast_io::details::non_overlapped_copy_n(fromit,remained,remained_buffer);
+				fromit=fromlast;
+			}
+			return {fromit,toit};
 		}
-		auto [fromit,toit]=deco.process_chars(fromfirst,fromlast,tofirst,tolast);
-		remained=0;
-		if(fromit!=fromlast&&toit!=tolast)
-		{
-			remained=static_cast<::std::size_t>(fromlast-fromit);
-			::fast_io::details::non_overlapped_copy_n(fromit,remained,remained_buffer);
-			fromit=fromlast;
-		}
-		return {fromit,toit};
 	}
 
-	inline constexpr output_char_type* do_final(output_char_type *tofirst,output_char_type *tolast) noexcept(noexcept(deco.do_final(remained_buffer,remained_buffer+remained,tofirst,tolast)))
+	inline constexpr output_char_type* do_final(output_char_type *tofirst)
 	{
-		return deco.do_final(remained_buffer,remained_buffer+remained,tofirst,tolast);
+		return deco.do_final(remained_buffer,remained_buffer+remained,tofirst);
 	}
 };
 
