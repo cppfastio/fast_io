@@ -2,7 +2,7 @@
 
 int main()
 {
-	::fast_io::u8iobuf_io_file file(::fast_io::io_place_type<::fast_io::u8native_file>,u8"io_file.txt",::fast_io::open_mode::out);
+	::fast_io::u8iobuf_io_file file(::fast_io::io_cookie_type<::fast_io::u8native_file>,u8"io_file.txt",::fast_io::open_mode::out);
 
 	using namespace ::fast_io::io;
 
