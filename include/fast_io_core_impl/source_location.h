@@ -77,7 +77,7 @@ inline constexpr basic_reserve_scatters_define_result<char_type> print_reserve_s
 	return ::fast_io::details::prrsv_reserve_scatters_source_location_define_impl(pscatters,pbuffer,location);
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 inline

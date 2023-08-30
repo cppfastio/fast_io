@@ -75,7 +75,7 @@ inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<cha
 	}
 }
 
-namespace manipulators {
+inline namespace manipulators {
 template <::std::ranges::range rg, ::std::integral char_type>
 inline constexpr auto rgvw(rg&& r, char_type const (&sep)[2])
 {

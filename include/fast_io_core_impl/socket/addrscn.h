@@ -480,7 +480,7 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_in6addr_impl(char
 
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<ip_scan_flags flags, ::fast_io::details::iptypesimpl iptype>

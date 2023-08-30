@@ -198,7 +198,7 @@ concept precise_reserve_scannable_no_error = precise_reserve_scannable<char_type
 	{scan_precise_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,buffer_curr,t)}->::std::same_as<void>;
 };
 
-namespace manipulators
+inline namespace manipulators
 {}
 
 namespace mnp=manipulators;

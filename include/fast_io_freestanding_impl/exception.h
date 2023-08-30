@@ -19,7 +19,7 @@ inline cross_code_cvt_t<char8_t> ehvw_common_impl(char const* c_str) noexcept
 
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 template<typename T>
 requires requires(T const& eh)

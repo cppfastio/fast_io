@@ -4,7 +4,10 @@
 #include"defined_types.h"
 #endif
 
-namespace fast_io::io
+namespace fast_io
+{
+
+inline namespace io
 {
 
 template<typename T,typename... Args>
@@ -332,6 +335,8 @@ inline constexpr ::std::conditional_t<report,bool,void> scan(input&& in,Args&& .
 static_assert(device_error,"freestanding environment must provide IO device");
 #endif
 	}
+}
+
 }
 
 }

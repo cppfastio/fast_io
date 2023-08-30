@@ -124,7 +124,7 @@ inline constexpr io_strlike_reference_wrapper<char16_t,QString> io_strlike_ref(:
 	return {__builtin_addressof(hstr)};
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<typename T>

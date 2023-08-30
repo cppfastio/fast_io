@@ -13,7 +13,7 @@ concept cond_value_transferable =
 	;
 }
 
-namespace manipulators {
+inline namespace manipulators {
 
 template <typename T1, typename T2>
 struct condition {
@@ -49,7 +49,7 @@ inline constexpr auto cond(bool pred, T1&& t1, T2&& t2) noexcept {
 	}
 }
 
-}  // namespace manipulators
+}  // inline namespace manipulators
 
 namespace details {
 

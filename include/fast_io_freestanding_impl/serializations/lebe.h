@@ -62,7 +62,10 @@ inline constexpr ::std::size_t size_lebe_float_size{::fast_io::details::cal_size
 
 }
 
-namespace fast_io::manipulators
+namespace fast_io
+{
+
+inline namespace manipulators
 {
 
 template<std::size_t sz,typename value_type>
@@ -260,6 +263,8 @@ template<::std::floating_point T>
 inline constexpr auto iec559_be_get(T& t)
 {
 	return ::fast_io::manipulators::iec559_lebe_get<::std::endian::big>(t);
+}
+
 }
 
 }
