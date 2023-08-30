@@ -40,8 +40,7 @@ concept has_input_or_io_stream_transcode_deco_filter_define =
 }
 
 template<typename T,typename D,typename... Args>
-requires (::fast_io::operations::decay::defines::has_input_or_io_stream_transcode_deco_filter_define<T,D>&&
-	(sizeof...(Args)==0||(::fast_io::operations::decay::defines::has_input_stream_add_deco_filter_define<T,Args>&&...)))
+requires (::fast_io::operations::decay::defines::has_input_or_io_stream_transcode_deco_filter_define<T,D>)
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
@@ -76,8 +75,7 @@ inline constexpr auto transcode_input_decos_decay(T t,D &&deco,Args&& ...args)
 }
 
 template<typename T,typename D,typename... Args>
-requires (::fast_io::operations::decay::defines::has_output_or_io_stream_transcode_deco_filter_define<T,D>&&
-	(sizeof...(Args)==0||(::fast_io::operations::decay::defines::has_output_stream_add_deco_filter_define<T,Args>&&...)))
+requires (::fast_io::operations::decay::defines::has_output_or_io_stream_transcode_deco_filter_define<T,D>)
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
@@ -112,8 +110,7 @@ inline constexpr auto transcode_output_decos_decay(T t,D &&deco,Args&& ...args)
 }
 
 template<typename T,typename D,typename... Args>
-requires (::fast_io::operations::decay::defines::has_io_stream_transcode_deco_filter_define<T,D>&&
-	(sizeof...(Args)==0||(::fast_io::operations::decay::defines::has_io_stream_add_deco_filter_define<T,Args>&&...)))
+requires (::fast_io::operations::decay::defines::has_io_stream_transcode_deco_filter_define<T,D>)
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
@@ -143,19 +140,19 @@ namespace defines
 template<typename T>
 concept has_input_stream_transcode_deco_filter_ref_define = requires(T&& t)
 {
-	input_stream_transcode_deco_filter_ref_define(t);
+	input_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 };
 
 template<typename T>
 concept has_output_stream_transcode_deco_filter_ref_define = requires(T&& t)
 {
-	output_stream_transcode_deco_filter_ref_define(t);
+	output_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 };
 
 template<typename T>
 concept has_io_stream_transcode_deco_filter_ref_define = requires(T&& t)
 {
-	io_stream_transcode_deco_filter_ref_define(t);
+	io_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 };
 
 template<typename T>
@@ -182,11 +179,11 @@ inline constexpr decltype(auto) input_stream_transcode_deco_filter_ref(T &&t)
 {
 	if constexpr(::fast_io::operations::defines::has_input_or_io_stream_transcode_deco_filter_ref_define<T>)
 	{
-		return input_stream_transcode_deco_filter_ref_define(t);
+		return input_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 	}
 	else
 	{
-		return io_transcode_deco_filter_ref_define(t);
+		return io_transcode_deco_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 	}
 }
 
@@ -204,11 +201,11 @@ inline constexpr decltype(auto) output_stream_transcode_deco_filter_ref(T &&t)
 {
 	if constexpr(::fast_io::operations::defines::has_output_or_io_stream_transcode_deco_filter_ref_define<T>)
 	{
-		return output_stream_transcode_deco_filter_ref_define(t);
+		return output_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 	}
 	else
 	{
-		return io_deco_transcode_filter_ref_define(t);
+		return io_deco_transcode_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 	}
 }
 
@@ -224,7 +221,7 @@ requires (::fast_io::operations::defines::has_io_stream_transcode_deco_filter_re
 #endif
 inline constexpr decltype(auto) io_stream_transcode_deco_filter_ref(T &&t)
 {
-	return io_stream_transcode_deco_filter_ref_define(t);
+	return io_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::forward<T>(t));
 }
 
 template<typename T,typename Deco,typename... Args>
@@ -240,7 +237,7 @@ requires (!::std::is_lvalue_reference_v<T>)
 inline constexpr auto transcode_input_decos(T&& t,Deco &&d, Args &&...args)
 {
 	return ::fast_io::operations::decay::transcode_input_decos_decay(
-		::fast_io::operations::input_stream_transcode_deco_filter_ref(t),::fast_io::freestanding::forward<Deco>(d),::fast_io::freestanding::forward<Args>(args)...);
+		::fast_io::operations::input_stream_transcode_deco_filter_ref(::fast_io::freestanding::forward<T>(t)),::fast_io::freestanding::forward<Deco>(d),::fast_io::freestanding::forward<Args>(args)...);
 }
 
 template<typename T,typename Deco,typename... Args>
@@ -256,7 +253,7 @@ requires (!::std::is_lvalue_reference_v<T>)
 inline constexpr auto transcode_output_decos(T&& t,Deco &&d, Args &&...args)
 {
 	return ::fast_io::operations::decay::transcode_output_decos_decay(
-		::fast_io::operations::output_stream_transcode_deco_filter_ref(t),::fast_io::freestanding::forward<Deco>(d),::fast_io::freestanding::forward<Args>(args)...);
+		::fast_io::operations::output_stream_transcode_deco_filter_ref(::fast_io::freestanding::forward<T>(t)),::fast_io::freestanding::forward<Deco>(d),::fast_io::freestanding::forward<Args>(args)...);
 }
 
 template<typename T,typename Deco,typename... Args>
@@ -272,7 +269,7 @@ requires (!::std::is_lvalue_reference_v<T>)
 inline constexpr auto transcode_io_decos(T&& t,Deco &&d, Args &&...args)
 {
 	return ::fast_io::operations::decay::transcode_io_decos_decay(
-		::fast_io::operations::io_stream_transcode_deco_filter_ref(t),::fast_io::freestanding::forward<Deco>(d),::fast_io::freestanding::forward<Args>(args)...);
+		::fast_io::operations::io_stream_transcode_deco_filter_ref(::fast_io::freestanding::forward<T>(t)),::fast_io::freestanding::forward<Deco>(d),::fast_io::freestanding::forward<Args>(args)...);
 }
 
 }

@@ -4,7 +4,7 @@ namespace fast_io
 {
 
 #if 0
-namespace manipulators
+inline namespace manipulators
 {
 
 template<ip_flags flags,typename iptype>

@@ -21,8 +21,8 @@ template<typename handletype,typename decorators,typename allocator_type=::fast_
 using basic_io_transcode_deco_filt = basic_io_deco_filter<handletype,
 	basic_io_buffer_traits<::fast_io::buffer_mode::in|::fast_io::buffer_mode::out|::fast_io::buffer_mode::tie,
 		allocator_type,
-		typename decorators::input_char_type,
-		typename decorators::output_char_type>,
+		typename decorators::input_decorator_type::input_char_type,
+		typename decorators::output_decorator_type::output_char_type>,
 		decorators>;
 
 
