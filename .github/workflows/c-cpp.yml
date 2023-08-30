@@ -19,25 +19,3 @@ jobs:
       run: make -j
     - name: make test
       run: make test -j
-
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: cmake
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On
-    - name: make
-      run: make -j
-    - name: make test
-      run: make test -j
-
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: cmake
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On
-    - name: msbuild
-      run: msbuild
-    - name: msbuild test
-      run: msbuild test
