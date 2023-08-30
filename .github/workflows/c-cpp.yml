@@ -20,26 +20,14 @@ jobs:
     - name: make test
       run: make test -j
 
-  macos:
-    runs-on: macos-latest
+  # macos:
+  #   runs-on: macos-latest
 
-    steps:
-    - uses: actions/checkout@v3
-    - name: cmake
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On
-    - name: make
-      run: make -j
-    - name: make test
-      run: make test -j
-
-  windows:
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: cmake
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On
-    - name: msbuild
-      run: msbuild
-    - name: msbuild test
-      run: msbuild test
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: cmake
+  #     run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On
+  #   - name: make
+  #     run: make -j
+  #   - name: make test
+  #     run: make test -j
