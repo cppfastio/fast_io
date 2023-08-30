@@ -42,6 +42,9 @@ concept has_input_or_io_stream_transcode_deco_filter_define =
 template<typename T,typename D,typename... Args>
 requires (::fast_io::operations::decay::defines::has_input_or_io_stream_transcode_deco_filter_define<T,D>&&
 	(sizeof...(Args)==0||(::fast_io::operations::decay::defines::has_input_stream_add_deco_filter_define<T,Args>&&...)))
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
+#endif
 inline constexpr auto transcode_input_decos_decay(T t,D &&deco,Args&& ...args)
 {
 	if constexpr(::fast_io::operations::decay::defines::has_input_stream_transcode_deco_filter_define<T,D>)
@@ -75,6 +78,9 @@ inline constexpr auto transcode_input_decos_decay(T t,D &&deco,Args&& ...args)
 template<typename T,typename D,typename... Args>
 requires (::fast_io::operations::decay::defines::has_output_or_io_stream_transcode_deco_filter_define<T,D>&&
 	(sizeof...(Args)==0||(::fast_io::operations::decay::defines::has_output_stream_add_deco_filter_define<T,Args>&&...)))
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
+#endif
 inline constexpr auto transcode_output_decos_decay(T t,D &&deco,Args&& ...args)
 {
 	if constexpr(::fast_io::operations::decay::defines::has_output_stream_transcode_deco_filter_define<T,D>)
@@ -108,6 +114,9 @@ inline constexpr auto transcode_output_decos_decay(T t,D &&deco,Args&& ...args)
 template<typename T,typename D,typename... Args>
 requires (::fast_io::operations::decay::defines::has_io_stream_transcode_deco_filter_define<T,D>&&
 	(sizeof...(Args)==0||(::fast_io::operations::decay::defines::has_io_stream_add_deco_filter_define<T,Args>&&...)))
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
+#endif
 inline constexpr auto transcode_io_decos_decay(T t,D &&deco,Args&& ...args)
 {
 	if constexpr(sizeof...(Args)==0)
@@ -166,6 +175,9 @@ requires (::fast_io::operations::defines::has_input_or_io_stream_transcode_deco_
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
+#endif
 inline constexpr decltype(auto) input_stream_transcode_deco_filter_ref(T &&t)
 {
 	if constexpr(::fast_io::operations::defines::has_input_or_io_stream_transcode_deco_filter_ref_define<T>)
@@ -184,6 +196,9 @@ requires (::fast_io::operations::defines::has_output_or_io_stream_transcode_deco
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
+#endif
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
 #endif
 inline constexpr decltype(auto) output_stream_transcode_deco_filter_ref(T &&t)
 {
@@ -204,17 +219,23 @@ requires (::fast_io::operations::defines::has_io_stream_transcode_deco_filter_re
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
+#endif
 inline constexpr decltype(auto) io_stream_transcode_deco_filter_ref(T &&t)
 {
 	return io_stream_transcode_deco_filter_ref_define(t);
 }
 
 template<typename T,typename Deco,typename... Args>
-requires ::std::is_rvalue_reference_v<T>
+requires (!::std::is_lvalue_reference_v<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
+#endif
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
 #endif
 inline constexpr auto transcode_input_decos(T&& t,Deco &&d, Args &&...args)
 {
@@ -223,11 +244,14 @@ inline constexpr auto transcode_input_decos(T&& t,Deco &&d, Args &&...args)
 }
 
 template<typename T,typename Deco,typename... Args>
-requires ::std::is_rvalue_reference_v<T>
+requires (!::std::is_lvalue_reference_v<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
+#endif
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
 #endif
 inline constexpr auto transcode_output_decos(T&& t,Deco &&d, Args &&...args)
 {
@@ -236,11 +260,14 @@ inline constexpr auto transcode_output_decos(T&& t,Deco &&d, Args &&...args)
 }
 
 template<typename T,typename Deco,typename... Args>
-requires ::std::is_rvalue_reference_v<T>
+requires (!::std::is_lvalue_reference_v<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
+#endif
+#if __has_cpp_attribute(nodiscard)
+[[nodiscard]]
 #endif
 inline constexpr auto transcode_io_decos(T&& t,Deco &&d, Args &&...args)
 {
