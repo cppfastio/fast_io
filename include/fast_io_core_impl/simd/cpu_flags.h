@@ -70,7 +70,8 @@ true
 #endif
 };
 
-inline constexpr bool avx512vbmi_supported {
+inline constexpr bool avx512vbmi_supported
+{
 #if defined(__AVX512VBMI__)
 true
 #endif
