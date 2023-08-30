@@ -62,25 +62,6 @@ inline constexpr decltype(auto)
 	return io_stream_deco_filter_ref_define(r.iobptr->handle);
 }
 
-
-template<typename handletype,
-	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
-inline constexpr decltype(auto)
-	io_stream_transcode_deco_filter_ref_define(basic_io_buffer<handletype,iobuffertraits> &&r) noexcept
-{
-	return io_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::move(r.handle));
-}
-
-template<typename handletype,
-	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out&&(iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
-inline constexpr decltype(auto)
-	io_stream_transcode_deco_filter_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
-{
-	return io_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::move(r.iobptr->handle));
-}
-
 template<typename handletype,
 	typename iobuffertraits>
 requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
@@ -122,25 +103,6 @@ inline constexpr decltype(auto)
 	output_stream_deco_filter_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
 {
 	return output_stream_deco_filter_ref_define(r.iobptr->handle);
-}
-
-
-template<typename handletype,
-	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
-inline constexpr decltype(auto)
-	output_stream_transcode_deco_filter_ref_define(basic_io_buffer<handletype,iobuffertraits> &&r) noexcept
-{
-	return output_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::move(r.handle));
-}
-
-template<typename handletype,
-	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::out)==buffer_mode::out)
-inline constexpr decltype(auto)
-	output_stream_transcode_deco_filter_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
-{
-	return output_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::move(r.iobptr->handle));
 }
 
 
@@ -188,24 +150,5 @@ inline constexpr decltype(auto)
 {
 	return input_stream_deco_filter_ref_define(r.iobptr->handle);
 }
-
-template<typename handletype,
-	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
-inline constexpr decltype(auto)
-	input_stream_transcode_deco_filter_ref_define(basic_io_buffer<handletype,iobuffertraits> &&r) noexcept
-{
-	return input_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::move(r.handle));
-}
-
-template<typename handletype,
-	typename iobuffertraits>
-requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)
-inline constexpr decltype(auto)
-	input_stream_transcode_deco_filter_ref_define(basic_io_buffer_ref<basic_io_buffer<handletype,iobuffertraits>> r) noexcept
-{
-	return input_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::move(r.iobptr->handle));
-}
-
 
 }
