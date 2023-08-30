@@ -366,6 +366,16 @@ constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_ty
 
 template<::std::integral inchar_type,
 	::std::integral outchar_type,
+	typename allocatortype>
+constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>>
+	io_stream_transcode_deco_filter_ref_define(
+		basic_general_io_file<inchar_type,outchar_type,allocatortype>&& t) noexcept
+{
+	return {__builtin_addressof(t)};
+}
+
+template<::std::integral inchar_type,
+	::std::integral outchar_type,
 	typename allocatortype,
 	typename dectref>
 inline constexpr void io_stream_add_deco_filter_define(
@@ -377,6 +387,7 @@ inline constexpr void io_stream_add_deco_filter_define(
 		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectref>>,
 		::fast_io::freestanding::forward<dectref>(deco),::fast_io::freestanding::move(*rf.giofptr));
 }
+
 
 template<::std::integral inchar_type,
 	::std::integral outchar_type,
