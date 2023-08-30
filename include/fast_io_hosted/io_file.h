@@ -370,12 +370,26 @@ template<::std::integral inchar_type,
 	typename dectref>
 inline constexpr void io_stream_add_deco_filter_define(
 	basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>> rf,
-	dectref deco)
+	dectref &&deco)
 {
 	*rf.giofptr=basic_general_io_file<inchar_type,outchar_type,allocatortype>(
-		::fast_io::io_cookie_type<basic_iodecfilt<
+		::fast_io::io_cookie_type<basic_io_deco_filt<
 		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectref>>,
-		deco,::fast_io::freestanding::move(*rf.giofptr));
+		::fast_io::freestanding::forward<dectref>(deco),::fast_io::freestanding::move(*rf.giofptr));
+}
+
+template<::std::integral inchar_type,
+	::std::integral outchar_type,
+	typename allocatortype,
+	typename dectref>
+inline constexpr auto io_stream_transcode_deco_filter_define(
+	basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>> rf,
+	dectref &&deco)
+{
+	return basic_general_io_file<inchar_type,outchar_type,allocatortype>(
+		::fast_io::io_cookie_type<basic_io_transcode_deco_filt<
+		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectref>>,
+		::fast_io::freestanding::forward<dectref>(deco),::fast_io::freestanding::move(*rf.giofptr));
 }
 
 template<::std::integral char_type>
