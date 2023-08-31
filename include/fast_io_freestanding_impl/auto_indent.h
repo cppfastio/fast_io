@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-namespace manipulators
+inline namespace manipulators
 {
 template<std::integral char_type,typename containe>
 struct auto_indent_t
@@ -143,7 +143,7 @@ inline constexpr char_type* print_reserve_define_auto_indent(char_type* iter,
 
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<std::integral char_type,typename containe>

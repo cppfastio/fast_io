@@ -5,7 +5,10 @@ Referenced from
 https://github.com/sunfishcode/wasm-reference-manual/blob/master/WebAssembly.md#primitive-encoding-types
 */
 
-namespace fast_io::manipulators
+namespace fast_io
+{
+
+inline namespace manipulators
 {
 
 template<::std::floating_point T>
@@ -54,6 +57,8 @@ template<::fast_io::details::my_integral T>
 inline constexpr auto wasm_uint64_get(T& t)
 {
 	return ::fast_io::manipulators::le_get<64>(t);
+}
+
 }
 
 }

@@ -204,6 +204,9 @@ bool is_all_zeros_impl(::fast_io::intrinsics::simd_vector<T,n> const& vec) noexc
 namespace intrinsics
 {
 
+inline constexpr
+	::std::size_t optimal_simd_vector_run_with_cpu_instruction_size{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
+
 template<typename T,std::size_t N>
 inline constexpr bool is_all_zeros(simd_vector<T,N> const& vec) noexcept
 {

@@ -14,7 +14,10 @@ concept printable_to_cxx_ostringstream=std::integral<char_type>&&requires(std::b
 
 }
 
-namespace fast_io::manipulators
+namespace fast_io
+{
+
+inline namespace manipulators
 {
 
 template<typename... Args>
@@ -53,6 +56,8 @@ static_assert(type_error,"this type is not printable with C++ ostream facilities
 		return std::basic_string<wchar_t>();
 	}
 	return {};
+}
+
 }
 
 }

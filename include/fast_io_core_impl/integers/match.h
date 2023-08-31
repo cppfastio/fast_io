@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-namespace manipulators
+inline namespace manipulators
 {
 template<typename T>
 struct basic_matcher_t
@@ -68,7 +68,7 @@ inline constexpr manipulators::basic_matcher_t<basic_io_scatter_t<char_type>> sc
 }
 
 #if 0
-namespace manipulators
+inline namespace manipulators
 {
 template<typename rg>
 //requires (std::integral<std::ranges::range_value_t<rg>>)

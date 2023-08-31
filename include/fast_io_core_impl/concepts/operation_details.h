@@ -36,7 +36,7 @@ concept constructible_to_os_c_str_or_nullptr = constructible_to_os_c_str<T>||req
 	{t.is_nullptr()}->std::same_as<bool>;
 };
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<std::integral ch_type>

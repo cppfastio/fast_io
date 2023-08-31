@@ -479,7 +479,7 @@ inline constexpr bool print_alias_test_codecvt_impl() noexcept
 
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<

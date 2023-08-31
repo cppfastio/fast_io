@@ -1,0 +1,5 @@
+set(CMAKE_CXX_STANDARD 23)
+add_executable(0001helloworld examples/0001.helloworld/helloworld.cc)
+add_test(0001helloworldtest 0001helloworld)
+add_executable(0007constructfstreamfromsyscall examples/0007.legacy/construct_fstream_from_syscall.cc)
+add_test(0007constructfstreamfromsyscalltest 0007constructfstreamfromsyscall)

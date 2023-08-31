@@ -1113,7 +1113,7 @@ inline constexpr ::fast_io::manipulators::scalar_flags base_lc_time_flags_cache{
 
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 /*
 do not use them. they are experimental

@@ -105,6 +105,7 @@ inline constexpr decltype(auto)
 	return output_stream_deco_filter_ref_define(r.iobptr->handle);
 }
 
+
 template<typename handletype,
 	typename iobuffertraits>
 requires ((iobuffertraits::mode&buffer_mode::in)==buffer_mode::in)

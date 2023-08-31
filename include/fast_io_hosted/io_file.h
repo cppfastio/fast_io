@@ -366,16 +366,51 @@ constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_ty
 
 template<::std::integral inchar_type,
 	::std::integral outchar_type,
+	typename allocatortype>
+constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>>
+	io_stream_transcode_deco_filter_ref_define(
+		basic_general_io_file<inchar_type,outchar_type,allocatortype>&& t) noexcept
+{
+	return {__builtin_addressof(t)};
+}
+
+template<::std::integral inchar_type,
+	::std::integral outchar_type,
 	typename allocatortype,
 	typename dectref>
 inline constexpr void io_stream_add_deco_filter_define(
 	basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>> rf,
-	dectref deco)
+	dectref &&deco)
 {
 	*rf.giofptr=basic_general_io_file<inchar_type,outchar_type,allocatortype>(
-		::fast_io::io_cookie_type<basic_iodecfilt<
+		::fast_io::io_cookie_type<basic_io_deco_filt<
 		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectref>>,
-		deco,::fast_io::freestanding::move(*rf.giofptr));
+		::fast_io::freestanding::forward<dectref>(deco),::fast_io::freestanding::move(*rf.giofptr));
+}
+
+
+template<::std::integral inchar_type,
+	::std::integral outchar_type,
+	typename allocatortype,
+	typename dectref>
+inline constexpr auto io_stream_transcode_deco_filter_define(
+	basic_general_io_file_ref<basic_general_io_file<inchar_type,outchar_type,allocatortype>> rf,
+	dectref &&deco)
+{
+	using dectrefnocvref=::std::remove_cvref_t<dectref>;
+
+
+	using input_char_type = typename dectrefnocvref::input_decorator_type::input_char_type;
+	using output_char_type = typename dectrefnocvref::output_decorator_type::output_char_type;
+
+
+	return basic_general_io_file<typename dectrefnocvref::input_decorator_type::input_char_type,
+		typename dectrefnocvref::output_decorator_type::output_char_type,
+		allocatortype>(
+		::fast_io::io_cookie_type<basic_io_transcode_deco_filt<
+		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectrefnocvref>>,
+		::fast_io::freestanding::forward<dectref>(deco),::fast_io::freestanding::move(*rf.giofptr));
+
 }
 
 template<::std::integral char_type>

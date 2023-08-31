@@ -98,3 +98,12 @@ else()
 endif()
 
 endif()
+
+option(ENABLE_TESTS "Enable tests" OFF)
+
+if(${ENABLE_TESTS})
+include(CTest)
+include_directories(include)
+include(${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt)
+
+endif()

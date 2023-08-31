@@ -68,7 +68,7 @@ LC_TIME Category for the Locale Definition Source File Format
 https://www.ibm.com/support/knowledgecenter/ssw_aix_71/filesreference/LC_TIME.html
 */
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<typename T>

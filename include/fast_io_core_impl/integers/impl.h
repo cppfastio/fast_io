@@ -25,7 +25,7 @@ concept has_scalar_manip_detail_tag = requires(scalar_type)
 
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 enum class scalar_placement:char8_t
@@ -412,7 +412,7 @@ concept scalar_integrals =
 
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<scalar_flags flags,typename T>

@@ -210,7 +210,7 @@ inline std::conditional_t<sizeof(char_type)==sizeof(char),basic_io_scatter_t<cha
 	}
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 inline constexpr pyobject_io_observer pyobj(PyObject* p) noexcept

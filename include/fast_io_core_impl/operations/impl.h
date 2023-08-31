@@ -13,3 +13,4 @@
 #include"transmitimpl/impl.h"
 #include"strlike_reference_wrapper.h"
 #include"decofilter.h"
+#include"transcodefilter.h"

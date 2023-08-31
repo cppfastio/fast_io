@@ -7,7 +7,6 @@
 #include"input.h"
 #include"destroy.h"
 
-
 namespace fast_io
 {
 
@@ -34,3 +33,6 @@ using basic_iobuf = basic_io_buffer<handletype,
 		typename decltype(::fast_io::operations::output_stream_ref(*static_cast<handletype*>(nullptr)))::output_char_type>>;
 
 }
+
+
+#include"io_buffer_transcode_ref.h"

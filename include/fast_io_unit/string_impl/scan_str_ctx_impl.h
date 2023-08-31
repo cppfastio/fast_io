@@ -150,7 +150,7 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(io_reserve_type_t
 	return ::fast_io::details::scan_context_define_whole_string_eof_impl(ctx.copying,str.reference);
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<std::integral char_type,typename traits,typename allocator_type>

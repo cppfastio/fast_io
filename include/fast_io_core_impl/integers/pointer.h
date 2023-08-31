@@ -16,7 +16,7 @@ We extend print pointers to print contiguous_iterator. No we can write things li
 std::vector<std::size_t> vec(100,2);
 println("vec.begin():",fast_io::mnp::funcvw(vec.begin())," vec.end()",fast_io::mnp::funcvw(vec.end()));
 */
-namespace manipulators
+inline namespace manipulators
 {
 template<typename T>
 struct chvw_t

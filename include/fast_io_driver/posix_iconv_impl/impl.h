@@ -258,7 +258,7 @@ inline void reset_state(posix_iconv_io_observer piciob)
 		throw_posix_error();
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<typename T>
