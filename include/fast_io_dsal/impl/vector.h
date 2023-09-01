@@ -764,12 +764,7 @@ private:
 		auto ptr{ imp.begin_ptr };
 		for (; first != last; ++first, ++ptr)
 		{
-#if defined(_MSC_VER) && !defined(__clang__)
-			// why???
 			std::construct_at(ptr, *first);
-#else
-			new (ptr) value_type(*first);
-#endif
 		}
 		imp.curr_ptr = ptr;
 	}
