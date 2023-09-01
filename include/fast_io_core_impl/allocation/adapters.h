@@ -1,5 +1,11 @@
 ﻿#pragma once
 
+#if !defined(__GNUC__) && !defined(__clang__)
+// to make a constexpr allocator, we need std::allocator. Because only new expression and std::allocator<T>::allocate are allowed in constexpr functions. 
+// see https://github.com/microsoft/STL/issues/1532 https://github.com/microsoft/STL/issues/4002
+// however clang and gcc provides constexpr ::operator new, which is nice. 
+#include <memory>
+#endif
 
 namespace fast_io
 {
@@ -118,8 +124,15 @@ public:
 	};
 
 	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#else
+#if defined(__GNUC__) || defined(__clang__)
+	// A untyped allocator is not constexpr
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#endif
 #endif
 	void* allocate(::std::size_t n) noexcept
 	{
@@ -252,8 +265,10 @@ public:
 	static inline constexpr bool has_deallocate = ::fast_io::details::has_deallocate_impl<alloc>;
 
 	static inline
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
 #endif
 	void deallocate(void* p) noexcept requires(has_deallocate)
 	{
@@ -274,8 +289,10 @@ public:
 	}
 
 	static inline
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
 #endif
 	void deallocate_n(void* p,::std::size_t n) noexcept
 	{
@@ -304,8 +321,14 @@ public:
 
 
 	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#else
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#endif
 #endif
 	void* allocate_aligned(::std::size_t alignment,::std::size_t n) noexcept
 	{
@@ -326,8 +349,12 @@ public:
 	}
 
 	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#else
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
 #endif
 	void* allocate_aligned_zero(::std::size_t alignment,::std::size_t n) noexcept
 	{
@@ -351,8 +378,14 @@ public:
 	static inline constexpr bool has_reallocate_aligned = ::fast_io::details::has_reallocate_aligned_impl<alloc>;
 
 	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#else
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#endif
 #endif
 	void* reallocate_aligned(void* p,::std::size_t alignment,::std::size_t n) noexcept
 		requires(has_reallocate_aligned)
@@ -364,8 +397,14 @@ public:
 		::fast_io::details::has_reallocate_aligned_zero_impl<alloc>;
 
 	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#else
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#endif
 #endif
 	void* reallocate_aligned_zero(void* p,::std::size_t alignment,::std::size_t n) noexcept
 		requires(has_reallocate_aligned_zero)
@@ -374,8 +413,14 @@ public:
 	}
 
 	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#else
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#endif
 #endif
 	void* reallocate_aligned_n(void* p,::std::size_t oldn,::std::size_t alignment,::std::size_t n) noexcept
 	{
@@ -421,8 +466,14 @@ public:
 	}
 
 	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#else
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#endif
 #endif
 	void* reallocate_aligned_zero_n(void* p,::std::size_t oldn,::std::size_t alignment,::std::size_t n) noexcept
 	{
@@ -447,8 +498,10 @@ public:
 	}
 
 	static inline
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
 #endif
 	void deallocate_aligned_n(void* p,::std::size_t alignment,::std::size_t n) noexcept
 	{
@@ -472,8 +525,10 @@ public:
 	}
 	static inline constexpr bool has_deallocate_aligned = ::fast_io::details::has_deallocate_aligned_impl<alloc>;
 	static inline
+#if defined(__GNUC__) || defined(__clang__)
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
 #endif
 	void deallocate_aligned(void* p,::std::size_t alignment) noexcept requires(has_deallocate_aligned)
 	{
@@ -490,8 +545,24 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#endif
 	T* allocate(::std::size_t n) noexcept
 	{
+#if !defined(__GNUC__) & !defined(__clang__)
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return std::allocator<T>{}.allocate(n);
+		}
+		else {}
+#endif
+#endif
 		constexpr
 			::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()/sizeof(T)};
 		if(n>mxn)
@@ -515,6 +586,19 @@ public:
 #endif
 	void deallocate(T* ptr) noexcept requires(has_deallocate)
 	{
+#if !defined(__GNUC__) & !defined(__clang__)
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return std::allocator<T>{}.deallocate(ptr, 1);
+		}
+		else {}
+#endif
+#endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
 		{
 			return alloc::deallocate(ptr);
@@ -530,6 +614,19 @@ public:
 #endif
 	void deallocate_n(T* ptr,::std::size_t n) noexcept
 	{
+#if !defined(__GNUC__) & !defined(__clang__)
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return std::allocator<T>{}.deallocate(ptr, n);
+		}
+		else {}
+#endif
+#endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
 		{
 			alloc::deallocate_n(ptr,n);
@@ -542,6 +639,9 @@ public:
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
 #endif
 	T* allocate_zero(::std::size_t n) noexcept
 	{
@@ -566,6 +666,9 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#endif
 	void* reallocate(T* ptr,::std::size_t n) noexcept requires(has_reallocate)
 	{
 		constexpr
@@ -587,6 +690,9 @@ public:
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
 #endif
 	void* reallocate_n(T* ptr,::std::size_t oldn,::std::size_t n) noexcept
 	{
@@ -611,6 +717,9 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
+#endif
 	void* reallocate_zero(T* ptr,::std::size_t n) noexcept requires(has_reallocate)
 	{
 		constexpr
@@ -632,6 +741,9 @@ public:
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+	__declspec(allocator)
 #endif
 	void* reallocate_zero_n(T* ptr,::std::size_t oldn,::std::size_t n) noexcept
 	{

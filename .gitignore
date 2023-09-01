@@ -13,3 +13,4 @@ build
 *.obj
 *.html
 *.txt
+!CMakeLists.txt
