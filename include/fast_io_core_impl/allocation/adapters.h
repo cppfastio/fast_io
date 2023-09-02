@@ -3,7 +3,7 @@
 // To make a constexpr allocator, we need std::allocator. Because only new expression and std::allocator<T>::allocate are allowed in constexpr functions. 
 // See https://github.com/microsoft/STL/issues/1532 https://github.com/microsoft/STL/issues/4002
 // gcc and clang provide constexpr new, but still won't compile. 
-#include <memory>
+// std::allocator<T> is NOT freestanding.
 
 namespace fast_io
 {
@@ -487,17 +487,6 @@ public:
 #endif
 	T* allocate(::std::size_t n) noexcept
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
-		{
-			return std::allocator<T>{}.allocate(n);
-		}
-		else {}
-#endif
 		constexpr
 			::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()/sizeof(T)};
 		if(n>mxn)
@@ -521,17 +510,6 @@ public:
 #endif
 	void deallocate(T* ptr) noexcept requires(has_deallocate)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
-		{
-			return std::allocator<T>{}.deallocate(ptr, 1);
-		}
-		else {}
-#endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
 		{
 			return alloc::deallocate(ptr);
@@ -547,17 +525,6 @@ public:
 #endif
 	void deallocate_n(T* ptr,::std::size_t n) noexcept
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
-		{
-			return std::allocator<T>{}.deallocate(ptr, n);
-		}
-		else {}
-#endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
 		{
 			alloc::deallocate_n(ptr,n);
