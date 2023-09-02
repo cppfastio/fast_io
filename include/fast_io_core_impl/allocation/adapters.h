@@ -487,6 +487,16 @@ public:
 #endif
 	T* allocate(::std::size_t n) noexcept
 	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return ::std::allocator<T>{}.allocate(n);
+		}
+#endif
 		constexpr
 			::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()/sizeof(T)};
 		if(n>mxn)
@@ -510,6 +520,16 @@ public:
 #endif
 	void deallocate(T* ptr) noexcept requires(has_deallocate)
 	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return ::std::allocator<T>{}.deallocate(ptr, 1);
+		}
+#endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
 		{
 			return alloc::deallocate(ptr);
@@ -525,6 +545,16 @@ public:
 #endif
 	void deallocate_n(T* ptr,::std::size_t n) noexcept
 	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return ::std::allocator<T>{}.deallocate(ptr, n);
+		}
+#endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
 		{
 			alloc::deallocate_n(ptr,n);
