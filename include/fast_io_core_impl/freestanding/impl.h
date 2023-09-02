@@ -27,6 +27,16 @@ no std::array, std::copy and others
 #include<memory>
 #endif
 
+#if defined(_LIBCPP_VERSION) && __has_include(<__memory/allocator.h>)
+#include<__memory/allocator.h>
+#elif defined(__GLIBCXX__) && __has_include(<bits/allocator.h>)
+#include<bits/allocator.h>
+#elif defined(_MSVC_STL_UPDATE) && __has_include(<xmemory>)
+#include<xmemory>
+#else
+#include<memory>
+#endif
+
 #include"array.h"
 #include"cstr_len.h"
 #include"bytes.h"
