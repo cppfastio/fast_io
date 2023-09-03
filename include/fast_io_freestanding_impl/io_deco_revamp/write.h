@@ -21,7 +21,7 @@ inline constexpr void decowrite_all_overflow_common_define_impl(
 		auto [it,bufferit] = outdeco.output_process_chars(first,last,
 			bufferfirst,bufferlast);
 		::fast_io::operations::decay::write_all_decay(
-			::fast_io::operations::output_stream_ref(outstm),
+			outstm,
 			bufferfirst,bufferit);
 		first=it;
 	}
@@ -78,31 +78,31 @@ inline constexpr void deco_scatter_write_all_overflow_define_impl(
 
 }
 
-template<typename io_buffer_type,typename traits_type>
+template<typename io_buffer_type>
 inline constexpr void write_all_overflow_define(
 			basic_io_deco_filter_ref<io_buffer_type> filter,
-			typename traits_type::output_char_type const* first,
-			typename traits_type::output_char_type const* last)
+			typename io_buffer_type::traits_type::output_char_type const* first,
+			typename io_buffer_type::traits_type::output_char_type const* last)
 {
 	auto &idoref{*filter.idoptr};
 	::fast_io::details::decowrite_all_overflow_define_impl<
-		typename traits_type::allocator_type,
-		traits_type::output_buffer_size>(
+		typename io_buffer_type::traits_type::allocator_type,
+		io_buffer_type::traits_type::output_buffer_size>(
 		::fast_io::operations::output_stream_ref(idoref.handle),
 		::fast_io::operations::refs::output_decorators_ref(idoref.decorators),
 		first,last);
 }
 
-template<typename io_buffer_type,typename traits_type>
+template<typename io_buffer_type>
 inline constexpr void scatter_write_all_overflow_define(
 			basic_io_deco_filter_ref<io_buffer_type> filter,
-			basic_io_scatter_t<typename traits_type::output_char_type> const* scatters,
+			basic_io_scatter_t<typename io_buffer_type::traits_type::output_char_type> const* scatters,
 			::std::size_t n)
 {
 	auto &idoref{*filter.idoptr};
 	::fast_io::details::deco_scatter_write_all_overflow_define_impl<
-		typename traits_type::allocator_type,
-		traits_type::output_buffer_size>(
+		typename io_buffer_type::traits_type::allocator_type,
+		io_buffer_type::traits_type::output_buffer_size>(
 		::fast_io::operations::output_stream_ref(idoref.handle),
 		::fast_io::operations::refs::output_decorators_ref(idoref.decorators),
 		scatters,n);

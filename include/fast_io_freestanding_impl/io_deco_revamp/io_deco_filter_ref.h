@@ -23,7 +23,7 @@ template<typename handletype,
 inline constexpr basic_io_deco_filter_ref<basic_io_deco_filter<handletype,decorators,iobuffertraits>>
 	io_stream_ref_define(basic_io_deco_filter<handletype,decorators,iobuffertraits> &r) noexcept
 {
-	return {__builtin_addressof(r.base)};
+	return {__builtin_addressof(r)};
 }
 
 template<typename handletype,
@@ -32,7 +32,7 @@ template<typename handletype,
 inline constexpr basic_io_deco_filter_ref<basic_io_deco_filter<handletype,decorators,iobuffertraits>>
 	io_stream_ref_define(basic_io_deco_filter<handletype,decorators,iobuffertraits> &&r) noexcept
 {
-	return {__builtin_addressof(r.base)};
+	return {__builtin_addressof(r)};
 }
 
 template<typename handletype,
