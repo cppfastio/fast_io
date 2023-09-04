@@ -11,11 +11,11 @@ template<typename allocator_type,typename instmtype,
 inline constexpr input_char_type* decoread_until_eof_underflow_define_sz_impl(
 			instmtype instm,
 			indecotype indeco,
-			basic_io_buffer_pointers<input_char_type>& input_buffer,
+			basic_io_buffer_pointers<typename instmtype::input_char_type>& input_buffer,
 			input_char_type* first,
 			input_char_type* last,::std::size_t sz)
 {
-	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,input_char_type>;
+	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type,typename instmtype::input_char_type>;
 	auto bufbg{input_buffer.buffer_begin};
 	if(bufbg==nullptr)
 	{
@@ -53,7 +53,7 @@ template<typename allocator_type,::std::size_t sz,typename instmtype,
 inline constexpr input_char_type* decoread_until_eof_underflow_define_impl(
 			instmtype instm,
 			indecotype indeco,
-			basic_io_buffer_pointers<input_char_type>& input_buffer,
+			basic_io_buffer_pointers<typename instmtype::input_char_type>& input_buffer,
 			input_char_type* first,
 			input_char_type* last)
 {
