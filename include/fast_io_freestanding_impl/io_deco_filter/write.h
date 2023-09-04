@@ -40,8 +40,8 @@ inline constexpr void decowrite_all_overflow_define_impl(
 	{
 		return;
 	}
-	::fast_io::details::buffer_alloc_arr_ptr<output_char_type,false,allocator_type> arrptr(output_buffer_size);
-	::fast_io::details::decowrite_all_overflow_common_define_impl<allocator_type>(outstm,outdeco,first,last,arrptr.ptr,arrptr.ptr+output_buffer_size);
+	::fast_io::details::buffer_alloc_arr_ptr<typename outstmtype::output_char_type,false,allocator_type> arrptr(output_buffer_size);
+	::fast_io::details::decowrite_all_overflow_common_define_impl(outstm,outdeco,first,last,arrptr.ptr,arrptr.ptr+output_buffer_size);
 }
 
 template<typename allocator_type,typename outstmtype,
@@ -57,7 +57,7 @@ inline constexpr void deco_scatter_write_all_overflow_common_define_impl(
 	{
 		return;
 	}
-	::fast_io::details::buffer_alloc_arr_ptr<output_char_type,false,allocator_type> arrptr(output_buffer_size);
+	::fast_io::details::buffer_alloc_arr_ptr<typename outstmtype::output_char_type,false,allocator_type> arrptr(output_buffer_size);
 	for(::std::size_t i{};i!=n;++i)
 	{
 		auto [base,sn] = scatters[i];
@@ -81,8 +81,8 @@ inline constexpr void deco_scatter_write_all_overflow_define_impl(
 template<typename io_buffer_type>
 inline constexpr void write_all_overflow_define(
 			basic_io_deco_filter_ref<io_buffer_type> filter,
-			typename io_buffer_type::traits_type::output_char_type const* first,
-			typename io_buffer_type::traits_type::output_char_type const* last)
+			typename basic_io_deco_filter_ref<io_buffer_type>::output_char_type const* first,
+			typename basic_io_deco_filter_ref<io_buffer_type>::output_char_type const* last)
 {
 	auto &idoref{*filter.idoptr};
 	::fast_io::details::decowrite_all_overflow_define_impl<
@@ -96,7 +96,7 @@ inline constexpr void write_all_overflow_define(
 template<typename io_buffer_type>
 inline constexpr void scatter_write_all_overflow_define(
 			basic_io_deco_filter_ref<io_buffer_type> filter,
-			basic_io_scatter_t<typename io_buffer_type::traits_type::output_char_type> const* scatters,
+			basic_io_scatter_t<typename basic_io_deco_filter_ref<io_buffer_type>::output_char_type> const* scatters,
 			::std::size_t n)
 {
 	auto &idoref{*filter.idoptr};
