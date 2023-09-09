@@ -494,7 +494,7 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::std::allocator<T>{}.allocate(n);
+			return ::fast_io::freestanding::allocator<T>{}.allocate(n);
 		}
 #endif
 		constexpr
@@ -527,7 +527,7 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::std::allocator<T>{}.deallocate(ptr, 1);
+			return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, 1);
 		}
 #endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
@@ -552,7 +552,7 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::std::allocator<T>{}.deallocate(ptr, n);
+			return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, n);
 		}
 #endif
 		if constexpr(alignof(T)<=alloc::default_alignment)
