@@ -407,7 +407,7 @@ inline constexpr auto io_stream_transcode_deco_filter_define(
 	return basic_general_io_file<typename dectrefnocvref::input_decorator_type::input_char_type,
 		typename dectrefnocvref::output_decorator_type::output_char_type,
 		allocatortype>(
-		::fast_io::io_cookie_type<basic_io_transcode_deco_filt<
+		::fast_io::io_cookie_type<basic_io_deco_filt<
 		basic_general_io_file<inchar_type,outchar_type,allocatortype>,dectrefnocvref>>,
 		::fast_io::freestanding::forward<dectref>(deco),::fast_io::freestanding::move(*rf.giofptr));
 
