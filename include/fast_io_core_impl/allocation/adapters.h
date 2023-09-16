@@ -461,8 +461,15 @@ public:
 			{
 				return;
 			}
-			::std::size_t const to_deallocate{sizeof(void*)+alignment+n};
-			allocator_type::deallocate(reinterpret_cast<void**>(p)[-1],to_deallocate);
+			if constexpr (::fast_io::details::has_deallocate_impl<alloc>)
+			{
+				allocator_type::deallocate(reinterpret_cast<void**>(p)[-1]);
+			}
+			else
+			{
+				::std::size_t const to_deallocate{sizeof(void*)+alignment+n};
+				allocator_type::deallocate_n(reinterpret_cast<void**>(p)[-1],to_deallocate);
+			}
 		}
 	}
 	static inline constexpr bool has_deallocate_aligned = ::fast_io::details::has_deallocate_aligned_impl<alloc>;
