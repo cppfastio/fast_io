@@ -16,6 +16,7 @@ using ::std::find_if;
 using ::std::copy_n;
 using ::std::copy;
 using ::std::copy_backward;
+using ::std::move_backward;
 using ::std::fill;
 using ::std::fill_n;
 }
@@ -107,10 +108,17 @@ inline constexpr void fill_n(fwd_iter first,std::size_t n,T value)
 }
 
 
-template<::std::bidirectional_iterator BidirIt1,::std::bidirectional_iterator BidirIt2 >
+template<::std::bidirectional_iterator BidirIt1,::std::bidirectional_iterator BidirIt2>
 constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 {
 	for(;first!=last;*(--d_last)=*(--last));
+	return d_last;
+}
+
+template<::std::bidirectional_iterator BidirIt1, ::std::bidirectional_iterator BidirIt2>
+constexpr BidirIt2 move_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
+{
+	for (; first != last; *(--d_last) = ::std::move(*(--last)));
 	return d_last;
 }
 
@@ -236,7 +244,7 @@ inline void* my_memset(void* dest, int ch, std::size_t count) noexcept
 
 inline
 #if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
+#if __has_builtin(__builtin_memcmp)
 constexpr
 #endif
 #endif
@@ -521,9 +529,9 @@ inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const&
 }
 
 template<::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
-constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first)
+inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first)
 {
-    using T = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+	using T = typename std::iterator_traits<NoThrowForwardIt>::value_type;
 	struct destroyer
 	{
 		NoThrowForwardIt d_first;
@@ -573,6 +581,120 @@ constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThr
 	NoThrowForwardIt current = d.current;
 	d.current = d.d_first;
 	return current;
+}
+
+template<::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
+inline constexpr NoThrowForwardIt uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) noexcept(::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type>)
+{
+	using T = typename ::std::iterator_traits<NoThrowForwardIt>::value_type;
+	struct destroyer
+	{
+		NoThrowForwardIt d_first;
+		NoThrowForwardIt current;
+		constexpr ~destroyer() noexcept
+		{
+			for (; d_first != current; ++d_first)
+			{
+				d_first->~T();
+			}
+		}
+	};
+	using input_iter = InputIt;
+	using output_iter = NoThrowForwardIt;
+	using input_value_type = ::std::iter_value_t<input_iter>;
+	using output_value_type = ::std::iter_value_t<output_iter>;
+	if constexpr
+		(::std::contiguous_iterator<input_iter> &&
+			::std::contiguous_iterator<output_iter> &&
+			::std::is_trivially_copyable_v<input_value_type> &&
+			::std::is_trivially_copyable_v<output_value_type> &&
+			(::std::same_as<input_value_type, output_value_type> ||
+				(::std::integral<input_value_type> && ::std::integral<output_value_type> &&
+					sizeof(input_value_type) == sizeof(output_value_type))))
+	{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			if (n)	//to avoid nullptr UB
+				my_memmove(::std::to_address(d_first), ::std::to_address(first), sizeof(input_value_type) * n);
+			return d_first += n;
+		}
+#endif
+	}
+	destroyer d{ d_first,d_first };
+	for (::std::size_t i{}; i != n; ++i)
+	{
+		::std::construct_at(::std::to_address(d.current), *first);
+		++d.current;
+		++first;
+	}
+	NoThrowForwardIt current = d.current;
+	d.current = d.d_first;
+	return current;
+}
+
+template<::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
+inline constexpr NoThrowForwardIt uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) noexcept(::std::is_nothrow_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type>) // undefined if throws
+{
+	using T = typename ::std::iterator_traits<NoThrowForwardIt>::value_type;
+	using input_iter = InputIt;
+	using output_iter = NoThrowForwardIt;
+	using input_value_type = ::std::iter_value_t<input_iter>;
+	using output_value_type = ::std::iter_value_t<output_iter>;
+	if constexpr
+		(::std::contiguous_iterator<input_iter> &&
+			::std::contiguous_iterator<output_iter> &&
+			::std::is_trivially_copyable_v<input_value_type> &&
+			::std::is_trivially_copyable_v<output_value_type> &&
+			(::std::same_as<input_value_type, output_value_type> ||
+				(::std::integral<input_value_type> && ::std::integral<output_value_type> &&
+					sizeof(input_value_type) == sizeof(output_value_type))))
+	{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			if (n)	//to avoid nullptr UB
+				my_memmove(::std::to_address(d_first), ::std::to_address(first), sizeof(input_value_type) * n);
+			return d_first += n;
+		}
+#endif
+	}
+	for (::std::size_t i{}; i != n; ++i)
+	{
+		::std::construct_at(::std::to_address(d_first), ::std::move(*first));
+		++d_first;
+		++first;
+	}
+	return d_first;
+}
+
+template<::std::forward_iterator ForwardIt>
+inline constexpr ForwardIt rotate(ForwardIt first, ForwardIt middle, ForwardIt last) noexcept(::std::is_nothrow_swappable_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+{
+	// copied from cppreference, room for improvements
+	if (first == middle)
+		return last;
+	if (middle == last)
+		return first;
+	ForwardIt write = first;
+	ForwardIt next_read = first; // read position for when "read" hits "last"
+	for (ForwardIt read = middle; read != last; ++write, ++read)
+	{
+		if (write == next_read)
+			next_read = read; // track where "first" went
+		::std::ranges::swap(*write, *read);
+	}
+	// rotate the remaining sequence into place
+	rotate(write, next_read, last);
+	return write;
 }
 
 }
