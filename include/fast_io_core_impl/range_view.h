@@ -63,15 +63,21 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type, si
 	return ptr;
 }
 
+namespace operations
+{
+template<bool line, typename output, typename ...Args>
+inline constexpr void print_freestanding(output&& outstm, Args&& ...args);
+}
+
 template <::std::integral char_type, ::std::input_iterator It, typename output>
 inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<char_type, It>>, output out, range_view_t<char_type, It> t)
 {
 	if (t.begin == t.end) return;
 	auto curr_ptr{ t.begin };
-	print_freestanding(out, *curr_ptr);
+	::fast_io::operations::print_freestanding<false>(out, *curr_ptr);
 	for (++curr_ptr; curr_ptr != t.end; ++curr_ptr)
 	{
-		print_freestanding(out, t.sep, *curr_ptr);
+		::fast_io::operations::print_freestanding<false>(out, t.sep, *curr_ptr);
 	}
 }
 

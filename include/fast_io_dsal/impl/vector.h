@@ -232,6 +232,9 @@ struct vector_internal
 	T* end_ptr{};
 };
 
+template <typename Rg, typename T>
+concept container_compatible_range = ::std::ranges::input_range<Rg> && ::std::convertible_to<::std::ranges::range_reference_t<Rg>, T>;
+
 }
 
 template<::std::movable T,typename allocator>
@@ -685,17 +688,30 @@ private:
 		auto new_i{new_begin_ptr};
 		for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
 		{
-			new (new_i) value_type(::std::move(*old_i));
+			::std::construct_at(new_i, ::std::move(*old_i));
 			old_i->~value_type();
 			++new_i;
 		}
-		if constexpr(typed_allocator_type::has_deallocate)
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+#endif
 		{
-			typed_allocator_type::deallocate(imp.begin_ptr);
+			if constexpr (typed_allocator_type::has_deallocate)
+			{
+				typed_allocator_type::deallocate(imp.begin_ptr);
+			}
+			else
+			{
+				typed_allocator_type::deallocate_n(imp.begin_ptr, cap);
+			}
 		}
 		else
 		{
-			typed_allocator_type::deallocate_n(imp.begin_ptr,cap);
+			typed_allocator_type::deallocate_n(imp.begin_ptr, cap);
 		}
 		imp.begin_ptr=new_begin_ptr;
 		imp.curr_ptr=new_i;
@@ -764,7 +780,7 @@ private:
 		auto ptr{ imp.begin_ptr };
 		for (; first != last; ++first, ++ptr)
 		{
-			std::construct_at(ptr, *first);
+			::std::construct_at(ptr, *first);
 		}
 		imp.curr_ptr = ptr;
 	}
@@ -987,7 +1003,15 @@ public:
 
 private:
 
-	constexpr iterator grow_to_size_and_reserve_blank_impl(size_type pos, size_type cnt) noexcept
+	inline static constexpr void destroy_range(iterator first, iterator last) noexcept
+	{
+		if constexpr (!::std::is_trivially_destructible_v<value_type>) {
+			for (; first != last; ++first) {
+				first->~value_type();
+			}
+		}
+	}
+	constexpr iterator grow_to_size_and_reserve_blank_impl(size_type pos, size_type cnt) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
@@ -999,115 +1023,208 @@ private:
 #endif
 #endif
 			{
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-				{
-					::fast_io::containers::details::grow_to_size_common_impl<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-						imp.curr_ptr - imp.begin_ptr + cnt);
-				}
-				else
-				{
-					::fast_io::containers::details::grow_to_size_common_aligned_impl<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-						alignof(value_type), imp.curr_ptr - imp.begin_ptr + cnt);
-				}
+				auto newcap{ imp.curr_ptr - imp.begin_ptr + cnt };
+				grow_to_size_nearest_impl(newcap);
 				auto old_first = imp.begin_ptr + pos;
 				auto old_last = imp.curr_ptr;
-				auto new_last = old_last + cnt;
-				::fast_io::freestanding::my_copy_backward(old_first, old_last, new_last);
+				imp.curr_ptr = old_last + cnt;
+				::fast_io::freestanding::copy_backward(old_first, old_last, imp.curr_ptr);
 				return old_first;
 			}
 		}
-		auto old_cap = static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
-		auto new_cap{ old_cap + cnt };
-		auto new_begin = typed_allocator_type::allocate(new_cap);
-		auto new_i{new_begin};
-		for (auto old_i{imp.begin_ptr}, old_e{old_i + pos}; old_i != old_e; ++old_i)
+		auto const old_cap{ static_cast<size_type>(imp.end_ptr - imp.begin_ptr) };
+		auto const new_cap{ static_cast<size_type>(imp.curr_ptr - imp.begin_ptr) + cnt };
+		iterator new_end;
+		if (old_cap < new_cap)
 		{
-			new (new_i) value_type(::std::move(*old_i));
-			old_i->~value_type();
-			++new_i;
-		}
-		new_i = new_begin + pos + cnt;
-		for (auto old_i{imp.begin_ptr + pos}, old_e{imp.curr_ptr}; old_i != old_e; ++old_i)
-		{
-			new (new_i) value_type(::std::move(*old_i));
-			old_i->~value_type();
-			++new_i;
-		}
-		if constexpr (typed_allocator_type::has_deallocate)
-		{
-			typed_allocator_type::deallocate(imp.begin_ptr);
+			auto new_begin{ typed_allocator_type::allocate(new_cap) };
+			new_end = new_begin + new_cap;
+			auto new_i{ new_begin };
+			for (auto old_i{ imp.begin_ptr }, old_e{ old_i + pos }; old_i != old_e; ++old_i)
+			{
+				::std::construct_at(new_i, ::std::move(*old_i));
+				old_i->~value_type();
+				++new_i;
+			}
 		}
 		else
 		{
-			typed_allocator_type::deallocate_n(imp.begin_ptr, old_cap);
+			new_end = imp.begin_ptr + new_cap;
 		}
-		imp.begin_ptr = new_begin;
-		imp.curr_ptr = new_i;
-		imp.end_ptr = new_begin + new_cap;
-		return new_begin + pos;
+		{
+			auto new_e{ new_end }, old_i{ imp.begin_ptr + pos }, old_e{ imp.curr_ptr };
+			do
+			{
+				--old_e, --new_e;
+				::std::construct_at(new_e, ::std::move(*old_e));
+			} while (old_i != old_e);
+		}
+		if (old_cap < new_cap)
+		{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
+			{
+				if constexpr (typed_allocator_type::has_deallocate)
+				{
+					typed_allocator_type::deallocate(imp.begin_ptr);
+				}
+				else
+				{
+					typed_allocator_type::deallocate_n(imp.begin_ptr, old_cap);
+				}
+			}
+			else
+			{
+				typed_allocator_type::deallocate_n(imp.begin_ptr, old_cap);
+			}
+			imp.begin_ptr = new_end - new_cap;
+			imp.curr_ptr = new_end;
+			imp.end_ptr = new_end;
+		}
+		else
+		{
+			imp.curr_ptr = new_end;
+		}
+		return imp.begin_ptr + pos;
+	}
+	constexpr iterator reserve_blank_impl(iterator first, iterator last, size_type cnt) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		auto d_first{ first + cnt };
+		if (d_first < last) // overlapped
+		{
+			auto overlapped{ last - cnt };
+			::fast_io::freestanding::uninitialized_move_n(overlapped, cnt, last);
+			::fast_io::freestanding::move_backward(first, overlapped, last);
+			destroy_range(first, d_first);
+		}
+		else
+		{
+			::fast_io::freestanding::uninitialized_move_n(first, cnt, d_first);
+			destroy_range(first, last);
+		}
+		imp.curr_ptr += cnt;
+		return first;
+	}
+public:
+	template <bool move = false, typename Iter>
+	constexpr iterator insert_counted_range_impl(const_iterator pos, Iter first, size_type cnt) noexcept(noexcept(this->push_back(*first)))
+	{
+		if (cnt == 0)
+		{
+			return pos - imp.begin_ptr + imp.end_ptr;
+		}
+		iterator itr;
+		if (static_cast<size_type>(imp.end_ptr - imp.curr_ptr) < cnt)
+			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, cnt);
+		else
+			itr = reserve_blank_impl(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, cnt);
+		struct restore_t
+		{
+			iterator old_i, new_i, new_e;
+			constexpr ~restore_t() noexcept
+			{
+				for (; new_i != new_e; ++new_i, ++old_i)
+				{
+					::std::construct_at(old_i, ::std::move(*new_i));
+				}
+			}
+		} restore{};
+		if constexpr (move && ::std::same_as<value_type, ::std::remove_cvref_t<typename ::std::iterator_traits<Iter>::value_type>>)
+		{
+			::fast_io::freestanding::uninitialized_move_n(first, cnt, itr);
+		}
+		else
+		{
+			if constexpr (!(::std::same_as<value_type, ::std::remove_cvref_t<typename ::std::iterator_traits<Iter>::value_type>> || noexcept(this->push_back(*first))))
+				// do not provide exception guarantee when thrown by copy or move ctor
+				restore = { itr, itr + cnt, imp.curr_ptr };
+			::fast_io::freestanding::uninitialized_copy_n(first, cnt, itr);
+			restore = {};
+		}
+		return itr;
+	}
+	template <typename Iter, typename Sentinel>
+	constexpr iterator insert_uncounted_range_impl(const_iterator pos, Iter first, Sentinel last) noexcept(noexcept(this->push_back(*first)))
+	{
+		if (first == last)
+		{
+			return pos - imp.begin_ptr + imp.begin_ptr;
+		}
+		auto off{ pos - imp.begin_ptr };
+		auto old_size{ imp.curr_ptr - imp.begin_ptr };
+		append_uncounted_range_impl(first, last);
+		::fast_io::freestanding::rotate(imp.begin_ptr + off, imp.begin_ptr + old_size, imp.curr_ptr);
+		return imp.begin_ptr + off;
 	}
 
 public:
 
-	// todo: exception guarantee?
-#if 0
+#if 1
 	constexpr iterator insert(const_iterator pos, T const& value) noexcept(noexcept(this->push_back(value)))
 	{
-		iterator mut_pos{ pos - imp.begin_ptr + imp.begin_ptr };
+		iterator itr;
 		if (imp.curr_ptr == imp.end_ptr)
-			grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, 1);
+			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, 1);
 		else
-			::fast_io::freestanding::my_copy_backward(mut_pos, imp.curr_ptr, imp.curr_ptr + 1);
-		new (mut_pos) value_type(value);
-		return mut_pos;
+			itr = ::fast_io::freestanding::copy_backward(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, imp.curr_ptr + 1);
+		std::construct_at(itr, value);
+		return itr;
 	}
 	constexpr iterator insert(const_iterator pos, T&& value) noexcept(noexcept(this->push_back(::std::move(value))))
 	{
-		iterator mut_pos{ pos - imp.begin_ptr + imp.begin_ptr };
+		iterator itr;
 		if (imp.curr_ptr == imp.end_ptr)
-			grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, 1);
+			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, 1);
 		else
-			::fast_io::freestanding::my_copy_backward(mut_pos, imp.curr_ptr, imp.curr_ptr + 1);
-		new (mut_pos) value_type(value);
-		return mut_pos;
+			itr = ::fast_io::freestanding::copy_backward(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, imp.curr_ptr + 1);
+		std::construct_at(itr, ::std::move(value));
+		return itr;
 	}
 	constexpr iterator insert(const_iterator pos, size_type count, T const& value) noexcept(noexcept(this->push_back(value)))
 	{
-		iterator mut_pos{ pos - imp.begin_ptr + imp.begin_ptr };
+		iterator itr;
 		if (imp.end_ptr - imp.begin_ptr < count)
-			grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, count);
+			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, count);
 		else
-			::fast_io::freestanding::my_copy_backward(mut_pos, imp.curr_ptr, imp.curr_ptr + count);
-		for (auto itr{ mut_pos }, itr_end{ mut_pos + count }; itr != itr_end; ++itr)
+			itr = ::fast_io::freestanding::copy_backward(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, imp.curr_ptr + count);
+		for (auto new_itr{ itr }, itr_end{ itr + count }; new_itr != itr_end; ++new_itr)
 		{
-			new (itr) value_type(value);
+			::std::construct_at(new_itr, value);
 		}
-		return mut_pos;
+		return itr;
 	}
 	template <::std::input_iterator InputIt>
 	constexpr iterator insert(const_iterator pos, InputIt first, InputIt last) noexcept(noexcept(this->push_back(*first)))
 	{
-
+		if constexpr (::std::forward_iterator<InputIt>)
+		{
+			return insert_counted_range_impl<false>(pos, first, ::std::distance(first, last));
+		}
+		else
+		{
+			return insert_uncounted_range_impl(pos, first, last);
+		}
 	}
 	constexpr iterator insert(const_iterator pos, std::initializer_list<T> ilist) noexcept(noexcept(this->push_back(*ilist.begin())))
 	{
-		iterator mut_pos{ pos - imp.begin_ptr + imp.begin_ptr };
-		auto size{ ilist.size() };
-		if (imp.end_ptr - imp.begin_ptr < size)
-			grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, size);
-		else
-			::fast_io::freestanding::my_copy_backward(mut_pos, imp.curr_ptr, imp.curr_ptr + size);
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		return insert_counted_range_impl<true>(pos, ilist.begin(), ilist.size());
+	}
+	template <::fast_io::containers::details::container_compatible_range<value_type> R>
+	constexpr iterator insert_range(const_iterator pos, R&& rg) noexcept(noexcept(this->push_back(*::std::ranges::begin(rg))))
+	{
+		if constexpr (::std::ranges::forward_range<R>)
 		{
-			::fast_io::freestanding::non_overlapped_copy_n(ilist.begin(), size, mut_pos);
+			return insert_counted_range_impl<::std::is_rvalue_reference_v<R>>(pos, ::std::ranges::begin(rg), ::std::ranges::size(rg));
 		}
 		else
 		{
-			// todo
+			return insert_uncounted_range_impl(pos, ::std::ranges::begin(rg), ::std::ranges::end(rg));
 		}
-		return mut_pos;
 	}
 #endif
 	constexpr iterator erase(const_iterator pos) noexcept
@@ -1230,42 +1347,42 @@ public:
 private:
 
 	template<::std::input_or_output_iterator Iter>
-	constexpr void append_impl(Iter first, Iter last) noexcept(noexcept(this->push_back(*first)))
+	constexpr void append_counted_range_impl(Iter first, size_type cnt) noexcept(noexcept(this->push_back(*first)))
 	{
-		if constexpr(::std::forward_iterator<Iter>)
+		::std::size_t const remain_space{static_cast<size_type>(imp.end_ptr-imp.curr_ptr)};
+		auto sum{remain_space+static_cast<::std::size_t>(cnt)};
+		::std::size_t const capcty{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
+		if(capcty < sum)
 		{
-			auto dis{::std::distance(first,last)};
-			::std::size_t const remain_space{static_cast<size_type>(imp.end_ptr-imp.curr_ptr)};
-			auto sum{remain_space + static_cast<::std::size_t>(dis)};
-			::std::size_t const capcty{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
-			if(capcty < sum)
+			if constexpr(SIZE_MAX<::std::numeric_limits<decltype(sum)>::max())
 			{
-				if constexpr(SIZE_MAX<::std::numeric_limits<decltype(sum)>::max())
+				if(SIZE_MAX<sum)
 				{
-					if(SIZE_MAX<sum)
-					{
-						::fast_io::fast_terminate();
-					}
+					::fast_io::fast_terminate();
 				}
-				this->grow_to_size_nearest_impl(sum);
 			}
-			this->imp.curr_ptr=::fast_io::freestanding::uninitialized_copy(first,last,this->imp.curr_ptr);
+			this->grow_to_size_nearest_impl(sum);
 		}
-		else
+		this->imp.curr_ptr=::fast_io::freestanding::uninitialized_copy_n(first,cnt,this->imp.curr_ptr);
+	}
+	template <typename Iter, typename Sentinel>
+	constexpr void append_uncounted_range_impl(Iter first, Sentinel last) noexcept(noexcept(this->push_back(*first)))
+	{
+		for (; first != last; ++first)
 		{
-			for(;first!=last;++first)
-			{
-				this->push_back(*first);
-			}
+			this->emplace_back(*first);
 		}
 	}
 
 public:
 
-	template<::std::ranges::input_range R>
-	constexpr void append_range(R && rg) noexcept(noexcept(this->append_impl(::std::ranges::begin(rg),::std::ranges::end(rg))))
+	template<::fast_io::containers::details::container_compatible_range<value_type> R>
+	constexpr void append_range(R&& rg) noexcept(noexcept(this->push_back(*::std::ranges::begin(rg))))
 	{
-		this->append_impl(::std::ranges::begin(rg),::std::ranges::end(rg));
+		if constexpr (::std::ranges::forward_range<R>)
+			this->append_counted_range_impl(::std::ranges::begin(rg), ::std::ranges::size(rg));
+		else
+			this->append_uncounted_range_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 
 	[[nodiscard]] constexpr const_reference back() const noexcept
