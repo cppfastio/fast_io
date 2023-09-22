@@ -12,7 +12,7 @@ inline ::std::byte* posix_read_bytes_impl(int fd,::std::byte *first,::std::byte 
 	auto ret{system_call<__NR_read,::std::ptrdiff_t>(fd,first,static_cast<::std::size_t>(last-first))};
 	::fast_io::linux_system_call_throw_error(ret);
 #else
-#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 	auto ret{::fast_io::noexcept_call(::_read,fd,first,
 		static_cast<::std::uint_least32_t>(::fast_io::details::read_write_bytes_compute<::std::int_least32_t>(first,last)))};
 #else
@@ -32,7 +32,7 @@ inline ::std::byte const* posix_write_bytes_impl(int fd,::std::byte const *first
 	auto ret{system_call<__NR_write,::std::ptrdiff_t>(fd,first,static_cast<::std::size_t>(last-first))};
 	::fast_io::linux_system_call_throw_error(ret);
 #else
-#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 	auto ret{::fast_io::noexcept_call(::_write,fd,first,
 		static_cast<::std::uint_least32_t>(::fast_io::details::read_write_bytes_compute<::std::int_least32_t>(first,last)))};
 #else
