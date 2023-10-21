@@ -592,14 +592,14 @@ template<nt_family family,std::integral ch_type>
 inline ::std::byte* pread_some_bytes_underflow_define(basic_nt_family_io_observer<family,ch_type> niob,
 	::std::byte* first, ::std::byte* last, ::fast_io::intfpos_t off)
 {
-	return ::fast_io::win32::nt::details::nt_read_some_bytes_impl<family>(niob.handle,first,last,off);
+	return ::fast_io::win32::nt::details::nt_pread_some_bytes_impl<family>(niob.handle,first,last,off);
 }
 
 template<nt_family family,std::integral ch_type>
 inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_nt_family_io_observer<family,ch_type> niob,
 	::std::byte const *first, ::std::byte const *last, ::fast_io::intfpos_t off)
 {
-	return ::fast_io::win32::nt::details::nt_write_some_bytes_impl<family>(niob.handle,first,last,off);
+	return ::fast_io::win32::nt::details::nt_pwrite_some_bytes_impl<family>(niob.handle,first,last,off);
 }
 
 #if __cpp_lib_three_way_comparison >= 201907L
