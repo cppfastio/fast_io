@@ -30,9 +30,9 @@ inline win32_file_loader_return_value_t win32_load_address_impl(void* handle)
 	if(file_size==0)
 		return {nullptr,nullptr};
 	if constexpr(family==win32_family::wide_nt)
-		return win32_load_address_common_impl(CreateFileMappingW(handle,nullptr,0x08,0,0,nullptr),file_size);
+		return win32_load_address_common_impl(::fast_io::win32::CreateFileMappingW(handle, nullptr, 0x08, 0, 0, nullptr), file_size);
 	else
-		return win32_load_address_common_impl(CreateFileMappingA(handle,nullptr,0x08,0,0,nullptr),file_size);
+		return win32_load_address_common_impl(::fast_io::win32::CreateFileMappingA(handle, nullptr, 0x08, 0, 0, nullptr), file_size);
 }
 
 template<win32_family family>
@@ -59,7 +59,7 @@ inline auto win32_load_file_impl(nt_at_entry ent,T const& str,open_mode om,perms
 inline void win32_unload_address(void const* address) noexcept
 {
 	if(address)
-		UnmapViewOfFile(address);
+		::fast_io::win32::UnmapViewOfFile(address);
 }
 
 }
@@ -85,27 +85,27 @@ public:
 	inline constexpr win32_family_file_loader() noexcept=default;
 	inline explicit win32_family_file_loader(nt_at_entry ent)
 	{
-		auto ret{win32::details::win32_load_address_impl<family>(ent.handle)};
+		auto ret{::fast_io::win32::details::win32_load_address_impl<family>(ent.handle)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
 	inline explicit win32_family_file_loader(nt_fs_dirent fsdirent,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
-		auto ret{win32::details::win32_load_file_impl<family>(fsdirent,om,pm)};
+		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(fsdirent, om, pm)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
 	template<::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
-		auto ret{win32::details::win32_load_file_impl<family>(filename,om,pm)};
+		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(filename, om, pm)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
 	template<::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(nt_at_entry ent,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
-		auto ret{win32::details::win32_load_file_impl<family>(ent,filename,om,pm)};
+		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(ent, filename, om, pm)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
@@ -117,7 +117,7 @@ public:
 	}
 	win32_family_file_loader& operator=(win32_family_file_loader&& __restrict other) noexcept
 	{
-		win32::details::win32_unload_address(address_begin);
+		::fast_io::win32::details::win32_unload_address(address_begin);
 		address_begin=other.address_begin;
 		address_end=other.address_end;
 		other.address_end=other.address_begin=nullptr;
@@ -222,12 +222,12 @@ public:
 	}
 	inline void close()
 	{
-		win32::details::win32_unload_address(address_begin);
+		::fast_io::win32::details::win32_unload_address(address_begin);
 		address_end=address_begin=nullptr;
 	}
 	~win32_family_file_loader()
 	{
-		win32::details::win32_unload_address(address_begin);
+		::fast_io::win32::details::win32_unload_address(address_begin);
 	}
 };
 
