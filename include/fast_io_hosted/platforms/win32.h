@@ -168,7 +168,7 @@ is_nt
 
 inline void* create_io_completion_port(void* filehandle,void* existing_completionport,::std::uintptr_t completionkey,::std::uint_least32_t numberofconcurrentthreads)
 {
-	void* ptr{fast_io::win32::CreateIoCompletionPort(filehandle,existing_completionport,completionkey,numberofconcurrentthreads)};
+	void* ptr{::fast_io::win32::CreateIoCompletionPort(filehandle,existing_completionport,completionkey,numberofconcurrentthreads)};
 	if(ptr==nullptr)[[unlikely]]
 		throw_win32_error();
 	return ptr;
@@ -548,7 +548,7 @@ inline void* win32_dup_impl(void* handle)
 {
 	void* current_process{reinterpret_cast<void*>(static_cast<intptr_t>(-1))};
 	void* new_handle{};
-	if(!DuplicateHandle(current_process,handle,current_process,__builtin_addressof(new_handle), 0, true, 2/*DUPLICATE_SAME_ACCESS*/))
+	if(!::fast_io::win32::DuplicateHandle(current_process,handle,current_process,__builtin_addressof(new_handle), 0, true, 2/*DUPLICATE_SAME_ACCESS*/))
 		throw_win32_error();
 	return handle;
 }
@@ -557,13 +557,13 @@ inline void* win32_dup2_impl(void* handle,void* newhandle)
 {
 	auto temp{win32_dup_impl(handle)};
 	if(newhandle)[[likely]]
-		CloseHandle(newhandle);
+		::fast_io::win32::CloseHandle(newhandle);
 	return temp;
 }
 
 inline void win32_flush_impl(void* __restrict handle)
 {
-	if(!FlushFileBuffers(handle))
+	if (!::fast_io::win32::FlushFileBuffers(handle))
 		throw_win32_error();
 }
 
@@ -612,7 +612,7 @@ inline ::fast_io::intfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,s
 	}
 	::std::int_least32_t distance_to_move_high{};
 	constexpr ::std::uint_least32_t invalid{UINT_LEAST32_MAX};
-	if(win32::SetFilePointer(handle,static_cast<::std::int_least32_t>(offset),__builtin_addressof(distance_to_move_high),static_cast<::std::uint_least32_t>(s))==invalid)
+	if (::fast_io::win32::SetFilePointer(handle, static_cast<::std::int_least32_t>(offset), __builtin_addressof(distance_to_move_high), static_cast<::std::uint_least32_t>(s)) == invalid)
 	{
 		throw_win32_error();
 	}
@@ -626,7 +626,7 @@ inline ::fast_io::intfpos_t seek_impl(void* handle,::fast_io::intfpos_t offset,s
 			throw_win32_error(0x00000057);
 	}
 	::std::int_least64_t distance_to_move_high{};
-	if(!win32::SetFilePointerEx(handle,static_cast<::std::int_least64_t>(offset),__builtin_addressof(distance_to_move_high),static_cast<::std::uint_least32_t>(s)))
+	if (!::fast_io::win32::SetFilePointerEx(handle, static_cast<::std::int_least64_t>(offset), __builtin_addressof(distance_to_move_high), static_cast<::std::uint_least32_t>(s)))
 	{
 		throw_win32_error();
 	}
@@ -681,11 +681,11 @@ inline ::std::byte* read_or_pread_some_bytes_common_impl(void* __restrict handle
 	::std::byte *last,::fast_io::win32::overlapped *lpoverlapped)
 {
 	::std::uint_least32_t number_of_bytes{};
-	if(!win32::ReadFile(handle,first,
+	if(!::fast_io::win32::ReadFile(handle,first,
 		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
 		__builtin_addressof(number_of_bytes),lpoverlapped))
 	{
-		auto err(win32::GetLastError());
+		auto err(::fast_io::win32::GetLastError());
 		if(err==109)
 			return first;
 		throw_win32_error(err);
@@ -711,7 +711,7 @@ inline ::std::byte const* write_or_pwrite_some_bytes_common_impl(void* __restric
 	::std::byte const *last,::fast_io::win32::overlapped *lpoverlapped)
 {
 	::std::uint_least32_t number_of_bytes{};
-	if(!win32::WriteFile(handle,first,
+	if (!::fast_io::win32::WriteFile(handle, first,
 		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
 		__builtin_addressof(number_of_bytes),lpoverlapped))
 	{
@@ -803,7 +803,7 @@ inline constexpr ::std::conditional_t<family==win32_family::ansi_9x,nop_file_loc
 template<win32_family family,::std::integral ch_type,typename... Args>
 requires requires(basic_win32_family_io_observer<family,ch_type> h,Args&& ...args)
 {
-	fast_io::win32::DeviceIoControl(h.handle,::std::forward<Args>(args)...);
+	::fast_io::win32::DeviceIoControl(h.handle,::std::forward<Args>(args)...);
 }
 inline void io_control(basic_win32_family_io_observer<family,ch_type> h,Args&& ...args)
 {
@@ -825,7 +825,7 @@ win32_file_factory
 	~win32_file_factory()
 	{
 		if(handle)[[likely]]
-			fast_io::win32::CloseHandle(handle);
+			::fast_io::win32::CloseHandle(handle);
 	}
 };
 
@@ -844,10 +844,10 @@ public:
 	constexpr basic_win32_family_file(basic_win32_family_io_observer<family,ch_type>) noexcept=delete;
 	constexpr basic_win32_family_file& operator=(basic_win32_family_io_observer<family,ch_type>) noexcept=delete;
 
-	basic_win32_family_file(basic_win32_family_file const& other):basic_win32_family_io_observer<family,ch_type>{win32::details::win32_dup_impl(other.handle)}{}
+	basic_win32_family_file(basic_win32_family_file const& other) : basic_win32_family_io_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(other.handle)} {}
 	basic_win32_family_file& operator=(basic_win32_family_file const& other)
 	{
-		this->handle=win32::details::win32_dup2_impl(other.handle,this->handle);
+		this->handle = ::fast_io::win32::details::win32_dup2_impl(other.handle, this->handle);
 		return *this;
 	}
 	basic_win32_family_file(basic_win32_family_file&& __restrict b) noexcept:
@@ -882,7 +882,7 @@ public:
 	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_win32_family_file(native_hd handle1) noexcept:basic_win32_family_io_observer<family,ch_type>{handle1}{}
 
-	basic_win32_family_file(io_dup_t,basic_win32_family_io_observer<family,ch_type> wiob):basic_win32_family_io_observer<family,ch_type>{win32::details::win32_dup_impl(wiob.handle)}
+	basic_win32_family_file(io_dup_t, basic_win32_family_io_observer<family, ch_type> wiob) : basic_win32_family_io_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(wiob.handle)}
 	{}
 
 	explicit constexpr basic_win32_family_file(win32_file_factory&& fact) noexcept: basic_win32_family_io_observer<family,ch_type>{fact.handle}
@@ -921,7 +921,7 @@ template<win32_family family,::std::integral ch_type>
 inline void truncate(basic_win32_family_io_observer<family,ch_type> handle,::fast_io::uintfpos_t size)
 {
 	io_stream_seek_bytes_define(handle,size,seekdir::beg);
-	if(!win32::SetEndOfFile(handle.handle))
+	if(!::fast_io::win32::SetEndOfFile(handle.handle))
 		throw_win32_error();
 }
 #endif
@@ -933,7 +933,7 @@ inline file_type file_type_impl(void* handle)
 /*
 https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletype
 */
-	::std::uint_least32_t ftvalue{GetFileType(handle)};
+	::std::uint_least32_t ftvalue{::fast_io::win32::GetFileType(handle)};
 	switch(ftvalue)
 	{
 	case 0x0002:
@@ -946,7 +946,7 @@ https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletyp
 		return file_type::remote;
 	case 0x0000:
 	{
-		auto errcd=GetLastError();
+		auto errcd = ::fast_io::win32::GetLastError();
 		if(errcd==0)
 			return file_type::unknown;
 		throw_win32_error(errcd);
@@ -965,7 +965,7 @@ inline posix_file_status win32_status_impl(void* __restrict handle)
 			static_cast<::std::uintmax_t>(reinterpret_cast<::std::uintptr_t>(handle)),
 			0,131072,0,{},{},{},{},0,0};
 	by_handle_file_information bhdi;
-	if(!GetFileInformationByHandle(handle,__builtin_addressof(bhdi)))
+	if (!::fast_io::win32::GetFileInformationByHandle(handle, __builtin_addressof(bhdi)))
 		throw_win32_error();
 	::std::uintmax_t file_size{static_cast<::std::uintmax_t>((static_cast<::std::uint_least64_t>(bhdi.nFileSizeHigh)<<32)|bhdi.nFileSizeLow)};
 	::std::underlying_type_t<perms> pm{0444};
@@ -996,7 +996,7 @@ Thanks Fseuio for providing source code.
 */
 inline bool win32_is_character_device(void* handle) noexcept
 {
-	return (win32::GetFileType(handle) & 0xFFFF7FFF) ==2;
+	return (::fast_io::win32::GetFileType(handle) & 0xFFFF7FFF) == 2;
 }
 
 struct win32_console_mode_guard
@@ -1005,16 +1005,16 @@ struct win32_console_mode_guard
 	::std::uint_least32_t mode{};
 	win32_console_mode_guard(void* hd):out_hdl{hd}
 	{
-		if(!GetConsoleMode(out_hdl,__builtin_addressof(mode)))
+		if (!::fast_io::win32::GetConsoleMode(out_hdl, __builtin_addressof(mode)))
 			throw_win32_error();
-		if(!SetConsoleMode(out_hdl,mode|0x0004))
+		if (!::fast_io::win32::SetConsoleMode(out_hdl, mode | 0x0004))
 			throw_win32_error();
 	}
 	win32_console_mode_guard(win32_console_mode_guard const&)=delete;
 	win32_console_mode_guard& operator=(win32_console_mode_guard const&)=delete;
 	~win32_console_mode_guard()
 	{
-		SetConsoleMode(out_hdl,mode);
+		::fast_io::win32::SetConsoleMode(out_hdl, mode);
 	}
 };
 
@@ -1027,7 +1027,7 @@ Since many people are using console like msys2, we need to first write something
 	constexpr ::std::uint_least32_t written_chars{static_cast<::std::uint_least32_t>(::fast_io::details::string_literal_size(str))};
 //not bytes, but chars
 	win32_console_mode_guard guard{out_hdl};
-	if(!win32::WriteFile(out_hdl, str, written_chars, nullptr, nullptr))
+	if(!::fast_io::win32::WriteFile(out_hdl, str, written_chars, nullptr, nullptr))
 		throw_win32_error();
 }
 
@@ -1056,7 +1056,7 @@ public:
 	basic_win32_family_pipe()
 	{
 		win32::security_attributes sec_attr{sizeof(win32::security_attributes),nullptr,true};
-		if(!win32::CreatePipe(
+		if(!::fast_io::win32::CreatePipe(
 			__builtin_addressof(pipes.front().handle),
 			__builtin_addressof(pipes.back().handle),
 			__builtin_addressof(sec_attr),0))
@@ -1220,66 +1220,66 @@ using io_async_scheduler=win32_file;
 template<::std::integral char_type=char>
 inline basic_win32_io_observer_9xa<char_type> win32_stdin_9xa() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdin_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdin_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer_9xa<char_type> win32_stdout_9xa() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdout_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdout_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer_9xa<char_type> win32_stderr_9xa() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stderr_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stderr_number)};
 }
 
 template<::std::integral char_type=char>
 inline basic_win32_io_observer_ntw<char_type> win32_stdin_ntw() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdin_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdin_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer_ntw<char_type> win32_stdout_ntw() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdout_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdout_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer_ntw<char_type> win32_stderr_ntw() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stderr_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stderr_number)};
 }
 
 template<::std::integral char_type=char>
 inline basic_win32_io_observer<char_type> win32_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdin_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdin_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer<char_type> win32_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdout_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdout_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer<char_type> win32_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stderr_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stderr_number)};
 }
 
 #if !defined(__CYGWIN__) && !defined(__WINE__)
 template<::std::integral char_type=char>
 inline basic_win32_io_observer<char_type> native_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdin_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdin_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer<char_type> native_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stdout_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stdout_number)};
 }
 template<::std::integral char_type=char>
 inline basic_win32_io_observer<char_type> native_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(win32_stderr_number)};
+	return {::fast_io::win32::GetStdHandle(win32_stderr_number)};
 }
 #endif
 
