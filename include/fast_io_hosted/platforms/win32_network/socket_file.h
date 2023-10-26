@@ -64,26 +64,26 @@ inline ::std::byte* win32_socket_read_bytes_impl(::std::uintptr_t socket, ::std:
 inline void posix_connect_win32_socket_impl(::std::uintptr_t hsocket,void const* addr,int addrlen)
 {
 	if(::fast_io::win32::WSAConnect(hsocket,addr,addrlen,nullptr,nullptr,nullptr,nullptr))
-		throw_win32_error(static_cast<::std::uint_least32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 }
 
 inline void posix_bind_win32_socket_impl(::std::uintptr_t hsocket,void const* addr,int addrlen)
 {
 	if(::fast_io::win32::bind(hsocket,addr,addrlen)==-1)
-		throw_win32_error(static_cast<::std::uint_least32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 }
 
 inline void posix_listen_win32_socket_impl(::std::uintptr_t hsocket,int backlog)
 {
 	if(::fast_io::win32::listen(hsocket,backlog)==-1)
-		throw_win32_error(static_cast<::std::uint_least32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 }
 
 inline ::std::uintptr_t posix_accept_win32_socket_impl(::std::uintptr_t hsocket,void* addr,int* addrlen)
 {
 	::std::uintptr_t accepted_socket{::fast_io::win32::WSAAccept(hsocket,addr,addrlen,nullptr,0)};
 	if(accepted_socket==static_cast<::std::uintptr_t>(-1))
-		throw_win32_error(static_cast<::std::uint_least32_t>(WSAGetLastError()));
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	return accepted_socket;
 }
 
@@ -132,7 +132,7 @@ inline ::std::uintptr_t win32_dup2hsocket(::std::uintptr_t handle,::std::uintptr
 {
 	auto temp{win32_duphsocket(handle)};
 	if(newhandle)[[likely]]
-		closesocket(newhandle);
+		::fast_io::win32::closesocket(newhandle);
 	return temp;
 }
 
@@ -350,14 +350,14 @@ inline ::std::uintptr_t open_win32_socket_raw_impl(int af,int tp,int prt,::std::
 	{
 		::std::uintptr_t ret{::fast_io::win32::WSASocketW(af,tp,prt,nullptr,0,dwflags)};
 		if(ret==UINTPTR_MAX)
-			throw_win32_error(static_cast<::std::uint_least32_t>(WSAGetLastError()));
+			throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 		return ret;
 	}
 	else
 	{
 		::std::uintptr_t ret{::fast_io::win32::WSASocketA(af,tp,prt,nullptr,0,dwflags)};
 		if(ret==UINTPTR_MAX)
-			throw_win32_error(static_cast<::std::uint_least32_t>(WSAGetLastError()));
+			throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 		return ret;
 	}
 }
@@ -397,7 +397,7 @@ win32_socket_factory
 	~win32_socket_factory()
 	{
 		if(hsocket)[[likely]]
-			win32::closesocket(hsocket);
+			::fast_io::win32::closesocket(hsocket);
 	}
 };
 
@@ -405,13 +405,13 @@ win32_socket_factory
 template<win32_family family,::std::integral ch_type>
 inline win32_socket_factory posix_accept(basic_win32_family_socket_io_observer<family,ch_type> h,void* addr,win32_socklen_t* addrlen)
 {
-	return win32_socket_factory{win32::details::posix_accept_win32_socket_impl(h.hsocket,addr,addrlen)};
+	return win32_socket_factory{::fast_io::win32::details::posix_accept_win32_socket_impl(h.hsocket, addr, addrlen)};
 }
 
 template<win32_family family,::std::integral ch_type>
 inline win32_socket_factory tcp_accept(basic_win32_family_socket_io_observer<family,ch_type> h)
 {
-	return win32_socket_factory{win32::details::posix_accept_win32_socket_impl(h.hsocket,nullptr,nullptr)};
+	return win32_socket_factory{::fast_io::win32::details::posix_accept_win32_socket_impl(h.hsocket, nullptr, nullptr)};
 }
 
 template<win32_family family,::std::integral ch_type>
@@ -436,18 +436,18 @@ public:
 	explicit constexpr basic_win32_family_socket_file(native_hd hsocket1) noexcept: basic_win32_family_socket_io_observer<family,ch_type>{hsocket1}
 	{}
 	explicit constexpr basic_win32_family_socket_file(decltype(nullptr)) noexcept=delete;
-	basic_win32_family_socket_file(io_dup_t,basic_win32_family_socket_io_observer<family,ch_type> wsiob):basic_win32_family_socket_io_observer<family,ch_type>{win32::details::win32_duphsocket(wsiob.hsocket)}
+	basic_win32_family_socket_file(io_dup_t,basic_win32_family_socket_io_observer<family,ch_type> wsiob):basic_win32_family_socket_io_observer<family,ch_type>{::fast_io::win32::details::win32_duphsocket(wsiob.hsocket)}
 	{}
 	basic_win32_family_socket_file(sock_family d,sock_type t,open_mode m,sock_protocol p)
-		:basic_win32_family_socket_file<family,ch_type>{win32::details::open_win32_socket_impl<family>(d,t,m,p)}
+		: basic_win32_family_socket_file<family, ch_type>{::fast_io::win32::details::open_win32_socket_impl<family>(d, t, m, p)}
 	{}
 
-	basic_win32_family_socket_file(basic_win32_family_socket_file const& dp):basic_win32_family_socket_io_observer<family,char_type>{win32::details::win32_duphsocket(dp.hsocket)}
+	basic_win32_family_socket_file(basic_win32_family_socket_file const& dp) : basic_win32_family_socket_io_observer<family, char_type>{::fast_io::win32::details::win32_duphsocket(dp.hsocket)}
 	{
 	}
 	basic_win32_family_socket_file& operator=(basic_win32_family_socket_file const& dp)
 	{
-		this->hsocket=win32::details::win32_dup2hsocket(dp.hsocket,this->hsocket);
+		this->hsocket = ::fast_io::win32::details::win32_dup2hsocket(dp.hsocket, this->hsocket);
 		return *this;
 	}
 	constexpr basic_win32_family_socket_file(basic_win32_family_socket_file&& __restrict b) noexcept : basic_win32_family_socket_io_observer<family,char_type>{b.hsocket}

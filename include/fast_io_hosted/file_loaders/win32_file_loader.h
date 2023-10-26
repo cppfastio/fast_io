@@ -17,7 +17,7 @@ inline win32_file_loader_return_value_t win32_load_address_common_impl(void* hfi
 	if(hfilemappingobj==nullptr)
 		throw_win32_error();
 	win32_file map_hd{hfilemappingobj};
-	auto base_ptr{MapViewOfFile(hfilemappingobj,1,0,0,file_size)};
+	auto base_ptr{::fast_io::win32::MapViewOfFile(hfilemappingobj,1,0,0,file_size)};
 	if(base_ptr==nullptr)
 		throw_win32_error();
 	return {reinterpret_cast<char*>(base_ptr),reinterpret_cast<char*>(base_ptr)+file_size};
