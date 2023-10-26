@@ -14,7 +14,7 @@ bool showbase_uppercase,
 bool showpos,
 bool uppercase,
 bool uppercase_e,
-typename flt,::::std::integral char_type>
+typename flt,::std::integral char_type>
 inline constexpr char_type* lc_print_rsvhexfloat_define_impl(char_type* iter,flt f,char_type const* decimal_point_base,::std::size_t decimal_point_len) noexcept
 {
 	using trait = iec559_traits<flt>;

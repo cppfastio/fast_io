@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class nt_at_flags:::std::uint_least32_t
+enum class nt_at_flags: ::std::uint_least32_t
 {
 eaccess=static_cast<::std::uint_least32_t>(1),
 symlink_nofollow=static_cast<::std::uint_least32_t>(1)<<1,

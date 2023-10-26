@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class utime_flags:::std::uint_fast8_t
+enum class utime_flags: ::std::uint_fast8_t
 {
 none,now,omit
 };

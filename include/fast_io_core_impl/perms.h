@@ -106,7 +106,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,per
 	return details::print_status_impl<char_type>(iter,p);
 }
 
-enum class data_sync_flags:::std::uint_least8_t
+enum class data_sync_flags: ::std::uint_least8_t
 {
 normal=0,
 file_data_only=0x00000001,

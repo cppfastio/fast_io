@@ -5,7 +5,7 @@ namespace fast_io
 
 //https://github.com/MicrosoftDocs/windows-driver-docs/issues/1736
 
-enum class win32_memory_page_protect:::std::uint_least32_t
+enum class win32_memory_page_protect: ::std::uint_least32_t
 {
 executed = 0x10,
 executed_read = 0x20,
@@ -292,7 +292,7 @@ public:
 	}
 };
 
-enum class win32_desired_access:::std::uint_least32_t
+enum class win32_desired_access: ::std::uint_least32_t
 {
 del = 0x00010000L,
 read_control = 0x00020000L,

@@ -250,7 +250,7 @@ inline void ucrt_unlock_file(FILE* fp) noexcept;
 }
 
 
-enum class c_family:::std::uint_fast8_t
+enum class c_family: ::std::uint_fast8_t
 {
 standard,
 unlocked,
@@ -273,7 +273,7 @@ unlocked
 #endif
 };
 
-enum class c_io_device_environment:::std::uint_fast8_t
+enum class c_io_device_environment: ::std::uint_fast8_t
 {
 file,
 custom,

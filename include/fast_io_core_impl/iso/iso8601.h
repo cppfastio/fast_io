@@ -551,7 +551,7 @@ namespace details
 template<::std::integral char_type>
 inline constexpr ::std::size_t print_reserve_size_timezone_impl_v{print_reserve_size(io_reserve_type<char_type,::std::int_least32_t>)+static_cast<::std::size_t>(4u)};
 
-template<::::std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type* print_reserve_timezone_impl(char_type* iter,::std::int_least32_t timezone) noexcept
 {
 	::std::uint_least64_t unsigned_tz{static_cast<::std::uint_least64_t>(timezone)};
@@ -582,7 +582,7 @@ inline constexpr char_type* print_reserve_timezone_impl(char_type* iter,::std::i
 	return iter;
 }
 
-template<::::std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type* print_reserve_iso8601_timestamp_impl(char_type* iter,iso8601_timestamp const& timestamp) noexcept
 {
 	iter=chrono_year_impl(iter,timestamp.year);
@@ -614,7 +614,7 @@ inline constexpr char_type* print_reserve_iso8601_timestamp_impl(char_type* iter
 	return iter;
 }
 
-template<bool comma=false, ::::std::integral char_type>
+template<bool comma=false, ::std::integral char_type>
 inline constexpr char_type* print_reserve_bsc_timestamp_impl(char_type* iter,unix_timestamp timestamp) noexcept
 {
 	iter=print_reserve_define(io_reserve_type<char_type,::std::int_least64_t>,iter,timestamp.seconds);
@@ -649,16 +649,16 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,iso
 	return details::print_reserve_iso8601_timestamp_impl(iter,timestamp);
 }
 
-inline constexpr win32_timestamp to_win32_timestamp_ftu64(::::std::uint_least64_t ftu64) noexcept
+inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t ftu64) noexcept
 {
-	::::std::uint_least64_t seconds{ftu64/10000000ULL};
-	::::std::uint_least64_t subseconds{ftu64%10000000ULL};
-	constexpr ::::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
-	return {static_cast<::::std::int_least64_t>(seconds),static_cast<::::std::uint_least64_t>(subseconds*mul_factor)};
+	::std::uint_least64_t seconds{ftu64/10000000ULL};
+	::std::uint_least64_t subseconds{ftu64%10000000ULL};
+	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/10000000u};
+	return {static_cast<::std::int_least64_t>(seconds),static_cast<::std::uint_least64_t>(subseconds*mul_factor)};
 }
 
 // warning: relies on the order of the items
-enum class scan_timestamp_context_phase : ::::std::uint_least8_t
+enum class scan_timestamp_context_phase : ::std::uint_least8_t
 {
 	year,
 	after_year,
@@ -684,7 +684,7 @@ enum class scan_timestamp_context_phase : ::::std::uint_least8_t
 
 inline constexpr scan_timestamp_context_phase& operator++(scan_timestamp_context_phase& e) noexcept
 {
-	return e = static_cast<scan_timestamp_context_phase>(static_cast<::::std::uint_least8_t>(e)+1);
+	return e = static_cast<scan_timestamp_context_phase>(static_cast<::std::uint_least8_t>(e)+1);
 }
 inline constexpr scan_timestamp_context_phase operator++(scan_timestamp_context_phase& e, int) noexcept
 {
@@ -693,7 +693,7 @@ inline constexpr scan_timestamp_context_phase operator++(scan_timestamp_context_
 	return tmp;
 }
 
-enum class scan_integral_context_phase : ::::std::uint_least8_t;
+enum class scan_integral_context_phase : ::std::uint_least8_t;
 
 struct timestamp_scan_context_buffer_max_size_t
 {
@@ -701,17 +701,17 @@ private:
 	template <typename T>
 	static inline constexpr auto size_common{ ::fast_io::details::print_integer_reserved_size_cache<10, false, ::fast_io::details::my_signed_integral<T>, T> };
 public:
-	static inline constexpr auto year_size = size_common<::::std::int_least64_t>;
-	static inline constexpr auto subs_size = size_common<::::std::uint_least64_t>;
-	static inline constexpr ::::std::size_t max_size{ year_size > subs_size ? year_size : subs_size };
+	static inline constexpr auto year_size = size_common<::std::int_least64_t>;
+	static inline constexpr auto subs_size = size_common<::std::uint_least64_t>;
+	static inline constexpr ::std::size_t max_size{ year_size > subs_size ? year_size : subs_size };
 };
 
-template <::::std::integral char_type>
+template <::std::integral char_type>
 struct timestamp_scan_state_t : private timestamp_scan_context_buffer_max_size_t
 {
 	using timestamp_scan_context_buffer_max_size_t::max_size;
 	::fast_io::freestanding::array<char_type, max_size> buffer;
-	::::std::uint_least8_t size{};
+	::std::uint_least8_t size{};
 	scan_timestamp_context_phase tsp_phase{};
 	scan_integral_context_phase integer_phase{};
 };
@@ -719,7 +719,7 @@ struct timestamp_scan_state_t : private timestamp_scan_context_buffer_max_size_t
 namespace details
 {
 
-template <bool comma, ::::std::integral char_type>
+template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const*> scn_cnt_define_unix_timestamp_impl(char_type const* begin, char_type const* end, unix_timestamp& t) noexcept
 {
 	// TODO: whether to accept C-like floatings such as 2. and .2
@@ -746,14 +746,14 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_unix_timestamp_im
 	return chrono_scan_decimal_fraction_part_never_overflow_impl(begin, end, t.subseconds);
 }
 
-template <::::std::integral char_type, ::::std::integral T>
+template <::std::integral char_type, ::std::integral T>
 inline constexpr parse_result<char_type const*> scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, T& t) noexcept
 {
 	if (begin == end)
 		return { begin, parse_code::partial };
 	auto itr{ skip_digits<10, char_type>(begin, end) };
-	auto frag_length{ static_cast<::::std::uint_least8_t>(itr - begin) };
-	constexpr auto digitsm1{ ::::std::numeric_limits<::::std::uint_least64_t>::digits10 };
+	auto frag_length{ static_cast<::std::uint_least8_t>(itr - begin) };
+	constexpr auto digitsm1{ ::std::numeric_limits<::std::uint_least64_t>::digits10 };
 	auto buffer_begin{ state.buffer.begin() };
 	auto buffer_size{ state.size };
 	if (itr != end)
@@ -850,12 +850,12 @@ inline constexpr parse_result<char_type const*> scn_ctx_decimal_fraction_part_ne
 		// neither overflow the buffer
 		// so put it into the buffer
 		::fast_io::freestanding::non_overlapped_copy_n(begin, frag_length, buffer_begin + buffer_size);
-		state.size += static_cast<::::std::uint_least8_t>(frag_length);
+		state.size += static_cast<::std::uint_least8_t>(frag_length);
 		return { end, parse_code::partial };
 	}
 }
 
-template <bool comma, ::::std::integral char_type>
+template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const*> scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, unix_timestamp& t) noexcept
 {
 #if __has_cpp_attribute(assume)
@@ -955,7 +955,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_unix_timestamp_im
 #endif
 }
 
-template <::::std::integral char_type>
+template <::std::integral char_type>
 inline constexpr parse_code scn_ctx_eof_define_unix_timestamp_impl(timestamp_scan_state_t<char_type>& state, unix_timestamp& t) noexcept
 {
 	switch (state.tsp_phase)
@@ -982,7 +982,7 @@ inline constexpr parse_code scn_ctx_eof_define_unix_timestamp_impl(timestamp_sca
 }
 
 // TODO: remove template comma, because iso8601 doesn't accept comma
-template <bool comma, ::::std::integral char_type>
+template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	char_type const* begin, char_type const* end,
 	iso8601_timestamp& t) noexcept
@@ -1078,20 +1078,20 @@ inline constexpr parse_result<char_type const*> scn_cnt_define_iso8601_impl(
 	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 		return { begin, parse_code::invalid };
-	::::std::uint8_t timezone_minutes;
+	::std::uint8_t timezone_minutes;
 	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, timezone_minutes); ec != parse_code::ok) [[unlikely]]
 		return { begin, ec };
 	if (timezone_minutes >= 60) [[unlikely]]
 		return { begin, parse_code::overflow };
 	begin += 2;
 	retval.timezone *= 3600;
-	retval.timezone += static_cast<::::std::int_least32_t>(timezone_minutes) * 60;
+	retval.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
 	if (sign) retval.timezone = -retval.timezone;
 	t = retval;
 	return { begin, parse_code::ok };
 }
 
-template <::::std::integral char_type, ::::std::integral T>
+template <::std::integral char_type, ::std::integral T>
 inline constexpr parse_result<char_type const*> scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, T& t) noexcept
 {
 #if __has_cpp_attribute(assume)
@@ -1201,7 +1201,7 @@ inline constexpr parse_result<char_type const*> scan_iso8601_context_year_phase(
 	}
 }
 
-template <::::std::integral char_type, ::::std::integral T>
+template <::std::integral char_type, ::std::integral T>
 inline constexpr parse_result<char_type const*> scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, T& t) noexcept
 {
 	auto diff{ end - begin };
@@ -1251,7 +1251,7 @@ inline constexpr parse_result<char_type const*> scan_iso8601_context_2_digits_ph
 	return { begin, parse_code::ok };
 }
 
-template <bool comma, ::::std::integral char_type>
+template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, iso8601_timestamp& t) noexcept
 {
 	// TODO: is it necessary to change macro to function to reuse code?
@@ -1397,7 +1397,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 		[[fallthrough]];
 	case scan_timestamp_context_phase::timezone_minutes:
 	{
-		::::std::uint8_t timezone_minutes;
+		::std::uint8_t timezone_minutes;
 		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, timezone_minutes); ec != parse_code::ok) [[unlikely]]
 			return { itr, ec };
 		else
@@ -1407,7 +1407,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 			begin = itr;
 		}
 		t.timezone *= 3600;
-		t.timezone += static_cast<::::std::int_least32_t>(timezone_minutes) * 60;
+		t.timezone += static_cast<::std::int_least32_t>(timezone_minutes) * 60;
 		if (state.integer_phase == static_cast<scan_integral_context_phase>(1))
 			t.timezone = -t.timezone;
 		state.tsp_phase = scan_timestamp_context_phase::ok;
@@ -1467,7 +1467,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_iso8601_impl(time
 
 }
 
-template <::::std::integral char_type, ::::std::int_least64_t off_to_epoch>
+template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
 inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<basic_timestamp<off_to_epoch>&>>, char_type const* begin, char_type const* end, fast_io::parameter<basic_timestamp<off_to_epoch>&> t) noexcept
 {
 	if constexpr (off_to_epoch == 0)
@@ -1481,13 +1481,13 @@ inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserv
 	}
 }
 
-template <::::std::integral char_type, ::::std::int_least64_t off_to_epoch>
+template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
 inline constexpr io_type_t<timestamp_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<basic_timestamp<off_to_epoch>&>>) noexcept
 {
 	return {};
 }
 
-template <::::std::integral char_type, ::::std::int_least64_t off_to_epoch>
+template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
 inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, parameter<basic_timestamp<off_to_epoch>&>>, timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, parameter<basic_timestamp<off_to_epoch>&> t) noexcept
 {
 	if constexpr (off_to_epoch == 0)
@@ -1498,7 +1498,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_t
 	return result;
 }
 
-template <::::std::integral char_type, ::::std::int_least64_t off_to_epoch>
+template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, parameter<basic_timestamp<off_to_epoch>&>>, timestamp_scan_state_t<char_type>& state, fast_io::parameter<basic_timestamp<off_to_epoch>&> t) noexcept
 {
 	if constexpr (off_to_epoch == 0)
@@ -1509,25 +1509,25 @@ inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,
 	return result;
 }
 
-template <::::std::integral char_type>
+template <::std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, char_type const* begin, char_type const* end, fast_io::parameter<iso8601_timestamp&> t) noexcept
 {
 	return details::scn_cnt_define_iso8601_impl<false>(begin, end, t.reference);
 }
 
-template <::::std::integral char_type>
+template <::std::integral char_type>
 inline constexpr io_type_t<timestamp_scan_state_t<char_type>> scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>) noexcept
 {
 	return {};
 }
 
-template <::::std::integral char_type>
+template <::std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type, parameter<iso8601_timestamp&>>, timestamp_scan_state_t<char_type>& state, char_type const* begin, char_type const* end, fast_io::parameter<iso8601_timestamp&> t) noexcept
 {
 	return details::scn_ctx_define_iso8601_impl<false>(state, begin, end, t.reference);
 }
 
-template <::::std::integral char_type>
+template <::std::integral char_type>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp&>>, timestamp_scan_state_t<char_type>& state, fast_io::parameter<iso8601_timestamp&>) noexcept
 {
 	if (state.tsp_phase == scan_timestamp_context_phase::ok)

@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class access_how:::std::uint_fast8_t
+enum class access_how: ::std::uint_fast8_t
 {
 f_ok=0,
 x_ok=1,

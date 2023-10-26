@@ -38,7 +38,7 @@ enum class floating_format:char8_t
 fixed,general,scientific,decimal,hexfloat
 };
 
-enum class lc_time_flag:::std::uint_least8_t
+enum class lc_time_flag: ::std::uint_least8_t
 {
 none,
 d_t_fmt,

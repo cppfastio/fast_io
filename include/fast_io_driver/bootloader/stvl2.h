@@ -32,14 +32,14 @@ struct stvl2_empty{};
 ::std::conditional_t<sizeof(void*)==8,stvl2_empty,::std::uint_least32_t> pad{};
 };
 
-enum class stvl2_header_tag:::std::uint_least64_t
+enum class stvl2_header_tag: ::std::uint_least64_t
 {
 framebuffer_id=0x3ecc1bc43d0f7971,
 fb_mtrr_id=0x4c7bb07731282e00,
 smp_id=0x1ab015085f3273df
 };
 
-enum class stvl2_struct_tag:::std::uint_least64_t
+enum class stvl2_struct_tag: ::std::uint_least64_t
 {
 cmdline_id=0xe5e76a1b4597a781,
 memmap_id=0x2187f79e8612de07,
@@ -56,7 +56,7 @@ dtb=0xabb29bd49a2833fa,
 vmap=0xb0ed257db18cb58f
 };
 
-enum class stvl2_mmap_type:::std::uint_least32_t
+enum class stvl2_mmap_type: ::std::uint_least32_t
 {
 usable=1,
 reserved=2,
@@ -67,7 +67,7 @@ bootloader_reclaimable=0x1000,
 kernel_and_modules=0x1001
 };
 
-enum class stvl2_firmware_flags:::std::uint_least64_t
+enum class stvl2_firmware_flags: ::std::uint_least64_t
 {
 bios=1<<0
 };

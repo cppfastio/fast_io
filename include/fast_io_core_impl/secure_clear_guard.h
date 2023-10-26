@@ -21,7 +21,7 @@ Availability: GCC and Clang.
 Effectiveness: effective
 Not effective on Clang:
 	::std::memset(data,0,size);
-	__asm__ __volatile__("" ::: "memory");
+	__asm__ __volatile__("" : :: "memory");
 
 
 Effective on Clang

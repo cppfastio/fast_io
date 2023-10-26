@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class wine_family:::std::uint_least32_t
+enum class wine_family: ::std::uint_least32_t
 {
 unspecified_host=0,
 linux_host=1,

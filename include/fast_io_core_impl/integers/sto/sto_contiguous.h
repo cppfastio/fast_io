@@ -733,7 +733,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(
 }
 }
 
-enum class scan_integral_context_phase:::std::uint_least8_t
+enum class scan_integral_context_phase: ::std::uint_least8_t
 {
 space,
 sign,
