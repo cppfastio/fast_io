@@ -7,7 +7,7 @@ namespace details
 template<::std::integral char_type>
 inline constexpr char_type* print_reserve_parse_code_impl(char_type* iter,parse_code code) noexcept
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 	switch(code)
 	{
@@ -25,7 +25,7 @@ inline constexpr char_type* print_reserve_parse_code_impl(char_type* iter,parse_
 		return copy_string_literal("unknown",iter);
 	}
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 	switch(code)
 	{
@@ -43,7 +43,7 @@ inline constexpr char_type* print_reserve_parse_code_impl(char_type* iter,parse_
 		return copy_string_literal(L"unknown",iter);
 	}
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 	switch(code)
 	{
@@ -83,8 +83,8 @@ inline constexpr char_type* print_reserve_parse_code_impl(char_type* iter,parse_
 
 }
 
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,parse_code>) noexcept
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,parse_code>) noexcept
 {
 	return 16;
 }
@@ -95,17 +95,17 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,par
 	return details::print_reserve_parse_code_impl(iter,code);
 }
 
-inline constexpr std::uintptr_t domain_define(error_type_t<parse_code>) noexcept
+inline constexpr ::std::uintptr_t domain_define(error_type_t<parse_code>) noexcept
 {
-	if constexpr(sizeof(std::uintptr_t)<=sizeof(std::uint_least16_t))
+	if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least16_t))
 		return 19339u;
-	else if constexpr(sizeof(std::uintptr_t)<=sizeof(std::uint_least32_t))
+	else if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least32_t))
 		return 2666707100u;
 	else
 		return 17020429607921007685ULL;
 }
 
-inline constexpr std::uintptr_t parse_domain_value{domain_define(error_type<parse_code>)};
+inline constexpr ::std::uintptr_t parse_domain_value{domain_define(error_type<parse_code>)};
 
 [[noreturn]] inline void throw_parse_code([[maybe_unused]] parse_code code)
 {
@@ -113,7 +113,7 @@ inline constexpr std::uintptr_t parse_domain_value{domain_define(error_type<pars
 #if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
 	fast_terminate();
 #else
-	throw ::fast_io::error{parse_domain_value,static_cast<std::uintptr_t>(static_cast<char8_t>(code))};
+	throw ::fast_io::error{parse_domain_value,static_cast<::std::uintptr_t>(static_cast<char8_t>(code))};
 #endif
 #else
 	fast_terminate();
@@ -123,7 +123,7 @@ inline constexpr std::uintptr_t parse_domain_value{domain_define(error_type<pars
 namespace details
 {
 
-inline constexpr bool parse_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code,std::uintptr_t e) noexcept
+inline constexpr bool parse_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,::std::uintptr_t e) noexcept
 {
 	return domain==parse_domain_value&&code==e;
 }
@@ -132,7 +132,7 @@ inline constexpr bool parse_code_equivalent_impl(std::uintptr_t domain,std::uint
 
 inline constexpr bool equivalent_define(error_type_t<parse_code>,error e,parse_code code) noexcept
 {
-	return ::fast_io::details::parse_code_equivalent_impl(e.domain,e.code,static_cast<std::uintptr_t>(static_cast<char8_t>(code)));
+	return ::fast_io::details::parse_code_equivalent_impl(e.domain,e.code,static_cast<::std::uintptr_t>(static_cast<char8_t>(code)));
 }
 
 }

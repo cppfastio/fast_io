@@ -44,7 +44,7 @@ __asm__("gethostbyname")
 namespace details
 {
 
-inline constexpr ::fast_io::ip_address hostent_to_ip_address_impl(::fast_io::win32::hostent* ent,std::size_t pos) noexcept
+inline constexpr ::fast_io::ip_address hostent_to_ip_address_impl(::fast_io::win32::hostent* ent,::std::size_t pos) noexcept
 {
 	::fast_io::ip_address ipaddr;
 	if(ent->h_addrtype==2)
@@ -65,7 +65,7 @@ inline constexpr ::fast_io::ip_address hostent_to_ip_address_impl(::fast_io::win
 	return ipaddr;
 }
 
-inline constexpr ::fast_io::ip hostent_to_ip_impl(::fast_io::win32::hostent* ent,std::size_t pos,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip hostent_to_ip_impl(::fast_io::win32::hostent* ent,::std::size_t pos,::std::uint_least16_t port) noexcept
 {
 	return ::fast_io::ip{hostent_to_ip_address_impl(ent,pos),port};
 }
@@ -93,7 +93,7 @@ public:
 	}
 };
 
-inline constexpr ::fast_io::ip to_ip(win32_9x_dns_io_observer d,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip to_ip(win32_9x_dns_io_observer d,::std::uint_least16_t port) noexcept
 {
 	return ::fast_io::details::hostent_to_ip_impl(d.res,0u,port);
 }
@@ -107,7 +107,7 @@ struct win32_9x_dns_iterator
 {
 	using native_handle_type = ::fast_io::win32::hostent*;
 	native_handle_type res{};
-	std::size_t pos{};
+	::std::size_t pos{};
 };
 
 inline constexpr win32_9x_dns_iterator operator*(win32_9x_dns_iterator d) noexcept
@@ -157,7 +157,7 @@ inline constexpr bool operator!=(win32_9x_dns_iterator a, ::std::default_sentine
 	return !(a==b);
 }
 
-inline constexpr ::fast_io::ip to_ip(win32_9x_dns_iterator d,std::uint_least16_t port)
+inline constexpr ::fast_io::ip to_ip(win32_9x_dns_iterator d,::std::uint_least16_t port)
 {
 	return ::fast_io::details::hostent_to_ip_impl(d.res,d.pos,port);
 }
@@ -168,7 +168,7 @@ inline ::fast_io::win32::hostent* win32_9x_gethostbyname_impl(char const* name)
 {
 	::fast_io::win32::hostent* ret{::fast_io::win32::gethostbyname(name)};
 	if(ret==nullptr)
-		throw_win32_error(static_cast<std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	return ret;
 }
 
@@ -195,7 +195,7 @@ public:
 	using native_handle_type = typename win32_9x_dns_io_observer::native_handle_type;
 	constexpr win32_9x_dns_file() noexcept = default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr win32_9x_dns_file(native_hd res1) noexcept: win32_9x_dns_io_observer{res1}{}
 	explicit constexpr win32_9x_dns_file(decltype(nullptr)) noexcept = delete;
 

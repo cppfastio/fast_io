@@ -14,7 +14,7 @@ We use the same strerror strings in GNU newlib since newlib is the standard in O
 
 namespace details::tsc_namespace
 {
-template<typename char_type,std::size_t N>
+template<typename char_type,::std::size_t N>
 inline constexpr basic_io_scatter_t<char_type> tsc(char_type const (&a)[N]) noexcept
 {
 	return {a,N-1};

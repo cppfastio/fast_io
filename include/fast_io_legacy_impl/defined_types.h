@@ -118,7 +118,7 @@ inline constexpr void debug_print_after_io_print_forward(Args ...args)
 }
 
 template<bool report,typename... Args>
-inline constexpr std::conditional_t<report,bool,void> scan_after_io_scan_forward(Args ...args)
+inline constexpr ::std::conditional_t<report,bool,void> scan_after_io_scan_forward(Args ...args)
 {
 #if __has_include(<stdio.h>)
 	if constexpr(report)

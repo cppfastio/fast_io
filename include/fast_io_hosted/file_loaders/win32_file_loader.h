@@ -12,7 +12,7 @@ struct win32_file_loader_return_value_t
 	char* address_end;
 };
 
-inline win32_file_loader_return_value_t win32_load_address_common_impl(void* hfilemappingobj,std::size_t file_size)
+inline win32_file_loader_return_value_t win32_load_address_common_impl(void* hfilemappingobj,::std::size_t file_size)
 {
 	if(hfilemappingobj==nullptr)
 		throw_win32_error();
@@ -26,7 +26,7 @@ inline win32_file_loader_return_value_t win32_load_address_common_impl(void* hfi
 template<win32_family family>
 inline win32_file_loader_return_value_t win32_load_address_impl(void* handle)
 {
-	std::size_t file_size{win32_load_file_get_file_size(handle)};
+	::std::size_t file_size{win32_load_file_get_file_size(handle)};
 	if(file_size==0)
 		return {nullptr,nullptr};
 	if constexpr(family==win32_family::wide_nt)
@@ -75,10 +75,10 @@ public:
 	using iterator = pointer;
 	using reference = char&;
 	using const_reference = char const&;
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-	using reverse_iterator = std::reverse_iterator<iterator>;
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
 
 	pointer address_begin{};
 	pointer address_end{};
@@ -131,11 +131,11 @@ public:
 	{
 		return address_begin==address_end;
 	}
-	constexpr std::size_t size() const noexcept
+	constexpr ::std::size_t size() const noexcept
 	{
-		return static_cast<std::size_t>(address_end-address_begin);
+		return static_cast<::std::size_t>(address_end-address_begin);
 	}
-	constexpr std::size_t max_size() const noexcept
+	constexpr ::std::size_t max_size() const noexcept
 	{
 		return SIZE_MAX;
 	}
@@ -227,7 +227,7 @@ public:
 	}
 	~win32_family_file_loader()
 	{
-		::fast_io::win32::details::win32_unload_address(address_begin);
+		win32::details::win32_unload_address(address_begin);
 	}
 };
 

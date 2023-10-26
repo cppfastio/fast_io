@@ -5,14 +5,14 @@
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline void sha512_simd16_byte_swap_message_2rounds(::fast_io::intrinsics::simd_vector<std::uint_least64_t,2>& __restrict s1,
-	std::byte const* __restrict blocks_start,std::uint_least64_t* __restrict w,std::uint_least64_t* __restrict wt,std::uint_fast16_t round) noexcept
+inline void sha512_simd16_byte_swap_message_2rounds(::fast_io::intrinsics::simd_vector<::std::uint_least64_t,2>& __restrict s1,
+	::std::byte const* __restrict blocks_start,::std::uint_least64_t* __restrict w,::std::uint_least64_t* __restrict wt,::std::uint_fast16_t round) noexcept
 {
 	using namespace ::fast_io::intrinsics;
-	simd_vector<std::uint_least64_t,2> s0;
+	simd_vector<::std::uint_least64_t,2> s0;
 	s1.load(blocks_start+(round<<3u));
 	s0.load(::fast_io::details::sha512::K512+round);
-	if constexpr(std::endian::native==std::endian::little)
+	if constexpr(::std::endian::native==::std::endian::little)
 	{
 		s1.swap_endian();
 	}
@@ -27,11 +27,11 @@ inline void sha512_simd16_byte_swap_message_2rounds(::fast_io::intrinsics::simd_
 [[msvc::forceinline]]
 #endif
 inline void sha512_simd16_compute_message_2rounds(
-	::fast_io::intrinsics::simd_vector<std::uint_least64_t,2>& __restrict s1,
-	std::uint_least64_t* __restrict w,std::uint_least64_t* __restrict wt,std::uint_fast8_t round) noexcept
+	::fast_io::intrinsics::simd_vector<::std::uint_least64_t,2>& __restrict s1,
+	::std::uint_least64_t* __restrict w,::std::uint_least64_t* __restrict wt,::std::uint_fast8_t round) noexcept
 {
 	using namespace ::fast_io::intrinsics;
-	simd_vector<std::uint_least64_t,2> s0;
+	simd_vector<::std::uint_least64_t,2> s0;
 	s0.load(w+(round-15));
 	if constexpr(true)
 	{
@@ -70,29 +70,29 @@ inline void sha512_simd16_compute_message_2rounds(
 #elif __has_cpp_attribute(msvc::flatten)
 [[msvc::flatten]]
 #endif
-inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
+inline void sha512_runtime_routine(::std::uint_least64_t* __restrict state,::std::byte const* __restrict blocks_start,::std::byte const* __restrict blocks_last) noexcept
 {
 	using namespace fast_io::intrinsics;
 	using namespace fast_io::details::sha512;
 
-	simd_vector<std::uint_least64_t,2> simd;
+	simd_vector<::std::uint_least64_t,2> simd;
 
-	std::uint_least64_t w[80];
-	std::uint_least64_t wt0[2],wt1[2];
-	std::uint_least64_t a{state[0]};
-	std::uint_least64_t b{state[1]};
-	std::uint_least64_t c{state[2]};
-	std::uint_least64_t d{state[3]};
-	std::uint_least64_t e{state[4]};
-	std::uint_least64_t f{state[5]};
-	std::uint_least64_t g{state[6]};
-	std::uint_least64_t h{state[7]};
+	::std::uint_least64_t w[80];
+	::std::uint_least64_t wt0[2],wt1[2];
+	::std::uint_least64_t a{state[0]};
+	::std::uint_least64_t b{state[1]};
+	::std::uint_least64_t c{state[2]};
+	::std::uint_least64_t d{state[3]};
+	::std::uint_least64_t e{state[4]};
+	::std::uint_least64_t f{state[5]};
+	::std::uint_least64_t g{state[6]};
+	::std::uint_least64_t h{state[7]};
 
 	for(;blocks_start!=blocks_last;blocks_start+=128)
 	{
 		sha512_simd16_byte_swap_message_2rounds(simd,blocks_start,w,wt0,0);
 		sha512_simd16_byte_swap_message_2rounds(simd,blocks_start,w,wt1,2);
-		std::uint_least64_t bpc{b^c};
+		::std::uint_least64_t bpc{b^c};
 		sha512_scalar_round(wt0[0],a,b,d,e,f,g,h,bpc);
 		sha512_scalar_round(wt0[1],h,a,c,d,e,f,g,bpc);
 
@@ -120,7 +120,7 @@ inline void sha512_runtime_routine(std::uint_least64_t* __restrict state,std::by
 		sha512_scalar_round(wt0[0],e,f,h,a,b,c,d,bpc);
 		sha512_scalar_round(wt0[1],d,e,g,h,a,b,c,bpc);
 
-		for(std::uint_fast8_t i{14};i!=78;i+=16)
+		for(::std::uint_fast8_t i{14};i!=78;i+=16)
 		{
 			sha512_simd16_compute_message_2rounds(simd,w,wt0,i+2);
 			sha512_scalar_round(wt1[0],c,d,f,g,h,a,b,bpc);

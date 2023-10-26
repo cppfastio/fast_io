@@ -18,11 +18,11 @@ struct basic_str_get_all
 #endif
 #endif
 	T reference;
-	std::size_t n;
+	::std::size_t n;
 };
 
 template<typename T>
-inline constexpr auto str_get_all(T& reference,std::size_t n) noexcept
+inline constexpr auto str_get_all(T& reference,::std::size_t n) noexcept
 {
 	return basic_str_get_all<decltype(io_strlike_ref(io_alias,reference))>{io_strlike_ref(io_alias,reference),n};
 }
@@ -37,14 +37,14 @@ struct str_get_all_context
 };
 
 template<::std::integral char_type,typename T>
-inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_buffer_common_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,std::size_t n)
+inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_buffer_common_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,::std::size_t n)
 {
 	auto bg{obuffer_begin(output)};
 	auto curr{obuffer_curr(output)};
-	std::size_t elements{static_cast<std::size_t>(curr-bg)};
-	std::size_t remain_characters{static_cast<std::size_t>(n-elements)};
-	std::size_t itdiff{static_cast<std::size_t>(last-first)};
-	std::size_t to_copy{remain_characters};
+	::std::size_t elements{static_cast<::std::size_t>(curr-bg)};
+	::std::size_t remain_characters{static_cast<::std::size_t>(n-elements)};
+	::std::size_t itdiff{static_cast<::std::size_t>(last-first)};
+	::std::size_t to_copy{remain_characters};
 	bool not_enough{itdiff<remain_characters};
 	if(not_enough)
 	{
@@ -57,7 +57,7 @@ inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_
 }
 
 template<::std::integral char_type,typename T>
-inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_buffer_strlike_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,std::size_t n,bool& ctx)
+inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_buffer_strlike_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,::std::size_t n,bool& ctx)
 {
 	if(!ctx)
 	{
@@ -69,7 +69,7 @@ inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_
 }
 
 template<::std::integral char_type,typename T>
-inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_general_strlike_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,std::size_t n,::fast_io::details::basic_concat_buffer<char_type>& ctx)
+inline constexpr parse_result<char_type const*> scan_context_define_str_get_all_general_strlike_impl(char_type const* first,char_type const* last,io_strlike_reference_wrapper<char_type,T> output,::std::size_t n,::fast_io::details::basic_concat_buffer<char_type>& ctx)
 {
 	auto ret{scan_context_define_str_get_all_buffer_common_impl(first,last,io_strlike_ref(ctx),n)};
 	if(ret.code==parse_code::ok)
@@ -107,7 +107,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	}
 }
 
-template<std::integral char_type,typename ctxtype,typename T>
+template<::std::integral char_type,typename ctxtype,typename T>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_str_get_all<io_strlike_reference_wrapper<char_type,T>>>,
 	ctxtype&,

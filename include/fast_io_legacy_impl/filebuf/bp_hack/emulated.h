@@ -62,7 +62,7 @@ https://cplusplus.github.io/LWG/issue255
 	using model = ::fast_io::details::streambuf_hack::emulated_basic_streambuf_hack_model<char_type,traits_type>;
 	constexpr auto curr_methodptr{&model::gptr};
 	auto diff{ptr-(biob.fb->*curr_methodptr)()};
-	if constexpr(sizeof(int)<sizeof(std::ptrdiff_t))
+	if constexpr(sizeof(int)<sizeof(::std::ptrdiff_t))
 	{
 		constexpr ::std::ptrdiff_t mn{static_cast<::std::ptrdiff_t>(::std::numeric_limits<int>::min())},mx{static_cast<::std::ptrdiff_t>(::std::numeric_limits<int>::max())};
 		if(diff<mn||mx<diff)
@@ -116,7 +116,7 @@ https://cplusplus.github.io/LWG/issue255
 	using model = ::fast_io::details::streambuf_hack::emulated_basic_streambuf_hack_model<char_type,traits_type>;
 	constexpr auto curr_methodptr{&model::pptr};
 	auto diff{ptr-(biob.fb->*curr_methodptr)()};
-	if constexpr(sizeof(int)<sizeof(std::ptrdiff_t))
+	if constexpr(sizeof(int)<sizeof(::std::ptrdiff_t))
 	{
 		constexpr ::std::ptrdiff_t mn{static_cast<::std::ptrdiff_t>(::std::numeric_limits<int>::min())},mx{static_cast<::std::ptrdiff_t>(::std::numeric_limits<int>::max())};
 		if(diff<mn||mx<diff)

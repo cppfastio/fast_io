@@ -38,7 +38,7 @@ enum class floating_format:char8_t
 fixed,general,scientific,decimal,hexfloat
 };
 
-enum class lc_time_flag:std::uint_least8_t
+enum class lc_time_flag:::std::uint_least8_t
 {
 none,
 d_t_fmt,
@@ -118,7 +118,7 @@ struct ip_scan_manip_t
 
 struct scalar_flags
 {
-	std::size_t base{10};
+	::std::size_t base{10};
 	bool alphabet{};
 	bool showbase{};
 	bool showpos{};
@@ -181,7 +181,7 @@ struct whole_get_t
 
 namespace details
 {
-template<std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false,bool comma=false,::fast_io::manipulators::percentage_flag perflag=::fast_io::manipulators::percentage_flag::none>
+template<::std::size_t bs,bool upper,bool shbase,bool fll,bool showpos=false,bool comma=false,::fast_io::manipulators::percentage_flag perflag=::fast_io::manipulators::percentage_flag::none>
 inline constexpr ::fast_io::manipulators::scalar_flags base_mani_flags_cache{.base=bs,.showbase=shbase,.showpos=showpos,.uppercase_showbase=((bs==2||bs==3||bs==16)?upper:false),.uppercase=((bs<=10)?false:upper),.comma=comma,.full=fll,.percentage=perflag};
 
 template<bool upper>
@@ -196,7 +196,7 @@ inline constexpr ::fast_io::manipulators::scalar_flags dcmfloat_mani_flags_cache
 template<bool uppercase,bool shbase>
 inline constexpr ::fast_io::manipulators::scalar_flags cryptohash_mani_flags_cache{.base=16,.showbase=shbase,.uppercase_showbase=uppercase,.uppercase=uppercase};
 
-template<std::size_t bs,bool noskipws,bool shbase,bool skipzero>
+template<::std::size_t bs,bool noskipws,bool shbase,bool skipzero>
 inline constexpr ::fast_io::manipulators::scalar_flags base_scan_mani_flags_cache{.base=bs,.showbase=shbase,.noskipws=noskipws,.full=skipzero};
 
 template<bool shport>
@@ -206,10 +206,10 @@ template<typename inttype>
 struct unsigned_integer_alias_type_traits_helper
 {
 	using alias_type = 
-	std::conditional_t<(sizeof(inttype)==sizeof(std::uint_least8_t)),std::uint_least8_t,
-	std::conditional_t<(sizeof(inttype)==sizeof(std::uint_least16_t)),std::uint_least16_t,
-	std::conditional_t<(sizeof(inttype)==sizeof(std::uint_least32_t)),std::uint_least32_t,
-	std::conditional_t<(sizeof(inttype)==sizeof(std::uint_least64_t)),std::uint_least64_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::uint_least8_t)),::std::uint_least8_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::uint_least16_t)),::std::uint_least16_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::uint_least32_t)),::std::uint_least32_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::uint_least64_t)),::std::uint_least64_t,
 	inttype>>>>;
 };
 
@@ -217,10 +217,10 @@ template<typename inttype>
 struct signed_integer_alias_type_traits_helper
 {
 	using alias_type = 
-	std::conditional_t<(sizeof(inttype)==sizeof(std::int_least8_t)),std::int_least8_t,
-	std::conditional_t<(sizeof(inttype)==sizeof(std::int_least16_t)),std::int_least16_t,
-	std::conditional_t<(sizeof(inttype)==sizeof(std::int_least32_t)),std::int_least32_t,
-	std::conditional_t<(sizeof(inttype)==sizeof(std::int_least64_t)),std::int_least64_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::int_least8_t)),::std::int_least8_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::int_least16_t)),::std::int_least16_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::int_least32_t)),::std::int_least32_t,
+	::std::conditional_t<(sizeof(inttype)==sizeof(::std::int_least64_t)),::std::int_least64_t,
 	inttype>>>>;
 };
 
@@ -228,33 +228,33 @@ template<typename inttype>
 struct integer_alias_type_traits
 {
 	using alias_type =
-	std::conditional_t<my_unsigned_integral<inttype>,
-	std::conditional_t<(sizeof(inttype)<sizeof(unsigned)),
+	::std::conditional_t<my_unsigned_integral<inttype>,
+	::std::conditional_t<(sizeof(inttype)<sizeof(unsigned)),
 	typename unsigned_integer_alias_type_traits_helper<unsigned>::alias_type,
 	typename unsigned_integer_alias_type_traits_helper<inttype>::alias_type>,
-	std::conditional_t<(sizeof(inttype)<sizeof(int)),
+	::std::conditional_t<(sizeof(inttype)<sizeof(int)),
 	typename signed_integer_alias_type_traits_helper<int>::alias_type,
 	typename signed_integer_alias_type_traits_helper<inttype>::alias_type>>;
 };
 
 template<typename inttype>
-using integer_alias_type = typename integer_alias_type_traits<std::remove_cvref_t<inttype>>::alias_type;
+using integer_alias_type = typename integer_alias_type_traits<::std::remove_cvref_t<inttype>>::alias_type;
 
-using uintptr_alias_type = ::fast_io::details::integer_alias_type<std::uintptr_t>;
+using uintptr_alias_type = ::fast_io::details::integer_alias_type<::std::uintptr_t>;
 
 template<typename inttype>
 struct integer_full_alias_type_traits
 {
 	using alias_type =
-	std::conditional_t<my_unsigned_integral<inttype>,
+	::std::conditional_t<my_unsigned_integral<inttype>,
 	typename unsigned_integer_alias_type_traits_helper<inttype>::alias_type,
 	typename signed_integer_alias_type_traits_helper<inttype>::alias_type>;
 };
 
 template<typename inttype>
-using integer_full_alias_type = typename integer_full_alias_type_traits<std::remove_cvref_t<inttype>>::alias_type;
+using integer_full_alias_type = typename integer_full_alias_type_traits<::std::remove_cvref_t<inttype>>::alias_type;
 
-using uintptr_full_alias_type = ::fast_io::details::integer_full_alias_type<std::uintptr_t>;
+using uintptr_full_alias_type = ::fast_io::details::integer_full_alias_type<::std::uintptr_t>;
 
 template<typename flt>
 struct float_alias_type_traits
@@ -267,7 +267,7 @@ template<>
 struct float_alias_type_traits<double>
 {
 	using alias_type = 
-	std::conditional_t<sizeof(_Float64)==sizeof(double)&&std::numeric_limits<double>::is_iec559,
+	::std::conditional_t<sizeof(_Float64)==sizeof(double)&&::std::numeric_limits<double>::is_iec559,
 	_Float64,double>;
 };
 #endif
@@ -277,7 +277,7 @@ template<>
 struct float_alias_type_traits<float>
 {
 	using alias_type = 
-	std::conditional_t<sizeof(_Float32)==sizeof(float)&&std::numeric_limits<float>::is_iec559,
+	::std::conditional_t<sizeof(_Float32)==sizeof(float)&&::std::numeric_limits<float>::is_iec559,
 	_Float32,float>;
 };
 #endif
@@ -305,7 +305,7 @@ struct float_alias_type_traits<__float16>
 #endif
 
 template<typename flt>
-using float_alias_type = typename float_alias_type_traits<std::remove_cvref_t<flt>>::alias_type;
+using float_alias_type = typename float_alias_type_traits<::std::remove_cvref_t<flt>>::alias_type;
 
 inline constexpr
 	::fast_io::manipulators::scalar_flags compute_bool_scalar_flags_cache(::fast_io::manipulators::scalar_flags flags) noexcept
@@ -322,18 +322,18 @@ inline constexpr
 template<::fast_io::manipulators::scalar_flags cache,typename scalar_type>
 inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 {
-	using scalar_type_nocvref = std::remove_cvref_t<scalar_type>;
+	using scalar_type_nocvref = ::std::remove_cvref_t<scalar_type>;
 	if constexpr(cache.full)
 	{
-		if constexpr(std::same_as<scalar_type_nocvref,std::nullptr_t>)
+		if constexpr(::std::same_as<scalar_type_nocvref,::std::nullptr_t>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,std::nullptr_t>{};
+			return ::fast_io::manipulators::scalar_manip_t<cache,::std::nullptr_t>{};
 		}
 		else if constexpr(::std::same_as<scalar_type_nocvref,bool>)
 		{
 			return ::fast_io::manipulators::scalar_manip_t<compute_bool_scalar_flags_cache(cache),bool>{t};
 		}
-		else if constexpr(::std::same_as<scalar_type_nocvref,std::byte>)
+		else if constexpr(::std::same_as<scalar_type_nocvref,::std::byte>)
 		{
 			using alias_type = integer_full_alias_type<char unsigned>;
 			return ::fast_io::manipulators::scalar_manip_t<cache,alias_type>
@@ -344,9 +344,9 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 			using alias_type = integer_full_alias_type<scalar_type_nocvref>;
 			return ::fast_io::manipulators::scalar_manip_t<cache,alias_type>{static_cast<alias_type>(t)};
 		}
-		else if constexpr(std::is_pointer_v<scalar_type_nocvref>)
+		else if constexpr(::std::is_pointer_v<scalar_type_nocvref>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<std::uintptr_t>(t))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<::std::uintptr_t>(t))};
 		}
 		else if constexpr(::std::same_as<::fast_io::manipulators::member_function_pointer_holder_t,scalar_type_nocvref>)
 		{
@@ -358,21 +358,21 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		}
 		else
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<std::uintptr_t>(::std::to_address(t)))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<::std::uintptr_t>(::std::to_address(t)))};
 		}
 
 	}
 	else
 	{
-		if constexpr(std::same_as<scalar_type_nocvref,std::nullptr_t>)
+		if constexpr(::std::same_as<scalar_type_nocvref,::std::nullptr_t>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,std::nullptr_t>{};
+			return ::fast_io::manipulators::scalar_manip_t<cache,::std::nullptr_t>{};
 		}
 		else if constexpr(::std::same_as<scalar_type_nocvref,bool>)
 		{
 			return ::fast_io::manipulators::scalar_manip_t<compute_bool_scalar_flags_cache(cache),bool>{t};
 		}
-		else if constexpr(::std::same_as<scalar_type_nocvref,std::byte>)
+		else if constexpr(::std::same_as<scalar_type_nocvref,::std::byte>)
 		{
 			using alias_type = integer_alias_type<char unsigned>;
 			return ::fast_io::manipulators::scalar_manip_t<cache,alias_type>
@@ -387,9 +387,9 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		{
 			return ::fast_io::manipulators::scalar_manip_t<cache,::fast_io::manipulators::member_function_pointer_holder_t>{t};
 		}
-		else if constexpr(std::is_pointer_v<scalar_type_nocvref>)
+		else if constexpr(::std::is_pointer_v<scalar_type_nocvref>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<std::uintptr_t>(t))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<::std::uintptr_t>(t))};
 		}
 		else if constexpr(::fast_io::details::has_scalar_manip_detail_tag<scalar_type>)
 		{
@@ -397,7 +397,7 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		}
 		else
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<std::uintptr_t>(::std::to_address(t)))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<::std::uintptr_t>(::std::to_address(t)))};
 		}
 	}
 }
@@ -428,7 +428,7 @@ struct scalar_manip_precision_t
 #endif
 #endif
 	T reference;
-	std::size_t precision;
+	::std::size_t precision;
 };
 
 template<scalar_placement flags,typename T>
@@ -443,10 +443,10 @@ struct width_t
 #endif
 #endif
 	T reference;
-	std::size_t width;
+	::std::size_t width;
 };
 
-template<scalar_placement flags,typename T,std::integral ch_type>
+template<scalar_placement flags,typename T,::std::integral ch_type>
 struct width_ch_t
 {
 	using manip_tag = manip_tag_t;
@@ -459,7 +459,7 @@ struct width_ch_t
 #endif
 #endif
 	T reference;
-	std::size_t width;
+	::std::size_t width;
 	char_type ch;
 };
 
@@ -476,10 +476,10 @@ struct width_runtime_t
 #endif
 #endif
 	T reference;
-	std::size_t width;
+	::std::size_t width;
 };
 
-template<typename T,std::integral ch_type>
+template<typename T,::std::integral ch_type>
 struct width_runtime_ch_t
 {
 	using manip_tag = manip_tag_t;
@@ -493,18 +493,18 @@ struct width_runtime_ch_t
 #endif
 #endif
 	T reference;
-	std::size_t width;
+	::std::size_t width;
 	char_type ch;
 };
 
-template<std::size_t bs,bool shbase=false,bool full=false,typename scalar_type>
+template<::std::size_t bs,bool shbase=false,bool full=false,typename scalar_type>
 requires ((2<=bs&&bs<=36)&&(::fast_io::details::scalar_integrals<scalar_type>))
 inline constexpr auto base(scalar_type t) noexcept
 {
 	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<bs,false,shbase,full>>(t);
 }
 
-template<std::size_t bs,bool shbase=false,bool full=false,typename scalar_type>
+template<::std::size_t bs,bool shbase=false,bool full=false,typename scalar_type>
 requires ((2<=bs&&bs<=36)&&(::fast_io::details::scalar_integrals<scalar_type>))
 inline constexpr auto baseupper(scalar_type t) noexcept
 {
@@ -553,7 +553,7 @@ inline constexpr auto addrvw(scalar_type t) noexcept
 {
 	if constexpr(::fast_io::details::my_signed_integral<scalar_type>)
 	{
-		return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(static_cast<::fast_io::details::my_make_unsigned_t<std::remove_cvref_t<scalar_type>>>(t));
+		return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(static_cast<::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<scalar_type>>>(t));
 	}
 	else
 	{
@@ -563,7 +563,7 @@ inline constexpr auto addrvw(scalar_type t) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires ((::std::is_pointer_v<scalar_type>||::std::contiguous_iterator<scalar_type>)&&
-		(!::std::is_function_v<std::remove_cvref_t<scalar_type>>))
+		(!::std::is_function_v<::std::remove_cvref_t<scalar_type>>))
 inline constexpr auto pointervw(scalar_type t) noexcept
 {
 	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(t);
@@ -573,7 +573,7 @@ template<bool uppercase=false,typename scalar_type>
 requires (::std::is_function_v<scalar_type>)
 inline constexpr auto funcvw(scalar_type *t) noexcept
 {
-	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(::std::bit_cast<std::uintptr_t>(t));
+	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(::std::bit_cast<::std::uintptr_t>(t));
 }
 
 template<bool uppercase=false,typename scalar_type>
@@ -592,7 +592,7 @@ inline constexpr auto methodvw(scalar_type t) noexcept
 }
 
 template<bool uppercase=false,typename scalar_type>
-requires ((::std::is_pointer_v<scalar_type>&&!::std::is_function_v<std::remove_cvref_t<scalar_type>>)||
+requires ((::std::is_pointer_v<scalar_type>&&!::std::is_function_v<::std::remove_cvref_t<scalar_type>>)||
 	::std::integral<scalar_type>)
 inline constexpr auto handlevw(scalar_type t) noexcept
 {
@@ -672,7 +672,7 @@ inline constexpr auto hexfloat(scalar_type t) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto hexfloat(scalar_type t,std::size_t n) noexcept
+inline constexpr auto hexfloat(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,false>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -688,7 +688,7 @@ inline constexpr auto comma_hexfloat(scalar_type t) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto comma_hexfloat(scalar_type t,std::size_t n) noexcept
+inline constexpr auto comma_hexfloat(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::hexafloat_mani_flags_cache<uppercase,true>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -712,7 +712,7 @@ inline constexpr auto comma_decimal(scalar_type t) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto decimal(scalar_type t,std::size_t n) noexcept
+inline constexpr auto decimal(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::decimal>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -720,7 +720,7 @@ inline constexpr auto decimal(scalar_type t,std::size_t n) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto comma_decimal(scalar_type t,std::size_t n) noexcept
+inline constexpr auto comma_decimal(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::decimal>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -745,7 +745,7 @@ inline constexpr auto comma_general(scalar_type t) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto general(scalar_type t,std::size_t n) noexcept
+inline constexpr auto general(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::general>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -753,7 +753,7 @@ inline constexpr auto general(scalar_type t,std::size_t n) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto comma_general(scalar_type t,std::size_t n) noexcept
+inline constexpr auto comma_general(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::general>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -778,7 +778,7 @@ inline constexpr auto comma_fixed(scalar_type t) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto fixed(scalar_type t,std::size_t n) noexcept
+inline constexpr auto fixed(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::fixed>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -786,7 +786,7 @@ inline constexpr auto fixed(scalar_type t,std::size_t n) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto comma_fixed(scalar_type t,std::size_t n) noexcept
+inline constexpr auto comma_fixed(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::fixed>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -810,7 +810,7 @@ inline constexpr auto comma_scientific(scalar_type t) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto scientific(scalar_type t,std::size_t n) noexcept
+inline constexpr auto scientific(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,false,manipulators::floating_format::scientific>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -818,7 +818,7 @@ inline constexpr auto scientific(scalar_type t,std::size_t n) noexcept
 
 template<bool uppercase=false,typename scalar_type>
 requires (::fast_io::details::my_floating_point<scalar_type>)
-inline constexpr auto comma_scientific(scalar_type t,std::size_t n) noexcept
+inline constexpr auto comma_scientific(scalar_type t,::std::size_t n) noexcept
 {
 	using float_alias_type = ::fast_io::details::float_alias_type<scalar_type>;
 	return scalar_manip_precision_t<::fast_io::details::dcmfloat_mani_flags_cache<uppercase,true,manipulators::floating_format::scientific>,float_alias_type>{static_cast<float_alias_type>(t),n};
@@ -835,7 +835,7 @@ inline constexpr ::std::remove_cvref_t<inttype> bitfieldvw(inttype v) noexcept
 namespace details
 {
 
-template<std::integral char_type,std::size_t base>
+template<::std::integral char_type,::std::size_t base>
 inline constexpr auto generate_base_prefix_array() noexcept
 {
 	static_assert(2<=base&&base<=36);
@@ -856,10 +856,10 @@ inline constexpr auto generate_base_prefix_array() noexcept
 	}
 }
 
-template<std::integral char_type,std::size_t base>
+template<::std::integral char_type,::std::size_t base>
 inline constexpr auto base_prefix_array{generate_base_prefix_array<char_type,base>()};
 
-template<std::size_t base,bool uppercase_showbase,::std::integral char_type>
+template<::std::size_t base,bool uppercase_showbase,::std::integral char_type>
 constexpr char_type* print_reserve_show_base_impl(char_type* iter)
 {
 	static_assert(2<=base&&base<=36);
@@ -867,26 +867,26 @@ constexpr char_type* print_reserve_show_base_impl(char_type* iter)
 	{
 		if constexpr(uppercase_showbase)
 		{
-			if constexpr(std::same_as<char_type,char>)
+			if constexpr(::std::same_as<char_type,char>)
 				iter=copy_string_literal("0B",iter);
-			else if constexpr(std::same_as<char_type,wchar_t>)
+			else if constexpr(::std::same_as<char_type,wchar_t>)
 				iter=copy_string_literal(L"0B",iter);
-			else if constexpr(std::same_as<char_type,char16_t>)
+			else if constexpr(::std::same_as<char_type,char16_t>)
 				iter=copy_string_literal(u"0B",iter);
-			else if constexpr(std::same_as<char_type,char32_t>)
+			else if constexpr(::std::same_as<char_type,char32_t>)
 				iter=copy_string_literal(U"0B",iter);
 			else
 				iter=copy_string_literal(u8"0B",iter);
 		}
 		else
 		{
-			if constexpr(std::same_as<char_type,char>)
+			if constexpr(::std::same_as<char_type,char>)
 				iter=copy_string_literal("0b",iter);
-			else if constexpr(std::same_as<char_type,wchar_t>)
+			else if constexpr(::std::same_as<char_type,wchar_t>)
 				iter=copy_string_literal(L"0b",iter);
-			else if constexpr(std::same_as<char_type,char16_t>)
+			else if constexpr(::std::same_as<char_type,char16_t>)
 				iter=copy_string_literal(u"0b",iter);
-			else if constexpr(std::same_as<char_type,char32_t>)
+			else if constexpr(::std::same_as<char_type,char32_t>)
 				iter=copy_string_literal(U"0b",iter);
 			else
 				iter=copy_string_literal(u8"0b",iter);
@@ -896,26 +896,26 @@ constexpr char_type* print_reserve_show_base_impl(char_type* iter)
 	{
 		if constexpr(uppercase_showbase)
 		{
-			if constexpr(std::same_as<char_type,char>)
+			if constexpr(::std::same_as<char_type,char>)
 				iter=copy_string_literal("0T",iter);
-			else if constexpr(std::same_as<char_type,wchar_t>)
+			else if constexpr(::std::same_as<char_type,wchar_t>)
 				iter=copy_string_literal(L"0T",iter);
-			else if constexpr(std::same_as<char_type,char16_t>)
+			else if constexpr(::std::same_as<char_type,char16_t>)
 				iter=copy_string_literal(u"0T",iter);
-			else if constexpr(std::same_as<char_type,char32_t>)
+			else if constexpr(::std::same_as<char_type,char32_t>)
 				iter=copy_string_literal(U"0T",iter);
 			else
 				iter=copy_string_literal(u8"0T",iter);
 		}
 		else
 		{
-			if constexpr(std::same_as<char_type,char>)
+			if constexpr(::std::same_as<char_type,char>)
 				iter=copy_string_literal("0t",iter);
-			else if constexpr(std::same_as<char_type,wchar_t>)
+			else if constexpr(::std::same_as<char_type,wchar_t>)
 				iter=copy_string_literal(L"0t",iter);
-			else if constexpr(std::same_as<char_type,char16_t>)
+			else if constexpr(::std::same_as<char_type,char16_t>)
 				iter=copy_string_literal(u"0t",iter);
-			else if constexpr(std::same_as<char_type,char32_t>)
+			else if constexpr(::std::same_as<char_type,char32_t>)
 				iter=copy_string_literal(U"0t",iter);
 			else
 				iter=copy_string_literal(u8"0t",iter);
@@ -930,26 +930,26 @@ constexpr char_type* print_reserve_show_base_impl(char_type* iter)
 	{
 		if constexpr(uppercase_showbase)
 		{
-			if constexpr(std::same_as<char_type,char>)
+			if constexpr(::std::same_as<char_type,char>)
 				iter=copy_string_literal("0X",iter);
-			else if constexpr(std::same_as<char_type,wchar_t>)
+			else if constexpr(::std::same_as<char_type,wchar_t>)
 				iter=copy_string_literal(L"0X",iter);
-			else if constexpr(std::same_as<char_type,char16_t>)
+			else if constexpr(::std::same_as<char_type,char16_t>)
 				iter=copy_string_literal(u"0X",iter);
-			else if constexpr(std::same_as<char_type,char32_t>)
+			else if constexpr(::std::same_as<char_type,char32_t>)
 				iter=copy_string_literal(U"0X",iter);
 			else
 				iter=copy_string_literal(u8"0X",iter);
 		}
 		else
 		{
-			if constexpr(std::same_as<char_type,char>)
+			if constexpr(::std::same_as<char_type,char>)
 				iter=copy_string_literal("0x",iter);
-			else if constexpr(std::same_as<char_type,wchar_t>)
+			else if constexpr(::std::same_as<char_type,wchar_t>)
 				iter=copy_string_literal(L"0x",iter);
-			else if constexpr(std::same_as<char_type,char16_t>)
+			else if constexpr(::std::same_as<char_type,char16_t>)
 				iter=copy_string_literal(u"0x",iter);
-			else if constexpr(std::same_as<char_type,char32_t>)
+			else if constexpr(::std::same_as<char_type,char32_t>)
 				iter=copy_string_literal(U"0x",iter);
 			else
 				iter=copy_string_literal(u8"0x",iter);
@@ -958,14 +958,14 @@ constexpr char_type* print_reserve_show_base_impl(char_type* iter)
 	else if constexpr(base!=10)
 	{
 		constexpr auto arr{base_prefix_array<char_type,base>};
-		constexpr std::size_t sz{arr.size()};
+		constexpr ::std::size_t sz{arr.size()};
 		iter=non_overlapped_copy_n(arr.data(),sz,iter);
 	}
 	return iter;
 }
 
-template<std::size_t base,bool uppercase,bool ryu_mode=false,::std::integral char_type,typename T>
-constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t len)
+template<::std::size_t base,bool uppercase,bool ryu_mode=false,::std::integral char_type,typename T>
+constexpr void print_reserve_integral_main_impl(char_type* iter,T t,::std::size_t len)
 {
 	if constexpr(base<=10&&uppercase)
 	{
@@ -973,8 +973,8 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 	}
 	else if constexpr(need_seperate_print<T>)
 	{
-		constexpr std::size_t basetdigits{::fast_io::details::cal_max_int_size<T,base>()};
-		constexpr std::size_t sizetdigits{::fast_io::details::cal_max_int_size<optimal_print_unsigned_type,base>()};
+		constexpr ::std::size_t basetdigits{::fast_io::details::cal_max_int_size<T,base>()};
+		constexpr ::std::size_t sizetdigits{::fast_io::details::cal_max_int_size<optimal_print_unsigned_type,base>()};
 		static_assert(basetdigits!=0&&sizetdigits!=0);
 		if constexpr(base==2||base==4||base==16)
 		{
@@ -989,8 +989,8 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 		}
 		else
 		{
-			constexpr std::size_t sizetdigitsm1{sizetdigits-1};
-			constexpr std::size_t remain_digits{basetdigits-sizetdigitsm1*2};
+			constexpr ::std::size_t sizetdigitsm1{sizetdigits-1};
+			constexpr ::std::size_t remain_digits{basetdigits-sizetdigitsm1*2};
 			constexpr T maxhighdigits{compile_pow10<T,(sizetdigitsm1*2)>};
 			if constexpr(!ryu_mode&&remain_digits!=0)
 			{
@@ -1007,12 +1007,12 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 				}
 				else
 				{
-					constexpr std::size_t least_digits{basetdigits-remain_digits};
+					constexpr ::std::size_t least_digits{basetdigits-remain_digits};
 					if(len>least_digits)
 					{
 						T high{t/maxhighdigits};
 						t=t%maxhighdigits;
-						std::uint_least8_t rem{static_cast<std::uint_least8_t>(high)};
+						::std::uint_least8_t rem{static_cast<::std::uint_least8_t>(high)};
 						if(len==basetdigits)
 						{
 							constexpr auto tb{::fast_io::details::digits_table<char_type,base,uppercase>};
@@ -1053,8 +1053,8 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 		{
 			constexpr auto tb{::fast_io::details::digits_table<char_type,base,uppercase>};
 			constexpr T pw{static_cast<T>(base*base)};
-			std::size_t const len2{len>>static_cast<std::size_t>(1u)};
-			for(std::size_t i{};i!=len2;++i)
+			::std::size_t const len2{len>>static_cast<::std::size_t>(1u)};
+			for(::std::size_t i{};i!=len2;++i)
 			{
 				auto const rem{t%pw};
 				t/=pw;
@@ -1075,7 +1075,7 @@ constexpr void print_reserve_integral_main_impl(char_type* iter,T t,std::size_t 
 	}
 }
 
-template<bool full,std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
+template<bool full,::std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
 constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,T u)
 {
 	if constexpr(base<=10&&uppercase)
@@ -1086,7 +1086,7 @@ constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,
 	{
 		if constexpr(full)
 		{
-			constexpr std::size_t sz{::fast_io::details::cal_max_int_size<T,base>()};
+			constexpr ::std::size_t sz{::fast_io::details::cal_max_int_size<T,base>()};
 			if constexpr(sizeof(u)<=sizeof(unsigned))
 				print_reserve_integral_main_impl<base,uppercase>(first+=sz,static_cast<unsigned>(u),sz);
 			else
@@ -1095,7 +1095,7 @@ constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,
 		}
 		else
 		{
-			if constexpr(base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
+			if constexpr(base==10&&(::std::numeric_limits<::std::uint_least32_t>::digits==32u))
 			{
 				if constexpr(false)
 				{
@@ -1108,7 +1108,7 @@ constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,
 			}
 			else
 			{
-				std::size_t const sz{chars_len<base,false>(u)};
+				::std::size_t const sz{chars_len<base,false>(u)};
 				if constexpr(sizeof(u)<=sizeof(unsigned))
 					print_reserve_integral_main_impl<base,uppercase>(first+=sz,static_cast<unsigned>(u),sz);
 				else
@@ -1120,11 +1120,11 @@ constexpr char_type* print_reserve_integral_withfull_main_impl(char_type* first,
 	}
 }
 
-template<std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
-inline constexpr void print_reserve_integral_withfull_precise_main_impl(char_type* last,T u,std::size_t n)
+template<::std::size_t base,bool uppercase,::std::integral char_type,my_unsigned_integral T>
+inline constexpr void print_reserve_integral_withfull_precise_main_impl(char_type* last,T u,::std::size_t n)
 {
 
-	if constexpr(sizeof(u)<=sizeof(unsigned)&&sizeof(unsigned)<=sizeof(std::size_t))
+	if constexpr(sizeof(u)<=sizeof(unsigned)&&sizeof(unsigned)<=sizeof(::std::size_t))
 		print_reserve_integral_main_impl<base,uppercase>(last,static_cast<unsigned>(u),n);
 	else
 	{
@@ -1132,7 +1132,7 @@ inline constexpr void print_reserve_integral_withfull_precise_main_impl(char_typ
 	}
 }
 
-template<std::size_t base,
+template<::std::size_t base,
 	bool showbase=false,
 	bool uppercase_showbase=false,
 	bool showpos=false,
@@ -1148,7 +1148,7 @@ constexpr char_type* print_reserve_integral_define(char_type* first,int_type t)
 	else
 	{
 		static_assert((2<=base)&&(base<=36));
-		if constexpr(std::same_as<bool,std::remove_cvref_t<int_type>>)
+		if constexpr(::std::same_as<bool,::std::remove_cvref_t<int_type>>)
 		{
 			if constexpr(showpos)
 			{
@@ -1206,13 +1206,13 @@ constexpr char_type* print_reserve_integral_define(char_type* first,int_type t)
 	}
 }
 
-template<std::size_t base,
+template<::std::size_t base,
 	bool showbase=false,
 	bool uppercase_showbase=false,
 	bool showpos=false,
 	bool uppercase=false,
 	typename int_type,::std::integral char_type>
-constexpr void print_reserve_integral_define_precise(char_type* start,std::size_t n,int_type t)
+constexpr void print_reserve_integral_define_precise(char_type* start,::std::size_t n,int_type t)
 {	
 	if constexpr(base<=10&&uppercase)
 	{
@@ -1222,7 +1222,7 @@ constexpr void print_reserve_integral_define_precise(char_type* start,std::size_
 	{
 		auto first{start};
 		static_assert((2<=base)&&(base<=36));
-		if constexpr(std::same_as<bool,std::remove_cvref_t<int_type>>)
+		if constexpr(::std::same_as<bool,::std::remove_cvref_t<int_type>>)
 		{
 			if constexpr(showpos)
 			{
@@ -1275,9 +1275,9 @@ constexpr void print_reserve_integral_define_precise(char_type* start,std::size_
 			}
 			if constexpr(showbase&&(base!=10))
 				first=print_reserve_show_base_impl<base,uppercase_showbase>(first);
-			if constexpr(base==10&&(std::numeric_limits<std::uint_least32_t>::digits==32u))
+			if constexpr(base==10&&(::std::numeric_limits<::std::uint_least32_t>::digits==32u))
 			{
-				return ::fast_io::details::jeaiii::jeaiii_main_len(first,u,static_cast<std::uint_least32_t>(n));
+				return ::fast_io::details::jeaiii::jeaiii_main_len(first,u,static_cast<::std::uint_least32_t>(n));
 			}
 			else
 			{
@@ -1285,7 +1285,7 @@ constexpr void print_reserve_integral_define_precise(char_type* start,std::size_
 				if constexpr(my_unsigned_integral<int_type>&&!showbase&&!showpos)
 					print_reserve_integral_withfull_precise_main_impl<base,uppercase>(ed,u,n);
 				else
-					print_reserve_integral_withfull_precise_main_impl<base,uppercase>(ed,u,static_cast<std::size_t>(ed-first));
+					print_reserve_integral_withfull_precise_main_impl<base,uppercase>(ed,u,static_cast<::std::size_t>(ed-first));
 			}
 		}
 	}
@@ -1313,16 +1313,16 @@ template<
 bool showbase=false,
 bool showpos=false,
 my_integral T>
-inline constexpr std::size_t print_reserve_scalar_size_impl()
+inline constexpr ::std::size_t print_reserve_scalar_size_impl()
 {
-	std::size_t total_sum{};
+	::std::size_t total_sum{};
 	if constexpr(showpos)
 		++total_sum;
 	if constexpr(showbase)
 	{
 		total_sum+=::fast_io::details::print_showbase_length<base>;
 	}
-	if constexpr(std::same_as<std::remove_cvref_t<T>,bool>)
+	if constexpr(::std::same_as<::std::remove_cvref_t<T>,bool>)
 		++total_sum;
 	else
 	{
@@ -1337,22 +1337,22 @@ inline constexpr std::size_t print_reserve_scalar_size_impl()
 }
 
 
-template<std::size_t base,
+template<::std::size_t base,
 bool showbase,
 bool showpos,
 my_integral T>
-inline constexpr std::size_t print_integer_reserved_size_cache{print_reserve_scalar_size_impl<base,showbase,showpos,T>()};
+inline constexpr ::std::size_t print_integer_reserved_size_cache{print_reserve_scalar_size_impl<base,showbase,showpos,T>()};
 
 
 template<
-std::size_t base,
+::std::size_t base,
 bool showbase,
 bool showpos,
 bool full,
 my_integral T>
-inline constexpr std::size_t print_reserve_scalar_cal_precise_cache_size_impl()
+inline constexpr ::std::size_t print_reserve_scalar_cal_precise_cache_size_impl()
 {
-	std::size_t total_sum{};
+	::std::size_t total_sum{};
 	if constexpr(showpos)
 		++total_sum;
 	if constexpr(showbase)
@@ -1368,7 +1368,7 @@ inline constexpr std::size_t print_reserve_scalar_cal_precise_cache_size_impl()
 		//base==10 does not have showbase
 		if constexpr(full)
 		{
-			if constexpr(std::same_as<std::remove_cvref_t<T>,bool>)
+			if constexpr(::std::same_as<::std::remove_cvref_t<T>,bool>)
 				++total_sum;
 			else
 			{
@@ -1384,29 +1384,29 @@ inline constexpr std::size_t print_reserve_scalar_cal_precise_cache_size_impl()
 	return total_sum;
 }
 
-template<std::size_t base,
+template<::std::size_t base,
 bool showbase,
 bool showpos,
 bool full,
 my_integral T>
-inline constexpr std::size_t print_integer_reserved_precise_size_cache{print_reserve_scalar_cal_precise_cache_size_impl<base,showbase,showpos,full,T>()};
+inline constexpr ::std::size_t print_integer_reserved_precise_size_cache{print_reserve_scalar_cal_precise_cache_size_impl<base,showbase,showpos,full,T>()};
 
 
 template<
-std::size_t base,
+::std::size_t base,
 bool showbase,
 bool showpos,
 bool full,
 my_integral T>
-inline constexpr std::size_t print_integer_reserved_precise_size(T t)
+inline constexpr ::std::size_t print_integer_reserved_precise_size(T t)
 {
-	if constexpr(std::same_as<std::remove_cvref_t<T>,bool>)
+	if constexpr(::std::same_as<::std::remove_cvref_t<T>,bool>)
 		return print_integer_reserved_size_cache<base,showbase,showpos,T>;
 	else if constexpr(full)
 	{
 		if constexpr(!showpos&&my_signed_integral<T>)
 		{
-			std::size_t total_sum{print_integer_reserved_precise_size_cache<base,showbase,showpos,full,T>};
+			::std::size_t total_sum{print_integer_reserved_precise_size_cache<base,showbase,showpos,full,T>};
 			if(t<0)
 				++total_sum;
 			return total_sum;
@@ -1416,7 +1416,7 @@ inline constexpr std::size_t print_integer_reserved_precise_size(T t)
 	}
 	else
 	{
-		std::size_t total_sum{print_integer_reserved_precise_size_cache<base,showbase,showpos,false,T>};
+		::std::size_t total_sum{print_integer_reserved_precise_size_cache<base,showbase,showpos,false,T>};
 		if constexpr(my_signed_integral<T>)
 		{
 			using unsigned_type = my_make_unsigned_t<T>;
@@ -1436,32 +1436,32 @@ inline constexpr std::size_t print_integer_reserved_precise_size(T t)
 	}
 }
 
-template<std::integral char_type,
-std::size_t base,
+template<::std::integral char_type,
+::std::size_t base,
 bool showbase,
 bool uppercase_showbase,
 bool showpos,
 bool uppercase,
 bool full>
-inline constexpr std::size_t nullptr_print_optimization_call_size_impl() noexcept
+inline constexpr ::std::size_t nullptr_print_optimization_call_size_impl() noexcept
 {
-	::fast_io::freestanding::array<char_type,print_integer_reserved_size_cache<base,showbase,showpos,std::uintptr_t>> arr;
-	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),std::uintptr_t{})};
-	return static_cast<std::size_t>(res-arr.data());
+	::fast_io::freestanding::array<char_type,print_integer_reserved_size_cache<base,showbase,showpos,::std::uintptr_t>> arr;
+	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),::std::uintptr_t{})};
+	return static_cast<::std::size_t>(res-arr.data());
 }
 
-template<std::integral char_type,
-std::size_t base,
+template<::std::integral char_type,
+::std::size_t base,
 bool showbase,
 bool uppercase_showbase,
 bool showpos,
 bool uppercase,
 bool full>
-inline constexpr std::size_t nullptr_print_optimization_call_size_cache{
+inline constexpr ::std::size_t nullptr_print_optimization_call_size_cache{
 	nullptr_print_optimization_call_size_impl<char_type,base,showbase,uppercase_showbase,showpos,uppercase,full>()};
 
-template<std::integral char_type,
-std::size_t base,
+template<::std::integral char_type,
+::std::size_t base,
 bool showbase,
 bool uppercase_showbase,
 bool showpos,
@@ -1469,14 +1469,14 @@ bool uppercase,
 bool full>
 inline constexpr auto nullptr_print_optimization_call_impl() noexcept
 {
-	constexpr std::size_t sz{nullptr_print_optimization_call_size_cache<char_type,base,showbase,uppercase_showbase,showpos,uppercase,full>};
+	constexpr ::std::size_t sz{nullptr_print_optimization_call_size_cache<char_type,base,showbase,uppercase_showbase,showpos,uppercase,full>};
 	::fast_io::freestanding::array<char_type,sz> arr{};
-	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),std::uintptr_t{})};
+	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),::std::uintptr_t{})};
 	return arr;
 }
 
-template<std::integral char_type,
-std::size_t base,
+template<::std::integral char_type,
+::std::size_t base,
 bool showbase,
 bool uppercase_showbase,
 bool showpos,
@@ -1490,28 +1490,28 @@ inline constexpr char_type* print_reserve_boolalpha_impl(char_type* iter,bool b)
 {
 	if(b)
 	{
-		if constexpr(std::same_as<char_type,char>)
+		if constexpr(::std::same_as<char_type,char>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal("TRUE",iter);
 			else
 				return copy_string_literal("true",iter);
 		}
-		else if constexpr(std::same_as<char_type,wchar_t>)
+		else if constexpr(::std::same_as<char_type,wchar_t>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal(L"TRUE",iter);
 			else
 				return copy_string_literal(L"true",iter);
 		}
-		else if constexpr(std::same_as<char_type,char16_t>)
+		else if constexpr(::std::same_as<char_type,char16_t>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal(u"TRUE",iter);
 			else
 				return copy_string_literal(u"true",iter);
 		}
-		else if constexpr(std::same_as<char_type,char32_t>)
+		else if constexpr(::std::same_as<char_type,char32_t>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal(U"TRUE",iter);
@@ -1528,28 +1528,28 @@ inline constexpr char_type* print_reserve_boolalpha_impl(char_type* iter,bool b)
 	}
 	else
 	{
-		if constexpr(std::same_as<char_type,char>)
+		if constexpr(::std::same_as<char_type,char>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal("FALSE",iter);
 			else
 				return copy_string_literal("false",iter);
 		}
-		else if constexpr(std::same_as<char_type,wchar_t>)
+		else if constexpr(::std::same_as<char_type,wchar_t>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal(L"FALSE",iter);
 			else
 				return copy_string_literal(L"false",iter);
 		}
-		else if constexpr(std::same_as<char_type,char16_t>)
+		else if constexpr(::std::same_as<char_type,char16_t>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal(u"FALSE",iter);
 			else
 				return copy_string_literal(u"false",iter);
 		}
-		else if constexpr(std::same_as<char_type,char32_t>)
+		else if constexpr(::std::same_as<char_type,char32_t>)
 		{
 			if constexpr(uppercase)
 				return copy_string_literal(U"FALSE",iter);
@@ -1569,28 +1569,28 @@ inline constexpr char_type* print_reserve_boolalpha_impl(char_type* iter,bool b)
 template<bool uppercase, ::std::integral char_type>
 inline constexpr char_type* print_reserve_nullptr_alphabet_impl(char_type* iter)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		if constexpr(uppercase)
 			return copy_string_literal("NULLPTR",iter);
 		else
 			return copy_string_literal("nullptr",iter);
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		if constexpr(uppercase)
 			return copy_string_literal(L"NULLPTR",iter);
 		else
 			return copy_string_literal(L"nullptr",iter);
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		if constexpr(uppercase)
 			return copy_string_literal(u"NULLPTR",iter);
 		else
 			return copy_string_literal(u"nullptr",iter);
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		if constexpr(uppercase)
 			return copy_string_literal(U"NULLPTR",iter);
@@ -1607,7 +1607,7 @@ inline constexpr char_type* print_reserve_nullptr_alphabet_impl(char_type* iter)
 }
 
 
-template<std::size_t base,
+template<::std::size_t base,
 	bool showbase=false,
 	bool uppercase_showbase=false,
 	bool showpos=false,
@@ -1647,7 +1647,7 @@ inline constexpr char_type* print_reserve_method_impl(char_type* iter,::fast_io:
 }
 
 template<typename scalar_type>
-requires (details::my_integral<scalar_type>||::fast_io::details::my_floating_point<scalar_type>||std::same_as<std::nullptr_t,std::remove_cvref_t<scalar_type>>)
+requires (details::my_integral<scalar_type>||::fast_io::details::my_floating_point<scalar_type>||::std::same_as<::std::nullptr_t,::std::remove_cvref_t<scalar_type>>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -1667,42 +1667,42 @@ inline constexpr auto print_alias_define(io_alias_t,scalar_type t) noexcept
 	}
 	else
 	{
-		return manipulators::scalar_manip_t<manipulators::scalar_flags{.alphabet=true},std::nullptr_t>{};
+		return manipulators::scalar_manip_t<manipulators::scalar_flags{.alphabet=true},::std::nullptr_t>{};
 	}
 }
 
-template<std::integral char_type,typename T>
-requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>)
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,T>) noexcept
+template<::std::integral char_type,typename T>
+requires (details::my_integral<T>||::std::same_as<::std::remove_cv_t<T>,::std::byte>)
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,T>) noexcept
 {
-	if constexpr(std::same_as<std::remove_cv_t<T>,std::byte>)
+	if constexpr(::std::same_as<::std::remove_cv_t<T>,::std::byte>)
 		return details::print_integer_reserved_size_cache<10,false,false,char8_t>;
 	else
-		return details::print_integer_reserved_size_cache<10,false,false,std::remove_cvref_t<T>>;
+		return details::print_integer_reserved_size_cache<10,false,false,::std::remove_cvref_t<T>>;
 }
 
 template<::std::integral char_type,typename T>
-requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>)
+requires (details::my_integral<T>||::std::same_as<::std::remove_cv_t<T>,::std::byte>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]//always inline to reduce inline depth in GCC and LLVM clang
 #endif
 inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,T>, char_type* iter,T t) noexcept
 {
-	if constexpr(std::same_as<std::remove_cv_t<T>,std::byte>)
+	if constexpr(::std::same_as<::std::remove_cv_t<T>,::std::byte>)
 		return details::print_reserve_integral_define<10,false,false,false,false,false>(iter,static_cast<char8_t>(t));
 	else
 		return details::print_reserve_integral_define<10,false,false,false,false,false>(iter,t);
 }
 
-template<std::integral char_type,::fast_io::manipulators::scalar_flags flags,typename T>
-requires (details::my_integral<T>||std::same_as<::std::remove_cv_t<T>,std::byte>||std::same_as<std::remove_cvref_t<T>,std::nullptr_t>||
+template<::std::integral char_type,::fast_io::manipulators::scalar_flags flags,typename T>
+requires (details::my_integral<T>||::std::same_as<::std::remove_cv_t<T>,::std::byte>||::std::same_as<::std::remove_cvref_t<T>,::std::nullptr_t>||
 ::std::same_as<::std::remove_cv_t<T>,::fast_io::manipulators::member_function_pointer_holder_t>)
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>) noexcept
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>) noexcept
 {
 	if constexpr(flags.alphabet)
 	{
-		static_assert((std::same_as<std::remove_cvref_t<T>,bool>||std::same_as<std::remove_cvref_t<T>,std::nullptr_t>),"only bool and std::nullptr_t support alphabet output");
-		if constexpr(std::same_as<std::remove_cvref_t<T>,bool>)
+		static_assert((::std::same_as<::std::remove_cvref_t<T>,bool>||::std::same_as<::std::remove_cvref_t<T>,::std::nullptr_t>),"only bool and ::std::nullptr_t support alphabet output");
+		if constexpr(::std::same_as<::std::remove_cvref_t<T>,bool>)
 			return 5; // u8"false"
 		else
 			return 7; // u8"nullptr"
@@ -1713,16 +1713,16 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,mani
 			::std::size_t method_size{(details::print_integer_reserved_size_cache<flags.base,flags.showbase,flags.showpos,::std::size_t>+1)*::fast_io::details::method_ptr_hold_size-1};
 		return method_size;
 	}
-	else if constexpr(::std::same_as<std::remove_cvref_t<T>,std::nullptr_t>)
+	else if constexpr(::std::same_as<::std::remove_cvref_t<T>,::std::nullptr_t>)
 		return details::nullptr_print_optimization_call_size_cache<char_type,flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>;
-	else if constexpr(::std::same_as<std::remove_cv_t<T>,::std::byte>)
+	else if constexpr(::std::same_as<::std::remove_cv_t<T>,::std::byte>)
 		return details::print_integer_reserved_size_cache<flags.base,flags.showbase,flags.showpos,char8_t>;
 	else
 		return details::print_integer_reserved_size_cache<flags.base,flags.showbase,flags.showpos,T>;
 }
 
 template<::std::integral char_type,manipulators::scalar_flags flags,typename T>
-requires (details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>||std::same_as<std::remove_cvref_t<T>,std::nullptr_t>||
+requires (details::my_integral<T>||::std::same_as<::std::remove_cv_t<T>,::std::byte>||::std::same_as<::std::remove_cvref_t<T>,::std::nullptr_t>||
 ::std::same_as<::std::remove_cv_t<T>,::fast_io::manipulators::member_function_pointer_holder_t>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]//always inline to reduce inline depth in GCC and LLVM clang
@@ -1732,8 +1732,8 @@ constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io:
 	static_assert(flags.percentage==::fast_io::manipulators::percentage_flag::none);
 	if constexpr(flags.alphabet)
 	{
-		static_assert((std::same_as<std::remove_cvref_t<T>,bool>||std::same_as<std::remove_cvref_t<T>,std::nullptr_t>),"only bool and std::nullptr_t support alphabet output");
-		if constexpr(std::same_as<std::remove_cvref_t<T>,bool>)
+		static_assert((::std::same_as<::std::remove_cvref_t<T>,bool>||::std::same_as<::std::remove_cvref_t<T>,::std::nullptr_t>),"only bool and ::std::nullptr_t support alphabet output");
+		if constexpr(::std::same_as<::std::remove_cvref_t<T>,bool>)
 			return details::print_reserve_boolalpha_impl<flags.uppercase>(iter,t.reference);
 		else
 			return details::print_reserve_nullptr_alphabet_impl<flags.uppercase>(iter);
@@ -1742,44 +1742,44 @@ constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,::fast_io:
 	{
 		return ::fast_io::details::print_reserve_method_impl<flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>(iter,t.reference);
 	}
-	else if constexpr(std::same_as<std::remove_cv_t<T>,std::nullptr_t>)
+	else if constexpr(::std::same_as<::std::remove_cv_t<T>,::std::nullptr_t>)
 	{
 		constexpr auto& cache{details::nullptr_print_optimization_call_cache<char_type,flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>};
-		constexpr std::size_t n{cache.size()};
+		constexpr ::std::size_t n{cache.size()};
 		return details::non_overlapped_copy_n(cache.element,n,iter);
 	}
-	else if constexpr(std::same_as<std::remove_cv_t<T>,std::byte>)
+	else if constexpr(::std::same_as<::std::remove_cv_t<T>,::std::byte>)
 		return details::print_reserve_integral_define<flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>(iter,static_cast<char8_t>(t.reference));
 	else
 		return details::print_reserve_integral_define<flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase,flags.full>(iter,t.reference);
 }
 
 
-template<std::integral char_type,manipulators::scalar_flags flags,typename T>
-requires ((details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>) && !flags.alphabet)
-inline constexpr std::size_t print_reserve_precise_size(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,manipulators::scalar_manip_t<flags,T> t) noexcept
+template<::std::integral char_type,manipulators::scalar_flags flags,typename T>
+requires ((details::my_integral<T>||::std::same_as<::std::remove_cv_t<T>,::std::byte>) && !flags.alphabet)
+inline constexpr ::std::size_t print_reserve_precise_size(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,manipulators::scalar_manip_t<flags,T> t) noexcept
 {
-	if constexpr(std::same_as<T,std::byte>)
+	if constexpr(::std::same_as<T,::std::byte>)
 		return details::print_integer_reserved_precise_size<flags.base,flags.showbase,flags.showpos,flags.full>(static_cast<char8_t>(t.reference));
 	else
 		return details::print_integer_reserved_precise_size<flags.base,flags.showbase,flags.showpos,flags.full>(t.reference);
 }
 
-template<std::integral char_type,::std::random_access_iterator Iter,manipulators::scalar_flags flags,typename T>
-requires ((details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>) && !flags.alphabet)
-inline constexpr void print_reserve_precise_define(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,Iter iter,std::size_t n,manipulators::scalar_manip_t<flags,T> t) noexcept
+template<::std::integral char_type,::std::random_access_iterator Iter,manipulators::scalar_flags flags,typename T>
+requires ((details::my_integral<T>||::std::same_as<::std::remove_cv_t<T>,::std::byte>) && !flags.alphabet)
+inline constexpr void print_reserve_precise_define(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,Iter iter,::std::size_t n,manipulators::scalar_manip_t<flags,T> t) noexcept
 {
-	if constexpr(std::same_as<T,std::byte>)
+	if constexpr(::std::same_as<T,::std::byte>)
 		details::print_reserve_integral_define_precise<flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase>(iter,n,static_cast<char8_t>(t.reference));
 	else
 		details::print_reserve_integral_define_precise<flags.base,flags.showbase,flags.uppercase_showbase,flags.showpos,flags.uppercase>(iter,n,t.reference);
 }
 
-template<std::integral char_type,manipulators::scalar_flags flags,typename T>
-requires ((details::my_integral<T>||std::same_as<std::remove_cv_t<T>,std::byte>) && !flags.alphabet&&(
-	flags.showpos||(details::my_signed_integral<T>&&!std::same_as<std::remove_cv_t<T>,bool>)
+template<::std::integral char_type,manipulators::scalar_flags flags,typename T>
+requires ((details::my_integral<T>||::std::same_as<::std::remove_cv_t<T>,::std::byte>) && !flags.alphabet&&(
+	flags.showpos||(details::my_signed_integral<T>&&!::std::same_as<::std::remove_cv_t<T>,bool>)
 ))
-inline constexpr std::size_t print_define_internal_shift(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,manipulators::scalar_manip_t<flags,T> t) noexcept
+inline constexpr ::std::size_t print_define_internal_shift(io_reserve_type_t<char_type,manipulators::scalar_manip_t<flags,T>>,manipulators::scalar_manip_t<flags,T> t) noexcept
 {
 	if constexpr(flags.showpos)
 	{

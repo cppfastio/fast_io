@@ -2,10 +2,10 @@
 
 inline constexpr auto create_k256scalar() noexcept
 {
-	constexpr std::size_t n{sizeof(K256)/sizeof(std::uint_least32_t)};
-	constexpr std::size_t nsub16{n-16u};
-	::fast_io::freestanding::array<std::uint_least32_t,nsub16> a;
-	for(std::size_t i{};i!=nsub16;++i)
+	constexpr ::std::size_t n{sizeof(K256)/sizeof(::std::uint_least32_t)};
+	constexpr ::std::size_t nsub16{n-16u};
+	::fast_io::freestanding::array<::std::uint_least32_t,nsub16> a;
+	for(::std::size_t i{};i!=nsub16;++i)
 	{
 		a[i]=K256[i+16u];
 	}
@@ -20,9 +20,9 @@ inline constexpr auto k256scalar{create_k256scalar()};
 #if __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void sha256_round(std::uint_least32_t T1,std::uint_least32_t a,std::uint_least32_t b,std::uint_least32_t& __restrict d,
-				std::uint_least32_t e,std::uint_least32_t f,std::uint_least32_t g,std::uint_least32_t& __restrict h,
-				std::uint_least32_t& __restrict bpc,std::uint_least32_t k) noexcept
+inline constexpr void sha256_round(::std::uint_least32_t T1,::std::uint_least32_t a,::std::uint_least32_t b,::std::uint_least32_t& __restrict d,
+				::std::uint_least32_t e,::std::uint_least32_t f,::std::uint_least32_t g,::std::uint_least32_t& __restrict h,
+				::std::uint_least32_t& __restrict bpc,::std::uint_least32_t k) noexcept
 {
 	sha256_scalar_round(T1+k,a,b,d,e,f,g,h,bpc);
 }
@@ -30,28 +30,28 @@ inline constexpr void sha256_round(std::uint_least32_t T1,std::uint_least32_t a,
 #if __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
 #endif
-inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
+inline void sha256_runtime_routine(::std::uint_least32_t* __restrict state,::std::byte const* __restrict blocks_start,::std::byte const* __restrict blocks_last) noexcept
 {
 	using ul32_may_alias
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	= std::uint_least32_t;
-	std::uint_least32_t a{state[0]};
-	std::uint_least32_t b{state[1]};
-	std::uint_least32_t c{state[2]};
-	std::uint_least32_t d{state[3]};
-	std::uint_least32_t e{state[4]};
-	std::uint_least32_t f{state[5]};
-	std::uint_least32_t g{state[6]};
-	std::uint_least32_t h{state[7]};
-	std::uint_least32_t x[16];
-	constexpr std::uint_least32_t const* k5_start{k256scalar.element};
-	constexpr std::uint_least32_t const* k5_last{k256scalar.element+k256scalar.size()};
+	= ::std::uint_least32_t;
+	::std::uint_least32_t a{state[0]};
+	::std::uint_least32_t b{state[1]};
+	::std::uint_least32_t c{state[2]};
+	::std::uint_least32_t d{state[3]};
+	::std::uint_least32_t e{state[4]};
+	::std::uint_least32_t f{state[5]};
+	::std::uint_least32_t g{state[6]};
+	::std::uint_least32_t h{state[7]};
+	::std::uint_least32_t x[16];
+	constexpr ::std::uint_least32_t const* k5_start{k256scalar.element};
+	constexpr ::std::uint_least32_t const* k5_last{k256scalar.element+k256scalar.size()};
 	for(;blocks_start!=blocks_last;blocks_start+=64)
 	{
 		ul32_may_alias const* W{reinterpret_cast<ul32_may_alias const*>(blocks_start)};
-		std::uint_least32_t bpc{b^c};
+		::std::uint_least32_t bpc{b^c};
 		sha256_round(x[0]=big_endian(W[0]),a,b,d,e,f,g,h,bpc,0x428A2F98);
 		sha256_round(x[1]=big_endian(W[1]),h,a,c,d,e,f,g,bpc,0x71374491);
 		sha256_round(x[2]=big_endian(W[2]),g,h,b,c,d,e,f,bpc,0xB5C0FBCF);
@@ -68,7 +68,7 @@ inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::by
 		sha256_round(x[13]=big_endian(W[13]),d,e,g,h,a,b,c,bpc,0x80DEB1FE);
 		sha256_round(x[14]=big_endian(W[14]),c,d,f,g,h,a,b,bpc,0x9BDC06A7);
 		sha256_round(x[15]=big_endian(W[15]),b,c,e,f,g,h,a,bpc,0xC19BF174);
-		for(std::uint_least32_t const *k5{k5_start};k5!=k5_last;k5+=16)
+		for(::std::uint_least32_t const *k5{k5_start};k5!=k5_last;k5+=16)
 		{
 			sha256_round((x[0]+=sigma0(x[1])+sigma1(x[14])+x[9]),a,b,d,e,f,g,h,bpc,*k5);
 			sha256_round((x[1]+=sigma0(x[2])+sigma1(x[15])+x[10]),h,a,c,d,e,f,g,bpc,k5[1]);

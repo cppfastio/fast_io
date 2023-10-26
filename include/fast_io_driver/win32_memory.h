@@ -5,7 +5,7 @@ namespace fast_io
 
 //https://github.com/MicrosoftDocs/windows-driver-docs/issues/1736
 
-enum class win32_memory_page_protect:std::uint_least32_t
+enum class win32_memory_page_protect:::std::uint_least32_t
 {
 executed = 0x10,
 executed_read = 0x20,
@@ -112,32 +112,32 @@ constexpr void print_define(output& out,win32_memory_page_protect info)
 		print_freestanding(out,"enclave_no_change/enclave_nodecommit");
 	break;
 	default:
-		print_freestanding(out,"unknown(",static_cast<std::uint_least32_t>(info),")");
+		print_freestanding(out,"unknown(",static_cast<::std::uint_least32_t>(info),")");
 	}
 }
 #endif
 
 constexpr win32_memory_page_protect operator&(win32_memory_page_protect x, win32_memory_page_protect y) noexcept
 {
-using utype = typename std::underlying_type<win32_memory_page_protect>::type;
+using utype = typename ::std::underlying_type<win32_memory_page_protect>::type;
 return static_cast<win32_memory_page_protect>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
 constexpr win32_memory_page_protect operator|(win32_memory_page_protect x, win32_memory_page_protect y) noexcept
 {
-using utype = typename std::underlying_type<win32_memory_page_protect>::type;
+using utype = typename ::std::underlying_type<win32_memory_page_protect>::type;
 return static_cast<win32_memory_page_protect>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
 constexpr win32_memory_page_protect operator^(win32_memory_page_protect x, win32_memory_page_protect y) noexcept
 {
-using utype = typename std::underlying_type<win32_memory_page_protect>::type;
+using utype = typename ::std::underlying_type<win32_memory_page_protect>::type;
 return static_cast<win32_memory_page_protect>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
 constexpr win32_memory_page_protect operator~(win32_memory_page_protect x) noexcept
 {
-using utype = typename std::underlying_type<win32_memory_page_protect>::type;
+using utype = typename ::std::underlying_type<win32_memory_page_protect>::type;
 return static_cast<win32_memory_page_protect>(~static_cast<utype>(x));
 }
 
@@ -149,13 +149,13 @@ inline constexpr win32_memory_page_protect& operator^=(win32_memory_page_protect
 
 struct win32_memory_basic_information
 {
-	std::uintptr_t base_address{};
-	std::uintptr_t allocation_base{};
+	::std::uintptr_t base_address{};
+	::std::uintptr_t allocation_base{};
 	win32_memory_page_protect allocation_protect{};
-	std::size_t region_size{};
-	std::uint_least32_t state{};
-	std::uint_least32_t protect{};
-	std::uint_least32_t type{};
+	::std::size_t region_size{};
+	::std::uint_least32_t state{};
+	::std::uint_least32_t protect{};
+	::std::uint_least32_t type{};
 };
 #if 0
 template<reserve_output_stream output>
@@ -177,45 +177,45 @@ extern "C" void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-OpenProcess(std::uint_least32_t,int,std::uint_least32_t);
+OpenProcess(::std::uint_least32_t,int,::std::uint_least32_t);
 extern "C" int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WriteProcessMemory(void*,void*,void const*,std::size_t,std::size_t*);
+WriteProcessMemory(void*,void*,void const*,::std::size_t,::std::size_t*);
 extern "C" int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-ReadProcessMemory(void*,void const*,void*,std::size_t,std::size_t*);
+ReadProcessMemory(void*,void const*,void*,::std::size_t,::std::size_t*);
 extern "C" int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-VirtualQueryEx(void*,void const*,win32_memory_basic_information*,std::size_t);
+VirtualQueryEx(void*,void const*,win32_memory_basic_information*,::std::size_t);
 extern "C" int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-VirtualProtectEx(void*,void const*,std::size_t,std::uint_least32_t,std::uint_least32_t*);
+VirtualProtectEx(void*,void const*,::std::size_t,::std::uint_least32_t,::std::uint_least32_t*);
 extern "C" void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
 FindWindowA(char const*,char const*);
-extern "C" std::uint_least32_t
+extern "C" ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-GetWindowThreadProcessId(void*,std::uint_least32_t*);
+GetWindowThreadProcessId(void*,::std::uint_least32_t*);
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_win32_memory_io_observer
 {
 public:
 	using native_handle_type = void*;
-	using base_address_type = std::uintptr_t;
+	using base_address_type = ::std::uintptr_t;
 	using char_type = ch_type;
 	native_handle_type handle{};
 	base_address_type base_addr{};
@@ -247,7 +247,7 @@ public:
 	}
 };
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_win32_memory_io_handle: public basic_win32_memory_io_observer<ch_type>
 {
 public:
@@ -292,7 +292,7 @@ public:
 	}
 };
 
-enum class win32_desired_access:std::uint_least32_t
+enum class win32_desired_access:::std::uint_least32_t
 {
 del = 0x00010000L,
 read_control = 0x00020000L,
@@ -316,25 +316,25 @@ process_vm_write = 0x0020,
 
 constexpr win32_desired_access operator&(win32_desired_access x, win32_desired_access y) noexcept
 {
-using utype = typename std::underlying_type<win32_desired_access>::type;
+using utype = typename ::std::underlying_type<win32_desired_access>::type;
 return static_cast<win32_desired_access>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
 constexpr win32_desired_access operator|(win32_desired_access x, win32_desired_access y) noexcept
 {
-using utype = typename std::underlying_type<win32_desired_access>::type;
+using utype = typename ::std::underlying_type<win32_desired_access>::type;
 return static_cast<win32_desired_access>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
 constexpr win32_desired_access operator^(win32_desired_access x, win32_desired_access y) noexcept
 {
-using utype = typename std::underlying_type<win32_desired_access>::type;
+using utype = typename ::std::underlying_type<win32_desired_access>::type;
 return static_cast<win32_desired_access>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
 constexpr win32_desired_access operator~(win32_desired_access x) noexcept
 {
-using utype = typename std::underlying_type<win32_desired_access>::type;
+using utype = typename ::std::underlying_type<win32_desired_access>::type;
 return static_cast<win32_desired_access>(~static_cast<utype>(x));
 }
 
@@ -344,17 +344,17 @@ inline constexpr win32_desired_access& operator|=(win32_desired_access& x, win32
 
 inline constexpr win32_desired_access& operator^=(win32_desired_access& x, win32_desired_access y) noexcept{return x=x^y;}
 
-inline std::uint_least32_t get_process_id_from_window_name(cstring_view name)
+inline ::std::uint_least32_t get_process_id_from_window_name(cstring_view name)
 {
 	void* hwnd {win32::FindWindowA(nullptr,name.data())};
 	if(hwnd==nullptr)
 		throw_win32_error();
-	std::uint_least32_t process_id{};
+	::std::uint_least32_t process_id{};
 	win32::GetWindowThreadProcessId(hwnd,__builtin_addressof(process_id));
 	return process_id;
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_win32_memory_file: public basic_win32_memory_io_handle<ch_type>
 {
 public:
@@ -364,9 +364,9 @@ public:
 	constexpr basic_win32_memory_file()=default;
 	constexpr basic_win32_memory_file(native_handle_type hd,base_address_type base):
 		basic_win32_memory_io_handle<ch_type>(hd,base){}
-	basic_win32_memory_file(win32_desired_access dw_desired_access,bool inherit_handle,std::uint_least32_t process_id,
+	basic_win32_memory_file(win32_desired_access dw_desired_access,bool inherit_handle,::std::uint_least32_t process_id,
 		base_address_type base_addr={}):
-		basic_win32_memory_io_handle<ch_type>(win32::OpenProcess(static_cast<std::uint_least32_t>(dw_desired_access),inherit_handle,process_id),base_addr)
+		basic_win32_memory_io_handle<ch_type>(win32::OpenProcess(static_cast<::std::uint_least32_t>(dw_desired_access),inherit_handle,process_id),base_addr)
 	{
 		if(this->native_handle()==nullptr)
 			throw_win32_error();
@@ -392,26 +392,26 @@ public:
 	}
 };
 
-template<std::integral char_type,::std::contiguous_iterator Iter>
+template<::std::integral char_type,::std::contiguous_iterator Iter>
 [[nodiscard]] inline Iter read(basic_win32_memory_io_observer<char_type>& iob,Iter begin,Iter end)
 {
-	std::size_t readed{};
+	::std::size_t readed{};
 	if(!win32::ReadProcessMemory(iob.handle,bit_cast<void const*>(iob.base_addr),::std::to_address(begin),(end-begin)*sizeof(*begin),__builtin_addressof(readed)))
 		throw_win32_error();
 	iob.base_addr+=readed;
 	return begin+readed/sizeof(*begin);
 }
-template<std::integral char_type>
+template<::std::integral char_type>
 [[nodiscard]] inline auto find_read_start(basic_win32_memory_io_observer<char_type> iob)
 {
-	std::size_t readed{};
-	for(std::byte ch{};!win32::ReadProcessMemory(iob.handle,bit_cast<void const*>(iob.base_addr),__builtin_addressof(ch),1,__builtin_addressof(readed));++iob.base_addr);
+	::std::size_t readed{};
+	for(::std::byte ch{};!win32::ReadProcessMemory(iob.handle,bit_cast<void const*>(iob.base_addr),__builtin_addressof(ch),1,__builtin_addressof(readed));++iob.base_addr);
 	return iob;
 }
-template<std::integral char_type,::std::contiguous_iterator Iter>
+template<::std::integral char_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_win32_memory_io_observer<char_type>& iob,Iter begin,Iter end)
 {
-	std::size_t written{};
+	::std::size_t written{};
 	if(!win32::WriteProcessMemory(iob.handle,bit_cast<void*>(iob.base_addr),
 		::std::to_address(begin),(end-begin)*sizeof(*begin),__builtin_addressof(written)))
 		throw_win32_error();
@@ -425,7 +425,7 @@ using win32_memory_file = basic_win32_memory_file<char>;
 static_assert(input_stream<win32_memory_file>);
 static_assert(output_stream<win32_memory_file>);
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline win32_memory_basic_information win32_virtual_query(basic_win32_memory_io_observer<char_type> iob)
 {
 	win32_memory_basic_information mem{};
@@ -434,27 +434,27 @@ inline win32_memory_basic_information win32_virtual_query(basic_win32_memory_io_
 	return mem;
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline win32_memory_page_protect win32_virtual_protect(basic_win32_memory_io_observer<char_type> iob,
-	std::size_t size,
+	::std::size_t size,
 	win32_memory_page_protect new_protect)
 {
-	std::uint_least32_t old_protect{};
+	::std::uint_least32_t old_protect{};
 	if(!win32::VirtualProtectEx(iob.handle,bit_cast<void const*>(iob.base_addr),
-		size,static_cast<std::uint_least32_t>(new_protect),__builtin_addressof(old_protect)))
+		size,static_cast<::std::uint_least32_t>(new_protect),__builtin_addressof(old_protect)))
 		throw_win32_error();
 	return static_cast<win32_memory_page_protect>(old_protect);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 [[nodiscard]] inline auto find_usable_region(basic_win32_memory_io_observer<char_type> wmf)
 {
 	for(;;)
 	{
 		auto mem_info{fast_io::win32_virtual_query(wmf)};
-		if(static_cast<std::uint_least32_t>(mem_info.allocation_protect)==0)
+		if(static_cast<::std::uint_least32_t>(mem_info.allocation_protect)==0)
 		{
-			std::size_t rsize{mem_info.region_size};
+			::std::size_t rsize{mem_info.region_size};
 			if(rsize==0)[[unlikely]]
 				break;
 			wmf.base_address()+=rsize;
@@ -469,13 +469,13 @@ template<std::integral char_type>
 class win32_virtual_protect_guard
 {
 	void* process_handle{};
-	std::uintptr_t address{};
-	std::size_t region_size{};
+	::std::uintptr_t address{};
+	::std::size_t region_size{};
 	win32_memory_page_protect oprotect{};
 public:
-	template<std::integral char_type>
+	template<::std::integral char_type>
 	win32_virtual_protect_guard(basic_win32_memory_io_observer<char_type> iob,
-	std::size_t size,
+	::std::size_t size,
 	win32_memory_page_protect new_protect):
 		process_handle(iob.native_handle()),
 		address(iob.base_addr),
@@ -491,9 +491,9 @@ public:
 	win32_virtual_protect_guard& operator=(win32_virtual_protect_guard const&)=delete;
 	~win32_virtual_protect_guard()
 	{
-		std::uint_least32_t useless{};
+		::std::uint_least32_t useless{};
 		win32::VirtualProtectEx(process_handle,bit_cast<void const*>(address),
-		region_size,static_cast<std::uint_least32_t>(oprotect),__builtin_addressof(useless));
+		region_size,static_cast<::std::uint_least32_t>(oprotect),__builtin_addressof(useless));
 	}
 };
 

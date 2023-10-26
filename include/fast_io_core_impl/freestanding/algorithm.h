@@ -35,11 +35,11 @@ inline constexpr Iter find_if(Iter first,Iter last,predicate q)
 }
 
 template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
-inline constexpr output_iter copy_n(input_iter first,std::size_t count,output_iter result)
+inline constexpr output_iter copy_n(input_iter first,::std::size_t count,output_iter result)
 {
 	using input_value_type = ::std::iter_value_t<input_iter>;
 	using output_value_type = ::std::iter_value_t<output_iter>;
-	for (std::size_t i{}; i != count; ++i)
+	for (::std::size_t i{}; i != count; ++i)
 	{
 		if constexpr(sizeof(input_value_type)==1&&
 			(::std::same_as<input_value_type,::std::byte>)&&
@@ -98,9 +98,9 @@ inline constexpr void fill(fwd_iter first,fwd_iter last,T value)
 
 
 template<::std::input_iterator fwd_iter,typename T>
-inline constexpr void fill_n(fwd_iter first,std::size_t n,T value)
+inline constexpr void fill_n(fwd_iter first,::std::size_t n,T value)
 {
-	for(std::size_t i{};i!=n;++i)
+	for(::std::size_t i{};i!=n;++i)
 	{
 		*first=value;
 		++first;
@@ -130,7 +130,7 @@ namespace fast_io::freestanding
 {
 
 template<::std::input_iterator Iter,::std::integral T>
-//requires (std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(std::uintmax_t))
+//requires (::std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(::std::uintmax_t))
 requires (::std::is_trivially_copyable_v<T>)
 inline constexpr Iter find(Iter first,Iter last,T t)
 {
@@ -141,7 +141,7 @@ inline constexpr Iter find(Iter first,Iter last,T t)
 }
 
 template<::std::input_iterator Iter,::std::integral T>
-//requires (std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(std::uintmax_t))
+//requires (::std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(::std::uintmax_t))
 requires (::std::is_trivially_copyable_v<T>)
 inline constexpr Iter find_not(Iter first,Iter last,T t)
 {
@@ -190,17 +190,17 @@ inline
 constexpr
 #endif
 #endif
-void* my_memcpy(void* dest, void const* src, std::size_t count) noexcept
+void* my_memcpy(void* dest, void const* src, ::std::size_t count) noexcept
 {
 	return
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memcpy)
 		__builtin_memcpy
 #else
-		std::memcpy
+		::std::memcpy
 #endif
 #else
-		std::memcpy
+		::std::memcpy
 #endif
 		(dest, src, count);
 }
@@ -212,32 +212,32 @@ inline
 constexpr
 #endif
 #endif
-void* my_memmove(void* dest, void const* src, std::size_t count) noexcept
+void* my_memmove(void* dest, void const* src, ::std::size_t count) noexcept
 {
 	return
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memmove)
 		__builtin_memmove
 #else
-		std::memmove
+		::std::memmove
 #endif
 #else
-		std::memmove
+		::std::memmove
 #endif
 		(dest, src, count);
 }
 
-inline void* my_memset(void* dest, int ch, std::size_t count) noexcept
+inline void* my_memset(void* dest, int ch, ::std::size_t count) noexcept
 {
 	return
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memset)
 		__builtin_memset
 #else
-		std::memset
+		::std::memset
 #endif
 #else
-		std::memset
+		::std::memset
 #endif
 		(dest, ch, count);
 }
@@ -248,23 +248,23 @@ inline
 constexpr
 #endif
 #endif
-int my_memcmp(void const* dest, void const* src, std::size_t count) noexcept
+int my_memcmp(void const* dest, void const* src, ::std::size_t count) noexcept
 {
 	return
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memcmp)
 		__builtin_memcmp
 #else
-		std::memcmp
+		::std::memcmp
 #endif
 #else
-		std::memcmp
+		::std::memcmp
 #endif
 		(dest, src, count);
 }
 
 template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
-inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t count, output_iter result)
+inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size_t count, output_iter result)
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -283,11 +283,11 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, std::size_t
 		if constexpr
 			(::std::contiguous_iterator<input_iter> &&
 				::std::contiguous_iterator<output_iter> &&
-				std::is_trivially_copyable_v<input_value_type> &&
-				std::is_trivially_copyable_v<output_value_type> &&
-				(std::same_as<input_value_type, output_value_type> ||
-					((std::integral<input_value_type>||::std::same_as<::std::byte,input_value_type>)
-					&& (std::integral<output_value_type>||::std::same_as<::std::byte,output_value_type>) &&
+				::std::is_trivially_copyable_v<input_value_type> &&
+				::std::is_trivially_copyable_v<output_value_type> &&
+				(::std::same_as<input_value_type, output_value_type> ||
+					((::std::integral<input_value_type>||::std::same_as<::std::byte,input_value_type>)
+					&& (::std::integral<output_value_type>||::std::same_as<::std::byte,output_value_type>) &&
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			if (count)	//to avoid nullptr UB
@@ -319,14 +319,14 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 		if constexpr
 			(::std::contiguous_iterator<input_iter> &&
 				::std::contiguous_iterator<output_iter> &&
-				std::is_trivially_copyable_v<input_value_type> &&
-				std::is_trivially_copyable_v<output_value_type> &&
-				(std::same_as<input_value_type, output_value_type> ||
-					((std::integral<input_value_type>||::std::same_as<::std::byte,input_value_type>)
-					&& (std::integral<output_value_type>||::std::same_as<::std::byte,output_value_type>) &&
+				::std::is_trivially_copyable_v<input_value_type> &&
+				::std::is_trivially_copyable_v<output_value_type> &&
+				(::std::same_as<input_value_type, output_value_type> ||
+					((::std::integral<input_value_type>||::std::same_as<::std::byte,input_value_type>)
+					&& (::std::integral<output_value_type>||::std::same_as<::std::byte,output_value_type>) &&
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
-			std::size_t count{ static_cast<std::size_t>(last - first) };
+			::std::size_t count{ static_cast<::std::size_t>(last - first) };
 			if (count)	//to avoid nullptr UB
 				my_memcpy(::std::to_address(result), ::std::to_address(first), sizeof(::std::iter_value_t<input_iter>) * count);
 			return result += count;
@@ -339,7 +339,7 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 }
 
 template<::std::input_iterator input_iter,::std::input_or_output_iterator output_iter>
-inline constexpr output_iter my_copy_n(input_iter first, std::size_t count, output_iter result)
+inline constexpr output_iter my_copy_n(input_iter first, ::std::size_t count, output_iter result)
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -358,10 +358,10 @@ inline constexpr output_iter my_copy_n(input_iter first, std::size_t count, outp
 		if constexpr
 			(::std::contiguous_iterator<input_iter> &&
 				::std::contiguous_iterator<output_iter> &&
-				std::is_trivially_copyable_v<input_value_type> &&
-				std::is_trivially_copyable_v<output_value_type> &&
-				(std::same_as<input_value_type, output_value_type> ||
-					(std::integral<input_value_type> && std::integral<output_value_type> &&
+				::std::is_trivially_copyable_v<input_value_type> &&
+				::std::is_trivially_copyable_v<output_value_type> &&
+				(::std::same_as<input_value_type, output_value_type> ||
+					(::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			if (count)	//to avoid nullptr UB
@@ -380,11 +380,11 @@ inline constexpr output_iter my_copy(input_iter first, input_iter second, output
 {
 	using input_value_type = ::std::iter_value_t<input_iter>;
 	using output_value_type = ::std::iter_value_t<output_iter>;
-	if constexpr (::std::contiguous_iterator<input_iter> && ::std::contiguous_iterator<output_iter> && std::is_trivially_copyable_v<input_value_type> &&
-		std::is_trivially_copyable_v<output_value_type> &&
-		(std::same_as<input_value_type, output_value_type> || (std::integral<input_value_type> && std::integral<output_value_type> && sizeof(std::is_trivially_copyable_v<input_value_type>) == sizeof(std::is_trivially_copyable_v<output_value_type>))))
+	if constexpr (::std::contiguous_iterator<input_iter> && ::std::contiguous_iterator<output_iter> && ::std::is_trivially_copyable_v<input_value_type> &&
+		::std::is_trivially_copyable_v<output_value_type> &&
+		(::std::same_as<input_value_type, output_value_type> || (::std::integral<input_value_type> && ::std::integral<output_value_type> && sizeof(::std::is_trivially_copyable_v<input_value_type>) == sizeof(::std::is_trivially_copyable_v<output_value_type>))))
 	{
-		my_copy_n(first, static_cast<std::size_t>(second - first), result);
+		my_copy_n(first, static_cast<::std::size_t>(second - first), result);
 		return result + (second - first);
 	}
 	else
@@ -411,13 +411,13 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 		if constexpr
 			(::std::contiguous_iterator<input_iter> &&
 				::std::contiguous_iterator<output_iter> &&
-				std::is_trivially_copyable_v<input_value_type> &&
-				std::is_trivially_copyable_v<output_value_type> &&
-				(std::same_as<input_value_type, output_value_type> ||
-					(std::integral<input_value_type> && std::integral<output_value_type> &&
+				::std::is_trivially_copyable_v<input_value_type> &&
+				::std::is_trivially_copyable_v<output_value_type> &&
+				(::std::same_as<input_value_type, output_value_type> ||
+					(::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
-			std::size_t const count(last - first);
+			::std::size_t const count(last - first);
 			d_last -= count;
 			if (count)	//to avoid nullptr UB
 				my_memmove(::std::to_address(d_last), ::std::to_address(first), sizeof(input_value_type) * count);
@@ -429,7 +429,7 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 }
 
 template<::std::random_access_iterator input_iter,::std::random_access_iterator output_iter>
-inline constexpr bool my_compare_iter_n(input_iter first,std::size_t n,output_iter outier) noexcept
+inline constexpr bool my_compare_iter_n(input_iter first,::std::size_t n,output_iter outier) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -456,13 +456,13 @@ inline constexpr bool my_compare_iter_n(input_iter first,std::size_t n,output_it
 		if constexpr
 		(::std::contiguous_iterator<input_iter> &&
 			::std::contiguous_iterator<output_iter> &&
-			std::is_trivially_copyable_v<input_value_type> &&
-			std::is_trivially_copyable_v<output_value_type> &&
-			(std::same_as<input_value_type, output_value_type> ||
-				(std::integral<input_value_type> && std::integral<output_value_type> &&
+			::std::is_trivially_copyable_v<input_value_type> &&
+			::std::is_trivially_copyable_v<output_value_type> &&
+			(::std::same_as<input_value_type, output_value_type> ||
+				(::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 		{
-			return my_memcmp(std::to_address(first),std::to_address(outier),n)==0;
+			return my_memcmp(::std::to_address(first),::std::to_address(outier),n)==0;
 		}
 		else
 		{
@@ -504,7 +504,7 @@ inline constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, In
 	return first1==last1&&first2==last2;
 }
 
-template<std::forward_iterator ForwardIt, class T, class Compare>
+template<::std::forward_iterator ForwardIt, class T, class Compare>
 inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const& value, Compare comp)
 {
 	ForwardIt it;
@@ -531,7 +531,7 @@ inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const&
 template<::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
 inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first)
 {
-	using T = typename std::iterator_traits<NoThrowForwardIt>::value_type;
+	using T = typename ::std::iterator_traits<NoThrowForwardIt>::value_type;
 	struct destroyer
 	{
 		NoThrowForwardIt d_first;
@@ -552,10 +552,10 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 	if constexpr
 		(::std::contiguous_iterator<input_iter> &&
 			::std::contiguous_iterator<output_iter> &&
-			std::is_trivially_copyable_v<input_value_type> &&
-			std::is_trivially_copyable_v<output_value_type> &&
-			(std::same_as<input_value_type, output_value_type> ||
-				(std::integral<input_value_type> && std::integral<output_value_type> &&
+			::std::is_trivially_copyable_v<input_value_type> &&
+			::std::is_trivially_copyable_v<output_value_type> &&
+			(::std::same_as<input_value_type, output_value_type> ||
+				(::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 	{
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
@@ -565,7 +565,7 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 		if (!__builtin_is_constant_evaluated())
 #endif
 		{
-			std::size_t count{ static_cast<std::size_t>(last - first) };
+			::std::size_t count{ static_cast<::std::size_t>(last - first) };
 			if (count)	//to avoid nullptr UB
 				my_memmove(::std::to_address(d_first), ::std::to_address(first), sizeof(input_value_type) * count);
 			return d_first += count;

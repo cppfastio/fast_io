@@ -1,4 +1,4 @@
-﻿	if constexpr(std::same_as<char_type,char>)
+﻿	if constexpr(::std::same_as<char_type,char>)
 	{
 switch(errn)
 {
@@ -36,7 +36,7 @@ default:
 	return tsc("Unknown");
 }
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 switch(errn)
 {
@@ -74,7 +74,7 @@ default:
 	return tsc(L"Unknown");
 }
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 switch(errn)
 {
@@ -112,7 +112,7 @@ default:
 	return tsc(u"Unknown");
 }
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 switch(errn)
 {

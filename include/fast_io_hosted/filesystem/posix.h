@@ -32,7 +32,7 @@ public:
 	{
 		return dirp;
 	}
-	template<std::integral char_type>
+	template<::std::integral char_type>
 	operator basic_posix_io_observer<char_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
@@ -82,7 +82,7 @@ public:
 	explicit constexpr posix_directory_file(posix_directory_io_observer) noexcept=delete;
 	constexpr posix_directory_file& operator=(posix_directory_io_observer) noexcept=delete;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	constexpr posix_directory_file(native_hd dirp1):posix_directory_io_observer{dirp1}{}
 	posix_directory_file(posix_file&& pioh):posix_directory_io_observer{noexcept_call(::fdopendir,pioh.fd)}
 	{
@@ -154,8 +154,8 @@ struct posix_directory_entry
 	using char_type = char8_t;
 	DIR* dirp{};
 	struct dirent* entry{};
-	std::size_t d_namlen{};
-	template<std::integral ch_type>
+	::std::size_t d_namlen{};
+	template<::std::integral ch_type>
 	explicit operator basic_posix_io_observer<ch_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
@@ -187,7 +187,7 @@ inline ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> u8filena
 	return {reinterpret_cast<char8_may_alias_const_ptr>(pioe.entry->d_name),pioe.d_namlen};
 }
 
-inline constexpr std::uint_least64_t inode_ul64(posix_directory_entry pioe) noexcept
+inline constexpr ::std::uint_least64_t inode_ul64(posix_directory_entry pioe) noexcept
 {
 	return pioe.entry->d_ino;
 }
@@ -247,7 +247,7 @@ struct posix_directory_iterator
 {
 	DIR* dirp{};
 	struct dirent* entry{};
-	std::size_t d_namlen{};
+	::std::size_t d_namlen{};
 };
 
 struct posix_directory_generator
@@ -326,7 +326,7 @@ struct basic_posix_recursive_directory_iterator
 	using stack_type = StackType;
 	DIR* dirp{};
 	struct dirent* entry{};
-	std::size_t d_namlen{};
+	::std::size_t d_namlen{};
 	stack_type stack;
 	constexpr basic_posix_recursive_directory_iterator()=default;
 	explicit constexpr basic_posix_recursive_directory_iterator(DIR* dp):dirp(dp){}
@@ -346,7 +346,7 @@ struct basic_posix_recursive_directory_generator
 using posix_recursive_directory_generator = basic_posix_recursive_directory_generator<::fast_io::containers::vector<posix_directory_file,::fast_io::posix_api_encoding_converter::allocator_type>>;
 
 template<typename StackType>
-inline std::size_t depth(basic_posix_recursive_directory_iterator<StackType> const& prdit) noexcept
+inline ::std::size_t depth(basic_posix_recursive_directory_iterator<StackType> const& prdit) noexcept
 {
 	return prdit.stack.size();
 }

@@ -68,13 +68,13 @@ namespace fast_io
 inline namespace manipulators
 {
 
-template<std::size_t sz,typename value_type>
+template<::std::size_t sz,typename value_type>
 struct basic_lebe_get_integral
 {
 	value_type* pointer;
 };
 
-template<std::size_t sz,typename value_type>
+template<::std::size_t sz,typename value_type>
 struct basic_lebe_put_integral
 {
 	using manip_tag = manip_tag_t;
@@ -290,7 +290,7 @@ constexpr
 #endif
 parse_lebeget_int_result<int_type> scan_precise_reserve_define_integer_common_largechartype_impl(char_type const* iter) noexcept
 {
-	constexpr std::size_t n{sizeof(int_type)};
+	constexpr ::std::size_t n{sizeof(int_type)};
 	static_assert(n!=0);
 	int_type t;
 
@@ -343,7 +343,7 @@ constexpr
 #endif
 auto scan_precise_reserve_define_integer_common_impl(char_type const* iter) noexcept
 {
-	constexpr std::size_t n{sizeof(int_type)};
+	constexpr ::std::size_t n{sizeof(int_type)};
 	static_assert(n!=0);
 	int_type t;
 
@@ -386,7 +386,7 @@ auto scan_precise_reserve_define_integer_common_impl(char_type const* iter) noex
 	return t;
 }
 
-template<::std::endian endn,std::size_t n,::fast_io::details::my_integral int_type,::std::integral char_type>
+template<::std::endian endn,::std::size_t n,::fast_io::details::my_integral int_type,::std::integral char_type>
 inline constexpr ::std::conditional_t<(1<sizeof(char_type)),::fast_io::parse_code,void> scan_precise_reserve_define_integer_impl(char_type const* iter,int_type& t) noexcept
 {
 	static_assert(n<=128);
@@ -411,7 +411,7 @@ inline constexpr ::std::conditional_t<(1<sizeof(char_type)),::fast_io::parse_cod
 		temp = scan_precise_reserve_define_integer_common_impl<endn,proxy_type>(iter);
 	}
 	using my_unsigned_type = ::fast_io::details::my_make_unsigned_t<int_type>;
-	constexpr std::size_t digits{::std::numeric_limits<my_unsigned_type>::digits};
+	constexpr ::std::size_t digits{::std::numeric_limits<my_unsigned_type>::digits};
 	if constexpr(digits<n)
 	{
 		constexpr proxy_type mx_value{::std::numeric_limits<my_unsigned_type>::max()};
@@ -465,12 +465,12 @@ inline constexpr ::std::conditional_t<(1<sizeof(char_type)),::fast_io::parse_cod
 	{
 		if constexpr(isiec559)
 		{
-			t=static_cast<flttypef>(std::bit_cast<float>(temp));
+			t=static_cast<flttypef>(::std::bit_cast<float>(temp));
 		}
 		else
 		{
 #if __STDCPP_FLOAT32_T__
-			t=static_cast<flttypef>(std::bit_cast<_Float32>(temp));
+			t=static_cast<flttypef>(::std::bit_cast<_Float32>(temp));
 #else
 static_assert(isiec559,"float is not iec60559");
 #endif
@@ -480,12 +480,12 @@ static_assert(isiec559,"float is not iec60559");
 	{
 		if constexpr(isiec559)
 		{
-			t=static_cast<flttypef>(std::bit_cast<double>(temp));
+			t=static_cast<flttypef>(::std::bit_cast<double>(temp));
 		}
 		else
 		{
 #if __STDCPP_FLOAT64_T__
-			t=static_cast<flttypef>(std::bit_cast<_Float64>(temp));
+			t=static_cast<flttypef>(::std::bit_cast<_Float64>(temp));
 #else
 static_assert(isiec559,"double is not iec60559");
 #endif
@@ -494,14 +494,14 @@ static_assert(isiec559,"double is not iec60559");
 	else if constexpr(::std::same_as<flttype,long double>)
 	{
 #if __STDCPP_FLOAT128_T__
-			t=static_cast<flttypef>(std::bit_cast<_Float128>(temp));
+			t=static_cast<flttypef>(::std::bit_cast<_Float128>(temp));
 #else
 static_assert(sizeof(double)!=sizeof(long)&&isiec559,"long double is not iec60559 or sizeof(double) == sizeof(long double)");
 #endif
 	}
 	else
 	{
-		t=static_cast<flttypef>(std::bit_cast<flttype>(temp));
+		t=static_cast<flttypef>(::std::bit_cast<flttype>(temp));
 	}
 	if constexpr(1<sizeof(char_type))
 	{
@@ -516,7 +516,7 @@ constexpr
 #endif
 char_type* print_reserve_define_integer_lebe_common_impl(char_type* iter,uint_type u) noexcept
 {
-	constexpr std::size_t n{sizeof(uint_type)};
+	constexpr ::std::size_t n{sizeof(uint_type)};
 	static_assert(n!=0);
 	if constexpr(::std::endian::native!=endn)
 	{
@@ -571,10 +571,10 @@ template<::std::integral char_type,::std::endian end,::std::size_t sz,typename i
 requires (((sz%(::std::numeric_limits<char unsigned>::digits))==0)&&!::std::is_const_v<int_type>
 	&&(::fast_io::details::my_integral<int_type>||
 	(::std::floating_point<int_type>&&(::fast_io::details::size_lebe_float_size<int_type>)==sz)))
-inline constexpr std::size_t scan_precise_reserve_size(io_reserve_type_t<char_type,
+inline constexpr ::std::size_t scan_precise_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_lebe_get_put<end,::fast_io::manipulators::basic_lebe_get_integral<sz,int_type>>>) noexcept
 {
-	constexpr std::size_t cache{sz/(::std::numeric_limits<char unsigned>::digits)};
+	constexpr ::std::size_t cache{sz/(::std::numeric_limits<char unsigned>::digits)};
 	return cache;
 }
 
@@ -600,10 +600,10 @@ inline constexpr auto scan_precise_reserve_define(io_reserve_type_t<char_type,
 template<::std::integral char_type,::std::endian end,::std::size_t sz,typename int_type>
 requires (((sz%(::std::numeric_limits<char unsigned>::digits))==0)&&
 	(::fast_io::details::my_unsigned_integral<int_type>||::std::same_as<int_type,::fast_io::details::pesudo_int128type>))
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_lebe_get_put<end,::fast_io::manipulators::basic_lebe_put_integral<sz,int_type>>>) noexcept
 {
-	constexpr std::size_t cache{sz/(::std::numeric_limits<char unsigned>::digits)};
+	constexpr ::std::size_t cache{sz/(::std::numeric_limits<char unsigned>::digits)};
 	return cache;
 }
 

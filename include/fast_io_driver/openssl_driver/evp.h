@@ -48,7 +48,7 @@ public:
 		key=nullptr;
 		return temp;
 	}
-	std::size_t use_count() const noexcept
+	::std::size_t use_count() const noexcept
 	{
 		return EVP_PKEY_up_ref(key);
 	}
@@ -211,10 +211,10 @@ https://linux.die.net/man/3/pem_read_rsa_pubkey
 
 
 template<output_stream output>
-requires (std::same_as<typename std::remove_cvref_t<output>::char_type,char>&&(std::derived_from<std::remove_cvref_t<output>,bio_io_observer>||buffer_output_stream<std::remove_cvref_t<output>>))
+requires (::std::same_as<typename ::std::remove_cvref_t<output>::char_type,char>&&(::std::derived_from<::std::remove_cvref_t<output>,bio_io_observer>||buffer_output_stream<::std::remove_cvref_t<output>>))
 inline void print_define(io_reserve_type_t<typename output::char_type,private_key>,output out,private_key const& key)
 {
-	if constexpr(std::derived_from<std::remove_cvref_t<output>,bio_io_observer>)
+	if constexpr(::std::derived_from<::std::remove_cvref_t<output>,bio_io_observer>)
 	{
 		if(!noexcept_call(PEM_write_bio_PrivateKey,out.bio,key.x.key,key.enc,key.kstr,key.klen,key.cb,key.u))
 			throw_openssl_error();
@@ -227,10 +227,10 @@ inline void print_define(io_reserve_type_t<typename output::char_type,private_ke
 }
 
 template<output_stream output>
-requires (std::same_as<typename std::remove_cvref_t<output>::char_type,char>&&(std::derived_from<std::remove_cvref_t<output>,bio_io_observer>||buffer_output_stream<std::remove_cvref_t<output>>))
+requires (::std::same_as<typename ::std::remove_cvref_t<output>::char_type,char>&&(::std::derived_from<::std::remove_cvref_t<output>,bio_io_observer>||buffer_output_stream<::std::remove_cvref_t<output>>))
 inline void print_define(io_reserve_type_t<typename output::char_type,public_key>,output out,public_key key)
 {
-	if constexpr(std::derived_from<std::remove_cvref_t<output>,bio_io_observer>)
+	if constexpr(::std::derived_from<::std::remove_cvref_t<output>,bio_io_observer>)
 	{
 		if(!noexcept_call(PEM_write_bio_PUBKEY,out.bio,key.x.key))
 			throw_openssl_error();

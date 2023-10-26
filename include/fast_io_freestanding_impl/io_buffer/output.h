@@ -122,7 +122,7 @@ inline constexpr char_type const* write_some_overflow_impl(
 	basic_io_buffer_pointers<char_type>& pointers,
 	char_type const* first, char_type const* last)
 {
-	std::size_t const diff{static_cast<std::size_t>(last-first)};
+	::std::size_t const diff{static_cast<::std::size_t>(last-first)};
 	if(pointers.buffer_begin==nullptr)
 	{
 		if(diff<buffer_size)
@@ -162,7 +162,7 @@ inline constexpr void write_all_overflow_impl(
 	basic_io_buffer_pointers<char_type>& pointers,
 	char_type const* first, char_type const* last)
 {
-	std::size_t const diff{static_cast<std::size_t>(last-first)};
+	::std::size_t const diff{static_cast<::std::size_t>(last-first)};
 	if(pointers.buffer_begin==nullptr)
 	{
 		if(diff<buffer_size)

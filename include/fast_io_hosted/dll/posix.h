@@ -117,7 +117,7 @@ public:
 	using native_handle_type = void*;
 	constexpr posix_dll_file()=default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr posix_dll_file(native_hd handle) noexcept:posix_dll_io_observer{handle}{}
 	explicit constexpr posix_dll_file(decltype(nullptr)) noexcept = delete;
 

@@ -9,25 +9,25 @@ secure_clear=2
 
 constexpr allocator_adapter_flags operator&(allocator_adapter_flags x, allocator_adapter_flags y) noexcept
 {
-using utype = typename std::underlying_type<allocator_adapter_flags>::type;
+using utype = typename ::std::underlying_type<allocator_adapter_flags>::type;
 return static_cast<allocator_adapter_flags>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
 constexpr allocator_adapter_flags operator|(allocator_adapter_flags x, allocator_adapter_flags y) noexcept
 {
-using utype = typename std::underlying_type<allocator_adapter_flags>::type;
+using utype = typename ::std::underlying_type<allocator_adapter_flags>::type;
 return static_cast<allocator_adapter_flags>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
 constexpr allocator_adapter_flags operator^(allocator_adapter_flags x, allocator_adapter_flags y) noexcept
 {
-using utype = typename std::underlying_type<allocator_adapter_flags>::type;
+using utype = typename ::std::underlying_type<allocator_adapter_flags>::type;
 return static_cast<allocator_adapter_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
 constexpr allocator_adapter_flags operator~(allocator_adapter_flags x) noexcept
 {
-using utype = typename std::underlying_type<allocator_adapter_flags>::type;
+using utype = typename ::std::underlying_type<allocator_adapter_flags>::type;
 return static_cast<allocator_adapter_flags>(~static_cast<utype>(x));
 }
 

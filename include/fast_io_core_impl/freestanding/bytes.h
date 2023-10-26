@@ -7,9 +7,9 @@ namespace fast_io::details
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr ::std::byte* bytes_copy_naive_n_impl(::std::byte const* first,std::size_t n,::std::byte* dest) noexcept
+inline constexpr ::std::byte* bytes_copy_naive_n_impl(::std::byte const* first,::std::size_t n,::std::byte* dest) noexcept
 {
-	for(std::size_t i{};i!=n;++i)
+	for(::std::size_t i{};i!=n;++i)
 	{
 		dest[i]=first[i];
 	}
@@ -87,13 +87,13 @@ inline constexpr ::std::byte* nonoverlapped_bytes_copy_n(::std::byte const* __re
 
 inline constexpr ::std::byte* nonoverlapped_bytes_copy(::std::byte const* first,::std::byte const* last,::std::byte* __restrict dest) noexcept
 {
-	return nonoverlapped_bytes_copy_n(first,static_cast<std::size_t>(last-first),dest);
+	return nonoverlapped_bytes_copy_n(first,static_cast<::std::size_t>(last-first),dest);
 }
 
 template<typename T>
 inline constexpr ::std::byte const* type_punning_from_bytes(::std::byte const* __restrict first,T& __restrict t) noexcept
 {
-	constexpr std::size_t n{sizeof(T)};
+	constexpr ::std::size_t n{sizeof(T)};
 	if constexpr(n!=0)
 	{
 #if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L ||__cpp_lib_is_constant_evaluated >= 201811L)
@@ -122,9 +122,9 @@ inline constexpr ::std::byte const* type_punning_from_bytes(::std::byte const* _
 	return first+n;
 }
 
-template<std::size_t n,typename T>
+template<::std::size_t n,typename T>
 requires (n<=sizeof(T))
-inline constexpr std::byte* type_punning_to_bytes_n(T const& __restrict first,::std::byte* __restrict dest) noexcept
+inline constexpr ::std::byte* type_punning_to_bytes_n(T const& __restrict first,::std::byte* __restrict dest) noexcept
 {
 	if constexpr(n!=0)
 	{
@@ -154,13 +154,13 @@ inline constexpr std::byte* type_punning_to_bytes_n(T const& __restrict first,::
 }
 
 template<typename T>
-inline constexpr std::byte* type_punning_to_bytes(T const& __restrict first,::std::byte* __restrict dest) noexcept
+inline constexpr ::std::byte* type_punning_to_bytes(T const& __restrict first,::std::byte* __restrict dest) noexcept
 {
-	constexpr std::size_t n{sizeof(T)};
+	constexpr ::std::size_t n{sizeof(T)};
 	return type_punning_to_bytes_n<n>(first,dest);
 }
 
-inline constexpr ::std::byte* bytes_clear_n(::std::byte* data,std::size_t size) noexcept
+inline constexpr ::std::byte* bytes_clear_n(::std::byte* data,::std::size_t size) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -169,8 +169,8 @@ inline constexpr ::std::byte* bytes_clear_n(::std::byte* data,std::size_t size) 
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
-		for(std::size_t i{};i!=size;++i)
-			data[i]=std::byte{};
+		for(::std::size_t i{};i!=size;++i)
+			data[i]=::std::byte{};
 	}
 	else
 #endif
@@ -190,10 +190,10 @@ inline constexpr ::std::byte* bytes_clear_n(::std::byte* data,std::size_t size) 
 
 inline constexpr ::std::byte* bytes_clear(::std::byte* first,::std::byte* last) noexcept
 {
-	return bytes_clear_n(first,static_cast<std::size_t>(last-first));
+	return bytes_clear_n(first,static_cast<::std::size_t>(last-first));
 }
 
-inline constexpr ::std::byte* bytes_fill_n(::std::byte* data,::std::size_t size,std::byte val) noexcept
+inline constexpr ::std::byte* bytes_fill_n(::std::byte* data,::std::size_t size,::std::byte val) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -202,7 +202,7 @@ inline constexpr ::std::byte* bytes_fill_n(::std::byte* data,::std::size_t size,
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
-		for(std::size_t i{};i!=size;++i)
+		for(::std::size_t i{};i!=size;++i)
 			data[i]=val;
 	}
 	else
@@ -221,9 +221,9 @@ inline constexpr ::std::byte* bytes_fill_n(::std::byte* data,::std::size_t size,
 	return data+size;
 }
 
-inline constexpr ::std::byte* bytes_fill(::std::byte* first,::std::byte* last,std::byte val) noexcept
+inline constexpr ::std::byte* bytes_fill(::std::byte* first,::std::byte* last,::std::byte val) noexcept
 {
-	return bytes_fill_n(first,static_cast<std::size_t>(last-first),val);
+	return bytes_fill_n(first,static_cast<::std::size_t>(last-first),val);
 }
 
 }

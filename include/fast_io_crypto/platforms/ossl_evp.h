@@ -69,9 +69,9 @@ class ossl_evp_hash_file
 {
 public:
 	using native_handle_type = EVP_MD_CTX*;
-	static inline constexpr std::size_t evp_max_md_size{EVP_MAX_MD_SIZE};
+	static inline constexpr ::std::size_t evp_max_md_size{EVP_MAX_MD_SIZE};
 	native_handle_type pmdctx{};
-	std::size_t evp_size{};
+	::std::size_t evp_size{};
 	::std::byte digest_buffer[evp_max_md_size];
 	constexpr ossl_evp_hash_file() noexcept = default;
 	template<constructible_to_os_c_str T>
@@ -85,9 +85,9 @@ public:
 			noexcept_call(EVP_MD_CTX_free,this->pmdctx);
 		}
 	}
-	void update(std::byte const* first,std::byte const* last)
+	void update(::std::byte const* first,::std::byte const* last)
 	{
-		if(!noexcept_call(EVP_DigestUpdate,this->pmdctx,first,static_cast<std::size_t>(last-first)))
+		if(!noexcept_call(EVP_DigestUpdate,this->pmdctx,first,static_cast<::std::size_t>(last-first)))
 		{
 			throw_posix_error(EINVAL);
 		}
@@ -107,13 +107,13 @@ public:
 		{
 			throw_posix_error(EINVAL);
 		}
-		evp_size=static_cast<std::size_t>(u);
+		evp_size=static_cast<::std::size_t>(u);
 	}
-	constexpr std::size_t runtime_digest_size() const noexcept
+	constexpr ::std::size_t runtime_digest_size() const noexcept
 	{
 		return evp_size;
 	}
-	constexpr std::byte const* digest_byte_ptr() const noexcept
+	constexpr ::std::byte const* digest_byte_ptr() const noexcept
 	{
 		return digest_buffer;
 	}

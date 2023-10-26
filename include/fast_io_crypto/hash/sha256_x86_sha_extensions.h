@@ -6,9 +6,9 @@
 #elif __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
 #endif
-inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::byte const* __restrict block,std::byte const* __restrict blocks_last) noexcept
+inline void sha256_runtime_routine(::std::uint_least32_t* __restrict state,::std::byte const* __restrict block,::std::byte const* __restrict blocks_last) noexcept
 {
-	constexpr std::size_t block_size{64};
+	constexpr ::std::size_t block_size{64};
 	using ::fast_io::intrinsics::simd_vector;
 	simd_vector<int,4> state0st{static_cast<int>(state[5]),static_cast<int>(state[4]),
 				static_cast<int>(state[1]),static_cast<int>(state[0])};
@@ -238,12 +238,12 @@ inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::by
 		state1st.wrap_add_assign(state1);
 		state1 = state1st;
 	}
-	state[0]=static_cast<std::uint_least32_t>(state0[3]);
-	state[1]=static_cast<std::uint_least32_t>(state0[2]);
-	state[2]=static_cast<std::uint_least32_t>(state1[3]);
-	state[3]=static_cast<std::uint_least32_t>(state1[2]);
-	state[4]=static_cast<std::uint_least32_t>(state0[1]);
-	state[5]=static_cast<std::uint_least32_t>(state0[0]);
-	state[6]=static_cast<std::uint_least32_t>(state1[1]);
-	state[7]=static_cast<std::uint_least32_t>(state1[0]);
+	state[0]=static_cast<::std::uint_least32_t>(state0[3]);
+	state[1]=static_cast<::std::uint_least32_t>(state0[2]);
+	state[2]=static_cast<::std::uint_least32_t>(state1[3]);
+	state[3]=static_cast<::std::uint_least32_t>(state1[2]);
+	state[4]=static_cast<::std::uint_least32_t>(state0[1]);
+	state[5]=static_cast<::std::uint_least32_t>(state0[0]);
+	state[6]=static_cast<::std::uint_least32_t>(state1[1]);
+	state[7]=static_cast<::std::uint_least32_t>(state1[0]);
 }

@@ -5,24 +5,24 @@ namespace fast_io::win32::nt
 
 struct ansi_string
 {
-std::uint_least16_t Length;
-std::uint_least16_t MaximumLength;
+::std::uint_least16_t Length;
+::std::uint_least16_t MaximumLength;
 char*  Buffer;
 };
 
 struct unicode_string
 {
-std::uint_least16_t Length;
-std::uint_least16_t MaximumLength;
+::std::uint_least16_t Length;
+::std::uint_least16_t MaximumLength;
 char16_t*  Buffer;
 };
 
 struct object_attributes
 {
-std::uint_least32_t Length;
+::std::uint_least32_t Length;
 void*          RootDirectory;
 unicode_string *ObjectName;
-std::uint_least32_t   Attributes;
+::std::uint_least32_t   Attributes;
 void*           SecurityDescriptor;
 void*           SecurityQualityOfService;
 };
@@ -31,17 +31,17 @@ struct io_status_block
 {
 union
 {
-	std::uint_least32_t Status;
+	::std::uint_least32_t Status;
 	void*    Pointer;
 } DUMMYUNIONNAME;
-std::uintptr_t Information;
+::std::uintptr_t Information;
 };
 
-using pio_apc_routine = void (*)(void*,io_status_block*,std::uint_least32_t) noexcept;
+using pio_apc_routine = void (*)(void*,io_status_block*,::std::uint_least32_t) noexcept;
 
 struct rtlp_curdir_def
 {
-	std::int_least32_t ref_count;
+	::std::int_least32_t ref_count;
 	void* handle;
 };
 
@@ -153,33 +153,33 @@ FileCaseSensitiveInformationForceAccessCheck,   // 75
 
 struct file_full_dir_information
 {
-std::uint_least32_t NextEntryOffset;
-std::uint_least32_t FileIndex;
-std::int_least64_t CreationTime;
-std::int_least64_t LastAccessTime;
-std::int_least64_t LastWriteTime;
-std::int_least64_t ChangeTime;
-std::int_least64_t EndOfFile;
-std::int_least64_t AllocationSize;
-std::uint_least32_t FileAttributes;
-std::uint_least32_t FileNameLength;
-std::uint_least32_t EaSize;
+::std::uint_least32_t NextEntryOffset;
+::std::uint_least32_t FileIndex;
+::std::int_least64_t CreationTime;
+::std::int_least64_t LastAccessTime;
+::std::int_least64_t LastWriteTime;
+::std::int_least64_t ChangeTime;
+::std::int_least64_t EndOfFile;
+::std::int_least64_t AllocationSize;
+::std::uint_least32_t FileAttributes;
+::std::uint_least32_t FileNameLength;
+::std::uint_least32_t EaSize;
 char16_t FileName[1];
 };
 
 struct file_both_dir_information
 {
-std::uint_least32_t         NextEntryOffset;
-std::uint_least32_t         FileIndex;
-std::int_least64_t CreationTime;
-std::int_least64_t LastAccessTime;
-std::int_least64_t LastWriteTime;
-std::int_least64_t ChangeTime;
-std::int_least64_t EndOfFile;
-std::int_least64_t AllocationSize;
-std::uint_least32_t         FileAttributes;
-std::uint_least32_t         FileNameLength;
-std::uint_least32_t         EaSize;
+::std::uint_least32_t         NextEntryOffset;
+::std::uint_least32_t         FileIndex;
+::std::int_least64_t CreationTime;
+::std::int_least64_t LastAccessTime;
+::std::int_least64_t LastWriteTime;
+::std::int_least64_t ChangeTime;
+::std::int_least64_t EndOfFile;
+::std::int_least64_t AllocationSize;
+::std::uint_least32_t         FileAttributes;
+::std::uint_least32_t         FileNameLength;
+::std::uint_least32_t         EaSize;
 char         ShortNameLength;
 char16_t         ShortName[12];
 char16_t         FileName[1];
@@ -195,9 +195,9 @@ file_both_dir_information* BothDirInfo;
 
 struct file_standard_information
 {
-std::uint_least64_t allocation_size;
-std::uint_least64_t end_of_file;
-std::uint_least32_t number_of_links;
+::std::uint_least64_t allocation_size;
+::std::uint_least64_t end_of_file;
+::std::uint_least32_t number_of_links;
 int delete_pending;
 int directory;
 };
@@ -311,10 +311,10 @@ MaxProcessInfoClass
 
 struct process_basic_information
 {
-	std::uint_least32_t ExitStatus;
+	::std::uint_least32_t ExitStatus;
 	void* PebBaseAddress;
-	std::uintptr_t AffinityMask;
-	std::uint_least32_t BasePriority;
+	::std::uintptr_t AffinityMask;
+	::std::uint_least32_t BasePriority;
 	void* UniqueProcessId;
 	void* InheritedFromUniqueProcessId;
 };
@@ -327,13 +327,13 @@ struct curdir
 
 struct rtl_drive_letter_curdir
 {
-	std::uint_least16_t Flags;
-	std::uint_least16_t Length;
-	std::uint_least32_t TimeStamp;
+	::std::uint_least16_t Flags;
+	::std::uint_least16_t Length;
+	::std::uint_least32_t TimeStamp;
 	unicode_string DosPath;
 };
 
-inline constexpr std::size_t rtl_max_drive_letters{32};
+inline constexpr ::std::size_t rtl_max_drive_letters{32};
 
 struct client_id
 {
@@ -352,33 +352,33 @@ MaxSectionInfoClass
 struct rtl_critical_section
 {
 	void* debug_info;
-	std::int_least32_t lock_count;
-	std::int_least32_t recursion_count;
+	::std::int_least32_t lock_count;
+	::std::int_least32_t recursion_count;
 	void* owning_thread;
 	void* lock_semaphore;
-	std::uintptr_t spin_count;
+	::std::uintptr_t spin_count;
 };
 
 struct section_image_information
 {
 	void* TransferAddress;
-	std::uint_least32_t ZeroBits;
-	std::size_t MaximumStackSize;
-	std::size_t CommittedStackSize;
-	std::uint_least32_t SubSystemType;
+	::std::uint_least32_t ZeroBits;
+	::std::size_t MaximumStackSize;
+	::std::size_t CommittedStackSize;
+	::std::uint_least32_t SubSystemType;
 	union U
 	{
 		struct S
 		{
-			std::uint_least16_t SubSystemMinorVersion;
-			std::uint_least16_t SubSystemMajorVersion;
+			::std::uint_least16_t SubSystemMinorVersion;
+			::std::uint_least16_t SubSystemMajorVersion;
 		}s;
-		std::uint_least32_t SubSystemVersion;
+		::std::uint_least32_t SubSystemVersion;
 	}u;
-	std::uint_least32_t GpValue;
-	std::uint_least16_t ImageCharacteristics;
-	std::uint_least16_t DllCharacteristics;
-	std::uint_least16_t Machine;
+	::std::uint_least32_t GpValue;
+	::std::uint_least16_t ImageCharacteristics;
+	::std::uint_least16_t DllCharacteristics;
+	::std::uint_least16_t Machine;
 	int ImageContainsCode;
 	union U1
 	{
@@ -393,21 +393,21 @@ struct section_image_information
 			char unsigned Reserved : 3;
 		}s;
 	}u1;
-	std::uint_least32_t LoaderFlags;
-	std::uint_least32_t ImageFileSize;
-	std::uint_least32_t CheckSum;
+	::std::uint_least32_t LoaderFlags;
+	::std::uint_least32_t ImageFileSize;
+	::std::uint_least32_t CheckSum;
 };
 
 struct rtl_user_process_parameters
 {
-	std::uint_least32_t MaximumLength;
-	std::uint_least32_t Length;
+	::std::uint_least32_t MaximumLength;
+	::std::uint_least32_t Length;
 
-	std::uint_least32_t Flags;
-	std::uint_least32_t DebugFlags;
+	::std::uint_least32_t Flags;
+	::std::uint_least32_t DebugFlags;
 
 	void* ConsoleHandle;
-	std::uint_least32_t ConsoleFlags;
+	::std::uint_least32_t ConsoleFlags;
 	void* StandardInput;
 	void* StandardOutput;
 	void* StandardError;
@@ -418,27 +418,27 @@ struct rtl_user_process_parameters
 	unicode_string CommandLine;
 	char16_t *Environment;
 
-	std::uint_least32_t StartingX;
-	std::uint_least32_t StartingY;
-	std::uint_least32_t CountX;
-	std::uint_least32_t CountY;
-	std::uint_least32_t CountCharsX;
-	std::uint_least32_t CountCharsY;
-	std::uint_least32_t FillAttribute;
+	::std::uint_least32_t StartingX;
+	::std::uint_least32_t StartingY;
+	::std::uint_least32_t CountX;
+	::std::uint_least32_t CountY;
+	::std::uint_least32_t CountCharsX;
+	::std::uint_least32_t CountCharsY;
+	::std::uint_least32_t FillAttribute;
 
-	std::uint_least32_t WindowFlags;
-	std::uint_least32_t ShowWindowFlags;
+	::std::uint_least32_t WindowFlags;
+	::std::uint_least32_t ShowWindowFlags;
 	unicode_string WindowTitle;
 	unicode_string DesktopInfo;
 	unicode_string ShellInfo;
 	unicode_string RuntimeData;
 	rtl_drive_letter_curdir CurrentDirectories[rtl_max_drive_letters];
 
-	std::uint_least32_t EnvironmentSize;
-	std::uint_least32_t EnvironmentVersion;
+	::std::uint_least32_t EnvironmentSize;
+	::std::uint_least32_t EnvironmentVersion;
 	void* PackageDependencyData;
-	std::uint_least32_t ProcessGroupId;
-	std::uint_least32_t LoaderThreads;
+	::std::uint_least32_t ProcessGroupId;
+	::std::uint_least32_t LoaderThreads;
 };
 enum class ps_create_state
 {

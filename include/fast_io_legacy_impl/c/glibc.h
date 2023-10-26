@@ -116,28 +116,28 @@ namespace details::fp_wide_hack
 /*
 https://github.com/lattera/glibc/blob/master/libio/bits/types/struct_FILE.h
 */
-inline std::byte* hack_wide_data(FILE* fp) noexcept
+inline ::std::byte* hack_wide_data(FILE* fp) noexcept
 {
-	constexpr std::size_t off{sizeof(__off64_t)+2*sizeof(std::uintptr_t)};
-	std::byte* value;
-	::fast_io::details::my_memcpy(__builtin_addressof(value),reinterpret_cast<std::byte*>(__builtin_addressof(fp->_lock))+off,sizeof(std::byte*));
+	constexpr ::std::size_t off{sizeof(__off64_t)+2*sizeof(::std::uintptr_t)};
+	::std::byte* value;
+	::fast_io::details::my_memcpy(__builtin_addressof(value),reinterpret_cast<::std::byte*>(__builtin_addressof(fp->_lock))+off,sizeof(::std::byte*));
 	return value;
 }
 
-template<std::size_t position,std::integral char_type>
+template<::std::size_t position,::std::integral char_type>
 requires (sizeof(char_type)==sizeof(char32_t))
 inline char_type* hack_wp(FILE* fp) noexcept
 {
-	constexpr std::size_t off{position*sizeof(uintptr_t)};
+	constexpr ::std::size_t off{position*sizeof(uintptr_t)};
 	char_type* value;
 	::fast_io::details::my_memcpy(__builtin_addressof(value),hack_wide_data(fp)+off,sizeof(wchar_t*));
 	return value;
 }
-template<std::size_t position,std::integral char_type>
+template<::std::size_t position,::std::integral char_type>
 requires (sizeof(char_type)==sizeof(char32_t))
 inline void hack_wpset(FILE* fp,char_type* ptr) noexcept
 {
-	constexpr std::size_t off{position*sizeof(uintptr_t)};
+	constexpr ::std::size_t off{position*sizeof(uintptr_t)};
 	::fast_io::details::my_memcpy(hack_wide_data(fp)+off,__builtin_addressof(ptr),sizeof(wchar_t*));
 }
 }
@@ -167,13 +167,13 @@ inline void ibuffer_set_curr(wc_io_observer_unlocked cio,wchar_t* ptr) noexcept
 
 namespace details
 {
-extern std::uint_least32_t glibc_wunderflow (FILE *) noexcept __asm__("__wunderflow");
+extern ::std::uint_least32_t glibc_wunderflow (FILE *) noexcept __asm__("__wunderflow");
 }
 #if WCHAR_MAX == UINT_LEAST32_MAX
 inline bool ibuffer_underflow(wc_io_observer_unlocked cio) noexcept
 {
 	ibuffer_set_curr(cio,ibuffer_end(cio));
-	return details::glibc_wunderflow(cio.fp)!=static_cast<std::uint_least32_t>(0xffffffffu);
+	return details::glibc_wunderflow(cio.fp)!=static_cast<::std::uint_least32_t>(0xffffffffu);
 }
 inline wchar_t* obuffer_begin(wc_io_observer_unlocked cio) noexcept
 {
@@ -198,12 +198,12 @@ inline void obuffer_set_curr(wc_io_observer_unlocked cio,wchar_t* ptr) noexcept
 #endif
 namespace details
 {
-extern std::uint_least32_t glibc_woverflow (FILE *,std::uint_least32_t) noexcept __asm__("__woverflow");
+extern ::std::uint_least32_t glibc_woverflow (FILE *,::std::uint_least32_t) noexcept __asm__("__woverflow");
 }
 
 inline void obuffer_overflow(wc_io_observer_unlocked cio,wchar_t ch)
 {
-	if(details::glibc_woverflow(cio.fp,static_cast<std::uint_least32_t>(ch))==static_cast<std::uint_least32_t>(0xffffffffu))[[unlikely]]
+	if(details::glibc_woverflow(cio.fp,static_cast<::std::uint_least32_t>(ch))==static_cast<::std::uint_least32_t>(0xffffffffu))[[unlikely]]
 		throw_posix_error();
 }
 
@@ -231,7 +231,7 @@ inline void ibuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alia
 inline bool ibuffer_underflow(u32c_io_observer_unlocked cio) noexcept
 {
 	ibuffer_set_curr(cio,ibuffer_end(cio));
-	return details::glibc_wunderflow(cio.fp)!=static_cast<std::uint_least32_t>(0xffffffffu);
+	return details::glibc_wunderflow(cio.fp)!=static_cast<::std::uint_least32_t>(0xffffffffu);
 }
 
 [[__gnu__::__may_alias__]] inline char32_t* obuffer_begin(u32c_io_observer_unlocked cio) noexcept
@@ -256,7 +256,7 @@ inline void obuffer_set_curr(u32c_io_observer_unlocked cio,[[__gnu__::__may_alia
 
 inline void obuffer_overflow(u32c_io_observer_unlocked cio,char32_t ch)
 {
-	if(details::glibc_woverflow(cio.fp,static_cast<std::uint_least32_t>(ch))==static_cast<std::uint_least32_t>(0xffffffffu))[[unlikely]]
+	if(details::glibc_woverflow(cio.fp,static_cast<::std::uint_least32_t>(ch))==static_cast<::std::uint_least32_t>(0xffffffffu))[[unlikely]]
 		throw_posix_error();
 }
 
@@ -265,7 +265,7 @@ namespace details
 extern int glibc_flbf(FILE* fp) noexcept __asm__("__flbf");
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline bool obuffer_is_line_buffering_define(basic_c_io_observer_unlocked<ch_type> ciou) noexcept
 {
 	return details::glibc_flbf(ciou.fp);

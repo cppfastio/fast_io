@@ -8,7 +8,7 @@ FAST_IO_MODULE_EXPORT struct basic_io_scatter_t
 {
 	using value_type = T;
 	T const* base;
-	std::size_t len;
+	::std::size_t len;
 };
 
 //should be binary compatible with POSIX's iovec
@@ -18,21 +18,21 @@ FAST_IO_MODULE_EXPORT using io_scatters_t = basic_io_scatter_t<io_scatter_t>;
 
 FAST_IO_MODULE_EXPORT struct io_scatter_status_t
 {
-	std::size_t position;
-	std::size_t position_in_scatter;
+	::std::size_t position;
+	::std::size_t position_in_scatter;
 };
 
 template<typename T>
 FAST_IO_MODULE_EXPORT struct basic_message_hdr
 {
 	T const        *name;       /* Optional address */
-	std::size_t     namelen;    /* Size of address */
+	::std::size_t     namelen;    /* Size of address */
 	basic_io_scatter_t<T> const* iov;        /* Scatter/gather array */
-	std::size_t   iovlen;     /* # elements in msg_iov */
+	::std::size_t   iovlen;     /* # elements in msg_iov */
 	T const       *control;    /* Ancillary data, see below */
-	std::size_t   controllen; /* Ancillary data buffer len */
+	::std::size_t   controllen; /* Ancillary data buffer len */
 	int           flags;      /* Flags (unused) */
-	inline operator basic_message_hdr<void>() const noexcept requires(!std::same_as<T,void>)
+	inline operator basic_message_hdr<void>() const noexcept requires(!::std::same_as<T,void>)
 	{
 		return {name,namelen*sizeof(T),iov,iovlen*sizeof(T),control,controllen,flags};
 	}
@@ -49,19 +49,19 @@ using type = T;
 template<typename T>
 FAST_IO_MODULE_EXPORT inline constexpr io_type_t<T> io_type{};
 
-template<std::integral char_type>
+template<::std::integral char_type>
 FAST_IO_MODULE_EXPORT struct cross_code_cvt_t
 {
 	using value_type = char_type;
 	basic_io_scatter_t<value_type> scatter;
 };
 
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 FAST_IO_MODULE_EXPORT struct io_reserve_type_t
 {
 explicit constexpr io_reserve_type_t() noexcept =default;
 };
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 FAST_IO_MODULE_EXPORT inline constexpr io_reserve_type_t<char_type,T> io_reserve_type{};
 
 FAST_IO_MODULE_EXPORT struct reserve_scatters_size_result
@@ -84,16 +84,16 @@ explicit constexpr io_alias_t() noexcept =default;
 
 FAST_IO_MODULE_EXPORT inline constexpr io_alias_t io_alias{};
 
-template<std::integral char_type>
+template<::std::integral char_type>
 FAST_IO_MODULE_EXPORT struct io_alias_type_t
 {
 explicit constexpr io_alias_type_t() noexcept = default;
 };
 
-template<std::integral char_type>
+template<::std::integral char_type>
 FAST_IO_MODULE_EXPORT inline constexpr io_alias_type_t<char_type> io_alias_type{};
 
-template<std::integral char_type>
+template<::std::integral char_type>
 FAST_IO_MODULE_EXPORT struct try_get_result
 {
 	char_type ch;

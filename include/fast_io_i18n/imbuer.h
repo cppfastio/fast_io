@@ -6,8 +6,8 @@ namespace fast_io
 template<stream stm>
 requires (value_based_stream<stm>&&requires(stm sm)
 {
-	{io_value_handle(sm)}->std::same_as<stm>;
-}&&std::is_trivially_copyable_v<stm>)
+	{io_value_handle(sm)}->::std::same_as<stm>;
+}&&::std::is_trivially_copyable_v<stm>)
 struct lc_imbuer
 {
 	using handle_type = stm;
@@ -31,8 +31,8 @@ inline constexpr lc_imbuer<stm> io_value_handle(lc_imbuer<stm> sm) noexcept
 }
 
 template<stream stm>
-requires (std::is_lvalue_reference_v<stm>||std::is_trivially_copyable_v<stm>)
-inline constexpr auto imbue(basic_lc_all<typename std::remove_cvref_t<stm>::char_type> const* all,stm&& out) noexcept
+requires (::std::is_lvalue_reference_v<stm>||::std::is_trivially_copyable_v<stm>)
+inline constexpr auto imbue(basic_lc_all<typename ::std::remove_cvref_t<stm>::char_type> const* all,stm&& out) noexcept
 {
 	if constexpr(value_based_stream<stm>)
 		return lc_imbuer<decltype(io_value_handle(out))>{all,io_value_handle(out)};

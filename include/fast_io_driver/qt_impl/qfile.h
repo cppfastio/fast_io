@@ -74,7 +74,7 @@ inline QFile* open_qfile_with_fd(int fd,open_mode mode)
 
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_qt_file:public basic_qt_io_observer<ch_type>
 {
 public:
@@ -82,7 +82,7 @@ public:
 	using native_handle_type = typename basic_qt_io_observer<ch_type>::native_handle_type;
 	constexpr basic_qt_file()=default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_qt_file(native_hd qdevice):basic_qt_io_observer<char_type>{qdevice}{}
 
 	explicit constexpr basic_qt_file(decltype(nullptr)) noexcept=delete;

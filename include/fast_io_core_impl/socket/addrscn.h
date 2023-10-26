@@ -635,7 +635,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(::fast_io::i
 		state.ip_phase = ::std::bit_cast<scan_ipv4_context_phase>(state.port_mark);
 		[[fallthrough]];
 	}
-	// clang bug for std::bit_cast is not a constexpr expression
+	// clang bug for ::std::bit_cast is not a constexpr expression
 #if !defined(__clang__)
 	case ::std::bit_cast<scan_ipv4_context_phase>(state.port_mark) :
 		case ::std::bit_cast<scan_ipv4_context_phase>(state.port) :

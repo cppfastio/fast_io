@@ -5,17 +5,17 @@
 namespace fast_io
 {
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_oiconv_file = basic_io_buffer<onative_file,
 buffer_mode::out|buffer_mode::construct_decorator,
 basic_decorators<char_type,empty_decorator,iconv_deco_t>>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_iiconv_file = basic_io_buffer<inative_file,
 buffer_mode::in|buffer_mode::construct_decorator,
 basic_decorators<char_type,iconv_deco_t>>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_iconv_file = basic_io_buffer<native_file,
 buffer_mode::in|buffer_mode::out|buffer_mode::tie|buffer_mode::construct_decorator,
 basic_decorators<char_type,iconv_deco_t,iconv_deco_t>>;

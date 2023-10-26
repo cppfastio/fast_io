@@ -18,7 +18,7 @@ default_value,
 cont
 };
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 struct basic_kpr
 {
 	using char_type = ch_type;
@@ -91,11 +91,11 @@ inline void linux_kpr_raw_write_fmt(char const* fmt,void const* start,void const
 	char const* start_char_ptr{reinterpret_cast<char const*>(start)};
 	char const* last_char_ptr{reinterpret_cast<char const*>(last)};
 
-	std::size_t diff{static_cast<std::size_t>(last_char_ptr-start_char_ptr)};
-	constexpr int int_max{std::numeric_limits<int>::max()};
-	if constexpr(int_max<=std::numeric_limits<std::size_t>::max())
+	::std::size_t diff{static_cast<::std::size_t>(last_char_ptr-start_char_ptr)};
+	constexpr int int_max{::std::numeric_limits<int>::max()};
+	if constexpr(int_max<=::std::numeric_limits<::std::size_t>::max())
 	{
-		constexpr std::size_t int_max_size_val{static_cast<std::size_t>(int_max)};
+		constexpr ::std::size_t int_max_size_val{static_cast<::std::size_t>(int_max)};
 		if(diff>int_max_size_val)//linux kernel ring buffer has restricted size. discard >=INT_MAX bytes
 			diff=int_max_size_val;
 	}
@@ -108,7 +108,7 @@ inline void linux_kpr_raw_write(::fast_io::kern k,void const* start,void const* 
 	linux_kpr_raw_write_fmt(reinterpret_cast<char const*>(kern_to_fmt<line>(k)),start,last);
 }
 
-template<bool line,std::integral ch_type,typename T>
+template<bool line,::std::integral ch_type,typename T>
 inline constexpr void print_status_define_single_line_impl(basic_kpr<ch_type> kpr,T t)
 {
 	basic_io_scatter_t<ch_type> scatter{print_scatter_define(io_reserve_type<ch_type,T>,t)};
@@ -116,13 +116,13 @@ inline constexpr void print_status_define_single_line_impl(basic_kpr<ch_type> kp
 	linux_kpr_raw_write<line>(kpr.level,base,base+scatter.len);
 }
 
-template<kern k,std::size_t n,bool line>
-requires (static_cast<std::size_t>(k)<=static_cast<std::size_t>(kern::cont))
+template<kern k,::std::size_t n,bool line>
+requires (static_cast<::std::size_t>(k)<=static_cast<::std::size_t>(kern::cont))
 inline constexpr auto linux_kernel_printk_formatter_cal() noexcept
 {
 	static_assert(n<=(SIZE_MAX-256u)/4u);
-	constexpr std::size_t start{(k==kern::default_value?0:2)};
-	::fast_io::freestanding::array<char8_t,(k==kern::default_value?0:2)+n*4+1+static_cast<std::size_t>(line)> fmts;
+	constexpr ::std::size_t start{(k==kern::default_value?0:2)};
+	::fast_io::freestanding::array<char8_t,(k==kern::default_value?0:2)+n*4+1+static_cast<::std::size_t>(line)> fmts;
 	
 	if constexpr(k!=kern::default_value)
 	{
@@ -134,9 +134,9 @@ inline constexpr auto linux_kernel_printk_formatter_cal() noexcept
 		else
 			fmts[1]=u8'c';
 	}
-	for(std::size_t i{};i!=n;++i)
+	for(::std::size_t i{};i!=n;++i)
 	{
-		std::size_t j{start+i*4};
+		::std::size_t j{start+i*4};
 		fmts[j]=u8'%';
 		fmts[j+1]=u8'.';
 		fmts[j+2]=u8'*';
@@ -150,10 +150,10 @@ inline constexpr auto linux_kernel_printk_formatter_cal() noexcept
 	return fmts;
 }
 
-template<kern k,std::size_t n,bool line>
+template<kern k,::std::size_t n,bool line>
 inline constexpr auto kfmtcache{linux_kernel_printk_formatter_cal<k,n,line>()};
 
-template<std::size_t n,bool line>
+template<::std::size_t n,bool line>
 inline constexpr char8_t const* cal_kpr_fmt(kern k) noexcept
 {
 	switch(k)
@@ -186,12 +186,12 @@ struct kpr_scatter_struct
 	int bytes;
 };
 
-template<std::integral char_type,typename T,typename... Args>
+template<::std::integral char_type,typename T,typename... Args>
 inline void kpr_scatter_print_recursive(kpr_scatter_struct* p,T t,Args ...args)
 {
 	auto scatter{print_scatter_define(io_reserve_type<char_type,T>,t)};
-	std::size_t len{scatter.len*sizeof(char_type)};
-	constexpr int int_max{std::numeric_limits<int>::max()};
+	::std::size_t len{scatter.len*sizeof(char_type)};
+	constexpr int int_max{::std::numeric_limits<int>::max()};
 	if(len>int_max)
 		len=int_max;
 	*--p={reinterpret_cast<char const*>(scatter.base),static_cast<int>(len)};
@@ -199,14 +199,14 @@ inline void kpr_scatter_print_recursive(kpr_scatter_struct* p,T t,Args ...args)
 		kpr_scatter_print_recursive<char_type>(p,args...);
 }
 
-template<std::integral char_type,typename T,typename... Args>
+template<::std::integral char_type,typename T,typename... Args>
 inline void kpr_scatter_reserve_print_recursive(kpr_scatter_struct* p,char_type* buffer,T t,Args ...args)
 {
 	if constexpr(scatter_printable<char_type,T>)
 	{
 		auto scatter{print_scatter_define(io_reserve_type<char_type,T>,t)};
-		std::size_t len{scatter.len*sizeof(char_type)};
-		constexpr int int_max{std::numeric_limits<int>::max()};
+		::std::size_t len{scatter.len*sizeof(char_type)};
+		constexpr int int_max{::std::numeric_limits<int>::max()};
 		if(len>int_max)
 			len=int_max;
 		*--p={reinterpret_cast<char const*>(scatter.base),static_cast<int>(len)};
@@ -227,7 +227,7 @@ inline void kpr_scatter_reserve_print_recursive(kpr_scatter_struct* p,char_type*
 }
 
 
-template<std::size_t n,typename... Args>
+template<::std::size_t n,typename... Args>
 inline void deal_with_kpr_fmt_real(char const* fmt_str,kpr_scatter_struct* s,Args ...args)
 {
 	if constexpr(n==0)
@@ -236,13 +236,13 @@ inline void deal_with_kpr_fmt_real(char const* fmt_str,kpr_scatter_struct* s,Arg
 		deal_with_kpr_fmt_real<n-1>(fmt_str,s+1,s->bytes,s->ptr,args...);
 }
 
-template<std::integral char_type,typename T,typename... Args>
-inline constexpr bool kpr_total_print_reserve_size_less_or_equal_than512(std::size_t size) noexcept
+template<::std::integral char_type,typename T,typename... Args>
+inline constexpr bool kpr_total_print_reserve_size_less_or_equal_than512(::std::size_t size) noexcept
 {
 	if constexpr(reserve_printable<char_type,T>)
 	{
-		constexpr std::size_t this_size{print_reserve_size(io_reserve_type<char_type,T>)};
-		if constexpr(this_size>=std::numeric_limits<int>::max())
+		constexpr ::std::size_t this_size{print_reserve_size(io_reserve_type<char_type,T>)};
+		if constexpr(this_size>=::std::numeric_limits<int>::max())
 			return false;
 		if(__builtin_add_overflow(size,this_size,__builtin_addressof(size)))
 			return false;
@@ -260,16 +260,16 @@ inline constexpr bool kpr_total_print_reserve_size_less_or_equal_than512(std::si
 		return kpr_total_print_reserve_size_less_or_equal_than512<char_type,Args...>(size);
 	}
 }
-template<std::integral char_type>
-inline constexpr bool kpr_total_print_reserve_size_less_or_equal_than512(std::size_t size) noexcept
+template<::std::integral char_type>
+inline constexpr bool kpr_total_print_reserve_size_less_or_equal_than512(::std::size_t size) noexcept
 {
 	return size<=512;
 }
 
-template<std::integral char_type,typename... Args>
+template<::std::integral char_type,typename... Args>
 inline void deal_with_kpr_ignore_line(char const* fmt_str,Args ...args)
 {
-	constexpr std::size_t n{sizeof...(Args)};
+	constexpr ::std::size_t n{sizeof...(Args)};
 	if constexpr(n==0)
 	{
 		::fast_io::linux_kernel_printk(fmt_str);
@@ -284,7 +284,7 @@ inline void deal_with_kpr_ignore_line(char const* fmt_str,Args ...args)
 		}
 		else
 		{
-			constexpr std::size_t reserve_size{::fast_io::details::decay::calculate_scatter_reserve_size<char_type,Args...>()};
+			constexpr ::std::size_t reserve_size{::fast_io::details::decay::calculate_scatter_reserve_size<char_type,Args...>()};
 			char_type reserve_buffer[reserve_size];
 			kpr_scatter_reserve_print_recursive(buffer+n,reserve_buffer,args...);
 			deal_with_kpr_fmt_real<n>(fmt_str,buffer);
@@ -292,10 +292,10 @@ inline void deal_with_kpr_ignore_line(char const* fmt_str,Args ...args)
 	}
 }
 
-template<bool line,std::integral char_type,typename... Args>
+template<bool line,::std::integral char_type,typename... Args>
 inline void deal_with_kpr_common(basic_kpr<char_type> kpr,Args ...args)
 {
-	constexpr std::size_t n{sizeof...(Args)};
+	constexpr ::std::size_t n{sizeof...(Args)};
 	if constexpr(n==0&&!line)
 	{
 		if(kpr.level==kern::default_value)
@@ -306,13 +306,13 @@ inline void deal_with_kpr_common(basic_kpr<char_type> kpr,Args ...args)
 
 }
 
-template<std::integral char_type,::std::contiguous_iterator Iter>
+template<::std::integral char_type,::::std::contiguous_iterator Iter>
 inline void write(basic_kpr<char_type> kpr,Iter first,Iter last) noexcept
 {
-	details::linux_kpr_raw_write<false>(kpr.level,::std::to_address(first),::std::to_address(last));
+	details::linux_kpr_raw_write<false>(kpr.level,::::std::to_address(first),::::std::to_address(last));
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr basic_kpr<ch_type> io_value_handle(basic_kpr<ch_type> linuxkpr) noexcept
 {
 	return linuxkpr;
@@ -324,7 +324,7 @@ using u8kpr = basic_kpr<char8_t>;
 using u16kpr = basic_kpr<char16_t>;
 using u32kpr = basic_kpr<char32_t>;
 
-template<bool line,std::integral ch_type,typename... Args>
+template<bool line,::std::integral ch_type,typename... Args>
 requires (print_freestanding_decay_okay_character_type_no_status<ch_type,Args...>&&sizeof(ch_type)==1&&(!::fast_io::details::is_ebcdic<ch_type>))
 inline constexpr void print_status_define(basic_kpr<ch_type> k,Args ...args)
 {

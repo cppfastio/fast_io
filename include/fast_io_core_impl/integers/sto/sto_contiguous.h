@@ -13,7 +13,7 @@ namespace details
 
 inline constexpr bool sto_use_table{true};
 
-template<char8_t base,std::integral char_type>
+template<char8_t base,::std::integral char_type>
 requires (2<=base&&base<=36)
 inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) noexcept
 {
@@ -36,11 +36,11 @@ inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) n
 	{
 		if constexpr(sto_use_table)
 		{
-			constexpr char8_t mx{std::numeric_limits<char8_t>::max()};
-			constexpr bool use_partial{mx<(std::numeric_limits<unsigned_char_type>::max())||std::numeric_limits<char8_t>::digits!=8};
+			constexpr char8_t mx{::std::numeric_limits<char8_t>::max()};
+			constexpr bool use_partial{mx<(::std::numeric_limits<unsigned_char_type>::max())||::std::numeric_limits<char8_t>::digits!=8};
 			if constexpr(use_partial)
 			{
-				constexpr std::size_t n{sto_base_tb<ebcdic,use_partial,base>.size()};
+				constexpr ::std::size_t n{sto_base_tb<ebcdic,use_partial,base>.size()};
 				static_assert(n<=mx);
 				constexpr char8_t v{static_cast<char8_t>(n)};
 				if(v<ch)
@@ -151,7 +151,7 @@ inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type>& ch) n
 	}
 }
 
-template<char8_t base,std::integral char_type>
+template<char8_t base,::std::integral char_type>
 requires (2<=base&&base<=36)
 inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 {
@@ -174,11 +174,11 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 	{
 		if constexpr(sto_use_table)
 		{
-			constexpr char8_t mx{std::numeric_limits<char8_t>::max()};
-			constexpr bool use_partial{mx<(std::numeric_limits<unsigned_char_type>::max())||std::numeric_limits<char8_t>::digits!=8};
+			constexpr char8_t mx{::std::numeric_limits<char8_t>::max()};
+			constexpr bool use_partial{mx<(::std::numeric_limits<unsigned_char_type>::max())||::std::numeric_limits<char8_t>::digits!=8};
 			if constexpr(use_partial)
 			{
-				constexpr std::size_t n{sto_base_tb<ebcdic,use_partial,base>.size()};
+				constexpr ::std::size_t n{sto_base_tb<ebcdic,use_partial,base>.size()};
 				static_assert(n<=mx);
 				constexpr char8_t v{static_cast<char8_t>(n)};
 				if(v<ch)
@@ -251,12 +251,12 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 	}
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type const* find_none_zero_simd_impl(char_type const* first,char_type const* last) noexcept;
 
 struct simd_parse_result
 {
-	std::size_t digits;
+	::std::size_t digits;
 	fast_io::parse_code code;
 };
 
@@ -266,7 +266,7 @@ inline constexpr char unsigned simd16_shift_table[32]{0xFF,0xFF,0xFF,0xFF,0xFF,0
 #if defined(__SSE4_1__) && defined(__x86_64__)
 
 template<bool char_execharset>
-inline std::uint_least32_t detect_length(char unsigned const* buffer) noexcept
+inline ::std::uint_least32_t detect_length(char unsigned const* buffer) noexcept
 {
 	constexpr char8_t zero_constant{char_execharset?static_cast<char8_t>('0'):u8'0'};
 	constexpr char8_t v176_constant{static_cast<char8_t>((zero_constant+static_cast<char8_t>(128))&255u)};
@@ -279,39 +279,39 @@ inline std::uint_least32_t detect_length(char unsigned const* buffer) noexcept
 	x86_64_v16qu const t0{chunk-v176};
 	x86_64_v16qs const minus118{-118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118};
 	x86_64_v16qs const mask{(x86_64_v16qs)t0<minus118};
-	std::uint_least16_t v{static_cast<std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
+	::std::uint_least16_t v{static_cast<::std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
 #else
 	__m128i chunk = _mm_loadu_si128(reinterpret_cast<__m128i const*>(buffer));
 	__m128i const t0 = _mm_sub_epi8(chunk, _mm_set1_epi8(v176_constant));
 	__m128i const mask = _mm_cmplt_epi8(t0, _mm_set1_epi8(-118));
-	std::uint_least16_t v{static_cast<std::uint_least16_t>(_mm_movemask_epi8(mask))};
+	::std::uint_least16_t v{static_cast<::std::uint_least16_t>(_mm_movemask_epi8(mask))};
 #endif
-	return static_cast<std::uint_least32_t>(std::countr_one(v));
+	return static_cast<::std::uint_least32_t>(::std::countr_one(v));
 }
 
 template<bool char_execharset>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline std::size_t sse_skip_long_overflow_digits(char unsigned const* buffer,char unsigned const* buffer_end) noexcept
+inline ::std::size_t sse_skip_long_overflow_digits(char unsigned const* buffer,char unsigned const* buffer_end) noexcept
 {
 	auto it{buffer+16};
 	for(;16<=buffer_end-it;it+=16)
 	{
 		auto new_length{detect_length<char_execharset>(it)};
 		if(new_length!=16)
-			return static_cast<std::size_t>(it-buffer+new_length);
+			return static_cast<::std::size_t>(it-buffer+new_length);
 	};
 	if(buffer_end==it)
-		return static_cast<std::size_t>(it-buffer);
-	return static_cast<std::size_t>(buffer_end-buffer+detect_length<char_execharset>(buffer_end-16));
+		return static_cast<::std::size_t>(it-buffer);
+	return static_cast<::std::size_t>(buffer_end-buffer+detect_length<char_execharset>(buffer_end-16));
 }
 
 template<bool char_execharset,bool less_than_64_bits>
 #if __has_cpp_attribute(__gnu__::__hot__)
 [[__gnu__::__hot__]]
 #endif
-inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned const* buffer_end,std::uint_least64_t &res) noexcept
+inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned const* buffer_end,::std::uint_least64_t &res) noexcept
 {
 	constexpr char8_t zero_constant{char_execharset?static_cast<char8_t>('0'):u8'0'};
 	constexpr char8_t v176_constant{static_cast<char8_t>((zero_constant+static_cast<char8_t>(128))&255u)};
@@ -325,8 +325,8 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 	x86_64_v16qu const t0{chunk-v176};
 	x86_64_v16qs const minus118{-118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118, -118};
 	x86_64_v16qs const mask{(x86_64_v16qs)t0<minus118};
-	std::uint_least16_t v{static_cast<std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
-	std::uint_least32_t digits{static_cast<std::uint_least32_t>(std::countr_one(v))};
+	::std::uint_least16_t v{static_cast<::std::uint_least16_t>(__builtin_ia32_pmovmskb128((x86_64_v16qi)mask))};
+	::std::uint_least32_t digits{static_cast<::std::uint_least32_t>(::std::countr_one(v))};
 	if(digits==0)
 		return {0,parse_code::invalid};
 	x86_64_v16qu const zeros{zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,zero_constant,
@@ -339,14 +339,14 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 	chunk=(x86_64_v16qu)__builtin_ia32_pmaddwd128((x86_64_v8hi)chunk,x86_64_v8hi{100,1,100,1,100,1,100,1});
 	chunk=(x86_64_v16qu)__builtin_ia32_packusdw128((x86_64_v4si)chunk,(x86_64_v4si)chunk);
 	chunk=(x86_64_v16qu)__builtin_ia32_pmaddwd128((x86_64_v8hi)chunk,x86_64_v8hi{10000,1,10000,1,0,0,0,0});
-	std::uint_least64_t chunk0;
+	::std::uint_least64_t chunk0;
 	__builtin_memcpy(__builtin_addressof(chunk0),__builtin_addressof(chunk),sizeof(chunk0));
 #else
 	__m128i chunk = _mm_loadu_si128(reinterpret_cast<__m128i const*>(buffer));
 	__m128i const t0 = _mm_sub_epi8(chunk, _mm_set1_epi8(v176_constant));
 	__m128i const mask = _mm_cmplt_epi8(t0, _mm_set1_epi8(-118));
-	std::uint_least16_t v{static_cast<std::uint_least16_t>(_mm_movemask_epi8(mask))};
-	std::uint_least32_t digits{static_cast<std::uint_least32_t>(std::countr_one(v))};
+	::std::uint_least16_t v{static_cast<::std::uint_least16_t>(_mm_movemask_epi8(mask))};
+	::std::uint_least32_t digits{static_cast<::std::uint_least32_t>(::std::countr_one(v))};
 	if(digits==0)
 		return {0,parse_code::invalid};
 	chunk = _mm_sub_epi8(chunk, _mm_set1_epi8(zero_constant));
@@ -355,20 +355,20 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 	chunk = _mm_madd_epi16(chunk, _mm_set_epi16(1,100,1,100,1,100,1,100));
 	chunk = _mm_packus_epi32(chunk, chunk);
 	chunk = _mm_madd_epi16(chunk,_mm_set_epi16(0,0,0,0,1,10000,1,10000));
-	std::uint_least64_t chunk0;
-	std::memcpy(__builtin_addressof(chunk0),__builtin_addressof(chunk),sizeof(chunk0));
+	::std::uint_least64_t chunk0;
+	::std::memcpy(__builtin_addressof(chunk0),__builtin_addressof(chunk),sizeof(chunk0));
 #endif
-	std::uint_least64_t result{static_cast<std::uint_least64_t>(((chunk0 & 0xffffffff) * UINT64_C(100000000)) + (chunk0 >> 32))};
+	::std::uint_least64_t result{static_cast<::std::uint_least64_t>(((chunk0 & 0xffffffff) * UINT64_C(100000000)) + (chunk0 >> 32))};
 	if(digits==16)[[unlikely]]
 	{
 		if constexpr(less_than_64_bits)
 		{
-			//std::uint_least32_t can never have 16 digits
+			//::std::uint_least32_t can never have 16 digits
 			return {sse_skip_long_overflow_digits<char_execharset>(buffer+16,buffer_end)+16,parse_code::overflow};
 		}
 		else
 		{
-			std::size_t digits1{detect_length<char_execharset>(buffer+16)};
+			::std::size_t digits1{detect_length<char_execharset>(buffer+16)};
 //18446744073709551615 20 digits
 			switch(digits1)
 			{
@@ -380,7 +380,7 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 			}
 			case 2:
 			{
-				res=result*UINT16_C(100)+((buffer[16]-zero_constant)*UINT16_C(10)+static_cast<std::uint_least64_t>(buffer[17]-zero_constant));
+				res=result*UINT16_C(100)+((buffer[16]-zero_constant)*UINT16_C(10)+static_cast<::std::uint_least64_t>(buffer[17]-zero_constant));
 				return {18,parse_code::ok};
 			}
 			case 1:
@@ -395,16 +395,16 @@ inline simd_parse_result sse_parse(char unsigned const* buffer,char unsigned con
 			}
 			case 4:
 			{
-				constexpr std::uint_least64_t risky_value{UINT_LEAST64_MAX/UINT64_C(10000)};
-				constexpr std::uint_fast16_t risky_mod{UINT_LEAST64_MAX%UINT64_C(10000)};
+				constexpr ::std::uint_least64_t risky_value{UINT_LEAST64_MAX/UINT64_C(10000)};
+				constexpr ::std::uint_fast16_t risky_mod{UINT_LEAST64_MAX%UINT64_C(10000)};
 				if(result>risky_value)
 					return {20,parse_code::overflow};
-				std::uint_fast16_t partial{
-				static_cast<std::uint_fast16_t>(
-				static_cast<std::uint_fast16_t>(buffer[16]-zero_constant)*UINT16_C(1000)+
-				static_cast<std::uint_fast8_t>(buffer[17]-zero_constant)*UINT16_C(100)+
-				static_cast<std::uint_fast8_t>(buffer[18]-zero_constant)*UINT16_C(10)+
-				static_cast<std::uint_fast8_t>(buffer[19]-zero_constant))};
+				::std::uint_fast16_t partial{
+				static_cast<::std::uint_fast16_t>(
+				static_cast<::std::uint_fast16_t>(buffer[16]-zero_constant)*UINT16_C(1000)+
+				static_cast<::std::uint_fast8_t>(buffer[17]-zero_constant)*UINT16_C(100)+
+				static_cast<::std::uint_fast8_t>(buffer[18]-zero_constant)*UINT16_C(10)+
+				static_cast<::std::uint_fast8_t>(buffer[19]-zero_constant))};
 				if(result==risky_value&&risky_mod<partial)
 					return {20,parse_code::overflow};
 				res=result*UINT16_C(10000)+partial;
@@ -434,7 +434,7 @@ template<char8_t base,::std::integral char_type>
 #endif
 inline constexpr char_type const* skip_digits(char_type const* first,char_type const* last) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	for(;first!=last&&char_is_digit<base,char_type>(static_cast<unsigned_char_type>(*first));++first);
 	return first;
 }
@@ -445,16 +445,16 @@ template<char8_t base,::std::integral char_type,my_unsigned_integral T>
 #endif
 inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_space_part_define_impl(char_type const* first,char_type const* last,T& res) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
-	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
+	using unsigned_type = my_make_unsigned_t<::std::remove_cvref_t<T>>;
 	constexpr unsigned_char_type base_char_type{base};
 	constexpr unsigned_type risky_uint_max{static_cast<unsigned_type>(-1)};
 	constexpr unsigned_type risky_value{risky_uint_max/base};
 	constexpr unsigned_char_type risky_digit(risky_uint_max%base);
 	constexpr bool isspecialbase{base==2||base==4||base==16};
-	constexpr std::size_t max_size{details::cal_max_int_size<unsigned_type,base>()-(!isspecialbase)};
-	std::size_t const diff{static_cast<std::size_t>(last-first)};
-	std::size_t mn_val{max_size};
+	constexpr ::std::size_t max_size{details::cal_max_int_size<unsigned_type,base>()-(!isspecialbase)};
+	::std::size_t const diff{static_cast<::std::size_t>(last-first)};
+	::std::size_t mn_val{max_size};
 	if(diff<mn_val)
 		mn_val=diff;
 	auto first_phase_last{first+mn_val};
@@ -502,9 +502,9 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_simd_sp
 	return {first,(overflow?(parse_code::overflow):(parse_code::ok))};
 }
 
-inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(std::numeric_limits<char unsigned>::max())};
+inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(::std::numeric_limits<char unsigned>::max())};
 
-template<char8_t base,std::integral char_type>
+template<char8_t base,::std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const* first,char_type const* last) noexcept
 {
 	if(first==last||*first!=char_literal_v<u8'0',char_type>)
@@ -567,13 +567,13 @@ inline constexpr parse_result<char_type const*> scan_shbase_impl(char_type const
 	return {first,ongoing_parse_code};
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type const* skip_hexdigits(char_type const* first,char_type const* last) noexcept;
 
 template<char8_t base,bool shbase=false,bool skipzero=false,::std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_part_define_impl(char_type const* first,char_type const* last,T& t) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	[[maybe_unused]] bool sign{};
 	if constexpr(my_signed_integral<T>)
 	{
@@ -633,20 +633,20 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_none_space_p
 			}
 		}
 	}
-	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<T>>;
+	using unsigned_type = my_make_unsigned_t<::std::remove_cvref_t<T>>;
 	unsigned_type res{};
 	char_type const* it;
 #if defined(__SSE4_1__) && defined(__x86_64__)
-	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(std::uint_least64_t))
+	if constexpr(base==10&&sizeof(char_type)==1&&sizeof(unsigned_type)<=sizeof(::std::uint_least64_t))
 	{
 		if(
 #if __cpp_lib_is_constant_evaluated >= 201811L
-		!std::is_constant_evaluated()&&
+		!::std::is_constant_evaluated()&&
 #endif
 		last-first>=32)[[likely]]
 		{
-			constexpr bool smaller_than_uint64{sizeof(unsigned_type)<sizeof(std::uint_least64_t)};
-			std::uint_least64_t temp{};
+			constexpr bool smaller_than_uint64{sizeof(unsigned_type)<sizeof(::std::uint_least64_t)};
+			::std::uint_least64_t temp{};
 			auto [digits,ec]=sse_parse<is_ebcdic<char_type>,smaller_than_uint64>(reinterpret_cast<char unsigned const*>(first),reinterpret_cast<char unsigned const*>(last),temp);
 			it=first+digits;
 			if(ec!=parse_code::ok)[[unlikely]]
@@ -733,7 +733,7 @@ inline constexpr parse_result<char_type const*> scan_int_contiguous_define_impl(
 }
 }
 
-enum class scan_integral_context_phase:std::uint_least8_t
+enum class scan_integral_context_phase:::std::uint_least8_t
 {
 space,
 sign,
@@ -747,17 +747,17 @@ overflow
 
 namespace details
 {
-template<char8_t base,std::integral char_type,
+template<char8_t base,::std::integral char_type,
 	::fast_io::details::my_integral T>
 inline constexpr auto scan_context_type_impl_int() noexcept
 {
-	using unsigned_type = details::my_make_unsigned_t<std::remove_cvref_t<T>>;
-	constexpr std::size_t max_size{(::fast_io::details::print_integer_reserved_size_cache<base,false,
+	using unsigned_type = details::my_make_unsigned_t<::std::remove_cvref_t<T>>;
+	constexpr ::std::size_t max_size{(::fast_io::details::print_integer_reserved_size_cache<base,false,
 	::fast_io::details::my_signed_integral<T>,unsigned_type>)+2};
 	struct scan_integer_context
 	{
 		::fast_io::freestanding::array<char_type,max_size> buffer;
-		std::uint_least8_t size{};
+		::std::uint_least8_t size{};
 		scan_integral_context_phase integer_phase{};
 		inline constexpr void reset() noexcept
 		{
@@ -782,7 +782,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_space_phase(char_type
 	return {first,ongoing_parse_code};
 }
 
-template<bool allow_negative,bool allow_positive,typename State,std::integral char_type>
+template<bool allow_negative,bool allow_positive,typename State,::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_sign_phase(State& st,char_type const* first,char_type const* last) noexcept
 {
 	if(first==last)
@@ -830,10 +830,10 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_sign_phase(State& st,
 	return {first,ongoing_parse_code};
 }
 
-template<char8_t base,std::integral char_type>
+template<char8_t base,::std::integral char_type>
 requires (base!=10)
 inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
-	std::uint_least8_t& sz,char_type const* first,char_type const* last) noexcept
+	::std::uint_least8_t& sz,char_type const* first,char_type const* last) noexcept
 {
 	if(first==last)
 	{
@@ -849,7 +849,7 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 	}
 	else
 	{
-		std::uint_least8_t size_cache{sz};
+		::std::uint_least8_t size_cache{sz};
 		if(size_cache==0)
 		{
 			if(*first!=char_literal_v<u8'0',char_type>)
@@ -942,10 +942,10 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_prefix_phase(
 	return {first,ongoing_parse_code};
 }
 
-template<char8_t base,bool skipzero,std::integral char_type>
+template<char8_t base,bool skipzero,::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_zero_phase(scan_integral_context_phase& integer_phase,char_type const* first,char_type const* last) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	if(first==last)
 	{
 		integer_phase=scan_integral_context_phase::zero;
@@ -989,17 +989,17 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_zero_phase(scan_integ
 }
 
 
-template<char8_t base,std::integral char_type,typename State,my_integral T>
+template<char8_t base,::std::integral char_type,typename State,my_integral T>
 inline constexpr parse_result<char_type const*> sc_int_ctx_digit_phase(State& st,char_type const* first,char_type const* last,T& t) noexcept
 {
 	auto it{skip_digits<base>(first,last)};
-	std::size_t const diff{st.buffer.size()-static_cast<std::size_t>(st.size)};
-	std::size_t const first_it_diff{static_cast<std::size_t>(it-first)};
+	::std::size_t const diff{st.buffer.size()-static_cast<::std::size_t>(st.size)};
+	::std::size_t const first_it_diff{static_cast<::std::size_t>(it-first)};
 	if(first_it_diff<diff)
 	{
 		auto start{st.buffer.data()+st.size};
 		auto e{non_overlapped_copy_n(first,first_it_diff,start)};
-		st.size+=static_cast<std::uint_least8_t>(first_it_diff);
+		st.size+=static_cast<::std::uint_least8_t>(first_it_diff);
 		if(it==last)
 		{
 			st.integer_phase=scan_integral_context_phase::digit;
@@ -1027,10 +1027,10 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_digit_phase(State& st
 	}
 }
 
-template<char8_t base,std::integral char_type>
+template<char8_t base,::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_zero_invalid_phase(char_type const* first,char_type const* last) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	if(first==last)
 		return {first,parse_code::partial};
 	++first;
@@ -1041,14 +1041,14 @@ inline constexpr parse_result<char_type const*> sc_int_ctx_zero_invalid_phase(ch
 	return {first,parse_code::invalid};
 }
 
-template<char8_t base,std::integral char_type>
+template<char8_t base,::std::integral char_type>
 inline constexpr parse_result<char_type const*> sc_int_ctx_skip_digits_phase(char_type const* first,char_type const* last) noexcept
 {
 	first=skip_digits<base>(first,last);
 	return {first,(first==last)?parse_code::partial:parse_code::invalid};
 }
 
-template<char8_t base,bool noskipws,bool shbase,bool skipzero,typename State,std::integral char_type,my_integral T>
+template<char8_t base,bool noskipws,bool shbase,bool skipzero,typename State,::std::integral char_type,my_integral T>
 inline constexpr parse_result<char_type const*> scan_context_define_parse_impl(State& st,char_type const* first,char_type const* last,T& t) noexcept
 {
 	auto phase{st.integer_phase};
@@ -1233,7 +1233,7 @@ inline constexpr ch_get_t<T&> ch_get(T& reference) noexcept
 	return {reference};
 }
 
-template<std::size_t bs,bool noskipws=false,bool skipzero=false,::fast_io::details::my_integral scalar_type>
+template<::std::size_t bs,bool noskipws=false,bool skipzero=false,::fast_io::details::my_integral scalar_type>
 inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<bs,noskipws,false,skipzero>,scalar_type&> base_get(scalar_type& t) noexcept
 {
 	return {t};
@@ -1265,7 +1265,7 @@ inline constexpr ::fast_io::manipulators::scalar_manip_t<::fast_io::details::bas
 	return {t};
 }
 
-template<std::integral char_type,manipulators::scalar_flags flags,details::my_integral T>
+template<::std::integral char_type,manipulators::scalar_flags flags,details::my_integral T>
 inline constexpr auto scan_context_type(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,T&>>) noexcept
 {
 	return details::scan_context_type_impl_int<flags.base,char_type,T>();
@@ -1303,19 +1303,19 @@ inline constexpr parse_result<char_type const*> ch_get_context_impl(char_type co
 }
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr io_type_t<details::empty> scan_context_type(io_reserve_type_t<char_type,manipulators::ch_get_t<char_type&>>) noexcept
 {
 	return {};
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr parse_result<char_type const*> scan_context_define(io_reserve_type_t<char_type,manipulators::ch_get_t<char_type&>>,details::empty,char_type const* begin,char_type const* end,manipulators::ch_get_t<char_type&> t) noexcept
 {
 	return details::ch_get_context_impl(begin,end,t.reference);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,manipulators::ch_get_t<char_type&>>,details::empty,manipulators::ch_get_t<char_type&>) noexcept
 {
 	return parse_code::end_of_file;

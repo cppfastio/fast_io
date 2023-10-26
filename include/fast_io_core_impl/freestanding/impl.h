@@ -3,7 +3,7 @@
 /*
 
 GCC provides more headers in freestanding environment than standard requires because WG21 sucks very badly.
-no std::array, std::copy and others
+no ::std::array, ::std::copy and others
 
 */
 #if defined(__GLIBCXX__) &&__has_include(<bits/ranges_base.h>) && __has_include(<bits/stl_iterator.h>) && _GLIBCXX_RELEASE >= 12

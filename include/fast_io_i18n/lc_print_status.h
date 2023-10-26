@@ -4,22 +4,22 @@ namespace fast_io
 {
 
 template<typename char_type,typename T>
-concept lc_dynamic_reserve_printable = std::integral<char_type>&&
-	requires(T t,basic_lc_all<char_type> const* all,char_type* ptr,std::size_t size)
+concept lc_dynamic_reserve_printable = ::std::integral<char_type>&&
+	requires(T t,basic_lc_all<char_type> const* all,char_type* ptr,::std::size_t size)
 {
-	{print_reserve_size(all,t)}->std::convertible_to<std::size_t>;
-	{print_reserve_define(all,ptr,t)}->std::convertible_to<char_type*>;
+	{print_reserve_size(all,t)}->::std::convertible_to<::std::size_t>;
+	{print_reserve_define(all,ptr,t)}->::std::convertible_to<char_type*>;
 };
 
-template<std::integral char_type,typename value_type>
-requires lc_dynamic_reserve_printable<char_type,std::remove_cvref_t<value_type>>
+template<::std::integral char_type,typename value_type>
+requires lc_dynamic_reserve_printable<char_type,::std::remove_cvref_t<value_type>>
 inline constexpr auto print_reserve_size(basic_lc_all<char_type> const* __restrict all,parameter<value_type> para)
 {
 	return print_reserve_size(all,para.reference);
 }
 
-template<std::integral char_type,typename value_type>
-requires lc_dynamic_reserve_printable<char_type,std::remove_cvref_t<value_type>>
+template<::std::integral char_type,typename value_type>
+requires lc_dynamic_reserve_printable<char_type,::std::remove_cvref_t<value_type>>
 inline constexpr auto print_reserve_define(basic_lc_all<char_type> const* __restrict all,char_type* begin,parameter<value_type> para)
 {
 	return print_reserve_define(all,begin,para.reference);
@@ -28,7 +28,7 @@ inline constexpr auto print_reserve_define(basic_lc_all<char_type> const* __rest
 template<typename char_type,typename T>
 concept lc_scatter_printable=requires(basic_lc_all<char_type> const* all,T t)
 {
-	{print_scatter_define(all,t)}->std::same_as<basic_io_scatter_t<char_type>>;
+	{print_scatter_define(all,t)}->::std::same_as<basic_io_scatter_t<char_type>>;
 };
 
 template<typename char_type,typename T>
@@ -40,11 +40,11 @@ concept lc_printable = requires(basic_lc_all<char_type> const* all,::fast_io::de
 template<typename char_type,typename T>
 concept lc_printable_internal_shift=requires(basic_lc_all<char_type> const* all,T t)
 {
-	{print_define_internal_shift(all,t)}->std::same_as<std::size_t>;
+	{print_define_internal_shift(all,t)}->::std::same_as<::std::size_t>;
 };
 
-template<std::integral char_type,typename value_type>
-requires lc_printable_internal_shift<char_type,std::remove_cvref_t<value_type>>
+template<::std::integral char_type,typename value_type>
+requires lc_printable_internal_shift<char_type,::std::remove_cvref_t<value_type>>
 inline constexpr auto print_define_internal_shift(basic_lc_all<char_type> const* __restrict all,parameter<value_type> para)
 {
 	return print_define_internal_shift(all,para.reference);
@@ -53,13 +53,13 @@ inline constexpr auto print_define_internal_shift(basic_lc_all<char_type> const*
 namespace details::decay
 {
 
-template<std::integral char_type,typename T,typename... Args>
-inline constexpr std::size_t calculate_lc_scatter_dynamic_reserve_size(
+template<::std::integral char_type,typename T,typename... Args>
+inline constexpr ::std::size_t calculate_lc_scatter_dynamic_reserve_size(
 	basic_lc_all<char_type> const* __restrict all,T t,Args... args)
 {
 	if constexpr(lc_dynamic_reserve_printable<char_type,T>)
 	{
-		std::size_t res{print_reserve_size(all,t)};
+		::std::size_t res{print_reserve_size(all,t)};
 		if constexpr(sizeof...(Args)==0)
 			return res;
 		else
@@ -68,7 +68,7 @@ inline constexpr std::size_t calculate_lc_scatter_dynamic_reserve_size(
 	else if constexpr(!reserve_printable<char_type,T>&&
 		dynamic_reserve_printable<char_type,T>)
 	{
-		std::size_t res{print_reserve_size(io_reserve_type<char_type,T>,t)};
+		::std::size_t res{print_reserve_size(io_reserve_type<char_type,T>,t)};
 		if constexpr(sizeof...(Args)==0)
 			return res;
 		else
@@ -83,7 +83,7 @@ inline constexpr std::size_t calculate_lc_scatter_dynamic_reserve_size(
 	}
 }
 
-template<std::integral char_type,typename T,typename... Args>
+template<::std::integral char_type,typename T,typename... Args>
 inline constexpr void lc_scatter_print_with_dynamic_reserve_recursive(
 	basic_lc_all<char_type> const* __restrict all,
 	io_scatter_t* __restrict arr,
@@ -117,7 +117,7 @@ inline constexpr void lc_scatter_print_with_dynamic_reserve_recursive(
 	else
 	{
 		auto end_ptr = print_reserve_define(io_reserve_type<char_type,T>,dynamic_buffer_ptr,t);
-		*arr={dynamic_buffer_ptr,static_cast<std::size_t>(end_ptr-dynamic_buffer_ptr)*sizeof(*dynamic_buffer_ptr)};
+		*arr={dynamic_buffer_ptr,static_cast<::std::size_t>(end_ptr-dynamic_buffer_ptr)*sizeof(*dynamic_buffer_ptr)};
 		if constexpr(sizeof...(Args)!=0)
 			dynamic_buffer_ptr = end_ptr;
 	}
@@ -131,7 +131,7 @@ inline constexpr void lc_scatter_print_with_dynamic_reserve_recursive(
 }
 
 
-template<std::integral char_type,typename T,typename... Args>
+template<::std::integral char_type,typename T,typename... Args>
 inline constexpr void lc_scatter_print_with_dynamic_only_reserve_recursive(
 	basic_lc_all<char_type> const* __restrict all,
 	io_scatter_t* __restrict arr,
@@ -158,7 +158,7 @@ inline constexpr void lc_scatter_print_with_dynamic_only_reserve_recursive(
 	else
 	{
 		auto end_ptr = print_reserve_define(io_reserve_type<char_type,T>,dynamic_buffer_ptr,t);
-		*arr={dynamic_buffer_ptr,static_cast<std::size_t>(end_ptr-dynamic_buffer_ptr)*sizeof(*dynamic_buffer_ptr)};
+		*arr={dynamic_buffer_ptr,static_cast<::std::size_t>(end_ptr-dynamic_buffer_ptr)*sizeof(*dynamic_buffer_ptr)};
 		if constexpr(sizeof...(Args)!=0)
 			dynamic_buffer_ptr = end_ptr;
 	}
@@ -173,7 +173,7 @@ inline constexpr void lc_scatter_print_with_dynamic_only_reserve_recursive(
 
 
 template<bool line,output_stream output,typename T>
-inline constexpr void lc_print_control_reserve_bad_path(basic_lc_all<typename output::char_type> const* __restrict lc,output out,T t,std::size_t size)
+inline constexpr void lc_print_control_reserve_bad_path(basic_lc_all<typename output::char_type> const* __restrict lc,output out,T t,::std::size_t size)
 {
 	using char_type = typename output::char_type;
 	if constexpr(line)
@@ -193,26 +193,26 @@ inline constexpr void lc_print_control_reserve_bad_path(basic_lc_all<typename ou
 }
 
 template<bool line,output_stream output,typename T>
-requires (std::is_trivially_copyable_v<output>&&std::is_trivially_copyable_v<T>)
+requires (::std::is_trivially_copyable_v<output>&&::std::is_trivially_copyable_v<T>)
 inline constexpr void lc_print_control(basic_lc_all<typename output::char_type> const* __restrict lc,output out,T t)
 {
 	using char_type = typename output::char_type;
-	using value_type = std::remove_cvref_t<T>;
+	using value_type = ::std::remove_cvref_t<T>;
 	if constexpr(lc_scatter_printable<char_type,value_type>)
 		print_control<line>(out,print_scatter_define(lc,t));
 	else if constexpr(lc_dynamic_reserve_printable<char_type,value_type>)
 	{
-		std::size_t sz{print_reserve_size(lc,t)};
+		::std::size_t sz{print_reserve_size(lc,t)};
 		if constexpr(buffer_output_stream<output>)
 		{
 			auto bcurr{obuffer_curr(out)};
 			auto bend{obuffer_end(out)};
-			std::ptrdiff_t diff(bend-bcurr);
+			::std::ptrdiff_t diff(bend-bcurr);
 			if constexpr(line)
 			{
 				--diff;
 			}
-			if(static_cast<std::ptrdiff_t>(sz)<diff)[[likely]]
+			if(static_cast<::std::ptrdiff_t>(sz)<diff)[[likely]]
 			{
 				//To check whether this affects performance.
 				auto it{print_reserve_define(lc,bcurr,t)};
@@ -275,7 +275,7 @@ inline constexpr void lc_print_controls_line(basic_lc_all<typename output::char_
 	}
 }
 
-template<std::integral char_type,typename T,typename... Args>
+template<::std::integral char_type,typename T,typename... Args>
 inline constexpr void lc_scatter_print_recursive(basic_lc_all<char_type> const* __restrict lc,io_scatter_t* arr,T t, Args ...args)
 {
 	if constexpr(lc_scatter_printable<char_type,T>)
@@ -314,8 +314,8 @@ inline constexpr void lc_print_fallback(basic_lc_all<typename output::char_type>
 		||lc_scatter_printable<char_type,Args>
 		)&&...))
 	{
-		constexpr std::size_t args_num{sizeof...(Args)};
-		constexpr std::size_t scatters_num{args_num+static_cast<std::size_t>(ln)};
+		constexpr ::std::size_t args_num{sizeof...(Args)};
+		constexpr ::std::size_t scatters_num{args_num+static_cast<::std::size_t>(ln)};
 		io_scatter_t scatters[scatters_num];
 		if constexpr(((scatter_printable<char_type,Args>||lc_scatter_printable<char_type,Args>)&&...))
 		{
@@ -335,7 +335,7 @@ inline constexpr void lc_print_fallback(basic_lc_all<typename output::char_type>
 		}
 		else
 		{
-			constexpr std::size_t arrayn{calculate_scatter_reserve_size<char_type,Args...>()};
+			constexpr ::std::size_t arrayn{calculate_scatter_reserve_size<char_type,Args...>()};
 			if constexpr(arrayn!=0)
 			{
 				char_type reserve_array[arrayn];
@@ -427,7 +427,7 @@ inline constexpr void lc_print_status_define_further_decay(basic_lc_all<typename
 }
 
 template<typename char_type,typename... Args>
-concept lc_print_status_define_okay_character_type = std::integral<char_type>&&(
+concept lc_print_status_define_okay_character_type = ::std::integral<char_type>&&(
 	((printable<char_type,Args>||reserve_printable<char_type,Args>||dynamic_reserve_printable<char_type,Args>||scatter_printable<char_type,Args>||
 	lc_printable<char_type,Args>||lc_dynamic_reserve_printable<char_type,Args>||
 	lc_scatter_printable<char_type,Args>)&&...));

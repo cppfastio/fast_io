@@ -32,10 +32,10 @@ struct u32utf_mb_state
 };
 
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)<=4)
-using basic_utf_mb_state = std::conditional_t<sizeof(char_type)==4,u32utf_mb_state,
-std::conditional_t<sizeof(char_type)==2,u16utf_mb_state,u8utf_mb_state>>;
+using basic_utf_mb_state = ::std::conditional_t<sizeof(char_type)==4,u32utf_mb_state,
+::std::conditional_t<sizeof(char_type)==2,u16utf_mb_state,u8utf_mb_state>>;
 using utf_mb_state = basic_utf_mb_state<char>;
 using wutf_mb_state = basic_utf_mb_state<wchar_t>;
 
@@ -52,7 +52,7 @@ utf_le,
 utf_be,
 gb18030,
 utf_ebcdic,
-utf=std::endian::big==std::endian::native?utf_be:(std::endian::little==std::endian::native?utf_le:5)
+utf=::std::endian::big==::std::endian::native?utf_be:(::std::endian::little==::std::endian::native?utf_le:5)
 };
 /*
 CppCon 2018: Bob Steagall “Fast Conversion From UTF-8 with C++, DFAs, and SSE Intrinsics”
@@ -64,31 +64,31 @@ https://github.com/BobSteagall/utf_utils/blob/master/src/utf_utils.cpp
 namespace details
 {
 
-template<std::size_t src_char_type_size,std::size_t dest_char_type_size>
+template<::std::size_t src_char_type_size,::std::size_t dest_char_type_size>
 requires ((dest_char_type_size<=4)&&(src_char_type_size<=4))
-inline constexpr std::size_t cal_full_reserve_size(std::size_t internal_size) noexcept
+inline constexpr ::std::size_t cal_full_reserve_size(::std::size_t internal_size) noexcept
 {
-	constexpr std::size_t external_max{std::numeric_limits<std::size_t>::max()/dest_char_type_size};
-	constexpr std::size_t internal_max{std::numeric_limits<std::size_t>::max()/src_char_type_size};
+	constexpr ::std::size_t external_max{::std::numeric_limits<::std::size_t>::max()/dest_char_type_size};
+	constexpr ::std::size_t internal_max{::std::numeric_limits<::std::size_t>::max()/src_char_type_size};
 	if constexpr(src_char_type_size==4)
 	{
 		if constexpr(dest_char_type_size==4)
 		{
-			constexpr std::size_t imax{external_max};
+			constexpr ::std::size_t imax{external_max};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size;
 		}
 		else if constexpr(dest_char_type_size==2)
 		{
-			constexpr std::size_t imax{external_max/2};
+			constexpr ::std::size_t imax{external_max/2};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*2;
 		}
 		else
 		{
-			constexpr std::size_t imax{external_max/8};
+			constexpr ::std::size_t imax{external_max/8};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*8;
@@ -98,21 +98,21 @@ inline constexpr std::size_t cal_full_reserve_size(std::size_t internal_size) no
 	{
 		if constexpr(dest_char_type_size==4)
 		{
-			constexpr std::size_t imax{external_max};
+			constexpr ::std::size_t imax{external_max};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size;
 		}
 		else if constexpr(dest_char_type_size==2)
 		{
-			constexpr std::size_t imax{external_max/2};
+			constexpr ::std::size_t imax{external_max/2};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*2;
 		}
 		else
 		{
-			constexpr std::size_t imax{external_max/8};
+			constexpr ::std::size_t imax{external_max/8};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*8;
@@ -122,21 +122,21 @@ inline constexpr std::size_t cal_full_reserve_size(std::size_t internal_size) no
 	{
 		if constexpr(dest_char_type_size==4)
 		{
-			constexpr std::size_t imax{external_max};
+			constexpr ::std::size_t imax{external_max};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size;
 		}
 		else if constexpr(dest_char_type_size==2)
 		{
-			constexpr std::size_t imax{internal_max/2};
+			constexpr ::std::size_t imax{internal_max/2};
 			if(internal_size>=imax)
 				fast_terminate();
 			return 2*internal_size;
 		}
 		else
 		{
-			constexpr std::size_t imax{internal_max/8};
+			constexpr ::std::size_t imax{internal_max/8};
 			if(internal_size>=imax)
 				fast_terminate();
 			return 8*internal_size;
@@ -144,31 +144,31 @@ inline constexpr std::size_t cal_full_reserve_size(std::size_t internal_size) no
 	}
 }
 
-template<std::size_t src_char_type_size,std::size_t dest_char_type_size>
+template<::std::size_t src_char_type_size,::std::size_t dest_char_type_size>
 requires ((dest_char_type_size<=4)&&(src_char_type_size<=4))
-inline constexpr std::size_t cal_decorated_reserve_size(std::size_t internal_size) noexcept
+inline constexpr ::std::size_t cal_decorated_reserve_size(::std::size_t internal_size) noexcept
 {
-	constexpr std::size_t external_max{std::numeric_limits<std::size_t>::max()/dest_char_type_size};
-	constexpr std::size_t internal_max{std::numeric_limits<std::size_t>::max()/src_char_type_size};
+	constexpr ::std::size_t external_max{::std::numeric_limits<::std::size_t>::max()/dest_char_type_size};
+	constexpr ::std::size_t internal_max{::std::numeric_limits<::std::size_t>::max()/src_char_type_size};
 	if constexpr(src_char_type_size==4)
 	{
 		if constexpr(dest_char_type_size==4)
 		{
-			constexpr std::size_t imax{external_max};
+			constexpr ::std::size_t imax{external_max};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size;
 		}
 		else if constexpr(dest_char_type_size==2)
 		{
-			constexpr std::size_t imax{external_max/2};
+			constexpr ::std::size_t imax{external_max/2};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*2;
 		}
 		else
 		{
-			constexpr std::size_t imax{external_max/8};
+			constexpr ::std::size_t imax{external_max/8};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*8;
@@ -178,21 +178,21 @@ inline constexpr std::size_t cal_decorated_reserve_size(std::size_t internal_siz
 	{
 		if constexpr(dest_char_type_size==4)
 		{
-			constexpr std::size_t imax{external_max-1};
+			constexpr ::std::size_t imax{external_max-1};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size+1;
 		}
 		else if constexpr(dest_char_type_size==2)
 		{
-			constexpr std::size_t imax{external_max/2-1};
+			constexpr ::std::size_t imax{external_max/2-1};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*2+2;
 		}
 		else
 		{
-			constexpr std::size_t imax{external_max/8-1};
+			constexpr ::std::size_t imax{external_max/8-1};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size*8+8;
@@ -202,21 +202,21 @@ inline constexpr std::size_t cal_decorated_reserve_size(std::size_t internal_siz
 	{
 		if constexpr(dest_char_type_size==4)
 		{
-			constexpr std::size_t imax{external_max-7};
+			constexpr ::std::size_t imax{external_max-7};
 			if(internal_size>=imax)
 				fast_terminate();
 			return internal_size+7;
 		}
 		else if constexpr(dest_char_type_size==2)
 		{
-			constexpr std::size_t imax{internal_max/2-7};
+			constexpr ::std::size_t imax{internal_max/2-7};
 			if(internal_size>=imax)
 				fast_terminate();
 			return 2*internal_size+14;
 		}
 		else
 		{
-			constexpr std::size_t imax{internal_max/8-7};
+			constexpr ::std::size_t imax{internal_max/8-7};
 			if(internal_size>=imax)
 				fast_terminate();
 			return 8*internal_size+56;
@@ -225,7 +225,7 @@ inline constexpr std::size_t cal_decorated_reserve_size(std::size_t internal_siz
 }
 #if defined(__GNUC_EXECUTION_CHARSET_NAME) || defined(__GNUC_WIDE_EXECUTION_CHARSET_NAME)
 
-template<std::size_t N1,std::size_t N2>
+template<::std::size_t N1,::std::size_t N2>
 inline constexpr bool execution_charset_is(char const (&str)[N1],char8_t const (&encoding)[N2]) noexcept
 {
 	if constexpr(N1!=N2)
@@ -234,7 +234,7 @@ inline constexpr bool execution_charset_is(char const (&str)[N1],char8_t const (
 	}
 	else
 	{
-		for(std::size_t i{};i!=N1;++i)
+		for(::std::size_t i{};i!=N1;++i)
 		{
 			char8_t ch{::fast_io::char_category::to_c_upper(static_cast<char8_t>(str[i]))};
 			char8_t ch1{::fast_io::char_category::to_c_upper(static_cast<char8_t>(encoding[i]))};
@@ -250,15 +250,15 @@ inline constexpr bool execution_charset_is(char const (&str)[N1],char8_t const (
 #endif
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr encoding_scheme execution_charset_encoding_scheme() noexcept
 {
-	using char_type_no_cvref_t = std::remove_cvref_t<char_type>;
+	using char_type_no_cvref_t = ::std::remove_cvref_t<char_type>;
 	if constexpr(::fast_io::details::is_ebcdic<char_type_no_cvref_t>)
 		return encoding_scheme::utf_ebcdic;
 	else
 	{
-		if constexpr(std::same_as<char_type_no_cvref_t,char>)
+		if constexpr(::std::same_as<char_type_no_cvref_t,char>)
 		{
 #if defined(_MSVC_EXECUTION_CHARACTER_SET)
 			if constexpr(_MSVC_EXECUTION_CHARACTER_SET == 936 || _MSVC_EXECUTION_CHARACTER_SET == 54936)
@@ -283,7 +283,7 @@ inline constexpr encoding_scheme execution_charset_encoding_scheme() noexcept
 			return encoding_scheme::utf;
 #endif
 		}
-		else if constexpr(std::same_as<char_type_no_cvref_t,wchar_t>)
+		else if constexpr(::std::same_as<char_type_no_cvref_t,wchar_t>)
 		{
 #if defined(__GNUC_WIDE_EXECUTION_CHARSET_NAME)
 			if constexpr(sizeof(wchar_t)==1&&
@@ -318,10 +318,10 @@ inline constexpr encoding_scheme execution_charset_encoding_scheme() noexcept
 	}
 }
 
-template<std::integral char_type,encoding_scheme scheme=execution_charset_encoding_scheme<char_type>()>
+template<::std::integral char_type,encoding_scheme scheme=execution_charset_encoding_scheme<char_type>()>
 using basic_mb_state=basic_utf_mb_state<char_type>;
 
-template<std::integral src_char_type,std::integral dest_char_type>
+template<::std::integral src_char_type,::std::integral dest_char_type>
 struct code_cvt_result
 {
 	src_char_type const* src;
@@ -342,9 +342,9 @@ inline constexpr bool is_native_scheme(encoding_scheme scheme) noexcept
 	return scheme==encoding_scheme::utf;
 }
 
-template<std::integral T>
+template<::std::integral T>
 requires (sizeof(T)==1)
-inline constexpr std::size_t get_utf8_invalid_code_units(T* dst) noexcept
+inline constexpr ::std::size_t get_utf8_invalid_code_units(T* dst) noexcept
 {
 	*dst = static_cast<T>(0xEF);
 	dst[1] = static_cast<T>(0xBF);
@@ -352,9 +352,9 @@ inline constexpr std::size_t get_utf8_invalid_code_units(T* dst) noexcept
 	return 3;
 }
 
-template<encoding_scheme scheme,std::integral T>
+template<encoding_scheme scheme,::std::integral T>
 requires (sizeof(T)<=4)
-inline constexpr std::size_t get_utf_code_units(char32_t cdpt,T* dst) noexcept
+inline constexpr ::std::size_t get_utf_code_units(char32_t cdpt,T* dst) noexcept
 {
 	if constexpr(scheme==encoding_scheme::utf_ebcdic)
 	{
@@ -438,23 +438,23 @@ inline constexpr bool is_utf16_low_surrogate(char16_t uc) noexcept { return (uc 
 
 inline constexpr char32_t utf16_surrogate_to_utf32(char16_t high, char16_t low) noexcept
 { 
-	return static_cast<char32_t>((static_cast<std::uint_least32_t>(high) << 10u) + low - 0x35fdc00u); 
+	return static_cast<char32_t>((static_cast<::std::uint_least32_t>(high) << 10u) + low - 0x35fdc00u); 
 }
 
 #if (defined(_MSC_VER)&&defined(_M_AMD64)&&!defined(__clang__)) || (defined(__SSE__) && defined(__x86_64__))
-template<std::integral T,std::integral U>
+template<::std::integral T,::std::integral U>
 requires ((sizeof(T)==1)&&(sizeof(U)==1||sizeof(U)==2||sizeof(U)==4))
 inline code_cvt_result<T,U> convert_ascii_with_sse(T const* __restrict pSrc, U* __restrict pDst) noexcept
 {
-	std::uint_least32_t mask;
+	::std::uint_least32_t mask;
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(__INTEL_COMPILER)
 	using namespace fast_io::intrinsics;
-	constexpr std::size_t m128i_size{16};
+	constexpr ::std::size_t m128i_size{16};
 	if constexpr(sizeof(U)==1)
 	{
 		x86_64_v16qi chunk;
 		__builtin_memcpy(__builtin_addressof(chunk),pSrc,m128i_size);
-		mask = static_cast<std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
+		mask = static_cast<::std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
 		__builtin_memcpy(pDst,__builtin_addressof(chunk),m128i_size);
 	}
 	else if constexpr(sizeof(U)==2)
@@ -462,7 +462,7 @@ inline code_cvt_result<T,U> convert_ascii_with_sse(T const* __restrict pSrc, U* 
 		x86_64_v16qi const zero{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		x86_64_v16qi chunk;
 		__builtin_memcpy(__builtin_addressof(chunk),pSrc,m128i_size);
-		mask = static_cast<std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
+		mask = static_cast<::std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
 #if __has_builtin(__builtin_shufflevector)
 		x86_64_v16qi half{__builtin_shufflevector(chunk, zero, 0, 16+0, 1, 16+1, 2, 16+2, 3, 16+3, 4, 16+4, 5, 16+5, 6, 16+6, 7, 16+7)};
 		__builtin_memcpy(pDst,__builtin_addressof(half),m128i_size);
@@ -479,7 +479,7 @@ inline code_cvt_result<T,U> convert_ascii_with_sse(T const* __restrict pSrc, U* 
 		x86_64_v16qi const zero{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		x86_64_v16qi chunk;
 		__builtin_memcpy(__builtin_addressof(chunk),pSrc,m128i_size);
-		mask = static_cast<std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
+		mask = static_cast<::std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
 #if __has_builtin(__builtin_shufflevector)
 		x86_64_v16qi half_result{__builtin_shufflevector(chunk, zero, 0, 16+0, 1, 16+1, 2, 16+2, 3, 16+3, 4, 16+4, 5, 16+5, 6, 16+6, 7, 16+7)};
 		x86_64_v8hi half;
@@ -553,26 +553,26 @@ inline code_cvt_result<T,U> convert_ascii_with_sse(T const* __restrict pSrc, U* 
 		_mm_storeu_si128((x86_64_m128i*) (pDst + 12), qrtr);     //- Write to memory
 	}
 #endif
-	auto const incr{std::countr_zero(static_cast<std::uint_least16_t>(mask))};
+	auto const incr{::std::countr_zero(static_cast<::std::uint_least16_t>(mask))};
 	return {pSrc+incr,pDst+incr};
 }
 
 #endif
 
-template<std::integral T>
+template<::std::integral T>
 struct advance_with_big_table_unchecked_result
 {
 	T const* src;
 	char32_t cdpt;
 };
 
-template<std::integral T>
+template<::std::integral T>
 requires (sizeof(T)==1)
 inline constexpr advance_with_big_table_unchecked_result<T> advance_with_big_table_unchecked(T const* it) noexcept
 {
 	char8_t const* info{first_unit_info[static_cast<char8_t>(*it)]};
 	char32_t cdpt{static_cast<char32_t>(*info)};                                //- From it, get the initial code point value
-	std::int_least32_t curr{info[1]};                                 //- From it, get the second state
+	::std::int_least32_t curr{info[1]};                                 //- From it, get the second state
 	for(++it;12<curr;)
 	{
 		char8_t const unit{static_cast<char8_t>(*it)};
@@ -586,7 +586,7 @@ inline constexpr advance_with_big_table_unchecked_result<T> advance_with_big_tab
 	return {it,cdpt};
 }
 
-template<std::integral T>
+template<::std::integral T>
 struct advance_with_big_table_result
 {
 	bool failed;
@@ -594,13 +594,13 @@ struct advance_with_big_table_result
 	char32_t cdpt;
 };
 
-template<std::integral T>
+template<::std::integral T>
 requires (sizeof(T)==1)
 inline constexpr advance_with_big_table_result<T> advance_with_big_table(T const* first, T const* last) noexcept
 {
 	char8_t const* info{first_unit_info[static_cast<char8_t>(*first)]};
 	char32_t cdpt{static_cast<char32_t>(*info)};                //- From it, get the initial code point value
-	std::int_least32_t curr{info[1]};                                 //- From it, get the second state
+	::std::int_least32_t curr{info[1]};                                 //- From it, get the second state
 	auto it{first};
 	for(++it;12<curr;)
 	{
@@ -622,9 +622,9 @@ inline constexpr advance_with_big_table_result<T> advance_with_big_table(T const
 
 }
 
-template<std::integral T>
+template<::std::integral T>
 requires (sizeof(T)<=4)
-inline constexpr std::size_t get_utf_code_units(char32_t ch,T* ptr) noexcept
+inline constexpr ::std::size_t get_utf_code_units(char32_t ch,T* ptr) noexcept
 {
 	return details::codecvt::get_utf_code_units<encoding_scheme::utf>(ch,ptr);
 }

@@ -25,21 +25,21 @@ using dir_file = directory_file_wrapper<basic_native_file<char>>;
 template region
 */
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_iobuf_pipe = basic_iobuf<basic_native_pipe<char_type>>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_ibuf_file = basic_ibuf<input_file_wrapper<basic_native_file<char_type>>>;
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_obuf_file = basic_obuf<output_file_wrapper<basic_native_file<char_type>>>;
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_iobuf_file = basic_iobuf<basic_native_file<char_type>>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_ibuf_file_mutex = basic_iomutex<basic_ibuf_file<char_type>>;
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_obuf_file_mutex = basic_iomutex<basic_obuf_file<char_type>>;
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_iobuf_file_mutex = basic_iomutex<basic_iobuf_file<char_type>>;
 /*
 char region
@@ -58,7 +58,7 @@ using iobuf_file_mutex = basic_iobuf_file_mutex<char>;
 wchar_t region
 */
 /*
-libstdc++ bug on GCC 10. wchar_t does not satisfy the std::integral concept on MSDOS DJGPP toolchain.
+libstdc++ bug on GCC 10. wchar_t does not satisfy the ::std::integral concept on MSDOS DJGPP toolchain.
 Remove restriction after GCC 11.0 is released.
 */
 using wiobuf_pipe = basic_iobuf_pipe<wchar_t>;
@@ -112,7 +112,7 @@ using u32iobuf_file_mutex = basic_iobuf_file_mutex<char32_t>;
 
 #if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_iobuf_socket_file = basic_iobuf<basic_native_socket_file<char_type>>;
 
 using iobuf_socket_file = basic_iobuf_socket_file<char>;

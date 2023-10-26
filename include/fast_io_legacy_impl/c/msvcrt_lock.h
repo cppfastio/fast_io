@@ -79,7 +79,7 @@ inline FILE* wincrt_iob_func() noexcept
 #endif
 }
 
-inline constexpr std::size_t msvcrt_iob_entries
+inline constexpr ::std::size_t msvcrt_iob_entries
 {
 #if defined(_IOB_ENTRIES)
 _IOB_ENTRIES
@@ -91,7 +91,7 @@ _IOB_ENTRIES
 inline void my_msvcrt_lock_file(FILE* fp) noexcept
 {
 	auto iob{wincrt_iob_func()};
-	std::size_t entry{static_cast<std::size_t>(fp-iob)};
+	::std::size_t entry{static_cast<::std::size_t>(fp-iob)};
 	if(entry<msvcrt_iob_entries)
 	{
 		/*
@@ -110,7 +110,7 @@ https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a
 inline void my_msvcrt_unlock_file(FILE* fp) noexcept
 {
 	auto iob{wincrt_iob_func()};
-	std::size_t entry{static_cast<std::size_t>(fp-iob)};
+	::std::size_t entry{static_cast<::std::size_t>(fp-iob)};
 	if(entry<msvcrt_iob_entries)
 	{
 		fp->_flag &= ~0x8000;

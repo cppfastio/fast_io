@@ -5,7 +5,7 @@
 namespace fast_io::asio_driver
 {
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_ip_tcp_socket_io_observer = basic_socket_io_observer<asio::ip::tcp::socket,char_type>;
 
 using ip_tcp_socket_io_observer=basic_ip_tcp_socket_io_observer<char>;

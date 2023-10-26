@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_ssl_io_observer
 {
 public:
@@ -30,7 +30,7 @@ public:
 	}
 };
 
-template<std::integral ch_type,std::integral ch_type1,std::integral ch_type2>
+template<::std::integral ch_type,::std::integral ch_type1,::std::integral ch_type2>
 inline void set_bio(basic_ssl_io_observer<ch_type> siob,basic_bio_file<ch_type1>&& rbio,basic_bio_file<ch_type2>&& wbio) noexcept
 {
 	::fast_io::noexcept_call(SSL_set_bio,siob.ssl,rbio.bio,wbio.bio);
@@ -38,27 +38,27 @@ inline void set_bio(basic_ssl_io_observer<ch_type> siob,basic_bio_file<ch_type1>
 	wbio.bio=nullptr;
 }
 
-template<std::integral ch_type>
-inline std::size_t use_count(basic_ssl_io_observer<ch_type> siob)
+template<::std::integral ch_type>
+inline ::std::size_t use_count(basic_ssl_io_observer<ch_type> siob)
 {
-	return static_cast<std::size_t>(SSL_up_ref(siob.s));
+	return static_cast<::std::size_t>(SSL_up_ref(siob.s));
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline void connect(basic_ssl_io_observer<ch_type> siob)
 {
 	if(::fast_io::noexcept_call(SSL_connect,siob.ssl)==-1)
 		throw_openssl_error();
 }
 
-template<std::integral ch_type,zero_copy_io_stream stm>
+template<::std::integral ch_type,zero_copy_io_stream stm>
 inline void attach(basic_ssl_io_observer<ch_type> siob,stm& sm)
 {
 	if(!SSL_set_fd(siob.native_handle(),zero_copy_in_handle(sm)))
 		throw_openssl_error();
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline void attach(basic_ssl_io_observer<ch_type> siob,
 	basic_bio_io_observer<ch_type> bio1,
 	basic_bio_io_observer<ch_type> bio2)
@@ -66,7 +66,7 @@ inline void attach(basic_ssl_io_observer<ch_type> siob,
 	SSL_set_bio(siob.native_handle(),bio1.native_handle(),bio2.native_handle());
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_ssl_io_handle:public basic_ssl_io_observer<ch_type>
 {
 public:
@@ -118,7 +118,7 @@ public:
 };
 
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_ssl_file:public basic_ssl_io_handle<ch_type>
 {
 public:
@@ -152,10 +152,10 @@ public:
 	}
 };
 
-template<std::integral ch_type,::std::contiguous_iterator Iter>
+template<::std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_ssl_io_observer<ch_type> iob,Iter begin,Iter end)
 {
-	std::size_t read_bytes{};
+	::std::size_t read_bytes{};
 	auto ret(SSL_read_ex(iob.native_handle(),::std::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(read_bytes)));
 	if(ret<=0)
 	{
@@ -167,10 +167,10 @@ inline Iter read(basic_ssl_io_observer<ch_type> iob,Iter begin,Iter end)
 	return begin+read_bytes/sizeof(*begin);
 }
 
-template<std::integral ch_type,::std::contiguous_iterator Iter>
+template<::std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_ssl_io_observer<ch_type> iob,Iter begin,Iter end)
 {
-	std::size_t written_bytes{};
+	::std::size_t written_bytes{};
 	auto ret(SSL_write_ex(iob.native_handle(),::std::to_address(begin),sizeof(*begin)*(end-begin),__builtin_addressof(written_bytes)));
 	if(ret<=0)
 	{
@@ -185,9 +185,9 @@ inline Iter write(basic_ssl_io_observer<ch_type> iob,Iter begin,Iter end)
 using ssl_io_observer = basic_ssl_io_observer<char>;
 using ssl_file = basic_ssl_file<char>;
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_ibuf_ssl_io_observer = basic_ibuf<basic_ssl_io_observer<ch_type>>;
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_ibuf_ssl_file = basic_ibuf<basic_ssl_file<ch_type>>;
 
 using ibuf_ssl_io_observer = basic_ibuf_ssl_io_observer<char>;

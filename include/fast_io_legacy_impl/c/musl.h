@@ -86,9 +86,9 @@ struct fp_model
 };
 #endif
 
-template<std::size_t position>
+template<::std::size_t position>
 requires (position<6)
-constexpr std::size_t get_offset() noexcept
+constexpr ::std::size_t get_offset() noexcept
 {
 	if constexpr(position==0)
 		return __builtin_offsetof(fp_model,buf);
@@ -104,20 +104,20 @@ constexpr std::size_t get_offset() noexcept
 		return __builtin_offsetof(fp_model,wend);
 }
 
-template<std::integral char_type,std::size_t position>
+template<::std::integral char_type,::std::size_t position>
 inline char_type* hack_fp_ptr(FILE* fp) noexcept
 {
-	constexpr std::size_t offset{get_offset<position>()};
+	constexpr ::std::size_t offset{get_offset<position>()};
 	char_type* value;
-	__builtin_memcpy(__builtin_addressof(value),reinterpret_cast<std::byte*>(fp)+offset,sizeof(char_type*));
+	__builtin_memcpy(__builtin_addressof(value),reinterpret_cast<::std::byte*>(fp)+offset,sizeof(char_type*));
 	return value;	
 }
 
-template<std::size_t position,std::integral char_type>
+template<::std::size_t position,::std::integral char_type>
 inline void hack_fp_set_ptr(FILE* fp,char_type* ptr) noexcept
 {
-	constexpr std::size_t offset(get_offset<position>());
-	__builtin_memcpy(reinterpret_cast<std::byte*>(fp)+offset,__builtin_addressof(ptr),sizeof(char_type*));
+	constexpr ::std::size_t offset(get_offset<position>());
+	__builtin_memcpy(reinterpret_cast<::std::byte*>(fp)+offset,__builtin_addressof(ptr),sizeof(char_type*));
 }
 
 }

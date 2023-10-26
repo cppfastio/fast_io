@@ -12,7 +12,7 @@ public:
 	using input_char_type = chtype;
 	handle_type handle;
 	template<typename... Args>
-	requires ((sizeof...(Args)!=0)&&std::constructible_from<handle_type,Args...>)
+	requires ((sizeof...(Args)!=0)&&::std::constructible_from<handle_type,Args...>)
 	explicit constexpr basic_generic_posix_dev_urandom(Args&& ...args):handle(::std::forward<Args>(args)...){}
 
 	constexpr basic_generic_posix_dev_urandom():handle(u8"/dev/urandom",::fast_io::open_mode::in){}

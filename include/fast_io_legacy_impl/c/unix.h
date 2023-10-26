@@ -62,7 +62,7 @@ sFILE {
 
 #endif
 
-template<typename T,std::size_t num>
+template<typename T,::std::size_t num>
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
 #endif
@@ -336,7 +336,7 @@ inline bool ibuffer_underflow(u8c_io_observer_unlocked cio)
 }
 
 #if defined(__MSDOS__)
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline bool obuffer_is_line_buffering_define(basic_c_io_observer_unlocked<ch_type> ciou) noexcept
 {
 	return details::bsd_get_buffer_ptr_impl<char8_t,2>(ciou.fp)<details::bsd_get_buffer_ptr_impl<char8_t,1>(ciou.fp);

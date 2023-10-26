@@ -27,7 +27,7 @@ inline constexpr char* hack_ibuffer_end_impl(FILE* fp) noexcept
 
 inline constexpr void hack_ibuffer_set_curr_impl(FILE* fp,char* ptr) noexcept
 {
-	std::size_t new_size{static_cast<std::size_t>(ptr-fp->__buffer_ptr)};
+	::std::size_t new_size{static_cast<::std::size_t>(ptr-fp->__buffer_ptr)};
 	fp->__offset=fp->__io_offset=new_size;
 }
 
@@ -51,7 +51,7 @@ inline constexpr char* hack_obuffer_end_impl(FILE* fp) noexcept
 
 inline constexpr void hack_obuffer_set_curr_impl(FILE* fp,char* ptr) noexcept
 {
-	std::size_t new_size{static_cast<std::size_t>(ptr-fp->__buffer_ptr)};
+	::std::size_t new_size{static_cast<::std::size_t>(ptr-fp->__buffer_ptr)};
 	if(fp->__dirty_begin==fp->__io_offset)
 	{
 		fp->__dirty_begin=new_size;

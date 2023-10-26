@@ -32,7 +32,7 @@ struct basic_general_iomutex
 	mutex_type mutex;
 	
 	template<typename... Args>
-	requires std::constructible_from<T,Args...>
+	requires ::std::constructible_from<T,Args...>
 	explicit constexpr basic_general_iomutex(Args&& ...args):handle(::std::forward<Args>(args)...)
 	{
 	}

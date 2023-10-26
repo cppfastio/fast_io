@@ -3,7 +3,7 @@
 namespace fast_io::details
 {
 
-template<std::size_t n>
+template<::std::size_t n>
 inline constexpr char8_t* compute_libcxx_copy_string_literal(char8_t const(&s)[n],char8_t* result) noexcept
 {
 	constexpr
@@ -15,9 +15,9 @@ inline constexpr char8_t* compute_libcxx_copy_string_literal(char8_t const(&s)[n
 	return result+mn1;
 }
 
-constexpr std::size_t compute_libcxx_symbol_name_chars_len(::std::size_t value) noexcept
+constexpr ::std::size_t compute_libcxx_symbol_name_chars_len(::std::size_t value) noexcept
 {
-	std::size_t sz{1};
+	::std::size_t sz{1};
 	for(;10u<=value;value/=10u)
 		++sz;
 	return sz;
@@ -48,7 +48,7 @@ inline constexpr char8_t* compute_libcxx_itanium_prefix(char8_t* iter) noexcept
 	return ed;
 }
 
-template<std::size_t n>
+template<::std::size_t n>
 struct libcxx_msvcabi_symbol_name_holder
 {
 	char8_t const* ptr{};
@@ -62,7 +62,7 @@ struct libcxx_msvcabi_symbol_name_holder
 	}
 };
 
-template<std::size_t n>
+template<::std::size_t n>
 inline constexpr libcxx_msvcabi_symbol_name_holder<n-1> compute_libcxx_msvcabi_symbol(char8_t const(&s)[n]) noexcept
 {
 	return {s};
@@ -87,46 +87,46 @@ inline constexpr auto compute_libcxx_stdinoutbufname() noexcept
 		{
 			if constexpr(::std::same_as<char_type,char>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char>");
 			}
 			else if constexpr(::std::same_as<char_type,wchar_t>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<wchar_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<wchar_t>");
 			}
 			else if constexpr(::std::same_as<char_type,char8_t>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char8_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char8_t>");
 			}
 			else if constexpr(::std::same_as<char_type,char16_t>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char16_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char16_t>");
 			}
 			else
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char32_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char32_t>");
 			}
 		}
 		else
 		{
 			if constexpr(::std::same_as<char_type,char>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char>");
 			}
 			else if constexpr(::std::same_as<char_type,wchar_t>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<wchar_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<wchar_t>");
 			}
 			else if constexpr(::std::same_as<char_type,char8_t>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char8_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char8_t>");
 			}
 			else if constexpr(::std::same_as<char_type,char16_t>)
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char16_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char16_t>");
 			}
 			else
 			{
-				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char32_t>");
+				return ::fast_io::details::compute_libcxx_msvcabi_symbol(u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char32_t>");
 			}
 		}
 	}

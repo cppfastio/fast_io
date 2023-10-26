@@ -13,14 +13,14 @@ inline explicit constexpr cannot_output_type() noexcept = default;
 
 template <typename T>
 concept alias_return_lvalue_ref = !(::std::is_function_v<::std::remove_cvref_t<T>> || alias_printable<::std::remove_cvref_t<T>>) &&
-	std::is_lvalue_reference_v<T>;
+	::std::is_lvalue_reference_v<T>;
 
 }
 
 template<typename T>
 inline constexpr decltype(auto) io_print_alias(T&& t) noexcept
 {
-	using no_cvref_t=std::remove_cvref_t<T>;
+	using no_cvref_t=::std::remove_cvref_t<T>;
 	if constexpr(::std::is_function_v<no_cvref_t>)
 	{
 		return ::fast_io::details::cannot_output_type{};
@@ -31,23 +31,23 @@ inline constexpr decltype(auto) io_print_alias(T&& t) noexcept
 		return ::std::forward<T>(t);
 }
 
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 inline constexpr auto io_print_forward(T&& t) noexcept
 {
-	using no_cvref_t=std::remove_cvref_t<T>;
+	using no_cvref_t=::std::remove_cvref_t<T>;
 	if constexpr(::std::is_function_v<no_cvref_t>)
 	{
 		return ::fast_io::details::cannot_output_type{};
 	}
 	else if constexpr(status_io_print_forwardable<char_type,T>)
 		return status_io_print_forward(io_alias_type<char_type>,::std::forward<T>(t));
-	else if constexpr (std::is_trivially_copyable_v<no_cvref_t>)
+	else if constexpr (::std::is_trivially_copyable_v<no_cvref_t>)
 		return static_cast<no_cvref_t>(t);
 	else
-		return parameter<std::remove_reference_t<T> const&>{t};
+		return parameter<::std::remove_reference_t<T> const&>{t};
 }
 
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 inline constexpr auto io_scan_forward(T t) noexcept
 {
 	if constexpr(status_io_scan_forwardable<char_type,T>)
@@ -59,7 +59,7 @@ inline constexpr auto io_scan_forward(T t) noexcept
 template<typename T>
 inline constexpr auto io_scan_alias(T&& t) noexcept
 {
-	using no_ref_t = std::remove_reference_t<T>;
+	using no_ref_t = ::std::remove_reference_t<T>;
 	if constexpr(::std::is_function_v<no_ref_t>)
 	{
 		return ::fast_io::details::cannot_output_type{};

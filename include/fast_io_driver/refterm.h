@@ -11,12 +11,12 @@ inline constexpr ::fast_io::manipulators::scalar_flags fast_pipe_hex_scl_flg{.ba
 template<win32_family family>
 inline void* win32_family_refterm_fast_pipe_impl(open_mode mode,perms pm)
 {
-	std::uint_least32_t process_id{::fast_io::win32::GetCurrentProcessId()};
-	using type = ::fast_io::mnp::scalar_manip_t<fast_pipe_hex_scl_flg,std::uint_least32_t>;
+	::std::uint_least32_t process_id{::fast_io::win32::GetCurrentProcessId()};
+	using type = ::fast_io::mnp::scalar_manip_t<fast_pipe_hex_scl_flg,::std::uint_least32_t>;
 	if constexpr(family==win32_family::wide_nt)
 	{
 		char16_t buffer[256]=u"\\\\.\\pipe\\fastpipe";
-		constexpr std::size_t sz{sizeof(u"\\\\.\\pipe\\fastpipe")/sizeof(char16_t)-1};
+		constexpr ::std::size_t sz{sizeof(u"\\\\.\\pipe\\fastpipe")/sizeof(char16_t)-1};
 		char16_t* res{print_reserve_define(io_reserve_type<char16_t,type>,buffer+sz,{process_id})};
 		*res=0;
 		return win32_file_ntw(::fast_io::mnp::os_c_str(buffer),mode,pm).release();
@@ -24,7 +24,7 @@ inline void* win32_family_refterm_fast_pipe_impl(open_mode mode,perms pm)
 	else
 	{
 		char8_t buffer[256]=u8"\\\\.\\pipe\\fastpipe";
-		constexpr std::size_t sz{sizeof(u8"\\\\.\\pipe\\fastpipe")/sizeof(char8_t)-1};
+		constexpr ::std::size_t sz{sizeof(u8"\\\\.\\pipe\\fastpipe")/sizeof(char8_t)-1};
 		char8_t* res{print_reserve_define(io_reserve_type<char8_t,type>,buffer+sz,{process_id})};
 		*res=0;
 		return win32_file_9xa(::fast_io::mnp::os_c_str(buffer),mode,pm).release();

@@ -3,7 +3,7 @@
 namespace fast_io::freestanding
 {
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 requires (sizeof(N)!=0)
 struct array
 {
@@ -12,8 +12,8 @@ struct array
 	using const_pointer=T const*;
 	using reference=T&;
 	using const_reference=T const&;
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
 	T element[N];
 	inline constexpr T* data() noexcept
 	{
@@ -35,7 +35,7 @@ struct array
 	{
 		return false;
 	}
-	inline static constexpr std::size_t size() noexcept
+	inline static constexpr ::std::size_t size() noexcept
 	{
 		return N;
 	}
@@ -71,11 +71,11 @@ struct array
 	{
 		return element[N-1];
 	}
-	inline constexpr T const& operator[](std::size_t i) const noexcept
+	inline constexpr T const& operator[](::std::size_t i) const noexcept
 	{
 		return element[i];
 	}
-	inline constexpr T& operator[](std::size_t i) noexcept
+	inline constexpr T& operator[](::std::size_t i) noexcept
 	{
 		return element[i];
 	}

@@ -40,12 +40,12 @@ template<typename input,typename P>
 inline constexpr bool scan_context_status_impl(input in,P arg)
 {
 	using char_type = typename input::input_char_type;
-	for(typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,P>))>::type state;;)
+	for(typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,P>))>::type state;;)
 	{
 		auto curr{ibuffer_curr(in)};
 		auto end{ibuffer_end(in)};
 		auto [it,ec]=scan_context_define(io_reserve_type<char_type,P>,state,curr,end,arg);
-		if constexpr(std::same_as<decltype(curr),decltype(it)>)
+		if constexpr(::std::same_as<decltype(curr),decltype(it)>)
 		{
 			ibuffer_set_curr(in,it);
 		}
@@ -84,11 +84,11 @@ template<typename input,typename T>
 	{
 		if constexpr(precise_reserve_scannable<char_type,T>)
 		{
-			constexpr std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
+			constexpr ::std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
 			auto curr_ptr{ibuffer_curr(in)};
 			char_type const* curr{curr_ptr};
 			char_type const* end{ibuffer_end(in)};
-			std::size_t const diff{static_cast<std::size_t>(end-curr)};
+			::std::size_t const diff{static_cast<::std::size_t>(end-curr)};
 			if(diff<n)[[unlikely]]
 			{
 				return false;
@@ -117,7 +117,7 @@ template<typename input,typename T>
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
 			auto [it,ec] = scan_contiguous_define(io_reserve_type<char_type,T>,curr,end,arg);
-			if constexpr(std::same_as<decltype(curr),decltype(it)>)
+			if constexpr(::std::same_as<decltype(curr),decltype(it)>)
 			{
 				ibuffer_set_curr(in,it);
 			}
@@ -135,11 +135,11 @@ template<typename input,typename T>
 		}
 		else if constexpr(context_scannable<char_type,T>)
 		{
-			typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
+			typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 			auto curr{ibuffer_curr(in)};
 			auto end{ibuffer_end(in)};
 			auto [it,ec]=scan_context_define(io_reserve_type<char_type,T>,state,curr,end,arg);
-			if constexpr(std::same_as<decltype(curr),decltype(it)>)
+			if constexpr(::std::same_as<decltype(curr),decltype(it)>)
 			{
 				ibuffer_set_curr(in,it);
 			}
@@ -170,7 +170,7 @@ template<typename input,typename T>
 	{
 		if constexpr(precise_reserve_scannable<char_type,T>)
 		{
-			constexpr std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
+			constexpr ::std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
 			char_type buffer[n];
 			if constexpr(::fast_io::details::asan_state::current==::fast_io::details::asan_state::activate)
 			{
@@ -199,7 +199,7 @@ template<typename input,typename T>
 				char_type const* curr{curr_ptr};
 				char_type const* end{ibuffer_end(in)};
 				char_type const* p{curr};
-				std::size_t const diff{static_cast<std::size_t>(end-curr)};
+				::std::size_t const diff{static_cast<::std::size_t>(end-curr)};
 				bool inbuffer{diff<n};
 				if(inbuffer)[[unlikely]]
 				{
@@ -238,7 +238,7 @@ template<typename input,typename T>
 				return scan_context_status_impl(in,arg);
 			else
 			{
-				if constexpr(std::same_as<decltype(curr),decltype(it)>)
+				if constexpr(::std::same_as<decltype(curr),decltype(it)>)
 				{
 					ibuffer_set_curr(in,it);
 				}
@@ -253,12 +253,12 @@ template<typename input,typename T>
 		}
 		else if constexpr(context_scannable<char_type,T>)
 		{
-			for(typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;;)
+			for(typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;;)
 			{
 				auto curr{ibuffer_curr(in)};
 				auto end{ibuffer_end(in)};
 				auto [it,ec]=scan_context_define(io_reserve_type<char_type,T>,state,curr,end,arg);
-				if constexpr(std::same_as<decltype(curr),decltype(it)>)
+				if constexpr(::std::same_as<decltype(curr),decltype(it)>)
 				{
 					ibuffer_set_curr(in,it);
 				}

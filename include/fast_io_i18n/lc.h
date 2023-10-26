@@ -37,23 +37,23 @@ struct basic_lc_monetary
 	basic_io_scatter_t<char_type> currency_symbol{};
 	basic_io_scatter_t<char_type> mon_decimal_point{};
 	basic_io_scatter_t<char_type> mon_thousands_sep{};
-	basic_io_scatter_t<std::size_t> mon_grouping{};
+	basic_io_scatter_t<::std::size_t> mon_grouping{};
 	basic_io_scatter_t<char_type> positive_sign{};
 	basic_io_scatter_t<char_type> negative_sign{};
-	std::size_t int_frac_digits{};
-	std::size_t frac_digits{};
-	std::size_t p_cs_precedes{};
-	std::size_t p_sep_by_space{};
-	std::size_t n_cs_precedes{};
-	std::size_t n_sep_by_space{};
-	std::size_t int_p_cs_precedes{};
-	std::size_t int_p_sep_by_space{};
-	std::size_t int_n_cs_precedes{};
-	std::size_t int_n_sep_by_space{};
-	std::size_t p_sign_posn{};
-	std::size_t n_sign_posn{};
-	std::size_t int_p_sign_posn{};
-	std::size_t int_n_sign_posn{};
+	::std::size_t int_frac_digits{};
+	::std::size_t frac_digits{};
+	::std::size_t p_cs_precedes{};
+	::std::size_t p_sep_by_space{};
+	::std::size_t n_cs_precedes{};
+	::std::size_t n_sep_by_space{};
+	::std::size_t int_p_cs_precedes{};
+	::std::size_t int_p_sep_by_space{};
+	::std::size_t int_n_cs_precedes{};
+	::std::size_t int_n_sep_by_space{};
+	::std::size_t p_sign_posn{};
+	::std::size_t n_sign_posn{};
+	::std::size_t int_p_sign_posn{};
+	::std::size_t int_n_sign_posn{};
 };
 
 using lc_monetary=basic_lc_monetary<char>;
@@ -67,7 +67,7 @@ struct basic_lc_numeric
 {
 	basic_io_scatter_t<char_type> decimal_point{};
 	basic_io_scatter_t<char_type> thousands_sep{};
-	basic_io_scatter_t<std::size_t> grouping{};
+	basic_io_scatter_t<::std::size_t> grouping{};
 };
 
 using lc_numeric=basic_lc_numeric<char>;
@@ -80,14 +80,14 @@ template<typename char_type>
 struct basic_lc_time_era
 {
 	bool direction{};//+ is true, - is false
-	std::int_least64_t offset{};
-	std::int_least64_t start_date_year{};
-	std::uint_least8_t start_date_month{};
-	std::uint_least8_t start_date_day{};
-	std::int_least8_t  end_date_special{};//-1 is -*, 0 means end_date exist, 1 is +*
-	std::int_least64_t end_date_year{};
-	std::uint_least8_t end_date_month{};
-	std::uint_least8_t end_date_day{};
+	::std::int_least64_t offset{};
+	::std::int_least64_t start_date_year{};
+	::std::uint_least8_t start_date_month{};
+	::std::uint_least8_t start_date_day{};
+	::std::int_least8_t  end_date_special{};//-1 is -*, 0 means end_date exist, 1 is +*
+	::std::int_least64_t end_date_year{};
+	::std::uint_least8_t end_date_month{};
+	::std::uint_least8_t end_date_day{};
 	basic_io_scatter_t<char_type> era_name;
 	basic_io_scatter_t<char_type> era_format;
 	basic_io_scatter_t<char_type> era;
@@ -114,13 +114,13 @@ struct basic_lc_time
 	basic_io_scatter_t<basic_io_scatter_t<char_type>> alt_digits{};
 	struct
 	{
-		std::size_t ndays{7};
-		std::int_least64_t first_day{19971201};
-		std::size_t first_week{4};
+		::std::size_t ndays{7};
+		::std::int_least64_t first_day{19971201};
+		::std::size_t first_week{4};
 	}week{};
-	std::size_t first_weekday{};
-	std::size_t first_workday{};
-	std::size_t cal_direction{};
+	::std::size_t first_weekday{};
+	::std::size_t first_workday{};
+	::std::size_t cal_direction{};
 	basic_io_scatter_t<basic_io_scatter_t<char_type>> timezone{};
 };
 
@@ -148,8 +148,8 @@ using u32lc_messages=basic_lc_messages<char32_t>;
 template<typename char_type>
 struct basic_lc_paper
 {
-	std::uint_least64_t width{};
-	std::uint_least64_t height{};
+	::std::uint_least64_t width{};
+	::std::uint_least64_t height{};
 };
 
 using lc_paper=basic_lc_paper<char>;
@@ -198,7 +198,7 @@ struct basic_lc_address
 	basic_io_scatter_t<char_type> country_post{};
 	basic_io_scatter_t<char_type> country_ab2{};
 	basic_io_scatter_t<char_type> country_ab3{};
-	std::uint_least64_t country_num{};
+	::std::uint_least64_t country_num{};
 	basic_io_scatter_t<char_type> country_car{};
 	basic_io_scatter_t<char_type> country_isbn{};
 	basic_io_scatter_t<char_type> lang_name{};
@@ -216,7 +216,7 @@ using u32lc_address=basic_lc_address<char32_t>;
 template<typename char_type>
 struct basic_lc_measurement
 {
-	std::uint_least64_t measurement{};
+	::std::uint_least64_t measurement{};
 };
 
 using lc_measurement=basic_lc_measurement<char>;
@@ -268,20 +268,20 @@ struct lc_locale
 	u32lc_all const* u32all{};
 };
 
-template<std::integral char_type>
-requires (std::same_as<char_type,char>||std::same_as<char_type,wchar_t>||
-	std::same_as<char_type,char8_t>||std::same_as<char_type,char16_t>||std::same_as<char_type,char32_t>)
+template<::std::integral char_type>
+requires (::std::same_as<char_type,char>||::std::same_as<char_type,wchar_t>||
+	::std::same_as<char_type,char8_t>||::std::same_as<char_type,char16_t>||::std::same_as<char_type,char32_t>)
 inline constexpr basic_lc_all<char_type> const* get_all(lc_locale const& loc) noexcept
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 		return loc.all;
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 		return loc.wall;
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 		return loc.u8all;
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 		return loc.u16all;
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 		return loc.u32all;
 	else
 		return {};

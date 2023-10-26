@@ -17,10 +17,10 @@ namespace fast_io
 #if 0
 struct chacha
 {
-	using state_value_type = std::uint_least32_t;
-	static inline constexpr std::size_t block_size{64};
-	static inline constexpr std::endian cipher_endian{std::endian::little};
-	static inline constexpr std::size_t state_size{16};
+	using state_value_type = ::std::uint_least32_t;
+	static inline constexpr ::std::size_t block_size{64};
+	static inline constexpr ::std::endian cipher_endian{::std::endian::little};
+	static inline constexpr ::std::size_t state_size{16};
 	state_value_type state[state_size];
 #if __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr

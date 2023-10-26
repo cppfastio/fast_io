@@ -11,12 +11,12 @@ inline void avr_libc_write_common_impl(FILE* fp, char const* first, char const* 
 			throw_posix_error(EINVAL);
 }
 
-inline void avr_libc_scatter_write_impl_with_normal_write(FILE* fp,io_scatter_t const* scatters,std::size_t n)
+inline void avr_libc_scatter_write_impl_with_normal_write(FILE* fp,io_scatter_t const* scatters,::std::size_t n)
 {
 	auto put_func{fp->put};
 	if(put_func==nullptr)
 		throw_posix_error(EINVAL);
-	for(std::size_t i{};i!=n;++i)
+	for(::std::size_t i{};i!=n;++i)
 	{
 		char const* bs{reinterpret_cast<char const*>(scatters[i].base)};
 		avr_libc_write_common_impl(fp,bs,bs+scatters[i].len);
@@ -47,20 +47,20 @@ inline char* avr_libc_read_internal_impl(FILE* fp,char* first,char* last)
 
 }
 
-template<std::integral char_type,::std::contiguous_iterator Iter>
+template<::std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr void write(basic_c_family_io_observer<c_family::emulated_unlocked,char_type> ciob,Iter first,Iter last)
 {
 	::fast_io::details::avr_libc_write_internal_impl(ciob.fp,reinterpret_cast<char const*>(::std::to_address(first)),
 					reinterpret_cast<char const*>(::std::to_address(last)));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr void scatter_write(basic_c_family_io_observer<c_family::emulated_unlocked,char_type> ciob,io_scatters_t scatters)
 {
 	::fast_io::details::avr_libc_scatter_write_impl_with_normal_write(ciob.fp,scatters.base,scatters.len);
 }
 
-template<std::integral char_type,::std::contiguous_iterator Iter>
+template<::std::integral char_type,::std::contiguous_iterator Iter>
 inline constexpr Iter read(basic_c_family_io_observer<c_family::emulated_unlocked,char_type> ciob,Iter first,Iter last)
 {
 	auto first_addr{reinterpret_cast<char*>(::std::to_address(first))};
@@ -68,7 +68,7 @@ inline constexpr Iter read(basic_c_family_io_observer<c_family::emulated_unlocke
 	first_addr,reinterpret_cast<char*>(::std::to_address(last)))-first_addr)+first;
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==sizeof(char))
 inline void try_unget(basic_c_family_io_observer<c_family::emulated_unlocked,char_type> ciob,char_type ch) noexcept
 {

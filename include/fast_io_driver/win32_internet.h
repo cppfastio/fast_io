@@ -98,13 +98,13 @@ inline void win32_http_send_request(win32_internet_handle& handle,cstring_view s
 	if(!HttpSendRequestA(handle.handle,sview.data(),sview.size(),nullptr,0))
 		throw fast_io::win32_error();
 }
-inline void win32_http_send_request(win32_internet_handle& handle,cstring_view sview,std::span<std::byte> extra)
+inline void win32_http_send_request(win32_internet_handle& handle,cstring_view sview,::std::span<::std::byte> extra)
 {
 	if(!HttpSendRequestA(handle.handle,sview.data(),sview.size(),extra.data(),extra.size()))
 		throw fast_io::win32_error();
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_win32_internet_io_observer
 {
 public:
@@ -125,7 +125,7 @@ public:
 	}
 };
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_win32_internet_https_client:public basic_win32_internet_io_observer<ch_type>
 {
 public:
@@ -135,7 +135,7 @@ public:
 	win32_internet_handle connection;
 	win32_internet_handle request;
 	constexpr basic_win32_internet_https_client()=default;
-	basic_win32_internet_https_client(cstring_view host,cstring_view method,cstring_view object_name,std::uint_least32_t port=443):
+	basic_win32_internet_https_client(cstring_view host,cstring_view method,cstring_view object_name,::std::uint_least32_t port=443):
 		session(win32_internet_open("Microsoft Internet Explorer",INTERNET_OPEN_TYPE_PRECONFIG,nullptr,nullptr,0)),
 		connection(win32_internet_connect(session,host.data(),port,nullptr,nullptr,INTERNET_SERVICE_HTTP,0,0)),
 		request(win32_http_open_request(connection,method.data(),object_name.data(),HTTP_VERSION,nullptr,nullptr,
@@ -150,7 +150,7 @@ public:
 	}
 };
 
-template<std::integral ch_type,::std::contiguous_iterator Iter>
+template<::std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter read(basic_win32_internet_io_observer<ch_type> iob,Iter begin,Iter end)
 {
 	unsigned long readed{};
@@ -159,7 +159,7 @@ inline Iter read(basic_win32_internet_io_observer<ch_type> iob,Iter begin,Iter e
 	return begin+readed/sizeof(begin);
 }
 
-template<std::integral ch_type,::std::contiguous_iterator Iter>
+template<::std::integral ch_type,::std::contiguous_iterator Iter>
 inline Iter write(basic_win32_internet_io_observer<ch_type> iob,Iter begin,Iter end)
 {
 	unsigned long written{};

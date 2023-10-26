@@ -6,7 +6,7 @@ namespace fast_io
 namespace details::codecvt
 {
 template<encoding_scheme encoding,typename T>
-inline constexpr auto general_advance(T* src_first,std::size_t sz) noexcept
+inline constexpr auto general_advance(T* src_first,::std::size_t sz) noexcept
 {
 	if constexpr(encoding_scheme::utf_ebcdic==encoding)
 		return utf_ebcdic_advance(src_first,sz);
@@ -15,7 +15,7 @@ inline constexpr auto general_advance(T* src_first,std::size_t sz) noexcept
 }
 
 template<encoding_scheme encoding,typename T>
-inline constexpr std::size_t get_general_invalid_code_units(T* dst) noexcept
+inline constexpr ::std::size_t get_general_invalid_code_units(T* dst) noexcept
 {
 	if constexpr(encoding==encoding_scheme::utf_ebcdic)
 		return get_utf_ebcdic_invalid_code_units(dst);
@@ -39,7 +39,7 @@ inline constexpr std::size_t get_general_invalid_code_units(T* dst) noexcept
 	}
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr encoding_scheme get_execution_charset_encoding_scheme(encoding_scheme scheme) noexcept
 {
 	if(scheme!=encoding_scheme::execution_charset)
@@ -50,7 +50,7 @@ inline constexpr encoding_scheme get_execution_charset_encoding_scheme(encoding_
 template<
 encoding_scheme src_encoding=encoding_scheme::execution_charset,
 encoding_scheme encoding=encoding_scheme::execution_charset,
-std::integral src_char_type,std::integral dest_char_type>
+::std::integral src_char_type,::std::integral dest_char_type>
 requires (sizeof(src_char_type)<=4 &&sizeof(dest_char_type)<=4)
 inline constexpr code_cvt_result<src_char_type,dest_char_type> general_code_cvt(src_char_type const* src_first,src_char_type const* src_last,dest_char_type* __restrict dst) noexcept
 {
@@ -66,7 +66,7 @@ inline constexpr code_cvt_result<src_char_type,dest_char_type> general_code_cvt(
 	}
 	else if constexpr(sizeof(src_char_type)==sizeof(dest_char_type)&&src_encoding==encoding)
 	{
-		std::size_t diff{static_cast<std::size_t>(src_last-src_first)};
+		::std::size_t diff{static_cast<::std::size_t>(src_last-src_first)};
 		non_overlapped_copy_n(src_first,diff,dst);
 		return {src_last,dst+diff};
 	}
@@ -162,10 +162,10 @@ https://stackoverflow.com/questions/23919515/how-to-convert-from-utf-16-to-utf-3
 		if constexpr(src_encoding!=encoding_scheme::utf_ebcdic&&encoding!=encoding_scheme::utf_ebcdic&&1==sizeof(src_char_type)
 		&&(1==sizeof(dest_char_type)||encoding_is_utf(encoding)))
 		{
-		if (!std::is_constant_evaluated())
+		if (!::std::is_constant_evaluated())
 		{
-		constexpr std::size_t m128i_size{16};
-		while(m128i_size < static_cast<std::size_t>(src_last-src_first))
+		constexpr ::std::size_t m128i_size{16};
+		while(m128i_size < static_cast<::std::size_t>(src_last-src_first))
 		{
 			if (static_cast<char8_t>(*src_first) < 0x80)
 			{
@@ -283,7 +283,7 @@ https://stackoverflow.com/questions/23919515/how-to-convert-from-utf-16-to-utf-3
 template<
 encoding_scheme src_encoding=encoding_scheme::execution_charset,
 encoding_scheme encoding=encoding_scheme::execution_charset,typename state_type,
-std::integral src_char_type,std::integral dest_char_type>
+::std::integral src_char_type,::std::integral dest_char_type>
 requires (sizeof(src_char_type)<=4 &&sizeof(dest_char_type)<=4)
 inline constexpr dest_char_type* general_code_cvt(state_type& __restrict state,src_char_type const* src_first,src_char_type const* src_last,dest_char_type* __restrict dst) noexcept
 {
@@ -349,21 +349,21 @@ inline constexpr dest_char_type* general_code_cvt(state_type& __restrict state,s
 	}
 	else if constexpr(sizeof(src_char_type)==1)
 	{
-		std::size_t const state_size{static_cast<std::size_t>(state.size)};
+		::std::size_t const state_size{static_cast<::std::size_t>(state.size)};
 		if(state_size)
 		{
-			std::size_t src_diff{static_cast<std::size_t>(src_last-src_first)};
+			::std::size_t src_diff{static_cast<::std::size_t>(src_last-src_first)};
 			if(src_diff==0)
 				return dst;
-			constexpr std::size_t state_bytes{8};
-			constexpr std::size_t state_bytesm1{state_bytes-1};
-			std::size_t remain_unsolved{state_bytes-state_size};
+			constexpr ::std::size_t state_bytes{8};
+			constexpr ::std::size_t state_bytesm1{state_bytes-1};
+			::std::size_t remain_unsolved{state_bytes-state_size};
 			char8_t bytes[state_bytes];
 			non_overlapped_copy_n(state.bytes,state_bytesm1,bytes);
 			if(src_diff<remain_unsolved)
 				remain_unsolved=src_diff;
 			non_overlapped_copy_n(src_first,remain_unsolved,bytes+state_size);
-			std::size_t total_bytes{state_size+remain_unsolved};
+			::std::size_t total_bytes{state_size+remain_unsolved};
 			if constexpr(src_encoding==encoding_scheme::utf)
 			{
 				auto [failed,bytes_src,code] = advance_with_big_table(bytes, bytes+total_bytes);
@@ -382,7 +382,7 @@ inline constexpr dest_char_type* general_code_cvt(state_type& __restrict state,s
 				}
 				else
 					dst+=get_utf_code_units<encoding>(code,dst);
-				src_first+=static_cast<std::size_t>(bytes_src-bytes-state_size);
+				src_first+=static_cast<::std::size_t>(bytes_src-bytes-state_size);
 			}
 			else
 			{
@@ -402,11 +402,11 @@ inline constexpr dest_char_type* general_code_cvt(state_type& __restrict state,s
 				}
 				else
 					dst+=get_utf_code_units<encoding>(code,dst);
-				src_first+=static_cast<std::size_t>(static_cast<std::size_t>(adv)-state_size);
+				src_first+=static_cast<::std::size_t>(static_cast<::std::size_t>(adv)-state_size);
 			}
 		}
 		auto [new_src,new_dst]=general_code_cvt<src_encoding,encoding>(src_first,src_last,dst);
-		std::size_t diff{static_cast<std::size_t>(src_last-new_src)};
+		::std::size_t diff{static_cast<::std::size_t>(src_last-new_src)};
 		state.size=static_cast<char8_t>(diff);
 		non_overlapped_copy_n(new_src,diff,state.bytes);
 		return new_dst;
@@ -418,7 +418,7 @@ inline constexpr dest_char_type* general_code_cvt(state_type& __restrict state,s
 template<
 encoding_scheme src_encoding=encoding_scheme::execution_charset,
 encoding_scheme encoding=encoding_scheme::execution_charset,
-std::integral src_char_type,std::integral dest_char_type>
+::std::integral src_char_type,::std::integral dest_char_type>
 requires (sizeof(src_char_type)<=4 &&sizeof(dest_char_type)<=4)
 inline constexpr dest_char_type* general_code_cvt_full(src_char_type const* src_first,src_char_type const* src_last,dest_char_type* __restrict dst) noexcept
 {
@@ -464,7 +464,7 @@ inline constexpr bool print_alias_test_codecvt_impl() noexcept
 		if constexpr(type_has_value_type<alias_type>)
 		{
 			using value_type = typename alias_type::value_type;
-			return std::same_as<alias_type,basic_io_scatter_t<value_type>>;
+			return ::std::same_as<alias_type,basic_io_scatter_t<value_type>>;
 		}
 		else
 		{
@@ -485,7 +485,7 @@ inline namespace manipulators
 template<
 encoding_scheme src_scheme,
 encoding_scheme dst_scheme,
-std::integral char_type>
+::std::integral char_type>
 struct code_cvt_t
 {
 	using manip_tag = manip_tag_t;
@@ -506,7 +506,7 @@ constexpr auto code_cvt(T const& t) noexcept
 template<
 encoding_scheme src_scheme=encoding_scheme::execution_charset,
 encoding_scheme dst_scheme=encoding_scheme::execution_charset,
-std::integral char_type>
+::std::integral char_type>
 constexpr auto code_cvt(basic_io_scatter_t<char_type> t) noexcept
 {
 	return code_cvt_t<src_scheme,dst_scheme,char_type>{t};
@@ -515,7 +515,7 @@ constexpr auto code_cvt(basic_io_scatter_t<char_type> t) noexcept
 template<
 encoding_scheme src_scheme=encoding_scheme::execution_charset,
 encoding_scheme dst_scheme=encoding_scheme::execution_charset,
-std::integral char_type,std::size_t N>
+::std::integral char_type,::std::size_t N>
 constexpr auto code_cvt(small_scatter_t<char_type,N> t) noexcept
 {
 	return code_cvt_t<src_scheme,dst_scheme,char_type>{{t.base,t.len}};
@@ -542,9 +542,9 @@ constexpr auto code_cvt_os_c_str(char_type const* cstr,::std::size_t n) noexcept
 template<
 encoding_scheme src_scheme=encoding_scheme::execution_charset,
 encoding_scheme dst_scheme=encoding_scheme::execution_charset,
-std::integral src_char_type,
-std::integral dst_char_type>
-inline constexpr std::size_t print_reserve_size(
+::std::integral src_char_type,
+::std::integral dst_char_type>
+inline constexpr ::std::size_t print_reserve_size(
 io_reserve_type_t<dst_char_type,code_cvt_t<src_scheme,dst_scheme,src_char_type>>,
 code_cvt_t<src_scheme,dst_scheme,src_char_type> v) noexcept
 {
@@ -554,7 +554,7 @@ code_cvt_t<src_scheme,dst_scheme,src_char_type> v) noexcept
 template<
 encoding_scheme src_scheme=encoding_scheme::execution_charset,
 encoding_scheme dst_scheme=encoding_scheme::execution_charset,
-std::integral src_char_type,
+::std::integral src_char_type,
 ::std::integral char_type>
 inline constexpr char_type* print_reserve_define(
 io_reserve_type_t<char_type,code_cvt_t<src_scheme,dst_scheme,src_char_type>>,

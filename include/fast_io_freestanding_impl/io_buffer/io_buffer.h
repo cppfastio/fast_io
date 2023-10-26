@@ -37,9 +37,9 @@ public:
 	using input_char_type = typename traits_type::input_char_type;
 	using output_char_type = typename traits_type::output_char_type;
 
-	using input_buffer_type = std::conditional_t<(traits_type::mode&buffer_mode::in)==buffer_mode::in,
+	using input_buffer_type = ::std::conditional_t<(traits_type::mode&buffer_mode::in)==buffer_mode::in,
 		basic_io_buffer_pointers<input_char_type>,empty_buffer_pointers>;
-	using output_buffer_type = std::conditional_t<(traits_type::mode&buffer_mode::out)==buffer_mode::out,
+	using output_buffer_type = ::std::conditional_t<(traits_type::mode&buffer_mode::out)==buffer_mode::out,
 		basic_io_buffer_pointers<output_char_type>,empty_buffer_pointers>;
 
 #ifndef __INTELLISENSE__
@@ -90,11 +90,11 @@ public:
 		::fast_io::details::clear_basic_io_buffer_pointers(*this);
 		if constexpr(::fast_io::details::has_reopen_impl<handle_type,Args...>)
 		{
-			handle.reopen(std::forward<Args>(args)...);
+			handle.reopen(::std::forward<Args>(args)...);
 		}
 		else
 		{
-			handle=handle_type(std::forward<Args>(args)...);
+			handle=handle_type(::std::forward<Args>(args)...);
 		}
 	}
 

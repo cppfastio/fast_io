@@ -319,7 +319,7 @@ inline void* nt_create_file_impl(T const& t,open_mode_perms ompm)
 }
 
 template<bool zw,bool kernel>
-inline void* nt_family_create_file_at_impl(void* directory_handle,char16_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
+inline void* nt_family_create_file_at_impl(void* directory_handle,char16_t const* filename_c_str,::std::size_t filename_c_str_len,open_mode_perms md)
 {
 	if constexpr(kernel)
 	{
@@ -334,7 +334,7 @@ inline void* nt_family_create_file_at_impl(void* directory_handle,char16_t const
 }
 
 template<bool zw>
-inline void* nt_family_create_file_fs_dirent_impl(void* directory_handle,char16_t const* filename_c_str,std::size_t filename_c_str_len,open_mode_perms md)
+inline void* nt_family_create_file_fs_dirent_impl(void* directory_handle,char16_t const* filename_c_str,::std::size_t filename_c_str_len,open_mode_perms md)
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -347,7 +347,7 @@ inline void* nt_family_create_file_fs_dirent_impl(void* directory_handle,char16_
 }
 
 template<bool zw>
-inline void* nt_family_create_file_kernel_impl(char16_t const* filename_cstr,std::size_t filename_c_str_len,open_mode_perms ompm)
+inline void* nt_family_create_file_kernel_impl(char16_t const* filename_cstr,::std::size_t filename_c_str_len,open_mode_perms ompm)
 {
 	return ::fast_io::win32::nt::details::nt_call_kernel_nodir_callback(
 				filename_cstr,filename_c_str_len,
@@ -363,7 +363,7 @@ struct nt_family_open_file_kernel_parameter
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-	inline void* operator()(char16_t const* filename_cstr,std::size_t filename_c_str_len)
+	inline void* operator()(char16_t const* filename_cstr,::std::size_t filename_c_str_len)
 	{
 		return nt_family_create_file_kernel_impl<zw>(filename_cstr,filename_c_str_len,ompm);
 	}
@@ -386,7 +386,7 @@ struct nt_family_open_file_at_parameter
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-	inline void* operator()(char16_t const* filename_cstr,std::size_t filename_c_str_len)
+	inline void* operator()(char16_t const* filename_cstr,::std::size_t filename_c_str_len)
 	{
 		return nt_family_create_file_at_impl<zw,kernel>(directory_handle,filename_cstr,filename_c_str_len,ompm);
 	}
@@ -403,11 +403,11 @@ template<::fast_io::nt_family family>
 inline ::std::uint_least64_t nt_calculate_current_file_offset(void* __restrict handle)
 {
 	win32::nt::io_status_block block;
-	std::uint_least64_t fps{};
+	::std::uint_least64_t fps{};
 	auto status{win32::nt::nt_query_information_file<family==::fast_io::nt_family::zw>(handle,
 		__builtin_addressof(block),
 		__builtin_addressof(fps),
-		static_cast<::std::uint_least32_t>(sizeof(std::uint_least64_t)),
+		static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
 		win32::nt::file_information_class::FilePositionInformation)};
 	if(status)
 		throw_nt_error(status);
@@ -503,7 +503,7 @@ struct nt_at_entry
 #endif
 inline nt_at_entry nt_at_fdcwd() noexcept
 {
-	constexpr std::intptr_t value{-3};	//use -3 as at_fdwcd handle
+	constexpr ::std::intptr_t value{-3};	//use -3 as at_fdwcd handle
 	return nt_at_entry{bit_cast<void*>(value)};
 }
 
@@ -535,10 +535,10 @@ struct nt_fs_dirent
 
 using zw_at_entry=nt_family_at_entry<nt_family::zw>;
 
-template<win32_family family,std::integral ch_type>
+template<win32_family family,::std::integral ch_type>
 class basic_win32_family_io_observer;
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 requires (family==nt_family::nt||family==nt_family::zw)
 class basic_nt_family_io_observer
 {
@@ -574,28 +574,28 @@ public:
 	}
 };
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline ::std::byte* read_some_bytes_underflow_define(basic_nt_family_io_observer<family,ch_type> niob,
 	::std::byte* first, ::std::byte* last)
 {
 	return ::fast_io::win32::nt::details::nt_read_some_bytes_impl<family>(niob.handle,first,last);
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline ::std::byte const* write_some_bytes_overflow_define(basic_nt_family_io_observer<family,ch_type> niob,
 	::std::byte const *first, ::std::byte const *last)
 {
 	return ::fast_io::win32::nt::details::nt_write_some_bytes_impl<family>(niob.handle,first,last);
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline ::std::byte* pread_some_bytes_underflow_define(basic_nt_family_io_observer<family,ch_type> niob,
 	::std::byte* first, ::std::byte* last, ::fast_io::intfpos_t off)
 {
 	return ::fast_io::win32::nt::details::nt_pread_some_bytes_impl<family>(niob.handle,first,last,off);
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_nt_family_io_observer<family,ch_type> niob,
 	::std::byte const *first, ::std::byte const *last, ::fast_io::intfpos_t off)
 {
@@ -604,13 +604,13 @@ inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_nt_family_io_o
 
 #if __cpp_lib_three_way_comparison >= 201907L
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline constexpr bool operator==(basic_nt_family_io_observer<family,ch_type> a,basic_nt_family_io_observer<family,ch_type> b) noexcept
 {
 	return a.handle==b.handle;
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline constexpr auto operator<=>(basic_nt_family_io_observer<family,ch_type> a,basic_nt_family_io_observer<family,ch_type> b) noexcept
 {
 	return a.handle<=>b.handle;
@@ -618,7 +618,7 @@ inline constexpr auto operator<=>(basic_nt_family_io_observer<family,ch_type> a,
 
 #endif
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline constexpr auto at(basic_nt_family_io_observer<family,ch_type> niob) noexcept
 {
 	if constexpr(family==nt_family::nt)
@@ -627,13 +627,13 @@ inline constexpr auto at(basic_nt_family_io_observer<family,ch_type> niob) noexc
 		return nt_family_at_entry<family>{niob.handle};
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline constexpr basic_nt_family_io_observer<family,ch_type> io_stream_ref_define(basic_nt_family_io_observer<family,ch_type> other) noexcept
 {
 	return other;
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline constexpr basic_nt_family_io_observer<family,char> io_bytes_stream_ref_define(basic_nt_family_io_observer<family,ch_type> other) noexcept
 {
 	return {other.handle};
@@ -646,7 +646,7 @@ template<bool zw>
 inline void nt_flush_impl(void* handle)
 {
 	win32::nt::io_status_block block;
-	std::uint_least32_t status{win32::nt::nt_flush_buffers_file<zw>(handle,__builtin_addressof(block))};
+	::std::uint_least32_t status{win32::nt::nt_flush_buffers_file<zw>(handle,__builtin_addressof(block))};
 	if(status)
 		throw_nt_error(status);
 }
@@ -659,7 +659,7 @@ inline void nt_data_sync_impl(void* handle,data_sync_flags flags [[maybe_unused]
 NtFlushBuffersFileEx and ZwFlushBuffersFileEx are only provided since windows 8
 */
 	win32::nt::io_status_block block;
-	std::uint_least32_t status{win32::nt::nt_flush_buffers_file_ex<zw>(handle,static_cast<std::uint_least32_t>(flags),nullptr,0u,__builtin_addressof(block))};
+	::std::uint_least32_t status{win32::nt::nt_flush_buffers_file_ex<zw>(handle,static_cast<::std::uint_least32_t>(flags),nullptr,0u,__builtin_addressof(block))};
 	if(status)
 		throw_nt_error(status);
 #else
@@ -669,13 +669,13 @@ NtFlushBuffersFileEx and ZwFlushBuffersFileEx are only provided since windows 8
 
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline void flush(basic_nt_family_io_observer<family,ch_type> ntiob)
 {
 	win32::nt::details::nt_flush_impl<family==nt_family::zw>(ntiob.handle);
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline void data_sync(basic_nt_family_io_observer<family,ch_type> ntiob,data_sync_flags flags)
 {
 	win32::nt::details::nt_data_sync_impl<family==nt_family::zw>(ntiob.handle,flags);
@@ -692,17 +692,17 @@ struct nt_file_position_status
 template<bool zw>
 inline nt_file_position_status nt_get_file_position_impl(void* __restrict handle,::std::int_least64_t offset,seekdir s)
 {
-	std::uint_least64_t file_position{static_cast<std::uint_least64_t>(offset)};
+	::std::uint_least64_t file_position{static_cast<::std::uint_least64_t>(offset)};
 	win32::nt::io_status_block block;
 	switch(s)
 	{
 	case seekdir::cur:
 	{
-		std::uint_least64_t fps{};
+		::std::uint_least64_t fps{};
 		auto status{win32::nt::nt_query_information_file<zw>(handle,
 			__builtin_addressof(block),
 			__builtin_addressof(fps),
-			static_cast<::std::uint_least32_t>(sizeof(std::uint_least64_t)),
+			static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
 			win32::nt::file_information_class::FilePositionInformation)};
 		if(status)
 			return {status};
@@ -724,13 +724,13 @@ inline nt_file_position_status nt_get_file_position_impl(void* __restrict handle
 	break;
 	default:;
 	}
-	if(static_cast<::std::uint_least64_t>(std::numeric_limits<::std::int_least64_t>::max())<file_position)
+	if(static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max())<file_position)
 		file_position=0;
 	return {0,static_cast<::std::int_least64_t>(file_position)};
 }
 
 template<bool zw>
-inline std::int_least64_t nt_seek64_impl(void* __restrict handle,std::int_least64_t offset,seekdir s)
+inline ::std::int_least64_t nt_seek64_impl(void* __restrict handle,::std::int_least64_t offset,seekdir s)
 {
 	auto [status,file_position]=nt_get_file_position_impl<zw>(handle,offset,s);
 	if(status)
@@ -749,7 +749,7 @@ inline std::int_least64_t nt_seek64_impl(void* __restrict handle,std::int_least6
 template<bool zw>
 inline ::fast_io::intfpos_t nt_seek_impl(void* __restrict handle,::fast_io::intfpos_t offset,seekdir s)
 {
-	return static_cast<::fast_io::intfpos_t>(nt_seek64_impl<zw>(handle,static_cast<std::int_least64_t>(offset),s));
+	return static_cast<::fast_io::intfpos_t>(nt_seek64_impl<zw>(handle,static_cast<::std::int_least64_t>(offset),s));
 }
 
 template<bool zw>
@@ -773,14 +773,14 @@ inline void* nt_dup2_impl(void* handle,void* newhandle)
 }
 
 template<bool zw>
-inline void nt_truncate_impl(void* handle,std::uintmax_t newfilesizem)
+inline void nt_truncate_impl(void* handle,::std::uintmax_t newfilesizem)
 {
-	std::uint_least64_t newfilesize{static_cast<std::uint_least64_t>(newfilesizem)};
+	::std::uint_least64_t newfilesize{static_cast<::std::uint_least64_t>(newfilesizem)};
 	win32::nt::io_status_block block;
 	auto status{win32::nt::nt_set_information_file<zw>(handle,
 		__builtin_addressof(block),
 		__builtin_addressof(newfilesize),
-		sizeof(std::uint_least64_t),
+		sizeof(::std::uint_least64_t),
 		win32::nt::file_information_class::FileEndOfFileInformation)};
 	if(status)
 		throw_nt_error(status);
@@ -795,7 +795,7 @@ inline ::std::uint_least32_t nt_family_file_lock_common_impl(void* __restrict ha
 		return status;
 	}
 	win32::nt::io_status_block block;
-	std::int_least64_t len{req.len};
+	::std::int_least64_t len{req.len};
 	if(len==0)
 	{
 		len=INT_LEAST64_MAX;
@@ -849,13 +849,13 @@ inline void nt_family_file_lock_common_impl(void* __restrict handle,flock_reques
 	}
 }
 
-template<bool zw,std::integral int_type>
+template<bool zw,::std::integral int_type>
 inline void nt_family_file_lock_impl(void* __restrict handle,basic_flock_request<int_type>& __restrict t)
 {
 	if constexpr(sizeof(int_type)>=sizeof(::std::int_least64_t))
 	{
-		constexpr int_type mn{std::numeric_limits<::std::int_least64_t>::min()};
-		constexpr int_type mx{std::numeric_limits<::std::int_least64_t>::max()};
+		constexpr int_type mn{::std::numeric_limits<::std::int_least64_t>::min()};
+		constexpr int_type mx{::std::numeric_limits<::std::int_least64_t>::max()};
 		if(t.start<mn||mx<t.start||t.len<mn||mx<t.len)
 		{
 			throw_nt_error(0xC0000095);	//STATUS_INTEGER_OVERFLOW
@@ -864,13 +864,13 @@ inline void nt_family_file_lock_impl(void* __restrict handle,basic_flock_request
 	nt_family_file_lock_common_impl<zw>(handle,t);
 }
 
-template<bool zw,std::integral int_type>
+template<bool zw,::std::integral int_type>
 inline void nt_family_file_unlock_impl(void* __restrict handle,basic_flock_request<int_type>& __restrict t)
 {
 	if constexpr(sizeof(int_type)>=sizeof(::std::int_least64_t))
 	{
-		constexpr int_type mn{std::numeric_limits<::std::int_least64_t>::min()};
-		constexpr int_type mx{std::numeric_limits<::std::int_least64_t>::max()};
+		constexpr int_type mn{::std::numeric_limits<::std::int_least64_t>::min()};
+		constexpr int_type mx{::std::numeric_limits<::std::int_least64_t>::max()};
 		if(t.start<mn||mx<t.start||t.len<mn||mx<t.len)
 		{
 			fast_terminate();
@@ -879,13 +879,13 @@ inline void nt_family_file_unlock_impl(void* __restrict handle,basic_flock_reque
 	nt_family_file_unlock_common_impl<zw>(handle,t);
 }
 
-template<bool zw,std::integral int_type>
+template<bool zw,::std::integral int_type>
 inline bool nt_family_file_try_lock_impl(void* __restrict handle,basic_flock_request<int_type>& __restrict t)
 {
 	if constexpr(sizeof(int_type)>=sizeof(::std::int_least64_t))
 	{
-		constexpr int_type mn{std::numeric_limits<::std::int_least64_t>::min()};
-		constexpr int_type mx{std::numeric_limits<::std::int_least64_t>::max()};
+		constexpr int_type mn{::std::numeric_limits<::std::int_least64_t>::min()};
+		constexpr int_type mx{::std::numeric_limits<::std::int_least64_t>::max()};
 		if(t.start<mn||mx<t.start||t.len<mn||mx<t.len)
 		{
 			return false;
@@ -907,19 +907,19 @@ inline bool nt_family_file_try_lock_impl(void* __restrict handle,basic_flock_req
 
 }
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_nt_family_io_observer<family,ch_type> handle,::fast_io::intfpos_t offset,seekdir s)
 {
 	return win32::nt::details::nt_seek_impl<family==nt_family::zw>(handle.handle,offset,s);
 }
 
-template<nt_family family,std::integral ch_type>
-inline void truncate(basic_nt_family_io_observer<family,ch_type> handle,std::uintmax_t newfilesize)
+template<nt_family family,::std::integral ch_type>
+inline void truncate(basic_nt_family_io_observer<family,ch_type> handle,::std::uintmax_t newfilesize)
 {
 	win32::nt::details::nt_truncate_impl<family==nt_family::zw>(handle.handle,newfilesize);
 }
 #if 0
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 inline posix_file_status status(basic_nt_family_io_observer<family,ch_type> handle)
 {
 	return win32::nt::details::nt_status_impl<family==nt_family::zw>(handle.handle);
@@ -931,20 +931,20 @@ template<nt_family family>
 struct nt_family_file_lock
 {
 	void* handle{};
-	template<std::signed_integral int_type>
-	requires (sizeof(int_type)>=sizeof(std::int_least64_t))
+	template<::std::signed_integral int_type>
+	requires (sizeof(int_type)>=sizeof(::std::int_least64_t))
 	inline void lock(basic_flock_request<int_type>& __restrict t)
 	{
 		::fast_io::win32::nt::details::nt_family_file_lock_impl<family==nt_family::zw>(this->handle,t);
 	}
-	template<std::signed_integral int_type>
-	requires (sizeof(int_type)>=sizeof(std::int_least64_t))
+	template<::std::signed_integral int_type>
+	requires (sizeof(int_type)>=sizeof(::std::int_least64_t))
 	inline void unlock(basic_flock_request<int_type>& __restrict t) noexcept
 	{
 		::fast_io::win32::nt::details::nt_family_file_unlock_impl<family==nt_family::zw>(this->handle,t);
 	}
-	template<std::signed_integral int_type>
-	requires (sizeof(int_type)>=sizeof(std::int_least64_t))
+	template<::std::signed_integral int_type>
+	requires (sizeof(int_type)>=sizeof(::std::int_least64_t))
 	inline bool try_lock(basic_flock_request<int_type>& __restrict t) noexcept
 	{
 		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl<family==nt_family::zw>(this->handle,t);
@@ -982,7 +982,7 @@ nt_family_file_factory
 using nt_file_factory = nt_family_file_factory<nt_family::nt>;
 using zw_file_factory = nt_family_file_factory<nt_family::zw>;
 
-template<nt_family family,std::integral ch_type>
+template<nt_family family,::std::integral ch_type>
 class basic_nt_family_file:public basic_nt_family_io_observer<family,ch_type>
 {
 public:
@@ -996,7 +996,7 @@ public:
 	constexpr basic_nt_family_file& operator=(basic_nt_family_io_observer<family,ch_type>) noexcept=delete;
 
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_nt_family_file(native_hd hd) noexcept:basic_nt_family_io_observer<family,ch_type>{hd}{}
 	constexpr basic_nt_family_file(decltype(nullptr)) noexcept = delete;
 	explicit constexpr basic_nt_family_file(nt_family_file_factory<family>&& hd) noexcept:basic_nt_family_io_observer<family,ch_type>{hd}
@@ -1062,10 +1062,10 @@ public:
 	}
 };
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_nt_io_observer=basic_nt_family_io_observer<nt_family::nt,char_type>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_nt_file=basic_nt_family_file<nt_family::nt,char_type>;
 
 using nt_io_observer=basic_nt_io_observer<char>;
@@ -1112,29 +1112,29 @@ inline void* nt_get_stdhandle() noexcept
 
 }
 
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdin() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<0>()};
 }
 
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stdout() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<1>()};
 }
 
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> nt_stderr() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_zw_io_observer=basic_nt_family_io_observer<nt_family::zw,char_type>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_zw_file=basic_nt_family_file<nt_family::zw,char_type>;
 
 using zw_io_observer=basic_zw_io_observer<char>;
@@ -1152,36 +1152,36 @@ using u16zw_file=basic_zw_file<char16_t>;
 using u32zw_io_observer=basic_zw_io_observer<char32_t>;
 using u32zw_file=basic_zw_file<char32_t>;
 
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdin() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<0>()};
 }
 
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stdout() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<1>()};
 }
 
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
 #if 0
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stdin() noexcept
 {
 	return {fast_io::win32::GetStdHandle(-10)};
 }
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stdout() noexcept
 {
 	return {fast_io::win32::GetStdHandle(-11)};
 }
-template<std::integral char_type=char>
+template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stderr() noexcept
 {
 	return {fast_io::win32::GetStdHandle(-12)};
@@ -1190,13 +1190,13 @@ inline basic_nt_io_observer<char_type> native_stderr() noexcept
 
 namespace freestanding
 {
-template<nt_family fm,std::integral char_type>
+template<nt_family fm,::std::integral char_type>
 struct is_trivially_relocatable<basic_nt_family_file<fm,char_type>>
 {
 	inline static constexpr bool value = true;
 };
 
-template<nt_family fm,std::integral char_type>
+template<nt_family fm,::std::integral char_type>
 struct is_zero_default_constructible<basic_nt_family_file<fm,char_type>>
 {
 	inline static constexpr bool value = true;

@@ -6,9 +6,9 @@
 namespace fast_io
 {
 
-inline constexpr std::uint_least32_t win32_stdin_number(static_cast<std::uint_least32_t>(-10));
-inline constexpr std::uint_least32_t win32_stdout_number(static_cast<std::uint_least32_t>(-11));
-inline constexpr std::uint_least32_t win32_stderr_number(static_cast<std::uint_least32_t>(-12));
+inline constexpr ::std::uint_least32_t win32_stdin_number(static_cast<::std::uint_least32_t>(-10));
+inline constexpr ::std::uint_least32_t win32_stdout_number(static_cast<::std::uint_least32_t>(-11));
+inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::uint_least32_t>(-12));
 
 }
 #include"win32_code.h"
@@ -40,11 +40,11 @@ inline constexpr auto native_stderr_number(win32_stderr_number);
 using native_at_entry = nt_at_entry;
 using native_fs_dirent = nt_fs_dirent;
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_native_io_observer = basic_win32_io_observer<ch_type>;
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_native_file = basic_win32_file<ch_type>;
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_native_pipe = basic_win32_pipe<ch_type>;
 #else
 inline constexpr auto native_stdin_number(posix_stdin_number);
@@ -54,11 +54,11 @@ inline constexpr auto native_stderr_number(posix_stderr_number);
 using native_at_entry = posix_at_entry;
 using native_fs_dirent = posix_fs_dirent;
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_native_io_observer = basic_posix_io_observer<ch_type>;
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_native_file = basic_posix_file<ch_type>;
-template<std::integral ch_type>
+template<::std::integral ch_type>
 using basic_native_pipe = basic_posix_pipe<ch_type>;
 
 #endif

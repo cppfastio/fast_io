@@ -259,7 +259,7 @@ concept has_ibuffer_minimum_size_operations = requires(T instm)
 {
 	{ibuffer_minimum_size_define(::fast_io::io_reserve_type<
 		typename T::input_char_type,
-		T>)}->std::same_as<::std::size_t>;
+		T>)}->::std::same_as<::std::size_t>;
 	ibuffer_minimum_size_underflow_all_prepare_define(instm);
 };
 

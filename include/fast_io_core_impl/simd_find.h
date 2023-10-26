@@ -22,12 +22,12 @@ inline constexpr auto create_find_simd_vector_with_unsigned_toggle(char_type val
 	return arr;
 }
 
-template<char8_t lfch,std::integral char_type,std::size_t N,bool signed_disposition=false>
+template<char8_t lfch,::std::integral char_type,::std::size_t N,bool signed_disposition=false>
 inline constexpr
 	::fast_io::freestanding::array<char_type,N> characters_array_impl{
 		create_find_simd_vector_with_unsigned_toggle<signed_disposition,char_type,N>(lfch)};
 
-template<wchar_t lfch,std::integral char_type,std::size_t N,bool signed_disposition=false>
+template<wchar_t lfch,::std::integral char_type,::std::size_t N,bool signed_disposition=false>
 inline constexpr
 	::fast_io::freestanding::array<char_type,N> wide_characters_array_impl{
 		create_find_simd_vector_with_unsigned_toggle<signed_disposition,char_type,N>(lfch)};
@@ -39,14 +39,14 @@ inline constexpr T create_simd_vector_with_all_masks() noexcept
 	return ~t;
 }
 
-template<std::size_t vec_size,std::integral char_type,typename Func>
+template<::std::size_t vec_size,::std::integral char_type,typename Func>
 requires (sizeof(char_type)<=vec_size)&&(vec_size%sizeof(char_type)==0)
 inline constexpr char_type const* find_simd_common_condition_impl(char_type const* first,char_type const* last,Func func) noexcept
 {
 	constexpr unsigned N{vec_size/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	simd_vector_type simdvec;
-	for(;N<=static_cast<std::size_t>(last-first);first+=N)
+	for(;N<=static_cast<::std::size_t>(last-first);first+=N)
 	{
 		simdvec.load(first);
 		if(func(simdvec))
@@ -57,7 +57,7 @@ inline constexpr char_type const* find_simd_common_condition_impl(char_type cons
 	return first;
 }
 
-template<bool findnot,std::size_t vec_size,std::integral char_type,typename Func>
+template<bool findnot,::std::size_t vec_size,::std::integral char_type,typename Func>
 requires (sizeof(char_type)<=vec_size)&&(vec_size%sizeof(char_type)==0)
 inline constexpr char_type const* find_simd_common_all_impl(char_type const* first,char_type const* last,Func func) noexcept
 {
@@ -80,7 +80,7 @@ inline constexpr char_type const* find_simd_common_all_impl(char_type const* fir
 	}
 }
 
-template<bool findnot,std::size_t vec_size,std::integral char_type,typename simd_vector_type>
+template<bool findnot,::std::size_t vec_size,::std::integral char_type,typename simd_vector_type>
 inline constexpr char_type const* find_simd_constant_simd_common_all_impl(char_type const* first,char_type const* last,simd_vector_type const& charsvec) noexcept
 {
 	return find_simd_common_condition_impl<vec_size>(first,last,[&](simd_vector_type const& simdvec) noexcept -> bool
@@ -96,16 +96,16 @@ inline constexpr char_type const* find_simd_constant_simd_common_all_impl(char_t
 	});
 }
 
-template<char8_t lfch,bool findnot,std::size_t vec_size,std::integral char_type>
+template<char8_t lfch,bool findnot,::std::size_t vec_size,::std::integral char_type>
 inline constexpr char_type const* find_simd_constant_simd_common_impl(char_type const* first,char_type const* last) noexcept
 {
-	constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchct{char_literal_v<lfch,::std::remove_cvref_t<char_type>>};
 	constexpr unsigned N{vec_size/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 		simd_vector_type charsvec{
-			std::bit_cast<simd_vector_type>(characters_array_impl<lfchct,char_type,N>)};
+			::std::bit_cast<simd_vector_type>(characters_array_impl<lfchct,char_type,N>)};
 #else
 	simd_vector_type charsvec;
 	charsvec.load(characters_array_impl<lfchct,char_type,N>.data());
@@ -116,12 +116,12 @@ inline constexpr char_type const* find_simd_constant_simd_common_impl(char_type 
 //Change to architectures when they may have efficient unsigned comparison support. Although i do not know any of them.
 inline constexpr bool use_signed_vector_type{true};
 
-template<bool ishtml,bool findnot,std::size_t vec_size>
+template<bool ishtml,bool findnot,::std::size_t vec_size>
 inline constexpr wchar_t const* find_space_simd_common_wide_none_utf_encoding_impl(wchar_t const* first,wchar_t const* last) noexcept
 {
 	using char_type = wchar_t;
-	using unsigned_char_type = std::make_unsigned_t<std::remove_cvref_t<char_type>>;
-	using signed_char_type = std::make_unsigned_t<unsigned_char_type>;
+	using unsigned_char_type = ::std::make_unsigned_t<::std::remove_cvref_t<char_type>>;
+	using signed_char_type = ::std::make_unsigned_t<unsigned_char_type>;
 	constexpr char_type spacech{L' '};
 	constexpr char_type horizontaltab{arithmetic_char_literal_v<u8'\t',char_type>};
 	constexpr char_type verticaltab{L'\v'};
@@ -129,16 +129,16 @@ inline constexpr wchar_t const* find_space_simd_common_wide_none_utf_encoding_im
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	using unsigned_simd_vector_type = ::fast_io::intrinsics::simd_vector<unsigned_char_type,N>;
 	using signed_simd_vector_type = ::fast_io::intrinsics::simd_vector<signed_char_type,N>;
-	using decision_simd_vector_type = std::conditional_t<use_signed_vector_type,signed_simd_vector_type,unsigned_simd_vector_type>;
+	using decision_simd_vector_type = ::std::conditional_t<use_signed_vector_type,signed_simd_vector_type,unsigned_simd_vector_type>;
 
 	constexpr char_type five{5};
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 		decision_simd_vector_type fives{
-			std::bit_cast<decision_simd_vector_type>(wide_characters_array_impl<five,char_type,N,use_signed_vector_type>)};
+			::std::bit_cast<decision_simd_vector_type>(wide_characters_array_impl<five,char_type,N,use_signed_vector_type>)};
 	constexpr
 		decision_simd_vector_type horizontaltabs{
-			std::bit_cast<decision_simd_vector_type>(wide_characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>)};
+			::std::bit_cast<decision_simd_vector_type>(wide_characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>)};
 #else
 	decision_simd_vector_type fives;
 	fives.load(wide_characters_array_impl<five,char_type,N,use_signed_vector_type>.data());
@@ -149,7 +149,7 @@ inline constexpr wchar_t const* find_space_simd_common_wide_none_utf_encoding_im
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 		simd_vector_type spaces{
-		std::bit_cast<simd_vector_type>(wide_characters_array_impl<spacech,char_type,N>)};
+		::std::bit_cast<simd_vector_type>(wide_characters_array_impl<spacech,char_type,N>)};
 #else
 	simd_vector_type spaces;
 	spaces.load(wide_characters_array_impl<spacech,char_type,N>.data());
@@ -159,7 +159,7 @@ inline constexpr wchar_t const* find_space_simd_common_wide_none_utf_encoding_im
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 		constexpr
 			simd_vector_type verticaltabs{
-				std::bit_cast<simd_vector_type>(wide_characters_array_impl<verticaltab,char_type,N>)};
+				::std::bit_cast<simd_vector_type>(wide_characters_array_impl<verticaltab,char_type,N>)};
 #else
 
 		simd_vector_type verticaltabs;
@@ -198,7 +198,7 @@ inline constexpr wchar_t const* find_space_simd_common_wide_none_utf_encoding_im
 	return first;
 }
 
-template<bool ishtml,bool findnot,std::size_t vec_size,std::integral char_type>
+template<bool ishtml,bool findnot,::std::size_t vec_size,::std::integral char_type>
 inline constexpr char_type const* find_space_simd_common_impl(char_type const* first,char_type const* last) noexcept
 {
 	if constexpr(::std::same_as<char_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
@@ -207,23 +207,23 @@ inline constexpr char_type const* find_space_simd_common_impl(char_type const* f
 	}
 	else
 	{
-	using unsigned_char_type = std::make_unsigned_t<std::remove_cvref_t<char_type>>;
-	using signed_char_type = std::make_unsigned_t<unsigned_char_type>;
-	constexpr char_type spacech{char_literal_v<u8' ',std::remove_cvref_t<char_type>>};
-	constexpr char_type horizontaltab{char_literal_v<u8'\t',std::remove_cvref_t<char_type>>};
-	constexpr char_type verticaltab{char_literal_v<u8'\v',std::remove_cvref_t<char_type>>};
+	using unsigned_char_type = ::std::make_unsigned_t<::std::remove_cvref_t<char_type>>;
+	using signed_char_type = ::std::make_unsigned_t<unsigned_char_type>;
+	constexpr char_type spacech{char_literal_v<u8' ',::std::remove_cvref_t<char_type>>};
+	constexpr char_type horizontaltab{char_literal_v<u8'\t',::std::remove_cvref_t<char_type>>};
+	constexpr char_type verticaltab{char_literal_v<u8'\v',::std::remove_cvref_t<char_type>>};
 	constexpr unsigned N{vec_size/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
 	using unsigned_simd_vector_type = ::fast_io::intrinsics::simd_vector<unsigned_char_type,N>;
 	using signed_simd_vector_type = ::fast_io::intrinsics::simd_vector<signed_char_type,N>;
 
-	using decision_simd_vector_type = std::conditional_t<use_signed_vector_type,signed_simd_vector_type,unsigned_simd_vector_type>;
+	using decision_simd_vector_type = ::std::conditional_t<use_signed_vector_type,signed_simd_vector_type,unsigned_simd_vector_type>;
 
 
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 		simd_vector_type spaces{
-		std::bit_cast<simd_vector_type>(characters_array_impl<spacech,char_type,N>)};
+		::std::bit_cast<simd_vector_type>(characters_array_impl<spacech,char_type,N>)};
 #else
 	simd_vector_type spaces;
 	spaces.load(characters_array_impl<spacech,char_type,N>.data());
@@ -242,17 +242,17 @@ ASCII: space (0x20, ' '), EBCDIC:64
 */
 		constexpr char_type three{3};
 		constexpr char_type ebcdic_specific_nl{21};
-		constexpr char_type linefeed{char_literal_v<u8'\n',std::remove_cvref_t<char_type>>};
+		constexpr char_type linefeed{char_literal_v<u8'\n',::std::remove_cvref_t<char_type>>};
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 		constexpr
 			simd_vector_type ebcdic_specific_nls{
-				std::bit_cast<simd_vector_type>(characters_array_impl<ebcdic_specific_nl,char_type,N>)};
+				::std::bit_cast<simd_vector_type>(characters_array_impl<ebcdic_specific_nl,char_type,N>)};
 		constexpr
 			simd_vector_type linefeeds{
-				std::bit_cast<simd_vector_type>(characters_array_impl<linefeed,char_type,N>)};
+				::std::bit_cast<simd_vector_type>(characters_array_impl<linefeed,char_type,N>)};
 		constexpr
 			simd_vector_type horizontaltabs{
-				std::bit_cast<simd_vector_type>(characters_array_impl<horizontaltab,char_type,N>)};
+				::std::bit_cast<simd_vector_type>(characters_array_impl<horizontaltab,char_type,N>)};
 #else
 		simd_vector_type ebcdic_specific_nls,linefeeds,horizontaltabs;
 
@@ -263,15 +263,15 @@ ASCII: space (0x20, ' '), EBCDIC:64
 
 		if constexpr(ishtml)
 		{
-			constexpr char_type formfeed{char_literal_v<u8'\f',std::remove_cvref_t<char_type>>};
-			constexpr char_type carriagereturn{char_literal_v<u8'\r',std::remove_cvref_t<char_type>>};
+			constexpr char_type formfeed{char_literal_v<u8'\f',::std::remove_cvref_t<char_type>>};
+			constexpr char_type carriagereturn{char_literal_v<u8'\r',::std::remove_cvref_t<char_type>>};
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 			constexpr
 			simd_vector_type formfeeds{
-			std::bit_cast<simd_vector_type>(characters_array_impl<formfeed,char_type,N>)};
+			::std::bit_cast<simd_vector_type>(characters_array_impl<formfeed,char_type,N>)};
 			constexpr
 			simd_vector_type carriagereturns{
-			std::bit_cast<simd_vector_type>(characters_array_impl<carriagereturn,char_type,N>)};
+			::std::bit_cast<simd_vector_type>(characters_array_impl<carriagereturn,char_type,N>)};
 #else
 			simd_vector_type formfeeds,carriagereturns;
 			formfeeds.load(characters_array_impl<formfeed,char_type,N>.data());
@@ -288,10 +288,10 @@ ASCII: space (0x20, ' '), EBCDIC:64
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 			constexpr
 				decision_simd_vector_type threes{
-					std::bit_cast<decision_simd_vector_type>(characters_array_impl<three,char_type,N,use_signed_vector_type>)};
+					::std::bit_cast<decision_simd_vector_type>(characters_array_impl<three,char_type,N,use_signed_vector_type>)};
 			constexpr
 				decision_simd_vector_type verticaltabs{
-					std::bit_cast<decision_simd_vector_type>(characters_array_impl<verticaltab,char_type,N,use_signed_vector_type>)};
+					::std::bit_cast<decision_simd_vector_type>(characters_array_impl<verticaltab,char_type,N,use_signed_vector_type>)};
 #else
 			decision_simd_vector_type threes,verticaltabs;
 			threes.load(characters_array_impl<three,char_type,N,use_signed_vector_type>.data());
@@ -312,10 +312,10 @@ ASCII: space (0x20, ' '), EBCDIC:64
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 		constexpr
 			decision_simd_vector_type fives{
-				std::bit_cast<decision_simd_vector_type>(characters_array_impl<five,char_type,N,use_signed_vector_type>)};
+				::std::bit_cast<decision_simd_vector_type>(characters_array_impl<five,char_type,N,use_signed_vector_type>)};
 		constexpr
 			decision_simd_vector_type horizontaltabs{
-				std::bit_cast<decision_simd_vector_type>(characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>)};
+				::std::bit_cast<decision_simd_vector_type>(characters_array_impl<horizontaltab,char_type,N,use_signed_vector_type>)};
 #else
 		decision_simd_vector_type fives;
 		fives.load(characters_array_impl<five,char_type,N,use_signed_vector_type>.data());
@@ -329,7 +329,7 @@ ASCII: space (0x20, ' '), EBCDIC:64
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 			constexpr
 				simd_vector_type verticaltabs{
-					std::bit_cast<simd_vector_type>(characters_array_impl<verticaltab,char_type,N>)};
+					::std::bit_cast<simd_vector_type>(characters_array_impl<verticaltab,char_type,N>)};
 #else
 
 			simd_vector_type verticaltabs;
@@ -361,27 +361,27 @@ inline constexpr char unsigned const* find_characters_musl(char unsigned const* 
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
-	if(!std::is_constant_evaluated())
+	if(!::std::is_constant_evaluated())
 #endif
 	{
-	constexpr std::size_t diff{sizeof(std::size_t)};
+	constexpr ::std::size_t diff{sizeof(::std::size_t)};
 	
-	constexpr char unsigned ucharmx{std::numeric_limits<char unsigned>::max()};
-	constexpr std::size_t ones{std::numeric_limits<std::size_t>::max()/ucharmx};
-	constexpr std::size_t highs{ones*(ucharmx/2+1)};
+	constexpr char unsigned ucharmx{::std::numeric_limits<char unsigned>::max()};
+	constexpr ::std::size_t ones{::std::numeric_limits<::std::size_t>::max()/ucharmx};
+	constexpr ::std::size_t highs{ones*(ucharmx/2+1)};
 	if(first!=last&&*first!=ch)
 	{
-	for(std::size_t const constantk{ones*ch};diff<=static_cast<std::size_t>(last-first);first+=diff)
+	for(::std::size_t const constantk{ones*ch};diff<=static_cast<::std::size_t>(last-first);first+=diff)
 	{
 
-		std::size_t x;
+		::std::size_t x;
 #if defined(_MSC_VER) && !defined(__clang__)
-		std::memcpy(__builtin_addressof(x),first,diff);
+		::std::memcpy(__builtin_addressof(x),first,diff);
 #else
 		__builtin_memcpy(__builtin_addressof(x),first,diff);
 #endif
 		x^=constantk;
-		std::size_t v{(x-ones)&(~x)&highs};
+		::std::size_t v{(x-ones)&(~x)&highs};
 		if constexpr(findnot)
 		{
 			if(v!=highs)
@@ -411,15 +411,15 @@ inline constexpr char unsigned const* find_characters_musl(char unsigned const* 
 	return first;
 }
 
-template<char8_t lfch,bool findnot,std::integral char_type>
+template<char8_t lfch,bool findnot,::std::integral char_type>
 inline constexpr char_type const* find_simd_constant_common_cold_impl(char_type const* first,char_type const* last) noexcept
 {
-	constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchct{char_literal_v<lfch,::std::remove_cvref_t<char_type>>};
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
-	if(!std::is_constant_evaluated())
+	if(!::std::is_constant_evaluated())
 #endif
 	{
 	constexpr bool use_builtin_memchr{
@@ -434,7 +434,7 @@ inline constexpr char_type const* find_simd_constant_common_cold_impl(char_type 
 	};
 	if constexpr(use_builtin_memchr&&(sizeof(char_type)==1||(sizeof(char_type)==4&&sizeof(wchar_t)==4)))
 	{
-		std::size_t diff{static_cast<std::size_t>(last-first)};
+		::std::size_t diff{static_cast<::std::size_t>(last-first)};
 		if(diff==0)
 #if __has_cpp_attribute(likely)
 		[[likely]]
@@ -478,15 +478,15 @@ inline constexpr char_type const* find_simd_constant_common_cold_impl(char_type 
 	}
 }
 
-template<bool secondlevelopt,std::integral char_type,typename Pred,typename Func>
+template<bool secondlevelopt,::std::integral char_type,typename Pred,typename Func>
 inline constexpr char_type const* find_simd_small_optimization_common_impl(char_type const* first,char_type const* last,Pred pred,Func func) noexcept
 {
-	constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size?
+	constexpr ::std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size?
 		::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size:
-		(secondlevelopt?sizeof(std::size_t):0)};
-	if constexpr(sizeof(std::uint_least16_t)<initialdiffn)
+		(secondlevelopt?sizeof(::std::size_t):0)};
+	if constexpr(sizeof(::std::uint_least16_t)<initialdiffn)
 	{
-		std::size_t diff{static_cast<std::size_t>(last-first)};
+		::std::size_t diff{static_cast<::std::size_t>(last-first)};
 		if(initialdiffn<diff)
 		{
 			diff=initialdiffn;
@@ -504,12 +504,12 @@ inline constexpr char_type const* find_simd_small_optimization_common_impl(char_
 	return func(first,last);
 }
 
-template<char8_t lfch,bool findnot,std::integral char_type>
+template<char8_t lfch,bool findnot,::std::integral char_type>
 inline constexpr char_type const* find_simd_constant_common_impl(char_type const* first,char_type const* last) noexcept
 {
 	return find_simd_small_optimization_common_impl<false>(first,last,[](char_type ch) noexcept
 	{
-		constexpr char_type lfchct{char_literal_v<lfch,std::remove_cvref_t<char_type>>};
+		constexpr char_type lfchct{char_literal_v<lfch,::std::remove_cvref_t<char_type>>};
 		if constexpr(findnot)
 		{
 			return ch==lfchct;
@@ -553,14 +553,14 @@ inline constexpr Iter find_space_common_iterator_generic_impl(Iter begin,Iter en
 	return begin;
 }
 
-template<bool ishtml,bool findnot,std::integral char_type>
+template<bool ishtml,bool findnot,::std::integral char_type>
 inline constexpr char_type const* find_space_common_cold_impl(char_type const* first,char_type const* last) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
-	if(!std::is_constant_evaluated())
+	if(!::std::is_constant_evaluated())
 #endif
 	{
 		if constexpr(::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size)
@@ -572,7 +572,7 @@ inline constexpr char_type const* find_space_common_cold_impl(char_type const* f
 	return find_space_common_iterator_generic_impl<ishtml,findnot>(first,last);
 }
 
-template<bool ishtml,bool findnot,std::integral char_type>
+template<bool ishtml,bool findnot,::std::integral char_type>
 inline constexpr char_type const* find_space_common_impl(char_type const* first,char_type const* last) noexcept
 {
 	return find_simd_small_optimization_common_impl<false>(first,last,[](char_type ch) noexcept
@@ -605,13 +605,13 @@ inline constexpr char_type const* find_space_common_impl(char_type const* first,
 	});
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type const* find_lf_simd_impl(char_type const* first,char_type const* last) noexcept
 {
 	return find_simd_constant_common_impl<u8'\n',false>(first,last);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type const* find_none_zero_simd_impl(char_type const* first,char_type const* last) noexcept
 {
 	return find_simd_constant_common_impl<u8'0',true>(first,last);
@@ -635,8 +635,8 @@ inline constexpr Iter find_space_impl(Iter first,Iter last)
 		}
 		else
 		{
-			::std::remove_cvref_t<value_type> const* first_const_ptr{std::to_address(first)};
-			return ::fast_io::details::find_space_common_impl<ishtml,findnot>(first_const_ptr,std::to_address(last))-first_const_ptr+first;
+			::std::remove_cvref_t<value_type> const* first_const_ptr{::std::to_address(first)};
+			return ::fast_io::details::find_space_common_impl<ishtml,findnot>(first_const_ptr,::std::to_address(last))-first_const_ptr+first;
 		}
 	}
 	else
@@ -663,13 +663,13 @@ inline constexpr Iter find_ch_impl(Iter first,Iter last)
 		}
 		else
 		{
-			::std::remove_cvref_t<value_type> const* first_const_ptr{std::to_address(first)};
-			return ::fast_io::details::find_simd_constant_common_impl<lfch,findnot>(first_const_ptr,std::to_address(last))-first_const_ptr+first;
+			::std::remove_cvref_t<value_type> const* first_const_ptr{::std::to_address(first)};
+			return ::fast_io::details::find_simd_constant_common_impl<lfch,findnot>(first_const_ptr,::std::to_address(last))-first_const_ptr+first;
 		}
 	}
 	else
 	{
-		constexpr auto lfchct{char_literal_v<lfch,std::remove_cvref_t<value_type>>};
+		constexpr auto lfchct{char_literal_v<lfch,::std::remove_cvref_t<value_type>>};
 		if constexpr(findnot)
 		{
 			return ::fast_io::freestanding::find_not(first,last,lfchct);

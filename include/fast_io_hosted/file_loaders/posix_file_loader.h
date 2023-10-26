@@ -16,25 +16,25 @@ namespace fast_io
 #if (defined(_WIN32) && !defined(__BIONIC__)) || defined(__CYGWIN__)
 namespace win32::details
 {
-inline std::size_t win32_load_file_get_file_size(void* handle)
+inline ::std::size_t win32_load_file_get_file_size(void* handle)
 {
 	by_handle_file_information bhdi;
 	if(!GetFileInformationByHandle(handle,__builtin_addressof(bhdi)))
 		throw_win32_error();
-	if constexpr(sizeof(std::size_t)<sizeof(std::uint_least64_t))
+	if constexpr(sizeof(::std::size_t)<sizeof(::std::uint_least64_t))
 	{
 		if(bhdi.nFileSizeHigh)
 			throw_win32_error(0x000000DF);
-		if constexpr(sizeof(std::size_t)<sizeof(std::uint_least32_t))
+		if constexpr(sizeof(::std::size_t)<sizeof(::std::uint_least32_t))
 		{
-			if(bhdi.nFileSizeLow>static_cast<std::uint_least32_t>(SIZE_MAX))
+			if(bhdi.nFileSizeLow>static_cast<::std::uint_least32_t>(SIZE_MAX))
 				throw_win32_error(0x000000DF);
 		}
-		return static_cast<std::size_t>(bhdi.nFileSizeLow);
+		return static_cast<::std::size_t>(bhdi.nFileSizeLow);
 	}
 	else
 	{
-		return static_cast<std::size_t>((static_cast<std::uint_least64_t>(bhdi.nFileSizeHigh)<<32)|bhdi.nFileSizeLow);
+		return static_cast<::std::size_t>((static_cast<::std::uint_least64_t>(bhdi.nFileSizeHigh)<<32)|bhdi.nFileSizeLow);
 	}
 }
 }
@@ -43,7 +43,7 @@ inline std::size_t win32_load_file_get_file_size(void* handle)
 namespace details
 {
 
-inline std::size_t posix_loader_get_file_size(int fd)
+inline ::std::size_t posix_loader_get_file_size(int fd)
 {
 #if defined(_WIN32) && !defined(__BIONIC__)&&!defined(__WINE__)
 //windows 95 and windows 98 msvcrt do not provide struct __stat64. Directly invoke win32 api
@@ -58,13 +58,13 @@ inline std::size_t posix_loader_get_file_size(int fd)
 		0x1000	//AT_EMPTY_PATH requires _GNU_SOURCE gets defined which might not be available for all libcs
 #endif
 		,STATX_SIZE,__builtin_addressof(statxbuf)));
-	using stx_size_unsigned_type = std::make_unsigned_t<decltype(statxbuf.stx_size)>;
-	if constexpr(sizeof(stx_size_unsigned_type)>sizeof(std::size_t))
+	using stx_size_unsigned_type = ::std::make_unsigned_t<decltype(statxbuf.stx_size)>;
+	if constexpr(sizeof(stx_size_unsigned_type)>sizeof(::std::size_t))
 	{
 		if(static_cast<stx_size_unsigned_type>(statxbuf.stx_size)>static_cast<stx_size_unsigned_type>(SIZE_MAX))
 			throw_posix_error(EINVAL);
 	}
-	return static_cast<std::size_t>(statxbuf.stx_size);
+	return static_cast<::std::size_t>(statxbuf.stx_size);
 #else
 #if defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
 	struct stat64 st;
@@ -79,13 +79,13 @@ fstat
 #endif
 	(fd,__builtin_addressof(st))<0)
 		throw_posix_error();
-	using st_size_unsigned_type = std::make_unsigned_t<decltype(st.st_size)>;
-	if constexpr(sizeof(st_size_unsigned_type)>sizeof(std::size_t))
+	using st_size_unsigned_type = ::std::make_unsigned_t<decltype(st.st_size)>;
+	if constexpr(sizeof(st_size_unsigned_type)>sizeof(::std::size_t))
 	{
 		if(static_cast<st_size_unsigned_type>(st.st_size)>static_cast<st_size_unsigned_type>(SIZE_MAX))
 			throw_posix_error(EINVAL);
 	}
-	return static_cast<std::size_t>(st.st_size);
+	return static_cast<::std::size_t>(st.st_size);
 #endif
 }
 
@@ -93,7 +93,7 @@ fstat
 struct load_file_allocation_guard
 {
 	void* address{};
-	explicit load_file_allocation_guard(std::size_t file_size):address(
+	explicit load_file_allocation_guard(::std::size_t file_size):address(
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_malloc)
 __builtin_malloc
@@ -125,7 +125,7 @@ malloc
 };
 
 template<bool allocation>
-inline char* posix_load_address(int fd,std::size_t file_size)
+inline char* posix_load_address(int fd,::std::size_t file_size)
 {
 	if constexpr(allocation)
 	{
@@ -158,7 +158,7 @@ sys_mmap(nullptr,file_size,PROT_READ|PROT_WRITE,MAP_PRIVATE
 	}
 }
 
-inline char* posix_load_address_extra(int fd,std::size_t file_size,std::size_t exsz)
+inline char* posix_load_address_extra(int fd,::std::size_t file_size,::std::size_t exsz)
 {
 	::std::size_t mxsz{SIZE_MAX-exsz};
 	if(file_size>mxsz)
@@ -189,7 +189,7 @@ memset
 
 
 template<bool allocation>
-inline void posix_unload_address(void* address,[[maybe_unused]] std::size_t file_size) noexcept
+inline void posix_unload_address(void* address,[[maybe_unused]] ::std::size_t file_size) noexcept
 {
 	if constexpr(allocation)
 	{
@@ -223,7 +223,7 @@ struct posix_file_loader_return_value_t
 template<bool allocation>
 inline posix_file_loader_return_value_t posix_load_address_impl(int fd)
 {
-	std::size_t size{posix_loader_get_file_size(fd)};
+	::std::size_t size{posix_loader_get_file_size(fd)};
 	auto add{posix_load_address<allocation>(fd,size)};
 	return {add,add+size};
 }
@@ -252,7 +252,7 @@ inline auto posix_load_file_impl(native_at_entry ent,T const& str,open_mode om,p
 
 inline posix_file_loader_return_value_t posix_load_address_allocation_extra_impl(::std::size_t exsz,int fd)
 {
-	std::size_t size{posix_loader_get_file_size(fd)};
+	::std::size_t size{posix_loader_get_file_size(fd)};
 	auto add{posix_load_address_extra(fd,size,exsz)};
 	return {add,add+size};
 }
@@ -290,10 +290,10 @@ public:
 	using iterator = pointer;
 	using reference = char&;
 	using const_reference = char const&;
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-	using reverse_iterator = std::reverse_iterator<iterator>;
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
 
 	pointer address_begin{};
 	pointer address_end{};
@@ -336,7 +336,7 @@ public:
 	}
 	posix_file_loader_impl& operator=(posix_file_loader_impl && __restrict other) noexcept
 	{
-		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));
+		posix_unload_address<allocation>(address_begin,static_cast<::std::size_t>(address_end-address_begin));
 		address_begin=other.address_begin;
 		address_end=other.address_end;
 		if constexpr(allocation)
@@ -382,9 +382,9 @@ public:
 	{
 		return address_begin==address_end;
 	}
-	constexpr std::size_t size() const noexcept
+	constexpr ::std::size_t size() const noexcept
 	{
-		return static_cast<std::size_t>(address_end-address_begin);
+		return static_cast<::std::size_t>(address_end-address_begin);
 	}
 	constexpr const_iterator cbegin() const noexcept
 	{
@@ -410,7 +410,7 @@ public:
 	{
 		return address_end;
 	}
-	constexpr std::size_t max_size() const noexcept
+	constexpr ::std::size_t max_size() const noexcept
 	{
 		return SIZE_MAX;
 	}
@@ -464,7 +464,7 @@ public:
 	}
 	inline void close()
 	{
-		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));
+		posix_unload_address<allocation>(address_begin,static_cast<::std::size_t>(address_end-address_begin));
 		if constexpr(allocation)
 			address_end=address_begin=nullptr;
 		else
@@ -484,7 +484,7 @@ public:
 	}
 	~posix_file_loader_impl()
 	{
-		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));
+		posix_unload_address<allocation>(address_begin,static_cast<::std::size_t>(address_end-address_begin));
 	}
 };
 

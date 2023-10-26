@@ -26,7 +26,7 @@ inline ::llvm::raw_fd_ostream* open_llvm_raw_fd_ostream_from_fd_dup2(::llvm::raw
 
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 requires (sizeof(ch_type)==1)
 class basic_raw_fd_ostream_file:public basic_raw_fd_ostream_io_observer<ch_type>
 {
@@ -39,7 +39,7 @@ public:
 	constexpr basic_raw_fd_ostream_file& operator=(basic_raw_fd_ostream_io_observer<ch_type>) noexcept=delete;
 
 	template<typename T>
-	requires std::same_as<T,::llvm::raw_fd_ostream>
+	requires ::std::same_as<T,::llvm::raw_fd_ostream>
 	explicit constexpr basic_raw_fd_ostream_file(T* p) noexcept:basic_raw_fd_ostream_io_observer<char_type>{p}{}
 	constexpr basic_raw_fd_ostream_file(basic_raw_fd_ostream_file&& __restrict other) noexcept:basic_raw_fd_ostream_io_observer<char_type>{other.os}
 	{

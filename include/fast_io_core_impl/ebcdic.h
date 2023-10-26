@@ -3,14 +3,14 @@
 namespace fast_io::details
 {
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr bool exec_charset_is_ebcdic() noexcept
 {
-	if constexpr(std::same_as<std::remove_cvref_t<char_type>,char>)
+	if constexpr(::std::same_as<::std::remove_cvref_t<char_type>,char>)
 	{
 		return static_cast<char8_t>('A')!=u8'A';
 	}
-	else if constexpr(std::same_as<std::remove_cvref_t<char_type>,wchar_t>)
+	else if constexpr(::std::same_as<::std::remove_cvref_t<char_type>,wchar_t>)
 	{
 		if constexpr(sizeof(wchar_t)==sizeof(char16_t))
 		{
@@ -35,7 +35,7 @@ inline constexpr bool exec_charset_is_ebcdic() noexcept
 	}
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr bool is_ebcdic{exec_charset_is_ebcdic<char_type>()};
 
 inline constexpr bool wexec_charset_is_utf_none_native_endian() noexcept

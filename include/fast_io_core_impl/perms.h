@@ -3,7 +3,7 @@
 namespace fast_io
 {
 //https://github.com/gcc-mirror/gcc/blob/master/libstdc++-v3/include/bits/fs_fwd.h
-enum class perms : std::uint_least32_t
+enum class perms : ::std::uint_least32_t
 {
 none		=  0,
 owner_read	=  0400,
@@ -31,25 +31,25 @@ symlink_nofollow= 0x40000
 
 constexpr perms operator&(perms x, perms y) noexcept
 {
-using utype = typename std::underlying_type<perms>::type;
+using utype = typename ::std::underlying_type<perms>::type;
 return static_cast<perms>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
 constexpr perms operator|(perms x, perms y) noexcept
 {
-using utype = typename std::underlying_type<perms>::type;
+using utype = typename ::std::underlying_type<perms>::type;
 return static_cast<perms>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
 constexpr perms operator^(perms x, perms y) noexcept
 {
-using utype = typename std::underlying_type<perms>::type;
+using utype = typename ::std::underlying_type<perms>::type;
 return static_cast<perms>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
 constexpr perms operator~(perms x) noexcept
 {
-using utype = typename std::underlying_type<perms>::type;
+using utype = typename ::std::underlying_type<perms>::type;
 return static_cast<perms>(~static_cast<utype>(x));
 }
 
@@ -61,7 +61,7 @@ inline constexpr perms& operator^=(perms& x, perms y) noexcept{return x=x^y;}
 
 namespace details::perm
 {
-template<std::integral char_type,char8_t fillch>
+template<::std::integral char_type,char8_t fillch>
 inline constexpr void print_perm_per_check(char_type* i,perms p,perms checked) noexcept
 {
 	if((p&checked)==perms::none)
@@ -75,15 +75,15 @@ inline constexpr void print_perm_per_check(char_type* i,perms p,perms checked) n
 }
 
 }
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,perms>) noexcept
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,perms>) noexcept
 {
 	return 9;
 }
 
 namespace details
 {
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type* print_status_impl(char_type* iter,perms p) noexcept
 {
 	details::perm::print_perm_per_check<char_type,u8'r'>(iter,p,perms::owner_read);
@@ -100,13 +100,13 @@ inline constexpr char_type* print_status_impl(char_type* iter,perms p) noexcept
 }
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,perms>, char_type* iter,perms p) noexcept
 {
 	return details::print_status_impl<char_type>(iter,p);
 }
 
-enum class data_sync_flags:std::uint_least8_t
+enum class data_sync_flags:::std::uint_least8_t
 {
 normal=0,
 file_data_only=0x00000001,

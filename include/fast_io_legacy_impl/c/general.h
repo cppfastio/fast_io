@@ -18,10 +18,10 @@ namespace fast_io
 
 namespace details
 {
-template<std::integral char_type>
+template<::std::integral char_type>
 inline auto fgetc_unlocked_impl(FILE* fp) noexcept
 {
-	if constexpr(std::same_as<char_type,char>||std::same_as<char_type,char8_t>)
+	if constexpr(::std::same_as<char_type,char>||::std::same_as<char_type,char8_t>)
 	{
 #if (defined(_WIN32)&&!defined(__WINE__))
 		return _fgetc_nolock(fp);
@@ -45,20 +45,20 @@ inline auto fgetc_unlocked_impl(FILE* fp) noexcept
 	}
 }
 
-template<std::integral char_type,std::integral int_type>
-requires (std::same_as<char_type,char>||std::same_as<char_type,char8_t>||std::same_as<char_type,wchar_t>)
+template<::std::integral char_type,::std::integral int_type>
+requires (::std::same_as<char_type,char>||::std::same_as<char_type,char8_t>||::std::same_as<char_type,wchar_t>)
 inline constexpr bool equals_to_eof_macro(int_type inv) noexcept
 {
-	if constexpr(std::same_as<char_type,char>||std::same_as<char_type,char8_t>)
+	if constexpr(::std::same_as<char_type,char>||::std::same_as<char_type,char8_t>)
 		return inv==EOF;
 	else
 		return inv==WEOF;
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline auto ungetc_unlocked_impl(char_type ch,FILE* fp) noexcept
 {
-	if constexpr(std::same_as<char_type,char>||std::same_as<char_type,char8_t>)
+	if constexpr(::std::same_as<char_type,char>||::std::same_as<char_type,char8_t>)
 	{
 #if defined(_MSC_VER)
 		return _ungetc_nolock(ch,fp);
@@ -92,13 +92,13 @@ inline void ferror_throw_ex_impl(FILE* fp)
 }
 }
 
-template<std::integral char_type>
-requires (std::same_as<char_type,char>
+template<::std::integral char_type>
+requires (::std::same_as<char_type,char>
 #if !defined(__serenity__)
-||std::same_as<char_type,wchar_t>
+||::std::same_as<char_type,wchar_t>
 #endif
-||std::same_as<char_type,char8_t>)
-inline std::pair<char_type,bool> try_get(basic_c_io_observer_unlocked<char_type> ciob)
+||::std::same_as<char_type,char8_t>)
+inline ::std::pair<char_type,bool> try_get(basic_c_io_observer_unlocked<char_type> ciob)
 {
 	auto ret{details::fgetc_unlocked_impl<char_type>(ciob.fp)};
 	if(details::equals_to_eof_macro<char_type>(ret))
@@ -109,8 +109,8 @@ inline std::pair<char_type,bool> try_get(basic_c_io_observer_unlocked<char_type>
 	return {static_cast<char_type>(ret),true};
 }
 
-template<std::integral char_type>
-requires (std::same_as<char_type,char>||std::same_as<char_type,wchar_t>||std::same_as<char_type,char8_t>)
+template<::std::integral char_type>
+requires (::std::same_as<char_type,char>||::std::same_as<char_type,wchar_t>||::std::same_as<char_type,char8_t>)
 inline void try_unget(basic_c_io_observer_unlocked<char_type> ciob,char_type ch) noexcept
 {
 	details::ungetc_unlocked_impl<char_type>(ch,ciob.fp);

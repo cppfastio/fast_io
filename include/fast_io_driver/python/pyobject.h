@@ -155,10 +155,10 @@ inline constexpr pyobject_io_observer io_strlike_ref(io_alias_t,pyobject_io_obse
 
 inline pyobject_file strlike_construct_define(io_strlike_type_t<char,pyobject_file>,char const* first,char const* last) noexcept
 {
-	std::size_t diff{static_cast<std::size_t>(last-first)};
+	::std::size_t diff{static_cast<::std::size_t>(last-first)};
 	if constexpr(::std::numeric_limits<Py_ssize_t>::max()<::std::numeric_limits<::std::size_t>::max())
 	{
-		constexpr Py_ssize_t max_sz{static_cast<Py_ssize_t>(std::numeric_limits<Py_ssize_t>::max()/static_cast<Py_ssize_t>(sizeof(char)))};
+		constexpr Py_ssize_t max_sz{static_cast<Py_ssize_t>(::std::numeric_limits<Py_ssize_t>::max()/static_cast<Py_ssize_t>(sizeof(char)))};
 		if(max_sz<diff)
 			::fast_io::fast_terminate();
 	}
@@ -186,8 +186,8 @@ inline pyobject_file print_alias_define(io_alias_t,pyobject_io_observer pyiob) n
 		pyob_repr.p,reinterpret_cast<char const*>(u8"utf-8"),reinterpret_cast<char const*>(u8"~E~")));
 }
 
-template<std::integral char_type>
-inline std::conditional_t<sizeof(char_type)==sizeof(char),basic_io_scatter_t<char_type>,manipulators::code_cvt_t<encoding_scheme::execution_charset,encoding_scheme::execution_charset,char>> status_io_print_forward(io_alias_type_t<char_type>,pyobject_io_observer piob) noexcept
+template<::std::integral char_type>
+inline ::std::conditional_t<sizeof(char_type)==sizeof(char),basic_io_scatter_t<char_type>,manipulators::code_cvt_t<encoding_scheme::execution_charset,encoding_scheme::execution_charset,char>> status_io_print_forward(io_alias_type_t<char_type>,pyobject_io_observer piob) noexcept
 {
 	using char_type_may_alias_const_ptr
 #if __has_cpp_attribute(gnu::may_alias)

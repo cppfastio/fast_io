@@ -12,14 +12,14 @@ namespace fast_io::details
 template<typename T>
 concept has_entroy_method_impl = requires(T&& handle)
 {
-	{random_entropy(handle)}->std::convertible_to<double>;
+	{random_entropy(handle)}->::std::convertible_to<double>;
 };
 
-template<typename input,std::size_t N>
+template<typename input,::std::size_t N>
 inline constexpr bool minimum_buffer_input_stream_require_size_constant_impl =
 	(N<ibuffer_minimum_size_define(::fast_io::io_reserve_type<typename input::input_char_type,input>));
 
-template<typename input,std::size_t N>
+template<typename input,::std::size_t N>
 concept minimum_buffer_input_stream_require_size_impl = ::fast_io::operations::decay::defines::has_ibuffer_minimum_size_operations<input>
 	&& minimum_buffer_input_stream_require_size_constant_impl<input,N>;
 
@@ -39,7 +39,7 @@ inline int my_random_entropy(int fd) noexcept
 {
 	int ent{};
 #if defined(__linux__) && defined(__NR_ioctl)
-	if(system_call<__NR_ioctl,std::ptrdiff_t>(fd,static_cast<std::uint_least32_t>(u8'R')<<8u,__builtin_addressof(ent))!=0)
+	if(system_call<__NR_ioctl,::std::ptrdiff_t>(fd,static_cast<::std::uint_least32_t>(u8'R')<<8u,__builtin_addressof(ent))!=0)
 		return 0.0;
 #else
 	if(::fast_io::posix::ioctl(fd,RNDGETENTCNT,__builtin_addressof(ent))!=0)
@@ -50,14 +50,14 @@ inline int my_random_entropy(int fd) noexcept
 #endif
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline int random_entropy(basic_posix_io_observer<ch_type> piob) noexcept
 {
 	return ::fast_io::details::my_random_entropy(piob.fd);
 }
 #endif
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_native_white_hole =
 #if defined(_WIN32)&&!defined(__WINE__)
 #if defined(_WIN32_WINDOWS) || (defined(_WIN32_WINNT)&&_WIN32_WINNT <= 0x0500)
@@ -73,7 +73,7 @@ basic_linux_getrandom<char_type>;
 basic_posix_dev_urandom<char_type>;
 #endif
 
-template<std::integral char_type,typename allocator_type=::fast_io::native_global_allocator>
+template<::std::integral char_type,typename allocator_type=::fast_io::native_global_allocator>
 using basic_ibuf_white_hole = basic_io_buffer<basic_native_white_hole<char_type>,
 	::fast_io::basic_io_buffer_traits<buffer_mode::in|buffer_mode::secure_clear,
 		allocator_type,char_type,
@@ -113,7 +113,7 @@ struct basic_white_hole_engine
 		if constexpr(::fast_io::details::has_entroy_method_impl<handletype>)
 		{
 			auto v{random_entropy(handle)};
-			constexpr std::size_t mx_value{static_cast<std::size_t>(::std::numeric_limits<::std::size_t>::digits)};
+			constexpr ::std::size_t mx_value{static_cast<::std::size_t>(::std::numeric_limits<::std::size_t>::digits)};
 			if(v>mx_value)
 				v=mx_value;
 			return static_cast<double>(v);

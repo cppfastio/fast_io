@@ -6,7 +6,7 @@ namespace fast_io
 struct posix_timezone_name
 {
 	char8_t *ptr{};
-	std::size_t n{};
+	::std::size_t n{};
 	constexpr posix_timezone_name() noexcept=default;
 	constexpr posix_timezone_name(posix_timezone_name const&)=delete;
 	posix_timezone_name& operator=(posix_timezone_name const&)=delete;
@@ -34,14 +34,14 @@ struct posix_timezone_name
 namespace posix
 {
 extern int libc_lstat(char8_t const* pathname,struct stat* buf) noexcept __asm__("lstat");
-extern std::ptrdiff_t libc_readlink(char8_t const* pathname,char8_t* buf, std::size_t bufsiz) noexcept __asm__("readlink");
+extern ::std::ptrdiff_t libc_readlink(char8_t const* pathname,char8_t* buf, ::std::size_t bufsiz) noexcept __asm__("readlink");
 }
 
 namespace details
 {
 
 inline constexpr char8_t localtimezoneinfo[]{u8"/usr/share/zoneinfo/"};
-inline constexpr std::size_t localtimezoneinfo_string_len{std::ranges::size(localtimezoneinfo)-1};
+inline constexpr ::std::size_t localtimezoneinfo_string_len{::std::ranges::size(localtimezoneinfo)-1};
 
 inline posix_timezone_name posix_localtimezone_impl() noexcept
 {
@@ -52,21 +52,21 @@ inline posix_timezone_name posix_localtimezone_impl() noexcept
 		return {};
 	}
 	using unsignedtype = ::std::make_unsigned_t<decltype(st.st_size)>;
-	if constexpr(sizeof(decltype(st.st_size))>sizeof(std::size_t))
+	if constexpr(sizeof(decltype(st.st_size))>sizeof(::std::size_t))
 	{
-		constexpr std::size_t mx{::std::numeric_limits<std::size_t>::max()};
+		constexpr ::std::size_t mx{::std::numeric_limits<::std::size_t>::max()};
 		if(mx<static_cast<unsignedtype>(st.st_size))
 		{
 			return {};
 		}
 	}
-	std::size_t real_size{static_cast<std::size_t>(st.st_size)};
+	::std::size_t real_size{static_cast<::std::size_t>(st.st_size)};
 	char8_t* bufptr{::fast_io::typed_generic_allocator_adapter<::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator>,char8_t>::allocate(real_size)};
 	posix_timezone_name nm;
 	nm.ptr=bufptr;
-	nm.n=static_cast<std::size_t>(static_cast<unsignedtype>(st.st_size));
-	std::ptrdiff_t symret{::fast_io::posix::libc_readlink(u8"/etc/localtime",bufptr,real_size)};
-	if(ret==-1||static_cast<std::size_t>(symret)!=real_size||real_size<=localtimezoneinfo_string_len)
+	nm.n=static_cast<::std::size_t>(static_cast<unsignedtype>(st.st_size));
+	::std::ptrdiff_t symret{::fast_io::posix::libc_readlink(u8"/etc/localtime",bufptr,real_size)};
+	if(ret==-1||static_cast<::std::size_t>(symret)!=real_size||real_size<=localtimezoneinfo_string_len)
 	{
 		return {};
 	}

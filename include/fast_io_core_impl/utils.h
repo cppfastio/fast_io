@@ -9,7 +9,7 @@ namespace fast_io
 
 //All compilers have supported bit_cast but most people are stick with GCC 10. We provide emulation currently.
 template<typename To,typename From>
-requires (sizeof(To)==sizeof(From) && std::is_trivially_copyable_v<To> && std::is_trivial_v<From>)
+requires (sizeof(To)==sizeof(From) && ::std::is_trivially_copyable_v<To> && ::std::is_trivial_v<From>)
 inline
 #if __cpp_lib_bit_cast >= 201806L
 constexpr
@@ -17,17 +17,17 @@ constexpr
  To bit_cast(From const& src) noexcept
 {
 #if __cpp_lib_bit_cast >= 201806L
-	return std::bit_cast<To>(src);
+	return ::std::bit_cast<To>(src);
 #else
 	To dst;
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memcpy)
 		__builtin_memcpy
 #else
-		std::memcpy
+		::std::memcpy
 #endif
 #else
-		std::memcpy
+		::std::memcpy
 #endif
 	(__builtin_addressof(dst), __builtin_addressof(src), sizeof(To));
 	return dst;
@@ -49,7 +49,7 @@ using make_noexcept_t = typename make_noexcept<R,Args...>::type;
 
 
 template<typename F>
-requires std::is_function_v<F>
+requires ::std::is_function_v<F>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -65,7 +65,7 @@ inline constexpr auto noexcept_cast(F* f) noexcept
 }
 
 template<typename F,typename... Args>
-requires std::is_function_v<F>
+requires ::std::is_function_v<F>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -88,7 +88,7 @@ decltype(auto) noexcept_call(F* f,Args&& ...args) noexcept
 	}
 #else
 #if __cpp_lib_is_constant_evaluated >= 201811
-	if (std::is_constant_evaluated())
+	if (::std::is_constant_evaluated())
 		return f(::std::forward<Args>(args)...);		//EH unwinding does not matter here
 	else
 #endif
@@ -159,45 +159,45 @@ namespace details
 template<typename T>
 using my_make_signed_t=
 #ifdef __SIZEOF_INT128__
-std::conditional_t<
-std::same_as<std::remove_cv_t<T>,__int128_t>||std::same_as<std::remove_cv_t<T>,__uint128_t>,
-std::conditional_t<std::same_as<std::remove_cv_t<T>,__int128_t>,T,
-std::conditional_t<std::same_as<T,__uint128_t volatile const>,__int128_t volatile const,
-std::conditional_t<std::same_as<T,__uint128_t const>,__int128_t const,
-std::conditional_t<std::same_as<T,__uint128_t volatile>,__int128_t volatile,
+::std::conditional_t<
+::std::same_as<::std::remove_cv_t<T>,__int128_t>||::std::same_as<::std::remove_cv_t<T>,__uint128_t>,
+::std::conditional_t<::std::same_as<::std::remove_cv_t<T>,__int128_t>,T,
+::std::conditional_t<::std::same_as<T,__uint128_t volatile const>,__int128_t volatile const,
+::std::conditional_t<::std::same_as<T,__uint128_t const>,__int128_t const,
+::std::conditional_t<::std::same_as<T,__uint128_t volatile>,__int128_t volatile,
 __int128_t>>>>,
-std::make_signed_t<std::conditional_t<std::same_as<std::remove_cv_t<T>,__int128_t>||std::same_as<std::remove_cv_t<T>,__uint128_t>,int,T>>>;
+::std::make_signed_t<::std::conditional_t<::std::same_as<::std::remove_cv_t<T>,__int128_t>||::std::same_as<::std::remove_cv_t<T>,__uint128_t>,int,T>>>;
 #else
-std::make_signed_t<T>;
+::std::make_signed_t<T>;
 #endif
 template<typename T>
 using my_make_unsigned_t=
 #ifdef __SIZEOF_INT128__
-std::conditional_t<
-std::same_as<std::remove_cv_t<T>,__int128_t>||std::same_as<std::remove_cv_t<T>,__uint128_t>,
-std::conditional_t<std::same_as<std::remove_cv_t<T>,__uint128_t>,T,
-std::conditional_t<std::same_as<T,__int128_t volatile const>,__uint128_t volatile const,
-std::conditional_t<std::same_as<T,__int128_t const>,__uint128_t const,
-std::conditional_t<std::same_as<T,__int128_t volatile>,__uint128_t volatile,
+::std::conditional_t<
+::std::same_as<::std::remove_cv_t<T>,__int128_t>||::std::same_as<::std::remove_cv_t<T>,__uint128_t>,
+::std::conditional_t<::std::same_as<::std::remove_cv_t<T>,__uint128_t>,T,
+::std::conditional_t<::std::same_as<T,__int128_t volatile const>,__uint128_t volatile const,
+::std::conditional_t<::std::same_as<T,__int128_t const>,__uint128_t const,
+::std::conditional_t<::std::same_as<T,__int128_t volatile>,__uint128_t volatile,
 __uint128_t>>>>,
-std::make_unsigned_t<std::conditional_t<std::same_as<std::remove_cv_t<T>,__int128_t>||std::same_as<std::remove_cv_t<T>,__uint128_t>,int,T>>>;
+::std::make_unsigned_t<::std::conditional_t<::std::same_as<::std::remove_cv_t<T>,__int128_t>||::std::same_as<::std::remove_cv_t<T>,__uint128_t>,int,T>>>;
 #else
-std::make_unsigned_t<T>;
+::std::make_unsigned_t<T>;
 #endif
 
 template<typename T>
 concept my_integral = 
-std::integral<T>
+::std::integral<T>
 #ifdef __SIZEOF_INT128__
-||std::same_as<std::remove_cv_t<T>,__uint128_t>||std::same_as<std::remove_cv_t<T>,__int128_t>
+||::std::same_as<::std::remove_cv_t<T>,__uint128_t>||::std::same_as<::std::remove_cv_t<T>,__int128_t>
 #endif
 ;
 
 template<typename T>
 concept my_signed_integral = 
-std::signed_integral<T>
+::std::signed_integral<T>
 #ifdef __SIZEOF_INT128__
-||std::same_as<std::remove_cv_t<T>,__int128_t>
+||::std::same_as<::std::remove_cv_t<T>,__int128_t>
 #endif
 ;
 template<typename T>
@@ -206,24 +206,24 @@ concept my_unsigned_integral = my_integral<T>&&!my_signed_integral<T>;
 
 template<typename T>
 concept my_floating_point = 
-std::floating_point<T>
+::std::floating_point<T>
 #ifdef __SIZEOF_FLOAT16__
-||std::same_as<std::remove_cv_t<T>,__float16>
+||::std::same_as<::std::remove_cv_t<T>,__float16>
 #endif
 #ifdef __SIZEOF_FLOAT80__
-||std::same_as<std::remove_cv_t<T>,__float80>
+||::std::same_as<::std::remove_cv_t<T>,__float80>
 #endif
 #ifdef __SIZEOF_FLOAT128__
-||std::same_as<std::remove_cv_t<T>,__float128>
+||::std::same_as<::std::remove_cv_t<T>,__float128>
 #endif
 ;
 
 #ifdef __SIZEOF_INT128__ 
-inline constexpr __uint128_t calculate_byteswap_ff(std::size_t v) noexcept
+inline constexpr __uint128_t calculate_byteswap_ff(::std::size_t v) noexcept
 {
 	return static_cast<__uint128_t>(0xff)<<(v*8);
 }
-template<std::size_t v>
+template<::std::size_t v>
 inline constexpr __uint128_t uint128_t_bsv{calculate_byteswap_ff(v)};
 #endif
 
@@ -300,8 +300,8 @@ inline constexpr U byte_swap(U a) noexcept
 		return __builtin_bswap128(a);
 #else
 	{
-		std::uint_least64_t high(__builtin_bswap64(static_cast<std::uint_least64_t>(a>>64)));
-		std::uint_least64_t low(__builtin_bswap64(static_cast<std::uint_least64_t>(a)));
+		::std::uint_least64_t high(__builtin_bswap64(static_cast<::std::uint_least64_t>(a>>64)));
+		::std::uint_least64_t low(__builtin_bswap64(static_cast<::std::uint_least64_t>(a)));
 		return (static_cast<__uint128_t>(low)<<64)|static_cast<__uint128_t>(high);
 	}
 #endif
@@ -316,7 +316,7 @@ inline constexpr U byte_swap(U a) noexcept
 #else
 
 #if __cpp_lib_is_constant_evaluated>=201811L
-	if (std::is_constant_evaluated())
+	if (::std::is_constant_evaluated())
 	{
 		return details::byte_swap_naive_impl(a);
 	}
@@ -341,9 +341,9 @@ inline constexpr U byte_swap(U a) noexcept
 template<details::my_unsigned_integral U>
 inline constexpr U big_endian(U u) noexcept
 {
-	if constexpr(sizeof(U)==1||std::endian::big==std::endian::native)
+	if constexpr(sizeof(U)==1||::std::endian::big==::std::endian::native)
 		return u;
-	else if constexpr(std::endian::little==std::endian::native)
+	else if constexpr(::std::endian::little==::std::endian::native)
 		return byte_swap(u);
 	else
 		return details::byte_swap_naive_impl(u);	//support architectures like PDP11
@@ -352,9 +352,9 @@ inline constexpr U big_endian(U u) noexcept
 template<details::my_unsigned_integral U>
 inline constexpr U little_endian(U u) noexcept
 {
-	if constexpr(sizeof(U)==1||std::endian::little==std::endian::native)
+	if constexpr(sizeof(U)==1||::std::endian::little==::std::endian::native)
 		return u;
-	else if constexpr(std::endian::big==std::endian::native)
+	else if constexpr(::std::endian::big==::std::endian::native)
 		return byte_swap(u);
 	else
 		return details::byte_swap_naive_impl(u);	//support architectures like PDP11
@@ -368,7 +368,7 @@ inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
 constexpr
 #endif
-void compile_time_type_punning_copy_n(range_type const* first,std::size_t bytes,std::byte* out)
+void compile_time_type_punning_copy_n(range_type const* first,::std::size_t bytes,::std::byte* out)
 {
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
 #if __cpp_if_consteval >= 202106L
@@ -377,7 +377,7 @@ void compile_time_type_punning_copy_n(range_type const* first,std::size_t bytes,
 	if(__builtin_is_constant_evaluated())
 #endif
 	{
-		if constexpr(std::same_as<range_type,std::byte>)
+		if constexpr(::std::same_as<range_type,::std::byte>)
 		{
 			for(auto i{first},e{first+bytes};i!=e;++i)
 			{
@@ -391,7 +391,7 @@ void compile_time_type_punning_copy_n(range_type const* first,std::size_t bytes,
 			auto first_end{first+bytes/sizeof(range_type)};
 			for(auto i{first};i!=first_end;++i)
 			{
-				::fast_io::freestanding::array<std::byte,sizeof(range_type)> arr{std::bit_cast<::fast_io::freestanding::array<std::byte,sizeof(range_type)>>(*i)};
+				::fast_io::freestanding::array<::std::byte,sizeof(range_type)> arr{::std::bit_cast<::fast_io::freestanding::array<::std::byte,sizeof(range_type)>>(*i)};
 				j=non_overlapped_copy_n(arr.data(),arr.size(),j);
 			}
 		}
@@ -405,8 +405,8 @@ void compile_time_type_punning_copy_n(range_type const* first,std::size_t bytes,
 }
 
 template<::std::input_or_output_iterator output_iter,typename T>
-requires (std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(std::uintmax_t))
-inline constexpr output_iter my_fill_n(output_iter first,std::size_t count, T value)
+requires (::std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(::std::uintmax_t))
+inline constexpr output_iter my_fill_n(output_iter first,::std::size_t count, T value)
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -421,7 +421,7 @@ inline constexpr output_iter my_fill_n(output_iter first,std::size_t count, T va
 #endif
 	{
 	using output_value_type = ::std::iter_value_t<output_iter>;
-	if constexpr(::std::contiguous_iterator<output_iter>&&std::is_trivially_copyable_v<output_value_type>&&std::integral<output_value_type>&&sizeof(output_value_type)==1)
+	if constexpr(::std::contiguous_iterator<output_iter>&&::std::is_trivially_copyable_v<output_value_type>&&::std::integral<output_value_type>&&sizeof(output_value_type)==1)
 	{
 		if(count)[[likely]]
 			my_memset(::std::to_address(first),static_cast<int>(value),count);
@@ -434,24 +434,24 @@ inline constexpr output_iter my_fill_n(output_iter first,std::size_t count, T va
 }
 
 template<::std::forward_iterator fwd_iter,typename T>
-requires (std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(std::uintmax_t))
+requires (::std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(::std::uintmax_t))
 inline constexpr void my_fill(fwd_iter first,fwd_iter last,T value)
 {
 	using fwd_iter_value_type = ::std::iter_value_t<fwd_iter>;
-	if constexpr(::std::contiguous_iterator<fwd_iter>&&std::is_trivially_copyable_v<fwd_iter_value_type>&&std::integral<fwd_iter_value_type>&&sizeof(fwd_iter_value_type)==1)
+	if constexpr(::std::contiguous_iterator<fwd_iter>&&::std::is_trivially_copyable_v<fwd_iter_value_type>&&::std::integral<fwd_iter_value_type>&&sizeof(fwd_iter_value_type)==1)
 		::fast_io::freestanding::fill_n(first,last-first,value);
 	else
 		::fast_io::freestanding::fill(first,last,value);
 }
 
-template<std::integral char_type,std::size_t n>
+template<::std::integral char_type,::std::size_t n>
 requires(n!=0)
-inline constexpr std::size_t string_literal_size(char_type const(&)[n])
+inline constexpr ::std::size_t string_literal_size(char_type const(&)[n])
 {
 	return n-1;
 }
 
-template<std::integral char_type,std::size_t n,::std::random_access_iterator output_iter>
+template<::std::integral char_type,::std::size_t n,::std::random_access_iterator output_iter>
 requires(n!=0)
 inline constexpr output_iter copy_string_literal(char_type const(&s)[n],output_iter result)
 {
@@ -466,25 +466,25 @@ inline constexpr output_iter copy_scatter(basic_io_scatter_t<::std::iter_value_t
 }
 
 template<my_integral T>
-inline constexpr T compile_time_pow(T base,std::size_t pow) noexcept
+inline constexpr T compile_time_pow(T base,::std::size_t pow) noexcept
 {
 	T t=1;
-	for(std::size_t i{};i!=pow;++i)
+	for(::std::size_t i{};i!=pow;++i)
 		t*=base;
 	return t;
 }
 
-template<my_integral T,std::size_t pow>
+template<my_integral T,::std::size_t pow>
 inline constexpr T compile_pow10{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(10,pow)};
 
-template<my_integral T,std::size_t pow>
+template<my_integral T,::std::size_t pow>
 inline constexpr T compile_pow5{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(5,pow)};
 
-template<my_integral T,std::size_t pow>
+template<my_integral T,::std::size_t pow>
 inline constexpr T compile_pow2{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(2,pow)};
 
 #if 0
-inline constexpr std::uint_least64_t fast_lup_table[]{
+inline constexpr ::std::uint_least64_t fast_lup_table[]{
       4294967296,  8589934582,  8589934582,  8589934582,  12884901788,
       12884901788, 12884901788, 17179868184, 17179868184, 17179868184,
       21474826480, 21474826480, 21474826480, 21474826480, 25769703776,
@@ -493,7 +493,7 @@ inline constexpr std::uint_least64_t fast_lup_table[]{
       38554705664, 38554705664, 41949672960, 41949672960, 41949672960,
       42949672960, 42949672960};
 
-inline constexpr std::uint_least64_t fast_lup_switch(std::uint_least32_t value) noexcept
+inline constexpr ::std::uint_least64_t fast_lup_switch(::std::uint_least32_t value) noexcept
 {
 	switch(value)
 	{
@@ -521,27 +521,27 @@ true
 #endif
 };
 
-using optimal_print_unsigned_type = std::conditional_t<is_wasi_environment,::std::uint_least64_t,
-std::conditional_t<(sizeof(std::size_t)<sizeof(unsigned)),unsigned,std::size_t>>;
+using optimal_print_unsigned_type = ::std::conditional_t<is_wasi_environment,::std::uint_least64_t,
+::std::conditional_t<(sizeof(::std::size_t)<sizeof(unsigned)),unsigned,::std::size_t>>;
 
 template<typename T>
 inline constexpr bool need_seperate_print{(sizeof(T)>sizeof(optimal_print_unsigned_type))&&(sizeof(T)%sizeof(optimal_print_unsigned_type)==0)&&(sizeof(T)/sizeof(optimal_print_unsigned_type)==2)};
 
-template<std::uint_least32_t base,bool ryu_mode=false,std::size_t mx_size=std::numeric_limits<std::size_t>::max(),my_unsigned_integral U>
-constexpr std::size_t chars_len(U value) noexcept
+template<::std::uint_least32_t base,bool ryu_mode=false,::std::size_t mx_size=::std::numeric_limits<::std::size_t>::max(),my_unsigned_integral U>
+constexpr ::std::size_t chars_len(U value) noexcept
 {
 #if 0
-	if constexpr(base==10&&2<=sizeof(U)&&sizeof(U)<=4&&sizeof(std::size_t)>=8&&!ryu_mode)
+	if constexpr(base==10&&2<=sizeof(U)&&sizeof(U)<=4&&sizeof(::std::size_t)>=8&&!ryu_mode)
 	{
-		return (static_cast<std::uint_least32_t>(value) + fast_lup_switch(
+		return (static_cast<::std::uint_least32_t>(value) + fast_lup_switch(
 #if defined(_MSC_VER) && !defined(__clang__)
-		std::countl_zero(static_cast<std::uint_least32_t>(value))
+		::std::countl_zero(static_cast<::std::uint_least32_t>(value))
 #elif __has_builtin(__builtin_ia32_lzcnt_u32)
-		__builtin_ia32_lzcnt_u32(static_cast<std::uint_least32_t>(value))
+		__builtin_ia32_lzcnt_u32(static_cast<::std::uint_least32_t>(value))
 #elif __has_builtin(__builtin_clz)
-		__builtin_clz(static_cast<std::uint_least32_t>(value) | 1)
+		__builtin_clz(static_cast<::std::uint_least32_t>(value) | 1)
 #else
-		std::countl_zero(static_cast<std::uint_least32_t>(value))
+		::std::countl_zero(static_cast<::std::uint_least32_t>(value))
 #endif
 		)) >> 32;
 	}
@@ -551,7 +551,7 @@ constexpr std::size_t chars_len(U value) noexcept
 	{
 		if constexpr(15<sizeof(U))
 		{
-			using M = std::remove_cvref_t<U>;
+			using M = ::std::remove_cvref_t<U>;
 			if constexpr(16<sizeof(M)||!ryu_mode)
 			{
 			if constexpr(39<=mx_size)
@@ -689,30 +689,30 @@ constexpr std::size_t chars_len(U value) noexcept
 	}
 	else if constexpr(base==2u||base==4u||base==8u||base==16u||base==32u)
 	{
-		constexpr std::size_t bits{sizeof(U)*8u};
+		constexpr ::std::size_t bits{sizeof(U)*8u};
 #if defined(__SIZEOF_INT128__)
 		if constexpr(sizeof(U)==sizeof(__uint128_t))
 		{
-			std::uint_least64_t high{static_cast<std::uint_least64_t>(value>>64u)};
-			constexpr std::uint_least64_t zero{};
-			std::size_t base2len;
+			::std::uint_least64_t high{static_cast<::std::uint_least64_t>(value>>64u)};
+			constexpr ::std::uint_least64_t zero{};
+			::std::size_t base2len;
 			if(high==zero)
 			{
-				constexpr std::uint_least64_t one_constant{1};
-				std::uint_least64_t low{static_cast<std::uint_least64_t>(value)|one_constant};
-				constexpr std::size_t bitsdv2{bits>>1u};
-				base2len=bitsdv2-static_cast<std::size_t>(std::countl_zero(low));
+				constexpr ::std::uint_least64_t one_constant{1};
+				::std::uint_least64_t low{static_cast<::std::uint_least64_t>(value)|one_constant};
+				constexpr ::std::size_t bitsdv2{bits>>1u};
+				base2len=bitsdv2-static_cast<::std::size_t>(::std::countl_zero(low));
 			}
 			else
 			{
-				base2len=bits-static_cast<std::size_t>(std::countl_zero(high));
+				base2len=bits-static_cast<::std::size_t>(::std::countl_zero(high));
 			}
 			if constexpr(base==2)
 				return base2len;
 			else
 			{
-				constexpr std::size_t one{1};
-				constexpr std::size_t log2base{static_cast<std::size_t>(std::countr_zero(base))};
+				constexpr ::std::size_t one{1};
+				constexpr ::std::size_t log2base{static_cast<::std::size_t>(::std::countr_zero(base))};
 				return (base2len-one)/log2base+one;
 			}
 		}
@@ -720,23 +720,23 @@ constexpr std::size_t chars_len(U value) noexcept
 #endif
 		{
 			constexpr U one_constant{1};
-			std::size_t const base2len{bits-static_cast<std::size_t>(std::countl_zero(static_cast<U>(value|one_constant)))};
+			::std::size_t const base2len{bits-static_cast<::std::size_t>(::std::countl_zero(static_cast<U>(value|one_constant)))};
 			if constexpr(base==2)
 				return base2len;
 			else
 			{
-				constexpr std::size_t one{1};
-				constexpr std::size_t log2base{static_cast<std::size_t>(std::countr_zero(base))};
+				constexpr ::std::size_t one{1};
+				constexpr ::std::size_t log2base{static_cast<::std::size_t>(::std::countr_zero(base))};
 				return (base2len-one)/log2base+one;
 			}
 		}
 	}
 	else
 	{
-		constexpr std::uint_least32_t base2(base  * base);
-		constexpr std::uint_least32_t base3(base2 * base);
-		constexpr std::uint_least32_t base4(base3 * base);
-		for (std::size_t n(1);;n+=4)
+		constexpr ::std::uint_least32_t base2(base  * base);
+		constexpr ::std::uint_least32_t base3(base2 * base);
+		constexpr ::std::uint_least32_t base4(base3 * base);
+		for (::std::size_t n(1);;n+=4)
 		{
 			if (value < base)
 				return n;
@@ -755,7 +755,7 @@ template<my_integral T>
 inline constexpr my_make_unsigned_t<T> cal_int_max() noexcept
 {
 #if defined(_MSC_VER) && !defined(__clang__)
-	return static_cast<my_make_unsigned_t<T>>(std::numeric_limits<T>::max());
+	return static_cast<my_make_unsigned_t<T>>(::std::numeric_limits<T>::max());
 #else
 	my_make_unsigned_t<T> n{};
 	--n;
@@ -773,35 +773,35 @@ inline constexpr T get_int_max() noexcept
 template<my_integral T>
 inline constexpr auto get_int_max_unsigned() noexcept
 {
-	constexpr my_make_unsigned_t<std::remove_cvref_t<T>> v{static_cast<my_make_unsigned_t<std::remove_cvref_t<T>>>(cal_int_max<std::remove_cvref_t<T>>())};
+	constexpr my_make_unsigned_t<::std::remove_cvref_t<T>> v{static_cast<my_make_unsigned_t<::std::remove_cvref_t<T>>>(cal_int_max<::std::remove_cvref_t<T>>())};
 	return v;
 }
 template<my_integral T,char8_t base = 10>
-inline constexpr std::size_t cal_max_int_size() noexcept
+inline constexpr ::std::size_t cal_max_int_size() noexcept
 {
-	std::size_t i{};
+	::std::size_t i{};
 	auto n(get_int_max_unsigned<T>());
 	for(;n;++i)
 		n/=base;
 	return i;
 }
 
-//static_assert(cal_max_int_size<std::uint_least64_t,10>()==20);
-//static_assert(cal_max_int_size<std::uint_least32_t,10>()==10);
-template<typename char_type,std::size_t N>
+//static_assert(cal_max_int_size<::std::uint_least64_t,10>()==20);
+//static_assert(cal_max_int_size<::std::uint_least32_t,10>()==10);
+template<typename char_type,::std::size_t N>
 inline constexpr basic_io_scatter_t<char_type> tsc(char_type const (&a)[N]) noexcept
 {
 	return {a,N-1};
 }
 
-template<typename char_type,std::size_t N>
-inline constexpr std::size_t cal_array_size(char_type const (&)[N]) noexcept
+template<typename char_type,::std::size_t N>
+inline constexpr ::std::size_t cal_array_size(char_type const (&)[N]) noexcept
 {
 	return N-1;
 }
 
-template<std::integral char_type,bool iobuf=false>
-inline constexpr std::size_t cal_buffer_size()
+template<::std::integral char_type,bool iobuf=false>
+inline constexpr ::std::size_t cal_buffer_size()
 {
 #ifdef FAST_IO_BUFFER_SIZE
 	static_assert(sizeof(char_type)<=FAST_IO_BUFFER_SIZE);

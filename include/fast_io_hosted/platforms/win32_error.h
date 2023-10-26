@@ -14,7 +14,7 @@ EOTHER
 #endif
 };
 
-inline constexpr int win32_code_to_errno(std::uint_least32_t code) noexcept
+inline constexpr int win32_code_to_errno(::std::uint_least32_t code) noexcept
 {
 	switch(code)
 	{
@@ -24,7 +24,7 @@ return eother_value;
 	};
 }
 
-inline constexpr std::uint_least32_t errno_to_win32_code(int code) noexcept
+inline constexpr ::std::uint_least32_t errno_to_win32_code(int code) noexcept
 {
 	switch(code)
 	{
@@ -34,7 +34,7 @@ return 0x00000057;
 	};
 }
 
-inline constexpr bool win32_code_equals_errno(std::uint_least32_t code,int ec) noexcept
+inline constexpr bool win32_code_equals_errno(::std::uint_least32_t code,int ec) noexcept
 {
 	auto e{win32_code_to_errno(code)};
 	if(e==eother_value)
@@ -44,7 +44,7 @@ inline constexpr bool win32_code_equals_errno(std::uint_least32_t code,int ec) n
 	return e==ec;
 }
 
-inline bool nt_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code,std::uint_least32_t e) noexcept
+inline bool nt_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,::std::uint_least32_t e) noexcept
 {
 	if(nt_domain_value==domain)
 	{
@@ -68,7 +68,7 @@ inline bool nt_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code,st
 	}
 }
 
-inline bool win32_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code,std::uint_least32_t e) noexcept
+inline bool win32_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,::std::uint_least32_t e) noexcept
 {
 	if(win32_domain_value==domain)
 	{
@@ -80,7 +80,7 @@ inline bool win32_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code
 #ifdef _WIN32_WINDOWS
 		return false;
 #else
-		return ::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<std::uint_least32_t>(code))==e;
+		return ::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<::std::uint_least32_t>(code))==e;
 #endif
 	}
 	else if(posix_domain_value==domain)
@@ -93,27 +93,27 @@ inline bool win32_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code
 	}
 }
 
-inline bool posix_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code,int e) noexcept
+inline bool posix_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,int e) noexcept
 {
 	if(posix_domain_value==domain)
 	{
-		using common_type = std::common_type_t<std::uintptr_t,unsigned>;
+		using common_type = ::std::common_type_t<::std::uintptr_t,unsigned>;
 		return static_cast<common_type>(static_cast<unsigned>(e))==code;
 	}
 	else if(win32_domain_value==domain||nt_domain_value==domain)
 	{
-		std::uint_least32_t win32cd{};
+		::std::uint_least32_t win32cd{};
 		if(nt_domain_value==domain)
 		{
 #ifdef _WIN32_WINDOWS
 			win32cd=0x00000057;			
 #else
-			win32cd=::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<std::uint_least32_t>(code));
+			win32cd=::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<::std::uint_least32_t>(code));
 #endif
 		}
 		else
 		{
-			win32cd=static_cast<std::uint_least32_t>(code);
+			win32cd=static_cast<::std::uint_least32_t>(code);
 		}
 		return win32_code_equals_errno(win32cd,static_cast<int>(static_cast<unsigned>(e)));
 	}
@@ -123,18 +123,18 @@ inline bool posix_code_equivalent_impl(std::uintptr_t domain,std::uintptr_t code
 	}
 }
 
-inline constexpr std::uint_least32_t to_win32_code_impl(std::uintptr_t domain,std::uintptr_t code) noexcept
+inline constexpr ::std::uint_least32_t to_win32_code_impl(::std::uintptr_t domain,::std::uintptr_t code) noexcept
 {
 	if(win32_domain_value==domain)
 	{
-		return static_cast<std::uint_least32_t>(code);
+		return static_cast<::std::uint_least32_t>(code);
 	}
 	else if(nt_domain_value==domain)
 	{
 #ifdef _WIN32_WINDOWS
 		return 0x00000057;
 #else
-		return ::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<std::uint_least32_t>(code));
+		return ::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<::std::uint_least32_t>(code));
 #endif
 	}
 	else if(posix_domain_value==domain)
@@ -147,26 +147,26 @@ inline constexpr std::uint_least32_t to_win32_code_impl(std::uintptr_t domain,st
 	}
 }
 
-inline constexpr int to_posix_code_impl(std::uintptr_t domain,std::uintptr_t code) noexcept
+inline constexpr int to_posix_code_impl(::std::uintptr_t domain,::std::uintptr_t code) noexcept
 {
 	if(posix_domain_value==domain)
 	{
-		return win32_code_to_errno(static_cast<std::uint_least32_t>(code));
+		return win32_code_to_errno(static_cast<::std::uint_least32_t>(code));
 	}
 	else if(win32_domain_value==domain||nt_domain_value==domain)
 	{
-		std::uint_least32_t win32cd{};
+		::std::uint_least32_t win32cd{};
 		if(nt_domain_value==domain)
 		{
 #ifdef _WIN32_WINDOWS
 			return 0x00000057;
 #else
-			win32cd=::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<std::uint_least32_t>(code));
+			win32cd=::fast_io::win32::nt::rtl_nt_status_to_dos_error(static_cast<::std::uint_least32_t>(code));
 #endif
 		}
 		else
 		{
-			win32cd=static_cast<std::uint_least32_t>(code);
+			win32cd=static_cast<::std::uint_least32_t>(code);
 		}
 		return win32_code_to_errno(win32cd);
 	}

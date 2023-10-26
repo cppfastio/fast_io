@@ -4,10 +4,10 @@ namespace fast_io
 {
 
 template<typename T>
-inline constexpr io_scatter_status_t scatter_size_to_status(std::size_t sz,basic_io_scatter_t<T> const *base,::std::size_t len) noexcept
+inline constexpr io_scatter_status_t scatter_size_to_status(::std::size_t sz,basic_io_scatter_t<T> const *base,::std::size_t len) noexcept
 {
-	std::size_t total{sz};
-	for(std::size_t i{};i!=len;++i)
+	::std::size_t total{sz};
+	for(::std::size_t i{};i!=len;++i)
 	{
 		::std::size_t blen{base[i].len};
 		if(total<blen)[[unlikely]]

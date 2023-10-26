@@ -89,7 +89,7 @@ inline constexpr ::fast_io::parse_code scan_context_define_whole_string_eof_impl
 
 }
 
-template<std::integral char_type,::fast_io::manipulators::scalar_flags flags,typename traits,typename allocator_type>
+template<::std::integral char_type,::fast_io::manipulators::scalar_flags flags,typename traits,typename allocator_type>
 inline constexpr io_type_t<scan_string_context> scan_context_type(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,::std::basic_string<char_type,traits,allocator_type>&>>) noexcept
 {
 	return {};
@@ -105,7 +105,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	return ::fast_io::details::scan_context_define_string_impl<flags.noskipws,flags.line>(skip_space_done.copying,first,last,str.reference);
 }
 
-template<::fast_io::manipulators::scalar_flags flags,std::integral char_type,typename traits,typename allocator_type>
+template<::fast_io::manipulators::scalar_flags flags,::std::integral char_type,typename traits,typename allocator_type>
 inline constexpr ::fast_io::parse_code scan_context_eof_define(io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,::std::basic_string<char_type,traits,allocator_type>&>>,
 	scan_string_context skip_space_done,::fast_io::manipulators::scalar_manip_t<flags,::std::basic_string<char_type,traits,allocator_type>&> str) noexcept
 {
@@ -120,14 +120,14 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(io_reserve_type_t
 		return ::fast_io::details::scan_context_eof_string_define_impl(skip_space_done.copying);
 }
 
-template<std::integral char_type,typename traits,typename allocator_type>
+template<::std::integral char_type,typename traits,typename allocator_type>
 inline constexpr ::fast_io::manipulators::scalar_manip_t<::fast_io::details::string_default_scalar_flags<false,false>,::std::basic_string<char_type,traits,allocator_type>&> scan_alias_define(io_alias_t,::std::basic_string<char_type,traits,allocator_type>& t) noexcept
 {
 	return {t};
 }
 
 
-template<std::integral char_type,typename traits,typename allocator_type>
+template<::std::integral char_type,typename traits,typename allocator_type>
 inline constexpr io_type_t<::fast_io::scan_string_context> scan_context_type(io_reserve_type_t<char_type,::fast_io::manipulators::whole_get_t<::std::basic_string<char_type,traits,allocator_type>&>>) noexcept
 {
 	return {};
@@ -143,7 +143,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	return ::fast_io::details::scan_context_define_whole_string_impl(ctx.copying,first,last,str.reference);
 }
 
-template<std::integral char_type,typename traits,typename allocator_type>
+template<::std::integral char_type,typename traits,typename allocator_type>
 inline constexpr ::fast_io::parse_code scan_context_eof_define(io_reserve_type_t<char_type,::fast_io::manipulators::whole_get_t<::std::basic_string<char_type,traits,allocator_type>&>>,
 	::fast_io::scan_string_context ctx,::fast_io::manipulators::whole_get_t<::std::basic_string<char_type,traits,allocator_type>&> str) noexcept
 {
@@ -153,13 +153,13 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(io_reserve_type_t
 inline namespace manipulators
 {
 
-template<std::integral char_type,typename traits,typename allocator_type>
+template<::std::integral char_type,typename traits,typename allocator_type>
 inline constexpr ::fast_io::manipulators::scalar_manip_t<::fast_io::details::string_default_scalar_flags<false,true>,::std::basic_string<char_type,traits,allocator_type>&> line_get(::std::basic_string<char_type,traits,allocator_type>& line_str) noexcept
 {
 	return {line_str};
 }
 
-template<std::integral char_type,typename traits,typename allocator_type>
+template<::std::integral char_type,typename traits,typename allocator_type>
 inline constexpr ::fast_io::manipulators::whole_get_t<::std::basic_string<char_type,traits,allocator_type>&> whole_get(::std::basic_string<char_type,traits,allocator_type>& whole_str) noexcept
 {
 	return {whole_str};

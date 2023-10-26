@@ -652,31 +652,31 @@ inline int open_socket_impl(sock_family d,sock_type t,open_mode m,sock_protocol 
 }
 
 
-inline std::size_t posix_socket_write_impl(int fd, void const* data,std::size_t to_write)
+inline ::std::size_t posix_socket_write_impl(int fd, void const* data,::std::size_t to_write)
 {
 #if defined(__linux__) && defined(__NR_send)
-	std::ptrdiff_t written{system_call<__NR_send,std::ptrdiff_t>(fd,data,to_write)};
+	::std::ptrdiff_t written{system_call<__NR_send,::std::ptrdiff_t>(fd,data,to_write)};
 	system_call_throw_error(written);
-	return static_cast<std::size_t>(written);
+	return static_cast<::std::size_t>(written);
 #else
-	std::ptrdiff_t written{send(fd,data,to_write,0)};
+	::std::ptrdiff_t written{send(fd,data,to_write,0)};
 	if(written<0)
 		throw_posix_error();
-	return static_cast<std::size_t>(written);
+	return static_cast<::std::size_t>(written);
 #endif
 }
 
-inline std::size_t posix_socket_read_impl(int fd, void* data,std::size_t to_write)
+inline ::std::size_t posix_socket_read_impl(int fd, void* data,::std::size_t to_write)
 {
 #if defined(__linux__) && defined(__NR_recv)
-	std::ptrdiff_t written{system_call<__NR_recv,std::ptrdiff_t>(fd,data,to_write)};
+	::std::ptrdiff_t written{system_call<__NR_recv,::std::ptrdiff_t>(fd,data,to_write)};
 	system_call_throw_error(written);
-	return static_cast<std::size_t>(written);
+	return static_cast<::std::size_t>(written);
 #else
-	std::ptrdiff_t written{recv(fd,data,to_write,0)};
+	::std::ptrdiff_t written{recv(fd,data,to_write,0)};
 	if(written<0)
 		throw_posix_error();
-	return static_cast<std::size_t>(written);
+	return static_cast<::std::size_t>(written);
 #endif
 }
 

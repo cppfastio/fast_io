@@ -58,7 +58,7 @@ namespace details
 {
 
 template<bool noskipws,bool line,bool ctxread=false,::std::integral char_type,typename T>
-inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_strlike_impl(std::conditional_t<ctxread,bool,bool&> skip_space_done,char_type const* first,char_type const* last,
+inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_strlike_impl(::std::conditional_t<ctxread,bool,bool&> skip_space_done,char_type const* first,char_type const* last,
 	T ref)
 {
 	auto it{first};
@@ -99,7 +99,7 @@ inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_s
 }
 
 template<bool ctxread=false,::std::integral char_type,typename T>
-inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_strlike_getall_impl(std::conditional_t<ctxread,bool,bool&> skip_space_done,char_type const* first,char_type const* last,
+inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_strlike_getall_impl(::std::conditional_t<ctxread,bool,bool&> skip_space_done,char_type const* first,char_type const* last,
 	T ref)
 {
 	if(!skip_space_done)
@@ -121,11 +121,11 @@ inline constexpr ::fast_io::parse_code scan_context_eof_strlike_define_impl(bool
 
 }
 
-template<std::integral char_type,::fast_io::manipulators::scalar_flags flags,
+template<::std::integral char_type,::fast_io::manipulators::scalar_flags flags,
 	typename T>
 inline constexpr io_type_t<::std::conditional_t<
-	(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>
-	&&::std::same_as<typename std::remove_cvref_t<T>::char_type,char_type>),
+	(::fast_io::buffer_strlike<char_type,typename ::std::remove_cvref_t<T>::value_type>
+	&&::std::same_as<typename ::std::remove_cvref_t<T>::char_type,char_type>),
 	::fast_io::details::str_get_all_context,
 	::fast_io::details::basic_concat_buffer<char_type>>> scan_context_type(
 	io_reserve_type_t<char_type,
@@ -144,9 +144,9 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	::fast_io::manipulators::scalar_manip_t<flags,
 	::fast_io::manipulators::basic_strlike_get<T>> ref)
 {
-	using value_type = std::remove_cvref_t<T>;
-	using undefttype_char_type = typename std::remove_cvref_t<value_type>::char_type;
-	if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
+	using value_type = ::std::remove_cvref_t<T>;
+	using undefttype_char_type = typename ::std::remove_cvref_t<value_type>::char_type;
+	if constexpr(::fast_io::buffer_strlike<char_type,typename ::std::remove_cvref_t<T>::value_type>&&::std::same_as<undefttype_char_type,char_type>)
 	{
 		return ::fast_io::details::scan_context_define_strlike_impl<flags.noskipws,flags.line>(ctx.copying,first,last,ref.reference.reference);
 	}
@@ -171,7 +171,7 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	}
 }
 
-template<::fast_io::manipulators::scalar_flags flags,std::integral char_type,typename ctx_type,typename T>
+template<::fast_io::manipulators::scalar_flags flags,::std::integral char_type,typename ctx_type,typename T>
 inline constexpr ::fast_io::parse_code scan_context_eof_define(
 	io_reserve_type_t<char_type,::fast_io::manipulators::scalar_manip_t<flags,
 	::fast_io::manipulators::basic_strlike_get<T>>>,
@@ -179,11 +179,11 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(
 	::fast_io::manipulators::scalar_manip_t<flags,
 	::fast_io::manipulators::basic_strlike_get<T>> ref)
 {
-	using value_type = std::remove_cvref_t<T>;
-	using undefttype_char_type = typename std::remove_cvref_t<value_type>::char_type;
+	using value_type = ::std::remove_cvref_t<T>;
+	using undefttype_char_type = typename ::std::remove_cvref_t<value_type>::char_type;
 	if constexpr(flags.line||flags.noskipws)
 	{
-		if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
+		if constexpr(::fast_io::buffer_strlike<char_type,typename ::std::remove_cvref_t<T>::value_type>&&::std::same_as<undefttype_char_type,char_type>)
 		{
 			if(obuffer_begin(ref.reference.reference)==obuffer_curr(ref.reference.reference))
 			{
@@ -217,7 +217,7 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(
 	}
 	else
 	{
-		if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
+		if constexpr(::fast_io::buffer_strlike<char_type,typename ::std::remove_cvref_t<T>::value_type>&&::std::same_as<undefttype_char_type,char_type>)
 		{
 			return ::fast_io::details::scan_context_eof_strlike_define_impl(ctx.copying);
 		}
@@ -245,10 +245,10 @@ inline constexpr ::fast_io::parse_code scan_context_eof_define(
 }
 
 
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 inline constexpr io_type_t<::std::conditional_t<
-	(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>
-	&&::std::same_as<typename std::remove_cvref_t<T>::char_type,char_type>),
+	(::fast_io::buffer_strlike<char_type,typename ::std::remove_cvref_t<T>::value_type>
+	&&::std::same_as<typename ::std::remove_cvref_t<T>::char_type,char_type>),
 	::fast_io::details::str_get_all_context,
 	::fast_io::details::basic_concat_buffer<char_type>>> scan_context_type(
 	io_reserve_type_t<char_type,
@@ -264,9 +264,9 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	char_type const* first,char_type const* last,
 	::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>> ref)
 {
-	using value_type = std::remove_cvref_t<T>;
-	using undefttype_char_type = typename std::remove_cvref_t<value_type>::char_type;
-	if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
+	using value_type = ::std::remove_cvref_t<T>;
+	using undefttype_char_type = typename ::std::remove_cvref_t<value_type>::char_type;
+	if constexpr(::fast_io::buffer_strlike<char_type,typename ::std::remove_cvref_t<T>::value_type>&&::std::same_as<undefttype_char_type,char_type>)
 	{
 		return ::fast_io::details::scan_context_define_strlike_getall_impl(ctx.copying,first,last,ref.reference.reference);
 	}
@@ -291,16 +291,16 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	}
 }
 
-template<std::integral char_type,typename ctx_type,typename T>
+template<::std::integral char_type,typename ctx_type,typename T>
 inline constexpr ::fast_io::parse_code scan_context_eof_define(
 	io_reserve_type_t<char_type,::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>>>,
 	ctx_type& ctx,
 	::fast_io::manipulators::whole_get_t<::fast_io::manipulators::basic_strlike_get<T>> ref)
 {
 
-	using value_type = std::remove_cvref_t<T>;
-	using undefttype_char_type = typename std::remove_cvref_t<value_type>::char_type;
-	if constexpr(::fast_io::buffer_strlike<char_type,typename std::remove_cvref_t<T>::value_type>&&std::same_as<undefttype_char_type,char_type>)
+	using value_type = ::std::remove_cvref_t<T>;
+	using undefttype_char_type = typename ::std::remove_cvref_t<value_type>::char_type;
+	if constexpr(::fast_io::buffer_strlike<char_type,typename ::std::remove_cvref_t<T>::value_type>&&::std::same_as<undefttype_char_type,char_type>)
 	{
 		if(!ctx.copying)
 		{
