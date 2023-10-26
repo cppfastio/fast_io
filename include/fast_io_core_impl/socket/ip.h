@@ -6,13 +6,13 @@ namespace fast_io
 struct ipv4
 {
 	posix_in_addr address{};
-	std::uint_least16_t port{};
+	::std::uint_least16_t port{};
 };
 
 struct ipv6
 {
 	posix_in6_addr address{};
-	std::uint_least16_t port{};
+	::std::uint_least16_t port{};
 };
 
 struct ip_address
@@ -28,7 +28,7 @@ struct ip_address
 struct ip
 {
 	ip_address address;
-	std::uint_least16_t port{};
+	::std::uint_least16_t port{};
 
 	inline constexpr bool is_ipv4() const noexcept
 	{

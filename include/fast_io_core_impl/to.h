@@ -6,7 +6,7 @@ namespace fast_io
 namespace details
 {
 
-template<std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
+template<::std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -38,7 +38,7 @@ inline constexpr void inplace_to_decay_context_impl(basic_dynamic_output_buffer_
 	}
 }
 
-template<std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
+template<::std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -68,7 +68,7 @@ inline constexpr void inplace_to_decay_buffer_scatter_context_impl(state& s,T t,
 	}
 }
 
-template<std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
+template<::std::integral char_type,typename state,typename T,typename Arg1,typename ...Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -116,15 +116,15 @@ inline constexpr void inplace_to_decay_buffer_context_impl(char_type* buffer,sta
 	}
 }
 
-template<std::integral char_type,bool ln,typename T,typename... Args>
-inline constexpr std::size_t calculate_print_normal_maxium_size_main(std::size_t mx_value) noexcept
+template<::std::integral char_type,bool ln,typename T,typename... Args>
+inline constexpr ::std::size_t calculate_print_normal_maxium_size_main(::std::size_t mx_value) noexcept
 {
-	std::size_t val{};
+	::std::size_t val{};
 	if constexpr(ln&&(sizeof...(Args)==0))
 		++val;
 	if constexpr(reserve_printable<char_type,T>)
 	{
-		constexpr std::size_t size{print_reserve_size(io_reserve_type<char_type,T>)};
+		constexpr ::std::size_t size{print_reserve_size(io_reserve_type<char_type,T>)};
 		static_assert(size!=SIZE_MAX,"overflow");
 		val+=size;
 	}
@@ -136,18 +136,18 @@ inline constexpr std::size_t calculate_print_normal_maxium_size_main(std::size_t
 		return calculate_print_normal_maxium_size_main<char_type,ln,Args...>(mx_value);
 }
 
-template<std::integral char_type,bool ln,typename... Args>
-inline constexpr std::size_t calculate_print_normal_maxium_size() noexcept
+template<::std::integral char_type,bool ln,typename... Args>
+inline constexpr ::std::size_t calculate_print_normal_maxium_size() noexcept
 {
 	return calculate_print_normal_maxium_size_main<char_type,ln,Args...>(0);
 }
 
-template<std::integral char_type,bool ln,typename T,typename... Args>
-inline constexpr std::size_t calculate_print_normal_dynamic_maxium_main(std::size_t mx_value,T t,Args... args) noexcept
+template<::std::integral char_type,bool ln,typename T,typename... Args>
+inline constexpr ::std::size_t calculate_print_normal_dynamic_maxium_main(::std::size_t mx_value,T t,Args... args) noexcept
 {
 	if constexpr(dynamic_reserve_printable<char_type,T>)
 	{
-		std::size_t size{print_reserve_size(io_reserve_type<char_type,T>,t)};
+		::std::size_t size{print_reserve_size(io_reserve_type<char_type,T>,t)};
 		if constexpr(ln&&(sizeof...(Args)==0))
 		{
 			if(size==SIZE_MAX)
@@ -163,7 +163,7 @@ inline constexpr std::size_t calculate_print_normal_dynamic_maxium_main(std::siz
 		return calculate_print_normal_dynamic_maxium_main<char_type,ln>(mx_value,args...);
 }
 
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 inline constexpr void deal_with_single_to(char_type const* buffer_begin,char_type const* buffer_end,T t)
 {
 	auto code{scan_contiguous_define(io_reserve_type<char_type,T>,buffer_begin,buffer_end,t).code};
@@ -171,7 +171,7 @@ inline constexpr void deal_with_single_to(char_type const* buffer_begin,char_typ
 		throw_parse_code(code);
 }
 
-template<std::integral char_type,typename T,typename Arg>
+template<::std::integral char_type,typename T,typename Arg>
 inline constexpr void to_deal_with_contiguous_single_scatter(T t,Arg arg)
 {
 	basic_io_scatter_t<char_type> scatter{print_scatter_define(io_reserve_type<char_type,Arg>,arg)};
@@ -179,7 +179,7 @@ inline constexpr void to_deal_with_contiguous_single_scatter(T t,Arg arg)
 	deal_with_single_to<char_type>(base,base+scatter.len,t);
 }
 
-template<std::integral char_type,typename T,typename... Args>
+template<::std::integral char_type,typename T,typename... Args>
 inline constexpr char_type* to_impl_with_reserve_recursive(char_type* p,T t,Args ...args)
 {
 	if constexpr(scatter_printable<char_type,T>)
@@ -201,12 +201,12 @@ inline constexpr char_type* to_impl_with_reserve_recursive(char_type* p,T t,Args
 }
 
 
-template<std::integral char_type,typename T,typename... Args>
-inline constexpr std::size_t calculate_scatter_dynamic_reserve_size_with_scatter([[maybe_unused]] T t,Args... args)
+template<::std::integral char_type,typename T,typename... Args>
+inline constexpr ::std::size_t calculate_scatter_dynamic_reserve_size_with_scatter([[maybe_unused]] T t,Args... args)
 {
 	if constexpr(dynamic_reserve_printable<char_type,T>)
 	{
-		std::size_t res{print_reserve_size(io_reserve_type<char_type,T>,t)};
+		::std::size_t res{print_reserve_size(io_reserve_type<char_type,T>,t)};
 		if constexpr(sizeof...(Args)==0)
 			return res;
 		else
@@ -214,7 +214,7 @@ inline constexpr std::size_t calculate_scatter_dynamic_reserve_size_with_scatter
 	}
 	else if constexpr(scatter_printable<char_type,T>)
 	{
-		std::size_t res{print_scatter_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,t).len};
+		::std::size_t res{print_scatter_define(io_reserve_type<char_type,::std::remove_cvref_t<T>>,t).len};
 		if constexpr(sizeof...(Args)==0)
 			return res;
 		else
@@ -230,11 +230,11 @@ inline constexpr std::size_t calculate_scatter_dynamic_reserve_size_with_scatter
 }
 
 template<typename char_type,typename T,typename ...Args>
-concept inplace_to_decay_detect = std::integral<char_type>&&(sizeof...(Args)!=0&&::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<char_type,Args...>&&(contiguous_scannable<char_type,T>||context_scannable<char_type,T>));
+concept inplace_to_decay_detect = ::std::integral<char_type>&&(sizeof...(Args)!=0&&::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<char_type,Args...>&&(contiguous_scannable<char_type,T>||context_scannable<char_type,T>));
 
 }
 
-template<std::integral char_type,typename T,typename ...Args>
+template<::std::integral char_type,typename T,typename ...Args>
 inline constexpr void basic_inplace_to_decay(T t,Args... args)
 {
 	constexpr bool failed{::fast_io::details::inplace_to_decay_detect<char_type,T,Args...>};
@@ -246,20 +246,20 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 			constexpr bool no_need_dynamic_reserve{((reserve_printable<char_type,Args>||scatter_printable<char_type,Args>)&&...)};
 			if constexpr(context_scannable<char_type,T>&&(!(contiguous_scannable<char_type,T>&&sizeof...(args)==1)))
 			{
-				typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
+				typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 				if constexpr(all_scatters)
 				{
 					::fast_io::details::inplace_to_decay_buffer_scatter_context_impl<char_type>(state,t,args...);
 				}
 				else if constexpr(no_need_dynamic_reserve)
 				{
-					constexpr std::size_t maximum_reserve_size{::fast_io::details::calculate_print_normal_maxium_size<char_type,false,Args...>()};
+					constexpr ::std::size_t maximum_reserve_size{::fast_io::details::calculate_print_normal_maxium_size<char_type,false,Args...>()};
 					char_type buffer[maximum_reserve_size];
 					::fast_io::details::inplace_to_decay_buffer_context_impl<char_type>(buffer,state,t,args...);
 				}
 				else
 				{
-					std::size_t const maximum_reserve_size{::fast_io::details::calculate_print_normal_dynamic_maxium_main<char_type,false>(0,args...)};
+					::std::size_t const maximum_reserve_size{::fast_io::details::calculate_print_normal_dynamic_maxium_main<char_type,false>(0,args...)};
 					::fast_io::details::local_operator_new_array_ptr<char_type> heap_buffer(maximum_reserve_size);
 					::fast_io::details::inplace_to_decay_buffer_context_impl<char_type>(heap_buffer.ptr,state,t,args...);
 				}
@@ -272,14 +272,14 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 				}
 				else if constexpr(((reserve_printable<char_type,Args>)&&...))
 				{
-					constexpr std::size_t total_size{::fast_io::details::decay::calculate_scatter_reserve_size<char_type,Args...>()};
+					constexpr ::std::size_t total_size{::fast_io::details::decay::calculate_scatter_reserve_size<char_type,Args...>()};
 					char_type buffer[total_size];
 					auto ret{::fast_io::details::to_impl_with_reserve_recursive(buffer,args...)};
 					::fast_io::details::deal_with_single_to<char_type>(buffer,ret,t);
 				}
 				else
 				{
-					std::size_t const maximum_reserve_size{::fast_io::details::calculate_scatter_dynamic_reserve_size_with_scatter<char_type>(args...)};
+					::std::size_t const maximum_reserve_size{::fast_io::details::calculate_scatter_dynamic_reserve_size_with_scatter<char_type>(args...)};
 					::fast_io::details::local_operator_new_array_ptr<char_type> heap_buffer(maximum_reserve_size);
 					auto ret{::fast_io::details::to_impl_with_reserve_recursive(heap_buffer.ptr,args...)};
 					::fast_io::details::deal_with_single_to<char_type>(heap_buffer.ptr,ret,t);
@@ -292,7 +292,7 @@ inline constexpr void basic_inplace_to_decay(T t,Args... args)
 			auto ref{::fast_io::operations::output_stream_ref(buffer)};
 			if constexpr(context_scannable<char_type,T>&&(!(contiguous_scannable<char_type,T>&&sizeof...(args)==1)))
 			{
-				typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
+				typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 				::fast_io::details::inplace_to_decay_context_impl(ref,state,t,args...);
 			}
 			else if constexpr(contiguous_scannable<char_type,T>)
@@ -316,7 +316,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 namespace details
 {
 
-template<std::integral char_type,typename T,typename ...Args>
+template<::std::integral char_type,typename T,typename ...Args>
 requires ::fast_io::details::inplace_to_decay_detect<char_type,T,Args...>
 inline constexpr void basic_inplace_to_decay_model(T,Args...)
 {
@@ -331,7 +331,7 @@ concept can_do_inplace_to = requires(T& t,Args&& ...args)
 
 }
 
-template<std::integral char_type,typename T,typename ...Args>
+template<::std::integral char_type,typename T,typename ...Args>
 inline constexpr void basic_inplace_to(T&& t,Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char_type,T,Args...>};
@@ -420,7 +420,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 namespace decay
 {
 
-template<std::integral char_type,typename T,typename ...Args>
+template<::std::integral char_type,typename T,typename ...Args>
 inline constexpr T basic_to_decay(Args... args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char_type,T,Args...>};
@@ -430,7 +430,7 @@ inline constexpr T basic_to_decay(Args... args)
 	}
 	else if constexpr(failed)
 	{
-		if constexpr(std::is_scalar_v<T>)
+		if constexpr(::std::is_scalar_v<T>)
 		{
 			T v{};
 			basic_inplace_to_decay<char_type>(::fast_io::io_scan_forward<char_type>(::fast_io::io_scan_alias(v)),args...);
@@ -452,7 +452,7 @@ static_assert(failed,"either somes args not printable or some type not detectabl
 
 }
 
-template<std::integral char_type,typename T,typename ...Args>
+template<::std::integral char_type,typename T,typename ...Args>
 inline constexpr T basic_to(Args&& ...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char_type,T,Args...>};

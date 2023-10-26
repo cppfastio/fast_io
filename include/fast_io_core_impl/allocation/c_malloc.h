@@ -24,10 +24,10 @@ public:
 #if __has_builtin(__builtin_malloc)
 			__builtin_malloc(n)
 #else
-			std::malloc(n)
+			::std::malloc(n)
 #endif
 #else
-			std::malloc(n)
+			::std::malloc(n)
 #endif
 		;
 		if(p==nullptr)

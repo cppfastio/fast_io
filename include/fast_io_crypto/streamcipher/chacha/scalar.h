@@ -47,10 +47,10 @@ void chacha_main_routine(::std::byte* __restrict outdata,
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #else
-	if(std::is_constant_evaluated())
+	if(::std::is_constant_evaluated())
 #endif
 	{
-		for(std::size_t i{};i!=n;++i)
+		for(::std::size_t i{};i!=n;++i)
 			x[i]=indata[i];
 	}
 	else
@@ -78,7 +78,7 @@ void chacha_main_routine(::std::byte* __restrict outdata,
 
 	for(::std::size_t i{};i!=n;++i)
 	{
-		std::uint_least32_t res{x[i]+indata[i]};
+		::std::uint_least32_t res{x[i]+indata[i]};
 		if constexpr(::std::endian::little!=::std::endian::native)
 		{
 			res=::fast_io::byte_swap(res);
@@ -87,7 +87,7 @@ void chacha_main_routine(::std::byte* __restrict outdata,
 #if __cpp_if_consteval >= 202106L
 		if consteval
 #else
-		if(std::is_constant_evaluated())
+		if(::std::is_constant_evaluated())
 #endif
 		{
 			auto v{::std::bit_cast<::fast_io::freestanding::array<::std::byte,sizeof(::std::uint_least32_t)>>(res)};

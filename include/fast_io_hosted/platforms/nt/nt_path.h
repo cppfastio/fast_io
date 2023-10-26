@@ -3,14 +3,14 @@
 namespace fast_io::win32::nt::details
 {
 
-inline std::uint_least16_t nt_filename_bytes(std::size_t sz)
+inline ::std::uint_least16_t nt_filename_bytes(::std::size_t sz)
 {
-	if constexpr(sizeof(sz)<sizeof(std::uint_least16_t))//sizeof(std::size_t) can never be smaller than sizeof(std::uint_least16_t)
-		return static_cast<std::uint_least16_t>(static_cast<std::uint_least16_t>(sz)<<1u);
-	constexpr std::size_t max_value{static_cast<std::size_t>(std::numeric_limits<std::uint_least16_t>::max()>>1u)};
+	if constexpr(sizeof(sz)<sizeof(::std::uint_least16_t))//sizeof(::std::size_t) can never be smaller than sizeof(::std::uint_least16_t)
+		return static_cast<::std::uint_least16_t>(static_cast<::std::uint_least16_t>(sz)<<1u);
+	constexpr ::std::size_t max_value{static_cast<::std::size_t>(::std::numeric_limits<::std::uint_least16_t>::max()>>1u)};
 	if(max_value<sz)
 		throw_nt_error(0xC0000106);
-	return static_cast<std::uint_least16_t>(sz<<1);
+	return static_cast<::std::uint_least16_t>(sz<<1);
 }
 
 inline void nt_file_rtl_path(char16_t const* filename,win32::nt::unicode_string& nt_name,char16_t const*& part_name,win32::nt::rtl_relative_name_u& relative_name)
@@ -29,22 +29,22 @@ ReactOS shows that RtlDosPathNameToNtPathName_U_WithStatus was added since Windo
 #endif
 }
 
-template<std::integral char_type,typename func>
-inline auto nt_call_invoke_with_directory_handle_impl(void* directory,char_type const* filename,std::size_t filename_len,func callback)
+template<::std::integral char_type,typename func>
+inline auto nt_call_invoke_with_directory_handle_impl(void* directory,char_type const* filename,::std::size_t filename_len,func callback)
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
 	= char16_t const*;
-	if constexpr(std::same_as<char_type,char16_t>)
+	if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		using char16_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
 #endif
 		= char16_t*;
-		std::uint_least16_t const bytes(nt_filename_bytes(filename_len));
+		::std::uint_least16_t const bytes(nt_filename_bytes(filename_len));
 		win32::nt::unicode_string relative_path{
 			.Length=bytes,
 			.MaximumLength=bytes,
@@ -60,11 +60,11 @@ inline auto nt_call_invoke_with_directory_handle_impl(void* directory,char_type 
 	}
 }
 
-template<std::integral char_type,typename func>
+template<::std::integral char_type,typename func>
 requires (sizeof(char_type)==sizeof(char16_t))
 inline auto nt_call_invoke_without_directory_handle_impl(char_type const* filename_c_str,func callback)
 {
-	if constexpr(std::same_as<char_type,char16_t>)
+	if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		char16_t const* part_name{};
 		win32::nt::rtl_relative_name_u relative_name{};
@@ -84,8 +84,8 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const* filena
 	}
 }
 
-template<std::integral char_type,typename func>
-inline auto nt_call_invoke_without_directory_handle(char_type const* filename,std::size_t filename_len,func callback)
+template<::std::integral char_type,typename func>
+inline auto nt_call_invoke_without_directory_handle(char_type const* filename,::std::size_t filename_len,func callback)
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -101,26 +101,26 @@ inline auto nt_call_invoke_without_directory_handle(char_type const* filename,st
 	}
 }
 
-template<std::integral char_type,typename func>
-inline auto nt_call_callback(void* directory, char_type const* filename,std::size_t filename_len,func callback)
+template<::std::integral char_type,typename func>
+inline auto nt_call_callback(void* directory, char_type const* filename,::std::size_t filename_len,func callback)
 {
 	if(directory==nullptr)
 		throw_nt_error(0xC0000008);	//STATUS_INVALID_HANDLE
-	else if(directory==reinterpret_cast<void*>(std::intptr_t(-3)))
+	else if(directory==reinterpret_cast<void*>(::std::intptr_t(-3)))
 		return nt_call_invoke_without_directory_handle(filename,filename_len,callback);
 	return nt_call_invoke_with_directory_handle_impl(directory,filename,filename_len,callback);
 }
 
-template<std::integral char_type,typename func>
-inline auto nt_call_callback_without_directory_handle(char_type const* filename,std::size_t filename_len,func callback)
+template<::std::integral char_type,typename func>
+inline auto nt_call_callback_without_directory_handle(char_type const* filename,::std::size_t filename_len,func callback)
 {
 	return nt_call_invoke_without_directory_handle(filename,filename_len,callback);
 }
 
 template<typename func>
-inline auto nt_call_kernel_common_impl(void* directory,char16_t const* filename,std::size_t filename_len,func callback)
+inline auto nt_call_kernel_common_impl(void* directory,char16_t const* filename,::std::size_t filename_len,func callback)
 {
-	std::uint_least16_t const bytes(nt_filename_bytes(filename_len));
+	::std::uint_least16_t const bytes(nt_filename_bytes(filename_len));
 	win32::nt::unicode_string relative_path{
 		.Length=bytes,
 		.MaximumLength=bytes,
@@ -129,23 +129,23 @@ inline auto nt_call_kernel_common_impl(void* directory,char16_t const* filename,
 }
 
 template<typename func>
-inline auto nt_call_kernel_nodir_callback(char16_t const* filename,std::size_t filename_len,func callback)
+inline auto nt_call_kernel_nodir_callback(char16_t const* filename,::std::size_t filename_len,func callback)
 {
 	return nt_call_kernel_common_impl(nullptr,filename,filename_len,callback);
 }
 
 template<typename func>
-inline auto nt_call_kernel_callback(void* directory,char16_t const* filename,std::size_t filename_len,func callback)
+inline auto nt_call_kernel_callback(void* directory,char16_t const* filename,::std::size_t filename_len,func callback)
 {
 	if(directory==nullptr)
 		throw_nt_error(0xC0000008);	//STATUS_INVALID_HANDLE
-	else if(directory==reinterpret_cast<void*>(std::intptr_t(-3)))
+	else if(directory==reinterpret_cast<void*>(::std::intptr_t(-3)))
 		directory=nullptr;
 	return nt_call_kernel_common_impl(directory,filename,filename_len,callback);
 }
 
 template<typename func>
-inline auto nt_call_kernel_fs_dirent_callback(void* directory,char16_t const* filename,std::size_t filename_len,func callback)
+inline auto nt_call_kernel_fs_dirent_callback(void* directory,char16_t const* filename,::std::size_t filename_len,func callback)
 {
 	if(directory==nullptr)
 		throw_nt_error(0xC0000008);	//STATUS_INVALID_HANDLE

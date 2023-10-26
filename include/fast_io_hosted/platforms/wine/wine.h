@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class wine_family:std::uint_least32_t
+enum class wine_family: ::std::uint_least32_t
 {
 unspecified_host=0,
 linux_host=1,
@@ -16,7 +16,7 @@ unspecified_host
 #endif
 };
 
-template<wine_family family,std::integral ch_type>
+template<wine_family family,::std::integral ch_type>
 class basic_wine_family_io_observer
 {
 public:
@@ -60,7 +60,7 @@ wine_family_file_factory
 
 using wine_file_factory = wine_family_file_factory<wine_family::native>;
 
-template<wine_family family,std::integral ch_type>
+template<wine_family family,::std::integral ch_type>
 class basic_wine_family_file:public basic_wine_family_io_observer<family,ch_type>
 {
 public:
@@ -69,7 +69,7 @@ public:
 	using file_factory_type = wine_family_file_factory<family>;
 	constexpr basic_wine_family_file() noexcept = default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_wine_family_file(native_hd host_fd1) noexcept: basic_wine_family_io_observer<family,ch_type>{host_fd1}{}
 	constexpr basic_wine_family_file(decltype(nullptr)) noexcept = delete;
 	constexpr basic_wine_family_file(basic_wine_family_file<family,ch_type>) noexcept=delete;

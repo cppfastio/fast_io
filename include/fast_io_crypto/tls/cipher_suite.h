@@ -6,7 +6,7 @@ namespace fast_io::tls::cipher_suite
 
 struct cipher_suite_type
 {
-	::fast_io::freestanding::array<std::byte,2> array{};
+	::fast_io::freestanding::array<::std::byte,2> array{};
 };
 
 inline constexpr bool operator==(cipher_suite_type const& a,cipher_suite_type const& b)
@@ -27,38 +27,38 @@ page 74
 https://tools.ietf.org/html/rfc5246
 */
 
-inline constexpr cipher_suite_type tls_rsa_with_null_null                {{ std::byte(0x00),std::byte(0x00) }};
-inline constexpr cipher_suite_type tls_rsa_with_null_md5                 {{ std::byte(0x00),std::byte(0x01) }};
-inline constexpr cipher_suite_type tls_rsa_with_null_sha                 {{ std::byte(0x00),std::byte(0x02) }};
-inline constexpr cipher_suite_type tls_rsa_with_null_sha256              {{ std::byte(0x00),std::byte(0x3B) }};
-inline constexpr cipher_suite_type tls_rsa_with_rc4_128_md5              {{ std::byte(0x00),std::byte(0x04) }};
-inline constexpr cipher_suite_type tls_rsa_with_rc4_128_sha              {{ std::byte(0x00),std::byte(0x05) }};
-inline constexpr cipher_suite_type tls_rsa_with_3des_ede_cbc_sha         {{ std::byte(0x00),std::byte(0x0A) }};
-inline constexpr cipher_suite_type tls_rsa_with_aes_128_cbc_sha          {{ std::byte(0x00),std::byte(0x2F) }};
-inline constexpr cipher_suite_type tls_rsa_with_aes_256_cbc_sha          {{ std::byte(0x00),std::byte(0x35) }};
-inline constexpr cipher_suite_type tls_rsa_with_aes_128_cbc_sha256       {{ std::byte(0x00),std::byte(0x3C) }};
-inline constexpr cipher_suite_type tls_rsa_with_aes_256_cbc_sha256       {{ std::byte(0x00),std::byte(0x3D) }};
+inline constexpr cipher_suite_type tls_rsa_with_null_null                {{ ::std::byte(0x00),::std::byte(0x00) }};
+inline constexpr cipher_suite_type tls_rsa_with_null_md5                 {{ ::std::byte(0x00),::std::byte(0x01) }};
+inline constexpr cipher_suite_type tls_rsa_with_null_sha                 {{ ::std::byte(0x00),::std::byte(0x02) }};
+inline constexpr cipher_suite_type tls_rsa_with_null_sha256              {{ ::std::byte(0x00),::std::byte(0x3B) }};
+inline constexpr cipher_suite_type tls_rsa_with_rc4_128_md5              {{ ::std::byte(0x00),::std::byte(0x04) }};
+inline constexpr cipher_suite_type tls_rsa_with_rc4_128_sha              {{ ::std::byte(0x00),::std::byte(0x05) }};
+inline constexpr cipher_suite_type tls_rsa_with_3des_ede_cbc_sha         {{ ::std::byte(0x00),::std::byte(0x0A) }};
+inline constexpr cipher_suite_type tls_rsa_with_aes_128_cbc_sha          {{ ::std::byte(0x00),::std::byte(0x2F) }};
+inline constexpr cipher_suite_type tls_rsa_with_aes_256_cbc_sha          {{ ::std::byte(0x00),::std::byte(0x35) }};
+inline constexpr cipher_suite_type tls_rsa_with_aes_128_cbc_sha256       {{ ::std::byte(0x00),::std::byte(0x3C) }};
+inline constexpr cipher_suite_type tls_rsa_with_aes_256_cbc_sha256       {{ ::std::byte(0x00),::std::byte(0x3D) }};
 
-inline constexpr cipher_suite_type tls_dh_dss_with_3des_ede_cbc_sha      {{ std::byte(0x00),std::byte(0x0D) }};
-inline constexpr cipher_suite_type tls_dh_rsa_with_3des_ede_cbc_sha      {{ std::byte(0x00),std::byte(0x10) }};
-inline constexpr cipher_suite_type tls_dhe_dss_with_3des_ede_cbc_sha     {{ std::byte(0x00),std::byte(0x13) }};
-inline constexpr cipher_suite_type tls_dhe_rsa_with_3des_ede_cbc_sha     {{ std::byte(0x00),std::byte(0x16) }};
-inline constexpr cipher_suite_type tls_dh_dss_with_aes_128_cbc_sha       {{ std::byte(0x00),std::byte(0x30) }};
-inline constexpr cipher_suite_type tls_dh_rsa_with_aes_128_cbc_sha       {{ std::byte(0x00),std::byte(0x31) }};
-inline constexpr cipher_suite_type tls_dhe_dss_with_aes_128_cbc_sha      {{ std::byte(0x00),std::byte(0x32) }};
-inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_128_cbc_sha      {{ std::byte(0x00),std::byte(0x33) }};
-inline constexpr cipher_suite_type tls_dh_dss_with_aes_256_cbc_sha       {{ std::byte(0x00),std::byte(0x36) }};
-inline constexpr cipher_suite_type tls_dh_rsa_with_aes_256_cbc_sha       {{ std::byte(0x00),std::byte(0x37) }};
-inline constexpr cipher_suite_type tls_dhe_dss_with_aes_256_cbc_sha      {{ std::byte(0x00),std::byte(0x38) }};
-inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_256_cbc_sha      {{ std::byte(0x00),std::byte(0x39) }};
-inline constexpr cipher_suite_type tls_dh_dss_with_aes_128_cbc_sha256    {{ std::byte(0x00),std::byte(0x3e) }};
-inline constexpr cipher_suite_type tls_dh_rsa_with_aes_128_cbc_sha256    {{ std::byte(0x00),std::byte(0x3f) }};
-inline constexpr cipher_suite_type tls_dhe_dss_with_aes_128_cbc_sha256   {{ std::byte(0x00),std::byte(0x40) }};
-inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_128_cbc_sha256   {{ std::byte(0x00),std::byte(0x67) }};
-inline constexpr cipher_suite_type tls_dh_dss_with_aes_256_cbc_sha256    {{ std::byte(0x00),std::byte(0x68) }};
-inline constexpr cipher_suite_type tls_dh_rsa_with_aes_256_cbc_sha256    {{ std::byte(0x00),std::byte(0x69) }};
-inline constexpr cipher_suite_type tls_dhe_dss_with_aes_256_cbc_sha256   {{ std::byte(0x00),std::byte(0x6a) }};
-inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_256_cbc_sha256   {{ std::byte(0x00),std::byte(0x6b) }};
+inline constexpr cipher_suite_type tls_dh_dss_with_3des_ede_cbc_sha      {{ ::std::byte(0x00),::std::byte(0x0D) }};
+inline constexpr cipher_suite_type tls_dh_rsa_with_3des_ede_cbc_sha      {{ ::std::byte(0x00),::std::byte(0x10) }};
+inline constexpr cipher_suite_type tls_dhe_dss_with_3des_ede_cbc_sha     {{ ::std::byte(0x00),::std::byte(0x13) }};
+inline constexpr cipher_suite_type tls_dhe_rsa_with_3des_ede_cbc_sha     {{ ::std::byte(0x00),::std::byte(0x16) }};
+inline constexpr cipher_suite_type tls_dh_dss_with_aes_128_cbc_sha       {{ ::std::byte(0x00),::std::byte(0x30) }};
+inline constexpr cipher_suite_type tls_dh_rsa_with_aes_128_cbc_sha       {{ ::std::byte(0x00),::std::byte(0x31) }};
+inline constexpr cipher_suite_type tls_dhe_dss_with_aes_128_cbc_sha      {{ ::std::byte(0x00),::std::byte(0x32) }};
+inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_128_cbc_sha      {{ ::std::byte(0x00),::std::byte(0x33) }};
+inline constexpr cipher_suite_type tls_dh_dss_with_aes_256_cbc_sha       {{ ::std::byte(0x00),::std::byte(0x36) }};
+inline constexpr cipher_suite_type tls_dh_rsa_with_aes_256_cbc_sha       {{ ::std::byte(0x00),::std::byte(0x37) }};
+inline constexpr cipher_suite_type tls_dhe_dss_with_aes_256_cbc_sha      {{ ::std::byte(0x00),::std::byte(0x38) }};
+inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_256_cbc_sha      {{ ::std::byte(0x00),::std::byte(0x39) }};
+inline constexpr cipher_suite_type tls_dh_dss_with_aes_128_cbc_sha256    {{ ::std::byte(0x00),::std::byte(0x3e) }};
+inline constexpr cipher_suite_type tls_dh_rsa_with_aes_128_cbc_sha256    {{ ::std::byte(0x00),::std::byte(0x3f) }};
+inline constexpr cipher_suite_type tls_dhe_dss_with_aes_128_cbc_sha256   {{ ::std::byte(0x00),::std::byte(0x40) }};
+inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_128_cbc_sha256   {{ ::std::byte(0x00),::std::byte(0x67) }};
+inline constexpr cipher_suite_type tls_dh_dss_with_aes_256_cbc_sha256    {{ ::std::byte(0x00),::std::byte(0x68) }};
+inline constexpr cipher_suite_type tls_dh_rsa_with_aes_256_cbc_sha256    {{ ::std::byte(0x00),::std::byte(0x69) }};
+inline constexpr cipher_suite_type tls_dhe_dss_with_aes_256_cbc_sha256   {{ ::std::byte(0x00),::std::byte(0x6a) }};
+inline constexpr cipher_suite_type tls_dhe_rsa_with_aes_256_cbc_sha256   {{ ::std::byte(0x00),::std::byte(0x6b) }};
 /*
 TLS 1.3
 rfc
@@ -78,11 +78,11 @@ https://tools.ietf.org/html/rfc8446#page-133
               +------------------------------+-------------+
 */
 
-inline constexpr cipher_suite_type tls_aes_128_gcm_sha256{{std::byte(0x13),std::byte(0x01)}};
-inline constexpr cipher_suite_type tls_aes_256_gcm_sha256{{std::byte(0x13),std::byte(0x02)}};
-inline constexpr cipher_suite_type tls_chacha20_poly1305_sha256{{std::byte(0x13),std::byte(0x03)}};
-inline constexpr cipher_suite_type tls_aes_128_ccm_sha256{{std::byte(0x13),std::byte(0x04)}};
-inline constexpr cipher_suite_type tls_aes_128_ccm_8_sha256{{std::byte(0x13),std::byte(0x05)}};
+inline constexpr cipher_suite_type tls_aes_128_gcm_sha256{{::std::byte(0x13),::std::byte(0x01)}};
+inline constexpr cipher_suite_type tls_aes_256_gcm_sha256{{::std::byte(0x13),::std::byte(0x02)}};
+inline constexpr cipher_suite_type tls_chacha20_poly1305_sha256{{::std::byte(0x13),::std::byte(0x03)}};
+inline constexpr cipher_suite_type tls_aes_128_ccm_sha256{{::std::byte(0x13),::std::byte(0x04)}};
+inline constexpr cipher_suite_type tls_aes_128_ccm_8_sha256{{::std::byte(0x13),::std::byte(0x05)}};
 
 template<output_stream output>
 inline constexpr void print_define(output& outp,cipher_suite_type const& e)

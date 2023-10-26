@@ -6,13 +6,13 @@ namespace fast_io
 namespace details
 {
 
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_identification(output bos,basic_lc_identification<char_type> const& identification)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 		print_freestanding(bos,"LC_IDENTIFICATION\n"
 			"name\t\"",identification.name,"\"\n"
 			"encoding\t\"",identification.encoding,"\"\n"
@@ -31,7 +31,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			"revision\t\"",identification.revision,"\"\n"
 			"date\t\"",identification.date,"\"\n"
 			"END LC_IDENTIFICATION");
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 		print_freestanding(bos,L"LC_IDENTIFICATION\n"
 			L"name\t\"",identification.name,L"\"\n"
 			L"encoding\t\"",identification.encoding,L"\"\n"
@@ -50,7 +50,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			L"revision\t\"",identification.revision,L"\"\n"
 			L"date\t\"",identification.date,L"\"\n"
 			L"END LC_IDENTIFICATION");
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 		print_freestanding(bos,u"LC_IDENTIFICATION\n"
 			u"name\t\"",identification.name,u"\"\n"
 			u"encoding\t\"",identification.encoding,u"\"\n"
@@ -69,7 +69,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			u"revision\t\"",identification.revision,u"\"\n"
 			u"date\t\"",identification.date,u"\"\n"
 			u"END LC_IDENTIFICATION");
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 		print_freestanding(bos,U"LC_IDENTIFICATION\n"
 			U"name\t\"",identification.name,U"\"\n"
 			U"encoding\t\"",identification.encoding,U"\"\n"
@@ -88,7 +88,7 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 			U"revision\t\"",identification.revision,U"\"\n"
 			U"date\t\"",identification.date,U"\"\n"
 			U"END LC_IDENTIFICATION");
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 		print_freestanding(bos,u8"LC_IDENTIFICATION\n"
 			u8"name\t\"",identification.name,u8"\"\n"
 			u8"encoding\t\"",identification.encoding,u8"\"\n"
@@ -115,38 +115,38 @@ constexpr void print_define_impl_lc_identification(output bos,basic_lc_identific
 namespace details
 {
 template<typename output>
-constexpr void print_grouping(output bos,basic_io_scatter_t<std::size_t> grouping)
+constexpr void print_grouping(output bos,basic_io_scatter_t<::std::size_t> grouping)
 {
 	using char_type = typename output::char_type;
 	if(grouping.len==0)
 	{
-		if constexpr(std::same_as<char,char_type>)
+		if constexpr(::std::same_as<char,char_type>)
 			print_freestanding(bos,"-1");
-		else if constexpr(std::same_as<wchar_t,char_type>)
+		else if constexpr(::std::same_as<wchar_t,char_type>)
 			print_freestanding(bos,L"-1");
-		else if constexpr(std::same_as<char16_t,char_type>)
+		else if constexpr(::std::same_as<char16_t,char_type>)
 			print_freestanding(bos,u"-1");
-		else if constexpr(std::same_as<char32_t,char_type>)
+		else if constexpr(::std::same_as<char32_t,char_type>)
 			print_freestanding(bos,U"-1");
-		else if constexpr(std::same_as<char8_t,char_type>)
+		else if constexpr(::std::same_as<char8_t,char_type>)
 			print_freestanding(bos,u8"-1");
 		return;
 	}
-	for(std::size_t i{};i!=grouping.len;++i)
+	for(::std::size_t i{};i!=grouping.len;++i)
 	{
 		if(i)
 			put(bos,char_literal_v<u8';',char_type>);
-		if(grouping.base[i]==std::numeric_limits<std::size_t>::max())
+		if(grouping.base[i]==::std::numeric_limits<::std::size_t>::max())
 		{
-			if constexpr(std::same_as<char,char_type>)
+			if constexpr(::std::same_as<char,char_type>)
 				print_freestanding(bos,"-1");
-			else if constexpr(std::same_as<wchar_t,char_type>)
+			else if constexpr(::std::same_as<wchar_t,char_type>)
 				print_freestanding(bos,L"-1");
-			else if constexpr(std::same_as<char16_t,char_type>)
+			else if constexpr(::std::same_as<char16_t,char_type>)
 				print_freestanding(bos,u"-1");
-			else if constexpr(std::same_as<char32_t,char_type>)
+			else if constexpr(::std::same_as<char32_t,char_type>)
 				print_freestanding(bos,U"-1");
-			else if constexpr(std::same_as<char8_t,char_type>)
+			else if constexpr(::std::same_as<char8_t,char_type>)
 				print_freestanding(bos,u8"-1");
 		}
 		else
@@ -154,13 +154,13 @@ constexpr void print_grouping(output bos,basic_io_scatter_t<std::size_t> groupin
 	}
 }
 
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_type> const& monetary)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_MONETARY\n"
 			"int_curr_symbol\t\"",monetary.int_curr_symbol,"\"\n"
@@ -188,7 +188,7 @@ constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_t
 			"int_n_sign_posn\t",monetary.int_n_sign_posn,"\n"
 			"END LC_MONETARY");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_MONETARY\n"
 			L"int_curr_symbol\t\"",monetary.int_curr_symbol,L"\"\n"
@@ -216,7 +216,7 @@ constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_t
 			L"int_n_sign_posn\t",monetary.int_n_sign_posn,L"\n"
 			L"END LC_MONETARY");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_MONETARY\n"
 			u"int_curr_symbol\t\"",monetary.int_curr_symbol,u"\"\n"
@@ -244,7 +244,7 @@ constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_t
 			u"int_n_sign_posn\t",monetary.int_n_sign_posn,u"\n"
 			u"END LC_MONETARY");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_MONETARY\n"
 			U"int_curr_symbol\t\"",monetary.int_curr_symbol,U"\"\n"
@@ -272,7 +272,7 @@ constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_t
 			U"int_n_sign_posn\t",monetary.int_n_sign_posn,U"\n"
 			U"END LC_MONETARY");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_MONETARY\n"
 			u8"int_curr_symbol\t\"",monetary.int_curr_symbol,u8"\"\n"
@@ -301,13 +301,13 @@ constexpr void print_define_impl_lc_monetary(output bos,basic_lc_monetary<char_t
 			u8"END LC_MONETARY");
 	}
 }
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_numeric(output bos,basic_lc_numeric<char_type> const& numeric)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_NUMERIC\n"
 			"decimal_point\t\"",numeric.decimal_point,"\"\n"
@@ -317,7 +317,7 @@ constexpr void print_define_impl_lc_numeric(output bos,basic_lc_numeric<char_typ
 		print_freestanding(bos,"\n"
 			"END LC_NUMERIC");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_NUMERIC\n"
 			L"decimal_point\t\"",numeric.decimal_point,L"\"\n"
@@ -327,7 +327,7 @@ constexpr void print_define_impl_lc_numeric(output bos,basic_lc_numeric<char_typ
 		print_freestanding(bos,L"\n"
 			L"END LC_NUMERIC");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_NUMERIC\n"
 			u"decimal_point\t\"",numeric.decimal_point,u"\"\n"
@@ -337,7 +337,7 @@ constexpr void print_define_impl_lc_numeric(output bos,basic_lc_numeric<char_typ
 		print_freestanding(bos,u"\n"
 			u"END LC_NUMERIC");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_NUMERIC\n"
 			U"decimal_point\t\"",numeric.decimal_point,U"\"\n"
@@ -347,7 +347,7 @@ constexpr void print_define_impl_lc_numeric(output bos,basic_lc_numeric<char_typ
 		print_freestanding(bos,U"\n"
 			U"END LC_NUMERIC");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_NUMERIC\n"
 			u8"decimal_point\t\"",numeric.decimal_point,u8"\"\n"
@@ -363,14 +363,14 @@ constexpr void print_define_impl_lc_numeric(output bos,basic_lc_numeric<char_typ
 namespace details
 {
 template<buffer_output_stream output>
-constexpr void print_loc_days_real_impl(output bos,typename output::char_type const* category_name,std::size_t category_name_len,basic_io_scatter_t<typename output::char_type> const* day_strings,std::size_t day_strings_len)
+constexpr void print_loc_days_real_impl(output bos,typename output::char_type const* category_name,::std::size_t category_name_len,basic_io_scatter_t<typename output::char_type> const* day_strings,::std::size_t day_strings_len)
 {
 	using char_type = typename output::char_type;
 	if(day_strings_len==0||day_strings_len==0)
 		return;
 	print_freestanding(bos,basic_io_scatter_t<char_type>{category_name,category_name_len});
 	put(bos,char_literal_v<u8'\t',char_type>);
-	for(std::size_t i{};i!=day_strings_len;++i)
+	for(::std::size_t i{};i!=day_strings_len;++i)
 	{
 		if(i)
 			put(bos,char_literal_v<u8';',char_type>);
@@ -381,31 +381,31 @@ constexpr void print_loc_days_real_impl(output bos,typename output::char_type co
 	put(bos,char_literal_v<u8'\n',char_type>);
 }
 
-template<std::size_t n,buffer_output_stream output>
+template<::std::size_t n,buffer_output_stream output>
 constexpr void print_loc_days_impl(output bos,typename output::char_type const (&category_name)[n],basic_io_scatter_t<basic_io_scatter_t<typename output::char_type>> day_strings)
 {
 	print_loc_days_real_impl(bos,category_name,n-1,day_strings.base,day_strings.len);
 }
 
 template<buffer_output_stream output>
-constexpr void print_loc_era_impl(output bos,basic_lc_time_era<typename output::char_type> const* eras_ptr,std::size_t n)
+constexpr void print_loc_era_impl(output bos,basic_lc_time_era<typename output::char_type> const* eras_ptr,::std::size_t n)
 {
 	using char_type = typename output::char_type;
 	if(n==0)
 		return;
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print(bos,"era\t");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print(bos,L"era\t");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print(bos,u"era\t");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print(bos,U"era\t");
 	}
@@ -413,7 +413,7 @@ constexpr void print_loc_era_impl(output bos,basic_lc_time_era<typename output::
 	{
 		print(bos,u8"era\t");
 	}
-	for(std::size_t i{};i!=n;++i)
+	for(::std::size_t i{};i!=n;++i)
 	{
 		if(i)
 			put(bos,char_literal_v<u8';',char_type>);
@@ -424,19 +424,19 @@ constexpr void print_loc_era_impl(output bos,basic_lc_time_era<typename output::
 	put(bos,char_literal_v<u8'\n',char_type>);
 }
 
-template<buffer_output_stream output,std::integral ch_type1,std::size_t n1,std::integral ch_type2,std::size_t n2>
+template<buffer_output_stream output,::std::integral ch_type1,::std::size_t n1,::std::integral ch_type2,::std::size_t n2>
 constexpr void print_loc_days_impl_const(output bos,ch_type1 const (&category_name)[n1],basic_io_scatter_t<ch_type2> const (&day_strings)[n2])
 {
 	print_loc_days_real_impl(bos,category_name,n1-1,day_strings,n2);
 }
 
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> const& time)
 {
-	if constexpr(std::same_as<char,char_type>)
+	if constexpr(::std::same_as<char,char_type>)
 	{
 		print_freestanding(bos,"LC_TIME\n");
 		::fast_io::details::print_loc_days_impl_const(bos,"abday",time.abday);
@@ -463,7 +463,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		::fast_io::details::print_loc_days_impl(bos,"timezone",time.timezone);
 		print_freestanding(bos,"END LC_TIME");
 	}
-	else if constexpr(std::same_as<wchar_t,char_type>)
+	else if constexpr(::std::same_as<wchar_t,char_type>)
 	{
 		print_freestanding(bos,L"LC_TIME\n");
 		::fast_io::details::print_loc_days_impl_const(bos,L"abday",time.abday);
@@ -490,7 +490,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		::fast_io::details::print_loc_days_impl(bos,L"timezone",time.timezone);
 		print_freestanding(bos,L"END LC_TIME");
 	}
-	else if constexpr(std::same_as<char16_t,char_type>)
+	else if constexpr(::std::same_as<char16_t,char_type>)
 	{
 		print_freestanding(bos,u"LC_TIME\n");
 		::fast_io::details::print_loc_days_impl_const(bos,u"abday",time.abday);
@@ -517,7 +517,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		::fast_io::details::print_loc_days_impl(bos,u"timezone",time.timezone);
 		print_freestanding(bos,u"END LC_TIME");
 	}
-	else if constexpr(std::same_as<char32_t,char_type>)
+	else if constexpr(::std::same_as<char32_t,char_type>)
 	{
 		print_freestanding(bos,U"LC_TIME\n");
 		::fast_io::details::print_loc_days_impl_const(bos,U"abday",time.abday);
@@ -544,7 +544,7 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 		::fast_io::details::print_loc_days_impl(bos,U"timezone",time.timezone);
 		print_freestanding(bos,U"END LC_TIME");
 	}
-	else if constexpr(std::same_as<char8_t,char_type>)
+	else if constexpr(::std::same_as<char8_t,char_type>)
 	{
 		print_freestanding(bos,u8"LC_TIME\n");
 		::fast_io::details::print_loc_days_impl_const(bos,u8"abday",time.abday);
@@ -574,9 +574,9 @@ constexpr void print_define_impl_lc_time(output bos,basic_lc_time<char_type> con
 }
 
 template<buffer_output_stream output>
-constexpr void print_loc_keyboards_impl(output bos,basic_io_scatter_t<typename output::char_type> const* keyboards_strings,std::size_t keyboards_strings_len)
+constexpr void print_loc_keyboards_impl(output bos,basic_io_scatter_t<typename output::char_type> const* keyboards_strings,::std::size_t keyboards_strings_len)
 {
-	for(std::size_t i{};i!=keyboards_strings_len;++i)
+	for(::std::size_t i{};i!=keyboards_strings_len;++i)
 	{
 		if(i)
 			put(bos,char_literal_v<u8';',typename output::char_type>);
@@ -586,13 +586,13 @@ constexpr void print_loc_keyboards_impl(output bos,basic_io_scatter_t<typename o
 	}
 }
 
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_type> const& messages)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_MESSAGES\n"
 			"yesexpr\t\"",messages.yesexpr,"\"\n"
@@ -601,7 +601,7 @@ constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_t
 			"nostr\t\"",messages.nostr,"\"\n"
 			"END LC_MESSAGES");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_MESSAGES\n"
 			L"yesexpr\t\"",messages.yesexpr,L"\"\n"
@@ -610,7 +610,7 @@ constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_t
 			L"nostr\t\"",messages.nostr,L"\"\n"
 			L"END LC_MESSAGES");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_MESSAGES\n"
 			u"yesexpr\t\"",messages.yesexpr,u"\"\n"
@@ -619,7 +619,7 @@ constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_t
 			u"nostr\t\"",messages.nostr,u"\"\n"
 			u"END LC_MESSAGES");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_MESSAGES\n"
 			U"yesexpr\t\"",messages.yesexpr,U"\"\n"
@@ -628,7 +628,7 @@ constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_t
 			U"nostr\t\"",messages.nostr,U"\"\n"
 			U"END LC_MESSAGES");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_MESSAGES\n"
 			u8"yesexpr\t\"",messages.yesexpr,u8"\"\n"
@@ -638,41 +638,41 @@ constexpr void print_define_impl_lc_messages(output bos,basic_lc_messages<char_t
 			u8"END LC_MESSAGES");
 	}
 }
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_paper(output bos,basic_lc_paper<char_type> const& paper)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_PAPER\n"
 			"width\t",paper.width,"\n"
 			"height\t",paper.height,"\n"
 			"END LC_PAPER");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_PAPER\n"
 			L"width\t",paper.width,L"\n"
 			L"height\t",paper.height,L"\n"
 			L"END LC_PAPER");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_PAPER\n"
 			u"width\t",paper.width,u"\n"
 			u"height\t",paper.height,u"\n"
 			u"END LC_PAPER");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_PAPER\n"
 			U"width\t",paper.width,U"\n"
 			U"height\t",paper.height,U"\n"
 			U"END LC_PAPER");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_PAPER\n"
 			u8"width\t",paper.width,u8"\n"
@@ -681,13 +681,13 @@ constexpr void print_define_impl_lc_paper(output bos,basic_lc_paper<char_type> c
 	}
 }
 
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char_type> const& telephone)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_TELEPHONE\n"
 			"tel_int_fmt\t\"",telephone.tel_int_fmt,"\"\n"
@@ -696,7 +696,7 @@ constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char
 			"int_prefix\t\"",telephone.int_prefix,"\"\n"
 			"END LC_TELEPHONE");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_TELEPHONE\n"
 			L"tel_int_fmt\t\"",telephone.tel_int_fmt,L"\"\n"
@@ -705,7 +705,7 @@ constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char
 			L"int_prefix\t\"",telephone.int_prefix,L"\"\n"
 			L"END LC_TELEPHONE");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_TELEPHONE\n"
 			u"tel_int_fmt\t\"",telephone.tel_int_fmt,u"\"\n"
@@ -714,7 +714,7 @@ constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char
 			u"int_prefix\t\"",telephone.int_prefix,u"\"\n"
 			u"END LC_TELEPHONE");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_TELEPHONE\n"
 			U"tel_int_fmt\t\"",telephone.tel_int_fmt,U"\"\n"
@@ -723,7 +723,7 @@ constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char
 			U"int_prefix\t\"",telephone.int_prefix,U"\"\n"
 			U"END LC_TELEPHONE");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_TELEPHONE\n"
 			u8"tel_int_fmt\t\"",telephone.tel_int_fmt,u8"\"\n"
@@ -733,13 +733,13 @@ constexpr void print_define_impl_lc_telephone(output bos,basic_lc_telephone<char
 			u8"END LC_TELEPHONE");
 	}
 }
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> const& name)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_NAME\n"
 			"name_fmt\t\"",name.name_fmt,"\"\n"
@@ -750,7 +750,7 @@ constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> con
 			"name_ms\t\"",name.name_ms,"\"\n"
 			"END LC_NAME");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_NAME\n"
 			L"name_fmt\t\"",name.name_fmt,L"\"\n"
@@ -761,7 +761,7 @@ constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> con
 			L"name_ms\t\"",name.name_ms,L"\"\n"
 			L"END LC_NAME");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_NAME\n"
 			u"name_fmt\t\"",name.name_fmt,u"\"\n"
@@ -772,7 +772,7 @@ constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> con
 			u"name_ms\t\"",name.name_ms,u"\"\n"
 			u"END LC_NAME");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_NAME\n"
 			U"name_fmt\t\"",name.name_fmt,U"\"\n"
@@ -783,7 +783,7 @@ constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> con
 			U"name_ms\t\"",name.name_ms,U"\"\n"
 			U"END LC_NAME");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_NAME\n"
 			u8"name_fmt\t\"",name.name_fmt,u8"\"\n"
@@ -795,74 +795,74 @@ constexpr void print_define_impl_lc_name(output bos,basic_lc_name<char_type> con
 			u8"END LC_NAME");
 	}
 }
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_measurement(output bos,basic_lc_measurement<char_type> measurement)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_MEASUREMENT\n"
 			"measurement\t",measurement.measurement,"\n"
 			"END LC_MEASUREMENT");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_MEASUREMENT\n"
 			L"measurement\t",measurement.measurement,L"\n"
 			L"END LC_MEASUREMENT");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_MEASUREMENT\n"
 			u"measurement\t",measurement.measurement,u"\n"
 			u"END LC_MEASUREMENT");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_MEASUREMENT\n"
 			U"measurement\t",measurement.measurement,U"\n"
 			U"END LC_MEASUREMENT");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_MEASUREMENT\n"
 			u8"measurement\t",measurement.measurement,u8"\n"
 			u8"END LC_MEASUREMENT");
 	}
 }
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 constexpr void print_define_impl_lc_keyboard(output bos,basic_lc_keyboard<char_type> const& keyboard)
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		print_freestanding(bos,"LC_KEYBOARD\nkeyboards\t");
 		::fast_io::details::print_loc_keyboards_impl(bos,keyboard.keyboards.base,keyboard.keyboards.len);
 		print_freestanding(bos,"\nEND LC_KEYBOARD");
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		print_freestanding(bos,L"LC_KEYBOARD\nkeyboards\t");
 		::fast_io::details::print_loc_keyboards_impl(bos,keyboard.keyboards.base,keyboard.keyboards.len);
 		print_freestanding(bos,L"\nEND LC_KEYBOARD");
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		print_freestanding(bos,u"LC_KEYBOARD\nkeyboards\t");
 		::fast_io::details::print_loc_keyboards_impl(bos,keyboard.keyboards.base,keyboard.keyboards.len);
 		print_freestanding(bos,u"\nEND LC_KEYBOARD");
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		print_freestanding(bos,U"LC_KEYBOARD\nkeyboards\t");
 		::fast_io::details::print_loc_keyboards_impl(bos,keyboard.keyboards.base,keyboard.keyboards.len);
 		print_freestanding(bos,U"\nEND LC_KEYBOARD");
 	}
-	else if constexpr(std::same_as<char_type,char8_t>)
+	else if constexpr(::std::same_as<char_type,char8_t>)
 	{
 		print_freestanding(bos,u8"LC_KEYBOARD\nkeyboards\t");
 		::fast_io::details::print_loc_keyboards_impl(bos,keyboard.keyboards.base,keyboard.keyboards.len);
@@ -870,22 +870,22 @@ constexpr void print_define_impl_lc_keyboard(output bos,basic_lc_keyboard<char_t
 	}
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type const* lc_all_create_nn() noexcept
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 		return "\n\n";
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 		return L"\n\n";
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 		return u"\n\n";
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 		return U"\n\n";
 	else
 		return u8"\n\n";
 }
 
-template<typename output,std::integral char_type>
+template<typename output,::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -914,84 +914,84 @@ constexpr void print_define_impl_lc_all(output bos,basic_lc_all<char_type> const
 
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_identification<char_type>>,output bos,basic_lc_identification<char_type> const& identification)
 {
 	::fast_io::details::print_define_impl_lc_identification(bos,identification);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_monetary<char_type>>,output bos,basic_lc_monetary<char_type> const& monetary)
 {
 	::fast_io::details::print_define_impl_lc_monetary(bos,monetary);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_numeric<char_type>>,output bos,basic_lc_numeric<char_type> const& numeric)
 {
 	::fast_io::details::print_define_impl_lc_numeric(bos,numeric);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_time<char_type>>,output bos,basic_lc_time<char_type> const& time)
 {
 	::fast_io::details::print_define_impl_lc_time(bos,time);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_messages<char_type>>,output bos,basic_lc_messages<char_type> const& messages)
 {
 	::fast_io::details::print_define_impl_lc_messages(bos,messages);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_paper<char_type>>,output bos,basic_lc_paper<char_type> const& paper)
 {
 	::fast_io::details::print_define_impl_lc_paper(bos,paper);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_telephone<char_type>>,output bos,basic_lc_telephone<char_type> const& telephone)
 {
 	::fast_io::details::print_define_impl_lc_telephone(bos,telephone);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_name<char_type>>,output bos,basic_lc_name<char_type> const& name)
 {
 	::fast_io::details::print_define_impl_lc_name(bos,name);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_measurement<char_type>>,output bos,basic_lc_measurement<char_type> measurement)
 {
 	::fast_io::details::print_define_impl_lc_measurement(bos,measurement);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_keyboard<char_type>>,output bos,basic_lc_keyboard<char_type> keyboard)
 {
 	::fast_io::details::print_define_impl_lc_keyboard(bos,keyboard);
 }
 
-template<buffer_output_stream output,std::integral char_type>
-requires (std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
+template<buffer_output_stream output,::std::integral char_type>
+requires (::std::same_as<typename output::char_type,char_type>&&::std::is_trivially_copyable_v<output>)
 constexpr void print_define(io_reserve_type_t<char_type,basic_lc_all<char_type>>,output bos,basic_lc_all<char_type> const& all)
 {
 	::fast_io::details::print_define_impl_lc_all(bos,all);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 constexpr ::fast_io::parameter<basic_lc_all<char_type> const&> status_io_print_forward(io_alias_type_t<char_type>,lc_locale const& ln) noexcept
 {
 	return {*get_all<char_type>(ln)};

@@ -32,11 +32,11 @@ inline constexpr char_type* prtrsv_ipv4_define_impl(char_type* it,ipv4 v) noexce
 
 }
 
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_in_addr>) noexcept
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_in_addr>) noexcept
 {
-	constexpr std::size_t char_unsigned_sz{::fast_io::details::print_integer_reserved_size_cache<10,false,false,char unsigned>};
-	constexpr std::size_t res{char_unsigned_sz*4+3};
+	constexpr ::std::size_t char_unsigned_sz{::fast_io::details::print_integer_reserved_size_cache<10,false,false,char unsigned>};
+	constexpr ::std::size_t res{char_unsigned_sz*4+3};
 	return res;
 }
 
@@ -46,11 +46,11 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,pos
 	return ::fast_io::details::prtrsv_inaddr_define_impl(it,inaddr);
 }
 
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,ipv4>) noexcept
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,ipv4>) noexcept
 {
-	constexpr std::size_t char_unsigned_sz{print_reserve_size(io_reserve_type<char_type,posix_in_addr>)};
-	constexpr std::size_t res{char_unsigned_sz+1+::fast_io::details::print_integer_reserved_size_cache<10,false,false,std::uint_least16_t>};
+	constexpr ::std::size_t char_unsigned_sz{print_reserve_size(io_reserve_type<char_type,posix_in_addr>)};
+	constexpr ::std::size_t res{char_unsigned_sz+1+::fast_io::details::print_integer_reserved_size_cache<10,false,false,::std::uint_least16_t>};
 	return res;
 }
 

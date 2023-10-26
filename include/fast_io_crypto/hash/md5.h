@@ -47,7 +47,7 @@ inline constexpr void uu(auto& a,auto b,auto c,auto d,auto x,int s,auto ac) noex
 	x+=ac;
 	x+=a;
 	x+=unit<op>(b,c,d);
-	a=std::rotl(x,s)+b;
+	a=::std::rotl(x,s)+b;
 }
 
 template<operation op>
@@ -69,26 +69,26 @@ inline constexpr void uutmp(auto& tmp,auto& a,auto b,auto d,auto x,int s,auto ac
 		tmp=t2;
 		x+=d;
 	}
-	a=std::rotl(x,s)+b;
+	a=::std::rotl(x,s)+b;
 }
 
 inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
 #endif
-void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict block,std::byte const* __restrict ed) noexcept
+void md5_main(::std::uint_least32_t * __restrict state,::std::byte const* __restrict block,::std::byte const* __restrict ed) noexcept
 {
-	std::uint_least32_t a{*state},b{state[1]},c{state[2]},d{state[3]};
+	::std::uint_least32_t a{*state},b{state[1]},c{state[2]},d{state[3]};
 
 	using ul32_may_alias
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	= std::uint_least32_t;
+	= ::std::uint_least32_t;
 
-	constexpr std::size_t block_size{64};
-	std::uint_least32_t x[16];
-	std::uint_least32_t tmp;
+	constexpr ::std::size_t block_size{64};
+	::std::uint_least32_t x[16];
+	::std::uint_least32_t tmp;
 	for(;block!=ed;block+=block_size)
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
@@ -98,11 +98,11 @@ void md5_main(std::uint_least32_t * __restrict state,std::byte const* __restrict
 		if(__builtin_is_constant_evaluated())
 #endif
 		{
-			for(std::size_t j{};j!=16;++j)
+			for(::std::size_t j{};j!=16;++j)
 			{
 				auto dj{block+j*4};
-				x[j]=(std::to_integer<std::uint_least32_t>(*dj))|(std::to_integer<std::uint_least32_t>(dj[1])<<8)|
-					(std::to_integer<std::uint_least32_t>(dj[2])<<16)|std::to_integer<std::uint_least32_t>(dj[3]<<24);
+				x[j]=(::std::to_integer<::std::uint_least32_t>(*dj))|(::std::to_integer<::std::uint_least32_t>(dj[1])<<8)|
+					(::std::to_integer<::std::uint_least32_t>(dj[2])<<16)|::std::to_integer<::std::uint_least32_t>(dj[3]<<24);
 			}
 			uu<operation::F>(a, b, c, d, x[ 0], 7, 0xd76aa478u);
 			uu<operation::F>(d, a, b, c, x[ 1], 12, 0xe8c7b756u);
@@ -232,18 +232,18 @@ inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
 #endif
-void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restrict block,std::byte const* __restrict ed) noexcept
+void md5_main_le(::std::uint_least32_t * __restrict state,::std::byte const* __restrict block,::std::byte const* __restrict ed) noexcept
 {
-	std::uint_least32_t a{*state},b{state[1]},c{state[2]},d{state[3]};
+	::std::uint_least32_t a{*state},b{state[1]},c{state[2]},d{state[3]};
 
 	using ul32_may_alias
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	= std::uint_least32_t;
+	= ::std::uint_least32_t;
 
-	constexpr std::size_t block_size{64};
-	std::uint_least32_t tmp;
+	constexpr ::std::size_t block_size{64};
+	::std::uint_least32_t tmp;
 	for(;block!=ed;block+=block_size)
 	{
 		ul32_may_alias const* x{reinterpret_cast<ul32_may_alias const*>(block)};
@@ -353,15 +353,15 @@ void md5_main_le(std::uint_least32_t * __restrict state,std::byte const* __restr
 class md5
 {
 public:
-	using state_value_type = std::uint_least32_t;
-	static inline constexpr std::size_t block_size{64};
-	static inline constexpr std::endian hash_endian{std::endian::little};
-	static inline constexpr std::size_t state_size{4};
+	using state_value_type = ::std::uint_least32_t;
+	static inline constexpr ::std::size_t block_size{64};
+	static inline constexpr ::std::endian hash_endian{::std::endian::little};
+	static inline constexpr ::std::size_t state_size{4};
 	state_value_type state[state_size];
 #if __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif
-	void update_blocks(std::byte const* block_start,std::byte const* block_last) noexcept
+	void update_blocks(::std::byte const* block_start,::std::byte const* block_last) noexcept
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -375,7 +375,7 @@ public:
 		else
 #endif
 		{
-			if constexpr(std::endian::native==std::endian::little)
+			if constexpr(::std::endian::native==::std::endian::little)
 			{
 				::fast_io::details::md5::md5_main_le(this->state,block_start,block_last);
 			}
@@ -389,11 +389,11 @@ public:
 
 struct md5_initializer
 {
-	static inline constexpr std::size_t digest_size{16};
+	static inline constexpr ::std::size_t digest_size{16};
 	static inline constexpr ::fast_io::details::md5::md5 initialize_value{{0x67452301,0xefcdab89,0x98badcfe,0x10325476}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least32_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least32_t const* digest,::std::byte* ptr) noexcept
 	{
-		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,std::endian::little>(digest,ptr);
+		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,::std::endian::little>(digest,ptr);
 	}
 };
 

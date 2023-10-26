@@ -8,7 +8,7 @@ extern "C" {
 namespace fast_io
 {
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 requires (sizeof(ch_type) == 1)
 class basic_avio_context_io_observer
 {
@@ -29,7 +29,7 @@ public:
 	}
 };
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline void write(basic_avio_context_io_observer<char_type> baciob,char_type const* first,char_type const* last)
 {
 	baciob.avios->error=0;
@@ -40,7 +40,7 @@ inline void write(basic_avio_context_io_observer<char_type> baciob,char_type con
 			constexpr
 				::std::size_t mx{INT_MAX};
 			int this_round{INT_MAX};
-			::std::size_t diff{static_cast<std::size_t>(last-first)};
+			::std::size_t diff{static_cast<::std::size_t>(last-first)};
 			if(diff<mx)
 #if __has_cpp_attribute(likely)
 			[[likely]]
@@ -62,7 +62,7 @@ inline void write(basic_avio_context_io_observer<char_type> baciob,char_type con
 	}
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline char_type* read(basic_avio_context_io_observer<char_type> baciob,char_type* first,char_type* last)
 {
 	baciob.avios->error=0;
@@ -72,7 +72,7 @@ inline char_type* read(basic_avio_context_io_observer<char_type> baciob,char_typ
 		constexpr
 			::std::size_t mx{INT_MAX};
 		int this_round{INT_MAX};
-		::std::size_t diff{static_cast<std::size_t>(last-first)};
+		::std::size_t diff{static_cast<::std::size_t>(last-first)};
 		if(diff<mx)
 #if __has_cpp_attribute(likely)
 		[[likely]]
@@ -93,7 +93,7 @@ inline char_type* read(basic_avio_context_io_observer<char_type> baciob,char_typ
 	return ret;
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 requires (sizeof(ch_type) == 1)
 inline constexpr basic_avio_context_io_observer<ch_type> io_value_handle(basic_avio_context_io_observer<ch_type> baciob) noexcept
 {
@@ -102,25 +102,25 @@ inline constexpr basic_avio_context_io_observer<ch_type> io_value_handle(basic_a
 
 #if 0
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline char_type* ibuffer_begin(basic_avio_context_io_observer<char_type> baciob) noexcept
 {
 	return reinterpret_cast<char_type*>(baciob.avios.buffer);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline char_type* ibuffer_curr(basic_avio_context_io_observer<char_type> baciob) noexcept
 {
 	return reinterpret_cast<char_type*>(baciob.avios.buf_ptr);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline char_type* ibuffer_end(basic_avio_context_io_observer<char_type> baciob) noexcept
 {
 	return reinterpret_cast<char_type*>(baciob.avios.buf_end);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline bool ibuffer_underflow(basic_avio_context_io_observer<char_type> baciob) noexcept
 {
 	baciob.avios.buf_ptr = baciob.avios.buf_end<=baciob.avios.buf_ptr;
@@ -128,19 +128,19 @@ inline bool ibuffer_underflow(basic_avio_context_io_observer<char_type> baciob) 
 	return;	
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline char_type* ibuffer_begin(basic_avio_context_io_observer<char_type> baciob) noexcept
 {
 	return reinterpret_cast<char_type*>(baciob.avios.buffer);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline char_type* ibuffer_curr(basic_avio_context_io_observer<char_type> baciob) noexcept
 {
 	return reinterpret_cast<char_type*>(baciob.avios.buf_ptr);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline char_type* ibuffer_end(basic_avio_context_io_observer<char_type> baciob) noexcept
 {
 	return reinterpret_cast<char_type*>(baciob.avios.buf_end);
@@ -148,7 +148,7 @@ inline char_type* ibuffer_end(basic_avio_context_io_observer<char_type> baciob) 
 
 #endif
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 requires (sizeof(ch_type) == 1)
 class basic_avio_context_file:public basic_avio_context_io_observer<ch_type>
 {
@@ -217,7 +217,7 @@ struct avio_buffer
 	}
 };
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type) == 1)
 struct basic_avio_buffer_context
 {
@@ -235,7 +235,7 @@ namespace details
 template<typename T>
 concept has_file_status_impl = requires(T t)
 {
-	{status(t)}->std::same_as<::fast_io::posix_file_status>;
+	{status(t)}->::std::same_as<::fast_io::posix_file_status>;
 };
 
 template<typename rftype>
@@ -307,7 +307,7 @@ inline basic_avio_buffer_context<typename rftype::char_type> create_avio_context
 				if constexpr(has_file_status_impl<rftype>)
 				{
 					auto sz{status(rft).size};
-					if constexpr(std::numeric_limits<decltype(sz)>::max()>INT64_MAX)
+					if constexpr(::std::numeric_limits<decltype(sz)>::max()>INT64_MAX)
 					{
 						if(sz>INT64_MAX)
 						{

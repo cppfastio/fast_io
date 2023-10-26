@@ -24,7 +24,7 @@ inline namespace manipulators
 template<typename T>
 requires requires(T const& eh)
 {
-	{eh.what()}->std::same_as<char const*>;
+	{eh.what()}->::std::same_as<char const*>;
 }
 inline cross_code_cvt_t<char8_t> ehvw(T const& eh) noexcept
 {

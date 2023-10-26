@@ -17,25 +17,25 @@ line_buffering = (1<<4)|(1<<1),
 
 inline constexpr buffer_mode operator&(buffer_mode x, buffer_mode y) noexcept
 {
-using utype = typename std::underlying_type<buffer_mode>::type;
+using utype = typename ::std::underlying_type<buffer_mode>::type;
 return static_cast<buffer_mode>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
 inline constexpr buffer_mode operator|(buffer_mode x, buffer_mode y) noexcept
 {
-using utype = typename std::underlying_type<buffer_mode>::type;
+using utype = typename ::std::underlying_type<buffer_mode>::type;
 return static_cast<buffer_mode>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
 inline constexpr buffer_mode operator^(buffer_mode x, buffer_mode y) noexcept
 {
-using utype = typename std::underlying_type<buffer_mode>::type;
+using utype = typename ::std::underlying_type<buffer_mode>::type;
 return static_cast<buffer_mode>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
 inline constexpr buffer_mode operator~(buffer_mode x) noexcept
 {
-using utype = typename std::underlying_type<buffer_mode>::type;
+using utype = typename ::std::underlying_type<buffer_mode>::type;
 return static_cast<buffer_mode>(~static_cast<utype>(x));
 }
 
@@ -47,7 +47,7 @@ inline constexpr buffer_mode& operator^=(buffer_mode& x, buffer_mode y) noexcept
 
 
 template<typename char_type>
-inline constexpr std::size_t io_default_buffer_size = details::cal_buffer_size<char_type,true>();
+inline constexpr ::std::size_t io_default_buffer_size = details::cal_buffer_size<char_type,true>();
 
 struct empty_buffer_pointers
 {};

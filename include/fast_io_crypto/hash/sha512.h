@@ -6,7 +6,7 @@ https://github.com/noloader/SHA-Intrinsics/blob/master/sha256-x86.c
 namespace fast_io::details::sha512
 {
 
-inline constexpr std::uint_least64_t K512[]
+inline constexpr ::std::uint_least64_t K512[]
 {
 0x428a2f98d728ae22, 0x7137449123ef65cd,
 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc,
@@ -55,7 +55,7 @@ inline constexpr std::uint_least64_t K512[]
 #endif
 inline constexpr auto Sigma0(auto x) noexcept
 {
-	return std::rotr(x,28)^std::rotr(x,34)^std::rotr(x,39);
+	return ::std::rotr(x,28)^::std::rotr(x,34)^::std::rotr(x,39);
 }
 
 #if __has_cpp_attribute(msvc::forceinline)
@@ -63,17 +63,17 @@ inline constexpr auto Sigma0(auto x) noexcept
 #endif
 inline constexpr auto Sigma1(auto x) noexcept
 {
-	return std::rotr(x,14)^std::rotr(x,18)^std::rotr(x,41);
+	return ::std::rotr(x,14)^::std::rotr(x,18)^::std::rotr(x,41);
 }
 
 inline constexpr auto sigma0(auto x) noexcept
 {
-	return std::rotr(x,1)^std::rotr(x,8)^(x>>7);
+	return ::std::rotr(x,1)^::std::rotr(x,8)^(x>>7);
 }
 
 inline constexpr auto sigma1(auto x) noexcept
 {
-	return std::rotr(x,19)^std::rotr(x,61)^(x>>6);
+	return ::std::rotr(x,19)^::std::rotr(x,61)^(x>>6);
 }
 
 #if __has_cpp_attribute(msvc::forceinline)
@@ -94,40 +94,40 @@ inline constexpr auto Maj(auto x,auto y,auto z) noexcept
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void sha512_scalar_round(std::uint_least64_t T1k,std::uint_least64_t a,std::uint_least64_t b,std::uint_least64_t& __restrict d,
-				std::uint_least64_t e,std::uint_least64_t f,std::uint_least64_t g,std::uint_least64_t& __restrict h,std::uint_least64_t& __restrict bpc) noexcept
+inline constexpr void sha512_scalar_round(::std::uint_least64_t T1k,::std::uint_least64_t a,::std::uint_least64_t b,::std::uint_least64_t& __restrict d,
+				::std::uint_least64_t e,::std::uint_least64_t f,::std::uint_least64_t g,::std::uint_least64_t& __restrict h,::std::uint_least64_t& __restrict bpc) noexcept
 {
 	T1k+=h+Sigma1(e)+Ch(e,f,g);
 	h=Sigma0(a);
-	std::uint_least64_t apb{a^b};
+	::std::uint_least64_t apb{a^b};
 	h+=(apb&bpc)^b;
 	bpc=apb;
 	d+=T1k;
 	h+=T1k;
 }
 
-inline constexpr void sha512_do_constexpr_function(std::uint_least64_t* __restrict state,std::byte const* __restrict data,std::byte const* __restrict ed) noexcept
+inline constexpr void sha512_do_constexpr_function(::std::uint_least64_t* __restrict state,::std::byte const* __restrict data,::std::byte const* __restrict ed) noexcept
 {
-	std::uint_least64_t a{state[0]}, b{state[1]}, c{state[2]}, d{state[3]}, e{state[4]}, f{state[5]}, g{state[6]}, h{state[7]}, s0, s1, T1, T2;
-	std::uint_least64_t X[16];
+	::std::uint_least64_t a{state[0]}, b{state[1]}, c{state[2]}, d{state[3]}, e{state[4]}, f{state[5]}, g{state[6]}, h{state[7]}, s0, s1, T1, T2;
+	::std::uint_least64_t X[16];
 	while(data!=ed)
 	{
-		std::uint_least32_t i{};
+		::std::uint_least32_t i{};
 		for (; i < 16; ++i)
 		{
-			if (std::is_constant_evaluated())
+			if (::std::is_constant_evaluated())
 			{
-				std::uint_least64_t value{};
-				for(std::size_t j{};j!=8;++j)
+				::std::uint_least64_t value{};
+				for(::std::size_t j{};j!=8;++j)
 				{
 					value<<=8u;
-					value|=std::to_integer<std::uint_least64_t>(data[j]);
+					value|=::std::to_integer<::std::uint_least64_t>(data[j]);
 				}
 				X[i] = value;
 			}
 			else
 			{
-				std::uint_least64_t value;
+				::std::uint_least64_t value;
 				::fast_io::details::my_memcpy(__builtin_addressof(value),data,8);
 				X[i] = big_endian(value);
 			}
@@ -210,16 +210,16 @@ inline constexpr void sha512_do_constexpr_function(std::uint_least64_t* __restri
 class sha512
 {
 public:
-	using state_value_type = std::uint_least64_t;
-	static inline constexpr std::size_t block_size{128};
-	static inline constexpr std::endian hash_endian{std::endian::big};
-	static inline constexpr std::size_t state_size{8};
+	using state_value_type = ::std::uint_least64_t;
+	static inline constexpr ::std::size_t block_size{128};
+	static inline constexpr ::std::endian hash_endian{::std::endian::big};
+	static inline constexpr ::std::size_t state_size{8};
 	state_value_type state[state_size];
 	inline
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif
-	void update_blocks(std::byte const* blocks_start,std::byte const* blocks_last) noexcept
+	void update_blocks(::std::byte const* blocks_start,::std::byte const* blocks_last) noexcept
 	{
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -240,39 +240,39 @@ public:
 
 struct sha512_initializer
 {
-	static inline constexpr std::size_t digest_size{64};
+	static inline constexpr ::std::size_t digest_size{64};
 	static inline constexpr ::fast_io::details::sha512::sha512 initialize_value{{0x6a09e667f3bcc908, 0xbb67ae8584caa73b,0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1,0x510e527fade682d1, 0x9b05688c2b3e6c1f,0x1f83d9abfb41bd6b, 0x5be0cd19137e2179}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least64_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least64_t const* digest,::std::byte* ptr) noexcept
 	{
-		hash_digest_to_byte_ptr_common<::std::uint_least64_t,digest_size,std::endian::big>(digest,ptr);
+		hash_digest_to_byte_ptr_common<::std::uint_least64_t,digest_size,::std::endian::big>(digest,ptr);
 	}
 };
 
 struct sha512_224_initializer
 {
-	static inline constexpr std::size_t digest_size{28};
+	static inline constexpr ::std::size_t digest_size{28};
 	static inline constexpr ::fast_io::details::sha512::sha512 initialize_value{{0x8c3d37c819544da2,0x73e1996689dcd4d6,0x1dfab7ae32ff9c82,0x679dd514582f9fcf,0x0f6d2b697bd44da8,0x77e36f7304c48942,0x3f9d85a86a1d36c8,0x1112e6ad91d692a1}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least64_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least64_t const* digest,::std::byte* ptr) noexcept
 	{
-		hash_digest_to_byte_ptr_common<::std::uint_least64_t,digest_size,std::endian::big>(digest,ptr);
+		hash_digest_to_byte_ptr_common<::std::uint_least64_t,digest_size,::std::endian::big>(digest,ptr);
 	}
 };
 
 struct sha512_256_initializer
 {
-	static inline constexpr std::size_t digest_size{32};
+	static inline constexpr ::std::size_t digest_size{32};
 	static inline constexpr ::fast_io::details::sha512::sha512 initialize_value{{0x22312194fc2bf72c,0x9f555fa3c84c64c2,0x2393b86b6f53b151,0x963877195940eabd,0x96283ee2a88effe3,0xbe5e1e2553863992,0x2b0199fc2c85b8aa,0x0eb72ddc81c52ca2}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least64_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least64_t const* digest,::std::byte* ptr) noexcept
 	{
-		hash_digest_to_byte_ptr_common<::std::uint_least64_t,digest_size,std::endian::big>(digest,ptr);
+		hash_digest_to_byte_ptr_common<::std::uint_least64_t,digest_size,::std::endian::big>(digest,ptr);
 	}
 };
 
 struct sha384_initializer
 {
-	static inline constexpr std::size_t digest_size{48};
+	static inline constexpr ::std::size_t digest_size{48};
 	static inline constexpr ::fast_io::details::sha512::sha512 initialize_value{{0xcbbb9d5dc1059ed8,0x629a292a367cd507,0x9159015a3070dd17,0x152fecd8f70e5939,0x67332667ffc00b31,0x8eb44a8768581511,0xdb0c2e0d64f98fa7,0x47b5481dbefa4fa4}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least64_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least64_t const* digest,::std::byte* ptr) noexcept
 	{
 		hash_digest_to_byte_ptr_common<::std::uint_least64_t,digest_size,::std::endian::big>(digest,ptr);
 	}

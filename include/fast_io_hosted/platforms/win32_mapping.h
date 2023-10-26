@@ -10,25 +10,25 @@ copy=0x00000001,write=0x00000002,read=0x00000004,all_access=0x000f001f,execute=0
 
 constexpr win32_file_map_attribute operator&(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
 {
-using utype = typename std::underlying_type<win32_file_map_attribute>::type;
+using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 return static_cast<win32_file_map_attribute>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
 constexpr win32_file_map_attribute operator|(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
 {
-using utype = typename std::underlying_type<win32_file_map_attribute>::type;
+using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 return static_cast<win32_file_map_attribute>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
 constexpr win32_file_map_attribute operator^(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
 {
-using utype = typename std::underlying_type<win32_file_map_attribute>::type;
+using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 return static_cast<win32_file_map_attribute>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
 constexpr win32_file_map_attribute operator~(win32_file_map_attribute x) noexcept
 {
-using utype = typename std::underlying_type<win32_file_map_attribute>::type;
+using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 return static_cast<win32_file_map_attribute>(~static_cast<utype>(x));
 }
 
@@ -61,14 +61,14 @@ inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 {
 	if constexpr(family==win32_family::wide_nt)
 	{
-		void* addr{win32::CreateFileMappingW(handle,nullptr,static_cast<std::uint_least32_t>(attr),0,0,nullptr)};
+		void* addr{win32::CreateFileMappingW(handle,nullptr,static_cast<::std::uint_least32_t>(attr),0,0,nullptr)};
 		if(addr==nullptr)
 			throw_win32_error();
 		return addr;
 	}
 	else
 	{
-		void* addr{win32::CreateFileMappingA(handle,nullptr,static_cast<std::uint_least32_t>(attr),0,0,nullptr)};
+		void* addr{win32::CreateFileMappingA(handle,nullptr,static_cast<::std::uint_least32_t>(attr),0,0,nullptr)};
 		if(addr==nullptr)
 			throw_win32_error();
 		return addr;
@@ -81,27 +81,27 @@ template<win32_family family>
 class win32_family_memory_map_file
 {
 public:
-	using value_type = std::byte;
+	using value_type = ::std::byte;
 	using pointer = value_type*;
 	using const_pointer = value_type const*;
 	using const_iterator = const_pointer;
 	using iterator = pointer;
 	using reference = value_type&;
 	using const_reference = value_type const&;
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-	using reverse_iterator = std::reverse_iterator<iterator>;
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	pointer address_begin{},address_end{};
 	constexpr win32_family_memory_map_file()=default;
-	constexpr win32_family_memory_map_file(std::byte* addressbegin,std::byte* addressend):address_begin{addressbegin},address_end{addressend}{}
-	win32_family_memory_map_file(nt_at_entry bf,file_map_attribute attr,std::size_t bytes,std::uintmax_t start_address=0)
+	constexpr win32_family_memory_map_file(::std::byte* addressbegin,::std::byte* addressend):address_begin{addressbegin},address_end{addressend}{}
+	win32_family_memory_map_file(nt_at_entry bf,file_map_attribute attr,::std::size_t bytes,::std::uintmax_t start_address=0)
 	{
 		basic_win32_family_file<family,char> mapping_file{win32::details::create_file_mapping_impl<family>(bf.handle,attr)};
-		void *base_ptr{win32::MapViewOfFile(mapping_file.handle,static_cast<std::uint_least32_t>(to_win32_file_map_attribute(attr)),start_address>>32,static_cast<std::uint_least32_t>(start_address),bytes)};
+		void *base_ptr{win32::MapViewOfFile(mapping_file.handle,static_cast<::std::uint_least32_t>(to_win32_file_map_attribute(attr)),start_address>>32,static_cast<::std::uint_least32_t>(start_address),bytes)};
 		if(base_ptr==nullptr)
 			throw_win32_error();
-		this->address_begin=reinterpret_cast<std::byte*>(base_ptr);
+		this->address_begin=reinterpret_cast<::std::byte*>(base_ptr);
 		this->address_end=this->address_begin+bytes;
 	}
 	constexpr pointer data() const noexcept
@@ -112,9 +112,9 @@ public:
 	{
 		return address_begin==address_end;
 	}
-	constexpr std::size_t size() const noexcept
+	constexpr ::std::size_t size() const noexcept
 	{
-		return static_cast<std::size_t>(address_end-address_begin);
+		return static_cast<::std::size_t>(address_end-address_begin);
 	}
 	constexpr const_iterator cbegin() const noexcept
 	{
@@ -140,7 +140,7 @@ public:
 	{
 		return address_end;
 	}
-	constexpr std::size_t max_size() const noexcept
+	constexpr ::std::size_t max_size() const noexcept
 	{
 		return SIZE_MAX;
 	}

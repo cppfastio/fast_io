@@ -22,7 +22,7 @@ inline void throw_pulse_audio_error(int ec=PA_OK)
 #endif
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_pulseaudio_simple_io_observer
 {
 public:
@@ -43,7 +43,7 @@ public:
 	}
 };
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_pulseaudio_simple_file:public basic_pulseaudio_simple_io_observer<ch_type>
 {
 public:
@@ -113,32 +113,32 @@ inline void pa_simple_write_overflow_impl(pa_simple *ps,::std::byte const *first
 
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline void read_all_bytes_underflow_define(basic_pulseaudio_simple_io_observer<ch_type> iob,::std::byte *first,::std::byte *last)
 {
 	return ::fast_io::details::pa_simple_read_underflow_impl(iob.s,first,last);
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline void write_all_bytes_overflow_define(basic_pulseaudio_simple_io_observer<ch_type> iob,::std::byte const *first,::std::byte const *last)
 {
 	return ::fast_io::details::pa_simple_write_overflow_impl(iob.s,first,last);
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr basic_pulseaudio_simple_io_observer<ch_type> io_stream_ref_define(basic_pulseaudio_simple_io_observer<ch_type> other) noexcept
 {
 	return other;
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr basic_pulseaudio_simple_io_observer<char> io_bytes_stream_ref_define(basic_pulseaudio_simple_io_observer<ch_type> other) noexcept
 {
 	return other;
 }
 
 #if 0
-template<std::integral char_type>
+template<::std::integral char_type>
 inline void flush(basic_pulseaudio_simple_io_observer<char_type> bpsiob)
 {
 	int err{};

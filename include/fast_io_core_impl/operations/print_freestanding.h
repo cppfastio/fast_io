@@ -131,11 +131,11 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 	}
 }
 
-template<typename output,std::size_t N>
+template<typename output,::std::size_t N>
 inline constexpr bool minimum_buffer_output_stream_require_size_constant_impl =
 	(N<obuffer_minimum_size_define(::fast_io::io_reserve_type<typename output::output_char_type,output>));
 
-template<typename output,std::size_t N>
+template<typename output,::std::size_t N>
 concept minimum_buffer_output_stream_require_size_impl = ::fast_io::operations::decay::defines::has_obuffer_minimum_size_operations<output>
 	&& minimum_buffer_output_stream_require_size_constant_impl<output,N>;
 
@@ -189,11 +189,11 @@ inline auto prrsvsct_byte_common_impl(io_scatter_t* pscatters,char_type const* b
 }
 
 template<bool line=false,typename output,typename T>
-requires (std::is_trivially_copyable_v<output>&&std::is_trivially_copyable_v<T>)
+requires (::std::is_trivially_copyable_v<output>&&::std::is_trivially_copyable_v<T>)
 inline constexpr void print_control_single(output outstm,T t)
 {
 	using char_type = typename output::output_char_type;
-	using value_type = std::remove_cvref_t<T>;
+	using value_type = ::std::remove_cvref_t<T>;
 	constexpr bool asan_activated{::fast_io::details::asan_state::current==::fast_io::details::asan_state::activate};
 	constexpr auto lfch{char_literal_v<u8'\n',char_type>};
 	if constexpr(scatter_printable<char_type,value_type>)
@@ -214,9 +214,9 @@ inline constexpr void print_control_single(output outstm,T t)
 			{
 				auto curr=obuffer_curr(out);
 				auto end=obuffer_end(out);
-				std::ptrdiff_t sz(end-curr-1);
-				std::size_t const len{scatter.len};
-				if(sz<static_cast<std::ptrdiff_t>(len))
+				::std::ptrdiff_t sz(end-curr-1);
+				::std::size_t const len{scatter.len};
+				if(sz<static_cast<::std::ptrdiff_t>(len))
 					fast_terminate();
 				curr=non_overlapped_copy_n(scatter.base,scatter.len,curr);
 				*curr=lfch;
@@ -227,9 +227,9 @@ inline constexpr void print_control_single(output outstm,T t)
 			{
 				auto curr=obuffer_curr(out);
 				auto end=obuffer_end(out);
-				std::size_t const len{scatter.len};
-				std::ptrdiff_t sz(end-curr-1);
-				if(static_cast<std::ptrdiff_t>(len)<sz)[[likely]]
+				::std::size_t const len{scatter.len};
+				::std::ptrdiff_t sz(end-curr-1);
+				if(static_cast<::std::ptrdiff_t>(len)<sz)[[likely]]
 				{
 					curr=details::non_overlapped_copy_n(scatter.base,len,curr);
 					*curr=lfch;
@@ -280,15 +280,15 @@ inline constexpr void print_control_single(output outstm,T t)
 	}
 	else if constexpr(reserve_printable<char_type,value_type>)
 	{
-		constexpr std::size_t real_size{print_reserve_size(::fast_io::io_reserve_type<char_type,value_type>)};
-		constexpr std::size_t size{real_size+static_cast<std::size_t>(line)};
+		constexpr ::std::size_t real_size{print_reserve_size(::fast_io::io_reserve_type<char_type,value_type>)};
+		constexpr ::std::size_t size{real_size+static_cast<::std::size_t>(line)};
 		static_assert(real_size<PTRDIFF_MAX);
 #if 0
 		if constexpr(contiguous_output_stream<output>)
 		{
 			auto bcurr{obuffer_curr(outstm)};
 			auto bend{obuffer_end(outstm)};
-			std::size_t diff{static_cast<std::size_t>(bend-bcurr)};
+			::std::size_t diff{static_cast<::std::size_t>(bend-bcurr)};
 			if(diff<size)[[unlikely]]
 				fast_terminate();
 			auto it{print_reserve_define(::fast_io::io_reserve_type<char_type,value_type>,bcurr,t)};
@@ -306,8 +306,8 @@ inline constexpr void print_control_single(output outstm,T t)
 			{
 				char_type* bcurr{obuffer_curr(outstm)};
 				char_type* bend{obuffer_end(outstm)};
-				std::ptrdiff_t const diff(bend-bcurr);
-				bool smaller{static_cast<std::ptrdiff_t>(size)<diff};
+				::std::ptrdiff_t const diff(bend-bcurr);
+				bool smaller{static_cast<::std::ptrdiff_t>(size)<diff};
 				if constexpr(minimum_buffer_output_stream_require_size_impl<output,size>)
 				{
 					if(!smaller)[[unlikely]]
@@ -357,17 +357,17 @@ inline constexpr void print_control_single(output outstm,T t)
 	}
 	else if constexpr(dynamic_reserve_printable<char_type,value_type>)
 	{
-		std::size_t size{print_reserve_size(::fast_io::io_reserve_type<char_type,value_type>,t)};
+		::std::size_t size{print_reserve_size(::fast_io::io_reserve_type<char_type,value_type>,t)};
 		if constexpr(line)
 		{
-			constexpr std::size_t mx{std::numeric_limits<std::ptrdiff_t>::max()-1};
+			constexpr ::std::size_t mx{::std::numeric_limits<::std::ptrdiff_t>::max()-1};
 			if(size>=mx)
 				fast_terminate();
 			++size;
 		}
 		else
 		{
-			constexpr std::size_t mx{std::numeric_limits<std::ptrdiff_t>::max()};
+			constexpr ::std::size_t mx{::std::numeric_limits<::std::ptrdiff_t>::max()};
 			if(mx<size)
 				fast_terminate();
 		}
@@ -377,7 +377,7 @@ inline constexpr void print_control_single(output outstm,T t)
 			auto bcurr{obuffer_curr(outstm)};
 			auto bend{obuffer_end(outstm)};
 			auto it{print_reserve_define(::fast_io::io_reserve_type<char_type,value_type>,bcurr,t,size)};
-			std::size_t diff{static_cast<std::size_t>(bend-bcurr)};
+			::std::size_t diff{static_cast<::std::size_t>(bend-bcurr)};
 			if(diff<size)[[unlikely]]
 				fast_terminate();
 			if constexpr(line)
@@ -394,9 +394,9 @@ inline constexpr void print_control_single(output outstm,T t)
 			{
 				auto curr{obuffer_curr(outstm)};
 				auto ed{obuffer_end(outstm)};
-				std::ptrdiff_t diff(ed-curr);
+				::std::ptrdiff_t diff(ed-curr);
 				auto toptr{curr};
-				bool smaller{static_cast<std::ptrdiff_t>(size)<diff};
+				bool smaller{static_cast<::std::ptrdiff_t>(size)<diff};
 				::fast_io::details::local_operator_new_array_ptr<char_type> newptr;
 				if(!smaller)
 #if __has_cpp_attribute(unlikely)
@@ -490,7 +490,7 @@ static_assert(no,"type not printable");
 }
 
 #if 0
-template<bool ln,::std::integral char_type,std::size_t n,typename Arg,typename ...Args>
+template<bool ln,::std::integral char_type,::std::size_t n,typename Arg,typename ...Args>
 inline constexpr char_type* printrsvcontiguousimpl(char_type* iter,Arg arg,Args... args)
 {
 	if constexpr(sizeof...(Args)!=0)
@@ -1067,8 +1067,8 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm,T t,Args .
 					static_cast<::std::size_t>(needprintlf)};
 				char_type* bcurr{obuffer_curr(optstm)};
 				char_type* bend{obuffer_end(optstm)};
-				std::ptrdiff_t const diff(bend-bcurr);
-				bool smaller{static_cast<std::ptrdiff_t>(buffersize)<diff};
+				::std::ptrdiff_t const diff(bend-bcurr);
+				bool smaller{static_cast<::std::ptrdiff_t>(buffersize)<diff};
 				if constexpr(minimum_buffer_output_stream_require_size_impl<outputstmtype,buffersize>)
 				{
 					if(!smaller)[[unlikely]]

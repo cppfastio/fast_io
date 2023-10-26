@@ -13,7 +13,7 @@ namespace fast_io
 
 namespace intrinsics
 {
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 struct
 #if defined(__has_declspec_attribute)
 #if __has_declspec_attribute(intrin_type)
@@ -33,8 +33,8 @@ namespace details
 template<typename T,typename Func>
 inline constexpr void generic_simd_operation_impl(T& selfval,T const& other,Func func) noexcept
 {
-	constexpr std::size_t N{std::remove_cvref_t<T>::size()};
-	for(std::size_t i{};i!=N;++i)
+	constexpr ::std::size_t N{::std::remove_cvref_t<T>::size()};
+	for(::std::size_t i{};i!=N;++i)
 	{
 		func(selfval.value[i],other.value[i]);
 	}
@@ -43,19 +43,19 @@ inline constexpr void generic_simd_operation_impl(T& selfval,T const& other,Func
 template<typename T,typename Func>
 inline constexpr void generic_simd_self_op_impl(T& selfval,Func func) noexcept
 {
-	constexpr std::size_t N{std::remove_cvref_t<T>::size()};
-	for(std::size_t i{};i!=N;++i)
+	constexpr ::std::size_t N{::std::remove_cvref_t<T>::size()};
+	for(::std::size_t i{};i!=N;++i)
 	{
 		func(selfval.value[i]);
 	}
 }
 
 template<typename T,typename Func>
-inline constexpr std::remove_cvref_t<T> generic_simd_self_create_op_impl(T const& selfval,Func func) noexcept
+inline constexpr ::std::remove_cvref_t<T> generic_simd_self_create_op_impl(T const& selfval,Func func) noexcept
 {
-	std::remove_cvref_t<T> newval;
-	constexpr std::size_t N{std::remove_cvref_t<T>::size()};
-	for(std::size_t i{};i!=N;++i)
+	::std::remove_cvref_t<T> newval;
+	constexpr ::std::size_t N{::std::remove_cvref_t<T>::size()};
+	for(::std::size_t i{};i!=N;++i)
 	{
 		newval.value[i]=func(selfval.value[i]);
 	}
@@ -63,11 +63,11 @@ inline constexpr std::remove_cvref_t<T> generic_simd_self_create_op_impl(T const
 }
 
 template<typename T,typename Func>
-inline constexpr std::remove_cvref_t<T> generic_simd_create_op_impl(T const& a,T const& b,Func func) noexcept
+inline constexpr ::std::remove_cvref_t<T> generic_simd_create_op_impl(T const& a,T const& b,Func func) noexcept
 {
-	constexpr std::size_t N{std::remove_cvref_t<T>::size()};
-	std::remove_cvref_t<T> newval;
-	for(std::size_t i{};i!=N;++i)
+	constexpr ::std::size_t N{::std::remove_cvref_t<T>::size()};
+	::std::remove_cvref_t<T> newval;
+	for(::std::size_t i{};i!=N;++i)
 	{
 		newval.value[i]=func(a.value[i],b.value[i]);
 	}
@@ -77,19 +77,19 @@ inline constexpr std::remove_cvref_t<T> generic_simd_create_op_impl(T const& a,T
 template<typename T>
 inline constexpr auto create_value_mx() noexcept
 {
-	::fast_io::freestanding::array<std::uint_least8_t,sizeof(T)> arr;
+	::fast_io::freestanding::array<::std::uint_least8_t,sizeof(T)> arr;
 	for(auto& e : arr)
 	{
-		e=std::numeric_limits<std::uint_least8_t>::max();
+		e=::std::numeric_limits<::std::uint_least8_t>::max();
 	}
-	return std::bit_cast<T>(arr);
+	return ::std::bit_cast<T>(arr);
 }
 
 template<typename T,typename Func>
 inline constexpr T generic_simd_comparision_common_impl(T const& a,
 	T const& b,Func func) noexcept
 {
-	using value_type = typename std::remove_cvref_t<T>::value_type;
+	using value_type = typename ::std::remove_cvref_t<T>::value_type;
 	return ::fast_io::details::generic_simd_create_op_impl(a,b,[&](value_type va,value_type vb) noexcept ->value_type
 	{
 		bool t{func(va,vb)};
@@ -102,13 +102,13 @@ inline constexpr T generic_simd_comparision_common_impl(T const& a,
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T,N> all_zero_simd_vector_mask{};
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T,N> all_one_simd_vector_mask{create_value_mx<::fast_io::intrinsics::simd_vector<T,N>>()};
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_io::intrinsics::simd_vector<T,N> const& a,::fast_io::intrinsics::simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -121,7 +121,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				__m128i amm = __builtin_bit_cast(__m128i,a);
 				__m128i bmm = __builtin_bit_cast(__m128i,b);
@@ -142,7 +142,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 					return __builtin_bit_cast(vec_type,_mm_add_epi64(amm,bmm));
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -169,7 +169,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				__m256i amm = __builtin_bit_cast(__m256i,a);
 				__m256i bmm = __builtin_bit_cast(__m256i,b);
@@ -190,7 +190,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 					return __builtin_bit_cast(vec_type,_mm256_add_epi64(amm,bmm));
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -217,7 +217,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
@@ -238,7 +238,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 					return __builtin_bit_cast(vec_type,_mm512_add_epi64(amm,bmm));
 				}
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -267,7 +267,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -324,7 +324,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -366,9 +366,9 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 	}
 	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
-		if constexpr(std::signed_integral<T>)
+		if constexpr(::std::signed_integral<T>)
 		{
-			using unsignedtype = std::make_unsigned_t<T>;
+			using unsignedtype = ::std::make_unsigned_t<T>;
 			return static_cast<T>(static_cast<unsignedtype>(va)+static_cast<unsignedtype>(vb));
 		}
 		else
@@ -378,7 +378,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_add_common(::fast_
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fast_io::intrinsics::simd_vector<T,N> const& a,::fast_io::intrinsics::simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -392,7 +392,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				__m128i amm = __builtin_bit_cast(__m128i,a);
 				__m128i bmm = __builtin_bit_cast(__m128i,b);
@@ -413,7 +413,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 					return __builtin_bit_cast(vec_type,_mm_sub_epi64(amm,bmm));
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -440,7 +440,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				__m256i amm = __builtin_bit_cast(__m256i,a);
 				__m256i bmm = __builtin_bit_cast(__m256i,b);
@@ -461,7 +461,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 					return __builtin_bit_cast(vec_type,_mm256_sub_epi64(amm,bmm));
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -488,7 +488,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
@@ -509,7 +509,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 					return __builtin_bit_cast(vec_type,_mm512_sub_epi64(amm,bmm));
 				}
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -538,7 +538,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -595,7 +595,7 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -637,9 +637,9 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 	}
 	return ::fast_io::details::generic_simd_create_op_impl(a,b,[](T va,T vb) noexcept -> T
 	{
-		if constexpr(std::signed_integral<T>)
+		if constexpr(::std::signed_integral<T>)
 		{
-			using unsignedtype = std::make_unsigned_t<T>;
+			using unsignedtype = ::std::make_unsigned_t<T>;
 			return static_cast<T>(static_cast<unsignedtype>(va)-static_cast<unsignedtype>(vb));
 		}
 		else
@@ -649,18 +649,18 @@ inline constexpr ::fast_io::intrinsics::simd_vector<T,N> wrap_minus_common(::fas
 	});
 }
 
-template<std::size_t sizeoft,
+template<::std::size_t sizeoft,
 	::std::size_t N>
 requires (sizeoft*N<
-	::std::numeric_limits<char unsigned>::max()&&(sizeoft<=sizeof(std::uint_least64_t)))
+	::std::numeric_limits<char unsigned>::max()&&(sizeoft<=sizeof(::std::uint_least64_t)))
 inline constexpr auto create_byte_swap_mask() noexcept
 {
 	using T=
-	std::conditional_t<sizeoft==8,std::uint_least64_t,
-	std::conditional_t<sizeoft==4,std::uint_least32_t,
-	std::conditional_t<sizeoft==2,std::uint_least16_t,
-	std::uint_least8_t>>>;
-	constexpr std::size_t totaln{sizeoft*N};
+	::std::conditional_t<sizeoft==8,::std::uint_least64_t,
+	::std::conditional_t<sizeoft==4,::std::uint_least32_t,
+	::std::conditional_t<sizeoft==2,::std::uint_least16_t,
+	::std::uint_least8_t>>>;
+	constexpr ::std::size_t totaln{sizeoft*N};
 	constexpr char unsigned resn{totaln};
 	::fast_io::freestanding::array<char unsigned,totaln> v1;
 	for(char unsigned i{};i!=resn;++i)
@@ -674,7 +674,7 @@ inline constexpr auto create_byte_swap_mask() noexcept
 	}
 	return __builtin_bit_cast(::fast_io::intrinsics::simd_vector<char unsigned,totaln>,v2);
 }
-template<std::size_t sizeoft,
+template<::std::size_t sizeoft,
 	::std::size_t N>
 inline constexpr auto simd_byte_swap_shuffle_mask{create_byte_swap_mask<sizeoft,N>()};
 
@@ -683,31 +683,31 @@ inline constexpr auto simd_byte_swap_shuffle_mask{create_byte_swap_mask<sizeoft,
 namespace intrinsics
 {
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator+(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return ::fast_io::details::wrap_add_common(a,b);
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> wrap_add(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return ::fast_io::details::wrap_add_common(a,b);
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator-(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return ::fast_io::details::wrap_minus_common(a,b);
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> wrap_minus(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return ::fast_io::details::wrap_minus_common(a,b);
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -720,11 +720,11 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				__m128i amm = __builtin_bit_cast(__m128i,a);
 				__m128i bmm = __builtin_bit_cast(__m128i,b);
-				if constexpr(std::signed_integral<T>)
+				if constexpr(::std::signed_integral<T>)
 				{
 					if constexpr(sizeof(T)==4)
 					{
@@ -739,7 +739,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -766,11 +766,11 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				__m256i amm = __builtin_bit_cast(__m256i,a);
 				__m256i bmm = __builtin_bit_cast(__m256i,b);
-				if constexpr(std::signed_integral<T>)
+				if constexpr(::std::signed_integral<T>)
 				{
 					if constexpr(sizeof(T)==4)
 					{
@@ -785,7 +785,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -812,11 +812,11 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
-				if constexpr(std::signed_integral<T>)
+				if constexpr(::std::signed_integral<T>)
 				{
 					if constexpr(sizeof(T)==4)
 					{
@@ -831,7 +831,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -860,7 +860,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::unsigned_integral<T>)
+			if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -905,7 +905,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::signed_integral<T>)
+			else if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -950,7 +950,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -996,7 +996,7 @@ inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vecto
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -1009,7 +1009,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 #if __has_cpp_attribute(__gnu__::__vector_size__)
 				using vec2_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
@@ -1037,7 +1037,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 				}
 #endif
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -1064,7 +1064,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 #if __has_cpp_attribute(__gnu__::__vector_size__)
 				using vec2_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
@@ -1092,7 +1092,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 				}
 #endif
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -1119,7 +1119,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 #if __has_cpp_attribute(__gnu__::__vector_size__)
 				using vec2_type [[__gnu__::__vector_size__ (N*sizeof(T))]] = T;
@@ -1147,7 +1147,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 				}
 #endif
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 #if !defined(__clang__)
 				if constexpr(sizeof(T)==sizeof(float)/2)
@@ -1177,7 +1177,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
 #if defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64)
-			if constexpr(std::floating_point<T>)
+			if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1220,7 +1220,7 @@ inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vecto
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -1262,7 +1262,7 @@ inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1319,7 +1319,7 @@ inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1385,7 +1385,7 @@ inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vecto
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -1427,7 +1427,7 @@ inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1484,7 +1484,7 @@ inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1550,7 +1550,7 @@ inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vecto
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -1592,7 +1592,7 @@ inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1649,7 +1649,7 @@ inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1715,7 +1715,7 @@ inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vecto
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -1729,7 +1729,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vect
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1786,7 +1786,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vect
 					}
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -1852,7 +1852,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vect
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -1868,7 +1868,7 @@ inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,simd_vect
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,unsigned i) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -1967,7 +1967,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,unsigned 
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2016,7 +2016,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,unsigned 
 					}
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2074,7 +2074,7 @@ inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,unsigned 
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,unsigned i) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -2173,7 +2173,7 @@ inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,unsigned 
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2222,7 +2222,7 @@ inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,unsigned 
 					}
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2280,7 +2280,7 @@ inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,unsigned 
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -2293,14 +2293,14 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m128i amm = __builtin_bit_cast(__m128i,a);
 					__m128i bmm = __builtin_bit_cast(__m128i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -2343,7 +2343,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 				{
 					__m128i amm = __builtin_bit_cast(__m128i,a);
 					__m128i bmm = __builtin_bit_cast(__m128i,b);
-					if constexpr(std::unsigned_integral<T>)
+					if constexpr(::std::unsigned_integral<T>)
 					{
 						__m128i mask;
 						if constexpr(sizeof(T)==1)
@@ -2378,7 +2378,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -2396,14 +2396,14 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m256i amm = __builtin_bit_cast(__m256i,a);
 					__m256i bmm = __builtin_bit_cast(__m256i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -2446,7 +2446,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 				{
 					__m256i amm = __builtin_bit_cast(__m256i,a);
 					__m256i bmm = __builtin_bit_cast(__m256i,b);
-					if constexpr(std::unsigned_integral<T>)
+					if constexpr(::std::unsigned_integral<T>)
 					{
 						__m256i mask;
 						if constexpr(sizeof(T)==1)
@@ -2492,7 +2492,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 					return __builtin_bit_cast(vec_type,res);
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -2510,11 +2510,11 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
-				if constexpr(std::signed_integral<T>)
+				if constexpr(::std::signed_integral<T>)
 				{
 					if constexpr(sizeof(T)==1)
 					{
@@ -2553,7 +2553,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -2573,7 +2573,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2634,7 +2634,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 #endif
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -2704,7 +2704,7 @@ inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vecto
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -2717,14 +2717,14 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m128i amm = __builtin_bit_cast(__m128i,a);
 					__m128i bmm = __builtin_bit_cast(__m128i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -2767,7 +2767,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 				{
 					__m128i amm = __builtin_bit_cast(__m128i,a);
 					__m128i bmm = __builtin_bit_cast(__m128i,b);
-					if constexpr(std::unsigned_integral<T>)
+					if constexpr(::std::unsigned_integral<T>)
 					{
 						__m128i mask;
 						if constexpr(sizeof(T)==1)
@@ -2802,7 +2802,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -2820,14 +2820,14 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m256i amm = __builtin_bit_cast(__m256i,a);
 					__m256i bmm = __builtin_bit_cast(__m256i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -2870,7 +2870,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 				{
 					__m256i amm = __builtin_bit_cast(__m256i,a);
 					__m256i bmm = __builtin_bit_cast(__m256i,b);
-					if constexpr(std::unsigned_integral<T>)
+					if constexpr(::std::unsigned_integral<T>)
 					{
 						__m256i mask;
 						if constexpr(sizeof(T)==1)
@@ -2916,7 +2916,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 					return __builtin_bit_cast(vec_type,res);
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -2934,11 +2934,11 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
-				if constexpr(std::signed_integral<T>)
+				if constexpr(::std::signed_integral<T>)
 				{
 					if constexpr(sizeof(T)==1)
 					{
@@ -2977,7 +2977,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -2997,7 +2997,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3058,7 +3058,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 #endif
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3128,7 +3128,7 @@ inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vecto
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -3141,14 +3141,14 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m128i amm = __builtin_bit_cast(__m128i,a);
 					__m128i bmm = __builtin_bit_cast(__m128i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -3192,7 +3192,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 					return b>a;
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -3210,14 +3210,14 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m256i amm = __builtin_bit_cast(__m256i,a);
 					__m256i bmm = __builtin_bit_cast(__m256i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -3257,7 +3257,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -3275,11 +3275,11 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
-				if constexpr(std::signed_integral<T>)
+				if constexpr(::std::signed_integral<T>)
 				{
 					if constexpr(sizeof(T)==1)
 					{
@@ -3318,7 +3318,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -3338,7 +3338,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3399,7 +3399,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 #endif
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3469,7 +3469,7 @@ inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vect
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -3482,14 +3482,14 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 		using vec_type = ::fast_io::intrinsics::simd_vector<T,N>;
 		if constexpr(sizeof(vec_type)==16&&::fast_io::details::cpu_flags::sse2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m128i amm = __builtin_bit_cast(__m128i,a);
 					__m128i bmm = __builtin_bit_cast(__m128i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -3533,7 +3533,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 					return b<a;
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -3551,14 +3551,14 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 		}
 		else if constexpr(sizeof(vec_type)==32&&::fast_io::details::cpu_flags::avx2_supported)
 		{
-			if constexpr(std::integral<T>)
+			if constexpr(::std::integral<T>)
 			{
 				if constexpr(::fast_io::details::cpu_flags::avx512vl_supported&&
 				::fast_io::details::cpu_flags::avx512bw_supported)
 				{
 					__m256i amm = __builtin_bit_cast(__m256i,a);
 					__m256i bmm = __builtin_bit_cast(__m256i,b);
-					if constexpr(std::signed_integral<T>)
+					if constexpr(::std::signed_integral<T>)
 					{
 						if constexpr(sizeof(T)==1)
 						{
@@ -3602,7 +3602,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 					return b<a;
 				}
 			}
-			else if constexpr(std::floating_point<T>)
+			else if constexpr(::std::floating_point<T>)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -3620,11 +3620,11 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 		}
 		else if constexpr(sizeof(vec_type)==64)
 		{
-			if constexpr(std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
+			if constexpr(::std::integral<T>&&::fast_io::details::cpu_flags::avx512bw_supported)
 			{
 				__m512i amm = __builtin_bit_cast(__m512i,a);
 				__m512i bmm = __builtin_bit_cast(__m512i,b);
-				if constexpr(std::signed_integral<T>)
+				if constexpr(::std::signed_integral<T>)
 				{
 					if constexpr(sizeof(T)==1)
 					{
@@ -3663,7 +3663,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 					}
 				}
 			}
-			else if constexpr(std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
+			else if constexpr(::std::floating_point<T>&&::fast_io::details::cpu_flags::avx512f_supported)
 			{
 				if constexpr(sizeof(T)==sizeof(float))
 				{
@@ -3683,7 +3683,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3744,7 +3744,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 #endif
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3814,7 +3814,7 @@ inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vect
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -3892,7 +3892,7 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 		using vec_type = simd_vector<T,N>;
 		if constexpr(::fast_io::details::cpu_flags::armneon_supported)
 		{
-			if constexpr(std::signed_integral<T>)
+			if constexpr(::std::signed_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -3953,7 +3953,7 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 #endif
 				}
 			}
-			else if constexpr(std::unsigned_integral<T>)
+			else if constexpr(::std::unsigned_integral<T>)
 			{
 				if constexpr(sizeof(vec_type)==8)
 				{
@@ -4023,7 +4023,7 @@ inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vect
 	});
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	using vec_type = simd_vector<T,N>;
@@ -4110,7 +4110,7 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 		}
 #elif defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
 		using vec_type = simd_vector<T,N>;
-		if constexpr(std::signed_integral<T>)
+		if constexpr(::std::signed_integral<T>)
 		{
 			if constexpr(sizeof(vec_type)==8)
 			{
@@ -4171,7 +4171,7 @@ inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vect
 #endif
 			}
 		}
-		else if constexpr(std::unsigned_integral<T>)
+		else if constexpr(::std::unsigned_integral<T>)
 		{
 			if constexpr(sizeof(vec_type)==8)
 			{

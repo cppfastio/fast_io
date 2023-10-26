@@ -135,7 +135,7 @@ inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
 	{
 		return size;
 	}
-	return static_cast<std::size_t>(cap<<1);
+	return static_cast<::std::size_t>(cap<<1);
 }
 
 template<typename allocator,::std::size_t size>
@@ -165,7 +165,7 @@ inline constexpr void add_zero_towards(vector_model* m, char8_t* end) noexcept
 	}
 	else
 	{
-		::fast_io::freestanding::my_memset(m->curr_ptr, 0, static_cast<std::size_t>(end - m->curr_ptr));
+		::fast_io::freestanding::my_memset(m->curr_ptr, 0, static_cast<::std::size_t>(end - m->curr_ptr));
 		m->curr_ptr = end;
 	}
 }
@@ -194,7 +194,7 @@ template <typename allocator>
 inline constexpr void check_size_and_assign_align(vector_model* m, ::std::size_t alignment, char8_t const* begin, char8_t const* end) noexcept
 {
 	auto const newcap{ static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) };
-	if ( newcap < static_cast<std::size_t>(end - begin))
+	if ( newcap < static_cast<::std::size_t>(end - begin))
 	{
 		grow_to_size_common_aligned_impl<allocator>(m, alignment, newcap);
 	}
@@ -218,7 +218,7 @@ inline void erase_impl(vector_model* m, char8_t* first, char8_t* last) noexcept
 	}
 	else
 	{
-		std::size_t const length{static_cast<std::size_t>(m->curr_ptr - last)};
+		::std::size_t const length{static_cast<::std::size_t>(m->curr_ptr - last)};
 		::fast_io::freestanding::my_memmove(first, last, length);
 		m->curr_ptr -= last - first;
 	}
@@ -513,7 +513,7 @@ public:
 		}
 		else
 		{
-			auto const size{ static_cast<std::size_t>(last - first) };
+			auto const size{ static_cast<::std::size_t>(last - first) };
 			new (this) vector(size);
 			assign_common_impl(first, last);
 		}
@@ -522,7 +522,7 @@ public:
 	constexpr vector(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
-		auto const size{ static_cast<std::size_t>(last - first) };
+		auto const size{ static_cast<::std::size_t>(last - first) };
 		imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(size);
 		auto e = imp.end_ptr = imp.begin_ptr + size;
 		run_destroy des{ this };
@@ -575,7 +575,7 @@ public:
 
 	constexpr vector(vector const& vec) requires(::std::copyable<value_type>)
 	{
-		std::size_t const vecsize{static_cast<std::size_t>(vec.imp.curr_ptr-vec.imp.begin_ptr)};
+		::std::size_t const vecsize{static_cast<::std::size_t>(vec.imp.curr_ptr-vec.imp.begin_ptr)};
 		if(vecsize==0)
 		{
 			return;
@@ -591,7 +591,7 @@ public:
 #endif
 #endif
 		{
-			std::size_t const n{vecsize*sizeof(value_type)};
+			::std::size_t const n{vecsize*sizeof(value_type)};
 			::fast_io::freestanding::my_memcpy(imp.begin_ptr, vec.imp.begin_ptr, n);
 			imp.end_ptr=imp.curr_ptr=imp.begin_ptr+vecsize;
 			return;
@@ -632,7 +632,7 @@ public:
 	}
 
 	template<typename... Args>
-	requires std::constructible_from<value_type,Args...>
+	requires ::std::constructible_from<value_type,Args...>
 	constexpr reference emplace_back_unchecked(Args&& ...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
 		auto p{::new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
@@ -679,7 +679,7 @@ private:
 				return;
 			}
 		}
-		std::size_t cap;
+		::std::size_t cap;
 		if constexpr(!typed_allocator_type::has_deallocate)
 		{
 			cap = static_cast<size_type>(imp.end_ptr-imp.begin_ptr);
@@ -743,7 +743,7 @@ private:
 				return;
 			}
 		}
-		std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
+		::std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
 		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type),false>(cap));
 	}
 	inline constexpr void grow_to_size_nearest_impl(size_type leastcap) noexcept
@@ -752,7 +752,7 @@ private:
 			::std::size_t mx_value2{(::std::numeric_limits<::std::size_t>::max()/sizeof(value_type))};
 		constexpr 
 			::std::size_t mx_value{mx_value2>>1};
-		std::size_t cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
+		::std::size_t cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
 		if(mx_value<cap)
 		{
 			cap=mx_value2;
@@ -787,7 +787,7 @@ private:
 public:
 	constexpr void reserve(size_type n) noexcept
 	{
-		if(n<=static_cast<std::size_t>(imp.end_ptr-imp.begin_ptr))
+		if(n<=static_cast<::std::size_t>(imp.end_ptr-imp.begin_ptr))
 		{
 			return;
 		}
@@ -797,7 +797,7 @@ public:
 	constexpr void assign(size_type n, value_type const& value) noexcept
 		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
-		if (n > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+		if (n > static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(n);
 		::fast_io::freestanding::fill_n(imp.begin_ptr, n, value);
 		imp.curr_ptr = imp.begin_ptr + n;
@@ -806,7 +806,7 @@ public:
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
-		if (n > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+		if (n > static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(n);
 		run_destroy des{ this };
 		for (auto end{imp.begin_ptr + n}; imp.curr_ptr != end; ++imp.curr_ptr)
@@ -840,8 +840,8 @@ public:
 		}
 		else
 		{
-			auto const size{ static_cast<std::size_t>(last - first) };
-			if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+			auto const size{ static_cast<::std::size_t>(last - first) };
+			if (size > static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr))
 				grow_to_size_impl(size);
 			assign_common_impl(first, last);
 		}
@@ -851,8 +851,8 @@ public:
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
-		auto const size{ static_cast<std::size_t>(last - first) };
-		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+		auto const size{ static_cast<::std::size_t>(last - first) };
+		if (size > static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(size);
 		run_destroy des{ this };
 		if constexpr (::std::contiguous_iterator<InputIt>)
@@ -887,7 +887,7 @@ public:
 	{
 		clear();
 		auto const size{ ilist.size() };
-		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+		if (size > static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr))
 			grow_to_size_impl(size);
 		run_destroy des{ this };
 		assign_common_impl(ilist.begin(), ilist.end());
@@ -898,7 +898,7 @@ public:
 	{
 		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
 		{
-			if (n <= static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+			if (n <= static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr))
 			{
 				using char8_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -1172,7 +1172,7 @@ public:
 			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, 1);
 		else
 			itr = ::fast_io::freestanding::copy_backward(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, imp.curr_ptr + 1);
-		std::construct_at(itr, value);
+		::std::construct_at(itr, value);
 		return itr;
 	}
 	constexpr iterator insert(const_iterator pos, T&& value) noexcept(noexcept(this->push_back(::std::move(value))))
@@ -1182,7 +1182,7 @@ public:
 			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, 1);
 		else
 			itr = ::fast_io::freestanding::copy_backward(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, imp.curr_ptr + 1);
-		std::construct_at(itr, ::std::move(value));
+		::std::construct_at(itr, ::std::move(value));
 		return itr;
 	}
 	constexpr iterator insert(const_iterator pos, size_type count, T const& value) noexcept(noexcept(this->push_back(value)))
@@ -1210,7 +1210,7 @@ public:
 			return insert_uncounted_range_impl(pos, first, last);
 		}
 	}
-	constexpr iterator insert(const_iterator pos, std::initializer_list<T> ilist) noexcept(noexcept(this->push_back(*ilist.begin())))
+	constexpr iterator insert(const_iterator pos, ::std::initializer_list<T> ilist) noexcept(noexcept(this->push_back(*ilist.begin())))
 	{
 		return insert_counted_range_impl<true>(pos, ilist.begin(), ilist.size());
 	}
@@ -1305,7 +1305,7 @@ public:
 		{
 			return;
 		}
-		grow_to_size_impl(static_cast<std::size_t>(imp.curr_ptr-imp.begin_ptr));
+		grow_to_size_impl(static_cast<::std::size_t>(imp.curr_ptr-imp.begin_ptr));
 	}
 	constexpr void pop_back() noexcept
 	{
@@ -1394,7 +1394,7 @@ public:
 		return imp.curr_ptr[-1];
 	}
 	template<typename... Args>
-	requires std::constructible_from<value_type,Args...>
+	requires ::std::constructible_from<value_type,Args...>
 	constexpr reference emplace_back(Args&& ...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
 		if(imp.curr_ptr==imp.end_ptr)

@@ -11,17 +11,17 @@ inline constexpr deco_result<char_type,char_type>
 	simd_lf_crlf_process_chars(char_type const *fromfirst,char_type const *fromlast,
 			char_type *tofirst,char_type *tolast) noexcept
 {
-	constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
+	constexpr ::std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
 	constexpr unsigned N{initialdiffn/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
-	constexpr char_type lfchct{char_literal_v<u8'\n',std::remove_cvref_t<char_type>>};
-	constexpr char_type lfchr{char_literal_v<u8'\r',std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchct{char_literal_v<u8'\n',::std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchr{char_literal_v<u8'\r',::std::remove_cvref_t<char_type>>};
 
 	constexpr char_type tofdch{cr?lfchr:lfchct};
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 	simd_vector_type charsvec{
-		std::bit_cast<simd_vector_type>(characters_array_impl<tofdch,char_type,N>)};
+		::std::bit_cast<simd_vector_type>(characters_array_impl<tofdch,char_type,N>)};
 #else
 	simd_vector_type charsvec;
 	charsvec.load(characters_array_impl<tofdch,char_type,N>.data());
@@ -103,16 +103,16 @@ inline constexpr deco_result<char_type,char_type>
 	simd_crlf_lf_process_chars(char_type const *fromfirst,char_type const *fromlast,
 			char_type *tofirst,char_type *tolast) noexcept
 {
-	constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
+	constexpr ::std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
 	constexpr unsigned N{initialdiffn/sizeof(char_type)};
 	constexpr unsigned Np1{N+1u};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
-	constexpr char_type lfchct{char_literal_v<u8'\n',std::remove_cvref_t<char_type>>};
-	constexpr char_type lfchr{char_literal_v<u8'\r',std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchct{char_literal_v<u8'\n',::std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchr{char_literal_v<u8'\r',::std::remove_cvref_t<char_type>>};
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 	simd_vector_type charsvec{
-		std::bit_cast<simd_vector_type>(characters_array_impl<lfchr,char_type,N>)};
+		::std::bit_cast<simd_vector_type>(characters_array_impl<lfchr,char_type,N>)};
 #else
 	simd_vector_type charsvec;
 	charsvec.load(characters_array_impl<lfchr,char_type,N>.data());
@@ -159,19 +159,19 @@ inline constexpr deco_result<char_type,char_type>
 	simd_lf_cr_process_chars(char_type const *fromfirst,char_type const *fromlast,
 			char_type *tofirst,char_type *tolast) noexcept
 {
-	constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
+	constexpr ::std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
 	constexpr unsigned N{initialdiffn/sizeof(char_type)};
 	using simd_vector_type = ::fast_io::intrinsics::simd_vector<char_type,N>;
-	constexpr char_type lfchct{char_literal_v<u8'\n',std::remove_cvref_t<char_type>>};
-	constexpr char_type lfchr{char_literal_v<u8'\r',std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchct{char_literal_v<u8'\n',::std::remove_cvref_t<char_type>>};
+	constexpr char_type lfchr{char_literal_v<u8'\r',::std::remove_cvref_t<char_type>>};
 	constexpr char_type tofdch{cr?lfchr:lfchct};
 #if (__cpp_lib_bit_cast >= 201806L) && !defined(__clang__)
 	constexpr
 	simd_vector_type charsvec{
-		std::bit_cast<simd_vector_type>(characters_array_impl<tofdch,char_type,N>)};
+		::std::bit_cast<simd_vector_type>(characters_array_impl<tofdch,char_type,N>)};
 	constexpr
 	simd_vector_type threevec{
-		std::bit_cast<simd_vector_type>(characters_array_impl<3,char_type,N>)};
+		::std::bit_cast<simd_vector_type>(characters_array_impl<3,char_type,N>)};
 #else
 	simd_vector_type charsvec;
 	charsvec.load(characters_array_impl<tofdch,char_type,N>.data());

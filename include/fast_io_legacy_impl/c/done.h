@@ -13,11 +13,11 @@ namespace details
 #if __has_cpp_attribute(__gnu__::__cdecl__)
 [[__gnu__::__cdecl__]]
 #endif
-extern std::size_t
+extern ::std::size_t
 #if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
 __cdecl
 #endif
-my_cygwin_fwrite_unlocked(void const* __restrict buffer,std::size_t size,std::size_t count,FILE* __restrict) noexcept __asm__("fwrite_unlocked");
+my_cygwin_fwrite_unlocked(void const* __restrict buffer,::std::size_t size,::std::size_t count,FILE* __restrict) noexcept __asm__("fwrite_unlocked");
 
 #if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
 [[__gnu__::__dllimport__]]
@@ -25,20 +25,20 @@ my_cygwin_fwrite_unlocked(void const* __restrict buffer,std::size_t size,std::si
 #if __has_cpp_attribute(__gnu__::__cdecl__)
 [[__gnu__::__cdecl__]]
 #endif
-extern std::size_t 
+extern ::std::size_t 
 #if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
 __cdecl
 #endif
-my_cygwin_fread_unlocked(void* __restrict buffer,std::size_t size,std::size_t count,FILE* __restrict) noexcept __asm__("fread_unlocked");
+my_cygwin_fread_unlocked(void* __restrict buffer,::std::size_t size,::std::size_t count,FILE* __restrict) noexcept __asm__("fread_unlocked");
 #endif
 
-inline std::size_t c_fwrite_unlocked_impl(void const* __restrict begin,std::size_t type_size,std::size_t count,FILE* __restrict fp)
+inline ::std::size_t c_fwrite_unlocked_impl(void const* __restrict begin,::std::size_t type_size,::std::size_t count,FILE* __restrict fp)
 {
 	if(count==0)
 		return 0;
 #if defined(__NEWLIB__)&&!defined(__CYGWIN__)
 	struct _reent rent{};
-	std::size_t written_count{
+	::std::size_t written_count{
 #if defined(__IMPL_UNLOCKED__)
 	noexcept_call(_fwrite_unlocked_r,__builtin_addressof(rent),begin,type_size,count,fp)
 #else
@@ -48,7 +48,7 @@ inline std::size_t c_fwrite_unlocked_impl(void const* __restrict begin,std::size
 	if(!written_count)[[unlikely]]
 		throw_posix_error(rent._errno);
 #else
-	std::size_t written_count{
+	::std::size_t written_count{
 #if defined(__CYGWIN__)
 	my_cygwin_fwrite_unlocked(begin,type_size,count,fp)
 #elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD) ))
@@ -77,7 +77,7 @@ inline std::size_t c_fwrite_unlocked_impl(void const* __restrict begin,std::size
 	return written_count;
 }
 
-inline std::size_t c_fread_unlocked_impl(void* __restrict begin,std::size_t type_size,std::size_t count,FILE* __restrict fp)
+inline ::std::size_t c_fread_unlocked_impl(void* __restrict begin,::std::size_t type_size,::std::size_t count,FILE* __restrict fp)
 {
 	if(fp==stdin)
 	{
@@ -85,7 +85,7 @@ inline std::size_t c_fread_unlocked_impl(void* __restrict begin,std::size_t type
 	}
 #if defined(__NEWLIB__)&&!defined(__CYGWIN__)
 	struct _reent rent{};
-	std::size_t read_count{
+	::std::size_t read_count{
 #if defined(__IMPL_UNLOCKED__)
 	noexcept_call(_fread_unlocked_r,__builtin_addressof(rent),begin,type_size,count,fp)
 #else
@@ -98,7 +98,7 @@ inline std::size_t c_fread_unlocked_impl(void* __restrict begin,std::size_t type
 			throw_posix_error(rent._errno);
 	}
 #else
-	std::size_t read_count{
+	::std::size_t read_count{
 #if defined(__CYGWIN__)
 	my_cygwin_fread_unlocked(begin,type_size,count,fp)
 #elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD) ))
@@ -152,18 +152,18 @@ inline std::size_t c_fread_unlocked_impl(void* __restrict begin,std::size_t type
 	return read_count;
 }
 
-inline std::size_t c_fwrite_impl(void const* __restrict begin,std::size_t type_size,std::size_t count,FILE* __restrict fp)
+inline ::std::size_t c_fwrite_impl(void const* __restrict begin,::std::size_t type_size,::std::size_t count,FILE* __restrict fp)
 {
 	if(count==0)
 		return 0;
 #if defined(__NEWLIB__)&&!defined(__CYGWIN__)
 	struct _reent rent{};
-	std::size_t written_count{noexcept_call(_fwrite_r,__builtin_addressof(rent),begin,type_size,count,fp)};
+	::std::size_t written_count{noexcept_call(_fwrite_r,__builtin_addressof(rent),begin,type_size,count,fp)};
 	if(!written_count)[[unlikely]]
 		throw_posix_error(rent._errno);
 #else
 
-	std::size_t written_count{
+	::std::size_t written_count{
 #if !defined(fwrite)&&defined(__has_builtin)
 #if __has_builtin(__builtin_fwrite)
 	__builtin_fwrite(begin,type_size,count,fp)
@@ -180,7 +180,7 @@ inline std::size_t c_fwrite_impl(void const* __restrict begin,std::size_t type_s
 	return written_count;
 }
 
-inline std::size_t c_fread_impl(void* __restrict begin,std::size_t type_size,std::size_t count,FILE* __restrict fp)
+inline ::std::size_t c_fread_impl(void* __restrict begin,::std::size_t type_size,::std::size_t count,FILE* __restrict fp)
 {
 	if(fp==stdin)
 	{
@@ -188,14 +188,14 @@ inline std::size_t c_fread_impl(void* __restrict begin,std::size_t type_size,std
 	}
 #if defined(__NEWLIB__)
 	struct _reent rent{};
-	std::size_t read_count{noexcept_call(_fread_r,__builtin_addressof(rent),begin,type_size,count,fp)};
+	::std::size_t read_count{noexcept_call(_fread_r,__builtin_addressof(rent),begin,type_size,count,fp)};
 	if(read_count==0)[[unlikely]]
 	{
 		if(rent._errno)
 			throw_posix_error(rent._errno);
 	}
 #else
-	std::size_t read_count{
+	::std::size_t read_count{
 #if !defined(fread)&&defined(__has_builtin)
 #if __has_builtin(__builtin_fread)
 	__builtin_fread(begin,type_size,count,fp)
@@ -225,22 +225,22 @@ inline std::size_t c_fread_impl(void* __restrict begin,std::size_t type_size,std
 	return read_count;
 }
 
-inline ::std::byte* c_read_some_bytes_impl(FILE* __restrict fp, ::std::byte* first, std::byte* last)
+inline ::std::byte* c_read_some_bytes_impl(FILE* __restrict fp, ::std::byte* first, ::std::byte* last)
 {
 	return c_fread_impl(first,1,static_cast<::std::size_t>(last-first),fp)+first;
 }
 
-inline ::std::byte* c_unlocked_read_some_bytes_impl(FILE* __restrict fp, ::std::byte* first, std::byte* last)
+inline ::std::byte* c_unlocked_read_some_bytes_impl(FILE* __restrict fp, ::std::byte* first, ::std::byte* last)
 {
 	return c_fread_unlocked_impl(first,1,static_cast<::std::size_t>(last-first),fp)+first;
 }
 
-inline ::std::byte const* c_write_some_bytes_impl(FILE* __restrict fp, ::std::byte const* first, std::byte const* last)
+inline ::std::byte const* c_write_some_bytes_impl(FILE* __restrict fp, ::std::byte const* first, ::std::byte const* last)
 {
 	return c_fwrite_impl(first,1,static_cast<::std::size_t>(last-first),fp)+first;
 }
 
-inline ::std::byte const* c_unlocked_write_some_bytes_impl(FILE* __restrict fp, ::std::byte const* first, std::byte const* last)
+inline ::std::byte const* c_unlocked_write_some_bytes_impl(FILE* __restrict fp, ::std::byte const* first, ::std::byte const* last)
 {
 	return c_fwrite_unlocked_impl(first,1,static_cast<::std::size_t>(last-first),fp)+first;
 }

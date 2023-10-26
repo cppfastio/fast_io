@@ -30,8 +30,8 @@ inline FILE* stdinbuf_stdoutbuf_fp_hack(T* stdbuf) noexcept
 {
 	FILE* fp{};
 	// we can only do this or ubsanitizer will complain. Do not do down_cast
-	::fast_io::details::my_memcpy(__builtin_addressof(fp),reinterpret_cast<std::byte*>(stdbuf)+
-	sizeof(std::basic_streambuf<typename T::char_type, typename T::traits_type>),sizeof(fp));
+	::fast_io::details::my_memcpy(__builtin_addressof(fp),reinterpret_cast<::std::byte*>(stdbuf)+
+	sizeof(::std::basic_streambuf<typename T::char_type, typename T::traits_type>),sizeof(fp));
 	return fp;
 }
 
@@ -58,7 +58,7 @@ private:
 
 template <class _CharT, class _Traits>
 class libcxx_basic_filebuf_model
-    : public std::basic_streambuf<_CharT, _Traits>
+    : public ::std::basic_streambuf<_CharT, _Traits>
 {
 public:
 	typedef _CharT                           char_type;
@@ -71,15 +71,15 @@ public:
 	const char* __extbufnext_;
 	const char* __extbufend_;
 	char __extbuf_min_[8];
-	std::size_t __ebs_;
+	::std::size_t __ebs_;
 	char_type* __intbuf_;
-	std::size_t __ibs_;
+	::std::size_t __ibs_;
 	FILE* __file_;
-	const std::codecvt<char_type, char, state_type>* __cv_;
+	const ::std::codecvt<char_type, char, state_type>* __cv_;
 	state_type __st_;
 	state_type __st_last_;
-	std::ios_base::openmode __om_;
-	std::ios_base::openmode __cm_;
+	::std::ios_base::openmode __om_;
+	::std::ios_base::openmode __cm_;
 	bool __owns_eb_;
 	bool __owns_ib_;
 	bool __always_noconv_;
@@ -87,22 +87,22 @@ public:
 
 
 template<typename char_type,typename traits_type>
-inline constexpr std::size_t libcxx_fp_location{__builtin_offsetof(libcxx_basic_filebuf_model<char_type,traits_type>,__file_)};
+inline constexpr ::std::size_t libcxx_fp_location{__builtin_offsetof(libcxx_basic_filebuf_model<char_type,traits_type>,__file_)};
 
 template<typename char_type,typename traits_type>
-inline constexpr std::size_t libcxx_om_location{__builtin_offsetof(libcxx_basic_filebuf_model<char_type,traits_type>,__om_)};
+inline constexpr ::std::size_t libcxx_om_location{__builtin_offsetof(libcxx_basic_filebuf_model<char_type,traits_type>,__om_)};
 
 template<typename char_type,typename traits_type>
-inline FILE* fp_hack_impl(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack_impl(::std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
 	FILE* fp{};
 	// we can only do this or ubsanitizer will complain. Do not do down_cast
-	::fast_io::details::my_memcpy(__builtin_addressof(fp),reinterpret_cast<std::byte*>(fbuf)+libcxx_fp_location<char_type,traits_type>,sizeof(fp));
+	::fast_io::details::my_memcpy(__builtin_addressof(fp),reinterpret_cast<::std::byte*>(fbuf)+libcxx_fp_location<char_type,traits_type>,sizeof(fp));
 	return fp;
 }
 
 template<typename char_type,typename traits_type>
-inline FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
+inline FILE* fp_hack(::std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 {
 	if(fbuf==nullptr)
 		return nullptr;
@@ -111,7 +111,7 @@ inline FILE* fp_hack(std::basic_filebuf<char_type,traits_type>* fbuf) noexcept
 
 
 template<typename T>
-requires (std::same_as<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>)
+requires (::std::same_as<T,::std::basic_streambuf<typename T::char_type,typename T::traits_type>>)
 inline FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
 {
 #ifdef __cpp_rtti
@@ -143,7 +143,7 @@ inline FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
 					return stdinbuf_stdoutbuf_fp_hack(stdbuf);
 				}
 			}
-			auto fbf{dynamic_cast<std::basic_filebuf<char_type,traits_type>*>(stdbuf)};
+			auto fbf{dynamic_cast<::std::basic_filebuf<char_type,traits_type>*>(stdbuf)};
 			if(fbf)
 			{
 				return fp_hack_impl(fbf);
@@ -158,23 +158,23 @@ inline FILE* fp_hack([[maybe_unused]] T* stdbuf) noexcept
 }
 
 template<typename char_type,typename traits_type>
-inline void fp_hack_open(std::basic_filebuf<char_type,traits_type>* fb,FILE* fp,std::ios::openmode mode) noexcept
+inline void fp_hack_open(::std::basic_filebuf<char_type,traits_type>* fb,FILE* fp,::std::ios::openmode mode) noexcept
 {
-	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+libcxx_om_location<char_type,traits_type>,__builtin_addressof(mode),sizeof(mode));
-	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+libcxx_fp_location<char_type,traits_type>,__builtin_addressof(fp),sizeof(fp));
+	::fast_io::details::my_memcpy(reinterpret_cast<::std::byte*>(fb)+libcxx_om_location<char_type,traits_type>,__builtin_addressof(mode),sizeof(mode));
+	::fast_io::details::my_memcpy(reinterpret_cast<::std::byte*>(fb)+libcxx_fp_location<char_type,traits_type>,__builtin_addressof(fp),sizeof(fp));
 }
 
 template<typename CharT, typename Traits>
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
-inline std::basic_filebuf<CharT, Traits>* open_libcxx_hacked_basic_filebuf_impl(FILE* fp, ::std::ios::openmode mode)
+inline ::std::basic_filebuf<CharT, Traits>* open_libcxx_hacked_basic_filebuf_impl(FILE* fp, ::std::ios::openmode mode)
 {
-	filebuf_guard<CharT, Traits> guard(new std::basic_filebuf<CharT, Traits>);
-	std::basic_filebuf<CharT, Traits> *fb{guard.new_filebuf};
-	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+
+	filebuf_guard<CharT, Traits> guard(new ::std::basic_filebuf<CharT, Traits>);
+	::std::basic_filebuf<CharT, Traits> *fb{guard.new_filebuf};
+	::fast_io::details::my_memcpy(reinterpret_cast<::std::byte*>(fb)+
 		libcxx_fp_location<CharT,Traits>,__builtin_addressof(fp),sizeof(fp));
-	::fast_io::details::my_memcpy(reinterpret_cast<std::byte*>(fb)+
+	::fast_io::details::my_memcpy(reinterpret_cast<::std::byte*>(fb)+
 		libcxx_om_location<CharT,Traits>,__builtin_addressof(mode),sizeof(mode));
 	return guard.release();
 }
@@ -183,7 +183,7 @@ template<typename CharT, typename Traits>
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
-inline std::basic_filebuf<CharT, Traits>* open_hacked_basic_filebuf(FILE* fp, ::fast_io::open_mode mode)
+inline ::std::basic_filebuf<CharT, Traits>* open_hacked_basic_filebuf(FILE* fp, ::fast_io::open_mode mode)
 {
 	return open_libcxx_hacked_basic_filebuf_impl<CharT,Traits>(fp,::fast_io::details::calculate_fstream_file_open_mode(mode));
 }

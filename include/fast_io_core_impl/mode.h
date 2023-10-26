@@ -14,8 +14,8 @@ none = 0, not_found = -1, regular = 1, directory = 2, symlink = 3,
 block = 4, character = 5, fifo = 6, socket = 7, unknown = 8, remote = 9
 };
 
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,file_type>) noexcept
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,file_type>) noexcept
 {
 	return 20;
 }
@@ -23,10 +23,10 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,file
 
 namespace details
 {
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type* print_file_status_impl(char_type* it,file_type f) noexcept
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		switch(f)
 		{
@@ -54,7 +54,7 @@ inline constexpr char_type* print_file_status_impl(char_type* it,file_type f) no
 			return details::copy_string_literal("unknown",it);
 		}
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		switch(f)
 		{
@@ -82,7 +82,7 @@ inline constexpr char_type* print_file_status_impl(char_type* it,file_type f) no
 			return details::copy_string_literal(L"unknown",it);
 		}
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		switch(f)
 		{
@@ -110,7 +110,7 @@ inline constexpr char_type* print_file_status_impl(char_type* it,file_type f) no
 			return details::copy_string_literal(u"unknown",it);
 		}
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		switch(f)
 		{
@@ -169,7 +169,7 @@ inline constexpr char_type* print_file_status_impl(char_type* it,file_type f) no
 }
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,file_type>,char_type* it,file_type f) noexcept
 {
 	return details::print_file_status_impl<char_type>(it,f);
@@ -276,25 +276,25 @@ tty_init=static_cast<::std::uint_least64_t>(1)<<32,
 
 constexpr open_mode operator&(open_mode x, open_mode y) noexcept
 {
-using utype = typename std::underlying_type<open_mode>::type;
+using utype = typename ::std::underlying_type<open_mode>::type;
 return static_cast<open_mode>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
 constexpr open_mode operator|(open_mode x, open_mode y) noexcept
 {
-using utype = typename std::underlying_type<open_mode>::type;
+using utype = typename ::std::underlying_type<open_mode>::type;
 return static_cast<open_mode>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
 constexpr open_mode operator^(open_mode x, open_mode y) noexcept
 {
-using utype = typename std::underlying_type<open_mode>::type;
+using utype = typename ::std::underlying_type<open_mode>::type;
 return static_cast<open_mode>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
 constexpr open_mode operator~(open_mode x) noexcept
 {
-using utype = typename std::underlying_type<open_mode>::type;
+using utype = typename ::std::underlying_type<open_mode>::type;
 return static_cast<open_mode>(~static_cast<utype>(x));
 }
 
@@ -308,7 +308,7 @@ inline constexpr open_mode& operator^=(open_mode& x, open_mode y) noexcept{retur
 
 inline constexpr open_mode c_supported(open_mode m) noexcept
 {
-using utype = typename std::underlying_type<open_mode>::type;
+using utype = typename ::std::underlying_type<open_mode>::type;
 constexpr auto c_supported_values{static_cast<utype>(open_mode::text)|
 	static_cast<utype>(open_mode::excl)|
 	static_cast<utype>(open_mode::out)|
@@ -320,7 +320,7 @@ return static_cast<open_mode>(static_cast<utype>(m)&c_supported_values);
 
 inline constexpr char const* to_c_mode(open_mode m) noexcept
 {
-	using utype = typename std::underlying_type<open_mode>::type;
+	using utype = typename ::std::underlying_type<open_mode>::type;
 	switch(static_cast<utype>(c_supported(m)))
 	{
 //Action if file already exists;	Action if file does not exist;	c-style mode;	Explanation
@@ -415,16 +415,16 @@ enum class posix_wait_reason:unsigned char
 none,if_exited,if_signaled,if_core_dump,if_core_signal,if_stopped
 };
 
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_wait_reason>) noexcept
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_wait_reason>) noexcept
 {
 	return 20;
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,posix_wait_reason>,char_type* iter,posix_wait_reason reason) noexcept
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 	{
 		switch(reason)
 		{
@@ -444,7 +444,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,pos
 			return details::copy_string_literal("unknown",iter);
 		}
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 	{
 		switch(reason)
 		{
@@ -464,7 +464,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,pos
 			return details::copy_string_literal(L"unknown",iter);
 		}
 	}
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 	{
 		switch(reason)
 		{
@@ -484,7 +484,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,pos
 			return details::copy_string_literal(u"unknown",iter);
 		}
 	}
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 	{
 		switch(reason)
 		{

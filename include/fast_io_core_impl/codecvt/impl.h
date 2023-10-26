@@ -11,10 +11,10 @@
 namespace fast_io
 {
 
-template<std::integral char_type,std::integral cross_char_type>
+template<::std::integral char_type,::std::integral cross_char_type>
 inline constexpr auto status_io_print_forward(io_alias_type_t<char_type>,cross_code_cvt_t<cross_char_type> const& ccvt) noexcept
 {
-	if constexpr(std::same_as<char_type,cross_char_type>)
+	if constexpr(::std::same_as<char_type,cross_char_type>)
 	{
 		return ccvt.scatter;
 	}

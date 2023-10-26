@@ -11,7 +11,7 @@ public:
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
-	virtual void invoke(std::size_t) noexcept = 0;
+	virtual void invoke(::std::size_t) noexcept = 0;
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif

@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-// To make a constexpr allocator, we need std::allocator. Because only new expression and std::allocator<T>::allocate are allowed in constexpr functions. 
+// To make a constexpr allocator, we need ::std::allocator. Because only new expression and ::std::allocator<T>::allocate are allowed in constexpr functions. 
 // See https://github.com/microsoft/STL/issues/1532 https://github.com/microsoft/STL/issues/4002
 // gcc and clang provide constexpr new, but still won't compile. 
-// std::allocator<T> is NOT freestanding.
+// ::std::allocator<T> is NOT freestanding.
 
 namespace fast_io
 {
@@ -50,10 +50,10 @@ inline constexpr void* allocator_pointer_aligned_impl(::std::size_t alignment,::
 #if __has_builtin(__builtin_memset)
 		__builtin_memset
 #else
-		std::memset
+		::std::memset
 #endif
 #else
-		std::memset
+		::std::memset
 #endif
 		(aligned_ptr,0,n);
 		return aligned_ptr;
@@ -71,7 +71,7 @@ inline constexpr void* allocator_pointer_aligned_impl(::std::size_t alignment,::
 			::fast_io::fast_terminate();
 		}
 		::std::size_t total_extra_space{alignment+sizeofptr};
-		::std::size_t upperlimit{static_cast<std::size_t>(mxn-total_extra_space)};
+		::std::size_t upperlimit{static_cast<::std::size_t>(mxn-total_extra_space)};
 		if(n>upperlimit)
 		{
 			::fast_io::fast_terminate();
@@ -167,10 +167,10 @@ public:
 #if __has_builtin(__builtin_memset)
 			__builtin_memset(p,0,n);
 #else
-			std::memset(p,0,n);
+			::std::memset(p,0,n);
 #endif
 #else
-			std::memset(p,0,n);
+			::std::memset(p,0,n);
 #endif
 			return p;
 		}
@@ -203,10 +203,10 @@ public:
 #if __has_builtin(__builtin_memcpy)
 				__builtin_memcpy
 #else
-				std::memcpy
+				::std::memcpy
 #endif
 #else
-				std::memcpy
+				::std::memcpy
 #endif
 				(newptr,p,n);
 				generic_allocator_adapter::deallocate_n(p,oldn);
@@ -237,15 +237,15 @@ public:
 			auto newptr{generic_allocator_adapter::reallocate_n(p,oldn,n)};
 			if(oldn<n)
 			{
-				::std::size_t const to_zero_bytes{static_cast<std::size_t>(n-oldn)};
+				::std::size_t const to_zero_bytes{static_cast<::std::size_t>(n-oldn)};
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memset)
 				__builtin_memset
 #else
-				std::memset
+				::std::memset
 #endif
 #else
-				std::memset
+				::std::memset
 #endif
 				(reinterpret_cast<char*>(newptr)+oldn,0,to_zero_bytes);
 			}
@@ -406,10 +406,10 @@ public:
 #if __has_builtin(__builtin_memcpy)
 				__builtin_memcpy
 #else
-				std::memcpy
+				::std::memcpy
 #endif
 #else
-				std::memcpy
+				::std::memcpy
 #endif
 				(newptr,p,n);
 				generic_allocator_adapter::deallocate_aligned_n(p,alignment,oldn);
@@ -435,10 +435,10 @@ public:
 #if __has_builtin(__builtin_memset)
 			__builtin_memset(newptr,0,n);
 #else
-			std::memset(newptr,0,n);
+			::std::memset(newptr,0,n);
 #endif
 #else
-			std::memset(newptr,0,n);
+			::std::memset(newptr,0,n);
 #endif
 			return newptr;
 		}

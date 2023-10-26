@@ -11,7 +11,7 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
@@ -93,7 +93,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-LoadLibraryExA(char const*,void*,std::uint_least32_t) noexcept
+LoadLibraryExA(char const*,void*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -119,7 +119,7 @@ extern void *
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-LoadLibraryExW(char16_t const*,void*,std::uint_least32_t) noexcept
+LoadLibraryExW(char16_t const*,void*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -142,11 +142,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-FormatMessageA(std::uint_least32_t, char const*, std::uint_least32_t,std::uint_least32_t, char*, std::uint_least32_t, void /*va_list*/ *) noexcept
+FormatMessageA(::std::uint_least32_t, char const*, ::std::uint_least32_t,::std::uint_least32_t, char*, ::std::uint_least32_t, void /*va_list*/ *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -168,11 +168,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-FormatMessageW(std::uint_least32_t, char16_t const*, std::uint_least32_t,std::uint_least32_t, char16_t*, std::uint_least32_t, void /*va_list*/ *) noexcept
+FormatMessageW(::std::uint_least32_t, char16_t const*, ::std::uint_least32_t,::std::uint_least32_t, char16_t*, ::std::uint_least32_t, void /*va_list*/ *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -198,7 +198,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-CreateFileMappingA(void*,security_attributes*,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,char const*) noexcept
+CreateFileMappingA(void*,security_attributes*,::std::uint_least32_t,::std::uint_least32_t,::std::uint_least32_t,char const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -224,7 +224,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-CreateFileMappingW(void*,security_attributes*,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,char16_t const*) noexcept
+CreateFileMappingW(void*,security_attributes*,::std::uint_least32_t,::std::uint_least32_t,::std::uint_least32_t,char16_t const*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -250,7 +250,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-MapViewOfFile(void*,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,std::size_t) noexcept
+MapViewOfFile(void*,::std::uint_least32_t,::std::uint_least32_t,::std::uint_least32_t,::std::size_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -328,7 +328,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WriteFile(void*,void const*,std::uint_least32_t,std::uint_least32_t*,overlapped*) noexcept
+WriteFile(void*,void const*,::std::uint_least32_t,::std::uint_least32_t*,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -354,7 +354,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-ReadFile(void*,void const*,std::uint_least32_t,std::uint_least32_t*,overlapped*) noexcept
+ReadFile(void*,void const*,::std::uint_least32_t,::std::uint_least32_t*,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -376,11 +376,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-SetFilePointer(void*,std::int_least32_t,std::int_least32_t*,std::uint_least32_t) noexcept
+SetFilePointer(void*,::std::int_least32_t,::std::int_least32_t*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -406,7 +406,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-SetFilePointerEx(void*,std::int_least64_t,std::int_least64_t*,std::uint_least32_t) noexcept
+SetFilePointerEx(void*,::std::int_least64_t,::std::int_least64_t*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -432,7 +432,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-DuplicateHandle(void*,void*,void*,void**,std::uint_least32_t,int,std::uint_least32_t) noexcept
+DuplicateHandle(void*,void*,void*,void**,::std::uint_least32_t,int,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -458,7 +458,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-GetStdHandle(std::uint_least32_t) noexcept
+GetStdHandle(::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -484,7 +484,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-CreatePipe(void**,void**,security_attributes*,std::uint_least32_t) noexcept
+CreatePipe(void**,void**,security_attributes*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -618,11 +618,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WaitForSingleObject(void*,std::uint_least32_t) noexcept
+WaitForSingleObject(void*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -644,7 +644,7 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
@@ -804,7 +804,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-QueryUnbiasedInterruptTime(std::uint_least64_t*) noexcept
+QueryUnbiasedInterruptTime(::std::uint_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -830,7 +830,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-QueryPerformanceCounter(std::int_least64_t*) noexcept
+QueryPerformanceCounter(::std::int_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -856,7 +856,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-QueryPerformanceFrequency(std::int_least64_t*) noexcept
+QueryPerformanceFrequency(::std::int_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -935,7 +935,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-GetHandleInformation(void*,std::uint_least32_t*) noexcept
+GetHandleInformation(void*,::std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -960,7 +960,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-SetHandleInformation(void*,std::uint_least32_t,std::uint_least32_t) noexcept
+SetHandleInformation(void*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -982,11 +982,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-GetTempPathA(std::uint_least32_t,char* buffer) noexcept
+GetTempPathA(::std::uint_least32_t,char* buffer) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1008,11 +1008,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-GetTempPathW(std::uint_least32_t,char16_t* buffer) noexcept
+GetTempPathW(::std::uint_least32_t,char16_t* buffer) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1038,7 +1038,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-CreateFileA(char const*,std::uint_least32_t,std::uint_least32_t,security_attributes*,std::uint_least32_t,std::uint_least32_t,void*) noexcept
+CreateFileA(char const*,::std::uint_least32_t,::std::uint_least32_t,security_attributes*,::std::uint_least32_t,::std::uint_least32_t,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1064,7 +1064,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-CreateFileW(char16_t const*,std::uint_least32_t,std::uint_least32_t,security_attributes*,std::uint_least32_t,std::uint_least32_t,void*) noexcept
+CreateFileW(char16_t const*,::std::uint_least32_t,::std::uint_least32_t,security_attributes*,::std::uint_least32_t,::std::uint_least32_t,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1090,7 +1090,7 @@ extern void*
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-CreateIoCompletionPort(void*,void*,std::uintptr_t,std::uint_least32_t) noexcept
+CreateIoCompletionPort(void*,void*,::std::uintptr_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1115,7 +1115,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-SystemFunction036(void*,std::uint_least32_t) noexcept
+SystemFunction036(void*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1165,7 +1165,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-LockFileEx(void*,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,overlapped*) noexcept
+LockFileEx(void*,::std::uint_least32_t,::std::uint_least32_t,::std::uint_least32_t,::std::uint_least32_t,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1191,7 +1191,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-UnlockFileEx(void*,std::uint_least32_t,std::uint_least32_t,std::uint_least32_t,overlapped*) noexcept
+UnlockFileEx(void*,::std::uint_least32_t,::std::uint_least32_t,::std::uint_least32_t,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1217,7 +1217,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-DeviceIoControl(void*,std::uint_least32_t,void*,std::uint_least32_t,void*,std::uint_least32_t,void*,overlapped*) noexcept
+DeviceIoControl(void*,::std::uint_least32_t,void*,::std::uint_least32_t,void*,::std::uint_least32_t,void*,overlapped*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1239,7 +1239,7 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
@@ -1266,7 +1266,7 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
@@ -1344,11 +1344,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-MessageBoxA(void*,char const*,char const*,std::uint_least32_t) noexcept
+MessageBoxA(void*,char const*,char const*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1370,11 +1370,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-MessageBoxW(void*,char16_t const*,char16_t const*,std::uint_least32_t) noexcept
+MessageBoxW(void*,char16_t const*,char16_t const*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1400,7 +1400,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-GetConsoleMode(void *, std::uint_least32_t *) noexcept
+GetConsoleMode(void *, ::std::uint_least32_t *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1426,7 +1426,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-SetConsoleMode(void *, std::uint_least32_t) noexcept
+SetConsoleMode(void *, ::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1452,7 +1452,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-ReadConsoleA(void*,void*,std::uint_least32_t,std::uint_least32_t*,void*) noexcept
+ReadConsoleA(void*,void*,::std::uint_least32_t,::std::uint_least32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1478,7 +1478,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-ReadConsoleW(void*,void*,std::uint_least32_t,std::uint_least32_t*,void*) noexcept
+ReadConsoleW(void*,void*,::std::uint_least32_t,::std::uint_least32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1504,7 +1504,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WriteConsoleA(void*,void const*,std::uint_least32_t,std::uint_least32_t*,void*) noexcept
+WriteConsoleA(void*,void const*,::std::uint_least32_t,::std::uint_least32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1530,7 +1530,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WriteConsoleW(void*,void const*,std::uint_least32_t,std::uint_least32_t*,void*) noexcept
+WriteConsoleW(void*,void const*,::std::uint_least32_t,::std::uint_least32_t*,void*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1791,7 +1791,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSADuplicateSocketA(void*,std::uint_least32_t,wsaprotocol_infoa*) noexcept
+WSADuplicateSocketA(void*,::std::uint_least32_t,wsaprotocol_infoa*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1817,7 +1817,7 @@ extern void
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSADuplicateSocketW(void*,std::uint_least32_t,wsaprotocol_infow*) noexcept
+WSADuplicateSocketW(void*,::std::uint_least32_t,wsaprotocol_infow*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1869,7 +1869,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSAStartup(std::uint_least32_t,wsadata*) noexcept
+WSAStartup(::std::uint_least32_t,wsadata*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1921,7 +1921,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-closesocket(std::uintptr_t) noexcept
+closesocket(::std::uintptr_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1943,11 +1943,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uintptr_t
+extern ::std::uintptr_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSASocketW(int,int,int,wsaprotocol_infow*,std::uint_least32_t,std::uint_least32_t) noexcept
+WSASocketW(int,int,int,wsaprotocol_infow*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1969,11 +1969,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uintptr_t
+extern ::std::uintptr_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSASocketA(int,int,int,wsaprotocol_infoa*,std::uint_least32_t,std::uint_least32_t) noexcept
+WSASocketA(int,int,int,wsaprotocol_infoa*,::std::uint_least32_t,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1999,7 +1999,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-bind(std::uintptr_t,void const*,int) noexcept
+bind(::std::uintptr_t,void const*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2025,7 +2025,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-listen(std::uintptr_t,int) noexcept
+listen(::std::uintptr_t,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2047,11 +2047,11 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uintptr_t
+extern ::std::uintptr_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSAAccept(std::uintptr_t,void const*,int*,lpconditionproc,std::uintptr_t) noexcept
+WSAAccept(::std::uintptr_t,void const*,int*,lpconditionproc,::std::uintptr_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2077,7 +2077,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-ioctlsocket(std::uintptr_t,long,std::uint_least32_t*) noexcept
+ioctlsocket(::std::uintptr_t,long,::std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2104,7 +2104,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSASend(std::uintptr_t,wsabuf*,std::uint_least32_t,std::uint_least32_t*,std::uint_least32_t,overlapped*,lpwsaoverlapped_completion_routine) noexcept
+WSASend(::std::uintptr_t,wsabuf*,::std::uint_least32_t,::std::uint_least32_t*,::std::uint_least32_t,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2130,7 +2130,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSASendMsg(std::uintptr_t,wsamsg*,std::uint_least32_t,std::uint_least32_t*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
+WSASendMsg(::std::uintptr_t,wsamsg*,::std::uint_least32_t,::std::uint_least32_t*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2157,7 +2157,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSASendTo(std::uintptr_t,wsabuf*,std::uint_least32_t,std::uint_least32_t*,std::uint_least32_t,void const*,int,overlapped*,lpwsaoverlapped_completion_routine) noexcept
+WSASendTo(::std::uintptr_t,wsabuf*,::std::uint_least32_t,::std::uint_least32_t*,::std::uint_least32_t,void const*,int,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2183,7 +2183,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-recv(std::uintptr_t,char* buf,int len,int flags) noexcept
+recv(::std::uintptr_t,char* buf,int len,int flags) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2209,7 +2209,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSARecv(std::uintptr_t,wsabuf*,std::uint_least32_t,std::uint_least32_t*,std::uint_least32_t*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
+WSARecv(::std::uintptr_t,wsabuf*,::std::uint_least32_t,::std::uint_least32_t*,::std::uint_least32_t*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2235,7 +2235,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSARecvFrom(std::uintptr_t,wsabuf*,std::uint_least32_t,std::uint_least32_t*,std::uint_least32_t*,void const*,int*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
+WSARecvFrom(::std::uintptr_t,wsabuf*,::std::uint_least32_t,::std::uint_least32_t*,::std::uint_least32_t*,void const*,int*,overlapped*,lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2261,7 +2261,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-connect(std::uintptr_t,void const*,int) noexcept
+connect(::std::uintptr_t,void const*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2287,7 +2287,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-WSAConnect(std::uintptr_t,void const*,int,wsabuf*,wsabuf*,qualityofservice*,qualityofservice*) noexcept
+WSAConnect(::std::uintptr_t,void const*,int,wsabuf*,wsabuf*,qualityofservice*,qualityofservice*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2313,7 +2313,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-shutdown(std::uintptr_t,void const*,int) noexcept
+shutdown(::std::uintptr_t,void const*,int) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2335,7 +2335,7 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern std::uint_least32_t
+extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
@@ -2391,7 +2391,7 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-GetQueuedCompletionStatus(void*,std::uint_least32_t*,std::uintptr_t*,overlapped*,std::uint_least32_t) noexcept
+GetQueuedCompletionStatus(void*,::std::uint_least32_t*,::std::uintptr_t*,overlapped*,::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

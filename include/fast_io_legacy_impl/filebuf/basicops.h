@@ -6,23 +6,23 @@ namespace fast_io
 namespace details
 {
 
-template<std::integral char_type,typename traits_type>
-inline char_type* streambuf_read_report_eh_impl(std::basic_streambuf<char_type,traits_type>* fb,
+template<::std::integral char_type,typename traits_type>
+inline char_type* streambuf_read_report_eh_impl(::std::basic_streambuf<char_type,traits_type>* fb,
 	char_type* src, char_type* last)
 {
-	return src+fb->sgetn(src,static_cast<std::streamsize>(last-src));
+	return src+fb->sgetn(src,static_cast<::std::streamsize>(last-src));
 }
 
-template<std::integral char_type,typename traits_type>
-inline char_type const* streambuf_write_report_eh_impl(std::basic_streambuf<char_type,traits_type>* fb,
+template<::std::integral char_type,typename traits_type>
+inline char_type const* streambuf_write_report_eh_impl(::std::basic_streambuf<char_type,traits_type>* fb,
 	char_type const* src, char_type const* last)
 {
-	return src+fb->sputn(src,static_cast<std::streamsize>(last-src));
+	return src+fb->sputn(src,static_cast<::std::streamsize>(last-src));
 }
 
-template<std::integral char_type,typename traits_type>
+template<::std::integral char_type,typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_common(
-	std::basic_streambuf<char_type,traits_type>* fb,
+	::std::basic_streambuf<char_type,traits_type>* fb,
 	::fast_io::intfpos_t off,
 	::fast_io::seekdir sdir,::std::ios_base::openmode md)
 {
@@ -69,27 +69,27 @@ inline ::fast_io::intfpos_t streambuf_seek_common(
 	return retval;
 }
 
-template<std::integral char_type,typename traits_type>
+template<::std::integral char_type,typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_input(
-	std::basic_streambuf<char_type,traits_type>* fb,
+	::std::basic_streambuf<char_type,traits_type>* fb,
 	::fast_io::intfpos_t off,
 	::fast_io::seekdir sdir)
 {
 	return ::fast_io::details::streambuf_seek_common(fb,off,sdir,::std::ios_base::in);
 }
 
-template<std::integral char_type,typename traits_type>
+template<::std::integral char_type,typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_output(
-	std::basic_streambuf<char_type,traits_type>* fb,
+	::std::basic_streambuf<char_type,traits_type>* fb,
 	::fast_io::intfpos_t off,
 	::fast_io::seekdir sdir)
 {
 	return ::fast_io::details::streambuf_seek_common(fb,off,sdir,::std::ios_base::out);
 }
 
-template<std::integral char_type,typename traits_type>
+template<::std::integral char_type,typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_io(
-	std::basic_streambuf<char_type,traits_type>* fb,
+	::std::basic_streambuf<char_type,traits_type>* fb,
 	::fast_io::intfpos_t off,
 	::fast_io::seekdir sdir)
 {
@@ -97,8 +97,8 @@ inline ::fast_io::intfpos_t streambuf_seek_io(
 		::std::ios_base::in|::std::ios_base::out);
 }
 
-template<std::integral char_type,typename traits_type>
-inline void streambuf_flush_impl(std::basic_streambuf<char_type,traits_type>* fb)
+template<::std::integral char_type,typename traits_type>
+inline void streambuf_flush_impl(::std::basic_streambuf<char_type,traits_type>* fb)
 {
 	if(fb->pubsync()==-1)
 		throw_posix_error(EIO);

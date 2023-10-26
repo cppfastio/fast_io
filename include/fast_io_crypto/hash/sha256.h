@@ -6,7 +6,7 @@ https://github.com/noloader/SHA-Intrinsics/blob/master/sha256-x86.c
 namespace fast_io::details::sha256
 {
 
-inline constexpr std::uint_least32_t K256[]
+inline constexpr ::std::uint_least32_t K256[]
 {
 0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
@@ -28,19 +28,19 @@ inline constexpr std::uint_least32_t K256[]
 
 inline constexpr auto Sigma0(auto x) noexcept
 {
-	return std::rotr(x,2)^std::rotr(x,13)^std::rotr(x,22);
+	return ::std::rotr(x,2)^::std::rotr(x,13)^::std::rotr(x,22);
 }
 inline constexpr auto Sigma1(auto x) noexcept
 {
-	return std::rotr(x,6)^std::rotr(x,11)^std::rotr(x,25);
+	return ::std::rotr(x,6)^::std::rotr(x,11)^::std::rotr(x,25);
 }
 inline constexpr auto sigma0(auto x) noexcept
 {
-	return std::rotr(x,7)^std::rotr(x,18)^(x>>3);
+	return ::std::rotr(x,7)^::std::rotr(x,18)^(x>>3);
 }
 inline constexpr auto sigma1(auto x) noexcept
 {
-	return std::rotr(x,17)^std::rotr(x,19)^(x>>10);
+	return ::std::rotr(x,17)^::std::rotr(x,19)^(x>>10);
 }
 inline constexpr auto Ch(auto x,auto y,auto z) noexcept
 {
@@ -56,46 +56,46 @@ inline constexpr auto Maj(auto x,auto y,auto z) noexcept
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void sha256_scalar_round(std::uint_least32_t T1k,std::uint_least32_t a,std::uint_least32_t b,std::uint_least32_t& __restrict d,
-				std::uint_least32_t e,std::uint_least32_t f,std::uint_least32_t g,std::uint_least32_t& __restrict h,std::uint_least32_t& __restrict bpc) noexcept
+inline constexpr void sha256_scalar_round(::std::uint_least32_t T1k,::std::uint_least32_t a,::std::uint_least32_t b,::std::uint_least32_t& __restrict d,
+				::std::uint_least32_t e,::std::uint_least32_t f,::std::uint_least32_t g,::std::uint_least32_t& __restrict h,::std::uint_least32_t& __restrict bpc) noexcept
 {
 	T1k+=h+Sigma1(e)+Ch(e,f,g);
 	h=Sigma0(a);
-	std::uint_least32_t apb{a^b};
+	::std::uint_least32_t apb{a^b};
 	h+=(apb&bpc)^b;
 	bpc=apb;
 	d+=T1k;
 	h+=T1k;
 }
 
-inline constexpr std::uint_least32_t B2U32(std::byte val, std::uint_least8_t sh) noexcept
+inline constexpr ::std::uint_least32_t B2U32(::std::byte val, ::std::uint_least8_t sh) noexcept
 {
-	return (static_cast<std::uint_least32_t>(val)) << sh;
+	return (static_cast<::std::uint_least32_t>(val)) << sh;
 }
 
 inline 
 #if __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
 #endif
-void sha256_do_constexpr_function(std::uint_least32_t* __restrict state,std::byte const* __restrict data,std::byte const* __restrict blocks_last) noexcept
+void sha256_do_constexpr_function(::std::uint_least32_t* __restrict state,::std::byte const* __restrict data,::std::byte const* __restrict blocks_last) noexcept
 {
-	std::uint_least32_t a{state[0]}, b{state[1]}, c{state[2]}, d{state[3]}, e{state[4]}, f{state[5]}, g{state[6]}, h{state[7]}, s0, s1, T1, T2;
-	std::uint_least32_t X[16];
+	::std::uint_least32_t a{state[0]}, b{state[1]}, c{state[2]}, d{state[3]}, e{state[4]}, f{state[5]}, g{state[6]}, h{state[7]}, s0, s1, T1, T2;
+	::std::uint_least32_t X[16];
 	using namespace fast_io::details::sha256;
 	while(data!=blocks_last)
 	{
-		std::uint_least32_t i{};
+		::std::uint_least32_t i{};
 		for (; i < 16; ++i)
 		{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-			if (std::is_constant_evaluated())
+			if (::std::is_constant_evaluated())
 			{
 				X[i] = B2U32(data[0], 24) | B2U32(data[1], 16) | B2U32(data[2], 8) | B2U32(data[3], 0);
 			}
 			else
 #endif
 			{
-				std::uint_least32_t value;
+				::std::uint_least32_t value;
 				::fast_io::details::my_memcpy(__builtin_addressof(value),data,4);
 				X[i] = big_endian(value);
 			}
@@ -176,15 +176,15 @@ __has_builtin(__builtin_ia32_pshufb128) && (!defined(__clang__)||(defined(__SSE4
 class sha256
 {
 public:
-	using state_value_type = std::uint_least32_t;
-	static inline constexpr std::size_t block_size{64};
-	static inline constexpr std::endian hash_endian{std::endian::big};
-	static inline constexpr std::size_t state_size{8};
+	using state_value_type = ::std::uint_least32_t;
+	static inline constexpr ::std::size_t block_size{64};
+	static inline constexpr ::std::endian hash_endian{::std::endian::big};
+	static inline constexpr ::std::size_t state_size{8};
 	state_value_type state[state_size]{0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif
-	void update_blocks(std::byte const* blocks_start,std::byte const* blocks_last) noexcept
+	void update_blocks(::std::byte const* blocks_start,::std::byte const* blocks_last) noexcept
 	{
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -205,21 +205,21 @@ public:
 
 struct sha224_initializer
 {
-	static inline constexpr std::size_t digest_size{28};
+	static inline constexpr ::std::size_t digest_size{28};
 	static inline constexpr ::fast_io::details::sha256::sha256 initialize_value{{0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least32_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least32_t const* digest,::std::byte* ptr) noexcept
 	{
-		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,std::endian::big>(digest,ptr);
+		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,::std::endian::big>(digest,ptr);
 	}
 };
 
 struct sha256_initializer
 {
-	static inline constexpr std::size_t digest_size{32};
+	static inline constexpr ::std::size_t digest_size{32};
 	static inline constexpr ::fast_io::details::sha256::sha256 initialize_value{{0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least32_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least32_t const* digest,::std::byte* ptr) noexcept
 	{
-		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,std::endian::big>(digest,ptr);
+		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,::std::endian::big>(digest,ptr);
 	}
 };
 

@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 class basic_generic_dynamic_output_buffer
 {
 public:
@@ -30,7 +30,7 @@ public:
 	}
 };
 
-template<std::integral char_type,typename allocatortype = ::fast_io::native_thread_local_allocator>
+template<::std::integral char_type,typename allocatortype = ::fast_io::native_thread_local_allocator>
 using basic_dynamic_output_buffer = basic_generic_dynamic_output_buffer<char_type,256,allocatortype>;
 
 template<typename T>
@@ -43,7 +43,7 @@ public:
 	native_handle_type dob_ptr{};
 };
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> output_stream_ref_define(basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>& diob) noexcept
 {
 	return {__builtin_addressof(diob)};
@@ -52,7 +52,7 @@ inline constexpr basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_bu
 namespace details
 {
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr void write_all_overflow_define_impl(
 		basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>& bob,
 		char_type const *first,char_type const *last)
@@ -95,7 +95,7 @@ inline constexpr void write_all_overflow_define_impl(
 	bob.curr_ptr=::fast_io::details::non_overlapped_copy(first,last,curit);
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -125,39 +125,39 @@ inline constexpr void grow_twice_define_impl(
 
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr void write_all_overflow_define(basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> bdobr,
 						char_type const *first,char_type const *last)
 {
 	::fast_io::details::write_all_overflow_define_impl(*bdobr.dob_ptr,first,last);
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr char_type* obuffer_begin(basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> bdobr) noexcept
 {
 	return bdobr.dob_ptr->begin_ptr;
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr char_type* obuffer_curr(basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> bdobr) noexcept
 {
 	return bdobr.dob_ptr->curr_ptr;
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr char_type* obuffer_end(basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> bdobr) noexcept
 {
 	return bdobr.dob_ptr->end_ptr;
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr void obuffer_set_curr(basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> bdobr,
 						char_type *it) noexcept
 {
 	bdobr.dob_ptr->curr_ptr=it;
 }
 
-template<std::integral char_type,::std::size_t buffersize,typename allocatortype>
+template<::std::integral char_type,::std::size_t buffersize,typename allocatortype>
 inline constexpr void obuffer_overflow(basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type,buffersize,allocatortype>> bdobr,
 						char_type ch) noexcept
 {

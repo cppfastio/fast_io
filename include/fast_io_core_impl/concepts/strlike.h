@@ -3,13 +3,13 @@
 namespace fast_io
 {
 
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 struct io_strlike_type_t
 {
 	explicit constexpr io_strlike_type_t() noexcept = default;
 };
 
-template<std::integral char_type,typename T>
+template<::std::integral char_type,typename T>
 inline constexpr io_strlike_type_t<char_type,T> io_strlike_type{};
 
 namespace details
@@ -24,7 +24,7 @@ concept buffer_strlike_impl = requires(T& t)
 	{
 		{strlike_set_curr(io_strlike_type<char_type,T>,t,ptr)};
 	};
-	requires requires(std::size_t n)
+	requires requires(::std::size_t n)
 	{
 		{strlike_reserve(io_strlike_type<char_type,T>,t,n)};
 	};
@@ -32,7 +32,7 @@ concept buffer_strlike_impl = requires(T& t)
 }
 
 template<typename char_type,typename T>
-concept strlike = std::integral<char_type>&&std::is_default_constructible_v<T>&&(requires(char_type const* first)
+concept strlike = ::std::integral<char_type>&&::std::is_default_constructible_v<T>&&(requires(char_type const* first)
 {
 	strlike_construct_define(io_strlike_type<char_type,T>,first,first);
 }||::fast_io::details::buffer_strlike_impl<char_type,T>);
@@ -59,7 +59,7 @@ concept buffer_strlike = strlike<char_type,T> && requires(T& t)
 	{
 		{strlike_set_curr(io_strlike_type<char_type,T>,t,ptr)};
 	};
-	requires requires(std::size_t n)
+	requires requires(::std::size_t n)
 	{
 		{strlike_reserve(io_strlike_type<char_type,T>,t,n)};
 	};
@@ -75,7 +75,7 @@ concept auxiliary_strlike = strlike<char_type,T> && requires(T& t,char_type ch,c
 template<typename char_type,typename T>
 concept sso_buffer_strlike = buffer_strlike<char_type,T> && requires()
 {
-	{strlike_sso_size(io_strlike_type<char_type,T>)}->std::same_as<std::size_t>;
+	{strlike_sso_size(io_strlike_type<char_type,T>)}->::std::same_as<::std::size_t>;
 };
 
 }

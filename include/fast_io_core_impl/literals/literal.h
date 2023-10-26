@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -19,10 +19,10 @@ inline constexpr ch_type char_literal(char8_t ch) noexcept
 		return static_cast<ch_type>(static_cast<unsigned_t>(ch));
 	}
 }
-template<char8_t ch,std::integral ch_type>
+template<char8_t ch,::std::integral ch_type>
 inline constexpr ch_type char_literal_v{char_literal<ch_type>(ch)};
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -30,7 +30,7 @@ template<std::integral ch_type>
 #endif
 inline constexpr ch_type arithmetic_char_literal(char8_t ch) noexcept
 {
-	if constexpr(std::same_as<ch_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
+	if constexpr(::std::same_as<ch_type,wchar_t>&&::fast_io::details::wide_is_none_utf_endian)
 	{
 		using unsigned_t = ::std::make_unsigned_t<ch_type>;
 		return static_cast<ch_type>(static_cast<unsigned_t>(ch));
@@ -41,10 +41,10 @@ inline constexpr ch_type arithmetic_char_literal(char8_t ch) noexcept
 	}
 }
 
-template<char8_t ch,std::integral ch_type>
+template<char8_t ch,::std::integral ch_type>
 inline constexpr ch_type arithmetic_char_literal_v{arithmetic_char_literal<ch_type>(ch)};
 
-template<std::integral char_type,char8_t ch=u8'0',std::integral T>
+template<::std::integral char_type,char8_t ch=u8'0',::std::integral T>
 inline constexpr char_type char_literal_add(T offs) noexcept
 {
 #if __has_cpp_attribute(assume)

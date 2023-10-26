@@ -124,7 +124,7 @@ inline void* llvm_libc_obuffer_end(FILE* fpp) noexcept
 inline void llvm_libc_set_buffer_curr(FILE* fpp,void* currptr) noexcept
 {
 	auto fp{reinterpret_cast<File*>(fpp)};
-	fp->pos=static_cast<std::size_t>(reinterpret_cast<char*>(currptr)-reinterpret_cast<char*>(fp->buf));
+	fp->pos=static_cast<::std::size_t>(reinterpret_cast<char*>(currptr)-reinterpret_cast<char*>(fp->buf));
 }
 
 inline bool llvm_libc_underflow(FILE* fpp) noexcept
@@ -159,7 +159,7 @@ inline void llvm_libc_overflow(FILE* fpp,char ch) noexcept
 
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
@@ -169,7 +169,7 @@ inline char_type* ibuffer_begin(basic_c_io_observer_unlocked<char_type> ciob) no
 	return reinterpret_cast<char_type*>(::fast_io::details::llvmlibc_hack::llvm_libc_buffer_begin(ciob.fp));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
@@ -179,7 +179,7 @@ inline char_type* obuffer_begin(basic_c_io_observer_unlocked<char_type> ciob) no
 	return reinterpret_cast<char_type*>(::fast_io::details::llvmlibc_hack::llvm_libc_buffer_begin(ciob.fp));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
@@ -189,7 +189,7 @@ inline char_type* ibuffer_curr(basic_c_io_observer_unlocked<char_type> ciob) noe
 	return reinterpret_cast<char_type*>(::fast_io::details::llvmlibc_hack::llvm_libc_buffer_curr(ciob.fp));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
@@ -199,7 +199,7 @@ inline char_type* obuffer_curr(basic_c_io_observer_unlocked<char_type> ciob) noe
 	return reinterpret_cast<char_type*>(::fast_io::details::llvmlibc_hack::llvm_libc_buffer_curr(ciob.fp));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
@@ -209,7 +209,7 @@ inline char_type* ibuffer_end(basic_c_io_observer_unlocked<char_type> ciob) noex
 	return reinterpret_cast<char_type*>(::fast_io::details::llvmlibc_hack::llvm_libc_ibuffer_end(ciob.fp));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 [[__gnu__::__may_alias__]]
@@ -219,28 +219,28 @@ inline char_type* obuffer_end(basic_c_io_observer_unlocked<char_type> ciob) noex
 	return reinterpret_cast<char_type*>(::fast_io::details::llvmlibc_hack::llvm_libc_obuffer_end(ciob.fp));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 inline void ibuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type* ptr) noexcept
 {
 	::fast_io::details::llvmlibc_hack::llvm_libc_set_buffer_curr(ciob.fp,ptr);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 inline void obuffer_set_curr(basic_c_io_observer_unlocked<char_type> ciob,char_type* ptr) noexcept
 {
 	::fast_io::details::llvmlibc_hack::llvm_libc_set_buffer_curr(ciob.fp,ptr);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 inline bool ibuffer_underflow(basic_c_io_observer_unlocked<char_type> ciob) noexcept
 {
 	return ::fast_io::details::llvmlibc_hack::llvm_libc_underflow(ciob.fp);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 inline void obuffer_overflow(basic_c_io_observer_unlocked<char_type> ciob,char_type ch) noexcept
 {

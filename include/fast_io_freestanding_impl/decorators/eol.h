@@ -29,7 +29,7 @@ struct basic_eol_converter
 				char_type *tofirst,char_type *tolast) noexcept
 	{
 
-		constexpr std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
+		constexpr ::std::size_t initialdiffn{::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size};
 		if constexpr(fromscheme==eol_scheme::lf&&toscheme==eol_scheme::crlf)
 		{
 			if(last_unfinished)

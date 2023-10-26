@@ -6,7 +6,7 @@
 namespace fast_io
 {
 
-enum class protocol_family: std::uint_least32_t
+enum class protocol_family: ::std::uint_least32_t
 {
 	unspec = 0,
 	local = 1,

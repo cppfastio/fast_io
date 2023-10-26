@@ -8,8 +8,8 @@ Author: jeaiii
 namespace fast_io::details::jeaiii
 {
 
-template<std::integral char_type>
-inline constexpr void jeaiii_w(char_type* iter,std::uint_fast32_t u) noexcept
+template<::std::integral char_type>
+inline constexpr void jeaiii_w(char_type* iter,::std::uint_fast32_t u) noexcept
 {
 	constexpr
 		auto const *digitstb{digits_table<char_type,10,false>};
@@ -18,41 +18,41 @@ inline constexpr void jeaiii_w(char_type* iter,std::uint_fast32_t u) noexcept
 	::fast_io::details::intrinsics::typed_memcpy(iter,digitstb+(u<<1),tocopybytes);
 }
 
-template<std::size_t n,std::integral char_type>
-inline constexpr std::uint_least64_t jeaiii_a(char_type* iter,std::uint_least32_t u) noexcept
+template<::std::size_t n,::std::integral char_type>
+inline constexpr ::std::uint_least64_t jeaiii_a(char_type* iter,::std::uint_least32_t u) noexcept
 {
-	constexpr std::uint_least64_t one{1};
-	constexpr std::uint_least64_t v{n/5*n*53/16};
-	constexpr std::uint_least64_t constant{(one<<(32+v))/
-		::fast_io::details::compile_pow10<std::uint_least64_t,n>+1+n/6-n/8};
-	std::uint_least64_t t{constant*u};
+	constexpr ::std::uint_least64_t one{1};
+	constexpr ::std::uint_least64_t v{n/5*n*53/16};
+	constexpr ::std::uint_least64_t constant{(one<<(32+v))/
+		::fast_io::details::compile_pow10<::std::uint_least64_t,n>+1+n/6-n/8};
+	::std::uint_least64_t t{constant*u};
 	t>>=v;
-	constexpr std::uint_least64_t add_factor{n/6*4};
+	constexpr ::std::uint_least64_t add_factor{n/6*4};
 	if constexpr(add_factor!=0u)
 		t+=add_factor;
-	jeaiii_w(iter,static_cast<std::uint_fast32_t>(t>>32u));
+	jeaiii_w(iter,static_cast<::std::uint_fast32_t>(t>>32u));
 	return t;
 }
 
-template<std::size_t n,std::integral char_type>
-inline constexpr void jeaiii_s(char_type* iter,std::uint_least64_t t) noexcept
+template<::std::size_t n,::std::integral char_type>
+inline constexpr void jeaiii_s(char_type* iter,::std::uint_least64_t t) noexcept
 {
-	constexpr std::uint_least64_t ten{10u};
-	iter[n]=::fast_io::char_literal_add<char_type>((ten*static_cast<std::uint_least32_t>(t))>>32u);
+	constexpr ::std::uint_least64_t ten{10u};
+	iter[n]=::fast_io::char_literal_add<char_type>((ten*static_cast<::std::uint_least32_t>(t))>>32u);
 }
 
-template<std::size_t n,bool last=false,std::integral char_type>
-inline constexpr auto jeaiii_d(char_type* iter,std::uint_least64_t t) noexcept
+template<::std::size_t n,bool last=false,::std::integral char_type>
+inline constexpr auto jeaiii_d(char_type* iter,::std::uint_least64_t t) noexcept
 {
-	constexpr std::uint_least64_t hundred{100u};
-	jeaiii_w(iter+n,static_cast<std::uint_least32_t>((t=hundred*static_cast<std::uint_least32_t>(t))>>32));
+	constexpr ::std::uint_least64_t hundred{100u};
+	jeaiii_w(iter+n,static_cast<::std::uint_least32_t>((t=hundred*static_cast<::std::uint_least32_t>(t))>>32));
 	if constexpr(!last)
 		return t;
 }
 
 
-template<std::size_t n,std::integral char_type>
-inline constexpr void jeaiii_c(char_type* iter,std::uint_least32_t u) noexcept
+template<::std::size_t n,::std::integral char_type>
+inline constexpr void jeaiii_c(char_type* iter,::std::uint_least32_t u) noexcept
 {
 	if constexpr(n==0)
 	{
@@ -88,7 +88,7 @@ inline constexpr void jeaiii_c(char_type* iter,std::uint_least32_t u) noexcept
 	}
 	else if constexpr(n==8)
 	{
-		std::uint_least64_t t{jeaiii_a<7>(iter,u)};
+		::std::uint_least64_t t{jeaiii_a<7>(iter,u)};
 		t=jeaiii_d<2>(iter,t);
 		t=jeaiii_d<4>(iter,t);
 		t=jeaiii_d<6>(iter,t);
@@ -96,7 +96,7 @@ inline constexpr void jeaiii_c(char_type* iter,std::uint_least32_t u) noexcept
 	}
 	else if constexpr(n==9)
 	{
-		std::uint_least64_t t{jeaiii_a<8>(iter,u)};
+		::std::uint_least64_t t{jeaiii_a<8>(iter,u)};
 		t=jeaiii_d<2>(iter,t);
 		t=jeaiii_d<4>(iter,t);
 		t=jeaiii_d<6>(iter,t);
@@ -104,16 +104,16 @@ inline constexpr void jeaiii_c(char_type* iter,std::uint_least32_t u) noexcept
 	}
 }
 
-template<std::size_t n,std::integral char_type>
-inline constexpr char_type* jeaiii_f(char_type* iter,std::uint_least32_t u) noexcept
+template<::std::size_t n,::std::integral char_type>
+inline constexpr char_type* jeaiii_f(char_type* iter,::std::uint_least32_t u) noexcept
 {
-	constexpr std::size_t np1{n+1};
+	constexpr ::std::size_t np1{n+1};
 	jeaiii_c<n>(iter,u);
 	return iter+np1;
 }
 
-template<std::size_t left,std::size_t right,std::integral char_type>
-inline constexpr char_type* jeaiii_tree(char_type* iter,std::uint_least32_t u) noexcept
+template<::std::size_t left,::std::size_t right,::std::integral char_type>
+inline constexpr char_type* jeaiii_tree(char_type* iter,::std::uint_least32_t u) noexcept
 {
 	static_assert(left<=right);
 /*
@@ -122,9 +122,9 @@ binary search tree
 #if 0
 	if constexpr(left==0&&right==9)
 	{
-		if(u<::fast_io::details::compile_pow10<std::uint_least32_t,2>)
+		if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,2>)
 		{
-			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,1>)
+			if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,1>)
 			{
 				*iter=::fast_io::char_literal_add<char_type>(u);
 				return iter+1;
@@ -134,11 +134,11 @@ binary search tree
 				return jeaiii_f<1>(iter,u);
 			}
 		}
-		else if(u<::fast_io::details::compile_pow10<std::uint_least32_t,6>)
+		else if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,6>)
 		{
-			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,4>)
+			if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,4>)
 			{
-				if(u<::fast_io::details::compile_pow10<std::uint_least32_t,3>)
+				if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,3>)
 				{
 					return jeaiii_f<2>(iter,u);
 				}
@@ -147,7 +147,7 @@ binary search tree
 					return jeaiii_f<3>(iter,u);
 				}
 			}
-			else if(u<::fast_io::details::compile_pow10<std::uint_least32_t,5>)
+			else if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,5>)
 			{
 				return jeaiii_f<4>(iter,u);
 			}
@@ -156,9 +156,9 @@ binary search tree
 				return jeaiii_f<5>(iter,u);
 			}
 		}
-		else if(u<::fast_io::details::compile_pow10<std::uint_least32_t,8>)
+		else if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,8>)
 		{
-			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,7>)
+			if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,7>)
 			{
 				return jeaiii_f<6>(iter,u);
 			}
@@ -169,7 +169,7 @@ binary search tree
 		}
 		else
 		{
-			if(u<::fast_io::details::compile_pow10<std::uint_least32_t,9>)
+			if(u<::fast_io::details::compile_pow10<::std::uint_least32_t,9>)
 			{
 				return jeaiii_f<8>(iter,u);
 			}
@@ -188,7 +188,7 @@ binary search tree
 		}
 		else if constexpr(left+1==right)
 		{
-			if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,right>))
+			if(u<(::fast_io::details::compile_pow10<::std::uint_least32_t,right>))
 			{
 				return jeaiii_f<left>(iter,u);
 			}
@@ -199,7 +199,7 @@ binary search tree
 		}
 		else if constexpr(left+2==right)
 		{
-			if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,left+1>))
+			if(u<(::fast_io::details::compile_pow10<::std::uint_least32_t,left+1>))
 			{
 				return jeaiii_f<left>(iter,u);
 			}
@@ -221,8 +221,8 @@ binary search tree
 		}
 		else
 		{
-			constexpr std::size_t middle{(left+right)/2};
-			if(u<(::fast_io::details::compile_pow10<std::uint_least32_t,middle+1>))
+			constexpr ::std::size_t middle{(left+right)/2};
+			if(u<(::fast_io::details::compile_pow10<::std::uint_least32_t,middle+1>))
 			{
 				return jeaiii_tree<left,middle>(iter,u);
 			}
@@ -234,73 +234,73 @@ binary search tree
 	}
 }
 
-template<bool ryu_mode=false,bool recursive=false,std::integral char_type,::fast_io::details::my_unsigned_integral U>
+template<bool ryu_mode=false,bool recursive=false,::std::integral char_type,::fast_io::details::my_unsigned_integral U>
 inline constexpr char_type* jeaiii_main(char_type* iter,U n) noexcept
 {
-	if constexpr(sizeof(U)>sizeof(std::uint_least64_t)&&sizeof(U)==16)//__uint128_t
+	if constexpr(sizeof(U)>sizeof(::std::uint_least64_t)&&sizeof(U)==16)//__uint128_t
 	{
-		if(static_cast<std::uint_least64_t>(n>>64u)==0)
+		if(static_cast<::std::uint_least64_t>(n>>64u)==0)
 		{
-			return jeaiii_main(iter,static_cast<std::uint_least64_t>(n));
+			return jeaiii_main(iter,static_cast<::std::uint_least64_t>(n));
 		}
-		constexpr std::uint_least64_t divisor{10000000000000000000ull};
+		constexpr ::std::uint_least64_t divisor{10000000000000000000ull};
 		U a{n/divisor};
-		std::uint_least64_t u{static_cast<std::uint_least64_t>(n%divisor)};
-		std::uint_least64_t alow{static_cast<std::uint_least64_t>(a)};
+		::std::uint_least64_t u{static_cast<::std::uint_least64_t>(n%divisor)};
+		::std::uint_least64_t alow{static_cast<::std::uint_least64_t>(a)};
 		if constexpr(ryu_mode)
 		{
-			iter=jeaiii_main(iter,static_cast<std::uint_least64_t>(alow));
+			iter=jeaiii_main(iter,static_cast<::std::uint_least64_t>(alow));
 		}
 		else
 		{
 			if(a!=static_cast<U>(alow))
 			{
-				std::uint_least32_t v{static_cast<std::uint_least32_t>(a/divisor)};
-				std::uint_least64_t m{static_cast<std::uint_least64_t>(a%divisor)};
+				::std::uint_least32_t v{static_cast<::std::uint_least32_t>(a/divisor)};
+				::std::uint_least64_t m{static_cast<::std::uint_least64_t>(a%divisor)};
 				jeaiii_c<0>(iter,v);
 				++iter;
 				alow=m;
-				iter=jeaiii_main<false,true,char_type>(iter,static_cast<std::uint_least64_t>(alow));
+				iter=jeaiii_main<false,true,char_type>(iter,static_cast<::std::uint_least64_t>(alow));
 			}
 			else
 			{
-				iter=jeaiii_main(iter,static_cast<std::uint_least64_t>(alow));
+				iter=jeaiii_main(iter,static_cast<::std::uint_least64_t>(alow));
 			}
 		}
-		return jeaiii_main<false,true,char_type>(iter,static_cast<std::uint_least64_t>(u));
+		return jeaiii_main<false,true,char_type>(iter,static_cast<::std::uint_least64_t>(u));
 	}
-	else if constexpr(sizeof(U)==sizeof(std::uint_least64_t))
+	else if constexpr(sizeof(U)==sizeof(::std::uint_least64_t))
 	{
-		constexpr std::uint_least32_t divisor{1000000000u};
+		constexpr ::std::uint_least32_t divisor{1000000000u};
 		if constexpr(recursive)
 		{
-			std::uint_least64_t high{n/divisor};
-			std::uint_least32_t low{static_cast<std::uint_least32_t>(n%divisor)};
-			std::uint_least32_t high_first{static_cast<std::uint_least32_t>(high/divisor)};
-			std::uint_least32_t high_low{static_cast<std::uint_least32_t>(high%divisor)};
+			::std::uint_least64_t high{n/divisor};
+			::std::uint_least32_t low{static_cast<::std::uint_least32_t>(n%divisor)};
+			::std::uint_least32_t high_first{static_cast<::std::uint_least32_t>(high/divisor)};
+			::std::uint_least32_t high_low{static_cast<::std::uint_least32_t>(high%divisor)};
 			jeaiii_c<0>(iter,high_first);
 			++iter;
 			iter=jeaiii_f<8>(jeaiii_f<8>(iter,high_low),low);
 		}
 		else
 		{
-			if(static_cast<std::uint_least32_t>(n>>32u)==0)
+			if(static_cast<::std::uint_least32_t>(n>>32u)==0)
 			{
-				return jeaiii_tree<0,9>(iter,static_cast<std::uint_least32_t>(n));
+				return jeaiii_tree<0,9>(iter,static_cast<::std::uint_least32_t>(n));
 			}
-			std::uint_least64_t a{n/divisor};
-			std::uint_least32_t u{static_cast<std::uint_least32_t>(n%divisor)};
-			std::uint_least32_t alow{static_cast<std::uint_least32_t>(a)};
+			::std::uint_least64_t a{n/divisor};
+			::std::uint_least32_t u{static_cast<::std::uint_least32_t>(n%divisor)};
+			::std::uint_least32_t alow{static_cast<::std::uint_least32_t>(a)};
 			if constexpr(ryu_mode)
 			{
 				iter=jeaiii_tree<0,7>(iter,alow);
 			}
 			else
 			{
-				if(a!=static_cast<std::uint_least64_t>(alow))
+				if(a!=static_cast<::std::uint_least64_t>(alow))
 				{
-					std::uint_least32_t v{static_cast<std::uint_least32_t>(a/divisor)};
-					alow=static_cast<std::uint_least32_t>(a%divisor);
+					::std::uint_least32_t v{static_cast<::std::uint_least32_t>(a/divisor)};
+					alow=static_cast<::std::uint_least32_t>(a%divisor);
 					if(v<10u)
 					{
 						jeaiii_c<0>(iter,v);
@@ -336,8 +336,8 @@ inline constexpr char_type* jeaiii_main(char_type* iter,U n) noexcept
 	}
 }
 
-template<std::size_t n,std::integral char_type>
-inline constexpr void jeaiii_hash(char_type* iter,std::uint_least32_t u,std::uint_least32_t len) noexcept
+template<::std::size_t n,::std::integral char_type>
+inline constexpr void jeaiii_hash(char_type* iter,::std::uint_least32_t u,::std::uint_least32_t len) noexcept
 {
 	if constexpr(n==7)
 	{
@@ -498,80 +498,80 @@ inline constexpr void jeaiii_hash(char_type* iter,std::uint_least32_t u,std::uin
 	}
 }
 
-template<bool ryu_mode=false,bool recursive=false,std::integral char_type,::fast_io::details::my_unsigned_integral U>
-inline constexpr void jeaiii_main_len(char_type* iter,U n,std::uint_least32_t len) noexcept
+template<bool ryu_mode=false,bool recursive=false,::std::integral char_type,::fast_io::details::my_unsigned_integral U>
+inline constexpr void jeaiii_main_len(char_type* iter,U n,::std::uint_least32_t len) noexcept
 {
-	if constexpr(sizeof(U)>sizeof(std::uint_least64_t)&&sizeof(U)==16)//__uint128_t
+	if constexpr(sizeof(U)>sizeof(::std::uint_least64_t)&&sizeof(U)==16)//__uint128_t
 	{
-		if(static_cast<std::uint_least64_t>(n>>64u)==0)
+		if(static_cast<::std::uint_least64_t>(n>>64u)==0)
 		{
-			return jeaiii_main_len(iter,static_cast<std::uint_least64_t>(n),len);
+			return jeaiii_main_len(iter,static_cast<::std::uint_least64_t>(n),len);
 		}
-		constexpr std::uint_least32_t full_length{19u};
-		constexpr std::uint_least64_t divisor{10000000000000000000ull};
+		constexpr ::std::uint_least32_t full_length{19u};
+		constexpr ::std::uint_least64_t divisor{10000000000000000000ull};
 		U a{n/divisor};
-		std::uint_least64_t u{static_cast<std::uint_least64_t>(n%divisor)};
-		std::uint_least64_t alow{static_cast<std::uint_least64_t>(a)};
+		::std::uint_least64_t u{static_cast<::std::uint_least64_t>(n%divisor)};
+		::std::uint_least64_t alow{static_cast<::std::uint_least64_t>(a)};
 		if constexpr(ryu_mode)
 		{
-			iter=jeaiii_main_len(iter,static_cast<std::uint_least64_t>(alow),len-full_length);
+			iter=jeaiii_main_len(iter,static_cast<::std::uint_least64_t>(alow),len-full_length);
 		}
 		else
 		{
 			if(a!=static_cast<U>(alow))
 			{
-				std::uint_least32_t v{static_cast<std::uint_least32_t>(a/divisor)};
-				std::uint_least64_t m{static_cast<std::uint_least64_t>(a%divisor)};
+				::std::uint_least32_t v{static_cast<::std::uint_least32_t>(a/divisor)};
+				::std::uint_least64_t m{static_cast<::std::uint_least64_t>(a%divisor)};
 				jeaiii_c<0>(iter,v);
 				++iter;
 				alow=m;
-				jeaiii_main_len<false,true>(iter,static_cast<std::uint_least64_t>(alow),full_length);
+				jeaiii_main_len<false,true>(iter,static_cast<::std::uint_least64_t>(alow),full_length);
 				iter+=full_length;
 			}
 			else
 			{
-				std::uint_least32_t len_sub{len-full_length};
-				jeaiii_main_len(iter,static_cast<std::uint_least64_t>(alow),len_sub);
+				::std::uint_least32_t len_sub{len-full_length};
+				jeaiii_main_len(iter,static_cast<::std::uint_least64_t>(alow),len_sub);
 				iter+=len_sub;
 			}
 		}
-		jeaiii_main_len<false,true>(iter,static_cast<std::uint_least64_t>(u),full_length);
+		jeaiii_main_len<false,true>(iter,static_cast<::std::uint_least64_t>(u),full_length);
 	}
-	else if constexpr(sizeof(U)==sizeof(std::uint_least64_t))
+	else if constexpr(sizeof(U)==sizeof(::std::uint_least64_t))
 	{
-		constexpr std::uint_least32_t full_length{9u};
-		constexpr std::uint_least32_t divisor{1000000000u};
+		constexpr ::std::uint_least32_t full_length{9u};
+		constexpr ::std::uint_least32_t divisor{1000000000u};
 		if constexpr(recursive)
 		{
-			std::uint_least64_t high{n/divisor};
-			std::uint_least32_t low{static_cast<std::uint_least32_t>(n%divisor)};
-			std::uint_least32_t high_first{static_cast<std::uint_least32_t>(high/divisor)};
-			std::uint_least32_t high_low{static_cast<std::uint_least32_t>(high%divisor)};
+			::std::uint_least64_t high{n/divisor};
+			::std::uint_least32_t low{static_cast<::std::uint_least32_t>(n%divisor)};
+			::std::uint_least32_t high_first{static_cast<::std::uint_least32_t>(high/divisor)};
+			::std::uint_least32_t high_low{static_cast<::std::uint_least32_t>(high%divisor)};
 			jeaiii_c<0>(iter,high_first);
 			++iter;
 			iter=jeaiii_f<8>(jeaiii_f<8>(iter,high_low),low);
 		}
 		else
 		{
-			if(static_cast<std::uint_least32_t>(n>>32u)==0)
+			if(static_cast<::std::uint_least32_t>(n>>32u)==0)
 			{
-				return jeaiii_hash<9>(iter,static_cast<std::uint_least32_t>(n),len);
+				return jeaiii_hash<9>(iter,static_cast<::std::uint_least32_t>(n),len);
 			}
-			std::uint_least64_t a{n/divisor};
-			std::uint_least32_t u{static_cast<std::uint_least32_t>(n%divisor)};
-			std::uint_least32_t alow{static_cast<std::uint_least32_t>(a)};
+			::std::uint_least64_t a{n/divisor};
+			::std::uint_least32_t u{static_cast<::std::uint_least32_t>(n%divisor)};
+			::std::uint_least32_t alow{static_cast<::std::uint_least32_t>(a)};
 			if constexpr(ryu_mode)
 			{
-				std::uint_least32_t len_sub{len-full_length};
+				::std::uint_least32_t len_sub{len-full_length};
 				jeaiii_hash<7>(iter,alow,len_sub);
 				iter+=len_sub;
 			}
 			else
 			{
-				if(a!=static_cast<std::uint_least64_t>(alow))
+				if(a!=static_cast<::std::uint_least64_t>(alow))
 				{
-					std::uint_least32_t v{static_cast<std::uint_least32_t>(a/divisor)};
-					alow=static_cast<std::uint_least32_t>(a%divisor);
+					::std::uint_least32_t v{static_cast<::std::uint_least32_t>(a/divisor)};
+					alow=static_cast<::std::uint_least32_t>(a%divisor);
 					if(v<10u)
 					{
 						jeaiii_c<0>(iter,v);
@@ -587,7 +587,7 @@ inline constexpr void jeaiii_main_len(char_type* iter,U n,std::uint_least32_t le
 				}
 				else
 				{
-					std::uint_least32_t len_sub{len-full_length};
+					::std::uint_least32_t len_sub{len-full_length};
 					jeaiii_hash<9>(iter,alow,len_sub);
 					iter+=len_sub;
 				}

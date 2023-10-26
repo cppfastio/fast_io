@@ -3,9 +3,9 @@
 namespace fast_io
 {
 
-inline constexpr std::uint_least32_t dll_mode_to_win32_ex_flags(dll_mode mode) noexcept
+inline constexpr ::std::uint_least32_t dll_mode_to_win32_ex_flags(dll_mode mode) noexcept
 {
-	std::uint_least32_t flags{};
+	::std::uint_least32_t flags{};
 	if((mode&dll_mode::win32_dont_resolve_dll_references)==dll_mode::win32_dont_resolve_dll_references)
 		flags|=0x00000001;
 	if((mode&dll_mode::win32_load_ignore_code_authz_level)==dll_mode::win32_load_ignore_code_authz_level)
@@ -85,7 +85,7 @@ inline void* create_win32_dll_ntw(char16_t const* filename,[[maybe_unused]] dll_
 template<win32_family family>
 struct win32_family_win32_dll_parameter
 {
-	using family_char_type = std::conditional_t<family==win32_family::wide_nt,char16_t,char>;
+	using family_char_type = ::std::conditional_t<family==win32_family::wide_nt,char16_t,char>;
 	dll_mode mode{};
 	inline void* operator()(family_char_type const* filename_c_str)
 	{
@@ -120,7 +120,7 @@ public:
 	using native_handle_type = void*;
 	constexpr win32_family_dll_file()=default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr win32_family_dll_file(native_hd handle) noexcept:win32_family_dll_io_observer<family>{handle}{}
 	explicit constexpr win32_family_dll_file(decltype(nullptr)) noexcept = delete;
 
@@ -137,7 +137,7 @@ public:
 	win32_family_dll_file& operator=(win32_family_dll_file&& __restrict other) noexcept
 	{
 		if(this->hmodule)[[likely]]
-			win32::FreeLibrary(this->hmodule);
+			::fast_io::win32::FreeLibrary(this->hmodule);
 		this->hmodule=other.hmodule;
 		other.hmodule=nullptr;
 		return *this;
@@ -146,7 +146,7 @@ public:
 	{
 		if(this->hmodule)[[likely]]
 		{
-			auto ret{win32::FreeLibrary(this->hmodule)};
+			auto ret{::fast_io::win32::FreeLibrary(this->hmodule)};
 			this->hmodule=nullptr;
 			if(!ret)
 				throw_win32_error();
@@ -155,7 +155,7 @@ public:
 	~win32_family_dll_file()
 	{
 		if(this->hmodule)[[likely]]
-			win32::FreeLibrary(this->hmodule);
+			::fast_io::win32::FreeLibrary(this->hmodule);
 	}
 };
 

@@ -10,7 +10,7 @@ namespace fast_io
 struct cxa_demangle
 {
 	char* buffer{};
-	std::size_t length{};
+	::std::size_t length{};
 	explicit cxa_demangle(char const* mangled_name) noexcept
 	{
 #if __has_include(<cxxabi.h>)
@@ -27,7 +27,7 @@ struct cxa_demangle
 #endif
 		{
 			length=strlen(mangled_name);
-			std::size_t lengthp1{length+1};
+			::std::size_t lengthp1{length+1};
 			auto newp{malloc(lengthp1)};
 			if(newp==nullptr)
 			{

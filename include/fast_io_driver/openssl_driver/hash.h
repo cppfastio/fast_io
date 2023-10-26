@@ -9,8 +9,8 @@ struct basic_ossl_hash_context
 	using meta_info_type = metainfotype;
 	using native_handle_type = typename meta_info_type::ctx_type;
 	native_handle_type handle;
-	static inline constexpr std::size_t digest_size{meta_info_type::digest_length};
-	std::byte digest_buffer[digest_size];
+	static inline constexpr ::std::size_t digest_size{meta_info_type::digest_length};
+	::std::byte digest_buffer[digest_size];
 	explicit basic_ossl_hash_context() noexcept
 	{
 		this->reset();
@@ -21,13 +21,13 @@ struct basic_ossl_hash_context
 		if(meta_info_type::init_function(__builtin_addressof(handle))==0)[[unlikely]]
 			::fast_io::fast_terminate();
 	}
-	constexpr void digest_to_byte_ptr(std::byte* dest) const noexcept
+	constexpr void digest_to_byte_ptr(::std::byte* dest) const noexcept
 	{
 		::fast_io::freestanding::nonoverlapped_bytes_copy_n(digest_buffer,digest_size,dest);
 	}
-	void update(std::byte const* first, std::byte const* last) noexcept
+	void update(::std::byte const* first, ::std::byte const* last) noexcept
 	{
-		if(meta_info_type::update_function(__builtin_addressof(handle),first,static_cast<std::size_t>(last-first))==0)[[unlikely]]
+		if(meta_info_type::update_function(__builtin_addressof(handle),first,static_cast<::std::size_t>(last-first))==0)[[unlikely]]
 			::fast_io::fast_terminate();
 	}
 	void do_final() noexcept
@@ -40,12 +40,12 @@ struct basic_ossl_hash_context
 struct md5_meta_info
 {
 	using ctx_type = MD5_CTX;
-	static inline constexpr std::size_t digest_length{MD5_DIGEST_LENGTH};
+	static inline constexpr ::std::size_t digest_length{MD5_DIGEST_LENGTH};
 	static inline int init_function(ctx_type* c) noexcept
 	{
 		return ::fast_io::noexcept_call(MD5_Init,c);
 	}
-	static inline int update_function(ctx_type* c,void const* data,std::size_t len) noexcept
+	static inline int update_function(ctx_type* c,void const* data,::std::size_t len) noexcept
 	{
 		return ::fast_io::noexcept_call(MD5_Update,c,data,len);
 	}
@@ -64,12 +64,12 @@ using md5_context
 struct sha1_meta_info
 {
 	using ctx_type = SHA_CTX;
-	static inline constexpr std::size_t digest_length{SHA_DIGEST_LENGTH};
+	static inline constexpr ::std::size_t digest_length{SHA_DIGEST_LENGTH};
 	static inline int init_function(ctx_type* c) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA1_Init,c);
 	}
-	static inline int update_function(ctx_type* c,void const* data,std::size_t len) noexcept
+	static inline int update_function(ctx_type* c,void const* data,::std::size_t len) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA1_Update,c,data,len);
 	}
@@ -88,12 +88,12 @@ using sha1_context
 struct sha224_meta_info
 {
 	using ctx_type = SHA256_CTX;
-	static inline constexpr std::size_t digest_length{SHA224_DIGEST_LENGTH};
+	static inline constexpr ::std::size_t digest_length{SHA224_DIGEST_LENGTH};
 	static inline int init_function(ctx_type* c) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA224_Init,c);
 	}
-	static inline int update_function(ctx_type* c,void const* data,std::size_t len) noexcept
+	static inline int update_function(ctx_type* c,void const* data,::std::size_t len) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA224_Update,c,data,len);
 	}
@@ -108,12 +108,12 @@ using sha224_context = basic_ossl_hash_context<sha224_meta_info>;
 struct sha256_meta_info
 {
 	using ctx_type = SHA256_CTX;
-	static inline constexpr std::size_t digest_length{SHA256_DIGEST_LENGTH};
+	static inline constexpr ::std::size_t digest_length{SHA256_DIGEST_LENGTH};
 	static inline int init_function(ctx_type* c) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA256_Init,c);
 	}
-	static inline int update_function(ctx_type* c,void const* data,std::size_t len) noexcept
+	static inline int update_function(ctx_type* c,void const* data,::std::size_t len) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA256_Update,c,data,len);
 	}
@@ -128,12 +128,12 @@ using sha256_context = basic_ossl_hash_context<sha256_meta_info>;
 struct sha384_meta_info
 {
 	using ctx_type = SHA512_CTX;
-	static inline constexpr std::size_t digest_length{SHA384_DIGEST_LENGTH};
+	static inline constexpr ::std::size_t digest_length{SHA384_DIGEST_LENGTH};
 	static inline int init_function(ctx_type* c) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA384_Init,c);
 	}
-	static inline int update_function(ctx_type* c,void const* data,std::size_t len) noexcept
+	static inline int update_function(ctx_type* c,void const* data,::std::size_t len) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA384_Update,c,data,len);
 	}
@@ -148,12 +148,12 @@ using sha384_context = basic_ossl_hash_context<sha384_meta_info>;
 struct sha512_meta_info
 {
 	using ctx_type = SHA512_CTX;
-	static inline constexpr std::size_t digest_length{SHA512_DIGEST_LENGTH};
+	static inline constexpr ::std::size_t digest_length{SHA512_DIGEST_LENGTH};
 	static inline int init_function(ctx_type* c) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA512_Init,c);
 	}
-	static inline int update_function(ctx_type* c,void const* data,std::size_t len) noexcept
+	static inline int update_function(ctx_type* c,void const* data,::std::size_t len) noexcept
 	{
 		return ::fast_io::noexcept_call(SHA512_Update,c,data,len);
 	}

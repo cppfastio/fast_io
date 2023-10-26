@@ -6,7 +6,7 @@ namespace fast_io
 namespace details
 {
 
-template<std::integral char_type>
+template<::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -15,7 +15,7 @@ inline constexpr char_type* win32_get_locale_name_from_lcid(::std::uint_least32_
 #include"win32_lcid_table.h"
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
@@ -128,12 +128,12 @@ inline constexpr char_type* win32_get_locale_encoding_from_code_page(::std::uint
 }
 
 template<::fast_io::win32_family family>
-inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::fast_io::win32_family::wide_nt,char16_t,char8_t> const* cstr,std::size_t n,lc_locale& loc)
+inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::fast_io::win32_family::wide_nt,char16_t,char8_t> const* cstr,::std::size_t n,lc_locale& loc)
 {
-	constexpr std::size_t size_restriction{256u};
-	constexpr std::size_t encoding_size_restriction{128u};
-	using native_char_type = std::conditional_t<family==::fast_io::win32_family::wide_nt,char16_t,char8_t>;
-	constexpr std::size_t msys2_encoding_size_restriction{size_restriction>>2};
+	constexpr ::std::size_t size_restriction{256u};
+	constexpr ::std::size_t encoding_size_restriction{128u};
+	using native_char_type = ::std::conditional_t<family==::fast_io::win32_family::wide_nt,char16_t,char8_t>;
+	constexpr ::std::size_t msys2_encoding_size_restriction{size_restriction>>2};
 	native_char_type msys2_encoding[msys2_encoding_size_restriction];
 	if(n>=size_restriction)	//locale should not contain so many characters
 	{
@@ -141,10 +141,10 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 	}
 	else if(n==0)
 	{
-		constexpr std::uint_least32_t encoding_size_restriction_ul32{msys2_encoding_size_restriction};
+		constexpr ::std::uint_least32_t encoding_size_restriction_ul32{msys2_encoding_size_restriction};
 		if constexpr(family==::fast_io::win32_family::ansi_9x)
 		{
-			constexpr std::size_t sz{3};
+			constexpr ::std::size_t sz{3};
 			constexpr char8_t const* candidates[sz]{u8"L10N",u8"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
@@ -158,13 +158,13 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 					throw_win32_error(0x00000057);
 				}
 				cstr=msys2_encoding;
-				n=static_cast<std::size_t>(env_size);
+				n=static_cast<::std::size_t>(env_size);
 				break;
 			}
 		}
 		else
 		{
-			constexpr std::size_t sz{3};
+			constexpr ::std::size_t sz{3};
 			constexpr char16_t const* candidates[sz]{u"L10N",u"LANG"};
 			for(auto i{candidates},ed{i+sz};i!=ed;++i)
 			{
@@ -178,7 +178,7 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 					throw_win32_error(0x00000057);
 				}
 				cstr=msys2_encoding;
-				n=static_cast<std::size_t>(env_size);
+				n=static_cast<::std::size_t>(env_size);
 				break;
 			}
 		}
@@ -207,7 +207,7 @@ inline void* win32_family_load_l10n_common_impl(::std::conditional_t<family==::f
 		}
 	}
 	//fast_io_i18n.locale.{localename}.{dll/so}
-	constexpr std::size_t total_size{::fast_io::details::intrinsics::add_or_overflow_die_chain(sizeof(u8"fast_io_i18n.locale."),size_restriction,encoding_size_restriction,sizeof(u8".dll"))};
+	constexpr ::std::size_t total_size{::fast_io::details::intrinsics::add_or_overflow_die_chain(sizeof(u8"fast_io_i18n.locale."),size_restriction,encoding_size_restriction,sizeof(u8".dll"))};
 	native_char_type buffer[total_size];
 	native_char_type* it{buffer};
 	if constexpr(family==::fast_io::win32_family::wide_nt)
@@ -311,9 +311,9 @@ __attribute__((__fastcall__))
 template<::fast_io::win32_family family,::fast_io::constructible_to_os_c_str path_type>
 inline void* win32_family_load_l10n_impl(path_type const& p,lc_locale& loc)
 {
-	return ::fast_io::win32_family_api_common<family>(p,[&loc](auto const* cstr_ptr,std::size_t n)
+	return ::fast_io::win32_family_api_common<family>(p,[&loc](auto const* cstr_ptr,::std::size_t n)
 	{
-		using native_char_type = std::conditional_t<family==::fast_io::win32_family::wide_nt,char16_t,char8_t>;
+		using native_char_type = ::std::conditional_t<family==::fast_io::win32_family::wide_nt,char16_t,char8_t>;
 		using native_char_type_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
@@ -380,17 +380,17 @@ public:
 	}
 };
 
-template<std::integral char_type,::fast_io::win32_family family>
+template<::std::integral char_type,::fast_io::win32_family family>
 inline constexpr ::fast_io::parameter<basic_lc_all<char_type> const&> status_io_print_forward(io_alias_type_t<char_type>,win32_family_l10n<family> const& loc) noexcept
 {
 	return status_io_print_forward(io_alias_type<char_type>,loc.loc);
 }
 
 template<::fast_io::win32_family family,stream stm>
-requires (std::is_lvalue_reference_v<stm>||std::is_trivially_copyable_v<stm>)
+requires (::std::is_lvalue_reference_v<stm>||::std::is_trivially_copyable_v<stm>)
 inline constexpr auto imbue(win32_family_l10n<family>& loc,stm&& out) noexcept
 {
-	using char_type = typename std::remove_cvref_t<stm>::char_type;
+	using char_type = typename ::std::remove_cvref_t<stm>::char_type;
 	return imbue(get_all<char_type>(loc.loc),::std::forward<stm>(out));
 }
 

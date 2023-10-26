@@ -13,22 +13,22 @@ class generator_promise
 {
 public:
 	using element_type = T;
-	using value_type = std::remove_cvref_t<element_type>;
-	using reference = std::remove_reference_t<T>&;
-	using const_reference = std::remove_reference_t<T> const&;
+	using value_type = ::std::remove_cvref_t<element_type>;
+	using reference = ::std::remove_reference_t<T>&;
+	using const_reference = ::std::remove_reference_t<T> const&;
 	using pointer = value_type*;
 	using const_pointer = value_type const*;
 	element_type ptr{};
 #ifdef __cpp_exceptions
-	std::exception_ptr ex_ptr;
+	::std::exception_ptr ex_ptr;
 #endif
 	generator<T> get_return_object() noexcept;
 
-	constexpr std::suspend_always initial_suspend() const noexcept { return {}; }
-	constexpr std::suspend_always final_suspend() const noexcept { return {}; }
+	constexpr ::std::suspend_always initial_suspend() const noexcept { return {}; }
+	constexpr ::std::suspend_always final_suspend() const noexcept { return {}; }
 //	template<typename U>
-//	requires std::same_as<std::remove_reference_t<U>,std::remove_reference_t<T>>
-	constexpr std::suspend_always yield_value(T value) noexcept
+//	requires ::std::same_as<::std::remove_reference_t<U>,::std::remove_reference_t<T>>
+	constexpr ::std::suspend_always yield_value(T value) noexcept
 	{
 		ptr=value;
 //		ptr = __builtin_addressof(value);
@@ -37,22 +37,22 @@ public:
 	constexpr void unhandled_exception() noexcept
 	{
 #ifdef __cpp_exceptions
-		ex_ptr = std::current_exception();
+		ex_ptr = ::std::current_exception();
 #else
-		std::terminate();
+		::std::terminate();
 #endif
 	}
 	constexpr void return_void() noexcept
 	{
 	}
 	template<typename U>
-	std::suspend_never await_transform(U&& value) = delete;
+	::std::suspend_never await_transform(U&& value) = delete;
 
 	void rethrow_if_exception()
 	{
 #ifdef __cpp_exceptions
 		if (ex_ptr)
-			std::rethrow_exception(ex_ptr);
+			::std::rethrow_exception(ex_ptr);
 #endif
 	}
 };
@@ -61,7 +61,7 @@ template<typename T>
 class generator_iterator
 {
 public:
-	using coroutine_handle_type = std::coroutine_handle<generator_promise<T>>;
+	using coroutine_handle_type = ::std::coroutine_handle<generator_promise<T>>;
 	using iterator_category = ::std::output_iterator_tag;
 	coroutine_handle_type handle{};
 /*
@@ -132,8 +132,8 @@ class [[nodiscard]] generator
 {
 public:
 	using promise_type = details::generator_promise<T>;
-	std::coroutine_handle<promise_type> handle;
-	constexpr generator(std::coroutine_handle<promise_type> v):handle(v){}
+	::std::coroutine_handle<promise_type> handle;
+	constexpr generator(::std::coroutine_handle<promise_type> v):handle(v){}
 	constexpr generator(generator const&) noexcept=delete;
 	constexpr generator& operator=(generator const&) noexcept=delete;
 	constexpr ~generator()
@@ -192,7 +192,7 @@ namespace details
 template<typename T>
 inline generator<T> generator_promise<T>::get_return_object() noexcept
 {
-	using coroutine_handle = std::coroutine_handle<generator_promise<T>>;
+	using coroutine_handle = ::std::coroutine_handle<generator_promise<T>>;
 	return { coroutine_handle::from_promise(*this) };
 }
 }

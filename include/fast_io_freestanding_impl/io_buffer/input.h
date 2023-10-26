@@ -6,7 +6,7 @@ namespace fast_io
 namespace details::io_buffer
 {
 
-template<typename allocator_type,std::integral char_type,typename instmtype>
+template<typename allocator_type,::std::integral char_type,typename instmtype>
 inline constexpr bool ibuffer_underflow_rl_size_impl(instmtype insm,
 	basic_io_buffer_pointers<char_type>& ibuffer,::std::size_t bfsz)
 {
@@ -18,14 +18,14 @@ inline constexpr bool ibuffer_underflow_rl_size_impl(instmtype insm,
 	return ibuffer.buffer_begin!=ibuffer.buffer_end;
 }
 
-template<::std::size_t bfsz,std::integral char_type,typename allocator_type,typename instmtype>
+template<::std::size_t bfsz,::std::integral char_type,typename allocator_type,typename instmtype>
 inline constexpr bool ibuffer_underflow_rl_impl(instmtype insm,
 	basic_io_buffer_pointers<char_type>& ibuffer)
 {
 	return ::fast_io::details::io_buffer::ibuffer_underflow_rl_size_impl<allocator_type>(insm,ibuffer,bfsz);
 }
 
-template<typename allocator_type,std::integral char_type,typename instmtype>
+template<typename allocator_type,::std::integral char_type,typename instmtype>
 inline constexpr void ibuffer_minimum_size_underflow_all_prepare_rl_size_impl(instmtype insm,
 	basic_io_buffer_pointers<char_type>& ibuffer,::std::size_t bfsz)
 {
@@ -39,7 +39,7 @@ inline constexpr void ibuffer_minimum_size_underflow_all_prepare_rl_size_impl(in
 	ibuffer.buffer_end=ed;
 }
 
-template<::std::size_t bfsz,std::integral char_type,typename allocator_type,typename instmtype>
+template<::std::size_t bfsz,::std::integral char_type,typename allocator_type,typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif

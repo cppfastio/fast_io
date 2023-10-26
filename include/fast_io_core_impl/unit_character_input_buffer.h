@@ -16,10 +16,10 @@ public:
 };
 
 template<input_stream input,::std::contiguous_iterator Iter>
-requires (std::same_as<typename input::char_type,::std::iter_value_t<Iter>>||std::same_as<char,typename input::char_type>)
+requires (::std::same_as<typename input::char_type,::std::iter_value_t<Iter>>||::std::same_as<char,typename input::char_type>)
 constexpr Iter read(single_character_input_buffer<input>& in,Iter begin,Iter end)
 {
-	if constexpr(std::same_as<typename input::char_type,::std::iter_value_t<Iter>>)
+	if constexpr(::std::same_as<typename input::char_type,::std::iter_value_t<Iter>>)
 	{
 		if(in.pos!=in.pos_end)
 		{
@@ -45,12 +45,12 @@ constexpr auto ibuffer_begin(single_character_input_buffer<input>& in)
 template<input_stream input>
 constexpr auto ibuffer_curr(single_character_input_buffer<input>& in)
 {
-	return __builtin_addressof(in.single_character)+static_cast<std::size_t>(in.pos);
+	return __builtin_addressof(in.single_character)+static_cast<::std::size_t>(in.pos);
 }
 template<input_stream input>
 constexpr auto ibuffer_end(single_character_input_buffer<input>& in)
 {
-	return __builtin_addressof(in.single_character)+static_cast<std::size_t>(in.pos_end);
+	return __builtin_addressof(in.single_character)+static_cast<::std::size_t>(in.pos_end);
 }
 
 template<input_stream input>

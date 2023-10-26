@@ -52,10 +52,10 @@ public:
 	using iterator = pointer;
 	using reference = char&;
 	using const_reference = char const&;
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-	using reverse_iterator = std::reverse_iterator<iterator>;
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
 
 	pointer address_begin{};
 	pointer address_end{};
@@ -111,7 +111,7 @@ public:
 	}
 	basic_allocation_file_loader& operator=(basic_allocation_file_loader && __restrict other) noexcept
 	{
-		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));
+		posix_unload_address<allocation>(address_begin,static_cast<::std::size_t>(address_end-address_begin));
 		address_begin=other.address_begin;
 		address_end=other.address_end;
 		if constexpr(allocation)
@@ -128,9 +128,9 @@ public:
 	{
 		return address_begin==address_end;
 	}
-	constexpr std::size_t size() const noexcept
+	constexpr ::std::size_t size() const noexcept
 	{
-		return static_cast<std::size_t>(address_end-address_begin);
+		return static_cast<::std::size_t>(address_end-address_begin);
 	}
 	constexpr const_iterator cbegin() const noexcept
 	{
@@ -156,7 +156,7 @@ public:
 	{
 		return address_end;
 	}
-	constexpr std::size_t max_size() const noexcept
+	constexpr ::std::size_t max_size() const noexcept
 	{
 		return SIZE_MAX;
 	}
@@ -210,7 +210,7 @@ public:
 	}
 	inline void close()
 	{
-		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));
+		posix_unload_address<allocation>(address_begin,static_cast<::std::size_t>(address_end-address_begin));
 		if constexpr(allocation)
 			address_end=address_begin=nullptr;
 		else
@@ -230,7 +230,7 @@ public:
 	}
 	~posix_file_loader_impl()
 	{
-		posix_unload_address<allocation>(address_begin,static_cast<std::size_t>(address_end-address_begin));
+		posix_unload_address<allocation>(address_begin,static_cast<::std::size_t>(address_end-address_begin));
 	}
 }
 

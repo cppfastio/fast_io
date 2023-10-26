@@ -35,7 +35,7 @@ inline constexpr auto leb128_put(T t) noexcept
 		}
 		else
 		{
-			return ::fast_io::manipulators::basic_leb128_get_put<std::remove_cvref_t<T>>{t};
+			return ::fast_io::manipulators::basic_leb128_get_put<::std::remove_cvref_t<T>>{t};
 		}
 	}
 	else
@@ -50,7 +50,7 @@ inline constexpr auto leb128_put(T t) noexcept
 		}
 		else
 		{
-			return ::fast_io::manipulators::basic_leb128_get_put<std::remove_cvref_t<T>>{t};
+			return ::fast_io::manipulators::basic_leb128_get_put<::std::remove_cvref_t<T>>{t};
 		}
 	}
 }
@@ -67,24 +67,24 @@ namespace details
 {
 
 template<::fast_io::details::my_integral T>
-inline constexpr std::size_t print_reserve_size_leb128_length() noexcept
+inline constexpr ::std::size_t print_reserve_size_leb128_length() noexcept
 {
-	constexpr std::size_t digits{
+	constexpr ::std::size_t digits{
 		::std::numeric_limits<char unsigned>::digits*sizeof(T)};
-	constexpr std::size_t seven{7};
-	constexpr std::size_t digitsdiv7{digits/seven};
+	constexpr ::std::size_t seven{7};
+	constexpr ::std::size_t digitsdiv7{digits/seven};
 	constexpr bool notsevenmul{(digits%seven)!=0};
-	constexpr std::size_t urret{notsevenmul+digitsdiv7};
+	constexpr ::std::size_t urret{notsevenmul+digitsdiv7};
 	return urret;
 }
 
 template<::fast_io::details::my_integral T>
-inline constexpr std::size_t leb128_length_val{print_reserve_size_leb128_length<T>()};
+inline constexpr ::std::size_t leb128_length_val{print_reserve_size_leb128_length<T>()};
 
 }
 
-template<std::integral char_type,::fast_io::details::my_integral T>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
+template<::std::integral char_type,::fast_io::details::my_integral T>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_leb128_get_put<T>>) noexcept
 {
 	return ::fast_io::details::leb128_length_val<T>;
@@ -93,7 +93,7 @@ inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,
 namespace details
 {
 
-template<std::integral char_type,::fast_io::details::my_integral T>
+template<::std::integral char_type,::fast_io::details::my_integral T>
 inline constexpr char_type* pr_rsv_leb128_impl(char_type* iter,T value) noexcept
 {
 	using unsigned_char_type =
@@ -129,7 +129,7 @@ inline constexpr char_type* pr_rsv_leb128_impl(char_type* iter,T value) noexcept
 
 }
 
-template<std::integral char_type,::fast_io::details::my_integral T>
+template<::std::integral char_type,::fast_io::details::my_integral T>
 inline constexpr char_type* print_reserve_define(
 	io_reserve_type_t<char_type,
 	::fast_io::manipulators::basic_leb128_get_put<T>>,
@@ -141,10 +141,10 @@ inline constexpr char_type* print_reserve_define(
 
 struct leb128_scan_state_t
 {
-	std::size_t group_count{};
+	::std::size_t group_count{};
 };
 
-template <std::integral char_type, typename I>
+template <::std::integral char_type, typename I>
 inline constexpr
 io_type_t<leb128_scan_state_t> scan_context_type(io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I>>) noexcept
 {
@@ -153,18 +153,18 @@ io_type_t<leb128_scan_state_t> scan_context_type(io_reserve_type_t<char_type, ma
 
 namespace details
 {
-template <std::integral char_type, ::fast_io::details::my_integral I>
+template <::std::integral char_type, ::fast_io::details::my_integral I>
 inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
-	std::size_t& group_count,
+	::std::size_t& group_count,
 	char_type const* begin, char_type const* end,
 	I& t) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	using U = ::fast_io::details::my_make_unsigned_t<I>;
-	constexpr auto digits{ std::numeric_limits<U>::digits };
+	constexpr auto digits{ ::std::numeric_limits<U>::digits };
 	constexpr auto remains{ digits % 7 };
 	U tmp{};
-	std::size_t cnt{ group_count };
+	::std::size_t cnt{ group_count };
 	if (cnt == 0)
 		t = 0;
 	for (; begin != end; cnt += 7)
@@ -178,7 +178,7 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 			}
 		}
 		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
-		std::uint_fast8_t byte{static_cast<std::uint_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
+		::std::uint_fast8_t byte{static_cast<::std::uint_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
 		++begin;
 		if constexpr (::fast_io::details::my_signed_integral<I>)
 		{
@@ -209,16 +209,16 @@ inline constexpr parse_result<char_type const*> scn_ctx_define_leb128_impl(
 	return { begin, parse_code::partial };
 }
 
-template <std::integral char_type, ::fast_io::details::my_integral I>
+template <::std::integral char_type, ::fast_io::details::my_integral I>
 inline constexpr parse_result<char_type const*>
 	scn_cnt_define_leb128_impl(char_type const* begin, char_type const* end,I& t) noexcept
 {
-	using unsigned_char_type = std::make_unsigned_t<char_type>;
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	using U = ::fast_io::details::my_make_unsigned_t<I>;
-	constexpr auto digits{ std::numeric_limits<U>::digits };
+	constexpr auto digits{ ::std::numeric_limits<U>::digits };
 	constexpr auto remains{ digits % 7 };
 	U tmp{};
-	std::size_t cnt{};
+	::std::size_t cnt{};
 	t = 0;
 	for (; begin != end; cnt += 7)
 	{
@@ -231,7 +231,7 @@ inline constexpr parse_result<char_type const*>
 			}
 		}
 		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
-		std::uint_fast8_t byte{static_cast<std::uint_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
+		::std::uint_fast8_t byte{static_cast<::std::uint_fast8_t>(static_cast<unsigned_char_type>(*begin) & 0x7f)};
 		++begin;
 		if constexpr (::fast_io::details::my_signed_integral<I>)
 		{
@@ -262,7 +262,7 @@ inline constexpr parse_result<char_type const*>
 
 }
 
-template <std::integral char_type, ::fast_io::details::my_integral I>
+template <::std::integral char_type, ::fast_io::details::my_integral I>
 inline constexpr parse_result<char_type const*> scan_context_define(
 	io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I*>>,
 	leb128_scan_state_t& state,
@@ -272,13 +272,13 @@ inline constexpr parse_result<char_type const*> scan_context_define(
 	return ::fast_io::details::scn_ctx_define_leb128_impl(state.group_count,begin,end,*t.reference);
 }
 
-template <std::integral char_type, ::fast_io::details::my_integral I>
+template <::std::integral char_type, ::fast_io::details::my_integral I>
 inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I*>>, leb128_scan_state_t&, manipulators::basic_leb128_get_put<I*>) noexcept
 {
 	return parse_code::end_of_file;
 }
 
-template <std::integral char_type, ::fast_io::details::my_integral I>
+template <::std::integral char_type, ::fast_io::details::my_integral I>
 inline constexpr
 parse_result<char_type const*> scan_contiguous_define(
 	io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I*>>,

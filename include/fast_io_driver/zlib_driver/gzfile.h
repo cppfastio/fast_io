@@ -42,26 +42,26 @@ struct gz_state_model{
 inline int hack_gz_file_fd(gzFile gzfile)
 {
 	int fdn;
-	::fast_io::details::my_memcpy(__builtin_addressof(fdn),reinterpret_cast<std::byte const*>(gzfile)+offsetof(gz_state_model,fd),sizeof(int));
+	::fast_io::details::my_memcpy(__builtin_addressof(fdn),reinterpret_cast<::std::byte const*>(gzfile)+offsetof(gz_state_model,fd),sizeof(int));
 	return fdn;
 }
 /*
 inline char* hack_gz_file_in(gzFile gzfile)
 {
 	char* ptr;
-	::fast_io::details::my_memcpy(__builtin_addressof(ptr),reinterpret_cast<std::byte const*>(gzfile)+offsetof(gz_state_model,in),sizeof(char *));
+	::fast_io::details::my_memcpy(__builtin_addressof(ptr),reinterpret_cast<::std::byte const*>(gzfile)+offsetof(gz_state_model,in),sizeof(char *));
 	return ptr;
 }
 inline char* hack_gz_file_out(gzFile gzfile)
 {
 	char* ptr;
-	::fast_io::details::my_memcpy(__builtin_addressof(ptr),reinterpret_cast<std::byte const*>(gzfile)+offsetof(gz_state_model,out),sizeof(char *));
+	::fast_io::details::my_memcpy(__builtin_addressof(ptr),reinterpret_cast<::std::byte const*>(gzfile)+offsetof(gz_state_model,out),sizeof(char *));
 	return ptr;
 }
 */
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_gz_io_observer
 {
 public:
@@ -92,7 +92,7 @@ public:
 #endif
 };
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_gz_file:public basic_gz_io_observer<ch_type>
 {
 public:
@@ -168,45 +168,45 @@ using gz_io_observer = basic_gz_io_observer<char>;
 using gz_file = basic_gz_file<char>;
 
 
-template<std::integral char_type,::std::contiguous_iterator Iter>
-requires (std::same_as<char_type,::std::iter_value_t<Iter>>||std::same_as<char,char_type>)
+template<::std::integral char_type,::std::contiguous_iterator Iter>
+requires (::std::same_as<char_type,::std::iter_value_t<Iter>>||::std::same_as<char,char_type>)
 inline Iter read(basic_gz_io_observer<char_type> giob,Iter b,Iter e)
 {
-	if constexpr(std::same_as<char_type,::std::iter_value_t<Iter>>)
+	if constexpr(::std::same_as<char_type,::std::iter_value_t<Iter>>)
 	{
-		std::size_t to_read((e-b)*sizeof(*b));
-		if constexpr(sizeof(unsigned)<sizeof(std::size_t))
-			if(static_cast<std::size_t>(std::numeric_limits<unsigned>::max())<to_read)
-				to_read=std::numeric_limits<unsigned>::max();
+		::std::size_t to_read((e-b)*sizeof(*b));
+		if constexpr(sizeof(unsigned)<sizeof(::std::size_t))
+			if(static_cast<::std::size_t>(::std::numeric_limits<unsigned>::max())<to_read)
+				to_read=::std::numeric_limits<unsigned>::max();
 		int readed{gzread(giob.gzfile,::std::to_address(b),static_cast<unsigned>(to_read))};
 		if(readed==-1)
 			throw_posix_error();
-		return b+static_cast<std::size_t>(readed)/sizeof(*b);
+		return b+static_cast<::std::size_t>(readed)/sizeof(*b);
 	}
 	else
 		return b+(read(giob,reinterpret_cast<char*>(::std::to_address(b)),reinterpret_cast<char*>(::std::to_address(e)))-reinterpret_cast<char*>(::std::to_address(b)))/sizeof(*b);
 }
 
-template<std::integral char_type,::std::contiguous_iterator Iter>
-requires (std::same_as<char_type,::std::iter_value_t<Iter>>||std::same_as<char,char_type>)
+template<::std::integral char_type,::std::contiguous_iterator Iter>
+requires (::std::same_as<char_type,::std::iter_value_t<Iter>>||::std::same_as<char,char_type>)
 inline Iter write(basic_gz_io_observer<char_type> giob,Iter b,Iter e)
 {
-	if constexpr(std::same_as<char_type,::std::iter_value_t<Iter>>)
+	if constexpr(::std::same_as<char_type,::std::iter_value_t<Iter>>)
 	{
-		std::size_t to_write((e-b)*sizeof(*b));
-		if constexpr(sizeof(unsigned)<sizeof(std::size_t))
-			if(static_cast<std::size_t>(std::numeric_limits<unsigned>::max())<to_write)
-				to_write=std::numeric_limits<unsigned>::max();
+		::std::size_t to_write((e-b)*sizeof(*b));
+		if constexpr(sizeof(unsigned)<sizeof(::std::size_t))
+			if(static_cast<::std::size_t>(::std::numeric_limits<unsigned>::max())<to_write)
+				to_write=::std::numeric_limits<unsigned>::max();
 		int written{gzwrite(giob.gzfile,::std::to_address(b),static_cast<unsigned>(to_write))};
 		if(written<0)
 			throw_posix_error();
-		return b+static_cast<std::size_t>(written)/sizeof(*b);
+		return b+static_cast<::std::size_t>(written)/sizeof(*b);
 	}
 	else
 		return b+(write(giob,reinterpret_cast<char const*>(::std::to_address(b)),reinterpret_cast<char const*>(::std::to_address(e)))-reinterpret_cast<char const*>(::std::to_address(b)))/sizeof(*b);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline void flush(basic_gz_io_observer<char_type> giob)
 {
 	if(gzflush(giob.gzfile))
@@ -217,7 +217,7 @@ static_assert(input_stream<gz_file>);
 static_assert(output_stream<gz_file>);
 
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_ibuf_gz_file=basic_ibuf<basic_gz_file<char_type>>;
 
 using ibuf_gz_file = basic_ibuf_gz_file<char>;

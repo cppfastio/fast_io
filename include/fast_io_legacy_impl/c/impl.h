@@ -15,7 +15,7 @@ namespace fast_io
 inline constexpr open_mode native_c_supported(open_mode m) noexcept
 {
 #if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
-using utype = typename std::underlying_type<open_mode>::type;
+using utype = typename ::std::underlying_type<open_mode>::type;
 constexpr auto c_supported_values{static_cast<utype>(open_mode::text)|
 	static_cast<utype>(open_mode::out)|
 	static_cast<utype>(open_mode::app)|
@@ -48,7 +48,7 @@ From microsoft's document. _fdopen only supports
 
 "x" will throw EINVAL which does not satisfy POSIX, C11 and C++17 standard.
 */
-	using utype = typename std::underlying_type<open_mode>::type;
+	using utype = typename ::std::underlying_type<open_mode>::type;
 #ifdef _WIN32_WINDOWS
 	switch(static_cast<utype>(native_c_supported(m)))
 	{
@@ -250,7 +250,7 @@ inline void ucrt_unlock_file(FILE* fp) noexcept;
 }
 
 
-enum class c_family:std::uint_fast8_t
+enum class c_family: ::std::uint_fast8_t
 {
 standard,
 unlocked,
@@ -273,7 +273,7 @@ unlocked
 #endif
 };
 
-enum class c_io_device_environment:std::uint_fast8_t
+enum class c_io_device_environment: ::std::uint_fast8_t
 {
 file,
 custom,
@@ -553,7 +553,7 @@ https://www.gnu.org/software/libc/manual/html_node/File-Positioning.html
 #elif defined(__MSDOS__) || defined(__CYGWIN__) || defined(_PICOLIBC__) || (defined(__MINGW32__)&&!__has_include(<_mingw_stat64.h>))
 		if constexpr(sizeof(long)<sizeof(::fast_io::intfpos_t))
 		{
-			if(offset<static_cast<::fast_io::intfpos_t>(std::numeric_limits<long>::min())||offset>static_cast<::fast_io::intfpos_t>(std::numeric_limits<long>::max()))
+			if(offset<static_cast<::fast_io::intfpos_t>(::std::numeric_limits<long>::min())||offset>static_cast<::fast_io::intfpos_t>(::std::numeric_limits<long>::max()))
 				throw_posix_error(EINVAL);
 		}
 		if(noexcept_call(::fseek,fp,static_cast<long>(offset),static_cast<int>(s)))
@@ -616,7 +616,7 @@ inline FILE* my_c_open_tmp_file()
 
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 requires (family==c_family::native||family==c_family::native_unlocked)
 class basic_c_family_io_observer
 {
@@ -720,26 +720,26 @@ public:
 	}
 };
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline constexpr basic_c_family_io_observer<family,ch_type> io_stream_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
 {
 	return other;
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline constexpr basic_c_family_io_observer<family,char> io_bytes_stream_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
 {
 	return {other.fp};
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 requires (family==c_family::standard||family==c_family::emulated)
 inline constexpr basic_c_family_io_observer<family,ch_type> io_stream_mutex_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
 {
 	return other;
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 requires (family==c_family::standard||family==c_family::emulated)
 inline constexpr basic_c_family_io_observer<c_family::native_unlocked,ch_type> io_stream_unlocked_ref_define(basic_c_family_io_observer<family,ch_type> other) noexcept
 {
@@ -748,7 +748,7 @@ inline constexpr basic_c_family_io_observer<c_family::native_unlocked,ch_type> i
 
 
 #if defined(__AVR__)
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_type> ciob)
 {
 	details::avr_libc_nosup_impl();
@@ -756,13 +756,13 @@ inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_t
 
 #else
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline constexpr posix_at_entry at(basic_c_family_io_observer<family,ch_type> other) noexcept
 {
 	return posix_at_entry{details::my_fileno_impl<family>(other.fp)};
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 requires requires(basic_posix_io_observer<ch_type> piob)
 {
 	status(piob);
@@ -773,13 +773,13 @@ inline constexpr posix_file_status status(basic_c_family_io_observer<family,ch_t
 }
 #endif
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline void io_stream_buffer_flush_define(basic_c_family_io_observer<family,ch_type> cfhd)
 {
 	details::my_c_io_flush_impl<family>(cfhd.fp);
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_c_family_io_observer<family,ch_type> cfhd,::fast_io::intfpos_t offset,seekdir s)
 {
 	return details::my_c_io_seek_impl<family>(cfhd.fp,offset,s);
@@ -787,13 +787,13 @@ inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_c_family_io_observ
 
 #if __cpp_lib_three_way_comparison >= 201907L
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline constexpr bool operator==(basic_c_family_io_observer<family,ch_type> a,basic_c_family_io_observer<family,ch_type> b) noexcept
 {
 	return a.fp==b.fp;
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 inline constexpr auto operator<=>(basic_c_family_io_observer<family,ch_type> a,basic_c_family_io_observer<family,ch_type> b) noexcept
 {
 	return a.fp<=>b.fp;
@@ -801,7 +801,7 @@ inline constexpr auto operator<=>(basic_c_family_io_observer<family,ch_type> a,b
 #endif
 
 #if !defined(__AVR__)
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 requires requires(basic_c_family_io_observer<family,ch_type> h)
 {
 	redirect_handle(static_cast<basic_posix_io_observer<ch_type>>(h));
@@ -811,14 +811,14 @@ inline decltype(auto) redirect_handle(basic_c_family_io_observer<family,ch_type>
 	return redirect_handle(static_cast<basic_posix_io_observer<ch_type>>(h));
 }
 #if 0
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 requires zero_copy_input_stream<basic_posix_io_observer<ch_type>>
 inline decltype(auto) zero_copy_in_handle(basic_c_family_io_observer<family,ch_type> h)
 {
 	return zero_copy_in_handle(static_cast<basic_posix_io_observer<ch_type>>(h));
 }
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 requires zero_copy_output_stream<basic_posix_io_observer<ch_type>>
 inline decltype(auto) zero_copy_out_handle(basic_c_family_io_observer<family,ch_type> h)
 {
@@ -853,7 +853,7 @@ c_family_file_factory
 	}
 };
 
-template<c_family family,std::integral ch_type>
+template<c_family family,::std::integral ch_type>
 class basic_c_family_file:public basic_c_family_io_observer<family,ch_type>
 {
 public:
@@ -863,7 +863,7 @@ public:
 	using native_handle_type = FILE*;
 	constexpr basic_c_family_file() noexcept=default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_c_family_file(native_hd ffp) noexcept:basic_c_family_io_observer<family,ch_type>{ffp}{}
 	template<c_family family2>
 	explicit constexpr basic_c_family_file(c_family_file_factory<family2>&& other) noexcept:basic_c_family_io_observer<family,ch_type>{other.fp}
@@ -964,14 +964,14 @@ public:
 	{}
 };
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_c_io_observer_unlocked = basic_c_family_io_observer<c_family::native_unlocked,char_type>;
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_c_io_observer = basic_c_family_io_observer<c_family::native,char_type>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_c_file_unlocked = basic_c_family_file<c_family::native_unlocked,char_type>;
-template<std::integral char_type>
+template<::std::integral char_type>
 using basic_c_file = basic_c_family_file<c_family::native,char_type>;
 
 using c_io_observer_unlocked=basic_c_io_observer_unlocked<char>;
@@ -1001,13 +1001,13 @@ using c_file_factory_unlocked = c_family_file_factory<c_family::native_unlocked>
 namespace freestanding
 {
 
-template<c_family fm,std::integral char_type>
+template<c_family fm,::std::integral char_type>
 struct is_trivially_relocatable<basic_c_family_file<fm,char_type>>
 {
 	inline static constexpr bool value = true;
 };
 
-template<c_family fm,std::integral char_type>
+template<c_family fm,::std::integral char_type>
 struct is_zero_default_constructible<basic_c_family_file<fm,char_type>>
 {
 	inline static constexpr bool value = true;

@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-template<std::integral CharT,typename Traits = std::char_traits<CharT>>
+template<::std::integral CharT,typename Traits = ::std::char_traits<CharT>>
 class basic_filebuf_file:public basic_filebuf_io_observer<CharT,Traits>
 {
 public:
@@ -11,10 +11,10 @@ public:
 	using input_char_type = char_type;
 	using output_char_type = char_type;
 	using traits_type = Traits;
-	using native_handle_type = std::basic_filebuf<char_type,traits_type>*;
+	using native_handle_type = ::std::basic_filebuf<char_type,traits_type>*;
 	constexpr basic_filebuf_file() noexcept=default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	constexpr basic_filebuf_file(native_hd fb) noexcept:basic_filebuf_io_observer<CharT,Traits>{fb}{}
 	constexpr basic_filebuf_file(basic_filebuf_io_observer<CharT,Traits>) noexcept=delete;
 	constexpr basic_filebuf_file& operator=(basic_filebuf_io_observer<CharT,Traits>) noexcept=delete;
@@ -115,13 +115,13 @@ using wfilebuf_file=basic_filebuf_file<wchar_t>;
 namespace freestanding
 {
 
-template<std::integral CharT,typename Traits>
+template<::std::integral CharT,typename Traits>
 struct is_trivially_relocatable<basic_filebuf_file<CharT,Traits>>
 {
 	inline static constexpr bool value = true;
 };
 
-template<std::integral CharT,typename Traits>
+template<::std::integral CharT,typename Traits>
 struct is_zero_default_constructible<basic_filebuf_file<CharT,Traits>>
 {
 	inline static constexpr bool value = true;

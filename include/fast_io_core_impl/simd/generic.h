@@ -6,7 +6,7 @@ namespace fast_io
 namespace intrinsics
 {
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 struct
 #if defined(__has_declspec_attribute)
 #if __has_declspec_attribute(intrin_type)
@@ -46,7 +46,7 @@ simd_vector
 		::std::memcpy(__builtin_addressof(value),address,sizeof(value));
 #endif
 	}
-	inline static constexpr std::size_t size() noexcept
+	inline static constexpr ::std::size_t size() noexcept
 	{
 		return N;
 	}
@@ -71,7 +71,7 @@ simd_vector
 	}
 	inline constexpr value_type back() const noexcept
 	{
-		constexpr std::size_t nm1{N-1};
+		constexpr ::std::size_t nm1{N-1};
 		return value[nm1];
 	}
 
@@ -79,12 +79,12 @@ simd_vector
 	{
 		return !N;
 	}
-	inline static constexpr std::size_t max_size() noexcept
+	inline static constexpr ::std::size_t max_size() noexcept
 	{
-		constexpr std::size_t v{static_cast<std::size_t>(-1)/sizeof(value_type)};
+		constexpr ::std::size_t v{static_cast<::std::size_t>(-1)/sizeof(value_type)};
 		return v;
 	}
-	inline constexpr value_type operator[](std::size_t n) const noexcept
+	inline constexpr value_type operator[](::std::size_t n) const noexcept
 	{
 		return value[n];
 	}
@@ -114,8 +114,8 @@ simd_vector
 		return ::fast_io::details::wrap_minus_common(::fast_io::details::all_zero_simd_vector_mask<T,N>,*this);
 	}
 
-	template<typename T1,std::size_t N1>
-	requires (sizeof(T1)*N1==sizeof(T)*N&&!std::same_as<T1,value_type>)
+	template<typename T1,::std::size_t N1>
+	requires (sizeof(T1)*N1==sizeof(T)*N&&!::std::same_as<T1,value_type>)
 	explicit constexpr operator simd_vector<T1,N1>() const noexcept
 	{
        		return __builtin_bit_cast(simd_vector<T1,N1>,*this);

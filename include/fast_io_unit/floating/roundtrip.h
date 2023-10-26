@@ -9,17 +9,17 @@ namespace fast_io::details
 
 struct uint32x2
 {
-std::uint_least32_t hi;
-std::uint_least32_t lo;
+::std::uint_least32_t hi;
+::std::uint_least32_t lo;
 };
 
 struct uint64x2
 {
-std::uint_least64_t hi;
-std::uint_least64_t lo;
+::std::uint_least64_t hi;
+::std::uint_least64_t lo;
 };
 
-inline constexpr std::uint_least64_t pow10_float32_tb[]
+inline constexpr ::std::uint_least64_t pow10_float32_tb[]
 {
 0x81ceb32c4b43fcf5, 0xa2425ff75e14fc32, 0xcad2f7f5359a3b3f, 0xfd87b5f28300ca0e,
 0x9e74d1b791e07e49, 0xc612062576589ddb, 0xf79687aed3eec552, 0x9abe14cd44753b53,
@@ -717,117 +717,117 @@ template<typename mantissa_type>
 struct m10_result
 {
 	mantissa_type m10;
-	std::int_least32_t e10;
+	::std::int_least32_t e10;
 };
 
-inline constexpr std::int_least32_t mul_ln2_div_ln10_floor(std::int_least32_t e) noexcept
+inline constexpr ::std::int_least32_t mul_ln2_div_ln10_floor(::std::int_least32_t e) noexcept
 {
 	return (e*1262611)>>22;
 }
 
-inline constexpr std::int_least32_t mul_ln10_div_ln2_floor(std::int_least32_t e) noexcept
+inline constexpr ::std::int_least32_t mul_ln10_div_ln2_floor(::std::int_least32_t e) noexcept
 {
 	return (e*1741647)>>19;
 }
 
-inline constexpr std::uint_least64_t mulshift_float64(std::uint_least64_t x,std::uint_least64_t ylow,std::uint_least64_t yhigh) noexcept
+inline constexpr ::std::uint_least64_t mulshift_float64(::std::uint_least64_t x,::std::uint_least64_t ylow,::std::uint_least64_t yhigh) noexcept
 {
-	std::uint_least64_t p0high{intrinsics::umul_least64_high(x,ylow)};
-	std::uint_least64_t p1high;
-	std::uint_least64_t p1low{intrinsics::umul(x,yhigh,p1high)};
-	constexpr std::uint_least64_t zero{};
+	::std::uint_least64_t p0high{intrinsics::umul_least64_high(x,ylow)};
+	::std::uint_least64_t p1high;
+	::std::uint_least64_t p1low{intrinsics::umul(x,yhigh,p1high)};
+	constexpr ::std::uint_least64_t zero{};
 	intrinsics::add_carry(intrinsics::add_carry(false,p1low,p0high,p1low),p1high,zero,p1high);
 	return p1high;
 }
 
-inline constexpr std::uint_least32_t mulshift_float32(std::uint_least32_t x,std::uint_least64_t y) noexcept
+inline constexpr ::std::uint_least32_t mulshift_float32(::std::uint_least32_t x,::std::uint_least64_t y) noexcept
 {
-	return static_cast<std::uint_least32_t>(intrinsics::umul_least64_high(x,y));
+	return static_cast<::std::uint_least32_t>(intrinsics::umul_least64_high(x,y));
 }
 
-inline constexpr bool mul_parity_float64(std::uint_least64_t two_f,std::uint_least64_t pow10_low,std::uint_least64_t pow10_high,std::int_least32_t beta_minus_1) noexcept
+inline constexpr bool mul_parity_float64(::std::uint_least64_t two_f,::std::uint_least64_t pow10_low,::std::uint_least64_t pow10_high,::std::int_least32_t beta_minus_1) noexcept
 {
-	std::uint_least64_t const p01{two_f * pow10_high};
-	std::uint_least64_t const p10{intrinsics::umul_least64_high(two_f,pow10_low)};
-	std::uint_least64_t const mid{p01 + p10};
-	constexpr std::uint_least64_t one{1};
+	::std::uint_least64_t const p01{two_f * pow10_high};
+	::std::uint_least64_t const p10{intrinsics::umul_least64_high(two_f,pow10_low)};
+	::std::uint_least64_t const mid{p01 + p10};
+	constexpr ::std::uint_least64_t one{1};
 	return (mid & (one << (64 - beta_minus_1)));
 }
 
-inline constexpr bool mul_parity_float32(std::uint_least64_t two_f,std::uint_least64_t pow10,std::int_least32_t beta_minus_1) noexcept
+inline constexpr bool mul_parity_float32(::std::uint_least64_t two_f,::std::uint_least64_t pow10,::std::int_least32_t beta_minus_1) noexcept
 {
-	std::uint_least64_t const p01{two_f * pow10};
-	constexpr std::uint_least64_t one{1};
+	::std::uint_least64_t const p01{two_f * pow10};
+	constexpr ::std::uint_least64_t one{1};
 	return (p01 & (one << (64 - beta_minus_1)));
 }
 
 template<my_unsigned_integral value_type>
-inline constexpr bool multiple_of_pow2_unchecked(value_type value,std::uint_least32_t e2) noexcept
+inline constexpr bool multiple_of_pow2_unchecked(value_type value,::std::uint_least32_t e2) noexcept
 {
 	constexpr value_type one{1};
 	return !(value & ((one << e2) - 1));
 }
 
 template<my_unsigned_integral value_type>
-inline constexpr bool multiple_of_pow2(value_type value,std::int_least32_t e2) noexcept
+inline constexpr bool multiple_of_pow2(value_type value,::std::int_least32_t e2) noexcept
 {
-	constexpr std::int_least32_t e2max_bits{static_cast<std::int_least32_t>(sizeof(value_type)*8)};
-	return e2 < e2max_bits && multiple_of_pow2_unchecked(value,static_cast<std::uint_least32_t>(e2));
+	constexpr ::std::int_least32_t e2max_bits{static_cast<::std::int_least32_t>(sizeof(value_type)*8)};
+	return e2 < e2max_bits && multiple_of_pow2_unchecked(value,static_cast<::std::uint_least32_t>(e2));
 }
 
-inline constexpr bool multiple_of_pow5(std::uint_least64_t value,std::uint_least32_t e5) noexcept
+inline constexpr bool multiple_of_pow5(::std::uint_least64_t value,::std::uint_least32_t e5) noexcept
 {
 	auto m5{float64_mod5_tb[e5]};
 	return value*m5.hi <= m5.lo;
 }
 
-inline constexpr bool is_integral_end_point(std::uint_least64_t two_f,std::int_least32_t e2,std::int_least32_t minus_k) noexcept
+inline constexpr bool is_integral_end_point(::std::uint_least64_t two_f,::std::int_least32_t e2,::std::int_least32_t minus_k) noexcept
 {
 	if(e2<-2)
 		return false;
 	if(e2<=9)
 		return true;
 	if(e2<=86)
-		return multiple_of_pow5(two_f, static_cast<std::uint_least32_t>(minus_k));
+		return multiple_of_pow5(two_f, static_cast<::std::uint_least32_t>(minus_k));
 	return false;
 }
 
-inline constexpr bool is_integral_mid_point(std::uint_least64_t two_f,std::int_least32_t e2,std::int_least32_t minus_k) noexcept
+inline constexpr bool is_integral_mid_point(::std::uint_least64_t two_f,::std::int_least32_t e2,::std::int_least32_t minus_k) noexcept
 {
 	if(e2<-4)
 		return multiple_of_pow2(two_f,minus_k-e2+1);
 	if(e2<=9)
 		return true;
 	if(e2<=86)
-		return multiple_of_pow5(two_f,static_cast<std::uint_least32_t>(minus_k));
+		return multiple_of_pow5(two_f,static_cast<::std::uint_least32_t>(minus_k));
 	return false;
 }
 
-inline constexpr bool multiple_of_pow5_float32(std::uint_least32_t value,std::uint_least32_t e5) noexcept
+inline constexpr bool multiple_of_pow5_float32(::std::uint_least32_t value,::std::uint_least32_t e5) noexcept
 {
 	auto m5{float_mod5_tb[e5]};
 	return value*m5.hi <= m5.lo;
 }
 
-inline constexpr bool is_integral_end_point_float32(std::uint_least32_t two_f,std::int_least32_t e2,std::int_least32_t minus_k) noexcept
+inline constexpr bool is_integral_end_point_float32(::std::uint_least32_t two_f,::std::int_least32_t e2,::std::int_least32_t minus_k) noexcept
 {
 	if(e2<-1)
 		return false;
 	if(e2<=6)
 		return true;
 	if(e2<=39)
-		return multiple_of_pow5_float32(two_f, static_cast<std::uint_least32_t>(minus_k));
+		return multiple_of_pow5_float32(two_f, static_cast<::std::uint_least32_t>(minus_k));
 	return false;
 }
 
-inline constexpr bool is_integral_mid_point_float32(std::uint_least32_t two_f,std::int_least32_t e2,std::int_least32_t minus_k) noexcept
+inline constexpr bool is_integral_mid_point_float32(::std::uint_least32_t two_f,::std::int_least32_t e2,::std::int_least32_t minus_k) noexcept
 {
 	if(e2<-2)
 		return multiple_of_pow2(two_f,minus_k-e2+1);
 	if(e2<=6)
 		return true;
 	if(e2<=39)
-		return multiple_of_pow5_float32(two_f,static_cast<std::uint_least32_t>(minus_k));
+		return multiple_of_pow5_float32(two_f,static_cast<::std::uint_least32_t>(minus_k));
 	return false;
 }
 
@@ -835,23 +835,23 @@ template<typename flt>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> schubfach_asymmetric_interval(std::int_least32_t e2) noexcept
+inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> schubfach_asymmetric_interval(::std::int_least32_t e2) noexcept
 {
 	using trait = iec559_traits<flt>;
 
-	constexpr std::int_least32_t mbits{trait::mbits};
-	std::int_least32_t const minus_k{(e2 * 1262611 - 524031)>>22};
-	std::int_least32_t const plus_k{-minus_k};
-	std::int_least32_t const beta_minus_1{e2 + mul_ln10_div_ln2_floor(plus_k)};
-	std::uint_least32_t const rshift{static_cast<std::uint_least32_t>(64-mbits-beta_minus_1)};
+	constexpr ::std::int_least32_t mbits{trait::mbits};
+	::std::int_least32_t const minus_k{(e2 * 1262611 - 524031)>>22};
+	::std::int_least32_t const plus_k{-minus_k};
+	::std::int_least32_t const beta_minus_1{e2 + mul_ln10_div_ln2_floor(plus_k)};
+	::std::uint_least32_t const rshift{static_cast<::std::uint_least32_t>(64-mbits-beta_minus_1)};
 	if constexpr(sizeof(flt)==sizeof(::std::uint_least64_t))
 	{
 		uint64x2 const pw{compute_pow10_float64[plus_k]};
-		std::uint_least64_t const pw_lo{pw.lo},pw_hi{pw.hi};
-		std::uint_least64_t const lower_endpoint{(pw_hi-(pw_hi>>(mbits+1)))>>rshift};
-		std::uint_least64_t q{(pw_lo+(pw_hi>>mbits))>>rshift};
+		::std::uint_least64_t const pw_lo{pw.lo},pw_hi{pw.hi};
+		::std::uint_least64_t const lower_endpoint{(pw_hi-(pw_hi>>(mbits+1)))>>rshift};
+		::std::uint_least64_t q{(pw_lo+(pw_hi>>mbits))>>rshift};
 		bool const lower_endpoint_is_not_integer((2!=e2)&(3!=e2));
-		std::uint_least64_t const xi{lower_endpoint+lower_endpoint_is_not_integer};
+		::std::uint_least64_t const xi{lower_endpoint+lower_endpoint_is_not_integer};
 		q/=10;
 		if(q*10>=xi)
 			return {q,minus_k+1};
@@ -865,20 +865,20 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> schubfac
 	}
 	else
 	{
-		std::uint_least64_t const pw{compute_pow10_float32[plus_k]};
-		std::uint_least64_t const lower_endpoint{(pw-(pw>>(mbits+1)))>>rshift};
-		std::uint_least64_t q{(pw>>mbits)>>rshift};
+		::std::uint_least64_t const pw{compute_pow10_float32[plus_k]};
+		::std::uint_least64_t const lower_endpoint{(pw-(pw>>(mbits+1)))>>rshift};
+		::std::uint_least64_t q{(pw>>mbits)>>rshift};
 		bool const lower_endpoint_is_not_integer((2!=e2)&(3!=e2));
-		std::uint_least64_t const xi{lower_endpoint+lower_endpoint_is_not_integer};
+		::std::uint_least64_t const xi{lower_endpoint+lower_endpoint_is_not_integer};
 		q/=10;
 		if(q*10>=xi)
-			return {static_cast<std::uint_least32_t>(q),minus_k+1};
+			return {static_cast<::std::uint_least32_t>(q),minus_k+1};
 		q=((pw>>(rshift-1))+1)>>1;
 		if(e2==-35)
 			q-=(q&1);
 		else
 			q+=(q<xi);
-		return {static_cast<std::uint_least32_t>(q),minus_k};
+		return {static_cast<::std::uint_least32_t>(q),minus_k};
 	}
 }
 
@@ -889,24 +889,24 @@ template<typename flt>
 #if __has_cpp_attribute(__gnu__::__hot__)
 [[__gnu__::__hot__]]
 #endif
-inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbox_main(typename iec559_traits<flt>::mantissa_type m2,std::int_least32_t e2) noexcept
+inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbox_main(typename iec559_traits<flt>::mantissa_type m2,::std::int_least32_t e2) noexcept
 {
 	using trait = iec559_traits<flt>;
 	using mantissa_type = typename trait::mantissa_type;
 
-	constexpr std::size_t mbits{trait::mbits};
-	constexpr std::size_t ebits{trait::ebits};
-	constexpr std::uint_least32_t bias{(static_cast<std::uint_least32_t>(1<<ebits)>>1)-1};
-	constexpr std::int_least32_t exponent_bias{bias+mbits};
+	constexpr ::std::size_t mbits{trait::mbits};
+	constexpr ::std::size_t ebits{trait::ebits};
+	constexpr ::std::uint_least32_t bias{(static_cast<::std::uint_least32_t>(1<<ebits)>>1)-1};
+	constexpr ::std::int_least32_t exponent_bias{bias+mbits};
 	constexpr mantissa_type mflags{static_cast<mantissa_type>(static_cast<mantissa_type>(1)<<mbits)};
-	constexpr std::int_least32_t kappa{(sizeof(flt)==sizeof(std::uint_least32_t))?1:2};
-	constexpr std::uint_least32_t big_divisor{kappa==2?1000:100};
-	constexpr std::uint_least32_t small_divisor{big_divisor/10};
-	constexpr std::uint_least32_t small_divisor_div2{small_divisor/2};
+	constexpr ::std::int_least32_t kappa{(sizeof(flt)==sizeof(::std::uint_least32_t))?1:2};
+	constexpr ::std::uint_least32_t big_divisor{kappa==2?1000:100};
+	constexpr ::std::uint_least32_t small_divisor{big_divisor/10};
+	constexpr ::std::uint_least32_t small_divisor_div2{small_divisor/2};
 
 	if(e2==0)[[unlikely]]
 	{
-		constexpr std::int_least32_t e2bias{1-static_cast<std::int_least32_t>(exponent_bias)};
+		constexpr ::std::int_least32_t e2bias{1-static_cast<::std::int_least32_t>(exponent_bias)};
 		e2=e2bias;
 	}
 	else
@@ -914,28 +914,28 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 		auto e2_temp{e2};
 		e2-=exponent_bias;
 		m2|=mflags;
-		std::uint_least32_t pos_e2{static_cast<std::uint_least32_t>(-e2)};
+		::std::uint_least32_t pos_e2{static_cast<::std::uint_least32_t>(-e2)};
 		if(pos_e2<mbits && multiple_of_pow2_unchecked(m2,pos_e2))[[unlikely]]
 			return {m2>>pos_e2, 0};
 		if(m2==0&&e2_temp>1)[[unlikely]]
 			return schubfach_asymmetric_interval<flt>(e2);
 	}
 	bool const is_even{(m2&1u)==0u};
-	std::int_least32_t const minus_k{mul_ln2_div_ln10_floor(e2)-kappa};
-	std::int_least32_t const plus_k{-minus_k};
-	std::int_least32_t const beta_minus_1{e2+mul_ln10_div_ln2_floor(plus_k)};
+	::std::int_least32_t const minus_k{mul_ln2_div_ln10_floor(e2)-kappa};
+	::std::int_least32_t const plus_k{-minus_k};
+	::std::int_least32_t const beta_minus_1{e2+mul_ln10_div_ln2_floor(plus_k)};
 	if constexpr(sizeof(flt)==sizeof(::std::uint_least64_t))
 	{
 		uint64x2 const pow10{compute_pow10_float64[plus_k]};
-		std::uint_least64_t const pow10_lo{pow10.lo};
-		std::uint_least64_t const pow10_hi{pow10.hi};
-		std::uint_least32_t const delta{static_cast<std::uint_least32_t>(pow10_hi>>(63-beta_minus_1))};
-		std::uint_least64_t const two_fc{m2<<1},two_fl{two_fc-1},two_fr{two_fc+1};
-		std::uint_least64_t const zi{mulshift_float64(two_fr<<beta_minus_1,pow10_lo,pow10_hi)};
-		std::uint_least64_t q;
-		std::uint_least32_t r;
+		::std::uint_least64_t const pow10_lo{pow10.lo};
+		::std::uint_least64_t const pow10_hi{pow10.hi};
+		::std::uint_least32_t const delta{static_cast<::std::uint_least32_t>(pow10_hi>>(63-beta_minus_1))};
+		::std::uint_least64_t const two_fc{m2<<1},two_fl{two_fc-1},two_fr{two_fc+1};
+		::std::uint_least64_t const zi{mulshift_float64(two_fr<<beta_minus_1,pow10_lo,pow10_hi)};
+		::std::uint_least64_t q;
+		::std::uint_least32_t r;
 		q=zi/big_divisor;
-		r=static_cast<std::uint_least32_t>(zi%big_divisor);
+		r=static_cast<::std::uint_least32_t>(zi%big_divisor);
 		if(r<delta)
 		{
 			if(r||is_even||!is_integral_end_point(two_fr,e2,minus_k))
@@ -949,10 +949,10 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 				return {q,minus_k+kappa+1};
 		}
 		q *= 10;
-		std::uint_least32_t const dist{static_cast<std::uint_least32_t>(r-delta/2+small_divisor_div2)};
-		constexpr std::uint_least32_t distq_divisor_divisor{100};
-		std::uint_least32_t const dist_q{dist / distq_divisor_divisor};
-		std::uint_least32_t const dist_q_mul100{dist_q * distq_divisor_divisor};
+		::std::uint_least32_t const dist{static_cast<::std::uint_least32_t>(r-delta/2+small_divisor_div2)};
+		constexpr ::std::uint_least32_t distq_divisor_divisor{100};
+		::std::uint_least32_t const dist_q{dist / distq_divisor_divisor};
+		::std::uint_least32_t const dist_q_mul100{dist_q * distq_divisor_divisor};
 		q+=dist_q;
 		if(dist==dist_q_mul100)
 		{
@@ -964,12 +964,12 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 	}
 	else if constexpr(sizeof(flt)==sizeof(::std::uint_least32_t))
 	{
-		std::uint_least64_t const pow10{compute_pow10_float32[plus_k]};
-		std::uint_least32_t const two_fc{m2<<1},two_fl{two_fc-1},two_fr{two_fc+1};
-		std::uint_least32_t const zi{mulshift_float32(two_fr<<beta_minus_1,pow10)};
-		std::uint_least32_t q{zi/big_divisor};
-		std::uint_least32_t r{zi%big_divisor};
-		std::uint_least32_t const delta{static_cast<std::uint_least32_t>(pow10>>(63-beta_minus_1))};
+		::std::uint_least64_t const pow10{compute_pow10_float32[plus_k]};
+		::std::uint_least32_t const two_fc{m2<<1},two_fl{two_fc-1},two_fr{two_fc+1};
+		::std::uint_least32_t const zi{mulshift_float32(two_fr<<beta_minus_1,pow10)};
+		::std::uint_least32_t q{zi/big_divisor};
+		::std::uint_least32_t r{zi%big_divisor};
+		::std::uint_least32_t const delta{static_cast<::std::uint_least32_t>(pow10>>(63-beta_minus_1))};
 		if(r<delta)
 		{
 			if(r||is_even||!is_integral_end_point_float32(two_fr,e2,minus_k))
@@ -983,9 +983,9 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 				return {q,minus_k+kappa+1};
 		}
 		q *= 10;
-		std::uint_least32_t const dist{static_cast<std::uint_least32_t>(r-delta/2+small_divisor_div2)};
-		std::uint_least32_t const dist_q{dist / small_divisor};
-		std::uint_least32_t const dist_q_mul100{dist_q * small_divisor};
+		::std::uint_least32_t const dist{static_cast<::std::uint_least32_t>(r-delta/2+small_divisor_div2)};
+		::std::uint_least32_t const dist_q{dist / small_divisor};
+		::std::uint_least32_t const dist_q_mul100{dist_q * small_divisor};
 		q+=dist_q;
 		if(dist==dist_q_mul100)
 		{
@@ -1004,15 +1004,15 @@ template<typename flt>
 #if __has_cpp_attribute(__gnu__::__hot__)
 [[__gnu__::__hot__]]
 #endif
-inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2,std::int_least32_t e2) noexcept
+inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2,::std::int_least32_t e2) noexcept
 {
 	using mantissa_type = typename iec559_traits<flt>::mantissa_type;
 	auto [m10,e10]=dragonbox_main<flt>(m2,e2);
 //m10 should not ==0
-	if constexpr(sizeof(std::size_t)>=sizeof(std::uint_least64_t)||
-		sizeof(mantissa_type)<sizeof(std::uint_least64_t))
+	if constexpr(sizeof(::std::size_t)>=sizeof(::std::uint_least64_t)||
+		sizeof(mantissa_type)<sizeof(::std::uint_least64_t))
 	{
-		if constexpr(sizeof(std::uint_least64_t)<=sizeof(mantissa_type))
+		if constexpr(sizeof(::std::uint_least64_t)<=sizeof(mantissa_type))
 		{
 			auto tmp_div100000000(m10/100000000u);
 			auto tmp_mod100000000(m10%100000000u);
@@ -1068,7 +1068,7 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 			m10=tmp_div100;
 			e10+=2;
 		}
-		std::uint_least32_t m10ul32{static_cast<std::uint_least32_t>(m10)};
+		::std::uint_least32_t m10ul32{static_cast<::std::uint_least32_t>(m10)};
 		for(;;)
 		{
 			auto tmp_div100{m10ul32/100u};
@@ -1083,7 +1083,7 @@ inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type> dragonbo
 }
 
 template<bool comma,::std::integral char_type,my_unsigned_integral U>
-inline constexpr char_type* print_rsv_fp_decimal_scientific_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
+inline constexpr char_type* print_rsv_fp_decimal_scientific_common_impl(char_type* iter,U m10,::std::uint_least32_t m10len) noexcept
 {
 	auto itp1{iter+1};
 	::fast_io::details::jeaiii::jeaiii_main_len<true>(itp1,m10,m10len);
@@ -1093,7 +1093,7 @@ inline constexpr char_type* print_rsv_fp_decimal_scientific_common_impl(char_typ
 }
 
 template<bool comma,::std::integral char_type,my_unsigned_integral U>
-inline constexpr char_type* print_rsv_fp_decimal_common_impl(char_type* iter,U m10,std::uint_least32_t m10len) noexcept
+inline constexpr char_type* print_rsv_fp_decimal_common_impl(char_type* iter,U m10,::std::uint_least32_t m10len) noexcept
 {
 	if(m10len==1)[[unlikely]]
 	{
@@ -1106,11 +1106,11 @@ inline constexpr char_type* print_rsv_fp_decimal_common_impl(char_type* iter,U m
 }
 
 template<typename flt,bool uppercase_e,::std::integral char_type>
-inline constexpr char_type* print_rsv_fp_e_impl(char_type* iter,std::int_least32_t e10) noexcept
+inline constexpr char_type* print_rsv_fp_e_impl(char_type* iter,::std::int_least32_t e10) noexcept
 {
 	*iter=char_literal_v<uppercase_e?u8'E':u8'e',char_type>;
 	++iter;
-	std::uint_least32_t ue10{static_cast<std::uint_least32_t>(e10)};
+	::std::uint_least32_t ue10{static_cast<::std::uint_least32_t>(e10)};
 	if(e10<0)
 	{
 		ue10=0u-ue10;
@@ -1123,9 +1123,9 @@ inline constexpr char_type* print_rsv_fp_e_impl(char_type* iter,std::int_least32
 }
 
 template<::std::integral char_type>
-inline constexpr char_type* fill_zeros_impl(char_type* iter,std::size_t n) noexcept
+inline constexpr char_type* fill_zeros_impl(char_type* iter,::std::size_t n) noexcept
 {
-	for(std::size_t i{};i!=n;++i)
+	for(::std::size_t i{};i!=n;++i)
 	{
 		*iter=char_literal_v<u8'0',char_type>;
 		++iter;
@@ -1138,26 +1138,26 @@ inline constexpr char_type* fill_zero_point_impl(char_type* iter) noexcept
 {
 	if constexpr(comma)
 	{
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 		return copy_string_literal("0,",iter);
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 		return copy_string_literal(L"0,",iter);
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 		return copy_string_literal(u"0,",iter);
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 		return copy_string_literal(U"0,",iter);
 	else
 		return copy_string_literal(u8"0,",iter);
 	}
 	else
 	{
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 		return copy_string_literal("0.",iter);
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 		return copy_string_literal(L"0.",iter);
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 		return copy_string_literal(u"0.",iter);
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 		return copy_string_literal(U"0.",iter);
 	else
 		return copy_string_literal(u8"0.",iter);
@@ -1165,48 +1165,48 @@ inline constexpr char_type* fill_zero_point_impl(char_type* iter) noexcept
 }
 
 template<typename flt,::std::integral char_type>
-inline constexpr char_type* fixed_case0_full_integer(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t olength,std::int_least32_t real_exp) noexcept
+inline constexpr char_type* fixed_case0_full_integer(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,::std::int_least32_t olength,::std::int_least32_t real_exp) noexcept
 {
-	::fast_io::details::jeaiii::jeaiii_main_len<true>(iter,m10,static_cast<std::uint_least32_t>(olength));
+	::fast_io::details::jeaiii::jeaiii_main_len<true>(iter,m10,static_cast<::std::uint_least32_t>(olength));
 	iter+=olength;
-	return fill_zeros_impl(iter,static_cast<std::uint_least32_t>(real_exp+1-olength));
+	return fill_zeros_impl(iter,static_cast<::std::uint_least32_t>(real_exp+1-olength));
 }
 
 template<typename flt,bool comma,::std::integral char_type>
-inline constexpr char_type* fixed_case1_integer_and_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t olength,std::int_least32_t real_exp) noexcept
+inline constexpr char_type* fixed_case1_integer_and_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,::std::int_least32_t olength,::std::int_least32_t real_exp) noexcept
 {
 	auto eposition(real_exp+1);
 	if(olength==eposition)
 	{
-		::fast_io::details::jeaiii::jeaiii_main_len<true>(iter,m10,static_cast<std::uint_least32_t>(olength));
+		::fast_io::details::jeaiii::jeaiii_main_len<true>(iter,m10,static_cast<::std::uint_least32_t>(olength));
 		iter+=olength;
 	}
 	else
 	{
 		auto tmp{iter};
-		::fast_io::details::jeaiii::jeaiii_main_len<true>(iter+1,m10,static_cast<std::uint_least32_t>(olength));
+		::fast_io::details::jeaiii::jeaiii_main_len<true>(iter+1,m10,static_cast<::std::uint_least32_t>(olength));
 		iter+=olength+1;
-		my_copy_n(tmp+1,static_cast<std::uint_least32_t>(eposition),tmp);
+		my_copy_n(tmp+1,static_cast<::std::uint_least32_t>(eposition),tmp);
 		tmp[eposition]=char_literal_v<(comma?u8',':u8'.'),char_type>;
 	}
 	return iter;
 }
 
 template<typename flt,bool comma,::std::integral char_type>
-inline constexpr char_type* fixed_case2_all_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t olength,std::int_least32_t real_exp) noexcept
+inline constexpr char_type* fixed_case2_all_point(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,::std::int_least32_t olength,::std::int_least32_t real_exp) noexcept
 {
 	iter=fill_zero_point_impl<comma>(iter);
-	iter=fill_zeros_impl(iter,static_cast<std::uint_least32_t>(-real_exp-1));
-	::fast_io::details::jeaiii::jeaiii_main_len<true>(iter,m10,static_cast<std::uint_least32_t>(olength));
+	iter=fill_zeros_impl(iter,static_cast<::std::uint_least32_t>(-real_exp-1));
+	::fast_io::details::jeaiii::jeaiii_main_len<true>(iter,m10,static_cast<::std::uint_least32_t>(olength));
 	iter+=olength;
 	return iter;
 }
 
 template<typename flt,bool comma,::std::integral char_type>
-inline constexpr char_type* print_rsv_fp_fixed_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
+inline constexpr char_type* print_rsv_fp_fixed_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,::std::int_least32_t e10) noexcept
 {
-	std::int_least32_t olength(static_cast<std::int_least32_t>(chars_len<10,true>(m10)));	
-	std::int_least32_t const real_exp(static_cast<std::int_least32_t>(e10 + olength - 1));
+	::std::int_least32_t olength(static_cast<::std::int_least32_t>(chars_len<10,true>(m10)));	
+	::std::int_least32_t const real_exp(static_cast<::std::int_least32_t>(e10 + olength - 1));
 	if(olength<=real_exp)
 	{
 		return fixed_case0_full_integer<flt>(iter,m10,olength,real_exp);
@@ -1227,7 +1227,7 @@ bool comma,
 bool uppercase_e,
 ::fast_io::manipulators::floating_format mt,
 ::std::integral char_type>
-inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,std::int_least32_t e10) noexcept
+inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename iec559_traits<flt>::mantissa_type m10,::std::int_least32_t e10) noexcept
 {
 	if constexpr(mt==::fast_io::manipulators::floating_format::general)
 	{
@@ -1249,7 +1249,7 @@ inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename 
 			auto iterp1{iter};
 			++iterp1;
 			auto new_iter{::fast_io::details::jeaiii::jeaiii_main<false>(iterp1,m10)};
-			e10+=static_cast<std::int_least32_t>(static_cast<std::uint_least32_t>(new_iter-iterp1)-1u);
+			e10+=static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(new_iter-iterp1)-1u);
 			*iter=*iterp1;
 			*iterp1=char_literal_v<comma?u8',':u8'.',char_type>;
 			iter=new_iter;
@@ -1258,28 +1258,28 @@ inline constexpr char_type* print_rsv_fp_decision_impl(char_type* iter,typename 
 	}
 	else	//decimal
 	{
-		std::int_least32_t olength{static_cast<std::int_least32_t>(chars_len<10,true>(m10))};
-		std::int_least32_t const real_exp{static_cast<std::int_least32_t>(e10 + olength - 1)};
-		std::uint_least32_t fixed_length{},this_case{};
+		::std::int_least32_t olength{static_cast<::std::int_least32_t>(chars_len<10,true>(m10))};
+		::std::int_least32_t const real_exp{static_cast<::std::int_least32_t>(e10 + olength - 1)};
+		::std::uint_least32_t fixed_length{},this_case{};
 		if(olength<=real_exp)
 		{
-			fixed_length=static_cast<std::uint_least32_t>(real_exp+1);
+			fixed_length=static_cast<::std::uint_least32_t>(real_exp+1);
 			this_case=1;
 		}
 		else if(0<=real_exp&&real_exp<olength)
 		{
-			fixed_length=static_cast<std::uint_least32_t>(olength+2);
+			fixed_length=static_cast<::std::uint_least32_t>(olength+2);
 			if(olength==real_exp+1)
 				--fixed_length;
 			this_case=2;
 		}
 		else
-			fixed_length=static_cast<std::uint_least32_t>(static_cast<std::uint_least32_t>(-real_exp)+static_cast<std::uint_least32_t>(olength)+1u);
-		std::uint_least32_t scientific_length{static_cast<std::uint_least32_t>(olength==1?olength+3:olength+5)};
+			fixed_length=static_cast<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(-real_exp)+static_cast<::std::uint_least32_t>(olength)+1u);
+		::std::uint_least32_t scientific_length{static_cast<::std::uint_least32_t>(olength==1?olength+3:olength+5)};
 		if(scientific_length<fixed_length)
 		{
 			//scientific decision
-			iter=print_rsv_fp_decimal_common_impl<comma>(iter,m10,static_cast<std::uint_least32_t>(olength));
+			iter=print_rsv_fp_decimal_common_impl<comma>(iter,m10,static_cast<::std::uint_least32_t>(olength));
 			return print_rsv_fp_e_impl<flt,uppercase_e>(iter,real_exp);
 		}
 		//fixed decision
@@ -1316,9 +1316,9 @@ inline constexpr char_type* print_rsvflt_define_impl(char_type* iter,flt f) noex
 	{
 		using trait = iec559_traits<flt>;
 		using mantissa_type = typename trait::mantissa_type;
-		constexpr std::size_t ebits{trait::ebits};
+		constexpr ::std::size_t ebits{trait::ebits};
 		constexpr mantissa_type exponent_mask{(static_cast<mantissa_type>(1)<<ebits)-1};
-		constexpr std::uint_least32_t exponent_mask_u32{static_cast<std::uint_least32_t>(exponent_mask)};
+		constexpr ::std::uint_least32_t exponent_mask_u32{static_cast<::std::uint_least32_t>(exponent_mask)};
 		auto [mantissa,exponent,sign] = get_punned_result(f);
 		iter=print_rsv_fp_sign_impl<showpos>(iter,sign);
 		if(exponent==exponent_mask_u32)
@@ -1334,7 +1334,7 @@ inline constexpr char_type* print_rsvflt_define_impl(char_type* iter,flt f) noex
 			else
 				return prsv_fp_dece0<uppercase>(iter);
 		}
-		auto [m10,e10] = dragonbox_impl<flt>(mantissa,static_cast<std::int_least32_t>(exponent));
+		auto [m10,e10] = dragonbox_impl<flt>(mantissa,static_cast<::std::int_least32_t>(exponent));
 		if constexpr(mt==::fast_io::manipulators::floating_format::fixed)
 			return print_rsv_fp_fixed_decision_impl<flt,comma>(iter,m10,e10);
 		else
@@ -1343,14 +1343,14 @@ inline constexpr char_type* print_rsvflt_define_impl(char_type* iter,flt f) noex
 }
 
 template<typename flt,::fast_io::manipulators::floating_format mf>
-inline constexpr std::size_t print_rsvflt_size_impl() noexcept
+inline constexpr ::std::size_t print_rsvflt_size_impl() noexcept
 {
 	using trait = iec559_traits<flt>;
 	if constexpr(mf==::fast_io::manipulators::floating_format::fixed)
 	{
 		//general's max length is equal to scientific's max length
 //(+/-)(significants+sep)
-		std::size_t sum{1};//sign(+/-)
+		::std::size_t sum{1};//sign(+/-)
 		sum+=2;//0./,
 		sum+=trait::e10max;
 		sum+=trait::m10digits;
@@ -1360,7 +1360,7 @@ inline constexpr std::size_t print_rsvflt_size_impl() noexcept
 	{
 		//decimal and general's max lengths are equal to scientific's max length
 //(+/-)(significants+sep)(E/e)(+/-)e
-		std::size_t sum{1};//sign(+/-)
+		::std::size_t sum{1};//sign(+/-)
 		sum+=trait::m10digits;
 		++sum;//./,
 		sum+=2;//(E/e)(+/-)
@@ -1370,6 +1370,6 @@ inline constexpr std::size_t print_rsvflt_size_impl() noexcept
 }
 
 template<typename flt,::fast_io::manipulators::floating_format mt>
-inline constexpr std::size_t print_rsv_cache{print_rsvflt_size_impl<flt,mt>()};
+inline constexpr ::std::size_t print_rsv_cache{print_rsvflt_size_impl<flt,mt>()};
 
 }

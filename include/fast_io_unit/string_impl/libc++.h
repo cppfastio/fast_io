@@ -20,7 +20,7 @@ model
     typedef _Traits                                      traits_type;
     typedef _CharT                                       value_type;
     typedef _Allocator                                   allocator_type;
-    typedef std::allocator_traits<allocator_type>             __alloc_traits;
+    typedef ::std::allocator_traits<allocator_type>             __alloc_traits;
     typedef typename __alloc_traits::size_type           size_type;
     typedef typename __alloc_traits::difference_type     difference_type;
     typedef value_type&                                  reference;
@@ -93,7 +93,7 @@ model
 };
 
 template<typename elem,typename traits,typename alloc>
-inline decltype(auto) hack_rep(std::basic_string<elem,traits,alloc>& str) noexcept
+inline decltype(auto) hack_rep(::std::basic_string<elem,traits,alloc>& str) noexcept
 {
 	using model_t = model<elem,traits,alloc>;
 	using __rep = typename model_t::__rep;
@@ -102,11 +102,11 @@ inline decltype(auto) hack_rep(std::basic_string<elem,traits,alloc>& str) noexce
 [[__gnu__::__may_alias__]]
 #endif
 	= typename ::std::__compressed_pair<__rep, alloc>*;
-	return reinterpret_cast<alias_pointer>(reinterpret_cast<std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,__r_))->first();
+	return reinterpret_cast<alias_pointer>(reinterpret_cast<::std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,__r_))->first();
 }
 
 template<typename elem,typename traits,typename alloc>
-inline void set_size(std::basic_string<elem,traits,alloc>& str,typename std::basic_string<elem,traits,alloc>::size_type s) noexcept
+inline void set_size(::std::basic_string<elem,traits,alloc>& str,typename ::std::basic_string<elem,traits,alloc>::size_type s) noexcept
 {
 	decltype(auto) __r_{hack_rep(str)};
 	if (bool(__r_.__s.__is_long_))
@@ -120,14 +120,14 @@ inline void set_size(std::basic_string<elem,traits,alloc>& str,typename std::bas
 template<typename T>
 inline constexpr void set_end_ptr(T& str,typename T::value_type* ptr) noexcept
 {
-	set_size(str,static_cast<std::size_t>(ptr-str.data()));
+	set_size(str,static_cast<::std::size_t>(ptr-str.data()));
 }
 
 template<typename T>
-inline constexpr std::size_t local_capacity() noexcept
+inline constexpr ::std::size_t local_capacity() noexcept
 {
 	using model_type = model<typename T::value_type,typename T::traits_type,typename T::allocator_type>;
-	constexpr std::size_t mcapminus1{static_cast<std::size_t>(model_type::__min_cap-static_cast<std::size_t>(1u))};
+	constexpr ::std::size_t mcapminus1{static_cast<::std::size_t>(model_type::__min_cap-static_cast<::std::size_t>(1u))};
 	return mcapminus1;
 }
 

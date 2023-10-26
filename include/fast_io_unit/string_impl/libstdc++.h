@@ -55,7 +55,7 @@ inline decltype(auto) hack_M_data(T& str) noexcept
 	using model_t = model<T>;
 	using alloc_hider = typename model_t::_Alloc_hider;
 	using pointer = typename T::pointer;
-	return *reinterpret_cast<pointer*>(reinterpret_cast<std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,_M_dataplus)+__builtin_offsetof(alloc_hider,_M_p));
+	return *reinterpret_cast<pointer*>(reinterpret_cast<::std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,_M_dataplus)+__builtin_offsetof(alloc_hider,_M_p));
 }
 
 template<typename T>
@@ -63,17 +63,17 @@ inline decltype(auto) hack_M_string_length(T& str) noexcept
 {
 	using model_t = model<T>;
 	using size_type = typename T::size_type;
-	return *reinterpret_cast<size_type*>(reinterpret_cast<std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,_M_string_length));
+	return *reinterpret_cast<size_type*>(reinterpret_cast<::std::byte*>(__builtin_addressof(str))+__builtin_offsetof(model_t,_M_string_length));
 }
 
 template<typename T>
 inline constexpr void set_end_ptr(T& str,typename T::value_type* ptr) noexcept
 {
-	hack_M_string_length(str)=static_cast<std::size_t>(ptr-::std::to_address(hack_M_data(str)));
+	hack_M_string_length(str)=static_cast<::std::size_t>(ptr-::std::to_address(hack_M_data(str)));
 }
 
 template<typename T>
-inline constexpr std::size_t local_capacity() noexcept
+inline constexpr ::std::size_t local_capacity() noexcept
 {
 	using model_type = model<T>;
 	return model_type::_S_local_capacity;

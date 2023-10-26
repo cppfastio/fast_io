@@ -8,7 +8,7 @@ requires (fam==win32_family::ansi_9x||fam==win32_family::wide_nt)
 class win32_family_dns_io_observer
 {
 public:
-	using char_type = std::conditional_t<fam==win32_family::wide_nt,char16_t,char>;
+	using char_type = ::std::conditional_t<fam==win32_family::wide_nt,char16_t,char>;
 	using native_handle_type = ::fast_io::win32::win32_family_addrinfo<fam>*;
 	native_handle_type res{};
 	inline constexpr native_handle_type native_handle() const noexcept
@@ -90,7 +90,7 @@ inline constexpr ::fast_io::ip_address win32_to_ip_address_with_ai_addr_impl(int
 	return ret;
 }
 
-inline constexpr ::fast_io::ip win32_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip win32_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,::std::uint_least16_t port) noexcept
 {
 	return ::fast_io::ip{win32_to_ip_address_with_ai_addr_impl(ai_family,ai_addr),port};
 }
@@ -98,7 +98,7 @@ inline constexpr ::fast_io::ip win32_to_ip_with_ai_addr_impl(int ai_family,posix
 }
 
 template<win32_family fam>
-inline constexpr ::fast_io::ip to_ip(win32_family_dns_io_observer<fam> d,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip to_ip(win32_family_dns_io_observer<fam> d,::std::uint_least16_t port) noexcept
 {
 	return ::fast_io::details::win32_to_ip_with_ai_addr_impl(d.res->ai_family,d.res->ai_addr,port);
 }
@@ -113,20 +113,20 @@ namespace details
 {
 
 template<win32_family fam>
-inline ::fast_io::win32::win32_family_addrinfo<fam>* win32_getaddrinfo_impl(std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node,std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* service,::fast_io::win32::win32_family_addrinfo<fam> const* hints)
+inline ::fast_io::win32::win32_family_addrinfo<fam>* win32_getaddrinfo_impl(::std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node,::std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* service,::fast_io::win32::win32_family_addrinfo<fam> const* hints)
 {
 	::fast_io::win32::win32_family_addrinfo<fam>* res{};
 	if constexpr(win32_family::ansi_9x==fam)
 	{
 		int ret{::fast_io::win32::getaddrinfo(node,service,hints,__builtin_addressof(res))};
 		if(ret)
-			throw_win32_error(static_cast<std::uint_least32_t>(ret));
+			throw_win32_error(static_cast<::std::uint_least32_t>(ret));
 	}
 	else
 	{
 		int ret{::fast_io::win32::GetAddrInfoW(node,service,hints,__builtin_addressof(res))};
 		if(ret)
-			throw_win32_error(static_cast<std::uint_least32_t>(ret));
+			throw_win32_error(static_cast<::std::uint_least32_t>(ret));
 	}
 	return res;
 }
@@ -146,7 +146,7 @@ inline void win32_family_freeaddrinfo_impl(::fast_io::win32::win32_family_addrin
 
 
 template<win32_family fam>
-inline constexpr auto win32_family_dns_open_internal_impl(std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node)
+inline constexpr auto win32_family_dns_open_internal_impl(::std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node)
 {
 	constexpr ::fast_io::win32::win32_family_addrinfo<fam> info{.ai_family=0};
 	return win32_getaddrinfo_impl<fam>(node,nullptr,__builtin_addressof(info));
@@ -155,7 +155,7 @@ inline constexpr auto win32_family_dns_open_internal_impl(std::conditional_t<fam
 template<win32_family fam>
 struct win32_family_dns_open_parameter
 {
-	inline auto operator()(std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node_name_c_str)
+	inline auto operator()(::std::conditional_t<fam==win32_family::wide_nt,char16_t,char> const* node_name_c_str)
 	{
 		return ::fast_io::details::win32_family_dns_open_internal_impl<fam>(node_name_c_str);
 	}
@@ -181,7 +181,7 @@ public:
 	constexpr win32_family_dns_file& operator=(win32_family_dns_io_observer<fam>) noexcept=delete;
 
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr win32_family_dns_file(native_hd res1) noexcept: win32_family_dns_io_observer<fam>{res1}{}
 	explicit constexpr win32_family_dns_file(decltype(nullptr)) noexcept = delete;
 	win32_family_dns_file(char_type const* node,char_type const* service,::fast_io::win32::win32_family_addrinfo<fam> const* hints):win32_family_dns_io_observer<fam>{::fast_io::details::win32_getaddrinfo_impl<fam>(node,service,hints)}{}

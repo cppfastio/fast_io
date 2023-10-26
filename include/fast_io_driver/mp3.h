@@ -53,13 +53,13 @@ inline mp3_duration_result compute_mp3_duration(void const* first,void const* la
 	constexpr
 		::std::uint_least32_t mp3frameheadersize{10};
 
-	for(;mp3frameheadersize<static_cast<std::size_t>(lastbyte-firstbyte);)
+	for(;mp3frameheadersize<static_cast<::std::size_t>(lastbyte-firstbyte);)
 	{
 		::std::uint_least32_t nval;
 		::memcpy(__builtin_addressof(nval),firstbyte+4,4);
 		::std::uint_least32_t datalen{decode_mp3_safe_int(nval)};
 		firstbyte+=mp3frameheadersize;
-		if(static_cast<std::size_t>(lastbyte-firstbyte)<datalen)
+		if(static_cast<::std::size_t>(lastbyte-firstbyte)<datalen)
 		{
 			return {0,::fast_io::parse_code::invalid};
 		}

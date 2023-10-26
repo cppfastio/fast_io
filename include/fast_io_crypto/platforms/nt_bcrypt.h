@@ -24,7 +24,7 @@ public:
 	native_handle_type phAlgorithm{};
 	native_handle_type hashHandle{};
 	::std::uint_least32_t bcrypt_size{};
-	std::byte* digest_buffer{};
+	::std::byte* digest_buffer{};
 	constexpr nt_bcrypt_hash_file() noexcept = default;
 	template<constructible_to_os_c_str T>
 	explicit nt_bcrypt_hash_file(T const& s)
@@ -60,11 +60,11 @@ public:
 	{
 		this->do_final();
 	}
-	constexpr std::size_t runtime_digest_size() const noexcept
+	constexpr ::std::size_t runtime_digest_size() const noexcept
 	{
 		return bcrypt_size;
 	}
-	constexpr std::byte const* digest_byte_ptr() const noexcept
+	constexpr ::std::byte const* digest_byte_ptr() const noexcept
 	{
 		return digest_buffer;
 	}
@@ -151,7 +151,7 @@ inline void ntbcrypt_update_impl(void* hashHandle,::std::byte const* first,::std
 	if constexpr(sizeof(::std::ptrdiff_t)<=sizeof(::std::uint_least32_t))
 	{
 		::std::uint_least32_t ntstatus{::fast_io::win32::BCryptHashData(hashHandle,first,
-			static_cast<::std::uint_least32_t>(static_cast<std::size_t>(last-first)),0u)};
+			static_cast<::std::uint_least32_t>(static_cast<::std::size_t>(last-first)),0u)};
 		if(ntstatus)
 		{
 			throw_nt_error(ntstatus);
@@ -159,10 +159,10 @@ inline void ntbcrypt_update_impl(void* hashHandle,::std::byte const* first,::std
 	}
 	else
 	{
-		constexpr std::size_t ul32_max{static_cast<std::size_t>(std::numeric_limits<std::uint_least32_t>::max())};
-		for(std::size_t sz{static_cast<std::size_t>(last-first)};sz;)
+		constexpr ::std::size_t ul32_max{static_cast<::std::size_t>(::std::numeric_limits<::std::uint_least32_t>::max())};
+		for(::std::size_t sz{static_cast<::std::size_t>(last-first)};sz;)
 		{
-			std::size_t mn{sz};
+			::std::size_t mn{sz};
 			if(ul32_max<sz)
 			{
 				mn=ul32_max;

@@ -5,10 +5,10 @@ namespace fast_io
 
 namespace details
 {
-template<std::integral char_type,typename T>
-inline constexpr std::size_t pr_rsv_size_impl() noexcept
+template<::std::integral char_type,typename T>
+inline constexpr ::std::size_t pr_rsv_size_impl() noexcept
 {
-	using nocvref_t = std::remove_cvref_t<T>;
+	using nocvref_t = ::std::remove_cvref_t<T>;
 	if constexpr(alias_printable<nocvref_t>)
 	{
 		using alias_type = decltype(print_alias_define(::fast_io::io_alias,
@@ -16,7 +16,7 @@ inline constexpr std::size_t pr_rsv_size_impl() noexcept
 		constexpr bool error{reserve_printable<char_type,alias_type>};
 		if constexpr(error)
 		{
-			constexpr std::size_t sz{print_reserve_size(io_reserve_type<char_type,alias_type>)};
+			constexpr ::std::size_t sz{print_reserve_size(io_reserve_type<char_type,alias_type>)};
 			return sz;
 		}
 		else
@@ -30,7 +30,7 @@ static_assert(error,"type is not reserve_printable");
 		constexpr bool error{reserve_printable<char_type,nocvref_t>};
 		if constexpr(error)
 		{
-			constexpr std::size_t sz{print_reserve_size(io_reserve_type<char_type,nocvref_t>)};
+			constexpr ::std::size_t sz{print_reserve_size(io_reserve_type<char_type,nocvref_t>)};
 			return sz;
 		}
 		else
@@ -42,14 +42,14 @@ static_assert(error,"type is not reserve_printable");
 }
 }
 
-template<std::integral char_type,typename T>
-inline constexpr std::size_t pr_rsv_size{::fast_io::details::pr_rsv_size_impl<char_type,T>()};
+template<::std::integral char_type,typename T>
+inline constexpr ::std::size_t pr_rsv_size{::fast_io::details::pr_rsv_size_impl<char_type,T>()};
 
 template<::std::random_access_iterator Iter,typename T>
 inline constexpr Iter pr_rsv_to_iterator_unchecked(Iter it,T&& t) noexcept
 {
 	using char_type = ::std::iter_value_t<Iter>;
-	if constexpr(alias_printable<std::remove_cvref_t<T>>)
+	if constexpr(alias_printable<::std::remove_cvref_t<T>>)
 	{
 		using alias_type = decltype(print_alias_define(::fast_io::io_alias,t));
 		constexpr bool error{reserve_printable<char_type,alias_type>};
@@ -66,10 +66,10 @@ static_assert(error,"type is not reserve_printable");
 	}
 	else
 	{
-		constexpr bool error{reserve_printable<char_type,std::remove_cvref_t<T>>};
+		constexpr bool error{reserve_printable<char_type,::std::remove_cvref_t<T>>};
 		if constexpr(error)
 		{
-			return print_reserve_define(io_reserve_type<char_type,std::remove_cvref_t<T>>,it,t);
+			return print_reserve_define(io_reserve_type<char_type,::std::remove_cvref_t<T>>,it,t);
 		}
 		else
 		{
@@ -78,10 +78,10 @@ static_assert(error,"type is not reserve_printable");
 		}
 	}
 }
-template<std::integral char_type,std::size_t n,typename T>
+template<::std::integral char_type,::std::size_t n,typename T>
 inline constexpr char_type* pr_rsv_to_c_array(char_type (&buffer)[n],T&& t) noexcept
 {
-	constexpr bool error{(pr_rsv_size<char_type,std::remove_cvref_t<T>>)<=n};
+	constexpr bool error{(pr_rsv_size<char_type,::std::remove_cvref_t<T>>)<=n};
 	if constexpr(error)
 	{
 		return pr_rsv_to_iterator_unchecked(buffer,::std::forward<T>(t));
@@ -94,10 +94,10 @@ static_assert(error,"C array size is not enough");
 }
 
 #if defined(_GLIBCXX_ARRAY) || defined(_GLIBCXX_ARRAY) || defined(_ARRAY_)
-template<std::integral char_type,std::size_t n,typename T>
+template<::std::integral char_type,::std::size_t n,typename T>
 inline constexpr typename ::std::array<char_type,n>::iterator pr_rsv_to_array(::std::array<char_type,n> &buffer,T&& t) noexcept
 {
-	constexpr bool error{(pr_rsv_size<char_type,std::remove_cvref_t<T>>)<=n};
+	constexpr bool error{(pr_rsv_size<char_type,::std::remove_cvref_t<T>>)<=n};
 	if constexpr(error)
 	{
 		return pr_rsv_to_iterator_unchecked(buffer.data(),::std::forward<T>(t))-buffer.data()+buffer.begin();
@@ -118,8 +118,8 @@ inline constexpr ::fast_io::parse_result<char_type const*> parse_by_scan_impl(ch
 {
 	if constexpr(::fast_io::precise_reserve_scannable<char_type,T>)
 	{
-		constexpr std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
-		std::size_t const diff{static_cast<std::size_t>(last-first)};
+		constexpr ::std::size_t n{scan_precise_reserve_size(io_reserve_type<char_type,T>)};
+		::std::size_t const diff{static_cast<::std::size_t>(last-first)};
 		if(diff<n)[[unlikely]]
 		{
 			return {first,::fast_io::parse_code::end_of_file};
@@ -140,7 +140,7 @@ inline constexpr ::fast_io::parse_result<char_type const*> parse_by_scan_impl(ch
 	}
 	else if constexpr(::fast_io::context_scannable<char_type,T>)
 	{
-		typename std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
+		typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type,T>))>::type state;
 		auto [it,ec]=scan_context_define(io_reserve_type<char_type,T>,state,first,last,t);
 		if(ec!=parse_code::partial)
 		{

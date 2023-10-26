@@ -112,7 +112,7 @@ inline constexpr ::fast_io::ip_address posix_to_ip_address_with_ai_addr_impl(int
 	return ret;
 }
 
-inline constexpr ::fast_io::ip posix_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip posix_to_ip_with_ai_addr_impl(int ai_family,posix_sockaddr const* ai_addr,::std::uint_least16_t port) noexcept
 {
 	return ::fast_io::ip{posix_to_ip_address_with_ai_addr_impl(ai_family,ai_addr),port};
 }
@@ -149,7 +149,7 @@ inline constexpr auto posix_dns_open_impl(T const& t)
 
 }
 
-inline constexpr ::fast_io::ip to_ip(posix_dns_io_observer d,std::uint_least16_t port) noexcept
+inline constexpr ::fast_io::ip to_ip(posix_dns_io_observer d,::std::uint_least16_t port) noexcept
 {
 	return fast_io::details::posix_to_ip_with_ai_addr_impl(d.res->ai_family,d.res->ai_addr,port);
 }
@@ -172,7 +172,7 @@ public:
 	constexpr posix_dns_file(posix_dns_io_observer) noexcept=delete;
 	constexpr posix_dns_file& operator=(posix_dns_io_observer) noexcept=delete;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr posix_dns_file(native_hd res1) noexcept: posix_dns_io_observer(res1){}
 	explicit constexpr posix_dns_file(decltype(nullptr)) noexcept = delete;
 	posix_dns_file(char_type const* node,char_type const* service,posix_addrinfo const* hints):posix_dns_io_observer{details::my_getaddrinfo_impl(node,service,hints)}{}

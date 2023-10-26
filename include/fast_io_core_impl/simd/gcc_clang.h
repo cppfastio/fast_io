@@ -10,7 +10,7 @@ namespace fast_io
 namespace intrinsics
 {
 
-inline constexpr bool simd_shuffle_size_is_supported(std::size_t n) noexcept
+inline constexpr bool simd_shuffle_size_is_supported(::std::size_t n) noexcept
 {
 	if(n==16)
 	{
@@ -31,7 +31,7 @@ inline constexpr bool simd_shuffle_size_is_supported(std::size_t n) noexcept
 	return false;
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 struct simd_vector
 {
 	using value_type = T;
@@ -45,7 +45,7 @@ struct simd_vector
 	{
 		return __builtin_addressof(value[0]);
 	}
-	inline static constexpr std::size_t size() noexcept
+	inline static constexpr ::std::size_t size() noexcept
 	{
 		return N;
 	}
@@ -69,7 +69,7 @@ struct simd_vector
 	}
 	inline constexpr value_type back() const noexcept
 	{
-		constexpr std::size_t nm1{N-1};
+		constexpr ::std::size_t nm1{N-1};
 		return value[nm1];
 	}
 
@@ -77,12 +77,12 @@ struct simd_vector
 	{
 		return !N;
 	}
-	inline static constexpr std::size_t max_size() noexcept
+	inline static constexpr ::std::size_t max_size() noexcept
 	{
-		constexpr std::size_t v{static_cast<std::size_t>(-1)/sizeof(value_type)};
+		constexpr ::std::size_t v{static_cast<::std::size_t>(-1)/sizeof(value_type)};
 		return v;
 	}
-	inline constexpr value_type operator[](std::size_t n) const noexcept
+	inline constexpr value_type operator[](::std::size_t n) const noexcept
 	{
 		return value[n];
 	}
@@ -113,20 +113,20 @@ struct simd_vector
 	}
 
 	template<typename T2>
-	requires ((sizeof(T2)==sizeof(T)*N)&&std::is_trivially_copyable_v<T2>)
+	requires ((sizeof(T2)==sizeof(T)*N)&&::std::is_trivially_copyable_v<T2>)
 	inline
 #if __has_builtin(__builtin_bit_cast)
 	constexpr
 #endif
-	void wrap_add_assign(T2 const& b) noexcept requires(std::integral<value_type>)
+	void wrap_add_assign(T2 const& b) noexcept requires(::std::integral<value_type>)
 	{
-		if constexpr(std::same_as<simd_vector<T,N>,T2>&&std::unsigned_integral<value_type>)
+		if constexpr(::std::same_as<simd_vector<T,N>,T2>&&::std::unsigned_integral<value_type>)
 		{
 			value+=b.value;
 		}
 		else
 		{
-			using unsigned_type = std::make_unsigned_t<T>;
+			using unsigned_type = ::std::make_unsigned_t<T>;
 			using unsigned_vec_type = typename simd_vector<unsigned_type,N>::vec_type;
 #if __has_builtin(__builtin_bit_cast)
 			this->value=__builtin_bit_cast(vec_type,__builtin_bit_cast(unsigned_vec_type,this->value)+__builtin_bit_cast(unsigned_vec_type,b));
@@ -142,20 +142,20 @@ struct simd_vector
 	}
 
 	template<typename T2>
-	requires ((sizeof(T2)==sizeof(T)*N)&&std::is_trivially_copyable_v<T2>)
+	requires ((sizeof(T2)==sizeof(T)*N)&&::std::is_trivially_copyable_v<T2>)
 	inline
 #if __has_builtin(__builtin_bit_cast)
 	constexpr
 #endif
-	void wrap_sub_assign(T2 const& b) noexcept requires(std::integral<value_type>)
+	void wrap_sub_assign(T2 const& b) noexcept requires(::std::integral<value_type>)
 	{
-		if constexpr(std::same_as<simd_vector<T,N>,T2>&&std::unsigned_integral<value_type>)
+		if constexpr(::std::same_as<simd_vector<T,N>,T2>&&::std::unsigned_integral<value_type>)
 		{
 			value-=b.value;
 		}
 		else
 		{
-			using unsigned_type = std::make_unsigned_t<T>;
+			using unsigned_type = ::std::make_unsigned_t<T>;
 			using unsigned_vec_type = typename simd_vector<unsigned_type,N>::vec_type;
 #if __has_builtin(__builtin_bit_cast)
 			this->value=__builtin_bit_cast(vec_type,__builtin_bit_cast(unsigned_vec_type,this->value)-__builtin_bit_cast(unsigned_vec_type,b));
@@ -195,13 +195,13 @@ struct simd_vector
 		return *this;
 	}
 
-	template<std::integral I>
+	template<::std::integral I>
 	inline constexpr simd_vector<T,N>& operator<<=(I other) noexcept
 	{
 		value<<=other;
 		return *this;
 	}
-	template<std::integral I>
+	template<::std::integral I>
 	inline constexpr simd_vector<T,N>& operator>>=(I other) noexcept
 	{
 		value>>=other;
@@ -211,8 +211,8 @@ struct simd_vector
 	{
 		return {~value};
 	}
-	template<typename T1,std::size_t N1>
-	requires (sizeof(T1)*N1==sizeof(T)*N&&!std::same_as<T1,value_type>)
+	template<typename T1,::std::size_t N1>
+	requires (sizeof(T1)*N1==sizeof(T)*N&&!::std::same_as<T1,value_type>)
 	explicit
 #if __has_builtin(__builtin_bit_cast)
 	constexpr
@@ -240,7 +240,7 @@ struct simd_vector
 #if __has_builtin(__builtin_bit_cast)
 	constexpr
 #endif
-	void swap_endian() noexcept requires(::std::integral<value_type>&&(sizeof(value_type)<=sizeof(std::uint_least64_t))&&(N*sizeof(T)==16||N*sizeof(T)==32||N*sizeof(T)==64))
+	void swap_endian() noexcept requires(::std::integral<value_type>&&(sizeof(value_type)<=sizeof(::std::uint_least64_t))&&(N*sizeof(T)==16||N*sizeof(T)==32||N*sizeof(T)==64))
 	{
 		if constexpr(sizeof(T)==1)
 		{
@@ -446,7 +446,7 @@ struct simd_vector
 #endif
 		}
 	}
-	template<std::integral T1,std::size_t N1>
+	template<::std::integral T1,::std::size_t N1>
 	requires (simd_shuffle_size_is_supported(sizeof(vec_type))&&sizeof(simd_vector<T1,N1>)==sizeof(vec_type)&&sizeof(T1)==1)
 	inline constexpr void shuffle([[maybe_unused]] simd_vector<T1,N1> const& mask) noexcept
 	{
@@ -481,118 +481,118 @@ struct simd_vector
 	}
 };
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator+(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value+b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator-(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value-b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator*(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value*b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator/(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value/b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator&(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value&b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator|(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value|b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator^(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value^b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value<<b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value>>b.value};
 }
 
-template<typename T,std::size_t N,std::integral I>
+template<typename T,::std::size_t N,::std::integral I>
 inline constexpr simd_vector<T,N> operator<<(simd_vector<T,N> const& a,I i) noexcept
 {
 	return {a.value<<i};
 }
 
-template<typename T,std::size_t N,std::integral I>
+template<typename T,::std::size_t N,::std::integral I>
 inline constexpr simd_vector<T,N> operator>>(simd_vector<T,N> const& a,I i) noexcept
 {
 	return {a.value>>i};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator<(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value<b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator>(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value>b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator<=(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value<=b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator>=(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value>=b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator==(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value==b.value};
 }
 
-template<typename T,std::size_t N>
+template<typename T,::std::size_t N>
 inline constexpr simd_vector<T,N> operator!=(simd_vector<T,N> const& a,simd_vector<T,N> const& b) noexcept
 {
 	return {a.value!=b.value};
 }
 
-template<std::integral T,std::size_t N>
+template<::std::integral T,::std::size_t N>
 inline
 #if __has_builtin(__builtin_bit_cast)
 constexpr
 #endif
 simd_vector<T,N> wrap_add(simd_vector<T,N> a,simd_vector<T,N> b) noexcept
 {
-	if constexpr(std::signed_integral<T>)
+	if constexpr(::std::signed_integral<T>)
 	{
-		using unsigned_type = std::make_unsigned_t<T>;
+		using unsigned_type = ::std::make_unsigned_t<T>;
 		using vec_type = typename simd_vector<unsigned_type,N>::vec_type;
 #if __has_builtin(__builtin_bit_cast)
 		return __builtin_bit_cast(simd_vector<T,N>,__builtin_bit_cast(vec_type,a)+__builtin_bit_cast(vec_type,b));
@@ -613,16 +613,16 @@ simd_vector<T,N> wrap_add(simd_vector<T,N> a,simd_vector<T,N> b) noexcept
 	}
 }
 
-template<std::integral T,std::size_t N>
+template<::std::integral T,::std::size_t N>
 inline
 #if __has_builtin(__builtin_bit_cast)
 constexpr
 #endif
 simd_vector<T,N> wrap_sub(simd_vector<T,N> a,simd_vector<T,N> b) noexcept
 {
-	if constexpr(std::signed_integral<T>)
+	if constexpr(::std::signed_integral<T>)
 	{
-		using unsigned_type = std::make_unsigned_t<T>;
+		using unsigned_type = ::std::make_unsigned_t<T>;
 		using vec_type = typename simd_vector<unsigned_type,N>::vec_type;
 #if __has_builtin(__builtin_bit_cast)
 		return __builtin_bit_cast(simd_vector<T,N>,__builtin_bit_cast(vec_type,a)-__builtin_bit_cast(vec_type,b));

@@ -7,7 +7,7 @@ namespace fast_io
 #pragma comment(lib,"advapi32.lib")
 #endif
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_rtl_gen_random
 {
 public:
@@ -26,7 +26,7 @@ inline ::std::byte* rtl_gen_random_some_impl(::std::byte *first,::std::byte *las
 	if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least32_t))
 	{
 		::std::size_t sz{static_cast<::std::size_t>(last-first)};
-		if(!::fast_io::win32::SystemFunction036(first,static_cast<std::uint_least32_t>(sz)))
+		if(!::fast_io::win32::SystemFunction036(first,static_cast<::std::uint_least32_t>(sz)))
 		{
 			throw_win32_error();
 		}
@@ -34,13 +34,13 @@ inline ::std::byte* rtl_gen_random_some_impl(::std::byte *first,::std::byte *las
 	}
 	else
 	{
-		constexpr std::size_t uintleast32mx{static_cast<std::size_t>(::std::numeric_limits<::std::uint_least32_t>::max())};
+		constexpr ::std::size_t uintleast32mx{static_cast<::std::size_t>(::std::numeric_limits<::std::uint_least32_t>::max())};
 		while(first!=last)
 		{
 			::std::size_t toreadthisround{static_cast<::std::size_t>(last-first)};
 			if(uintleast32mx<toreadthisround)
 				toreadthisround=uintleast32mx;
-			if(!::fast_io::win32::SystemFunction036(first,static_cast<std::uint_least32_t>(toreadthisround)))
+			if(!::fast_io::win32::SystemFunction036(first,static_cast<::std::uint_least32_t>(toreadthisround)))
 			{
 				return first;
 			}
@@ -65,20 +65,20 @@ inline void rtl_gen_random_all_impl(::std::byte *first,::std::byte *last)
 }
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 requires (sizeof(::std::uint_least32_t)<sizeof(::std::size_t))
 inline ::std::byte* read_some_bytes_underflow_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
 {
 	return ::fast_io::win32::details::rtl_gen_random_some_impl(first,last);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline void read_all_bytes_underflow_define(basic_rtl_gen_random<char_type>,::std::byte* first,::std::byte* last)
 {
 	::fast_io::win32::details::rtl_gen_random_all_impl(first,last);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr basic_rtl_gen_random<char_type> input_stream_ref_define(basic_rtl_gen_random<char_type> brg) noexcept
 {
 	return brg;	
@@ -86,7 +86,7 @@ inline constexpr basic_rtl_gen_random<char_type> input_stream_ref_define(basic_r
 
 using rtl_gen_random = basic_rtl_gen_random<char>;
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr void input_stream_require_secure_clear_define(basic_rtl_gen_random<char_type>) noexcept{}
 
 }

@@ -48,7 +48,7 @@ inline constexpr char_type* chrono_two_digits_impl(char_type* it,I i) noexcept
 		}
 		if constexpr(transparent)
 		{
-			constexpr std::uint_least8_t ten{static_cast<std::uint_least8_t>(10u)};
+			constexpr ::std::uint_least8_t ten{static_cast<::std::uint_least8_t>(10u)};
 			if(i<ten)
 			{
 				*it = char_literal_v<u8' ',char_type>;
@@ -65,7 +65,7 @@ inline constexpr char_type* chrono_two_digits_impl(char_type* it,I i) noexcept
 template<::std::integral char_type,::std::signed_integral integ>
 inline constexpr char_type* chrono_year_impl(char_type* it,integ i) noexcept
 {
-	using unsigned_type = my_make_unsigned_t<std::remove_cvref_t<integ>>;
+	using unsigned_type = my_make_unsigned_t<::std::remove_cvref_t<integ>>;
 	unsigned_type u{static_cast<unsigned_type>(i)};
 	if(i<0)[[unlikely]]
 	{

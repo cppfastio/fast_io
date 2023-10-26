@@ -3,9 +3,9 @@
 #if __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
 #endif
-inline void sha256_runtime_routine(std::uint_least32_t* __restrict state,std::byte const* __restrict block,std::byte const* __restrict blocks_last) noexcept
+inline void sha256_runtime_routine(::std::uint_least32_t* __restrict state,::std::byte const* __restrict block,::std::byte const* __restrict blocks_last) noexcept
 {
-	constexpr std::size_t block_size{64};
+	constexpr ::std::size_t block_size{64};
 	__m128i STATE0, STATE1;
 	__m128i MSG, TMP;
 	__m128i MSG0, MSG1, MSG2, MSG3;

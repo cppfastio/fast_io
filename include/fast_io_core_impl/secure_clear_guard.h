@@ -20,12 +20,12 @@ Used in: zap from Kerberos, memzero_explicit from Linux.
 Availability: GCC and Clang.
 Effectiveness: effective
 Not effective on Clang:
-	std::memset(data,0,size);
-	__asm__ __volatile__("" ::: "memory");
+	::std::memset(data,0,size);
+	__asm__ __volatile__("" : :: "memory");
 
 
 Effective on Clang
-	std::memset(data,0,size);
+	::std::memset(data,0,size);
 	__asm__ __volatile__("" ::"r"(data): "memory");
 
 How difficult to create a reliable scrubbing function
@@ -40,7 +40,7 @@ inline
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
 #endif
-void none_secure_clear(std::byte* data,std::size_t size) noexcept
+void none_secure_clear(::std::byte* data,::std::size_t size) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -49,8 +49,8 @@ void none_secure_clear(std::byte* data,std::size_t size) noexcept
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
-		for(std::size_t i{};i!=size;++i)
-			data[i]=std::byte{};
+		for(::std::size_t i{};i!=size;++i)
+			data[i]=::std::byte{};
 	}
 	else
 #endif
@@ -67,7 +67,7 @@ void none_secure_clear(std::byte* data,std::size_t size) noexcept
 	}
 }
 
-inline void secure_clear(void* data,std::size_t size) noexcept
+inline void secure_clear(void* data,::std::size_t size) noexcept
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 /*
@@ -105,7 +105,7 @@ namespace freestanding
 {
 
 
-inline constexpr ::std::byte* bytes_secure_clear_n(::std::byte* data,std::size_t size) noexcept
+inline constexpr ::std::byte* bytes_secure_clear_n(::std::byte* data,::std::size_t size) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
@@ -114,8 +114,8 @@ inline constexpr ::std::byte* bytes_secure_clear_n(::std::byte* data,std::size_t
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
-		for(std::size_t i{};i!=size;++i)
-			data[i]=std::byte{};
+		for(::std::size_t i{};i!=size;++i)
+			data[i]=::std::byte{};
 	}
 	else
 #endif
@@ -163,7 +163,7 @@ Referenced from glibc
 
 inline constexpr ::std::byte* bytes_secure_clear(::std::byte* first,::std::byte const* last) noexcept
 {
-	return bytes_secure_clear_n(first,static_cast<std::size_t>(last-first));
+	return bytes_secure_clear_n(first,static_cast<::std::size_t>(last-first));
 }
 
 }
@@ -173,8 +173,8 @@ class secure_clear_guard
 {
 public:
 	T* region;
-	std::size_t count;
-	secure_clear_guard(T* rg,std::size_t bts):region(rg),count(bts){}
+	::std::size_t count;
+	secure_clear_guard(T* rg,::std::size_t bts):region(rg),count(bts){}
 	secure_clear_guard(secure_clear_guard const&)=delete;
 	secure_clear_guard& operator=(secure_clear_guard const&)=delete;
 	~secure_clear_guard()
@@ -187,10 +187,10 @@ template<typename T>
 class secure_clear_no_op
 {
 public:
-	constexpr secure_clear_no_op(T*,std::size_t){};
+	constexpr secure_clear_no_op(T*,::std::size_t){};
 };
 
 template<typename T,bool condition>
-using conditional_secure_clear_guard=std::conditional_t<condition,secure_clear_guard<T>,secure_clear_no_op<T>>;
+using conditional_secure_clear_guard=::std::conditional_t<condition,secure_clear_guard<T>,secure_clear_no_op<T>>;
 
 }

@@ -42,38 +42,38 @@ inline constexpr int native_code(posix_wait_status pws) noexcept
 	return pws.wait_loc;
 }
 
-inline constexpr std::uintmax_t code(posix_wait_status pws) noexcept
+inline constexpr ::std::uintmax_t code(posix_wait_status pws) noexcept
 {
-	return static_cast<std::uintmax_t>(pws.wait_loc);
+	return static_cast<::std::uintmax_t>(pws.wait_loc);
 
-template<std::integral char_type>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_wait_status>) noexcept
+template<::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_wait_status>) noexcept
 {
 	return sizeof(u8"reason:")+print_reserve_size(io_reserve_type<char_type,posix_wait_reason>)
 		+sizeof(u8" native_code:")+print_reserve_size(io_reserve_type<char_type,int>);
 }
 
-template<std::integral char_type,::std::random_access_iterator Iter>
+template<::std::integral char_type,::std::random_access_iterator Iter>
 inline constexpr Iter print_reserve_define(io_reserve_type_t<char_type,posix_wait_status>,Iter iter,posix_wait_status pws) noexcept
 {
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 		iter=details::copy_string_literal("reason:",iter);
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 		iter=details::copy_string_literal(L"reason:",iter);
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 		iter=details::copy_string_literal(u"reason:",iter);
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 		iter=details::copy_string_literal(U"reason:",iter);
 	else
 		iter=details::copy_string_literal(u8"reason:",iter);
 	iter=print_reserve_define(io_reserve_type<char_type,posix_wait_reason>,iter,reason(pws));
-	if constexpr(std::same_as<char_type,char>)
+	if constexpr(::std::same_as<char_type,char>)
 		iter=details::copy_string_literal(" native_code:",iter);
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr(::std::same_as<char_type,wchar_t>)
 		iter=details::copy_string_literal(L" native_code:",iter);
-	else if constexpr(std::same_as<char_type,char16_t>)
+	else if constexpr(::std::same_as<char_type,char16_t>)
 		iter=details::copy_string_literal(u" native_code:",iter);
-	else if constexpr(std::same_as<char_type,char32_t>)
+	else if constexpr(::std::same_as<char_type,char32_t>)
 		iter=details::copy_string_literal(U" native_code:",iter);
 	else
 		iter=details::copy_string_literal(u8" native_code:",iter);
@@ -285,7 +285,7 @@ struct temp_array_scoped_ptr
 {
 	T* ptr{};
 	constexpr temp_array_scoped_ptr() noexcept = default;
-	explicit constexpr temp_array_scoped_ptr(std::size_t n):ptr(new T[n]){}
+	explicit constexpr temp_array_scoped_ptr(::std::size_t n):ptr(new T[n]){}
 	temp_array_scoped_ptr(temp_array_scoped_ptr const&)=delete;
 	temp_array_scoped_ptr& operator=(temp_array_scoped_ptr const&)=delete;
 #if __cpp_constexpr_dynamic_alloc >= 201907L
@@ -309,11 +309,11 @@ struct temp_array_scoped_ptr
 	{
 		return ptr;
 	}
-	constexpr T& operator[](std::size_t pos) noexcept
+	constexpr T& operator[](::std::size_t pos) noexcept
 	{
 		return ptr[pos];
 	}
-	constexpr T const& operator[](std::size_t pos) const noexcept
+	constexpr T const& operator[](::std::size_t pos) const noexcept
 	{
 		return ptr[pos];
 	}
@@ -324,12 +324,12 @@ inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 //	constexpr
 #endif
-char const* const* dup_enviro_impl_with_size(Iter begin,Iter end,std::size_t size)
+char const* const* dup_enviro_impl_with_size(Iter begin,Iter end,::std::size_t size)
 {
 	temp_array_scoped_ptr<char const*> uptr(size+1);
 	if constexpr(requires(::std::iter_value_t<Iter> v)
 	{
-		{v.c_str()}->std::convertible_to<char const*>;
+		{v.c_str()}->::std::convertible_to<char const*>;
 	})
 	{
 		for(char const** it{uptr.get()};begin!=end;++begin)
@@ -351,7 +351,7 @@ inline
 #endif
 char const* const* dup_enviro_impl(Iter begin,Iter end)
 {
-	return dup_enviro_impl_with_size(begin,end,static_cast<std::size_t>(::std::distance(begin,end)));
+	return dup_enviro_impl_with_size(begin,end,static_cast<::std::size_t>(::std::distance(begin,end)));
 }
 
 template<::std::forward_iterator Iter>
@@ -375,23 +375,23 @@ struct posix_process_args
 	bool is_dynamic_allocated{};
 	constexpr posix_process_args(char const* const* envir) noexcept:args(envir){}
 	template<::std::forward_iterator Iter>
-	requires (std::convertible_to<::std::iter_value_t<Iter>,char const*>||requires(::std::iter_value_t<Iter> v)
+	requires (::std::convertible_to<::std::iter_value_t<Iter>,char const*>||requires(::std::iter_value_t<Iter> v)
 	{
-		{v.c_str()}->std::convertible_to<char const*>;
+		{v.c_str()}->::std::convertible_to<char const*>;
 	})
 	constexpr posix_process_args(Iter begin,Iter end):
 		args(details::dup_enviro_entry(begin,end)),is_dynamic_allocated(true)
 	{}
 #if __has_include(<ranges>)
-	template<std::ranges::contiguous_range range>
-	requires (std::convertible_to<std::ranges::range_value_t<range>,char const*>||requires(std::ranges::range_value_t<range> v)
+	template<::std::ranges::contiguous_range range>
+	requires (::std::convertible_to<::std::ranges::range_value_t<range>,char const*>||requires(::std::ranges::range_value_t<range> v)
 	{
-		{v.c_str()}->std::convertible_to<char const*>;
+		{v.c_str()}->::std::convertible_to<char const*>;
 	})
-	constexpr posix_process_args(range&& rg):posix_process_args(std::ranges::cbegin(rg),std::ranges::cend(rg))
+	constexpr posix_process_args(range&& rg):posix_process_args(::std::ranges::cbegin(rg),::std::ranges::cend(rg))
 	{}
 #if __has_include(<initializer_list>)
-	constexpr posix_process_args(std::initializer_list<char const*> ilist):
+	constexpr posix_process_args(::std::initializer_list<char const*> ilist):
 		posix_process_args(ilist.begin(),ilist.end()){}
 #endif
 #endif
@@ -414,7 +414,7 @@ public:
 	using native_handle_type = pid_t;
 	explicit constexpr posix_process() noexcept =default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr posix_process(native_hd pid1) noexcept:
 		posix_process_observer{pid1}{}
 	template<::fast_io::constructible_to_os_c_str path_type>

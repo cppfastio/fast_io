@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 struct basic_qt_qdebug
 {
 	using char_type = ch_type;
@@ -54,7 +54,7 @@ inline void qtdbg_write_impl(QDebug& qdb,char const* first,char const* last)
 	qdb<<QByteArrayView(first,last);
 }
 
-inline void qtdbg_scatter_write_impl(QDebug& qdb,io_scatter_t const* scatters,std::size_t n)
+inline void qtdbg_scatter_write_impl(QDebug& qdb,io_scatter_t const* scatters,::std::size_t n)
 {
 	for(auto i{scatters},e{i+n};i!=e;++i)
 	{
@@ -64,13 +64,13 @@ inline void qtdbg_scatter_write_impl(QDebug& qdb,io_scatter_t const* scatters,st
 
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline void write(basic_qt_qdebug<char_type> qdbg,char_type const* first,char_type const* last)
 {
 	::fast_io::details::qtdbg_write_impl(qdbg.pqdbg,reinterpret_cast<char const*>(first),reinterpret_cast<char const*>(last));
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline void scatter_write(basic_qt_qdebug<char_type> qdbg,io_scatters_t scatters)
 {
 	::fast_io::details::qtdbg_scatter_write_impl(qdbg.pqdbg,scatters.base,scatters.len);

@@ -5,7 +5,7 @@ namespace fast_io
 
 struct win32_timezone_name
 {
-	std::size_t position{183};
+	::std::size_t position{183};
 };
 
 enum win32_timezone_family
@@ -38,7 +38,7 @@ struct win32_registry_guard
 
 template<typename T>
 requires (::std::same_as<T,char8_t>||::std::same_as<T,char16_t>)
-inline constexpr win32_timezone_name find_win32_regtz_position_impl(T const* str,std::size_t len) noexcept
+inline constexpr win32_timezone_name find_win32_regtz_position_impl(T const* str,::std::size_t len) noexcept
 {
 	::fast_io::basic_io_scatter_t<T> scatter{str,len};
 	::fast_io::basic_io_scatter_t<T> const* first;
@@ -67,13 +67,13 @@ inline constexpr win32_timezone_name find_win32_regtz_position_impl(T const* str
 	{
 		return {};
 	}
-	return {static_cast<std::size_t>(it-first)};
+	return {static_cast<::std::size_t>(it-first)};
 }
 
 template<win32_timezone_family tzfamily,win32_family family>
 inline win32_timezone_name win32_localtimezone_impl() noexcept
 {
-	using api_char_type = std::conditional_t<family==win32_family::ansi_9x,char8_t,char16_t>;
+	using api_char_type = ::std::conditional_t<family==win32_family::ansi_9x,char8_t,char16_t>;
 	if constexpr(tzfamily == win32_timezone_family::gettimezoneinformation)
 	{
 		static_assert(tzfamily != win32_timezone_family::gettimezoneinformation
@@ -84,7 +84,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 		{
 			throw_win32_error();
 		}
-		std::size_t const standardnamesize{::fast_io::cstr_nlen(tzi.StandardName,sizeof(tzi.StandardName))};
+		::std::size_t const standardnamesize{::fast_io::cstr_nlen(tzi.StandardName,sizeof(tzi.StandardName))};
 		return ::fast_io::win32::details::find_win32_regtz_position_impl(tzi.StandardName,standardnamesize);
 	}
 	else
@@ -106,7 +106,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 		constexpr
 			::std::size_t n{128};
 		api_char_type buffer[n];
-		constexpr std::uint_least32_t bfbytes{n*sizeof(api_char_type)};
+		constexpr ::std::uint_least32_t bfbytes{n*sizeof(api_char_type)};
 		::std::uint_least32_t cbdata{bfbytes};
 		{
 			::fast_io::win32::details::win32_registry_guard guard(k);
@@ -143,7 +143,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 		{
 			return {};
 		}
-		std::size_t const stringlen{static_cast<std::size_t>(cbdata-1u)};
+		::std::size_t const stringlen{static_cast<::std::size_t>(cbdata-1u)};
 		return ::fast_io::win32::details::find_win32_regtz_position_impl(buffer,stringlen);
 	}
 }
@@ -169,7 +169,7 @@ using win32_local_timezone = basic_win32_local_timezone<::fast_io::win32_family:
 using native_local_timezone = win32_local_timezone;
 #endif
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr basic_io_scatter_t<char_type> status_io_print_forward(io_alias_type_t<char_type>,win32_timezone_name tzn) noexcept
 {
 	if constexpr(::std::same_as<char_type,char>)

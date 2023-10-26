@@ -156,7 +156,7 @@ inline constexpr void write_all_iterator_decay_impl(outstmtype outsm,Iter first,
 	{
 		using output_char_type = typename outstmtype::output_char_type;
 		using itvt = ::std::iter_value_t<Iter>;
-		if constexpr(::fast_io::multiblock_view_iterator<Iter>)	//Optimize for std::deque
+		if constexpr(::fast_io::multiblock_view_iterator<Iter>)	//Optimize for ::std::deque
 		{
 			auto firstvit{multiblock_iterator_view_ref_define(first)};
 			auto lastvit{multiblock_iterator_view_ref_define(last)};
@@ -256,8 +256,8 @@ inline constexpr void write_all_range_decay(outstmtype outsm,rg &&r)
 		}
 		else
 		{
-			auto firstptrbt{reinterpret_cast<std::byte const*>(firstptr)};
-			auto lastptrbt{reinterpret_cast<std::byte const*>(lastptr)};
+			auto firstptrbt{reinterpret_cast<::std::byte const*>(firstptr)};
+			auto lastptrbt{reinterpret_cast<::std::byte const*>(lastptr)};
 			::fast_io::operations::decay::write_all_bytes_decay(
 				outsm,firstptrbt,lastptrbt);
 		}

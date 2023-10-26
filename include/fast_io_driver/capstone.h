@@ -26,7 +26,7 @@ inline void throw_cs_error(cs_err e[[maybe_unused]])
 namespace details
 {
 
-inline void cs_option_wrapper_impl(std::size_t csh,cs_opt_type t,std::size_t value)
+inline void cs_option_wrapper_impl(::std::size_t csh,cs_opt_type t,::std::size_t value)
 {
 	auto ret{::fast_io::noexcept_call(::cs_option,csh,t,value)};
 	if(ret!=CS_ERR_OK)
@@ -38,8 +38,8 @@ inline void cs_option_wrapper_impl(std::size_t csh,cs_opt_type t,std::size_t val
 class cs_io_observer
 {
 public:
-	std::size_t csh{};
-	void option(cs_opt_type t,std::size_t value) const
+	::std::size_t csh{};
+	void option(cs_opt_type t,::std::size_t value) const
 	{
 		::fast_io::capstone::details::cs_option_wrapper_impl(this->csh,t,value);
 	}
@@ -50,7 +50,7 @@ class cs_file:public cs_io_observer
 public:
 	constexpr cs_file() noexcept = default;
 	template<typename T>
-	requires std::same_as<T,std::size_t>
+	requires ::std::same_as<T,::std::size_t>
 	explicit constexpr cs_file(T cs) noexcept:cs_io_observer{cs}{}
 	cs_file(cs_file const&)=delete;
 	cs_file& operator=(cs_file const&)=delete;
@@ -83,7 +83,7 @@ class cs_insn_range
 {
 public:
 	cs_insn* ins{};
-	std::size_t count{};
+	::std::size_t count{};
 
 	using value_type = cs_insn;
 	using pointer = cs_insn*;
@@ -92,16 +92,16 @@ public:
 	using iterator = pointer;
 	using reference = cs_insn&;
 	using const_reference = cs_insn const&;
-	using size_type = std::size_t;
-	using difference_type = std::ptrdiff_t;
-	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-	using reverse_iterator = std::reverse_iterator<iterator>;
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
 
 	constexpr cs_insn_range() noexcept = default;
 
-	explicit cs_insn_range(cs_io_observer csiob,char const* buffer,std::size_t code_size,std::uint_least64_t address,std::size_t c) noexcept
+	explicit cs_insn_range(cs_io_observer csiob,char const* buffer,::std::size_t code_size,::std::uint_least64_t address,::std::size_t c) noexcept
 	{
-		count=noexcept_call(cs_disasm,csiob.csh,reinterpret_cast<std::uint_least8_t const*>(buffer),code_size,address,c,__builtin_addressof(ins));
+		count=noexcept_call(cs_disasm,csiob.csh,reinterpret_cast<::std::uint_least8_t const*>(buffer),code_size,address,c,__builtin_addressof(ins));
 	}
 	cs_insn_range(cs_insn_range const&)=delete;
 	cs_insn_range& operator=(cs_insn_range const&)=delete;
@@ -133,7 +133,7 @@ public:
 	{
 		return !this->count;
 	}
-	constexpr std::size_t size() const noexcept
+	constexpr ::std::size_t size() const noexcept
 	{
 		return this->count;
 	}
@@ -161,9 +161,9 @@ public:
 	{
 		return ins+this->count;
 	}
-	constexpr std::size_t max_size() const noexcept
+	constexpr ::std::size_t max_size() const noexcept
 	{
-		constexpr std::size_t mx_size{SIZE_MAX/sizeof(value_type)};
+		constexpr ::std::size_t mx_size{SIZE_MAX/sizeof(value_type)};
 		return mx_size;
 	}
 	constexpr const_reverse_iterator crbegin() const noexcept

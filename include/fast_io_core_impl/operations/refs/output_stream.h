@@ -269,7 +269,7 @@ concept has_obuffer_minimum_size_operations = requires(T outstm)
 {
 	{obuffer_minimum_size_define(::fast_io::io_reserve_type<
 		typename T::output_char_type,
-		T>)}->std::same_as<::std::size_t>;
+		T>)}->::std::same_as<::std::size_t>;
 	obuffer_minimum_size_flush_prepare_define(outstm);
 };
 

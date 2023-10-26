@@ -13,7 +13,7 @@ struct basic_file_wrapper:public T
 	using typename T::file_factory_type;
 	constexpr basic_file_wrapper() noexcept=default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_file_wrapper(native_hd hd) noexcept:T(hd){}
 	explicit constexpr basic_file_wrapper(file_factory_type&& factory) noexcept:T(static_cast<file_factory_type&&>(factory)){}
 	constexpr basic_file_wrapper(native_fs_dirent fsdirent,open_mode m=interface_mode,perms p=static_cast<perms>(436)):

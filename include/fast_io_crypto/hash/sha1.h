@@ -3,46 +3,46 @@
 namespace fast_io::details::sha1
 {
 //from https://github.com/vog/sha1/blob/master/sha1.cpp
-inline constexpr std::uint_least32_t blk(std::uint_least32_t* __restrict block,std::size_t const i) noexcept
+inline constexpr ::std::uint_least32_t blk(::std::uint_least32_t* __restrict block,::std::size_t const i) noexcept
 {
-	return std::rotl(block[(i+13)&15] ^ block[(i+8)&15] ^ block[(i+2)&15] ^ block[i], 1);
+	return ::std::rotl(block[(i+13)&15] ^ block[(i+8)&15] ^ block[(i+2)&15] ^ block[i], 1);
 }
 
-inline constexpr void R0(std::uint_least32_t* __restrict block, std::uint_least32_t const v, std::uint_least32_t &w, std::uint_least32_t const x, std::uint_least32_t const y, std::uint_least32_t &z, std::size_t i) noexcept
+inline constexpr void R0(::std::uint_least32_t* __restrict block, ::std::uint_least32_t const v, ::std::uint_least32_t &w, ::std::uint_least32_t const x, ::std::uint_least32_t const y, ::std::uint_least32_t &z, ::std::size_t i) noexcept
 {
-	z += ((w&(x^y))^y) + block[i] + 0x5a827999 + std::rotl(v, 5);
-	w = std::rotl(w, 30);
+	z += ((w&(x^y))^y) + block[i] + 0x5a827999 + ::std::rotl(v, 5);
+	w = ::std::rotl(w, 30);
 }
 
-inline constexpr void R1(std::uint_least32_t* __restrict block, std::uint_least32_t const v, std::uint_least32_t &w, std::uint_least32_t const x, std::uint_least32_t const y, std::uint_least32_t &z, std::size_t i) noexcept
+inline constexpr void R1(::std::uint_least32_t* __restrict block, ::std::uint_least32_t const v, ::std::uint_least32_t &w, ::std::uint_least32_t const x, ::std::uint_least32_t const y, ::std::uint_least32_t &z, ::std::size_t i) noexcept
 {
 	block[i] = blk(block, i);
-	z += ((w&(x^y))^y) + block[i] + 0x5a827999 + std::rotl(v, 5);
-	w = std::rotl(w, 30);
+	z += ((w&(x^y))^y) + block[i] + 0x5a827999 + ::std::rotl(v, 5);
+	w = ::std::rotl(w, 30);
 }
 
 
-inline constexpr void R2(std::uint_least32_t* __restrict block, std::uint_least32_t const v, std::uint_least32_t &w, std::uint_least32_t const x, std::uint_least32_t const y, std::uint_least32_t &z, std::size_t i) noexcept
+inline constexpr void R2(::std::uint_least32_t* __restrict block, ::std::uint_least32_t const v, ::std::uint_least32_t &w, ::std::uint_least32_t const x, ::std::uint_least32_t const y, ::std::uint_least32_t &z, ::std::size_t i) noexcept
 {
 	block[i] = blk(block, i);
-	z += (w^x^y) + block[i] + 0x6ed9eba1 + std::rotl(v, 5);
-	w = std::rotl(w, 30);
+	z += (w^x^y) + block[i] + 0x6ed9eba1 + ::std::rotl(v, 5);
+	w = ::std::rotl(w, 30);
 }
 
 
-inline constexpr void R3(std::uint_least32_t* __restrict block, std::uint_least32_t const v, std::uint_least32_t &w, std::uint_least32_t const x, std::uint_least32_t const y, std::uint_least32_t &z, std::size_t i) noexcept
+inline constexpr void R3(::std::uint_least32_t* __restrict block, ::std::uint_least32_t const v, ::std::uint_least32_t &w, ::std::uint_least32_t const x, ::std::uint_least32_t const y, ::std::uint_least32_t &z, ::std::size_t i) noexcept
 {
 	block[i] = blk(block, i);
-	z += (((w|x)&y)|(w&x)) + block[i] + 0x8f1bbcdc + std::rotl(v, 5);
-	w = std::rotl(w, 30);
+	z += (((w|x)&y)|(w&x)) + block[i] + 0x8f1bbcdc + ::std::rotl(v, 5);
+	w = ::std::rotl(w, 30);
 }
 
 
-inline constexpr void R4(std::uint_least32_t* __restrict block, std::uint_least32_t const v, std::uint_least32_t &w, std::uint_least32_t const x, std::uint_least32_t const y, std::uint_least32_t &z, std::size_t i) noexcept
+inline constexpr void R4(::std::uint_least32_t* __restrict block, ::std::uint_least32_t const v, ::std::uint_least32_t &w, ::std::uint_least32_t const x, ::std::uint_least32_t const y, ::std::uint_least32_t &z, ::std::size_t i) noexcept
 {
 	block[i] = blk(block, i);
-	z += (w^x^y) + block[i] + 0xca62c1d6 + std::rotl(v, 5);
-	w = std::rotl(w, 30);
+	z += (w^x^y) + block[i] + 0xca62c1d6 + ::std::rotl(v, 5);
+	w = ::std::rotl(w, 30);
 }
 
 
@@ -50,28 +50,28 @@ inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
 constexpr
 #endif
-void sha1_do_constexpr_function(std::uint_least32_t* __restrict state,std::byte const* __restrict blocks_start,std::size_t blocks_bytes) noexcept
+void sha1_do_constexpr_function(::std::uint_least32_t* __restrict state,::std::byte const* __restrict blocks_start,::std::size_t blocks_bytes) noexcept
 {
-	std::uint_least32_t a{state[0]}, b{state[1]}, c{state[2]}, d{state[3]}, e{state[4]};
-	std::uint_least32_t X[16];
-	constexpr std::size_t block_size{64};
-	for(std::byte const* data(blocks_start),*ed(blocks_start+blocks_bytes);data!=ed;data+=block_size)
+	::std::uint_least32_t a{state[0]}, b{state[1]}, c{state[2]}, d{state[3]}, e{state[4]};
+	::std::uint_least32_t X[16];
+	constexpr ::std::size_t block_size{64};
+	for(::std::byte const* data(blocks_start),*ed(blocks_start+blocks_bytes);data!=ed;data+=block_size)
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-		if(std::is_constant_evaluated())
+		if(::std::is_constant_evaluated())
 		{
-			for(std::size_t j{};j!=16;++j)
+			for(::std::size_t j{};j!=16;++j)
 			{
 				auto dj{data+j*4};
-				X[j]=(std::to_integer<std::uint_least32_t>(*dj)<<24)|(std::to_integer<std::uint_least32_t>(dj[1])<<16)|
-					(std::to_integer<std::uint_least32_t>(dj[2])<<8)|std::to_integer<std::uint_least32_t>(dj[3]);
+				X[j]=(::std::to_integer<::std::uint_least32_t>(*dj)<<24)|(::std::to_integer<::std::uint_least32_t>(dj[1])<<16)|
+					(::std::to_integer<::std::uint_least32_t>(dj[2])<<8)|::std::to_integer<::std::uint_least32_t>(dj[3]);
 			}
 		}
 		else
 #endif
 		{
 			my_memcpy(X,data,block_size);
-			if constexpr(std::endian::big!=std::endian::native)
+			if constexpr(::std::endian::big!=::std::endian::native)
 			{
 				for(auto& ele : X)
 					ele=big_endian(ele);
@@ -169,7 +169,7 @@ void sha1_do_constexpr_function(std::uint_least32_t* __restrict state,std::byte 
 }
 
 #if defined(FAST_IO_ARM_SHA) && ( defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM) )
-inline void sha1_arm_function(std::uint_least32_t* __restrict state,std::byte const* __restrict blocks_start,std::size_t blocks_bytes) noexcept
+inline void sha1_arm_function(::std::uint_least32_t* __restrict state,::std::byte const* __restrict blocks_start,::std::size_t blocks_bytes) noexcept
 {
 	uint32x4_t ABCD, ABCD_SAVED;
 	uint32x4_t TMP0, TMP1;
@@ -184,10 +184,10 @@ inline void sha1_arm_function(std::uint_least32_t* __restrict state,std::byte co
 		E0_SAVED = E0;
 
 		/* Load message */
-		MSG0 = vld1q_u32(reinterpret_cast<std::uint_least32_t const *>(data +  0));
-		MSG1 = vld1q_u32(reinterpret_cast<std::uint_least32_t const *>(data + 16));
-		MSG2 = vld1q_u32(reinterpret_cast<std::uint_least32_t const *>(data + 32));
-		MSG3 = vld1q_u32(reinterpret_cast<std::uint_least32_t const *>(data + 48));
+		MSG0 = vld1q_u32(reinterpret_cast<::std::uint_least32_t const *>(data +  0));
+		MSG1 = vld1q_u32(reinterpret_cast<::std::uint_least32_t const *>(data + 16));
+		MSG2 = vld1q_u32(reinterpret_cast<::std::uint_least32_t const *>(data + 32));
+		MSG3 = vld1q_u32(reinterpret_cast<::std::uint_least32_t const *>(data + 48));
 
 		/* Reverse for little endian */
 		MSG0 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(MSG0)));
@@ -339,9 +339,9 @@ inline void sha1_arm_function(std::uint_least32_t* __restrict state,std::byte co
 }
 #endif
 
-inline void sha1_do_function(std::uint_least32_t* __restrict state,std::byte const* __restrict blocks_start,std::size_t blocks_bytes) noexcept
+inline void sha1_do_function(::std::uint_least32_t* __restrict state,::std::byte const* __restrict blocks_start,::std::size_t blocks_bytes) noexcept
 {
-	[[maybe_unused]] constexpr std::size_t block_size{64};
+	[[maybe_unused]] constexpr ::std::size_t block_size{64};
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_ia32_sha1rnds4)&& \
 __has_builtin(__builtin_ia32_sha1nexte)&& \
@@ -520,7 +520,7 @@ __has_builtin(__builtin_ia32_pshufb128) && (!defined(__clang__)||(defined(__SSE4
 		abcd = abcdstate;
 	}
 	simd_vector<int,4>{abcd[3],abcd[2],abcd[1],abcd[0]}.store(state);
-	state[4]=static_cast<std::uint_least32_t>(e0.back());
+	state[4]=static_cast<::std::uint_least32_t>(e0.back());
 #elif defined(FAST_IO_ARM_SHA) && ( defined(__arm__) || defined(__aarch32__) || defined(__arm64__) || defined(__aarch64__) || defined(_M_ARM) )
 	sha1_arm_function(state,blocks_start,blocks_bytes);
 #else
@@ -717,17 +717,17 @@ __has_builtin(__builtin_ia32_pshufb128) && (!defined(__clang__)||(defined(__SSE4
 class sha1
 {
 public:
-	using state_value_type = std::uint_least32_t;
-	static inline constexpr std::size_t block_size{64};
-	static inline constexpr std::endian hash_endian{std::endian::big};
-	static inline constexpr std::size_t state_size{5};
+	using state_value_type = ::std::uint_least32_t;
+	static inline constexpr ::std::size_t block_size{64};
+	static inline constexpr ::std::endian hash_endian{::std::endian::big};
+	static inline constexpr ::std::size_t state_size{5};
 	state_value_type state[state_size];
 #if __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif
-	void update_blocks(std::byte const* __restrict blocks_start,std::byte const* __restrict blocks_last) noexcept
+	void update_blocks(::std::byte const* __restrict blocks_start,::std::byte const* __restrict blocks_last) noexcept
 	{
-		std::size_t const blocks_bytes{static_cast<std::size_t>(blocks_last-blocks_start)};
+		::std::size_t const blocks_bytes{static_cast<::std::size_t>(blocks_last-blocks_start)};
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
 		if consteval
@@ -747,11 +747,11 @@ public:
 
 struct sha1_initializer
 {
-	static inline constexpr std::size_t digest_size{20};
+	static inline constexpr ::std::size_t digest_size{20};
 	static inline constexpr ::fast_io::details::sha1::sha1 initialize_value{{0x67452301,0xefcdab89,0x98badcfe,0x10325476,0xc3d2e1f0}};
-	static inline constexpr void digest_to_byte_ptr(std::uint_least32_t const* digest,std::byte* ptr) noexcept
+	static inline constexpr void digest_to_byte_ptr(::std::uint_least32_t const* digest,::std::byte* ptr) noexcept
 	{
-		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,std::endian::big>(digest,ptr);
+		hash_digest_to_byte_ptr_common<::std::uint_least32_t,digest_size,::std::endian::big>(digest,ptr);
 	}
 };
 

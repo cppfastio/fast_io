@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-template<std::integral T>
+template<::std::integral T>
 class basic_atl_io_observer
 {
 public:
@@ -37,7 +37,7 @@ public:
 	}
 };
 
-template<std::integral T>
+template<::std::integral T>
 inline constexpr basic_atl_io_observer<T> io_value_handle(basic_atl_io_observer<T> t) noexcept
 {
 	return t;
@@ -67,19 +67,19 @@ inline void throw_com_error(HRESULT hr)
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline void atl_write_n_impl(CAtlFile* cfp,std::byte const* first_ptr,std::size_t n)
+inline void atl_write_n_impl(CAtlFile* cfp,::std::byte const* first_ptr,::std::size_t n)
 {
-	if constexpr(sizeof(std::size_t)>sizeof(std::uint_least32_t))
+	if constexpr(sizeof(::std::size_t)>sizeof(::std::uint_least32_t))
 	{
 		while(n)
 		{
-			constexpr std::size_t sz_max{static_cast<std::size_t>(UINT_LEAST32_MAX)};
-			std::size_t write_this_round{n};
+			constexpr ::std::size_t sz_max{static_cast<::std::size_t>(UINT_LEAST32_MAX)};
+			::std::size_t write_this_round{n};
 			if(sz_max<write_this_round)
 			{
 				write_this_round=sz_max;
 			}
-			auto hresult{cfp->Write(first_ptr,static_cast<std::uint_least32_t>(write_this_round))};
+			auto hresult{cfp->Write(first_ptr,static_cast<::std::uint_least32_t>(write_this_round))};
 			if(hresult!=S_OK)
 				throw_com_error(hresult); 
 			n-=write_this_round;
@@ -87,7 +87,7 @@ inline void atl_write_n_impl(CAtlFile* cfp,std::byte const* first_ptr,std::size_
 	}
 	else
 	{
-		cfp->Write(first_ptr,static_cast<std::uint_least32_t>(n));
+		cfp->Write(first_ptr,static_cast<::std::uint_least32_t>(n));
 	}
 }
 
@@ -95,61 +95,61 @@ inline void atl_write_impl(CAtlFile* cfp,void const* first,void const* last)
 {
 	char const* first_ptr{reinterpret_cast<char const*>(first)};
 	char const* last_ptr{reinterpret_cast<char const*>(last)};
-	atl_write_n_impl(cfp,reinterpret_cast<std::byte const*>(first_ptr),static_cast<std::size_t>(last_ptr-first_ptr));
+	atl_write_n_impl(cfp,reinterpret_cast<::std::byte const*>(first_ptr),static_cast<::std::size_t>(last_ptr-first_ptr));
 }
 
-inline std::size_t atl_read_impl(CAtlFile* cfp,void* first,std::size_t to_read)
+inline ::std::size_t atl_read_impl(CAtlFile* cfp,void* first,::std::size_t to_read)
 {
-	if constexpr(sizeof(std::size_t)>4)
-		if(static_cast<std::size_t>(UINT_LEAST32_MAX)<to_read)
-			to_read=static_cast<std::size_t>(UINT_LEAST32_MAX);
+	if constexpr(sizeof(::std::size_t)>4)
+		if(static_cast<::std::size_t>(UINT_LEAST32_MAX)<to_read)
+			to_read=static_cast<::std::size_t>(UINT_LEAST32_MAX);
 	DWORD ret{};
-	auto hr{cfp->Read(first,static_cast<std::uint_least32_t>(to_read),ret)};
+	auto hr{cfp->Read(first,static_cast<::std::uint_least32_t>(to_read),ret)};
 	if(hr!=S_OK)
 		throw_com_error(hr);
-	return static_cast<std::size_t>(ret);
+	return static_cast<::std::size_t>(ret);
 }
 
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline void atl_scatter_write_impl(CAtlFile* cfp,io_scatter_t const* scats,std::size_t n)
+inline void atl_scatter_write_impl(CAtlFile* cfp,io_scatter_t const* scats,::std::size_t n)
 {
 	auto i{scats};
 	auto e{scats+n};
 	for(;i!=e;++i)
 	{
-		atl_write_n_impl(cfp,reinterpret_cast<std::byte const*>(scats->base),scats->len);
+		atl_write_n_impl(cfp,reinterpret_cast<::std::byte const*>(scats->base),scats->len);
 	}
 }
 
 }
 
-template<std::integral T,::std::contiguous_iterator Iter>
+template<::std::integral T,::std::contiguous_iterator Iter>
 inline void write(basic_atl_io_observer<T> hd,Iter first,Iter last)
 {
 	::fast_io::details::atl_write_impl(hd.phandle,::std::to_address(first),::std::to_address(last));
 }
 
-template<std::integral T>
+template<::std::integral T>
 inline void scatter_write(basic_atl_io_observer<T> hd,io_scatters_t scatters)
 {
 	::fast_io::details::atl_scatter_write_impl(hd.phandle,scatters.base,scatters.len);
 }
 
-template<std::integral T>
+template<::std::integral T>
 inline void flush(basic_atl_io_observer<T> hd)
 {
 	hd.phandle->Flush();
 }
 
-template<std::integral T,::std::contiguous_iterator Iter>
+template<::std::integral T,::std::contiguous_iterator Iter>
 inline Iter read(basic_atl_io_observer<T> hd,Iter first,Iter last)
 {
 	return first+atl_read_impl(hd.phandle,::std::to_address(first),(last-first)*sizeof(*first))/sizeof(T);
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_atl_file:public basic_atl_io_observer<ch_type>
 {
 public:
@@ -157,7 +157,7 @@ public:
 	using native_handle_type = CAtlFile*;
 	constexpr basic_atl_file() noexcept=default;
 	template<typename T>
-	requires std::same_as<T,native_handle_type>
+	requires ::std::same_as<T,native_handle_type>
 	explicit constexpr basic_atl_file(T hd) noexcept:basic_atl_io_observer<ch_type>{hd}{}
 	explicit constexpr basic_atl_file(decltype(nullptr)) noexcept = delete;
 

@@ -57,7 +57,7 @@ inline typename T::char_type* ibuffer_begin(::fast_io::basic_general_streambuf_i
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IGfirst)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IGfirst)};
 	return **reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset);
 }
 
@@ -67,7 +67,7 @@ inline typename T::char_type* ibuffer_curr(::fast_io::basic_general_streambuf_io
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IGnext)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IGnext)};
 	return **reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset);
 }
 
@@ -77,8 +77,8 @@ inline typename T::char_type* ibuffer_end(::fast_io::basic_general_streambuf_io_
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IGnext)};
-	constexpr std::size_t count_offset{__builtin_offsetof(model,_IGcount)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IGnext)};
+	constexpr ::std::size_t count_offset{__builtin_offsetof(model,_IGcount)};
 	return **reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset)+
 		**reinterpret_cast<int**>(reinterpret_cast<char*>(biob.fb)+count_offset);
 }
@@ -89,8 +89,8 @@ inline void ibuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> b
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IGnext)};
-	constexpr std::size_t count_offset{__builtin_offsetof(model,_IGcount)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IGnext)};
+	constexpr ::std::size_t count_offset{__builtin_offsetof(model,_IGcount)};
 	char_type** addr_of_currptr{*reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset)};
 	char_type* currptr{*addr_of_currptr};
 	*addr_of_currptr=ptr;
@@ -103,7 +103,7 @@ inline typename T::char_type* obuffer_begin(::fast_io::basic_general_streambuf_i
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IPfirst)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IPfirst)};
 	return **reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset);
 }
 
@@ -113,7 +113,7 @@ inline typename T::char_type* obuffer_curr(::fast_io::basic_general_streambuf_io
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IPnext)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IPnext)};
 	return **reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset);
 }
 
@@ -123,8 +123,8 @@ inline typename T::char_type* obuffer_end(::fast_io::basic_general_streambuf_io_
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IPnext)};
-	constexpr std::size_t count_offset{__builtin_offsetof(model,_IPcount)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IPnext)};
+	constexpr ::std::size_t count_offset{__builtin_offsetof(model,_IPcount)};
 	return **reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset)+
 		**reinterpret_cast<int**>(reinterpret_cast<char*>(biob.fb)+count_offset);
 }
@@ -135,8 +135,8 @@ inline void obuffer_set_curr(::fast_io::basic_general_streambuf_io_observer<T> b
 	using char_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::char_type;
 	using traits_type = typename ::fast_io::basic_general_streambuf_io_observer<T>::traits_type;
 	using model = ::fast_io::details::streambuf_hack::msvc_stl_basic_streambuf_hack_model<char_type,traits_type>;
-	constexpr std::size_t offset{__builtin_offsetof(model,_IPnext)};
-	constexpr std::size_t count_offset{__builtin_offsetof(model,_IPcount)};
+	constexpr ::std::size_t offset{__builtin_offsetof(model,_IPnext)};
+	constexpr ::std::size_t count_offset{__builtin_offsetof(model,_IPcount)};
 	char_type** addr_of_currptr{*reinterpret_cast<char_type***>(reinterpret_cast<char*>(biob.fb)+offset)};
 	char_type* currptr{*addr_of_currptr};
 	*addr_of_currptr=ptr;

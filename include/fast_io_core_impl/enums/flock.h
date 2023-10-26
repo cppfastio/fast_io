@@ -10,7 +10,7 @@ exclusive_lock,
 unlock,
 };
 
-template<std::signed_integral T>
+template<::std::signed_integral T>
 struct basic_flock_request
 {
 	using int_type = T;

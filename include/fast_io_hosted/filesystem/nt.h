@@ -22,9 +22,9 @@ struct nt_dirent
 	void* d_handle{};
 	file_type d_type{};
 	char16_t native_d_name[0x2001];
-	std::size_t native_d_namlen{};
+	::std::size_t native_d_namlen{};
 	char8_t u8d_name[0x8004];
-	std::size_t u8d_namlen{};
+	::std::size_t u8d_namlen{};
 };
 
 namespace win32::nt::details
@@ -111,8 +111,8 @@ template<nt_family family>
 inline nt_dirent* set_nt_dirent(nt_dirent* entry,bool start)
 {
 	io_status_block block{};
-	constexpr std::uint_least32_t ul32_buffer_size{0x4000};
-	std::byte buffer[ul32_buffer_size];
+	constexpr ::std::uint_least32_t ul32_buffer_size{0x4000};
+	::std::byte buffer[ul32_buffer_size];
 	::fast_io::win32::nt::dir_information d_info{buffer};
 	auto status{nt_query_directory_file<family==nt_family::zw>(entry->d_handle,nullptr,nullptr,nullptr,
 	__builtin_addressof(block),d_info.DirInfo,
@@ -128,13 +128,13 @@ inline nt_dirent* set_nt_dirent(nt_dirent* entry,bool start)
 	entry->native_d_namlen=ful_dir_info->FileNameLength/sizeof(char16_t);
 
 	::fast_io::freestanding::nonoverlapped_bytes_copy_n(
-		reinterpret_cast<std::byte const*>(ful_dir_info->FileName),ful_dir_info->FileNameLength,
-		reinterpret_cast<std::byte*>(entry->native_d_name));
+		reinterpret_cast<::std::byte const*>(ful_dir_info->FileName),ful_dir_info->FileNameLength,
+		reinterpret_cast<::std::byte*>(entry->native_d_name));
 	entry->native_d_name[entry->native_d_namlen]=0;
 
 	char16_t const* enstart{entry->native_d_name};
 	char16_t const* enend{enstart+entry->native_d_namlen};
-	entry->u8d_namlen=static_cast<std::size_t>(::fast_io::details::codecvt::general_code_cvt_full(enstart,enend,entry->u8d_name)-entry->u8d_name);
+	entry->u8d_namlen=static_cast<::std::size_t>(::fast_io::details::codecvt::general_code_cvt_full(enstart,enend,entry->u8d_name)-entry->u8d_name);
 	entry->u8d_name[entry->u8d_namlen]=0;
 /*
 Referenced from win32 port dirent.h
@@ -149,7 +149,7 @@ https://github.com/win32ports/dirent_h/blob/5a40afce928f1780058f44e0dda37553c662
 			data->entries[data->index].d_type = DT_REG;
 */
 
-	std::uint_least32_t attribute{ful_dir_info->FileAttributes};
+	::std::uint_least32_t attribute{ful_dir_info->FileAttributes};
 	if(attribute&0x400)
 		entry->d_type=file_type::symlink;
 	else if(attribute&0x40)
@@ -182,12 +182,12 @@ struct nt_directory_entry
 	using native_char_type = char16_t;
 	using char_type = char8_t;
 	nt_dirent* entry{};
-	template<nt_family family,std::integral ch_type>
+	template<nt_family family,::std::integral ch_type>
 	explicit constexpr operator basic_nt_family_io_observer<family,ch_type>() const noexcept
 	{
 		return {entry->d_handle};
 	}
-	template<win32_family family,std::integral ch_type>
+	template<win32_family family,::std::integral ch_type>
 	explicit constexpr operator basic_win32_family_io_observer<family,ch_type>() const noexcept
 	{
 		return {entry->d_handle};
@@ -217,7 +217,7 @@ inline constexpr ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t
 	return {ent.u8d_name,ent.u8d_namlen};
 }
 
-inline constexpr std::uint_least64_t inode_ul64(nt_directory_entry) noexcept
+inline constexpr ::std::uint_least64_t inode_ul64(nt_directory_entry) noexcept
 {
 	return 0;
 }
@@ -373,7 +373,7 @@ struct basic_nt_family_recursive_directory_generator
 };
 
 template<nt_family family,typename StackType>
-inline std::size_t depth(basic_nt_family_recursive_directory_iterator<family,StackType> const& prdit) noexcept
+inline ::std::size_t depth(basic_nt_family_recursive_directory_iterator<family,StackType> const& prdit) noexcept
 {
 	return prdit.stack.size();
 }
@@ -403,7 +403,7 @@ inline basic_nt_family_recursive_directory_iterator<family,StackType>& operator+
 		}
 		if(prdit.entry->d_type==file_type::directory)
 		{
-			std::size_t const native_d_namlen{prdit.entry->native_d_namlen};
+			::std::size_t const native_d_namlen{prdit.entry->native_d_namlen};
 			char16_t const *native_d_name_ptr{prdit.entry->native_d_name};
 			if((native_d_namlen==1&&*native_d_name_ptr==u'.')||(native_d_namlen==2&&*native_d_name_ptr==u'.'&&native_d_name_ptr[1]==u'.'))
 				continue;
@@ -438,7 +438,7 @@ inline basic_nt_family_recursive_directory_iterator<family,StackType> begin(basi
 	{
 		auto& ent{*prdit.entry};
 		char16_t const *native_d_name_ptr{ent.native_d_name};
-		std::size_t const native_d_namlen{ent.native_d_namlen};
+		::std::size_t const native_d_namlen{ent.native_d_namlen};
 		if((native_d_namlen==1&&*native_d_name_ptr==u'.')||(native_d_namlen==2&&*native_d_name_ptr==u'.'&&native_d_name_ptr[1]==u'.'))
 		{
 			++prdit;
@@ -531,11 +531,11 @@ inline auto u8stem(nt_directory_entry ent) noexcept
 	return ::fast_io::details::find_dot_and_sep<true,char8_t,char8_t>(et.u8d_name,et.u8d_namlen);
 }
 
-template<std::integral char_type>
+template<::std::integral char_type>
 inline constexpr auto status_io_print_forward(io_alias_type_t<char_type>,nt_directory_entry ent) noexcept
 {
 	auto& et{*ent.entry};
-	if constexpr(sizeof(char_type)==1||(std::same_as<char_type,char>&&
+	if constexpr(sizeof(char_type)==1||(::std::same_as<char_type,char>&&
 		::fast_io::execution_charset_encoding_scheme<char>()==::fast_io::encoding_scheme::utf))
 	{
 		return status_io_print_forward(io_alias_type<char_type>,

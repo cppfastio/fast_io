@@ -2,19 +2,19 @@
 
 namespace fast_io::kernel
 {
-template<std::size_t wd=80,std::size_t ht=25>
+template<::std::size_t wd=80,::std::size_t ht=25>
 struct terminal
 {
 	using char_type = char;
-	static inline constexpr std::size_t vga_width=wd;
-	static inline constexpr std::size_t vga_height=ht;
-	std::size_t row{};
-	std::size_t column{};
+	static inline constexpr ::std::size_t vga_width=wd;
+	static inline constexpr ::std::size_t vga_height=ht;
+	::std::size_t row{};
+	::std::size_t column{};
 	void clear() noexcept
 	{
 		auto ptr=(char volatile*)0xb8000;
-		constexpr std::size_t resolution{vga_width*vga_height};
-		for(std::size_t i{};i!=resolution;++i)
+		constexpr ::std::size_t resolution{vga_width*vga_height};
+		for(::std::size_t i{};i!=resolution;++i)
 		{
 			*ptr=u8' ';
 			ptr+=2;
@@ -27,25 +27,25 @@ struct terminal
 };
 namespace details
 {
-template<std::size_t vga_width=80,std::size_t vga_height=25>
+template<::std::size_t vga_width=80,::std::size_t vga_height=25>
 inline void clear_line(terminal<vga_width,vga_height>& tem) noexcept
 {
 	auto ptr=(char volatile*)0xb8000+((vga_width*tem.row)<<1);
-	for(std::size_t i{};i!=vga_width;++i)
+	for(::std::size_t i{};i!=vga_width;++i)
 	{
 		*ptr=u8' ';
 		ptr+=2;
 	}
 }
 
-template<std::size_t wd=80,std::size_t ht=25>
+template<::std::size_t wd=80,::std::size_t ht=25>
 inline void next_line(terminal<wd,ht>& tem) noexcept
 {
 	if(++tem.row==ht)[[unlikely]]
 		tem.row={};
 	clear_line(tem);
 }
-template<std::size_t wd=80,std::size_t ht=25>
+template<::std::size_t wd=80,::std::size_t ht=25>
 inline void next_character(terminal<wd,ht>& tem) noexcept
 {
 	if (++tem.column == terminal<wd,ht>::vga_width)[[unlikely]]
@@ -56,7 +56,7 @@ inline void next_character(terminal<wd,ht>& tem) noexcept
 }
 }
 
-template<std::size_t wd,std::size_t ht>
+template<::std::size_t wd,::std::size_t ht>
 inline void put(terminal<wd,ht>& tem,char ch) noexcept
 {
 	auto ptr=(char volatile*)0xb8000;
@@ -76,9 +76,9 @@ inline void put(terminal<wd,ht>& tem,char ch) noexcept
 			details::clear_line(tem);
 			break;
 		}
-		std::size_t col{tem.column};
+		::std::size_t col{tem.column};
 		auto pos=ptr+(((tem.row*wd)+col)<<1);
-		for(std::size_t i(col%8);i!=8;++i)
+		for(::std::size_t i(col%8);i!=8;++i)
 		{
 			*pos=u8' ';
 			pos+=2;
@@ -99,7 +99,7 @@ inline void put(terminal<wd,ht>& tem,char ch) noexcept
 
 namespace details
 {
-template<std::size_t wd,std::size_t ht>
+template<::std::size_t wd,::std::size_t ht>
 constexpr inline void write_impl(terminal<wd,ht>& tem,char const* b,char const* e) noexcept
 {
 	for(;b!=e;++b)
@@ -108,17 +108,17 @@ constexpr inline void write_impl(terminal<wd,ht>& tem,char const* b,char const* 
 
 }
 
-template<std::size_t wd,std::size_t ht,::std::contiguous_iterator Iter>
+template<::std::size_t wd,::std::size_t ht,::std::contiguous_iterator Iter>
 constexpr inline void write(terminal<wd,ht>& tem,Iter begin, Iter end) noexcept
 {
-	if constexpr(std::same_as<::std::iter_value_t<Iter>,char>)
+	if constexpr(::std::same_as<::std::iter_value_t<Iter>,char>)
 		details::write_impl(tem,::std::to_address(begin),::std::to_address(end));
 	else
 		details::write_impl(tem,reinterpret_cast<char const*>(::std::to_address(begin)),reinterpret_cast<char const*>(::std::to_address(end)));
 }
 
-template<std::size_t wd,std::size_t ht>
-constexpr inline void scatter_write(terminal<wd,ht>& tem,std::span<fast_io::io_scatter_t const> sp) noexcept
+template<::std::size_t wd,::std::size_t ht>
+constexpr inline void scatter_write(terminal<wd,ht>& tem,::std::span<fast_io::io_scatter_t const> sp) noexcept
 {
 	for(auto const& e : sp)
 		details::write_impl(tem,reinterpret_cast<char const*>(e.base),reinterpret_cast<char const*>(e.base)+e.len);

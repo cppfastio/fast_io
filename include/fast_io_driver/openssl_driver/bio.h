@@ -94,10 +94,10 @@ struct bio_io_cookie_functions_t
 	native_functions_type functions{};
 	explicit bio_io_cookie_functions_t()
 	{
-		using value_type = std::remove_reference_t<stm>;
+		using value_type = ::std::remove_reference_t<stm>;
 		if constexpr(::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<value_type>)
 		{
-			functions.bread=[](BIO* bbio,char* buf,std::size_t size,std::size_t* readd) noexcept->int
+			functions.bread=[](BIO* bbio,char* buf,::std::size_t size,::std::size_t* readd) noexcept->int
 			{
 #ifdef __cpp_exceptions
 				try
@@ -121,7 +121,7 @@ struct bio_io_cookie_functions_t
 		}
 		if constexpr(::fast_io::operations::decay::defines::has_any_of_write_bytes_operations<value_type>)
 		{
-			functions.bwrite=[](BIO* bbio,char const* buf,std::size_t size,std::size_t* written) noexcept->int
+			functions.bwrite=[](BIO* bbio,char const* buf,::std::size_t size,::std::size_t* written) noexcept->int
 			{
 #ifdef __cpp_exceptions
 				try
@@ -143,7 +143,7 @@ struct bio_io_cookie_functions_t
 #endif
 			};
 		}
-		if constexpr(!std::is_reference_v<stm>&&!std::is_trivially_copyable_v<value_type>)
+		if constexpr(!::std::is_reference_v<stm>&&!::std::is_trivially_copyable_v<value_type>)
 		{
 			functions.destroy=[](BIO* bbio) noexcept -> int
 			{
@@ -195,7 +195,7 @@ inline BIO* construct_bio_by_t(void* ptr)
 }
 
 template<typename stm,typename... Args>
-requires (std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
+requires (::std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
 inline void* construct_cookie_by_args_trivial(Args&& ...args)
 {
 	stm s{::std::forward<Args>(args)...};
@@ -240,7 +240,7 @@ inline BIO* construct_bio_by_phase2(stream* smptr)
 template<typename stm,typename... Args>
 inline BIO* construct_bio_by_args(Args&&... args)
 {
-	if constexpr(std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
+	if constexpr(::std::is_trivially_copyable_v<stm>&&sizeof(stm)<=sizeof(void*))
 	{
 		return construct_bio_by_t<stm>(construct_cookie_by_args_trivial<stm>(::std::forward<Args>(args)...));
 	}
@@ -265,7 +265,7 @@ inline BIO* open_bio_with_fp(FILE* fp,::fast_io::open_mode om)
 
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_bio_io_observer
 {
 public:
@@ -312,7 +312,7 @@ public:
 #endif
 #endif
 };
-template<std::integral ch_type>
+template<::std::integral ch_type>
 class basic_bio_file:public basic_bio_io_observer<ch_type>
 {
 public:
@@ -322,7 +322,7 @@ public:
 	using output_char_type = char_type;
 	constexpr basic_bio_file() noexcept=default;
 	template<typename native_hd>
-	requires std::same_as<native_handle_type,std::remove_cvref_t<native_hd>>
+	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr basic_bio_file(native_hd bio) noexcept:basic_bio_io_observer<char_type>{bio}{}
 
 	explicit constexpr basic_bio_file(decltype(nullptr)) noexcept=delete;
@@ -331,7 +331,7 @@ public:
 	constexpr basic_bio_file& operator=(basic_bio_io_observer<ch_type>) noexcept=delete;
 
 	template<typename stm,typename ...Args>
-	requires (!std::is_reference_v<stm>&&std::constructible_from<stm,Args...>)
+	requires (!::std::is_reference_v<stm>&&::std::constructible_from<stm,Args...>)
 	basic_bio_file(::fast_io::io_cookie_type_t<stm>,Args&& ...args):
 		basic_bio_io_observer<char_type>{details::construct_bio_by_args<stm>(::std::forward<Args>(args)...)}
 	{
@@ -415,17 +415,17 @@ using u32bio_file =  basic_bio_file<char32_t>;
 
 namespace details
 {
-inline std::byte* bio_read_impl(BIO *bio,std::byte *first,std::byte *last)
+inline ::std::byte* bio_read_impl(BIO *bio,::std::byte *first,::std::byte *last)
 {
-	std::size_t read_bytes{};
+	::std::size_t read_bytes{};
 	if(::fast_io::noexcept_call(BIO_read_ex,bio,first,static_cast<::std::size_t>(last-first),__builtin_addressof(read_bytes))==-1)
 		throw_openssl_error();
 	return read_bytes+first;
 }
 
-inline std::byte const* bio_write_impl(BIO *bio,std::byte const *first,std::byte const *last)
+inline ::std::byte const* bio_write_impl(BIO *bio,::std::byte const *first,::std::byte const *last)
 {
-	std::size_t written_bytes{};
+	::std::size_t written_bytes{};
 	if(::fast_io::noexcept_call(BIO_write_ex,bio,first,static_cast<::std::size_t>(last-first),__builtin_addressof(written_bytes))==-1)
 		throw_openssl_error();
 	return written_bytes+first;
@@ -438,45 +438,45 @@ inline posix_file_status bio_status_impl(BIO* bio)
 #endif
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline ::std::byte* read_some_bytes_underflow_define(basic_bio_io_observer<ch_type> iob,::std::byte* first,::std::byte* last)
 {
 	return ::fast_io::details::bio_read_impl(iob.bio,first,last);
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline ::std::byte const* write_some_bytes_overflow_define(basic_bio_io_observer<ch_type> iob,::std::byte const* first,::std::byte const* last)
 {
 	return ::fast_io::details::bio_write_impl(iob.bio,first,last);
 }
 
 #if __cpp_lib_three_way_comparison >= 201907L
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr bool operator==(basic_bio_io_observer<ch_type> a,basic_bio_io_observer<ch_type> b) noexcept
 {
 	return a.bio==b.bio;
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr auto operator<=>(basic_bio_io_observer<ch_type> a,basic_bio_io_observer<ch_type> b) noexcept
 {
 	return a.bio<=>b.bio;
 }
 #endif
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr basic_bio_io_observer<ch_type> io_stream_ref_define(basic_bio_io_observer<ch_type> other) noexcept
 {
 	return other;
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr basic_bio_io_observer<char> io_bytes_stream_ref_define(basic_bio_io_observer<ch_type> other) noexcept
 {
 	return other;
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr posix_at_entry at(basic_bio_io_observer<ch_type> bio) noexcept
 {
 	return posix_at_entry{details::bio_to_fd(bio.bio)};
@@ -520,20 +520,20 @@ inline ::std::byte const* bio_pwrite_impl(BIO *bio,::std::byte const *first,::st
 
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_bio_io_observer<ch_type> iob,::fast_io::intfpos_t offset,seekdir s)
 {
 	return ::fast_io::details::bio_io_seekbytes_impl(iob.bio,offset,s);
 }
 
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline ::std::byte* pread_some_bytes_underflow_define(basic_bio_io_observer<ch_type> iob,::std::byte* first,::std::byte* last,::fast_io::intfpos_t offset)
 {
 	return ::fast_io::details::bio_pread_impl(iob.bio,first,last,offset);
 }
 
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_bio_io_observer<ch_type> iob,::std::byte const* first,::std::byte const* last,::fast_io::intfpos_t offset)
 {
 	return ::fast_io::details::bio_pwrite_impl(iob.bio,first,last,offset);
@@ -541,7 +541,7 @@ inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_bio_io_observe
 
 
 #if 0
-template<std::integral ch_type>
+template<::std::integral ch_type>
 inline constexpr posix_file_status status(basic_bio_io_observer<ch_type> bio)
 {
 	return details::bio_status_impl(bio.bio);
@@ -553,7 +553,7 @@ namespace details
 template<typename output>
 inline void print_define_openssl_error(output out)
 {
-	if constexpr(std::same_as<output,bio_io_observer>)
+	if constexpr(::std::same_as<output,bio_io_observer>)
 	{
 		::fast_io::noexcept_call(ERR_print_errors,out.bio);
 	}
@@ -567,7 +567,7 @@ inline void print_define_openssl_error(output out)
 }
 
 template<typename output>
-requires (std::is_trivially_copyable_v<output>&&std::same_as<typename output::char_type,char>)
+requires (::std::is_trivially_copyable_v<output>&&::std::same_as<typename output::char_type,char>)
 inline void print_define(io_reserve_type_t<char,openssl_error>,output out,openssl_error)
 {
 	::fast_io::details::print_define_openssl_error(out);

@@ -41,7 +41,7 @@ inline constexpr char32_t gb18030_ranges[13][4]{
 
 template<typename T>
 requires (sizeof(T)==1)
-inline constexpr std::size_t get_gb18030_invalid_code_units(T* p_dst) noexcept
+inline constexpr ::std::size_t get_gb18030_invalid_code_units(T* p_dst) noexcept
 {
 	*p_dst=static_cast<T>(0x84);
 	p_dst[1]=static_cast<T>(0x31);
@@ -63,18 +63,18 @@ inline constexpr char32_t lookup_gb18030_to_uni2_tb[23940]{
 
 template<typename T>
 requires (sizeof(T)==1)
-inline constexpr std::size_t lookup_uni_to_gb18030(char32_t cdpt, T* p_dst) noexcept
+inline constexpr ::std::size_t lookup_uni_to_gb18030(char32_t cdpt, T* p_dst) noexcept
 {
 	char32_t v{lookup_uni_to_gb18030_tb[cdpt]};
 	char16_t v2{static_cast<char16_t>(v)};
 	if(static_cast<char32_t>(v2)==v)
 	{
-		if constexpr((!std::is_volatile_v<T>)&&(std::endian::native==std::endian::little||std::endian::native==std::endian::big))
+		if constexpr((!::std::is_volatile_v<T>)&&(::std::endian::native==::std::endian::little||::std::endian::native==::std::endian::big))
 		{
 #if __cpp_lib_is_constant_evaluated>=201811L
-			if(!std::is_constant_evaluated())
+			if(!::std::is_constant_evaluated())
 			{
-				if constexpr(std::endian::native==std::endian::big)
+				if constexpr(::std::endian::native==::std::endian::big)
 					v2=byte_swap(v2);
 				::fast_io::details::my_memcpy(p_dst,&v2,2);
 			}
@@ -92,12 +92,12 @@ inline constexpr std::size_t lookup_uni_to_gb18030(char32_t cdpt, T* p_dst) noex
 		}
 		return 2;
 	}
-	if constexpr((!std::is_volatile_v<T>)&&(std::endian::native==std::endian::little||std::endian::native==std::endian::big))
+	if constexpr((!::std::is_volatile_v<T>)&&(::std::endian::native==::std::endian::little||::std::endian::native==::std::endian::big))
 	{
 #if __cpp_lib_is_constant_evaluated>=201811L
-		if(!std::is_constant_evaluated())
+		if(!::std::is_constant_evaluated())
 		{
-			if constexpr(std::endian::native==std::endian::big)
+			if constexpr(::std::endian::native==::std::endian::big)
 				v=byte_swap(v);
 			::fast_io::details::my_memcpy(p_dst,&v,4);
 		}
@@ -122,14 +122,14 @@ inline constexpr std::size_t lookup_uni_to_gb18030(char32_t cdpt, T* p_dst) noex
 
 template<typename T>
 requires (sizeof(T)==1)
-inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t cdpt, T* p_dst) noexcept
+inline constexpr ::std::size_t get_gb18030_code_units_unhappy(char32_t cdpt, T* p_dst) noexcept
 {
 	if(cdpt<0x110000)[[likely]]
 	{
 		if(cdpt<0x0452)
 			return lookup_uni_to_gb18030(cdpt-128,p_dst);
 		char32_t sum{128};
-		for(std::size_t i{};i!=13;++i)
+		for(::std::size_t i{};i!=13;++i)
 		{
 			auto const& e{gb18030_ranges[i]};
 			auto const e0{e[0]};
@@ -156,7 +156,7 @@ inline constexpr std::size_t get_gb18030_code_units_unhappy(char32_t cdpt, T* p_
 
 template<typename T>
 requires (sizeof(T)==1)
-inline constexpr std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T* p_dst, ::std::size_t pdstsz) noexcept
+inline constexpr ::std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T* p_dst, ::std::size_t pdstsz) noexcept
 {
 	char32_t v{lookup_uni_to_gb18030_tb[cdpt]};
 	char16_t v2{static_cast<char16_t>(v)};
@@ -166,12 +166,12 @@ inline constexpr std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T* p_dst,
 		{
 			return 0;
 		}
-		if constexpr((!std::is_volatile_v<T>)&&(std::endian::native==std::endian::little||std::endian::native==std::endian::big))
+		if constexpr((!::std::is_volatile_v<T>)&&(::std::endian::native==::std::endian::little||::std::endian::native==::std::endian::big))
 		{
 #if __cpp_lib_is_constant_evaluated>=201811L
-			if(!std::is_constant_evaluated())
+			if(!::std::is_constant_evaluated())
 			{
-				if constexpr(std::endian::native==std::endian::big)
+				if constexpr(::std::endian::native==::std::endian::big)
 					v2=byte_swap(v2);
 				::fast_io::details::my_memcpy(p_dst,&v2,2);
 			}
@@ -193,12 +193,12 @@ inline constexpr std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T* p_dst,
 	{
 		return 0;
 	}
-	if constexpr((!std::is_volatile_v<T>)&&(std::endian::native==std::endian::little||std::endian::native==std::endian::big))
+	if constexpr((!::std::is_volatile_v<T>)&&(::std::endian::native==::std::endian::little||::std::endian::native==::std::endian::big))
 	{
 #if __cpp_lib_is_constant_evaluated>=201811L
-		if(!std::is_constant_evaluated())
+		if(!::std::is_constant_evaluated())
 		{
-			if constexpr(std::endian::native==std::endian::big)
+			if constexpr(::std::endian::native==::std::endian::big)
 				v=byte_swap(v);
 			::fast_io::details::my_memcpy(p_dst,&v,4);
 		}
@@ -228,7 +228,7 @@ inline constexpr ::std::size_t get_gb18030_code_units_unhappy_pdstsz(char32_t u3
 		if(u32<0x0452)
 			return lookup_uni_to_gb18030(u32-128,p_dst);
 		char32_t sum{128};
-		for(std::size_t i{};i!=13;++i)
+		for(::std::size_t i{};i!=13;++i)
 		{
 			auto const& e{gb18030_ranges[i]};
 			auto const e0{e[0]};
@@ -261,7 +261,7 @@ inline constexpr ::std::size_t get_gb18030_code_units_unhappy_pdstsz(char32_t u3
 	return get_gb18030_invalid_code_units(p_dst);
 }
 
-inline constexpr std::size_t get_gb18030_code_units(char32_t cdpt, char* p_dst) noexcept
+inline constexpr ::std::size_t get_gb18030_code_units(char32_t cdpt, char* p_dst) noexcept
 {
 	if(cdpt<0x80)[[likely]]
 	{
@@ -281,7 +281,7 @@ inline constexpr char32_t lookup_gb18030_to_uni4_func(char32_t index) noexcept
 inline constexpr char32_t utf32cp_by_gb18030_index(char32_t index) noexcept
 {
 	char32_t sum{linear_18030_base+820};
-	for(std::size_t i{};i!=13;++i)
+	for(::std::size_t i{};i!=13;++i)
 	{
 		auto const& e{gb18030_ranges[i]};
 		auto const e0{e[0]};
@@ -332,7 +332,7 @@ inline constexpr gb18030_advance_unchecked_result<T> gb18030_advance_unchecked(T
 
 template<typename T>
 requires (sizeof(T)==1)
-inline constexpr gb18030_advance_unchecked_result<T> gb18030_advance(T const* src,std::size_t sz) noexcept
+inline constexpr gb18030_advance_unchecked_result<T> gb18030_advance(T const* src,::std::size_t sz) noexcept
 {
 	char8_t const src0{static_cast<char8_t>(*src)};
 	if(src0<0x80)

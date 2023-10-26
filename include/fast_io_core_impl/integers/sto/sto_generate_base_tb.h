@@ -118,10 +118,10 @@ inline constexpr bool char_digit_to_literal_impl(char8_t& ch) noexcept
 }
 
 template<bool isebcdic,bool partial,char8_t base>
-inline constexpr std::size_t calculate_max_available_sto_tb_size() noexcept
+inline constexpr ::std::size_t calculate_max_available_sto_tb_size() noexcept
 {
-	constexpr char8_t mx{std::numeric_limits<char8_t>::max()};
-	std::size_t n{static_cast<std::size_t>(mx)+1};
+	constexpr char8_t mx{::std::numeric_limits<char8_t>::max()};
+	::std::size_t n{static_cast<::std::size_t>(mx)+1};
 	if constexpr(partial)
 	{
 		for(;n;--n)
@@ -147,7 +147,7 @@ inline constexpr std::size_t calculate_max_available_sto_tb_size() noexcept
 template<bool isebcdic,bool partial,char8_t base>
 inline constexpr auto generate_sto_base_tb() noexcept
 {
-	constexpr char8_t mx{std::numeric_limits<char8_t>::max()};
+	constexpr char8_t mx{::std::numeric_limits<char8_t>::max()};
 
 	::fast_io::freestanding::array<char8_t,calculate_max_available_sto_tb_size<isebcdic,partial,base>()> buffer;
 	for(char16_t i{};i!=buffer.size();++i)

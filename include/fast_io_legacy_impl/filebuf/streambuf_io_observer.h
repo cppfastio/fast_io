@@ -7,7 +7,7 @@ namespace fast_io
 
 template<typename T>
 #if !defined(_MSC_VER) || defined(__clang__)
-requires std::derived_from<T,std::basic_streambuf<typename T::char_type,typename T::traits_type>>
+requires ::std::derived_from<T,::std::basic_streambuf<typename T::char_type,typename T::traits_type>>
 #endif
 class basic_general_streambuf_io_observer
 {
@@ -83,11 +83,11 @@ inline constexpr basic_general_streambuf_io_observer<T> io_value_handle(basic_ge
 	return other;
 }
 
-template<std::integral CharT,typename Traits = std::char_traits<CharT>>
-using basic_streambuf_io_observer = basic_general_streambuf_io_observer<std::basic_streambuf<CharT,Traits>>;
+template<::std::integral CharT,typename Traits = ::std::char_traits<CharT>>
+using basic_streambuf_io_observer = basic_general_streambuf_io_observer<::std::basic_streambuf<CharT,Traits>>;
 
-template<std::integral CharT,typename Traits = std::char_traits<CharT>>
-using basic_filebuf_io_observer = basic_general_streambuf_io_observer<std::basic_filebuf<CharT,Traits>>;
+template<::std::integral CharT,typename Traits = ::std::char_traits<CharT>>
+using basic_filebuf_io_observer = basic_general_streambuf_io_observer<::std::basic_filebuf<CharT,Traits>>;
 
 using streambuf_io_observer = basic_streambuf_io_observer<char>;
 using filebuf_io_observer = basic_filebuf_io_observer<char>;
@@ -97,13 +97,13 @@ using wfilebuf_io_observer = basic_filebuf_io_observer<wchar_t>;
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 
 #if 0
-template<std::integral ch_type,typename Traits>
+template<::std::integral ch_type,typename Traits>
 requires zero_copy_input_stream<basic_c_io_observer<ch_type>>
 inline constexpr decltype(auto) zero_copy_in_handle(basic_filebuf_io_observer<ch_type,Traits> h)
 {
 	return zero_copy_in_handle(static_cast<basic_c_io_observer<ch_type>>(h));
 }
-template<std::integral ch_type,typename Traits>
+template<::std::integral ch_type,typename Traits>
 requires zero_copy_output_stream<basic_c_io_observer<ch_type>>
 inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<ch_type,Traits> h)
 {
@@ -111,7 +111,7 @@ inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<c
 }
 #endif
 
-template<std::integral ch_type,typename traits_type>
+template<::std::integral ch_type,typename traits_type>
 requires requires(basic_c_io_observer<ch_type> piob)
 {
 	status(piob);
@@ -121,7 +121,7 @@ inline constexpr auto status(basic_streambuf_io_observer<ch_type,traits_type> ci
 	return status(static_cast<basic_c_io_observer<ch_type>>(ciob));
 }
 
-template<std::integral ch_type,typename traits_type>
+template<::std::integral ch_type,typename traits_type>
 requires requires(basic_c_io_observer<ch_type> piob)
 {
 	status(piob);
@@ -131,7 +131,7 @@ inline constexpr auto status(basic_filebuf_io_observer<ch_type,traits_type> ciob
 	return status(static_cast<basic_c_io_observer<ch_type>>(ciob));
 }
 
-template<std::integral char_type,typename traits_type>
+template<::std::integral char_type,typename traits_type>
 inline constexpr posix_at_entry at(basic_filebuf_io_observer<char_type,traits_type> other) noexcept
 {
 	return posix_at_entry{details::fp_to_fd(details::streambuf_hack::fp_hack(other.fb))};

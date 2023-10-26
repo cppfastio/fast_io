@@ -7,8 +7,8 @@ template<::std::integral char_type>
 requires (sizeof(char_type)==1)
 inline constexpr reserve_scatters_size_result print_reserve_scatters_size(::fast_io::io_reserve_type_t<char_type,::std::source_location>) noexcept
 {
-	constexpr std::size_t ulint32_rsv_size{print_reserve_size(::fast_io::io_reserve_type<char_type,::std::uint_least32_t>)};
-	constexpr std::size_t total_uint_least32_t_rsv_size{ulint32_rsv_size*2+3};
+	constexpr ::std::size_t ulint32_rsv_size{print_reserve_size(::fast_io::io_reserve_type<char_type,::std::uint_least32_t>)};
+	constexpr ::std::size_t total_uint_least32_t_rsv_size{ulint32_rsv_size*2+3};
 	return {3,total_uint_least32_t_rsv_size};
 }
 

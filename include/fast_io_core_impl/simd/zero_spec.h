@@ -16,7 +16,7 @@ struct simd_vector<T,0>
 	{
 		return nullptr;
 	}
-	inline static constexpr std::size_t size() noexcept
+	inline static constexpr ::std::size_t size() noexcept
 	{
 		return 0;
 	}
@@ -37,9 +37,9 @@ struct simd_vector<T,0>
 	{
 		return true;
 	}
-	inline static constexpr std::size_t max_size() noexcept
+	inline static constexpr ::std::size_t max_size() noexcept
 	{
-		constexpr std::size_t v{static_cast<std::size_t>(-1)/sizeof(value_type)};
+		constexpr ::std::size_t v{static_cast<::std::size_t>(-1)/sizeof(value_type)};
 		return v;
 	}
 };

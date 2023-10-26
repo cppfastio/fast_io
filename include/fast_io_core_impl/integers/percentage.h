@@ -328,7 +328,7 @@ inline constexpr chartype* prrsv_percentage_main_common_impl(chartype *iter,T nu
 					auto quotientdiv100{remainderlowlow/twodigits};
 					quotientmod100=static_cast<unsigned>(remainderlowlow%twodigits);
 
-					constexpr std::size_t tdigitsm2{::fast_io::details::cal_max_int_size<T,base>()-toprint};
+					constexpr ::std::size_t tdigitsm2{::fast_io::details::cal_max_int_size<T,base>()-toprint};
 					::fast_io::details::print_reserve_integral_main_impl<base,uppercase>(iter+=tdigitsm2,quotientdiv100,tdigitsm2);
 				}
 			}

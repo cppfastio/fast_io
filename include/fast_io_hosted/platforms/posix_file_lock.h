@@ -41,14 +41,14 @@ inline constexpr short flock_type_to_native(file_lock_mode t) noexcept
 	}
 }
 
-template<std::integral int_type>
+template<::std::integral int_type>
 inline void posix_file_lock_lock_impl(int fd,basic_flock_request<int_type> const& __restrict t)
 {
 	using flock_off_type = decltype(flock::l_start);
 	if constexpr(sizeof(flock_off_type)<sizeof(int_type))
 	{
-		constexpr int_type flock_off_min{std::numeric_limits<flock_off_type>::min()};
-		constexpr int_type flock_off_max{std::numeric_limits<flock_off_type>::max()};
+		constexpr int_type flock_off_min{::std::numeric_limits<flock_off_type>::min()};
+		constexpr int_type flock_off_max{::std::numeric_limits<flock_off_type>::max()};
 		if(t.start<flock_off_min||flock_off_max<t.start||
 			t.len<flock_off_min||flock_off_max<t.len)
 		{
@@ -74,14 +74,14 @@ inline bool posix_file_lock_try_lock_common_impl(int fd,struct flock const& lock
 #endif
 }
 
-template<std::integral int_type>
+template<::std::integral int_type>
 inline bool posix_file_lock_try_lock_impl(int fd,basic_flock_request<int_type> const& __restrict t) noexcept
 {
 	using flock_off_type = decltype(flock::l_start);
 	if constexpr(sizeof(flock_off_type)<sizeof(int_type))
 	{
-		constexpr int_type flock_off_min{std::numeric_limits<flock_off_type>::min()};
-		constexpr int_type flock_off_max{std::numeric_limits<flock_off_type>::max()};
+		constexpr int_type flock_off_min{::std::numeric_limits<flock_off_type>::min()};
+		constexpr int_type flock_off_max{::std::numeric_limits<flock_off_type>::max()};
 		if(t.start<flock_off_min||flock_off_max<t.start||
 			t.len<flock_off_min||flock_off_max<t.len)
 		{
@@ -98,14 +98,14 @@ inline bool posix_file_lock_try_lock_impl(int fd,basic_flock_request<int_type> c
 }
 
 
-template<std::integral int_type>
+template<::std::integral int_type>
 inline void posix_file_lock_unlock_impl(int fd,basic_flock_request<int_type> const& __restrict t) noexcept
 {
 	using flock_off_type = decltype(flock::l_start);
 	if constexpr(sizeof(flock_off_type)<sizeof(int_type))
 	{
-		constexpr int_type flock_off_min{std::numeric_limits<flock_off_type>::min()};
-		constexpr int_type flock_off_max{std::numeric_limits<flock_off_type>::max()};
+		constexpr int_type flock_off_min{::std::numeric_limits<flock_off_type>::min()};
+		constexpr int_type flock_off_max{::std::numeric_limits<flock_off_type>::max()};
 		if(t.start<flock_off_min||flock_off_max<t.start||
 			t.len<flock_off_min||flock_off_max<t.len)
 		{
@@ -130,17 +130,17 @@ inline void posix_file_lock_unlock_impl(int fd,basic_flock_request<int_type> con
 struct posix_file_lock
 {
 	int fd{-1};
-	template<std::integral int_type>
+	template<::std::integral int_type>
 	inline void lock(basic_flock_request<int_type> const& __restrict t)
 	{
 		::fast_io::details::posix_file_lock_lock_impl(this->fd,t);
 	}
-	template<std::integral int_type>
+	template<::std::integral int_type>
 	inline void unlock(basic_flock_request<int_type> const& __restrict t) noexcept
 	{
 		::fast_io::details::posix_file_lock_unlock_impl(this->fd,t);
 	}
-	template<std::integral int_type>
+	template<::std::integral int_type>
 	inline void try_lock(basic_flock_request<int_type> const& __restrict t)
 	{
 		::fast_io::details::posix_file_lock_lock_impl(this->fd,t);

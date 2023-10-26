@@ -33,10 +33,10 @@ requires requires(Iter iter)
 	typename Iter::_Elt_pointer;
 	typename Iter::_Map_pointer;
 	typename Iter::_Self;
-	{iter._M_cur}->std::same_as<typename Iter::_Elt_pointer&>;
-	{iter._M_first}->std::same_as<typename Iter::_Elt_pointer&>;
-	{iter._M_last}->std::same_as<typename Iter::_Elt_pointer&>;
-	{iter._M_node}->std::same_as<typename Iter::_Map_pointer&>;
+	{iter._M_cur}->::std::same_as<typename Iter::_Elt_pointer&>;
+	{iter._M_first}->::std::same_as<typename Iter::_Elt_pointer&>;
+	{iter._M_last}->::std::same_as<typename Iter::_Elt_pointer&>;
+	{iter._M_node}->::std::same_as<typename Iter::_Map_pointer&>;
 }
 constexpr auto multiblock_iterator_view_ref_define(Iter iter) noexcept ->
 	::fast_io::multiblock_iterator_view<::fast_io::details::glibcxxdequebufsize<typename Iter::value_type>,
