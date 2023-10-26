@@ -26,7 +26,7 @@ namespace details
 inline ::std::size_t print_reserve_define_win32_error_9xa_impl(char* ptr, ::std::uint_least32_t ec) noexcept
 {
 	constexpr ::std::size_t char8_buffer_size{65536};
-	return win32::FormatMessageA(
+	return ::fast_io::win32::FormatMessageA(
 	0x00000200 | 0x00001000,
 	nullptr,
 	ec,
@@ -39,7 +39,7 @@ inline ::std::size_t print_reserve_define_win32_error_9xa_impl(char* ptr, ::std:
 inline ::std::size_t print_reserve_define_win32_error_ntw_impl(char16_t* ptr, ::std::uint_least32_t ec) noexcept
 {
 	constexpr ::std::size_t char16_buffer_size{32768};
-	return win32::FormatMessageW(
+	return ::fast_io::win32::FormatMessageW(
 	0x00000200 | 0x00001000,
 	nullptr,
 	ec,

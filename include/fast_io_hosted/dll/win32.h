@@ -137,7 +137,7 @@ public:
 	win32_family_dll_file& operator=(win32_family_dll_file&& __restrict other) noexcept
 	{
 		if(this->hmodule)[[likely]]
-			win32::FreeLibrary(this->hmodule);
+			::fast_io::win32::FreeLibrary(this->hmodule);
 		this->hmodule=other.hmodule;
 		other.hmodule=nullptr;
 		return *this;
@@ -146,7 +146,7 @@ public:
 	{
 		if(this->hmodule)[[likely]]
 		{
-			auto ret{win32::FreeLibrary(this->hmodule)};
+			auto ret{::fast_io::win32::FreeLibrary(this->hmodule)};
 			this->hmodule=nullptr;
 			if(!ret)
 				throw_win32_error();
@@ -155,7 +155,7 @@ public:
 	~win32_family_dll_file()
 	{
 		if(this->hmodule)[[likely]]
-			win32::FreeLibrary(this->hmodule);
+			::fast_io::win32::FreeLibrary(this->hmodule);
 	}
 };
 
