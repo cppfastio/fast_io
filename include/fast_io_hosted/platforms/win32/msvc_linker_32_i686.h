@@ -162,3 +162,7 @@
 #pragma comment(linker,"/alternatename:__imp_?NtCreateUserProcess@nt@win32@fast_io@@YGIPAX0IIPAUobject_attributes@123@1IIPAUrtl_user_process_parameters@123@PAUps_create_info@123@PAUps_attribute_list@123@@Z=__imp__NtCreateUserProcess@44")
 #pragma comment(linker,"/alternatename:__imp_?ZwCreateUserProcess@nt@win32@fast_io@@YGIPAX0IIPAUobject_attributes@123@1IIPAUrtl_user_process_parameters@123@PAUps_create_info@123@PAUps_attribute_list@123@@Z=__imp__ZwCreateUserProcess@44")
 #pragma comment(linker,"/alternatename:__imp_?RtlCreateUserProcess@nt@win32@fast_io@@YGIPAUunicode_string@123@IPAUrtl_user_process_parameters@123@PAUsecurity_descriptor@123@2PAXE33PAUrtl_user_process_information@123@@Z=__imp__RtlCreateUserProcess@40")
+#pragma comment(linker,"/alternatename:__imp_?NtMapViewOfSection@nt@win32@fast_io@@YGIPAX0PAPAXIIPBTlarge_integer@123@PAIW4section_inherit@123@II@Z=__imp__NtMapViewOfSection@40")
+#pragma comment(linker,"/alternatename:__imp_?ZwMapViewOfSection@nt@win32@fast_io@@YGIPAX0PAPAXIIPBTlarge_integer@123@PAIW4section_inherit@123@II@Z=__imp__ZwMapViewOfSection@40")
+#pragma comment(linker,"/alternatename:__imp_?NtUnmapViewOfSection@nt@win32@fast_io@@YGIPAX0@Z=__imp__NtUnmapViewOfSection@8")
+#pragma comment(linker,"/alternatename:__imp_?ZwUnmapViewOfSection@nt@win32@fast_io@@YGIPAX0@Z=__imp__ZwUnmapViewOfSection@8")

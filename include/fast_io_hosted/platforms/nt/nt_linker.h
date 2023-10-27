@@ -1688,5 +1688,126 @@ __asm__("RtlCreateUserProcess")
 #endif
 ;
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+NtMapViewOfSection(void*, void*, void**, ::std::uint_least32_t, ::std::size_t, large_integer const*, ::std::size_t*, section_inherit, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("NtMapViewOfSection@40")
+#else
+__asm__("_NtMapViewOfSection@40")
+#endif
+#else
+__asm__("NtMapViewOfSection")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwMapViewOfSection(void*, void*, void**, ::std::uint_least32_t, ::std::size_t, large_integer const*, ::std::size_t*, section_inherit, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwMapViewOfSection@40")
+#else
+__asm__("_ZwMapViewOfSection@40")
+#endif
+#else
+__asm__("ZwMapViewOfSection")
+#endif
+#endif
+;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 10)
+inline ::std::uint_least32_t nt_map_view_of_section(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwMapViewOfSection(args...);
+	else
+		return NtMapViewOfSection(args...);
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+NtUnmapViewOfSection(void*, void*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("NtUnmapViewOfSection@8")
+#else
+__asm__("_NtUnmapViewOfSection@8")
+#endif
+#else
+__asm__("NtUnmapViewOfSection")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwUnmapViewOfSection(void*, void*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwUnmapViewOfSection@8")
+#else
+__asm__("_ZwUnmapViewOfSection@8")
+#endif
+#else
+__asm__("ZwUnmapViewOfSection")
+#endif
+#endif
+;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 2)
+inline ::std::uint_least32_t nt_unmap_view_of_section(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwUnmapViewOfSection(args...);
+	else
+		return NtUnmapViewOfSection(args...);
+}
 
 }

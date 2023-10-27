@@ -60,7 +60,7 @@ inline constexpr T addc(T a,T b,bool carryin,bool& carryout) noexcept
 		unsigned blow = static_cast<unsigned>(b);
 		unsigned bhigh = static_cast<unsigned>(b>>32u);
 		unsigned reslow,reshigh;
-		bool carrytemp{_addcarry_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow))};
+		bool carrytemp{static_cast<bool>(_addcarry_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow)))};
 		carryout=_addcarry_u32(carrytemp,ahigh,bhigh,__builtin_addressof(reshigh));
 		return (static_cast<long long unsigned>(reshigh)<<32u)|reslow;
 #endif
@@ -129,7 +129,7 @@ inline constexpr T subc(T a,T b,bool carryin,bool& carryout) noexcept
 		unsigned blow = static_cast<unsigned>(b);
 		unsigned bhigh = static_cast<unsigned>(b>>32u);
 		unsigned reslow,reshigh;
-		bool carrytemp{_subborrow_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow))};
+		bool carrytemp{static_cast<bool>(_subborrow_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow)))};
 		carryout=_subborrow_u32(carrytemp,alow,bhigh,__builtin_addressof(reshigh));
 		return (static_cast<long long unsigned>(reshigh)<<32u)|reslow;
 #endif

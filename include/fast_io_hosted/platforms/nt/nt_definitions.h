@@ -603,4 +603,21 @@ ObjectAllTypesInformation = 3,
 ObjectHandleInformation = 4
 };
 
+union large_integer {
+	struct {
+		::std::uint_least32_t LowPart;
+		::std::int_least32_t HighPart;
+	} DUMMYSTRUCTNAME;
+	struct {
+		::std::uint_least32_t LowPart;
+		::std::int_least32_t HighPart;
+	} u;
+	::std::int_least64_t QuadPart;
+};
+
+enum class section_inherit {
+	ViewShare = 1,
+	ViewUnmap = 2
+};
+
 }
