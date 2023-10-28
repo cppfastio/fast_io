@@ -119,6 +119,18 @@ public:
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_nt_file_loader(::fast_io::io_kernel_t, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) {
+		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<zw>(::fast_io::io_kernel, t, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_nt_file_loader(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) {
+		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<zw>(::fast_io::io_kernel, ent, t, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
 	basic_nt_file_loader(basic_nt_file_loader const&) = delete;
 	basic_nt_file_loader& operator=(basic_nt_file_loader const&) = delete;
 	constexpr basic_nt_file_loader(basic_nt_file_loader&& __restrict other) noexcept : address_begin(other.address_begin), address_end(other.address_end) {
@@ -217,7 +229,7 @@ public:
 };
 
 template <bool zw>
-inline constexpr basic_io_scatter_t<char> print_alias_define(io_alias_t, basic_nt_file_loader<zw> const& load) noexcept {
+inline constexpr basic_io_scatter_t<char> print_alias_define(::fast_io::io_alias_t, basic_nt_file_loader<zw> const& load) noexcept {
 	return {load.data(), load.size()};
 }
 
