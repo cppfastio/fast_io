@@ -98,10 +98,10 @@ struct load_file_allocation_guard
 #if __has_builtin(__builtin_malloc)
 __builtin_malloc
 #else
-malloc
+::std::malloc
 #endif
 #else
-malloc
+::std::malloc
 #endif
 (file_size))
 	{
@@ -116,10 +116,10 @@ malloc
 #if __has_builtin(__builtin_free)
 		__builtin_free(address);
 #else
-		free(address);
+		::std::free(address);
 #endif
 #else
-		free(address);
+		::std::free(address);
 #endif
 	}
 };
@@ -177,10 +177,10 @@ inline char* posix_load_address_extra(int fd,::std::size_t file_size,::std::size
 #if __has_builtin(__builtin_memset)
 __builtin_memset
 #else
-memset
+	::std::memset
 #endif
 #else
-memset
+	::std::memset
 #endif
 	(addr_ed,0,exsz);
 	guard.address=nullptr;
@@ -197,10 +197,10 @@ inline void posix_unload_address(void* address,[[maybe_unused]] ::std::size_t fi
 #if __has_builtin(__builtin_free)
 		__builtin_free(address);
 #else
-		free(address);
+		::std::free(address);
 #endif
 #else
-		free(address);
+		::std::free(address);
 #endif
 	}
 	else

@@ -3,6 +3,9 @@
 #include"posix_file_loader.h"
 #endif
 #if defined(_WIN32) || defined(__CYGWIN__)
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0501
+#include"nt_file_loader.h"
+#endif
 #include"win32_file_loader.h"
 #endif
 
