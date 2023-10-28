@@ -71,10 +71,10 @@ inline auto nt_load_file_impl(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent
 
 template <bool zw>
 inline void nt_unload_address(void* address) noexcept {
-	void* current_process_handle{reinterpret_cast<void*>(-1)};
-	auto status{::fast_io::win32::nt::nt_unmap_view_of_section<zw>(current_process_handle, address)};
-	if (status)
-		throw_nt_error(status);
+	if (address) {
+		void* current_process_handle{reinterpret_cast<void*>(-1)};
+		::fast_io::win32::nt::nt_unmap_view_of_section<zw>(current_process_handle, address);
+	}
 }
 
 }  // namespace win32::nt::details
