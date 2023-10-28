@@ -18,7 +18,7 @@ inline void* nt_create_section_common_impl(void* hfilemappingobj) {
 		.Attributes = 0x40L /*OBJ_CASE_INSENSITIVE*/
 	};
 	void* h_section{};
-	auto status{::fast_io::win32::nt::nt_create_section<zw>(__builtin_addressof(h_section), 0x000F0000 | 0x0001 | 0x0004, __builtin_addressof(objAttr), nullptr, 0x08 /*PAGE_WRITECOPY*/, 0x08000000, hfilemappingobj)};
+	auto status{::fast_io::win32::nt::nt_create_section<zw>(__builtin_addressof(h_section), 0x000F0000 | 0x0001 | 0x0004, __builtin_addressof(objAttr), nullptr, 0x08, 0x08000000, hfilemappingobj)};
 	if (status)
 		throw_nt_error(status);
 	return h_section;
@@ -31,7 +31,7 @@ inline nt_file_loader_return_value_t nt_create_map_view_common_impl(void* handle
 	::std::size_t view_size{};
 	void* current_process_handle{reinterpret_cast<void*>(-1)};
 
-	auto status{::fast_io::win32::nt::nt_map_view_of_section<zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), ::fast_io::win32::nt::section_inherit::ViewShare, 0, 0x08 /*PAGE_WRITECOPY*/)};
+	auto status{::fast_io::win32::nt::nt_map_view_of_section<zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), ::fast_io::win32::nt::section_inherit::ViewShare, 0, 0x08)};
 	if (status)
 		throw_nt_error(status);
 
@@ -44,19 +44,31 @@ inline nt_file_loader_return_value_t nt_create_map_view_common_impl(void* handle
 
 template <bool zw>
 inline auto nt_load_file_impl(nt_fs_dirent fsdirent, ::fast_io::open_mode om, ::fast_io::perms pm) {
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> nf(fsdirent, om, pm);
+	::fast_io::basic_nt_family_file<zw ? ::fast_io::nt_family::zw : ::fast_io::nt_family::nt, char> nf(fsdirent, om, pm);
 	return nt_create_map_view_common_impl<zw>(nf.handle);
 }
 
 template <bool zw, ::fast_io::constructible_to_os_c_str T>
 inline auto nt_load_file_impl(T const& str, ::fast_io::open_mode om, ::fast_io::perms pm) {
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> nf(str, om, pm);
+	::fast_io::basic_nt_family_file<zw ? ::fast_io::nt_family::zw : ::fast_io::nt_family::nt, char> nf(str, om, pm);
 	return nt_create_map_view_common_impl<zw>(nf.handle);
 }
 
 template <bool zw, ::fast_io::constructible_to_os_c_str T>
 inline auto nt_load_file_impl(::fast_io::nt_at_entry ent, T const& str, ::fast_io::open_mode om, ::fast_io::perms pm) {
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> nf(ent, str, om, pm);
+	::fast_io::basic_nt_family_file<zw ? ::fast_io::nt_family::zw : ::fast_io::nt_family::nt, char> nf(ent, str, om, pm);
+	return nt_create_map_view_common_impl<zw>(nf.handle);
+}
+
+template <bool zw, ::fast_io::constructible_to_os_c_str T>
+inline auto nt_load_file_impl(::fast_io::io_kernel_t, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) {
+	::fast_io::basic_nt_family_file<zw ? ::fast_io::nt_family::zw : ::fast_io::nt_family::nt, char> nf(::fast_io::io_kernel, t, om, pm);
+	return nt_create_map_view_common_impl<zw>(nf.handle);
+}
+
+template <bool zw, ::fast_io::constructible_to_os_c_str T>
+inline auto nt_load_file_impl(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) {
+	::fast_io::basic_nt_family_file<zw ? ::fast_io::nt_family::zw : ::fast_io::nt_family::nt, char> nf(::fast_io::io_kernel, ent, t, om, pm);
 	return nt_create_map_view_common_impl<zw>(nf.handle);
 }
 
