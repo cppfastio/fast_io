@@ -18,7 +18,7 @@ inline void* nt_create_section_common_impl(void* hfilemappingobj) {
 		.Attributes = 0x40L /*OBJ_CASE_INSENSITIVE*/
 	};
 	void* h_section{};
-	auto status{::fast_io::win32::nt::nt_create_section<zw>(__builtin_addressof(h_section), 0x1F03FF /*SECTION_ALL_ACCESS*/, __builtin_addressof(objAttr), nullptr, 0x08 /*PAGE_WRITECOPY*/, 0x08000000 /*SEC_COMMIT*/, hfilemappingobj)};
+	auto status{::fast_io::win32::nt::nt_create_section<zw>(__builtin_addressof(h_section), 0x000F0000 | 0x0001 | 0x0004, __builtin_addressof(objAttr), nullptr, 0x08 /*PAGE_WRITECOPY*/, 0, hfilemappingobj)};
 	if (status)
 		throw_nt_error(status);
 	return h_section;
@@ -31,7 +31,7 @@ inline nt_file_loader_return_value_t nt_create_map_view_common_impl(void* handle
 	::std::size_t view_size{};
 	void* current_process_handle{reinterpret_cast<void*>(-1)};
 
-	auto status{::fast_io::win32::nt::nt_map_view_of_section<zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), ::fast_io::win32::nt::section_inherit::ViewUnmap, 0, 0x08 /*PAGE_WRITECOPY*/)};
+	auto status{::fast_io::win32::nt::nt_map_view_of_section<zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), ::fast_io::win32::nt::section_inherit::ViewShare, 0, 0x08 /*PAGE_WRITECOPY*/)};
 	if (status)
 		throw_nt_error(status);
 
