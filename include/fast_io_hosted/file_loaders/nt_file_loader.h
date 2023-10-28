@@ -27,15 +27,12 @@ inline void* nt_create_section_common_impl(void* hfilemappingobj) {
 template <bool zw>
 inline nt_file_loader_return_value_t nt_create_map_view_common_impl(void* handle) {
 	void* h_section{nt_create_section_common_impl<zw>(handle)};
+	::fast_io::basic_nt_family_file<zw ? ::fast_io::nt_family::zw : ::fast_io::nt_family::nt, char> map_hd{h_section};
 	void* p_map_address{};
 	::std::size_t view_size{};
 	void* current_process_handle{reinterpret_cast<void*>(-1)};
 
 	auto status{::fast_io::win32::nt::nt_map_view_of_section<zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), ::fast_io::win32::nt::section_inherit::ViewShare, 0, 0x08)};
-	if (status)
-		throw_nt_error(status);
-
-	status = ::fast_io::win32::nt::nt_close<zw>(h_section);
 	if (status)
 		throw_nt_error(status);
 
