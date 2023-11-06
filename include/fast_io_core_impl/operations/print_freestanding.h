@@ -1174,7 +1174,11 @@ inline constexpr decltype(auto) print_freestanding_decay_cold(outputstmtype opts
 	return ::fast_io::operations::decay::print_freestanding_decay<line>(optstm,args...);
 }
 
-namespace defines
+
+
+}
+
+namespace decay::defines
 {
 
 template<typename char_type,typename ...Args>
@@ -1185,17 +1189,24 @@ concept print_freestanding_params_decay_okay =
 	::fast_io::scatter_printable<char_type,Args>||
 	::fast_io::reserve_scatters_printable<char_type,Args>)&&...);
 
-}
 
-}
-
-namespace defines
-{
 template<typename output,typename ...Args>
 concept print_freestanding_okay = ::fast_io::operations::defines::has_output_or_io_stream_ref_define<output>&&
 	::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-	typename decltype(::fast_io::operations::output_stream_ref(*static_cast<output*>(nullptr)))::output_char_type,
+	typename output::output_char_type,
 	Args...>;
+
+}
+
+
+namespace defines
+{
+
+template<typename output,typename ...Args>
+concept print_freestanding_okay = ::fast_io::operations::decay::defines::print_freestanding_okay<
+	decltype(::fast_io::operations::output_stream_ref(::std::declval<output>())),
+	decltype(::fast_io::io_print_forward<typename decltype(::fast_io::operations::output_stream_ref(::std::declval<output>()))::output_char_type>(::fast_io::io_print_alias(::std::declval<Args>())))...>;
+
 }
 
 template<bool line,typename output,typename ...Args>
@@ -1209,6 +1220,7 @@ inline constexpr void print_freestanding(output&& outstm,Args&& ...args)
 	::fast_io::operations::decay::print_freestanding_decay<line>(::fast_io::operations::output_stream_ref(outstm),
 	io_print_forward<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type>(io_print_alias(args))...);
 }
+
 
 }
 

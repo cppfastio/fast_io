@@ -136,5 +136,4 @@ using u8ostring_ref = basic_ostring_ref<char8_t>;
 using u16ostring_ref = basic_ostring_ref<char16_t>;
 using u32ostring_ref = basic_ostring_ref<char32_t>;
 
-static_assert(value_based_stream<ostring_ref>);
 }

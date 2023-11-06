@@ -10,7 +10,7 @@
 #error "Anyone knows how to hack brutal ::std::basic_string internal on this platform?"
 #endif
 
-#if 0
+#if 1
 #include"ostring_ref.h"
 #include"concat.h"
 #endif
