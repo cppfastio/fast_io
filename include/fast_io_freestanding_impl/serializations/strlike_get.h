@@ -84,12 +84,12 @@ inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_s
 		{
 			obuffer_set_curr(ref,obuffer_begin(ref));
 		}
-		write(ref,it,it_space);
+		::fast_io::operations::decay::write_all_decay(ref,it,it_space);
 		skip_space_done=true;
 	}
 	else
 	{
-		write(ref,it,it_space);
+		::fast_io::operations::decay::write_all_decay(ref,it,it_space);
 	}
 	if(it_space==last)
 		return {it_space,::fast_io::parse_code::partial};
@@ -107,7 +107,7 @@ inline constexpr ::fast_io::parse_result<char_type const*> scan_context_define_s
 		obuffer_set_curr(ref,obuffer_begin(ref));
 		skip_space_done=true;
 	}
-	write(ref,first,last);
+	::fast_io::operations::decay::write_all_decay(ref,first,last);
 	return {last,::fast_io::parse_code::partial};
 }
 
