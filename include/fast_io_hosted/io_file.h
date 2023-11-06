@@ -399,11 +399,6 @@ inline constexpr auto io_stream_transcode_deco_filter_define(
 {
 	using dectrefnocvref=::std::remove_cvref_t<dectref>;
 
-
-	using input_char_type = typename dectrefnocvref::input_decorator_type::input_char_type;
-	using output_char_type = typename dectrefnocvref::output_decorator_type::output_char_type;
-
-
 	return basic_general_io_file<typename dectrefnocvref::input_decorator_type::input_char_type,
 		typename dectrefnocvref::output_decorator_type::output_char_type,
 		allocatortype>(
