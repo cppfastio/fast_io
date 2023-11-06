@@ -271,7 +271,8 @@ inline constexpr char_type* uprsv128_impl(char_type *iter,__uint128_t value) noe
 
 		auto vdiv1_u128{vmod / onee18};
 #if __has_cpp_attribute(assume)
-		[[assume(vdiv1_u128<::fast_io::details::compile_pow10<::std::uint_least64_t,18>)]];
+		constexpr auto pow10val{::fast_io::details::compile_time_pow<::std::uint_least64_t>(10,18)};
+		[[assume(vdiv1_u128<pow10val)]];
 #endif
 		
 		low=static_cast<::std::uint_least64_t>(vmod % onee18);
