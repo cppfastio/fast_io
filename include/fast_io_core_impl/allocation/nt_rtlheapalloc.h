@@ -7,7 +7,7 @@
 namespace fast_io
 {
 
-namespace nt
+namespace win32::nt
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -158,7 +158,7 @@ __asm__("RtlReAllocateHeap")
 #endif
 inline void* rtl_get_process_heap() noexcept
 {
-	return ::fast_io::nt::RtlGetCurrentPeb()->ProcessHeap;
+	return ::fast_io::win32::nt::RtlGetCurrentPeb()->ProcessHeap;
 }
 
 }
@@ -175,8 +175,8 @@ inline void* nt_rtlallocate_heap_common_impl(::std::size_t to_allocate,::std::ui
 	{
 		to_allocate=1;
 	}
-	auto p{::fast_io::nt::RtlAllocateHeap(
-		::fast_io::nt::rtl_get_process_heap(),
+	auto p{::fast_io::win32::nt::RtlAllocateHeap(
+		::fast_io::win32::nt::rtl_get_process_heap(),
 		flag,to_allocate)};
 	if(p==nullptr)
 	{
@@ -201,8 +201,8 @@ inline void* nt_rtlreallocate_heap_common_impl(void* addr,::std::size_t n,::std:
 	{
 		return nt_rtlallocate_heap_common_impl(n,flag);
 	}
-	auto p{::fast_io::nt::RtlReAllocateHeap(
-		::fast_io::nt::rtl_get_process_heap(),
+	auto p{::fast_io::win32::nt::RtlReAllocateHeap(
+		::fast_io::win32::nt::rtl_get_process_heap(),
 		flag,addr,n)};
 	if(p==nullptr)
 	{
@@ -242,8 +242,8 @@ public:
 	{
 		if(addr==nullptr)
 			return;
-		::fast_io::nt::RtlFreeHeap(
-			::fast_io::nt::rtl_get_process_heap(),
+		::fast_io::win32::nt::RtlFreeHeap(
+			::fast_io::win32::nt::rtl_get_process_heap(),
 			0u,addr);
 	}
 };

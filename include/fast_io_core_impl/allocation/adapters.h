@@ -100,7 +100,7 @@ inline constexpr void* allocator_pointer_aligned_impl(::std::size_t alignment,::
 				p=alloc::allocate_zero(to_allocate);
 			}
 		}
-		void* aligned_ptr{reinterpret_cast<void*>((reinterpret_cast<::std::size_t>(p)+alignment)&(-alignment))};
+		void* aligned_ptr{reinterpret_cast<void*>((reinterpret_cast<::std::size_t>(p)+alignment)&(0-alignment))};
 		reinterpret_cast<void**>(aligned_ptr)[-1] = p;
 		return aligned_ptr;
 	}
