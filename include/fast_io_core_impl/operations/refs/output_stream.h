@@ -76,13 +76,13 @@ concept has_scatter_write_until_eof_bytes_overflow_define = requires(T instm,::f
 };
 
 template<typename T>
-concept has_scatter_write_some_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type> *pscatter,::std::size_t len)
+concept has_scatter_write_some_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type> const *pscatter,::std::size_t len)
 {
 	scatter_write_some_overflow_define(instm,pscatter,len);
 };
 
 template<typename T>
-concept has_scatter_write_all_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type> *pscatter,::std::size_t len)
+concept has_scatter_write_all_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type> const *pscatter,::std::size_t len)
 {
 	scatter_write_all_overflow_define(instm,pscatter,len);
 };
@@ -161,19 +161,19 @@ concept has_pwrite_until_eof_overflow_define = requires(T instm,typename decltyp
 };
 
 template<typename T>
-concept has_scatter_pwrite_some_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type>* scatter,::std::size_t len)
+concept has_scatter_pwrite_some_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type> const* scatter,::std::size_t len)
 {
 	scatter_pwrite_some_overflow_define(instm,scatter,len,0);
 };
 
 template<typename T>
-concept has_scatter_pwrite_all_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type>* scatter,::std::size_t len)
+concept has_scatter_pwrite_all_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type> const* scatter,::std::size_t len)
 {
 	scatter_pwrite_all_overflow_define(instm,scatter,len,0);
 };
 
 template<typename T>
-concept has_scatter_pwrite_until_eof_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type>* scatter,::std::size_t len)
+concept has_scatter_pwrite_until_eof_overflow_define = requires(T instm,::fast_io::basic_io_scatter_t<typename decltype(instm)::output_char_type> const* scatter,::std::size_t len)
 {
 	scatter_pwrite_until_eof_overflow_define(instm,scatter,len,0);
 };
