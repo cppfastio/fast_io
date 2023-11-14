@@ -102,9 +102,12 @@ template <::std::integral char_type, typename T1, typename T2>
 	requires(scatter_printable<char_type, T1> && scatter_printable<char_type, T2> && details::cond_transferable_value<T1, T2>)
 inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>, ::fast_io::manipulators::condition<T1, T2> c) 
 {
-	if (c.pred) {
+	if (c.pred)
+	{
 		return {print_scatter_define(io_reserve_type<char_type, T1>, c.t1)};
-	} else {
+	} 
+	else 
+	{
 		return {print_scatter_define(io_reserve_type<char_type, T2>, c.t2)};
 	}
 }
@@ -113,9 +116,12 @@ template <::std::integral char_type, typename T1, typename T2>
 	requires(scatter_printable<char_type, T1> && scatter_printable<char_type, T2> && !details::cond_transferable_value<T1, T2>)
 inline constexpr basic_io_scatter_t<char_type> print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>, ::fast_io::manipulators::condition<T1, T2> const& c)
 {
-	if (c.pred) {
+	if (c.pred) 
+	{
 		return {print_scatter_define(io_reserve_type<char_type, T1>, c.t1)};
-	} else {
+	}
+	else
+	{
 		return {print_scatter_define(io_reserve_type<char_type, T2>, c.t2)};
 	}
 }
@@ -243,7 +249,8 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type, ::
 	if (c.pred)
 	{
 		return ::fast_io::details::cond_print_reserve_define_impl<char_type, T1>(iter, c.t1);
-	} else
+	}
+	else
 	{
 		return ::fast_io::details::cond_print_reserve_define_impl<char_type, T2>(iter, c.t2);
 	}
