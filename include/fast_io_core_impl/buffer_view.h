@@ -23,6 +23,7 @@ struct basic_ibuffer_view
 	}
 };
 
+#if 0
 template<::std::integral ch_type,::std::contiguous_iterator Iter>
 requires ::std::same_as<::std::iter_value_t<Iter>,ch_type>
 [[nodiscard]] inline constexpr Iter read(basic_ibuffer_view<ch_type>& view,Iter first,Iter last) noexcept
@@ -34,6 +35,19 @@ requires ::std::same_as<::std::iter_value_t<Iter>,ch_type>
 	auto it{::fast_io::details::non_overlapped_copy_n(view.curr_ptr,static_cast<::std::size_t>(view_diff),first)};
 	view.curr_ptr+=diff;
 	return it;
+}
+#endif
+
+template <::std::integral ch_type>
+inline constexpr basic_ibuffer_view<ch_type> input_stream_ref_define(basic_ibuffer_view<ch_type> other) noexcept
+{
+	return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr basic_ibuffer_view<ch_type> input_bytes_stream_ref_define(basic_ibuffer_view<ch_type> other) noexcept 
+{
+	return other;
 }
 
 template<::std::integral ch_type>
@@ -135,6 +149,7 @@ struct basic_obuffer_view
 	}
 };
 
+#if 0
 template<::std::integral ch_type,::std::contiguous_iterator Iter>
 requires ::std::same_as<::std::iter_value_t<Iter>,ch_type>
 inline constexpr void write(basic_obuffer_view<ch_type>& view,Iter first,Iter last) noexcept
@@ -144,6 +159,19 @@ inline constexpr void write(basic_obuffer_view<ch_type>& view,Iter first,Iter la
 	if(view_diff<diff)
 		fast_terminate();
 	view.curr_ptr=::fast_io::details::non_overlapped_copy_n(first,static_cast<::std::size_t>(diff),view.curr_ptr);
+}
+#endif
+
+template <::std::integral ch_type>
+inline constexpr basic_obuffer_view<ch_type> output_stream_ref_define(basic_obuffer_view<ch_type> other) noexcept
+{
+	return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr basic_obuffer_view<ch_type> output_bytes_stream_ref_define(basic_obuffer_view<ch_type> other) noexcept
+{
+	return other;
 }
 
 template<::std::integral ch_type>
