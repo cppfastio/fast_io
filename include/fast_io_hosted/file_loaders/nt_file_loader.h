@@ -16,8 +16,7 @@ template <::fast_io::nt_family family>
 inline void* nt_create_section_common_impl(void* hfilemappingobj) 
 {
 	::fast_io::win32::nt::object_attributes objAttr{
-		.Length = sizeof(object_attributes),
-		.Attributes = 0x40L /*OBJ_CASE_INSENSITIVE*/
+		.Length = sizeof(::fast_io::win32::nt::object_attributes),
 	};
 	void* h_section{};
 	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), 0x000F0000 | 0x0001 | 0x0004, __builtin_addressof(objAttr), nullptr, 0x08, 0x08000000, hfilemappingobj)};
