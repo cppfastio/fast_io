@@ -12,7 +12,13 @@ struct basic_win32_family_box_t
 {
 	using char_type = ch_type;
 	using output_char_type = char_type;
-	explicit constexpr basic_win32_family_box_t() noexcept = default;
+	using family_char_type = ::std::conditional_t<family==::fast_io::win32_family::ansi_9x,char8_t,char16_t>;
+	family_char_type const *lpCaption{};
+	::std::uint_least32_t uType{};
+#if 0
+//to do support wLanguageId
+	::std::uint_least16_t wLanguageId{};
+#endif
 };
 
 template<::std::integral char_type>
@@ -42,67 +48,132 @@ using u32win32_box_t = basic_win32_box_t<char32_t>;
 namespace details
 {
 
-template <::fast_io::win32_family family>
-	requires(family == ::fast_io::win32_family::wide_nt)
-inline void win32_box_write_impl(char16_t* first, char16_t* last)
-{
-	*::fast_io::freestanding::remove(first,last,0)=0;
-	using char16_may_alias_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-	[[__gnu__::__may_alias__]]
-#endif
-	= char16_t const*;
-	if(!::fast_io::win32::MessageBoxW(nullptr,
-		reinterpret_cast<char16_may_alias_ptr>(first),
-		reinterpret_cast<char16_may_alias_ptr>(u"fast_io"),
-		0x00000040L /*MB_ICONINFORMATION*/))
-		throw_win32_error();
-}
-
-template <::fast_io::win32_family family>
-	requires(family == ::fast_io::win32_family::ansi_9x)
-inline void win32_box_write_impl(char8_t* first, char8_t* last)
-{
-	*::fast_io::freestanding::remove(first,last,0)=0;
-	if(!::fast_io::win32::MessageBoxA(nullptr,
-		reinterpret_cast<char const*>(first),
-		reinterpret_cast<char const*>(u8"fast_io"),
-		0x00000040L /*MB_ICONINFORMATION*/))
-		throw_win32_error();
-}
-
 template <::fast_io::win32_family family, ::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
 inline void win32_box_converter_path_impl(char_type const* first, char_type const* last)
 {
 	win32_family_api_encoding_converter<family> converter(first, static_cast<::std::size_t>(last-first));
 	win32_box_write_impl<family>(converter.buffer_data,converter.buffer_data_end);
 }
 
-}
-
-#if 0
-template <::fast_io::win32_family family, ::std::integral char_type, ::std::contiguous_iterator Iter>
-	requires ::std::same_as<char_type,::std::iter_value_t<Iter>>
-inline void write(basic_win32_family_box_t<family,char_type>, Iter first, Iter last)
-{
-	details::win32_box_converter_path_impl<family>(::std::to_address(first),::std::to_address(last));
-}
+template <::fast_io::win32_family family, ::std::integral ch_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
 #endif
-
-template <::fast_io::win32_family family, ::std::integral ch_type>
-inline constexpr basic_win32_family_box_t<family, ch_type> output_stream_ref_define(basic_win32_family_box_t<family, ch_type> other) noexcept {
-	return other;
-}
-
-template <::fast_io::win32_family family, ::std::integral ch_type>
-inline constexpr basic_win32_family_box_t<family, ch_type> output_bytes_stream_ref_define(basic_win32_family_box_t<family, ch_type> other) noexcept {
-	return other;
-}
-
-template <::fast_io::win32_family family, ::std::integral ch_type>
-inline void write_all_overflow_define(basic_win32_family_box_t<family, ch_type>, ch_type const* first, ch_type const* last)
+inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<family, ch_type> bx,basic_io_scatter_t<ch_type> const *scatters,::std::size_t n)
 {
-	details::win32_box_converter_path_impl<family>(first, last);
+	using chtypenocref = ::std::remove_cvref_t<ch_type>;
+	if constexpr(family==::fast_io::win32_family::ansi_9x&&
+		((!::std::same_as<chtypenocref,char8_t>)&&sizeof(chtypenocref)==sizeof(char8_t)&&
+			::fast_io::execution_charset_encoding_scheme<chtypenocref>()==::fast_io::encoding_scheme::utf))
+	{
+		using scatter_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+		= basic_io_scatter_t<char8_t> const *;
+		::fast_io::details::win32_box_converter_scatter_path_impl(bx,reinterpret_cast<scatter_may_alias_ptr>(scatters),n);
+	}
+	else if constexpr(family==::fast_io::win32_family::wide_nt&&
+		((!::std::same_as<chtypenocref,char16_t>)&&sizeof(chtypenocref)==sizeof(char16_t)&&
+			::fast_io::execution_charset_encoding_scheme<chtypenocref>()==::fast_io::encoding_scheme::utf))
+	{
+		using scatter_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+		= basic_io_scatter_t<char16_t> const *;
+		::fast_io::details::win32_box_converter_scatter_path_impl(bx,reinterpret_cast<scatter_may_alias_ptr>(scatters),n);
+	}
+	else
+	{
+		if(n==0)
+		{
+			return;
+		}
+		auto [totalsize,position] = ::fast_io::find_scatter_total_size_overflow(scatters,n);
+		if(totalsize==SIZE_MAX||position!=n)
+		{
+			throw_win32_error(0x00000057);
+		}
+		::fast_io::details::buffer_alloc_arr_ptr<chtypenocref,true> buffer(totalsize+1u);
+		chtypenocref *dest{buffer.ptr};
+		for(auto i{scatters},e{i+n};i!=e;++i)
+		{
+			auto [scbs,sclen] = *i;
+			dest=::fast_io::details::non_overlapped_copy_n(scbs,sclen,dest);
+		}
+		dest=::fast_io::freestanding::remove(buffer.ptr,dest,0);
+		if constexpr(family==::fast_io::win32_family::ansi_9x&&
+			(sizeof(chtypenocref)==sizeof(char8_t)&&
+				::fast_io::execution_charset_encoding_scheme<chtypenocref>()==::fast_io::encoding_scheme::utf))
+		{
+			*dest = 0;
+			if(!::fast_io::win32::MessageBoxA(nullptr,
+				reinterpret_cast<char const*>(buffer.ptr),
+				reinterpret_cast<char const*>(bx.lpCaption),
+				bx.uType))
+				throw_win32_error();
+		}
+		else if constexpr(family==::fast_io::win32_family::wide_nt&&
+			(sizeof(chtypenocref)==sizeof(char16_t)&&
+				::fast_io::execution_charset_encoding_scheme<chtypenocref>()==::fast_io::encoding_scheme::utf))
+		{
+			*dest = 0;
+			using char16_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+			= char16_t const*;
+			if(!::fast_io::win32::MessageBoxW(nullptr,
+				reinterpret_cast<char16_may_alias_ptr>(buffer.ptr),
+				reinterpret_cast<char16_may_alias_ptr>(bx.lpCaption),
+				bx.uType))
+				throw_win32_error();
+		}
+		else
+		{
+			win32_family_api_encoding_converter<family> converter(buffer.ptr, static_cast<::std::size_t>(dest-buffer.ptr));
+			if constexpr(family==::fast_io::win32_family::ansi_9x)
+			{
+				if(!::fast_io::win32::MessageBoxA(nullptr,
+					reinterpret_cast<char const*>(converter.buffer_data),
+					reinterpret_cast<char const*>(bx.lpCaption),
+					bx.uType))
+					throw_win32_error();
+			}
+			else
+			{
+				using char16_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+				= char16_t const*;
+				if(!::fast_io::win32::MessageBoxW(nullptr,
+					reinterpret_cast<char16_may_alias_ptr>(converter.buffer_data),
+					reinterpret_cast<char16_may_alias_ptr>(bx.lpCaption),
+					bx.uType))
+					throw_win32_error();
+			}
+		}
+	}
+}
+
+}
+
+template <::fast_io::win32_family family, ::std::integral ch_type>
+inline constexpr basic_win32_family_box_t<family, ch_type> output_stream_ref_define(basic_win32_family_box_t<family, ch_type> other) noexcept
+{
+	return other;
+}
+
+template <::fast_io::win32_family family, ::std::integral ch_type>
+inline void scatter_write_all_overflow_define(basic_win32_family_box_t<family, ch_type> bx,
+			basic_io_scatter_t<ch_type> const *scatters,::std::size_t n)
+{
+	::fast_io::details::win32_box_converter_scatter_path_impl<family>(bx,scatters,n);
 }
 
 }

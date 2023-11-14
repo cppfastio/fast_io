@@ -40,7 +40,7 @@ inline constexpr ::fast_io::details::basic_scatter_total_size_overflow_result<U>
 	auto i{base},e{base+len};
 	for(;i!=e;++i)
 	{
-		if(total<static_cast<U>(static_cast<::std::size_t>(mx-i->len)))
+		if(static_cast<U>(static_cast<::std::size_t>(mx-i->len))<total)
 		{
 			break;
 		}
