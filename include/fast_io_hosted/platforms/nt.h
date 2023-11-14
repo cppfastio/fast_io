@@ -1034,7 +1034,7 @@ public:
 			win32::nt::nt_close<family==nt_family::zw>(this->handle);
 		this->handle=newhandle;
 	}
- 	basic_nt_family_file(basic_nt_family_file const& other):
+	basic_nt_family_file(basic_nt_family_file const& other):
 		basic_nt_family_io_observer<family,ch_type>(win32::nt::details::nt_dup_impl<family==nt_family::zw>(other.handle))
 	{}
 	basic_nt_family_file& operator=(basic_nt_family_file const& other)
@@ -1095,7 +1095,7 @@ inline void* nt_get_stdhandle() noexcept
 #endif
 	=
 	::fast_io::win32::nt::rtl_user_process_parameters*;
-	auto ppeb{reinterpret_cast<prtl_user_process_parameters>(::fast_io::nt::RtlGetCurrentPeb()->ProcessParameters)};
+	auto ppeb{reinterpret_cast<prtl_user_process_parameters>(::fast_io::win32::nt::RtlGetCurrentPeb()->ProcessParameters)};
 	if constexpr(fd==0)
 	{
 		return ppeb->StandardInput;

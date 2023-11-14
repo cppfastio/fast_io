@@ -16,8 +16,7 @@ inline constexpr dummy_buffer_output_stream<char_type> output_stream_ref_define(
 }
 
 template<::std::integral char_type>
-inline constexpr void write_all_overflow_define(dummy_buffer_output_stream<char_type>,char_type const* first,char_type const* last) noexcept;
-
+inline constexpr void write_all_overflow_define(dummy_buffer_output_stream<char_type>,char_type const* first,char_type const* last) noexcept {}
 
 template<::std::integral char_type>
 inline constexpr char_type* obuffer_begin(dummy_buffer_output_stream<char_type>) noexcept
