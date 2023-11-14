@@ -1034,7 +1034,7 @@ public:
 			win32::nt::nt_close<family==nt_family::zw>(this->handle);
 		this->handle=newhandle;
 	}
- 	basic_nt_family_file(basic_nt_family_file const& other):
+	basic_nt_family_file(basic_nt_family_file const& other):
 		basic_nt_family_io_observer<family,ch_type>(win32::nt::details::nt_dup_impl<family==nt_family::zw>(other.handle))
 	{}
 	basic_nt_family_file& operator=(basic_nt_family_file const& other)

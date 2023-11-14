@@ -8,6 +8,7 @@ class basic_omemory_map
 {
 public:
 	using char_type = ch_type;
+	using output_char_type = char_type;
 	char_type *begin_ptr{},*curr_ptr{},*end_ptr{};
 	constexpr basic_omemory_map() = default;
 	constexpr basic_omemory_map(native_memory_map_file const& iob,::std::size_t offset=0):begin_ptr(reinterpret_cast<char_type*>(iob.address_begin+offset)),curr_ptr(begin_ptr),end_ptr(begin_ptr+iob.size()/sizeof(char_type)){}
@@ -18,6 +19,19 @@ public:
 	}
 };
 
+template <::std::integral ch_type>
+inline constexpr basic_omemory_map<ch_type> output_stream_ref_define(basic_omemory_map<ch_type> other) noexcept
+{
+	return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr basic_omemory_map<ch_type> output_bytes_stream_ref_define(basic_omemory_map<ch_type> other) noexcept
+{
+	return other;
+}
+
+#if 0
 namespace details
 {
 
@@ -37,6 +51,7 @@ constexpr void write(basic_omemory_map<char_type>& bomp,Iter begin,Iter end) noe
 {
 	details::omemory_map_write_impl(bomp,::std::to_address(begin),::std::to_address(end));
 }
+#endif
 
 template<::std::integral char_type>
 constexpr char_type* obuffer_begin(basic_omemory_map<char_type>& bomp) noexcept
@@ -76,11 +91,25 @@ class basic_imemory_map
 {
 public:
 	using char_type = ch_type;
+	using input_char_type = char_type;
 	char_type *begin_ptr{},*curr_ptr{},*end_ptr{};
 	constexpr basic_imemory_map() = default;
 	constexpr basic_imemory_map(native_memory_map_file const& iob,::std::size_t offset=0):begin_ptr(reinterpret_cast<char_type*>(iob.address_begin+offset)),curr_ptr(this->begin_ptr),end_ptr(this->begin_ptr+iob.size()/sizeof(char_type)){}
 };
 
+template <::std::integral ch_type>
+inline constexpr basic_imemory_map<ch_type> input_stream_ref_define(basic_imemory_map<ch_type> other) noexcept
+{
+	return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr basic_imemory_map<ch_type> input_bytes_stream_ref_define(basic_imemory_map<ch_type> other) noexcept
+{
+	return other;
+}
+
+#if 0
 template<::std::integral char_type,::std::contiguous_iterator Iter>
 constexpr Iter read(basic_imemory_map<char_type>& bomp,Iter begin,Iter end) noexcept
 {
@@ -92,6 +121,7 @@ constexpr Iter read(basic_imemory_map<char_type>& bomp,Iter begin,Iter end) noex
 	bomp.curr_ptr+=to_read;
 	return begin+to_read;
 }
+#endif
 
 template<::std::integral char_type>
 constexpr char_type* ibuffer_begin(basic_imemory_map<char_type>& bomp) noexcept
