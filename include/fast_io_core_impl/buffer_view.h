@@ -7,6 +7,7 @@ template<::std::integral ch_type>
 struct basic_ibuffer_view
 {
 	using char_type = ch_type;
+	using input_char_type = char_type;
 	char_type const *begin_ptr{};
 	char_type const *curr_ptr{};
 	char_type const *end_ptr{};
@@ -90,6 +91,7 @@ template<::std::integral ch_type>
 struct basic_obuffer_view
 {
 	using char_type = ch_type;
+	using output_char_type = char_type;
 	char_type *begin_ptr{},*curr_ptr{},*end_ptr{};
 	constexpr basic_obuffer_view() noexcept = default;
 	template<::std::contiguous_iterator Iter>
