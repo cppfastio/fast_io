@@ -30,8 +30,9 @@
 #endif
 
 #include"fast_io_legacy_impl/filebuf/streambuf_io_observer.h"
+#ifndef _LIBCPP_HAS_NO_FILESYSTEM
 #include"fast_io_legacy_impl/filebuf/filebuf_file.h"
-
+#endif
 #include"fast_io_legacy_impl/filebuf/op_out.h"
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)

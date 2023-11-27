@@ -86,14 +86,9 @@ inline constexpr basic_general_streambuf_io_observer<T> io_value_handle(basic_ge
 template<::std::integral CharT,typename Traits = ::std::char_traits<CharT>>
 using basic_streambuf_io_observer = basic_general_streambuf_io_observer<::std::basic_streambuf<CharT,Traits>>;
 
-template<::std::integral CharT,typename Traits = ::std::char_traits<CharT>>
-using basic_filebuf_io_observer = basic_general_streambuf_io_observer<::std::basic_filebuf<CharT,Traits>>;
-
 using streambuf_io_observer = basic_streambuf_io_observer<char>;
-using filebuf_io_observer = basic_filebuf_io_observer<char>;
-
 using wstreambuf_io_observer = basic_streambuf_io_observer<wchar_t>;
-using wfilebuf_io_observer = basic_filebuf_io_observer<wchar_t>;
+
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 
 #if 0
@@ -110,6 +105,13 @@ inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<c
 	return zero_copy_out_handle(static_cast<basic_c_io_observer<ch_type>>(h));
 }
 #endif
+
+#ifndef _LIBCPP_HAS_NO_FILESYSTEM
+
+template<::std::integral CharT,typename Traits = ::std::char_traits<CharT>>
+using basic_filebuf_io_observer = basic_general_streambuf_io_observer<::std::basic_filebuf<CharT,Traits>>;
+using filebuf_io_observer = basic_filebuf_io_observer<char>;
+using wfilebuf_io_observer = basic_filebuf_io_observer<wchar_t>;
 
 template<::std::integral ch_type,typename traits_type>
 requires requires(basic_c_io_observer<ch_type> piob)
@@ -136,6 +138,7 @@ inline constexpr posix_at_entry at(basic_filebuf_io_observer<char_type,traits_ty
 {
 	return posix_at_entry{details::fp_to_fd(details::streambuf_hack::fp_hack(other.fb))};
 }
+#endif
 
 #endif
 }
