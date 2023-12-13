@@ -30,7 +30,7 @@
 #endif
 
 #include"fast_io_legacy_impl/filebuf/streambuf_io_observer.h"
-#ifndef _LIBCPP_HAS_NO_FILESYSTEM
+#if !defined(_LIBCPP_HAS_NO_FILESYSTEM) || defined(_LIBCPP_HAS_FSTREAM)
 #include"fast_io_legacy_impl/filebuf/filebuf_file.h"
 #endif
 #include"fast_io_legacy_impl/filebuf/op_out.h"
