@@ -106,7 +106,7 @@ inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<c
 }
 #endif
 
-#ifndef _LIBCPP_HAS_NO_FILESYSTEM
+#if !defined(_LIBCPP_HAS_NO_FILESYSTEM) || defined(_LIBCPP_HAS_FSTREAM)
 
 template<::std::integral CharT,typename Traits = ::std::char_traits<CharT>>
 using basic_filebuf_io_observer = basic_general_streambuf_io_observer<::std::basic_filebuf<CharT,Traits>>;
