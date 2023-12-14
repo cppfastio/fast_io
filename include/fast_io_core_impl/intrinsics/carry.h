@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /*
 https://gcc.gnu.org/onlinedocs/gcc/Integer-Overflow-Builtins.html

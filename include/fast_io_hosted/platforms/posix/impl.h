@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 #include"common.h"

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /*
 fast_io's own uprsv (uint print reserve) algorithm

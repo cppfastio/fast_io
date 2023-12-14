@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include"scalar.h"
 #if (defined(__GNUC__)  || defined(__clang__)) && (defined(__SSE__)||defined(__wasm_simd128__))

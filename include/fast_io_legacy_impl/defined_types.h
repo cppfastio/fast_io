@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if __has_include(<stdio.h>)
 #include"c/impl.h"

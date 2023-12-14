@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include"destroy.h"
 #include"io_deco_filter.h"

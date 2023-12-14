@@ -1,4 +1,4 @@
-#define FAST_IO_SANITIZE_IO_BUFFER
+﻿#define FAST_IO_SANITIZE_IO_BUFFER
 #include <cstring>
 #include <string>
 #include <fast_io.h>

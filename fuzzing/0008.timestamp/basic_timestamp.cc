@@ -1,4 +1,4 @@
-#include <fast_io.h>
+﻿#include <fast_io.h>
 
 thread_local fast_io::timestamp_scan_state_t<char> state{};
 
