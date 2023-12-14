@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include"seek.h"
 #include"base.h"

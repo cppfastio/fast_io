@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant
 */

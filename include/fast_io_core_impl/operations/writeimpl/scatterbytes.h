@@ -1,4 +1,4 @@
-namespace fast_io
+﻿namespace fast_io
 {
 
 namespace details

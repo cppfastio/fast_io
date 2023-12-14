@@ -1,4 +1,4 @@
-#include<algorithm>
+﻿#include<algorithm>
 #include<fast_io.h>
 
 using namespace fast_io::io;

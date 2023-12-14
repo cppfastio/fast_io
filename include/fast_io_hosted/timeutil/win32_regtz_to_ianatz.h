@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 inline constexpr basic_io_scatter_t<char8_t> win32_registry_timezone_9xa[]
 {
