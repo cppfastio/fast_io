@@ -53,7 +53,7 @@ inline constexpr nt_file_map_attribute to_nt_file_map_attribute(file_map_attribu
 	};
 }
 
-namespace nt::details
+namespace win32::nt::details
 {
 
 template<nt_family family>
@@ -63,7 +63,7 @@ inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 		.Length = sizeof(::fast_io::win32::nt::object_attributes),
 	};
 	void* h_section{};
-	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), attr, __builtin_addressof(objAttr), nullptr, 0x08, 0x08000000, handle)};
+	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), 0x000F0000 | static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)), __builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
 	if (status)
 		throw_nt_error(status);
 	return h_section;
@@ -91,11 +91,11 @@ public:
 	constexpr nt_family_memory_map_file(::std::byte* addressbegin,::std::byte* addressend):address_begin{addressbegin},address_end{addressend}{}
 	nt_family_memory_map_file(nt_at_entry bf,file_map_attribute attr,::std::size_t bytes,::std::uintmax_t start_address=0)
 	{
-		basic_nt_family_file<family,char> mapping_file{nt::details::create_file_mapping_impl<family>(bf.handle,attr)};
+		basic_nt_family_file<family,char> mapping_file{win32::nt::details::create_file_mapping_impl<family>(bf.handle,attr)};
 		void* base_ptr{};
 		::std::size_t view_size{};
 		void* current_process_handle{reinterpret_cast<void*>(-1)};
-		auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0, __builtin_addressof(start_address), __builtin_addressof(bytes), ::fast_io::win32::nt::section_inherit::ViewShare, 0, static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr))};
+		auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0, reinterpret_cast<::fast_io::win32::nt::large_integer const*>(__builtin_addressof(start_address)), __builtin_addressof(bytes), ::fast_io::win32::nt::section_inherit::ViewShare, 0, static_cast<::std::uint_least32_t>(attr))};
 		if (status)
 			throw_nt_error(status);
 		this->address_begin = reinterpret_cast<::std::byte*>(base_ptr);
