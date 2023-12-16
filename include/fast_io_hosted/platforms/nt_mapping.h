@@ -5,7 +5,7 @@ namespace fast_io
 
 enum class nt_file_map_attribute
 {
-copy=0x00000001,write=0x00000002,read=0x00000004,all_access=0x000f001f,execute=0x00000020
+copy=0x00000001,write=0x00000002,read=0x00000004,execute=0x00000008,required=0x000f0000
 };
 
 constexpr nt_file_map_attribute operator&(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
@@ -40,14 +40,19 @@ inline constexpr nt_file_map_attribute& operator^=(nt_file_map_attribute& x, nt_
 
 inline constexpr nt_file_map_attribute to_nt_file_map_attribute(file_map_attribute x)
 {
-	switch(x)
-	{
-	case file_map_attribute::execute_read:return nt_file_map_attribute::execute|nt_file_map_attribute::read;
-	case file_map_attribute::execute_read_write:return nt_file_map_attribute::execute|nt_file_map_attribute::read;
-	case file_map_attribute::execute_write_copy:return nt_file_map_attribute::execute|nt_file_map_attribute::write|nt_file_map_attribute::copy;
-	case file_map_attribute::read_only:return nt_file_map_attribute::read;
-	case file_map_attribute::read_write:return nt_file_map_attribute::read|nt_file_map_attribute::write;
-	case file_map_attribute::write_copy:return nt_file_map_attribute::write|nt_file_map_attribute::copy;
+	switch (x) {
+	case file_map_attribute::execute_read:
+		return nt_file_map_attribute::execute | nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy;
+	case file_map_attribute::execute_read_write:
+		[[fallthrough]];
+	case file_map_attribute::execute_write_copy:
+		return nt_file_map_attribute::execute | nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy | nt_file_map_attribute::write;
+	case file_map_attribute::read_write:
+		return nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy | nt_file_map_attribute::write;
+	case file_map_attribute::read_only:
+		[[fallthrough]];
+	case file_map_attribute::write_copy:
+		return nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy;
 	default:
 		throw_nt_error(0x000000A0);
 	};
@@ -63,7 +68,7 @@ inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 		.Length = sizeof(::fast_io::win32::nt::object_attributes),
 	};
 	void* h_section{};
-	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), 0x000F0000 | static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)), __builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
+	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)), __builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
 	if (status)
 		throw_nt_error(status);
 	return h_section;
