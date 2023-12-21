@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if !defined(_MSC_VER) || defined(__clang__)
 #if defined(__x86_64__) || defined(__i386__)

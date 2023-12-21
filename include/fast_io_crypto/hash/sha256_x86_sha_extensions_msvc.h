@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]

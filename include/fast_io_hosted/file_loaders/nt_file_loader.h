@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace fast_io 
 {
@@ -63,14 +63,14 @@ inline auto nt_load_file_impl(::fast_io::nt_at_entry ent, T const& str, ::fast_i
 }
 
 template <::fast_io::nt_family family, ::fast_io::constructible_to_os_c_str T>
-inline auto nt_load_file_impl(::fast_io::io_kernel_t, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
+inline auto nt_load_file_impl(::fast_io::io_kernel_t, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm) 
 {
 	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::io_kernel, t, om, pm);
 	return nt_create_map_view_common_impl<family>(nf.handle);
 }
 
 template <::fast_io::nt_family family, ::fast_io::constructible_to_os_c_str T>
-inline auto nt_load_file_impl(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
+inline auto nt_load_file_impl(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm) 
 {
 	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::io_kernel, ent, t, om, pm);
 	return nt_create_map_view_common_impl<family>(nf.handle);
@@ -246,8 +246,7 @@ public:
 #if __has_cpp_attribute(nodiscard)
 	[[nodiscard]]
 #endif
-	constexpr pointer
-	release() noexcept
+	constexpr pointer release() noexcept
 	{
 		pointer temp{this->address_begin};
 		this->address_end = this->address_begin = nullptr;

@@ -1,4 +1,4 @@
-#include<random>
+﻿#include<random>
 #include<fast_io_dsal/vector.h>
 
 inline constexpr auto generate_vals() noexcept

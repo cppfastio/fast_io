@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 inline constexpr auto create_k256scalar() noexcept
 {
