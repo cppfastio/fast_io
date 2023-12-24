@@ -30,8 +30,8 @@ class basic_generic_posix_dev_urandom_ref:public observetype
 public:
 	using observer_type = observetype;
 	using native_handle_type = typename observer_type::native_handle_type;
-	using input_char_type = typename native_handle_type::input_char_type;
-	using output_char_type = typename native_handle_type::output_char_type;
+	using input_char_type = typename observer_type::input_char_type;
+	using output_char_type = typename observer_type::output_char_type;
 	constexpr basic_generic_posix_dev_urandom_ref() noexcept = default;
 	explicit constexpr basic_generic_posix_dev_urandom_ref(native_handle_type hd) noexcept:
 		observer_type{hd}{}
