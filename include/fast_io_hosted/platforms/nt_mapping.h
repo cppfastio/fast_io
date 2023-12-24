@@ -5,7 +5,7 @@ namespace fast_io
 
 enum class nt_file_map_attribute
 {
-copy=0x00000001,write=0x00000002,read=0x00000004,all_access=0x000f001f,execute=0x00000020
+copy=0x00000001,write=0x00000002,read=0x00000004,execute=0x00000008,required=0x000f0000
 };
 
 constexpr nt_file_map_attribute operator&(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
@@ -40,20 +40,25 @@ inline constexpr nt_file_map_attribute& operator^=(nt_file_map_attribute& x, nt_
 
 inline constexpr nt_file_map_attribute to_nt_file_map_attribute(file_map_attribute x)
 {
-	switch(x)
-	{
-	case file_map_attribute::execute_read:return nt_file_map_attribute::execute|nt_file_map_attribute::read;
-	case file_map_attribute::execute_read_write:return nt_file_map_attribute::execute|nt_file_map_attribute::read;
-	case file_map_attribute::execute_write_copy:return nt_file_map_attribute::execute|nt_file_map_attribute::write|nt_file_map_attribute::copy;
-	case file_map_attribute::read_only:return nt_file_map_attribute::read;
-	case file_map_attribute::read_write:return nt_file_map_attribute::read|nt_file_map_attribute::write;
-	case file_map_attribute::write_copy:return nt_file_map_attribute::write|nt_file_map_attribute::copy;
+	switch (x) {
+	case file_map_attribute::execute_read:
+		return nt_file_map_attribute::execute | nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy;
+	case file_map_attribute::execute_read_write:
+		[[fallthrough]];
+	case file_map_attribute::execute_write_copy:
+		return nt_file_map_attribute::execute | nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy | nt_file_map_attribute::write;
+	case file_map_attribute::read_write:
+		return nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy | nt_file_map_attribute::write;
+	case file_map_attribute::read_only:
+		[[fallthrough]];
+	case file_map_attribute::write_copy:
+		return nt_file_map_attribute::required | nt_file_map_attribute::read | nt_file_map_attribute::copy;
 	default:
 		throw_nt_error(0x000000A0);
 	};
 }
 
-namespace nt::details
+namespace win32::nt::details
 {
 
 template<nt_family family>
@@ -63,7 +68,7 @@ inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 		.Length = sizeof(::fast_io::win32::nt::object_attributes),
 	};
 	void* h_section{};
-	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), attr, __builtin_addressof(objAttr), nullptr, 0x08, 0x08000000, handle)};
+	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)), __builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
 	if (status)
 		throw_nt_error(status);
 	return h_section;
@@ -91,11 +96,11 @@ public:
 	constexpr nt_family_memory_map_file(::std::byte* addressbegin,::std::byte* addressend):address_begin{addressbegin},address_end{addressend}{}
 	nt_family_memory_map_file(nt_at_entry bf,file_map_attribute attr,::std::size_t bytes,::std::uintmax_t start_address=0)
 	{
-		basic_nt_family_file<family,char> mapping_file{nt::details::create_file_mapping_impl<family>(bf.handle,attr)};
+		basic_nt_family_file<family,char> mapping_file{win32::nt::details::create_file_mapping_impl<family>(bf.handle,attr)};
 		void* base_ptr{};
 		::std::size_t view_size{};
 		void* current_process_handle{reinterpret_cast<void*>(-1)};
-		auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0, __builtin_addressof(start_address), __builtin_addressof(bytes), ::fast_io::win32::nt::section_inherit::ViewShare, 0, static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr))};
+		auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0, reinterpret_cast<::fast_io::win32::nt::large_integer const*>(__builtin_addressof(start_address)), __builtin_addressof(bytes), ::fast_io::win32::nt::section_inherit::ViewShare, 0, static_cast<::std::uint_least32_t>(attr))};
 		if (status)
 			throw_nt_error(status);
 		this->address_begin = reinterpret_cast<::std::byte*>(base_ptr);

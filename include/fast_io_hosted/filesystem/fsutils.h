@@ -41,8 +41,7 @@ inline constexpr ::std::conditional_t<stem,
 		}
 		if constexpr(stem)
 		{
-			constexpr ::std::size_t two{2};
-			diff-=two;
+			--diff;
 			return {beg_ptr,diff};
 		}
 		else
