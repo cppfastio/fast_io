@@ -23,6 +23,7 @@ io,	//Io: I/O manager
 kd,	//Kd: Kernel debugger
 ke,	//Ke: Kernel
 kse,	//Kse: Kernel Shim Engine
+ldr,	//Ldr: NT Loader 
 lsa,	//Lsa: Local Security Authority
 mm,	//Mm: Memory manager
 nt,	//Nt: NT system services (accessible from user mode through system calls)

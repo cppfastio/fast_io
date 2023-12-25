@@ -77,6 +77,7 @@ inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 }
 
 template<nt_family family>
+requires (family == nt_family::nt || family == nt_family::zw)
 class nt_family_memory_map_file
 {
 public:
