@@ -157,17 +157,17 @@ __asm__("RtlReAllocateHeap")
 #endif
 inline peb* nt_get_current_peb() noexcept
 {
-#if (defined(__clang__) || defined(__GNUC__)) && defined(__i386__)
+#if (defined(__clang__) || defined(__GNUC__)) && (defined(__i386__) || defined(__x86_64__))
 	if constexpr(sizeof(::std::size_t)==sizeof(::std::uint_least64_t))
 	{
 		peb* ppeb;
-		__asm__("{movq\t%%gs:0x60, %0|mov\t%%gs:[0x60], %0}" : "=r" (ppeb));
+		__asm__("{movq\t%%gs:0x60, %0|mov\t%0, %%gs:[0x60]}" : "=r" (ppeb));
 		return ppeb;
 	}
 	else if constexpr(sizeof(::std::size_t)==sizeof(::std::uint_least32_t))
 	{
 		peb* ppeb;
-		__asm__("{movl\t%%fs:0x30, %0|mov\t%%fs:[0x30], %0}" : "=r" (ppeb));
+		__asm__("{movl\t%%fs:0x30, %0|mov\t%0, %%fs:[0x30]}" : "=r" (ppeb));
 		return ppeb;
 	}
 	else
