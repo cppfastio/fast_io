@@ -1095,18 +1095,18 @@ inline void* nt_get_stdhandle() noexcept
 #endif
 	=
 	::fast_io::win32::nt::rtl_user_process_parameters*;
-	auto ppeb{reinterpret_cast<prtl_user_process_parameters>(::fast_io::win32::nt::RtlGetCurrentPeb()->ProcessParameters)};
+	auto pparam{reinterpret_cast<prtl_user_process_parameters>(::fast_io::win32::nt::nt_get_current_peb()->ProcessParameters)};
 	if constexpr(fd==0)
 	{
-		return ppeb->StandardInput;
+		return pparam->StandardInput;
 	}
 	else if constexpr(fd==1)
 	{
-		return ppeb->StandardOutput;
+		return pparam->StandardOutput;
 	}
 	else
 	{
-		return ppeb->StandardError;
+		return pparam->StandardError;
 	}
 }
 

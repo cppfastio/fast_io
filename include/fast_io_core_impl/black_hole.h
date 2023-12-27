@@ -21,28 +21,28 @@ using u16black_hole = basic_black_hole<char16_t>;
 using u32black_hole = basic_black_hole<char32_t>;
 
 template<::std::integral ch_type>
-inline constexpr void read_all_underflow_define(basic_black_hole<ch_type> iob, ch_type* first, ch_type* last) noexcept {}
+inline constexpr ch_type* read_some_underflow_define(basic_black_hole<ch_type>, ch_type* first, ch_type*) noexcept { return first; }
 
 template<::std::integral ch_type>
-inline constexpr void write_all_overflow_define(basic_black_hole<ch_type> iob, ch_type const* first, ch_type const* last) noexcept {}
+inline constexpr void write_all_overflow_define(basic_black_hole<ch_type>, ch_type const*, ch_type const*) noexcept {}
 
 template<::std::integral ch_type>
-inline constexpr void read_all_bytes_underflow_define(basic_black_hole<ch_type> iob, ::std::byte* first, ::std::byte* last) noexcept {}
+inline constexpr ch_type* read_some_bytes_underflow_define(basic_black_hole<ch_type>, ::std::byte* first, ::std::byte*) noexcept { return first; }
 
 template<::std::integral ch_type>
-inline constexpr void write_all_bytes_overflow_define(basic_black_hole<ch_type> iob, ::std::byte const* first, ::std::byte const* last) noexcept {}
+inline constexpr void write_all_bytes_overflow_define(basic_black_hole<ch_type>, ::std::byte const*, ::std::byte const*) noexcept {}
 
 template<::std::integral ch_type>
-inline constexpr void pread_all_underflow_define(basic_black_hole<ch_type> iob, ch_type* first, ch_type* last) noexcept {}
+inline constexpr ch_type* pread_some_underflow_define(basic_black_hole<ch_type>, ch_type* first, ch_type*, ::fast_io::intfpos_t) noexcept {return first;}
 
 template<::std::integral ch_type>
-inline constexpr void pwrite_all_overflow_define(basic_black_hole<ch_type> iob, ch_type const* first, ch_type const* last) noexcept {}
+inline constexpr void pwrite_all_overflow_define(basic_black_hole<ch_type>, ch_type const*, ch_type const*,::fast_io::intfpos_t) noexcept {}
 
 template<::std::integral ch_type>
-inline constexpr void pread_all_bytes_underflow_define(basic_black_hole<ch_type> iob, ::std::byte* first, ::std::byte* last) noexcept {}
+inline constexpr ch_type* pread_some_bytes_underflow_define(basic_black_hole<ch_type>, ::std::byte* first, ::std::byte*, ::fast_io::intfpos_t) noexcept { return first; }
 
 template<::std::integral ch_type>
-inline constexpr void pwrite_all_bytes_overflow_define(basic_black_hole<ch_type> iob, ::std::byte const* first, ::std::byte const* last) noexcept {}
+inline constexpr void pwrite_all_bytes_overflow_define(basic_black_hole<ch_type>, ::std::byte const*, ::std::byte const*, ::fast_io::intfpos_t) noexcept {}
 
 template<::std::integral ch_type>
 inline constexpr basic_black_hole<ch_type> io_stream_ref_define(basic_black_hole<ch_type> other) noexcept
@@ -57,7 +57,7 @@ inline constexpr basic_black_hole<ch_type> io_bytes_stream_ref_define(basic_blac
 }
 
 template<::std::integral ch_type>
-inline constexpr void io_stream_buffer_flush_define(basic_black_hole<ch_type> other) noexcept {}
+inline constexpr void io_stream_buffer_flush_define(basic_black_hole<ch_type>) noexcept {}
 
 #if 0
 template<::std::integral ch_type>
