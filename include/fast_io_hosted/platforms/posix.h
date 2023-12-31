@@ -848,7 +848,7 @@ inline constexpr posix_file_status struct_stat_to_posix_file_status(stat_model& 
 	131072,
 	static_cast<std::uintmax_t>(st.st_size/512),
 	{st.st_atime,{}},{st.st_mtime,{}},{st.st_ctime,{}},{0,0},
-#elif !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__)
+#elif !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__) && !defined(__linux__)
 	static_cast<std::uintmax_t>(st.st_blksize),
 	static_cast<std::uintmax_t>(st.st_blocks),
 	timespec_to_unix_timestamp(st.st_atimespec),
@@ -873,7 +873,7 @@ timespec_to_unix_timestamp(st.st_birthtim)
 #endif
 ,
 #endif
-#if !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__)
+#if !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__) && !defined(__linux__)
 	st.st_flags,st.st_gen
 #else
 	0,0
