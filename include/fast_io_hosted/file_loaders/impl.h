@@ -16,7 +16,7 @@
 namespace fast_io
 {
 
-#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__) && !defined(__BIONIC__)
 using native_file_loader = win32_file_loader;
 using native_mmap_options = win32_mmap_options;
 #elif (!defined(__NEWLIB__)||defined(__CYGWIN__)) && !defined(__MSDOS__) && !defined(__wasm__) && !defined(_PICOLIBC__)
