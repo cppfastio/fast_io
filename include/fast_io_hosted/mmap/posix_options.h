@@ -17,7 +17,7 @@ struct posix_mmap_options
 #ifdef MAP_UNINITIALIZED
 		if constexpr(MAP_UNINITIALIZED==0)
 		{
-			if((flags&::fast_io::mmap_flags::map_uninitialized)==::fast_io::mmap_flags::map_uninitialized)
+			if((flagsv&::fast_io::mmap_flags::map_uninitialized)==::fast_io::mmap_flags::map_uninitialized)
 			{
 				flags-=0x4000000;
 			}
