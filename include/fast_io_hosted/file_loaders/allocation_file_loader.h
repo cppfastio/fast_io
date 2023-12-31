@@ -47,7 +47,7 @@ inline void close_allocation_file_loader_impl(int fd, char* address_begin, char*
 #if defined(_LARGEFILE64_SOURCE)
 	auto seekret = ::fast_io::noexcept_call(::lseek64,fd,0,0);
 #else
-	auto seekret = ::fast_io::noexcept_call(::llseek,fd,0,0);
+	auto seekret = ::fast_io::noexcept_call(::lseek,fd,0,0);
 #endif
 	constexpr bool needshrinktoint32{};
 #endif
