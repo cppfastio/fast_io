@@ -9,14 +9,14 @@ namespace details
 inline char* posix_load_address_options(int fd,::std::size_t file_size,::fast_io::posix_mmap_options const& options)
 {
 	if(file_size==0)
-		return (char*)-1;
+		return reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1));
 	return reinterpret_cast<char*>(sys_mmap(options.addr,file_size,options.prot,options.flags,fd,0));
 }
 
 inline char* posix_load_address(int fd,::std::size_t file_size)
 {
 	if(file_size==0)
-		return (char*)-1;
+		return reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1));
 	return reinterpret_cast<char*>(sys_mmap(nullptr,file_size,PROT_READ|PROT_WRITE,MAP_PRIVATE
 #if defined(MAP_POPULATE)
 |MAP_POPULATE
@@ -41,7 +41,7 @@ inline posix_file_loader_return_value_t posix_load_address_impl(int fd)
 	::std::size_t size{posix_loader_get_file_size(fd)};
 	auto add{posix_load_address(fd,size)};
 	auto ed{add};
-	if(ed!=(char*)-1)
+	if(ed!=reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1)))
 	{
 		ed+=size;
 	}
@@ -60,7 +60,7 @@ inline posix_file_loader_return_value_t posix_load_address_options_impl(::fast_i
 	::std::size_t size{posix_loader_get_file_size(fd)};
 	auto add{posix_load_address_options(fd,size,options)};
 	auto ed{add};
-	if(ed!=(char*)-1)
+	if(ed!=reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1)))
 	{
 		ed+=size;
 	}
@@ -93,7 +93,7 @@ public:
 
 	pointer address_begin{};
 	pointer address_end{};
-	inline explicit constexpr posix_file_loader() noexcept : address_begin((char*)-1),address_end((char*)-1){}
+	inline explicit constexpr posix_file_loader() noexcept : address_begin(reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1))),address_end(reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1))){}
 	inline explicit posix_file_loader(posix_at_entry pate)
 	{
 		auto ret{::fast_io::details::posix_load_address_impl(pate.fd)};
@@ -147,14 +147,14 @@ public:
 	posix_file_loader& operator=(posix_file_loader const&)=delete;
 	constexpr posix_file_loader(posix_file_loader&& __restrict other) noexcept:address_begin(other.address_begin),address_end(other.address_end)
 	{
-		other.address_end=other.address_begin=(char*)-1;
+		other.address_end=other.address_begin=reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1));
 	}
 	posix_file_loader& operator=(posix_file_loader && __restrict other) noexcept
 	{
 		::fast_io::details::posix_unload_address(address_begin,static_cast<::std::size_t>(address_end-address_begin));
 		address_begin=other.address_begin;
 		address_end=other.address_end;
-		other.address_end=other.address_begin=(char*)-1;
+		other.address_end=other.address_begin=reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1));
 		return *this;
 	}
 
@@ -250,7 +250,7 @@ public:
 	inline void close()
 	{
 		::fast_io::details::posix_unload_address(address_begin,static_cast<::std::size_t>(address_end-address_begin));
-		address_end=address_begin=(char*)-1;
+		address_end=address_begin=reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1));
 	}
 #if __has_cpp_attribute(nodiscard)
 	[[nodiscard]]
@@ -258,7 +258,7 @@ public:
 	inline constexpr pointer release() noexcept
 	{
 		pointer temp{address_begin};
-		address_end=address_begin=(char*)-1;
+		address_end=address_begin=reinterpret_cast<char*>(static_cast<::std::intptr_t>(-1));
 		return temp;
 	}
 	~posix_file_loader()
