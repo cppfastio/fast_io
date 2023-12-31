@@ -56,6 +56,7 @@ For hosted implementations the set of standard library headers required by the C
 
 #include"fast_io_hosted/api_encoding_converter/impl.h"
 #include"fast_io_hosted/mmap.h"
+#include"fast_io_hosted/mmap/impl.h"
 #include"fast_io_hosted/posix_status.h"
 #if __has_include(<ctime>)
 #include<ctime>

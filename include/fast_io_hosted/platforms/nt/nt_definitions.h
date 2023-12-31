@@ -604,11 +604,11 @@ ObjectHandleInformation = 4
 };
 
 union large_integer {
-	struct {
+	struct DUMMYSTRUCTNAMETYPE{
 		::std::uint_least32_t LowPart;
 		::std::int_least32_t HighPart;
 	} DUMMYSTRUCTNAME;
-	struct {
+	struct uTYPE{
 		::std::uint_least32_t LowPart;
 		::std::int_least32_t HighPart;
 	} u;

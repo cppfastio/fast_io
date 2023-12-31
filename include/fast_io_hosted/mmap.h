@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+/*
+Todo:
+Remove this file and all its usage
+*/
+
 namespace fast_io
 {
 /*
@@ -7,6 +12,7 @@ enum class mapping
 {
 indeterminate,private,shared,copy_on_write,clean
 };
+
 */
 
 enum class file_map_attribute

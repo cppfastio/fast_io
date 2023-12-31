@@ -12,15 +12,22 @@ struct win32_file_loader_return_value_t
 	char* address_end{};
 };
 
-inline win32_file_loader_return_value_t win32_load_address_common_impl(void* hfilemappingobj,::std::size_t file_size)
+
+
+inline win32_file_loader_return_value_t win32_load_address_common_options_impl(void* hfilemappingobj,::std::size_t file_size,::std::uint_least32_t dwDesiredAccess)
 {
 	if(hfilemappingobj==nullptr)
 		throw_win32_error();
 	::fast_io::win32_file map_hd{hfilemappingobj};
-	auto base_ptr{::fast_io::win32::MapViewOfFile(hfilemappingobj,1,0,0,file_size)};
+	auto base_ptr{::fast_io::win32::MapViewOfFile(hfilemappingobj,dwDesiredAccess,0,0,file_size)};
 	if(base_ptr==nullptr)
 		throw_win32_error();
 	return {reinterpret_cast<char*>(base_ptr),reinterpret_cast<char*>(base_ptr)+file_size};
+}
+
+inline win32_file_loader_return_value_t win32_load_address_common_impl(void* hfilemappingobj,::std::size_t file_size)
+{
+	return win32_load_address_common_options_impl(hfilemappingobj,file_size,1);
 }
 
 template<win32_family family>
@@ -35,26 +42,46 @@ inline win32_file_loader_return_value_t win32_load_address_impl(void* handle)
 		return win32_load_address_common_impl(::fast_io::win32::CreateFileMappingA(handle, nullptr, 0x08, 0, 0, nullptr), file_size);
 }
 
+
+template<win32_family family,typename... Args>
+inline auto win32_load_file_impl(Args&& ...args)
+{
+	::fast_io::basic_win32_family_file<family, char> wf(::fast_io::freestanding::forward<Args>(args)...);
+	return win32_load_address_impl<family>(wf.handle);
+}
+
 template<win32_family family>
-inline auto win32_load_file_impl(nt_fs_dirent fsdirent,open_mode om,perms pm)
+inline win32_file_loader_return_value_t win32_load_address_options_impl(win32_mmap_options const& options,void* handle)
 {
-	::fast_io::basic_win32_family_file<family, char> wf(fsdirent, om, pm);
-	return win32_load_address_impl<family>(wf.handle);
+	::std::size_t file_size{win32_load_file_get_file_size(handle)};
+	if(file_size==0)
+		return {nullptr,nullptr};
+	using secattr_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= ::fast_io::win32::security_attributes*;
+	if constexpr(family==win32_family::wide_nt)
+	{
+		using char16_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= char16_t const*;
+		return win32_load_address_common_options_impl(::fast_io::win32::CreateFileMappingW(handle, reinterpret_cast<secattr_ptr>(options.lpFileMappingAttributes), options.flProtect, 0, 0, reinterpret_cast<char16_const_ptr>(options.lpName)), file_size, options.dwDesiredAccess);
+	}
+	else
+		return win32_load_address_common_options_impl(::fast_io::win32::CreateFileMappingA(handle, reinterpret_cast<secattr_ptr>(options.lpFileMappingAttributes), options.flProtect, 0, 0, reinterpret_cast<char const*>(options.lpName)), file_size, options.dwDesiredAccess);
 }
 
-template<win32_family family,::fast_io::constructible_to_os_c_str T>
-inline auto win32_load_file_impl(T const& str,open_mode om,perms pm)
+
+template<win32_family family,typename... Args>
+inline auto win32_load_file_options_impl(win32_mmap_options const& options,Args&& ...args)
 {
-	::fast_io::basic_win32_family_file<family, char> wf(str, om, pm);
-	return win32_load_address_impl<family>(wf.handle);
+	::fast_io::basic_win32_family_file<family, char> wf(::fast_io::freestanding::forward<Args>(args)...);
+	return win32_load_address_options_impl<family>(options, wf.handle);
 }
 
-template<win32_family family,::fast_io::constructible_to_os_c_str T>
-inline auto win32_load_file_impl(nt_at_entry ent,T const& str,open_mode om,perms pm)
-{
-	::fast_io::basic_win32_family_file<family, char> wf(ent, str, om, pm);
-	return win32_load_address_impl<family>(wf.handle);
-}
 
 inline void win32_unload_address(void const* address) noexcept
 {
@@ -109,6 +136,28 @@ public:
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
+
+	inline explicit win32_family_file_loader(win32_mmap_options const& options,nt_fs_dirent fsdirent,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
+	{
+		auto ret{::fast_io::win32::details::win32_load_file_options_impl<family>(options, fsdirent, om, pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+	template<::fast_io::constructible_to_os_c_str T>
+	inline explicit win32_family_file_loader(win32_mmap_options const& options,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
+	{
+		auto ret{::fast_io::win32::details::win32_load_file_options_impl<family>(options, filename, om, pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+	template<::fast_io::constructible_to_os_c_str T>
+	inline explicit win32_family_file_loader(win32_mmap_options const& options,nt_at_entry ent,T const& filename,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
+	{
+		auto ret{::fast_io::win32::details::win32_load_file_options_impl<family>(options, ent, filename, om, pm)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
+
 	win32_family_file_loader(win32_family_file_loader const&)=delete;
 	win32_family_file_loader& operator=(win32_family_file_loader const&)=delete;
 	constexpr win32_family_file_loader(win32_family_file_loader&& __restrict other) noexcept:address_begin(other.address_begin),address_end(other.address_end)
