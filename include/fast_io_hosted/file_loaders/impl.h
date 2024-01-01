@@ -15,8 +15,13 @@ namespace fast_io
 {
 
 #if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__) && !defined(__BIONIC__)
-using native_file_loader = win32_file_loader;
-using native_mmap_options = win32_mmap_options;
+#if defined(_WIN32_WINDOWS)
+using native_file_loader = win32_file_loader_9xa;
+using native_mmap_options = win32_mmap_options_9xa;
+#else
+using native_file_loader = nt_file_loader;
+using native_mmap_options = nt_mmap_options;
+#endif
 #elif (!defined(__NEWLIB__)||defined(__CYGWIN__)) && !defined(__MSDOS__) && !defined(__wasm__) && !defined(_PICOLIBC__)
 using native_file_loader = posix_file_loader;
 using native_mmap_options = posix_mmap_options;
