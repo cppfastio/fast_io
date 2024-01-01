@@ -33,37 +33,40 @@ inline constexpr T addc(T a,T b,bool carryin,bool& carryout) noexcept
 	if constexpr(sizeof(T)==1)
 	{
 		char unsigned res;
-		carryout=_addcarry_u8(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
+		carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_addcarry_u8(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
 		return res;
 	}
 	else if constexpr(sizeof(T)==2)
 	{
 		short unsigned res;
-		carryout=_addcarry_u16(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
+		carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_addcarry_u16(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
 		return res;
 	}
 	else if constexpr(sizeof(T)==4)
 	{
 		unsigned res;
-		carryout=_addcarry_u32(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
+		carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_addcarry_u32(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
 		return res;
 	}
 	else if constexpr(sizeof(T)==8)
 	{
-#if defined(_M_AMD64)
-		long long unsigned res;
-		carryout=_addcarry_u64(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
-		return res;
-#else
-		unsigned alow = static_cast<unsigned>(a);
-		unsigned ahigh = static_cast<unsigned>(a>>32u);
-		unsigned blow = static_cast<unsigned>(b);
-		unsigned bhigh = static_cast<unsigned>(b>>32u);
-		unsigned reslow,reshigh;
-		bool carrytemp{static_cast<bool>(_addcarry_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow)))};
-		carryout=_addcarry_u32(carrytemp,ahigh,bhigh,__builtin_addressof(reshigh));
-		return (static_cast<long long unsigned>(reshigh)<<32u)|reslow;
-#endif
+		if constexpr(sizeof(::std::uint_least64_t)<=sizeof(::std::size_t))
+		{
+			long long unsigned res;
+			carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_addcarry_u64(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
+			return res;
+		}
+		else
+		{
+			unsigned alow = static_cast<unsigned>(a);
+			unsigned ahigh = static_cast<unsigned>(a>>32u);
+			unsigned blow = static_cast<unsigned>(b);
+			unsigned bhigh = static_cast<unsigned>(b>>32u);
+			unsigned reslow,reshigh;
+			bool carrytemp{static_cast<bool>(::fast_io::intrinsics::msvc::x86::_addcarry_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow)))};
+			carryout=::fast_io::intrinsics::msvc::x86::_addcarry_u32(carrytemp,ahigh,bhigh,__builtin_addressof(reshigh));
+			return (static_cast<long long unsigned>(reshigh)<<32u)|reslow;
+		}
 	}
 #elif defined(__has_builtin)
 #if __has_builtin(__builtin_add_overflow)
@@ -102,37 +105,40 @@ inline constexpr T subc(T a,T b,bool carryin,bool& carryout) noexcept
 	if constexpr(sizeof(T)==1)
 	{
 		char unsigned res;
-		carryout=_subborrow_u8(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
+		carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u8(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
 		return res;
 	}
 	else if constexpr(sizeof(T)==2)
 	{
 		short unsigned res;
-		carryout=_subborrow_u16(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
+		carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u16(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
 		return res;
 	}
 	else if constexpr(sizeof(T)==4)
 	{
 		unsigned res;
-		carryout=_subborrow_u32(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
+		carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u32(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
 		return res;
 	}
 	else if constexpr(sizeof(T)==8)
 	{
-#if defined(_M_AMD64)
-		long long unsigned res;
-		carryout=_subborrow_u64(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res));
-		return res;
-#else
-		unsigned alow = static_cast<unsigned>(a);
-		unsigned ahigh = static_cast<unsigned>(a>>32u);
-		unsigned blow = static_cast<unsigned>(b);
-		unsigned bhigh = static_cast<unsigned>(b>>32u);
-		unsigned reslow,reshigh;
-		bool carrytemp{static_cast<bool>(_subborrow_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow)))};
-		carryout=_subborrow_u32(carrytemp,alow,bhigh,__builtin_addressof(reshigh));
-		return (static_cast<long long unsigned>(reshigh)<<32u)|reslow;
-#endif
+		if constexpr(sizeof(::std::uint_least64_t)<=sizeof(::std::size_t))
+		{
+			long long unsigned res;
+			carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u64(static_cast<char unsigned>(carryin),a,b,__builtin_addressof(res)));
+			return res;
+		}
+		else
+		{
+			unsigned alow = static_cast<unsigned>(a);
+			unsigned ahigh = static_cast<unsigned>(a>>32u);
+			unsigned blow = static_cast<unsigned>(b);
+			unsigned bhigh = static_cast<unsigned>(b>>32u);
+			unsigned reslow,reshigh;
+			bool carrytemp{static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u32(static_cast<char unsigned>(carryin),alow,blow,__builtin_addressof(reslow)))};
+			carryout=static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u32(carrytemp,alow,bhigh,__builtin_addressof(reshigh)));
+			return (static_cast<long long unsigned>(reshigh)<<32u)|reslow;
+		}
 	}
 #elif defined(__has_builtin)
 #if __has_builtin(__builtin_sub_overflow)

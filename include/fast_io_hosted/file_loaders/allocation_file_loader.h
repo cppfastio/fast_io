@@ -19,7 +19,11 @@ struct allocation_file_loader_closer_impl
 	{
 		if(fd!=-1)
 		{
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
+			::fast_io::noexcept_call(::_close,fd);
+#else
 			::fast_io::noexcept_call(::close,fd);
+#endif
 		}
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_free)
@@ -409,7 +413,11 @@ public:
 		address_capacity=address_end=address_begin=nullptr;
 		if(fd!=-1)
 		{
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
+			::fast_io::noexcept_call(::_close,fd);
+#else
 			::fast_io::noexcept_call(::close,fd);
+#endif
 		}
 		fd=-1;
 		return temp;

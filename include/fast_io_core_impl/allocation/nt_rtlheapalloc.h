@@ -4,10 +4,6 @@
 #pragma comment(lib,"ntdll.lib")
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64))
-#include<intrin.h>
-#endif
-
 namespace fast_io
 {
 
@@ -178,11 +174,11 @@ inline peb* nt_get_current_peb() noexcept
 	{
 		return ::fast_io::win32::nt::RtlGetCurrentPeb();
 	}
-#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_AMD64))
+#elif defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64))
 #if defined(_M_AMD64)
-	return reinterpret_cast<peb*>(__readgsqword(0x60));
+	return reinterpret_cast<peb*>(::fast_io::intrinsics::msvc::x86::__readgsqword(0x60));
 #else
-	return reinterpret_cast<peb*>(__readfsdword(0x30));
+	return reinterpret_cast<peb*>(::fast_io::intrinsics::msvc::x86::__readfsdword(0x30));
 #endif
 #else
 	return ::fast_io::win32::nt::RtlGetCurrentPeb();

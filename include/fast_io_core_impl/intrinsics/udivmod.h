@@ -37,7 +37,7 @@ inline constexpr tuint<T> udivbigbysmalltosmalldefault(T u1, T u0, T v) noexcept
 		{
 #if defined(_MSC_VER) && !defined(__clang__)
 			long long unsigned remainder;
-			auto quotient{_udiv128(u1,u0,v,__builtin_addressof(remainder))};
+			auto quotient{::fast_io::intrinsics::msvc::x86::_udiv128(u1,u0,v,__builtin_addressof(remainder))};
 #else
 			T quotient,remainder;
 			__asm__("{divq\t%[v]|div\t%[v]}" :
@@ -114,7 +114,7 @@ inline constexpr T shiftleft(T low,T high,unsigned shift) noexcept
 		if(!__builtin_is_constant_evaluated())
 #endif
 		{
-			return __shiftleft128(low,high,static_cast<char unsigned>(shift));
+			return ::fast_io::intrinsics::msvc::x86::__shiftleft128(low,high,static_cast<char unsigned>(shift));
 		}
 	}
 #endif
@@ -139,7 +139,7 @@ inline constexpr T shiftright(T low,T high,unsigned shift) noexcept
 		if(!__builtin_is_constant_evaluated())
 #endif
 		{
-			return __shiftright128(low,high,static_cast<char unsigned>(shift));
+			return ::fast_io::intrinsics::msvc::x86::__shiftright128(low,high,static_cast<char unsigned>(shift));
 		}
 	}
 #endif
