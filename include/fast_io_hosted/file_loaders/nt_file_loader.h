@@ -23,20 +23,54 @@ inline void* nt_create_section_common_impl(void* hfilemappingobj)
 	return h_section;
 }
 
+
+template <::fast_io::nt_family family>
+inline void nt_unload_address(void* address) noexcept
+{
+	if (address)
+	{
+		void* current_process_handle{reinterpret_cast<void*>(-1)};
+		::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle, address);
+	}
+}
+
+template<bool zw>
+inline ::std::size_t nt_file_size_impl(void* handle)
+{
+	::fast_io::win32::nt::file_standard_information fsi;
+	::fast_io::win32::nt::io_status_block block;
+	auto status{::fast_io::win32::nt::nt_query_information_file<zw>(handle,
+		__builtin_addressof(block),
+		__builtin_addressof(fsi),
+		static_cast<::std::uint_least32_t>(sizeof(::fast_io::win32::nt::file_standard_information)),
+		::fast_io::win32::nt::file_information_class::FileStandardInformation)};
+	if(status)
+	{
+		throw_nt_error(status);
+	}
+	if constexpr(sizeof(::std::size_t)<sizeof(::std::uint_least64_t))
+	{
+		if(SIZE_MAX<fsi.end_of_file)
+		{
+			throw_nt_error(0xC0000040/*STATUS_SECTION_TOO_BIG*/);
+		}
+	}
+	return static_cast<::std::size_t>(fsi.end_of_file);
+}
+
 template <::fast_io::nt_family family>
 inline nt_file_loader_return_value_t nt_create_map_view_common_impl(void* handle) 
 {
 	void* h_section{nt_create_section_common_impl<family>(handle)};
 	::fast_io::basic_nt_family_file<family, char> map_hd{h_section};
 	void* p_map_address{};
-	::std::size_t view_size{};
+	::std::size_t fsz{::fast_io::win32::nt::details::nt_file_size_impl<family == ::fast_io::nt_family::zw>(handle)};
+	::std::size_t view_size{fsz};
 	void* current_process_handle{reinterpret_cast<void*>(-1)};
-
 	auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), ::fast_io::win32::nt::section_inherit::ViewShare, 0, 0x08)};
 	if (status)
 		throw_nt_error(status);
-
-	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + view_size};
+	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + fsz};
 }
 
 template <::fast_io::nt_family family, typename... Args>
@@ -45,6 +79,7 @@ inline auto nt_load_file_impl(Args&&... args)
 	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::freestanding::forward<Args>(args)...);
 	return nt_create_map_view_common_impl<family>(nf.handle);
 }
+
 
 template <::fast_io::nt_family family>
 inline nt_file_loader_return_value_t nt_load_address_options_impl(nt_mmap_options const& options, void* handle)
@@ -56,29 +91,25 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(nt_mmap_option
 	= ::fast_io::win32::nt::object_attributes*;
 
 	void* h_section{};
+	::fast_io::win32::nt::object_attributes objAttr{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
+	::fast_io::win32::nt::object_attributes* pobjattr{options.objAttr};
+	if (pobjattr==nullptr)
+	{
+		pobjattr=__builtin_addressof(objAttr);
+	}
 	::std::uint_least32_t status{};
-	if (options.objAttr) 
-	{
-		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, reinterpret_cast<secattr_ptr>(options.objAttr), nullptr, options.flProtect, options.attributes, handle);
-	}
-	else
-	{
-		::fast_io::win32::nt::object_attributes objAttr{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
-		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, __builtin_addressof(objAttr), nullptr, options.flProtect, options.attributes, handle);
-	}
+	status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, pobjattr, nullptr, options.flProtect, options.attributes, handle);
 	if (status)
 		throw_nt_error(status);
-
 	::fast_io::basic_nt_family_file<family, char> map_hd{h_section};
 	void* p_map_address{};
-	::std::size_t view_size{};
+	::std::size_t fsz{::fast_io::win32::nt::details::nt_file_size_impl<family == ::fast_io::nt_family::zw>(handle)};
+	::std::size_t view_size{fsz};
 	void* current_process_handle{reinterpret_cast<void*>(-1)};
-
 	status = ::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0, options.flProtect);
 	if (status)
 		throw_nt_error(status);
-
-	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + view_size};
+	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + fsz};
 }
 
 template <::fast_io::nt_family family, typename... Args>
@@ -86,16 +117,6 @@ inline auto nt_load_file_options_impl(nt_mmap_options const& options, Args&& ...
 {
 	::fast_io::basic_nt_family_file<family, char> wf(::fast_io::freestanding::forward<Args>(args)...);
 	return nt_load_address_options_impl<family>(options, wf.handle);
-}
-
-template <::fast_io::nt_family family>
-inline void nt_unload_address(void* address) noexcept
-{
-	if (address)
-	{
-		void* current_process_handle{reinterpret_cast<void*>(-1)};
-		::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle, address);
-	}
 }
 
 }  // namespace win32::nt::details

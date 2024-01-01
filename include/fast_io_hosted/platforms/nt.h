@@ -694,13 +694,13 @@ template<bool zw>
 inline nt_file_position_status nt_get_file_position_impl(void* __restrict handle,::std::int_least64_t offset,seekdir s)
 {
 	::std::uint_least64_t file_position{static_cast<::std::uint_least64_t>(offset)};
-	win32::nt::io_status_block block;
+	::fast_io::win32::nt::io_status_block block;
 	switch(s)
 	{
 	case seekdir::cur:
 	{
 		::std::uint_least64_t fps{};
-		auto status{win32::nt::nt_query_information_file<zw>(handle,
+		auto status{::fast_io::win32::nt::nt_query_information_file<zw>(handle,
 			__builtin_addressof(block),
 			__builtin_addressof(fps),
 			static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
@@ -712,12 +712,12 @@ inline nt_file_position_status nt_get_file_position_impl(void* __restrict handle
 	break;
 	case seekdir::end:
 	{
-		win32::nt::file_standard_information fsi;
-		auto status{win32::nt::nt_query_information_file<zw>(handle,
+		::fast_io::win32::nt::file_standard_information fsi;
+		auto status{::fast_io::win32::nt::nt_query_information_file<zw>(handle,
 			__builtin_addressof(block),
 			__builtin_addressof(fsi),
-			static_cast<::std::uint_least32_t>(sizeof(win32::nt::file_standard_information)),
-			win32::nt::file_information_class::FileStandardInformation)};
+			static_cast<::std::uint_least32_t>(sizeof(::fast_io::win32::nt::file_standard_information)),
+			::fast_io::win32::nt::file_information_class::FileStandardInformation)};
 		if(status)
 			return {status};
 		file_position+=fsi.end_of_file;
