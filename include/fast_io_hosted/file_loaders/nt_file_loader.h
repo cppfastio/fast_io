@@ -58,10 +58,12 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_
 	= ::fast_io::win32::nt::object_attributes*;
 
 	void* h_section{};
-	::fast_io::win32::nt::object_attributes objAttr{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
+	::fast_io::win32::nt::object_attributes objAttr;
 	secattr_ptr pobjattr{reinterpret_cast<secattr_ptr>(options.objAttr)};
 	if (pobjattr==nullptr)
 	{
+		objAttr={};
+		objAttr.Length = sizeof(::fast_io::win32::nt::object_attributes);
 		pobjattr=__builtin_addressof(objAttr);
 	}
 	::std::uint_least32_t status{};
@@ -176,7 +178,7 @@ public:
 
 	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::nt_at_entry ent) 
 	{
-		auto ret{::fast_io::win32::nt::details::nt_load_address_options_impl<family>(options,ent.handle)};
+		auto ret{::fast_io::win32::nt::details::nt_load_address_impl<family>(ent.handle)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
