@@ -165,12 +165,13 @@ inline allocation_file_loader_ret allocation_load_file_impl(bool writeback,Args 
 {
 	::fast_io::posix_file pf(::fast_io::freestanding::forward<Args>(args)...);
 	auto ret{allocation_load_address_impl(pf.fd)};
-	load_file_allocation_guard loader;
-	loader.address=ret.address_begin;
-	rewind_allocation_file_loader(pf.fd);
-	loader.address=nullptr;
+
 	if(writeback)
 	{
+		load_file_allocation_guard loader;
+		loader.address=ret.address_begin;
+		rewind_allocation_file_loader(pf.fd);
+		loader.address=nullptr;
 		ret.fd=pf.release();
 	}
 	return ret;
@@ -181,12 +182,12 @@ inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback,in
 	::fast_io::posix_file pf(::fast_io::io_dup, ::fast_io::posix_io_observer{fd});
 	rewind_allocation_file_loader(pf.fd);
 	auto ret{allocation_load_address_impl(pf.fd)};
-	load_file_allocation_guard loader;
-	loader.address=ret.address_begin;
-	rewind_allocation_file_loader(pf.fd);
-	loader.address=nullptr;
 	if(writeback)
 	{
+		load_file_allocation_guard loader;
+		loader.address=ret.address_begin;
+		rewind_allocation_file_loader(pf.fd);
+		loader.address=nullptr;
 		ret.fd=pf.release();
 	}
 	return ret;
