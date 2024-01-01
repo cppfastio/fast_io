@@ -179,7 +179,7 @@ inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback,in
 #endif
 	if(seekret == -1)
 	{
-		return;
+		throw_posix_error();
 	}
 	auto ret{allocation_load_address_impl(pf.fd)};
 	if(writeback)
