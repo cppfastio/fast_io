@@ -167,7 +167,22 @@ inline allocation_file_loader_ret allocation_load_file_impl(bool writeback,Args 
 
 inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback,int fd)
 {
-	return allocation_load_file_impl(writeback,::fast_io::io_dup, ::fast_io::posix_io_observer{fd});
+	::fast_io::posix_file pf(::fast_io::io_dup, ::fast_io::posix_io_observer{fd});
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
+	auto seekret = ::fast_io::noexcept_call(_lseeki64,pf.fd,0,0);
+#else
+#if defined(_LARGEFILE64_SOURCE)
+	auto seekret = ::fast_io::noexcept_call(::lseek64,pf.fd,0,0);
+#else
+	auto seekret = ::fast_io::noexcept_call(::lseek,pf.fd,0,0);
+#endif
+#endif
+	auto ret{allocation_load_address_impl(pf.fd)};
+	if(writeback)
+	{
+		ret.fd=pf.release();
+	}
+	return ret;
 }
 
 }
