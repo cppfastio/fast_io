@@ -18,6 +18,7 @@
 - riscv64
 - powerpc64
 - wasm32-wasi
+- wasm64-wasi
 - mips-abi32
 - mips-abin32
 - mips-abi64
