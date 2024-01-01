@@ -99,7 +99,6 @@ public:
 	{
 		basic_nt_family_file<family,char> mapping_file{win32::nt::details::create_file_mapping_impl<family>(bf.handle,attr)};
 		void* base_ptr{};
-		::std::size_t view_size{};
 		void* current_process_handle{reinterpret_cast<void*>(-1)};
 		auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0, reinterpret_cast<::fast_io::win32::nt::large_integer const*>(__builtin_addressof(start_address)), __builtin_addressof(bytes), ::fast_io::win32::nt::section_inherit::ViewShare, 0, static_cast<::std::uint_least32_t>(attr))};
 		if (status)

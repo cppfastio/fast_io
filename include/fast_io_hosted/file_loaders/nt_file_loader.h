@@ -75,7 +75,7 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_
 	::std::size_t fsz{::fast_io::win32::nt::details::nt_file_size_impl<family == ::fast_io::nt_family::zw>(handle)};
 	::std::size_t view_size{fsz};
 	void* current_process_handle{reinterpret_cast<void*>(-1)};
-	status = ::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0, options.flProtect);
+	status = ::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0u, 0u, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0u, options.flProtect);
 	if (status)
 		throw_nt_error(status);
 	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + fsz};
@@ -178,7 +178,7 @@ public:
 
 	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::nt_at_entry ent) 
 	{
-		auto ret{::fast_io::win32::nt::details::nt_load_address_impl<family>(ent.handle)};
+		auto ret{::fast_io::win32::nt::details::nt_load_address_options_impl<family>(options, ent.handle)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
