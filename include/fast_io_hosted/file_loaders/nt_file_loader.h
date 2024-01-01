@@ -173,6 +173,13 @@ public:
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
+
+	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::nt_at_entry ent) 
+	{
+		auto ret{::fast_io::win32::nt::details::nt_load_address_options_impl<family>(options,ent.handle)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
 	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::nt_fs_dirent fsdirent, ::fast_io::open_mode om = ::fast_io::open_mode::in, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, fsdirent, om, pm)};

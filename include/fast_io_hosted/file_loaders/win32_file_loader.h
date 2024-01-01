@@ -136,7 +136,12 @@ public:
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
-
+	inline explicit win32_family_file_loader(win32_mmap_options const& options, nt_at_entry ent)
+	{
+		auto ret{::fast_io::win32::details::win32_load_address_options_impl<family>(options,ent.handle)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
 	inline explicit win32_family_file_loader(win32_mmap_options const& options,nt_fs_dirent fsdirent,open_mode om = open_mode::in,perms pm=static_cast<perms>(436))
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_options_impl<family>(options, fsdirent, om, pm)};

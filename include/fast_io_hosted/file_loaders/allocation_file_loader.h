@@ -107,6 +107,7 @@ struct allocation_file_loader_ret
 struct load_file_allocation_guard
 {
 	void* address{};
+	explicit constexpr load_file_allocation_guard() noexcept = default;
 	explicit load_file_allocation_guard(::std::size_t file_size):address(
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_malloc)
@@ -160,6 +161,21 @@ inline allocation_file_loader_ret allocation_load_file_impl(bool writeback,Args 
 	if(writeback)
 	{
 		ret.fd=pf.release();
+	}
+	return ret;
+}
+
+template<typename... Args>
+inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback,int fd)
+{
+	auto ret{allocation_load_address_impl(fd)};
+	if(writeback)
+	{
+		load_file_allocation_guard guard;
+		guard.address=ret.address_begin;
+		::fast_io::posix_file pf(::fast_io::io_dup, ::fast_io::posix_io_observer{fd});
+		ret.fd=pf.release();
+		guard.address=nullptr;
 	}
 	return ret;
 }
@@ -218,7 +234,14 @@ public:
 		address_end=ret.address_end;
 		address_capacity=ret.address_capacity;
 	}
-
+	inline explicit allocation_file_loader(allocation_mmap_options options, posix_at_entry pate)
+	{
+		auto ret{::fast_io::details::allocation_load_file_fd_impl(options.write_back,pate.fd)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+		address_capacity=ret.address_capacity;
+		fd=ret.fd;
+	}
 	inline explicit allocation_file_loader(allocation_mmap_options options,native_fs_dirent fsdirent,open_mode om = open_mode::in, perms pm=static_cast<perms>(436))
 	{
 		auto ret{::fast_io::details::allocation_load_file_impl(options.write_back,fsdirent,om,pm)};

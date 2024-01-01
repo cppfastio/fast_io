@@ -120,7 +120,12 @@ public:
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 	}
-
+	inline explicit posix_file_loader(posix_mmap_options const& options, posix_at_entry ent)
+	{
+		auto ret{::fast_io::details::posix_load_address_options_impl(options,pate.fd)};
+		address_begin=ret.address_begin;
+		address_end=ret.address_end;
+	}
 	inline explicit posix_file_loader(posix_mmap_options const& options, native_fs_dirent fsdirent,open_mode om = open_mode::in, perms pm=static_cast<perms>(436))
 	{
 		auto ret{::fast_io::details::posix_load_file_options_impl(options,fsdirent,om,pm)};
