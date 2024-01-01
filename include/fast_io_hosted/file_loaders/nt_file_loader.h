@@ -60,12 +60,12 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(nt_mmap_option
 	void* h_section{};
 	if (options.objAttr)
 	{
-		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, reinterpret_cast<secattr_ptr>(options.objAttr), nullptr, options.flProtect, 0x08000000, handle);
+		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, reinterpret_cast<secattr_ptr>(options.objAttr), nullptr, options.flProtect, options.attributes, handle);
 	} 
 	else 
 	{
 		::fast_io::win32::nt::object_attributes objAttr_temp{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
-		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, __builtin_addressof(objAttr_temp), nullptr, options.flProtect, 0x08000000, handle);
+		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, __builtin_addressof(objAttr_temp), nullptr, options.flProtect, options.attributes, handle);
 	}
 	if (status)
 		throw_nt_error(status);
