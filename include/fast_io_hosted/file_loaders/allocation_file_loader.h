@@ -165,19 +165,9 @@ inline allocation_file_loader_ret allocation_load_file_impl(bool writeback,Args 
 	return ret;
 }
 
-template<typename... Args>
 inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback,int fd)
 {
-	auto ret{allocation_load_address_impl(fd)};
-	if(writeback)
-	{
-		load_file_allocation_guard guard;
-		guard.address=ret.address_begin;
-		::fast_io::posix_file pf(::fast_io::io_dup, ::fast_io::posix_io_observer{fd});
-		ret.fd=pf.release();
-		guard.address=nullptr;
-	}
-	return ret;
+	return allocation_load_file_impl(writeback,::fast_io::io_dup, ::fast_io::posix_io_observer{fd});
 }
 
 }
@@ -206,7 +196,7 @@ public:
 
 	inline explicit allocation_file_loader(posix_at_entry pate)
 	{
-		auto ret{::fast_io::details::allocation_load_address_impl(pate.fd)};
+		auto ret{::fast_io::details::allocation_load_file_fd_impl(false,pate.fd)};
 		address_begin=ret.address_begin;
 		address_end=ret.address_end;
 		address_capacity=ret.address_capacity;
