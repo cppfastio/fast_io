@@ -5,10 +5,11 @@ namespace fast_io
 
 struct nt_mmap_options
 {
-::std::uint_least32_t dwDesiredAccess{};
 void* objAttr{};
+::std::uint_least32_t dwDesiredAccess{};
 ::std::uint_least32_t flProtect{};
 ::std::uint_least32_t attributes{};
+::std::uint_least32_t viewShare{};
 
 explicit constexpr nt_mmap_options() noexcept = default;
 constexpr nt_mmap_options(::fast_io::mmap_prot protv,::fast_io::mmap_flags flagsv) noexcept
@@ -85,9 +86,11 @@ constexpr nt_mmap_options(::fast_io::mmap_prot protv,::fast_io::mmap_flags flags
 	{
 		flprotecttemp |= 0x80000000;
 	}
-	this->flProtect = flprotecttemp;
+
 	this->dwDesiredAccess = dwDesiredAccesstemp;
+	this->flProtect = flprotecttemp;
 	this->attributes = 0x08000000;
+	this->viewShare = 0x01;
 }
 };
 

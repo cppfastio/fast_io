@@ -55,17 +55,16 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(nt_mmap_option
 #endif
 	= ::fast_io::win32::nt::object_attributes*;
 
-	::std::uint_least32_t status{};
-
 	void* h_section{};
-	if (options.objAttr)
+	::std::uint_least32_t status{};
+	if (options.objAttr) 
 	{
 		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, reinterpret_cast<secattr_ptr>(options.objAttr), nullptr, options.flProtect, options.attributes, handle);
-	} 
-	else 
+	}
+	else
 	{
-		::fast_io::win32::nt::object_attributes objAttr_temp{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
-		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, __builtin_addressof(objAttr_temp), nullptr, options.flProtect, options.attributes, handle);
+		::fast_io::win32::nt::object_attributes objAttr{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
+		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, __builtin_addressof(objAttr), nullptr, options.flProtect, options.attributes, handle);
 	}
 	if (status)
 		throw_nt_error(status);
@@ -75,7 +74,7 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(nt_mmap_option
 	::std::size_t view_size{};
 	void* current_process_handle{reinterpret_cast<void*>(-1)};
 
-	status = ::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), ::fast_io::win32::nt::section_inherit::ViewShare, 0, options.flProtect);
+	status = ::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0, options.flProtect);
 	if (status)
 		throw_nt_error(status);
 
