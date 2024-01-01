@@ -15,9 +15,7 @@ struct nt_file_loader_return_value_t
 template <::fast_io::nt_family family>
 inline void* nt_create_section_common_impl(void* hfilemappingobj) 
 {
-	::fast_io::win32::nt::object_attributes objAttr{
-		.Length = sizeof(::fast_io::win32::nt::object_attributes),
-	};
+	::fast_io::win32::nt::object_attributes objAttr{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
 	void* h_section{};
 	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), 0x000F0000 | 0x0001 | 0x0004, __builtin_addressof(objAttr), nullptr, 0x08, 0x08000000, hfilemappingobj)};
 	if (status)
@@ -41,45 +39,60 @@ inline nt_file_loader_return_value_t nt_create_map_view_common_impl(void* handle
 	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + view_size};
 }
 
+template <::fast_io::nt_family family, typename... Args>
+inline auto nt_load_file_impl(Args&&... args) 
+{
+	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::freestanding::forward<Args>(args)...);
+	return nt_create_map_view_common_impl<family>(nf.handle);
+}
+
 template <::fast_io::nt_family family>
-inline auto nt_load_file_impl(nt_fs_dirent fsdirent, ::fast_io::open_mode om, ::fast_io::perms pm) 
+inline nt_file_loader_return_value_t nt_load_address_options_impl(nt_mmap_options const& options, void* handle)
 {
-	::fast_io::basic_nt_family_file<family, char> nf(fsdirent, om, pm);
-	return nt_create_map_view_common_impl<family>(nf.handle);
+	using secattr_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	= ::fast_io::win32::nt::object_attributes*;
+
+	void* h_section{};
+	::std::uint_least32_t status{};
+	if (options.objAttr) 
+	{
+		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, reinterpret_cast<secattr_ptr>(options.objAttr), nullptr, options.flProtect, options.attributes, handle);
+	}
+	else
+	{
+		::fast_io::win32::nt::object_attributes objAttr{.Length = sizeof(::fast_io::win32::nt::object_attributes)};
+		status = ::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), options.dwDesiredAccess, __builtin_addressof(objAttr), nullptr, options.flProtect, options.attributes, handle);
+	}
+	if (status)
+		throw_nt_error(status);
+
+	::fast_io::basic_nt_family_file<family, char> map_hd{h_section};
+	void* p_map_address{};
+	::std::size_t view_size{};
+	void* current_process_handle{reinterpret_cast<void*>(-1)};
+
+	status = ::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0, 0, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0, options.flProtect);
+	if (status)
+		throw_nt_error(status);
+
+	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + view_size};
 }
 
-template <::fast_io::nt_family family, ::fast_io::constructible_to_os_c_str T>
-inline auto nt_load_file_impl(T const& str, ::fast_io::open_mode om, ::fast_io::perms pm) 
+template <::fast_io::nt_family family, typename... Args>
+inline auto nt_load_file_options_impl(nt_mmap_options const& options, Args&& ...args)
 {
-	::fast_io::basic_nt_family_file<family, char> nf(str, om, pm);
-	return nt_create_map_view_common_impl<family>(nf.handle);
-}
-
-template <::fast_io::nt_family family, ::fast_io::constructible_to_os_c_str T>
-inline auto nt_load_file_impl(::fast_io::nt_at_entry ent, T const& str, ::fast_io::open_mode om, ::fast_io::perms pm) 
-{
-	::fast_io::basic_nt_family_file<family, char> nf(ent, str, om, pm);
-	return nt_create_map_view_common_impl<family>(nf.handle);
-}
-
-template <::fast_io::nt_family family, ::fast_io::constructible_to_os_c_str T>
-inline auto nt_load_file_impl(::fast_io::io_kernel_t, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm) 
-{
-	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::io_kernel, t, om, pm);
-	return nt_create_map_view_common_impl<family>(nf.handle);
-}
-
-template <::fast_io::nt_family family, ::fast_io::constructible_to_os_c_str T>
-inline auto nt_load_file_impl(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm) 
-{
-	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::io_kernel, ent, t, om, pm);
-	return nt_create_map_view_common_impl<family>(nf.handle);
+	::fast_io::basic_nt_family_file<family, char> wf(::fast_io::freestanding::forward<Args>(args)...);
+	return nt_load_address_options_impl<family>(options, wf.handle);
 }
 
 template <::fast_io::nt_family family>
 inline void nt_unload_address(void* address) noexcept
 {
-	if (address) {
+	if (address)
+	{
 		void* current_process_handle{reinterpret_cast<void*>(-1)};
 		::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle, address);
 	}
@@ -145,6 +158,40 @@ public:
 	inline explicit nt_family_file_loader(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<family>(::fast_io::io_kernel, ent, t, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
+	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::nt_fs_dirent fsdirent, ::fast_io::open_mode om = ::fast_io::open_mode::in, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
+	{
+		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, fsdirent, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit nt_family_file_loader(nt_mmap_options const& options, T const& filename, ::fast_io::open_mode om = ::fast_io::open_mode::in, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
+	{
+		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, filename, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::nt_at_entry ent, T const& filename, ::fast_io::open_mode om = ::fast_io::open_mode::in, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
+	{
+		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, ent, filename, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::io_kernel_t, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+	{
+		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, ::fast_io::io_kernel, t, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit nt_family_file_loader(nt_mmap_options const& options, ::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const& t, ::fast_io::open_mode om, ::fast_io::perms pm = static_cast<::fast_io::perms>(436)) 
+	{
+		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, ::fast_io::io_kernel, ent, t, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}

@@ -1,6 +1,8 @@
 #pragma once
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__WINE__)
+#include"nt_options.h"
+#include"nt.h"
 #include"win32_options.h"
 #include"win32.h"
 #endif
