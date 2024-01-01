@@ -39,7 +39,7 @@ inline nt_file_loader_return_value_t nt_create_map_view_common_impl(void* handle
 	return {reinterpret_cast<char*>(p_map_address), reinterpret_cast<char*>(p_map_address) + view_size};
 }
 
-template <::fast_io::nt_family, typename... Args>
+template <::fast_io::nt_family family, typename... Args>
 inline auto nt_load_file_impl(Args&&... args) 
 {
 	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::freestanding::forward<Args>(args)...);
