@@ -1170,25 +1170,23 @@ inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
-
 #if 0
 template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stdin() noexcept
 {
-	return {fast_io::win32::GetStdHandle(-10)};
+	return {::fast_io::details::nt_get_stdhandle<0>()};
 }
 template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stdout() noexcept
 {
-	return {fast_io::win32::GetStdHandle(-11)};
+	return {::fast_io::details::nt_get_stdhandle<1>()};
 }
 template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stderr() noexcept
 {
-	return {fast_io::win32::GetStdHandle(-12)};
+	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 #endif
-
 namespace freestanding
 {
 template<nt_family fm,::std::integral char_type>

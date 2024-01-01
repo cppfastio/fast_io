@@ -33,23 +33,24 @@ namespace fast_io
 {
 
 #if defined(_WIN32) && !defined(__WINE__)
-inline constexpr auto native_stdin_number(win32_stdin_number);
-inline constexpr auto native_stdout_number(win32_stdout_number);
-inline constexpr auto native_stderr_number(win32_stderr_number);
-
 using native_at_entry = nt_at_entry;
 using native_fs_dirent = nt_fs_dirent;
 
+#if defined(_WIN32_WINDOWS) || true
 template<::std::integral ch_type>
 using basic_native_io_observer = basic_win32_io_observer<ch_type>;
 template<::std::integral ch_type>
 using basic_native_file = basic_win32_file<ch_type>;
+#else
+template<::std::integral ch_type>
+using basic_native_io_observer = basic_nt_io_observer<ch_type>;
+template<::std::integral ch_type>
+using basic_native_file = basic_nt_file<ch_type>;
+#endif
+
 template<::std::integral ch_type>
 using basic_native_pipe = basic_win32_pipe<ch_type>;
 #else
-inline constexpr auto native_stdin_number(posix_stdin_number);
-inline constexpr auto native_stdout_number(posix_stdout_number);
-inline constexpr auto native_stderr_number(posix_stderr_number);
 
 using native_at_entry = posix_at_entry;
 using native_fs_dirent = posix_fs_dirent;
@@ -60,7 +61,6 @@ template<::std::integral ch_type>
 using basic_native_file = basic_posix_file<ch_type>;
 template<::std::integral ch_type>
 using basic_native_pipe = basic_posix_pipe<ch_type>;
-
 #endif
 
 using native_io_observer = basic_native_io_observer<char>;
