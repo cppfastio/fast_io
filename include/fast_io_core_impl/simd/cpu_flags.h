@@ -91,4 +91,18 @@ true
 #endif
 };
 
+inline constexpr bool loongarch_simd128_lsx_supported
+{
+#if defined(__loongarch__) && defined(__loongarch_sx)
+true
+#endif
+};
+
+inline constexpr bool loongarch_simd256_lasx_supported
+{
+#if defined(__loongarch__) && defined(__loongarch_asx)
+true
+#endif
+};
+
 }

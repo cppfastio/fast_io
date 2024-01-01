@@ -13,14 +13,16 @@ inline constexpr bool calculate_can_simd_vector_run_with_cpu_instruction(::std::
 		if constexpr(
 			::fast_io::details::cpu_flags::wasmsimd128_supported||
 			::fast_io::details::cpu_flags::sse2_supported||
-			::fast_io::details::cpu_flags::armneon_supported)
+			::fast_io::details::cpu_flags::armneon_supported||
+			::fast_io::details::cpu_flags::loongarch_simd128_lsx_supported)
 		{
 			return true;
 		}
 	}
 	else if(sizeofsimdvector==32)
 	{
-		if constexpr(::fast_io::details::cpu_flags::avx2_supported)
+		if constexpr(::fast_io::details::cpu_flags::avx2_supported||
+			::fast_io::details::cpu_flags::loongarch_simd256_lasx_supported)
 		{
 			return true;
 		}
