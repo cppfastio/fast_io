@@ -15,9 +15,9 @@ namespace fast_io
 {
 
 #if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__) && !defined(__BIONIC__)
-#if defined(_WIN32_WINDOWS)
-using native_file_loader = win32_file_loader_9xa;
-using native_mmap_options = win32_mmap_options_9xa;
+#if defined(_WIN32_WINDOWS) || true
+using native_file_loader = win32_file_loader;
+using native_mmap_options = win32_mmap_options;
 #else
 using native_file_loader = nt_file_loader;
 using native_mmap_options = nt_mmap_options;
