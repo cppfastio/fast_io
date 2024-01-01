@@ -4,6 +4,10 @@
 #pragma comment(lib,"ntdll.lib")
 #endif
 
+#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64))
+#include<intrin.h>
+#endif
+
 namespace fast_io
 {
 
