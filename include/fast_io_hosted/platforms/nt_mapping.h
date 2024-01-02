@@ -64,9 +64,8 @@ namespace win32::nt::details
 template<nt_family family>
 inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 {
-	::fast_io::win32::nt::object_attributes objAttr{
-		.Length = sizeof(::fast_io::win32::nt::object_attributes),
-	};
+	::fast_io::win32::nt::object_attributes objAttr{};
+	objAttr.Length = sizeof(::fast_io::win32::nt::object_attributes);
 	void* h_section{};
 	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)), __builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
 	if (status)
