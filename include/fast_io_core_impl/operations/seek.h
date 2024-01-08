@@ -45,6 +45,18 @@ inline constexpr void output_stream_buffer_flush_decay(T t)
 }
 
 template<typename T>
+requires (::fast_io::operations::decay::defines::has_io_stream_buffer_flush_define<T>)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void io_stream_buffer_flush_decay(T t)
+{
+	return io_stream_buffer_flush_define(t);
+}
+
+template<typename T>
 requires (::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<T>)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -459,6 +471,39 @@ template<typename T>
 inline constexpr void io_stream_rewind(T&& t)
 {
 	::fast_io::operations::decay::io_stream_rewind_decay(::fast_io::operations::io_stream_ref(t));
+}
+
+template<typename T>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void input_stream_buffer_flush(T&& t)
+{
+	::fast_io::operations::decay::input_stream_buffer_flush_decay(::fast_io::operations::input_stream_ref(t));
+}
+
+template<typename T>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void output_stream_buffer_flush(T&& t)
+{
+	::fast_io::operations::decay::output_stream_buffer_flush_decay(::fast_io::operations::output_stream_ref(t));
+}
+
+template<typename T>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr void io_stream_buffer_flush(T&& t)
+{
+	::fast_io::operations::decay::io_stream_buffer_flush_decay(::fast_io::operations::io_stream_ref(t));
 }
 
 }
