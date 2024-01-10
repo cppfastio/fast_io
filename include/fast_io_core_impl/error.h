@@ -5,7 +5,7 @@ namespace fast_io
 
 struct error
 {
-	using value_type = ::std::uintptr_t;
+	using value_type = ::std::size_t;
 	value_type domain{};
 	value_type code{};
 };
@@ -30,10 +30,10 @@ template<typename T>
 inline constexpr error_type_t<T> error_type{};
 
 template<typename T>
-concept error_domain = ::std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(::std::uintptr_t) &&
+concept error_domain = ::std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(::std::size_t) &&
 	requires(error e,T t)
 {
-	{domain_define(error_type<T>)}->::std::same_as<::std::uintptr_t>;
+	{domain_define(error_type<T>)}->::std::same_as<::std::size_t>;
 	{equivalent_define(error_type<T>,e,t)}->::std::same_as<bool>;
 #if 0
 	{to_code_define(error_type<T>,e)}->::std::same_as<T>;
@@ -43,7 +43,7 @@ concept error_domain = ::std::is_trivially_copyable_v<T> && sizeof(T)<=sizeof(::
 template<error_domain D>
 inline constexpr bool is_domain(error e) noexcept
 {
-	constexpr ::std::uintptr_t v{error_domain_define(error_type<D>)};
+	constexpr ::std::size_t v{error_domain_define(error_type<D>)};
 	return v==e.domain;
 }
 

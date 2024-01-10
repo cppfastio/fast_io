@@ -4,17 +4,17 @@ namespace fast_io
 {
 
 
-inline constexpr ::std::uintptr_t domain_define(error_type_t<::fast_io::freestanding::errc>) noexcept
+inline constexpr ::std::size_t domain_define(error_type_t<::fast_io::freestanding::errc>) noexcept
 {
-	if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least16_t))
+	if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least16_t))
 		return 52386u;
-	else if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least32_t))
+	else if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least32_t))
 		return 1105291838u;
 	else
 		return 11138730069487200664ULL;
 }
 
-inline constexpr ::std::uintptr_t posix_domain_value{domain_define(error_type<::fast_io::freestanding::errc>)};
+inline constexpr ::std::size_t posix_domain_value{domain_define(error_type<::fast_io::freestanding::errc>)};
 
 [[noreturn]] inline void throw_posix_error()
 {
@@ -22,7 +22,7 @@ inline constexpr ::std::uintptr_t posix_domain_value{domain_define(error_type<::
 #if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
 	fast_terminate();
 #else
-	throw ::fast_io::error{posix_domain_value,static_cast<::std::uintptr_t>(static_cast<unsigned>(errno))};
+	throw ::fast_io::error{posix_domain_value,static_cast<::std::size_t>(static_cast<unsigned>(errno))};
 #endif
 #else
 	fast_terminate();
@@ -34,7 +34,7 @@ inline constexpr ::std::uintptr_t posix_domain_value{domain_define(error_type<::
 #if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
 	fast_terminate();
 #else
-	throw ::fast_io::error{posix_domain_value,static_cast<::std::uintptr_t>(static_cast<unsigned>(err))};
+	throw ::fast_io::error{posix_domain_value,static_cast<::std::size_t>(static_cast<unsigned>(err))};
 #endif
 #else
 	fast_terminate();
@@ -51,18 +51,18 @@ inline constexpr basic_io_scatter_t<char_type> status_io_print_forward(io_alias_
 
 namespace details
 {
-inline constexpr bool posix_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,int e) noexcept
+inline constexpr bool posix_code_equivalent_impl(::std::size_t domain,::std::size_t code,int e) noexcept
 {
 	if(posix_domain_value!=domain)
 		return false;
 	else
 	{
-		using common_type = ::std::common_type_t<::std::uintptr_t,unsigned>;
+		using common_type = ::std::common_type_t<::std::size_t,unsigned>;
 		return code==static_cast<common_type>(static_cast<unsigned>(e));
 	}
 }
 
-inline constexpr int to_posix_code_impl(::std::uintptr_t domain,::std::uintptr_t code) noexcept
+inline constexpr int to_posix_code_impl(::std::size_t domain,::std::size_t code) noexcept
 {
 	if(posix_domain_value!=domain)
 	{

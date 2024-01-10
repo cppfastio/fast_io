@@ -12,7 +12,7 @@ public:
 	using char_type = ch_type;
 	using input_char_type = char_type;
 	using output_char_type = char_type;
-	using native_handle_type = ::std::uintptr_t;
+	using native_handle_type = ::std::size_t;
 	native_handle_type hsocket{};
 	constexpr native_handle_type release() noexcept
 	{
@@ -40,7 +40,7 @@ inline constexpr basic_win32_family_socket_io_observer<family,char> io_bytes_str
 
 namespace win32::details
 {
-inline ::std::byte const* win32_socket_write_bytes_impl(::std::uintptr_t socket, ::std::byte const *first,::std::byte const *last)
+inline ::std::byte const* win32_socket_write_bytes_impl(::std::size_t socket, ::std::byte const *first,::std::byte const *last)
 {
 	wsabuf buffer{
 		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first,last),
@@ -51,7 +51,7 @@ inline ::std::byte const* win32_socket_write_bytes_impl(::std::uintptr_t socket,
 	return first+sent;
 }
 
-inline ::std::byte* win32_socket_read_bytes_impl(::std::uintptr_t socket, ::std::byte *first,::std::byte *last)
+inline ::std::byte* win32_socket_read_bytes_impl(::std::size_t socket, ::std::byte *first,::std::byte *last)
 {
 	int recved{::fast_io::win32::recv(socket,
 		reinterpret_cast<char*>(first),
@@ -61,28 +61,28 @@ inline ::std::byte* win32_socket_read_bytes_impl(::std::uintptr_t socket, ::std:
 	return first+recved;
 }
 
-inline void posix_connect_win32_socket_impl(::std::uintptr_t hsocket,void const* addr,int addrlen)
+inline void posix_connect_win32_socket_impl(::std::size_t hsocket,void const* addr,int addrlen)
 {
 	if(::fast_io::win32::WSAConnect(hsocket,addr,addrlen,nullptr,nullptr,nullptr,nullptr))
 		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 }
 
-inline void posix_bind_win32_socket_impl(::std::uintptr_t hsocket,void const* addr,int addrlen)
+inline void posix_bind_win32_socket_impl(::std::size_t hsocket,void const* addr,int addrlen)
 {
 	if(::fast_io::win32::bind(hsocket,addr,addrlen)==-1)
 		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 }
 
-inline void posix_listen_win32_socket_impl(::std::uintptr_t hsocket,int backlog)
+inline void posix_listen_win32_socket_impl(::std::size_t hsocket,int backlog)
 {
 	if(::fast_io::win32::listen(hsocket,backlog)==-1)
 		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 }
 
-inline ::std::uintptr_t posix_accept_win32_socket_impl(::std::uintptr_t hsocket,void* addr,int* addrlen)
+inline ::std::size_t posix_accept_win32_socket_impl(::std::size_t hsocket,void* addr,int* addrlen)
 {
-	::std::uintptr_t accepted_socket{::fast_io::win32::WSAAccept(hsocket,addr,addrlen,nullptr,0)};
-	if(accepted_socket==static_cast<::std::uintptr_t>(-1))
+	::std::size_t accepted_socket{::fast_io::win32::WSAAccept(hsocket,addr,addrlen,nullptr,0)};
+	if(accepted_socket==static_cast<::std::size_t>(-1))
 		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	return accepted_socket;
 }
@@ -124,11 +124,11 @@ inline void posix_listen(basic_win32_family_socket_io_observer<family,ch_type> h
 namespace win32::details
 {
 
-inline ::std::uintptr_t win32_duphsocket(::std::uintptr_t s)
+inline ::std::size_t win32_duphsocket(::std::size_t s)
 {
-	return reinterpret_cast<::std::uintptr_t>(win32_dup_impl(reinterpret_cast<void*>(s)));
+	return reinterpret_cast<::std::size_t>(win32_dup_impl(reinterpret_cast<void*>(s)));
 }
-inline ::std::uintptr_t win32_dup2hsocket(::std::uintptr_t handle,::std::uintptr_t newhandle)
+inline ::std::size_t win32_dup2hsocket(::std::size_t handle,::std::size_t newhandle)
 {
 	auto temp{win32_duphsocket(handle)};
 	if(newhandle)[[likely]]
@@ -344,18 +344,18 @@ namespace win32::details
 {
 
 template<win32_family family>
-inline ::std::uintptr_t open_win32_socket_raw_impl(int af,int tp,int prt,::std::uint_least32_t dwflags)
+inline ::std::size_t open_win32_socket_raw_impl(int af,int tp,int prt,::std::uint_least32_t dwflags)
 {
 	if constexpr(family==win32_family::wide_nt)
 	{
-		::std::uintptr_t ret{::fast_io::win32::WSASocketW(af,tp,prt,nullptr,0,dwflags)};
+		::std::size_t ret{::fast_io::win32::WSASocketW(af,tp,prt,nullptr,0,dwflags)};
 		if(ret==UINTPTR_MAX)
 			throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 		return ret;
 	}
 	else
 	{
-		::std::uintptr_t ret{::fast_io::win32::WSASocketA(af,tp,prt,nullptr,0,dwflags)};
+		::std::size_t ret{::fast_io::win32::WSASocketA(af,tp,prt,nullptr,0,dwflags)};
 		if(ret==UINTPTR_MAX)
 			throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 		return ret;
@@ -363,7 +363,7 @@ inline ::std::uintptr_t open_win32_socket_raw_impl(int af,int tp,int prt,::std::
 }
 
 template<win32_family family>
-inline ::std::uintptr_t open_win32_socket_raw_om_custom_only_impl(int af,int tp,int prt,open_mode om)
+inline ::std::size_t open_win32_socket_raw_om_custom_only_impl(int af,int tp,int prt,open_mode om)
 {
 	if constexpr(family==::fast_io::win32_family::wide_nt)
 	{
@@ -376,7 +376,7 @@ inline ::std::uintptr_t open_win32_socket_raw_om_custom_only_impl(int af,int tp,
 }
 
 template<win32_family family>
-inline ::std::uintptr_t open_win32_socket_impl(sock_family d,sock_type t,open_mode m,sock_protocol p)
+inline ::std::size_t open_win32_socket_impl(sock_family d,sock_type t,open_mode m,sock_protocol p)
 {
 	return open_win32_socket_raw_om_custom_only_impl<family>(to_win32_sock_family(d),to_win32_sock_type(t),to_win32_sock_protocol(p),m);
 }
@@ -389,9 +389,9 @@ struct
 #endif
 win32_socket_factory
 {
-	using native_handle_type = ::std::uintptr_t;
-	::std::uintptr_t hsocket{};
-	explicit constexpr win32_socket_factory(::std::uintptr_t v) noexcept:hsocket(v){}
+	using native_handle_type = ::std::size_t;
+	::std::size_t hsocket{};
+	explicit constexpr win32_socket_factory(::std::size_t v) noexcept:hsocket(v){}
 	win32_socket_factory(win32_socket_factory const&)=delete;
 	win32_socket_factory& operator=(win32_socket_factory const&)=delete;
 	~win32_socket_factory()
@@ -495,7 +495,7 @@ namespace details
 {
 
 template<win32_family family>
-inline ::std::uintptr_t win32_family_tcp_connect_v4_impl(ipv4 v4,open_mode m)
+inline ::std::size_t win32_family_tcp_connect_v4_impl(ipv4 v4,open_mode m)
 {
 	basic_win32_family_socket_file<family,char> soc(sock_family::inet,sock_type::stream,m,sock_protocol::tcp);
 	constexpr auto inet{to_win32_sock_family(sock_family::inet)};
@@ -506,7 +506,7 @@ inline ::std::uintptr_t win32_family_tcp_connect_v4_impl(ipv4 v4,open_mode m)
 
 
 template<win32_family family>
-inline ::std::uintptr_t win32_family_tcp_connect_v6_impl(ipv6 v6,open_mode m)
+inline ::std::size_t win32_family_tcp_connect_v6_impl(ipv6 v6,open_mode m)
 {
 	basic_win32_family_socket_file<family,char> soc(sock_family::inet6,sock_type::stream,m,sock_protocol::tcp);
 	constexpr auto inet6{to_win32_sock_family(sock_family::inet6)};
@@ -516,7 +516,7 @@ inline ::std::uintptr_t win32_family_tcp_connect_v6_impl(ipv6 v6,open_mode m)
 }
 
 template<win32_family family>
-inline ::std::uintptr_t win32_family_tcp_connect_ip_impl(ip v,open_mode m)
+inline ::std::size_t win32_family_tcp_connect_ip_impl(ip v,open_mode m)
 {
 	basic_win32_family_socket_file<family,char> soc(v.address.isv4?sock_family::inet:sock_family::inet6,sock_type::stream,m,sock_protocol::tcp);
 	if(v.address.isv4)
@@ -534,7 +534,7 @@ inline ::std::uintptr_t win32_family_tcp_connect_ip_impl(ip v,open_mode m)
 	return soc.release();
 }
 
-inline void win32_tcp_listen_common_impl(::std::uintptr_t hsocket,::std::uint_least16_t port)
+inline void win32_tcp_listen_common_impl(::std::size_t hsocket,::std::uint_least16_t port)
 {
 	constexpr auto inet{to_win32_sock_family(sock_family::inet)};
 	posix_sockaddr_in in{.sin_family=inet,.sin_port=big_endian(port),.sin_addr={}};
@@ -543,7 +543,7 @@ inline void win32_tcp_listen_common_impl(::std::uintptr_t hsocket,::std::uint_le
 }
 
 template<win32_family family>
-inline ::std::uintptr_t win32_tcp_listen_impl(::std::uint_least16_t port,open_mode m)
+inline ::std::size_t win32_tcp_listen_impl(::std::uint_least16_t port,open_mode m)
 {
 	basic_win32_family_socket_file<family,char> soc(sock_family::inet,sock_type::stream,m,sock_protocol::tcp);
 	win32_tcp_listen_common_impl(soc.hsocket,port);

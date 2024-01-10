@@ -18,7 +18,7 @@ inline constexpr auto width(scalar_placement placement,T&& t,::std::size_t n) no
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -43,7 +43,7 @@ inline constexpr auto width(scalar_placement placement,T&& t,::std::size_t n,cha
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 
@@ -66,7 +66,7 @@ inline constexpr auto left(T&& t,::std::size_t n) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -90,7 +90,7 @@ inline constexpr auto middle(T&& t,::std::size_t n) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -114,7 +114,7 @@ inline constexpr auto right(T&& t,::std::size_t n) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -139,7 +139,7 @@ inline constexpr auto internal(T&& t,::std::size_t n) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -164,7 +164,7 @@ inline constexpr auto left(T&& t,::std::size_t n,char_type ch) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -188,7 +188,7 @@ inline constexpr auto middle(T&& t,::std::size_t n,char_type ch) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -212,7 +212,7 @@ inline constexpr auto right(T&& t,::std::size_t n,char_type ch) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{
@@ -236,7 +236,7 @@ inline constexpr auto internal(T&& t,::std::size_t n,char_type ch) noexcept
 #if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
 		sizeof(noref)<=8u
 #else
-		sizeof(noref)<=(sizeof(::std::uintptr_t)*2)
+		sizeof(noref)<=(sizeof(::std::size_t)*2)
 #endif	
 		)
 	{

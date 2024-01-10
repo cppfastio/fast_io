@@ -149,8 +149,8 @@ inline constexpr win32_memory_page_protect& operator^=(win32_memory_page_protect
 
 struct win32_memory_basic_information
 {
-	::std::uintptr_t base_address{};
-	::std::uintptr_t allocation_base{};
+	::std::size_t base_address{};
+	::std::size_t allocation_base{};
 	win32_memory_page_protect allocation_protect{};
 	::std::size_t region_size{};
 	::std::uint_least32_t state{};
@@ -215,7 +215,7 @@ class basic_win32_memory_io_observer
 {
 public:
 	using native_handle_type = void*;
-	using base_address_type = ::std::uintptr_t;
+	using base_address_type = ::std::size_t;
 	using char_type = ch_type;
 	native_handle_type handle{};
 	base_address_type base_addr{};
@@ -469,7 +469,7 @@ template<::std::integral char_type>
 class win32_virtual_protect_guard
 {
 	void* process_handle{};
-	::std::uintptr_t address{};
+	::std::size_t address{};
 	::std::size_t region_size{};
 	win32_memory_page_protect oprotect{};
 public:

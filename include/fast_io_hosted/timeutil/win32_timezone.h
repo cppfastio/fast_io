@@ -26,8 +26,8 @@ namespace win32::details
 
 struct win32_registry_guard
 {
-	::std::uintptr_t k;
-	explicit constexpr win32_registry_guard(::std::uintptr_t k1) noexcept:k(k1){}
+	::std::size_t k;
+	explicit constexpr win32_registry_guard(::std::size_t k1) noexcept:k(k1){}
 	win32_registry_guard(win32_registry_guard const&)=delete;
 	win32_registry_guard& operator=(win32_registry_guard const&)=delete;
 	~win32_registry_guard()
@@ -89,7 +89,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 	}
 	else
 	{
-		::std::uintptr_t k;
+		::std::size_t k;
 		::std::int_least32_t win32retcode;
 		if constexpr(family==win32_family::ansi_9x)
 		{

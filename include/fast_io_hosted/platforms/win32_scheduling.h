@@ -6,7 +6,7 @@ namespace fast_io
 inline void io_async_wait(win32_io_observer iocp)
 {
 	::std::uint_least32_t transferred{};
-	::std::uintptr_t completionkey{};
+	::std::size_t completionkey{};
 	win32::overlapped *over{};
 	if(!GetQueuedCompletionStatus(iocp.native_handle(),__builtin_addressof(transferred),__builtin_addressof(completionkey),
 		__builtin_addressof(over),::std::numeric_limits<::std::uint_least32_t>::max()))
@@ -19,7 +19,7 @@ namespace details
 inline bool iocp_io_async_wait_timeout_detail(win32_io_observer iocp,::std::uint_least32_t millseconds)
 {
 	::std::uint_least32_t transferred{};
-	::std::uintptr_t completionkey{};
+	::std::size_t completionkey{};
 	win32::overlapped *over{};
 	if(!GetQueuedCompletionStatus(iocp.native_handle(),__builtin_addressof(transferred),__builtin_addressof(completionkey),
 		__builtin_addressof(over),millseconds))

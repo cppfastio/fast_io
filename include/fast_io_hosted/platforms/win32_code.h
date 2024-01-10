@@ -8,17 +8,17 @@ struct win32_code
 	::std::uint_least32_t ec{};
 };
 
-inline constexpr ::std::uintptr_t domain_define(error_type_t<win32_code>) noexcept
+inline constexpr ::std::size_t domain_define(error_type_t<win32_code>) noexcept
 {
-	if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least16_t))
+	if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least16_t))
 		return 8987u;
-	else if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least32_t))
+	else if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least32_t))
 		return 588553401u;
 	else
 		return 12911969238956088748ULL;
 }
 
-inline constexpr ::std::uintptr_t win32_domain_value{domain_define(error_type<win32_code>)};
+inline constexpr ::std::size_t win32_domain_value{domain_define(error_type<win32_code>)};
 
 namespace details
 {
@@ -139,7 +139,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,win
 #if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
 	fast_terminate();
 #else
-	throw ::fast_io::error{win32_domain_value,static_cast<::std::uintptr_t>(win32::GetLastError())};
+	throw ::fast_io::error{win32_domain_value,static_cast<::std::size_t>(win32::GetLastError())};
 #endif
 #else
 	fast_terminate();
@@ -151,7 +151,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,win
 #if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
 	fast_terminate();
 #else
-	throw ::fast_io::error{win32_domain_value,static_cast<::std::uintptr_t>(err)};
+	throw ::fast_io::error{win32_domain_value,static_cast<::std::size_t>(err)};
 #endif
 #else
 	fast_terminate();

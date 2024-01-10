@@ -8,17 +8,17 @@ struct nt_code
 	::std::uint_least32_t ntstatus{};
 };
 
-inline constexpr ::std::uintptr_t domain_define(error_type_t<nt_code>) noexcept
+inline constexpr ::std::size_t domain_define(error_type_t<nt_code>) noexcept
 {
-	if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least16_t))
+	if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least16_t))
 		return 63612u;
-	else if constexpr(sizeof(::std::uintptr_t)<=sizeof(::std::uint_least32_t))
+	else if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least32_t))
 		return 3776340491u;
 	else
 		return 17311375720795711021ULL;
 }
 
-inline constexpr ::std::uintptr_t nt_domain_value{domain_define(error_type<nt_code>)};
+inline constexpr ::std::size_t nt_domain_value{domain_define(error_type<nt_code>)};
 
 [[noreturn]] inline void throw_nt_error([[maybe_unused]] ::std::uint_least32_t err)
 {
@@ -26,7 +26,7 @@ inline constexpr ::std::uintptr_t nt_domain_value{domain_define(error_type<nt_co
 #if defined(_MSC_VER) && (!defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS == 0)
 	fast_terminate();
 #else
-	throw ::fast_io::error{nt_domain_value,static_cast<::std::uintptr_t>(err)};
+	throw ::fast_io::error{nt_domain_value,static_cast<::std::size_t>(err)};
 #endif
 #else
 	fast_terminate();

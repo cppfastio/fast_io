@@ -357,7 +357,7 @@ inline void* my_get_osfile_handle(int fd) noexcept
 	long ret{cygwin_get_osfhandle(fd)};
 	if(ret==-1)
 		return nullptr;
-	return reinterpret_cast<void*>(static_cast<::std::uintptr_t>(static_cast<unsigned long>(ret)));
+	return reinterpret_cast<void*>(static_cast<::std::size_t>(static_cast<unsigned long>(ret)));
 #else
 	::std::intptr_t ret{noexcept_call(_get_osfhandle,fd)};
 	if(ret==-1)

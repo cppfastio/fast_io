@@ -12,7 +12,7 @@ concept cond_value_transferable =
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	sizeof(::std::remove_cvref_t<T1>) <= 8u
 #else
-	sizeof(::std::remove_cvref_t<T1>) <= (sizeof(::std::uintptr_t) * 2)
+	sizeof(::std::remove_cvref_t<T1>) <= (sizeof(::std::size_t) * 2)
 #endif
 ;
 }
@@ -77,7 +77,7 @@ concept cond_transferable_value =
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	sizeof(::fast_io::manipulators::condition<T1, T2>) <= 8u
 #else
-	sizeof(::fast_io::manipulators::condition<T1, T2>) <= (sizeof(::std::uintptr_t) * 2)
+	sizeof(::fast_io::manipulators::condition<T1, T2>) <= (sizeof(::std::size_t) * 2)
 #endif
 ;
 }
