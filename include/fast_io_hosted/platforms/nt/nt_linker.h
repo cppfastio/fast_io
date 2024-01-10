@@ -1700,7 +1700,7 @@ extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-NtMapViewOfSection(void*, void*, void**, ::std::uint_least32_t, ::std::size_t, large_integer const*, ::std::size_t*, section_inherit, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
+NtMapViewOfSection(void*, void*, void**, ::std::uintptr_t, ::std::size_t, large_integer const*, ::std::size_t*, section_inherit, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -1726,7 +1726,7 @@ extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
 __stdcall
 #endif
-ZwMapViewOfSection(void*, void*, void**, ::std::uint_least32_t, ::std::size_t, large_integer const*, ::std::size_t*, section_inherit, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
+ZwMapViewOfSection(void*, void*, void**, ::std::uintptr_t, ::std::size_t, large_integer const*, ::std::size_t*, section_inherit, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
