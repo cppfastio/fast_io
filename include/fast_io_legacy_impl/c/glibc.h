@@ -118,7 +118,7 @@ https://github.com/lattera/glibc/blob/master/libio/bits/types/struct_FILE.h
 */
 inline ::std::byte* hack_wide_data(FILE* fp) noexcept
 {
-	constexpr ::std::size_t off{sizeof(__off64_t)+2*sizeof(::std::uintptr_t)};
+	constexpr ::std::size_t off{sizeof(__off64_t)+2*sizeof(::std::size_t)};
 	::std::byte* value;
 	::fast_io::details::my_memcpy(__builtin_addressof(value),reinterpret_cast<::std::byte*>(__builtin_addressof(fp->_lock))+off,sizeof(::std::byte*));
 	return value;
@@ -128,7 +128,7 @@ template<::std::size_t position,::std::integral char_type>
 requires (sizeof(char_type)==sizeof(char32_t))
 inline char_type* hack_wp(FILE* fp) noexcept
 {
-	constexpr ::std::size_t off{position*sizeof(uintptr_t)};
+	constexpr ::std::size_t off{position*sizeof(size_t)};
 	char_type* value;
 	::fast_io::details::my_memcpy(__builtin_addressof(value),hack_wide_data(fp)+off,sizeof(wchar_t*));
 	return value;
@@ -137,7 +137,7 @@ template<::std::size_t position,::std::integral char_type>
 requires (sizeof(char_type)==sizeof(char32_t))
 inline void hack_wpset(FILE* fp,char_type* ptr) noexcept
 {
-	constexpr ::std::size_t off{position*sizeof(uintptr_t)};
+	constexpr ::std::size_t off{position*sizeof(size_t)};
 	::fast_io::details::my_memcpy(hack_wide_data(fp)+off,__builtin_addressof(ptr),sizeof(wchar_t*));
 }
 }

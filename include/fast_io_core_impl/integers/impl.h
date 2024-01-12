@@ -240,7 +240,7 @@ struct integer_alias_type_traits
 template<typename inttype>
 using integer_alias_type = typename integer_alias_type_traits<::std::remove_cvref_t<inttype>>::alias_type;
 
-using uintptr_alias_type = ::fast_io::details::integer_alias_type<::std::uintptr_t>;
+using uintptr_alias_type = ::fast_io::details::integer_alias_type<::std::size_t>;
 
 template<typename inttype>
 struct integer_full_alias_type_traits
@@ -254,7 +254,7 @@ struct integer_full_alias_type_traits
 template<typename inttype>
 using integer_full_alias_type = typename integer_full_alias_type_traits<::std::remove_cvref_t<inttype>>::alias_type;
 
-using uintptr_full_alias_type = ::fast_io::details::integer_full_alias_type<::std::uintptr_t>;
+using uintptr_full_alias_type = ::fast_io::details::integer_full_alias_type<::std::size_t>;
 
 template<typename flt>
 struct float_alias_type_traits
@@ -346,7 +346,7 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		}
 		else if constexpr(::std::is_pointer_v<scalar_type_nocvref>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<::std::uintptr_t>(t))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<::std::size_t>(t))};
 		}
 		else if constexpr(::std::same_as<::fast_io::manipulators::member_function_pointer_holder_t,scalar_type_nocvref>)
 		{
@@ -358,7 +358,7 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		}
 		else
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<::std::uintptr_t>(::std::to_address(t)))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_full_alias_type>{static_cast<uintptr_full_alias_type>(::std::bit_cast<::std::size_t>(::std::to_address(t)))};
 		}
 
 	}
@@ -389,7 +389,7 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		}
 		else if constexpr(::std::is_pointer_v<scalar_type_nocvref>)
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<::std::uintptr_t>(t))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<::std::size_t>(t))};
 		}
 		else if constexpr(::fast_io::details::has_scalar_manip_detail_tag<scalar_type>)
 		{
@@ -397,7 +397,7 @@ inline constexpr auto scalar_flags_int_cache(scalar_type t) noexcept
 		}
 		else
 		{
-			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<::std::uintptr_t>(::std::to_address(t)))};
+			return ::fast_io::manipulators::scalar_manip_t<cache,uintptr_alias_type>{static_cast<uintptr_alias_type>(::std::bit_cast<::std::size_t>(::std::to_address(t)))};
 		}
 	}
 }
@@ -573,7 +573,7 @@ template<bool uppercase=false,typename scalar_type>
 requires (::std::is_function_v<scalar_type>)
 inline constexpr auto funcvw(scalar_type *t) noexcept
 {
-	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(::std::bit_cast<::std::uintptr_t>(t));
+	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,uppercase,true,true,false>>(::std::bit_cast<::std::size_t>(t));
 }
 
 template<bool uppercase=false,typename scalar_type>
@@ -1445,8 +1445,8 @@ bool uppercase,
 bool full>
 inline constexpr ::std::size_t nullptr_print_optimization_call_size_impl() noexcept
 {
-	::fast_io::freestanding::array<char_type,print_integer_reserved_size_cache<base,showbase,showpos,::std::uintptr_t>> arr;
-	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),::std::uintptr_t{})};
+	::fast_io::freestanding::array<char_type,print_integer_reserved_size_cache<base,showbase,showpos,::std::size_t>> arr;
+	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),::std::size_t{})};
 	return static_cast<::std::size_t>(res-arr.data());
 }
 
@@ -1471,7 +1471,7 @@ inline constexpr auto nullptr_print_optimization_call_impl() noexcept
 {
 	constexpr ::std::size_t sz{nullptr_print_optimization_call_size_cache<char_type,base,showbase,uppercase_showbase,showpos,uppercase,full>};
 	::fast_io::freestanding::array<char_type,sz> arr{};
-	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),::std::uintptr_t{})};
+	auto res{print_reserve_integral_define<base,showbase,uppercase_showbase,showpos,uppercase,full>(arr.data(),::std::size_t{})};
 	return arr;
 }
 

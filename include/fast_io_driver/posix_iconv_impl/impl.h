@@ -9,7 +9,7 @@ class posix_iconv_io_observer
 {
 public:
 	using native_handle_type = iconv_t;
-	iconv_t cd{::std::bit_cast<iconv_t>(static_cast<uintptr_t>(-1))};
+	iconv_t cd{::std::bit_cast<iconv_t>(static_cast<size_t>(-1))};
 
 	constexpr auto& native_handle() noexcept
 	{
@@ -22,14 +22,14 @@ public:
 	constexpr iconv_t release() noexcept
 	{
 		auto temp{cd};
-		cd = ::std::bit_cast<iconv_t>(static_cast<uintptr_t>(-1));
+		cd = ::std::bit_cast<iconv_t>(static_cast<size_t>(-1));
 		return temp;
 	}
 };
 
 struct iconv_deco_t
 {
-	iconv_t cd{::std::bit_cast<iconv_t>(static_cast<uintptr_t>(-1))}; 
+	iconv_t cd{::std::bit_cast<iconv_t>(static_cast<size_t>(-1))}; 
 	char buffer[32]{};
 	::std::size_t len{};
 	iconv_deco_t(posix_iconv_io_observer piiob) noexcept:cd(piiob.cd){}
@@ -189,7 +189,7 @@ namespace details
 inline iconv_t my_iconv_open(char const* tocode,char const* fromcode)
 {
 	auto cd{iconv_open(tocode,fromcode)};
-	if(cd==::std::bit_cast<iconv_t>(static_cast<uintptr_t>(-1)))
+	if(cd==::std::bit_cast<iconv_t>(static_cast<size_t>(-1)))
 		throw_posix_error();
 	return cd;
 }

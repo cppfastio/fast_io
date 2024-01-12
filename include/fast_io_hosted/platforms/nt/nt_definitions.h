@@ -34,7 +34,7 @@ union
 	::std::uint_least32_t Status;
 	void*    Pointer;
 } DUMMYUNIONNAME;
-::std::uintptr_t Information;
+::std::size_t Information;
 };
 
 using pio_apc_routine = void (*)(void*,io_status_block*,::std::uint_least32_t) noexcept;
@@ -313,7 +313,7 @@ struct process_basic_information
 {
 	::std::uint_least32_t ExitStatus;
 	void* PebBaseAddress;
-	::std::uintptr_t AffinityMask;
+	::std::size_t AffinityMask;
 	::std::uint_least32_t BasePriority;
 	void* UniqueProcessId;
 	void* InheritedFromUniqueProcessId;
@@ -356,7 +356,7 @@ struct rtl_critical_section
 	::std::int_least32_t recursion_count;
 	void* owning_thread;
 	void* lock_semaphore;
-	::std::uintptr_t spin_count;
+	::std::size_t spin_count;
 };
 
 struct section_image_information
@@ -529,11 +529,11 @@ struct ps_create_info
 
 struct ps_attribute
 {
-	::std::uintptr_t Attribute;                // PROC_THREAD_ATTRIBUTE_XXX | PROC_THREAD_ATTRIBUTE_XXX modifiers, see ProcThreadAttributeValue macro and Windows Internals 6 (372)
+	::std::size_t Attribute;                // PROC_THREAD_ATTRIBUTE_XXX | PROC_THREAD_ATTRIBUTE_XXX modifiers, see ProcThreadAttributeValue macro and Windows Internals 6 (372)
 	::std::size_t Size;                        // Size of Value or *ValuePtr
 	union
 	{
-		::std::uintptr_t Value;                // Reserve 8 bytes for data (such as a Handle or a data pointer)
+		::std::size_t Value;                // Reserve 8 bytes for data (such as a Handle or a data pointer)
 		void* ValuePtr;                 // data pointer
 	};
 	::std::size_t* ReturnLength;               // Either 0 or specifies size of data returned to caller via "ValuePtr"

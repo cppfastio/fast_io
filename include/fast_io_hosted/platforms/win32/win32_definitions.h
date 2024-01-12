@@ -5,7 +5,7 @@ namespace fast_io::win32
 
 struct overlapped
 {
-::std::conditional_t<(sizeof(::std::uintptr_t)>4),::std::uint_least64_t,::std::uint_least32_t> Internal,InternalHigh;
+::std::conditional_t<(sizeof(::std::size_t)>4),::std::uint_least64_t,::std::uint_least32_t> Internal,InternalHigh;
 union dummy_union_name_t
 {
 struct dummy_struct_name_t
@@ -277,7 +277,7 @@ __stdcall
 #elif (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __attribute__((__stdcall__))
 #endif
-*)(wsabuf*,wsabuf*,qualityofservice*,qualityofservice*,wsabuf*,wsabuf*,::std::uint_least32_t*,::std::uintptr_t) noexcept;
+*)(wsabuf*,wsabuf*,qualityofservice*,qualityofservice*,wsabuf*,wsabuf*,::std::uint_least32_t*,::std::size_t) noexcept;
 
 template<win32_family fam>
 requires (fam==win32_family::ansi_9x||fam==win32_family::wide_nt)

@@ -16,9 +16,9 @@ To avoid name collision, we use itanium abi of name mangling for i686-w64-mingw3
 _ZN7fast_io7details5win3230crypt_acquire_context_fallbackILNS_12win32_familyE0EEEjv
 */
 template<::fast_io::win32_family family>
-inline ::std::uintptr_t crypt_acquire_context_fallback()
+inline ::std::size_t crypt_acquire_context_fallback()
 {
-	::std::uintptr_t hprov{};
+	::std::size_t hprov{};
 	if constexpr(family==::fast_io::win32_family::ansi_9x)
 	{
 		if (!::fast_io::win32::CryptAcquireContextA(__builtin_addressof(hprov), nullptr, nullptr, 0x1, 0xf0000000))
@@ -53,7 +53,7 @@ inline ::std::uintptr_t crypt_acquire_context_fallback()
 template<::fast_io::win32_family family>
 struct win32_family_hcryptprov_guard
 {
-	::std::uintptr_t hprov{};
+	::std::size_t hprov{};
 	win32_family_hcryptprov_guard():hprov{crypt_acquire_context_fallback<family>()}
 	{}
 	win32_family_hcryptprov_guard(win32_family_hcryptprov_guard const&)=delete;
@@ -166,7 +166,7 @@ is_nt
 	throw_win32_error(80u);	//ERROR_FILE_EXISTS
 }
 
-inline void* create_io_completion_port(void* filehandle,void* existing_completionport,::std::uintptr_t completionkey,::std::uint_least32_t numberofconcurrentthreads)
+inline void* create_io_completion_port(void* filehandle,void* existing_completionport,::std::size_t completionkey,::std::uint_least32_t numberofconcurrentthreads)
 {
 	void* ptr{::fast_io::win32::CreateIoCompletionPort(filehandle,existing_completionport,completionkey,numberofconcurrentthreads)};
 	if(ptr==nullptr)[[unlikely]]
@@ -176,7 +176,7 @@ inline void* create_io_completion_port(void* filehandle,void* existing_completio
 
 inline void* create_io_completion_port_impl()
 {
-	return create_io_completion_port(reinterpret_cast<void*>(static_cast<::std::uintptr_t>(-1)),nullptr,0,0);
+	return create_io_completion_port(reinterpret_cast<void*>(static_cast<::std::size_t>(-1)),nullptr,0,0);
 }
 
 struct win32_open_mode
@@ -962,7 +962,7 @@ inline posix_file_status win32_status_impl(void* __restrict handle)
 	file_type ft{file_type_impl(handle)};
 	if(ft==file_type::fifo||ft==file_type::character)
 		return posix_file_status{0,0,static_cast<perms>(436),ft,1,0,0,
-			static_cast<::std::uintmax_t>(reinterpret_cast<::std::uintptr_t>(handle)),
+			static_cast<::std::uintmax_t>(reinterpret_cast<::std::size_t>(handle)),
 			0,131072,0,{},{},{},{},0,0};
 	by_handle_file_information bhdi;
 	if (!::fast_io::win32::GetFileInformationByHandle(handle, __builtin_addressof(bhdi)))

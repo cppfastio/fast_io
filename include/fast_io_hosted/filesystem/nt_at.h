@@ -286,7 +286,7 @@ inline void native_unlinkat(nt_at_entry ent,path_type const& path,native_at_flag
 }
 
 template<::fast_io::constructible_to_os_c_str path_type>
-inline void native_fchownat(nt_at_entry,path_type&&,::std::uintptr_t,::std::uintptr_t,[[maybe_unused]] nt_at_flags flags=nt_at_flags::symlink_nofollow)
+inline void native_fchownat(nt_at_entry,path_type&&,::std::size_t,::std::size_t,[[maybe_unused]] nt_at_flags flags=nt_at_flags::symlink_nofollow)
 {
 //windows does not use POSIX user group system. stub it and it is perfectly fine. But nt_fchownat,zw_fchownat will not be provided since they do not exist.
 }

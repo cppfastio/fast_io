@@ -44,7 +44,7 @@ inline constexpr bool win32_code_equals_errno(::std::uint_least32_t code,int ec)
 	return e==ec;
 }
 
-inline bool nt_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,::std::uint_least32_t e) noexcept
+inline bool nt_code_equivalent_impl(::std::size_t domain,::std::size_t code,::std::uint_least32_t e) noexcept
 {
 	if(nt_domain_value==domain)
 	{
@@ -68,7 +68,7 @@ inline bool nt_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t cod
 	}
 }
 
-inline bool win32_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,::std::uint_least32_t e) noexcept
+inline bool win32_code_equivalent_impl(::std::size_t domain,::std::size_t code,::std::uint_least32_t e) noexcept
 {
 	if(win32_domain_value==domain)
 	{
@@ -93,11 +93,11 @@ inline bool win32_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t 
 	}
 }
 
-inline bool posix_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t code,int e) noexcept
+inline bool posix_code_equivalent_impl(::std::size_t domain,::std::size_t code,int e) noexcept
 {
 	if(posix_domain_value==domain)
 	{
-		using common_type = ::std::common_type_t<::std::uintptr_t,unsigned>;
+		using common_type = ::std::common_type_t<::std::size_t,unsigned>;
 		return static_cast<common_type>(static_cast<unsigned>(e))==code;
 	}
 	else if(win32_domain_value==domain||nt_domain_value==domain)
@@ -123,7 +123,7 @@ inline bool posix_code_equivalent_impl(::std::uintptr_t domain,::std::uintptr_t 
 	}
 }
 
-inline constexpr ::std::uint_least32_t to_win32_code_impl(::std::uintptr_t domain,::std::uintptr_t code) noexcept
+inline constexpr ::std::uint_least32_t to_win32_code_impl(::std::size_t domain,::std::size_t code) noexcept
 {
 	if(win32_domain_value==domain)
 	{
@@ -147,7 +147,7 @@ inline constexpr ::std::uint_least32_t to_win32_code_impl(::std::uintptr_t domai
 	}
 }
 
-inline constexpr int to_posix_code_impl(::std::uintptr_t domain,::std::uintptr_t code) noexcept
+inline constexpr int to_posix_code_impl(::std::size_t domain,::std::size_t code) noexcept
 {
 	if(posix_domain_value==domain)
 	{

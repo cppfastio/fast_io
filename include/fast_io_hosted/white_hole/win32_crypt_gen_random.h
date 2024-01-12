@@ -7,7 +7,7 @@ template<::std::integral ch_type>
 class basic_win32_crypt_gen_random_io_observer
 {
 public:
-	using native_handle_type = ::std::uintptr_t;
+	using native_handle_type = ::std::size_t;
 	using input_char_type = ch_type;
 	native_handle_type hprov{};
 	inline constexpr native_handle_type native_handle() const noexcept
@@ -34,7 +34,7 @@ inline constexpr void input_stream_require_secure_clear_define(basic_win32_crypt
 namespace win32::details
 {
 
-inline ::std::byte* win32_crypt_gen_random_some_impl(::std::uintptr_t hprov,::std::byte *first,::std::byte *last)
+inline ::std::byte* win32_crypt_gen_random_some_impl(::std::size_t hprov,::std::byte *first,::std::byte *last)
 {
 	if constexpr(sizeof(::std::size_t)<=sizeof(::std::uint_least32_t))
 	{
@@ -65,7 +65,7 @@ inline ::std::byte* win32_crypt_gen_random_some_impl(::std::uintptr_t hprov,::st
 	}
 }
 
-inline void win32_crypt_gen_random_all_impl(::std::uintptr_t hprov,::std::byte *first,::std::byte *last)
+inline void win32_crypt_gen_random_all_impl(::std::size_t hprov,::std::byte *first,::std::byte *last)
 {
 	auto ret{win32_crypt_gen_random_some_impl(hprov,first,last)};
 	if constexpr(sizeof(::std::uint_least32_t)<sizeof(::std::size_t))
@@ -96,7 +96,7 @@ template<win32_family family,::std::integral ch_type>
 class basic_win32_family_crypt_gen_random_file:public basic_win32_crypt_gen_random_io_observer<ch_type>
 {
 public:
-	using native_handle_type = ::std::uintptr_t;
+	using native_handle_type = ::std::size_t;
 	using input_char_type = ch_type;
 	basic_win32_family_crypt_gen_random_file():basic_win32_crypt_gen_random_io_observer<ch_type>{::fast_io::details::win32::crypt_acquire_context_fallback<family>()}{}
 	explicit constexpr basic_win32_family_crypt_gen_random_file(::std::nullptr_t):basic_win32_crypt_gen_random_io_observer<ch_type>{}
