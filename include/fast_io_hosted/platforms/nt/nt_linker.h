@@ -1662,6 +1662,16 @@ __asm__("ZwCreateUserProcess")
 #endif
 ;
 
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 11)
+inline ::std::uint_least32_t nt_create_user_process(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwCreateUserProcess(args...);
+	else
+		return NtCreateUserProcess(args...);
+}
+
+
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
 #elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))

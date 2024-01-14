@@ -166,3 +166,7 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwMapViewOfSection@nt@win32@fast_io@@YGIPAX0PAPAXIIPBTlarge_integer@123@PAIW4section_inherit@123@II@Z=__imp__ZwMapViewOfSection@40")
 #pragma comment(linker,"/alternatename:__imp_?NtUnmapViewOfSection@nt@win32@fast_io@@YGIPAX0@Z=__imp__NtUnmapViewOfSection@8")
 #pragma comment(linker,"/alternatename:__imp_?ZwUnmapViewOfSection@nt@win32@fast_io@@YGIPAX0@Z=__imp__ZwUnmapViewOfSection@8")
+#pragma comment(linker,"/alternatename:__imp_?SetConsoleCP@win32@fast_io@@YGHI@Z=__imp__SetConsoleCP@4")
+#pragma comment(linker,"/alternatename:__imp_?SetConsoleOutputCP@win32@fast_io@@YGHI@Z=__imp__SetConsoleOutputCP@4")
+#pragma comment(linker,"/alternatename:__imp_?GetConsoleCP@win32@fast_io@@YGIXZ=__imp__GetConsoleCP@0")
+#pragma comment(linker,"/alternatename:__imp_?GetConsoleOutputCP@win32@fast_io@@YGIXZ=__imp__GetConsoleOutputCP@0")

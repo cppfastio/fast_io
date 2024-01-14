@@ -12,25 +12,23 @@ struct nt_user_process_information
 namespace win32::nt::details
 {
 template<nt_family family>
-inline void close_nt_user_process_information_not_null(nt_user_process_information* hnt_user_process_info) noexcept
+inline void close_nt_user_process_information_not_null(nt_user_process_information hnt_user_process_info) noexcept
 {
-	if(hnt_user_process_info->hthread)[[likely]]
+	if(hnt_user_process_info.hthread)[[likely]]
 	{
-		win32::nt::nt_close<family==nt_family::zw>(hnt_user_process_info->hthread);
-		hnt_user_process_info->hthread=nullptr;
+		win32::nt::nt_close<family==nt_family::zw>(hnt_user_process_info.hthread);
+		hnt_user_process_info.hthread=nullptr;
 	}
-	if(hnt_user_process_info->hprocess)[[likely]]
+	if(hnt_user_process_info.hprocess)[[likely]]
 	{
-		win32::nt::nt_close<family==nt_family::zw>(hnt_user_process_info->hprocess);
-		hnt_user_process_info->hprocess=nullptr;
+		win32::nt::nt_close<family==nt_family::zw>(hnt_user_process_info.hprocess);
+		hnt_user_process_info.hprocess=nullptr;
 	}
-	delete hnt_user_process_info;
 }
 template<nt_family family>
-inline void close_nt_user_process_information(nt_user_process_information* hnt_user_process_info) noexcept
+inline void close_nt_user_process_information(nt_user_process_information hnt_user_process_info) noexcept
 {
-	if(hnt_user_process_info)[[likely]]
-		return details::close_nt_user_process_information_not_null<family>(hnt_user_process_info);
+	return details::close_nt_user_process_information_not_null<family>(hnt_user_process_info);
 }
 template<nt_family family>
 inline ::std::uint_least32_t nt_wait_user_process_or_thread(void* hprocess_thread) noexcept
@@ -56,14 +54,10 @@ inline void nt_wait_and_close_user_process_or_thread(void*& handle) noexcept(!th
 }
 
 template<nt_family family,bool throw_eh=false>
-inline void close_nt_user_process_information_and_wait(nt_user_process_information* hnt_user_process_info) noexcept(!throw_eh)
+inline void close_nt_user_process_information_and_wait(nt_user_process_information hnt_user_process_info) noexcept(!throw_eh)
 {
-	if(hnt_user_process_info)[[likely]]
-	{
-		nt_wait_and_close_user_process_or_thread<family,throw_eh>(hnt_user_process_info->hthread);
-		nt_wait_and_close_user_process_or_thread<family,throw_eh>(hnt_user_process_info->hprocess);
-		delete hnt_user_process_info;
-	}
+	nt_wait_and_close_user_process_or_thread<family,throw_eh>(hnt_user_process_info.hthread);
+	nt_wait_and_close_user_process_or_thread<family,throw_eh>(hnt_user_process_info.hprocess);
 }
 
 template<nt_family family>
@@ -106,98 +100,69 @@ Referenced from ReactOS
 https://doxygen.reactos.org/d3/d4d/sdk_2lib_2rtl_2process_8c.html
 */
 
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-[[clang::trivially_relocatable]]
-#endif
-nt_user_process_information_scoped_ptr
-{
-	nt_user_process_information* ptr{};
-	constexpr nt_user_process_information_scoped_ptr()=default;
-	explicit constexpr nt_user_process_information_scoped_ptr(nt_user_process_information* p):ptr(p){}
-	nt_user_process_information_scoped_ptr(nt_user_process_information_scoped_ptr const&)=delete;
-	nt_user_process_information_scoped_ptr& operator=(nt_user_process_information_scoped_ptr const&)=delete;
-	inline constexpr nt_user_process_information& operator*() noexcept
-	{
-		return *ptr;
-	}
-	inline constexpr nt_user_process_information const& operator*() const noexcept
-	{
-		return *ptr;
-	}
-	inline constexpr nt_user_process_information* release() noexcept
-	{
-		auto temp{ptr};
-		ptr=nullptr;
-		return temp;
-	}
-	constexpr ~nt_user_process_information_scoped_ptr()
-	{
-		delete ptr;
-	}
-};
-
-template<nt_family family>
-inline nt_user_process_information* nt_process_create_impl(void* __restrict fhandle,win32_process_io const& processio)
+template <nt_family family>
+inline nt_user_process_information nt_process_create_impl(void* __restrict fhandle,nt_process_io const& processio)
 {
 	constexpr bool zw{family==nt_family::zw};
-	nt_user_process_information_scoped_ptr uptr(new nt_user_process_information);
 	void* hsection{};
-	check_nt_status(nt_create_section<zw>(__builtin_addressof(hsection),0xf001f /*SECTION_ALL_ACCESS*/,
-		nullptr,nullptr,0x02 /*PAGE_READONLY*/,0x1000000 /*SEC_IMAGE*/,fhandle));
-	basic_nt_family_file<family,char> section(hsection);
+	check_nt_status(::fast_io::win32::nt::nt_create_section<zw>(__builtin_addressof(hsection), 0xf0000 | 0x01 | 0x04 | 0x08,
+		nullptr, nullptr, 0x02 /*PAGE_READ_ONLY*/, 0x1000000 /*SEC_IMAGE*/, fhandle));
+	basic_nt_family_file<family, char> section{hsection};
 	void* const current_process{reinterpret_cast<void*>(static_cast<::std::ptrdiff_t>(-1))};
 	void* hprocess{};
-	check_nt_status(nt_create_process<zw>(__builtin_addressof(hprocess),0x000F0000U|0x00100000U|0xFFF
+	check_nt_status(::fast_io::win32::nt::nt_create_process<zw>(__builtin_addressof(hprocess), 0x000F0000U | 0x00100000U | 0xFFF
 		/*PROCESS_ALL_ACCESS==(STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0xFFF)*/,
 		nullptr,current_process,true,hsection,nullptr,nullptr));
 //	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
 	basic_nt_family_file<family,char> process(hprocess);
 	process_basic_information pb_info{};
-	check_nt_status(nt_query_information_process<zw>(hprocess,process_information_class::ProcessBasicInformation,
+	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(hprocess, process_information_class::ProcessBasicInformation,
 		__builtin_addressof(pb_info),sizeof(pb_info),nullptr));
 
 //	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
 	section_image_information sec_info{};
-	check_nt_status(nt_query_section<zw>(hsection,section_information_class::SectionImageInformation,
+	check_nt_status(::fast_io::win32::nt::nt_query_section<zw>(hsection, section_information_class::SectionImageInformation,
 		__builtin_addressof(sec_info),sizeof(sec_info),nullptr));
 
 	rtl_user_process_parameters rtl_up{};
+#if 0
+	rtl_up.MaximumLength = rtl_up.Length = sizeof(rtl_user_process_parameters)/* + (260 * sizeof(char16_t))*/;
+#endif
 	nt_duplicate_process_std_handles_impl<zw>(hprocess,processio,rtl_up);
-//	check_nt_status(RtlpInitEnvironment(hprocess,pb_info.PebBaseAddress,__builtin_addressof(rtl_up)));
-//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
+	//nt_process_init_enironment<zw>(hprocess, nullptr, __builtin_addressof(rtl_up)); 
+	//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
 	void* hthread{};
 	client_id cid{};
 //	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
-	check_nt_status(RtlCreateUserThread(hprocess,nullptr,true,sec_info.ZeroBits,sec_info.MaximumStackSize,
+	check_nt_status(::fast_io::win32::nt::RtlCreateUserThread(hprocess, nullptr, true, sec_info.ZeroBits, sec_info.MaximumStackSize,
 			sec_info.CommittedStackSize,sec_info.TransferAddress,pb_info.PebBaseAddress,__builtin_addressof(hthread),__builtin_addressof(cid)));
 	basic_nt_family_file<family,char> thread(hthread);
 //	println_freestanding(fast_io::win32_stdout(),::std::source_location::current()," ",cid.hprocess," ",cid.hthread);
 	::std::uint_least32_t lprevcount{};
-	check_nt_status(nt_resume_thread<zw>(hthread,__builtin_addressof(lprevcount)));
+	check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hthread,__builtin_addressof(lprevcount)));
 //	println_freestanding(fast_io::win32_stdout(),::std::source_location::current()," ",lprevcount);
-	*uptr={process.release(),thread.release()};
-	return uptr.release();
+	return {process.release(), thread.release()};
+
 }
 
 template<nt_family family,typename path_type>
-inline nt_user_process_information* nt_create_process_overloads(nt_at_entry entry,path_type const& filename,win32_process_io const& processio)
+inline nt_user_process_information nt_create_process_overloads(nt_at_entry entry,path_type const& filename,nt_process_io const& processio)
 {
-	basic_nt_family_file<family,char> nf(entry,filename,open_mode::in|open_mode::excl);
+	basic_nt_family_file<family,char> nf(entry,filename, open_mode::in | open_mode::excl );
 	return nt_process_create_impl<family>(nf.handle,processio);
 }
 
 template<nt_family family,typename path_type>
-inline nt_user_process_information* nt_create_process_overloads(path_type const& filename,win32_process_io const& processio)
+inline nt_user_process_information nt_create_process_overloads(path_type const& filename,nt_process_io const& processio)
 {
-	basic_nt_family_file<family,char> nf(filename,open_mode::in|open_mode::excl);
+	basic_nt_family_file<family,char> nf(filename, open_mode::in | open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle,processio);
 }
 
 template<nt_family family,typename path_type>
-inline nt_user_process_information* nt_create_process_overloads(::fast_io::nt_fs_dirent ent,win32_process_io const& processio)
+inline nt_user_process_information nt_create_process_overloads(::fast_io::nt_fs_dirent ent,nt_process_io const& processio)
 {
-	basic_nt_family_file<family,char> nf(ent,open_mode::in|open_mode::excl);
+	basic_nt_family_file<family,char> nf(ent, open_mode::in | open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle,processio);
 }
 
@@ -208,7 +173,7 @@ requires (family==nt_family::nt||family==nt_family::zw)
 class nt_family_process_observer
 {
 public:
-	using native_handle_type = nt_user_process_information*;
+	using native_handle_type = nt_user_process_information;
 	native_handle_type hnt_user_process_info{};
 	constexpr auto& native_handle() noexcept
 	{
@@ -220,7 +185,7 @@ public:
 	}
 	explicit constexpr operator bool() const noexcept
 	{
-		return hnt_user_process_info;
+		return reinterpret_cast<::std::size_t>(hnt_user_process_info.hprocess) | reinterpret_cast<::std::size_t>(hnt_user_process_info.hthread);
 	}
 	inline constexpr native_handle_type release() noexcept
 	{
@@ -236,6 +201,7 @@ inline void detach(nt_family_process_observer<family>& ppob) noexcept
 	win32::nt::details::close_nt_user_process_information<family==nt_family::zw>(ppob.hnt_user_process_info);
 	ppob.hnt_user_process_info=nullptr;
 }
+
 #if 0
 struct nt_wait_status
 {
@@ -309,25 +275,22 @@ template<nt_family family>
 class nt_family_process:public nt_family_process_observer<family>
 {
 public:
-	using native_handle_type = nt_user_process_information*;
+	using native_handle_type = nt_user_process_information;
 	constexpr nt_family_process() noexcept = default;
 	template<typename native_hd>
 	requires ::std::same_as<native_handle_type,::std::remove_cvref_t<native_hd>>
 	explicit constexpr nt_family_process(native_hd hd) noexcept:nt_family_process_observer<family>{hd}{}
 
 	template<::fast_io::constructible_to_os_c_str path_type>
-	explicit nt_family_process(nt_at_entry nate,path_type const& filename,win32_process_io const& processio):
-		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(nate,filename,processio)}
-	{}
+	explicit nt_family_process(nt_at_entry nate,path_type const& filename,nt_process_io const& processio):
+		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(nate,filename,processio)}{}
 
 	template<::fast_io::constructible_to_os_c_str path_type>
-	explicit nt_family_process(path_type const& filename,win32_process_io const& processio):
-		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(filename,processio)}
-	{}
+	explicit nt_family_process(path_type const& filename,nt_process_io const& processio):
+		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(filename,processio)}{}
 
-	explicit nt_family_process(::fast_io::nt_fs_dirent ent,win32_process_io const& processio):
-		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(ent,processio)}
-	{}
+	explicit nt_family_process(::fast_io::nt_fs_dirent ent,nt_process_io const& processio):
+		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(ent,processio)}{}
 
 	nt_family_process(nt_family_process const& b)=delete;
 	nt_family_process& operator=(nt_family_process const& b)=delete;
