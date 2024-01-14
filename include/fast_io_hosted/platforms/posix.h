@@ -328,7 +328,7 @@ namespace details
 {
 
 /*
-Warning! cygwin's _get_osfhandle has the same name as msvcrt or ucrt's name, but they are completely different functions. Also, it returns long, not ::std::intptr_t
+Warning! cygwin's _get_osfhandle has the same name as msvcrt or ucrt's name, but they are completely different functions. Also, it returns long, not ::std::ptrdiff_t
 */
 #if defined(__CYGWIN__)
 #if (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
@@ -359,7 +359,7 @@ inline void* my_get_osfile_handle(int fd) noexcept
 		return nullptr;
 	return reinterpret_cast<void*>(static_cast<::std::size_t>(static_cast<unsigned long>(ret)));
 #else
-	::std::intptr_t ret{noexcept_call(_get_osfhandle,fd)};
+	::std::ptrdiff_t ret{noexcept_call(_get_osfhandle,fd)};
 	if(ret==-1)
 		return nullptr;
 	return reinterpret_cast<void*>(ret);
@@ -666,7 +666,7 @@ namespace details
 template<posix_open_mode_text_behavior behavior>
 inline int open_fd_from_handle_impl(void* handle,open_mode md)
 {
-	int fd{::fast_io::noexcept_call(_open_osfhandle,reinterpret_cast<::std::intptr_t>(handle),
+	int fd{::fast_io::noexcept_call(_open_osfhandle,reinterpret_cast<::std::ptrdiff_t>(handle),
 		details::calculate_posix_open_mode_for_win32_handle<behavior>(md))};
 	if(fd==-1)
 		throw_posix_error();
@@ -860,7 +860,7 @@ inline int my_open_posix_fd_temp_file()
 {
 #if (defined(_WIN32) && !defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 	::fast_io::basic_win32_file<char> wf(::fast_io::io_temp);
-	int fd{::fast_io::noexcept_call(_open_osfhandle,reinterpret_cast<::std::intptr_t>(wf.handle),_O_BINARY)};
+	int fd{::fast_io::noexcept_call(_open_osfhandle,reinterpret_cast<::std::ptrdiff_t>(wf.handle),_O_BINARY)};
 	if(fd==-1)
 		throw_posix_error();
 	wf.release();

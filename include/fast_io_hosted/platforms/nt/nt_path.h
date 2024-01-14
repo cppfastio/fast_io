@@ -106,7 +106,7 @@ inline auto nt_call_callback(void* directory, char_type const* filename,::std::s
 {
 	if(directory==nullptr)
 		throw_nt_error(0xC0000008);	//STATUS_INVALID_HANDLE
-	else if(directory==reinterpret_cast<void*>(::std::intptr_t(-3)))
+	else if(directory==reinterpret_cast<void*>(::std::ptrdiff_t(-3)))
 		return nt_call_invoke_without_directory_handle(filename,filename_len,callback);
 	return nt_call_invoke_with_directory_handle_impl(directory,filename,filename_len,callback);
 }
@@ -139,7 +139,7 @@ inline auto nt_call_kernel_callback(void* directory,char16_t const* filename,::s
 {
 	if(directory==nullptr)
 		throw_nt_error(0xC0000008);	//STATUS_INVALID_HANDLE
-	else if(directory==reinterpret_cast<void*>(::std::intptr_t(-3)))
+	else if(directory==reinterpret_cast<void*>(::std::ptrdiff_t(-3)))
 		directory=nullptr;
 	return nt_call_kernel_common_impl(directory,filename,filename_len,callback);
 }

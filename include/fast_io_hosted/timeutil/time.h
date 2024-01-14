@@ -257,7 +257,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	::fast_io::win32::filetime creation_time,exit_time,kernel_time,user_time;
 	if constexpr(is_thread)
 	{
-		auto hthread{bit_cast<void*>(::std::intptr_t(-2))};
+		auto hthread{bit_cast<void*>(::std::ptrdiff_t(-2))};
 		if(!::fast_io::win32::GetThreadTimes(hthread,__builtin_addressof(creation_time),
 		__builtin_addressof(exit_time),
 		__builtin_addressof(kernel_time),
@@ -266,7 +266,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	}
 	else
 	{
-		auto hprocess{bit_cast<void*>(::std::intptr_t(-1))};
+		auto hprocess{bit_cast<void*>(::std::ptrdiff_t(-1))};
 		if(!::fast_io::win32::GetProcessTimes(hprocess,__builtin_addressof(creation_time),
 		__builtin_addressof(exit_time),
 		__builtin_addressof(kernel_time),

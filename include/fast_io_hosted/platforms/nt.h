@@ -504,7 +504,7 @@ struct nt_at_entry
 #endif
 inline nt_at_entry nt_at_fdcwd() noexcept
 {
-	constexpr ::std::intptr_t value{-3};	//use -3 as at_fdwcd handle
+	constexpr ::std::ptrdiff_t value{-3};	//use -3 as at_fdwcd handle
 	return nt_at_entry{bit_cast<void*>(value)};
 }
 
@@ -756,7 +756,7 @@ inline ::fast_io::intfpos_t nt_seek_impl(void* __restrict handle,::fast_io::intf
 template<bool zw>
 inline void* nt_dup_impl(void* handle)
 {
-	void* current_process{reinterpret_cast<void*>(static_cast<intptr_t>(-1))};
+	void* current_process{reinterpret_cast<void*>(static_cast<ptrdiff_t>(-1))};
 	void* new_handle{};
 	auto status{win32::nt::nt_duplicate_object<zw>(current_process,handle,current_process,__builtin_addressof(new_handle),0,0x00000002L,2)};
 	if(status)

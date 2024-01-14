@@ -146,7 +146,7 @@ inline nt_user_process_information* nt_process_create_impl(void* __restrict fhan
 	check_nt_status(nt_create_section<zw>(__builtin_addressof(hsection),0xf001f /*SECTION_ALL_ACCESS*/,
 		nullptr,nullptr,0x02 /*PAGE_READONLY*/,0x1000000 /*SEC_IMAGE*/,fhandle));
 	basic_nt_family_file<family,char> section(hsection);
-	void* const current_process{reinterpret_cast<void*>(static_cast<::std::intptr_t>(-1))};
+	void* const current_process{reinterpret_cast<void*>(static_cast<::std::ptrdiff_t>(-1))};
 	void* hprocess{};
 	check_nt_status(nt_create_process<zw>(__builtin_addressof(hprocess),0x000F0000U|0x00100000U|0xFFF
 		/*PROCESS_ALL_ACCESS==(STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0xFFF)*/,

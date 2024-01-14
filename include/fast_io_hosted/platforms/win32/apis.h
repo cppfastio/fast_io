@@ -524,7 +524,7 @@ __asm__("FreeLibrary")
 #endif
 ;
 
-using farproc = intptr_t(
+using farproc = ptrdiff_t(
 #if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
 __stdcall
 #elif (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
