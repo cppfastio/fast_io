@@ -75,20 +75,20 @@ inline void check_nt_status(::std::uint_least32_t status)
 }
 
 template<bool zw>
-inline void* nt_duplicate_process_std_handle_impl(void* __restrict hprocess,win32_io_redirection const& redi)
+inline void* nt_duplicate_process_std_handle_impl(void* __restrict hprocess,nt_io_redirection const& redi)
 {
 	void* const current_process{};
 	void* ptr{};
-	if(redi.win32_handle)[[likely]]
+	if(redi.nt_handle)[[likely]]
 	{
-		check_nt_status(nt_duplicate_object<zw>(hprocess,current_process,redi.win32_handle,__builtin_addressof(ptr),0,0,
+		check_nt_status(nt_duplicate_object<zw>(hprocess,current_process,redi.nt_handle,__builtin_addressof(ptr),0,0,
 		/*DUPLICATE_SAME_ACCESS|DUPLICATE_SAME_ATTRIBUTES*/0x00000004|0x00000002));
 	}
 	return ptr;
 }
 
 template<bool zw>
-inline void nt_duplicate_process_std_handles_impl(void* __restrict hprocess,win32_process_io const& processio,rtl_user_process_parameters& para)
+inline void nt_duplicate_process_std_handles_impl(void* __restrict hprocess,nt_process_io const& processio,rtl_user_process_parameters& para)
 {
 	para.StandardInput=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.in);
 	para.StandardOutput=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.out);
@@ -99,6 +99,23 @@ inline void nt_duplicate_process_std_handles_impl(void* __restrict hprocess,win3
 Referenced from ReactOS
 https://doxygen.reactos.org/d3/d4d/sdk_2lib_2rtl_2process_8c.html
 */
+
+enum PRIORITY_CLASS : unsigned char
+{
+	Undefined,
+	Idle,
+	Normal,
+	High,
+	Realtime,
+	BelowNormal,
+	AboveNormal
+};
+
+struct PROCESS_PRIORITY_CLASS
+{
+	bool Foreground;
+	PRIORITY_CLASS PriorityClass;
+};
 
 template <nt_family family>
 inline nt_user_process_information nt_process_create_impl(void* __restrict fhandle,nt_process_io const& processio)
@@ -118,6 +135,9 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	process_basic_information pb_info{};
 	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(hprocess, process_information_class::ProcessBasicInformation,
 		__builtin_addressof(pb_info),sizeof(pb_info),nullptr));
+	PROCESS_PRIORITY_CLASS pb_info2{};
+	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(hprocess, process_information_class::ProcessPriorityClass,
+		(process_basic_information*)__builtin_addressof(pb_info2), sizeof(pb_info2), nullptr));
 
 //	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
 	section_image_information sec_info{};
@@ -128,7 +148,7 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 #if 0
 	rtl_up.MaximumLength = rtl_up.Length = sizeof(rtl_user_process_parameters)/* + (260 * sizeof(char16_t))*/;
 #endif
-	nt_duplicate_process_std_handles_impl<zw>(hprocess,processio,rtl_up);
+	//nt_duplicate_process_std_handles_impl<zw>(hprocess,processio,rtl_up);
 	//nt_process_init_enironment<zw>(hprocess, nullptr, __builtin_addressof(rtl_up)); 
 	//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
 	void* hthread{};

@@ -228,7 +228,7 @@ extern ::std::uint_least32_t
 __stdcall
 #endif
 NtQueryInformationProcess(void* __restrict,
-		process_information_class,process_basic_information*,
+		process_information_class, void*,
 		::std::uint_least32_t,::std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -256,7 +256,7 @@ extern ::std::uint_least32_t
 __stdcall
 #endif
 ZwQueryInformationProcess(void* __restrict,
-		process_information_class,process_basic_information*,
+		process_information_class,void*,
 		::std::uint_least32_t,::std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -1670,7 +1670,6 @@ inline ::std::uint_least32_t nt_create_user_process(Args... args) noexcept {
 	else
 		return NtCreateUserProcess(args...);
 }
-
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
