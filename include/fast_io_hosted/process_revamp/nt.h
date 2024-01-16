@@ -9,6 +9,40 @@ struct nt_user_process_information
 	void* hthread{};
 };
 
+struct nt_process_args
+{
+	char const* const* args{};
+	bool is_dynamic_allocated{};
+	inline constexpr nt_process_args(char const* const* envir) noexcept :args(envir) {}
+	template<::std::random_access_iterator Iter>
+		requires (::std::convertible_to<::std::iter_value_t<Iter>, char const*> || requires(::std::iter_value_t<Iter> v)
+	{
+		{ v.c_str() }->::std::convertible_to<char const*>;
+	})
+		inline constexpr nt_process_args(Iter begin, Iter end) :
+		args(details::dup_enviro_entry(begin, end)), is_dynamic_allocated(true)
+	{}
+	template<::std::ranges::random_access_range range>
+		requires (::std::convertible_to<::std::ranges::range_value_t<range>, char const*> || requires(::std::ranges::range_value_t<range> v)
+	{
+		{ v.c_str() }->::std::convertible_to<char const*>;
+	})
+		inline constexpr nt_process_args(range&& rg) :nt_process_args(::std::ranges::cbegin(rg), ::std::ranges::cend(rg))
+	{}
+	inline constexpr nt_process_args(::std::initializer_list<char const*> ilist) :
+		nt_process_args(ilist.begin(), ilist.end()) {}
+	nt_process_args(nt_process_args const&) = delete;
+	nt_process_args& operator=(nt_process_args const&) = delete;
+#if __cpp_constexpr_dynamic_alloc >= 201907L
+	inline constexpr
+#endif
+		~nt_process_args()
+	{
+		if (is_dynamic_allocated)
+			delete[] args;
+	}
+};
+
 namespace win32::nt::details
 {
 template<nt_family family>
@@ -100,69 +134,55 @@ Referenced from ReactOS
 https://doxygen.reactos.org/d3/d4d/sdk_2lib_2rtl_2process_8c.html
 */
 
-enum PRIORITY_CLASS : unsigned char
+inline void push_process_parameters() 
 {
-	Undefined,
-	Idle,
-	Normal,
-	High,
-	Realtime,
-	BelowNormal,
-	AboveNormal
-};
 
-struct PROCESS_PRIORITY_CLASS
-{
-	bool Foreground;
-	PRIORITY_CLASS PriorityClass;
-};
+}
 
 template <nt_family family>
-inline nt_user_process_information nt_process_create_impl(void* __restrict fhandle,nt_process_io const& processio)
+inline nt_user_process_information nt_process_create_impl(void* __restrict fhandle, nt_process_io const& processio)
 {
 	constexpr bool zw{family==nt_family::zw};
+
+	// Section
 	void* hsection{};
-	check_nt_status(::fast_io::win32::nt::nt_create_section<zw>(__builtin_addressof(hsection), 0xf0000 | 0x01 | 0x04 | 0x08,
+	check_nt_status(::fast_io::win32::nt::nt_create_section<zw>(__builtin_addressof(hsection), 0xf001f /*SECTION_ALL_ACCESS*/,
 		nullptr, nullptr, 0x02 /*PAGE_READ_ONLY*/, 0x1000000 /*SEC_IMAGE*/, fhandle));
 	basic_nt_family_file<family, char> section{hsection};
 	void* const current_process{reinterpret_cast<void*>(static_cast<::std::ptrdiff_t>(-1))};
+
+	// Process
 	void* hprocess{};
-	check_nt_status(::fast_io::win32::nt::nt_create_process<zw>(__builtin_addressof(hprocess), 0x000F0000U | 0x00100000U | 0xFFF
-		/*PROCESS_ALL_ACCESS==(STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0xFFF)*/,
-		nullptr,current_process,true,hsection,nullptr,nullptr));
-//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
+	check_nt_status(::fast_io::win32::nt::nt_create_process<zw>(__builtin_addressof(hprocess),
+		0x000F0000U | 0x00100000U | 0xFFF /*PROCESS_ALL_ACCESS*/,
+		nullptr, current_process, true, hsection, nullptr, nullptr));
 	basic_nt_family_file<family,char> process(hprocess);
+
+	// PROCESS_BASIC_INFO
 	process_basic_information pb_info{};
 	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(hprocess, process_information_class::ProcessBasicInformation,
 		__builtin_addressof(pb_info),sizeof(pb_info),nullptr));
-	PROCESS_PRIORITY_CLASS pb_info2{};
-	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(hprocess, process_information_class::ProcessPriorityClass,
-		(process_basic_information*)__builtin_addressof(pb_info2), sizeof(pb_info2), nullptr));
+	peb* peb_base_address{reinterpret_cast<peb*>(pb_info.PebBaseAddress)};
 
-//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
-	section_image_information sec_info{};
-	check_nt_status(::fast_io::win32::nt::nt_query_section<zw>(hsection, section_information_class::SectionImageInformation,
-		__builtin_addressof(sec_info),sizeof(sec_info),nullptr));
-
+	// PushProcessParameters (BasePushProcessParameters)
 	rtl_user_process_parameters rtl_up{};
-#if 0
-	rtl_up.MaximumLength = rtl_up.Length = sizeof(rtl_user_process_parameters)/* + (260 * sizeof(char16_t))*/;
-#endif
-	//nt_duplicate_process_std_handles_impl<zw>(hprocess,processio,rtl_up);
-	//nt_process_init_enironment<zw>(hprocess, nullptr, __builtin_addressof(rtl_up)); 
-	//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
+	if (peb_base_address && peb_base_address->ProcessParameters) [[likely]]
+		rtl_up = &peb_base_address->ProcessParameters;
+	nt_duplicate_process_std_handles_impl<zw>(hprocess,processio,rtl_up);
+
+	// Thread
 	void* hthread{};
 	client_id cid{};
-//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current());
+	section_image_information sec_info{};
+	check_nt_status(::fast_io::win32::nt::nt_query_section<zw>(hsection, section_information_class::SectionImageInformation,
+		__builtin_addressof(sec_info), sizeof(sec_info), nullptr));
+
 	check_nt_status(::fast_io::win32::nt::RtlCreateUserThread(hprocess, nullptr, true, sec_info.ZeroBits, sec_info.MaximumStackSize,
 			sec_info.CommittedStackSize,sec_info.TransferAddress,pb_info.PebBaseAddress,__builtin_addressof(hthread),__builtin_addressof(cid)));
 	basic_nt_family_file<family,char> thread(hthread);
-//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current()," ",cid.hprocess," ",cid.hthread);
 	::std::uint_least32_t lprevcount{};
 	check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hthread,__builtin_addressof(lprevcount)));
-//	println_freestanding(fast_io::win32_stdout(),::std::source_location::current()," ",lprevcount);
 	return {process.release(), thread.release()};
-
 }
 
 template<nt_family family,typename path_type>
@@ -252,43 +272,6 @@ inline nt_wait_status wait(nt_process_observer ppob)
 			throw_nt_error(status2);
 	}
 }
-#endif
-
-
-#if 0
-struct nt_process_args
-{
-	char const* const* args{};
-	bool is_dynamic_allocated{};
-	inline constexpr nt_process_args(char const* const* envir) noexcept:args(envir){}
-	template<::std::random_access_iterator Iter>
-	requires (::std::convertible_to<::std::iter_value_t<Iter>,char const*>||requires(::std::iter_value_t<Iter> v)
-	{
-		{v.c_str()}->::std::convertible_to<char const*>;
-	})
-	inline constexpr nt_process_args(Iter begin,Iter end):
-		args(details::dup_enviro_entry(begin,end)),is_dynamic_allocated(true)
-	{}
-	template<::std::ranges::random_access_range range>
-	requires (::std::convertible_to<::std::ranges::range_value_t<range>,char const*>||requires(::std::ranges::range_value_t<range> v)
-	{
-		{v.c_str()}->::std::convertible_to<char const*>;
-	})
-	inline constexpr nt_process_args(range&& rg):nt_process_args(::std::ranges::cbegin(rg),::std::ranges::cend(rg))
-	{}
-	inline constexpr nt_process_args(::std::initializer_list<char const*> ilist):
-		nt_process_args(ilist.begin(),ilist.end()){}
-	nt_process_args(nt_process_args const&)=delete;
-	nt_process_args& operator=(nt_process_args const&)=delete;
-#if __cpp_constexpr_dynamic_alloc >= 201907L
-	inline constexpr
-#endif
-	~nt_process_args()
-	{
-		if(is_dynamic_allocated)
-			delete[] args;
-	}
-};
 #endif
 
 template<nt_family family>

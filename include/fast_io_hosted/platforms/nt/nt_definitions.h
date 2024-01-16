@@ -620,4 +620,21 @@ enum class section_inherit {
 	ViewUnmap = 2
 };
 
+enum priority_class : ::std::uint_least8_t
+{
+	Undefined,
+	Idle,
+	Normal,
+	High,
+	Realtime,
+	BelowNormal,
+	AboveNormal
+};
+
+struct process_priority_class
+{
+	bool Foreground;
+	priority_class PriorityClass;
+};
+
 }

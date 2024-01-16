@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #if !defined(__MSDOS__) && !defined(__NEWLIB__) && !defined(__wasi__) && !defined(_PICOLIBC__)
-
+#include"base.h"
 #if defined(_WIN32) && !defined(_WIN32_WINDOWS)
 #include"nt.h"
 namespace fast_io {
