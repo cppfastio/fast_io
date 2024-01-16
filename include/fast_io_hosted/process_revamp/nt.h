@@ -122,11 +122,13 @@ inline void* nt_duplicate_process_std_handle_impl(void* __restrict hprocess,nt_i
 }
 
 template<bool zw>
-inline void nt_duplicate_process_std_handles_impl(void* __restrict hprocess,nt_process_io const& processio,rtl_user_process_parameters& para)
+inline void nt_duplicate_process_std_handles_impl(void* __restrict hprocess, nt_process_io const& processio, rtl_user_process_parameters* __restrict para)
 {
-	para.StandardInput=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.in);
-	para.StandardOutput=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.out);
-	para.StandardError=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.err);
+	if (!para) [[unlikely]]
+		return;
+	para->StandardInput=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.in);
+	para->StandardOutput=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.out);
+	para->StandardError=nt_duplicate_process_std_handle_impl<zw>(hprocess,processio.err);
 }
 
 /*
@@ -162,14 +164,18 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	process_basic_information pb_info{};
 	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(hprocess, process_information_class::ProcessBasicInformation,
 		__builtin_addressof(pb_info),sizeof(pb_info),nullptr));
-	peb* peb_base_address{reinterpret_cast<peb*>(pb_info.PebBaseAddress)};
 
 	// PushProcessParameters (BasePushProcessParameters)
-	rtl_user_process_parameters rtl_up{};
-	if (peb_base_address && peb_base_address->ProcessParameters) [[likely]]
-		rtl_up = &peb_base_address->ProcessParameters;
-	nt_duplicate_process_std_handles_impl<zw>(hprocess,processio,rtl_up);
 
+	// Duplicate Process Std Handles
+	rtl_user_process_parameters* rtl_up{};
+	check_nt_status(::fast_io::win32::nt::nt_read_virtual_memory<zw>(hprocess,
+																	 __builtin_addressof(reinterpret_cast<peb*>(pb_info.PebBaseAddress)->ProcessParameters),
+																	 __builtin_addressof(rtl_up),
+																	 sizeof(rtl_up),
+																	 nullptr));
+	nt_duplicate_process_std_handles_impl<zw>(hprocess, processio, rtl_up);
+	
 	// Thread
 	void* hthread{};
 	client_id cid{};
@@ -180,6 +186,10 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	check_nt_status(::fast_io::win32::nt::RtlCreateUserThread(hprocess, nullptr, true, sec_info.ZeroBits, sec_info.MaximumStackSize,
 			sec_info.CommittedStackSize,sec_info.TransferAddress,pb_info.PebBaseAddress,__builtin_addressof(hthread),__builtin_addressof(cid)));
 	basic_nt_family_file<family,char> thread(hthread);
+
+	// Call Windows Server
+
+	// Resume Thread
 	::std::uint_least32_t lprevcount{};
 	check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hthread,__builtin_addressof(lprevcount)));
 	return {process.release(), thread.release()};

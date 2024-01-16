@@ -170,3 +170,5 @@
 #pragma comment(linker,"/alternatename:__imp_?SetConsoleOutputCP@win32@fast_io@@YGHI@Z=__imp__SetConsoleOutputCP@4")
 #pragma comment(linker,"/alternatename:__imp_?GetConsoleCP@win32@fast_io@@YGIXZ=__imp__GetConsoleCP@0")
 #pragma comment(linker,"/alternatename:__imp_?GetConsoleOutputCP@win32@fast_io@@YGIXZ=__imp__GetConsoleOutputCP@0")
+#pragma comment(linker,"/alternatename:__imp_?NtReadVirtualMemory@nt@win32@fast_io@@YGIPAX00IPAI@Z=__imp__NtReadVirtualMemory@20")
+#pragma comment(linker,"/alternatename:__imp_?ZwReadVirtualMemory@nt@win32@fast_io@@YGIPAX00IPAI@Z=__imp__ZwReadVirtualMemory@20")
