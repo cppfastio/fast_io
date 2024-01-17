@@ -116,33 +116,19 @@ inline void check_nt_status(::std::uint_least32_t status)
 }
 
 template<bool zw>
-inline void* nt_duplicate_process_std_handle_impl(void* __restrict hprocess,nt_io_redirection const& redi)
+inline void* nt_duplicate_process_std_handle_impl(void* __restrict hprocess, nt_io_redirection const& redi)
 {
-	void* const current_process{};
+	void* const current_process{reinterpret_cast<void*>(-1)};
 	void* ptr{};
 	if(redi.nt_handle)[[likely]]
 	{
-		check_nt_status(::fast_io::win32::nt::nt_duplicate_object<zw>(hprocess, current_process, redi.nt_handle, __builtin_addressof(ptr), 0, 0,
+		check_nt_status(::fast_io::win32::nt::nt_duplicate_object<zw>(current_process, redi.nt_handle, hprocess, __builtin_addressof(ptr), 0, 0,
 		/*DUPLICATE_SAME_ACCESS|DUPLICATE_SAME_ATTRIBUTES*/0x00000004|0x00000002));
 	}
 	return ptr;
 }
 
-template<bool zw>
-inline void nt_duplicate_process_std_handles_impl(void* __restrict hprocess, nt_process_io const& processio, rtl_user_process_parameters* __restrict para)
-{
-	if (!para) [[unlikely]]
-		return;
-	void* ptr{};
-	ptr = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.in);
-	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hprocess, __builtin_addressof(para->StandardInput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-	ptr = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.out);
-	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hprocess, __builtin_addressof(para->StandardOutput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-	ptr = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.err);
-	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hprocess, __builtin_addressof(para->StandardError), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-}
-
-inline void copy_parameter_string(char16_t** Ptr, unicode_string* Destination, unicode_string* Source, ::std::uint_least16_t Size) noexcept
+inline void copy_parameter_string(char16_t** Ptr, unicode_string* Destination, unicode_string const* Source, ::std::uint_least16_t Size) noexcept
 {
 	Destination->Length = Source->Length;
 	Destination->MaximumLength = Size ? Size : Source->MaximumLength;
@@ -158,25 +144,17 @@ inline constexpr ::std::uint_least32_t align(::std::uint_least32_t x, ::std::uin
 }
 
 template <bool zw>
-inline void nt_push_process_parameters(void* __restrict hprocess, char const* const* args, char const* const* envs, rtl_user_process_parameters* __restrict para)
+inline void nt_push_process_parameters_and_duplicate_process_std_handles(void* __restrict hprocess, char const* const* args, char const* const* envs, nt_process_io const& __restrict processio, void* __restrict remote_peb)
 {
-	if (!para) [[unlikely]]
-		return;
-
 	auto c_peb{nt_get_current_peb()};
 	auto this_propara{c_peb->ProcessParameters};
 
 	rtl_user_process_parameters rtl_up{};
 
-	unicode_string EmptyString{};
-	EmptyString.Length = 0;
-	EmptyString.MaximumLength = sizeof(char16_t);
-	EmptyString.Buffer = u"";
-
 	::fast_io::win32::nt::RtlAcquirePebLock();
 
 	::std::uint_least32_t Length{};
-	inline constexpr ::std::uint_least32_t max_path{260};
+	constexpr ::std::uint_least32_t max_path{260};
 
 	Length = sizeof(rtl_user_process_parameters);
 
@@ -185,12 +163,12 @@ inline void nt_push_process_parameters(void* __restrict hprocess, char const* co
 
 	/* add string lengths */
 	Length += align(this_propara->DllPath.MaximumLength, sizeof(::std::uint_least32_t));
-	Length += align(this_propara->ImagePathName->Length + sizeof(char16_t), sizeof(::std::uint_least32_t));
-	Length += align(this_propara->CommandLine->Length + sizeof(char16_t), sizeof(::std::uint_least32_t));
-	Length += align(this_propara->WindowTitle->MaximumLength, sizeof(::std::uint_least32_t));
-	Length += align(this_propara->DesktopInfo->MaximumLength, sizeof(::std::uint_least32_t));
-	Length += align(this_propara->ShellInfo->MaximumLength, sizeof(::std::uint_least32_t));
-	Length += align(this_propara->RuntimeData->MaximumLength, sizeof(::std::uint_least32_t));
+	Length += align(this_propara->ImagePathName.Length + sizeof(char16_t), sizeof(::std::uint_least32_t));
+	Length += align(this_propara->CommandLine.Length + sizeof(char16_t), sizeof(::std::uint_least32_t));
+	Length += align(this_propara->WindowTitle.MaximumLength, sizeof(::std::uint_least32_t));
+	Length += align(this_propara->DesktopInfo.MaximumLength, sizeof(::std::uint_least32_t));
+	Length += align(this_propara->ShellInfo.MaximumLength, sizeof(::std::uint_least32_t));
+	Length += align(this_propara->RuntimeData.MaximumLength, sizeof(::std::uint_least32_t));
 
 	rtl_up.MaximumLength = Length;
 	rtl_up.Length = Length;
@@ -208,7 +186,7 @@ inline void nt_push_process_parameters(void* __restrict hprocess, char const* co
 	char16_t* Dest{reinterpret_cast<char16_t*>(reinterpret_cast<::std::byte*>(__builtin_addressof(rtl_up)) + sizeof(rtl_user_process_parameters))};
 	
 	/* copy current directory */
-	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.CurrentDirectory.DosPath), this_propara->CurrentDirectory.DosPath, max_path * sizeof(char16_t));
+	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.CurrentDirectory.DosPath), __builtin_addressof(this_propara->CurrentDirectory.DosPath), max_path * sizeof(char16_t));
 
 	/* make sure the current directory has a trailing backslash */
 	if (rtl_up.CurrentDirectory.DosPath.Length > 0) {
@@ -221,13 +199,13 @@ inline void nt_push_process_parameters(void* __restrict hprocess, char const* co
 	}
 
 	/* copy dll path */
-	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.DllPath), this_propara->DllPath,0);
+	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.DllPath), __builtin_addressof(this_propara->DllPath), 0);
 
 	/* copy image path name */
 	{
 		unicode_string ImagePathName_temp{};
 		// to do
-		copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.ImagePathName), ImagePathName_temp, ImagePathName_temp.Length + sizeof(char16_t));
+		copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.ImagePathName), __builtin_addressof(ImagePathName_temp), ImagePathName_temp.Length + sizeof(char16_t));
 	}
 
 	/* copy command line */
@@ -236,24 +214,43 @@ inline void nt_push_process_parameters(void* __restrict hprocess, char const* co
 		// to do
 	} 
 	else 
-		copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.CommandLine), EmptyString, EmptyString.Length + sizeof(char16_t));
+	{
+		rtl_up.CommandLine.Length = 0;
+		rtl_up.CommandLine.MaximumLength = sizeof(char16_t);
+		rtl_up.CommandLine.Buffer = Dest;
+		*rtl_up.CommandLine.Buffer = 0;
+		Dest++;
+	}
 
 	/* copy title */
-	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.WindowTitle), this_propara->WindowTitle, 0);
+	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.WindowTitle), __builtin_addressof(this_propara->WindowTitle), 0);
 
 	/* copy desktop */
-	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.DesktopInfo), this_propara->DesktopInfo, 0);
+	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.DesktopInfo), __builtin_addressof(this_propara->DesktopInfo), 0);
 
 	/* copy shell info */
-	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.ShellInfo), this_propara->ShellInfo, 0);
+	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.ShellInfo), __builtin_addressof(this_propara->ShellInfo), 0);
 
 	/* copy runtime info */
-	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.RuntimeData), this_propara->RuntimeData, 0);
+	copy_parameter_string(__builtin_addressof(Dest), __builtin_addressof(rtl_up.RuntimeData), __builtin_addressof(this_propara->RuntimeData), 0);
 
 	::fast_io::win32::nt::RtlReleasePebLock();
 
-	// to do
-	// https://github.com/reactos/reactos/blob/89d8b472af5b5c3960cbe92f9521b9d866398798/dll/win32/kernel32/client/proc.c#L746
+	/* Duplicate Process Std Handles */
+	rtl_up.StandardInput = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.in);
+	rtl_up.StandardOutput = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.out);
+	rtl_up.StandardError = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.err);
+
+	/* Allocate and Initialize new Environment Block */
+	rtl_user_process_parameters* RemoteParameters{};
+	::std::size_t Size{rtl_up.Length};
+	check_nt_status(::fast_io::win32::nt::nt_allocate_virtual_memory<zw>(hprocess, reinterpret_cast<void**>(__builtin_addressof(RemoteParameters)), 0, __builtin_addressof(Size), 0x1000 /*MEM_COMMIT*/, 0x04 /*PAGE_READWRITE*/));
+
+    /* Write the Parameter Block */
+	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hprocess, RemoteParameters, __builtin_addressof(rtl_up), rtl_up.Length, nullptr));
+
+	/* Write the PEB Pointer */
+	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hprocess, __builtin_addressof(reinterpret_cast<peb*>(remote_peb)->ProcessParameters), __builtin_addressof(RemoteParameters), sizeof(void*), nullptr));
 }
 
 template <nt_family family>
@@ -280,17 +277,8 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(hprocess, process_information_class::ProcessBasicInformation,
 		__builtin_addressof(pb_info),sizeof(pb_info),nullptr));
 
-	// PushProcessParameters
-	rtl_user_process_parameters* rtl_up{};
-	check_nt_status(::fast_io::win32::nt::nt_read_virtual_memory<zw>(hprocess,
-																	 __builtin_addressof(reinterpret_cast<peb*>(pb_info.PebBaseAddress)->ProcessParameters),
-																	 __builtin_addressof(rtl_up),
-																	 sizeof(rtl_up),
-																	 nullptr));
-	nt_push_process_parameters<zw>(hprocess, args, envs, rtl_up);
-
-	// Duplicate Process Std Handles
-	nt_duplicate_process_std_handles_impl<zw>(hprocess, processio, rtl_up);
+	// Push Process Parameters and Duplicate Process Std Handles
+	nt_push_process_parameters_and_duplicate_process_std_handles<zw>(hprocess, args, envs, processio, pb_info.PebBaseAddress);
 	
 	// Thread
 	void* hthread{};

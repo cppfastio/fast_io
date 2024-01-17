@@ -176,3 +176,5 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwWriteVirtualMemory@nt@win32@fast_io@@YAIPAX00IPAI@Z=__imp_ZwWriteVirtualMemory")
 #pragma comment(linker,"/alternatename:__imp_?RtlAcquirePebLock@nt@win32@fast_io@@YAIXZ=__imp_RtlAcquirePebLock")
 #pragma comment(linker,"/alternatename:__imp_?RtlReleasePebLock@nt@win32@fast_io@@YAIXZ=__imp_RtlReleasePebLock")
+#pragma comment(linker,"/alternatename:__imp_?NtAllocateVirtualMemory@nt@win32@fast_io@@YAIPAXPAPAXIPAIII@Z=__imp_NtAllocateVirtualMemory")
+#pragma comment(linker,"/alternatename:__imp_?ZwAllocateVirtualMemory@nt@win32@fast_io@@YAIPAXPAPAXIPAIII@Z=__imp_ZwAllocateVirtualMemory")
