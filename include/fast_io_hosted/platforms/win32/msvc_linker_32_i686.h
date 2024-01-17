@@ -172,3 +172,7 @@
 #pragma comment(linker,"/alternatename:__imp_?GetConsoleOutputCP@win32@fast_io@@YGIXZ=__imp__GetConsoleOutputCP@0")
 #pragma comment(linker,"/alternatename:__imp_?NtReadVirtualMemory@nt@win32@fast_io@@YGIPAX00IPAI@Z=__imp__NtReadVirtualMemory@20")
 #pragma comment(linker,"/alternatename:__imp_?ZwReadVirtualMemory@nt@win32@fast_io@@YGIPAX00IPAI@Z=__imp__ZwReadVirtualMemory@20")
+#pragma comment(linker,"/alternatename:__imp_?NtWriteVirtualMemory@nt@win32@fast_io@@YGIPAX00IPAI@Z=__imp__NtWriteVirtualMemory@20")
+#pragma comment(linker,"/alternatename:__imp_?ZwWriteVirtualMemory@nt@win32@fast_io@@YGIPAX00IPAI@Z=__imp__ZwWriteVirtualMemory@20")
+#pragma comment(linker,"/alternatename:__imp_?RtlAcquirePebLock@nt@win32@fast_io@@YGIXZ=__imp__RtlAcquirePebLock@0")
+#pragma comment(linker,"/alternatename:__imp_?RtlReleasePebLock@nt@win32@fast_io@@YGIXZ=__imp__RtlReleasePebLock@0")
