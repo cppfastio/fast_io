@@ -1203,7 +1203,7 @@ inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
-#if !defined(_WIN32_WINDOWS)
+#if !defined(_WIN32_WINDOWS) && 0
 template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stdin() noexcept
 {
