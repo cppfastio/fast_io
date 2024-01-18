@@ -35,11 +35,7 @@ mimalloc_allocator
 linux_kmalloc_allocator
 #elif ((__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1) && !defined(_LIBCPP_FREESTANDING)) || defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(FAST_IO_USE_C_MALLOC)
-#if defined(_WIN32_WINDOWS)
 win32_heapalloc_allocator
-#else
-nt_rtlallocateheap_allocator
-#endif
 #else
 c_malloc_allocator
 #endif
