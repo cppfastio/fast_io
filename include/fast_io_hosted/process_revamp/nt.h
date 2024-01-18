@@ -94,16 +94,6 @@ inline void* nt_duplicate_process_std_handle_impl(void* __restrict hprocess, nt_
 	return ptr;
 }
 
-struct nt_concat_parameter {
-	char16_t* ptr{};
-	constexpr nt_concat_parameter(char const* const* args) noexcept
-	{
-
-	}
-	constexpr ~nt_concat_parameter() {
-	}
-};
-
 struct rtl_manage
 {
 	rtl_user_process_parameters* rtl_up{};
@@ -135,7 +125,6 @@ inline void nt_push_process_parameters_and_duplicate_process_std_handles(void* _
 	auto NtImagePath{reinterpret_cast<unicode_string*>(::fast_io::native_thread_local_allocator::allocate(NtImagePath_len))};
 	unicode_string_manage us_man{NtImagePath};
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, NtImagePath, NtImagePath_len, __builtin_addressof(NtImagePath_len)));
-
 
 	rtl_user_process_parameters* rtl_up{};
 	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParameters(__builtin_addressof(rtl_up), NtImagePath, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr));
@@ -172,8 +161,23 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, NtImagePath, NtImagePath_len, __builtin_addressof(NtImagePath_len)));
 
 	// Create the process parameters
+
+	unicode_string ps_para{};
+	char16_t* ps_env{};
+	if (args)
+	{
+
+	}
+	if (envs)
+	{
+
+	}
 	rtl_user_process_parameters* rtl_temp{};
-	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0x01));
+	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
+		__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr,
+		args ? __builtin_addressof(ps_para) : nullptr,
+		envs ? ps_env : nullptr,
+		nullptr, nullptr, nullptr, nullptr, 0x01));
 	rtl_manage rtlm{rtl_temp};
 
 	// Initialize the PS_CREATE_INFO structure
@@ -191,7 +195,9 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	// Create the process
 	void* hProcess{};
 	void* hThread{};
-	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(&hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF, nullptr, nullptr, 0, 0, rtl_temp, &CreateInfo, &AttributeList));
+	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
+		&hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF,
+		nullptr, nullptr, 0, 1, rtl_temp, &CreateInfo, &AttributeList));
 	
 	// PROCESS_BASIC_INFO
 	process_basic_information pb_info{};
@@ -204,6 +210,7 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 																	 __builtin_addressof(rtl_up),
 																	 sizeof(rtl_up),
 																	 nullptr));
+
 	void* ptr{};
 	ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.in);
 	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardInput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
@@ -211,9 +218,13 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardOutput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
 	ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.err);
 	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardError), __builtin_addressof(ptr), sizeof(ptr), nullptr));
+	
+	// Resume Thread
+	::std::uint_least32_t lprevcount{};
+	check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hThread, __builtin_addressof(lprevcount)));
+
 	return {hProcess, hThread};
 #else
-#warning "Hasnt impl"
 	// Not Working!
 	
 	// Section

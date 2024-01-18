@@ -655,4 +655,5 @@ struct rtl_unicode_string_buffer {
 	rtl_buffer ByteBuffer;
 	char16_t MinimumStaticBufferForTerminalNul;
 };
+
 }
