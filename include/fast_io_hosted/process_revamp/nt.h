@@ -9,6 +9,13 @@ struct nt_user_process_information
 	void* hthread{};
 };
 
+struct nt_process_args {
+	char16_t const* args{};
+
+	constexpr nt_process_args() noexcept = default;
+	constexpr nt_process_args(char16_t const* a) noexcept : args{a} {};
+};
+
 namespace win32::nt::details
 {
 template<nt_family family>
@@ -117,7 +124,7 @@ struct unicode_string_manage {
 };
 
 template <bool zw>
-inline void nt_push_process_parameters_and_duplicate_process_std_handles(void* __restrict hprocess, void* __restrict fhandle, char const* const* args, char const* const* envs, nt_process_io const& __restrict processio, void* __restrict remote_peb) 
+inline void nt_push_process_parameters_and_duplicate_process_std_handles(void* __restrict hprocess, void* __restrict fhandle, char16_t const* args, char16_t const* envs, nt_process_io const& __restrict processio, void* __restrict remote_peb) 
 {
 	// Create the NtImagePath
 	::std::uint_least32_t NtImagePath_len{};
@@ -126,8 +133,16 @@ inline void nt_push_process_parameters_and_duplicate_process_std_handles(void* _
 	unicode_string_manage us_man{NtImagePath};
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, NtImagePath, NtImagePath_len, __builtin_addressof(NtImagePath_len)));
 
+	unicode_string ps_para{};
+	if (args) {
+		ps_para.Buffer = const_cast<char16_t*>(args);
+		ps_para.Length = ::fast_io::cstr_len(args);
+		ps_para.MaximumLength = ps_para.Length + sizeof(char16_t);
+	}
 	rtl_user_process_parameters* rtl_up{};
-	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParameters(__builtin_addressof(rtl_up), NtImagePath, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr));
+	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParameters(__builtin_addressof(rtl_up), NtImagePath, nullptr, nullptr,
+																	 args ? __builtin_addressof(ps_para) : nullptr,
+																	 (void*)(envs), nullptr, nullptr, nullptr, nullptr));
 	rtl_manage rtlm{rtl_up};
 
 	/* Duplicate Process Std Handles */
@@ -148,7 +163,7 @@ inline void nt_push_process_parameters_and_duplicate_process_std_handles(void* _
 }
 
 template <nt_family family>
-inline nt_user_process_information nt_process_create_impl(void* __restrict fhandle, char const* const* args, char const* const* envs, nt_process_io const& __restrict processio)
+inline nt_user_process_information nt_process_create_impl(void* __restrict fhandle, char16_t const* args, char16_t const* envs, nt_process_io const& __restrict processio) 
 {
 	constexpr bool zw{family==nt_family::zw};
 
@@ -163,21 +178,17 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 	// Create the process parameters
 
 	unicode_string ps_para{};
-	char16_t* ps_env{};
 	if (args)
 	{
-
-	}
-	if (envs)
-	{
-
+		ps_para.Buffer = const_cast<char16_t*>(args);
+		ps_para.Length = ::fast_io::cstr_len(args);
+		ps_para.MaximumLength = ps_para.Length + sizeof(char16_t);
 	}
 	rtl_user_process_parameters* rtl_temp{};
 	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
 		__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr,
 		args ? __builtin_addressof(ps_para) : nullptr,
-		envs ? ps_env : nullptr,
-		nullptr, nullptr, nullptr, nullptr, 0x01));
+		(void*)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
 	rtl_manage rtlm{rtl_temp};
 
 	// Initialize the PS_CREATE_INFO structure
@@ -212,12 +223,21 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 																	 nullptr));
 
 	void* ptr{};
-	ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.in);
-	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardInput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-	ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.out);
-	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardOutput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-	ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.err);
-	check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardError), __builtin_addressof(ptr), sizeof(ptr), nullptr));
+	if (processio.in.nt_handle)
+	{
+		ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.in);
+		check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardInput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
+	}
+	if (processio.out.nt_handle) 
+	{
+		ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.out);
+		check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardOutput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
+	}
+	if (processio.err.nt_handle) 
+	{
+		ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.err);
+		check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(hProcess, __builtin_addressof(rtl_up->StandardError), __builtin_addressof(ptr), sizeof(ptr), nullptr));
+	}
 	
 	// Resume Thread
 	::std::uint_least32_t lprevcount{};
@@ -270,21 +290,21 @@ inline nt_user_process_information nt_process_create_impl(void* __restrict fhand
 }
 
 template<nt_family family,typename path_type>
-inline nt_user_process_information nt_create_process_overloads(nt_at_entry entry, path_type const& filename, process_args const& args, process_args const& envs, nt_process_io const& processio)
+inline nt_user_process_information nt_create_process_overloads(nt_at_entry entry, path_type const& filename, nt_process_args const& args, nt_process_args const& envs, nt_process_io const& processio)
 {
 	basic_nt_family_file<family,char> nf(entry,filename, open_mode::in | open_mode::excl );
 	return nt_process_create_impl<family>(nf.handle, args.args, envs.args, processio);
 }
 
 template<nt_family family,typename path_type>
-inline nt_user_process_information nt_create_process_overloads(path_type const& filename, process_args const& args, process_args const& envs, nt_process_io const& processio) 
+inline nt_user_process_information nt_create_process_overloads(path_type const& filename, nt_process_args const& args, nt_process_args const& envs, nt_process_io const& processio) 
 {
 	basic_nt_family_file<family,char> nf(filename, open_mode::in | open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle, args.args, envs.args, processio);
 }
 
 template<nt_family family,typename path_type>
-inline nt_user_process_information nt_create_process_overloads(::fast_io::nt_fs_dirent ent, process_args const& args, process_args const& envs, nt_process_io const& processio) 
+inline nt_user_process_information nt_create_process_overloads(::fast_io::nt_fs_dirent ent, nt_process_args const& args, nt_process_args const& envs, nt_process_io const& processio) 
 {
 	basic_nt_family_file<family,char> nf(ent, open_mode::in | open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle, args.args, envs.args, processio);
@@ -369,14 +389,14 @@ public:
 	explicit constexpr nt_family_process(native_hd hd) noexcept:nt_family_process_observer<family>{hd}{}
 
 	template<::fast_io::constructible_to_os_c_str path_type>
-	explicit nt_family_process(nt_at_entry nate, path_type const& filename, process_args const& args, process_args const& envs, nt_process_io const& processio) : 
+	explicit nt_family_process(nt_at_entry nate, path_type const& filename, nt_process_args const& args, nt_process_args const& envs, nt_process_io const& processio) : 
 		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio)} {}
 
 	template<::fast_io::constructible_to_os_c_str path_type>
-	explicit nt_family_process(path_type const& filename, process_args const& args, process_args const& envs, nt_process_io const& processio) :
+	explicit nt_family_process(path_type const& filename, nt_process_args const& args, nt_process_args const& envs, nt_process_io const& processio) :
 		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio)}{}
 
-	explicit nt_family_process(::fast_io::nt_fs_dirent ent, process_args const& args, process_args const& envs, nt_process_io const& processio) :
+	explicit nt_family_process(::fast_io::nt_fs_dirent ent, nt_process_args const& args, nt_process_args const& envs, nt_process_io const& processio) :
 		nt_family_process_observer<family>{win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio)}{}
 
 	nt_family_process(nt_family_process const& b)=delete;
