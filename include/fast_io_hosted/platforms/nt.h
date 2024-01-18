@@ -479,6 +479,32 @@ inline ::std::byte const* nt_pwrite_some_bytes_impl(void* __restrict handle,::st
 
 }
 
+struct nt_io_redirection
+{
+	void *nt_pipe_in_handle{};
+	void *nt_pipe_out_handle{};
+	void *nt_handle{};
+	bool is_dev_null{};
+};
+
+struct nt_io_redirection_std:nt_io_redirection
+{
+	constexpr nt_io_redirection_std() noexcept = default;
+	template<typename T>
+	requires requires(T&& t)
+	{
+		{redirect(::std::forward<T>(t))}->::std::same_as<nt_io_redirection>;
+	}
+	constexpr nt_io_redirection_std(T&& t) noexcept : nt_io_redirection(redirect(::std::forward<T>(t))) {}
+};
+
+struct nt_process_io
+{
+	nt_io_redirection_std in;
+	nt_io_redirection_std out;
+	nt_io_redirection_std err;
+};
+
 namespace details
 {
 #if !defined(__WINE__)
@@ -504,7 +530,7 @@ struct nt_at_entry
 #endif
 inline nt_at_entry nt_at_fdcwd() noexcept
 {
-	constexpr ::std::intptr_t value{-3};	//use -3 as at_fdwcd handle
+	constexpr ::std::ptrdiff_t value{-3};	//use -3 as at_fdwcd handle
 	return nt_at_entry{bit_cast<void*>(value)};
 }
 
@@ -601,6 +627,12 @@ inline ::std::byte const* pwrite_some_bytes_overflow_define(basic_nt_family_io_o
 	::std::byte const *first, ::std::byte const *last, ::fast_io::intfpos_t off)
 {
 	return ::fast_io::win32::nt::details::nt_pwrite_some_bytes_impl<family>(niob.handle,first,last,off);
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr nt_io_redirection redirect(basic_nt_family_io_observer<family, ch_type> other) noexcept
+{
+	return { .nt_handle = other.handle };
 }
 
 #if __cpp_lib_three_way_comparison >= 201907L
@@ -756,7 +788,7 @@ inline ::fast_io::intfpos_t nt_seek_impl(void* __restrict handle,::fast_io::intf
 template<bool zw>
 inline void* nt_dup_impl(void* handle)
 {
-	void* current_process{reinterpret_cast<void*>(static_cast<intptr_t>(-1))};
+	void* current_process{reinterpret_cast<void*>(static_cast<ptrdiff_t>(-1))};
 	void* new_handle{};
 	auto status{win32::nt::nt_duplicate_object<zw>(current_process,handle,current_process,__builtin_addressof(new_handle),0,0x00000002L,2)};
 	if(status)
@@ -1170,7 +1202,8 @@ inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 {
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
-#if 0
+
+#if !defined(_WIN32_WINDOWS)
 template<::std::integral char_type=char>
 inline basic_nt_io_observer<char_type> native_stdin() noexcept
 {
@@ -1187,6 +1220,7 @@ inline basic_nt_io_observer<char_type> native_stderr() noexcept
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 #endif
+
 namespace freestanding
 {
 template<nt_family fm,::std::integral char_type>

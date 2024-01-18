@@ -16,7 +16,7 @@ inline ::std::byte* sys_mmap(void *addr, size_t len, int prot, int flags, int fd
 		if(offset>static_cast<::std::uintmax_t>(::std::numeric_limits<off_t>::max()))
 			throw_posix_error(EINVAL);
 	}
-	::std::intptr_t ret{system_call<__NR_mmap,::std::intptr_t>(addr,len,prot,flags,fd,offset)};
+	::std::ptrdiff_t ret{system_call<__NR_mmap,::std::ptrdiff_t>(addr,len,prot,flags,fd,offset)};
 	system_call_throw_error(ret);
 	return reinterpret_cast<::std::byte*>(ret);
 #elif defined(HAVE_MMAP64)

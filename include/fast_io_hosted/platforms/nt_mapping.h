@@ -67,7 +67,9 @@ inline void* create_file_mapping_impl(void* handle,file_map_attribute attr)
 	::fast_io::win32::nt::object_attributes objAttr{};
 	objAttr.Length = sizeof(::fast_io::win32::nt::object_attributes);
 	void* h_section{};
-	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(__builtin_addressof(h_section), static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)), __builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
+	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(
+		__builtin_addressof(h_section), static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)),
+		__builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
 	if (status)
 		throw_nt_error(status);
 	return h_section;
@@ -235,5 +237,9 @@ public:
 
 using nt_memory_map_file = nt_family_memory_map_file<nt_family::nt>;
 using zw_memory_map_file = nt_family_memory_map_file<nt_family::zw>;
+
+#if !defined(_WIN32_WINDOWS)
+using native_memory_map_file = nt_memory_map_file;
+#endif
 
 }

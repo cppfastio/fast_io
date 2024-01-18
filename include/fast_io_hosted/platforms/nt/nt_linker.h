@@ -228,7 +228,7 @@ extern ::std::uint_least32_t
 __stdcall
 #endif
 NtQueryInformationProcess(void* __restrict,
-		process_information_class,process_basic_information*,
+		process_information_class, void*,
 		::std::uint_least32_t,::std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -256,7 +256,7 @@ extern ::std::uint_least32_t
 __stdcall
 #endif
 ZwQueryInformationProcess(void* __restrict,
-		process_information_class,process_basic_information*,
+		process_information_class,void*,
 		::std::uint_least32_t,::std::uint_least32_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -433,6 +433,40 @@ __asm__("NtQueryObject")
 #endif
 ;
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwQueryObject(void*,object_information_class,void*,::std::uint_least32_t,::std::uint_least32_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwQueryObject@20")
+#else
+__asm__("_ZwQueryObject@20")
+#endif
+#else
+__asm__("ZwQueryObject")
+#endif
+#endif
+;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_query_object(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwQueryObject(args...);
+	else
+		return NtQueryObject(args...);
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -977,6 +1011,32 @@ __asm__("_RtlDosPathNameToNtPathName_U_WithStatus@16")
 #endif
 #else
 __asm__("RtlDosPathNameToNtPathName_U_WithStatus")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlNtPathNameToDosPathName(::std::uint_least32_t, rtl_unicode_string_buffer*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlNtPathNameToDosPathName@16")
+#else
+__asm__("_RtlNtPathNameToDosPathName@16")
+#endif
+#else
+__asm__("RtlNtPathNameToDosPathName")
 #endif
 #endif
 ;
@@ -1662,6 +1722,15 @@ __asm__("ZwCreateUserProcess")
 #endif
 ;
 
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 11)
+inline ::std::uint_least32_t nt_create_user_process(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwCreateUserProcess(args...);
+	else
+		return NtCreateUserProcess(args...);
+}
+
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
 #elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
@@ -1809,5 +1878,292 @@ inline ::std::uint_least32_t nt_unmap_view_of_section(Args... args) noexcept {
 	else
 		return NtUnmapViewOfSection(args...);
 }
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+NtReadVirtualMemory(void*, void*, void*, ::std::size_t, ::std::size_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("NtReadVirtualMemory@20")
+#else
+__asm__("_NtReadVirtualMemory@20")
+#endif
+#else
+__asm__("NtReadVirtualMemory")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwReadVirtualMemory(void*, void*, void*, ::std::size_t, ::std::size_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwReadVirtualMemory@20")
+#else
+__asm__("_ZwReadVirtualMemory@20")
+#endif
+#else
+__asm__("ZwReadVirtualMemory")
+#endif
+#endif
+;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_read_virtual_memory(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwReadVirtualMemory(args...);
+	else
+		return NtReadVirtualMemory(args...);
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+NtWriteVirtualMemory(void*, void*, void*, ::std::size_t, ::std::size_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("NtWriteVirtualMemory@20")
+#else
+__asm__("_NtWriteVirtualMemory@20")
+#endif
+#else
+__asm__("NtWriteVirtualMemory")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwWriteVirtualMemory(void*, void*, void*, ::std::size_t, ::std::size_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwWriteVirtualMemory@20")
+#else
+__asm__("_ZwWriteVirtualMemory@20")
+#endif
+#else
+__asm__("ZwWriteVirtualMemory")
+#endif
+#endif
+;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_write_virtual_memory(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwWriteVirtualMemory(args...);
+	else
+		return NtWriteVirtualMemory(args...);
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlAcquirePebLock() noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlAcquirePebLock@0")
+#else
+__asm__("_RtlAcquirePebLock@0")
+#endif
+#else
+__asm__("RtlAcquirePebLock")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlReleasePebLock() noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlReleasePebLock@0")
+#else
+__asm__("_RtlReleasePebLock@0")
+#endif
+#else
+__asm__("RtlReleasePebLock")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+NtAllocateVirtualMemory(void*, void**, ::std::size_t, ::std::size_t*, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("NtAllocateVirtualMemory@24")
+#else
+__asm__("_NtAllocateVirtualMemory@24")
+#endif
+#else
+__asm__("NtAllocateVirtualMemory")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwAllocateVirtualMemory(void*, void**, ::std::size_t, ::std::size_t*, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwAllocateVirtualMemory@24")
+#else
+__asm__("_ZwAllocateVirtualMemory@24")
+#endif
+#else
+__asm__("ZwAllocateVirtualMemory")
+#endif
+#endif
+;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 6)
+inline ::std::uint_least32_t nt_allocate_virtual_memory(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwAllocateVirtualMemory(args...);
+	else
+		return NtAllocateVirtualMemory(args...);
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlInitUnicodeString(unicode_string*, char16_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlInitUnicodeString@8")
+#else
+__asm__("_RtlInitUnicodeString@8")
+#endif
+#else
+__asm__("RtlInitUnicodeString")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+CsrClientCallServer(void*, void*, ::std::uint_least32_t, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("CsrClientCallServer@16")
+#else
+__asm__("_CsrClientCallServer@16")
+#endif
+#else
+__asm__("CsrClientCallServer")
+#endif
+#endif
+;
 
 }

@@ -154,7 +154,7 @@ is_nt
 			0x100|0x04000000|0x01000000|0x08000000,	//FILE_ATTRIBUTE_TEMPORARY|FILE_FLAG_DELETE_ON_CLOSE|FILE_FLAG_POSIX_SEMANTICS|FILE_FLAG_SEQUENTIAL_SCAN
 			nullptr);
 		}
-		if(handle==(void*) (::std::intptr_t)-1)[[unlikely]]
+		if(handle==(void*) (::std::ptrdiff_t)-1)[[unlikely]]
 		{
 			::std::uint_least32_t code{::fast_io::win32::GetLastError()};
 			if(code==80u)	//ERROR_FILE_EXISTS
@@ -201,7 +201,7 @@ inline void* win32_family_create_file_internal_impl(::std::conditional_t<family=
 		mode.dwCreationDisposition,
 		mode.dwFlagsAndAttributes,
 		nullptr));
-		if(handle==((void*) (::std::intptr_t)-1))
+		if(handle==((void*) (::std::ptrdiff_t)-1))
 			throw_win32_error();
 		return handle;
 	}
@@ -214,7 +214,7 @@ inline void* win32_family_create_file_internal_impl(::std::conditional_t<family=
 		mode.dwCreationDisposition,
 		mode.dwFlagsAndAttributes,
 		nullptr));
-		if(handle==((void*) (::std::intptr_t)-1))
+		if(handle==((void*) (::std::ptrdiff_t)-1))
 			throw_win32_error();
 		return handle;
 	}
@@ -493,7 +493,7 @@ public:
 	}
 	explicit operator bool() const noexcept
 	{
-		return handle!=nullptr&&handle!=reinterpret_cast<void*>(static_cast<::std::intptr_t>(-1));
+		return handle!=nullptr&&handle!=reinterpret_cast<void*>(static_cast<::std::ptrdiff_t>(-1));
 	}
 	template<nt_family family2>
 	explicit constexpr operator basic_nt_family_io_observer<family2,char_type>() const noexcept
@@ -546,7 +546,7 @@ namespace win32::details
 
 inline void* win32_dup_impl(void* handle)
 {
-	void* current_process{reinterpret_cast<void*>(static_cast<intptr_t>(-1))};
+	void* current_process{reinterpret_cast<void*>(static_cast<ptrdiff_t>(-1))};
 	void* new_handle{};
 	if(!::fast_io::win32::DuplicateHandle(current_process,handle,current_process,__builtin_addressof(new_handle), 0, true, 2/*DUPLICATE_SAME_ACCESS*/))
 		throw_win32_error();
@@ -1265,7 +1265,7 @@ inline basic_win32_io_observer<char_type> win32_stderr() noexcept
 	return {::fast_io::win32::GetStdHandle(win32_stderr_number)};
 }
 
-#if !defined(__CYGWIN__) && !defined(__WINE__) && (defined(_WIN32_WINDOWS) || true)
+#if !defined(__CYGWIN__) && !defined(__WINE__) && defined(_WIN32_WINDOWS)
 template<::std::integral char_type=char>
 inline basic_win32_io_observer<char_type> native_stdin() noexcept
 {
