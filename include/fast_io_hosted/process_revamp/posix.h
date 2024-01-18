@@ -277,45 +277,6 @@ inline constexpr auto operator<=>(posix_process_observer a,posix_process_observe
 	return a.pid<=>b.pid;
 }
 
-struct posix_process_args
-{
-	char const* const* args{};
-	bool is_dynamic_allocated{};
-	constexpr posix_process_args(char const* const* envir) noexcept:args(envir){}
-	template<::std::forward_iterator Iter>
-	requires (::std::convertible_to<::std::iter_value_t<Iter>,char const*>||requires(::std::iter_value_t<Iter> v)
-	{
-		{v.c_str()}->::std::convertible_to<char const*>;
-	})
-	constexpr posix_process_args(Iter begin,Iter end):
-		args(details::dup_enviro_entry(begin,end)),is_dynamic_allocated(true)
-	{}
-#if __has_include(<ranges>)
-	template<::std::ranges::contiguous_range range>
-	requires (::std::convertible_to<::std::ranges::range_value_t<range>,char const*>||requires(::std::ranges::range_value_t<range> v)
-	{
-		{v.c_str()}->::std::convertible_to<char const*>;
-	})
-	constexpr posix_process_args(range&& rg):posix_process_args(::std::ranges::cbegin(rg),::std::ranges::cend(rg))
-	{}
-#if __has_include(<initializer_list>)
-	constexpr posix_process_args(::std::initializer_list<char const*> ilist):
-		posix_process_args(ilist.begin(),ilist.end()){}
-#endif
-#endif
-	posix_process_args(posix_process_args const&)=delete;
-	posix_process_args& operator=(posix_process_args const&)=delete;
-#if __cpp_constexpr_dynamic_alloc >= 201907L
-	constexpr
-#endif
-	~posix_process_args()
-	{
-		if(is_dynamic_allocated)
-			delete[] args;
-	}
-};
-
-
 class posix_process:public posix_process_observer
 {
 public:
@@ -326,14 +287,14 @@ public:
 	explicit constexpr posix_process(native_hd pid1) noexcept:
 		posix_process_observer{pid1}{}
 	template<::fast_io::constructible_to_os_c_str path_type>
-	posix_process(posix_at_entry pate,path_type const& filename,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
+	posix_process(posix_at_entry pate,path_type const& filename,process_args const& args,process_args const& envp,posix_process_io const& pio):
 		posix_process_observer{details::posix_fork_execveat_impl(pate.fd,filename,args.args,envp.args,pio)}{}
 
 	template<::fast_io::constructible_to_os_c_str path_type>
-	posix_process(path_type const& filename,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
+	posix_process(path_type const& filename,process_args const& args,process_args const& envp,posix_process_io const& pio):
 		posix_process_observer{::fast_io::details::posix_fork_execve_impl(filename,args.args,envp.args,pio)}{}
 
-	posix_process(::fast_io::posix_fs_dirent ent,posix_process_args const& args,posix_process_args const& envp,posix_process_io const& pio):
+	posix_process(::fast_io::posix_fs_dirent ent,process_args const& args,process_args const& envp,posix_process_io const& pio):
 		posix_process_observer{::fast_io::details::posix_fork_execveat_common_impl(ent.fd,ent.filename,args.args,envp.args,pio)}{}
 
 	posix_process(posix_process const&)=delete;

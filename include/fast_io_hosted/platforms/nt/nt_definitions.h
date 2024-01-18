@@ -456,10 +456,10 @@ struct ps_create_info
 {
 	::std::size_t Size;
 	ps_create_state State;
-	union unnamedunion
+	union
 	{
 		// PsCreateInitialState
-		struct InitStateT
+		struct
 		{
 			union
 			{
@@ -479,30 +479,30 @@ struct ps_create_info
 		} InitState;
 
 		// PsCreateFailOnSectionCreate
-		struct FailSectionT
+		struct
 		{
 			void* FileHandle;
 		} FailSection;
 
 		// PsCreateFailExeFormat
-		struct ExeFormatT
+		struct
 		{
 			::std::uint_least16_t DllCharacteristics;
 		} ExeFormat;
 
 		// PsCreateFailExeName
-		struct ExeNameT
+		struct
 		{
 			void* IFEOKey;
 		} ExeName;
 
 		// PsCreateSuccess
-		struct SuccessStateT
+		struct
 		{
 			union
 			{
 				::std::uint_least32_t OutputFlags;
-				struct s2T
+				struct 
 				{
 					::std::uint_least8_t ProtectedProcess : 1;
 					::std::uint_least8_t AddressSpaceOverride : 1;
@@ -637,4 +637,22 @@ struct process_priority_class
 	priority_class PriorityClass;
 };
 
+struct object_name_information {
+	unicode_string Name;
+};
+
+struct rtl_buffer {
+	::std::uint_least8_t* Buffer;
+	::std::uint_least8_t* StaticBuffer;
+	::std::size_t Size;
+	::std::size_t StaticSize;
+	::std::size_t ReservedForAllocatedSize;
+	void* ReservedForIMalloc;
+};
+
+struct rtl_unicode_string_buffer {
+	unicode_string String;
+	rtl_buffer ByteBuffer;
+	char16_t MinimumStaticBufferForTerminalNul;
+};
 }

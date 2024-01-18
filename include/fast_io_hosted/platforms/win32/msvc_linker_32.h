@@ -178,3 +178,5 @@
 #pragma comment(linker,"/alternatename:__imp_?RtlReleasePebLock@nt@win32@fast_io@@YAIXZ=__imp_RtlReleasePebLock")
 #pragma comment(linker,"/alternatename:__imp_?NtAllocateVirtualMemory@nt@win32@fast_io@@YAIPAXPAPAXIPAIII@Z=__imp_NtAllocateVirtualMemory")
 #pragma comment(linker,"/alternatename:__imp_?ZwAllocateVirtualMemory@nt@win32@fast_io@@YAIPAXPAPAXIPAIII@Z=__imp_ZwAllocateVirtualMemory")
+#pragma comment(linker,"/alternatename:__imp_?NtQueryObject@nt@win32@fast_io@@YAIPAXW4object_information_class@123@0IPAI@Z=__imp_NtQueryObject")
+#pragma comment(linker,"/alternatename:__imp_?ZwQueryObject@nt@win32@fast_io@@YAIPAXW4object_information_class@123@0IPAI@Z=__imp_ZwQueryObject")

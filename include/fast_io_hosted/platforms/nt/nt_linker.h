@@ -433,6 +433,40 @@ __asm__("NtQueryObject")
 #endif
 ;
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+ZwQueryObject(void*,object_information_class,void*,::std::uint_least32_t,::std::uint_least32_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("ZwQueryObject@20")
+#else
+__asm__("_ZwQueryObject@20")
+#endif
+#else
+__asm__("ZwQueryObject")
+#endif
+#endif
+;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_query_object(Args... args) noexcept {
+	if constexpr (zw)
+		return ZwQueryObject(args...);
+	else
+		return NtQueryObject(args...);
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -977,6 +1011,32 @@ __asm__("_RtlDosPathNameToNtPathName_U_WithStatus@16")
 #endif
 #else
 __asm__("RtlDosPathNameToNtPathName_U_WithStatus")
+#endif
+#endif
+;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlNtPathNameToDosPathName(::std::uint_least32_t, rtl_unicode_string_buffer*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlNtPathNameToDosPathName@16")
+#else
+__asm__("_RtlNtPathNameToDosPathName@16")
+#endif
+#else
+__asm__("RtlNtPathNameToDosPathName")
 #endif
 #endif
 ;
@@ -2054,4 +2114,29 @@ inline ::std::uint_least32_t nt_allocate_virtual_memory(Args... args) noexcept {
 		return NtAllocateVirtualMemory(args...);
 }
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__)&&!defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__)&&!defined(__WINE__)) && defined(_MSC_VER)
+__stdcall
+#endif
+RtlInitUnicodeString(unicode_string*, char16_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX<=UINT_LEAST32_MAX &&(defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+__asm__("RtlInitUnicodeString@8")
+#else
+__asm__("_RtlInitUnicodeString@8")
+#endif
+#else
+__asm__("RtlInitUnicodeString")
+#endif
+#endif
+;
 }

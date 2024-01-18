@@ -5,16 +5,18 @@ namespace details {
 
 template <typename T>
 struct temp_array_scoped_ptr {
+	using Alloc = ::fast_io::native_typed_thread_local_allocator<T>;
+
 	T* ptr{};
 	constexpr temp_array_scoped_ptr() noexcept = default;
-	explicit constexpr temp_array_scoped_ptr(::std::size_t n) : ptr(new T[n]) {}
+	explicit constexpr temp_array_scoped_ptr(::std::size_t n) : ptr(Alloc::allocate(n)) {}
 	temp_array_scoped_ptr(temp_array_scoped_ptr const&) = delete;
 	temp_array_scoped_ptr& operator=(temp_array_scoped_ptr const&) = delete;
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
 		~temp_array_scoped_ptr() {
-		delete[] ptr;
+		Alloc::deallocate(ptr);
 	}
 	inline constexpr T* release() noexcept {
 		auto temp{ptr};
@@ -80,4 +82,33 @@ inline
 }
 
 }  // namespace details
+
+struct process_args {
+	using Alloc = ::fast_io::native_typed_thread_local_allocator<char const*>;
+
+	char const* const* args{};
+	bool is_dynamic_allocated{};
+	inline constexpr process_args(char const* const* envir) noexcept : args(envir) {}
+	template <::std::random_access_iterator Iter>
+		requires(::std::convertible_to<::std::iter_value_t<Iter>, char const*> || requires(::std::iter_value_t<Iter> v) {
+					{ v.c_str() } -> ::std::convertible_to<char const*>;
+				})
+	inline constexpr process_args(Iter begin, Iter end) : args(details::dup_enviro_entry(begin, end)), is_dynamic_allocated(true) {}
+	template <::std::ranges::random_access_range range>
+		requires(::std::convertible_to<::std::ranges::range_value_t<range>, char const*> || requires(::std::ranges::range_value_t<range> v) {
+			{ v.c_str() } -> ::std::convertible_to<char const*>;
+		})
+	inline constexpr process_args(range&& rg) : process_args(::std::ranges::cbegin(rg), ::std::ranges::cend(rg)) {}
+	inline constexpr process_args(::std::initializer_list<char const*> ilist) : process_args(ilist.begin(), ilist.end()) {}
+	process_args(process_args const&) = delete;
+	process_args& operator=(process_args const&) = delete;
+#if __cpp_constexpr_dynamic_alloc >= 201907L
+	inline constexpr
+#endif
+	~process_args() {
+		if (is_dynamic_allocated)
+			Alloc::deallocate(const_cast<char const**>(args));
+	}
+};
+
 }  // namespace fast_io
