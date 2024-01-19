@@ -12,7 +12,7 @@
 	!defined(_PICOLIBC)&& \
 	(!defined(__NEWLIB__) || defined(__CYGWIN__))
 #include"scatter.h"
-#if !(defined(_WIN32) && defined(__BIONIC__))
+#if !(defined(_WIN32) && defined(__BIONIC__)) && !defined(__CYGWIN__) && !defined(__NEWLIB__)
 #include"preadwrite.h"
 #endif
 #endif

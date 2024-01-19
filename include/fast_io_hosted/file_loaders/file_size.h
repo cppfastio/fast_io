@@ -17,7 +17,7 @@ namespace fast_io::win32::details
 {
 inline ::std::size_t win32_load_file_get_file_size(void* handle)
 {
-	by_handle_file_information bhdi;
+	::fast_io::win32::by_handle_file_information bhdi;
 	if(!GetFileInformationByHandle(handle,__builtin_addressof(bhdi)))
 		throw_win32_error();
 	if constexpr(sizeof(::std::size_t)<sizeof(::std::uint_least64_t))

@@ -228,7 +228,7 @@ using win32_memory_map_file_9xa = win32_family_memory_map_file<win32_family::ans
 using win32_memory_map_file_ntw = win32_family_memory_map_file<win32_family::wide_nt>;
 using win32_memory_map_file = win32_family_memory_map_file<win32_family::native>;
 
-#if !defined(__CYGWIN__) && defined(_WIN32_WINDOWS)
+#if !defined(__CYGWIN__) && !defined(__WINE__)
 using native_memory_map_file = win32_memory_map_file;
 #endif
 
