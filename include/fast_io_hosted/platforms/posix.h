@@ -589,7 +589,7 @@ timespec_to_unix_timestamp(st.st_birthtim)
 #endif
 ,
 #endif
-#if !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__)
+#if !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__) && !defined(__linux__)
 	st.st_flags,st.st_gen
 #else
 	0,0
