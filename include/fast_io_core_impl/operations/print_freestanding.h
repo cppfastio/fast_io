@@ -476,6 +476,124 @@ inline constexpr void print_control_single(output outstm,T t)
 		}
 		::fast_io::operations::decay::scatter_write_all_decay(outstm,scattersbuffer,ptr);
 	}
+	else if constexpr(context_printable<char_type,value_type>)
+	{
+		typename ::std::remove_cvref_t<decltype(print_context_type(io_reserve_type<char_type,value_type>))>::type st;
+		constexpr
+			::std::size_t reserved_size{32u};
+		constexpr
+			::std::ptrdiff_t reserved_size_no_line{static_cast<::std::ptrdiff_t>(reserved_size-static_cast<::std::size_t>(line))};
+		if constexpr(::fast_io::operations::decay::defines::has_obuffer_basic_operations<output>)
+		{
+			for(;;)
+			{
+				auto bcurr{obuffer_curr(outstm)};
+				auto bed{obuffer_end(outstm)};
+				if(bed<=bcurr)
+#if __has_cpp_attribute(unlikely)
+					[[unlikely]]
+#endif
+				{
+					if constexpr(minimum_buffer_output_stream_require_size_impl<output,reserved_size>)
+					{
+						obuffer_minimum_size_flush_prepare_define(outstm);
+						bcurr=obuffer_curr(outstm);
+						bed=obuffer_end(outstm);
+					}
+					else
+					{
+						::fast_io::operations::decay::output_stream_buffer_flush_decay(outstm);
+						bcurr = obuffer_curr(outstm);
+						bed = obuffer_end(outstm);
+						if(bed-bcurr<reserved_size_no_line)
+#if __has_cpp_attribute(unlikely)
+							[[unlikely]]
+#endif
+						{
+							char_type buffer[reserved_size];
+							char_type *buffered{buffer+reserved_size_no_line};
+							for (;;)
+							{
+								auto [resit, reqsize] = st.print_context_define(t, buffer,buffered);
+								bool done{!reqsize};
+								if constexpr(line)
+								{
+									if(done)
+									{
+										*resit = lfch;
+										++resit;
+									}
+									::fast_io::operations::decay::write_all_decay(outstm,buffer,resit);
+									if(done)
+									{
+										return;
+									}
+								}
+								else
+								{
+									::fast_io::operations::decay::write_all_decay(outstm,buffer,resit);
+									if(done)
+									{
+										return;
+									}
+								}
+							}
+							return;
+						}
+					}
+				}
+				else
+				{
+					auto [resit, reqsize] = st.print_context_define(t,bcurr,bed);
+					obuffer_set_curr(resit);
+					if(!reqsize)
+#if __has_cpp_attribute(likely)
+						[[likely]]
+#endif
+					{
+						if constexpr(line)
+						{
+							::fast_io::operations::decay::char_put_decay(outstm,lfch);
+						}
+						return;
+					}
+
+				}
+			}
+		}
+		else
+		{
+			char_type buffer[reserved_size];
+			char_type *buffered{buffer+reserved_size_no_line};
+			for (;;)
+			{
+				auto [resit, reqsize] = st.print_context_define(t, buffer,buffered);
+				bool done{!reqsize};
+				if constexpr(line)
+				{
+					if(done)
+					{
+						*resit = lfch;
+						++resit;
+					}
+					::fast_io::operations::decay::write_all_decay(outstm,buffer,resit);
+					if(done)
+					{
+						return;
+					}
+				}
+				else
+				{
+					::fast_io::operations::decay::write_all_decay(outstm,buffer,resit);
+					if(done)
+					{
+						return;
+					}
+				}
+			}
+			return;
+		}
+	}
 	else if constexpr(printable<char_type,value_type>)
 	{
 		print_define(::fast_io::io_reserve_type<char_type,value_type>,outstm,t);
@@ -1187,7 +1305,8 @@ concept print_freestanding_params_decay_okay =
 	::fast_io::reserve_printable<char_type,Args>||
 	::fast_io::dynamic_reserve_printable<char_type,Args>||
 	::fast_io::scatter_printable<char_type,Args>||
-	::fast_io::reserve_scatters_printable<char_type,Args>)&&...);
+	::fast_io::reserve_scatters_printable<char_type,Args>||
+	::fast_io::context_printable<char_type,Args>)&&...);
 
 
 template<typename output,typename ...Args>
