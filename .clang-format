@@ -1,0 +1,34 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 120
+IndentCaseLabels: true
+SortIncludes: Never
+NamespaceIndentation: None
+PointerAlignment: Right
+QualifierAlignment: Right
+AllowShortCompoundRequirementOnASingleLine: true
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Custom
+
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  BeforeLambdaBody: true
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+  BeforeWhile: true
+
+# Get-ChildItem -Path include -Recurse -Filter *.h | ForEach-Object { clang-format -style=file -i $_.FullName }
+# Get-ChildItem -Path benchmark -Recurse -Filter *.cc | ForEach-Object { clang-format -style=file -i $_.FullName }
+# Get-ChildItem -Path examples -Recurse -Filter *.cc | ForEach-Object { clang-format -style=file -i $_.FullName }
+# Get-ChildItem -Path fuzzing -Recurse -Filter *.cc | ForEach-Object { clang-format -style=file -i $_.FullName }

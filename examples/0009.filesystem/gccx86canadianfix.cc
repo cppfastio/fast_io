@@ -1,26 +1,25 @@
-﻿#include<fast_io.h>
-#include<fast_io_device.h>
-#include<string_view>
-#include<algorithm>
-#include<functional>
+﻿#include <fast_io.h>
+#include <fast_io_device.h>
+#include <string_view>
+#include <algorithm>
+#include <functional>
 
 using namespace fast_io::io;
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
-	if(argc<2)
-	{
-		if(argc==0)
-		{
-			return 1;
-		}
-		perr("Usage:",fast_io::mnp::os_c_str(*argv)," <gcc source directory>\n");
-		return 1;
-	}
-	using namespace ::std::string_view_literals;
+    if (argc < 2)
+    {
+        if (argc == 0)
+        {
+            return 1;
+        }
+        perr("Usage:", fast_io::mnp::os_c_str(*argv), " <gcc source directory>\n");
+        return 1;
+    }
+    using namespace ::std::string_view_literals;
 
-	constexpr
-		::std::u8string_view vw(u8R"abc(case $GCC,$host_os in
+    constexpr ::std::u8string_view vw(u8R"abc(case $GCC,$host_os in
   yes,cygwin* | yes,mingw* | yes,pw32* | yes,cegcc*)
     library_names_spec='$libname.dll.a'
     # DLL is installed to $(libdir)/../bin by postinstall_cmds
@@ -37,8 +36,7 @@ int main(int argc,char **argv)
       dlpath=$dir/\$dldll~
        $RM \$dlpath'
     shlibpath_overrides_runpath=yes)abc"sv);
-	constexpr
-		::std::u8string_view newvw(u8R"abc(case $GCC,$host_os in
+    constexpr ::std::u8string_view newvw(u8R"abc(case $GCC,$host_os in
   yes,cygwin* | yes,mingw* | yes,pw32* | yes,cegcc*)
     library_names_spec='$libname.dll.a'
     # DLL is installed to $(libdir)/../bin by postinstall_cmds
@@ -69,43 +67,43 @@ int main(int argc,char **argv)
       dlpath=$dir/\$dldll~
        $RM \$dlpath'
     shlibpath_overrides_runpath=yes)abc"sv);
-	::std::boyer_moore_horspool_searcher searcher(reinterpret_cast<char const*>(vw.data()),
-		reinterpret_cast<char const*>(vw.data())+vw.size());
-	fast_io::dir_file df(fast_io::mnp::os_c_str(argv[1]));
-	for(auto ent : recursive(at(df)))
-	{
-		if(type(ent)!=fast_io::file_type::regular)
-		{
-			continue;
-		}
-		std::u8string_view fnm_view(u8filename(ent));
-		if(fnm_view==u8"configure"sv||fnm_view==u8"libtool.m4"sv)
-		{
-			{
-				fast_io::native_file_loader loader(drt(ent));
-				auto bg{loader.data()};
-				auto ed{loader.data()+loader.size()};
-				auto it{std::search(bg,ed,searcher)};
-				if(it==ed)
-				{
-					continue;
-				}
-			}
-			fast_io::allocation_file_loader loader(drt(ent));
-			fast_io::obuf_file obf(drt(ent));
-			for(auto it{loader.data()},ed{it+loader.size()};;)
-			{
-				auto retit{std::search(it,ed,searcher)};
-				::fast_io::operations::write_all(obf,it,retit);
-				if(retit==ed)
-				{
-					break;
-				}
-				::fast_io::operations::write_all_bytes(obf,
-					reinterpret_cast<::std::byte const*>(newvw.data()),
-					reinterpret_cast<::std::byte const*>(newvw.data()+newvw.size()));
-				it=retit+vw.size();
-			}
-		}
-	}
+    ::std::boyer_moore_horspool_searcher searcher(reinterpret_cast<char const *>(vw.data()),
+                                                  reinterpret_cast<char const *>(vw.data()) + vw.size());
+    fast_io::dir_file df(fast_io::mnp::os_c_str(argv[1]));
+    for (auto ent : recursive(at(df)))
+    {
+        if (type(ent) != fast_io::file_type::regular)
+        {
+            continue;
+        }
+        std::u8string_view fnm_view(u8filename(ent));
+        if (fnm_view == u8"configure"sv || fnm_view == u8"libtool.m4"sv)
+        {
+            {
+                fast_io::native_file_loader loader(drt(ent));
+                auto bg{loader.data()};
+                auto ed{loader.data() + loader.size()};
+                auto it{std::search(bg, ed, searcher)};
+                if (it == ed)
+                {
+                    continue;
+                }
+            }
+            fast_io::allocation_file_loader loader(drt(ent));
+            fast_io::obuf_file obf(drt(ent));
+            for (auto it{loader.data()}, ed{it + loader.size()};;)
+            {
+                auto retit{std::search(it, ed, searcher)};
+                ::fast_io::operations::write_all(obf, it, retit);
+                if (retit == ed)
+                {
+                    break;
+                }
+                ::fast_io::operations::write_all_bytes(
+                    obf, reinterpret_cast<::std::byte const *>(newvw.data()),
+                    reinterpret_cast<::std::byte const *>(newvw.data() + newvw.size()));
+                it = retit + vw.size();
+            }
+        }
+    }
 }

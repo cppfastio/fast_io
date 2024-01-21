@@ -1,45 +1,65 @@
-﻿#include<fast_io.h>
-#include<memory>
+﻿#include <fast_io.h>
+#include <memory>
 
 class dummy_class
 {
-public:
-	void dummy_method() noexcept{}
+  public:
+    void dummy_method() noexcept {}
 };
 
 struct A
 {
-	virtual void f() noexcept {}
+    virtual void f() noexcept {}
 };
 struct B
 {
-	virtual void g() noexcept {}
+    virtual void g() noexcept {}
 };
 
-struct C : A, B {};
+struct C : A, B
+{
+};
 
 using namespace fast_io::io;
 
 int main()
 {
-	using namespace fast_io::mnp;
-	int fd{3};
-	int *ptr{::std::addressof(fd)};
+    using namespace fast_io::mnp;
+    int fd{3};
+    int *ptr{::std::addressof(fd)};
 
-	char const *ptr2="hello";
+    char const *ptr2 = "hello";
 
-	void (C::*downcptr)() noexcept = &B::g;
+    void (C::*downcptr)() noexcept = &B::g;
 
-	println("funcvw(main):",funcvw(main),"\n"
-		"pointervw(ptr):",pointervw(ptr),"\n"
-		"handlevw(fd):",handlevw(fd),"\n"
-		"handlevw(ptr):",handlevw(ptr),"\n"
-		"pointervw(ptr2):",pointervw(ptr2),"\n"
-		"dec(pointervw(ptr2)):",dec(pointervw(ptr2)),"\n"
-		"os_c_str(ptr2):",os_c_str(ptr2),"\n"
-		"methodvw(&dummy_class::dummy_method):",methodvw(&dummy_class::dummy_method),"\n"
-		"dec(methodvw(&dummy_class::dummy_method)):",dec(methodvw(&dummy_class::dummy_method)),"\n"
-		"methodvw(downcptr):",methodvw(downcptr));
+    println("funcvw(main):", funcvw(main),
+            "\n"
+            "pointervw(ptr):",
+            pointervw(ptr),
+            "\n"
+            "handlevw(fd):",
+            handlevw(fd),
+            "\n"
+            "handlevw(ptr):",
+            handlevw(ptr),
+            "\n"
+            "pointervw(ptr2):",
+            pointervw(ptr2),
+            "\n"
+            "dec(pointervw(ptr2)):",
+            dec(pointervw(ptr2)),
+            "\n"
+            "os_c_str(ptr2):",
+            os_c_str(ptr2),
+            "\n"
+            "methodvw(&dummy_class::dummy_method):",
+            methodvw(&dummy_class::dummy_method),
+            "\n"
+            "dec(methodvw(&dummy_class::dummy_method)):",
+            dec(methodvw(&dummy_class::dummy_method)),
+            "\n"
+            "methodvw(downcptr):",
+            methodvw(downcptr));
 }
 
 /*
