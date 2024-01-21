@@ -26,7 +26,7 @@ struct context_print_result
 {
 	using iterator = Iter;
 	iterator iter;
-	::std::size_t size_hint;
+	bool done;
 };
 
 }

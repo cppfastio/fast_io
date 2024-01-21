@@ -514,8 +514,7 @@ inline constexpr void print_control_single(output outstm,T t)
 							char_type *buffered{buffer+reserved_size_no_line};
 							for (;;)
 							{
-								auto [resit, reqsize] = st.print_context_define(t, buffer,buffered);
-								bool done{!reqsize};
+								auto [resit, done] = st.print_context_define(t, buffer,buffered);
 								if constexpr(line)
 								{
 									if(done)
@@ -544,9 +543,9 @@ inline constexpr void print_control_single(output outstm,T t)
 				}
 				else
 				{
-					auto [resit, reqsize] = st.print_context_define(t,bcurr,bed);
+					auto [resit, done] = st.print_context_define(t,bcurr,bed);
 					obuffer_set_curr(resit);
-					if(!reqsize)
+					if(done)
 #if __has_cpp_attribute(likely)
 						[[likely]]
 #endif
@@ -567,8 +566,7 @@ inline constexpr void print_control_single(output outstm,T t)
 			char_type *buffered{buffer+reserved_size_no_line};
 			for (;;)
 			{
-				auto [resit, reqsize] = st.print_context_define(t, buffer,buffered);
-				bool done{!reqsize};
+				auto [resit, done] = st.print_context_define(t, buffer,buffered);
 				if constexpr(line)
 				{
 					if(done)
