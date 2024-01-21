@@ -1,16 +1,15 @@
 ﻿#pragma once
 
-#include"scalar.h"
-#if (defined(__GNUC__)  || defined(__clang__)) && (defined(__SSE__)||defined(__wasm_simd128__))
+#include "scalar.h"
+#if (defined(__GNUC__) || defined(__clang__)) && (defined(__SSE__) || defined(__wasm_simd128__))
 #if __has_builtin(__builtin_shufflevector)
-#include"simd16.h"
+#include "simd16.h"
 #else
-#include"runtime.h"
+#include "runtime.h"
 #endif
 #else
-#include"runtime.h"
+#include "runtime.h"
 #endif
-
 
 namespace fast_io
 {
@@ -32,4 +31,4 @@ struct chacha
 	}
 }
 #endif
-}
+} // namespace fast_io

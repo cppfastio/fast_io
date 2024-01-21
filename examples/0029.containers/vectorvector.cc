@@ -1,18 +1,16 @@
 ﻿#if defined(USE_STD)
-#include<vector>
-#include<cstdint>
+#include <vector>
+#include <cstdint>
 namespace test
 {
-template<typename T>
-using vector = ::std::vector<T>;
+template <typename T> using vector = ::std::vector<T>;
 }
 #else
-#include<fast_io_dsal/vector.h>
+#include <fast_io_dsal/vector.h>
 
 namespace test
 {
-template<typename T>
-using vector = ::fast_io::vector<T>;
+template <typename T> using vector = ::fast_io::vector<T>;
 }
 #endif
 
@@ -22,7 +20,6 @@ Unfortunately fast_io internally sometimes uses vector despite i try to avoid th
 
 int main()
 {
-	test::vector<test::vector<std::int_least32_t>> vec1(1000);
-	test::vector<test::vector<char32_t>> vec2;
-
+    test::vector<test::vector<std::int_least32_t>> vec1(1000);
+    test::vector<test::vector<char32_t>> vec2;
 }

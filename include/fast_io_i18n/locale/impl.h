@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-#include"win32.h"
+#include "win32.h"
 #endif
 #if (!defined(_WIN32) || defined(__WINE__)) && (!defined(__wasi__) || !defined(__NEWLIB__) || defined(__CYGWIN__))
-#include"posix.h"
+#include "posix.h"
 #endif

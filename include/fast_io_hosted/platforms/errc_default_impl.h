@@ -10,4 +10,4 @@ using ::std::errc;
 
 }
 
-}
+} // namespace fast_io
