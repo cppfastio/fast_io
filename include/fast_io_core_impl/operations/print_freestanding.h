@@ -544,7 +544,7 @@ inline constexpr void print_control_single(output outstm, T t)
                 else
                 {
                     auto [resit, done] = st.print_context_define(t, bcurr, bed);
-                    obuffer_set_curr(resit);
+                    obuffer_set_curr(outstm, resit);
                     if (done)
 #if __has_cpp_attribute(likely)
                         [[likely]]
