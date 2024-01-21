@@ -21,4 +21,12 @@ struct parse_result
 	parse_code code;
 };
 
+template<typename Iter>
+struct context_print_result
+{
+	using iterator = Iter;
+	iterator iter;
+	::std::size_t size_hint;
+};
+
 }
