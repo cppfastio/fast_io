@@ -1,5 +1,5 @@
-﻿#include<iostream>
-#include<fast_io_legacy.h>
+﻿#include <iostream>
+#include <fast_io_legacy.h>
 
 /*
 C++ iostream is a holy crap. You cannot access FILE* inside std::cout because of the OO garbage.
@@ -14,23 +14,33 @@ using namespace fast_io::io;
 
 int main()
 {
-	fast_io::streambuf_io_observer siob{std::cout.rdbuf()};
-//This is done by hacking C++ standard library implementation in fast_io.
-// I hacked ALL c++ standard library implementation, including libstdc++, libc++ and MSVC stl
-	using namespace fast_io::mnp;
-	println("std::cout.rdbuf():",handlevw(siob.fb),"\n"
-	"FILE*:",handlevw(static_cast<fast_io::c_io_observer>(siob).fp),"\n"
-	"fd:",handlevw(static_cast<fast_io::posix_io_observer>(siob).fd)
-#if (defined(_WIN32)&&!defined(__WINE__)) || defined(__CYGWIN__)
-//On Windows we can also get its HANDLE
-	,"\nwin32 HANDLE:",handlevw(static_cast<fast_io::win32_io_observer>(siob).handle),"\n"
-//Nt HANDLE and win32 HANDLE are the same
-	"nt HANDLE:",handlevw(static_cast<fast_io::nt_io_observer>(siob).handle),"\n"
-	"zw HANDLE:",handlevw(static_cast<fast_io::zw_io_observer>(siob).handle)
-//Zw and Nt are the same in user mode, but different in kernel mode. See Book: Windows Internal 7th version
-//Or MSDN What Does the Zw Prefix Mean? https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/what-does-the-zw-prefix-mean
+    fast_io::streambuf_io_observer siob{std::cout.rdbuf()};
+    // This is done by hacking C++ standard library implementation in fast_io.
+    //  I hacked ALL c++ standard library implementation, including libstdc++, libc++ and MSVC stl
+    using namespace fast_io::mnp;
+    println("std::cout.rdbuf():", handlevw(siob.fb),
+            "\n"
+            "FILE*:",
+            handlevw(static_cast<fast_io::c_io_observer>(siob).fp),
+            "\n"
+            "fd:",
+            handlevw(static_cast<fast_io::posix_io_observer>(siob).fd)
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+            // On Windows we can also get its HANDLE
+            ,
+            "\nwin32 HANDLE:", handlevw(static_cast<fast_io::win32_io_observer>(siob).handle),
+            "\n"
+            // Nt HANDLE and win32 HANDLE are the same
+            "nt HANDLE:",
+            handlevw(static_cast<fast_io::nt_io_observer>(siob).handle),
+            "\n"
+            "zw HANDLE:",
+            handlevw(static_cast<fast_io::zw_io_observer>(siob).handle)
+// Zw and Nt are the same in user mode, but different in kernel mode. See Book: Windows Internal 7th version
+// Or MSDN What Does the Zw Prefix Mean?
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/what-does-the-zw-prefix-mean
 #endif
-	);
+    );
 }
 
 /*

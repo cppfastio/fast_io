@@ -98,3 +98,15 @@ else()
 endif()
 
 endif()
+
+option(ENABLE_TESTS "Enable tests" OFF)
+
+if(${ENABLE_TESTS})
+include(CTest)
+include_directories(include)
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+link_libraries(ntdll)
+endif()
+include(${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt)
+
+endif()

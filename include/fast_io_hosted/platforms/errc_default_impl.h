@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace fast_io
 {
@@ -10,4 +10,4 @@ using ::std::errc;
 
 }
 
-}
+} // namespace fast_io

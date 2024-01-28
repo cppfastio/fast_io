@@ -1,4 +1,3 @@
 ﻿#pragma once
 
-
-#include"string_impl/impl.h"
+#include "string_impl/impl.h"
