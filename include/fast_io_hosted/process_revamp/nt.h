@@ -214,6 +214,10 @@ inline nt_user_process_information nt_process_create_impl(void *__restrict fhand
         (void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
     rtl_manage rtlm{rtl_temp};
 
+    rtl_temp->StandardInput = processio.in.nt_handle;
+    rtl_temp->StandardOutput = processio.out.nt_handle;
+    rtl_temp->StandardError = processio.err.nt_handle;
+
     // Initialize the PS_CREATE_INFO structure
     ps_create_info CreateInfo{};
     CreateInfo.Size = sizeof(CreateInfo);
@@ -231,8 +235,9 @@ inline nt_user_process_information nt_process_create_impl(void *__restrict fhand
     void *hThread{};
     check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
         &hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF, nullptr, nullptr,
-        0, 1, rtl_temp, &CreateInfo, &AttributeList));
+        0x00, 0x00, rtl_temp, &CreateInfo, &AttributeList));
 
+#if 0
     // PROCESS_BASIC_INFO
     process_basic_information pb_info{};
     check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(
@@ -267,6 +272,7 @@ inline nt_user_process_information nt_process_create_impl(void *__restrict fhand
     // Resume Thread
     ::std::uint_least32_t lprevcount{};
     check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hThread, __builtin_addressof(lprevcount)));
+#endif
 
     return {hProcess, hThread};
 #else
