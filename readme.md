@@ -117,7 +117,7 @@ Note: I adjusted libstdc++'s BUFSIZ to 1048576 due to MinGW-W64's poor performan
 | std::to_chars+obuf_file        |      0.12s              |   :x:                 |                                                      |
 | std::to_chars+ofstream         |      0.192s             |   :x:                 |                                                      |
 | fast_io::c_file_unlocked       |      0.098999s          |   0.126003s           | I hacked MSVCRT's FILE* implementation               |
-| fast_io::c_file                |      0.298988s          |   0.318001s           | Thread Safe. I hacked MSVCRET's FILE* implementation |
+| fast_io::c_file                |      0.298988s          |   0.318001s           | Thread Safe. I hacked MSVCRT's FILE* implementation |
 | fast_io::filebuf_file          |      0.048999s          |   0.081s              | I hacked libstdc++'s streambuf/filebuf implementation|
 | fast_io::iobuf_utf8_file_char16|      0.124s       |   0.112001s             | UTF-16=>UTF-8 with SSE|
 | fast_io::iobuf_utf8_file_char32|      0.110999s       |   0.111011s             | UTF-32=>UTF-8 with SSE|
