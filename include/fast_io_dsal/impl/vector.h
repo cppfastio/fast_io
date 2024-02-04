@@ -687,6 +687,17 @@ class
             }
         }
         ::std::size_t cap;
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) &&                                   \
+    __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+        if consteval
+#else
+        if (__builtin_is_constant_evaluated())
+#endif
+#endif
+        {
+            cap = static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
+        }
         if constexpr (!typed_allocator_type::has_deallocate)
         {
             cap = static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
@@ -1121,7 +1132,7 @@ class
         }
         else
         {
-            ::fast_io::freestanding::uninitialized_move_n(first, cnt, d_first);
+            ::fast_io::freestanding::uninitialized_move_n(first, last - first, d_first);
             destroy_range(first, last);
         }
         imp.curr_ptr += cnt;
@@ -1135,7 +1146,7 @@ class
     {
         if (cnt == 0)
         {
-            return pos - imp.begin_ptr + imp.end_ptr;
+            return pos - imp.begin_ptr + imp.begin_ptr;
         }
         iterator itr;
         if (static_cast<size_type>(imp.end_ptr - imp.curr_ptr) < cnt)
@@ -1379,8 +1390,7 @@ class
     template <::std::input_or_output_iterator Iter>
     constexpr void append_counted_range_impl(Iter first, size_type cnt) noexcept(noexcept(this->push_back(*first)))
     {
-        ::std::size_t const remain_space{static_cast<size_type>(imp.end_ptr - imp.curr_ptr)};
-        auto sum{remain_space + static_cast<::std::size_t>(cnt)};
+        auto sum{static_cast<::std::size_t>(imp.curr_ptr - imp.begin_ptr) + static_cast<::std::size_t>(cnt)};
         ::std::size_t const capcty{static_cast<size_type>(imp.end_ptr - imp.begin_ptr)};
         if (capcty < sum)
         {
@@ -1433,7 +1443,7 @@ class
         {
             grow_twice_impl();
         }
-        auto p{new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
+        auto p{::std::construct_at(imp.curr_ptr, ::std::forward<Args>(args)...)};
         ++imp.curr_ptr;
         return *p;
     }
