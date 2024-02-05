@@ -503,7 +503,14 @@ template <typename alloc, typename T> class typed_generic_allocator_adapter
         if (__builtin_is_constant_evaluated())
 #endif
         {
-            return ::fast_io::freestanding::allocator<T>{}.allocate(n);
+            if (n)
+            {
+                return ::fast_io::freestanding::allocator<T>{}.allocate(n);
+            }
+            else
+            {
+                return nullptr;
+            }
         }
 #endif
         constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
@@ -539,7 +546,14 @@ template <typename alloc, typename T> class typed_generic_allocator_adapter
         if (__builtin_is_constant_evaluated())
 #endif
         {
-            return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, 1);
+            if (ptr)
+            {
+                return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, 1);
+            }
+            else
+            {
+                return;
+            }
         }
 #endif
         if constexpr (alignof(T) <= alloc::default_alignment)
@@ -567,7 +581,14 @@ template <typename alloc, typename T> class typed_generic_allocator_adapter
         if (__builtin_is_constant_evaluated())
 #endif
         {
-            return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, n);
+            if (ptr)
+            {
+                return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, n);
+            }
+            else
+            {
+                return;
+            }
         }
 #endif
         if constexpr (alignof(T) <= alloc::default_alignment)

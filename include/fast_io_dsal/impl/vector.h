@@ -811,7 +811,16 @@ class
         {
             return;
         }
-        grow_to_size_impl(n);
+        constexpr bool asan_activated{::fast_io::details::asan_state::current ==
+                                      ::fast_io::details::asan_state::activate};
+        if constexpr (asan_activated)
+        {
+            grow_to_size_impl(n);
+        }
+        else
+        {
+            grow_to_size_nearest_impl(n);
+        }
     }
 
     constexpr void assign(size_type n, value_type const &value) noexcept
@@ -1197,7 +1206,6 @@ class
     }
 
   public:
-#if 1
     constexpr iterator insert(const_iterator pos, T const &value) noexcept(noexcept(this->push_back(value)))
     {
         iterator itr;
@@ -1267,7 +1275,6 @@ class
             return insert_uncounted_range_impl(pos, ::std::ranges::begin(rg), ::std::ranges::end(rg));
         }
     }
-#endif
     constexpr iterator erase(const_iterator pos) noexcept
     {
         auto mut_pos{const_cast<iterator>(pos)};
