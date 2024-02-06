@@ -576,7 +576,7 @@ struct win32_process_io
 template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_io_observer
 {
-  public:
+public:
 	using native_handle_type = void *;
 	using char_type = ch_type;
 	using input_char_type = char_type;
@@ -955,7 +955,7 @@ struct
 template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_file : public basic_win32_family_io_observer<family, ch_type>
 {
-  public:
+public:
 	using typename basic_win32_family_io_observer<family, ch_type>::char_type;
 	using typename basic_win32_family_io_observer<family, ch_type>::input_char_type;
 	using typename basic_win32_family_io_observer<family, ch_type>::output_char_type;
@@ -1243,7 +1243,7 @@ inline posix_file_status status(basic_win32_family_io_observer<family, ch_type> 
 template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_pipe
 {
-  public:
+public:
 	using char_type = ch_type;
 	basic_win32_family_file<family, ch_type> pipes[2];
 	basic_win32_family_pipe()

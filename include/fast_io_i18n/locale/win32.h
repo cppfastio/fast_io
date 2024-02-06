@@ -338,7 +338,7 @@ inline void *win32_family_load_l10n_impl(path_type const &p, lc_locale &loc)
 template <::fast_io::win32_family family>
 class win32_family_l10n
 {
-  public:
+public:
 	using native_handle_type = void *;
 	lc_locale loc{};
 	native_handle_type hmodule{};

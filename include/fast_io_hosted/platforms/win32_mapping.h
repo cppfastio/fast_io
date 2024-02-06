@@ -103,7 +103,7 @@ inline void *create_file_mapping_impl(void *handle, file_map_attribute attr)
 template <win32_family family>
 class win32_family_memory_map_file
 {
-  public:
+public:
 	using value_type = ::std::byte;
 	using pointer = value_type *;
 	using const_pointer = value_type const *;

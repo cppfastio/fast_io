@@ -6,7 +6,7 @@ namespace fast_io
 template <typename handletype, typename iobuffertraits, typename decoratorstp>
 class basic_io_deco_filter
 {
-  public:
+public:
 	using handle_type = handletype;
 	using traits_type = iobuffertraits;
 	using input_char_type = typename traits_type::input_char_type;

@@ -30,7 +30,7 @@ protected:
 template <typename _Elem, typename traits_type>
 class msvc_stl_basic_streambuf_hack_model
 {
-  public:
+public:
 	void *vptr;
 	_Elem *_Gfirst;   // beginning of read buffer
 	_Elem *_Pfirst;   // beginning of write buffer

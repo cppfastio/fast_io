@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral T>
 class basic_mfc_io_observer
 {
-  public:
+public:
 	using char_type = T;
 	using native_handle_type = CFile *;
 	native_handle_type phandle{};
@@ -132,7 +132,7 @@ inline Iter read(basic_mfc_io_observer<T> hd, Iter first, Iter last)
 template <::std::integral ch_type>
 class basic_mfc_file : public basic_mfc_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = CFile *;
 	constexpr basic_mfc_file() noexcept = default;

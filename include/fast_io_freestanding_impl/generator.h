@@ -11,7 +11,7 @@ namespace details
 template <typename T>
 class generator_promise
 {
-  public:
+public:
 	using element_type = T;
 	using value_type = ::std::remove_cvref_t<element_type>;
 	using reference = ::std::remove_reference_t<T> &;
@@ -67,7 +67,7 @@ class generator_promise
 template <typename T>
 class generator_iterator
 {
-  public:
+public:
 	using coroutine_handle_type = ::std::coroutine_handle<generator_promise<T>>;
 	using iterator_category = ::std::output_iterator_tag;
 	coroutine_handle_type handle{};
@@ -140,7 +140,7 @@ inline constexpr void operator++(generator_iterator<T> &b, int)
 template <typename T>
 class [[nodiscard]] generator
 {
-  public:
+public:
 	using promise_type = details::generator_promise<T>;
 	::std::coroutine_handle<promise_type> handle;
 	constexpr generator(::std::coroutine_handle<promise_type> v)

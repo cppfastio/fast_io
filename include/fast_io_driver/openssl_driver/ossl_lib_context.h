@@ -7,7 +7,7 @@ using ossl_lib_context_observer = details::observer<OSSL_LIB_CTX *>;
 
 class openssl_context : public ossl_lib_context_observer
 {
-  public:
+public:
 	openssl_context()
 		: ossl_lib_context_observer(OSSL_LIB_CTX_new())
 	{

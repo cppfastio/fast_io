@@ -35,7 +35,7 @@ template <typename stm, ::std::input_iterator Iter, bool write>
 	requires((write && async_output_stream<stm>) || (!write && async_input_stream<stm>))
 class async_io_coroutine
 {
-  public:
+public:
 	typename io_async_scheduler_t<stm>::type &scheduler;
 	stm &stream;
 	Iter first, last;
@@ -78,7 +78,7 @@ template <typename stm, bool write>
 	requires((write && async_scatter_output_stream<stm>) || (!write && async_scatter_input_stream<stm>))
 class async_scatter_io_coroutine
 {
-  public:
+public:
 	typename io_async_scheduler_t<stm>::type &scheduler;
 	stm &stream;
 	::std::span<io_scatter_t> scatters;
@@ -120,7 +120,7 @@ class async_scatter_io_coroutine
 template <async_output_stream stm, bool line>
 class async_print_coroutine
 {
-  public:
+public:
 	typename io_async_scheduler_t<stm>::type &scheduler;
 	stm &stream;
 	::std::ptrdiff_t offset{};

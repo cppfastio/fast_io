@@ -18,7 +18,7 @@ namespace streambuf_hack
 template <typename CharT, typename Traits>
 class hack_libstdcxx_basic_filebuf : private ::std::basic_filebuf<CharT, Traits>
 {
-  public:
+public:
 	using ::std::basic_filebuf<CharT, Traits>::_M_lock;
 	using ::std::basic_filebuf<CharT, Traits>::_M_file;
 	using ::std::basic_filebuf<CharT, Traits>::_M_mode;

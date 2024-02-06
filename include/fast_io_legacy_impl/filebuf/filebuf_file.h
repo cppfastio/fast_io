@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral CharT, typename Traits = ::std::char_traits<CharT>>
 class basic_filebuf_file : public basic_filebuf_io_observer<CharT, Traits>
 {
-  public:
+public:
 	using char_type = CharT;
 	using input_char_type = char_type;
 	using output_char_type = char_type;

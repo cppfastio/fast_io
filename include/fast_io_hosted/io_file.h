@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral inchar_type, ::std::integral outchar_type>
 class basic_io_io_base
 {
-  public:
+public:
 	virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_read_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *, ::std::size_t) = 0;
 	virtual constexpr ::fast_io::io_scatter_status_t
@@ -26,7 +26,7 @@ class basic_io_io_base
 template <::std::integral inchar_type, ::std::integral outchar_type, typename allocatortype, typename T>
 class basic_io_io_derived : public basic_io_io_base<inchar_type, outchar_type>
 {
-  public:
+public:
 	T value;
 	static constexpr inline void operator delete(void *ptr, ::std::size_t n) noexcept
 	{
@@ -177,7 +177,7 @@ class basic_io_io_derived : public basic_io_io_base<inchar_type, outchar_type>
 template <::std::integral inchar_type, ::std::integral outchar_type>
 class basic_general_io_io_observer
 {
-  public:
+public:
 	using input_char_type = inchar_type;
 	using output_char_type = outchar_type;
 	using native_handle_type = basic_io_io_base<inchar_type, outchar_type> *;
@@ -289,7 +289,7 @@ inline constexpr ::fast_io::basic_io_io_base<inchartype, outchartype> *create_io
 template <::std::integral inchar_type, ::std::integral outchar_type, typename allocatortype>
 class basic_general_io_file : public basic_general_io_io_observer<inchar_type, outchar_type>
 {
-  public:
+public:
 	using input_char_type = inchar_type;
 	using output_char_type = outchar_type;
 	using native_handle_type = basic_io_io_base<inchar_type, outchar_type> *;
@@ -332,7 +332,7 @@ class basic_general_io_file : public basic_general_io_io_observer<inchar_type, o
 template <typename T>
 class basic_general_io_file_ref
 {
-  public:
+public:
 	using general_io_file_type = T;
 	using input_char_type = typename general_io_file_type::input_char_type;
 	using output_char_type = typename general_io_file_type::output_char_type;

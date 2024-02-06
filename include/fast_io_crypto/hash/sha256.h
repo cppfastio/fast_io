@@ -170,7 +170,7 @@ inline
 
 class sha256
 {
-  public:
+public:
 	using state_value_type = ::std::uint_least32_t;
 	static inline constexpr ::std::size_t block_size{64};
 	static inline constexpr ::std::endian hash_endian{::std::endian::big};

@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral ch_type>
 class basic_ssl_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = SSL *;
 	native_handle_type ssl{};
@@ -73,7 +73,7 @@ inline void attach(basic_ssl_io_observer<ch_type> siob, basic_bio_io_observer<ch
 template <::std::integral ch_type>
 class basic_ssl_io_handle : public basic_ssl_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = SSL *;
 	constexpr basic_ssl_io_handle() = default;
@@ -138,7 +138,7 @@ class basic_ssl_io_handle : public basic_ssl_io_observer<ch_type>
 template <::std::integral ch_type>
 class basic_ssl_file : public basic_ssl_io_handle<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = SSL *;
 	constexpr basic_ssl_file() = default;

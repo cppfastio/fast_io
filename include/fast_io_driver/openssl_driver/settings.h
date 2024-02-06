@@ -5,7 +5,7 @@ namespace fast_io
 
 class settings
 {
-  public:
+public:
 	using native_handle_type = OPENSSL_INIT_SETTINGS *;
 	native_handle_type ptr{};
 	constexpr operator native_handle_type() noexcept

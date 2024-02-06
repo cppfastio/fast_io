@@ -9,7 +9,7 @@ namespace fast_io::llvm::details
 
 class llvm_raw_ostream_model
 {
-  public:
+public:
 	void *ptr{};
 	::llvm::raw_ostream::OStreamKind Kind;
 	char *OutBufStart, *OutBufEnd, *OutBufCur;
@@ -67,7 +67,7 @@ inline void llvm_raw_ostream_overflow(::llvm::raw_ostream *os, char ch)
 
 class raw_fd_ostream_model : public ::llvm::raw_pwrite_stream
 {
-  public:
+public:
 	int FD;
 	bool ShouldClose;
 	bool SupportsSeeking = false;

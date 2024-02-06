@@ -17,7 +17,7 @@ inline constexpr
 	template <typename allocator>
 	class basic_path_dir_file
 {
-  public:
+public:
 	char8_t const *directory_path_buffer{};
 	::std::size_t directory_path_length{};
 

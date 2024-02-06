@@ -6,7 +6,7 @@ namespace fast_io
 template <typename T>
 class basic_io_buffer_ref
 {
-  public:
+public:
 	using io_buffer_type = T;
 	using handle_type = typename io_buffer_type::handle_type;
 	using traits_type = typename io_buffer_type::traits_type;

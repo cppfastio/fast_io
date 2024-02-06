@@ -242,7 +242,7 @@ inline void *nt_rtlreallocate_heap_common_impl(void *addr, ::std::size_t n, ::st
 
 class nt_rtlallocateheap_allocator
 {
-  public:
+public:
 #if __has_cpp_attribute(__gnu__::__malloc__)
 	[[__gnu__::__malloc__]]
 #endif

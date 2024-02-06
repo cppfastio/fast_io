@@ -788,12 +788,12 @@ enum class scan_integral_context_phase : ::std::uint_least8_t;
 
 struct timestamp_scan_context_buffer_max_size_t
 {
-  private:
+private:
 	template <typename T>
 	static inline constexpr auto size_common{
 		::fast_io::details::print_integer_reserved_size_cache<10, false, ::fast_io::details::my_signed_integral<T>, T>};
 
-  public:
+public:
 	static inline constexpr auto year_size = size_common<::std::int_least64_t>;
 	static inline constexpr auto subs_size = size_common<::std::uint_least64_t>;
 	static inline constexpr ::std::size_t max_size{year_size > subs_size ? year_size : subs_size};

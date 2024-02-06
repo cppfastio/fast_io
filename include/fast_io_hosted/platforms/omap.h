@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral ch_type>
 class basic_omemory_map
 {
-  public:
+public:
 	using char_type = ch_type;
 	using output_char_type = char_type;
 	char_type *begin_ptr{}, *curr_ptr{}, *end_ptr{};
@@ -95,7 +95,7 @@ using omemory_map = basic_omemory_map<char>;
 template <::std::integral ch_type>
 class basic_imemory_map
 {
-  public:
+public:
 	using char_type = ch_type;
 	using input_char_type = char_type;
 	char_type *begin_ptr{}, *curr_ptr{}, *end_ptr{};

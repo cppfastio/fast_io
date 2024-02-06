@@ -281,15 +281,15 @@ class
 #endif
 	vector
 {
-  public:
+public:
 	using allocator_type = allocator;
 	using value_type = T;
 
-  private:
+private:
 	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, value_type>;
 	static inline constexpr bool alloc_with_status{::fast_io::details::has_status_impl<allocator>};
 
-  public:
+public:
 	using pointer = value_type *;
 	using const_pointer = value_type const *;
 
@@ -396,7 +396,7 @@ class
 		other.imp = tmp;
 	}
 
-  private:
+private:
 	constexpr void destroy() noexcept
 	{
 		clear();
@@ -429,14 +429,11 @@ class
 	{
 		vector *thisvec{};
 		constexpr run_destroy() noexcept = default;
-
 		explicit constexpr run_destroy(vector *p) noexcept
 			: thisvec(p)
 		{}
-
 		run_destroy(run_destroy const &) = delete;
 		run_destroy &operator=(run_destroy const &) = delete;
-
 		constexpr ~run_destroy()
 		{
 			if (thisvec)
@@ -451,14 +448,11 @@ class
 		iterator begin{};
 		vector *thisvec{};
 		constexpr partial_destroy() noexcept = default;
-
 		explicit constexpr partial_destroy(iterator b, vector *p) noexcept
 			: begin(b), thisvec(p)
 		{}
-
 		partial_destroy(partial_destroy const &) = delete;
 		partial_destroy &operator=(partial_destroy const &) = delete;
-
 		constexpr ~partial_destroy()
 		{
 			if (!begin || !thisvec)
@@ -473,15 +467,13 @@ class
 		}
 	};
 
-  public:
+public:
 	constexpr vector() noexcept = default;
-
 	explicit constexpr vector(void *alloc_handler) noexcept
 		requires(alloc_with_status)
 		: allochdl{alloc_handler}
 	{
 	}
-
 	constexpr vector(size_type n, value_type const &value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		auto begin_ptr{typed_allocator_type::allocate(n)};
@@ -505,13 +497,11 @@ class
 			des.thisvec = nullptr;
 		}
 	}
-
 	constexpr vector(void *alloc_handler, size_type n, value_type const &value) noexcept(noexcept(vector(n, value)))
 		requires(alloc_with_status)
 		: vector(n, value), allochdl(alloc_handler)
 	{
 	}
-
 	explicit constexpr vector(size_type n) noexcept(
 		::fast_io::freestanding::is_zero_default_constructible_v<value_type> ||
 		::std::is_nothrow_default_constructible_v<value_type>)
@@ -545,13 +535,11 @@ class
 			}
 		}
 	}
-
 	explicit constexpr vector(void *alloc_handler, size_type n) noexcept(noexcept(vector(n)))
 		requires(alloc_with_status)
 		: vector(n), allochdl(alloc_handler)
 	{
 	}
-
 	explicit constexpr vector(size_type n, ::fast_io::for_overwrite_t) noexcept(
 		::std::is_trivially_constructible_v<value_type> || ::std::is_nothrow_default_constructible_v<value_type>)
 	{
@@ -584,15 +572,11 @@ class
 			}
 		}
 	}
-
-	explicit constexpr vector(void *alloc_handler,
-							  size_type n,
-							  ::fast_io::for_overwrite_t) noexcept(noexcept(vector(n, ::fast_io::for_overwrite)))
+	explicit constexpr vector(void *alloc_handler, size_type n, ::fast_io::for_overwrite_t) noexcept(noexcept(vector(n, ::fast_io::for_overwrite)))
 		requires(alloc_with_status)
 		: vector(n, ::fast_io::for_overwrite), allochdl(alloc_handler)
 	{
 	}
-
 	template <::std::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept
 		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
@@ -627,7 +611,6 @@ class
 			assign_common_impl(first, last);
 		}
 	}
-
 	template <::std::input_iterator InputIt>
 	constexpr vector(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
@@ -639,14 +622,12 @@ class
 		assign_common_impl(first, last);
 		des.thisvec = nullptr;
 	}
-
 	template <::std::input_iterator InputIt>
 	constexpr vector(void *alloc_handler, InputIt first, InputIt last) noexcept(noexcept(vector(first, last)))
 		requires(alloc_with_status)
 		: vector(first, last), allochdl(alloc_handler)
 	{
 	}
-
 	constexpr vector(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
@@ -691,14 +672,19 @@ class
 		assign_common_impl(ilist.begin(), ilist.end());
 		des.thisvec = nullptr;
 	}
-
 	template <typename T>
 	constexpr vector(void *alloc_handler, ::std::initializer_list<T> ilist) noexcept(noexcept(vector{ilist}))
 		requires(alloc_with_status)
 		: vector{ilist}, allochdl(alloc_handler)
 	{
 	}
-
+	template <typename T>
+	constexpr vector &operator=(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		vector newvec(ilist);
+		this->operator=(::std::move(newvec));
+		return *this;
+	}
 	template <::fast_io::containers::details::container_compatible_range R>
 	constexpr vector(::std::from_range_t, R &&rg) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
@@ -735,7 +721,6 @@ class
 			this->append_uncounted_range_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 		}
 	}
-
 	template <::fast_io::containers::details::container_compatible_range R>
 	constexpr vector(void *alloc_handler, ::std::from_range_t, R &&rg) noexcept(vector(::std::from_range, rg))
 		requires(alloc_with_status)
@@ -778,10 +763,15 @@ class
 			++this->imp.curr_ptr;
 		}
 		des.thisvec = nullptr;
+		if constexpr (::fast_io::details::has_status_impl<allocator>)
+		{
+			this->allochdl = vec.allochdl;
+		}
 	}
-
 	constexpr vector(vector const &vec) = delete;
-
+	constexpr vector(void *alloc_handler, vector const &vec) noexcept(vector(vec))
+		: vector(vec), allochdl(alloc_handler)
+	{}
 	constexpr vector &operator=(vector const &vec)
 		requires(::std::copyable<value_type>)
 	{
@@ -789,15 +779,15 @@ class
 		this->operator=(::std::move(newvec));
 		return *this;
 	}
-
 	constexpr vector &operator=(vector const &vec) = delete;
-
 	constexpr vector(vector &&vec) noexcept
 		: imp(vec.imp)
 	{
 		vec.imp = {};
 	}
-
+	constexpr vector(void *alloc_handler, vector &&vec) noexcept
+		: vector(::fast_io::freestanding::forward<vector>(vec)), allochdl(alloc_handler)
+	{}
 	constexpr vector &operator=(vector &&vec) noexcept
 	{
 		this->destroy();
@@ -805,7 +795,6 @@ class
 		vec.imp = {};
 		return *this;
 	}
-
 	constexpr ~vector()
 	{
 		destroy();
@@ -813,15 +802,14 @@ class
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference
-	emplace_back_unchecked(Args &&...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
+	constexpr reference emplace_back_unchecked(Args &&...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
 		auto p{::new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
 		++imp.curr_ptr;
 		return *p;
 	}
 
-  private:
+private:
 	inline constexpr void grow_to_size_impl(size_type newcap) noexcept
 	{
 		// assert(newcap >= size())
@@ -971,8 +959,7 @@ class
 	}
 
 	template <::std::input_iterator InputIt>
-	inline constexpr void assign_common_impl(InputIt first,
-											 InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	inline constexpr void assign_common_impl(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		auto ptr{imp.begin_ptr};
 		for (; first != last; ++first, ++ptr)
@@ -983,8 +970,7 @@ class
 	}
 
 	template <::std::input_iterator InputIt>
-	inline constexpr void append_common_impl(InputIt first,
-											 InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	inline constexpr void append_common_impl(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		for (; first != last; ++first, ++this->imp.curr_ptr)
 		{
@@ -992,7 +978,7 @@ class
 		}
 	}
 
-  public:
+public:
 	constexpr void reserve(size_type n) noexcept
 	{
 		if (n <= static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr))
@@ -1022,8 +1008,7 @@ class
 		imp.curr_ptr = imp.begin_ptr + n;
 	}
 
-	constexpr void assign(size_type n, value_type const &value) noexcept(
-		::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
+	constexpr void assign(size_type n, value_type const &value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
@@ -1079,8 +1064,7 @@ class
 
 	template <::std::input_iterator InputIt>
 	constexpr void
-	assign(InputIt first,
-		   InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
+	assign(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
@@ -1126,8 +1110,7 @@ class
 		}
 	}
 
-	constexpr void assign(::std::initializer_list<T> ilist) noexcept(
-		::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
+	constexpr void assign(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
 		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 	{
 		clear();
@@ -1257,7 +1240,7 @@ class
 		des.thisvec = nullptr;
 	}
 
-  private:
+private:
 	inline static constexpr void destroy_range(iterator first, iterator last) noexcept
 	{
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
@@ -1376,7 +1359,7 @@ class
 		return first;
 	}
 
-  public:
+public:
 	template <bool move = false, typename Iter>
 	constexpr iterator insert_counted_range_impl(const_iterator pos,
 												 Iter first,
@@ -1445,7 +1428,7 @@ class
 		return imp.begin_ptr + off;
 	}
 
-  public:
+public:
 	constexpr iterator insert(const_iterator pos, T const &value) noexcept(noexcept(this->push_back(value)))
 	{
 		iterator itr;
@@ -1670,7 +1653,7 @@ class
 		this->emplace_back_unchecked(::std::move(value));
 	}
 
-  private:
+private:
 	template <typename Iter>
 	constexpr void append_counted_range_impl(Iter first, size_type cnt) noexcept(noexcept(this->push_back(*first)))
 	{
@@ -1702,7 +1685,7 @@ class
 		}
 	}
 
-  public:
+public:
 	template <::fast_io::containers::details::container_compatible_range<value_type> R>
 	constexpr void append_range(R &&rg) noexcept(noexcept(this->push_back(*::std::ranges::begin(rg))))
 	{

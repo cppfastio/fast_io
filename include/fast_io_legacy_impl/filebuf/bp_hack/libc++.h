@@ -23,7 +23,7 @@ char_type* __eout_;
 template <typename char_type, typename traits_type>
 class libcxx_basic_streambuf_hack_model
 {
-  public:
+public:
 	void *vptr;
 	::std::locale __loc_;
 	char_type *__binp_;

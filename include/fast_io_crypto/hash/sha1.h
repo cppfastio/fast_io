@@ -731,7 +731,7 @@ inline void sha1_do_function(::std::uint_least32_t *__restrict state, ::std::byt
 
 class sha1
 {
-  public:
+public:
 	using state_value_type = ::std::uint_least32_t;
 	static inline constexpr ::std::size_t block_size{64};
 	static inline constexpr ::std::endian hash_endian{::std::endian::big};

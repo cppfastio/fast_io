@@ -6,7 +6,7 @@ namespace fast_io
 template <typename handletype, ::std::integral chtype>
 class basic_generic_posix_dev_urandom
 {
-  public:
+public:
 	using handle_type = handletype;
 	using observer_type = decltype(::fast_io::operations::io_stream_ref(*((handle_type *)nullptr)));
 	using input_char_type = chtype;
@@ -33,7 +33,7 @@ class basic_generic_posix_dev_urandom
 template <typename observetype, ::std::integral chtype>
 class basic_generic_posix_dev_urandom_ref : public observetype
 {
-  public:
+public:
 	using observer_type = observetype;
 	using native_handle_type = typename observer_type::native_handle_type;
 	using input_char_type = typename observer_type::input_char_type;

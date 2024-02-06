@@ -225,7 +225,7 @@ extern "C" ::std::uint_least32_t
 template <::std::integral ch_type>
 class basic_win32_memory_io_observer
 {
-  public:
+public:
 	using native_handle_type = void *;
 	using base_address_type = ::std::size_t;
 	using char_type = ch_type;
@@ -262,7 +262,7 @@ class basic_win32_memory_io_observer
 template <::std::integral ch_type>
 class basic_win32_memory_io_handle : public basic_win32_memory_io_observer<ch_type>
 {
-  public:
+public:
 	using native_handle_type = basic_win32_memory_io_observer<ch_type>::native_handle_type;
 	using base_address_type = basic_win32_memory_io_observer<ch_type>::base_address_type;
 	using char_type = ch_type;
@@ -394,7 +394,7 @@ inline ::std::uint_least32_t get_process_id_from_window_name(cstring_view name)
 template <::std::integral ch_type>
 class basic_win32_memory_file : public basic_win32_memory_io_handle<ch_type>
 {
-  public:
+public:
 	using native_handle_type = basic_win32_memory_io_observer<ch_type>::native_handle_type;
 	using base_address_type = basic_win32_memory_io_observer<ch_type>::base_address_type;
 	using char_type = ch_type;
@@ -535,7 +535,7 @@ class win32_virtual_protect_guard
 	::std::size_t region_size{};
 	win32_memory_page_protect oprotect{};
 
-  public:
+public:
 	template <::std::integral char_type>
 	win32_virtual_protect_guard(basic_win32_memory_io_observer<char_type> iob, ::std::size_t size,
 								win32_memory_page_protect new_protect)

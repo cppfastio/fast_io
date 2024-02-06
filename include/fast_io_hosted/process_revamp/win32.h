@@ -5,7 +5,7 @@ namespace fast_io
 
 class win32_process_observer
 {
-  public:
+public:
 	using native_handle_type = pid_t;
 	pid_t pid{-1};
 	constexpr auto &native_handle() noexcept

@@ -35,7 +35,7 @@ extern void libc_freeaddrinfo(posix_addrinfo *res) noexcept __asm__("freeaddrinf
 
 class posix_dns_io_observer
 {
-  public:
+public:
 	using char_type = char;
 	using native_handle_type = posix_addrinfo *;
 	native_handle_type res{};
@@ -175,7 +175,7 @@ class
 #endif
 	posix_dns_file : public posix_dns_io_observer
 {
-  public:
+public:
 	using typename posix_dns_io_observer::char_type;
 	using typename posix_dns_io_observer::native_handle_type;
 	constexpr posix_dns_file() noexcept = default;

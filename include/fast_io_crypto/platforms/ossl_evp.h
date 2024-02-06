@@ -8,7 +8,7 @@ namespace details
 
 class ossl_evp_guard
 {
-  public:
+public:
 	EVP_MD_CTX *pmdctx{};
 	ossl_evp_guard()
 		: pmdctx{noexcept_call(EVP_MD_CTX_new)}
@@ -68,7 +68,7 @@ inline EVP_MD_CTX *create_ossl_evp_hash_impl(T const &t)
 
 class ossl_evp_hash_file
 {
-  public:
+public:
 	using native_handle_type = EVP_MD_CTX *;
 	static inline constexpr ::std::size_t evp_max_md_size{EVP_MAX_MD_SIZE};
 	native_handle_type pmdctx{};

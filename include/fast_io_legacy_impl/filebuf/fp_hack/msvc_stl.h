@@ -21,7 +21,7 @@ https://github.com/microsoft/STL/blob/master/stl/inc/fstream#L775
 template <class _Elem, class _Traits>
 class basic_filebuf_model : public ::std::basic_streambuf<_Elem, _Traits>
 {
-  public:
+public:
 	using _Mysb = ::std::basic_streambuf<_Elem, _Traits>;
 	using _Cvt = ::std::codecvt<_Elem, char, typename _Traits::state_type>;
 	using int_type = typename _Traits::int_type;

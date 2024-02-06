@@ -12,7 +12,7 @@ namespace fast_io
 
 class pyobject_io_observer
 {
-  public:
+public:
 	using native_handle_type = PyObject *;
 	native_handle_type p{};
 	constexpr native_handle_type native_handle() const noexcept
@@ -115,7 +115,7 @@ inline basic_io_scatter_t<char> pybytes_asstringandsize_impl(PyObject *self) noe
 
 class pyobject_file : public pyobject_io_observer
 {
-  public:
+public:
 	using typename pyobject_io_observer::native_handle_type;
 
 	constexpr pyobject_file() noexcept = default;

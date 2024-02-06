@@ -5,7 +5,7 @@ namespace fast_io
 template <::std::integral ch_type, typename T>
 class basic_general_qdevice_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using value_type = T;
 	using native_handle_type = T *;

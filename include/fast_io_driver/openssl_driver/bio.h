@@ -275,7 +275,7 @@ inline BIO *open_bio_with_fp(FILE *fp, ::fast_io::open_mode om)
 template <::std::integral ch_type>
 class basic_bio_io_observer
 {
-  public:
+public:
 	using native_handle_type = BIO *;
 	using char_type = ch_type;
 	using input_char_type = char_type;
@@ -322,7 +322,7 @@ class basic_bio_io_observer
 template <::std::integral ch_type>
 class basic_bio_file : public basic_bio_io_observer<ch_type>
 {
-  public:
+public:
 	using native_handle_type = BIO *;
 	using char_type = ch_type;
 	using input_char_type = char_type;

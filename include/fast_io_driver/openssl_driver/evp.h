@@ -27,7 +27,7 @@ https://www.openssl.org/docs/man1.1.0/man3/EVP_PKEY_keygen.html
 
 class evp_pkey_observer
 {
-  public:
+public:
 	using native_handle_type = EVP_PKEY *;
 	native_handle_type key{};
 	constexpr auto &native_handle() const noexcept
@@ -56,7 +56,7 @@ class evp_pkey_observer
 
 class evp_pkey : public evp_pkey_observer
 {
-  public:
+public:
 	using native_handle_type = EVP_PKEY *;
 	constexpr evp_pkey() = default;
 	constexpr evp_pkey(native_handle_type ctx)
@@ -107,7 +107,7 @@ class evp_pkey : public evp_pkey_observer
 
 class evp_pkey_ctx_observer
 {
-  public:
+public:
 	using native_handle_type = EVP_PKEY_CTX *;
 	native_handle_type ctx{};
 	constexpr auto &native_handle() const noexcept
@@ -132,7 +132,7 @@ class evp_pkey_ctx_observer
 
 class evp_pkey_ctx : public evp_pkey_ctx_observer
 {
-  public:
+public:
 	using native_handle_type = EVP_PKEY_CTX *;
 	constexpr evp_pkey_ctx() = default;
 	constexpr evp_pkey_ctx(native_handle_type ctx)

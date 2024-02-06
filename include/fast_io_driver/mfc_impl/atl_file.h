@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral T>
 class basic_atl_io_observer
 {
-  public:
+public:
 	using char_type = T;
 	using native_handle_type = CAtlFile *;
 	native_handle_type phandle{};
@@ -161,7 +161,7 @@ inline Iter read(basic_atl_io_observer<T> hd, Iter first, Iter last)
 template <::std::integral ch_type>
 class basic_atl_file : public basic_atl_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = CAtlFile *;
 	constexpr basic_atl_file() noexcept = default;

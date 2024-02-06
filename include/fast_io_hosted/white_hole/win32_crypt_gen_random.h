@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral ch_type>
 class basic_win32_crypt_gen_random_io_observer
 {
-  public:
+public:
 	using native_handle_type = ::std::size_t;
 	using input_char_type = ch_type;
 	native_handle_type hprov{};
@@ -104,7 +104,7 @@ inline void read_all_bytes_underflow_define(basic_win32_crypt_gen_random_io_obse
 template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_crypt_gen_random_file : public basic_win32_crypt_gen_random_io_observer<ch_type>
 {
-  public:
+public:
 	using native_handle_type = ::std::size_t;
 	using input_char_type = ch_type;
 	basic_win32_family_crypt_gen_random_file()

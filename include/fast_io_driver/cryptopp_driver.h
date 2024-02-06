@@ -12,7 +12,7 @@ template <typename T>
 	}
 class iterated_hash_context
 {
-  public:
+public:
 	using native_handle_type = T;
 	native_handle_type handle;
 	static inline constexpr ::std::size_t digest_size{static_cast<::std::size_t>(native_handle_type::DIGESTSIZE)};

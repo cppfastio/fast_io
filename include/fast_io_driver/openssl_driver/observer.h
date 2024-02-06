@@ -6,7 +6,7 @@ namespace fast_io::details
 template <typename T>
 class observer
 {
-  public:
+public:
 	using native_handle_type = T;
 	native_handle_type handle{};
 	constexpr operator bool() noexcept

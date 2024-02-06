@@ -3,7 +3,7 @@
 
 class dummy_class
 {
-  public:
+public:
 	void dummy_method() noexcept
 	{}
 };

@@ -82,7 +82,7 @@ inline void wasi_random_get_all_impl(::std::byte *first, ::std::byte *last)
 template <::std::integral ch_type>
 class basic_wasi_random_get
 {
-  public:
+public:
 	using input_char_type = ch_type;
 	constexpr void close() noexcept
 	{}

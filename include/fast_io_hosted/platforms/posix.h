@@ -421,7 +421,7 @@ inline void *my_get_osfile_handle(int fd) noexcept
 template <::std::integral ch_type>
 class basic_posix_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using input_char_type = char_type;
 	using output_char_type = char_type;
@@ -1038,7 +1038,7 @@ struct
 template <::std::integral ch_type>
 class basic_posix_file : public basic_posix_io_observer<ch_type>
 {
-  public:
+public:
 	using typename basic_posix_io_observer<ch_type>::char_type;
 	using typename basic_posix_io_observer<ch_type>::input_char_type;
 	using typename basic_posix_io_observer<ch_type>::output_char_type;
@@ -1276,7 +1276,7 @@ inline void truncate(basic_posix_io_observer<ch_type> h, ::fast_io::uintfpos_t s
 template <::std::integral ch_type>
 class basic_posix_pipe
 {
-  public:
+public:
 	using char_type = ch_type;
 	basic_posix_file<ch_type> pipes[2];
 	basic_posix_pipe()

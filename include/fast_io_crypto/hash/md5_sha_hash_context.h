@@ -178,7 +178,7 @@ class basic_md5_sha_context_impl
 {
 	md5_sha_common_impl<T, counterbits> hasher;
 
-  public:
+public:
 	explicit constexpr basic_md5_sha_context_impl() noexcept
 	{
 		this->reset();

@@ -653,7 +653,7 @@ template <nt_family family, ::std::integral ch_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 class basic_nt_family_io_observer
 {
-  public:
+public:
 	using native_handle_type = void *;
 	using char_type = ch_type;
 	using input_char_type = ch_type;
@@ -1132,7 +1132,7 @@ using zw_file_factory = nt_family_file_factory<nt_family::zw>;
 template <nt_family family, ::std::integral ch_type>
 class basic_nt_family_file : public basic_nt_family_io_observer<family, ch_type>
 {
-  public:
+public:
 	using typename basic_nt_family_io_observer<family, ch_type>::char_type;
 	using typename basic_nt_family_io_observer<family, ch_type>::input_char_type;
 	using typename basic_nt_family_io_observer<family, ch_type>::output_char_type;

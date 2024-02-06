@@ -139,7 +139,7 @@ inline constexpr posix_file_map_attribute to_posix_file_map_attribute(file_map_a
 
 class posix_memory_map_file
 {
-  public:
+public:
 	using value_type = ::std::byte;
 	using pointer = value_type *;
 	using const_pointer = value_type const *;

@@ -13,7 +13,7 @@ template <::std::integral ch_type>
 	requires(sizeof(ch_type) == 1)
 class basic_avio_context_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = ::AVIOContext *;
 	native_handle_type avios{};
@@ -152,7 +152,7 @@ template <::std::integral ch_type>
 	requires(sizeof(ch_type) == 1)
 class basic_avio_context_file : public basic_avio_context_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = ::AVIOContext *;
 	explicit constexpr basic_avio_context_file(::AVIOContext *ctxx) noexcept

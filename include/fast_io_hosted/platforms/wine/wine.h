@@ -19,7 +19,7 @@ enum class wine_family : ::std::uint_least32_t
 template <wine_family family, ::std::integral ch_type>
 class basic_wine_family_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = int;
 	native_handle_type host_fd{-1};
@@ -66,7 +66,7 @@ using wine_file_factory = wine_family_file_factory<wine_family::native>;
 template <wine_family family, ::std::integral ch_type>
 class basic_wine_family_file : public basic_wine_family_io_observer<family, ch_type>
 {
-  public:
+public:
 	using typename basic_wine_family_io_observer<family, ch_type>::char_type;
 	using typename basic_wine_family_io_observer<family, ch_type>::native_handle_type;
 	using file_factory_type = wine_family_file_factory<family>;

@@ -112,7 +112,7 @@ inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, :
 template <typename alloc>
 class generic_allocator_adapter
 {
-  public:
+public:
 	using allocator_type = alloc;
 	static inline constexpr ::std::size_t default_alignment{
 		::fast_io::details::calculate_default_alignment<allocator_type>()};
@@ -487,7 +487,7 @@ class generic_allocator_adapter
 template <typename alloc, typename T>
 class typed_generic_allocator_adapter
 {
-  public:
+public:
 	using allocator_adapter = alloc;
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \

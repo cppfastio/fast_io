@@ -5,7 +5,7 @@ namespace fast_io
 
 class openssl_error
 {
-  public:
+public:
 };
 
 inline void throw_openssl_error()

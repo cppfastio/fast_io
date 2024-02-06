@@ -19,7 +19,7 @@ inline void ntbcrypt_do_final_impl(void *hashhandle, ::std::byte *buffer, ::std:
 
 class nt_bcrypt_hash_file
 {
-  public:
+public:
 	using native_handle_type = void *;
 	native_handle_type phAlgorithm{};
 	native_handle_type hashHandle{};

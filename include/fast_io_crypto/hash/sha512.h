@@ -191,7 +191,7 @@ inline constexpr void sha512_do_constexpr_function(::std::uint_least64_t *__rest
 
 class sha512
 {
-  public:
+public:
 	using state_value_type = ::std::uint_least64_t;
 	static inline constexpr ::std::size_t block_size{128};
 	static inline constexpr ::std::endian hash_endian{::std::endian::big};

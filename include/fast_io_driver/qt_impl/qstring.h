@@ -5,7 +5,7 @@ namespace fast_io
 
 class qt_error
 {
-  public:
+public:
 	QString qstr;
 	template <typename... Args>
 		requires ::std::constructible_from<QString, Args...>

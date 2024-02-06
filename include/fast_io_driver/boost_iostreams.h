@@ -35,7 +35,7 @@ concept boost_iostream_seekable_device =
 template <::std::integral ch_type, boost_iostreams_any_device src_type>
 class basic_boost_iostreams
 {
-  public:
+public:
 	using char_type = ch_type;
 	using source_type = src_type;
 	source_type source;

@@ -41,7 +41,7 @@ inline SSL_METHOD const *get_method(tls_method m)
 
 class ssl_context : public ssl_context_observer
 {
-  public:
+public:
 	ssl_context(ossl_lib_context_observer ocob, cstring_view view, tls_method m)
 		: ssl_context_observer(SSL_CTX_new_ex(ocob.native_handle(), view.data(), details::get_method(m)))
 	{

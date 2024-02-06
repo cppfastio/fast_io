@@ -35,7 +35,7 @@ template <::std::integral ch_type>
 	requires(sizeof(ch_type) == 1)
 class basic_raw_fd_ostream_file : public basic_raw_fd_ostream_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = typename basic_raw_fd_ostream_io_observer<char_type>::native_handle_type;
 	explicit constexpr basic_raw_fd_ostream_file() noexcept = default;

@@ -9,7 +9,7 @@ namespace fast_io
 template <::std::integral char_type>
 class basic_linux_getrandom
 {
-  public:
+public:
 	using input_char_type = char_type;
 	unsigned flags{};
 	constexpr void close() noexcept
