@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral char_type, ::std::size_t buffersize, typename allocatortype>
 class basic_generic_dynamic_output_buffer
 {
-  public:
+public:
 	using output_char_type = char_type;
 	using allocator_type = allocatortype;
 	static inline constexpr ::std::size_t buffer_size{buffersize};
@@ -40,7 +40,7 @@ using basic_dynamic_output_buffer = basic_generic_dynamic_output_buffer<char_typ
 template <typename T>
 class basic_dynamic_output_buffer_ref
 {
-  public:
+public:
 	using dynamic_output_buffer_type = T;
 	using output_char_type = typename dynamic_output_buffer_type::output_char_type;
 	using native_handle_type = dynamic_output_buffer_type *;

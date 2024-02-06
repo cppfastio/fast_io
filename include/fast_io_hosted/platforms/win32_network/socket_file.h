@@ -8,7 +8,7 @@ using win32_socklen_t = int;
 template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_socket_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using input_char_type = char_type;
 	using output_char_type = char_type;
@@ -453,7 +453,7 @@ class
 #endif
 	basic_win32_family_socket_file : public basic_win32_family_socket_io_observer<family, ch_type>
 {
-  public:
+public:
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::char_type;
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::input_char_type;
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::output_char_type;

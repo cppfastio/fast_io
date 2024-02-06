@@ -87,7 +87,7 @@ inline auto posix_load_file_options_impl(::fast_io::posix_mmap_options const &op
 
 class posix_file_loader
 {
-  public:
+public:
 	using value_type = char;
 	using pointer = char *;
 	using const_pointer = char const *;

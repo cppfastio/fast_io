@@ -682,7 +682,7 @@ template <c_family family, ::std::integral ch_type>
 	requires(family == c_family::native || family == c_family::native_unlocked)
 class basic_c_family_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using input_char_type = char_type;
 	using output_char_type = char_type;
@@ -929,7 +929,7 @@ struct
 template <c_family family, ::std::integral ch_type>
 class basic_c_family_file : public basic_c_family_io_observer<family, ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using input_char_type = char_type;
 	using output_char_type = char_type;

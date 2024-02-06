@@ -11,7 +11,7 @@ namespace fast_io
 
 class win32_internet_handle
 {
-  public:
+public:
 	void *handle{};
 	constexpr win32_internet_handle()
 	{}
@@ -122,7 +122,7 @@ inline void win32_http_send_request(win32_internet_handle &handle, cstring_view 
 template <::std::integral ch_type>
 class basic_win32_internet_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = void *;
 	native_handle_type handle{};
@@ -143,7 +143,7 @@ class basic_win32_internet_io_observer
 template <::std::integral ch_type>
 class basic_win32_internet_https_client : public basic_win32_internet_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = basic_win32_internet_io_observer<ch_type>::native_handle_type;
 	win32_internet_handle session;

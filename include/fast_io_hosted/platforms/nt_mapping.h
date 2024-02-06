@@ -100,7 +100,7 @@ template <nt_family family>
 	requires(family == nt_family::nt || family == nt_family::zw)
 class nt_family_memory_map_file
 {
-  public:
+public:
 	using value_type = ::std::byte;
 	using pointer = value_type *;
 	using const_pointer = value_type const *;

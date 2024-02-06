@@ -39,7 +39,7 @@ inline void cs_option_wrapper_impl(::std::size_t csh, cs_opt_type t, ::std::size
 
 class cs_io_observer
 {
-  public:
+public:
 	::std::size_t csh{};
 	void option(cs_opt_type t, ::std::size_t value) const
 	{
@@ -49,7 +49,7 @@ class cs_io_observer
 
 class cs_file : public cs_io_observer
 {
-  public:
+public:
 	constexpr cs_file() noexcept = default;
 	template <typename T>
 		requires ::std::same_as<T, ::std::size_t>
@@ -93,7 +93,7 @@ class cs_file : public cs_io_observer
 
 class cs_insn_range
 {
-  public:
+public:
 	cs_insn *ins{};
 	::std::size_t count{};
 

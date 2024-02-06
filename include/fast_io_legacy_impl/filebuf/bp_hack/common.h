@@ -8,7 +8,7 @@ namespace details::streambuf_hack
 template <typename char_type, typename traits_type>
 class basic_streambuf_hack_model : private ::std::basic_streambuf<char_type, traits_type>
 {
-  public:
+public:
 	using ::std::basic_streambuf<char_type, traits_type>::underflow;
 	using ::std::basic_streambuf<char_type, traits_type>::overflow;
 };

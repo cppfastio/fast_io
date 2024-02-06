@@ -7,7 +7,7 @@ template <win32_family fam>
 	requires(fam == win32_family::ansi_9x || fam == win32_family::wide_nt)
 class win32_family_dns_io_observer
 {
-  public:
+public:
 	using char_type = ::std::conditional_t<fam == win32_family::wide_nt, char16_t, char>;
 	using native_handle_type = ::fast_io::win32::win32_family_addrinfo<fam> *;
 	native_handle_type res{};
@@ -188,7 +188,7 @@ inline constexpr auto win32_family_dns_open_impl(T const &t)
 template <win32_family fam>
 class win32_family_dns_file : public win32_family_dns_io_observer<fam>
 {
-  public:
+public:
 	using typename win32_family_dns_io_observer<fam>::char_type;
 	using typename win32_family_dns_io_observer<fam>::native_handle_type;
 	constexpr win32_family_dns_file() noexcept = default;

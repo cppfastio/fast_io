@@ -61,7 +61,7 @@ private:
 template <class _CharT, class _Traits>
 class libcxx_basic_filebuf_model : public ::std::basic_streambuf<_CharT, _Traits>
 {
-  public:
+public:
 	typedef _CharT char_type;
 	typedef _Traits traits_type;
 	typedef typename traits_type::int_type int_type;

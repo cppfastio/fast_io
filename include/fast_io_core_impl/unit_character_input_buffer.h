@@ -7,7 +7,7 @@ template <input_stream input>
 	requires(!buffer_input_stream<input>)
 struct single_character_input_buffer
 {
-  public:
+public:
 	using char_type = typename input::char_type;
 	input &reference{};
 	char_type single_character{};

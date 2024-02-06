@@ -301,7 +301,7 @@ struct posix_process_args
 
 class posix_process_observer
 {
-  public:
+public:
 	using native_handle_type = pid_t;
 	pid_t pid{-1};
 	constexpr auto &native_handle() noexcept
@@ -348,7 +348,7 @@ inline constexpr auto operator<=>(posix_process_observer a, posix_process_observ
 
 class posix_process : public posix_process_observer
 {
-  public:
+public:
 	using native_handle_type = pid_t;
 	explicit constexpr posix_process() noexcept = default;
 	template <typename native_hd>

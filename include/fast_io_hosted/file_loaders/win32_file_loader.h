@@ -117,7 +117,7 @@ inline void win32_unload_address(void const *address) noexcept
 template <win32_family family>
 class win32_family_file_loader
 {
-  public:
+public:
 	using value_type = char;
 	using pointer = char *;
 	using const_pointer = char const *;

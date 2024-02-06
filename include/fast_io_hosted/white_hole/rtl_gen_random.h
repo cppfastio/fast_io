@@ -10,7 +10,7 @@ namespace fast_io
 template <::std::integral ch_type>
 class basic_rtl_gen_random
 {
-  public:
+public:
 	using input_char_type = ch_type;
 	constexpr void close() noexcept
 	{}

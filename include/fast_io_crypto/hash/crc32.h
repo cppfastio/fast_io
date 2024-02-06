@@ -129,7 +129,7 @@ class basic_crc32_scalar_context
 {
 	::std::uint_least32_t crcv{0xffffffff};
 
-  public:
+public:
 	static inline constexpr ::std::size_t digest_size{sizeof(::std::uint_least32_t)};
 	inline constexpr void update(::std::byte const *first, ::std::byte const *last) noexcept
 	{

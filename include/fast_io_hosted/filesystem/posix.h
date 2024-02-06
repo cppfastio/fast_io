@@ -23,7 +23,7 @@ inline int dirp_to_fd(DIR *dirp) noexcept
 
 class posix_directory_io_observer
 {
-  public:
+public:
 	using native_handle_type = DIR *;
 	native_handle_type dirp{};
 	constexpr native_handle_type native_handle() const noexcept
@@ -81,7 +81,7 @@ inline DIR *sys_dup_dir(DIR *dirp)
 
 class posix_directory_file : public posix_directory_io_observer
 {
-  public:
+public:
 	using native_handle_type = DIR *;
 	constexpr posix_directory_file() noexcept = default;
 

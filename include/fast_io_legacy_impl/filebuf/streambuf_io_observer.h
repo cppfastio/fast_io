@@ -11,7 +11,7 @@ template <typename T>
 #endif
 class basic_general_streambuf_io_observer
 {
-  public:
+public:
 	using streambuf_type = T;
 	using char_type = typename streambuf_type::char_type;
 	using input_char_type = char_type;

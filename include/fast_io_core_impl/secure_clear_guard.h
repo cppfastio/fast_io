@@ -175,7 +175,7 @@ inline constexpr ::std::byte *bytes_secure_clear(::std::byte *first, ::std::byte
 template <typename T>
 class secure_clear_guard
 {
-  public:
+public:
 	T *region;
 	::std::size_t count;
 	secure_clear_guard(T *rg, ::std::size_t bts)
@@ -192,7 +192,7 @@ class secure_clear_guard
 template <typename T>
 class secure_clear_no_op
 {
-  public:
+public:
 	constexpr secure_clear_no_op(T *, ::std::size_t){};
 };
 

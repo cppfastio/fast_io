@@ -204,7 +204,7 @@ inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback, i
 
 class allocation_file_loader
 {
-  public:
+public:
 	using file_type = posix_file;
 	using value_type = char;
 	using pointer = char *;

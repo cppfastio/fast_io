@@ -7,7 +7,7 @@ template <::std::integral ch_type, typename T>
 	requires(::std::derived_from<T, ::llvm::raw_ostream> && sizeof(ch_type) == 1)
 class basic_general_raw_ostream_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = T *;
 	native_handle_type os{};

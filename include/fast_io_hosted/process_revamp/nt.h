@@ -377,7 +377,7 @@ template <nt_family family>
 	requires(family == nt_family::nt || family == nt_family::zw)
 class nt_family_process_observer
 {
-  public:
+public:
 	using native_handle_type = nt_user_process_information;
 	native_handle_type hnt_user_process_info{};
 	constexpr auto &native_handle() noexcept
@@ -443,7 +443,7 @@ inline nt_wait_status wait(nt_process_observer ppob)
 template <nt_family family>
 class nt_family_process : public nt_family_process_observer<family>
 {
-  public:
+public:
 	using native_handle_type = nt_user_process_information;
 	constexpr nt_family_process() noexcept = default;
 	template <typename native_hd>

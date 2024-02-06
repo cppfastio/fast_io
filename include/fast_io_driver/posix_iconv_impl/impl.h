@@ -7,7 +7,7 @@ namespace fast_io
 
 class posix_iconv_io_observer
 {
-  public:
+public:
 	using native_handle_type = iconv_t;
 	iconv_t cd{::std::bit_cast<iconv_t>(static_cast<size_t>(-1))};
 
@@ -194,7 +194,7 @@ inline iconv_t my_iconv_open(char const *tocode, char const *fromcode)
 
 class posix_iconv_file : public posix_iconv_io_observer
 {
-  public:
+public:
 	using native_handle_type = iconv_t;
 	constexpr posix_iconv_file() noexcept = default;
 	constexpr posix_iconv_file(iconv_t icv) noexcept

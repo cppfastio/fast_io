@@ -5,7 +5,7 @@ namespace fast_io
 
 class iocp_overlapped_base : public fast_io::win32::overlapped
 {
-  public:
+public:
 	constexpr iocp_overlapped_base()
 		: fast_io::win32::overlapped{}
 	{}

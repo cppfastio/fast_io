@@ -67,7 +67,7 @@ inline constexpr ::std::uint_least32_t dll_mode_to_win32_ex_flags(dll_mode mode)
 template <win32_family family>
 class win32_family_dll_io_observer
 {
-  public:
+public:
 	using native_handle_type = void *;
 	native_handle_type hmodule{};
 	inline constexpr native_handle_type native_handle() const noexcept
@@ -149,7 +149,7 @@ class
 #endif
 	win32_family_dll_file : public win32_family_dll_io_observer<family>
 {
-  public:
+public:
 	using native_handle_type = void *;
 	constexpr win32_family_dll_file() = default;
 	template <typename native_hd>

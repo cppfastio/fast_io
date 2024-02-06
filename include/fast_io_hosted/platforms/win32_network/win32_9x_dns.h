@@ -76,7 +76,7 @@ inline constexpr ::fast_io::ip hostent_to_ip_impl(::fast_io::win32::hostent *ent
 
 class win32_9x_dns_io_observer
 {
-  public:
+public:
 	using native_handle_type = ::fast_io::win32::hostent *;
 	native_handle_type res{};
 	inline constexpr native_handle_type native_handle() const noexcept
@@ -195,7 +195,7 @@ inline constexpr auto win32_9x_dns_open_impl(T const &t)
 
 class win32_9x_dns_file : public win32_9x_dns_io_observer
 {
-  public:
+public:
 	using native_handle_type = typename win32_9x_dns_io_observer::native_handle_type;
 	constexpr win32_9x_dns_file() noexcept = default;
 	template <typename native_hd>

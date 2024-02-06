@@ -32,7 +32,7 @@ locale 			_M_buf_locale;
 template <typename char_type, typename traits_type>
 class libstdcxx_basic_streambuf_hack_model
 {
-  public:
+public:
 	void *vptr;
 	char_type *_M_in_beg;  ///< Start of get area.
 	char_type *_M_in_cur;  ///< Current read area.

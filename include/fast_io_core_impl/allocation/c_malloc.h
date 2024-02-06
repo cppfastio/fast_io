@@ -9,7 +9,7 @@ namespace fast_io
 
 class c_malloc_allocator
 {
-  public:
+public:
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 	[[__gnu__::__returns_nonnull__]]
 #endif

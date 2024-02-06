@@ -93,7 +93,7 @@ inline QFile *open_qfile_with_fd(int fd, open_mode mode)
 template <::std::integral ch_type>
 class basic_qt_file : public basic_qt_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = typename basic_qt_io_observer<ch_type>::native_handle_type;
 	constexpr basic_qt_file() = default;
@@ -173,7 +173,7 @@ class basic_qt_file : public basic_qt_io_observer<ch_type>
 		}
 	}
 
-  private:
+private:
 	void close_nothrow() noexcept
 	{
 #ifdef __cpp_exceptions
@@ -189,7 +189,7 @@ class basic_qt_file : public basic_qt_io_observer<ch_type>
 #endif
 	}
 
-  public:
+public:
 	constexpr basic_qt_file(basic_qt_file &&__restrict other) noexcept
 		: basic_qt_io_observer<ch_type>{other.release()}
 	{

@@ -8,7 +8,7 @@ namespace fast_io
 
 class pulse_audio_error
 {
-  public:
+public:
 	int error{};
 	pulse_audio_error(int e = PA_OK)
 		: error(e)
@@ -27,7 +27,7 @@ inline void throw_pulse_audio_error(int ec = PA_OK)
 template <::std::integral ch_type>
 class basic_pulseaudio_simple_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using output_char_type = char_type;
 	using input_char_type = char_type;
@@ -48,7 +48,7 @@ class basic_pulseaudio_simple_io_observer
 template <::std::integral ch_type>
 class basic_pulseaudio_simple_file : public basic_pulseaudio_simple_io_observer<ch_type>
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = pa_simple *;
 	constexpr basic_pulseaudio_simple_file()

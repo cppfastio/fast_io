@@ -59,7 +59,7 @@ inline constexpr int dll_mode_to_posix_rtld_mode(dll_mode mode) noexcept
 
 class posix_dll_io_observer
 {
-  public:
+public:
 	using native_handle_type = void *;
 	native_handle_type rtld_handle{};
 	inline constexpr native_handle_type native_handle() const noexcept
@@ -129,7 +129,7 @@ class
 #endif
 	posix_dll_file : public posix_dll_io_observer
 {
-  public:
+public:
 	using native_handle_type = void *;
 	constexpr posix_dll_file() = default;
 	template <typename native_hd>

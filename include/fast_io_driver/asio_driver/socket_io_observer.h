@@ -6,7 +6,7 @@ namespace fast_io::asio_driver
 template <typename T, ::std::integral ch_type>
 class basic_socket_io_observer
 {
-  public:
+public:
 	using char_type = ch_type;
 	using native_handle_type = T *;
 	native_handle_type handle{};

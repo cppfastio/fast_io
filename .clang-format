@@ -3,6 +3,8 @@ BasedOnStyle: Microsoft
 UseTab: ForContinuationAndIndentation
 ColumnLimit: 0
 
+AccessModifierOffset: -4
+
 InsertBraces: true
 
 BraceWrapping:

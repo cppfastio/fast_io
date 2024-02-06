@@ -24,7 +24,7 @@ concept has_close_impl = requires(T &&t) { t.close(); };
 template <typename handletype, typename iobuffertraits>
 class basic_io_buffer
 {
-  public:
+public:
 	using handle_type = handletype;
 	using traits_type = iobuffertraits;
 	using input_char_type = typename traits_type::input_char_type;

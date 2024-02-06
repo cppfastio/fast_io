@@ -23,7 +23,7 @@ inline void report_com_error(error_reporter& report, auto hresult) requires(::st
 #endif
 class com_error : public ::std::exception
 {
-  public:
+public:
 	HRESULT hresult{};
 	explicit com_error(HRESULT hr)
 		: hresult(hr)

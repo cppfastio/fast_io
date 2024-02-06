@@ -67,7 +67,7 @@ const*>(gzfile)+offsetof(gz_state_model,out),sizeof(char *)); return ptr;
 template <::std::integral ch_type>
 class basic_gz_io_observer
 {
-  public:
+public:
 	using native_handle_type = gzFile;
 	using char_type = ch_type;
 	native_handle_type gzfile{};
@@ -98,7 +98,7 @@ class basic_gz_io_observer
 template <::std::integral ch_type>
 class basic_gz_file : public basic_gz_io_observer<ch_type>
 {
-  public:
+public:
 	using native_handle_type = gzFile;
 	using char_type = ch_type;
 	constexpr basic_gz_file() = default;
