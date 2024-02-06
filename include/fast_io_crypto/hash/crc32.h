@@ -47,7 +47,7 @@ inline constexpr ::std::uint_least32_t calculate_crc32_common(::std::uint_least3
     }
     return crc;
 }
-// clang format off
+// clang-format off
 inline constexpr ::std::uint_least32_t crc32_tb[256]{
     0x0,        0x77073096, 0xee0e612c, 0x990951ba, 0x76dc419,  0x706af48f, 0xe963a535, 0x9e6495a3, 0xedb8832,
     0x79dcb8a4, 0xe0d5e91e, 0x97d2d988, 0x9b64c2b,  0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
@@ -109,7 +109,7 @@ inline constexpr ::std::uint_least32_t crc32c_tb[256]{
     0x88d28022, 0x7ab90321, 0xae7367ca, 0x5c18e4c9, 0x4f48173d, 0xbd23943e, 0xf36e6f75, 0x105ec76,  0x12551f82,
     0xe03e9c81, 0x34f4f86a, 0xc69f7b69, 0xd5cf889d, 0x27a40b9e, 0x79b737ba, 0x8bdcb4b9, 0x988c474d, 0x6ae7c44e,
     0xbe2da0a5, 0x4c4623a6, 0x5f16d052, 0xad7d5351};
-// clang format on
+// clang-format on
 template <crc32_option opt>
 inline constexpr ::std::uint_least32_t calculate_crc32(::std::uint_least32_t crc, ::std::byte const *i,
                                                        ::std::byte const *ed) noexcept

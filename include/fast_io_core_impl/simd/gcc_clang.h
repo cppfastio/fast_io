@@ -265,49 +265,61 @@ template <typename T, ::std::size_t N> struct simd_vector
 #if __has_builtin(__builtin_shufflevector)
             if constexpr (sizeof(T) == 8)
             {
+                // clang-format off
                 temp_vec = __builtin_shufflevector(temp_vec, temp_vec, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10,
                                                    9, 8, 23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28, 27, 26, 25, 24,
                                                    39, 38, 37, 36, 35, 34, 33, 32, 47, 46, 45, 44, 43, 42, 41, 40, 55,
                                                    54, 53, 52, 51, 50, 49, 48, 63, 62, 61, 60, 59, 58, 57, 56);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 4)
             {
+                // clang-format off
                 temp_vec = __builtin_shufflevector(temp_vec, temp_vec, 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13,
                                                    12, 19, 18, 17, 16, 23, 22, 21, 20, 27, 26, 25, 24, 31, 30, 29, 28,
                                                    35, 34, 33, 32, 39, 38, 37, 36, 43, 42, 41, 40, 47, 46, 45, 44, 51,
                                                    50, 49, 48, 55, 54, 53, 52, 59, 58, 57, 56, 63, 62, 61, 60);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 2)
             {
+                // clang-format off
                 temp_vec = __builtin_shufflevector(temp_vec, temp_vec, 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15,
                                                    14, 17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30,
                                                    33, 32, 35, 34, 37, 36, 39, 38, 41, 40, 43, 42, 45, 44, 47, 46, 49,
                                                    48, 51, 50, 53, 52, 55, 54, 57, 56, 59, 58, 61, 60, 63, 62);
+                // clang-format on
             }
 #elif __has_builtin(__builtin_ia32_pshufb512)
             if constexpr (sizeof(T) == 8)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{7,  6,  5,  4,  3,  2,  1,  0,  15, 14, 13, 12, 11, 10, 9,  8,
                                              23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28, 27, 26, 25, 24,
                                              39, 38, 37, 36, 35, 34, 33, 32, 47, 46, 45, 44, 43, 42, 41, 40,
                                              55, 54, 53, 52, 51, 50, 49, 48, 63, 62, 61, 60, 59, 58, 57, 56};
                 temp_vec = __builtin_ia32_pshufb512(temp_vec, mask);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 4)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{3,  2,  1,  0,  7,  6,  5,  4,  11, 10, 9,  8,  15, 14, 13, 12,
                                              19, 18, 17, 16, 23, 22, 21, 20, 27, 26, 25, 24, 31, 30, 29, 28,
                                              35, 34, 33, 32, 39, 38, 37, 36, 43, 42, 41, 40, 47, 46, 45, 44,
                                              51, 50, 49, 48, 55, 54, 53, 52, 59, 58, 57, 56, 63, 62, 61, 60};
                 temp_vec = __builtin_ia32_pshufb512(temp_vec, mask);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 2)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{1,  0,  3,  2,  5,  4,  7,  6,  9,  8,  11, 10, 13, 12, 15, 14,
                                              17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30,
                                              33, 32, 35, 34, 37, 36, 39, 38, 41, 40, 43, 42, 45, 44, 47, 46,
                                              49, 48, 51, 50, 53, 52, 55, 54, 57, 56, 59, 58, 61, 60, 63, 62};
                 temp_vec = __builtin_ia32_pshufb512(temp_vec, mask);
+                // clang-format on
             }
 #endif
 #if __has_builtin(__builtin_bit_cast)
@@ -328,38 +340,50 @@ template <typename T, ::std::size_t N> struct simd_vector
 #if __has_builtin(__builtin_shufflevector)
             if constexpr (sizeof(T) == 8)
             {
+                // clang-format off
                 temp_vec =
                     __builtin_shufflevector(temp_vec, temp_vec, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8,
                                             23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28, 27, 26, 25, 24);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 4)
             {
+                // clang-format off
                 temp_vec = __builtin_shufflevector(temp_vec, temp_vec, 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13,
                                                    12, 19, 18, 17, 16, 23, 22, 21, 20, 27, 26, 25, 24, 31, 30, 29, 28);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 2)
             {
+                // clang-format off
                 temp_vec = __builtin_shufflevector(temp_vec, temp_vec, 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15,
                                                    14, 17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30);
+                // clang-format on
             }
 #elif __has_builtin(__builtin_ia32_pshufb256)
             if constexpr (sizeof(T) == 8)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{7,  6,  5,  4,  3,  2,  1,  0,  15, 14, 13, 12, 11, 10, 9,  8,
                                              23, 22, 21, 20, 19, 18, 17, 16, 31, 30, 29, 28, 27, 26, 25, 24};
                 temp_vec = __builtin_ia32_pshufb256(temp_vec, mask);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 4)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{3,  2,  1,  0,  7,  6,  5,  4,  11, 10, 9,  8,  15, 14, 13, 12,
                                              19, 18, 17, 16, 23, 22, 21, 20, 27, 26, 25, 24, 31, 30, 29, 28};
                 temp_vec = __builtin_ia32_pshufb256(temp_vec, mask);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 2)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{1,  0,  3,  2,  5,  4,  7,  6,  9,  8,  11, 10, 13, 12, 15, 14,
                                              17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30};
                 temp_vec = __builtin_ia32_pshufb256(temp_vec, mask);
+                // clang-format on
             }
 #endif
 #if __has_builtin(__builtin_bit_cast)
@@ -381,34 +405,46 @@ template <typename T, ::std::size_t N> struct simd_vector
                                                (!defined(__GNUC__) || defined(__clang__)) || defined(__SSE4_2__))
             if constexpr (sizeof(T) == 8)
             {
+                // clang-format off
                 temp_vec =
                     __builtin_shufflevector(temp_vec, temp_vec, 7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 4)
             {
+                // clang-format off
                 temp_vec =
                     __builtin_shufflevector(temp_vec, temp_vec, 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 2)
             {
+                // clang-format off
                 temp_vec =
                     __builtin_shufflevector(temp_vec, temp_vec, 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
+                // clang-format on
             }
 #elif __has_builtin(__builtin_ia32_pshufb128) && defined(__SSE3__)
             if constexpr (sizeof(T) == 8)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8};
                 temp_vec = __builtin_ia32_pshufb128(temp_vec, mask);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 4)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12};
                 temp_vec = __builtin_ia32_pshufb128(temp_vec, mask);
+                // clang-format on
             }
             else if constexpr (sizeof(T) == 2)
             {
+                // clang-format off
                 constexpr temp_vec_type mask{1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14};
                 temp_vec = __builtin_ia32_pshufb128(temp_vec, mask);
+                // clang-format on
             }
 #elif defined(__SSE2__) && __has_builtin(__builtin_ia32_punpcklbw128) && __has_builtin(__builtin_ia32_punpckhbw128)
             using x86_64_v4si [[__gnu__::__vector_size__(16)]] = int;
