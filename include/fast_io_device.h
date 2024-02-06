@@ -9,10 +9,10 @@
 // fast_io_devices.h defines commonly used io devices and their correlated mutex verisons.
 #include "fast_io_hosted.h"
 
-#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) &&                                   \
-      !defined(_LIBCPP_FREESTANDING)) ||                                                                               \
-     defined(FAST_IO_ENABLE_HOSTED_FEATURES)) &&                                                                       \
-    !defined(__AVR__)
+#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
+	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
+	 defined(FAST_IO_ENABLE_HOSTED_FEATURES)) &&                                     \
+	!defined(__AVR__)
 namespace fast_io
 {
 
@@ -27,17 +27,22 @@ using dir_file = directory_file_wrapper<basic_native_file<char>>;
 template region
 */
 
-template <::std::integral char_type> using basic_iobuf_pipe = basic_iobuf<basic_native_pipe<char_type>>;
+template <::std::integral char_type>
+using basic_iobuf_pipe = basic_iobuf<basic_native_pipe<char_type>>;
 
 template <::std::integral char_type>
 using basic_ibuf_file = basic_ibuf<input_file_wrapper<basic_native_file<char_type>>>;
 template <::std::integral char_type>
 using basic_obuf_file = basic_obuf<output_file_wrapper<basic_native_file<char_type>>>;
-template <::std::integral char_type> using basic_iobuf_file = basic_iobuf<basic_native_file<char_type>>;
+template <::std::integral char_type>
+using basic_iobuf_file = basic_iobuf<basic_native_file<char_type>>;
 
-template <::std::integral char_type> using basic_ibuf_file_mutex = basic_iomutex<basic_ibuf_file<char_type>>;
-template <::std::integral char_type> using basic_obuf_file_mutex = basic_iomutex<basic_obuf_file<char_type>>;
-template <::std::integral char_type> using basic_iobuf_file_mutex = basic_iomutex<basic_iobuf_file<char_type>>;
+template <::std::integral char_type>
+using basic_ibuf_file_mutex = basic_iomutex<basic_ibuf_file<char_type>>;
+template <::std::integral char_type>
+using basic_obuf_file_mutex = basic_iomutex<basic_obuf_file<char_type>>;
+template <::std::integral char_type>
+using basic_iobuf_file_mutex = basic_iomutex<basic_iobuf_file<char_type>>;
 /*
 char region
 */
@@ -109,7 +114,8 @@ using u32iobuf_file_mutex = basic_iobuf_file_mutex<char32_t>;
 
 #if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
 
-template <::std::integral char_type> using basic_iobuf_socket_file = basic_iobuf<basic_native_socket_file<char_type>>;
+template <::std::integral char_type>
+using basic_iobuf_socket_file = basic_iobuf<basic_native_socket_file<char_type>>;
 
 using iobuf_socket_file = basic_iobuf_socket_file<char>;
 using wiobuf_socket_file = basic_iobuf_socket_file<wchar_t>;

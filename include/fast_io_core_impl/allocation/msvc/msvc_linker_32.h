@@ -6,7 +6,7 @@
 #pragma comment(linker, "/alternatename:__imp_?HeapReAlloc@win32@fast_io@@YAPAXPAXI0I@Z=__imp_HeapReAlloc")
 #pragma comment(linker, "/alternatename:__imp_?RtlAllocateHeap@nt@win32@fast_io@@YAPAXPAXII@Z=__imp_RtlAllocateHeap")
 #pragma comment(linker, "/alternatename:__imp_?RtlFreeHeap@nt@win32@fast_io@@YAEPAXI0@Z=__imp_RtlFreeHeap")
-#pragma comment(linker,                                                                                                \
-                "/alternatename:__imp_?RtlGetCurrentPeb@nt@win32@fast_io@@YAPAUpeb@123@XZ=__imp_RtlGetCurrentPeb")
-#pragma comment(linker,                                                                                                \
-                "/alternatename:__imp_?RtlReAllocateHeap@nt@win32@fast_io@@YAPAXPAXI0I@Z=__imp_RtlReAllocateHeap")
+#pragma comment(linker, \
+				"/alternatename:__imp_?RtlGetCurrentPeb@nt@win32@fast_io@@YAPAUpeb@123@XZ=__imp_RtlGetCurrentPeb")
+#pragma comment(linker, \
+				"/alternatename:__imp_?RtlReAllocateHeap@nt@win32@fast_io@@YAPAXPAXI0I@Z=__imp_RtlReAllocateHeap")

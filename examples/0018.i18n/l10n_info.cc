@@ -6,11 +6,11 @@ using namespace fast_io::io;
 int main()
 try
 {
-    fast_io::native_l10n loc(u8"");
-    println(imbue(loc, fast_io::c_stdout()), loc);
+	fast_io::native_l10n loc(u8"");
+	println(imbue(loc, fast_io::c_stdout()), loc);
 }
 catch (fast_io::error e)
 {
-    perrln(e);
-    return 1;
+	perrln(e);
+	return 1;
 }

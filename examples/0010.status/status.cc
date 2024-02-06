@@ -5,6 +5,6 @@ using namespace fast_io::io;
 
 int main()
 {
-    fast_io::obuf_file obf("a.txt");
-    println(status(obf.handle));
+	fast_io::obuf_file obf("a.txt");
+	println(status(obf.handle));
 }

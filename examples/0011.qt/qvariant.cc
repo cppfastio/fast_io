@@ -6,6 +6,6 @@ using namespace fast_io::io;
 
 int main()
 {
-    QVariant var = 4.503;
-    println("var:", var);
+	QVariant var = 4.503;
+	println("var:", var);
 }

@@ -14,5 +14,3 @@ build
 *.html
 *.txt
 !CMakeLists.txt
-.clang-format
-a.py

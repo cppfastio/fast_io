@@ -4,6 +4,6 @@ using namespace fast_io::io;
 
 int main()
 {
-    using namespace fast_io::mnp;
-    println('a', " ", chvw('a'));
+	using namespace fast_io::mnp;
+	println('a', " ", chvw('a'));
 }

@@ -7,9 +7,10 @@ namespace fast_io::manipulators
 fast_io::manipulators allow user to add their custom manipulators
 */
 
-template <typename T> inline constexpr auto hex_middle_8(T const &t)
+template <typename T>
+inline constexpr auto hex_middle_8(T const &t)
 {
-    return middle(hex<true>(t), 8, '-');
+	return middle(hex<true>(t), 8, '-');
 }
 
 } // namespace fast_io::manipulators
@@ -18,8 +19,8 @@ using namespace fast_io::io;
 
 int main()
 {
-    using namespace fast_io::mnp;
-    println(fast_io::concatln(hex_middle_8(42), "\t", addrvw(42)), hex_middle_8(42), "\t", addrvw(42));
+	using namespace fast_io::mnp;
+	println(fast_io::concatln(hex_middle_8(42), "\t", addrvw(42)), hex_middle_8(42), "\t", addrvw(42));
 }
 
 /*

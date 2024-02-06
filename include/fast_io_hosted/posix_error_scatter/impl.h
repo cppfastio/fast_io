@@ -18,18 +18,18 @@ namespace details::tsc_namespace
 template <typename char_type, ::std::size_t N>
 inline constexpr basic_io_scatter_t<char_type> tsc(char_type const (&a)[N]) noexcept
 {
-    return {a, N - 1};
+	return {a, N - 1};
 }
 } // namespace details::tsc_namespace
 
 template <details::character char_type>
 inline constexpr basic_io_scatter_t<char_type> get_posix_errno_scatter([[maybe_unused]] int errn) noexcept
 {
-    /*
-    Referenced from GNU newlib
-    https://github.com/bminor/newlib/blob/ea275093c179fea636470173509615eb6bddad0f/newlib/libc/string/strerror.c
-    */
-    using namespace details::tsc_namespace;
+	/*
+	Referenced from GNU newlib
+	https://github.com/bminor/newlib/blob/ea275093c179fea636470173509615eb6bddad0f/newlib/libc/string/strerror.c
+	*/
+	using namespace details::tsc_namespace;
 #if __has_include(<errno.h>)
 #if defined(__AVR__)
 #include "avr.h"

@@ -6,13 +6,15 @@ using namespace fast_io::io;
 
 int main()
 {
-    fast_io::u8obuf_file obf(u8"graph.txt");
-    constexpr std::size_t m{600000};
-    constexpr std::size_t n{50000};
-    println(obf, m, u8" ", n);
-    fast_io::ibuf_white_hole_engine rg;
-    std::uniform_int_distribution<std::size_t> node_dist(0, n - 1);
-    std::uniform_int_distribution<std::size_t> weight_dist(0, 1000000);
-    for (std::size_t i{}; i != m; ++i)
-        println(obf, node_dist(rg), u8" ", node_dist(rg), u8" ", weight_dist(rg));
+	fast_io::u8obuf_file obf(u8"graph.txt");
+	constexpr std::size_t m{600000};
+	constexpr std::size_t n{50000};
+	println(obf, m, u8" ", n);
+	fast_io::ibuf_white_hole_engine rg;
+	std::uniform_int_distribution<std::size_t> node_dist(0, n - 1);
+	std::uniform_int_distribution<std::size_t> weight_dist(0, 1000000);
+	for (std::size_t i{}; i != m; ++i)
+	{
+		println(obf, node_dist(rg), u8" ", node_dist(rg), u8" ", weight_dist(rg));
+	}
 }

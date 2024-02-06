@@ -4,7 +4,7 @@ using namespace fast_io::io;
 
 int main()
 {
-    std::size_t a, b;
-    scan(a, b);
-    println(a + b);
+	std::size_t a, b;
+	scan(a, b);
+	println(a + b);
 }

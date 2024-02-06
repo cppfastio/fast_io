@@ -22,8 +22,8 @@ inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::ui
 #endif
 #include "linux/system_call.h"
 #include "posix.h"
-#if (!defined(_WIN32) || defined(__WINE__)) &&                                                                         \
-    __has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__)
+#if (!defined(_WIN32) || defined(__WINE__)) && \
+	__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__)
 #include "posix_netop.h"
 #if __has_include(<netdb.h>)
 #include "posix_dns.h"
@@ -37,20 +37,26 @@ namespace fast_io
 using native_at_entry = nt_at_entry;
 using native_fs_dirent = nt_fs_dirent;
 
-template <::std::integral ch_type> using basic_native_io_observer = basic_win32_io_observer<ch_type>;
-template <::std::integral ch_type> using basic_native_file = basic_win32_file<ch_type>;
+template <::std::integral ch_type>
+using basic_native_io_observer = basic_win32_io_observer<ch_type>;
+template <::std::integral ch_type>
+using basic_native_file = basic_win32_file<ch_type>;
 using native_process_io = nt_process_io;
 
-template <::std::integral ch_type> using basic_native_pipe = basic_win32_pipe<ch_type>;
+template <::std::integral ch_type>
+using basic_native_pipe = basic_win32_pipe<ch_type>;
 
 #else
 
 using native_at_entry = posix_at_entry;
 using native_fs_dirent = posix_fs_dirent;
 
-template <::std::integral ch_type> using basic_native_io_observer = basic_posix_io_observer<ch_type>;
-template <::std::integral ch_type> using basic_native_file = basic_posix_file<ch_type>;
-template <::std::integral ch_type> using basic_native_pipe = basic_posix_pipe<ch_type>;
+template <::std::integral ch_type>
+using basic_native_io_observer = basic_posix_io_observer<ch_type>;
+template <::std::integral ch_type>
+using basic_native_file = basic_posix_file<ch_type>;
+template <::std::integral ch_type>
+using basic_native_pipe = basic_posix_pipe<ch_type>;
 using native_process_io = posix_process_io;
 #endif
 

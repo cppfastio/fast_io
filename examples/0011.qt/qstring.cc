@@ -5,6 +5,6 @@ using namespace fast_io::io;
 
 int main()
 {
-    QString qstr = "Hello QString\n";
-    print(qstr);
+	QString qstr = "Hello QString\n";
+	print(qstr);
 }

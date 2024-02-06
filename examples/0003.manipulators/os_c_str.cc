@@ -4,9 +4,9 @@ using namespace fast_io::io;
 
 int main()
 {
-    using namespace fast_io::mnp;
-    constexpr char const *ptr{"Hello\0World\n"};
-    println("Hello\0World\n", pointervw(ptr), "\n", os_c_str(ptr), "\n", os_c_str(ptr, 4), "\n", os_c_str(ptr, 10));
+	using namespace fast_io::mnp;
+	constexpr char const *ptr{"Hello\0World\n"};
+	println("Hello\0World\n", pointervw(ptr), "\n", os_c_str(ptr), "\n", os_c_str(ptr, 4), "\n", os_c_str(ptr, 10));
 }
 
 /*

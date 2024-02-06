@@ -5,9 +5,9 @@ using namespace fast_io::io;
 
 int main()
 {
-    using namespace fast_io::mnp;
-    println(fast_io::concatln(middle(hex0x(42), 8, '-'), "\t", addrvw(42)), middle(hex0xupper(42), 8, '-'), "\t",
-            addrvw(42), "\n", middle(base<36, true>(42), 11, '-'));
+	using namespace fast_io::mnp;
+	println(fast_io::concatln(middle(hex0x(42), 8, '-'), "\t", addrvw(42)), middle(hex0xupper(42), 8, '-'), "\t",
+			addrvw(42), "\n", middle(base<36, true>(42), 11, '-'));
 }
 
 /*

@@ -10,25 +10,25 @@ using namespace fast_io::io;
 
 inline void fast_io_fast_io(std::vector<double> const &vec)
 {
-    fast_io::timer t(u8"fast_io_direct");
-    fast_io::obuf_file file{u8"fast_io_direct.txt"};
-    for (auto const e : vec)
-    {
-        println(file, fast_io::mnp::scientific(e));
-    }
+	fast_io::timer t(u8"fast_io_direct");
+	fast_io::obuf_file file{u8"fast_io_direct.txt"};
+	for (auto const e : vec)
+	{
+		println(file, fast_io::mnp::scientific(e));
+	}
 }
 
 int main()
 {
-    constexpr std::size_t N = 10'000'000;
+	constexpr std::size_t N = 10'000'000;
 
-    std::mt19937_64 eng{};
-    std::uniform_real_distribution<double> dis(DBL_MIN, DBL_MAX);
-    std::vector<double> vec;
-    vec.reserve(N);
-    for (std::size_t i{}; i != N; ++i)
-    {
-        vec.emplace_back(dis(eng));
-    }
-    fast_io_fast_io(vec);
+	std::mt19937_64 eng{};
+	std::uniform_real_distribution<double> dis(DBL_MIN, DBL_MAX);
+	std::vector<double> vec;
+	vec.reserve(N);
+	for (std::size_t i{}; i != N; ++i)
+	{
+		vec.emplace_back(dis(eng));
+	}
+	fast_io_fast_io(vec);
 }

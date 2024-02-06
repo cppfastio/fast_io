@@ -21,9 +21,9 @@
 #pragma warning(disable : 5045)
 #endif
 
-#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) &&                                   \
-      !defined(_LIBCPP_FREESTANDING)) ||                                                                               \
-     defined(FAST_IO_ENABLE_HOSTED_FEATURES))
+#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
+	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
+	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #include "fast_io_hosted.h"
 #include "fast_io_crypto/platforms/impl.h"
 #endif

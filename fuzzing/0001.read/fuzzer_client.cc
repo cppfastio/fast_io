@@ -6,6 +6,6 @@ thread_local fast_io::iobuf_socket_file soc(fast_io::tcp_connect(fast_io::ipv4{{
 
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const *ptr, std::size_t n) noexcept
 {
-    write(soc, ptr, ptr + n);
-    return 0;
+	write(soc, ptr, ptr + n);
+	return 0;
 }

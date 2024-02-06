@@ -5,7 +5,7 @@ using namespace fast_io::io;
 
 int main()
 {
-    char8_t a, b, c, d;
-    scan(a, ".", b, ".", c, ".", d);
-    println(a, ".", b, ".", c, ".", d);
+	char8_t a, b, c, d;
+	scan(a, ".", b, ".", c, ".", d);
+	println(a, ".", b, ".", c, ".", d);
 }
