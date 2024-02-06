@@ -4,6 +4,6 @@
 
 int main()
 {
-    fast_io::timer t(u8"fast_io::vector");
-    fast_io::vector<std::size_t> vec(100000000);
+	fast_io::timer t(u8"fast_io::vector");
+	fast_io::vector<std::size_t> vec(100000000);
 }

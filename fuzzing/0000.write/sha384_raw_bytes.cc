@@ -9,12 +9,12 @@ using namespace fast_io::io;
 
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const *ptr, std::size_t n) noexcept
 {
-    ctx.reset();
-    for (std::size_t i{}; i != 16; ++i)
-    {
-        write(::fast_io::mnp::as_file(ctx), ptr, ptr + n);
-    }
-    ctx.do_final();
-    println(obf, ::fast_io::mnp::hash_digest_raw_bytes(ctx));
-    return 0;
+	ctx.reset();
+	for (std::size_t i{}; i != 16; ++i)
+	{
+		write(::fast_io::mnp::as_file(ctx), ptr, ptr + n);
+	}
+	ctx.do_final();
+	println(obf, ::fast_io::mnp::hash_digest_raw_bytes(ctx));
+	return 0;
 }

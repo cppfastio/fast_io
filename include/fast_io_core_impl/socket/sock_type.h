@@ -5,12 +5,12 @@ namespace fast_io
 
 enum class sock_type : char8_t
 {
-    stream,
-    dgram,
-    seqpacket,
-    raw,
-    rdm,
-    packet
+	stream,
+	dgram,
+	seqpacket,
+	raw,
+	rdm,
+	packet
 };
 
-}
+} // namespace fast_io

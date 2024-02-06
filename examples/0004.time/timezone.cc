@@ -4,5 +4,5 @@ using namespace fast_io::io;
 
 int main()
 {
-    println(fast_io::native_local_timezone{}());
+	println(fast_io::native_local_timezone{}());
 }

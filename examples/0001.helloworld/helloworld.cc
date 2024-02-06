@@ -7,7 +7,7 @@ using namespace fast_io::io;
 
 int main()
 {
-    print("Hello World\n");
+	print("Hello World\n");
 }
 /*
 This outputs to C's stdout FILE*

@@ -17,9 +17,9 @@ freestanding ones.
 #else
 #include "fast_io_freestanding.h"
 
-#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) &&                                   \
-      !defined(_LIBCPP_FREESTANDING)) ||                                                                               \
-     defined(FAST_IO_ENABLE_HOSTED_FEATURES))
+#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
+	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
+	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 
 #if __has_include(<stdio.h>)
 #if __has_include(<bits/error_constants.h>)

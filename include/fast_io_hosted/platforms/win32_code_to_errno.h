@@ -1,9 +1,9 @@
 ﻿#pragma once
 case 0:
-    return 0;
+return 0;
 #if defined(EACCES)
 case 5:
-    return EACCES;
+return EACCES;
 #endif
 #if defined(EAGAIN)
 case 89:
@@ -18,15 +18,15 @@ case 1455:
 case 2401:
 case 2402:
 case 2404:
-    return EAGAIN;
+return EAGAIN;
 #endif
 #if defined(EBADF)
 case 6:
-    return EBADF;
+return EBADF;
 #endif
 #if defined(EBADRQC)
 case 1:
-    return EBADRQC;
+return EBADRQC;
 #endif
 #if defined(EBUSY)
 case 32:
@@ -38,44 +38,44 @@ case 231:
 case 535:
 case 1053:
 case 1460:
-    return EBUSY;
+return EBUSY;
 #endif
 #if defined(ECHILD)
 case 128:
-    return ECHILD;
+return ECHILD;
 #endif
 #if defined(ECOMM)
 case 233:
 case 536:
-    return ECOMM;
+return ECOMM;
 #endif
 #if defined(ECONNREFUSED)
 case 1225:
-    return ECONNREFUSED;
+return ECONNREFUSED;
 #endif
 #if defined(EDEADLOCK)
 case 1131:
-    return EDEADLOCK;
+return EDEADLOCK;
 #endif
 #if defined(EEXIST)
 case 80:
 case 183:
 case 1392:
-    return EEXIST;
+return EEXIST;
 #endif
 #if defined(EFAULT)
 case 998:
 case 1067:
-    return EFAULT;
+return EFAULT;
 #endif
 #if defined(EFBIG)
 case 1450:
-    return EFBIG;
+return EFBIG;
 #endif
 #if defined(EINTR)
 case 104:
 case 1223:
-    return EINTR;
+return EINTR;
 #endif
 #if defined(EINVAL)
 case 13:
@@ -94,7 +94,7 @@ case 487:
 case 1008:
 case 1332:
 case 2202:
-    return EINVAL;
+return EINVAL;
 #endif
 #if defined(EIO)
 case 23:
@@ -115,46 +115,46 @@ case 1166:
 case 1393:
 case 1816:
 case 8341:
-    return EIO;
+return EIO;
 #endif
 #if defined(ELIBBAD)
 case 14001:
-    return ELIBBAD;
+return ELIBBAD;
 #endif
 #if defined(EMFILE)
 case 4:
-    return EMFILE;
+return EMFILE;
 #endif
 #if defined(EMLINK)
 case 1142:
-    return EMLINK;
+return EMLINK;
 #endif
 #if defined(EMSGSIZE)
 case 234:
-    return EMSGSIZE;
+return EMSGSIZE;
 #endif
 #if defined(ENAMETOOLONG)
 case 206:
-    return ENAMETOOLONG;
+return ENAMETOOLONG;
 #endif
 #if defined(ENFILE)
 case 113:
-    return ENFILE;
+return ENFILE;
 #endif
 #if defined(ENMFILE)
 case 18:
 case 259:
-    return ENMFILE;
+return ENMFILE;
 #endif
 #if defined(ENODATA)
 case 38:
-    return ENODATA;
+return ENODATA;
 #endif
 #if defined(ENODEV)
 case 15:
 case 20:
 case 1200:
-    return ENODEV;
+return ENODEV;
 #endif
 #if defined(ENOENT)
 case 2:
@@ -166,7 +166,7 @@ case 67:
 case 123:
 case 126:
 case 161:
-    return ENOENT;
+return ENOENT;
 #endif
 #if defined(ENOEXEC)
 case 191:
@@ -174,29 +174,29 @@ case 192:
 case 193:
 case 197:
 case 216:
-    return ENOEXEC;
+return ENOEXEC;
 #endif
 #if defined(ENOLCK)
 case 36:
-    return ENOLCK;
+return ENOLCK;
 #endif
 #if defined(ENOLINK)
 case 2250:
-    return ENOLINK;
+return ENOLINK;
 #endif
 #if defined(ENOMEDIUM)
 case 21:
 case 1112:
-    return ENOMEDIUM;
+return ENOMEDIUM;
 #endif
 #if defined(ENOMEM)
 case 8:
 case 14:
-    return ENOMEM;
+return ENOMEM;
 #endif
 #if defined(ENONET)
 case 51:
-    return ENONET;
+return ENONET;
 #endif
 #if defined(ENOSPC)
 case 39:
@@ -204,54 +204,54 @@ case 112:
 case 275:
 case 277:
 case 1100:
-    return ENOSPC;
+return ENOSPC;
 #endif
 #if defined(ENOSYS)
 case 50:
 case 58:
 case 120:
-    return ENOSYS;
+return ENOSYS;
 #endif
 #if defined(ENOTDIR)
 case 267:
-    return ENOTDIR;
+return ENOTDIR;
 #endif
 #if defined(ENOTEMPTY)
 case 145:
-    return ENOTEMPTY;
+return ENOTEMPTY;
 #endif
 #if defined(ENOTSUP)
 case 282:
-    return ENOTSUP;
+return ENOTSUP;
 #endif
 #if defined(ENOTUNIQ)
 case 52:
-    return ENOTUNIQ;
+return ENOTUNIQ;
 #endif
 #if defined(ENXIO)
 case 1006:
-    return ENXIO;
+return ENXIO;
 #endif
 #if defined(EPERM)
 case 82:
 case 288:
 case 1314:
-    return EPERM;
+return EPERM;
 #endif
 #if defined(EPIPE)
 case 109:
 case 232:
-    return EPIPE;
+return EPIPE;
 #endif
 #if defined(EROFS)
 case 19:
-    return EROFS;
+return EROFS;
 #endif
 #if defined(ESRCH)
 case 127:
-    return ESRCH;
+return ESRCH;
 #endif
 #if defined(EXDEV)
 case 17:
-    return EXDEV;
+return EXDEV;
 #endif

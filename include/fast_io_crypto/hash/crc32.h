@@ -8,45 +8,46 @@ namespace details
 
 enum class crc32_option
 {
-    crc32,
-    crc32c
+	crc32,
+	crc32c
 };
 
 inline constexpr void crc32_to_byte_ptr_commom_impl(::std::uint_least32_t crc, ::std::byte *ptr) noexcept
 {
-    crc = ~crc;
-    if constexpr (::std::endian::big != ::std::endian::native)
-    {
-        crc = ::fast_io::byte_swap(crc);
-    }
+	crc = ~crc;
+	if constexpr (::std::endian::big != ::std::endian::native)
+	{
+		crc = ::fast_io::byte_swap(crc);
+	}
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
 #if __cpp_if_consteval >= 202106L
-    if consteval
+	if consteval
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-    if (::std::is_constant_evaluated())
+	if (::std::is_constant_evaluated())
 #endif
-    {
-        auto a{::std::bit_cast<::fast_io::freestanding::array<::std::byte, sizeof(::std::uint_least32_t)>>(crc)};
-        ::fast_io::freestanding::nonoverlapped_bytes_copy_n(a.data(), a.size(), ptr);
-    }
-    else
+	{
+		auto a{::std::bit_cast<::fast_io::freestanding::array<::std::byte, sizeof(::std::uint_least32_t)>>(crc)};
+		::fast_io::freestanding::nonoverlapped_bytes_copy_n(a.data(), a.size(), ptr);
+	}
+	else
 #endif
-    {
-        ::fast_io::freestanding::nonoverlapped_bytes_copy_n(
-            reinterpret_cast<::std::byte const *>(__builtin_addressof(crc)), sizeof(::std::uint_least32_t), ptr);
-    }
+	{
+		::fast_io::freestanding::nonoverlapped_bytes_copy_n(
+			reinterpret_cast<::std::byte const *>(__builtin_addressof(crc)), sizeof(::std::uint_least32_t), ptr);
+	}
 }
 
 inline constexpr ::std::uint_least32_t calculate_crc32_common(::std::uint_least32_t crc, ::std::byte const *i,
-                                                              ::std::byte const *ed,
-                                                              ::std::uint_least32_t const *crctb) noexcept
+															  ::std::byte const *ed,
+															  ::std::uint_least32_t const *crctb) noexcept
 {
-    for (; i != ed; ++i)
-    {
-        crc = crctb[(static_cast<::std::uint_least32_t>(*i) ^ crc) & 0xff] ^ (crc >> 8);
-    }
-    return crc;
+	for (; i != ed; ++i)
+	{
+		crc = crctb[(static_cast<::std::uint_least32_t>(*i) ^ crc) & 0xff] ^ (crc >> 8);
+	}
+	return crc;
 }
+// clang-format off
 inline constexpr ::std::uint_least32_t crc32_tb[256]{
     0x0,        0x77073096, 0xee0e612c, 0x990951ba, 0x76dc419,  0x706af48f, 0xe963a535, 0x9e6495a3, 0xedb8832,
     0x79dcb8a4, 0xe0d5e91e, 0x97d2d988, 0x9b64c2b,  0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
@@ -108,44 +109,46 @@ inline constexpr ::std::uint_least32_t crc32c_tb[256]{
     0x88d28022, 0x7ab90321, 0xae7367ca, 0x5c18e4c9, 0x4f48173d, 0xbd23943e, 0xf36e6f75, 0x105ec76,  0x12551f82,
     0xe03e9c81, 0x34f4f86a, 0xc69f7b69, 0xd5cf889d, 0x27a40b9e, 0x79b737ba, 0x8bdcb4b9, 0x988c474d, 0x6ae7c44e,
     0xbe2da0a5, 0x4c4623a6, 0x5f16d052, 0xad7d5351};
-
+// clang-format on
 template <crc32_option opt>
 inline constexpr ::std::uint_least32_t calculate_crc32(::std::uint_least32_t crc, ::std::byte const *i,
-                                                       ::std::byte const *ed) noexcept
+													   ::std::byte const *ed) noexcept
 {
-    if constexpr (opt == crc32_option::crc32)
-    {
-        return calculate_crc32_common(crc, i, ed, crc32_tb);
-    }
-    else
-    {
-        return calculate_crc32_common(crc, i, ed, crc32c_tb);
-    }
+	if constexpr (opt == crc32_option::crc32)
+	{
+		return calculate_crc32_common(crc, i, ed, crc32_tb);
+	}
+	else
+	{
+		return calculate_crc32_common(crc, i, ed, crc32c_tb);
+	}
 }
 
-template <crc32_option opt> class basic_crc32_scalar_context
+template <crc32_option opt>
+class basic_crc32_scalar_context
 {
-    ::std::uint_least32_t crcv{0xffffffff};
+	::std::uint_least32_t crcv{0xffffffff};
 
   public:
-    static inline constexpr ::std::size_t digest_size{sizeof(::std::uint_least32_t)};
-    inline constexpr void update(::std::byte const *first, ::std::byte const *last) noexcept
-    {
-        crcv = calculate_crc32<opt>(crcv, first, last);
-    }
-    inline constexpr void reset() noexcept
-    {
-        crcv = 0xffffffff;
-    }
-    inline constexpr ::std::uint_least32_t digest_value() const noexcept
-    {
-        return ~crcv;
-    }
-    inline constexpr void do_final() const noexcept {}
-    inline constexpr void digest_to_byte_ptr(::std::byte *ptr) const noexcept
-    {
-        ::fast_io::details::crc32_to_byte_ptr_commom_impl(crcv, ptr);
-    }
+	static inline constexpr ::std::size_t digest_size{sizeof(::std::uint_least32_t)};
+	inline constexpr void update(::std::byte const *first, ::std::byte const *last) noexcept
+	{
+		crcv = calculate_crc32<opt>(crcv, first, last);
+	}
+	inline constexpr void reset() noexcept
+	{
+		crcv = 0xffffffff;
+	}
+	inline constexpr ::std::uint_least32_t digest_value() const noexcept
+	{
+		return ~crcv;
+	}
+	inline constexpr void do_final() const noexcept
+	{}
+	inline constexpr void digest_to_byte_ptr(::std::byte *ptr) const noexcept
+	{
+		::fast_io::details::crc32_to_byte_ptr_commom_impl(crcv, ptr);
+	}
 };
 } // namespace details
 

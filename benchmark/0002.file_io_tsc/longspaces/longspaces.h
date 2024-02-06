@@ -1,19 +1,19 @@
 ﻿#pragma once
 
-#include<array>
+#include <array>
 
 inline constexpr std::size_t space_size{1024};
 inline constexpr std::size_t N(100000);
 
-template<std::integral char_type>
+template <std::integral char_type>
 inline constexpr auto generate_filled_chars() noexcept
 {
-	std::array<char_type,space_size> arr;
-	if constexpr(std::same_as<char_type,char>)
+	std::array<char_type, space_size> arr;
+	if constexpr (std::same_as<char_type, char>)
 	{
 		arr.fill('\n');
 	}
-	else if constexpr(std::same_as<char_type,wchar_t>)
+	else if constexpr (std::same_as<char_type, wchar_t>)
 	{
 		arr.fill(L'\n');
 	}
@@ -24,6 +24,5 @@ inline constexpr auto generate_filled_chars() noexcept
 	return arr;
 }
 
-template<std::integral char_type>
+template <std::integral char_type>
 inline constexpr auto filled_chars{generate_filled_chars<char_type>()};
-

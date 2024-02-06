@@ -2,6 +2,7 @@
 
 namespace fast_io::details
 {
+// clang-format off
 /*
 Referenced from UTF-EBCDIC
 Unicode Technical Report #16
@@ -48,110 +49,119 @@ inline constexpr char8_t utfebcdic_shadow_flags[256]{
     1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3,
     3, 3, 3, 3, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 4, 4,
     4, 4, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 5, 5, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 6, 6, 7, 7, 0};
+// clang-format on
 
 template <::std::integral T>
-    requires(sizeof(T) == 1)
+	requires(sizeof(T) == 1)
 inline constexpr ::std::size_t get_utf_ebcdic_invalid_code_units(T *dst) noexcept
 {
-    *dst = 0xDD;
-    dst[1] = 0x73;
-    dst[2] = 0x66;
-    dst[3] = 0x73;
-    return 4;
+	*dst = 0xDD;
+	dst[1] = 0x73;
+	dst[2] = 0x66;
+	dst[3] = 0x73;
+	return 4;
 }
 
 template <::std::integral T>
-    requires(sizeof(T) == 1)
+	requires(sizeof(T) == 1)
 inline constexpr ::std::size_t get_utf_ebcdic_code_units(char32_t code, T *dst) noexcept
 {
-    if (code < 0xA0)
-    {
-        *dst = static_cast<T>(bm_i8_to_ebcdic[code]);
-        return 1;
-    }
-    else if (code < 0x400)
-    {
-        *dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11000000) | (code >> 5)]);
-        dst[1] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
-        return 2;
-    }
-    else if (code < 0x4000)
-    {
-        *dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11100000) | (code >> 10)]);
-        dst[1] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 5) & static_cast<char32_t>(0b11111))]);
-        dst[2] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
-        return 3;
-    }
-    else if (code < 0x40000)
-    {
-        *dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11110000) | (code >> 15)]);
-        dst[1] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 10) & static_cast<char32_t>(0b11111))]);
-        dst[2] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 5) & static_cast<char32_t>(0b11111))]);
-        dst[3] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
-        return 4;
-    }
-    else if (code < 0x110000)
-    {
-        *dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11111000) | (code >> 20)]);
-        dst[1] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 15) & static_cast<char32_t>(0b11111))]);
-        dst[2] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 10) & static_cast<char32_t>(0b11111))]);
-        dst[3] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 5) & static_cast<char32_t>(0b11111))]);
-        dst[4] = static_cast<T>(
-            bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
-        return 5;
-    }
-    return get_utf_ebcdic_invalid_code_units(dst);
+	if (code < 0xA0)
+	{
+		*dst = static_cast<T>(bm_i8_to_ebcdic[code]);
+		return 1;
+	}
+	else if (code < 0x400)
+	{
+		*dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11000000) | (code >> 5)]);
+		dst[1] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
+		return 2;
+	}
+	else if (code < 0x4000)
+	{
+		*dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11100000) | (code >> 10)]);
+		dst[1] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 5) & static_cast<char32_t>(0b11111))]);
+		dst[2] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
+		return 3;
+	}
+	else if (code < 0x40000)
+	{
+		*dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11110000) | (code >> 15)]);
+		dst[1] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 10) & static_cast<char32_t>(0b11111))]);
+		dst[2] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 5) & static_cast<char32_t>(0b11111))]);
+		dst[3] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
+		return 4;
+	}
+	else if (code < 0x110000)
+	{
+		*dst = static_cast<T>(bm_i8_to_ebcdic[static_cast<char32_t>(0b11111000) | (code >> 20)]);
+		dst[1] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 15) & static_cast<char32_t>(0b11111))]);
+		dst[2] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 10) & static_cast<char32_t>(0b11111))]);
+		dst[3] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | ((code >> 5) & static_cast<char32_t>(0b11111))]);
+		dst[4] = static_cast<T>(
+			bm_i8_to_ebcdic[static_cast<char32_t>(0b10100000) | (code & static_cast<char32_t>(0b11111))]);
+		return 5;
+	}
+	return get_utf_ebcdic_invalid_code_units(dst);
 }
 
 struct from_ebcdic_result
 {
-    char32_t code;
-    char8_t len;
+	char32_t code;
+	char8_t len;
 };
 
 template <::std::integral T>
-    requires(sizeof(T) == 1)
+	requires(sizeof(T) == 1)
 inline constexpr from_ebcdic_result utf_ebcdic_advance(T *src_first, ::std::size_t sz) noexcept
 {
-    char8_t src0(static_cast<char8_t>(*src_first));
-    char8_t shadow{utfebcdic_shadow_flags[src0]};
-    if (shadow < 2)
-        return {static_cast<char32_t>(bm_ebcdic_to_i8[src0]), 1};
-    if (shadow == 9)
-        return {0xFFFD, 1};
-    if (sz < shadow)
-        return {0, static_cast<char8_t>(-1)};
-    char32_t res{};
-    for (char8_t i{1}; i != shadow; ++i)
-    {
-        char8_t code(bm_ebcdic_to_i8[static_cast<char8_t>(src_first[i])]);
-        if ((code >> 5) != 0b101) [[unlikely]]
-            return {0xFFFD, i};
-        res = (res << 5) | (code & 0b11111);
-    }
-    char8_t src0i18{bm_ebcdic_to_i8[src0]};
-    switch (shadow)
-    {
-        case 2:
-            return {((static_cast<char32_t>(src0i18 & 0b11111)) << 5) | res, 2};
-        case 3:
-            return {((static_cast<char32_t>(src0i18 & 0b1111)) << 10) | res, 3};
-        case 4:
-            return {((static_cast<char32_t>(src0i18 & 0b111)) << 15) | res, 4};
-        case 5:
-            return {((static_cast<char32_t>(src0i18 & 0b1)) << 20) | res, 5};
-        default:
-            return {0xFFFD, shadow};
-    };
+	char8_t src0(static_cast<char8_t>(*src_first));
+	char8_t shadow{utfebcdic_shadow_flags[src0]};
+	if (shadow < 2)
+	{
+		return {static_cast<char32_t>(bm_ebcdic_to_i8[src0]), 1};
+	}
+	if (shadow == 9)
+	{
+		return {0xFFFD, 1};
+	}
+	if (sz < shadow)
+	{
+		return {0, static_cast<char8_t>(-1)};
+	}
+	char32_t res{};
+	for (char8_t i{1}; i != shadow; ++i)
+	{
+		char8_t code(bm_ebcdic_to_i8[static_cast<char8_t>(src_first[i])]);
+		if ((code >> 5) != 0b101) [[unlikely]]
+		{
+			return {0xFFFD, i};
+		}
+		res = (res << 5) | (code & 0b11111);
+	}
+	char8_t src0i18{bm_ebcdic_to_i8[src0]};
+	switch (shadow)
+	{
+	case 2:
+		return {((static_cast<char32_t>(src0i18 & 0b11111)) << 5) | res, 2};
+	case 3:
+		return {((static_cast<char32_t>(src0i18 & 0b1111)) << 10) | res, 3};
+	case 4:
+		return {((static_cast<char32_t>(src0i18 & 0b111)) << 15) | res, 4};
+	case 5:
+		return {((static_cast<char32_t>(src0i18 & 0b1)) << 20) | res, 5};
+	default:
+		return {0xFFFD, shadow};
+	};
 }
 
 } // namespace fast_io::details

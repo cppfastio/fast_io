@@ -5,11 +5,11 @@ using namespace fast_io::io;
 
 int main()
 {
-    using namespace fast_io::mnp;
-    fast_io::native_l10n loc(u8"");
-    println(imbue(loc, fast_io::c_stdout()), middle(hex0x(420000U), 11, '-'), "\t", addrvw(420000U), "\n",
-            middle(hex0xupper(420000U), 11, '-'), "\t", addrvw(420000U), "\n", middle(base<36, true>(420000U), 12, '-'),
-            "\n", 24124214.64364, "\t", hexfloat(24124214.64364));
+	using namespace fast_io::mnp;
+	fast_io::native_l10n loc(u8"");
+	println(imbue(loc, fast_io::c_stdout()), middle(hex0x(420000U), 11, '-'), "\t", addrvw(420000U), "\n",
+			middle(hex0xupper(420000U), 11, '-'), "\t", addrvw(420000U), "\n", middle(base<36, true>(420000U), 12, '-'),
+			"\n", 24124214.64364, "\t", hexfloat(24124214.64364));
 }
 
 /*

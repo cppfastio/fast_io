@@ -3,6 +3,6 @@
 
 int main()
 {
-    fast_io::obuf_file obf(u8"obf.txt");
-    print(obf, "Hello World\n");
+	fast_io::obuf_file obf(u8"obf.txt");
+	print(obf, "Hello World\n");
 }

@@ -27,30 +27,38 @@ namespace operations::refs
 {
 
 template <typename T>
-    requires ::fast_io::operations::defines::has_input_or_io_decorators_ref_define<T>
+	requires ::fast_io::operations::defines::has_input_or_io_decorators_ref_define<T>
 inline constexpr decltype(auto) input_decorators_ref(T &&t)
 {
-    if constexpr (::fast_io::operations::defines::has_input_decorators_ref_define<T>)
-        return input_decorators_ref_define(t);
-    else
-        return io_decorators_ref_define(t);
+	if constexpr (::fast_io::operations::defines::has_input_decorators_ref_define<T>)
+	{
+		return input_decorators_ref_define(t);
+	}
+	else
+	{
+		return io_decorators_ref_define(t);
+	}
 }
 
 template <typename T>
-    requires ::fast_io::operations::defines::has_output_or_io_decorators_ref_define<T>
+	requires ::fast_io::operations::defines::has_output_or_io_decorators_ref_define<T>
 inline constexpr decltype(auto) output_decorators_ref(T &&t)
 {
-    if constexpr (::fast_io::operations::defines::has_output_decorators_ref_define<T>)
-        return output_decorators_ref_define(t);
-    else
-        return io_decorators_ref_define(t);
+	if constexpr (::fast_io::operations::defines::has_output_decorators_ref_define<T>)
+	{
+		return output_decorators_ref_define(t);
+	}
+	else
+	{
+		return io_decorators_ref_define(t);
+	}
 }
 
 template <typename T>
-    requires ::fast_io::operations::defines::has_io_decorators_ref_define<T>
+	requires ::fast_io::operations::defines::has_io_decorators_ref_define<T>
 inline constexpr decltype(auto) io_decorators_ref(T &&t)
 {
-    return io_decorators_ref_define(t);
+	return io_decorators_ref_define(t);
 }
 
 } // namespace operations::refs

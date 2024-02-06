@@ -20,10 +20,11 @@ template <typename T>
 [[nodiscard]] inline constexpr T *
 addressof(T &r) noexcept
 {
-    return __builtin_addressof(r); // death to compilers which do not support __builtin_addressof
+	return __builtin_addressof(r); // death to compilers which do not support __builtin_addressof
 }
 
-template <typename T> T const *addressof(T const &&) = delete;
+template <typename T>
+T const *addressof(T const &&) = delete;
 
 template <typename T>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -34,7 +35,7 @@ template <typename T>
 [[nodiscard]] inline constexpr T &&
 forward(::std::remove_reference_t<T> &t) noexcept
 {
-    return static_cast<T &&>(t);
+	return static_cast<T &&>(t);
 }
 
 template <typename T>
@@ -46,7 +47,7 @@ template <typename T>
 [[nodiscard]] inline constexpr typename ::std::remove_reference<T>::type &&
 move(T &&t) noexcept
 {
-    return static_cast<typename ::std::remove_reference<T>::type &&>(t);
+	return static_cast<typename ::std::remove_reference<T>::type &&>(t);
 }
 
 } // namespace fast_io::freestanding

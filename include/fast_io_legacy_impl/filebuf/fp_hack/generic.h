@@ -6,7 +6,7 @@ namespace fast_io::details
 template <typename char_type, typename traits_type>
 inline FILE *fp_hack(::std::basic_filebuf<char_type, traits_type> *fbuf) noexcept
 {
-    return nullptr;
+	return nullptr;
 }
 
 template <typename CharT, typename Traits>
@@ -15,7 +15,7 @@ template <typename CharT, typename Traits>
 #endif
 inline ::std::basic_filebuf<CharT, Traits> *open_hacked_basic_filebuf(FILE *, ::fast_io::open_mode)
 {
-    throw_posix_error(EINVAL);
+	throw_posix_error(EINVAL);
 }
 
 } // namespace fast_io::details

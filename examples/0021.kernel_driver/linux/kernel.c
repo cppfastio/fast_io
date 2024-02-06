@@ -11,7 +11,7 @@ extern void fast_io_dummy_exit(void);
 
 static int dummy_init(void)
 {
-        return fast_io_dummy_init();
+	return fast_io_dummy_init();
 }
 
 static void dummy_exit(void)

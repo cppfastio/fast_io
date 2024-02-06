@@ -79,75 +79,79 @@ extern int uclibc_fputc_unlocked(int, FILE *) noexcept __asm__("__fputc_unlocked
 
 inline bool uclibc_underflow_impl(FILE *fp)
 {
-    bool eof{uclibc_fgetc_unlocked(fp) == EOF};
-    if (eof && ((fp->__modeflags & __FLAG_ERROR) == __FLAG_ERROR))
-        throw_posix_error();
-    fp->__bufpos = fp->__bufstart;
-    return !eof;
+	bool eof{uclibc_fgetc_unlocked(fp) == EOF};
+	if (eof && ((fp->__modeflags & __FLAG_ERROR) == __FLAG_ERROR))
+	{
+		throw_posix_error();
+	}
+	fp->__bufpos = fp->__bufstart;
+	return !eof;
 }
 
 inline void uclibc_overflow_impl(FILE *fp, char unsigned ch)
 {
-    if (uclibc_fputc_unlocked(static_cast<int>(ch), fp) == EOF)
-        throw_posix_error();
+	if (uclibc_fputc_unlocked(static_cast<int>(ch), fp) == EOF)
+	{
+		throw_posix_error();
+	}
 }
 
 inline void uclibc_set_curr_ptr_impl(FILE *fp, char unsigned *ptr) noexcept
 {
-    fp->__modeflags |= __FLAG_WRITING;
-    fp->__bufpos = reinterpret_cast<char unsigned *>(ptr);
+	fp->__modeflags |= __FLAG_WRITING;
+	fp->__bufpos = reinterpret_cast<char unsigned *>(ptr);
 }
 
 } // namespace details
 
 inline char *ibuffer_begin(c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char *>(ciob.fp->__bufstart);
+	return reinterpret_cast<char *>(ciob.fp->__bufstart);
 }
 
 inline char *ibuffer_curr(c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char *>(ciob.fp->__bufpos);
+	return reinterpret_cast<char *>(ciob.fp->__bufpos);
 }
 
 inline char *ibuffer_end(c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char *>(ciob.fp->__bufread);
+	return reinterpret_cast<char *>(ciob.fp->__bufread);
 }
 
 inline void ibuffer_set_curr(c_io_observer_unlocked ciob, char *ptr) noexcept
 {
-    ciob.fp->__bufpos = reinterpret_cast<char unsigned *>(ptr);
+	ciob.fp->__bufpos = reinterpret_cast<char unsigned *>(ptr);
 }
 
 inline bool ibuffer_underflow(c_io_observer_unlocked ciob)
 {
-    return details::uclibc_underflow_impl(ciob.fp);
+	return details::uclibc_underflow_impl(ciob.fp);
 }
 
 inline char *obuffer_begin(c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char *>(ciob.fp->__bufstart);
+	return reinterpret_cast<char *>(ciob.fp->__bufstart);
 }
 
 inline char *obuffer_curr(c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char *>(ciob.fp->__bufpos);
+	return reinterpret_cast<char *>(ciob.fp->__bufpos);
 }
 
 inline char *obuffer_end(c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char *>(ciob.fp->__bufend);
+	return reinterpret_cast<char *>(ciob.fp->__bufend);
 }
 
 inline void obuffer_set_curr(c_io_observer_unlocked ciob, char *ptr) noexcept
 {
-    details::uclibc_set_curr_ptr_impl(ciob.fp, reinterpret_cast<char unsigned *>(ptr));
+	details::uclibc_set_curr_ptr_impl(ciob.fp, reinterpret_cast<char unsigned *>(ptr));
 }
 
 inline void obuffer_overflow(c_io_observer_unlocked ciob, char ch)
 {
-    details::uclibc_overflow_impl(ciob.fp, static_cast<char unsigned>(ch));
+	details::uclibc_overflow_impl(ciob.fp, static_cast<char unsigned>(ch));
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -155,7 +159,7 @@ inline void obuffer_overflow(c_io_observer_unlocked ciob, char ch)
 #endif
 inline char8_t *ibuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char8_t *>(ciob.fp->__bufstart);
+	return reinterpret_cast<char8_t *>(ciob.fp->__bufstart);
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -163,7 +167,7 @@ inline char8_t *ibuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 #endif
 inline char8_t *ibuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char8_t *>(ciob.fp->__bufpos);
+	return reinterpret_cast<char8_t *>(ciob.fp->__bufpos);
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -171,7 +175,7 @@ inline char8_t *ibuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 #endif
 inline char8_t *ibuffer_end(u8c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char8_t *>(ciob.fp->__bufread);
+	return reinterpret_cast<char8_t *>(ciob.fp->__bufread);
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -179,12 +183,12 @@ inline char8_t *ibuffer_end(u8c_io_observer_unlocked ciob) noexcept
 #endif
 inline void ibuffer_set_curr(u8c_io_observer_unlocked ciob, char8_t *ptr) noexcept
 {
-    ciob.fp->__bufpos = reinterpret_cast<char unsigned *>(ptr);
+	ciob.fp->__bufpos = reinterpret_cast<char unsigned *>(ptr);
 }
 
 inline bool ibuffer_underflow(u8c_io_observer_unlocked ciob)
 {
-    return details::uclibc_underflow_impl(ciob.fp);
+	return details::uclibc_underflow_impl(ciob.fp);
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -192,7 +196,7 @@ inline bool ibuffer_underflow(u8c_io_observer_unlocked ciob)
 #endif
 inline char8_t *obuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char8_t *>(ciob.fp->__bufstart);
+	return reinterpret_cast<char8_t *>(ciob.fp->__bufstart);
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -200,7 +204,7 @@ inline char8_t *obuffer_begin(u8c_io_observer_unlocked ciob) noexcept
 #endif
 inline char8_t *obuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char8_t *>(ciob.fp->__bufpos);
+	return reinterpret_cast<char8_t *>(ciob.fp->__bufpos);
 }
 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -208,17 +212,17 @@ inline char8_t *obuffer_curr(u8c_io_observer_unlocked ciob) noexcept
 #endif
 inline char8_t *obuffer_end(u8c_io_observer_unlocked ciob) noexcept
 {
-    return reinterpret_cast<char8_t *>(ciob.fp->__bufend);
+	return reinterpret_cast<char8_t *>(ciob.fp->__bufend);
 }
 
 inline void obuffer_set_curr(u8c_io_observer_unlocked ciob, char8_t *ptr) noexcept
 {
-    details::uclibc_set_curr_ptr_impl(ciob.fp, reinterpret_cast<char unsigned *>(ptr));
+	details::uclibc_set_curr_ptr_impl(ciob.fp, reinterpret_cast<char unsigned *>(ptr));
 }
 
 inline void obuffer_overflow(u8c_io_observer_unlocked ciob, char8_t ch)
 {
-    details::uclibc_overflow_impl(ciob.fp, static_cast<char unsigned>(ch));
+	details::uclibc_overflow_impl(ciob.fp, static_cast<char unsigned>(ch));
 }
 
 } // namespace fast_io

@@ -7,6 +7,6 @@ using namespace fast_io::io;
 
 int main()
 {
-    CString cstr(fast_io::concat_atl_cstring("wwadqwjdqwjopdqjdpoqwjdpqowdjqwpodjwqop ", 241.42315235, " asfaf"));
-    print(cstr);
+	CString cstr(fast_io::concat_atl_cstring("wwadqwjdqwjopdqjdpoqwjdpqowdjqwpodjwqop ", 241.42315235, " asfaf"));
+	print(cstr);
 }

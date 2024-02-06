@@ -10,6 +10,6 @@ enum class errc : ::std::uint_least32_t
 {
 };
 
-}
+} // namespace freestanding
 
 } // namespace fast_io
