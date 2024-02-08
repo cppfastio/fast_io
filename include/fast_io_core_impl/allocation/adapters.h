@@ -57,7 +57,8 @@ inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, :
 	}
 	else
 	{
-		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()}, sizeofptr{sizeof(void *)},
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()},
+			sizeofptr{sizeof(void *)},
 			mxmptr{mxn - sizeofptr};
 		if (alignment < sizeofptr)
 		{
@@ -114,8 +115,7 @@ class generic_allocator_adapter
 {
 public:
 	using allocator_type = alloc;
-	static inline constexpr ::std::size_t default_alignment{
-		::fast_io::details::calculate_default_alignment<allocator_type>()};
+	static inline constexpr ::std::size_t default_alignment{::fast_io::details::calculate_default_alignment<allocator_type>()};
 
 	static inline
 #if defined(_MSC_VER) && !defined(__clang__)

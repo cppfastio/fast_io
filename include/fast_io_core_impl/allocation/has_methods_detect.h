@@ -82,5 +82,6 @@ concept has_deallocate_aligned_n_impl = requires(void *p, ::std::size_t n) {
 
 template <typename alloc>
 concept has_status_impl = requires {
-	{ alloc::has_status } -> ::std::same_as<bool>;
+	{ alloc::has_status } -> ::std::same_as<bool const&>;
+	requires alloc::has_status == true;
 };
