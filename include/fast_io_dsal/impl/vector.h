@@ -9,19 +9,16 @@ namespace containers
 namespace details
 {
 
-struct empty
-{
-};
+template <typename handle>
+concept is_trivally_stored_allocator_handle = ::fast_io::freestanding::is_zero_default_constructible_v<handle> &&
+											  ::fast_io::freestanding::is_trivially_relocatable_v<handle> &&
+											  ::std::is_trivially_copy_constructible_v<handle> &&
+											  sizeof(handle) <= sizeof(handle *) && alignof(handle) <= alignof(handle *);
 
-template <typename Alloc>
-concept is_trivally_stored_allocator = ::fast_io::freestanding::is_zero_default_constructible_v<Alloc> &&
-									   ::fast_io::freestanding::is_trivially_relocatable_v<Alloc> &&
-									   ::std::is_trivially_copy_constructible_v<Alloc> &&
-									   sizeof(Alloc) <= sizeof(Alloc *) && alignof(Alloc) <= alignof(Alloc *);
-
-template <typename Alloc>
-struct alloc_holder
+template <typename handle>
+struct handle_holder
 {
+	using handle_type = handle;
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
@@ -29,15 +26,41 @@ struct alloc_holder
 	[[no_unique_address]]
 #endif
 #endif
-	::std::conditional_t<is_trivally_stored_allocator<Alloc>, Alloc, Alloc *> value;
+	::std::conditional_t<is_trivally_stored_allocator_handle<handle>, handle, handle *> value;
+	constexpr handle_holder() noexcept
+		: value{}
+	{}
+	constexpr handle_holder(handle small) noexcept
+		requires(is_trivally_stored_allocator_handle<handle>)
+		: value(small)
+	{}
+	constexpr handle_holder(handle *small) noexcept
+		requires is_trivally_stored_allocator_handle<handle>
+		: value(*small)
+	{}
+	template <typename A>
+	constexpr handle_holder(A &&large) noexcept
+		requires(::std::same_as<::std::remove_cvref_t<A>, handle> && !is_trivally_stored_allocator_handle<handle>)
+	{
+		value = ::fast_io::typed_generic_allocator_adapter<handle, handle>::handle_allocate(large, 1);
+		::std::construct_at(value, ::std::forward<handle>(large));
+	}
+	constexpr handle_holder(handle *large) noexcept
+		requires(!is_trivally_stored_allocator_handle<handle>)
+		: value(large)
+	{}
+	constexpr handle_holder(handle_holder const &) noexcept = default;
+	constexpr handle_holder &operator=(handle_holder const &) noexcept = default;
+	constexpr handle_holder(handle_holder &&) noexcept = default;
+	constexpr handle_holder &operator=(handle_holder &&) noexcept = default;
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr operator Alloc const &() const noexcept
+	inline constexpr handle const &get() const noexcept
 	{
-		if constexpr (is_trivally_stored_allocator<Alloc>)
+		if constexpr (is_trivally_stored_allocator_handle<handle>)
 		{
 			return value;
 		}
@@ -51,9 +74,9 @@ struct alloc_holder
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr operator Alloc &() noexcept
+	inline constexpr handle &get() noexcept
 	{
-		if constexpr (is_trivally_stored_allocator<Alloc>)
+		if constexpr (is_trivally_stored_allocator_handle<handle>)
 		{
 			return value;
 		}
@@ -63,8 +86,12 @@ struct alloc_holder
 		}
 	}
 };
+template <::std::equality_comparable handle>
+inline constexpr auto operator==(handle_holder<handle> left, handle_holder<handle> right) noexcept
+{
+	return left.get() == right.get();
+}
 
-template <typename Alloc>
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
@@ -74,18 +101,9 @@ struct
 	char8_t *begin_ptr;
 	char8_t *curr_ptr;
 	char8_t *end_ptr;
-#ifndef __INTELLISENSE__
-#if __has_cpp_attribute(msvc::no_unique_address)
-	[[msvc::no_unique_address]]
-#elif __has_cpp_attribute(no_unique_address)
-	[[no_unique_address]]
-#endif
-#endif
-	alloc_holder<Alloc> alloc;
 };
 
-template <typename allocator>
-inline constexpr void swap(vector_model<allocator> &lhs, vector_model<allocator> &rhs) noexcept
+inline constexpr void swap(vector_model &lhs, vector_model &rhs) noexcept
 {
 	auto tmp = lhs;
 	lhs = rhs;
@@ -93,14 +111,14 @@ inline constexpr void swap(vector_model<allocator> &lhs, vector_model<allocator>
 }
 
 template <typename allocator>
-inline void grow_to_size_common_impl(vector_model<allocator> *m, ::std::size_t newcap) noexcept
+inline void grow_to_size_common_impl(vector_model *m, ::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
 
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
 	if constexpr (allocator::has_reallocate)
 	{
-		begin_ptr = reinterpret_cast<char8_t *>(m->alloc.reallocate(begin_ptr, newcap));
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::reallocate(begin_ptr, newcap));
 	}
 	else
 	{
@@ -113,27 +131,27 @@ inline void grow_to_size_common_impl(vector_model<allocator> *m, ::std::size_t n
 	m->end_ptr = begin_ptr + newcap;
 }
 template <typename allocator>
-inline void zero_init_grow_to_size_common_impl(vector_model<allocator> *m, ::std::size_t newcap) noexcept
+inline void statused_grow_to_size_common_impl(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
+
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
-	if constexpr (allocator::has_reallocate_zero)
+	if constexpr (allocator::has_handle_reallocate)
 	{
-		begin_ptr = reinterpret_cast<char8_t *>(allocator::reallocate_zero(begin_ptr, newcap));
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_reallocate(alloc.get(), begin_ptr, newcap));
 	}
 	else
 	{
 		auto end_ptr{m->end_ptr};
 		::std::size_t const old_cap{static_cast<::std::size_t>(end_ptr - begin_ptr)};
-		begin_ptr = reinterpret_cast<char8_t *>(allocator::reallocate_zero_n(begin_ptr, old_cap, newcap));
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_reallocate_n(alloc.get(), begin_ptr, old_cap, newcap));
 	}
 	m->begin_ptr = begin_ptr;
 	m->curr_ptr = begin_ptr + old_size;
 	m->end_ptr = begin_ptr + newcap;
 }
-
 template <typename allocator>
-inline void grow_to_size_common_aligned_impl(vector_model<allocator> *m, ::std::size_t alignment, ::std::size_t newcap) noexcept
+inline void grow_to_size_common_aligned_impl(vector_model *m, ::std::size_t alignment, ::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
@@ -152,7 +170,65 @@ inline void grow_to_size_common_aligned_impl(vector_model<allocator> *m, ::std::
 	m->end_ptr = begin_ptr + newcap;
 }
 template <typename allocator>
-inline void zero_init_grow_to_size_aligned_impl(vector_model<allocator> *m, ::std::size_t alignment, ::std::size_t newcap) noexcept
+inline void statused_grow_to_size_common_aligned_impl(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t alignment, ::std::size_t newcap) noexcept
+{
+	auto begin_ptr{m->begin_ptr};
+	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
+	if constexpr (allocator::has_handle_reallocate_aligned)
+	{
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_reallocate_aligned(alloc.get(), begin_ptr, alignment, newcap));
+	}
+	else
+	{
+		auto end_ptr{m->end_ptr};
+		::std::size_t const oldcap{static_cast<::std::size_t>(end_ptr - begin_ptr)};
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_reallocate_aligned_n(alloc.get(), begin_ptr, oldcap, alignment, newcap));
+	}
+	m->begin_ptr = begin_ptr;
+	m->curr_ptr = begin_ptr + old_size;
+	m->end_ptr = begin_ptr + newcap;
+}
+
+template <typename allocator>
+inline void zero_init_grow_to_size_common_impl(vector_model *m, ::std::size_t newcap) noexcept
+{
+	auto begin_ptr{m->begin_ptr};
+	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
+	if constexpr (allocator::has_reallocate_zero)
+	{
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::reallocate_zero(begin_ptr, newcap));
+	}
+	else
+	{
+		auto end_ptr{m->end_ptr};
+		::std::size_t const old_cap{static_cast<::std::size_t>(end_ptr - begin_ptr)};
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::reallocate_zero_n(begin_ptr, old_cap, newcap));
+	}
+	m->begin_ptr = begin_ptr;
+	m->curr_ptr = begin_ptr + old_size;
+	m->end_ptr = begin_ptr + newcap;
+}
+template <typename allocator>
+inline void statused_zero_init_grow_to_size_common_impl(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t newcap) noexcept
+{
+	auto begin_ptr{m->begin_ptr};
+	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
+	if constexpr (allocator::has_handle_reallocate_zero)
+	{
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_reallocate_zero(alloc.get(), begin_ptr, newcap));
+	}
+	else
+	{
+		auto end_ptr{m->end_ptr};
+		::std::size_t const old_cap{static_cast<::std::size_t>(end_ptr - begin_ptr)};
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_reallocate_zero_n(alloc.get(), begin_ptr, old_cap, newcap));
+	}
+	m->begin_ptr = begin_ptr;
+	m->curr_ptr = begin_ptr + old_size;
+	m->end_ptr = begin_ptr + newcap;
+}
+template <typename allocator>
+inline void zero_init_grow_to_size_aligned_impl(vector_model *m, ::std::size_t alignment, ::std::size_t newcap) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
 	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
@@ -166,6 +242,26 @@ inline void zero_init_grow_to_size_aligned_impl(vector_model<allocator> *m, ::st
 		::std::size_t const oldcap{static_cast<::std::size_t>(end_ptr - begin_ptr)};
 		begin_ptr =
 			reinterpret_cast<char8_t *>(allocator::reallocate_aligned_zero_n(begin_ptr, oldcap, alignment, newcap));
+	}
+	m->begin_ptr = begin_ptr;
+	m->curr_ptr = begin_ptr + old_size;
+	m->end_ptr = begin_ptr + newcap;
+}
+template <typename allocator>
+inline void statused_zero_init_grow_to_size_aligned_impl(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t alignment, ::std::size_t newcap) noexcept
+{
+	auto begin_ptr{m->begin_ptr};
+	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr - begin_ptr)};
+	if constexpr (allocator::has_handle_reallocate_aligned)
+	{
+		begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_reallocate_aligned_zero(alloc.get(), begin_ptr, alignment, newcap));
+	}
+	else
+	{
+		auto end_ptr{m->end_ptr};
+		::std::size_t const oldcap{static_cast<::std::size_t>(end_ptr - begin_ptr)};
+		begin_ptr =
+			reinterpret_cast<char8_t *>(allocator::handle_reallocate_aligned_zero_n(alloc.get(), begin_ptr, oldcap, alignment, newcap));
 	}
 	m->begin_ptr = begin_ptr;
 	m->curr_ptr = begin_ptr + old_size;
@@ -201,7 +297,7 @@ inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
 }
 
 template <typename allocator, ::std::size_t size>
-inline constexpr void grow_twice_common_impl(vector_model<allocator> *m) noexcept
+inline constexpr void grow_twice_common_impl(vector_model *m) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
 	auto end_ptr{m->end_ptr};
@@ -210,7 +306,16 @@ inline constexpr void grow_twice_common_impl(vector_model<allocator> *m) noexcep
 		cal_grow_twice_size<size, true>(static_cast<::std::size_t>(end_ptr - begin_ptr)));
 }
 template <typename allocator, ::std::size_t size>
-inline constexpr void grow_twice_common_aligned_impl(vector_model<allocator> *m, ::std::size_t alignment) noexcept
+inline constexpr void statused_grow_twice_common_impl(vector_model *m, handle_holder<typename allocator::handle_type> alloc) noexcept
+{
+	auto begin_ptr{m->begin_ptr};
+	auto end_ptr{m->end_ptr};
+	statused_grow_to_size_common_impl<allocator>(
+		m, alloc,
+		cal_grow_twice_size<size, true>(static_cast<::std::size_t>(end_ptr - begin_ptr)));
+}
+template <typename allocator, ::std::size_t size>
+inline constexpr void grow_twice_common_aligned_impl(vector_model *m, ::std::size_t alignment) noexcept
 {
 	auto begin_ptr{m->begin_ptr};
 	auto end_ptr{m->end_ptr};
@@ -219,9 +324,18 @@ inline constexpr void grow_twice_common_aligned_impl(vector_model<allocator> *m,
 		alignment,
 		cal_grow_twice_size<size, true>(static_cast<::std::size_t>(end_ptr - begin_ptr)));
 }
+template <typename allocator, ::std::size_t size>
+inline constexpr void statused_grow_twice_common_aligned_impl(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t alignment) noexcept
+{
+	auto begin_ptr{m->begin_ptr};
+	auto end_ptr{m->end_ptr};
+	statused_grow_to_size_common_aligned_impl<allocator>(
+		m, alloc,
+		alignment,
+		cal_grow_twice_size<size, true>(static_cast<::std::size_t>(end_ptr - begin_ptr)));
+}
 
-template <typename allocator>
-inline constexpr void add_zero_towards(vector_model<allocator> *m, char8_t *end) noexcept
+inline constexpr void add_zero_towards(vector_model *m, char8_t *end) noexcept
 {
 	if (end <= m->curr_ptr)
 	{
@@ -235,7 +349,7 @@ inline constexpr void add_zero_towards(vector_model<allocator> *m, char8_t *end)
 }
 
 template <typename allocator>
-inline constexpr void check_size_and_assign(vector_model<allocator> *m, char8_t const *begin, char8_t const *end) noexcept
+inline constexpr void check_size_and_assign(vector_model *m, char8_t const *begin, char8_t const *end) noexcept
 {
 	auto const newcap{static_cast<::std::size_t>(end - begin)};
 	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
@@ -245,7 +359,7 @@ inline constexpr void check_size_and_assign(vector_model<allocator> *m, char8_t 
 	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->begin_ptr);
 }
 template <typename allocator>
-inline constexpr void check_size_and_append(vector_model<allocator> *m, char8_t const *begin, char8_t const *end) noexcept
+inline constexpr void check_size_and_append(vector_model *m, char8_t const *begin, char8_t const *end) noexcept
 {
 	auto const newcap{static_cast<::std::size_t>(end - begin) + static_cast<::std::size_t>(m->curr_ptr - m->begin_ptr)};
 	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
@@ -255,16 +369,44 @@ inline constexpr void check_size_and_append(vector_model<allocator> *m, char8_t 
 	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->curr_ptr);
 }
 template <typename allocator>
-inline constexpr void check_size_and_construct(vector_model<allocator> *m, char8_t const *begin, char8_t const *end) noexcept
+inline constexpr void check_size_and_construct(vector_model *m, char8_t const *begin, char8_t const *end) noexcept
 {
 	auto const new_size{static_cast<::std::size_t>(end - begin)};
 	m->begin_ptr = reinterpret_cast<char8_t *>(allocator::allocate(new_size));
 	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
 	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
 }
+template <typename allocator>
+inline constexpr void statused_check_size_and_assign(vector_model *m, handle_holder<typename allocator::handle_type> alloc, char8_t const *begin, char8_t const *end) noexcept
+{
+	auto const newcap{static_cast<::std::size_t>(end - begin)};
+	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
+	{
+		statused_grow_to_size_common_impl<allocator>(m, alloc, newcap);
+	}
+	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->begin_ptr);
+}
+template <typename allocator>
+inline constexpr void statused_check_size_and_append(vector_model *m, handle_holder<typename allocator::handle_type> alloc, char8_t const *begin, char8_t const *end) noexcept
+{
+	auto const newcap{static_cast<::std::size_t>(end - begin) + static_cast<::std::size_t>(m->curr_ptr - m->begin_ptr)};
+	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
+	{
+		statused_grow_to_size_common_impl<allocator>(m, alloc, newcap);
+	}
+	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->curr_ptr);
+}
+template <typename allocator>
+inline constexpr void statused_check_size_and_construct(vector_model *m, handle_holder<typename allocator::handle_type> alloc, char8_t const *begin, char8_t const *end) noexcept
+{
+	auto const new_size{static_cast<::std::size_t>(end - begin)};
+	m->begin_ptr = reinterpret_cast<char8_t *>(allocator::handle_allocate(alloc.get(), new_size));
+	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
+	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
+}
 
 template <typename allocator>
-inline constexpr void check_size_and_assign_align(vector_model<allocator> *m, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
+inline constexpr void check_size_and_assign_align(vector_model *m, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
 {
 	auto const newcap{static_cast<::std::size_t>(m->end_ptr - m->begin_ptr)};
 	if (newcap < static_cast<::std::size_t>(end - begin))
@@ -274,7 +416,7 @@ inline constexpr void check_size_and_assign_align(vector_model<allocator> *m, ::
 	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->begin_ptr);
 }
 template <typename allocator>
-inline constexpr void check_size_and_append_align(vector_model<allocator> *m, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
+inline constexpr void check_size_and_append_align(vector_model *m, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
 {
 	auto const newcap{static_cast<::std::size_t>(end - begin) + static_cast<::std::size_t>(m->curr_ptr - m->begin_ptr)};
 	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
@@ -284,16 +426,43 @@ inline constexpr void check_size_and_append_align(vector_model<allocator> *m, ::
 	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->curr_ptr);
 }
 template <typename allocator>
-inline constexpr void check_size_and_construct_align(vector_model<allocator> *m, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
+inline constexpr void check_size_and_construct_align(vector_model *m, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
 {
 	auto const new_size{static_cast<::std::size_t>(end - begin)};
 	m->begin_ptr = allocator::allocate_aligned(alignment, new_size);
 	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
 	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
 }
-
 template <typename allocator>
-inline void erase_impl(vector_model<allocator> *m, char8_t *first, char8_t *last) noexcept
+inline constexpr void statused_check_size_and_assign_align(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
+{
+	auto const newcap{static_cast<::std::size_t>(m->end_ptr - m->begin_ptr)};
+	if (newcap < static_cast<::std::size_t>(end - begin))
+	{
+		statused_grow_to_size_common_aligned_impl<allocator>(m, alloc, alignment, newcap);
+	}
+	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->begin_ptr);
+}
+template <typename allocator>
+inline constexpr void statused_check_size_and_append_align(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
+{
+	auto const newcap{static_cast<::std::size_t>(end - begin) + static_cast<::std::size_t>(m->curr_ptr - m->begin_ptr)};
+	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
+	{
+		statused_grow_to_size_common_aligned_impl<allocator>(m, alloc, alignment, newcap);
+	}
+	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->curr_ptr);
+}
+template <typename allocator>
+inline constexpr void statused_check_size_and_construct_align(vector_model *m, handle_holder<typename allocator::handle_type> alloc, ::std::size_t alignment, char8_t const *begin, char8_t const *end) noexcept
+{
+	auto const new_size{static_cast<::std::size_t>(end - begin)};
+	m->begin_ptr = allocator::handled_allocate_aligned(alloc.get(), alignment, new_size);
+	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
+	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
+}
+
+inline void erase_impl(vector_model *m, char8_t *first, char8_t *last) noexcept
 {
 	if (last == m->curr_ptr) // no need to memmove
 	{
@@ -307,20 +476,12 @@ inline void erase_impl(vector_model<allocator> *m, char8_t *first, char8_t *last
 	}
 }
 
-template <typename T, typename allocator>
+template <typename T>
 struct vector_internal
 {
 	T *begin_ptr{};
 	T *curr_ptr{};
 	T *end_ptr{};
-#ifndef __INTELLISENSE__
-#if __has_cpp_attribute(msvc::no_unique_address)
-	[[msvc::no_unique_address]]
-#elif __has_cpp_attribute(no_unique_address)
-	[[no_unique_address]]
-#endif
-#endif
-	::fast_io::containers::details::alloc_holder<allocator> alloc{};
 };
 
 template <typename Rg, typename T>
@@ -340,8 +501,10 @@ public:
 	using value_type = T;
 
 private:
-	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, value_type>;
-	static inline constexpr bool alloc_with_status{::fast_io::details::has_status_impl<allocator>};
+	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, value_type, false>;
+	static inline constexpr bool alloc_with_status{allocator::has_status};
+	using handle_type = ::std::conditional_t<alloc_with_status, typename allocator::handle_type, allocator_type>;
+	using handle_holder_type = ::fast_io::containers::details::handle_holder<handle_type>;
 
 public:
 	using pointer = value_type *;
@@ -355,7 +518,7 @@ public:
 
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
-	::fast_io::containers::details::vector_internal<value_type, allocator> imp;
+	::fast_io::containers::details::vector_internal<value_type> imp;
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
@@ -363,7 +526,7 @@ public:
 	[[no_unique_address]]
 #endif
 #endif
-	::std::conditional_t<alloc_with_status, details::empty, void *> allochdl{};
+	handle_holder_type allochdl;
 
 private:
 	constexpr void destroy() noexcept
@@ -382,13 +545,27 @@ private:
 		else
 #endif
 		{
-			if constexpr (typed_allocator_type::has_deallocate)
+			if constexpr (alloc_with_status)
 			{
-				typed_allocator_type::deallocate(imp.begin_ptr);
+				if constexpr (typed_allocator_type::has_handle_deallocate)
+				{
+					typed_allocator_type::handle_deallocate(allochdl.get(), imp.begin_ptr);
+				}
+				else
+				{
+					typed_allocator_type::deallocate_n(allochdl.get(), imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+				}
 			}
 			else
 			{
-				typed_allocator_type::deallocate_n(imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+				if constexpr (typed_allocator_type::has_deallocate)
+				{
+					typed_allocator_type::deallocate(imp.begin_ptr);
+				}
+				else
+				{
+					typed_allocator_type::deallocate_n(imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+				}
 			}
 		}
 	}
@@ -456,18 +633,39 @@ private:
 					}
 				}
 				newcap *= sizeof(value_type);
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				if constexpr (alloc_with_status)
 				{
-					::fast_io::containers::details::grow_to_size_common_impl<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						newcap);
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::statused_grow_to_size_common_impl<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl,
+							newcap);
+					}
+					else
+					{
+						::fast_io::containers::details::grow_to_size_common_aligned_impl<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl,
+							alignof(value_type),
+							newcap);
+					}
 				}
 				else
 				{
-					::fast_io::containers::details::grow_to_size_common_aligned_impl<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						alignof(value_type),
-						newcap);
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::grow_to_size_common_impl<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							newcap);
+					}
+					else
+					{
+						::fast_io::containers::details::grow_to_size_common_aligned_impl<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							alignof(value_type),
+							newcap);
+					}
 				}
 				return;
 			}
@@ -484,14 +682,15 @@ private:
 		{
 			cap = static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
 		}
-		if constexpr (!typed_allocator_type::has_deallocate)
+		if constexpr ((!alloc_with_status && !typed_allocator_type::has_deallocate) ||
+					  (alloc_with_status && !typed_allocator_type::has_handle_deallocate))
 		{
 			cap = static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
 		}
 		value_type *new_begin_ptr;
 		if constexpr (alloc_with_status)
 		{
-			new_begin_ptr = typed_allocator_type::allocate(allochdl, newcap);
+			new_begin_ptr = typed_allocator_type::handle_allocate(allochdl.get(), newcap);
 		}
 		else
 		{
@@ -513,18 +712,39 @@ private:
 #endif
 #endif
 		{
-			if constexpr (typed_allocator_type::has_deallocate)
+			if constexpr (alloc_with_status)
 			{
-				typed_allocator_type::deallocate(imp.begin_ptr);
+				if constexpr (typed_allocator_type::has_handle_deallocate)
+				{
+					typed_allocator_type::handle_deallocate(allochdl.get(), imp.begin_ptr);
+				}
+				else
+				{
+					typed_allocator_type::handle_deallocate_n(allochdl.get(), imp.begin_ptr, cap);
+				}
+			}
+			else
+			{
+				if constexpr (typed_allocator_type::has_deallocate)
+				{
+					typed_allocator_type::deallocate(imp.begin_ptr);
+				}
+				else
+				{
+					typed_allocator_type::deallocate_n(imp.begin_ptr, cap);
+				}
+			}
+		}
+		else
+		{
+			if constexpr (alloc_with_status)
+			{
+				typed_allocator_type::handle_deallocate_n(allochdl.get(), imp.begin_ptr, cap);
 			}
 			else
 			{
 				typed_allocator_type::deallocate_n(imp.begin_ptr, cap);
 			}
-		}
-		else
-		{
-			typed_allocator_type::deallocate_n(imp.begin_ptr, cap);
 		}
 		imp.begin_ptr = new_begin_ptr;
 		imp.curr_ptr = new_i;
@@ -617,11 +837,11 @@ private:
 			value_type *new_begin;
 			if constexpr (alloc_with_status)
 			{
-				typed_allocator_type::allocate(allochdl, new_cap);
+				new_begin = typed_allocator_type::handle_allocate(allochdl.get(), new_cap);
 			}
 			else
 			{
-				typed_allocator_type::allocate(new_cap);
+				new_begin = typed_allocator_type::allocate(new_cap);
 			}
 			new_end = new_begin + new_cap;
 			auto new_i{new_begin};
@@ -655,18 +875,39 @@ private:
 #endif
 #endif
 			{
-				if constexpr (typed_allocator_type::has_deallocate)
+				if constexpr (alloc_with_status)
 				{
-					typed_allocator_type::deallocate(imp.begin_ptr);
+					if constexpr (typed_allocator_type::has_handle_deallocate)
+					{
+						typed_allocator_type::handle_deallocate(allochdl.get(), imp.begin_ptr);
+					}
+					else
+					{
+						typed_allocator_type::handle_deallocate_n(allochdl.get(), imp.begin_ptr, old_cap);
+					}
+				}
+				else
+				{
+					if constexpr (typed_allocator_type::has_deallocate)
+					{
+						typed_allocator_type::deallocate(imp.begin_ptr);
+					}
+					else
+					{
+						typed_allocator_type::deallocate_n(imp.begin_ptr, old_cap);
+					}
+				}
+			}
+			else
+			{
+				if constexpr (alloc_with_status)
+				{
+					typed_allocator_type::handle_deallocate_n(allochdl.get(), imp.begin_ptr, old_cap);
 				}
 				else
 				{
 					typed_allocator_type::deallocate_n(imp.begin_ptr, old_cap);
 				}
-			}
-			else
-			{
-				typed_allocator_type::deallocate_n(imp.begin_ptr, old_cap);
 			}
 			imp.begin_ptr = new_end - new_cap;
 			imp.curr_ptr = new_end;
@@ -916,7 +1157,7 @@ private:
 		value_type *begin_ptr;
 		if constexpr (alloc_with_status)
 		{
-			begin_ptr = typed_allocator_type::allocate(allochdl, n);
+			begin_ptr = typed_allocator_type::handle_allocate(allochdl.get(), n);
 		}
 		else
 		{
@@ -946,7 +1187,14 @@ private:
 	{
 		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
 		{
-			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			if constexpr (alloc_with_status)
+			{
+				imp.begin_ptr = typed_allocator_type::handle_allocate_zero(allochdl.get(), n);
+			}
+			else
+			{
+				imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			}
 			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
 		}
 		else
@@ -954,7 +1202,7 @@ private:
 			value_type *begin_ptr;
 			if constexpr (alloc_with_status)
 			{
-				begin_ptr = typed_allocator_type::allocate(allochdl, n);
+				begin_ptr = typed_allocator_type::handle_allocate(allochdl.get(), n);
 			}
 			else
 			{
@@ -965,7 +1213,7 @@ private:
 				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
 				for (auto p{begin_ptr}; p != e; ++p)
 				{
-					new (p) value_type();
+					::std::construct_at(p);
 				}
 			}
 			else
@@ -975,7 +1223,7 @@ private:
 				run_destroy des(this);
 				for (; imp.curr_ptr != e; ++imp.curr_ptr)
 				{
-					new (imp.curr_ptr) value_type();
+					::std::construct_at(imp.curr_ptr);
 				}
 				des.thisvec = nullptr;
 			}
@@ -987,11 +1235,11 @@ private:
 		{
 			if constexpr (alloc_with_status)
 			{
-				imp.begin_ptr = typed_allocator_type::allocate(allochdl, n);
+				imp.begin_ptr = typed_allocator_type::handle_allocate_zero(allochdl.get(), n);
 			}
 			else
 			{
-				imp.begin_ptr = typed_allocator_type::allocate(n);
+				imp.begin_ptr = typed_allocator_type::allocate_zero(n);
 			}
 			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
 		}
@@ -1000,7 +1248,7 @@ private:
 			value_type *begin_ptr;
 			if constexpr (alloc_with_status)
 			{
-				begin_ptr = typed_allocator_type::allocate(allochdl, n);
+				begin_ptr = typed_allocator_type::handle_allocate(allochdl.get(), n);
 			}
 			else
 			{
@@ -1011,7 +1259,7 @@ private:
 				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
 				for (auto p{begin_ptr}; p != e; ++p)
 				{
-					new (p) value_type;
+					::std::construct_at(p);
 				}
 			}
 			else
@@ -1021,7 +1269,7 @@ private:
 				run_destroy des(this);
 				for (; imp.curr_ptr != e; ++imp.curr_ptr)
 				{
-					new (imp.curr_ptr) value_type;
+					::std::construct_at(imp.curr_ptr);
 				}
 				des.thisvec = nullptr;
 			}
@@ -1035,9 +1283,9 @@ private:
 					  ::std::contiguous_iterator<Iter>)
 		{
 #if __cpp_if_consteval >= 202106L
-			if consteval
+			if !consteval
 #else
-			if (__builtin_is_constant_evaluated())
+			if (!__builtin_is_constant_evaluated())
 #endif
 			{
 				using char8_const_ptr
@@ -1076,7 +1324,8 @@ private:
 
 public:
 	constexpr vector() noexcept = default;
-	explicit constexpr vector(void *alloc_handler) noexcept
+	// handle holder is exposed to enable better arg passing
+	explicit constexpr vector(handle_holder_type alloc_handler) noexcept
 		requires(alloc_with_status)
 		: allochdl{alloc_handler}
 	{
@@ -1085,7 +1334,7 @@ public:
 	{
 		constructor(n, value);
 	}
-	constexpr vector(void *alloc_handler, size_type n, value_type const &value) noexcept(noexcept(constructor(n, value)))
+	constexpr vector(handle_holder_type alloc_handler, size_type n, value_type const &value) noexcept(noexcept(constructor(n, value)))
 		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
@@ -1095,7 +1344,7 @@ public:
 	{
 		constructor(n);
 	}
-	explicit constexpr vector(void *alloc_handler, size_type n) noexcept(noexcept(constructor(n)))
+	explicit constexpr vector(handle_holder_type alloc_handler, size_type n) noexcept(noexcept(constructor(n)))
 		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
@@ -1105,7 +1354,7 @@ public:
 	{
 		constructor(n, ::fast_io::for_overwrite);
 	}
-	explicit constexpr vector(void *alloc_handler, size_type n, ::fast_io::for_overwrite_t) noexcept(noexcept(constructor(n, ::fast_io::for_overwrite)))
+	explicit constexpr vector(handle_holder_type alloc_handler, size_type n, ::fast_io::for_overwrite_t) noexcept(noexcept(constructor(n, ::fast_io::for_overwrite)))
 		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
@@ -1117,7 +1366,7 @@ public:
 		constructor(first, last);
 	}
 	template <::std::input_iterator InputIt>
-	constexpr vector(void *alloc_handler, InputIt first, InputIt last) noexcept(noexcept(constructor(first, last)))
+	constexpr vector(handle_holder_type alloc_handler, InputIt first, InputIt last) noexcept(noexcept(constructor(first, last)))
 		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
@@ -1125,9 +1374,9 @@ public:
 	}
 	constexpr vector(::std::initializer_list<value_type> ilist) noexcept(noexcept(constructor(ilist.begin(), ilist.end())))
 	{
-		constructor(ilist.begin(), ilist.end());
+		constructor<true>(ilist.begin(), ilist.end());
 	}
-	constexpr vector(void *alloc_handler, ::std::initializer_list<value_type> ilist) noexcept(noexcept(constructor(ilist.begin(), ilist.end())))
+	constexpr vector(handle_holder_type alloc_handler, ::std::initializer_list<value_type> ilist) noexcept(noexcept(constructor(ilist.begin(), ilist.end())))
 		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
@@ -1145,7 +1394,7 @@ public:
 		constructor<::std::is_rvalue_reference_v<R &&>>(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 	template <::fast_io::containers::details::container_compatible_range<value_type> R>
-	constexpr vector(void *alloc_handler, ::std::from_range_t, R &&rg) noexcept(noexcept(constructor(::std::ranges::begin(rg), ::std::ranges::end(rg))))
+	constexpr vector(handle_holder_type alloc_handler, ::std::from_range_t, R &&rg) noexcept(noexcept(constructor(::std::ranges::begin(rg), ::std::ranges::end(rg))))
 		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
@@ -1155,14 +1404,11 @@ public:
 	constexpr vector(vector const &vec) noexcept(noexcept(constructor(vec.begin(), vec.end())))
 		requires(::std::copyable<value_type>)
 	{
-		if constexpr (::fast_io::details::has_status_impl<allocator>)
-		{
-			this->allochdl = vec.allochdl;
-		}
 		constructor(vec.begin(), vec.end());
 	}
 	constexpr vector(vector const &vec) = delete;
-	constexpr vector(void *alloc_handler, vector const &vec) noexcept(vector(vec))
+	constexpr vector(handle_holder_type alloc_handler, vector const &vec) noexcept(vector(vec))
+		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
 		constructor(vec.begin(), vec.end());
@@ -1182,13 +1428,27 @@ public:
 		if constexpr (alloc_with_status)
 		{
 			this->allochdl = vec.allochdl;
-			vec.allochdl = nullptr;
+			vec.allochdl = {};
 		}
 	}
-	// copy the vector and move the element
-	// constexpr vector(void *alloc_handler, vector &&vec) noexcept
-	//	: vector(::std::forward<vector>(vec)), allochdl(alloc_handler)
-	//{}
+	constexpr vector(handle_holder_type alloc_handler, vector &&vec) noexcept
+		requires(alloc_with_status)
+	{
+		if constexpr (::std::equality_comparable<handle_holder_type>)
+		{
+			if (alloc_handler != vec.allochdl)
+			{
+				this->allochdl = alloc_handler;
+				constructor<true>(vec.begin(), vec.end());
+				return;
+			}
+			// fall through
+		}
+		this->imp = vec.imp;
+		vec.imp = {};
+		this->allochdl = alloc_handler;
+		vec.allochdl = {};
+	}
 	constexpr vector &operator=(vector &&vec) noexcept
 	{
 		this->destroy();
@@ -1291,6 +1551,12 @@ public:
 	constexpr void assign_range(R &&rg) noexcept(true)
 	{
 		return assign<::std::is_rvalue_reference_v<R &&>>(::std::ranges::begin(rg), ::std::ranges::end(rg));
+	}
+
+	[[nodiscard]] constexpr handle_type get_allocator() const noexcept
+		requires(alloc_with_status)
+	{
+		return allochdl.get();
 	}
 
 	[[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
@@ -1608,25 +1874,25 @@ public:
 			if (__builtin_is_constant_evaluated())
 #endif
 			{
-				using char8_ptr
+				using char8_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 					[[__gnu__::__may_alias__]]
 #endif
-					= char8_t *;
+					= char8_t const *;
 				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 				{
 					::fast_io::containers::details::check_size_and_append<allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						reinterpret_cast<char8_ptr>(::std::to_address(::std::ranges::begin(rg))),
-						reinterpret_cast<char8_ptr>(::std::to_address(::std::ranges::end(rg))));
+						reinterpret_cast<char8_const_ptr>(::std::to_address(::std::ranges::begin(rg))),
+						reinterpret_cast<char8_const_ptr>(::std::to_address(::std::ranges::end(rg))));
 				}
 				else
 				{
 					::fast_io::containers::details::check_size_and_append_align<allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						alignof(value_type),
-						reinterpret_cast<char8_ptr>(::std::to_address(::std::ranges::begin(rg))),
-						reinterpret_cast<char8_ptr>(::std::to_address(::std::ranges::end(rg))));
+						reinterpret_cast<char8_const_ptr>(::std::to_address(::std::ranges::begin(rg))),
+						reinterpret_cast<char8_const_ptr>(::std::to_address(::std::ranges::end(rg))));
 				}
 				return;
 			}
@@ -1776,9 +2042,9 @@ public:
 		{
 			::std::ranges::swap(*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(this->imp)),
 								*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(other.imp)));
-			if constexpr (::fast_io::details::has_status_impl<allocator>)
+			if constexpr (!::std::is_empty_v<allocator>)
 			{
-				::std::ranges::swap(this->allochdl, other.allochdl);
+				::std::ranges::swap(this->alloc, other.alloc);
 			}
 		}
 	}
@@ -1842,14 +2108,14 @@ constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexce
 namespace freestanding
 {
 
-template <typename T, typename Alloc>
-struct is_trivially_relocatable<::fast_io::containers::vector<T, Alloc>>
+template <typename T, typename allocator>
+struct is_trivially_relocatable<::fast_io::containers::vector<T, allocator>>
 {
 	inline static constexpr bool value = true;
 };
 
-template <typename T, typename Alloc>
-struct is_zero_default_constructible<::fast_io::containers::vector<T, Alloc>>
+template <typename T, typename allocator>
+struct is_zero_default_constructible<::fast_io::containers::vector<T, allocator>>
 {
 	inline static constexpr bool value = true;
 };
