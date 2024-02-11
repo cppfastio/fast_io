@@ -741,11 +741,11 @@ public:
 		else
 #endif
 		{
-			if constexpr (::fast_io::details::has_deallocate_n_impl<alloc>)
+			if constexpr (::fast_io::details::has_handle_deallocate_n_impl<alloc>)
 			{
 				allocator_type::handle_deallocate_n(handle, p, n);
 			}
-			else if constexpr (::fast_io::details::has_deallocate_impl<alloc>)
+			else if constexpr (::fast_io::details::has_handle_deallocate_impl<alloc>)
 			{
 				allocator_type::handle_deallocate(handle, p);
 			}
@@ -1190,11 +1190,11 @@ public:
 #endif
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			alloc::deallocate_n(ptr, n);
+			alloc::deallocate_n(ptr, n * sizeof(T));
 		}
 		else
 		{
-			alloc::deallocate_aligned_n(ptr, alignof(T), n);
+			alloc::deallocate_aligned_n(ptr, alignof(T), n * sizeof(T));
 		}
 	}
 
@@ -1279,7 +1279,7 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		handle_handle_reallocate(handle_type handle, T *ptr, ::std::size_t n) noexcept
+		handle_reallocate(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
@@ -1306,7 +1306,7 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		handle_handle_reallocate_zero(handle_type handle, T *ptr, ::std::size_t n) noexcept
+		handle_reallocate_zero(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
@@ -1332,7 +1332,7 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		handle_handle_reallocate_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		handle_reallocate_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
@@ -1358,7 +1358,7 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		handle_handle_reallocate_zero_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		handle_reallocate_zero_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
@@ -1383,7 +1383,7 @@ public:
 		constexpr
 #endif
 		void
-		handle_handle_deallocate(handle_type handle, T *ptr) noexcept
+		handle_deallocate(handle_type handle, T *ptr) noexcept
 		requires(has_status && has_handle_deallocate)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
@@ -1419,7 +1419,7 @@ public:
 		constexpr
 #endif
 		void
-		handle_handle_deallocate_n(handle_type handle, T *ptr, ::std::size_t n) noexcept
+		handle_deallocate_n(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
@@ -1442,11 +1442,11 @@ public:
 #endif
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			alloc::handle_deallocate_n(handle, ptr, n);
+			alloc::handle_deallocate_n(handle, ptr, n * sizeof(T));
 		}
 		else
 		{
-			alloc::handle_deallocate_aligned_n(handle, ptr, alignof(T), n);
+			alloc::handle_deallocate_aligned_n(handle, ptr, alignof(T), n * sizeof(T));
 		}
 	}
 };

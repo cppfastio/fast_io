@@ -540,7 +540,14 @@ private:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			typed_allocator_type::deallocate_n(imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+			if constexpr (alloc_with_status)
+			{
+				typed_allocator_type::handle_deallocate_n(allochdl.get(), imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+			}
+			else
+			{
+				typed_allocator_type::deallocate_n(imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+			}
 		}
 		else
 #endif
@@ -553,7 +560,7 @@ private:
 				}
 				else
 				{
-					typed_allocator_type::deallocate_n(allochdl.get(), imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+					typed_allocator_type::handle_deallocate_n(allochdl.get(), imp.begin_ptr, static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
 				}
 			}
 			else
@@ -763,6 +770,24 @@ private:
 #endif
 #endif
 			{
+				if constexpr (alloc_with_status)
+				{
+				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				{
+					::fast_io::containers::details::statused_grow_twice_common_impl<allocator_type, sizeof(value_type)>(
+						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+						allochdl.get());
+				}
+				else
+				{
+					::fast_io::containers::details::statused_grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
+						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+						allochdl.get(),
+						alignof(value_type));
+				}
+				}
+				else
+				{
 				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
 				{
 					::fast_io::containers::details::grow_twice_common_impl<allocator_type, sizeof(value_type)>(
@@ -773,6 +798,7 @@ private:
 					::fast_io::containers::details::grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						alignof(value_type));
+				}
 				}
 				return;
 			}
@@ -1685,16 +1711,27 @@ public:
 	}
 	constexpr iterator insert(const_iterator pos, size_type count, value_type const &value) noexcept(noexcept(this->emplace_back(value)))
 	{
-		iterator itr;
-		if (imp.end_ptr - imp.begin_ptr < count)
+		iterator itr, itr_end;
+		if (static_cast<size_type>(imp.end_ptr - imp.curr_ptr) < count)
 		{
 			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, count);
+			itr_end = itr + count;
 		}
 		else
 		{
-			itr = ::fast_io::freestanding::copy_backward(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, imp.curr_ptr + count);
+			itr = pos - imp.begin_ptr + imp.begin_ptr;
+			::fast_io::freestanding::copy_backward(itr, imp.curr_ptr, imp.curr_ptr + count);
+			itr_end = itr + count;
+			if constexpr (!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+			{
+				for (auto new_itr{ itr }; new_itr != itr_end && new_itr != imp.curr_ptr; ++new_itr)
+				{
+					new_itr->~value_type();
+				}
+			}
+			imp.curr_ptr += count;
 		}
-		for (auto new_itr{itr}, itr_end{itr + count}; new_itr != itr_end; ++new_itr)
+		for (auto new_itr{itr}; new_itr != itr_end; ++new_itr)
 		{
 			::std::construct_at(new_itr, value);
 		}
@@ -1705,7 +1742,7 @@ public:
 	{
 		if constexpr (::std::sized_sentinel_for<InputIt, InputIt>)
 		{
-			return insert_counted_range_impl(pos, first, last);
+			return insert_counted_range_impl(pos, first, ::std::distance(first, last));
 		}
 		else
 		{
@@ -1721,7 +1758,7 @@ public:
 	{
 		if constexpr (::std::ranges::sized_range<R>)
 		{
-			return insert_counted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos, ::std::ranges::begin(rg), ::std::ranges::end(rg));
+			return insert_counted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos, ::std::ranges::begin(rg), ::std::ranges::size(rg));
 		}
 		else
 		{
@@ -1738,9 +1775,15 @@ public:
 		}
 		else
 		{
-			itr = ::fast_io::freestanding::copy_backward(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, imp.curr_ptr + 1);
+			itr = pos - imp.begin_ptr + imp.begin_ptr;
+			::fast_io::freestanding::copy_backward(itr, imp.curr_ptr, imp.curr_ptr + 1);
+			if (itr != imp.curr_ptr)
+			{
+				itr->~value_type();
+			}
+			++imp.curr_ptr;
 		}
-		::std::construct_at(itr, ::std::forward<Args>(args)...);
+		::std::construct_at(itr, args...);
 		return itr;
 	}
 
