@@ -81,6 +81,87 @@ concept has_deallocate_aligned_n_impl = requires(void *p, ::std::size_t n) {
 };
 
 template <typename alloc>
-concept has_status_impl = requires {
-	{ alloc::has_status } -> ::std::same_as<bool>;
+concept has_non_empty_handle_type = requires {
+	typename alloc::handle_type;
+	requires !::std::is_empty_v<typename alloc::handle_type>;
+};
+
+template <typename alloc>
+concept has_handle_allocate_impl = requires(typename alloc::handle_type handle, ::std::size_t n) {
+	{ alloc::handle_allocate(handle, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_allocate_aligned_impl = requires(typename alloc::handle_type handle, ::std::size_t n) {
+	{ alloc::handle_allocate_aligned(handle, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_allocate_zero_impl = requires(typename alloc::handle_type handle, ::std::size_t n) {
+	{ alloc::handle_allocate_zero(handle, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_allocate_aligned_zero_impl = requires(typename alloc::handle_type handle, ::std::size_t n) {
+	{ alloc::handle_allocate_aligned_zero(handle, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate(handle, p, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_aligned_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate_aligned(handle, p, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_zero_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate_zero(handle, p, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_aligned_zero_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate_aligned_zero(handle, p, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_n_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate_n(handle, p, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_aligned_n_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate_aligned_n(handle, p, n, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_zero_n_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate_zero_n(handle, p, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_reallocate_aligned_zero_n_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_reallocate_aligned_zero(handle, p, n, n, n) } -> ::std::same_as<void *>;
+};
+
+template <typename alloc>
+concept has_handle_deallocate_impl = requires(typename alloc::handle_type handle, void *p) {
+	{ alloc::handle_deallocate(handle, p) } -> ::std::same_as<void>;
+};
+
+template <typename alloc>
+concept has_handle_deallocate_aligned_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_deallocate_aligned(handle, p, n) } -> ::std::same_as<void>;
+};
+
+template <typename alloc>
+concept has_handle_deallocate_n_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_deallocate_n(handle, p, n) } -> ::std::same_as<void>;
+};
+
+template <typename alloc>
+concept has_handle_deallocate_aligned_n_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
+	{ alloc::handle_deallocate_aligned_n(handle, p, n, n) } -> ::std::same_as<void>;
 };

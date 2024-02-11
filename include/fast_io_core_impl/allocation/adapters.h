@@ -5,6 +5,9 @@
 // https://github.com/microsoft/STL/issues/4002 gcc and clang provide constexpr new, but still won't compile.
 // ::std::allocator<T> is NOT freestanding.
 
+#pragma push_macro("new")
+#undef new
+
 namespace fast_io
 {
 
@@ -57,7 +60,8 @@ inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, :
 	}
 	else
 	{
-		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()}, sizeofptr{sizeof(void *)},
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()},
+			sizeofptr{sizeof(void *)},
 			mxmptr{mxn - sizeofptr};
 		if (alignment < sizeofptr)
 		{
@@ -102,6 +106,80 @@ inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, :
 		return aligned_ptr;
 	}
 }
+template <typename alloc, bool zero>
+inline constexpr void *status_allocator_pointer_aligned_impl(typename alloc::handle_type handle, ::std::size_t alignment, ::std::size_t n) noexcept
+{
+	if constexpr (!has_allocate_impl<alloc> && !has_allocate_zero_impl<alloc>)
+	{
+		::fast_io::fast_terminate();
+	}
+	else if constexpr (!zero && !has_allocate_impl<alloc>)
+	{
+		return status_allocator_pointer_aligned_impl<alloc, true>(handle, alignment, n);
+	}
+	else if constexpr (zero && !has_allocate_zero_impl<alloc>)
+	{
+		void *aligned_ptr{status_allocator_pointer_aligned_impl<alloc, false>(handle, alignment, n)};
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memset)
+		__builtin_memset
+#else
+		::std::memset
+#endif
+#else
+		::std::memset
+#endif
+			(aligned_ptr, 0, n);
+		return aligned_ptr;
+	}
+	else
+	{
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()},
+			sizeofptr{sizeof(void *)},
+			mxmptr{mxn - sizeofptr};
+		if (alignment < sizeofptr)
+		{
+			alignment = sizeofptr;
+		}
+		if (alignment > mxmptr)
+		{
+			::fast_io::fast_terminate();
+		}
+		::std::size_t total_extra_space{alignment + sizeofptr};
+		::std::size_t upperlimit{static_cast<::std::size_t>(mxn - total_extra_space)};
+		if (n > upperlimit)
+		{
+			::fast_io::fast_terminate();
+		}
+		::std::size_t to_allocate{n + total_extra_space};
+		void *p;
+		if constexpr (zero)
+		{
+			if constexpr (has_handle_allocate_zero_impl<alloc>)
+			{
+				p = alloc::handle_allocate_zero(handle, to_allocate);
+			}
+			else
+			{
+				p = alloc::allocate(handle, to_allocate);
+			}
+		}
+		else
+		{
+			if constexpr (has_handle_allocate_impl<alloc>)
+			{
+				p = alloc::allocate(handle, to_allocate);
+			}
+			else
+			{
+				p = alloc::allocate_zero(handle, to_allocate);
+			}
+		}
+		void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::size_t>(p) + alignment) & (0 - alignment))};
+		reinterpret_cast<void **>(aligned_ptr)[-1] = p;
+		return aligned_ptr;
+	}
+}
 
 } // namespace details
 
@@ -114,8 +192,19 @@ class generic_allocator_adapter
 {
 public:
 	using allocator_type = alloc;
-	static inline constexpr ::std::size_t default_alignment{
-		::fast_io::details::calculate_default_alignment<allocator_type>()};
+	static inline constexpr bool has_status{::fast_io::details::has_non_empty_handle_type<allocator_type>};
+	template <typename T, bool = false>
+	struct has
+	{
+		using type = allocator_type; // any meaningless type other than void
+	};
+	template <typename T>
+	struct has<T, true>
+	{
+		using type = typename T::handle_type;
+	};
+	using handle_type = typename has<allocator_type, has_status>::type;
+	static inline constexpr ::std::size_t default_alignment{::fast_io::details::calculate_default_alignment<allocator_type>()};
 
 	static inline
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -123,6 +212,7 @@ public:
 #endif
 		void *
 		allocate(::std::size_t n) noexcept
+		requires(!has_status)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -151,8 +241,8 @@ public:
 			}
 		}
 	}
-
 	static inline void *allocate_zero(::std::size_t n) noexcept
+		requires(!has_status)
 	{
 		if constexpr (::fast_io::details::has_allocate_zero_impl<alloc>)
 		{
@@ -175,14 +265,19 @@ public:
 	}
 
 	static inline constexpr bool has_reallocate = ::fast_io::details::has_reallocate_impl<alloc>;
-
 	static inline void *reallocate(void *p, ::std::size_t n) noexcept
-		requires(has_reallocate)
+		requires(!has_status && has_reallocate)
 	{
 		return allocator_type::reallocate(p, n);
 	}
-
+	static inline constexpr bool has_reallocate_zero = ::fast_io::details::has_reallocate_zero_impl<alloc>;
+	static inline void *reallocate_zero(void *p, ::std::size_t n) noexcept
+		requires(!has_status && has_reallocate_zero)
+	{
+		return allocator_type::reallocate_zero(p, n);
+	}
 	static inline void *reallocate_n(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 		if constexpr (::fast_io::details::has_reallocate_n_impl<alloc>)
 		{
@@ -212,15 +307,8 @@ public:
 			return newptr;
 		}
 	}
-	static inline constexpr bool has_reallocate_zero = ::fast_io::details::has_reallocate_zero_impl<alloc>;
-
-	static inline void *reallocate_zero(void *p, ::std::size_t n) noexcept
-		requires(has_reallocate_zero)
-	{
-		return allocator_type::reallocate_zero(p, n);
-	}
-
 	static inline void *reallocate_zero_n(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 		if constexpr (::fast_io::details::has_reallocate_zero_n_impl<alloc>)
 		{
@@ -252,9 +340,8 @@ public:
 	}
 
 	static inline constexpr bool has_deallocate = ::fast_io::details::has_deallocate_impl<alloc>;
-
 	static inline void deallocate(void *p) noexcept
-		requires(has_deallocate)
+		requires(!has_status && has_deallocate)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -272,8 +359,8 @@ public:
 			allocator_type::deallocate(p);
 		}
 	}
-
 	static inline void deallocate_n(void *p, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -296,6 +383,10 @@ public:
 			{
 				allocator_type::deallocate(p);
 			}
+			else
+			{
+				fast_io::fast_terminate();
+			}
 		}
 	}
 
@@ -305,6 +396,7 @@ public:
 #endif
 		void *
 		allocate_aligned(::std::size_t alignment, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -322,13 +414,13 @@ public:
 			return ::fast_io::details::allocator_pointer_aligned_impl<alloc, false>(alignment, n);
 		}
 	}
-
 	static inline
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
 		void *
 		allocate_aligned_zero(::std::size_t alignment, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -348,38 +440,34 @@ public:
 	}
 
 	static inline constexpr bool has_reallocate_aligned = ::fast_io::details::has_reallocate_aligned_impl<alloc>;
-
 	static inline
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
 		void *
 		reallocate_aligned(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
-		requires(has_reallocate_aligned)
+		requires(!has_status && has_reallocate_aligned)
 	{
 		return allocator_type::reallocate_aligned(p, alignment, n);
 	}
-
-	static inline constexpr bool has_reallocate_aligned_zero =
-		::fast_io::details::has_reallocate_aligned_zero_impl<alloc>;
-
+	static inline constexpr bool has_reallocate_aligned_zero = ::fast_io::details::has_reallocate_aligned_zero_impl<alloc>;
 	static inline
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
 		void *
 		reallocate_aligned_zero(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
-		requires(has_reallocate_aligned_zero)
+		requires(!has_status && has_reallocate_aligned_zero)
 	{
 		return allocator_type::reallocate_aligned_zero(p, alignment, n);
 	}
-
 	static inline
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
 		void *
 		reallocate_aligned_n(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 		if constexpr (::fast_io::details::has_reallocate_aligned_n_impl<alloc>)
 		{
@@ -421,13 +509,13 @@ public:
 			return newptr;
 		}
 	}
-
 	static inline
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
 		void *
 		reallocate_aligned_zero_n(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 		if constexpr (::fast_io::details::has_reallocate_aligned_zero_n_impl<alloc>)
 		{
@@ -449,7 +537,14 @@ public:
 		}
 	}
 
+	static inline constexpr bool has_deallocate_aligned = ::fast_io::details::has_deallocate_aligned_impl<alloc>;
+	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
+		requires(!has_status && has_deallocate_aligned)
+	{
+		allocator_type::deallocate_aligned(p, alignment);
+	}
 	static inline void deallocate_aligned_n(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 		if constexpr (::fast_io::details::has_deallocate_aligned_n_impl<alloc>)
 		{
@@ -476,19 +571,381 @@ public:
 			}
 		}
 	}
-	static inline constexpr bool has_deallocate_aligned = ::fast_io::details::has_deallocate_aligned_impl<alloc>;
-	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
-		requires(has_deallocate_aligned)
+
+	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		handle_allocate(handle_type handle, ::std::size_t n) noexcept
+		requires(has_status)
 	{
-		allocator_type::deallocate_aligned(p, alignment);
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return ::operator new(n);
+		}
+		else
+#endif
+		{
+			if constexpr (::fast_io::details::has_handle_allocate_impl<alloc>)
+			{
+				return allocator_type::handle_allocate(handle, n);
+			}
+			else if constexpr (::fast_io::details::has_handle_allocate_impl<alloc>)
+			{
+				return allocator_type::handle_allocate_zero(handle, n);
+			}
+			else
+			{
+				fast_io::fast_terminate();
+			}
+		}
+	}
+	static inline void *handle_allocate_zero(handle_type handle, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+		if constexpr (::fast_io::details::has_handle_allocate_zero_impl<alloc>)
+		{
+			return allocator_type::handle_allocate_zero(handle, n);
+		}
+		else
+		{
+			auto p{generic_allocator_adapter::handle_allocate(handle, n)};
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memset)
+			__builtin_memset(p, 0, n);
+#else
+			::std::memset(p, 0, n);
+#endif
+#else
+			::std::memset(p, 0, n);
+#endif
+			return p;
+		}
+	}
+
+	static inline constexpr bool has_handle_reallocate = ::fast_io::details::has_handle_reallocate_impl<alloc>;
+	static inline void *handle_reallocate(handle_type handle, void *p, ::std::size_t n) noexcept
+		requires(has_status && has_handle_reallocate)
+	{
+		return allocator_type::handle_reallocate(handle, p, n);
+	}
+	static inline constexpr bool has_handle_reallocate_zero = ::fast_io::details::has_handle_reallocate_zero_impl<alloc>;
+	static inline void *handle_reallocate_zero(handle_type handle, void *p, ::std::size_t n) noexcept
+		requires(has_status && has_handle_reallocate_zero)
+	{
+		return allocator_type::handle_reallocate_zero(handle, p, n);
+	}
+	static inline void *handle_reallocate_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+		if constexpr (::fast_io::details::has_handle_reallocate_n_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_n(handle, p, oldn, n);
+		}
+		else
+		{
+			auto newptr{generic_allocator_adapter::handle_allocate(handle, n)};
+			if (p != nullptr && n)
+			{
+				if (oldn < n)
+				{
+					n = oldn;
+				}
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memcpy)
+				__builtin_memcpy
+#else
+				::std::memcpy
+#endif
+#else
+				::std::memcpy
+#endif
+					(newptr, p, n);
+				generic_allocator_adapter::handle_deallocate_n(handle, p, oldn);
+			}
+			return newptr;
+		}
+	}
+	static inline void *handle_reallocate_zero_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+		if constexpr (::fast_io::details::has_handle_reallocate_zero_n_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_zero_n(handle, p, oldn, n);
+		}
+		else if constexpr (::fast_io::details::has_handle_reallocate_zero_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_zero(handle, p, n);
+		}
+		else
+		{
+			auto newptr{generic_allocator_adapter::handle_reallocate_n(handle, p, oldn, n)};
+			if (oldn < n)
+			{
+				::std::size_t const to_zero_bytes{static_cast<::std::size_t>(n - oldn)};
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memset)
+				__builtin_memset
+#else
+				::std::memset
+#endif
+#else
+				::std::memset
+#endif
+					(reinterpret_cast<char *>(newptr) + oldn, 0, to_zero_bytes);
+			}
+			return newptr;
+		}
+	}
+
+	static inline constexpr bool has_handle_deallocate = ::fast_io::details::has_handle_deallocate_impl<alloc>;
+	static inline void handle_deallocate(handle_type handle, void *p) noexcept
+		requires(has_status && has_handle_deallocate)
+	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			::operator delete(p);
+		}
+		else
+#endif
+		{
+			allocator_type::handle_deallocate(handle, p);
+		}
+	}
+	static inline void handle_deallocate_n(handle_type handle, void *p, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			::operator delete(p);
+		}
+		else
+#endif
+		{
+			if constexpr (::fast_io::details::has_handle_deallocate_n_impl<alloc>)
+			{
+				allocator_type::handle_deallocate_n(handle, p, n);
+			}
+			else if constexpr (::fast_io::details::has_handle_deallocate_impl<alloc>)
+			{
+				allocator_type::handle_deallocate(handle, p);
+			}
+			else
+			{
+				fast_io::fast_terminate();
+			}
+		}
+	}
+
+	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		handle_allocate_aligned(handle_type handle, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return ::operator new(n);
+		}
+		else
+#endif
+		{
+			return ::fast_io::details::status_allocator_pointer_aligned_impl<alloc, false>(handle, alignment, n);
+		}
+	}
+	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		handle_allocate_aligned_zero(handle_type handle, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return ::operator new(n); // this is problematic. No way to clean it up at compile time.
+		}
+		else
+#endif
+		{
+			return ::fast_io::details::status_allocator_pointer_aligned_impl<alloc, true>(handle, alignment, n);
+		}
+	}
+
+	static inline constexpr bool has_handle_reallocate_aligned = ::fast_io::details::has_handle_reallocate_aligned_impl<alloc>;
+	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		handle_reallocate_aligned(handle_type handle, void *p, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(has_status && has_handle_reallocate_aligned)
+	{
+		return allocator_type::handle_reallocate_aligned(handle, p, alignment, n);
+	}
+	static inline constexpr bool has_handle_reallocate_aligned_zero = ::fast_io::details::has_handle_reallocate_aligned_zero_impl<alloc>;
+	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		handle_reallocate_aligned_zero(handle_type handle, void *p, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(has_status && has_handle_reallocate_aligned_zero)
+	{
+		return allocator_type::handle_reallocate_aligned_zero(handle, p, alignment, n);
+	}
+	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		handle_reallocate_aligned_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(!has_status && ::std::is_empty_v<alloc>)
+	{
+		if constexpr (::fast_io::details::has_handle_reallocate_aligned_n_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_aligned_n(handle, p, oldn, alignment, n);
+		}
+		else if constexpr (::fast_io::details::has_handle_reallocate_aligned_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_aligned(handle, p, alignment, n);
+		}
+		else if constexpr (::fast_io::details::has_handle_reallocate_aligned_zero_n_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_aligned_zero_n(handle, p, oldn, alignment, n);
+		}
+		else if constexpr (::fast_io::details::has_handle_reallocate_aligned_zero_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_aligned_zero(handle, p, alignment, n);
+		}
+		else
+		{
+			auto newptr{::fast_io::details::status_allocator_pointer_aligned_impl<alloc, false>(handle, alignment, n)};
+			if (p != nullptr && n)
+			{
+				if (oldn < n)
+				{
+					n = oldn;
+				}
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memcpy)
+				__builtin_memcpy
+#else
+				::std::memcpy
+#endif
+#else
+				::std::memcpy
+#endif
+					(newptr, p, n);
+				generic_allocator_adapter::handle_deallocate_aligned_n(handle, p, alignment, oldn);
+			}
+			return newptr;
+		}
+	}
+	static inline
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		handle_reallocate_aligned_zero_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(!has_status && ::std::is_empty_v<alloc>)
+	{
+		if constexpr (::fast_io::details::has_handle_reallocate_aligned_zero_n_impl<alloc>)
+		{
+			return allocator_type::handle_reallocate_aligned_zero_n(handle, p, oldn, alignment, n);
+		}
+		else
+		{
+			auto newptr{handle_reallocate_aligned_n(handle, p, oldn, alignment, n)};
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_memset)
+			__builtin_memset(newptr, 0, n);
+#else
+			::std::memset(newptr, 0, n);
+#endif
+#else
+			::std::memset(newptr, 0, n);
+#endif
+			return newptr;
+		}
+	}
+
+	static inline constexpr bool has_handle_deallocate_aligned = ::fast_io::details::has_handle_deallocate_aligned_impl<alloc>;
+	static inline void handle_deallocate_aligned(handle_type handle, void *p, ::std::size_t alignment) noexcept
+		requires(has_status && has_deallocate_aligned)
+	{
+		allocator_type::handle_deallocate_aligned(handle, p, alignment);
+	}
+	static inline void handle_deallocate_aligned_n(handle_type handle, void *p, ::std::size_t alignment, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+		if constexpr (::fast_io::details::has_handle_deallocate_aligned_n_impl<alloc>)
+		{
+			allocator_type::handle_deallocate_aligned_n(handle, p, alignment, n);
+		}
+		else if constexpr (::fast_io::details::has_handle_deallocate_aligned_impl<alloc>)
+		{
+			allocator_type::handle_deallocate_aligned(handle, p, alignment);
+		}
+		else
+		{
+			if (p == nullptr)
+			{
+				return;
+			}
+			if constexpr (::fast_io::details::has_handle_deallocate_impl<alloc>)
+			{
+				allocator_type::handle_deallocate(handle, reinterpret_cast<void **>(p)[-1]);
+			}
+			else
+			{
+				::std::size_t const to_deallocate{sizeof(void *) + alignment + n};
+				allocator_type::handle_deallocate_n(handle, reinterpret_cast<void **>(p)[-1], to_deallocate);
+			}
+		}
 	}
 };
 
-template <typename alloc, typename T>
+template <typename alloc, typename T, bool own = true>
 class typed_generic_allocator_adapter
 {
 public:
-	using allocator_adapter = alloc;
+	using allocator_adaptor = alloc;
+	static inline constexpr bool has_status{allocator_adaptor::has_status};
+	using handle_type = typename allocator_adaptor::handle_type;
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -499,6 +956,7 @@ public:
 #endif
 		T *
 		allocate(::std::size_t n) noexcept
+		requires(!has_status)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -532,8 +990,141 @@ public:
 			return static_cast<T *>(alloc::allocate_aligned(n * sizeof(T), alignof(T)));
 		}
 	}
-	static inline constexpr bool has_deallocate = allocator_adapter::has_deallocate;
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		T *
+		allocate_zero(::std::size_t n) noexcept
+		requires(!has_status)
+	{
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
+		if (n > mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			return static_cast<T *>(alloc::allocate_zero(n * sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T *>(alloc::allocate_zero_aligned(n * sizeof(T), alignof(T)));
+		}
+	}
 
+	static inline constexpr bool has_reallocate = allocator_adaptor::has_reallocate;
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		reallocate(T *ptr, ::std::size_t n) noexcept
+		requires(!has_status && has_reallocate)
+	{
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
+		if (n > mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			return static_cast<T *>(alloc::reallocate(ptr, n * sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T *>(alloc::reallocate_aligned(ptr, n * sizeof(T), alignof(T)));
+		}
+	}
+	static inline constexpr bool has_reallocate_zero = allocator_adaptor::has_reallocate_zero;
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		reallocate_zero(T *ptr, ::std::size_t n) noexcept
+		requires(!has_status && has_reallocate)
+	{
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
+		if (n > mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			return static_cast<T *>(alloc::reallocate_zero(ptr, n * sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T *>(alloc::reallocate_aligned_zero(ptr, n * sizeof(T), alignof(T)));
+		}
+	}
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		reallocate_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(!has_status)
+	{
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
+		if (n > mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			return static_cast<T *>(alloc::reallocate_n(ptr, oldn, n * sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T *>(alloc::reallocate_aligned_n(ptr, oldn, n * sizeof(T), alignof(T)));
+		}
+	}
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		void *
+		reallocate_zero_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(!has_status)
+	{
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
+		if (n > mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			return static_cast<T *>(alloc::reallocate_zero_n(ptr, oldn, n * sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T *>(alloc::reallocate_aligned_zero_n(ptr, oldn, n * sizeof(T), alignof(T)));
+		}
+	}
+
+	static inline constexpr bool has_deallocate = allocator_adaptor::has_deallocate;
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -541,7 +1132,7 @@ public:
 #endif
 		void
 		deallocate(T *ptr) noexcept
-		requires(has_deallocate)
+		requires(!has_status && has_deallocate)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -577,6 +1168,7 @@ public:
 #endif
 		void
 		deallocate_n(T *ptr, ::std::size_t n) noexcept
+		requires(!has_status)
 	{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -598,11 +1190,56 @@ public:
 #endif
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			alloc::deallocate_n(ptr, n);
+			alloc::deallocate_n(ptr, n * sizeof(T));
 		}
 		else
 		{
-			alloc::deallocate_aligned_n(ptr, alignof(T), n);
+			alloc::deallocate_aligned_n(ptr, alignof(T), n * sizeof(T));
+		}
+	}
+
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+#if defined(_MSC_VER) && !defined(__clang__)
+		__declspec(allocator)
+#endif
+		T *
+		handle_allocate(handle_type handle, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			if (n)
+			{
+				return ::fast_io::freestanding::allocator<T>{}.allocate(n);
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+#endif
+		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
+		if (n > mxn)
+		{
+			::fast_io::fast_terminate();
+		}
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			return static_cast<T *>(alloc::handle_allocate(handle, n * sizeof(T)));
+		}
+		else
+		{
+			return static_cast<T *>(alloc::handle_allocate_aligned(handle, n * sizeof(T), alignof(T)));
 		}
 	}
 	static inline
@@ -614,7 +1251,8 @@ public:
 		__declspec(allocator)
 #endif
 		T *
-		allocate_zero(::std::size_t n) noexcept
+		handle_allocate_zero(handle_type handle, ::std::size_t n) noexcept
+		requires(has_status)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
 		if (n > mxn)
@@ -623,15 +1261,15 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::allocate_zero(n * sizeof(T)));
+			return static_cast<T *>(alloc::handle_allocate_zero(handle, n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::allocate_zero_aligned(n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_allocate_zero_aligned(handle, n * sizeof(T), alignof(T)));
 		}
 	}
 
-	static inline constexpr bool has_reallocate = allocator_adapter::has_reallocate;
+	static inline constexpr bool has_handle_reallocate = allocator_adaptor::has_handle_reallocate;
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -641,8 +1279,8 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		reallocate(T *ptr, ::std::size_t n) noexcept
-		requires(has_reallocate)
+		handle_reallocate(handle_type handle, T *ptr, ::std::size_t n) noexcept
+		requires(has_status && has_handle_reallocate)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
 		if (n > mxn)
@@ -651,14 +1289,14 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::reallocate(ptr, n * sizeof(T)));
+			return static_cast<T *>(alloc::handle_reallocate(handle, ptr, n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned(ptr, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned(handle, ptr, n * sizeof(T), alignof(T)));
 		}
 	}
-
+	static inline constexpr bool has_handle_reallocate_zero = allocator_adaptor::has_handle_reallocate_zero;
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -668,7 +1306,8 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		reallocate_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		handle_reallocate_zero(handle_type handle, T *ptr, ::std::size_t n) noexcept
+		requires(has_status && has_handle_reallocate)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
 		if (n > mxn)
@@ -677,15 +1316,13 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::reallocate_n(ptr, oldn, n * sizeof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_zero(handle, ptr, n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned_n(ptr, oldn, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_zero(handle, ptr, n * sizeof(T), alignof(T)));
 		}
 	}
-
-	static inline constexpr bool has_reallocate_zero = allocator_adapter::has_reallocate_zero;
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -695,8 +1332,8 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		reallocate_zero(T *ptr, ::std::size_t n) noexcept
-		requires(has_reallocate)
+		handle_reallocate_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(has_status)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
 		if (n > mxn)
@@ -705,14 +1342,13 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::reallocate_zero(ptr, n * sizeof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_n(handle, ptr, oldn, n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned_zero(ptr, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_n(handle, ptr, oldn, n * sizeof(T), alignof(T)));
 		}
 	}
-
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
@@ -722,7 +1358,8 @@ public:
 		__declspec(allocator)
 #endif
 		void *
-		reallocate_zero_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		handle_reallocate_zero_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
+		requires(has_status)
 	{
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
 		if (n > mxn)
@@ -731,13 +1368,89 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::reallocate_zero_n(ptr, oldn, n * sizeof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_zero_n(handle, ptr, oldn, n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned_zero_n(ptr, oldn, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_zero_n(handle, ptr, oldn, n * sizeof(T), alignof(T)));
+		}
+	}
+
+	static inline constexpr bool has_handle_deallocate = allocator_adaptor::has_handle_deallocate;
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+		void
+		handle_deallocate(handle_type handle, T *ptr) noexcept
+		requires(has_status && has_handle_deallocate)
+	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			if (ptr)
+			{
+				return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, 1);
+			}
+			else
+			{
+				return;
+			}
+		}
+#endif
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			return alloc::handle_deallocate(handle, ptr);
+		}
+		else
+		{
+			return alloc::handle_deallocate_aligned(handle, ptr, alignof(T));
+		}
+	}
+	static inline
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+		constexpr
+#endif
+		void
+		handle_deallocate_n(handle_type handle, T *ptr, ::std::size_t n) noexcept
+		requires(has_status)
+	{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
+	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			if (ptr)
+			{
+				return ::fast_io::freestanding::allocator<T>{}.deallocate(ptr, n);
+			}
+			else
+			{
+				return;
+			}
+		}
+#endif
+		if constexpr (alignof(T) <= alloc::default_alignment)
+		{
+			alloc::handle_deallocate_n(handle, ptr, n * sizeof(T));
+		}
+		else
+		{
+			alloc::handle_deallocate_aligned_n(handle, ptr, alignof(T), n * sizeof(T));
 		}
 	}
 };
 
 } // namespace fast_io
+
+#pragma pop_macro("new")
