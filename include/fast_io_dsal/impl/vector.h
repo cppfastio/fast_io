@@ -772,33 +772,33 @@ private:
 			{
 				if constexpr (alloc_with_status)
 				{
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-				{
-					::fast_io::containers::details::statused_grow_twice_common_impl<allocator_type, sizeof(value_type)>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						allochdl.get());
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::statused_grow_twice_common_impl<allocator_type, sizeof(value_type)>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl.get());
+					}
+					else
+					{
+						::fast_io::containers::details::statused_grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl.get(),
+							alignof(value_type));
+					}
 				}
 				else
 				{
-					::fast_io::containers::details::statused_grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						allochdl.get(),
-						alignof(value_type));
-				}
-				}
-				else
-				{
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-				{
-					::fast_io::containers::details::grow_twice_common_impl<allocator_type, sizeof(value_type)>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)));
-				}
-				else
-				{
-					::fast_io::containers::details::grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						alignof(value_type));
-				}
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::grow_twice_common_impl<allocator_type, sizeof(value_type)>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)));
+					}
+					else
+					{
+						::fast_io::containers::details::grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							alignof(value_type));
+					}
 				}
 				return;
 			}
@@ -1414,6 +1414,7 @@ public:
 		this->operator=(::std::move(newvec));
 		return *this;
 	}
+#if __cpp_lib_containers_ranges >= 202202L
 	template <::fast_io::containers::details::container_compatible_range<value_type> R>
 	constexpr vector(::std::from_range_t, R &&rg) noexcept(noexcept(constructor(::std::ranges::begin(rg), ::std::ranges::end(rg))))
 	{
@@ -1426,6 +1427,7 @@ public:
 	{
 		constructor<::std::is_rvalue_reference_v<R &&>>(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
+#endif
 
 	constexpr vector(vector const &vec) noexcept(noexcept(constructor(vec.begin(), vec.end())))
 		requires(::std::copyable<value_type>)
@@ -1433,7 +1435,7 @@ public:
 		constructor(vec.begin(), vec.end());
 	}
 	constexpr vector(vector const &vec) = delete;
-	constexpr vector(handle_holder_type alloc_handler, vector const &vec) noexcept(vector(vec))
+	constexpr vector(handle_holder_type alloc_handler, vector const &vec) noexcept(noexcept(vector(vec)))
 		requires(alloc_with_status)
 		: allochdl(alloc_handler)
 	{
@@ -1724,7 +1726,7 @@ public:
 			itr_end = itr + count;
 			if constexpr (!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 			{
-				for (auto new_itr{ itr }; new_itr != itr_end && new_itr != imp.curr_ptr; ++new_itr)
+				for (auto new_itr{itr}; new_itr != itr_end && new_itr != imp.curr_ptr; ++new_itr)
 				{
 					new_itr->~value_type();
 				}
@@ -1742,7 +1744,7 @@ public:
 	{
 		if constexpr (::std::sized_sentinel_for<InputIt, InputIt>)
 		{
-			return insert_counted_range_impl(pos, first, ::std::distance(first, last));
+			return insert_counted_range_impl(pos, first, ::std::ranges::distance(first, last));
 		}
 		else
 		{
@@ -1762,7 +1764,7 @@ public:
 		}
 		else
 		{
-			return insert_uncounted_range_impl(pos, ::std::ranges::begin(rg), ::std::ranges::end(rg));
+			return insert_uncounted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos, ::std::ranges::begin(rg), ::std::ranges::end(rg));
 		}
 	}
 	template <typename... Args>
@@ -1941,9 +1943,9 @@ public:
 			}
 			// fall through
 		}
-		if constexpr (::std::ranges::forward_range<R>)
+		if constexpr (::std::ranges::sized_range<R>)
 		{
-			this->append_counted_range_impl(::std::ranges::begin(rg), ::std::ranges::size(rg));
+			this->append_counted_range_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 		}
 		else
 		{
