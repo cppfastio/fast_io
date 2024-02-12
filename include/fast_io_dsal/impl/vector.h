@@ -2224,6 +2224,11 @@ constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexce
 	lhs.swap(rhs);
 }
 
+template <::std::input_iterator InputIt, typename allocator>
+vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, allocator>;
+template <::std::ranges::input_range R, typename allocator>
+vector(::std::from_range_t, R&&) -> vector<::std::ranges::range_value_t<R>, allocator>;
+
 } // namespace containers
 
 namespace freestanding
