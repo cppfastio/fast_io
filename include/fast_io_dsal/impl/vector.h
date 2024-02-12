@@ -30,6 +30,7 @@ struct handle_holder
 	constexpr handle_holder() noexcept
 		: value{}
 	{}
+	constexpr handle_holder(decltype(nullptr)) noexcept = delete;
 	constexpr handle_holder(handle small) noexcept
 		requires(is_trivally_stored_allocator_handle<handle>)
 		: value(small)
@@ -945,12 +946,13 @@ private:
 		}
 		return imp.begin_ptr + pos;
 	}
-	constexpr iterator reserve_blank_impl(iterator first, iterator last, size_type cnt) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	constexpr iterator reserve_blank_impl(iterator first, size_type cnt) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
 	{
-		auto d_first{first + cnt};
+		auto const last{imp.curr_ptr};
+		auto const d_first{first + cnt};
 		if (d_first < last) // overlapped
 		{
-			auto overlapped{last - cnt};
+			auto const overlapped{last - cnt};
 			::fast_io::freestanding::uninitialized_move_n(overlapped, cnt, last);
 			::fast_io::freestanding::move_backward(first, overlapped, last);
 			destroy_range(first, d_first);
@@ -1134,7 +1136,7 @@ private:
 		}
 		else
 		{
-			itr = reserve_blank_impl(pos - imp.begin_ptr + imp.begin_ptr, imp.curr_ptr, cnt);
+			itr = reserve_blank_impl(pos - imp.begin_ptr + imp.begin_ptr, cnt);
 		}
 		struct restore_t
 		{
@@ -1319,24 +1321,51 @@ private:
 					[[__gnu__::__may_alias__]]
 #endif
 					= char8_t const *;
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				if constexpr (alloc_with_status)
 				{
-					::fast_io::containers::details::check_size_and_construct<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::statused_check_size_and_construct<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl.get(),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
+					else
+					{
+						::fast_io::containers::details::statused_check_size_and_construct_align<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl.get(),
+							alignof(value_type),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
 				}
 				else
 				{
-					::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						alignof(value_type),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::check_size_and_construct<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
+					else
+					{
+						::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							alignof(value_type),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
 				}
 				return;
 			}
 			// fallthrough
+		}
+		if constexpr (::std::contiguous_iterator<Iter> && ::std::same_as<Iter, Sentinel>)
+		{
+			this->assign_counted_range_impl<move>(::std::to_address(first), ::std::to_address(last));
 		}
 		if constexpr (::std::sized_sentinel_for<Sentinel, Iter>)
 		{
@@ -1414,7 +1443,6 @@ public:
 		this->operator=(::std::move(newvec));
 		return *this;
 	}
-#if __cpp_lib_containers_ranges >= 202202L
 	template <::fast_io::containers::details::container_compatible_range<value_type> R>
 	constexpr vector(::std::from_range_t, R &&rg) noexcept(noexcept(constructor(::std::ranges::begin(rg), ::std::ranges::end(rg))))
 	{
@@ -1427,7 +1455,6 @@ public:
 	{
 		constructor<::std::is_rvalue_reference_v<R &&>>(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
-#endif
 
 	constexpr vector(vector const &vec) noexcept(noexcept(constructor(vec.begin(), vec.end())))
 		requires(::std::copyable<value_type>)
@@ -1485,7 +1512,7 @@ public:
 		if constexpr (alloc_with_status)
 		{
 			this->allochdl = vec.allochdl;
-			vec.allochdl = nullptr;
+			vec.allochdl = {};
 		}
 		return *this;
 	}
@@ -1542,24 +1569,51 @@ public:
 					[[__gnu__::__may_alias__]]
 #endif
 					= char8_t const *;
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				if constexpr (alloc_with_status)
 				{
-					::fast_io::containers::details::check_size_and_assign<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::statused_check_size_and_assign<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl.get(),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
+					else
+					{
+						::fast_io::containers::details::statused_check_size_and_assign_align<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							allochdl.get(),
+							alignof(value_type),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
 				}
 				else
 				{
-					::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-						alignof(value_type),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
-						reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					{
+						::fast_io::containers::details::check_size_and_assign<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
+					else
+					{
+						::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
+							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+							alignof(value_type),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
+							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
+					}
 				}
 				return;
 			}
 			// fall through
+		}
+		if constexpr (::std::contiguous_iterator<InputIt>)
+		{
+			this->assign_counted_range_impl(::std::to_address(first), ::std::to_address(last));
 		}
 		if constexpr (::std::sized_sentinel_for<InputIt, InputIt>)
 		{
@@ -1713,27 +1767,16 @@ public:
 	}
 	constexpr iterator insert(const_iterator pos, size_type count, value_type const &value) noexcept(noexcept(this->emplace_back(value)))
 	{
-		iterator itr, itr_end;
+		iterator itr;
 		if (static_cast<size_type>(imp.end_ptr - imp.curr_ptr) < count)
 		{
 			itr = grow_to_size_and_reserve_blank_impl(pos - imp.begin_ptr, count);
-			itr_end = itr + count;
 		}
 		else
 		{
-			itr = pos - imp.begin_ptr + imp.begin_ptr;
-			::fast_io::freestanding::copy_backward(itr, imp.curr_ptr, imp.curr_ptr + count);
-			itr_end = itr + count;
-			if constexpr (!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-			{
-				for (auto new_itr{itr}; new_itr != itr_end && new_itr != imp.curr_ptr; ++new_itr)
-				{
-					new_itr->~value_type();
-				}
-			}
-			imp.curr_ptr += count;
+			itr = reserve_blank_impl(pos - imp.begin_ptr + imp.begin_ptr, count);
 		}
-		for (auto new_itr{itr}; new_itr != itr_end; ++new_itr)
+		for (auto new_itr{itr}, itr_end{itr + count}; new_itr != itr_end; ++new_itr)
 		{
 			::std::construct_at(new_itr, value);
 		}
@@ -1742,6 +1785,10 @@ public:
 	template <::std::input_iterator InputIt>
 	constexpr iterator insert(const_iterator pos, InputIt first, InputIt last) noexcept(noexcept(this->emplace_back(*first)))
 	{
+		if constexpr (::std::contiguous_iterator<InputIt>)
+		{
+			return insert_counted_range_impl(pos, ::std::to_address(first), ::std::ranges::distance(first, last));
+		}
 		if constexpr (::std::sized_sentinel_for<InputIt, InputIt>)
 		{
 			return insert_counted_range_impl(pos, first, ::std::ranges::distance(first, last));
@@ -1758,13 +1805,23 @@ public:
 	template <::fast_io::containers::details::container_compatible_range<value_type> R>
 	constexpr iterator insert_range(const_iterator pos, R &&rg) noexcept(noexcept(this->emplace_back(*::std::ranges::begin(rg))))
 	{
+		if constexpr (::std::ranges::contiguous_range<R>)
+		{
+			return insert_counted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos,
+																				 ::std::to_address(::std::ranges::begin(rg)),
+																				 ::std::to_address(::std::ranges::size(rg)));
+		}
 		if constexpr (::std::ranges::sized_range<R>)
 		{
-			return insert_counted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos, ::std::ranges::begin(rg), ::std::ranges::size(rg));
+			return insert_counted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos,
+																				 ::std::ranges::begin(rg),
+																				 ::std::ranges::size(rg));
 		}
 		else
 		{
-			return insert_uncounted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos, ::std::ranges::begin(rg), ::std::ranges::end(rg));
+			return insert_uncounted_range_impl<::std::is_rvalue_reference_v<R &&>>(pos,
+																				   ::std::ranges::begin(rg),
+																				   ::std::ranges::end(rg));
 		}
 	}
 	template <typename... Args>
@@ -1777,13 +1834,7 @@ public:
 		}
 		else
 		{
-			itr = pos - imp.begin_ptr + imp.begin_ptr;
-			::fast_io::freestanding::copy_backward(itr, imp.curr_ptr, imp.curr_ptr + 1);
-			if (itr != imp.curr_ptr)
-			{
-				itr->~value_type();
-			}
-			++imp.curr_ptr;
+			itr = reserve_blank_impl(pos - imp.begin_ptr + imp.begin_ptr, 1);
 		}
 		::std::construct_at(itr, args...);
 		return itr;
@@ -1943,7 +1994,11 @@ public:
 			}
 			// fall through
 		}
-		if constexpr (::std::ranges::sized_range<R>)
+		if constexpr (::std::ranges::contiguous_range<R>)
+		{
+			this->append_counted_range_impl(::std::to_address(::std::ranges::begin(rg)), ::std::to_address(::std::ranges::end(rg)));
+		}
+		if constexpr (::std::sized_sentinel_for<::std::remove_cvref_t<decltype(::std::ranges::end(rg))>, ::std::remove_cvref_t<decltype(::std::ranges::begin(rg))>>)
 		{
 			this->append_counted_range_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 		}
@@ -1984,18 +2039,39 @@ public:
 					::fast_io::fast_terminate();
 				}
 			}
-			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+			if constexpr (alloc_with_status)
 			{
-				::fast_io::containers::details::zero_init_grow_to_size_common_impl<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-					n * sizeof(value_type));
+				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				{
+					::fast_io::containers::details::statused_zero_init_grow_to_size_common_impl<allocator_type>(
+						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+						allochdl.get(),
+						n * sizeof(value_type));
+				}
+				else
+				{
+					::fast_io::containers::details::statused_zero_init_grow_to_size_aligned_impl<allocator_type>(
+						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+						allochdl.get(),
+						alignof(value_type),
+						n * sizeof(value_type));
+				}
 			}
 			else
 			{
-				::fast_io::containers::details::zero_init_grow_to_size_aligned_impl<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-					alignof(value_type),
-					n * sizeof(value_type));
+				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				{
+					::fast_io::containers::details::zero_init_grow_to_size_common_impl<allocator_type>(
+						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+						n * sizeof(value_type));
+				}
+				else
+				{
+					::fast_io::containers::details::zero_init_grow_to_size_aligned_impl<allocator_type>(
+						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+						alignof(value_type),
+						n * sizeof(value_type));
+				}
 			}
 			imp.curr_ptr = imp.begin_ptr + n;
 			return;
@@ -2096,7 +2172,7 @@ public:
 };
 
 template <typename T, typename allocator>
-constexpr auto operator<=>(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexcept
+constexpr auto operator<=>(vector<T, allocator> const &lhs, vector<T, allocator> const &rhs) noexcept
 	requires ::std::three_way_comparable<T>
 {
 	using ordering_category_t = decltype(T{} <=> T{});
@@ -2117,7 +2193,7 @@ constexpr auto operator<=>(vector<T, allocator> &lhs, vector<T, allocator> &rhs)
 }
 
 template <typename T, typename allocator>
-constexpr bool operator==(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexcept
+constexpr bool operator==(vector<T, allocator> const &lhs, vector<T, allocator> const &rhs) noexcept
 	requires ::std::equality_comparable<T>
 {
 	if (lhs.size() != rhs.size())
