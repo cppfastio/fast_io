@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <ranges>
 #include <string>
 #include <fast_io.h>
 #include <fast_io_dsal/vector.h>
@@ -60,5 +61,5 @@ int main()
 	print("emplace with A&&:\n");
 	container.emplace(container.end(), std::move(three));
 
-	println("content:\n", rgvw(container | std::views::transform([](auto const &a) { return a.s; }), " "));
+	println("content:\n ", rgvw(container | std::views::transform([](auto const &a) { return a.s; }), " "));
 }
