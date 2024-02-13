@@ -490,7 +490,7 @@ concept container_compatible_range = ::std::ranges::input_range<Rg> && ::std::co
 
 } // namespace details
 
-template <::std::movable T, typename allocator>
+template<typename T,typename allocator>
 class
 #if __has_cpp_attribute(clang::trivial_abi)
 	[[clang::trivial_abi]]
