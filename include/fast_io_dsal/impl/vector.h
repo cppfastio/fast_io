@@ -490,7 +490,7 @@ concept container_compatible_range = ::std::ranges::input_range<Rg> && ::std::co
 
 } // namespace details
 
-template <::std::movable T, typename allocator>
+template<typename T,typename allocator>
 class
 #if __has_cpp_attribute(clang::trivial_abi)
 	[[clang::trivial_abi]]
@@ -2223,6 +2223,11 @@ constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexce
 {
 	lhs.swap(rhs);
 }
+
+template <::std::input_iterator InputIt, typename allocator>
+vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, allocator>;
+template <::std::ranges::input_range R, typename allocator>
+vector(::std::from_range_t, R&&) -> vector<::std::ranges::range_value_t<R>, allocator>;
 
 } // namespace containers
 

@@ -38,13 +38,13 @@
 namespace fast_io
 {
 
-template <::std::movable T, typename Alloc = ::fast_io::native_global_allocator>
-using vector = ::fast_io::containers::vector<T, Alloc>;
+template<typename T,typename Alloc=::fast_io::native_global_allocator>
+using vector = ::fast_io::containers::vector<T,Alloc>;
 
 namespace tlc
 {
-template <::std::movable T, typename Alloc = ::fast_io::native_thread_local_allocator>
-using vector = ::fast_io::containers::vector<T, Alloc>;
+template<typename T,typename Alloc=::fast_io::native_thread_local_allocator>
+using vector = ::fast_io::containers::vector<T,Alloc>;
 }
 
 } // namespace fast_io
