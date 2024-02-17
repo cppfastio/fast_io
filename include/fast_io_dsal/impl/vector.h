@@ -490,7 +490,7 @@ concept container_compatible_range = ::std::ranges::input_range<Rg> && ::std::co
 
 } // namespace details
 
-template<typename T,typename allocator>
+template <typename T, typename allocator>
 class
 #if __has_cpp_attribute(clang::trivial_abi)
 	[[clang::trivial_abi]]
@@ -1446,6 +1446,7 @@ public:
 		this->operator=(::std::move(newvec));
 		return *this;
 	}
+#ifdef __cpp_lib_containers_ranges
 	template <::fast_io::containers::details::container_compatible_range<value_type> R>
 	constexpr vector(::std::from_range_t, R &&rg) noexcept(noexcept(constructor(::std::ranges::begin(rg), ::std::ranges::end(rg))))
 	{
@@ -1458,7 +1459,7 @@ public:
 	{
 		constructor<::std::is_rvalue_reference_v<R &&>>(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
-
+#endif
 	constexpr vector(vector const &vec) noexcept(noexcept(constructor(vec.begin(), vec.end())))
 		requires(::std::copyable<value_type>)
 	{
