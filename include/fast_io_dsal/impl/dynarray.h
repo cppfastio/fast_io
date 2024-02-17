@@ -99,8 +99,10 @@ public:
 		else
 		{
 			void *bufferptr;
+			::std::size_t toallocate;
 			if constexpr (sizeof(T) == 1)
 			{
+				toallocate = n;
 #if defined(__GNUC__) || defined(__clang__)
 				bufferptr = __builtin_alloca(n);
 #else
@@ -110,7 +112,6 @@ public:
 			else
 			{
 #if defined(__GNUC__) || defined(__clang__)
-				::std::size_t toallocate{n};
 				if (__builtin_mul_overflow(n, sizeof(T), __builtin_addressof(toallocate)))
 				{
 					__builtin_trap();
@@ -123,17 +124,26 @@ public:
 				{
 					::std::abort();
 				}
-				bufferptr = _malloca(n * sizeof(T));
+				toallocate = n * sizeof(T);
+				bufferptr = _malloca(toallocate);
 #endif
 			}
-			pointer first = reinterpret_cast<pointer>(bufferptr);
-			pointer last = first + n;
-			for (pointer it{first}; it != last; ++it)
+			if constexpr(::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
 			{
-				new (it) value_type();
+				__builtin_memset(bufferptr,0,toallocate);
+				buffer_end = ((buffer_begin = reinterpret_cast<pointer>(bufferptr)) + n);
 			}
-			buffer_begin = first;
-			buffer_end = last;
+			else
+			{
+				pointer first = reinterpret_cast<pointer>(bufferptr);
+				pointer last = first + n;
+				for (pointer it{first}; it != last; ++it)
+				{
+					new (static_cast<void*>(it)) value_type();
+				}
+				buffer_begin = first;
+				buffer_end = last;
+			}
 		}
 	}
 
