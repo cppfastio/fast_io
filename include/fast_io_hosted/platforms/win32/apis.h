@@ -2108,6 +2108,32 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	sendto(::std::size_t, const char *, int, int, const void *, int) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("sendto@24")
+#else
+	__asm__("_sendto@24")
+#endif
+#else
+	__asm__("sendto")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern int
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	WSASend(::std::size_t, wsabuf *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t,
 			overlapped *, lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -2215,6 +2241,33 @@ extern int
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	recvfrom(::std::size_t, char *, int, int, void *, int *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("recvfrom@24")
+#else
+	__asm__("_recvfrom@24")
+#endif
+#else
+	__asm__("recvfrom")
+#endif
+#endif
+		;
+
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern int
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	WSARecv(::std::size_t, wsabuf *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t *,
 			overlapped *, lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
@@ -2243,7 +2296,7 @@ extern int
 	__stdcall
 #endif
 	WSARecvFrom(::std::size_t, wsabuf *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t *,
-				void const *, int *, overlapped *, lpwsaoverlapped_completion_routine) noexcept
+				void *, int *, overlapped *, lpwsaoverlapped_completion_routine) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

@@ -102,6 +102,26 @@ inline ::std::size_t posix_accept_win32_socket_impl(::std::size_t hsocket, void 
 	return accepted_socket;
 }
 
+inline int posix_recvfrom_win32_socket_impl(::std::size_t hsocket, void *buf, ::std::size_t len, int flags, void *src_addr, int *addrlen)
+{
+	auto soc{::fast_io::win32::recvfrom(hsocket, reinterpret_cast<char *>(buf), static_cast<int>(len), flags, src_addr, addrlen)};
+	if (soc == -1)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+	}
+	return soc;
+}
+
+inline int posix_sendto_win32_socket_impl(::std::size_t hsocket, void const *msg, ::std::size_t len, int flags, void const *to, int tolen)
+{
+	auto soc{::fast_io::win32::sendto(hsocket, reinterpret_cast<char const *>(msg), static_cast<int>(len), flags, to, tolen)};
+
+	if (soc == -1)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+	}
+	return soc;
+}
 } // namespace win32::details
 
 template <win32_family family, ::std::integral ch_type>
@@ -136,6 +156,20 @@ template <win32_family family, ::std::integral ch_type>
 inline void posix_listen(basic_win32_family_socket_io_observer<family, ch_type> h, int backlog)
 {
 	win32::details::posix_listen_win32_socket_impl(h.hsocket, backlog);
+}
+
+template <win32_family family, ::std::integral ch_type>
+inline int posix_recvfrom(basic_win32_family_socket_io_observer<family, ch_type> h, void *buf, ::std::size_t len, 
+	int flags, void *src_addr, win32_socklen_t *addrlen)
+{
+	return win32::details::posix_recvfrom_win32_socket_impl(h.hsocket, buf, len, flags, src_addr, addrlen);
+}
+
+template <win32_family family, ::std::integral ch_type>
+inline int posix_sendto(basic_win32_family_socket_io_observer<family, ch_type> h, void const *msg, ::std::size_t len,
+	int flags, void const *to, win32_socklen_t tolen)
+{
+	return win32::details::posix_sendto_win32_socket_impl(h.hsocket, msg, len, flags, to, tolen);
 }
 
 namespace win32::details
