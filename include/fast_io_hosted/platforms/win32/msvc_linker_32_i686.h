@@ -162,11 +162,13 @@
 	"/alternatename:__imp_?WSARecv@win32@fast_io@@YGHIPAUwsabuf@12@IPAI1PAUoverlapped@12@P6GXII2I@_E@Z=__imp__WSARecv@28")
 #pragma comment( \
 	linker,      \
-	"/alternatename:__imp_?WSARecvFrom@win32@fast_io@@YGHIPAUwsabuf@12@IPAI1PBXPAHPAUoverlapped@12@P6GXII4I@_E@Z=__imp__WSARecvFrom@36")
+	"/alternatename:__imp_?WSARecvFrom@win32@fast_io@@YGHIPAUwsabuf@12@IPAI1PAXPAHPAUoverlapped@12@P6GXII4I@_E@Z=__imp__WSARecvFrom@36")
 #pragma comment(linker, "/alternatename:__imp_?connect@win32@fast_io@@YGHIPBXH@Z=__imp__connect@12")
 #pragma comment( \
 	linker,      \
 	"/alternatename:__imp_?WSAConnect@win32@fast_io@@YGHIPBXHPAUwsabuf@12@1PAUqualityofservice@12@2@Z=__imp__WSAConnect@28")
+#pragma comment(linker, "/alternatename:__imp_?recvfrom@win32@fast_io@@YGHIPADHHPAXPAH@Z=__imp__recvfrom@24")
+#pragma comment(linker, "/alternatename:__imp_?sendto@win32@fast_io@@YGHIPBDHHPBXH@Z=__imp__sendto@24")
 #pragma comment(linker, "/alternatename:__imp_?shutdown@win32@fast_io@@YGHIPBXH@Z=__imp__shutdown@8")
 #pragma comment(linker, "/alternatename:__imp_?GetCurrentProcessId@win32@fast_io@@YGIXZ=__imp__GetCurrentProcessId@0")
 #pragma comment(linker, "/alternatename:__imp_?FlushFileBuffers@win32@fast_io@@YGHPAX@Z=__imp__FlushFileBuffers@4")
