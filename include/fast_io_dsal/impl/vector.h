@@ -490,7 +490,7 @@ concept container_compatible_range = ::std::ranges::input_range<Rg> && ::std::co
 
 } // namespace details
 
-template<typename T,typename allocator>
+template <typename T, typename allocator>
 class
 #if __has_cpp_attribute(clang::trivial_abi)
 	[[clang::trivial_abi]]
@@ -516,6 +516,9 @@ public:
 
 	using iterator = value_type *;
 	using const_iterator = value_type const *;
+
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
@@ -1443,6 +1446,7 @@ public:
 		this->operator=(::std::move(newvec));
 		return *this;
 	}
+#ifdef __cpp_lib_containers_ranges
 	template <::fast_io::containers::details::container_compatible_range<value_type> R>
 	constexpr vector(::std::from_range_t, R &&rg) noexcept(noexcept(constructor(::std::ranges::begin(rg), ::std::ranges::end(rg))))
 	{
@@ -1455,7 +1459,7 @@ public:
 	{
 		constructor<::std::is_rvalue_reference_v<R &&>>(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
-
+#endif
 	constexpr vector(vector const &vec) noexcept(noexcept(constructor(vec.begin(), vec.end())))
 		requires(::std::copyable<value_type>)
 	{
@@ -1697,6 +1701,31 @@ public:
 	[[nodiscard]] constexpr const_iterator cend() const noexcept
 	{
 		return imp.curr_ptr;
+	}
+
+	[[nodiscard]] constexpr reverse_iterator rbegin() noexcept
+	{
+		return reverse_iterator{imp.curr_ptr};
+	}
+	[[nodiscard]] constexpr reverse_iterator rend() noexcept
+	{
+		return reverse_iterator{imp.begin_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept
+	{
+		return const_reverse_iterator{imp.curr_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator rend() const noexcept
+	{
+		return const_reverse_iterator{imp.begin_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept
+	{
+		return const_reverse_iterator{imp.curr_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator crend() const noexcept
+	{
+		return const_reverse_iterator{imp.begin_ptr};
 	}
 
 	[[nodiscard]] constexpr bool is_empty() const noexcept
@@ -2223,11 +2252,6 @@ constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexce
 {
 	lhs.swap(rhs);
 }
-
-template <::std::input_iterator InputIt, typename allocator>
-vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, allocator>;
-template <::std::ranges::input_range R, typename allocator>
-vector(::std::from_range_t, R&&) -> vector<::std::ranges::range_value_t<R>, allocator>;
 
 } // namespace containers
 

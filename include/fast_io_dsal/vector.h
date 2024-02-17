@@ -38,13 +38,26 @@
 namespace fast_io
 {
 
-template<typename T,typename Alloc=::fast_io::native_global_allocator>
-using vector = ::fast_io::containers::vector<T,Alloc>;
+template <typename T, typename Alloc = ::fast_io::native_global_allocator>
+using vector = ::fast_io::containers::vector<T, Alloc>;
+
+namespace containers
+{
+
+template <::std::input_iterator InputIt>
+vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, ::fast_io::native_global_allocator>;
+
+#ifdef __cpp_lib_containers_ranges
+template <::std::ranges::input_range R>
+vector(::std::from_range_t, R &&) -> vector<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
+#endif
+
+} // namespace containers
 
 namespace tlc
 {
-template<typename T,typename Alloc=::fast_io::native_thread_local_allocator>
-using vector = ::fast_io::containers::vector<T,Alloc>;
+template <typename T, typename Alloc = ::fast_io::native_thread_local_allocator>
+using vector = ::fast_io::containers::vector<T, Alloc>;
 }
 
 } // namespace fast_io
