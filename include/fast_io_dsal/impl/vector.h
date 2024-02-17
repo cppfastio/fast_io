@@ -517,6 +517,9 @@ public:
 	using iterator = value_type *;
 	using const_iterator = value_type const *;
 
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
 	::fast_io::containers::details::vector_internal<value_type> imp;
@@ -1699,6 +1702,31 @@ public:
 		return imp.curr_ptr;
 	}
 
+	[[nodiscard]] constexpr reverse_iterator rbegin() noexcept
+	{
+		return reverse_iterator{imp.curr_ptr};
+	}
+	[[nodiscard]] constexpr reverse_iterator rend() noexcept
+	{
+		return reverse_iterator{imp.begin_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept
+	{
+		return const_reverse_iterator{imp.curr_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator rend() const noexcept
+	{
+		return const_reverse_iterator{imp.begin_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept
+	{
+		return const_reverse_iterator{imp.curr_ptr};
+	}
+	[[nodiscard]] constexpr const_reverse_iterator crend() const noexcept
+	{
+		return const_reverse_iterator{imp.begin_ptr};
+	}
+
 	[[nodiscard]] constexpr bool is_empty() const noexcept
 	{
 		return imp.begin_ptr == imp.curr_ptr;
@@ -2223,11 +2251,6 @@ constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexce
 {
 	lhs.swap(rhs);
 }
-
-template <::std::input_iterator InputIt, typename allocator>
-vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, allocator>;
-template <::std::ranges::input_range R, typename allocator>
-vector(::std::from_range_t, R&&) -> vector<::std::ranges::range_value_t<R>, allocator>;
 
 } // namespace containers
 

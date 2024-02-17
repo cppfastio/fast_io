@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #undef min
 #undef max
 
@@ -27,37 +27,22 @@
 #include <cstddef>
 #include <new>
 #include <initializer_list>
-#include <bit>
-#include <compare>
-#include "../fast_io_core_impl/freestanding/impl.h"
+#include <iterator>
 #include "../fast_io_core_impl/terminate.h"
-#include "../fast_io_core_impl/allocation/impl.h"
+#include "../fast_io_core_impl/freestanding/impl.h"
 
-#include "impl/vector.h"
+#if 0
+//unfinished
+#include "impl/dynarray.h"
 
 namespace fast_io
 {
 
-template<typename T,typename Alloc=::fast_io::native_global_allocator>
-using vector = ::fast_io::containers::vector<T,Alloc>;
-
-namespace containers
-{
-
-template <::std::input_iterator InputIt>
-vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, ::fast_io::native_global_allocator>;
-template <::std::ranges::input_range R>
-vector(::std::from_range_t, R&&) -> vector<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
-
-}
-
-namespace tlc
-{
-template<typename T,typename Alloc=::fast_io::native_thread_local_allocator>
-using vector = ::fast_io::containers::vector<T,Alloc>;
-}
+using ::fast_io::containers::dynarray;
 
 } // namespace fast_io
+
+#endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
