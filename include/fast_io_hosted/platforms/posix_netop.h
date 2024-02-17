@@ -24,13 +24,13 @@ inline void posix_listen(basic_posix_io_observer<ch_type> h, int backlog)
 template <::std::integral ch_type>
 inline int posix_recvfrom(basic_posix_io_observer<ch_type> h, void *buf, ::std::size_t len, int flags, void *src_addr, posix_socklen_t *addrlen)
 {
-	details::posix_recvfrom_posix_socket_impl(h.fd, buf, len, flags, src_addr, addrlen);
+	return details::posix_recvfrom_posix_socket_impl(h.fd, buf, len, flags, src_addr, addrlen);
 }
 
 template <::std::integral ch_type>
 inline int posix_sendto(basic_posix_io_observer<ch_type> h, void const *buf, ::std::size_t len, int flags, void const *src_addr, posix_socklen_t addrlen)
 {
-	details::posix_sendto_posix_socket_impl(h.fd, buf, len, flags, src_addr, addrlen);
+	return details::posix_sendto_posix_socket_impl(h.fd, buf, len, flags, src_addr, addrlen);
 }
 
 namespace details
