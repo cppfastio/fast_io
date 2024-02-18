@@ -36,6 +36,9 @@ public:
 
 	using reference = ::std::conditional_t<isconst, value_type const &, value_type &>;
 	using const_reference = value_type const &;
+
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
 	void *iter{};
 
 	constexpr list_iterator &operator++() noexcept
@@ -295,7 +298,6 @@ inline void list_debug(void *leftfirstptr, void *leftlastptr)
 template <typename T, typename Cmp>
 inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, void *rightfirstptr, void *rightlastptr, Cmp cmp)
 {
-
 	for (; leftfirstptr != leftlastptr;)
 	{
 		auto rightfirst{static_cast<::fast_io::containers::details::list_node_common *>(rightfirstptr)};
@@ -328,12 +330,28 @@ inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, v
 		}
 		leftfirstptr = leftfirstnext;
 	}
-}
+	list_splice_range_common(leftlastptr, rightfirstptr, rightlastptr);
+#if 0
+	if (rightfirstptr != rightlastptr)
+	{
 
-template <typename T, typename Cmp>
-inline constexpr void list_sort_merge_common(void *firstptr, void *middleptr, void *lastptr, Cmp cmp)
-{
-	list_merge_common<T, Cmp>(firstptr, middleptr, middleptr, lastptr, cmp);
+		auto leftlast{static_cast<::fast_io::containers::details::list_node_common *>(leftlastptr)};
+		auto leftlastprev{static_cast<::fast_io::containers::details::list_node_common *>(leftlast->prev)};
+
+		auto rightfirst{static_cast<::fast_io::containers::details::list_node_common *>(rightfirstptr)};
+		auto rightfirstprev{static_cast<::fast_io::containers::details::list_node_common *>(rightfirst->prev)};
+		leftlastprev->next = rightfirst;
+		rightfirst->prev = leftlastprev;
+
+		auto rightlast{static_cast<::fast_io::containers::details::list_node_common *>(rightlastptr)};
+		auto rightlastprev{static_cast<::fast_io::containers::details::list_node_common *>(rightlast->prev)};
+		rightlastprev->next = leftlast;
+		leftlast->prev = rightlastprev;
+
+		rightlast->prev = rightfirstprev;
+		rightfirstprev->next = rightlast;
+	}
+#endif
 }
 
 template <typename T, typename Cmp>
@@ -816,7 +834,7 @@ public:
 
 	constexpr void splice(const_iterator pos, list &&other) noexcept
 	{
-		this->splice(pos, other.imp.next, __builtin_addressof(other.imp));
+		::fast_io::containers::details::list_splice_range_common(pos.iter, other.imp.next, __builtin_addressof(other.imp));
 		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
 	}
 
