@@ -630,7 +630,7 @@ public:
 
 	constexpr void splice(const_iterator pos, list &&other) noexcept
 	{
-		this->splice(pos, other.imp.first, other.imp.last);
+		this->splice(pos, other.imp.next, __builtin_addressof(other.imp));
 		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
 	}
 
