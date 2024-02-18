@@ -12,11 +12,11 @@ int main()
 
 	list1.splice(it, std::move(list2));
 
-	println("list1:", ::fast_io::mnp::rgvw(list1," "));
-	println("list2:", ::fast_io::mnp::rgvw(list2," "));
+	println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
+			::fast_io::mnp::rgvw(list2, " "));
 
 	list2.splice(list2.begin(), it, list1.end());
 
-	println("list1:", ::fast_io::mnp::rgvw(list1," "));
-	println("list2:", ::fast_io::mnp::rgvw(list2," "));
+	println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
+			::fast_io::mnp::rgvw(list2, " "));
 }

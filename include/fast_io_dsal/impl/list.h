@@ -412,13 +412,11 @@ inline constexpr void list_sort_n_common(void *firstptr, void *lastptr, ::std::s
 		::fast_io::containers::details::list_node_common rightdetacher{lastprev, middle};
 		middle->prev = lastprev->next = __builtin_addressof(rightdetacher);
 
+		list_sort_n_common<T, Cmp>(first, __builtin_addressof(leftdetacher), halfdis, cmp);
+		list_sort_n_common<T, Cmp>(middle, __builtin_addressof(rightdetacher), static_cast<::std::size_t>(n - halfdis), cmp);
 
-			list_sort_n_common<T, Cmp>(first, __builtin_addressof(leftdetacher), halfdis, cmp);
-			list_sort_n_common<T, Cmp>(middle, __builtin_addressof(rightdetacher), static_cast<::std::size_t>(n - halfdis), cmp);
-
-			list_merge_common<T, Cmp>(leftdetacher.next, __builtin_addressof(leftdetacher),
-									  rightdetacher.next, __builtin_addressof(rightdetacher), cmp);
-
+		list_merge_common<T, Cmp>(leftdetacher.next, __builtin_addressof(leftdetacher),
+								  rightdetacher.next, __builtin_addressof(rightdetacher), cmp);
 
 		auto leftdetacherprev{static_cast<::fast_io::containers::details::list_node_common *>(leftdetacher.prev)};
 		leftdetacherprev->next = last;
@@ -896,7 +894,23 @@ public:
 	}
 
 	template <typename Cmp>
-	constexpr void sort(Cmp cmp)
+	constexpr void merge(list &&other, Cmp cmp) noexcept
+	{
+		if (__builtin_addressof(other) == this)
+		{
+			return;
+		}
+		::fast_io::containers::details::list_merge_common<value_type, Cmp>(imp.next, __builtin_addressof(imp),
+																		   other.imp.next, __builtin_addressof(other.imp), cmp);
+	}
+
+	constexpr void merge(list &&other) noexcept
+	{
+		this->merge(other, ::std::ranges::less{});
+	}
+
+	template <typename Cmp>
+	constexpr void sort(Cmp cmp) noexcept
 	{
 		::fast_io::containers::details::list_sort_common<value_type, Cmp>(imp.next, __builtin_addressof(imp), cmp);
 	}

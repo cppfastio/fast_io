@@ -10,7 +10,7 @@ int main()
 {
 	::fast_io::vector<::std::size_t> vec;
 	constexpr
-		::std::size_t n{10};
+		::std::size_t n{1000000};
 	vec.reserve(n);
 	for(::std::size_t i{};i!=n;++i)
 	{
