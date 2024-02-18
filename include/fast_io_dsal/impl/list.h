@@ -88,20 +88,70 @@ inline constexpr bool operator!=(list_iterator<T, isconst1> a,list_iterator<T, i
 }
 
 template<typename allocator>
-inline void list_trivially_destroy(void* first, void* last,
-	::std::size_t sz,::std::size_t align)
+inline void list_trivially_destroy(void* first, void* last, ::std::size_t sz)
 {
-	for(void *it{first};it!=last;
-		it=static_cast<::fast_io::containers::details::list_node_common*>(it)->next)
+	for(void *it{first};it!=last;)
 	{
-		generic_allocator_adapter<allocator>::deallocate_aligned_n(it,sz,align);
+		auto next{static_cast<::fast_io::containers::details::list_node_common*>(it)->next};
+		generic_allocator_adapter<allocator>::deallocate_n(it,sz);
+		it=next;
 	}
 }
 
-template<typename allocator,::std::size_t sz,::std::size_t align>
+template<typename allocator>
+inline void list_trivially_destroy_aligned(void* first, void* last,
+	::std::size_t align,::std::size_t sz)
+{
+	for(void *it{first};it!=last;)
+	{
+		auto next{static_cast<::fast_io::containers::details::list_node_common*>(it)->next};
+		generic_allocator_adapter<allocator>::deallocate_aligned_n(it,align,sz);
+		it=next;
+	}
+}
+
+template<typename allocator,::std::size_t align,::std::size_t sz>
 inline void list_trivially_destroy_sa(void* first, void* last)
 {
-	::fast_io::containers::details::list_trivially_destroy<allocator>(first,last,sz,align);
+	if constexpr (align <= allocator::default_alignment)
+	{
+		::fast_io::containers::details::list_trivially_destroy<allocator>(first,last,sz);
+	}
+	else
+	{
+		::fast_io::containers::details::list_trivially_destroy_aligned<allocator>(first,last,align,sz);
+	}
+}
+
+inline void list_main_insert_ptr_common(void* newnodevp, void* iter) noexcept
+{
+	auto newnode(static_cast<::fast_io::containers::details::list_node_common*>(newnodevp));
+	auto node = static_cast<::fast_io::containers::details::list_node_common*>(iter);
+	auto prev = static_cast<::fast_io::containers::details::list_node_common*>(node->prev);
+	newnode->next=node;
+	newnode->prev=prev;
+	node->prev=newnode;
+	prev->next=newnode;
+}
+
+inline void list_main_push_front_ptr_common(void* newnodevp, void* imp) noexcept
+{
+	auto newnode(static_cast<::fast_io::containers::details::list_node_common*>(newnodevp));
+	auto prev = static_cast<::fast_io::containers::details::list_node_common*>(imp);
+	auto node = static_cast<::fast_io::containers::details::list_node_common*>(prev->next);
+	newnode->next=node;
+	newnode->prev=prev;
+	node->prev=newnode;
+	prev->next=newnode;
+}
+
+inline void list_main_erase_ptr_common(void* iter) noexcept
+{
+	auto node = static_cast<::fast_io::containers::details::list_node_common*>(iter);
+	auto prev = static_cast<::fast_io::containers::details::list_node_common*>(node->prev);
+	auto next = static_cast<::fast_io::containers::details::list_node_common*>(node->next);
+	prev->next = next;
+	next->prev = prev;
 }
 
 }
@@ -273,43 +323,34 @@ public:
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr reference emplace_back(Args &&...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
-		auto newnode = allocate_construct_new_node(::std::forward<Args>(args)...);
-		newnode->ptrs.prev = imp.prev;
-		newnode->ptrs.next = __builtin_addressof(imp);
-		imp.prev = newnode;
-		return newnode->element;
+		auto newnodecons = allocate_construct_new_node(::std::forward<Args>(args)...);
+		::fast_io::containers::details::list_main_insert_ptr_common(newnodecons,__builtin_addressof(imp));
+		return newnodecons->element;
 	}
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr reference emplace_front(Args &&...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
-		auto newnode = allocate_construct_new_node(::std::forward<Args>(args)...);
-		newnode->ptrs.next = imp.next;
-		newnode->ptrs.prev = __builtin_addressof(imp);
-		imp.next = newnode;
-		return newnode->element;
+		auto newnodecons = allocate_construct_new_node(::std::forward<Args>(args)...);
+		::fast_io::containers::details::list_main_push_front_ptr_common(newnodecons,__builtin_addressof(imp));
+		return newnodecons->element;
 	}
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr reference emplace(const_iterator iter, Args &&...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
-		auto newnode = allocate_construct_new_node(::std::forward<Args>(args)...);
-		auto node = static_cast<::fast_io::containers::details::list_node_common*>(iter.iter);
-		auto prev = static_cast<::fast_io::containers::details::list_node_common*>(node->prev);
-		newnode->next=node;
-		newnode->prev=prev;
-		node->prev=newnode;
-		prev->next=newnode;
-		return newnode->element;
+		auto newnodecons = allocate_construct_new_node(::std::forward<Args>(args)...);
+		::fast_io::containers::details::list_main_insert_ptr_common(newnodecons,iter.iter);
+		return newnodecons->element;
 	}
 
 private:
 
 	constexpr void destroy_node(void* it) noexcept
 	{
-		auto node = static_cast<::fast_io::containers::details::list_node<value_type>*>(it);
+		auto node = static_cast<node_type*>(it);
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
 			__builtin_addressof(node->element)->~value_type();
@@ -376,10 +417,7 @@ public:
 	constexpr void erase(const_iterator iter) noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common*>(iter.iter);
-		auto prev = static_cast<::fast_io::containers::details::list_node_common*>(node->prev);
-		auto next = static_cast<::fast_io::containers::details::list_node_common*>(node->next);
-		prev->next = next;
-		next->prev = prev;
+		::fast_io::containers::details::list_main_erase_ptr_common(node);
 		destroy_node(node);
 	}
 
@@ -434,14 +472,15 @@ private:
 			if constexpr(::std::is_trivially_destructible_v<value_type>&&!alloc_with_status)
 			{
 				::fast_io::containers::details::list_trivially_destroy_sa<allocator_type,
-					sizeof(node_type),alignof(node_type)>(imp.next,__builtin_addressof(imp));
+					alignof(node_type),sizeof(node_type)>(imp.next,__builtin_addressof(imp));
 				return;
 			}
 		}
-		for(void *it{imp.next},*ed{__builtin_addressof(imp)};it!=ed;
-			it=static_cast<::fast_io::containers::details::list_node_common*>(it)->next)
+		for(void *it{imp.next},*ed{__builtin_addressof(imp)};it!=ed;)
 		{
+			auto next{static_cast<::fast_io::containers::details::list_node_common*>(it)->next};
 			this->destroy_node(it);
+			it=next;
 		}
 	}
 public:
