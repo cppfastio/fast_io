@@ -9,11 +9,7 @@ namespace containers
 namespace details
 {
 
-struct
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-	[[__gnu__::__may_alias__]]
-#endif
-	list_node_common
+struct list_node_common
 {
 	void *prev;
 	void *next;
