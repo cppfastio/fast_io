@@ -786,7 +786,7 @@ inline int posix_sendto_posix_socket_impl(int fd, void const *buf, ::std::size_t
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr const*;
-	int socfd{::sendto(fd, buf, len, flags, reinterpret_cast<sockaddr_alias_ptr>(src_addr), addrlen)};
+	int socfd{::sendto(fd, buf, len, flags, reinterpret_cast<sockaddr_const_alias_ptr>(src_addr), addrlen)};
 	if (socfd == -1)
 	{
 		throw_posix_error();
