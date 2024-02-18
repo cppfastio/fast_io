@@ -34,31 +34,32 @@
 #include "../fast_io_core_impl/allocation/impl.h"
 
 #include "impl/common.h"
-#include "impl/vector.h"
+#include "impl/list.h"
 
 namespace fast_io
 {
 
 template <typename T, typename Alloc = ::fast_io::native_global_allocator>
-using vector = ::fast_io::containers::vector<T, Alloc>;
+using list = ::fast_io::containers::list<T, Alloc>;
 
 namespace containers
 {
 
+#if 0
 template <::std::input_iterator InputIt>
-vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, ::fast_io::native_global_allocator>;
+list(InputIt, InputIt) -> list<typename ::std::iterator_traits<InputIt>::value_type, ::fast_io::native_global_allocator>;
 
 #ifdef __cpp_lib_containers_ranges
 template <::std::ranges::input_range R>
-vector(::std::from_range_t, R &&) -> vector<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
+list(::std::from_range_t, R &&) -> list<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
 #endif
-
+#endif
 } // namespace containers
 
 namespace tlc
 {
 template <typename T, typename Alloc = ::fast_io::native_thread_local_allocator>
-using vector = ::fast_io::containers::vector<T, Alloc>;
+using list = ::fast_io::containers::list<T, Alloc>;
 }
 
 } // namespace fast_io

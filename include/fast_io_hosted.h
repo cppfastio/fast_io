@@ -83,6 +83,7 @@ freestanding ones.
 #include "fast_io_hosted/threads/mutex/impl.h"
 #include "fast_io_hosted/iomutex.h"
 
+#include "fast_io_dsal/impl/common.h"
 #include "fast_io_dsal/impl/vector.h"
 
 #include "fast_io_hosted/filesystem/native.h"
