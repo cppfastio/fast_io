@@ -290,11 +290,10 @@ inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, v
 
 		if (cmp(static_cast<list_node<T> *>(leftfirstptr)->element, static_cast<list_node<T> *>(rightfirstptr)->element))
 		{
-			leftfirst = leftfirst->next;
+			leftfirstptr = leftfirst->next;
 		}
 		else
 		{
-
 			auto leftfirstprev{static_cast<::fast_io::containers::details::list_node_common *>(leftfirst->prev)};
 			auto rightfirstnext{static_cast<::fast_io::containers::details::list_node_common *>(rightfirst->next)};
 			leftfirstprev->next = rightfirst;
@@ -316,7 +315,7 @@ inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, v
 template <typename T, typename Cmp>
 inline constexpr void list_sort_merge_common(void *firstptr, void *middleptr, void *lastptr, Cmp cmp)
 {
-	list_merge_common(firstptr, middleptr, middleptr, lastptr, cmp);
+	list_merge_common<T, Cmp>(firstptr, middleptr, middleptr, lastptr, cmp);
 }
 
 template <typename T, typename Cmp>
@@ -329,9 +328,9 @@ inline constexpr void list_sort_common(void *firstptr, void *lastptr, Cmp cmp)
 	}
 	::std::size_t halfdis{dis >> 1};
 	void *middleptr{list_ptr_advance(firstptr, halfdis)};
-	list_sort_common(firstptr, middleptr, cmp);
-	list_sort_common(middleptr, lastptr, cmp);
-	list_sort_merge_common(firstptr, middleptr, lastptr, cmp);
+	list_sort_common<T, Cmp>(firstptr, middleptr, cmp);
+	list_sort_common<T, Cmp>(middleptr, lastptr, cmp);
+	list_sort_merge_common<T, Cmp>(firstptr, middleptr, lastptr, cmp);
 }
 
 } // namespace details
@@ -412,16 +411,17 @@ private:
 
 	struct list_destroyer
 	{
-		list<T,allocator>* plst;
-		explicit constexpr list_destroyer(list<T,allocator>* pl) noexcept:plst(pl)
+		list<T, allocator> *plst;
+		explicit constexpr list_destroyer(list<T, allocator> *pl) noexcept
+			: plst(pl)
 		{}
 		constexpr void release()
 		{
-			plst=nullptr;
+			plst = nullptr;
 		}
 		constexpr ~list_destroyer()
 		{
-			if(plst==nullptr)
+			if (plst == nullptr)
 			{
 				return;
 			}
@@ -449,12 +449,12 @@ public:
 	{
 	}
 
-	template<::std::forward_iterator Iter, typename Sentinel>
-	explicit constexpr list(Iter first,Sentinel last)
+	template <::std::forward_iterator Iter, typename Sentinel>
+	explicit constexpr list(Iter first, Sentinel last)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		list_destroyer destroyer(this);
-		for(;first!=last;++first)
+		for (; first != last; ++first)
 		{
 			this->push_back(*first);
 		}
@@ -462,7 +462,7 @@ public:
 	}
 
 	explicit constexpr list(::std::initializer_list<value_type> ilist)
-		: list(ilist.begin(),ilist.end())
+		: list(ilist.begin(), ilist.end())
 	{
 	}
 
@@ -470,7 +470,7 @@ public:
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		list_destroyer destroyer(this);
-		for(::std::size_t i{};i!=n;++i)
+		for (::std::size_t i{}; i != n; ++i)
 		{
 			this->emplace_back();
 		}
@@ -777,7 +777,7 @@ public:
 	template <typename Cmp>
 	constexpr void sort(Cmp cmp)
 	{
-		::fast_io::containers::details::list_sort_common(imp.next, __builtin_addressof(imp), cmp);
+		::fast_io::containers::details::list_sort_common<value_type, Cmp>(imp.next, __builtin_addressof(imp), cmp);
 	}
 
 	constexpr void sort()
