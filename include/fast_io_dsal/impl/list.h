@@ -213,6 +213,17 @@ inline constexpr void *list_trivially_allocate_push_front_sa(void *imp) noexcept
 	}
 }
 
+inline constexpr void list_reverse_common(void *firstptr, void *lastptr) noexcept
+{
+	for(;firstptr!=lastptr;)
+	{
+		auto first{static_cast<::fast_io::containers::details::list_node_common *>(firstptr)};
+		auto nextptr(first->next);
+		::std::ranges::swap(first->next,first->prev);
+		firstptr=nextptr;
+	}
+}
+
 inline constexpr void list_splice_range_common(void *nodeptr, void *firstptr, void *lastptr) noexcept
 {
 	if (firstptr == lastptr)
@@ -248,6 +259,81 @@ inline constexpr void list_splice_single_common(void *nodeptr, void *iterptr) no
 	iter->next = node;
 	iterprev->next = iternext;
 	iternext->prev = iterprev;
+}
+
+
+inline constexpr ::std::size_t list_ptr_distance(void* firstptr, void* lastptr) noexcept
+{
+	::std::size_t n{};
+	for (;firstptr != lastptr;firstptr=static_cast<::fast_io::containers::details::list_node_common *>(firstptr)->next)
+	{
+		++n;
+	}
+	return n;
+}
+
+inline constexpr void* list_ptr_advance(void* firstptr, ::std::size_t n) noexcept
+{
+	for (;n;--n)
+	{
+		firstptr=static_cast<::fast_io::containers::details::list_node_common *>(firstptr)->next;
+	}
+	return firstptr;
+}
+
+template<typename T,typename Cmp>
+inline constexpr void list_merge_common(void* leftfirstptr, void* leftlastptr, void* rightfirstptr, void* rightlastptr, Cmp cmp)
+{
+	for(;leftfirstptr!=leftlastptr&&rightfirstptr!=rightlastptr;)
+	{
+		auto leftfirst{static_cast<::fast_io::containers::details::list_node_common *>(leftfirstptr)};
+		auto rightfirst{static_cast<::fast_io::containers::details::list_node_common *>(rightfirstptr)};
+
+		if(cmp(static_cast<list_node<T>*>(leftfirstptr)->element,static_cast<list_node<T>*>(rightfirstptr)->element))
+		{
+			leftfirst = leftfirst->next;
+		}
+		else
+		{
+
+			auto leftfirstprev{static_cast<::fast_io::containers::details::list_node_common *>(leftfirst->prev)};
+			auto rightfirst{static_cast<::fast_io::containers::details::list_node_common *>(rightfirstptr)};
+			auto rightfirstnext{static_cast<::fast_io::containers::details::list_node_common *>(rightfirst->next)};
+			leftfirstprev->next=rightfirst;
+			rightfirst->next=leftfirst;
+			leftfirst->prev=rightfirst;
+			rightfirstnext->prev=leftfirst;
+			rightfirstptr=rightfirstnext;
+		}
+	}
+	if(rightfirstptr!=rightlastptr)
+	{
+		auto rightfirst{static_cast<::fast_io::containers::details::list_node_common *>(rightfirstptr)};
+		auto leftlast{static_cast<::fast_io::containers::details::list_node_common *>(leftlastptr)};
+		leftlast->next=rightfirst;
+		rightfirst->prev=leftlast->prev;
+	}
+}
+
+template<typename T,typename Cmp>
+inline constexpr void list_sort_merge_common(void* firstptr, void* middleptr, void* lastptr, Cmp cmp)
+{
+	list_merge_common(firstptr,middleptr,middleptr,lastptr,cmp);
+}
+
+template<typename T,typename Cmp>
+inline constexpr void list_sort_common(void* firstptr, void* lastptr, Cmp cmp)
+{
+	::std::size_t dis{list_ptr_distance(firstptr,lastptr)};
+	if(dis<2u)
+	{
+		return;
+	}
+	::std::size_t halfdis{dis>>1};
+	void* middleptr{list_ptr_advance(firstptr,halfdis)};
+	list_sort_common(firstptr,middleptr,cmp);
+	list_sort_common(middleptr,lastptr,cmp);
+	list_sort_merge_common(firstptr,middleptr,lastptr,cmp);
 }
 
 } // namespace details
@@ -632,6 +718,26 @@ public:
 	{
 		this->splice(pos, other.imp.next, __builtin_addressof(other.imp));
 		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
+	}
+
+	constexpr void reverse() noexcept
+	{
+		::fast_io::containers::details::list_reverse_common(imp.next, __builtin_addressof(imp));
+		::std::ranges::swap(imp.prev,imp.next);
+	}
+
+/*
+Untested sort implementation
+*/
+	template<typename Cmp>
+	constexpr void sort(Cmp cmp)
+	{
+		::fast_io::containers::details::list_sort_common(imp.next,__builtin_addressof(imp),cmp);
+	}
+
+	constexpr void sort()
+	{
+		this->sort(::std::ranges::less{});
 	}
 
 	constexpr ~list()
