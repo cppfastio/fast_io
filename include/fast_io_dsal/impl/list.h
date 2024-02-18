@@ -213,6 +213,43 @@ inline constexpr void *list_trivially_allocate_push_front_sa(void *imp) noexcept
 	}
 }
 
+inline constexpr void list_splice_range_common(void *nodeptr, void *firstptr, void *lastptr) noexcept
+{
+	if (firstptr == lastptr)
+	{
+		return;
+	}
+	auto node(static_cast<::fast_io::containers::details::list_node_common *>(nodeptr));
+	auto first(static_cast<::fast_io::containers::details::list_node_common *>(firstptr));
+	auto last(static_cast<::fast_io::containers::details::list_node_common *>(lastptr));
+	auto nodeprev{static_cast<::fast_io::containers::details::list_node_common *>(node->prev)};
+
+	auto firstprev(static_cast<::fast_io::containers::details::list_node_common *>(first->prev));
+	auto lastprev(static_cast<::fast_io::containers::details::list_node_common *>(last->prev));
+
+	nodeprev->next = first;
+	first->prev = nodeprev;
+	node->prev = lastprev;
+	lastprev->next = node;
+
+	last->prev = firstprev;
+	firstprev->next = last;
+}
+
+inline constexpr void list_splice_single_common(void *nodeptr, void *iterptr) noexcept
+{
+	auto node(static_cast<::fast_io::containers::details::list_node_common *>(nodeptr));
+	auto iter(static_cast<::fast_io::containers::details::list_node_common *>(iterptr));
+	auto iternext(static_cast<::fast_io::containers::details::list_node_common *>(iter->next));
+	auto iterprev(static_cast<::fast_io::containers::details::list_node_common *>(iter->prev));
+	auto nodeprev(static_cast<::fast_io::containers::details::list_node_common *>(node->prev));
+
+	iter->prev = nodeprev;
+	iter->next = node;
+	iterprev->next = iternext;
+	iternext->prev = iterprev;
+}
+
 } // namespace details
 
 template <typename T, typename allocator>
@@ -579,6 +616,22 @@ public:
 	{
 		this->destroy();
 		imp = {__builtin_addressof(imp), __builtin_addressof(imp)};
+	}
+
+	constexpr void splice(const_iterator pos, const_iterator first, const_iterator last) noexcept
+	{
+		::fast_io::containers::details::list_splice_range_common(pos.iter, first.iter, last.iter);
+	}
+
+	constexpr void splice(const_iterator pos, const_iterator it) noexcept
+	{
+		::fast_io::containers::details::list_splice_single_common(pos.iter, it.iter);
+	}
+
+	constexpr void splice(const_iterator pos, list &&other) noexcept
+	{
+		this->splice(pos, other.imp.next, __builtin_addressof(other.imp));
+		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
 	}
 
 	constexpr ~list()
