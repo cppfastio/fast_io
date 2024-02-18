@@ -906,7 +906,7 @@ public:
 
 	constexpr void merge(list &&other) noexcept
 	{
-		this->merge(other, ::std::ranges::less{});
+		this->merge(::std::move(other), ::std::ranges::less{});
 	}
 
 	template <typename Cmp>

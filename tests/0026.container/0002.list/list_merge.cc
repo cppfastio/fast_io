@@ -11,6 +11,6 @@ int main()
 	println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
 			::fast_io::mnp::rgvw(list2, " "));
 
-	list1.merge(list2);
+	list1.merge(::std::move(list2));
 	println("merged:", ::fast_io::mnp::rgvw(list1, " "));
 }
