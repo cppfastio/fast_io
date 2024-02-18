@@ -31,6 +31,7 @@
 #include <compare>
 #include "../fast_io_core_impl/freestanding/impl.h"
 #include "../fast_io_core_impl/terminate.h"
+#include "../fast_io_core_impl/intrinsics/msvc/impl.h"
 #include "../fast_io_core_impl/allocation/impl.h"
 
 #include "impl/common.h"
