@@ -296,7 +296,6 @@ inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, v
 		{
 
 			auto leftfirstprev{static_cast<::fast_io::containers::details::list_node_common *>(leftfirst->prev)};
-			auto rightfirst{static_cast<::fast_io::containers::details::list_node_common *>(rightfirstptr)};
 			auto rightfirstnext{static_cast<::fast_io::containers::details::list_node_common *>(rightfirst->next)};
 			leftfirstprev->next = rightfirst;
 			rightfirst->next = leftfirst;
