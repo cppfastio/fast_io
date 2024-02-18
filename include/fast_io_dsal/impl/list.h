@@ -430,8 +430,8 @@ private:
 			{
 				::fast_io::containers::details::list_trivially_destroy_sa<allocator_type,
 					sizeof(node_type),alignof(node_type)>(imp.next,__builtin_addressof(imp));
+				return;
 			}
-			return;
 		}
 		for(void *it{imp.next},*ed{__builtin_addressof(imp)};it!=ed;
 			it=static_cast<::fast_io::containers::details::list_node_common*>(it)->next)
