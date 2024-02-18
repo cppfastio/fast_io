@@ -29,6 +29,7 @@ struct list_node
 template<typename T, bool isconst>
 class list_iterator
 {
+public:
 	using value_type = T;
 	using pointer = ::std::conditional_t<isconst, value_type const*, value_type *>;
 	using const_pointer = value_type const *;
@@ -40,13 +41,13 @@ class list_iterator
 	constexpr list_iterator& operator++() noexcept
 	{
 		iter=static_cast<list_node_common*>(iter)->next;
-		return iter;
+		return *this;
 	}
 
 	constexpr list_iterator& operator--() noexcept
 	{
 		iter=static_cast<list_node_common*>(iter)->prev;
-		return iter;
+		return *this;
 	}
 
 	constexpr list_iterator operator++(int) noexcept
