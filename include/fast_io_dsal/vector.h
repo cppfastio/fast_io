@@ -33,6 +33,7 @@
 #include "../fast_io_core_impl/terminate.h"
 #include "../fast_io_core_impl/allocation/impl.h"
 
+#include "impl/common.h"
 #include "impl/vector.h"
 
 namespace fast_io
