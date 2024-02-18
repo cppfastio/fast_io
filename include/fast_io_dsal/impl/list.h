@@ -410,6 +410,25 @@ private:
 		}
 	};
 
+	struct list_destroyer
+	{
+		list<T,allocator>* plst;
+		explicit constexpr list_destroyer(list<T,allocator>* pl) noexcept:plst(pl)
+		{}
+		constexpr void release()
+		{
+			plst=nullptr;
+		}
+		constexpr ~list_destroyer()
+		{
+			if(plst==nullptr)
+			{
+				return;
+			}
+			plst->destroy();
+		}
+	};
+
 public:
 	using pointer = value_type *;
 	using const_pointer = value_type const *;
@@ -428,6 +447,34 @@ public:
 	constexpr list() noexcept
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
+	}
+
+	template<::std::forward_iterator Iter, typename Sentinel>
+	explicit constexpr list(Iter first,Sentinel last)
+		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
+	{
+		list_destroyer destroyer(this);
+		for(;first!=last;++first)
+		{
+			this->push_back(*first);
+		}
+		destroyer.release();
+	}
+
+	explicit constexpr list(::std::initializer_list<value_type> ilist)
+		: list(ilist.begin(),ilist.end())
+	{
+	}
+
+	explicit constexpr list(::std::size_t n)
+		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
+	{
+		list_destroyer destroyer(this);
+		for(::std::size_t i{};i!=n;++i)
+		{
+			this->emplace_back();
+		}
+		destroyer.release();
 	}
 
 	inline constexpr iterator begin() noexcept
