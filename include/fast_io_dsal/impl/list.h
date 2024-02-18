@@ -279,7 +279,7 @@ inline constexpr void *list_ptr_advance(void *firstptr, ::std::size_t n) noexcep
 	}
 	return firstptr;
 }
-
+#if 0
 inline void list_debug(void *leftfirstptr, void *leftlastptr)
 {
 	__builtin_printf("%s %d\n", __FILE__, __LINE__);
@@ -291,10 +291,11 @@ inline void list_debug(void *leftfirstptr, void *leftlastptr)
 		leftfirstptr = leftfirst->next;
 	}
 }
-
+#endif
 template <typename T, typename Cmp>
 inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, void *rightfirstptr, void *rightlastptr, Cmp cmp)
 {
+
 	for (; leftfirstptr != leftlastptr;)
 	{
 		auto rightfirst{static_cast<::fast_io::containers::details::list_node_common *>(rightfirstptr)};
@@ -303,7 +304,8 @@ inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, v
 
 		for (; rightcurrptr != rightlastptr && cmp(static_cast<list_node<T> *>(rightcurrptr)->element, leftfirstele);
 			 rightcurrptr = static_cast<::fast_io::containers::details::list_node_common *>(rightcurrptr)->next)
-			;
+		{
+		}
 
 		auto leftfirst{static_cast<::fast_io::containers::details::list_node_common *>(leftfirstptr)};
 		auto leftfirstnext{static_cast<::fast_io::containers::details::list_node_common *>(leftfirst->next)};
