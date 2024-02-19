@@ -33,32 +33,34 @@
 #include "../fast_io_core_impl/terminate.h"
 #include "../fast_io_core_impl/intrinsics/msvc/impl.h"
 #include "../fast_io_core_impl/allocation/impl.h"
-#include "../fast_io_core_impl/asan_support.h"
 
 #include "impl/common.h"
-#include "impl/vector.h"
+#include "impl/deque.h"
 
 namespace fast_io
 {
 
 template <typename T, typename Alloc = ::fast_io::native_global_allocator>
-using vector = ::fast_io::containers::vector<T, Alloc>;
+using deque = ::fast_io::containers::deque<T, Alloc>;
 
 namespace containers
 {
 
+#if 0
 template <::std::input_iterator InputIt>
-vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::value_type, ::fast_io::native_global_allocator>;
+deque(InputIt, InputIt) -> deque<typename ::std::iterator_traits<InputIt>::value_type, ::fast_io::native_global_allocator>;
+
 #ifdef __cpp_lib_containers_ranges
 template <::std::ranges::input_range R>
-vector(::std::from_range_t, R &&) -> vector<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
+deque(::std::from_range_t, R &&) -> deque<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
+#endif
 #endif
 } // namespace containers
 
 namespace tlc
 {
 template <typename T, typename Alloc = ::fast_io::native_thread_local_allocator>
-using vector = ::fast_io::containers::vector<T, Alloc>;
+using deque = ::fast_io::containers::deque<T, Alloc>;
 }
 
 } // namespace fast_io

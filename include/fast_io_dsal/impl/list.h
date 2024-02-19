@@ -703,7 +703,7 @@ public:
 
 	constexpr void pop_back() noexcept
 	{
-		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(node->prev);
 		imp.prev = prev;
 		prev->next = __builtin_addressof(imp);
@@ -712,7 +712,7 @@ public:
 
 	constexpr void pop_front() noexcept
 	{
-		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 		auto next = static_cast<::fast_io::containers::details::list_node_common *>(node->next);
 		imp.next = next;
 		next->prev = __builtin_addressof(imp);
@@ -810,7 +810,9 @@ public:
 	constexpr void splice(const_iterator pos, list &&other) noexcept
 	{
 		::fast_io::containers::details::list_splice_range_common(pos.iter, other.imp.next, __builtin_addressof(other.imp));
+#if 0
 		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
+#endif
 	}
 
 	constexpr void reverse() noexcept

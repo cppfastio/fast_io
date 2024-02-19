@@ -185,34 +185,6 @@ inline void statused_zero_init_grow_to_size_aligned_impl(vector_model *m, handle
 	m->end_ptr = begin_ptr + newcap;
 }
 
-template <::std::size_t size, bool trivial>
-inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
-{
-	constexpr ::std::size_t mx_value2{::std::numeric_limits<::std::size_t>::max() / size};
-	constexpr ::std::size_t mx_value{trivial ? mx_value2 * size : mx_value2};
-	constexpr ::std::size_t mx_half_value{mx_value >> 1u};
-	if (cap == mx_value)
-	{
-		::fast_io::fast_terminate();
-	}
-	else if (cap > mx_half_value)
-	{
-		if constexpr (trivial)
-		{
-			return mx_value;
-		}
-		else
-		{
-			return 1;
-		}
-	}
-	else if (cap == 0)
-	{
-		return size;
-	}
-	return static_cast<::std::size_t>(cap << 1);
-}
-
 template <typename allocator, ::std::size_t size>
 inline constexpr void grow_twice_common_impl(vector_model *m) noexcept
 {

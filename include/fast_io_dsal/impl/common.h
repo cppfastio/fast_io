@@ -85,4 +85,33 @@ inline constexpr auto operator==(handle_holder<handle> left, handle_holder<handl
 {
 	return left.get() == right.get();
 }
+
+template <::std::size_t size, bool trivial>
+inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
+{
+	constexpr ::std::size_t mx_value2{::std::numeric_limits<::std::size_t>::max() / size};
+	constexpr ::std::size_t mx_value{trivial ? mx_value2 * size : mx_value2};
+	constexpr ::std::size_t mx_half_value{mx_value >> 1u};
+	if (cap == mx_value)
+	{
+		::fast_io::fast_terminate();
+	}
+	else if (cap > mx_half_value)
+	{
+		if constexpr (trivial)
+		{
+			return mx_value;
+		}
+		else
+		{
+			return 1;
+		}
+	}
+	else if (cap == 0)
+	{
+		return size;
+	}
+	return static_cast<::std::size_t>(cap << 1);
 }
+
+} // namespace fast_io::containers::details
