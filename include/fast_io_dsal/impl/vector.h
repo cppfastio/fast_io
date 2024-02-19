@@ -418,9 +418,10 @@ public:
 	using value_type = T;
 
 private:
-	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, value_type, false>;
-	static inline constexpr bool alloc_with_status{allocator::has_status};
-	using handle_type = ::std::conditional_t<alloc_with_status, typename allocator::handle_type, allocator_type>;
+	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, value_type>;
+	static inline constexpr bool alloc_with_status{untyped_allocator_type::has_status};
+	using handle_type = ::std::conditional_t<alloc_with_status, typename untyped_allocator_type::handle_type, allocator_type>;
 	using handle_holder_type = ::fast_io::containers::details::handle_holder<handle_type>;
 
 public:
@@ -562,16 +563,16 @@ private:
 				newcap *= sizeof(value_type);
 				if constexpr (alloc_with_status)
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::statused_grow_to_size_common_impl<allocator_type>(
+						::fast_io::containers::details::statused_grow_to_size_common_impl<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl,
 							newcap);
 					}
 					else
 					{
-						::fast_io::containers::details::grow_to_size_common_aligned_impl<allocator_type>(
+						::fast_io::containers::details::grow_to_size_common_aligned_impl<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl,
 							alignof(value_type),
@@ -580,15 +581,15 @@ private:
 				}
 				else
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::grow_to_size_common_impl<allocator_type>(
+						::fast_io::containers::details::grow_to_size_common_impl<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							newcap);
 					}
 					else
 					{
-						::fast_io::containers::details::grow_to_size_common_aligned_impl<allocator_type>(
+						::fast_io::containers::details::grow_to_size_common_aligned_impl<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							alignof(value_type),
 							newcap);
@@ -692,15 +693,15 @@ private:
 			{
 				if constexpr (alloc_with_status)
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::statused_grow_twice_common_impl<allocator_type, sizeof(value_type)>(
+						::fast_io::containers::details::statused_grow_twice_common_impl<untyped_allocator_type, sizeof(value_type)>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl.get());
 					}
 					else
 					{
-						::fast_io::containers::details::statused_grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
+						::fast_io::containers::details::statused_grow_twice_common_aligned_impl<untyped_allocator_type, sizeof(value_type)>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl.get(),
 							alignof(value_type));
@@ -708,14 +709,14 @@ private:
 				}
 				else
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::grow_twice_common_impl<allocator_type, sizeof(value_type)>(
+						::fast_io::containers::details::grow_twice_common_impl<untyped_allocator_type, sizeof(value_type)>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)));
 					}
 					else
 					{
-						::fast_io::containers::details::grow_twice_common_aligned_impl<allocator_type, sizeof(value_type)>(
+						::fast_io::containers::details::grow_twice_common_aligned_impl<untyped_allocator_type, sizeof(value_type)>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							alignof(value_type));
 					}
@@ -1242,9 +1243,9 @@ private:
 					= char8_t const *;
 				if constexpr (alloc_with_status)
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::statused_check_size_and_construct<allocator_type>(
+						::fast_io::containers::details::statused_check_size_and_construct<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl.get(),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
@@ -1252,7 +1253,7 @@ private:
 					}
 					else
 					{
-						::fast_io::containers::details::statused_check_size_and_construct_align<allocator_type>(
+						::fast_io::containers::details::statused_check_size_and_construct_align<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl.get(),
 							alignof(value_type),
@@ -1262,16 +1263,16 @@ private:
 				}
 				else
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::check_size_and_construct<allocator_type>(
+						::fast_io::containers::details::check_size_and_construct<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
 					}
 					else
 					{
-						::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
+						::fast_io::containers::details::check_size_and_construct_align<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							alignof(value_type),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
@@ -1491,9 +1492,9 @@ public:
 					= char8_t const *;
 				if constexpr (alloc_with_status)
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::statused_check_size_and_assign<allocator_type>(
+						::fast_io::containers::details::statused_check_size_and_assign<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl.get(),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
@@ -1501,7 +1502,7 @@ public:
 					}
 					else
 					{
-						::fast_io::containers::details::statused_check_size_and_assign_align<allocator_type>(
+						::fast_io::containers::details::statused_check_size_and_assign_align<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							allochdl.get(),
 							alignof(value_type),
@@ -1511,16 +1512,16 @@ public:
 				}
 				else
 				{
-					if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+					if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 					{
-						::fast_io::containers::details::check_size_and_assign<allocator_type>(
+						::fast_io::containers::details::check_size_and_assign<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
 					}
 					else
 					{
-						::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
+						::fast_io::containers::details::check_size_and_assign_align<untyped_allocator_type>(
 							reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 							alignof(value_type),
 							reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
@@ -1920,16 +1921,16 @@ public:
 					[[__gnu__::__may_alias__]]
 #endif
 					= char8_t const *;
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 				{
-					::fast_io::containers::details::check_size_and_append<allocator_type>(
+					::fast_io::containers::details::check_size_and_append<untyped_allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						reinterpret_cast<char8_const_ptr>(::std::to_address(::std::ranges::begin(rg))),
 						reinterpret_cast<char8_const_ptr>(::std::to_address(::std::ranges::end(rg))));
 				}
 				else
 				{
-					::fast_io::containers::details::check_size_and_append_align<allocator_type>(
+					::fast_io::containers::details::check_size_and_append_align<untyped_allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						alignof(value_type),
 						reinterpret_cast<char8_const_ptr>(::std::to_address(::std::ranges::begin(rg))),
@@ -1986,16 +1987,16 @@ public:
 			}
 			if constexpr (alloc_with_status)
 			{
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 				{
-					::fast_io::containers::details::statused_zero_init_grow_to_size_common_impl<allocator_type>(
+					::fast_io::containers::details::statused_zero_init_grow_to_size_common_impl<untyped_allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						allochdl.get(),
 						n * sizeof(value_type));
 				}
 				else
 				{
-					::fast_io::containers::details::statused_zero_init_grow_to_size_aligned_impl<allocator_type>(
+					::fast_io::containers::details::statused_zero_init_grow_to_size_aligned_impl<untyped_allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						allochdl.get(),
 						alignof(value_type),
@@ -2004,15 +2005,15 @@ public:
 			}
 			else
 			{
-				if constexpr (alignof(value_type) <= allocator_type::default_alignment)
+				if constexpr (alignof(value_type) <= untyped_allocator_type::default_alignment)
 				{
-					::fast_io::containers::details::zero_init_grow_to_size_common_impl<allocator_type>(
+					::fast_io::containers::details::zero_init_grow_to_size_common_impl<untyped_allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						n * sizeof(value_type));
 				}
 				else
 				{
-					::fast_io::containers::details::zero_init_grow_to_size_aligned_impl<allocator_type>(
+					::fast_io::containers::details::zero_init_grow_to_size_aligned_impl<untyped_allocator_type>(
 						reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 						alignof(value_type),
 						n * sizeof(value_type));
