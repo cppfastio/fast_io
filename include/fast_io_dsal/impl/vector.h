@@ -2065,10 +2065,7 @@ public:
 		des.thisvec = nullptr;
 	}
 
-private:
-
-	template<::std::input_or_output_iterator Iter>
-	constexpr void append_impl(Iter first, Iter last) noexcept(noexcept(this->push_back(*first)))
+	constexpr void swap(vector &other) noexcept
 	{
 #if __cpp_if_consteval >= 202106L
 		if consteval
