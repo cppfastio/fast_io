@@ -392,10 +392,10 @@ public:
 
 private:
 	using node_type = ::fast_io::containers::details::list_node<value_type>;
-	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type,
-																 node_type, false>;
-	static inline constexpr bool alloc_with_status{allocator::has_status};
-	using handle_type = ::std::conditional_t<alloc_with_status, typename allocator::handle_type, allocator_type>;
+	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, node_type>;
+	static inline constexpr bool alloc_with_status{untyped_allocator_type::has_status};
+	using handle_type = ::std::conditional_t<alloc_with_status, typename untyped_allocator_type::handle_type, allocator_type>;
 	using handle_holder_type = ::fast_io::containers::details::handle_holder<handle_type>;
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
