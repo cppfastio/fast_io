@@ -57,7 +57,10 @@ struct deque_controller
 };
 
 struct
-	[[__gnu__::__may_alias__]] deque_controller_common
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+	[[__gnu__::__may_alias__]]
+#endif
+	deque_controller_common
 {
 	::fast_io::containers::details::deque_control_block_common front_block;
 	::fast_io::containers::details::deque_control_block_common back_block;
@@ -82,42 +85,42 @@ inline constexpr void deque_destroy_controller(controllerblocktype *controllerpt
 template <typename allocator, typename controllerblocktype>
 inline constexpr void deque_destroy_trivial_common_align(controllerblocktype *controllerptr, ::std::size_t aligns, ::std::size_t totalsz) noexcept
 {
-	auto &controller{*controllerptr};
-	for (auto i{controller.controller_start_reserved_ptr}, e{controller.controller_after_reserved_ptr}; i != e; ++i)
+	auto &controller_block{*controllerptr};
+	for (auto i{controller_block.controller_start_reserved_ptr}, e{controller_block.controller_after_reserved_ptr}; i != e; ++i)
 	{
 		allocator::deallocate_aligned_n(*i, aligns, totalsz);
 	}
-	deque_destroy_controller(controllerptr);
+	deque_destroy_controller<allocator>(controllerptr);
 }
 
 template <typename allocator, typename controllerblocktype>
 inline constexpr void deque_destroy_trivial_common_no_align(controllerblocktype *controllerptr, ::std::size_t totalsz) noexcept
 {
-	auto &controller{*controllerptr};
-	for (auto i{controller.controller_start_reserved_ptr}, e{controller.controller_after_reserved_ptr}; i != e; ++i)
+	auto &controller_block{*controllerptr};
+	for (auto i{controller_block.controller_start_reserved_ptr}, e{controller_block.controller_after_reserved_ptr}; i != e; ++i)
 	{
 		allocator::deallocate_n(*i, totalsz);
 	}
-	deque_destroy_controller(controllerptr);
+	deque_destroy_controller<allocator>(controllerptr);
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz, typename controllerblocktype>
 inline constexpr void deque_destroy_trivial_common_impl(controllerblocktype *controllerptr) noexcept
 {
 	auto &controller{*controllerptr};
-	constexpr ::std::size_t totalsz{::fast_io::containers::details::deque_block_size<sz>};
+	constexpr ::std::size_t totalsz{sz * ::fast_io::containers::details::deque_block_size<sz>};
 	if constexpr (align <= allocator::default_alignment)
 	{
-		deque_destroy_trivial_common_align(controllerptr, align, totalsz);
+		::fast_io::containers::details::deque_destroy_trivial_common_no_align<allocator, controllerblocktype>(controllerptr, totalsz);
 	}
 	else
 	{
-		deque_destroy_trivial_common_no_align(controllerptr, totalsz);
+		::fast_io::containers::details::deque_destroy_trivial_common_align<allocator, controllerblocktype>(controllerptr, align, totalsz);
 	}
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz, typename controllerblocktype>
-inline constexpr void deque_destroy_trivial_common(controllerblocktype &controllerptr) noexcept
+inline constexpr void deque_destroy_trivial_common(controllerblocktype &controller) noexcept
 {
 #if __cpp_if_consteval >= 202106L
 	if consteval
@@ -125,12 +128,12 @@ inline constexpr void deque_destroy_trivial_common(controllerblocktype &controll
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
-		::fast_io::containers::details::deque_destroy_trivial_common_impl<allocator, align, sz, controllerblocktype>(__builtin_addressof(controllerptr));
+		::fast_io::containers::details::deque_destroy_trivial_common_impl<allocator, align, sz, controllerblocktype>(__builtin_addressof(controller));
 	}
 	else
 	{
 		::fast_io::containers::details::deque_destroy_trivial_common_impl<allocator, align, sz, ::fast_io::containers::details::deque_controller_block_common>(
-			reinterpret_cast<::fast_io::containers::details::deque_controller_block_common *>(__builtin_addressof(controllerptr)));
+			reinterpret_cast<::fast_io::containers::details::deque_controller_block_common *>(__builtin_addressof(controller)));
 	}
 }
 #if 0
@@ -239,7 +242,7 @@ private:
 		{
 			this->destroy_all_elements();
 		}
-		::fast_io::containers::details::deque_destroy_trivial_common<allocator, alignof(value_type), sizeof(value_type)>(controller);
+		::fast_io::containers::details::deque_destroy_trivial_common<allocator, alignof(value_type), sizeof(value_type)>(controller.controller_block);
 	}
 	constexpr void grow_back() noexcept
 	{
