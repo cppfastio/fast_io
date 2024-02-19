@@ -848,6 +848,17 @@ public:
 		this->sort(::std::ranges::less{});
 	}
 
+	template <typename Cmp>
+	constexpr void sort(const_iterator first, const_iterator last, Cmp cmp) noexcept
+	{
+		::fast_io::containers::details::list_sort_common<value_type, Cmp>(first.iter, last.iter, cmp);
+	}
+
+	constexpr void sort(const_iterator first, const_iterator last) noexcept
+	{
+		this->sort(first, last, ::std::ranges::less{});
+	}
+
 	constexpr ~list()
 	{
 		this->destroy();
