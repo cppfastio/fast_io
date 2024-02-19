@@ -28,7 +28,7 @@ int main()
 
 	print("using reserve: \n");
 	{
-		fast_io::vector<int, fast_io::generic_allocator_adapter<NAlloc>> v1;
+		fast_io::vector<int, NAlloc> v1;
 		v1.reserve(max_elements); // reserves at least max_elements * sizeof(int) bytes
 
 		for (int n = 0; n < max_elements; ++n)
@@ -39,7 +39,7 @@ int main()
 
 	print("not using reserve: \n");
 	{
-		fast_io::vector<int, fast_io::generic_allocator_adapter<NAlloc>> v1;
+		fast_io::vector<int, NAlloc> v1;
 
 		for (int n = 0; n < max_elements; ++n)
 		{

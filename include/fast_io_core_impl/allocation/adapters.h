@@ -939,7 +939,7 @@ public:
 	}
 };
 
-template <typename alloc, typename T, bool own = true>
+template <typename alloc, typename T>
 class typed_generic_allocator_adapter
 {
 public:
