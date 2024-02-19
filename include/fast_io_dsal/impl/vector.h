@@ -1084,7 +1084,7 @@ public:
 private:
 
 	template<::std::input_or_output_iterator Iter>
-	constexpr void append_impl(Iter first, Iter last) noexcept(noexcept(this->push_back(*this)))
+	constexpr void append_impl(Iter first, Iter last) noexcept(noexcept(this->push_back(*first)))
 	{
 		if constexpr(::std::forward_iterator<Iter>)
 		{
