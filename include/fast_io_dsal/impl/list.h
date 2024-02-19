@@ -810,7 +810,9 @@ public:
 	constexpr void splice(const_iterator pos, list &&other) noexcept
 	{
 		::fast_io::containers::details::list_splice_range_common(pos.iter, other.imp.next, __builtin_addressof(other.imp));
+#if 0
 		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
+#endif
 	}
 
 	constexpr void reverse() noexcept
