@@ -56,7 +56,8 @@ inline DIR *sys_dup_dir(DIR *dirp)
 	{
 		throw_posix_error(EBADF);
 	}
-	auto fd{
+	auto fd
+	{
 #if defined(__CYGWIN__)
 		dirp->__d_fd
 #else
@@ -266,6 +267,12 @@ inline constexpr file_type type(posix_directory_entry pioe) noexcept
 		return file_type::not_found;
 	};
 #endif
+}
+
+inline bool is_dot(posix_directory_entry ent) noexcept
+{
+	auto name{ent.entry->d_name};
+	return (*name == u8'.' && (name[1] == 0 || name[1] == u8'.' && name[2] == 0));
 }
 
 struct posix_directory_iterator
