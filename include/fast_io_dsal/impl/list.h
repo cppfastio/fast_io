@@ -704,19 +704,117 @@ public:
 	constexpr void pop_back() noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
+		if (node == __builtin_addressof(imp))
+		{
+			::fast_io::fast_terminate();
+		}
+#if 0
+		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(node->prev);
+		imp.prev = prev;
+		prev->next = __builtin_addressof(imp);
+		this->destroy_node(node);
+#else
+		this->pop_back_unchecked();
+#endif
+	}
+
+	constexpr void pop_front() noexcept
+	{
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
+		if (node == __builtin_addressof(imp))
+		{
+			::fast_io::fast_terminate();
+		}
+#if 0
+		auto next = static_cast<::fast_io::containers::details::list_node_common *>(node->next);
+		imp.next = next;
+		next->prev = __builtin_addressof(imp);
+		this->destroy_node(node);
+#else
+		this->pop_front_unchecked();
+#endif
+	}
+
+	constexpr void pop_back_unchecked() noexcept
+	{
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(node->prev);
 		imp.prev = prev;
 		prev->next = __builtin_addressof(imp);
 		this->destroy_node(node);
 	}
 
-	constexpr void pop_front() noexcept
+	constexpr void pop_front_unchecked() noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 		auto next = static_cast<::fast_io::containers::details::list_node_common *>(node->next);
 		imp.next = next;
 		next->prev = __builtin_addressof(imp);
 		this->destroy_node(node);
+	}
+
+	[[nodiscard]] constexpr const_reference front() const noexcept
+	{
+		auto nodeptr{imp.next};
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
+		if (node == __builtin_addressof(imp)) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
+	}
+	[[nodiscard]] constexpr reference front() noexcept
+	{
+		auto nodeptr{imp.next};
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
+		if (node == __builtin_addressof(imp)) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
+	}
+
+	[[nodiscard]] constexpr const_reference back() const noexcept
+	{
+		auto nodeptr{imp.prev};
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
+		if (node == __builtin_addressof(imp)) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
+	}
+	[[nodiscard]] constexpr reference back() noexcept
+	{
+		auto nodeptr{imp.prev};
+		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
+		if (node == __builtin_addressof(imp)) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
+	}
+
+	[[nodiscard]] constexpr const_reference front_unchecked() const noexcept
+	{
+		auto nodeptr{imp.next};
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
+	}
+	[[nodiscard]] constexpr reference front_unchecked() noexcept
+	{
+		auto nodeptr{imp.next};
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
+	}
+
+	[[nodiscard]] constexpr const_reference back_unchecked() const noexcept
+	{
+		auto nodeptr{imp.prev};
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
+	}
+	[[nodiscard]] constexpr reference back_unchecked() noexcept
+	{
+		auto nodeptr{imp.prev};
+		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
 
 	constexpr void erase(const_iterator iter) noexcept
