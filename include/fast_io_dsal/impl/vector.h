@@ -1543,7 +1543,13 @@ public:
 		return imp.begin_ptr[pos];
 	}
 
-	[[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr const_reference
+	operator[](size_type pos) const noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
@@ -1552,7 +1558,13 @@ public:
 		}
 		return begin_ptr[pos];
 	}
-	[[nodiscard]] constexpr reference operator[](size_type pos) noexcept
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr reference
+	operator[](size_type pos) noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
@@ -1562,7 +1574,13 @@ public:
 		return begin_ptr[pos];
 	}
 
-	[[nodiscard]] constexpr const_reference front() const noexcept
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr const_reference
+	front() const noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
@@ -1571,7 +1589,13 @@ public:
 		}
 		return *begin_ptr;
 	}
-	[[nodiscard]] constexpr reference front() noexcept
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr reference
+	front() noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
@@ -1580,8 +1604,13 @@ public:
 		}
 		return *begin_ptr;
 	}
-
-	[[nodiscard]] constexpr const_reference back() const noexcept
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr const_reference
+	back() const noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
@@ -1590,7 +1619,13 @@ public:
 		}
 		return curr_ptr[-1];
 	}
-	[[nodiscard]] constexpr reference back() noexcept
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr reference
+	back() noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
@@ -1984,7 +2019,11 @@ public:
 			this->append_uncounted_range_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 		}
 	}
-
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
 	constexpr void pop_back() noexcept
 	{
 		if (imp.curr_ptr == imp.begin_ptr) [[unlikely]]
