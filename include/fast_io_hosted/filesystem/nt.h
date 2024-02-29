@@ -240,6 +240,14 @@ inline constexpr file_type type(nt_directory_entry pioe) noexcept
 	return pioe.entry->d_type;
 }
 
+inline bool is_dot(nt_directory_entry ent) noexcept
+{
+	::std::size_t const native_d_namlen{ent.entry->native_d_namlen};
+	char16_t const *native_d_name_ptr{ent.entry->native_d_name};
+	return ((native_d_namlen == 1 && *native_d_name_ptr == u'.') ||
+			(native_d_namlen == 2 && *native_d_name_ptr == u'.' && native_d_name_ptr[1] == u'.'))
+}
+
 template <nt_family family>
 struct nt_family_directory_iterator
 {
