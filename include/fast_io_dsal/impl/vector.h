@@ -1548,7 +1548,8 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	[[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
+	[[nodiscard]] constexpr const_reference
+	operator[](size_type pos) const noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
@@ -1562,7 +1563,8 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	[[nodiscard]] constexpr reference operator[](size_type pos) noexcept
+	[[nodiscard]] constexpr reference
+	operator[](size_type pos) noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
@@ -1577,7 +1579,8 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	[[nodiscard]] constexpr const_reference front() const noexcept
+	[[nodiscard]] constexpr const_reference
+	front() const noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
@@ -1591,7 +1594,8 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	[[nodiscard]] constexpr reference front() noexcept
+	[[nodiscard]] constexpr reference
+	front() noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
@@ -1605,7 +1609,8 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	[[nodiscard]] constexpr const_reference back() const noexcept
+	[[nodiscard]] constexpr const_reference
+	back() const noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
@@ -1619,7 +1624,8 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	[[nodiscard]] constexpr reference back() noexcept
+	[[nodiscard]] constexpr reference
+	back() noexcept
 	{
 		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
 		if (begin_ptr == curr_ptr) [[unlikely]]
