@@ -1534,30 +1534,89 @@ public:
 		return allochdl.get();
 	}
 
-	[[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
+	[[nodiscard]] constexpr const_reference index_unchecked(size_type pos) const noexcept
 	{
 		return imp.begin_ptr[pos];
+	}
+	[[nodiscard]] constexpr reference index_unchecked(size_type pos) noexcept
+	{
+		return imp.begin_ptr[pos];
+	}
+
+	[[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
+	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return begin_ptr[pos];
 	}
 	[[nodiscard]] constexpr reference operator[](size_type pos) noexcept
 	{
-		return imp.begin_ptr[pos];
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return begin_ptr[pos];
 	}
+
 	[[nodiscard]] constexpr const_reference front() const noexcept
 	{
-		return *imp.begin_ptr;
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return *begin_ptr;
 	}
 	[[nodiscard]] constexpr reference front() noexcept
 	{
-		return *imp.begin_ptr;
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return *begin_ptr;
 	}
+
 	[[nodiscard]] constexpr const_reference back() const noexcept
 	{
-		return imp.curr_ptr[-1];
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return curr_ptr[-1];
 	}
 	[[nodiscard]] constexpr reference back() noexcept
 	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return curr_ptr[-1];
+	}
+
+	[[nodiscard]] constexpr const_reference front_unchecked() const noexcept
+	{
+		return *imp.begin_ptr;
+	}
+	[[nodiscard]] constexpr reference front_unchecked() noexcept
+	{
+		return *imp.begin_ptr;
+	}
+	[[nodiscard]] constexpr const_reference back_unchecked() const noexcept
+	{
 		return imp.curr_ptr[-1];
 	}
+	[[nodiscard]] constexpr reference back_unchecked() noexcept
+	{
+		return imp.curr_ptr[-1];
+	}
+
 	[[nodiscard]] constexpr pointer data() noexcept
 	{
 		return imp.begin_ptr;
@@ -1927,6 +1986,15 @@ public:
 	}
 
 	constexpr void pop_back() noexcept
+	{
+		if (imp.curr_ptr == imp.begin_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		(--imp.curr_ptr)->~value_type();
+	}
+
+	constexpr void pop_back_unchecked() noexcept
 	{
 		(--imp.curr_ptr)->~value_type();
 	}
