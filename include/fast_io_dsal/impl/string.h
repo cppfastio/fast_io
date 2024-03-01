@@ -140,25 +140,18 @@ public:
 	::fast_io::containers::details::string_sso_buffer<char_type, ::fast_io::containers::details::string_sso_size<char_type>> ssobuffer;
 
 	constexpr basic_string() noexcept
-		: imp{ssobuffer.buffer, ssobuffer.buffer, ssobuffer.buffer + ::fast_io::containers::details::string_sso_size<char_type> - 1}
+		: imp{ssobuffer.buffer, ssobuffer.buffer, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>}
 	{
 		*ssobuffer.buffer = 0;
 	}
 
 #if 0
-	explicit constexpr basic_string(size_type n, ::fast_io::for_overwrite_t) noexcept
-	{
-
-	}
-
 	explicit constexpr basic_string(size_type n) noexcept
 	{
-
 	}
 
 	explicit constexpr basic_string(size_type n, char_type ch) noexcept
-	{
-		
+	{		
 	}
 #endif
 
@@ -381,6 +374,43 @@ public:
 			this->imp = {ptr, ptrn, ptrn};
 		}
 	}
+
+private:
+	constexpr void moveconstructorcommon(basic_string &&other) noexcept
+	{
+		if (other.imp.begin_ptr == other.ssobuffer.buffer)
+		{
+			this->ssobuffer = other.ssobuffer;
+			this->imp.begin_ptr = this->ssobuffer.buffer;
+			this->imp.curr_ptr = this->ssobuffer.buffer + (other.imp.curr_ptr - other.imp.begin_ptr);
+			this->imp.end_ptr = this->ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>;
+			other.imp.curr_ptr = other.ssobuffer;
+		}
+		else
+		{
+			this->imp = other.imp;
+			other.imp.end_ptr = (other.imp.curr_ptr = other.imp.begin_ptr = other.ssobuffer) + ::fast_io::containers::details::string_sso_sizem1<char_type>;
+		}
+		*other.ssobuffer = 0;
+	}
+
+public:
+	constexpr basic_string(basic_string &&other) noexcept
+	{
+		this->moveconstructorcommon(::std::move(other));
+	}
+
+	constexpr basic_string &operator=(basic_string &&other) noexcept
+	{
+		if (__builtin_addressof(other) == this)
+		{
+			return *this;
+		}
+		this->destroy();
+		this->moveconstructorcommon(::std::move(other));
+		return *this;
+	}
+
 	constexpr basic_string(basic_string const &) noexcept = delete;
 	constexpr basic_string &operator=(basic_string const &) noexcept = delete;
 
@@ -506,7 +536,8 @@ public:
 	}
 #endif
 
-	constexpr ~basic_string()
+private:
+	constexpr void destroy() noexcept
 	{
 		auto beginptr{this->imp.begin_ptr};
 		if (beginptr != ssobuffer.buffer)
@@ -516,6 +547,19 @@ public:
 			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(this->imp.end_ptr - beginptr) + 1u));
 		}
 	}
+
+public:
+	constexpr ~basic_string()
+	{
+		this->destroy();
+	}
 };
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr ::fast_io::basic_io_scatter_t<chtype>
+print_alias_define(io_alias_t, basic_string<chtype, alloctype> const &str) noexcept
+{
+	return {str.imp.begin_ptr, static_cast<::std::size_t>(str.imp.curr_ptr - str.imp.begin_ptr)};
+}
 
 } // namespace fast_io::containers
