@@ -66,8 +66,15 @@ inline constexpr void string_heap_grow_twice(::fast_io::containers::details::str
 		::fast_io::fast_terminate();
 	}
 	::std::size_t const bfsizep1mul2{bfsizep1 << 1u};
-	auto ptr{typed_allocator_type::reallocate_n(imp.begin_ptr, bfsizep1, bfsizep1mul2)};
-	;
+	chtype *ptr;
+	if constexpr (typed_allocator_type::has_reallocate)
+	{
+		ptr = typed_allocator_type::reallocate(imp.begin_ptr, bfsizep1mul2);
+	}
+	else
+	{
+		ptr = typed_allocator_type::reallocate_n(imp.begin_ptr, bfsizep1, bfsizep1mul2);
+	}
 	imp = {ptr, ptr + bfsize, ptr + bfsizep1mul2};
 }
 
@@ -101,7 +108,7 @@ inline constexpr void string_stack_to_heap_grow_twice(::fast_io::containers::det
 	else
 	{
 		constexpr ::std::size_t ssobytes{sizeof(chtype) * ssosize};
-		::fast_io::containers::details::string_stack_to_heap_grow_twice_common(__builtin_addressof(imp), first, ssobytes, sizeof(chtype));
+		::fast_io::containers::details::string_stack_to_heap_grow_twice_common<allocator_type>(reinterpret_cast<::fast_io::containers::details::string_model *>(__builtin_addressof(imp)), first, ssobytes, sizeof(chtype));
 	}
 }
 
@@ -396,7 +403,7 @@ private:
 	{
 		if (this->imp.begin_ptr == ssobuffer.buffer)
 		{
-			::fast_io::containers::details::string_stack_to_heap_grow_twice<allocator_type>(this->imp);
+			::fast_io::containers::details::string_stack_to_heap_grow_twice<allocator_type>(this->imp, this->ssobuffer.buffer);
 		}
 		else
 		{
