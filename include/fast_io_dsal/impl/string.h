@@ -481,14 +481,12 @@ public:
 		{
 			::fast_io::fast_terminate();
 		}
-		*this->imp.curr_ptr = 0;
-		--this->imp.curr_ptr;
+		*--this->imp.curr_ptr = 0;
 	}
 
 	constexpr void pop_back_unchecked() noexcept
 	{
-		*this->imp.curr_ptr = 0;
-		--this->imp.curr_ptr;
+		*--this->imp.curr_ptr = 0;
 	}
 
 #if 0
