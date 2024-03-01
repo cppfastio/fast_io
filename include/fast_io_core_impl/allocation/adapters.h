@@ -1026,7 +1026,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		reallocate(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
 	{
@@ -1053,7 +1053,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		reallocate_zero(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
 	{
@@ -1079,7 +1079,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		reallocate_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1090,11 +1090,11 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::reallocate_n(ptr, oldn, n * sizeof(T)));
+			return static_cast<T *>(alloc::reallocate_n(ptr, oldn * sizeof(T), n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned_n(ptr, oldn, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::reallocate_aligned_n(ptr, oldn * sizeof(T), n * sizeof(T), alignof(T)));
 		}
 	}
 	static inline
@@ -1105,7 +1105,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		reallocate_zero_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1116,11 +1116,11 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::reallocate_zero_n(ptr, oldn, n * sizeof(T)));
+			return static_cast<T *>(alloc::reallocate_zero_n(ptr, oldn * sizeof(T), n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned_zero_n(ptr, oldn, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::reallocate_aligned_zero_n(ptr, oldn * sizeof(T), n * sizeof(T), alignof(T)));
 		}
 	}
 
@@ -1278,7 +1278,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		handle_reallocate(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
 	{
@@ -1305,7 +1305,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		handle_reallocate_zero(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
 	{
@@ -1331,7 +1331,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		handle_reallocate_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
 	{
@@ -1342,11 +1342,11 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::handle_reallocate_n(handle, ptr, oldn, n * sizeof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_n(handle, ptr, oldn * sizeof(T), n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_reallocate_aligned_n(handle, ptr, oldn, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_n(handle, ptr, oldn * sizeof(T), n * sizeof(T), alignof(T)));
 		}
 	}
 	static inline
@@ -1357,7 +1357,7 @@ public:
 #if defined(_MSC_VER) && !defined(__clang__)
 		__declspec(allocator)
 #endif
-		void *
+		T *
 		handle_reallocate_zero_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
 	{
@@ -1368,11 +1368,11 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			return static_cast<T *>(alloc::handle_reallocate_zero_n(handle, ptr, oldn, n * sizeof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_zero_n(handle, ptr, oldn * sizeof(T), n * sizeof(T)));
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_reallocate_aligned_zero_n(handle, ptr, oldn, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_zero_n(handle, ptr * sizeof(T), oldn, n * sizeof(T), alignof(T)));
 		}
 	}
 
