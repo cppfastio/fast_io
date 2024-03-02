@@ -209,6 +209,8 @@ constexpr inline u32string u32concatln(Args &&...args)
 	}
 }
 
+namespace tlc
+{
 
 template <typename... Args>
 constexpr inline tlc::string concat_tlc(Args &&...args)
@@ -359,6 +361,8 @@ constexpr inline tlc::u32string u32concatln_tlc(Args &&...args)
 		return {};
 	}
 }
+
+} // namespace tlc
 
 } // namespace fast_io
 
