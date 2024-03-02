@@ -491,11 +491,11 @@ private:
 #endif
 	constexpr void grow_twice() noexcept
 	{
-		if (this->imp.begin_ptr == ssobuffer.buffer)
+		if (this->imp.begin_ptr == ssobuffer.buffer) [[unlikely]]
 		{
 			::fast_io::containers::details::string_stack_to_heap_grow_twice<allocator_type>(this->imp, this->ssobuffer.buffer);
 		}
-		else
+		else [[likely]]
 		{
 			::fast_io::containers::details::string_heap_grow_twice<allocator_type>(this->imp);
 		}
@@ -592,15 +592,29 @@ public:
 		{
 			return;
 		}
-		if (this->imp.begin_ptr == ssobuffer.buffer)
+		if (this->imp.begin_ptr == ssobuffer.buffer) [[unlikely]]
 		{
 			::fast_io::containers::details::string_stack_to_heap_dilate_uncheck<allocator_type>(this->imp, this->ssobuffer.buffer, new_cap);
 		}
-		else
+		else [[likely]]
 		{
 			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap);
 		}
 	}
+
+	constexpr void reserve_unchecked(size_type new_cap) noexcept
+	{
+		if (this->imp.begin_ptr == ssobuffer.buffer) [[unlikely]]
+		{
+			::fast_io::containers::details::string_stack_to_heap_dilate_uncheck<allocator_type>(this->imp, this->ssobuffer.buffer, new_cap);
+		}
+		else [[likely]]
+		{
+			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap);
+		}
+	}
+
+
 #if 0
 	constexpr void shrink_to_fit() noexcept
 	{
@@ -664,7 +678,7 @@ inline constexpr void strlike_set_curr(::fast_io::io_strlike_type_t<chtype, basi
 template <::std::integral chtype, typename alloctype>
 inline constexpr void strlike_reserve(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str, ::std::size_t n) noexcept
 {
-	str.reserve(n);
+	str.reserve_unchecked(n);
 }
 
 template <::std::integral chtype, typename alloctype>
