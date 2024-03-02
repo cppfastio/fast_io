@@ -97,7 +97,11 @@ inline constexpr void string_stack_to_heap_grow_twice(::fast_io::containers::det
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 	constexpr ::std::size_t ssosize{::fast_io::containers::details::string_sso_size<chtype>};
+#if __cpp_if_consteval >= 202106L
 	if consteval
+#else
+	if (__builtin_is_constant_evaluated())
+#endif
 	{
 		constexpr ::std::size_t twosize{ssosize * 2u};
 		constexpr ::std::size_t twosizem1{twosize - 1u};
@@ -109,6 +113,62 @@ inline constexpr void string_stack_to_heap_grow_twice(::fast_io::containers::det
 	{
 		constexpr ::std::size_t ssobytes{sizeof(chtype) * ssosize};
 		::fast_io::containers::details::string_stack_to_heap_grow_twice_common<allocator_type>(reinterpret_cast<::fast_io::containers::details::string_model *>(__builtin_addressof(imp)), first, ssobytes, sizeof(chtype));
+	}
+}
+
+template <typename allocator_type, ::std::integral chtype>
+inline constexpr void string_heap_dilate_uncheck(::fast_io::containers::details::string_internal<chtype> &imp, ::std::size_t rsize) noexcept
+{
+	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
+
+	::std::size_t const bfsize{static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr)};
+	::std::size_t const bfsizep1{bfsize + 1u};
+
+	chtype *ptr;
+	if constexpr (typed_allocator_type::has_reallocate)
+	{
+		ptr = typed_allocator_type::reallocate(imp.begin_ptr, rsize);
+	}
+	else
+	{
+		ptr = typed_allocator_type::reallocate_n(imp.begin_ptr, bfsizep1, rsize);
+	}
+	imp = {ptr, ptr + bfsize, ptr + rsize};
+}
+
+template <typename allocator_type>
+inline void string_stack_to_heap_dilate_uncheck_common(::fast_io::containers::details::string_model *imp, void const *first,
+													   ::std::size_t ssobytes, ::std::size_t sz, ::std::size_t rsize) noexcept
+{
+	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+	void *ptr{untyped_allocator_type::allocate(rsize)};
+	::fast_io::details::my_memcpy(ptr, first, ssobytes);
+	*imp = {ptr, static_cast<::std::byte *>(ptr) + static_cast<::std::size_t>(rsize - sz),
+			static_cast<::std::byte *>(ptr) + static_cast<::std::size_t>(rsize - sz)};
+}
+
+template <typename allocator_type, ::std::integral chtype>
+inline constexpr void string_stack_to_heap_dilate_uncheck(::fast_io::containers::details::string_internal<chtype> &imp, chtype const *first, ::std::size_t rsize) noexcept
+{
+	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
+	constexpr ::std::size_t ssosize{::fast_io::containers::details::string_sso_size<chtype>};
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#else
+	if (__builtin_is_constant_evaluated())
+#endif
+	{
+		::std::size_t rsizem1{rsize - 1u};
+		auto ptr{typed_allocator_type::allocate(rsize)};
+		auto ptrcurr{::fast_io::details::non_overlapped_copy_n(first, ssosize, ptr)};
+		imp = {ptr, ptrcurr - 1, ptr + rsizem1};
+	}
+	else
+	{
+		constexpr ::std::size_t ssobytes{sizeof(chtype) * ssosize};
+		::fast_io::containers::details::string_stack_to_heap_dilate_uncheck_common<allocator_type>(reinterpret_cast<::fast_io::containers::details::string_model *>(__builtin_addressof(imp)), first, ssobytes, sizeof(chtype), rsize);
 	}
 }
 
@@ -384,14 +444,14 @@ private:
 			this->imp.begin_ptr = this->ssobuffer.buffer;
 			this->imp.curr_ptr = this->ssobuffer.buffer + (other.imp.curr_ptr - other.imp.begin_ptr);
 			this->imp.end_ptr = this->ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>;
-			other.imp.curr_ptr = other.ssobuffer;
+			other.imp.curr_ptr = other.ssobuffer.buffer;
 		}
 		else
 		{
 			this->imp = other.imp;
-			other.imp.end_ptr = (other.imp.curr_ptr = other.imp.begin_ptr = other.ssobuffer) + ::fast_io::containers::details::string_sso_sizem1<char_type>;
+			other.imp.end_ptr = (other.imp.curr_ptr = other.imp.begin_ptr = other.ssobuffer.buffer) + ::fast_io::containers::details::string_sso_sizem1<char_type>;
 		}
-		*other.ssobuffer = 0;
+		*other.ssobuffer.buffer = 0;
 	}
 
 public:
@@ -526,6 +586,21 @@ public:
 		*--this->imp.curr_ptr = 0;
 	}
 
+	constexpr void reserve(size_type new_cap) noexcept
+	{
+		if (capacity() >= new_cap) [[unlikely]]
+		{
+			return;
+		}
+		if (this->imp.begin_ptr == ssobuffer.buffer)
+		{
+			::fast_io::containers::details::string_stack_to_heap_dilate_uncheck<allocator_type>(this->imp, this->ssobuffer.buffer, new_cap);
+		}
+		else
+		{
+			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap);
+		}
+	}
 #if 0
 	constexpr void shrink_to_fit() noexcept
 	{
@@ -560,6 +635,48 @@ inline constexpr ::fast_io::basic_io_scatter_t<chtype>
 print_alias_define(io_alias_t, basic_string<chtype, alloctype> const &str) noexcept
 {
 	return {str.imp.begin_ptr, static_cast<::std::size_t>(str.imp.curr_ptr - str.imp.begin_ptr)};
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr chtype *strlike_begin(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str) noexcept
+{
+	return str.imp.begin_ptr;
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr chtype *strlike_curr(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str) noexcept
+{
+	return str.imp.curr_ptr;
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr chtype *strlike_end(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str) noexcept
+{
+	return str.imp.end_ptr;
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr void strlike_set_curr(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str, chtype *p) noexcept
+{
+	str.imp.curr_ptr = p;
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr void strlike_reserve(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str, ::std::size_t n) noexcept
+{
+	str.reserve(n);
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr ::std::size_t strlike_sso_size(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>) noexcept
+{
+	return details::string_sso_size<chtype>;
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr ::fast_io::io_strlike_reference_wrapper<chtype, basic_string<chtype, alloctype>> io_strlike_ref(::fast_io::io_alias_t, basic_string<chtype, alloctype> &str) noexcept
+{
+	return {__builtin_addressof(str)};
 }
 
 } // namespace fast_io::containers

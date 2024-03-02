@@ -30,7 +30,7 @@ public:
 			::std::malloc(n)
 #endif
 			;
-		if (p == nullptr)
+		if (p == nullptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -55,7 +55,7 @@ public:
 #endif
 
 			(p, to_allocate);
-		if (p == nullptr)
+		if (p == nullptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -79,7 +79,7 @@ public:
 #endif
 
 			(1, n);
-		if (p == nullptr)
+		if (p == nullptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
