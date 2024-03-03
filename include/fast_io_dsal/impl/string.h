@@ -565,6 +565,11 @@ public:
 		return reverse_iterator(this->imp.begin_ptr);
 	}
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
 	constexpr void push_back(char_type ch) noexcept
 	{
 		if (this->imp.curr_ptr == this->imp.end_ptr) [[unlikely]]
@@ -575,6 +580,11 @@ public:
 		*++this->imp.curr_ptr = 0;
 	}
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
 	constexpr void pop_back() noexcept
 	{
 		if (this->imp.curr_ptr == this->imp.begin_ptr) [[unlikely]]
