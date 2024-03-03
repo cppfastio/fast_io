@@ -591,27 +591,16 @@ public:
 
 	constexpr void reserve(size_type new_cap) noexcept
 	{
-		if (capacity() >= new_cap) [[unlikely]]
+		auto begin_ptr{this->imp.begin_ptr};
+		if (new_cap <= static_cast<size_type>(imp.end_ptr - begin_ptr))
 		{
 			return;
 		}
-		if (this->imp.begin_ptr == ssobuffer.buffer) [[unlikely]]
+		if (begin_ptr == ssobuffer.buffer)
 		{
 			::fast_io::containers::details::string_stack_to_heap_dilate_uncheck<allocator_type>(this->imp, this->ssobuffer.buffer, new_cap + 1u);
 		}
-		else [[likely]]
-		{
-			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap + 1u);
-		}
-	}
-
-	constexpr void reserve_unchecked(size_type new_cap) noexcept
-	{
-		if (this->imp.begin_ptr == ssobuffer.buffer) [[unlikely]]
-		{
-			::fast_io::containers::details::string_stack_to_heap_dilate_uncheck<allocator_type>(this->imp, this->ssobuffer.buffer,  new_cap + 1u);
-		}
-		else [[likely]]
+		else
 		{
 			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap + 1u);
 		}
@@ -681,13 +670,13 @@ inline constexpr void strlike_set_curr(::fast_io::io_strlike_type_t<chtype, basi
 template <::std::integral chtype, typename alloctype>
 inline constexpr void strlike_reserve(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str, ::std::size_t n) noexcept
 {
-	str.reserve_unchecked(n);
+	str.reserve(n);
 }
 
 template <::std::integral chtype, typename alloctype>
 inline constexpr ::std::size_t strlike_sso_size(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>) noexcept
 {
-	return details::string_sso_size<chtype>;
+	return ::fast_io::containers::details::string_sso_sizem1<chtype>;
 }
 
 template <::std::integral chtype, typename alloctype>
