@@ -26,10 +26,10 @@ struct string_internal
 };
 
 template <typename T>
-inline constexpr ::std::size_t string_sso_size_val{(64 - sizeof(::fast_io::containers::details::string_internal<T>)) / sizeof(T)};
+inline constexpr ::std::size_t string_sso_size_val{40*sizeof(T)+sizeof(::fast_io::containers::details::string_internal<T>)};
 
 template <typename T>
-inline constexpr ::std::size_t string_sso_size{::fast_io::containers::details::string_sso_size_val<T>};
+inline constexpr ::std::size_t string_sso_size{((string_sso_size_val<T>%16==0?(string_sso_size_val<T>/16):(string_sso_size_val<T>/16+1))*16-sizeof(::fast_io::containers::details::string_internal<T>))/sizeof(T)};
 
 template <typename T>
 inline constexpr ::std::size_t string_sso_sizem1{::fast_io::containers::details::string_sso_size<T> - 1u};
