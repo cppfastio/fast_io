@@ -26,10 +26,10 @@ struct string_internal
 };
 
 template <typename T>
-inline constexpr ::std::size_t string_sso_size_val{40*sizeof(T)+sizeof(::fast_io::containers::details::string_internal<T>)};
+inline constexpr ::std::size_t string_sso_size_val{40 * sizeof(T) + sizeof(::fast_io::containers::details::string_internal<T>)};
 
 template <typename T>
-inline constexpr ::std::size_t string_sso_size{((string_sso_size_val<T>%16==0?(string_sso_size_val<T>/16):(string_sso_size_val<T>/16+1))*16-sizeof(::fast_io::containers::details::string_internal<T>))/sizeof(T)};
+inline constexpr ::std::size_t string_sso_size{((string_sso_size_val<T> % 16 == 0 ? (string_sso_size_val<T> / 16) : (string_sso_size_val<T> / 16 + 1)) * 16 - sizeof(::fast_io::containers::details::string_internal<T>)) / sizeof(T)};
 
 template <typename T>
 inline constexpr ::std::size_t string_sso_sizem1{::fast_io::containers::details::string_sso_size<T> - 1u};
@@ -80,12 +80,12 @@ inline constexpr void string_heap_grow_twice(::fast_io::containers::details::str
 }
 
 template <typename allocator_type>
-inline void string_stack_to_heap_grow_twice_common(::fast_io::containers::details::string_model *imp, void const *first, 
+inline void string_stack_to_heap_grow_twice_common(::fast_io::containers::details::string_model *imp, void const *first,
 												   ::std::size_t ssobytes, ::std::size_t sz) noexcept
 {
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	::std::size_t const twobytes{ssobytes << 1u};
-	auto const strsize{static_cast<::std::size_t>(reinterpret_cast<::std::byte*>(imp->curr_ptr) - reinterpret_cast<::std::byte*>(imp->begin_ptr))};
+	auto const strsize{static_cast<::std::size_t>(reinterpret_cast<::std::byte *>(imp->curr_ptr) - reinterpret_cast<::std::byte *>(imp->begin_ptr))};
 	void *ptr{untyped_allocator_type::allocate(twobytes)};
 	::fast_io::details::my_memcpy(ptr, first, ssobytes);
 	*imp = {ptr, static_cast<::std::byte *>(ptr) + strsize,
@@ -144,8 +144,8 @@ inline void string_stack_to_heap_dilate_uncheck_common(::fast_io::containers::de
 {
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	void *ptr{untyped_allocator_type::allocate(rsize)};
-	::fast_io::details::my_memcpy(ptr, first, ssobytes);	
-	auto const strsize{static_cast<::std::size_t>(reinterpret_cast<::std::byte*>(imp->curr_ptr) - reinterpret_cast<::std::byte*>(imp->begin_ptr))};
+	::fast_io::details::my_memcpy(ptr, first, ssobytes);
+	auto const strsize{static_cast<::std::size_t>(reinterpret_cast<::std::byte *>(imp->curr_ptr) - reinterpret_cast<::std::byte *>(imp->begin_ptr))};
 	*imp = {ptr, static_cast<::std::byte *>(ptr) + strsize,
 			static_cast<::std::byte *>(ptr) + static_cast<::std::size_t>(rsize - sz)};
 }
@@ -606,7 +606,6 @@ public:
 		}
 	}
 
-
 #if 0
 	constexpr void shrink_to_fit() noexcept
 	{
@@ -643,6 +642,25 @@ print_alias_define(io_alias_t, basic_string<chtype, alloctype> const &str) noexc
 	return {str.imp.begin_ptr, static_cast<::std::size_t>(str.imp.curr_ptr - str.imp.begin_ptr)};
 }
 
+#if 0
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr auto
+strlike_construct_define(io_strlike_type_t<char_type, ::fast_io::basic_string<char_type, allocator_type>>,
+						 char_type const *first, char_type const *last)
+{
+	return ::fast_io::basic_string<char_type, allocator_type>(first, last);
+}
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr auto strlike_construct_single_character_define(
+	io_strlike_type_t<char_type, ::fast_io::basic_string<char_type, allocator_type>>, char_type ch)
+{
+	return ::fast_io::basic_string<char_type, allocator_type>(1, ch);
+}
+
+#endif
+
 template <::std::integral chtype, typename alloctype>
 inline constexpr chtype *strlike_begin(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str) noexcept
 {
@@ -664,7 +682,7 @@ inline constexpr chtype *strlike_end(::fast_io::io_strlike_type_t<chtype, basic_
 template <::std::integral chtype, typename alloctype>
 inline constexpr void strlike_set_curr(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str, chtype *p) noexcept
 {
-	str.imp.curr_ptr = p;
+	*(str.imp.curr_ptr = p) = 0;
 }
 
 template <::std::integral chtype, typename alloctype>
