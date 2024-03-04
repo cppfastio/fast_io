@@ -11,7 +11,7 @@ fast_io represents a cutting-edge input/output (I/O) library for C++20, designed
 #include <fast_io.h>
 
 int main() {
-	print("Hello, fast_io world!\n");
+	::fast_io::io::print("Hello, fast_io world!\n");
 }
 ```
 ### Memory-Mapped File
@@ -19,8 +19,8 @@ int main() {
 #include <fast_io.h>
 
 int main() {
-	fast_io::native_file_loader file_data("text.txt");
-	// file_data satisfies std::ranges::contiguous_range
+	::fast_io::native_file_loader file_data{"text.txt"};
+	// file_data satisfies ::std::ranges::contiguous_range
 }
 ```
 ### Additional Samples
