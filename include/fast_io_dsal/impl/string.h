@@ -59,7 +59,7 @@ inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::de
 
 	::std::size_t const bfsize{static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr)};
 	::std::size_t const strsize{static_cast<::std::size_t>(imp.curr_ptr - imp.begin_ptr)};
-	::std::size_t const bfsizep1{bfsize + sizeof(chtype)};
+	::std::size_t const bfsizep1{bfsize + 1u};
 
 	constexpr ::std::size_t mxsz{SIZE_MAX / sizeof(chtype) / 2u};
 	if (mxsz < bfsizep1) [[unlikely]]
@@ -76,7 +76,7 @@ inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::de
 	{
 		ptr = typed_allocator_type::reallocate_n(imp.begin_ptr, bfsizep1, bfsizep1mul2);
 	}
-	imp = {ptr, ptr + strsize, ptr + (bfsizep1mul2 - sizeof(chtype))};
+	imp = {ptr, ptr + strsize, ptr + (bfsizep1mul2 - 1u)};
 }
 
 template <typename allocator_type>
@@ -97,6 +97,8 @@ inline constexpr void string_push_back_stack_to_heap_grow_twice(::fast_io::conta
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 	constexpr ::std::size_t ssosize{::fast_io::containers::details::string_sso_size<chtype>};
+	constexpr ::std::size_t ssochsize{ssosize / sizeof(chtype)};
+
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #else
@@ -106,7 +108,7 @@ inline constexpr void string_push_back_stack_to_heap_grow_twice(::fast_io::conta
 		constexpr ::std::size_t twosize{ssosize * 2u};
 		auto ptr{typed_allocator_type::allocate(twosize)};
 		::fast_io::details::non_overlapped_copy_n(first, ssosize, ptr);
-		imp = {ptr, ptr + (ssosize - sizeof(chtype)), ptr + (twosize - sizeof(chtype))};
+		imp = {ptr, ptr + (ssochsize - 1u), ptr + (twosize - 1u)};
 	}
 	else
 	{
@@ -127,25 +129,13 @@ inline constexpr void string_heap_dilate_uncheck(::fast_io::containers::details:
 	chtype *ptr;
 	if constexpr (typed_allocator_type::has_reallocate)
 	{
-		ptr = typed_allocator_type::reallocate(imp.begin_ptr, rsize);
+		ptr = typed_allocator_type::reallocate(imp.begin_ptr, rsize + 1u);
 	}
 	else
 	{
-		ptr = typed_allocator_type::reallocate_n(imp.begin_ptr, bfsize, rsize);
+		ptr = typed_allocator_type::reallocate_n(imp.begin_ptr, bfsize, rsize + 1u);
 	}
-	imp = {ptr, ptr + strsize, ptr + (rsize - sizeof(chtype))};
-}
-
-template <typename allocator_type>
-inline void string_stack_to_heap_dilate_uncheck_common(::fast_io::containers::details::string_model *imp, void const *first,
-													   ::std::size_t ssobytes, ::std::size_t chsz, ::std::size_t rsize) noexcept
-{
-	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
-	void *ptr{untyped_allocator_type::allocate(rsize)};
-	::fast_io::details::my_memcpy(ptr, first, ssobytes);
-	auto const strsize{static_cast<::std::size_t>(reinterpret_cast<::std::byte *>(imp->curr_ptr) - reinterpret_cast<::std::byte *>(imp->begin_ptr))};
-	*imp = {ptr, static_cast<::std::byte *>(ptr) + strsize,
-			static_cast<::std::byte *>(ptr) + static_cast<::std::size_t>(rsize - chsz)};
+	imp = {ptr, ptr + strsize, ptr + rsize};
 }
 
 template <typename allocator_type, ::std::integral chtype>
@@ -162,14 +152,16 @@ inline constexpr void string_stack_to_heap_dilate_uncheck(::fast_io::containers:
 #endif
 	{
 		auto const strsize{static_cast<::std::size_t>(imp.curr_ptr - imp.begin_ptr)};
-		auto ptr{typed_allocator_type::allocate(rsize)};
+		auto ptr{typed_allocator_type::allocate(rsize + 1u)};
 		::fast_io::details::non_overlapped_copy_n(first, ssosize, ptr);
-		imp = {ptr, ptr + strsize, ptr + (rsize - chsz)};
+		imp = {ptr, ptr + strsize, ptr + rsize};
 	}
 	else
 	{
-		constexpr ::std::size_t ssobytes{sizeof(chtype) * ssosize};
-		::fast_io::containers::details::string_stack_to_heap_dilate_uncheck_common<allocator_type>(reinterpret_cast<::fast_io::containers::details::string_model *>(__builtin_addressof(imp)), first, ssobytes, chsz, rsize);
+		auto ptr{typed_allocator_type::allocate(rsize + 1)};
+		::fast_io::details::my_memcpy(ptr, first, ssosize);
+		auto const strsize{static_cast<::std::size_t>(imp.curr_ptr - imp.begin_ptr)};
+		imp = {ptr, ptr + strsize, ptr + rsize};
 	}
 }
 
@@ -596,11 +588,11 @@ public:
 		}
 		if (begin_ptr == ssobuffer.buffer)
 		{
-			::fast_io::containers::details::string_stack_to_heap_dilate_uncheck<allocator_type>(this->imp, this->ssobuffer.buffer, new_cap + 1u);
+			::fast_io::containers::details::string_stack_to_heap_dilate_uncheck<allocator_type>(this->imp, this->ssobuffer.buffer, new_cap);
 		}
 		else
 		{
-			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap + 1u);
+			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap);
 		}
 	}
 
