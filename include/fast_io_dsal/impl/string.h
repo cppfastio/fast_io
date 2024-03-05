@@ -97,7 +97,6 @@ inline constexpr void string_push_back_stack_to_heap_grow_twice(::fast_io::conta
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 	constexpr ::std::size_t ssosize{::fast_io::containers::details::string_sso_size<chtype>};
-	constexpr ::std::size_t ssochsize{ssosize / sizeof(chtype)};
 
 #if __cpp_if_consteval >= 202106L
 	if consteval
@@ -105,10 +104,10 @@ inline constexpr void string_push_back_stack_to_heap_grow_twice(::fast_io::conta
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
-		constexpr ::std::size_t twochsize{ssochsize * 2u};
-		auto ptr{typed_allocator_type::allocate(twochsize)};
-		::fast_io::details::non_overlapped_copy_n(first, ssochsize, ptr);
-		imp = {ptr, ptr + (ssochsize - 1u), ptr + (twochsize - 1u)};
+		constexpr ::std::size_t twosize{ssosize * 2u};
+		auto ptr{typed_allocator_type::allocate(twosize)};
+		::fast_io::details::non_overlapped_copy_n(first, ssosize, ptr);
+		imp = {ptr, ptr + (ssosize - 1u), ptr + (twosize - 1u)};
 	}
 	else
 	{
