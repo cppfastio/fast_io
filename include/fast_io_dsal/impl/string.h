@@ -47,7 +47,7 @@ inline constexpr chtype *string_allocate_init(chtype const *first, ::std::size_t
 	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, chtype>;
 	::std::size_t np1{n + sizeof(chtype)};
 	auto ptr{typed_allocator_type::allocate(np1)};
-	*::fast_io::details::non_overlapped_copy_n(first, n, ptr) = 0;
+	*::fast_io::freestanding::non_overlapped_copy_n(first, n, ptr) = 0;
 	return ptr;
 }
 
@@ -86,7 +86,7 @@ inline void string_push_back_stack_to_heap_grow_twice_common(::fast_io::containe
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	::std::size_t const twobytes{ssobytes << 1u};
 	void *ptr{untyped_allocator_type::allocate(twobytes)};
-	::fast_io::details::my_memcpy(ptr, first, ssobytes);
+	::fast_io::freestanding::my_memcpy(ptr, first, ssobytes);
 	*imp = {ptr, static_cast<::std::byte *>(ptr) + (ssobytes - chsz),
 			static_cast<::std::byte *>(ptr) + (twobytes - chsz)};
 }
@@ -106,7 +106,7 @@ inline constexpr void string_push_back_stack_to_heap_grow_twice(::fast_io::conta
 	{
 		constexpr ::std::size_t twosize{ssosize * 2u};
 		auto ptr{typed_allocator_type::allocate(twosize)};
-		::fast_io::details::non_overlapped_copy_n(first, ssosize, ptr);
+		::fast_io::freestanding::non_overlapped_copy_n(first, ssosize, ptr);
 		imp = {ptr, ptr + (ssosize - 1u), ptr + (twosize - 1u)};
 	}
 	else
@@ -152,13 +152,13 @@ inline constexpr void string_stack_to_heap_dilate_uncheck(::fast_io::containers:
 	{
 		auto const strsize{static_cast<::std::size_t>(imp.curr_ptr - imp.begin_ptr)};
 		auto ptr{typed_allocator_type::allocate(rsize + 1u)};
-		::fast_io::details::non_overlapped_copy_n(first, ssosize, ptr);
+		::fast_io::freestanding::non_overlapped_copy_n(first, ssosize, ptr);
 		imp = {ptr, ptr + strsize, ptr + rsize};
 	}
 	else
 	{
 		auto ptr{typed_allocator_type::allocate(rsize + 1)};
-		::fast_io::details::my_memcpy(ptr, first, ssosize);
+		::fast_io::freestanding::my_memcpy(ptr, first, ssosize);
 		auto const strsize{static_cast<::std::size_t>(imp.curr_ptr - imp.begin_ptr)};
 		imp = {ptr, ptr + strsize, ptr + rsize};
 	}
@@ -197,15 +197,94 @@ public:
 		*ssobuffer.buffer = 0;
 	}
 
-#if 0
 	explicit constexpr basic_string(size_type n) noexcept
 	{
+		constexpr auto ssosize{::fast_io::containers::details::string_sso_size<char_type>};
+		if (n < ssosize)
+		{
+			imp = {ssobuffer.buffer, ssobuffer.buffer, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
+			*ssobuffer.buffer = 0;
+		}
+		else
+		{
+			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
+			auto ptr{typed_allocator_type::allocate(n + 1u)};
+			imp = {ptr, ptr, ptr + n};		
+			*ptr = 0;
+		}
 	}
 
 	explicit constexpr basic_string(size_type n, char_type ch) noexcept
-	{		
+	{
+		constexpr auto ssosize{::fast_io::containers::details::string_sso_size<char_type>};
+		if (n < ssosize)
+		{
+			imp = {ssobuffer.buffer, ssobuffer.buffer + n, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
+			auto b{ssobuffer.buffer};
+			for (; b != ssobuffer.buffer + n; ++b)
+			{
+				*b = ch;
+			}
+			*b = 0;
+		}
+		else
+		{
+			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
+			auto ptr{typed_allocator_type::allocate(n + 1u)};
+			imp = {ptr, ptr + n, ptr + n};
+			auto b{ptr};
+			for (; b != ptr + n; ++b)
+			{
+				*b = ch;
+			}
+			*b = 0;
+		}
 	}
+
+	explicit constexpr basic_string(char_type const* b, char_type const* e) noexcept
+	{
+		auto const size{e - b};
+		constexpr auto ssosize{::fast_io::containers::details::string_sso_size<char_type>};
+		if (size < ssosize)
+		{
+			imp = {ssobuffer.buffer, ssobuffer.buffer + size, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
+#if __cpp_if_consteval >= 202106L
+			if consteval
+#else
+			if (__builtin_is_constant_evaluated())
 #endif
+			{
+				::fast_io::freestanding::non_overlapped_copy_n(b, size, ssobuffer.buffer);
+			}
+			else
+			{
+				::fast_io::freestanding::my_memcpy(ssobuffer.buffer, b, size);
+			}
+			ssobuffer.buffer[size] = 0;
+		}
+		else
+		{
+			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
+			auto ptr{typed_allocator_type::allocate(size + 1u)};
+			imp = {ptr, ptr + size, ptr + size};
+#if __cpp_if_consteval >= 202106L
+			if consteval
+#else
+			if (__builtin_is_constant_evaluated())
+#endif
+			{
+				::fast_io::freestanding::non_overlapped_copy_n(b, size, ptr);
+			}
+			else
+			{
+				::fast_io::freestanding::my_memcpy(ptr, b, size);
+			}
+			ptr[size] = 0;
+		}
+	}
 
 	constexpr const_pointer c_str() const noexcept
 	{
@@ -631,11 +710,9 @@ print_alias_define(io_alias_t, basic_string<chtype, alloctype> const &str) noexc
 	return {str.imp.begin_ptr, static_cast<::std::size_t>(str.imp.curr_ptr - str.imp.begin_ptr)};
 }
 
-#if 0
-
 template <::std::integral char_type, typename allocator_type>
 inline constexpr auto
-strlike_construct_define(io_strlike_type_t<char_type, ::fast_io::basic_string<char_type, allocator_type>>,
+strlike_construct_define(io_strlike_type_t<char_type, basic_string<char_type, allocator_type>>,
 						 char_type const *first, char_type const *last)
 {
 	return ::fast_io::basic_string<char_type, allocator_type>(first, last);
@@ -643,12 +720,10 @@ strlike_construct_define(io_strlike_type_t<char_type, ::fast_io::basic_string<ch
 
 template <::std::integral char_type, typename allocator_type>
 inline constexpr auto strlike_construct_single_character_define(
-	io_strlike_type_t<char_type, ::fast_io::basic_string<char_type, allocator_type>>, char_type ch)
+	io_strlike_type_t<char_type, basic_string<char_type, allocator_type>>, char_type ch)
 {
 	return ::fast_io::basic_string<char_type, allocator_type>(1, ch);
 }
-
-#endif
 
 template <::std::integral chtype, typename alloctype>
 inline constexpr chtype *strlike_begin(::fast_io::io_strlike_type_t<chtype, basic_string<chtype, alloctype>>, basic_string<chtype, alloctype> &str) noexcept
