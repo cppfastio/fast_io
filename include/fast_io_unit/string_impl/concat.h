@@ -14,10 +14,6 @@ template <typename... Args>
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
 																Args...>};
-
-	static_assert(
-		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
-																Args...>);
 	if constexpr (type_error)
 	{
 		return details::decay::basic_general_concat_phase1_decay_impl<false, char, ::std::string>(
