@@ -1,5 +1,6 @@
 #pragma once
-
+#ifndef __FAST_DEQUE__
+#define __FAST_DEQUE__
 namespace fast_io
 {
 namespace containers
@@ -1358,3 +1359,4 @@ struct is_zero_default_constructible<::fast_io::containers::deque<T, allocator>>
 } // namespace freestanding
 
 } // namespace fast_io
+#endif
