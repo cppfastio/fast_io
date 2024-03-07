@@ -115,13 +115,13 @@ inline void *nt_duplicate_process_std_handle_impl(void *__restrict hprocess, nt_
 	return ptr;
 }
 
-struct rtl_manage
+struct rtl_guard
 {
 	rtl_user_process_parameters *rtl_up{};
-	constexpr rtl_manage() noexcept = default;
-	constexpr rtl_manage(rtl_user_process_parameters *r) noexcept
+	constexpr rtl_guard() noexcept = default;
+	constexpr rtl_guard(rtl_user_process_parameters *r) noexcept
 		: rtl_up{r} {};
-	constexpr ~rtl_manage()
+	constexpr ~rtl_guard()
 	{
 		if (rtl_up) [[likely]]
 		{
@@ -130,13 +130,13 @@ struct rtl_manage
 	};
 };
 
-struct unicode_string_manage
+struct unicode_string_guard
 {
 	unicode_string *us{};
-	constexpr unicode_string_manage() noexcept = default;
-	constexpr unicode_string_manage(unicode_string *u) noexcept
+	constexpr unicode_string_guard() noexcept = default;
+	constexpr unicode_string_guard(unicode_string *u) noexcept
 		: us{u} {};
-	constexpr ~unicode_string_manage()
+	constexpr ~unicode_string_guard()
 	{
 		if (us) [[likely]]
 		{
@@ -146,11 +146,11 @@ struct unicode_string_manage
 };
 
 template <bool zw>
-inline void nt_push_process_parameters_and_duplicate_process_std_handles(void *__restrict hprocess,
-																		 void *__restrict fhandle, char16_t const *args,
-																		 char16_t const *envs,
-																		 nt_process_io const &__restrict processio,
-																		 void *__restrict remote_peb)
+inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void *__restrict hprocess,
+																			void *__restrict fhandle, char16_t const *args,
+																			char16_t const *envs,
+																			nt_process_io const &__restrict processio,
+																			void *__restrict remote_peb)
 {
 	// Create the NtImagePath
 	::std::uint_least32_t NtImagePath_len{};
@@ -158,7 +158,7 @@ inline void nt_push_process_parameters_and_duplicate_process_std_handles(void *_
 											  __builtin_addressof(NtImagePath_len));
 	auto NtImagePath{
 		reinterpret_cast<unicode_string *>(::fast_io::native_thread_local_allocator::allocate(NtImagePath_len))};
-	unicode_string_manage us_man{NtImagePath};
+	unicode_string_guard us_man{NtImagePath};
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
 															  NtImagePath, NtImagePath_len,
 															  __builtin_addressof(NtImagePath_len)));
@@ -174,7 +174,7 @@ inline void nt_push_process_parameters_and_duplicate_process_std_handles(void *_
 	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParameters(
 		__builtin_addressof(rtl_up), NtImagePath, nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
 		(void *)(envs), nullptr, nullptr, nullptr, nullptr));
-	rtl_manage rtlm{rtl_up};
+	rtl_guard rtlm{rtl_up};
 
 	/* Duplicate Process Std Handles */
 	rtl_up->StandardInput = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.in);
@@ -199,103 +199,15 @@ inline void nt_push_process_parameters_and_duplicate_process_std_handles(void *_
 }
 
 template <nt_family family>
-inline nt_user_process_information nt_process_create_impl(void *__restrict fhandle, char16_t const *args,
-														  char16_t const *envs,
-														  nt_process_io const &__restrict processio)
+inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *args,
+									  char16_t const *envs,
+									  nt_process_io const &__restrict processio)
 {
+	/****************************************************************************************************
+	 * A large number of security related checks are conducted in kernel32, and this API is not secure. *
+	 ****************************************************************************************************/
+
 	constexpr bool zw{family == nt_family::zw};
-
-#if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x600
-	// Create the NtImagePath
-	::std::uint_least32_t NtImagePath_len{};
-	::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, nullptr, 0,
-											  __builtin_addressof(NtImagePath_len));
-	auto NtImagePath{
-		reinterpret_cast<unicode_string *>(::fast_io::native_thread_local_allocator::allocate(NtImagePath_len))};
-	unicode_string_manage us_man{NtImagePath};
-	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
-															  NtImagePath, NtImagePath_len,
-															  __builtin_addressof(NtImagePath_len)));
-
-	// Create the process parameters
-
-	unicode_string ps_para{};
-	if (args)
-	{
-		ps_para.Buffer = const_cast<char16_t *>(args);
-		ps_para.Length = ::fast_io::cstr_len(args) * sizeof(char16_t);
-		;
-		ps_para.MaximumLength = ps_para.Length + sizeof(char16_t);
-	}
-	rtl_user_process_parameters *rtl_temp{};
-	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
-		__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
-		(void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
-	rtl_manage rtlm{rtl_temp};
-
-	rtl_temp->StandardInput = processio.in.nt_handle;
-	rtl_temp->StandardOutput = processio.out.nt_handle;
-	rtl_temp->StandardError = processio.err.nt_handle;
-
-	// Initialize the PS_CREATE_INFO structure
-	ps_create_info CreateInfo{};
-	CreateInfo.Size = sizeof(CreateInfo);
-	CreateInfo.State = ps_create_state::PsCreateInitialState;
-
-	// Initialize the PS_ATTRIBUTE_LIST structure
-	ps_attribute_list AttributeList{};
-	AttributeList.TotalLength = sizeof(ps_attribute_list) - sizeof(ps_attribute);
-	AttributeList.Attributes[0].Attribute = 131077;
-	AttributeList.Attributes[0].Size = NtImagePath->Length;
-	AttributeList.Attributes[0].Value = reinterpret_cast<::std::size_t>(NtImagePath->Buffer);
-
-	// Create the process
-	void *hProcess{};
-	void *hThread{};
-	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
-		&hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF, nullptr, nullptr,
-		0x00, 0x00, rtl_temp, &CreateInfo, &AttributeList));
-
-#if 0
-    // PROCESS_BASIC_INFO
-    process_basic_information pb_info{};
-    check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(
-        hProcess, process_information_class::ProcessBasicInformation, __builtin_addressof(pb_info), sizeof(pb_info),
-        nullptr));
-    // PushProcessParameters
-    rtl_user_process_parameters *rtl_up{};
-    check_nt_status(::fast_io::win32::nt::nt_read_virtual_memory<zw>(
-        hProcess, __builtin_addressof(reinterpret_cast<peb *>(pb_info.PebBaseAddress)->ProcessParameters),
-        __builtin_addressof(rtl_up), sizeof(rtl_up), nullptr));
-
-    void *ptr{};
-    if (processio.in.nt_handle)
-    {
-        ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.in);
-        check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(
-            hProcess, __builtin_addressof(rtl_up->StandardInput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-    }
-    if (processio.out.nt_handle)
-    {
-        ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.out);
-        check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(
-            hProcess, __builtin_addressof(rtl_up->StandardOutput), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-    }
-    if (processio.err.nt_handle)
-    {
-        ptr = nt_duplicate_process_std_handle_impl<zw>(hProcess, processio.err);
-        check_nt_status(::fast_io::win32::nt::nt_write_virtual_memory<zw>(
-            hProcess, __builtin_addressof(rtl_up->StandardError), __builtin_addressof(ptr), sizeof(ptr), nullptr));
-    }
-
-    // Resume Thread
-    ::std::uint_least32_t lprevcount{};
-    check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hThread, __builtin_addressof(lprevcount)));
-#endif
-
-	return {hProcess, hThread};
-#else
-	// Not Working!
 
 	// Section
 	void *hsection{};
@@ -319,8 +231,8 @@ inline nt_user_process_information nt_process_create_impl(void *__restrict fhand
 		nullptr));
 
 	// Push Process Parameters and Duplicate Process Std Handles
-	nt_push_process_parameters_and_duplicate_process_std_handles<zw>(hprocess, fhandle, args, envs, processio,
-																	 pb_info.PebBaseAddress);
+	nt_3x_push_process_parameters_and_duplicate_process_std_handles<zw>(hprocess, fhandle, args, envs, processio,
+																		pb_info.PebBaseAddress);
 
 	// Thread
 	void *hthread{};
@@ -336,11 +248,82 @@ inline nt_user_process_information nt_process_create_impl(void *__restrict fhand
 	basic_nt_family_file<family, char> thread(hthread);
 
 	// Call Windows Server
-
+	// to do
+	
 	// Resume Thread
 	::std::uint_least32_t lprevcount{};
 	check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hthread, __builtin_addressof(lprevcount)));
 	return {process.release(), thread.release()};
+}
+
+template <nt_family family>
+inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args,
+									  char16_t const *envs,
+									  nt_process_io const &__restrict processio)
+{
+	constexpr bool zw{family == nt_family::zw};
+
+	// Create the NtImagePath
+	::std::uint_least32_t NtImagePath_len{};
+	::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, nullptr, 0,
+											  __builtin_addressof(NtImagePath_len));
+	auto NtImagePath{
+		reinterpret_cast<unicode_string *>(::fast_io::native_thread_local_allocator::allocate(NtImagePath_len))};
+	unicode_string_guard us_man{NtImagePath};
+	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
+															  NtImagePath, NtImagePath_len,
+															  __builtin_addressof(NtImagePath_len)));
+
+	// Create the process parameters
+	unicode_string ps_para{};
+	if (args)
+	{
+		ps_para.Buffer = const_cast<char16_t *>(args);
+		ps_para.Length = ::fast_io::cstr_len(args) * sizeof(char16_t);
+		ps_para.MaximumLength = ps_para.Length + sizeof(char16_t);
+	}
+	rtl_user_process_parameters *rtl_temp{};
+	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
+		__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
+		(void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
+	rtl_guard rtlm{rtl_temp};
+
+	// Duplicate Process Std Handles
+	rtl_temp->StandardInput = processio.in.nt_handle;
+	rtl_temp->StandardOutput = processio.out.nt_handle;
+	rtl_temp->StandardError = processio.err.nt_handle;
+
+	// Initialize the PS_CREATE_INFO structure
+	ps_create_info CreateInfo{};
+	CreateInfo.Size = sizeof(CreateInfo);
+	CreateInfo.State = ps_create_state::PsCreateInitialState;
+
+	// Initialize the PS_ATTRIBUTE_LIST structure
+	ps_attribute_list AttributeList{};
+	AttributeList.TotalLength = sizeof(ps_attribute_list) - sizeof(ps_attribute);
+	AttributeList.Attributes[0].Attribute = 131077;
+	AttributeList.Attributes[0].Size = NtImagePath->Length;
+	AttributeList.Attributes[0].Value = reinterpret_cast<::std::size_t>(NtImagePath->Buffer);
+
+	// Create the process
+	void *hProcess{};
+	void *hThread{};
+	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
+		&hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF, nullptr, nullptr,
+		0x00, 0x00, rtl_temp, &CreateInfo, &AttributeList));
+	
+	return {hProcess, hThread};
+}
+
+template <nt_family family>
+inline nt_user_process_information nt_process_create_impl(void *__restrict fhandle, char16_t const *args,
+														  char16_t const *envs,
+														  nt_process_io const &__restrict processio)
+{
+#if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x600
+	return nt_6x_process_create_impl<family>(fhandle, args, envs, processio);
+#else
+	return nt_3x_process_create_impl<family>(fhandle, args, envs, processio);
 #endif
 }
 
