@@ -198,7 +198,7 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 		__builtin_addressof(RemoteParameters), sizeof(void *), nullptr));
 }
 
-template <bool zw>
+template <nt_family family>
 inline void nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *args,
 									  char16_t const *envs,
 									  nt_process_io const &__restrict processio)
@@ -206,6 +206,8 @@ inline void nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *
 	/****************************************************************************************************
 	 * A large number of security related checks are conducted in kernel32, and this API is not secure. *
 	 ****************************************************************************************************/
+
+	constexpr bool zw{family == nt_family::zw};
 
 	// Section
 	void *hsection{};
@@ -254,11 +256,13 @@ inline void nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *
 	return {process.release(), thread.release()};
 }
 
-template <bool zw>
+template <nt_family family>
 inline void nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args,
 									  char16_t const *envs,
 									  nt_process_io const &__restrict processio)
-{ 
+{
+	constexpr bool zw{family == nt_family::zw};
+
 	// Create the NtImagePath
 	::std::uint_least32_t NtImagePath_len{};
 	::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, nullptr, 0,
@@ -316,11 +320,10 @@ inline nt_user_process_information nt_process_create_impl(void *__restrict fhand
 														  char16_t const *envs,
 														  nt_process_io const &__restrict processio)
 {
-	constexpr bool zw{family == nt_family::zw};
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x600
-	return nt_6x_process_create_impl<zw>(fhandle, args, envs, processio);
+	return nt_6x_process_create_impl<family>(fhandle, args, envs, processio);
 #else
-	return nt_3x_process_create_impl<zw>(fhandle, args, envs, processio);
+	return nt_3x_process_create_impl<family>(fhandle, args, envs, processio);
 #endif
 }
 

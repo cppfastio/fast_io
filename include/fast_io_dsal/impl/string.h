@@ -715,14 +715,14 @@ inline constexpr auto
 strlike_construct_define(io_strlike_type_t<char_type, basic_string<char_type, allocator_type>>,
 						 char_type const *first, char_type const *last)
 {
-	return ::fast_io::basic_string<char_type, allocator_type>(first, last);
+	return basic_string<char_type, allocator_type>(first, last);
 }
 
 template <::std::integral char_type, typename allocator_type>
 inline constexpr auto strlike_construct_single_character_define(
 	io_strlike_type_t<char_type, basic_string<char_type, allocator_type>>, char_type ch)
 {
-	return ::fast_io::basic_string<char_type, allocator_type>(1, ch);
+	return basic_string<char_type, allocator_type>(1, ch);
 }
 
 template <::std::integral chtype, typename alloctype>
