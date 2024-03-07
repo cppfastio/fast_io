@@ -199,7 +199,7 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 }
 
 template <nt_family family>
-inline void nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *args,
+inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *args,
 									  char16_t const *envs,
 									  nt_process_io const &__restrict processio)
 {
@@ -257,7 +257,7 @@ inline void nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *
 }
 
 template <nt_family family>
-inline void nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args,
+inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args,
 									  char16_t const *envs,
 									  nt_process_io const &__restrict processio)
 {
