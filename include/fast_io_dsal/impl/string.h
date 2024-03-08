@@ -240,7 +240,7 @@ public:
 		{
 			this->imp = {ssobuffer.buffer, ssobuffer.buffer + n, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
 			auto b{ssobuffer.buffer};
-			for (auto e{ssobuffer.buffer + n} ; b != e; ++b)
+			for (auto e{ssobuffer.buffer + n}; b != e; ++b)
 			{
 				*b = ch;
 			}
@@ -253,7 +253,7 @@ public:
 			auto ptr{typed_allocator_type::allocate(n + 1u)};
 			this->imp = {ptr, ptr + n, ptr + n};
 			auto b{ptr};
-			for (auto e{ptr + n} ; b != e; ++b)
+			for (auto e{ptr + n}; b != e; ++b)
 			{
 				*b = ch;
 			}
@@ -263,23 +263,12 @@ public:
 
 	explicit constexpr basic_string(char_type const *b, char_type const *e) noexcept
 	{
-		auto const size{e - b};
+		size_type const size{static_cast<size_type>(e - b)};
 		constexpr auto ssosize{::fast_io::containers::details::string_sso_size<char_type>};
 		if (size < ssosize)
 		{
 			this->imp = {ssobuffer.buffer, ssobuffer.buffer + size, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
-			{
-				::fast_io::freestanding::non_overlapped_copy_n(b, size, ssobuffer.buffer);
-			}
-			else
-			{
-				::fast_io::freestanding::my_memcpy(ssobuffer.buffer, b, size);
-			}
+			::fast_io::freestanding::non_overlapped_copy_n(b, size, ssobuffer.buffer);
 			ssobuffer.buffer[size] = 0;
 		}
 		else
@@ -288,18 +277,7 @@ public:
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 			auto ptr{typed_allocator_type::allocate(size + 1u)};
 			this->imp = {ptr, ptr + size, ptr + size};
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
-			{
-				::fast_io::freestanding::non_overlapped_copy_n(b, size, ptr);
-			}
-			else
-			{
-				::fast_io::freestanding::my_memcpy(ptr, b, size);
-			}
+			::fast_io::freestanding::non_overlapped_copy_n(b, size, ptr);
 			ptr[size] = 0;
 		}
 	}
