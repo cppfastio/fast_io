@@ -104,7 +104,7 @@ inline void check_nt_status(::std::uint_least32_t status)
 template <bool zw>
 inline void *nt_duplicate_process_std_handle_impl(void *__restrict hprocess, win32_io_redirection const &redi)
 {
-	void *const current_process{reinterpret_cast<void *>(-1)};
+	void *const current_process{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 	void *ptr{};
 	if (redi.win32_handle) [[likely]]
 	{

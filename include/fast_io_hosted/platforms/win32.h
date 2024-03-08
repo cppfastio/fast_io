@@ -649,7 +649,7 @@ namespace win32::details
 
 inline void *win32_dup_impl(void *handle)
 {
-	void *current_process{reinterpret_cast<void *>(static_cast<ptrdiff_t>(-1))};
+	void *current_process{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 	void *new_handle{};
 	if (!::fast_io::win32::DuplicateHandle(current_process, handle, current_process, __builtin_addressof(new_handle), 0,
 										   true, 2 /*DUPLICATE_SAME_ACCESS*/))

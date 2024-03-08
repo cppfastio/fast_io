@@ -859,7 +859,7 @@ inline ::fast_io::intfpos_t nt_seek_impl(void *__restrict handle, ::fast_io::int
 template <bool zw>
 inline void *nt_dup_impl(void *handle)
 {
-	void *current_process{reinterpret_cast<void *>(static_cast<ptrdiff_t>(-1))};
+	void *current_process{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 	void *new_handle{};
 	auto status{::fast_io::win32::nt::nt_duplicate_object<zw>(current_process, handle, current_process,
 															  __builtin_addressof(new_handle), 0, 0x00000002L, 2)};
