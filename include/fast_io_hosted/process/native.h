@@ -14,9 +14,14 @@
 namespace fast_io
 {
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
-#if !defined(_WIN32_WINDOWS)
+#if !defined(_WIN32_WINDOWS) && (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x600)
 using native_process_observer = ::fast_io::nt_process_observer;
 using native_process = ::fast_io::nt_process;
+#else
+#if 0
+using native_process_observer = ::fast_io::win32_process_observer;
+using native_process = ::fast_io::win32_process;
+#endif
 #endif
 #else
 using native_process_observer = ::fast_io::posix_process_observer;

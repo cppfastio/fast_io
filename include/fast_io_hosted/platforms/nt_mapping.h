@@ -124,7 +124,7 @@ public:
 		basic_nt_family_file<family, char> mapping_file{
 			win32::nt::details::create_file_mapping_impl<family>(bf.handle, attr)};
 		void *base_ptr{};
-		void *current_process_handle{reinterpret_cast<void *>(-1)};
+		void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 		auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(
 			mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0,
 			reinterpret_cast<::fast_io::win32::nt::large_integer const *>(__builtin_addressof(start_address)),
@@ -236,7 +236,7 @@ public:
 	{
 		if (this->address_begin) [[likely]]
 		{
-			void *current_process_handle{reinterpret_cast<void *>(-1)};
+			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 			::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle,
 																							   this->address_begin);
 		}
@@ -249,7 +249,7 @@ public:
 	{
 		if (this->address_begin) [[likely]]
 		{
-			void *current_process_handle{reinterpret_cast<void *>(-1)};
+			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 			auto ret{::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(
 				current_process_handle, this->address_begin)};
 
@@ -264,7 +264,7 @@ public:
 	{
 		if (this->address_begin) [[likely]]
 		{
-			void *current_process_handle{reinterpret_cast<void *>(-1)};
+			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 			::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle,
 																							   this->address_begin);
 		}
