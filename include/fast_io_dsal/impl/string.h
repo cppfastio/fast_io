@@ -81,7 +81,7 @@ inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::de
 
 template <typename allocator_type>
 inline void string_push_back_stack_to_heap_grow_twice_common(::fast_io::containers::details::string_model *imp, void const *first,
-												   ::std::size_t ssobytes, ::std::size_t chsz) noexcept
+															 ::std::size_t ssobytes, ::std::size_t chsz) noexcept
 {
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	::std::size_t const twobytes{ssobytes << 1u};
@@ -209,8 +209,8 @@ public:
 		{
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
-			auto ptr{typed_allocator_type::allocate(n + 1u)};
-			this->imp = {ptr, ptr, ptr + n};		
+			auto ptr{typed_allocator_type::allocate_zero(n + 1u)};
+			this->imp = {ptr, ptr, ptr + n};
 			*ptr = 0;
 		}
 	}
@@ -240,7 +240,7 @@ public:
 		{
 			this->imp = {ssobuffer.buffer, ssobuffer.buffer + n, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
 			auto b{ssobuffer.buffer};
-			for (; b != ssobuffer.buffer + n; ++b)
+			for (auto e{ssobuffer.buffer + n} ; b != e; ++b)
 			{
 				*b = ch;
 			}
@@ -253,7 +253,7 @@ public:
 			auto ptr{typed_allocator_type::allocate(n + 1u)};
 			this->imp = {ptr, ptr + n, ptr + n};
 			auto b{ptr};
-			for (; b != ptr + n; ++b)
+			for (auto e{ptr + n} ; b != e; ++b)
 			{
 				*b = ch;
 			}
@@ -261,7 +261,7 @@ public:
 		}
 	}
 
-	explicit constexpr basic_string(char_type const* b, char_type const* e) noexcept
+	explicit constexpr basic_string(char_type const *b, char_type const *e) noexcept
 	{
 		auto const size{e - b};
 		constexpr auto ssosize{::fast_io::containers::details::string_sso_size<char_type>};
