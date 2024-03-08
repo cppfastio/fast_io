@@ -41,7 +41,7 @@ template <::std::integral ch_type>
 using basic_native_io_observer = basic_win32_io_observer<ch_type>;
 template <::std::integral ch_type>
 using basic_native_file = basic_win32_file<ch_type>;
-using native_process_io = nt_process_io;
+using native_process_io = win32_process_io;
 
 template <::std::integral ch_type>
 using basic_native_pipe = basic_win32_pipe<ch_type>;

@@ -566,7 +566,7 @@ struct win32_io_redirection_std : win32_io_redirection
 	}
 };
 
-struct win32_process_io
+struct win32_process_io // Shared by win32 and nt
 {
 	win32_io_redirection_std in;
 	win32_io_redirection_std out;
@@ -634,6 +634,12 @@ inline constexpr nt_at_entry at(basic_win32_family_io_observer<family, ch_type> 
 
 template <win32_family family, ::std::integral ch_type>
 inline constexpr win32_io_redirection redirect(basic_win32_family_io_observer<family, ch_type> other) noexcept
+{
+	return {.win32_handle = other.handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr win32_io_redirection redirect(basic_nt_family_io_observer<family, ch_type> other) noexcept
 {
 	return {.win32_handle = other.handle};
 }

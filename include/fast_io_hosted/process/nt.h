@@ -102,14 +102,14 @@ inline void check_nt_status(::std::uint_least32_t status)
 }
 
 template <bool zw>
-inline void *nt_duplicate_process_std_handle_impl(void *__restrict hprocess, nt_io_redirection const &redi)
+inline void *nt_duplicate_process_std_handle_impl(void *__restrict hprocess, win32_io_redirection const &redi)
 {
 	void *const current_process{reinterpret_cast<void *>(-1)};
 	void *ptr{};
-	if (redi.nt_handle) [[likely]]
+	if (redi.win32_handle) [[likely]]
 	{
 		check_nt_status(::fast_io::win32::nt::nt_duplicate_object<zw>(
-			current_process, redi.nt_handle, hprocess, __builtin_addressof(ptr), 0, 0,
+			current_process, redi.win32_handle, hprocess, __builtin_addressof(ptr), 0, 0,
 			/*DUPLICATE_SAME_ACCESS|DUPLICATE_SAME_ATTRIBUTES*/ 0x00000004 | 0x00000002));
 	}
 	return ptr;
@@ -149,7 +149,7 @@ template <bool zw>
 inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void *__restrict hprocess,
 																			void *__restrict fhandle, char16_t const *args,
 																			char16_t const *envs,
-																			nt_process_io const &__restrict processio,
+																			win32_process_io const &__restrict processio,
 																			void *__restrict remote_peb)
 {
 	// Create the NtImagePath
@@ -201,7 +201,7 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 template <nt_family family>
 inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *args,
 									  char16_t const *envs,
-									  nt_process_io const &__restrict processio)
+									  win32_process_io const &__restrict processio)
 {
 	/****************************************************************************************************
 	 * A large number of security related checks are conducted in kernel32, and this API is not secure. *
@@ -259,7 +259,7 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 template <nt_family family>
 inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args,
 									  char16_t const *envs,
-									  nt_process_io const &__restrict processio)
+									  win32_process_io const &__restrict processio)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -289,9 +289,9 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	rtl_guard rtlm{rtl_temp};
 
 	// Duplicate Process Std Handles
-	rtl_temp->StandardInput = processio.in.nt_handle;
-	rtl_temp->StandardOutput = processio.out.nt_handle;
-	rtl_temp->StandardError = processio.err.nt_handle;
+	rtl_temp->StandardInput = processio.in.win32_handle;
+	rtl_temp->StandardOutput = processio.out.win32_handle;
+	rtl_temp->StandardError = processio.err.win32_handle;
 
 	// Initialize the PS_CREATE_INFO structure
 	ps_create_info CreateInfo{};
@@ -318,7 +318,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 template <nt_family family>
 inline nt_user_process_information nt_process_create_impl(void *__restrict fhandle, char16_t const *args,
 														  char16_t const *envs,
-														  nt_process_io const &__restrict processio)
+														  win32_process_io const &__restrict processio)
 {
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x600
 	return nt_6x_process_create_impl<family>(fhandle, args, envs, processio);
@@ -330,7 +330,7 @@ inline nt_user_process_information nt_process_create_impl(void *__restrict fhand
 template <nt_family family, typename path_type>
 inline nt_user_process_information nt_create_process_overloads(nt_at_entry entry, path_type const &filename,
 															   nt_process_args const &args, nt_process_args const &envs,
-															   nt_process_io const &processio)
+															   win32_process_io const &processio)
 {
 	basic_nt_family_file<family, char> nf(entry, filename, open_mode::in | open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle, args.args, envs.args, processio);
@@ -339,7 +339,7 @@ inline nt_user_process_information nt_create_process_overloads(nt_at_entry entry
 template <nt_family family, typename path_type>
 inline nt_user_process_information nt_create_process_overloads(path_type const &filename, nt_process_args const &args,
 															   nt_process_args const &envs,
-															   nt_process_io const &processio)
+															   win32_process_io const &processio)
 {
 	basic_nt_family_file<family, char> nf(filename, open_mode::in | open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle, args.args, envs.args, processio);
@@ -348,7 +348,7 @@ inline nt_user_process_information nt_create_process_overloads(path_type const &
 template <nt_family family, typename path_type>
 inline nt_user_process_information nt_create_process_overloads(::fast_io::nt_fs_dirent ent, nt_process_args const &args,
 															   nt_process_args const &envs,
-															   nt_process_io const &processio)
+															   win32_process_io const &processio)
 {
 	basic_nt_family_file<family, char> nf(ent, open_mode::in | open_mode::excl);
 	return nt_process_create_impl<family>(nf.handle, args.args, envs.args, processio);
@@ -438,7 +438,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	explicit nt_family_process(nt_at_entry nate, path_type const &filename, nt_process_args const &args,
-							   nt_process_args const &envs, nt_process_io const &processio)
+							   nt_process_args const &envs, win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio)}
 	{
@@ -446,14 +446,14 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	explicit nt_family_process(path_type const &filename, nt_process_args const &args, nt_process_args const &envs,
-							   nt_process_io const &processio)
+							   win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio)}
 	{
 	}
 
 	explicit nt_family_process(::fast_io::nt_fs_dirent ent, nt_process_args const &args, nt_process_args const &envs,
-							   nt_process_io const &processio)
+							   win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio)}
 	{
