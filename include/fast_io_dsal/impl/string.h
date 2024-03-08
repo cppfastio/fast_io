@@ -81,7 +81,7 @@ inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::de
 
 template <typename allocator_type>
 inline void string_push_back_stack_to_heap_grow_twice_common(::fast_io::containers::details::string_model *imp, void const *first,
-												   ::std::size_t ssobytes, ::std::size_t chsz) noexcept
+															 ::std::size_t ssobytes, ::std::size_t chsz) noexcept
 {
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	::std::size_t const twobytes{ssobytes << 1u};
@@ -209,8 +209,8 @@ public:
 		{
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
-			auto ptr{typed_allocator_type::allocate(n + 1u)};
-			this->imp = {ptr, ptr, ptr + n};		
+			auto ptr{typed_allocator_type::allocate_zero(n + 1u)};
+			this->imp = {ptr, ptr, ptr + n};
 			*ptr = 0;
 		}
 	}
@@ -240,7 +240,7 @@ public:
 		{
 			this->imp = {ssobuffer.buffer, ssobuffer.buffer + n, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
 			auto b{ssobuffer.buffer};
-			for (; b != ssobuffer.buffer + n; ++b)
+			for (auto e{ssobuffer.buffer + n}; b != e; ++b)
 			{
 				*b = ch;
 			}
@@ -253,7 +253,7 @@ public:
 			auto ptr{typed_allocator_type::allocate(n + 1u)};
 			this->imp = {ptr, ptr + n, ptr + n};
 			auto b{ptr};
-			for (; b != ptr + n; ++b)
+			for (auto e{ptr + n}; b != e; ++b)
 			{
 				*b = ch;
 			}
@@ -261,25 +261,14 @@ public:
 		}
 	}
 
-	explicit constexpr basic_string(char_type const* b, char_type const* e) noexcept
+	explicit constexpr basic_string(char_type const *b, char_type const *e) noexcept
 	{
-		auto const size{e - b};
+		size_type const size{static_cast<size_type>(e - b)};
 		constexpr auto ssosize{::fast_io::containers::details::string_sso_size<char_type>};
 		if (size < ssosize)
 		{
 			this->imp = {ssobuffer.buffer, ssobuffer.buffer + size, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
-			{
-				::fast_io::freestanding::non_overlapped_copy_n(b, size, ssobuffer.buffer);
-			}
-			else
-			{
-				::fast_io::freestanding::my_memcpy(ssobuffer.buffer, b, size);
-			}
+			::fast_io::freestanding::non_overlapped_copy_n(b, size, ssobuffer.buffer);
 			ssobuffer.buffer[size] = 0;
 		}
 		else
@@ -288,18 +277,7 @@ public:
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 			auto ptr{typed_allocator_type::allocate(size + 1u)};
 			this->imp = {ptr, ptr + size, ptr + size};
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
-			{
-				::fast_io::freestanding::non_overlapped_copy_n(b, size, ptr);
-			}
-			else
-			{
-				::fast_io::freestanding::my_memcpy(ptr, b, size);
-			}
+			::fast_io::freestanding::non_overlapped_copy_n(b, size, ptr);
 			ptr[size] = 0;
 		}
 	}
@@ -633,6 +611,11 @@ public:
 		return reverse_iterator(this->imp.begin_ptr);
 	}
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
 	constexpr void push_back(char_type ch) noexcept
 	{
 		if (this->imp.curr_ptr == this->imp.end_ptr) [[unlikely]]
@@ -643,6 +626,11 @@ public:
 		*++this->imp.curr_ptr = 0;
 	}
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
 	constexpr void pop_back() noexcept
 	{
 		if (this->imp.curr_ptr == this->imp.begin_ptr) [[unlikely]]
