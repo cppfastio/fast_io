@@ -272,7 +272,7 @@ inline constexpr file_type type(posix_directory_entry pioe) noexcept
 inline bool is_dot(posix_directory_entry ent) noexcept
 {
 	auto name{ent.entry->d_name};
-	return (*name == u8'.' && (name[1] == 0 || name[1] == u8'.' && name[2] == 0));
+	return (*name == u8'.' && (name[1] == 0 || (name[1] == u8'.' && name[2] == 0)));
 }
 
 struct posix_directory_iterator
