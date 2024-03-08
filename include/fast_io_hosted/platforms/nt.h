@@ -315,19 +315,19 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 }
 
 template <bool zw>
-inline void *nt_create_file_common(void *directory, win32::nt::unicode_string *relative_path, nt_open_mode const &mode)
+inline void *nt_create_file_common(void *directory, ::fast_io::win32::nt::unicode_string *relative_path, nt_open_mode const &mode)
 {
-	win32::security_attributes sec_attr{sizeof(win32::security_attributes), nullptr, true};
-	win32::nt::object_attributes obj{.Length = sizeof(win32::nt::object_attributes),
-									 .RootDirectory = directory,
-									 .ObjectName = relative_path,
-									 .Attributes = mode.ObjAttributes,
-									 .SecurityDescriptor =
-										 mode.ObjAttributes & 0x00000002 ? __builtin_addressof(sec_attr) : nullptr,
-									 .SecurityQualityOfService = nullptr};
+	::fast_io::win32::security_attributes sec_attr{sizeof(::fast_io::win32::security_attributes), nullptr, true};
+	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
+												.RootDirectory = directory,
+												.ObjectName = relative_path,
+												.Attributes = mode.ObjAttributes,
+												.SecurityDescriptor =
+													mode.ObjAttributes & 0x00000002 ? __builtin_addressof(sec_attr) : nullptr,
+												.SecurityQualityOfService = nullptr};
 	void *handle;
-	win32::nt::io_status_block block;
-	auto const status{win32::nt::nt_create_file<zw>(
+	::fast_io::win32::nt::io_status_block block;
+	auto const status{::fast_io::win32::nt::nt_create_file<zw>(
 		__builtin_addressof(handle), mode.DesiredAccess, __builtin_addressof(obj), __builtin_addressof(block), nullptr,
 		mode.FileAttributes, mode.ShareAccess, mode.CreateDisposition, mode.CreateOptions, nullptr, 0u)};
 	if (status)
@@ -346,7 +346,7 @@ struct nt_create_callback
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	void *operator()(void *directory_handle, win32::nt::unicode_string *relative_path) const
+	void *operator()(void *directory_handle, ::fast_io::win32::nt::unicode_string *relative_path) const
 	{
 		return nt_create_file_common<zw>(directory_handle, relative_path, mode); // get rid of this pointer
 	}
@@ -470,12 +470,12 @@ inline void *nt_create_file_at_impl(void *directory_handle, T const &t, open_mod
 template <::fast_io::nt_family family>
 inline ::std::uint_least64_t nt_calculate_current_file_offset(void *__restrict handle)
 {
-	win32::nt::io_status_block block;
+	::fast_io::win32::nt::io_status_block block;
 	::std::uint_least64_t fps{};
-	auto status{win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(
+	auto status{::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(
 		handle, __builtin_addressof(block), __builtin_addressof(fps),
 		static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
-		win32::nt::file_information_class::FilePositionInformation)};
+		::fast_io::win32::nt::file_information_class::FilePositionInformation)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -495,8 +495,8 @@ inline ::std::byte *nt_read_pread_some_bytes_common_impl(void *__restrict handle
 														 ::std::int_least64_t *pbyteoffset)
 {
 	// some poeple in zwclose7 forum said we do not need to initialize io_status_block
-	win32::nt::io_status_block block;
-	auto const status{win32::nt::nt_read_file<family == ::fast_io::nt_family::zw>(
+	::fast_io::win32::nt::io_status_block block;
+	auto const status{::fast_io::win32::nt::nt_read_file<family == ::fast_io::nt_family::zw>(
 		handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
 		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
 	if (status)
@@ -526,8 +526,8 @@ inline ::std::byte const *nt_write_pwrite_some_bytes_common_impl(void *__restric
 																 ::std::byte const *last,
 																 ::std::int_least64_t *pbyteoffset)
 {
-	win32::nt::io_status_block block;
-	auto const status{win32::nt::nt_write_file<family == ::fast_io::nt_family::zw>(
+	::fast_io::win32::nt::io_status_block block;
+	auto const status{::fast_io::win32::nt::nt_write_file<family == ::fast_io::nt_family::zw>(
 		handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
 		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
 	if (status)
@@ -554,34 +554,6 @@ inline ::std::byte const *nt_pwrite_some_bytes_impl(void *__restrict handle, ::s
 }
 
 } // namespace win32::nt::details
-
-struct nt_io_redirection
-{
-	void *nt_pipe_in_handle{};
-	void *nt_pipe_out_handle{};
-	void *nt_handle{};
-	bool is_dev_null{};
-};
-
-struct nt_io_redirection_std : nt_io_redirection
-{
-	constexpr nt_io_redirection_std() noexcept = default;
-	template <typename T>
-		requires requires(T &&t) {
-			{ redirect(::std::forward<T>(t)) } -> ::std::same_as<nt_io_redirection>;
-		}
-	constexpr nt_io_redirection_std(T &&t) noexcept
-		: nt_io_redirection(redirect(::std::forward<T>(t)))
-	{
-	}
-};
-
-struct nt_process_io
-{
-	nt_io_redirection_std in;
-	nt_io_redirection_std out;
-	nt_io_redirection_std err;
-};
 
 namespace details
 {
@@ -714,12 +686,6 @@ inline ::std::byte const *pwrite_some_bytes_overflow_define(basic_nt_family_io_o
 	return ::fast_io::win32::nt::details::nt_pwrite_some_bytes_impl<family>(niob.handle, first, last, off);
 }
 
-template <nt_family family, ::std::integral ch_type>
-inline constexpr nt_io_redirection redirect(basic_nt_family_io_observer<family, ch_type> other) noexcept
-{
-	return {.nt_handle = other.handle};
-}
-
 #if __cpp_lib_three_way_comparison >= 201907L
 
 template <nt_family family, ::std::integral ch_type>
@@ -771,8 +737,8 @@ namespace win32::nt::details
 template <bool zw>
 inline void nt_flush_impl(void *handle)
 {
-	win32::nt::io_status_block block;
-	::std::uint_least32_t status{win32::nt::nt_flush_buffers_file<zw>(handle, __builtin_addressof(block))};
+	::fast_io::win32::nt::io_status_block block;
+	::std::uint_least32_t status{::fast_io::win32::nt::nt_flush_buffers_file<zw>(handle, __builtin_addressof(block))};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -786,8 +752,8 @@ inline void nt_data_sync_impl(void *handle, data_sync_flags flags [[maybe_unused
 	/*
 	NtFlushBuffersFileEx and ZwFlushBuffersFileEx are only provided since windows 8
 	*/
-	win32::nt::io_status_block block;
-	::std::uint_least32_t status{win32::nt::nt_flush_buffers_file_ex<zw>(
+	::fast_io::win32::nt::io_status_block block;
+	::std::uint_least32_t status{::fast_io::win32::nt::nt_flush_buffers_file_ex<zw>(
 		handle, static_cast<::std::uint_least32_t>(flags), nullptr, 0u, __builtin_addressof(block))};
 	if (status)
 	{
@@ -803,13 +769,13 @@ inline void nt_data_sync_impl(void *handle, data_sync_flags flags [[maybe_unused
 template <nt_family family, ::std::integral ch_type>
 inline void flush(basic_nt_family_io_observer<family, ch_type> ntiob)
 {
-	win32::nt::details::nt_flush_impl<family == nt_family::zw>(ntiob.handle);
+	::fast_io::win32::nt::details::nt_flush_impl<family == nt_family::zw>(ntiob.handle);
 }
 
 template <nt_family family, ::std::integral ch_type>
 inline void data_sync(basic_nt_family_io_observer<family, ch_type> ntiob, data_sync_flags flags)
 {
-	win32::nt::details::nt_data_sync_impl<family == nt_family::zw>(ntiob.handle, flags);
+	::fast_io::win32::nt::details::nt_data_sync_impl<family == nt_family::zw>(ntiob.handle, flags);
 }
 
 namespace win32::nt::details
@@ -834,7 +800,7 @@ inline nt_file_position_status nt_get_file_position_impl(void *__restrict handle
 		auto status{::fast_io::win32::nt::nt_query_information_file<zw>(
 			handle, __builtin_addressof(block), __builtin_addressof(fps),
 			static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
-			win32::nt::file_information_class::FilePositionInformation)};
+			::fast_io::win32::nt::file_information_class::FilePositionInformation)};
 		if (status)
 		{
 			return {status};
@@ -873,10 +839,10 @@ inline ::std::int_least64_t nt_seek64_impl(void *__restrict handle, ::std::int_l
 	{
 		throw_nt_error(status);
 	}
-	win32::nt::io_status_block block;
-	status = win32::nt::nt_set_information_file<zw>(handle, __builtin_addressof(block),
-													__builtin_addressof(file_position), sizeof(::std::uint_least64_t),
-													win32::nt::file_information_class::FilePositionInformation);
+	::fast_io::win32::nt::io_status_block block;
+	status = ::fast_io::win32::nt::nt_set_information_file<zw>(handle, __builtin_addressof(block),
+															   __builtin_addressof(file_position), sizeof(::std::uint_least64_t),
+															   ::fast_io::win32::nt::file_information_class::FilePositionInformation);
 	if (status)
 	{
 		throw_nt_error(status);
@@ -893,10 +859,10 @@ inline ::fast_io::intfpos_t nt_seek_impl(void *__restrict handle, ::fast_io::int
 template <bool zw>
 inline void *nt_dup_impl(void *handle)
 {
-	void *current_process{reinterpret_cast<void *>(static_cast<ptrdiff_t>(-1))};
+	void *current_process{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 	void *new_handle{};
-	auto status{win32::nt::nt_duplicate_object<zw>(current_process, handle, current_process,
-												   __builtin_addressof(new_handle), 0, 0x00000002L, 2)};
+	auto status{::fast_io::win32::nt::nt_duplicate_object<zw>(current_process, handle, current_process,
+															  __builtin_addressof(new_handle), 0, 0x00000002L, 2)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -910,7 +876,7 @@ inline void *nt_dup2_impl(void *handle, void *newhandle)
 	auto temp{nt_dup_impl<zw>(handle)};
 	if (newhandle) [[likely]]
 	{
-		win32::nt::nt_close<zw>(newhandle);
+		::fast_io::win32::nt::nt_close<zw>(newhandle);
 	}
 	return temp;
 }
@@ -919,10 +885,10 @@ template <bool zw>
 inline void nt_truncate_impl(void *handle, ::std::uintmax_t newfilesizem)
 {
 	::std::uint_least64_t newfilesize{static_cast<::std::uint_least64_t>(newfilesizem)};
-	win32::nt::io_status_block block;
-	auto status{win32::nt::nt_set_information_file<zw>(handle, __builtin_addressof(block),
-													   __builtin_addressof(newfilesize), sizeof(::std::uint_least64_t),
-													   win32::nt::file_information_class::FileEndOfFileInformation)};
+	::fast_io::win32::nt::io_status_block block;
+	auto status{::fast_io::win32::nt::nt_set_information_file<zw>(handle, __builtin_addressof(block),
+																  __builtin_addressof(newfilesize), sizeof(::std::uint_least64_t),
+																  ::fast_io::win32::nt::file_information_class::FileEndOfFileInformation)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -938,7 +904,7 @@ inline ::std::uint_least32_t nt_family_file_lock_common_impl(void *__restrict ha
 	{
 		return status;
 	}
-	win32::nt::io_status_block block;
+	::fast_io::win32::nt::io_status_block block;
 	::std::int_least64_t len{req.len};
 	if (len == 0)
 	{
@@ -949,14 +915,14 @@ inline ::std::uint_least32_t nt_family_file_lock_common_impl(void *__restrict ha
 	req.len = len;
 	if (req.type == file_lock_mode::unlock)
 	{
-		status = win32::nt::nt_unlock_file<zw>(handle, __builtin_addressof(block), __builtin_addressof(file_position),
-											   __builtin_addressof(len), 0u);
+		status = ::fast_io::win32::nt::nt_unlock_file<zw>(handle, __builtin_addressof(block), __builtin_addressof(file_position),
+														  __builtin_addressof(len), 0u);
 	}
 	else
 	{
-		status = win32::nt::nt_lock_file<zw>(handle, nullptr, nullptr, nullptr, __builtin_addressof(block),
-											 __builtin_addressof(file_position), __builtin_addressof(len), 0u,
-											 failedimmediately, req.type != file_lock_mode::shared_lock);
+		status = ::fast_io::win32::nt::nt_lock_file<zw>(handle, nullptr, nullptr, nullptr, __builtin_addressof(block),
+														__builtin_addressof(file_position), __builtin_addressof(len), 0u,
+														failedimmediately, req.type != file_lock_mode::shared_lock);
 	}
 	return status;
 }
@@ -978,9 +944,9 @@ inline void nt_family_file_unlock_common_impl(void *__restrict handle, flock_req
 	req.whence = seekdir::beg;
 	req.start = file_position;
 	req.len = len;
-	win32::nt::io_status_block block;
-	win32::nt::nt_unlock_file<zw>(handle, __builtin_addressof(block), __builtin_addressof(file_position),
-								  __builtin_addressof(len), 0u);
+	::fast_io::win32::nt::io_status_block block;
+	::fast_io::win32::nt::nt_unlock_file<zw>(handle, __builtin_addressof(block), __builtin_addressof(file_position),
+											 __builtin_addressof(len), 0u);
 }
 
 template <bool zw>
@@ -1055,19 +1021,19 @@ template <nt_family family, ::std::integral ch_type>
 inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_nt_family_io_observer<family, ch_type> handle,
 														::fast_io::intfpos_t offset, seekdir s)
 {
-	return win32::nt::details::nt_seek_impl<family == nt_family::zw>(handle.handle, offset, s);
+	return ::fast_io::win32::nt::details::nt_seek_impl<family == nt_family::zw>(handle.handle, offset, s);
 }
 
 template <nt_family family, ::std::integral ch_type>
 inline void truncate(basic_nt_family_io_observer<family, ch_type> handle, ::std::uintmax_t newfilesize)
 {
-	win32::nt::details::nt_truncate_impl<family == nt_family::zw>(handle.handle, newfilesize);
+	::fast_io::win32::nt::details::nt_truncate_impl<family == nt_family::zw>(handle.handle, newfilesize);
 }
 #if 0
 template<nt_family family,::std::integral ch_type>
 inline posix_file_status status(basic_nt_family_io_observer<family,ch_type> handle)
 {
-	return win32::nt::details::nt_status_impl<family==nt_family::zw>(handle.handle);
+	return ::fast_io::win32::nt::details::nt_status_impl<family==nt_family::zw>(handle.handle);
 }
 #endif
 
@@ -1121,7 +1087,7 @@ struct
 	{
 		if (handle) [[likely]]
 		{
-			win32::nt::nt_close<family == nt_family::zw>(this->handle);
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
 		}
 	}
 };
@@ -1156,12 +1122,12 @@ public:
 	}
 	explicit basic_nt_family_file(io_dup_t, basic_nt_family_io_observer<family, ch_type> wiob)
 		: basic_nt_family_io_observer<family, ch_type>{
-			  win32::nt::details::nt_dup_impl<family == nt_family::zw>(wiob.handle)}
+			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(wiob.handle)}
 	{
 	}
 	explicit basic_nt_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, char_type>{
-			  win32::nt::details::nt_family_create_file_fs_dirent_impl<family == nt_family::zw>(
+			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl<family == nt_family::zw>(
 				  fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
 	{
 	}
@@ -1197,7 +1163,7 @@ public:
 	{
 		if (this->handle) [[likely]]
 		{
-			auto status{win32::nt::nt_close<family == nt_family::zw>(this->handle)};
+			auto status{::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle)};
 			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
 			if (status) [[unlikely]]
 			{
@@ -1209,18 +1175,18 @@ public:
 	{
 		if (this->handle) [[likely]]
 		{
-			win32::nt::nt_close<family == nt_family::zw>(this->handle);
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
 		}
 		this->handle = newhandle;
 	}
 	basic_nt_family_file(basic_nt_family_file const &other)
 		: basic_nt_family_io_observer<family, ch_type>(
-			  win32::nt::details::nt_dup_impl<family == nt_family::zw>(other.handle))
+			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(other.handle))
 	{
 	}
 	basic_nt_family_file &operator=(basic_nt_family_file const &other)
 	{
-		this->handle = win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
+		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
 		return *this;
 	}
 	constexpr basic_nt_family_file(basic_nt_family_file &&__restrict other) noexcept
@@ -1232,7 +1198,7 @@ public:
 	{
 		if (this->handle) [[likely]]
 		{
-			win32::nt::nt_close<family == nt_family::zw>(this->handle);
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
 		}
 		this->handle = other.handle;
 		other.handle = nullptr;
@@ -1242,7 +1208,7 @@ public:
 	{
 		if (this->handle) [[likely]]
 		{
-			win32::nt::nt_close<family == nt_family::zw>(this->handle);
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
 		}
 	}
 };
