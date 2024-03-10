@@ -68,6 +68,11 @@ public:
 		return static_cast<list_node<T> *>(iter)->element;
 	}
 
+	constexpr pointer operator->() const noexcept
+	{
+		return __builtin_addressof(static_cast<list_node<T> *>(iter)->element);
+	}
+
 	constexpr operator list_iterator<T, true>()
 		requires(!isconst)
 	{
@@ -490,6 +495,9 @@ public:
 	using iterator = ::fast_io::containers::details::list_iterator<T, false>;
 	using const_iterator = ::fast_io::containers::details::list_iterator<T, true>;
 
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+
 	::fast_io::containers::details::list_node_common imp;
 
 	constexpr list() noexcept
@@ -525,44 +533,72 @@ public:
 		destroyer.release();
 	}
 
-	inline constexpr iterator begin() noexcept
+	[[nodiscard]] inline constexpr iterator begin() noexcept
 	{
 		return {imp.next};
 	}
-	inline constexpr iterator end() noexcept
+	[[nodiscard]] inline constexpr iterator end() noexcept
 	{
 		return {__builtin_addressof(imp)};
 	}
 
-	inline constexpr const_iterator begin() const noexcept
+	[[nodiscard]] inline constexpr const_iterator begin() const noexcept
 	{
 		return {imp.next};
 	}
-	inline constexpr const_iterator end() const noexcept
+	[[nodiscard]] inline constexpr const_iterator end() const noexcept
 	{
 		return {__builtin_addressof(imp)};
 	}
 
-	inline constexpr const_iterator cbegin() const noexcept
+	[[nodiscard]] inline constexpr const_iterator cbegin() const noexcept
 	{
 		return {imp.next};
 	}
-	inline constexpr const_iterator cend() const noexcept
+	[[nodiscard]] inline constexpr const_iterator cend() const noexcept
 	{
 		return {__builtin_addressof(imp)};
 	}
 
-	inline constexpr bool empty() const noexcept
+
+	[[nodiscard]] inline constexpr reverse_iterator rend() noexcept
+	{
+		return reverse_iterator({imp.next});
+	}
+	[[nodiscard]] inline constexpr reverse_iterator rbegin() noexcept
+	{
+		return reverse_iterator({__builtin_addressof(imp)});
+	}
+
+	[[nodiscard]] inline constexpr const_reverse_iterator rend() const noexcept
+	{
+		return const_reverse_iterator({imp.next});
+	}
+	[[nodiscard]] inline constexpr const_reverse_iterator rbegin() const noexcept
+	{
+		return const_reverse_iterator({__builtin_addressof(imp)});
+	}
+
+	[[nodiscard]] inline constexpr const_reverse_iterator crend() const noexcept
+	{
+		return const_reverse_iterator({imp.next});
+	}
+	[[nodiscard]] inline constexpr const_reverse_iterator crbegin() const noexcept
+	{
+		return const_reverse_iterator({__builtin_addressof(imp)});
+	}
+
+	[[nodiscard]] inline constexpr bool empty() const noexcept
 	{
 		return imp.next == __builtin_addressof(imp);
 	}
 
-	inline constexpr bool is_empty() const noexcept
+	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
 		return imp.next == __builtin_addressof(imp);
 	}
 
-	static inline constexpr size_type max_size() noexcept
+	[[nodiscard]] static inline constexpr size_type max_size() noexcept
 	{
 		constexpr size_type mxvl{SIZE_MAX / sizeof(node_type)};
 		return mxvl;
