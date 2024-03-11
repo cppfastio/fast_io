@@ -24,8 +24,12 @@ struct deque_control_block
 	T *begin_ptr, *curr_ptr, *end_ptr;
 };
 
+inline constexpr ::std::size_t deque_block_size_shift{12};
+
+inline constexpr ::std::size_t deque_block_size_common{static_cast<::std::size_t>(1) << deque_block_size_shift};
+
 template <::std::size_t sz>
-inline constexpr ::std::size_t deque_block_size{sz <= 4096u ? (4096u / sz) : 1u};
+inline constexpr ::std::size_t deque_block_size{sz <= deque_block_size_common ? (deque_block_size_common / sz) : 1u};
 
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -257,14 +261,14 @@ private:
 		size_type diff{
 			static_cast<size_type>(controller->front_block.controller_ptr - controller->back_block.controller_ptr)};
 
-		void **locale = make_blocks_balance(
+		void **blocktemp = make_blocks_balance(
 			controller->controller_block.controller_start_reserved_ptr,
 			controller->controller_block.controller_after_reserved_ptr,
 			controller->front_block.controller_ptr,
 			controller->back_block.controller_ptr + 1);
 
-		controller->front_block.controller_ptr = locale;
-		controller->back_block.controller_ptr = locale + diff;
+		controller->front_block.controller_ptr = blocktemp;
+		controller->back_block.controller_ptr = blocktemp + diff;
 	}
 
 	constexpr void make_unreserved_blocks_balance() noexcept
@@ -278,16 +282,16 @@ private:
 		size_type back_block_index{
 			static_cast<size_type>(controller->back_block.controller_ptr - controller->controller_block.controller_start_reserved_ptr)};
 
-		void **locale = make_blocks_balance(
+		void **blocktemp = make_blocks_balance(
 			controller->controller_block.controller_start_ptr,
 			controller->controller_block.controller_after_ptr,
 			controller->controller_block.controller_start_reserved_ptr,
 			controller->controller_block.controller_after_reserved_ptr);
 
-		controller->controller_block.controller_start_reserved_ptr = locale;
-		controller->controller_block.controller_after_reserved_ptr = locale + reserved_size;
-		controller->front_block.controller_ptr = locale + front_block_index;
-		controller->back_block.controller_ptr = locale + back_block_index;
+		controller->controller_block.controller_start_reserved_ptr = blocktemp;
+		controller->controller_block.controller_after_reserved_ptr = blocktemp + reserved_size;
+		controller->front_block.controller_ptr = blocktemp + front_block_index;
+		controller->back_block.controller_ptr = blocktemp + back_block_index;
 	}
 
 	constexpr void **make_blocks_balance(void **begin, void **end, void **b, void **e) noexcept
@@ -299,7 +303,7 @@ private:
 		{
 			if (begin == b)
 			{
-				void *t = *(end - 1);
+				void *t = end[-1];
 #ifdef _MSVC_TRADITIONAL
 				::std::copy
 #else
@@ -322,7 +326,7 @@ private:
 				::fast_io::freestanding::copy
 #endif
 					(b, e, begin);
-				*(end - 1) = t;
+				end[-1] = t;
 				--controller.back_block.controller_ptr;
 				--controller.back_block.controller_ptr;
 
@@ -331,30 +335,30 @@ private:
 		}
 		else
 		{
-			void **locale{begin + (external_diff - internal_diff) / 2u};
-			if (b > locale)
+			void **blocktemp{begin + (external_diff - internal_diff) / 2u};
+			if (blocktemp < b)
 			{
-				for (size_type i{}; i < internal_diff; ++i)
+				for (size_type i{}; i != internal_diff; ++i)
 				{
-					::std::swap(b[i], locale[i]);
+					::std::swap(b[i], blocktemp[i]);
 				}
 			}
 			else
 			{
-				for (int i{static_cast<int>(internal_diff - 1)}; i > -1; --i)
+				for (size_type i{internal_diff}; i--;)
 				{
-					::std::swap(b[i], locale[i]);
+					::std::swap(b[i], blocktemp[i]);
 				}
 			}
 
-			return locale;
+			return blocktemp;
 		}
 	}
 
 	constexpr void init_grow() noexcept
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
-		constexpr size_type block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+		constexpr size_type block_size{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 		constexpr size_type mid = single_block_capacity / 2u;
 		// clang-format off
 		controller.controller_block.controller_start_ptr 
@@ -381,8 +385,7 @@ private:
 
 	constexpr void grow_front() noexcept
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
-		constexpr size_type block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		if (controller.controller_block.controller_start_ptr == nullptr)
 		{
@@ -427,10 +430,12 @@ private:
 			(controller.front_block.begin_ptr = *--controller.front_block.controller_ptr) + single_block_capacity;
 	}
 
+#if __has_cpp_attribute(__gnu__::__cold__)
+	[[__gnu__::__cold__]]
+#endif
 	constexpr void grow_back() noexcept
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
-		constexpr size_type block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		if (controller.controller_block.controller_start_ptr == nullptr)
 		{
@@ -477,7 +482,7 @@ private:
 
 	void front_backspace()
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		if (++controller.front_block.curr_ptr == controller.front_block.end)
 		{
@@ -487,7 +492,7 @@ private:
 
 	void back_backspace()
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		if (--controller.back_block.curr_ptr == controller.back_block.begin)
 		{
@@ -514,7 +519,7 @@ public:
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr reference emplace_back(Args &&...args)
 	{
-		if (controller.back_block.curr_ptr == controller.back_block.end_ptr)
+		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
 		{
 			grow_back();
 		}
@@ -528,7 +533,7 @@ public:
 
 	constexpr reference push_back(value_type &value)
 	{
-		if (controller.back_block.curr_ptr == controller.back_block.end_ptr)
+		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
 		{
 			grow_back();
 		}
@@ -539,7 +544,7 @@ public:
 
 	constexpr reference push_back(value_type &&value)
 	{
-		if (controller.back_block.curr_ptr == controller.back_block.end_ptr)
+		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
 		{
 			grow_back();
 		}
@@ -550,7 +555,7 @@ public:
 
 	constexpr void pop_back() noexcept
 	{
-		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -580,7 +585,7 @@ public:
 
 	constexpr reference back() noexcept
 	{
-		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -590,7 +595,7 @@ public:
 
 	constexpr const_reference back() const noexcept
 	{
-		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -615,7 +620,7 @@ public:
 
 	constexpr reference push_front(value_type &value)
 	{
-		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr)
+		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
 		{
 			grow_front();
 		}
@@ -625,7 +630,7 @@ public:
 
 	constexpr reference push_front(value_type &&value)
 	{
-		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr)
+		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
 		{
 			grow_front();
 		}
@@ -637,7 +642,7 @@ public:
 
 	constexpr void pop_front() noexcept
 	{
-		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -667,7 +672,7 @@ public:
 
 	constexpr reference front() noexcept
 	{
-		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -677,7 +682,7 @@ public:
 
 	constexpr const_reference front() const noexcept
 	{
-		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -687,7 +692,7 @@ public:
 
 	constexpr reference operator[](size_type index) noexcept
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		if (size() <= index) [[unlikely]]
 		{
@@ -701,12 +706,30 @@ public:
 
 	constexpr const_reference operator[](size_type index) const noexcept
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		if (size() <= index) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
+
+		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
+
+		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
+	}
+
+	constexpr reference index_unchecked(size_type index) noexcept
+	{
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+
+		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
+
+		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
+	}
+
+	constexpr const_reference index_unchecked(size_type index) const noexcept
+	{
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
 
@@ -723,10 +746,10 @@ public:
 	{
 		if (controller.back_block.controller_ptr == controller.front_block.controller_ptr)
 		{
-			return controller.back_block.curr_ptr - controller.front_block.curr_ptr;
+			return static_cast<size_type>(controller.back_block.curr_ptr - controller.front_block.curr_ptr);
 		}
 
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		size_type full_block_size{static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) - 1u};
 
@@ -745,7 +768,7 @@ public:
 
 	constexpr void check() const noexcept
 	{
-		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		auto front_controller_ptr{controller.front_block.controller_ptr};
 		auto back_controller_ptr{controller.back_block.controller_ptr};
