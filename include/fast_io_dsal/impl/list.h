@@ -73,7 +73,7 @@ public:
 		return __builtin_addressof(static_cast<list_node<T> *>(iter)->element);
 	}
 
-	constexpr operator list_iterator<T, true>() noexcept
+	constexpr operator list_iterator<T, true>() const noexcept
 		requires(!isconst)
 	{
 		return {this->iter};
