@@ -210,7 +210,7 @@ struct deque_iterator
 		}
 	}
 
-	constexpr operator deque_iterator<T, true>() noexcept
+	constexpr operator deque_iterator<T, true>() const noexcept
 		requires(!isconst)
 	{
 		return {this->itercontent};
