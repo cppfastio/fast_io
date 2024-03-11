@@ -131,24 +131,84 @@ struct deque_iterator
 		return this->itercontent.curr_ptr;
 	}
 
-#if 0
 	constexpr deque_iterator &operator+=(difference_type pos) noexcept
 	{
+		constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+		constexpr size_type blocksizem1{blocksize - 1u};
+		size_type unsignedpos{static_cast<size_type>(pos)};
+		auto curr_ptr{this->itercontent.curr_ptr};
+		auto controllerptr{this->itercontent.controller_ptr};
+		decltype(curr_ptr) beginptr;
+		if (pos < 0)
+		{
+			size_type diff{static_cast<size_type>(this->itercontent.end_ptr - curr_ptr)};
+			constexpr size_type zero{};
+			size_type abspos{static_cast<size_type>(zero - unsignedpos)};
+			diff += abspos;
+			this->itercontent.curr_ptr = (beginptr = *(controllerptr -= diff / blocksize)) + (blocksizem1 - diff % blocksize);
+		}
+		else
+		{
+			size_type diff{static_cast<size_type>(curr_ptr - this->itercontent.begin_ptr)};
+			diff += unsignedpos;
+			this->itercontent.curr_ptr = (beginptr = *(controllerptr += diff / blocksize)) + diff % blocksize;
+		}
+		this->itercontent.controller_ptr = controllerptr;
+		this->itercontent.begin_ptr = beginptr;
+		this->itercontent.end_ptr = beginptr + blocksize;
 		return *this;
 	}
 
 	constexpr deque_iterator &operator-=(difference_type pos) noexcept
 	{
+		constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+		constexpr size_type blocksizem1{blocksize - 1u};
+		size_type unsignedpos{static_cast<size_type>(pos)};
+		auto curr_ptr{this->itercontent.curr_ptr};
+		auto controllerptr{this->itercontent.controller_ptr};
+		decltype(curr_ptr) beginptr;
+		if (pos < 0)
+		{
+			size_type diff{static_cast<size_type>(curr_ptr - this->itercontent.begin_ptr)};
+			constexpr size_type zero{};
+			size_type abspos{static_cast<size_type>(zero - unsignedpos)};
+			diff += abspos;
+			this->itercontent.curr_ptr = (beginptr = *(controllerptr += diff / blocksize)) + diff % blocksize;
+		}
+		else
+		{
+			size_type diff{static_cast<size_type>(this->itercontent.end_ptr - curr_ptr)};
+			diff += unsignedpos;
+			this->itercontent.curr_ptr = (beginptr = *(controllerptr -= diff / blocksize)) + (blocksizem1 - diff % blocksize);
+		}
+		this->itercontent.controller_ptr = controllerptr;
+		this->itercontent.begin_ptr = beginptr;
+		this->itercontent.end_ptr = beginptr + blocksize;
 		return *this;
 	}
 
-
-	constexpr reference operator[](difference_type) const noexcept
+	constexpr reference operator[](difference_type pos) const noexcept
 	{
-		return *this->itercontent.curr_ptr;
+		constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+		constexpr size_type blocksizem1{blocksize - 1u};
+		size_type unsignedpos{static_cast<size_type>(pos)};
+		auto curr_ptr{this->itercontent.curr_ptr};
+		auto controllerptr{this->itercontent.controller_ptr};
+		if (pos < 0)
+		{
+			size_type diff{static_cast<size_type>(this->itercontent.end_ptr - curr_ptr)};
+			constexpr size_type zero{};
+			size_type abspos{static_cast<size_type>(zero - unsignedpos)};
+			diff += abspos;
+			return (*(controllerptr - diff / blocksize))[blocksizem1 - diff % blocksize];
+		}
+		else
+		{
+			size_type diff{static_cast<size_type>(curr_ptr - this->itercontent.begin_ptr)};
+			diff += unsignedpos;
+			return controllerptr[diff / blocksize][diff % blocksize];
+		}
 	}
-
-#endif
 
 	constexpr operator deque_iterator<T, true>() noexcept
 		requires(!isconst)
@@ -157,33 +217,38 @@ struct deque_iterator
 	}
 };
 
-#if 0
-
 template <typename T, bool isconst>
-inline constexpr deque_iterator<T, isconst> operator+(deque_iterator<T, isconst> a, difference_type pos) noexcept
+inline constexpr deque_iterator<T, isconst> operator+(deque_iterator<T, isconst> a, ::std::ptrdiff_t pos) noexcept
 {
-	return (a+=pos);
+	return (a += pos);
 }
 
 template <typename T, bool isconst>
-inline constexpr deque_iterator<T, isconst> operator+(difference_type pos, deque_iterator<T, isconst> a) noexcept
+inline constexpr deque_iterator<T, isconst> operator+(::std::ptrdiff_t pos, deque_iterator<T, isconst> a) noexcept
 {
-	return (a+=pos);
+	return (a += pos);
 }
 
 template <typename T, bool isconst>
-inline constexpr deque_iterator<T, isconst> operator-(deque_iterator<T, isconst> a, difference_type pos) noexcept
+inline constexpr deque_iterator<T, isconst> operator-(deque_iterator<T, isconst> a, ::std::ptrdiff_t pos) noexcept
 {
-	return (a-=pos);
+	return (a -= pos);
 }
 
 template <typename T, bool isconst1, bool isconst2>
 inline constexpr ::std::ptrdiff_t operator-(deque_iterator<T, isconst1> const &a, deque_iterator<T, isconst2> const &b) noexcept
 {
-	return 0;
+	::std::ptrdiff_t controllerdiff{a.itercontent.controller_ptr - b.itercontent.controller_ptr};
+	if (controllerdiff == 0)
+	{
+		return a.itercontent.curr_ptr - b.itercontent.curr_ptr;
+	}
+	else
+	{
+		constexpr ::std::ptrdiff_t blocksizedf{static_cast<::std::ptrdiff_t>(::fast_io::containers::details::deque_block_size<sizeof(T)>)};
+		return controllerdiff * blocksizedf + (a.itercontent.curr_ptr - b.itercontent.begin_ptr) + (b.itercontent.begin_ptr - b.itercontent.curr_ptr);
+	}
 }
-
-#endif
 
 template <typename T, bool isconst1, bool isconst2>
 inline constexpr bool operator==(deque_iterator<T, isconst1> const &a, deque_iterator<T, isconst2> const &b) noexcept
