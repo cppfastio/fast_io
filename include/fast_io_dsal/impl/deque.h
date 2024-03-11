@@ -136,7 +136,7 @@ inline constexpr void deque_destroy_trivial_common(controllerblocktype &controll
 	}
 }
 #if 0
-			template<typename allocator, ::std::size_t align, ::std::size_t sz, typename dqcontrollerblocktype>
+			template<typename allocator, size_type align, size_type sz, typename dqcontrollerblocktype>
 			inline constexpr void* deque_allocate_block_memory_common_impl() noexcept
 			{
 
@@ -222,24 +222,24 @@ private:
 
 	constexpr void reallocate_controller_block() noexcept
 	{
-		constexpr ::std::size_t max_size{SIZE_MAX / sizeof(void *) / 2u};
+		constexpr size_type max_size{SIZE_MAX / sizeof(void *) / 2u};
 
-		::std::size_t old_size{static_cast<::std::size_t>(controller.controller_block.controller_after_ptr - controller.controller_block.controller_start_ptr)};
+		size_type old_size{static_cast<size_type>(controller.controller_block.controller_after_ptr - controller.controller_block.controller_start_ptr)};
 
 		if (old_size > max_size)
 		{
 			::fast_io::fast_terminate();
 		}
 
-		::std::size_t new_size{2 * old_size};
-		::std::size_t start_reserved_index{
-			static_cast<::std::size_t>(controller.controller_block.controller_start_reserved_ptr - controller.controller_block.controller_start_ptr)};
-		::std::size_t after_reserved_index{
-			static_cast<::std::size_t>(controller.controller_block.controller_after_reserved_ptr - controller.controller_block.controller_start_ptr)};
-		::std::size_t front_block_index{
-			static_cast<::std::size_t>(controller.front_block.controller_ptr - controller.controller_block.controller_start_ptr)};
-		::std::size_t back_block_index{
-			static_cast<::std::size_t>(controller.back_block.controller_ptr - controller.controller_block.controller_start_ptr)};
+		size_type new_size{2 * old_size};
+		size_type start_reserved_index{
+			static_cast<size_type>(controller.controller_block.controller_start_reserved_ptr - controller.controller_block.controller_start_ptr)};
+		size_type after_reserved_index{
+			static_cast<size_type>(controller.controller_block.controller_after_reserved_ptr - controller.controller_block.controller_start_ptr)};
+		size_type front_block_index{
+			static_cast<size_type>(controller.front_block.controller_ptr - controller.controller_block.controller_start_ptr)};
+		size_type back_block_index{
+			static_cast<size_type>(controller.back_block.controller_ptr - controller.controller_block.controller_start_ptr)};
 
 		controller.controller_block.controller_start_ptr = static_cast<value_type **>(allocator::reallocate_n(controller.controller_block.controller_start_ptr, old_size * sizeof(value_type *), new_size * sizeof(value_type *)));
 
@@ -254,8 +254,8 @@ private:
 	{
 		auto controller = reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(&this->controller);
 
-		::std::size_t diff{
-			static_cast<::std::size_t>(controller->front_block.controller_ptr - controller->back_block.controller_ptr)};
+		size_type diff{
+			static_cast<size_type>(controller->front_block.controller_ptr - controller->back_block.controller_ptr)};
 
 		void **locale = make_blocks_balance(
 			controller->controller_block.controller_start_reserved_ptr,
@@ -271,12 +271,12 @@ private:
 	{
 		auto controller = reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(&this->controller);
 
-		::std::size_t reserved_size{
-			static_cast<::std::size_t>(controller->controller_block.controller_after_reserved_ptr - controller->controller_block.controller_start_reserved_ptr)};
-		::std::size_t front_block_index{
-			static_cast<::std::size_t>(controller->front_block.controller_ptr - controller->controller_block.controller_start_reserved_ptr)};
-		::std::size_t back_block_index{
-			static_cast<::std::size_t>(controller->back_block.controller_ptr - controller->controller_block.controller_start_reserved_ptr)};
+		size_type reserved_size{
+			static_cast<size_type>(controller->controller_block.controller_after_reserved_ptr - controller->controller_block.controller_start_reserved_ptr)};
+		size_type front_block_index{
+			static_cast<size_type>(controller->front_block.controller_ptr - controller->controller_block.controller_start_reserved_ptr)};
+		size_type back_block_index{
+			static_cast<size_type>(controller->back_block.controller_ptr - controller->controller_block.controller_start_reserved_ptr)};
 
 		void **locale = make_blocks_balance(
 			controller->controller_block.controller_start_ptr,
@@ -292,8 +292,8 @@ private:
 
 	constexpr void **make_blocks_balance(void **begin, void **end, void **b, void **e) noexcept
 	{
-		::std::size_t external_diff{static_cast<::std::size_t>(end - begin)};
-		::std::size_t internal_diff{static_cast<::std::size_t>(e - b)};
+		size_type external_diff{static_cast<size_type>(end - begin)};
+		size_type internal_diff{static_cast<size_type>(e - b)};
 
 		if (external_diff - internal_diff == 1u)
 		{
@@ -334,7 +334,7 @@ private:
 			void **locale{begin + (external_diff - internal_diff) / 2u};
 			if (b > locale)
 			{
-				for (::std::size_t i{}; i < internal_diff; ++i)
+				for (size_type i{}; i < internal_diff; ++i)
 				{
 					::std::swap(b[i], locale[i]);
 				}
@@ -353,9 +353,9 @@ private:
 
 	constexpr void init_grow() noexcept
 	{
-		constexpr ::std::size_t single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
-		constexpr ::std::size_t block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
-		constexpr ::std::size_t mid = single_block_capacity / 2u;
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
+		constexpr size_type mid = single_block_capacity / 2u;
 
 		controller.controller_block.controller_start_ptr = controller.controller_block.controller_start_reserved_ptr = controller.front_block.controller_ptr = controller.back_block.controller_ptr = controller.controller_block.controller_start_ptr = static_cast<value_type **>(allocator::allocate(sizeof(value_type *)));
 
@@ -370,8 +370,8 @@ private:
 
 	constexpr void grow_front() noexcept
 	{
-		constexpr ::std::size_t single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
-		constexpr ::std::size_t block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
 
 		if (controller.controller_block.controller_start_ptr == nullptr)
 		{
@@ -418,8 +418,8 @@ private:
 
 	constexpr void grow_back() noexcept
 	{
-		constexpr ::std::size_t single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
-		constexpr ::std::size_t block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
 
 		if (controller.controller_block.controller_start_ptr == nullptr)
 		{
@@ -466,7 +466,7 @@ private:
 
 	void front_backspace()
 	{
-		constexpr ::std::size_t single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
 
 		if (++controller.front_block.curr_ptr == controller.front_block.end)
 		{
@@ -476,7 +476,7 @@ private:
 
 	void back_backspace()
 	{
-		constexpr ::std::size_t single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
 
 		if (--controller.back_block.curr_ptr == controller.back_block.begin)
 		{
@@ -493,7 +493,7 @@ public:
 					return;
 				}
 				this->destroy();
-				::std::size_t n{ (controller.back_block.controller_ptr - controller.front_block.controller_ptr) };
+				size_type n{ (controller.back_block.controller_ptr - controller.front_block.controller_ptr) };
 				n >>= 1u;
 				auto mid{ controller.front_block.controller_ptr + n };
 				*mid;
@@ -557,13 +557,33 @@ public:
 		back_backspace();
 	}
 
+	constexpr reference back_unchecked() noexcept
+	{
+		return controller.back_block.curr_ptr[-1];
+	}
+
+	constexpr const_reference back_unchecked() const noexcept
+	{
+		return controller.back_block.curr_ptr[-1];
+	}
+
 	constexpr reference back() noexcept
 	{
+		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		{
+			::fast_io::fast_terminate();
+		}
+
 		return controller.back_block.curr_ptr[-1];
 	}
 
 	constexpr const_reference back() const noexcept
 	{
+		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		{
+			::fast_io::fast_terminate();
+		}
+
 		return controller.back_block.curr_ptr[-1];
 	}
 
@@ -624,14 +644,62 @@ public:
 		front_backspace();
 	}
 
+	constexpr reference front_unchecked() noexcept
+	{
+		return *controller.front_block.curr_ptr;
+	}
+
+	constexpr const_reference front_unchecked() const noexcept
+	{
+		return *controller.front_block.curr_ptr;
+	}
+
 	constexpr reference front() noexcept
 	{
+		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		{
+			::fast_io::fast_terminate();
+		}
+
 		return *controller.front_block.curr_ptr;
 	}
 
 	constexpr const_reference front() const noexcept
 	{
+		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		{
+			::fast_io::fast_terminate();
+		}
+
 		return *controller.front_block.curr_ptr;
+	}
+
+	constexpr reference operator[](size_type index) noexcept
+	{
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+
+		if (size() <= index) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+
+		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
+
+		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
+	}
+
+	constexpr const_reference operator[](size_type index) const noexcept
+	{
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+
+		if (size() <= index) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+
+		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
+
+		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
 	}
 
 	static inline constexpr size_type max_size() noexcept
@@ -640,16 +708,16 @@ public:
 		return mxval;
 	}
 
-	constexpr ::std::size_t size() const noexcept
+	constexpr size_type size() const noexcept
 	{
 		if (controller.back_block.controller_ptr == controller.front_block.controller_ptr)
 		{
-			return controller.back_block.curr_ptr - controller.front_block.curr_ptr;
+			return controller.back_block.curr_ptr - controller.front_block.curr_ptr - 1u;
 		}
 
-		constexpr ::std::size_t single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
 
-		::std::size_t full_block_size = controller.back_block.controller_ptr - controller.front_block.controller_ptr - 1u;
+		size_type full_block_size = controller.back_block.controller_ptr - controller.front_block.controller_ptr - 1u;
 
 		return full_block_size * single_block_capacity + (controller.back_block.curr_ptr - controller.back_block.begin_ptr - 1u) + (controller.front_block.end_ptr - controller.front_block.curr_ptr);
 	}
@@ -666,7 +734,7 @@ public:
 
 	constexpr void check() const noexcept
 	{
-		constexpr ::std::size_t single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
+		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
 
 		auto front_controller_ptr{controller.front_block.controller_ptr};
 		auto back_controller_ptr{controller.back_block.controller_ptr};
