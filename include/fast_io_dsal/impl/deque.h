@@ -347,9 +347,9 @@ inline constexpr void deque_init_grow_common_controllerallocate_impl(dequecontro
 	using controlreplacetype = typename dequecontroltype::controlreplacetype;
 	constexpr ::std::size_t allocatesize{sizeof(controlreplacetype) << 2u};
 	auto controllerstartptr{static_cast<controlreplacetype *>(allocator::allocate(allocatesize))};
-	controller.controller_block.controller_start_ptr = controllerstartptr;
-	controller.controller_block.controller_after_reserved_ptr = controller.controller_block.controller_start_reserved_ptr = controller.back_block.controller_ptr = controller.front_block.controller_ptr = controllerstartptr + 1;
-	controller.controller_block.controller_after_ptr = controllerstartptr + 4u;
+	controller.controller_block.controller_start_reserved_ptr = controllerstartptr;
+	controller.controller_block.controller_after_ptr = controller.controller_block.controller_start_ptr = controller.back_block.controller_ptr = controller.front_block.controller_ptr = controllerstartptr + 1;
+	controller.controller_block.controller_after_reserved_ptr = controllerstartptr + 4u;
 	*controller.back_block.controller_ptr = blockptr;
 	controller.front_block.begin_ptr = controller.back_block.begin_ptr = blockptr;
 	controller.back_block.curr_ptr = controller.front_block.curr_ptr = blockptr + mid;
