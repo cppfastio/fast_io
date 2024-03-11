@@ -473,8 +473,6 @@ private:
 
 	constexpr void make_reserved_blocks_balance() noexcept
 	{
-		auto controller = reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(&this->controller);
-
 		size_type diff{
 			static_cast<size_type>(controller->front_block.controller_ptr - controller->back_block.controller_ptr)};
 
@@ -490,8 +488,6 @@ private:
 
 	constexpr void make_unreserved_blocks_balance() noexcept
 	{
-		auto controller = reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(&this->controller);
-
 		size_type reserved_size{
 			static_cast<size_type>(controller->controller_block.controller_after_reserved_ptr - controller->controller_block.controller_start_reserved_ptr)};
 		size_type front_block_index{
