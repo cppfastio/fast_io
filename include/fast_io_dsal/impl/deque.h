@@ -570,7 +570,6 @@ private:
 
 	constexpr void init_grow() noexcept
 	{
-		constexpr size_type block_size{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 		constexpr size_type mid{block_size >> 1u};
 #if __cpp_if_consteval >= 202106L
 		if consteval
@@ -591,7 +590,6 @@ private:
 #endif
 	constexpr void grow_front() noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 
 		if (controller.controller_block.controller_start_ptr == nullptr)
 		{
@@ -633,7 +631,7 @@ private:
 		}
 
 		controller.front_block.curr_ptr = controller.front_block.end_ptr =
-			(controller.front_block.begin_ptr = *--controller.front_block.controller_ptr) + single_block_capacity;
+			(controller.front_block.begin_ptr = *--controller.front_block.controller_ptr) + block_size;
 	}
 
 #if __has_cpp_attribute(__gnu__::__cold__)
@@ -641,8 +639,6 @@ private:
 #endif
 	constexpr void grow_back() noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		if (controller.controller_block.controller_start_ptr == nullptr)
 		{
 			init_grow();
@@ -683,26 +679,22 @@ private:
 			}
 		}
 
-		controller.back_block.end_ptr = (controller.back_block.curr_ptr = controller.back_block.begin_ptr = *++controller.back_block.controller_ptr) + single_block_capacity;
+		controller.back_block.end_ptr = (controller.back_block.curr_ptr = controller.back_block.begin_ptr = *++controller.back_block.controller_ptr) + block_size;
 	}
 
 	void front_backspace()
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		if (++controller.front_block.curr_ptr == controller.front_block.end)
 		{
-			controller.front_block.end_ptr = (controller.front_block.curr_ptr = controller.front_block.begin_ptr = *++controller.front_block.controller_ptr) + single_block_capacity;
+			controller.front_block.end_ptr = (controller.front_block.curr_ptr = controller.front_block.begin_ptr = *++controller.front_block.controller_ptr) + block_size;
 		}
 	}
 
 	void back_backspace()
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		if (--controller.back_block.curr_ptr == controller.back_block.begin)
 		{
-			controller.back_block.curr_ptr = controller.back_block.end_ptr = (controller.back_block.begin_ptr = *--controller.back_block.controller_ptr) + single_block_capacity;
+			controller.back_block.curr_ptr = controller.back_block.end_ptr = (controller.back_block.begin_ptr = *--controller.back_block.controller_ptr) + block_size;
 		}
 	}
 
@@ -875,8 +867,6 @@ public:
 
 	constexpr reference operator[](size_type index) noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		if (size() <= index) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
@@ -884,13 +874,11 @@ public:
 
 		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
 
-		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
+		return controller.front_block.controller_ptr[real_index / block_size][real_index % block_size];
 	}
 
 	constexpr const_reference operator[](size_type index) const noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		if (size() <= index) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
@@ -898,25 +886,21 @@ public:
 
 		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
 
-		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
+		return controller.front_block.controller_ptr[real_index / block_size][real_index % block_size];
 	}
 
 	constexpr reference index_unchecked(size_type index) noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
 
-		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
+		return controller.front_block.controller_ptr[real_index / block_size][real_index % block_size];
 	}
 
 	constexpr const_reference index_unchecked(size_type index) const noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
 
-		return controller.front_block.controller_ptr[real_index / single_block_capacity][real_index % single_block_capacity];
+		return controller.front_block.controller_ptr[real_index / block_size][real_index % block_size];
 	}
 
 	static inline constexpr size_type max_size() noexcept
@@ -932,11 +916,9 @@ public:
 			return static_cast<size_type>(controller.back_block.curr_ptr - controller.front_block.curr_ptr);
 		}
 
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		size_type full_block_size{static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) - 1u};
 
-		return full_block_size * single_block_capacity + (controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.end_ptr - controller.front_block.curr_ptr);
+		return full_block_size * block_size + (controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.end_ptr - controller.front_block.curr_ptr);
 	}
 
 	constexpr iterator begin() noexcept
@@ -975,10 +957,9 @@ private:
 		::fast_io::containers::details::deque_control_block<value_type> backblock{this->controller.back_block};
 		if (backblock.curr_ptr == backblock.end_ptr) [[unlikely]]
 		{
-			constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 			if (backblock.controller_ptr) [[likely]]
 			{
-				backblock.end_ptr = ((backblock.curr_ptr = backblock.begin_ptr = (*++backblock.controller_ptr)) + single_block_capacity);
+				backblock.end_ptr = ((backblock.curr_ptr = backblock.begin_ptr = (*++backblock.controller_ptr)) + block_size);
 			}
 		}
 		return {backblock};
@@ -989,10 +970,9 @@ private:
 		::fast_io::containers::details::deque_control_block<value_type> backblock{this->controller.back_block};
 		if (backblock.curr_ptr == backblock.end_ptr) [[unlikely]]
 		{
-			constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 			if (backblock.controller_ptr) [[likely]]
 			{
-				backblock.end_ptr = ((backblock.curr_ptr = backblock.begin_ptr = (*++backblock.controller_ptr)) + single_block_capacity);
+				backblock.end_ptr = ((backblock.curr_ptr = backblock.begin_ptr = (*++backblock.controller_ptr)) + block_size);
 			}
 		}
 		return {backblock};
@@ -1041,15 +1021,13 @@ public:
 
 	constexpr void check() const noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-
 		auto front_controller_ptr{controller.front_block.controller_ptr};
 		auto back_controller_ptr{controller.back_block.controller_ptr};
 		if (front_controller_ptr != back_controller_ptr)
 		{
 			for (T **it{front_controller_ptr + 1}, **ed{back_controller_ptr}; it != ed; ++it)
 			{
-				for (T *blockptr{*it}, *blockptr_end{*it + single_block_capacity}; blockptr != blockptr_end; ++blockptr)
+				for (T *blockptr{*it}, *blockptr_end{*it + block_size}; blockptr != blockptr_end; ++blockptr)
 				{
 					if (*blockptr != 5)
 					{
