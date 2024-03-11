@@ -738,22 +738,12 @@ public:
 
 	constexpr void push_back(value_type const &value)
 	{
-		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
-		{
-			grow_back();
-		}
-		*controller.back_block.curr_ptr = value;
-		++controller.back_block.curr_ptr;
+		this->emplace_back(value);
 	}
 
 	constexpr void push_back(value_type &&value)
 	{
-		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
-		{
-			grow_back();
-		}
-		*controller.back_block.curr_ptr = ::std::move(value);
-		++controller.back_block.curr_ptr;
+		this->emplace_back(::std::move(value));
 	}
 
 	constexpr void pop_back() noexcept
@@ -823,21 +813,12 @@ public:
 
 	constexpr void push_front(value_type const &value)
 	{
-		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
-		{
-			grow_front();
-		}
-		*--controller.front_block.curr_ptr = value;
+		this->emplace_front(value);
 	}
 
 	constexpr void push_front(value_type &&value)
 	{
-		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
-		{
-			grow_front();
-		}
-
-		*--controller.front_block.curr_ptr = ::std::move(value);
+		this->emplace_front(::std::move(value));
 	}
 
 	constexpr void pop_front() noexcept
