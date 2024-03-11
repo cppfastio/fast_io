@@ -37,6 +37,7 @@ struct
 #endif
 	deque_controller_block_common
 {
+	using replacetype = char unsigned;
 	void **controller_start_ptr;
 	void **controller_start_reserved_ptr;
 	void **controller_after_ptr;
@@ -46,6 +47,7 @@ struct
 template <typename T>
 struct deque_controller_block
 {
+	using replacetype = T;
 	T **controller_start_ptr;
 	T **controller_start_reserved_ptr;
 	T **controller_after_ptr;
@@ -55,6 +57,8 @@ struct deque_controller_block
 template <typename T>
 struct deque_controller
 {
+	using replacetype = T;
+	using controlreplacetype = T *;
 	::fast_io::containers::details::deque_control_block<T> front_block;
 	::fast_io::containers::details::deque_control_block<T> back_block;
 	::fast_io::containers::details::deque_controller_block<T> controller_block;
@@ -66,6 +70,8 @@ struct
 #endif
 	deque_controller_common
 {
+	using replacetype = char unsigned;
+	using controlreplacetype = void *;
 	::fast_io::containers::details::deque_control_block_common front_block;
 	::fast_io::containers::details::deque_control_block_common back_block;
 	::fast_io::containers::details::deque_controller_block_common controller_block;
@@ -334,33 +340,45 @@ inline constexpr void deque_destroy_trivial_common(controllerblocktype &controll
 			reinterpret_cast<::fast_io::containers::details::deque_controller_block_common *>(__builtin_addressof(controller)));
 	}
 }
-#if 0
-			template<typename allocator, size_type align, size_type sz, typename dqcontrollerblocktype>
-			inline constexpr void* deque_allocate_block_memory_common_impl() noexcept
-			{
 
-			}
-#endif
-
-template <typename allocator, ::std::size_t align, ::std::size_t sz, typename dqcontrollerblocktype>
-inline constexpr void deque_grow_trivial_common_impl(dqcontrollerblocktype *controllerptr) noexcept
+template <typename allocator, typename dequecontroltype, typename replacetype>
+inline constexpr void deque_init_grow_common_controllerallocate_impl(dequecontroltype &controller, ::std::size_t total_block_size, replacetype *blockptr) noexcept
 {
+	using controlreplacetype = typename dequecontroltype::controlreplacetype;
+	constexpr ::std::size_t allocatesize{sizeof(controlreplacetype) << 2};
+	auto controllerstartptr{static_cast<controlreplacetype *>(allocator::allocate(allocatesize))};
+	controller.controller_block.controller_start_ptr = controllerstartptr;
+	controller.controller_block.controller_after_reserved_ptr = controller.controller_block.controller_start_reserved_ptr = controller.back_block.controller_ptr = controller.front_block.controller_ptr = controllerstartptr + 1;
+	controller.controller_block.controller_after_ptr = controllerstartptr + 4;
+	*controller.back_block.controller_ptr = blockptr;
+	::std::size_t const mid{total_block_size >> 1u};
+	controller.front_block.begin_ptr = controller.back_block.begin_ptr = blockptr;
+	controller.back_block.curr_ptr = controller.front_block.curr_ptr = blockptr + mid;
+	controller.front_block.end_ptr = controller.back_block.end_ptr = blockptr + total_block_size;
 }
 
-template <typename allocator, ::std::size_t align, ::std::size_t sz, typename dqcontrollerblocktype>
-inline constexpr void deque_grow_trivial_common(dqcontrollerblocktype &controller) noexcept
+template <typename allocator, typename dequecontroltype>
+inline constexpr void deque_init_grow_common_noalign_impl(dequecontroltype &controller, ::std::size_t total_block_size) noexcept
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+	::fast_io::containers::details::deque_init_grow_common_controllerallocate_impl<allocator>(controller, total_block_size, static_cast<typename dequecontroltype::replacetype *>(allocator::allocate(total_block_size)));
+}
+
+template <typename allocator, typename dequecontroltype>
+inline constexpr void deque_init_grow_common_align_impl(dequecontroltype &controller, ::std::size_t align, ::std::size_t total_block_size) noexcept
+{
+	::fast_io::containers::details::deque_init_grow_common_controllerallocate_impl<allocator>(controller, total_block_size, static_cast<typename dequecontroltype::replacetype *>(allocator::allocate_aligned(align, total_block_size)));
+}
+
+template <typename allocator, ::std::size_t align, ::std::size_t block_size, typename dequecontroltype>
+inline constexpr void deque_init_grow_common(dequecontroltype &controller) noexcept
+{
+	if constexpr (align <= allocator::default_alignment)
 	{
-		::fast_io::containers::details::deque_grow_trivial_common_impl<allocator, align, sz, dqcontrollerblocktype>(__builtin_addressof(controller));
+		::fast_io::containers::details::deque_init_grow_common_noalign_impl<allocator>(controller, block_size);
 	}
 	else
 	{
-		::fast_io::containers::details::deque_grow_trivial_common_impl<allocator, align, sz, deque_controller_common>(reinterpret_cast<deque_controller_common *>(__builtin_addressof(controller)));
+		::fast_io::containers::details::deque_init_grow_common_align_impl<allocator>(controller, align, block_size);
 	}
 }
 
@@ -557,30 +575,19 @@ private:
 
 	constexpr void init_grow() noexcept
 	{
-		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 		constexpr size_type block_size{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-		constexpr size_type mid = single_block_capacity / 2u;
-		// clang-format off
-		controller.controller_block.controller_start_ptr 
-			= controller.controller_block.controller_start_reserved_ptr
-			= controller.front_block.controller_ptr 
-			= controller.back_block.controller_ptr 
-			= controller.controller_block.controller_start_ptr 
-			= static_cast<value_type **>(allocator::allocate(sizeof(value_type *)));
-
-		controller.controller_block.controller_after_ptr = controller.controller_block.controller_after_reserved_ptr = (controller.controller_block.controller_start_ptr + 1u);
-
-		*controller.controller_block.controller_start_ptr = static_cast<value_type *>(allocator::allocate(block_size*sizeof(value_type)));
-
-		controller.back_block.curr_ptr 
-			= (controller.front_block.curr_ptr
-				= (controller.front_block.begin_ptr
-					= controller.back_block.begin_ptr
-
-					= *controller.controller_block.controller_start_ptr) + mid);
-
-		// clang-format on
-		controller.front_block.end_ptr = controller.back_block.end_ptr = controller.front_block.begin_ptr + single_block_capacity;
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			::fast_io::containers::details::deque_init_grow_common<allocator, alignof(T), block_size>(controller);
+		}
+		else
+		{
+			::fast_io::containers::details::deque_init_grow_common<allocator, alignof(T), sizeof(value_type) * block_size>(*reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(__builtin_addressof(controller)));
+		}
 	}
 
 #if __has_cpp_attribute(__gnu__::__cold__)
