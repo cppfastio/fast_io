@@ -71,6 +71,90 @@ struct
 	::fast_io::containers::details::deque_controller_block_common controller_block;
 };
 
+template <typename T, bool isconst>
+struct deque_iterator
+{
+	using value_type = T;
+	using pointer = ::std::conditional_t<isconst, value_type const *, value_type *>;
+	using const_pointer = value_type const *;
+
+	using reference = ::std::conditional_t<isconst, value_type const &, value_type &>;
+	using const_reference = value_type const &;
+
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+
+	deque_control_block<T> itercontent;
+
+	constexpr deque_iterator &operator++() noexcept
+	{
+		if (++itercontent.curr_ptr == itercontent.end_ptr) [[unlikely]]
+		{
+			constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+			itercontent.end_ptr = ((itercontent.curr_ptr = itercontent.begin_ptr = (*++itercontent.controller_ptr)) + blocksize);
+		}
+		return *this;
+	}
+
+	constexpr deque_iterator &operator--() noexcept
+	{
+		if (itercontent.curr_ptr == itercontent.begin_ptr) [[unlikely]]
+		{
+			constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+			itercontent.end_ptr = itercontent.curr_ptr = ((itercontent.begin_ptr = (*--itercontent.controller_ptr)) + blocksize);
+		}
+		--itercontent.curr_ptr;
+		return *this;
+	}
+
+	constexpr deque_iterator operator++(int) noexcept
+	{
+		auto temp(*this);
+		++*this;
+		return temp;
+	}
+
+	constexpr deque_iterator operator--(int) noexcept
+	{
+		auto temp(*this);
+		--*this;
+		return temp;
+	}
+
+	constexpr reference operator*() const noexcept
+	{
+		return *this->itercontent.curr_ptr;
+	}
+
+	constexpr pointer operator->() const noexcept
+	{
+		return this->itercontent.curr_ptr;
+	}
+
+	constexpr operator deque_iterator<T, true>()
+		requires(!isconst)
+	{
+		return {this->itercontent};
+	}
+};
+
+template <typename T, bool isconst1, bool isconst2>
+inline constexpr bool operator==(deque_iterator<T, isconst1> const &a, deque_iterator<T, isconst2> const &b) noexcept
+{
+	return a.itercontent.curr_ptr == b.itercontent.curr_ptr;
+}
+
+template <typename T, bool isconst1, bool isconst2>
+inline constexpr auto operator<=>(deque_iterator<T, isconst1> const &a, deque_iterator<T, isconst2> const &b) noexcept
+{
+	auto block3way{a.itercontent.controller_ptr <=> b.itercontent.controller_ptr};
+	if (block3way == 0)
+	{
+		return a.itercontent.curr_ptr <=> b.itercontent.curr_ptr;
+	}
+	return block3way;
+}
+
 template <typename allocator, typename controllerblocktype>
 inline constexpr void deque_destroy_controller(controllerblocktype *controllerptr) noexcept
 {
@@ -181,6 +265,11 @@ public:
 	using const_reference = value_type const &;
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
+	using iterator = ::fast_io::containers::details::deque_iterator<T, false>;
+	using const_iterator = ::fast_io::containers::details::deque_iterator<T, true>;
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+
 	::fast_io::containers::details::deque_controller<T> controller;
 	static inline constexpr size_type block_size{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 	constexpr deque() noexcept
@@ -609,7 +698,7 @@ public:
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr reference emplace_front(Args &&...args)
 	{
-		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr)
+		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
 		{
 			grow_front();
 		}
@@ -753,6 +842,79 @@ public:
 		size_type full_block_size{static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) - 1u};
 
 		return full_block_size * single_block_capacity + (controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.end_ptr - controller.front_block.curr_ptr);
+	}
+
+	constexpr iterator begin() noexcept
+	{
+		return {this->controller.front_block};
+	}
+
+	constexpr const_iterator begin() const noexcept
+	{
+		return {this->controller.front_block};
+	}
+
+	constexpr const_iterator cbegin() const noexcept
+	{
+		return {this->controller.front_block};
+	}
+
+	constexpr reverse_iterator rend() noexcept
+	{
+		return reverse_iterator({this->controller.front_block});
+	}
+
+	constexpr const_reverse_iterator rend() const noexcept
+	{
+		return const_reverse_iterator({this->controller.front_block});
+	}
+
+	constexpr const_reverse_iterator crend() const noexcept
+	{
+		return const_reverse_iterator({this->controller.front_block});
+	}
+
+private:
+	constexpr ::fast_io::containers::details::deque_control_block<value_type> end_common() noexcept
+	{
+		::fast_io::containers::details::deque_control_block<value_type> backblock{this->controller.back_block};
+		if (backblock.curr_ptr == backblock.end_ptr) [[unlikely]]
+		{
+			constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
+			backblock.end_ptr = ((backblock.curr_ptr = backblock.begin_ptr = (*++backblock.controller_ptr)) + single_block_capacity);
+		}
+		return {backblock};
+	}
+
+public:
+	constexpr iterator end() noexcept
+	{
+		return {this->end_common()};
+	}
+
+	constexpr const_iterator end() const noexcept
+	{
+		return {this->end_common()};
+	}
+
+	constexpr const_iterator cend() const noexcept
+	{
+		return {this->end_common()};
+	}
+
+	constexpr reverse_iterator rbegin() noexcept
+	{
+		return reverse_iterator({this->end_common()});
+	}
+
+	constexpr const_reverse_iterator rbegin() const noexcept
+	{
+		return reverse_iterator({this->end_common()});
+	}
+
+	constexpr const_reverse_iterator crbegin() const noexcept
+	{
+		return reverse_iterator({this->end_common()});
 	}
 
 	constexpr bool empty() const noexcept
