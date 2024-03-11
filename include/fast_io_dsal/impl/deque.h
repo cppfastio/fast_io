@@ -383,6 +383,9 @@ private:
 		controller.front_block.end_ptr = controller.back_block.end_ptr = controller.front_block.begin_ptr + single_block_capacity;
 	}
 
+#if __has_cpp_attribute(__gnu__::__cold__)
+	[[__gnu__::__cold__]]
+#endif
 	constexpr void grow_front() noexcept
 	{
 		constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
@@ -523,15 +526,16 @@ public:
 		{
 			grow_back();
 		}
+		auto currptr{controller.back_block.curr_ptr};
 		if constexpr (::std::is_trivially_constructible_v<value_type>)
 		{
-			::std::construct_at(controller.back_block.curr_ptr, ::std::forward<Args>(args)...);
+			::std::construct_at(currptr, ::std::forward<Args>(args)...);
 		}
 		++controller.back_block.curr_ptr;
-		return back();
+		return *currptr;
 	}
 
-	constexpr reference push_back(value_type &value)
+	constexpr void push_back(value_type &value)
 	{
 		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
 		{
@@ -539,10 +543,9 @@ public:
 		}
 		*controller.back_block.curr_ptr = value;
 		++controller.back_block.curr_ptr;
-		return back();
 	}
 
-	constexpr reference push_back(value_type &&value)
+	constexpr void push_back(value_type &&value)
 	{
 		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
 		{
@@ -550,7 +553,6 @@ public:
 		}
 		*controller.back_block.curr_ptr = ::std::move(value);
 		++controller.back_block.curr_ptr;
-		return back();
 	}
 
 	constexpr void pop_back() noexcept
@@ -615,20 +617,19 @@ public:
 		{
 			::std::construct_at(--controller.back_block.curr_ptr, ::std::forward<Args>(args)...);
 		}
-		return back();
+		return *controller.back_block.curr_ptr;
 	}
 
-	constexpr reference push_front(value_type &value)
+	constexpr void push_front(value_type &value)
 	{
 		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
 		{
 			grow_front();
 		}
 		*--controller.front_block.curr_ptr = value;
-		return back();
 	}
 
-	constexpr reference push_front(value_type &&value)
+	constexpr void push_front(value_type &&value)
 	{
 		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
 		{
@@ -636,8 +637,6 @@ public:
 		}
 
 		*--controller.front_block.curr_ptr = ::std::move(value);
-
-		return front();
 	}
 
 	constexpr void pop_front() noexcept
