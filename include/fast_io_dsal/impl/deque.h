@@ -131,12 +131,59 @@ struct deque_iterator
 		return this->itercontent.curr_ptr;
 	}
 
-	constexpr operator deque_iterator<T, true>()
+#if 0
+	constexpr deque_iterator &operator+=(difference_type pos) noexcept
+	{
+		return *this;
+	}
+
+	constexpr deque_iterator &operator-=(difference_type pos) noexcept
+	{
+		return *this;
+	}
+
+
+	constexpr reference operator[](difference_type) const noexcept
+	{
+		return *this->itercontent.curr_ptr;
+	}
+
+#endif
+
+	constexpr operator deque_iterator<T, true>() noexcept
 		requires(!isconst)
 	{
 		return {this->itercontent};
 	}
 };
+
+#if 0
+
+template <typename T, bool isconst>
+inline constexpr deque_iterator<T, isconst> operator+(deque_iterator<T, isconst> a, difference_type pos) noexcept
+{
+	return (a+=pos);
+}
+
+template <typename T, bool isconst>
+inline constexpr deque_iterator<T, isconst> operator+(difference_type pos, deque_iterator<T, isconst> a) noexcept
+{
+	return (a+=pos);
+}
+
+template <typename T, bool isconst>
+inline constexpr deque_iterator<T, isconst> operator-(deque_iterator<T, isconst> a, difference_type pos) noexcept
+{
+	return (a-=pos);
+}
+
+template <typename T, bool isconst1, bool isconst2>
+inline constexpr ::std::ptrdiff_t operator-(deque_iterator<T, isconst1> const &a, deque_iterator<T, isconst2> const &b) noexcept
+{
+	return 0;
+}
+
+#endif
 
 template <typename T, bool isconst1, bool isconst2>
 inline constexpr bool operator==(deque_iterator<T, isconst1> const &a, deque_iterator<T, isconst2> const &b) noexcept

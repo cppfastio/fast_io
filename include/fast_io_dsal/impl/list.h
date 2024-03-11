@@ -73,7 +73,7 @@ public:
 		return __builtin_addressof(static_cast<list_node<T> *>(iter)->element);
 	}
 
-	constexpr operator list_iterator<T, true>()
+	constexpr operator list_iterator<T, true>() noexcept
 		requires(!isconst)
 	{
 		return {this->iter};
@@ -559,7 +559,6 @@ public:
 	{
 		return {__builtin_addressof(imp)};
 	}
-
 
 	[[nodiscard]] inline constexpr reverse_iterator rend() noexcept
 	{
