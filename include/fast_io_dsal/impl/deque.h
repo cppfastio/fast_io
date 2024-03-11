@@ -356,15 +356,26 @@ private:
 		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
 		constexpr size_type block_size{sizeof(value_type) > 4096u ? sizeof(value_type) : 4096u};
 		constexpr size_type mid = single_block_capacity / 2u;
-
-		controller.controller_block.controller_start_ptr = controller.controller_block.controller_start_reserved_ptr = controller.front_block.controller_ptr = controller.back_block.controller_ptr = controller.controller_block.controller_start_ptr = static_cast<value_type **>(allocator::allocate(sizeof(value_type *)));
+		// clang-format off
+		controller.controller_block.controller_start_ptr 
+			= controller.controller_block.controller_start_reserved_ptr
+			= controller.front_block.controller_ptr 
+			= controller.back_block.controller_ptr 
+			= controller.controller_block.controller_start_ptr 
+			= static_cast<value_type **>(allocator::allocate(sizeof(value_type *)));
 
 		controller.controller_block.controller_after_ptr = controller.controller_block.controller_after_reserved_ptr = (controller.controller_block.controller_start_ptr + 1u);
 
 		*controller.controller_block.controller_start_ptr = static_cast<value_type *>(allocator::allocate(block_size));
 
-		controller.back_block.curr_ptr = (controller.front_block.curr_ptr = (controller.front_block.begin_ptr = controller.back_block.begin_ptr = *controller.controller_block.controller_start_ptr) + mid) + 1u;
+		controller.back_block.curr_ptr 
+			= (controller.front_block.curr_ptr
+				= (controller.front_block.begin_ptr
+					= controller.back_block.begin_ptr
 
+					= *controller.controller_block.controller_start_ptr) + mid);
+
+		// clang-format on
 		controller.front_block.end_ptr = controller.back_block.end_ptr = controller.front_block.begin_ptr + single_block_capacity;
 	}
 
@@ -435,7 +446,7 @@ private:
 		if (controller.controller_block.controller_after_reserved_ptr - controller.back_block.controller_ptr < 2u)
 		{
 			// could balance reserved blocks == false
-			if (controller.controller_block.controller_start_ptr == controller.front_block.controller_ptr)
+			if (controller.controller_block.controller_start_reserved_ptr == controller.front_block.controller_ptr)
 			{
 				// has unreserved block == fasle
 				if (controller.controller_block.controller_after_ptr == controller.controller_block.controller_after_reserved_ptr)
@@ -539,7 +550,7 @@ public:
 
 	constexpr void pop_back() noexcept
 	{
-		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
 		{
 			::fast_io::fast_terminate();
 		}
@@ -569,7 +580,7 @@ public:
 
 	constexpr reference back() noexcept
 	{
-		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
 		{
 			::fast_io::fast_terminate();
 		}
@@ -579,7 +590,7 @@ public:
 
 	constexpr const_reference back() const noexcept
 	{
-		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
 		{
 			::fast_io::fast_terminate();
 		}
@@ -626,7 +637,7 @@ public:
 
 	constexpr void pop_front() noexcept
 	{
-		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
 		{
 			::fast_io::fast_terminate();
 		}
@@ -656,7 +667,7 @@ public:
 
 	constexpr reference front() noexcept
 	{
-		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
 		{
 			::fast_io::fast_terminate();
 		}
@@ -666,7 +677,7 @@ public:
 
 	constexpr const_reference front() const noexcept
 	{
-		if (controller.front_block.curr_ptr + 1u == controller.back_block.curr_ptr)
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr)
 		{
 			::fast_io::fast_terminate();
 		}
@@ -712,14 +723,14 @@ public:
 	{
 		if (controller.back_block.controller_ptr == controller.front_block.controller_ptr)
 		{
-			return controller.back_block.curr_ptr - controller.front_block.curr_ptr - 1u;
+			return controller.back_block.curr_ptr - controller.front_block.curr_ptr;
 		}
 
 		constexpr size_type single_block_capacity{sizeof(value_type) > 4096u ? 1u : 4096u / sizeof(value_type)};
 
-		size_type full_block_size = controller.back_block.controller_ptr - controller.front_block.controller_ptr - 1u;
+		size_type full_block_size{static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) - 1u};
 
-		return full_block_size * single_block_capacity + (controller.back_block.curr_ptr - controller.back_block.begin_ptr - 1u) + (controller.front_block.end_ptr - controller.front_block.curr_ptr);
+		return full_block_size * single_block_capacity + (controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.end_ptr - controller.front_block.curr_ptr);
 	}
 
 	constexpr bool empty() const noexcept
