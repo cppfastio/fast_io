@@ -239,15 +239,8 @@ template <typename T, bool isconst1, bool isconst2>
 inline constexpr ::std::ptrdiff_t operator-(deque_iterator<T, isconst1> const &a, deque_iterator<T, isconst2> const &b) noexcept
 {
 	::std::ptrdiff_t controllerdiff{a.itercontent.controller_ptr - b.itercontent.controller_ptr};
-	if (controllerdiff == 0)
-	{
-		return a.itercontent.curr_ptr - b.itercontent.curr_ptr;
-	}
-	else
-	{
-		constexpr ::std::ptrdiff_t blocksizedf{static_cast<::std::ptrdiff_t>(::fast_io::containers::details::deque_block_size<sizeof(T)>)};
-		return controllerdiff * blocksizedf + (a.itercontent.curr_ptr - b.itercontent.begin_ptr) + (b.itercontent.begin_ptr - b.itercontent.curr_ptr);
-	}
+	constexpr ::std::ptrdiff_t blocksizedf{static_cast<::std::ptrdiff_t>(::fast_io::containers::details::deque_block_size<sizeof(T)>)};
+	return controllerdiff * blocksizedf + (a.itercontent.curr_ptr - b.itercontent.begin_ptr) + (b.itercontent.begin_ptr - b.itercontent.curr_ptr);
 }
 
 template <typename T, bool isconst1, bool isconst2>
