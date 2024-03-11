@@ -671,7 +671,7 @@ public:
 		return *currptr;
 	}
 
-	constexpr void push_back(value_type &value)
+	constexpr void push_back(value_type const &value)
 	{
 		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
 		{
@@ -756,7 +756,7 @@ public:
 		return *controller.back_block.curr_ptr;
 	}
 
-	constexpr void push_front(value_type &value)
+	constexpr void push_front(value_type const &value)
 	{
 		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
 		{
