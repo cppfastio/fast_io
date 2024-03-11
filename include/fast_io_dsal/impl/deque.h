@@ -29,7 +29,7 @@ inline constexpr ::std::size_t deque_block_size_shift{12};
 inline constexpr ::std::size_t deque_block_size_common{static_cast<::std::size_t>(1) << deque_block_size_shift};
 
 template <::std::size_t sz>
-inline constexpr ::std::size_t deque_block_size{sz <= deque_block_size_common ? (deque_block_size_common / sz) : 1u};
+inline constexpr ::std::size_t deque_block_size{sz <= (deque_block_size_common / 16u) ? (deque_block_size_common / sz) : 16u};
 
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
