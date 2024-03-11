@@ -973,7 +973,10 @@ private:
 		if (backblock.curr_ptr == backblock.end_ptr) [[unlikely]]
 		{
 			constexpr size_type single_block_capacity{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-			backblock.end_ptr = ((backblock.curr_ptr = backblock.begin_ptr = (*++backblock.controller_ptr)) + single_block_capacity);
+			if (backblock.controller_ptr) [[likely]]
+			{
+				backblock.end_ptr = ((backblock.curr_ptr = backblock.begin_ptr = (*++backblock.controller_ptr)) + single_block_capacity);
+			}
 		}
 		return {backblock};
 	}
