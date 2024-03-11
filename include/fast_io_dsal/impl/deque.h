@@ -473,38 +473,42 @@ private:
 
 	constexpr void make_reserved_blocks_balance() noexcept
 	{
+		::fast_io::containers::details::deque_controller_common *pcontroller{reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(__builtin_addressof(controller))};
+
 		size_type diff{
-			static_cast<size_type>(controller->front_block.controller_ptr - controller->back_block.controller_ptr)};
+			static_cast<size_type>(pcontroller->front_block.controller_ptr - pcontroller->back_block.controller_ptr)};
 
 		void **blocktemp = make_blocks_balance(
-			controller->controller_block.controller_start_reserved_ptr,
-			controller->controller_block.controller_after_reserved_ptr,
-			controller->front_block.controller_ptr,
-			controller->back_block.controller_ptr + 1);
+			pcontroller->controller_block.controller_start_reserved_ptr,
+			pcontroller->controller_block.controller_after_reserved_ptr,
+			pcontroller->front_block.controller_ptr,
+			pcontroller->back_block.controller_ptr + 1);
 
-		controller->front_block.controller_ptr = blocktemp;
-		controller->back_block.controller_ptr = blocktemp + diff;
+		pcontroller->front_block.controller_ptr = blocktemp;
+		pcontroller->back_block.controller_ptr = blocktemp + diff;
 	}
 
 	constexpr void make_unreserved_blocks_balance() noexcept
 	{
+		::fast_io::containers::details::deque_controller_common *pcontroller{reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(__builtin_addressof(controller))};
+
 		size_type reserved_size{
-			static_cast<size_type>(controller->controller_block.controller_after_reserved_ptr - controller->controller_block.controller_start_reserved_ptr)};
+			static_cast<size_type>(pcontroller->controller_block.controller_after_reserved_ptr - pcontroller->controller_block.controller_start_reserved_ptr)};
 		size_type front_block_index{
-			static_cast<size_type>(controller->front_block.controller_ptr - controller->controller_block.controller_start_reserved_ptr)};
+			static_cast<size_type>(pcontroller->front_block.controller_ptr - pcontroller->controller_block.controller_start_reserved_ptr)};
 		size_type back_block_index{
-			static_cast<size_type>(controller->back_block.controller_ptr - controller->controller_block.controller_start_reserved_ptr)};
+			static_cast<size_type>(pcontroller->back_block.controller_ptr - pcontroller->controller_block.controller_start_reserved_ptr)};
 
 		void **blocktemp = make_blocks_balance(
-			controller->controller_block.controller_start_ptr,
-			controller->controller_block.controller_after_ptr,
-			controller->controller_block.controller_start_reserved_ptr,
-			controller->controller_block.controller_after_reserved_ptr);
+			pcontroller->controller_block.controller_start_ptr,
+			pcontroller->controller_block.controller_after_ptr,
+			pcontroller->controller_block.controller_start_reserved_ptr,
+			pcontroller->controller_block.controller_after_reserved_ptr);
 
-		controller->controller_block.controller_start_reserved_ptr = blocktemp;
-		controller->controller_block.controller_after_reserved_ptr = blocktemp + reserved_size;
-		controller->front_block.controller_ptr = blocktemp + front_block_index;
-		controller->back_block.controller_ptr = blocktemp + back_block_index;
+		pcontroller->controller_block.controller_start_reserved_ptr = blocktemp;
+		pcontroller->controller_block.controller_after_reserved_ptr = blocktemp + reserved_size;
+		pcontroller->front_block.controller_ptr = blocktemp + front_block_index;
+		pcontroller->back_block.controller_ptr = blocktemp + back_block_index;
 	}
 
 	constexpr void **make_blocks_balance(void **begin, void **end, void **b, void **e) noexcept
