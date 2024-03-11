@@ -570,7 +570,7 @@ private:
 
 		controller.controller_block.controller_after_ptr = controller.controller_block.controller_after_reserved_ptr = (controller.controller_block.controller_start_ptr + 1u);
 
-		*controller.controller_block.controller_start_ptr = static_cast<value_type *>(allocator::allocate(block_size));
+		*controller.controller_block.controller_start_ptr = static_cast<value_type *>(allocator::allocate(block_size*sizeof(value_type)));
 
 		controller.back_block.curr_ptr 
 			= (controller.front_block.curr_ptr
