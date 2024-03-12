@@ -698,6 +698,18 @@ public:
 	}
 };
 
+template <::std::integral chtype, typename allocator1, typename allocator2>
+constexpr bool operator==(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept
+{
+	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+template <::std::integral chtype, typename allocator1, typename allocator2>
+constexpr auto operator<=>(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept
+{
+	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
 template <::std::integral chtype, typename alloctype>
 inline constexpr ::fast_io::basic_io_scatter_t<chtype>
 print_alias_define(io_alias_t, basic_string<chtype, alloctype> const &str) noexcept
