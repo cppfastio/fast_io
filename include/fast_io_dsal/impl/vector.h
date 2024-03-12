@@ -2202,51 +2202,18 @@ public:
 	}
 };
 
-template <typename T, typename allocator>
-constexpr auto operator<=>(vector<T, allocator> const &lhs, vector<T, allocator> const &rhs) noexcept
-	requires ::std::three_way_comparable<T>
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::equality_comparable<T>
+constexpr bool operator==(vector<T, allocator1> const &lhs, vector<T, allocator2> const &rhs) noexcept
 {
-	using ordering_category_t = decltype(T{} <=> T{});
-	// copied from cppreference: lexicographical_compare
-	auto first1 = lhs.imp.begin_ptr, last1 = lhs.imp.curr_ptr, first2 = rhs.imp.begin_ptr, last2 = rhs.imp.curr_ptr;
-	for (; (first1 != last1) && (first2 != last2); (void)++first1, (void)++first2)
-	{
-		if (auto result = *first1 <=> *first2; result != 0)
-		{
-			return result;
-		}
-	}
-	if (first1 == last1)
-	{
-		return ordering_category_t(first2 <=> last2);
-	}
-	return ordering_category_t(::std::strong_ordering::greater);
+	return ::std::equal(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr);
 }
 
-template <typename T, typename allocator>
-constexpr bool operator==(vector<T, allocator> const &lhs, vector<T, allocator> const &rhs) noexcept
-	requires ::std::equality_comparable<T>
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::three_way_comparable<T>
+constexpr auto operator<=>(vector<T, allocator1> const &lhs, vector<T, allocator2> const &rhs) noexcept
 {
-	if (lhs.size() != rhs.size())
-	{
-		return false;
-	}
-	if constexpr (::std::three_way_comparable<T>)
-	{
-		return (lhs <=> rhs) == 0;
-	}
-	else
-	{
-		auto first1 = lhs.imp.begin_ptr, last1 = lhs.imp.curr_ptr, first2 = rhs.imp.begin_ptr;
-		for (; (first1 != last1); (void)++first1, (void)++first2)
-		{
-			if (*first1 != *first2)
-			{
-				return false;
-			}
-		}
-		return true;
-	}
+	return ::std::lexicographical_compare_three_way(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr, ::std::compare_three_way{});
 }
 
 template <typename T, typename allocator>

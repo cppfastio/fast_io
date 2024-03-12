@@ -29,6 +29,7 @@
 #include <initializer_list>
 #include <bit>
 #include <compare>
+#include <algorithm>
 #include "../fast_io_core.h"
 #include "impl/common.h"
 #include "impl/string.h"

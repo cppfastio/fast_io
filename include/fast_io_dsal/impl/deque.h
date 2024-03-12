@@ -1047,6 +1047,20 @@ public:
 	}
 };
 
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::equality_comparable<T>
+constexpr bool operator==(deque<T, allocator1> const &lhs, deque<T, allocator2> const &rhs) noexcept
+{
+	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::three_way_comparable<T>
+constexpr auto operator<=>(deque<T, allocator1> const &lhs, deque<T, allocator2> const &rhs) noexcept
+{
+	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
 } // namespace containers
 
 namespace freestanding
