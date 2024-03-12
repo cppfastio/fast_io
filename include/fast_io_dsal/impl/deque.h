@@ -1005,12 +1005,12 @@ public:
 
 	constexpr const_reverse_iterator rbegin() const noexcept
 	{
-		return reverse_iterator({this->end_common()});
+		return const_reverse_iterator({this->end_common()});
 	}
 
 	constexpr const_reverse_iterator crbegin() const noexcept
 	{
-		return reverse_iterator({this->end_common()});
+		return const_reverse_iterator({this->end_common()});
 	}
 
 	constexpr bool empty() const noexcept
