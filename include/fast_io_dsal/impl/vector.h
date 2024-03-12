@@ -1769,6 +1769,12 @@ public:
 		imp.curr_ptr = imp.begin_ptr;
 	}
 
+	constexpr void clear_destroy() noexcept
+	{
+		this->destroy();
+		imp.end_ptr = imp.curr_ptr = imp.begin_ptr = nullptr;
+	}
+
 	constexpr iterator insert(const_iterator pos, value_type const &value) noexcept(noexcept(this->emplace_back(value)))
 	{
 		return this->emplace(pos, value);

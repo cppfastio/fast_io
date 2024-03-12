@@ -930,6 +930,11 @@ public:
 		imp = {__builtin_addressof(imp), __builtin_addressof(imp)};
 	}
 
+	constexpr void clear_destroy() noexcept
+	{
+		this->clear();
+	}
+
 	constexpr void splice(const_iterator pos, const_iterator first, const_iterator last) noexcept
 	{
 		::fast_io::containers::details::list_splice_range_common(pos.iter, first.iter, last.iter);
