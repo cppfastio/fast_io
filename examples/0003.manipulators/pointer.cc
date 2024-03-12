@@ -25,6 +25,8 @@ struct C : A, B
 
 using namespace fast_io::io;
 
+void foo(){}
+
 int main()
 {
 	using namespace fast_io::mnp;
@@ -35,7 +37,7 @@ int main()
 
 	void (C::*downcptr)() noexcept = &B::g;
 
-	println("funcvw(main):", funcvw(main),
+	println("funcvw(foo):", funcvw(foo),
 			"\n"
 			"pointervw(ptr):",
 			pointervw(ptr),
@@ -66,7 +68,7 @@ int main()
 }
 
 /*
-funcvw(main):0x00007ff75abf27c0
+funcvw(foo):0x00007ff75abf27c0
 pointervw(ptr):0x000000c232d0fa9c
 handlevw(fd):3
 handlevw(ptr):0x000000c232d0fa9c

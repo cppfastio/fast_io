@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: cmake
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On
+      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
     - name: make
       run: make -j
     - name: make test
