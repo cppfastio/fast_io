@@ -1042,6 +1042,12 @@ public:
 		}
 	}
 
+	constexpr void clear_destroy() noexcept
+	{
+		this->destroy();
+		this->controller = {{}, {}, {}};
+	}
+
 	constexpr ~deque()
 	{
 		this->destroy();

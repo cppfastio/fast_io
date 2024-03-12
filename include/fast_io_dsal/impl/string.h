@@ -528,6 +528,13 @@ public:
 		*(this->imp.curr_ptr = this->imp.begin_ptr) = 0;
 	}
 
+	constexpr void clear_destroy() noexcept
+	{
+		this->destroy();
+		this->imp = {ssobuffer.buffer, ssobuffer.buffer, ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>};
+		*ssobuffer.buffer = 0;
+	}
+
 	constexpr void push_back_unchecked(char_type ch) noexcept
 	{
 		*this->imp.curr_ptr = ch;
