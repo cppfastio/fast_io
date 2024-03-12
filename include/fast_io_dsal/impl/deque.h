@@ -915,14 +915,7 @@ public:
 
 	constexpr size_type size() const noexcept
 	{
-		if (controller.back_block.controller_ptr == controller.front_block.controller_ptr)
-		{
-			return static_cast<size_type>(controller.back_block.curr_ptr - controller.front_block.curr_ptr);
-		}
-
-		size_type full_block_size{static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) - 1u};
-
-		return full_block_size * block_size + (controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.end_ptr - controller.front_block.curr_ptr);
+		return block_size * static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) + static_cast<size_type>((controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.begin_ptr - controller.front_block.curr_ptr));
 	}
 
 	constexpr iterator begin() noexcept
