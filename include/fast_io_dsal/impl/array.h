@@ -274,4 +274,36 @@ constexpr auto operator<=>(::fast_io::containers::array<T, N1> const &a, ::fast_
 	return ::std::lexicographical_compare_three_way(a.content, a.content + N1, b.content, b.content + N2, ::std::compare_three_way{});
 }
 
+namespace details
+{
+
+template <typename T, std::size_t N, std::size_t... I>
+constexpr ::fast_io::containers::array<std::remove_cv_t<T>, N>
+to_array_lvalueref_impl(T (&a)[N], ::std::index_sequence<I...>)
+{
+	return {{a[I]...}};
+}
+
+template <typename T, std::size_t N, std::size_t... I>
+constexpr ::fast_io::containers::array<std::remove_cv_t<T>, N>
+to_array_rvalueref_impl(T (&&a)[N], ::std::index_sequence<I...>)
+{
+	return {{::std::move(a[I])...}};
+}
+} // namespace details
+
+template <typename T, ::std::size_t N>
+	requires(!::std::is_array_v<T>)
+constexpr ::fast_io::containers::array<::std::remove_cv_t<T>, N> to_array(T (&a)[N]) noexcept(::std::is_nothrow_copy_constructible_v<T>)
+{
+	return ::fast_io::containers::details::to_array_lvalueref_impl(a, ::std::make_index_sequence<N>{});
+}
+
+template <typename T, ::std::size_t N>
+	requires(!::std::is_array_v<T>)
+constexpr ::fast_io::containers::array<::std::remove_cv_t<T>, N> to_array(T (&&a)[N]) noexcept(::std::is_nothrow_move_constructible_v<T>)
+{
+	return ::fast_io::containers::details::to_array_rvalueref_impl(::std::move(a), ::std::make_index_sequence<N>{});
+}
+
 } // namespace fast_io::containers
