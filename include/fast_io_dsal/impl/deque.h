@@ -833,7 +833,7 @@ public:
 			::std::destroy_at(controller.front_block.curr_ptr);
 		}
 
-		if (++controller.front_block.curr_ptr == controller.front_block.end) [[unlikely]]
+		if (++controller.front_block.curr_ptr == controller.front_block.end_ptr) [[unlikely]]
 		{
 			this->front_backspace();
 		}
