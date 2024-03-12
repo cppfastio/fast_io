@@ -45,3 +45,5 @@ no ::std::array, ::std::copy and others
 #include "bytes.h"
 #include "algorithm.h"
 #include "relocatable.h"
+
+#include <algorithm>
