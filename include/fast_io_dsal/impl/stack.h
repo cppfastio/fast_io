@@ -152,7 +152,7 @@ public:
 						  { container.back() } -> ::std::same_as<reference>;
 					  })
 		{
-			container.push_back(value);
+			container.push_back_unchecked(value);
 		}
 		else
 		{
@@ -212,7 +212,16 @@ public:
 	template <::std::ranges::range R>
 	constexpr void push_range(R &&rg)
 	{
-		container.append_range(::std::forward<R>(rg));
+		if constexpr (requires() {
+						  { container.append_range(::std::forward<R>(rg)) };
+					  })
+		{
+			container.append_range(::std::forward<R>(rg));
+		}
+		else
+		{
+			container.prepend_range(::std::forward<R>(rg));
+		}
 	}
 
 	constexpr void pop() noexcept
@@ -246,7 +255,7 @@ public:
 	constexpr value_type pop_element() noexcept
 		requires(::std::move_constructible<value_type>)
 	{
-		auto top{::std::move(container.back())};
+		value_type top(::std::move(container.back()));
 		if constexpr (requires() {
 						  { container.pop_back() };
 					  })
@@ -281,7 +290,7 @@ public:
 	constexpr value_type pop_element_unchecked() noexcept
 		requires(::std::move_constructible<value_type>)
 	{
-		auto top{::std::move(container.back_unchecked())};
+		value_type top(::std::move(container.back_unchecked()));
 		if constexpr (requires() {
 						  { container.pop_back() };
 					  })
