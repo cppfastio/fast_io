@@ -686,20 +686,15 @@ private:
 		controller.back_block.end_ptr = (controller.back_block.curr_ptr = controller.back_block.begin_ptr = *++controller.back_block.controller_ptr) + block_size;
 	}
 
-	void front_backspace()
+	constexpr void front_backspace() noexcept
 	{
-		if (++controller.front_block.curr_ptr == controller.front_block.end)
-		{
-			controller.front_block.end_ptr = (controller.front_block.curr_ptr = controller.front_block.begin_ptr = *++controller.front_block.controller_ptr) + block_size;
-		}
+		controller.front_block.end_ptr = (controller.front_block.curr_ptr = controller.front_block.begin_ptr = *++controller.front_block.controller_ptr) + block_size;
 	}
 
-	void back_backspace()
+	constexpr void back_backspace() noexcept
 	{
-		if (--controller.back_block.curr_ptr == controller.back_block.begin)
-		{
-			controller.back_block.curr_ptr = controller.back_block.end_ptr = (controller.back_block.begin_ptr = *--controller.back_block.controller_ptr) + block_size;
-		}
+
+		controller.back_block.curr_ptr = controller.back_block.end_ptr = (controller.back_block.begin_ptr = *--controller.back_block.controller_ptr) + block_size;
 	}
 
 public:
@@ -758,10 +753,12 @@ public:
 	{
 		if constexpr (::std::is_trivially_destructible_v<value_type>)
 		{
-			::std::destroy_at(controller.back_block.curr_ptr - 1u);
+			::std::destroy_at(controller.back_block.curr_ptr - 1);
 		}
-
-		back_backspace();
+		if (--controller.back_block.curr_ptr == controller.back_block.begin_ptr) [[unlikely]]
+		{
+			this->back_backspace();
+		}
 	}
 
 	constexpr reference back_unchecked() noexcept
@@ -836,7 +833,10 @@ public:
 			::std::destroy_at(controller.front_block.curr_ptr);
 		}
 
-		front_backspace();
+		if (++controller.front_block.curr_ptr == controller.front_block.end) [[unlikely]]
+		{
+			this->front_backspace();
+		}
 	}
 
 	constexpr reference front_unchecked() noexcept

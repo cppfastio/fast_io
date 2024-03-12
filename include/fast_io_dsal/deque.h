@@ -37,6 +37,10 @@
 #include "impl/common.h"
 #include "impl/deque.h"
 
+#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
+	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
+	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
+
 namespace fast_io
 {
 
@@ -64,6 +68,8 @@ using deque = ::fast_io::containers::deque<T, Alloc>;
 }
 
 } // namespace fast_io
+
+#endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)

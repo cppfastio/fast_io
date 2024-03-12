@@ -38,6 +38,10 @@
 #include "impl/common.h"
 #include "impl/vector.h"
 
+#if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
+	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
+	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
+
 namespace fast_io
 {
 
@@ -62,6 +66,8 @@ using vector = ::fast_io::containers::vector<T, Alloc>;
 }
 
 } // namespace fast_io
+
+#endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
