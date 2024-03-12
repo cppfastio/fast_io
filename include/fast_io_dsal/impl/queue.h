@@ -107,9 +107,14 @@ public:
 		container.push_back(::std::move(value));
 	}
 
+	constexpr void reserve(size_type newcap) noexcept
+	{
+		container.reserve(newcap);
+	}
+
 	constexpr void push_unchecked(value_type const &value)
 	{
-		container.push_front_unchecked(value);
+		container.push_back_unchecked(value);
 	}
 
 	constexpr void push_unchecked(value_type &&value)

@@ -145,6 +145,11 @@ public:
 		}
 	}
 
+	constexpr void reserve(size_type newcap) noexcept
+	{
+		container.reserve(newcap);
+	}
+
 	constexpr void push_unchecked(value_type const &value)
 	{
 		if constexpr (requires() {
