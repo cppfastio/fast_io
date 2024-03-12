@@ -801,9 +801,9 @@ public:
 		}
 		if constexpr (::std::is_trivially_constructible_v<value_type>)
 		{
-			::std::construct_at(--controller.back_block.curr_ptr, ::std::forward<Args>(args)...);
+			::std::construct_at(--controller.front_block.curr_ptr, ::std::forward<Args>(args)...);
 		}
-		return *controller.back_block.curr_ptr;
+		return *controller.front_block.curr_ptr;
 	}
 
 	constexpr void push_front(value_type const &value)
