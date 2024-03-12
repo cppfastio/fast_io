@@ -626,7 +626,7 @@ private:
 					}
 				}
 
-				*--controller.controller_block.controller_start_reserved_ptr = static_cast<value_type *>(allocator::allocate(block_size));
+				*--controller.controller_block.controller_start_reserved_ptr = static_cast<value_type *>(allocator::allocate(block_size * sizeof(value_type)));
 			}
 			else
 			{
@@ -674,7 +674,7 @@ private:
 					}
 				}
 
-				*controller.controller_block.controller_after_reserved_ptr = static_cast<value_type *>(allocator::allocate(block_size));
+				*controller.controller_block.controller_after_reserved_ptr = static_cast<value_type *>(allocator::allocate(block_size * sizeof(value_type)));
 				++controller.controller_block.controller_after_reserved_ptr;
 			}
 			else
