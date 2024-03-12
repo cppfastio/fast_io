@@ -345,11 +345,11 @@ template <typename allocator, typename dequecontroltype, typename replacetype>
 inline constexpr void deque_init_grow_common_controllerallocate_impl(dequecontroltype &controller, ::std::size_t total_block_size, ::std::size_t mid, replacetype *blockptr) noexcept
 {
 	using controlreplacetype = typename dequecontroltype::controlreplacetype;
-	constexpr ::std::size_t allocatesize{sizeof(controlreplacetype) << 2u};
+	constexpr ::std::size_t allocatesize{sizeof(controlreplacetype) * 4};
 	auto controllerstartptr{static_cast<controlreplacetype *>(allocator::allocate(allocatesize))};
-	controller.controller_block.controller_start_reserved_ptr = controllerstartptr;
-	controller.controller_block.controller_after_ptr = controller.controller_block.controller_start_ptr = controller.back_block.controller_ptr = controller.front_block.controller_ptr = controllerstartptr + 1;
-	controller.controller_block.controller_after_reserved_ptr = controllerstartptr + 4u;
+	controller.controller_block.controller_start_ptr = controllerstartptr;
+	controller.controller_block.controller_after_reserved_ptr = (controller.controller_block.controller_start_reserved_ptr = controller.back_block.controller_ptr = controller.front_block.controller_ptr = controllerstartptr + 1) + 1;
+	controller.controller_block.controller_after_ptr = controllerstartptr + 4u;
 	*controller.back_block.controller_ptr = blockptr;
 	controller.front_block.begin_ptr = controller.back_block.begin_ptr = blockptr;
 	controller.back_block.curr_ptr = controller.front_block.curr_ptr = blockptr + mid;
@@ -359,13 +359,13 @@ inline constexpr void deque_init_grow_common_controllerallocate_impl(dequecontro
 template <typename allocator, typename dequecontroltype>
 inline constexpr void deque_init_grow_common_noalign_impl(dequecontroltype &controller, ::std::size_t total_block_size, ::std::size_t mid) noexcept
 {
-	::fast_io::containers::details::deque_init_grow_common_controllerallocate_impl<allocator>(controller, total_block_size, mid, static_cast<typename dequecontroltype::replacetype *>(allocator::allocate(total_block_size)));
+	::fast_io::containers::details::deque_init_grow_common_controllerallocate_impl<allocator>(controller, total_block_size, mid, static_cast<typename dequecontroltype::replacetype *>(allocator::allocate_zero(total_block_size)));
 }
 
 template <typename allocator, typename dequecontroltype>
 inline constexpr void deque_init_grow_common_align_impl(dequecontroltype &controller, ::std::size_t align, ::std::size_t total_block_size, ::std::size_t mid) noexcept
 {
-	::fast_io::containers::details::deque_init_grow_common_controllerallocate_impl<allocator>(controller, total_block_size, mid, static_cast<typename dequecontroltype::replacetype *>(allocator::allocate_aligned(align, total_block_size)));
+	::fast_io::containers::details::deque_init_grow_common_controllerallocate_impl<allocator>(controller, total_block_size, mid, static_cast<typename dequecontroltype::replacetype *>(allocator::allocate_zero_aligned(align, total_block_size)));
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t block_size, ::std::size_t mid, typename dequecontroltype>
