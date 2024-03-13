@@ -209,7 +209,7 @@ public:
 		des.thisvec = nullptr;
 	}
 
-#ifdef __cpp_lib_containers_ranges
+#ifdef __cpp_lib_ranges_to_container
 	template <::std::ranges::range R>
 	explicit constexpr vector(::std::from_range_t, R &&rg)
 	{
@@ -231,13 +231,18 @@ public:
 											typed_allocator_type::allocate(n)) +
 									   n};
 			if constexpr (
-				::std::contiguous_range<R> &&
+				::std::ranges::contiguous_range<R> &&
 				::std::is_trivially_constructible_v<value_type, rvaluetype> &&
-				::std::same_as<::std::remove_cref_t<rvaluetype>, ::std::remove_cref_t<value_type>>)
+				::std::same_as<::std::remove_cvref_t<rvaluetype>, ::std::remove_cvref_t<value_type>>)
 			{
 				if (n) [[likely]]
 				{
-					::std::memcpy(this->imp.curr_ptr, ::std::ranges::data(rg), n * sizeof(value_type));
+#if defined(_MSC_VER) && !defined(__clang__)
+					::std::memcpy
+#else
+					__builtin_memcpy
+#endif
+						(this->imp.curr_ptr, ::std::ranges::data(rg), n * sizeof(value_type));
 				}
 				this->imp.curr_ptr = e;
 			}
@@ -823,6 +828,20 @@ private:
 		return it;
 	}
 
+	constexpr pointer erase_iters_common(pointer first, pointer last) noexcept
+	{
+		auto currptr{imp.curr_ptr};
+		imp.curr_ptr = ::std::move(last, currptr, first);
+		if constexpr (!::std::is_trivially_destructible_v<value_type>)
+		{
+			for (; last != currptr; ++last)
+			{
+				currptr->~value_type();
+			}
+		}
+		return first;
+	}
+
 public:
 	constexpr iterator erase(const_iterator it) noexcept
 	{
@@ -850,6 +869,34 @@ public:
 			::fast_io::fast_terminate();
 		}
 		this->erase_common(beginptr + idx);
+	}
+
+	constexpr iterator erase(const_iterator first, const_iterator last) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return this->erase_iters_common(first - imp.begin_ptr + imp.begin_ptr, last - imp.begin_ptr + imp.begin_ptr);
+		}
+		else
+		{
+			return this->erase_iters_common(const_cast<pointer>(first), const_cast<pointer>(last));
+		}
+	}
+
+	constexpr void erase_index(size_type firstidx, size_type lastidx) noexcept
+	{
+		auto beginptr{imp.begin_ptr};
+		auto currptr{imp.curr_ptr};
+		size_type sz{static_cast<size_type>(currptr - beginptr)};
+		if (lastidx < firstidx || sz <= lastidx)
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_iters_common(beginptr + firstidx, beginptr + lastidx);
 	}
 };
 
