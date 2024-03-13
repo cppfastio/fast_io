@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 
 namespace fast_io
 {
@@ -349,7 +350,7 @@ inline constexpr void deque_init_grow_common_controllerallocate_impl(dequecontro
 	auto controllerstartptr{static_cast<controlreplacetype *>(allocator::allocate(allocatesize))};
 	controller.controller_block.controller_start_ptr = controllerstartptr;
 	controller.controller_block.controller_after_reserved_ptr = (controller.controller_block.controller_start_reserved_ptr = controller.back_block.controller_ptr = controller.front_block.controller_ptr = controllerstartptr + 1) + 1;
-	controller.controller_block.controller_after_ptr = controllerstartptr + 4u;
+	controller.controller_block.controller_after_ptr = controllerstartptr + 3u;
 	*controller.back_block.controller_ptr = blockptr;
 	controller.front_block.begin_ptr = controller.back_block.begin_ptr = blockptr;
 	controller.back_block.curr_ptr = controller.front_block.curr_ptr = blockptr + mid;
@@ -443,7 +444,7 @@ private:
 
 	constexpr void reallocate_controller_block() noexcept
 	{
-		constexpr size_type max_size{SIZE_MAX / sizeof(void *) / 2u};
+		constexpr size_type max_size{SIZE_MAX / sizeof(void *) / 2u - 1u};
 
 		size_type old_size{static_cast<size_type>(controller.controller_block.controller_after_ptr - controller.controller_block.controller_start_ptr)};
 
@@ -462,7 +463,7 @@ private:
 		size_type back_block_index{
 			static_cast<size_type>(controller.back_block.controller_ptr - controller.controller_block.controller_start_ptr)};
 
-		controller.controller_block.controller_start_ptr = static_cast<value_type **>(allocator::reallocate_n(controller.controller_block.controller_start_ptr, old_size * sizeof(value_type *), new_size * sizeof(value_type *)));
+		controller.controller_block.controller_start_ptr = static_cast<value_type **>(allocator::reallocate_n(controller.controller_block.controller_start_ptr, old_size * sizeof(value_type *), (new_size + 1u) * sizeof(value_type *)));
 
 		controller.controller_block.controller_start_reserved_ptr = controller.controller_block.controller_start_ptr + start_reserved_index;
 		controller.controller_block.controller_after_reserved_ptr = controller.controller_block.controller_start_ptr + after_reserved_index;
@@ -521,14 +522,8 @@ private:
 			if (begin == b)
 			{
 				void *t = end[-1];
-#ifdef _MSVC_TRADITIONAL
-				::std::copy
-#else
-				::fast_io::freestanding::copy
-#endif
-					(b, e, begin + 1);
+				::std::copy(b, e, begin + 1);
 				*begin = t;
-
 				++controller.back_block.controller_ptr;
 				++controller.back_block.controller_ptr;
 
@@ -537,12 +532,7 @@ private:
 			else
 			{
 				void *t = *begin;
-#ifdef _MSVC_TRADITIONAL
-				::std::copy
-#else
-				::fast_io::freestanding::copy
-#endif
-					(b, e, begin);
+				::std::copy(b, e, begin);
 				end[-1] = t;
 				--controller.back_block.controller_ptr;
 				--controller.back_block.controller_ptr;
