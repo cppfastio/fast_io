@@ -12,6 +12,7 @@ int main()
 	vec.push_back(4);
 	vec.emplace_index(0,6);
 	vec.emplace_index(0,8);
+	vec.erase_index(0);
 	for(auto const & e : vec)
 	{
 		::fast_io::io::println(e);

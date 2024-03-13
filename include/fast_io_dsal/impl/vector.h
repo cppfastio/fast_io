@@ -809,6 +809,46 @@ public:
 	{
 		return this->emplace_index(idx, val);
 	}
+
+private:
+	constexpr pointer erase_common(pointer it) noexcept
+	{
+		auto lastele{imp.curr_ptr};
+		::std::move(it + 1, lastele, it);
+		--lastele;
+		lastele->~value_type();
+		imp.curr_ptr = lastele;
+		return it;
+	}
+
+public:
+	constexpr iterator erase(const_iterator it) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return this->erase_common(it - imp.begin_ptr + imp.begin_ptr);
+		}
+		else
+		{
+			return this->erase_common(const_cast<pointer>(it));
+		}
+	}
+
+	constexpr void erase_index(size_type idx) noexcept
+	{
+		auto beginptr{imp.begin_ptr};
+		auto currptr{imp.curr_ptr};
+		size_type sz{static_cast<size_type>(currptr - beginptr)};
+		if (sz <= idx)
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_common(beginptr + idx);
+	}
 };
 
 template <typename T, typename allocator1, typename allocator2>
