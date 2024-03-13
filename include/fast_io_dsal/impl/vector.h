@@ -221,7 +221,7 @@ public:
 		requires(::std::copyable<value_type>)
 	{
 		vector newvec(vec);
-		this->operator=(::fast_io::freestanding::move(newvec));
+		this->operator=(::std::move(newvec));
 		return *this;
 	}
 	constexpr vector &operator=(vector const &vec) = delete;
@@ -244,9 +244,9 @@ public:
 
 	template <typename... Args>
 		requires std::constructible_from<value_type, Args...>
-	constexpr reference emplace_back_unchecked(Args &&...args) noexcept(noexcept(value_type(::fast_io::freestanding::forward<Args>(args)...)))
+	constexpr reference emplace_back_unchecked(Args &&...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
-		auto p{::new (imp.curr_ptr) value_type(::fast_io::freestanding::forward<Args>(args)...)};
+		auto p{::new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
 		++imp.curr_ptr;
 		return *p;
 	}
@@ -297,7 +297,7 @@ private:
 		auto new_i{new_begin_ptr};
 		for (auto old_i{imp.begin_ptr}, old_e{imp.curr_ptr}; old_i != old_e; ++old_i)
 		{
-			new (new_i) value_type(::fast_io::freestanding::move(*old_i));
+			new (new_i) value_type(::std::move(*old_i));
 			old_i->~value_type();
 			++new_i;
 		}
@@ -384,17 +384,17 @@ public:
 	{
 		this->emplace_back(value);
 	}
-	constexpr void push_back(T &&value) noexcept(noexcept(this->emplace_back(::fast_io::freestanding::move(value))))
+	constexpr void push_back(T &&value) noexcept(noexcept(this->emplace_back(::std::move(value))))
 	{
-		this->emplace_back(::fast_io::freestanding::move(value));
+		this->emplace_back(::std::move(value));
 	}
 	constexpr void push_back_unchecked(T const &value) noexcept(noexcept(this->emplace_back_unchecked(value)))
 	{
 		this->emplace_back_unchecked(value);
 	}
-	constexpr void push_back_unchecked(T &&value) noexcept(noexcept(this->emplace_back_unchecked(::fast_io::freestanding::move(value))))
+	constexpr void push_back_unchecked(T &&value) noexcept(noexcept(this->emplace_back_unchecked(::std::move(value))))
 	{
-		this->emplace_back_unchecked(::fast_io::freestanding::move(value));
+		this->emplace_back_unchecked(::std::move(value));
 	}
 
 	constexpr pointer data() noexcept
@@ -610,12 +610,12 @@ public:
 	constexpr void clear_destroy() noexcept
 	{
 		this->destroy();
-		imp.end_ptr = imp.curr_ptr = imp.begin_ptr = nullptr;
+		imp = {};
 	}
 
 	template <typename... Args>
 		requires std::constructible_from<value_type, Args...>
-	constexpr reference emplace_back(Args &&...args) noexcept(noexcept(value_type(::fast_io::freestanding::forward<Args>(args)...)))
+	constexpr reference emplace_back(Args &&...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
 	{
 		if (imp.curr_ptr == imp.end_ptr)
 #if __has_cpp_attribute(unlikely)
@@ -624,7 +624,7 @@ public:
 		{
 			grow_twice_impl();
 		}
-		auto p{::std::construct_at(imp.curr_ptr, ::fast_io::freestanding::forward<Args>(args)...)};
+		auto p{::std::construct_at(imp.curr_ptr, ::std::forward<Args>(args)...)};
 		++imp.curr_ptr;
 		return *p;
 	}
