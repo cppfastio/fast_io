@@ -120,7 +120,7 @@ public:
 	explicit constexpr vector() noexcept = default;
 
 private:
-	void destroy() noexcept
+	constexpr void destroy() noexcept
 	{
 		clear();
 		if constexpr (!typed_allocator_type::has_deallocate)
