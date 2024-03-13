@@ -130,7 +130,7 @@ public:
 #endif
 	inline constexpr reference operator[](size_type idx) noexcept
 	{
-		if (idx <= N) [[unlikely]]
+		if (N <= idx) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -143,7 +143,7 @@ public:
 #endif
 	inline constexpr const_reference operator[](size_type idx) const noexcept
 	{
-		if (idx <= N) [[unlikely]]
+		if (N <= idx) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
