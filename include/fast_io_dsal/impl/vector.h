@@ -748,10 +748,12 @@ private:
 			this->grow_twice_impl();
 			iter = imp.begin_ptr + idx;
 		}
-		++imp.curr_ptr;
-		if (iter != imp.end_ptr) [[likely]]
+		auto currptr{imp.curr_ptr};
+		auto currptrp1{currptr + 1};
+		imp.curr_ptr = currptrp1;
+		if (iter != currptr) [[likely]]
 		{
-			::fast_io::containers::details::move_backward_construct(iter, imp.curr_ptr - 1, imp.curr_ptr);
+			::fast_io::containers::details::move_backward_construct(iter, currptr, currptrp1);
 			iter->~value_type();
 		}
 		return iter;
