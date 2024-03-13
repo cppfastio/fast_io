@@ -1060,25 +1060,6 @@ public:
 		return controller.front_block.curr_ptr == controller.back_block.curr_ptr;
 	}
 
-	constexpr void check() const noexcept
-	{
-		auto front_controller_ptr{controller.front_block.controller_ptr};
-		auto back_controller_ptr{controller.back_block.controller_ptr};
-		if (front_controller_ptr != back_controller_ptr)
-		{
-			for (T **it{front_controller_ptr + 1}, **ed{back_controller_ptr}; it != ed; ++it)
-			{
-				for (T *blockptr{*it}, *blockptr_end{*it + block_size}; blockptr != blockptr_end; ++blockptr)
-				{
-					if (*blockptr != 5)
-					{
-						::fast_io::fast_terminate();
-					}
-				}
-			}
-		}
-	}
-
 	constexpr void clear_destroy() noexcept
 	{
 		this->destroy();
