@@ -148,12 +148,12 @@ constexpr void move_backward_construct(Iter1 first, Iter1 last, Iter2 d_last)
 				::std::size_t n{static_cast<::std::size_t>(last - first)};
 				if (n) [[likely]]
 				{
-#if defined(__GNUC__) || defined(__clang__)
-					__builtin_memmove
-#else
+#if defined(_MSC_VER) && !defined(__clang__)
 					::std::memmove
+#else
+					__builtin_memmove
 #endif
-						(::std::to_address(first), ::std::to_address(d_last) - n, n * sizeof(iter1valuetype));
+						(d_last - n, first, n * sizeof(iter1valuetype));
 				}
 				return;
 			}

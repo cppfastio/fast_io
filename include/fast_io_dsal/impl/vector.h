@@ -740,23 +740,20 @@ public:
 	}
 
 private:
-	template <bool checked>
 	constexpr pointer movebackward_common_impl(pointer iter) noexcept
 	{
-		if constexpr (checked)
+		if (imp.curr_ptr == imp.end_ptr) [[unlikely]]
 		{
-			if (imp.curr_ptr == imp.end_ptr)
-#if __has_cpp_attribute(unlikely)
-				[[unlikely]]
-#endif
-			{
-				auto idx{iter - imp.begin_ptr};
-				this->grow_twice_impl();
-				iter = imp.begin_ptr + idx;
-			}
+			auto idx{iter - imp.begin_ptr};
+			this->grow_twice_impl();
+			iter = imp.begin_ptr + idx;
 		}
-		::fast_io::containers::details::move_backward_construct(iter, imp.curr_ptr - 1, imp.curr_ptr);
-		iter->~value_type();
+		++imp.curr_ptr;
+		if (iter != imp.end_ptr) [[likely]]
+		{
+			::fast_io::containers::details::move_backward_construct(iter, imp.curr_ptr - 1, imp.curr_ptr);
+			iter->~value_type();
+		}
 		return iter;
 	}
 
@@ -772,30 +769,11 @@ public:
 #endif
 		{
 			auto beginptr{imp.begin_ptr};
-			return ::std::construct_at(this->movebackward_common_impl<true>(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
+			return ::std::construct_at(this->movebackward_common_impl(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
 		}
 		else
 		{
-			return ::std::construct_at(this->movebackward_common_impl<true>(const_cast<pointer>(iter)), ::std::forward<Args>(args)...);
-		}
-	}
-
-	template <typename... Args>
-		requires std::constructible_from<value_type, Args...>
-	constexpr iterator emplace_unchecked(const_iterator iter, Args &&...args)
-	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
-		{
-			auto beginptr{imp.begin_ptr};
-			return ::std::construct_at(this->movebackward_common_impl<false>(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
-		}
-		else
-		{
-			return ::std::construct_at(this->movebackward_common_impl<false>(const_cast<pointer>(iter)), ::std::forward<Args>(args)...);
+			return ::std::construct_at(this->movebackward_common_impl(const_cast<pointer>(iter)), ::std::forward<Args>(args)...);
 		}
 	}
 
@@ -809,7 +787,7 @@ public:
 		{
 			::fast_io::fast_terminate();
 		}
-		return *::std::construct_at(this->movebackward_common_impl<true>(beginptr + idx), ::std::forward<Args>(args)...);
+		return *::std::construct_at(this->movebackward_common_impl(beginptr + idx), ::std::forward<Args>(args)...);
 	}
 
 	constexpr iterator insert(const_iterator iter, const_reference val)
@@ -820,16 +798,6 @@ public:
 	constexpr iterator insert(const_iterator iter, value_type &&val)
 	{
 		return this->emplace(iter, ::std::move(val));
-	}
-
-	constexpr iterator insert_unchecked(const_iterator iter, const_reference val)
-	{
-		return this->emplace_unchecked(iter, val);
-	}
-
-	constexpr iterator insert_unchecked(const_iterator iter, value_type &&val)
-	{
-		return this->emplace_unchecked(iter, ::std::move(val));
 	}
 
 	constexpr reference insert_index(size_type idx, const_reference val)
