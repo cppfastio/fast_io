@@ -114,30 +114,30 @@ inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
 	return static_cast<::std::size_t>(cap << 1);
 }
 
-template<::std::bidirectional_iterator Iter1, ::std::bidirectional_iterator Iter2>
+template <::std::bidirectional_iterator Iter1, ::std::bidirectional_iterator Iter2>
 constexpr void move_backward_construct(Iter1 first, Iter1 last, Iter2 d_last)
 {
-	if constexpr(::std::contiguous_iterator<Iter1>&&!::std::is_pointer_v<Iter1>&&::std::contiguous_iterator<Iter2>&&!::std::is_pointer_v<Iter2>)
+	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
 	{
-		move_backward_construct(::std::to_address(first),::std::to_address(last),
-			::std::to_address(d_last));
+		move_backward_construct(::std::to_address(first), ::std::to_address(last),
+								::std::to_address(d_last));
 	}
-	else if constexpr(::std::contiguous_iterator<Iter1>&&!::std::is_pointer_v<Iter1>)
+	else if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1>)
 	{
-		move_backward_construct(::std::to_address(first),::std::to_address(last),
-			d_last);
+		move_backward_construct(::std::to_address(first), ::std::to_address(last),
+								d_last);
 	}
-	else if constexpr(::std::contiguous_iterator<Iter2>&&!::std::is_pointer_v<Iter2>)
+	else if constexpr (::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
 	{
-		move_backward_construct(first,last,
-			::std::to_address(d_last));
+		move_backward_construct(first, last,
+								::std::to_address(d_last));
 	}
 	else
 	{
 		using iter1valuetype = ::std::iter_value_t<Iter1>;
 		using iter2valuetype = ::std::iter_value_t<Iter2>;
-		if constexpr(::std::is_pointer_v<Iter1>&&::std::is_pointer_v<Iter2>&&
-			::std::same_as<iter1valuetype,iter2valuetype>&&::std::is_trivially_copyable_v<iter1valuetype>)
+		if constexpr (::std::is_pointer_v<Iter1> && ::std::is_pointer_v<Iter2> &&
+					  ::std::same_as<iter1valuetype, iter2valuetype> && ::fast_io::freestanding::is_trivially_relocatable_v<iter1valuetype>)
 		{
 #ifdef __cpp_if_consteval
 			if !consteval
@@ -145,25 +145,25 @@ constexpr void move_backward_construct(Iter1 first, Iter1 last, Iter2 d_last)
 			if (!__builtin_is_constant_evaluated())
 #endif
 			{
-				::std::size_t n{static_cast<::std::size_t>(last-first)};
-				if(n) [[likely]]
+				::std::size_t n{static_cast<::std::size_t>(last - first)};
+				if (n) [[likely]]
 				{
 #if defined(__GNUC__) || defined(__clang__)
 					__builtin_memmove
 #else
 					::std::memmove
 #endif
-					(::std::to_address(first), ::std::to_address(d_last)-n, n*sizeof(iter1valuetype));
+						(::std::to_address(first), ::std::to_address(d_last) - n, n * sizeof(iter1valuetype));
 				}
 				return;
 			}
 		}
 		auto last2{last};
-		for(;first!=last&&last2!=d_last;)
+		for (; first != last && last2 != d_last;)
 		{
 			::std::construct_at(--d_last, std::move(*(--last)));
 		}
-		::std::move_backward(first,last,d_last);
+		::std::move_backward(first, last, d_last);
 	}
 }
 
