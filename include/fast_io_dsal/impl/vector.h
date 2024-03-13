@@ -151,6 +151,19 @@ private:
 		}
 	};
 
+	constexpr void default_construct_impl(size_type n)
+	{
+		auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
+										typed_allocator_type::allocate(n)) +
+								   n};
+		run_destroy des(this);
+		for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+		{
+			::std::construct_at(this->imp.curr_ptr);
+		}
+		des.thisvec = nullptr;
+	}
+
 public:
 	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type> || noexcept(value_type()))
 	{
@@ -161,17 +174,111 @@ public:
 		}
 		else
 		{
+			this->default_construct_impl(n);
+		}
+	}
+
+	explicit constexpr vector(size_type n, ::fast_io::for_overwrite_t) noexcept(::std::is_trivially_default_constructible_v<value_type> || ::fast_io::freestanding::is_zero_default_constructible_v<value_type> || noexcept(value_type()))
+	{
+		if constexpr (::std::is_trivially_default_constructible_v<value_type>)
+		{
+			imp.begin_ptr = typed_allocator_type::allocate(n);
+			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		}
+		else if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+		{
+			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		}
+		else
+		{
+			this->default_construct_impl(n);
+		}
+	}
+
+	explicit constexpr vector(size_type n, const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
+										typed_allocator_type::allocate(n)) +
+								   n};
+		run_destroy des(this);
+		for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+		{
+			::std::construct_at(this->imp.curr_ptr, val);
+		}
+		des.thisvec = nullptr;
+	}
+
+#ifdef __cpp_lib_containers_ranges
+	template <::std::ranges::range R>
+	explicit constexpr vector(::std::from_range_t, R &&rg)
+	{
+		using rvaluetype = ::std::ranges::range_value_t<R>;
+		if constexpr (::std::ranges::sized_range<R> || ::std::ranges::forward_range<R>)
+		{
+			auto first{::std::ranges::begin(rg)};
+			auto last{::std::ranges::end(rg)};
+			size_type n;
+			if constexpr (::std::ranges::sized_range<R>)
+			{
+				n = ::std::ranges::size(rg);
+			}
+			else
+			{
+				n = static_cast<size_type>(::std::ranges::distance(first, last));
+			}
 			auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
 											typed_allocator_type::allocate(n)) +
 									   n};
-			run_destroy des(this);
-			for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+			if constexpr (
+				::std::contiguous_range<R> &&
+				::std::is_trivially_constructible_v<value_type, rvaluetype> &&
+				::std::same_as<::std::remove_cref_t<rvaluetype>, ::std::remove_cref_t<value_type>>)
 			{
-				new (this->imp.curr_ptr) value_type;
+				if (n) [[likely]]
+				{
+					::std::memcpy(this->imp.curr_ptr, ::std::ranges::data(rg), n * sizeof(value_type));
+				}
+				this->imp.curr_ptr = e;
+			}
+			else if constexpr (::std::is_nothrow_constructible_v<value_type, rvaluetype>)
+			{
+				auto curr{this->imp.begin_ptr};
+				for (; curr != e; ++curr)
+				{
+					::std::construct_at(curr, *first);
+					++first;
+				}
+				this->imp.curr_ptr = e;
+			}
+			else
+			{
+				run_destroy des(this);
+				for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+				{
+					::std::construct_at(this->imp.curr_ptr, *first);
+					++first;
+				}
+				des.thisvec = nullptr;
+			}
+		}
+		else
+		{
+			run_destroy des(this);
+			for (auto const &e : rg)
+			{
+				this->emplace_back(e);
 			}
 			des.thisvec = nullptr;
 		}
 	}
+
+	explicit constexpr vector(::std::initializer_list<value_type> ilist) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+		: vector(::std::from_range, ilist)
+	{
+	}
+
+#endif
 
 	constexpr vector(vector const &vec)
 		requires(::std::copyable<value_type>)
@@ -630,6 +737,109 @@ public:
 		auto p{::std::construct_at(imp.curr_ptr, ::std::forward<Args>(args)...)};
 		++imp.curr_ptr;
 		return *p;
+	}
+
+private:
+	template <bool checked>
+	constexpr pointer movebackward_common_impl(pointer iter) noexcept
+	{
+		if constexpr (checked)
+		{
+			if (imp.curr_ptr == imp.end_ptr)
+#if __has_cpp_attribute(unlikely)
+				[[unlikely]]
+#endif
+			{
+				auto idx{iter - imp.begin_ptr};
+				this->grow_twice_impl();
+				iter = imp.begin_ptr + idx;
+			}
+		}
+		::fast_io::containers::details::move_backward_construct(iter, imp.curr_ptr - 1, imp.curr_ptr);
+		iter->~value_type();
+		return iter;
+	}
+
+public:
+	template <typename... Args>
+		requires std::constructible_from<value_type, Args...>
+	constexpr iterator emplace(const_iterator iter, Args &&...args)
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{imp.begin_ptr};
+			return ::std::construct_at(this->movebackward_common_impl<true>(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
+		}
+		else
+		{
+			return ::std::construct_at(this->movebackward_common_impl<true>(const_cast<pointer>(iter)), ::std::forward<Args>(args)...);
+		}
+	}
+
+	template <typename... Args>
+		requires std::constructible_from<value_type, Args...>
+	constexpr iterator emplace_unchecked(const_iterator iter, Args &&...args)
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{imp.begin_ptr};
+			return ::std::construct_at(this->movebackward_common_impl<false>(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
+		}
+		else
+		{
+			return ::std::construct_at(this->movebackward_common_impl<false>(const_cast<pointer>(iter)), ::std::forward<Args>(args)...);
+		}
+	}
+
+	template <typename... Args>
+		requires std::constructible_from<value_type, Args...>
+	constexpr reference emplace_index(size_type idx, Args &&...args)
+	{
+		auto beginptr{imp.begin_ptr};
+		size_type sz{static_cast<size_type>(imp.curr_ptr - beginptr)};
+		if (sz < idx)
+		{
+			::fast_io::fast_terminate();
+		}
+		return *::std::construct_at(this->movebackward_common_impl<true>(beginptr + idx), ::std::forward<Args>(args)...);
+	}
+
+	constexpr iterator insert(const_iterator iter, const_reference val)
+	{
+		return this->emplace(iter, val);
+	}
+
+	constexpr iterator insert(const_iterator iter, value_type &&val)
+	{
+		return this->emplace(iter, ::std::move(val));
+	}
+
+	constexpr iterator insert_unchecked(const_iterator iter, const_reference val)
+	{
+		return this->emplace_unchecked(iter, val);
+	}
+
+	constexpr iterator insert_unchecked(const_iterator iter, value_type &&val)
+	{
+		return this->emplace_unchecked(iter, ::std::move(val));
+	}
+
+	constexpr reference insert_index(size_type idx, const_reference val)
+	{
+		return this->emplace_index(idx, val);
+	}
+
+	constexpr reference insert_index(size_type idx, value_type &&val)
+	{
+		return this->emplace_index(idx, val);
 	}
 };
 
