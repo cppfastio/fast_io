@@ -862,10 +862,12 @@ public:
 	constexpr list(list const &other)
 		requires(::std::copyable<value_type>)
 	{
+		list_destroyer destroyer(this);
 		for (auto const &ele : other)
 		{
 			this->push_back(ele);
 		}
+		destroyer.release();
 	}
 
 	constexpr list &operator=(list const &other)
