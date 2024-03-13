@@ -590,7 +590,6 @@ constexpr void deque_grow_back_common_impl(dequecontroltype &controller) noexcep
 			}
 
 			*controller.controller_block.controller_after_reserved_ptr = reinterpret_cast<decltype(*controller.controller_block.controller_after_reserved_ptr)>(block_temp);
-
 			++controller.controller_block.controller_after_reserved_ptr;
 		}
 		else
