@@ -14,4 +14,15 @@ int main()
 		::fast_io::io::println(e);
 	}
 	::fast_io::io::println(arr1 <=> arr2);
+
+	for (::std::size_t i{};i!=arr1.size();++i)
+	{
+		::fast_io::io::println(arr1[i]);
+	}
+	for (::std::size_t i{};i!=arr2.size();++i)
+	{
+		::fast_io::io::println(arr2[i]);
+	}
+	::fast_io::io::println(arr1 <=> arr2);
+
 }
