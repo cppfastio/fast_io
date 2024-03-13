@@ -267,6 +267,10 @@ public:
 	{
 		return address_begin == address_end;
 	}
+	constexpr bool is_empty() const noexcept
+	{
+		return address_begin == address_end;
+	}
 	constexpr ::std::size_t size() const noexcept
 	{
 		return static_cast<::std::size_t>(address_end - address_begin);
@@ -323,21 +327,115 @@ public:
 	{
 		return const_reverse_iterator{address_begin};
 	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]]
 	constexpr const_reference front() const noexcept
 	{
+		if (address_begin == address_end) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
 		return *address_begin;
 	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]]
 	constexpr reference front() noexcept
 	{
+		if (address_begin == address_end) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
 		return *address_begin;
 	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]]
 	constexpr const_reference back() const noexcept
+	{
+		if (address_begin == address_end) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return address_end[-1];
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]]
+	constexpr reference back() noexcept
+	{
+		if (address_begin == address_end) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return address_end[-1];
+	}
+
+	constexpr const_reference front_unchecked() const noexcept
+	{
+		return *address_begin;
+	}
+	constexpr reference front_unchecked() noexcept
+	{
+		return *address_begin;
+	}
+	constexpr const_reference back_unchecked() const noexcept
 	{
 		return address_end[-1];
 	}
-	constexpr reference back() noexcept
+	constexpr reference back_unchecked() noexcept
 	{
 		return address_end[-1];
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]]
+	inline constexpr reference operator[](size_type size) noexcept
+	{
+		if (static_cast<size_type>(address_end - address_begin) <= size) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return address_begin[size];
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]]
+	inline constexpr const_reference operator[](size_type size) const noexcept
+	{
+		if (static_cast<size_type>(address_end - address_begin) <= size) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return address_begin[size];
+	}
+
+	inline constexpr reference index_unchecked(size_type size) noexcept
+	{
+		return address_begin[size];
+	}
+	inline constexpr const_reference index_unchecked(size_type size) const noexcept
+	{
+		return address_begin[size];
 	}
 
 #if __has_cpp_attribute(nodiscard)
@@ -349,14 +447,7 @@ public:
 		this->address_end = this->address_begin = nullptr;
 		return temp;
 	}
-	inline constexpr reference operator[](size_type size) noexcept
-	{
-		return address_begin[size];
-	}
-	inline constexpr const_reference operator[](size_type size) const noexcept
-	{
-		return address_begin[size];
-	}
+
 	inline void close()
 	{
 		::fast_io::win32::nt::details::nt_unload_address<family>(address_begin);
