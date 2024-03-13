@@ -16,26 +16,26 @@ struct A
 		print(" constructed\n");
 	}
 
-	A(A const &o)
+	A(A const &o) noexcept
 		: s(o.s)
 	{
 		print(" copy constructed\n");
 	}
 
-	A(A &&o)
+	A(A &&o) noexcept
 		: s(std::move(o.s))
 	{
 		print(" move constructed\n");
 	}
 
-	A &operator=(A const &other)
+	A &operator=(A const &other) noexcept
 	{
 		s = other.s;
 		print(" copy assigned\n");
 		return *this;
 	}
 
-	A &operator=(A &&other)
+	A &operator=(A &&other) noexcept
 	{
 		s = std::move(other.s);
 		print(" move assigned\n");
