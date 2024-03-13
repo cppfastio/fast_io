@@ -313,6 +313,9 @@ private:
 		imp.curr_ptr = new_i;
 		imp.end_ptr = new_begin_ptr + newcap;
 	}
+#if __has_cpp_attribute(__gnu__::__cold__)
+	[[__gnu__::__cold__]]
+#endif
 	inline constexpr void grow_twice_impl() noexcept
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
