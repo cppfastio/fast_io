@@ -202,7 +202,7 @@ struct deque_iterator
 		auto controllerptr{this->itercontent.controller_ptr};
 		if (pos < 0)
 		{
-			size_type diff{static_cast<size_type>(this->itercontent.end_ptr - curr_ptr)};
+			size_type diff{static_cast<size_type>(this->itercontent.end_ptr - curr_ptr) - 1u};
 			constexpr size_type zero{};
 			size_type abspos{static_cast<size_type>(zero - unsignedpos)};
 			diff += abspos;
