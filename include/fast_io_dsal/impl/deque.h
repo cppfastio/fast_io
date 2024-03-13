@@ -1,5 +1,4 @@
 #pragma once
-#include <algorithm>
 
 namespace fast_io
 {
