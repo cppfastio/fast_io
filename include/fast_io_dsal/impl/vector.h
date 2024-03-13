@@ -209,7 +209,6 @@ public:
 		des.thisvec = nullptr;
 	}
 
-
 #ifdef __cpp_lib_ranges_to_container
 	template <::std::ranges::range R>
 	explicit constexpr vector(::std::from_range_t, R &&rg)
@@ -243,7 +242,7 @@ public:
 #else
 					__builtin_memcpy
 #endif
-					(this->imp.curr_ptr, ::std::ranges::data(rg), n * sizeof(value_type));
+						(this->imp.curr_ptr, ::std::ranges::data(rg), n * sizeof(value_type));
 				}
 				this->imp.curr_ptr = e;
 			}
@@ -893,7 +892,7 @@ public:
 		auto beginptr{imp.begin_ptr};
 		auto currptr{imp.curr_ptr};
 		size_type sz{static_cast<size_type>(currptr - beginptr)};
-		if (lastidx < firstidx || lastidx <= sz)
+		if (lastidx < firstidx || sz <= lastidx)
 		{
 			::fast_io::fast_terminate();
 		}
