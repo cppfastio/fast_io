@@ -759,7 +759,10 @@ private:
 		if (iter != currptr) [[likely]]
 		{
 			::fast_io::containers::details::move_backward_construct(iter, currptr, currptrp1);
-			iter->~value_type();
+			if constexpr(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+			{
+				iter->~value_type();
+			}
 		}
 		return iter;
 	}
