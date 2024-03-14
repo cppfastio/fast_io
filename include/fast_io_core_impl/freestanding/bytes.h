@@ -55,8 +55,16 @@ inline constexpr ::std::byte *bytes_copy_n(::std::byte const *first, ::std::size
 	}
 }
 
-inline constexpr ::std::byte *nonoverlapped_bytes_copy_n(::std::byte const *__restrict first, ::std::size_t n,
-														 ::std::byte *__restrict dest) noexcept
+#if __has_cpp_attribute(__gnu__::__flatten__)
+[[__gnu__::__flatten__]]
+#endif
+inline constexpr ::std::byte *bytes_copy(::std::byte const *first, ::std::byte const *last, ::std::byte *dest) noexcept
+{
+	return ::fast_io::freestanding::bytes_copy_n(first, static_cast<::std::size_t>(last - first), dest);
+}
+
+inline constexpr ::std::byte *nonoverlapped_bytes_copy_n(::std::byte const * first, ::std::size_t n,
+														 ::std::byte * dest) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L

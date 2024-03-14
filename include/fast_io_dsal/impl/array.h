@@ -39,8 +39,7 @@ public:
 	}
 	static inline constexpr size_type max_size() noexcept
 	{
-		constexpr size_type mxval{SIZE_MAX / sizeof(value_type)};
-		return mxval;
+		return N;
 	}
 	inline constexpr iterator begin() noexcept
 	{
@@ -276,8 +275,7 @@ public:
 	}
 	static inline constexpr size_type max_size() noexcept
 	{
-		constexpr size_type mxval{SIZE_MAX / sizeof(value_type)};
-		return mxval;
+		return 0;
 	}
 	inline constexpr iterator begin() noexcept
 	{

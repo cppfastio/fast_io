@@ -45,6 +45,7 @@
 #endif
 #include "fast_io_core_impl/freestanding/impl.h"
 #include "fast_io_core_impl/terminate.h"
+#include "fast_io_dsal/impl/freestanding.h"
 #include "fast_io_core_impl/allocation/impl.h"
 
 #include "fast_io_core_impl/error.h"

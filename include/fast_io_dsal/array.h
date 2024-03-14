@@ -23,7 +23,6 @@
 #include <cstring>
 #endif
 
-#include <algorithm>
 #include "../fast_io_core.h"
 #include "impl/array.h"
 
@@ -37,7 +36,9 @@ namespace tlc
 {
 template <typename T, ::std::size_t N>
 using array = ::fast_io::containers::array<T, N>;
-}
+
+using ::fast_io::containers::to_array;
+} // namespace tlc
 
 using ::fast_io::containers::to_array;
 

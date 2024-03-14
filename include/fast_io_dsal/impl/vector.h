@@ -42,8 +42,8 @@ inline void *grow_to_size_iter_common_impl(vector_model *m, void *iter, ::std::s
 	else
 	{
 		begin_ptr = reinterpret_cast<char8_t *>(allocator::allocate(newcap));
-		newiter = ::fast_io::containers::details::move_destroy_construct(old_begin_ptr, reinterpret_cast<char8_t *>(iter), begin_ptr);
-		::fast_io::containers::details::move_destroy_construct(reinterpret_cast<char8_t *>(iter), reinterpret_cast<char8_t *>(old_curr_ptr), newiter + count);
+		newiter = ::fast_io::freestanding::uninitialized_relocate(old_begin_ptr, reinterpret_cast<char8_t *>(iter), begin_ptr);
+		::fast_io::freestanding::uninitialized_relocate(reinterpret_cast<char8_t *>(iter), reinterpret_cast<char8_t *>(old_curr_ptr), newiter + count);
 		if constexpr (allocator::has_deallocate)
 		{
 			allocator::deallocate(old_begin_ptr);
@@ -82,8 +82,8 @@ inline void *grow_to_size_iter_common_aligned_impl(vector_model *m, void *iter, 
 	else
 	{
 		begin_ptr = reinterpret_cast<char8_t *>(allocator::allocate(newcap));
-		newiter = ::fast_io::containers::details::move_destroy_construct(old_begin_ptr, reinterpret_cast<char8_t *>(iter), begin_ptr);
-		::fast_io::containers::details::move_destroy_construct(reinterpret_cast<char8_t *>(iter), reinterpret_cast<char8_t *>(old_curr_ptr), newiter + count);
+		newiter = ::fast_io::freestanding::uninitialized_relocate(old_begin_ptr, reinterpret_cast<char8_t *>(iter), begin_ptr);
+		::fast_io::freestanding::uninitialized_relocate(reinterpret_cast<char8_t *>(iter), reinterpret_cast<char8_t *>(old_curr_ptr), newiter + count);
 		if constexpr (allocator::has_deallocate)
 		{
 			allocator::deallocate_aligned(begin_ptr, alignment);
@@ -894,12 +894,12 @@ private:
 			cap = static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
 		}
 		auto new_begin_ptr = typed_allocator_type::allocate(newcap);
-		auto newiter{::fast_io::containers::details::move_destroy_construct(imp.begin_ptr, iter, new_begin_ptr)};
+		auto newiter{::fast_io::freestanding::uninitialized_relocate(imp.begin_ptr, iter, new_begin_ptr)};
 		auto old_curr_ptr{imp.curr_ptr};
 		size_type old_size{static_cast<size_type>(old_curr_ptr - imp.begin_ptr)};
 		if (iter != old_curr_ptr)
 		{
-			::fast_io::containers::details::move_destroy_construct(iter, old_curr_ptr, newiter + n);
+			::fast_io::freestanding::uninitialized_relocate(iter, old_curr_ptr, newiter + n);
 		}
 		if constexpr (typed_allocator_type::has_deallocate)
 		{
@@ -966,18 +966,18 @@ private:
 			if (__builtin_is_constant_evaluated())
 #endif
 			{
-				::fast_io::containers::details::move_backward_construct(iter, currptr, currptrp1);
+				::fast_io::freestanding::uninitialized_relocate_backward(iter, currptr, currptrp1);
 				iter->~value_type();
 			}
 			else
 			{
 				if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 				{
-					::fast_io::containers::details::move_backward_construct(reinterpret_cast<char unsigned *>(iter), reinterpret_cast<char unsigned *>(currptr), reinterpret_cast<char unsigned *>(currptrp1));
+					::fast_io::freestanding::uninitialized_relocate_backward(reinterpret_cast<char unsigned *>(iter), reinterpret_cast<char unsigned *>(currptr), reinterpret_cast<char unsigned *>(currptrp1));
 				}
 				else
 				{
-					::fast_io::containers::details::move_backward_construct(iter, currptr, currptrp1);
+					::fast_io::freestanding::uninitialized_relocate_backward(iter, currptr, currptrp1);
 					iter->~value_type();
 				}
 			}
@@ -1048,9 +1048,23 @@ private:
 	constexpr pointer erase_common(pointer it) noexcept
 	{
 		auto lastele{imp.curr_ptr};
-		::std::move(it + 1, lastele, it);
-		--lastele;
-		lastele->~value_type();
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+			if constexpr(!::std::is_trivially_destructible_v<value_type>)
+			{
+				it->~value_type();
+			}
+			::fast_io::freestanding::uninitialized_relocate(it + 1, lastele, it);
+		}
+		else
+		{
+			::std::move(it + 1, lastele, it);
+			--lastele;
+			if constexpr(!::std::is_trivially_destructible_v<value_type>)
+			{
+				lastele->~value_type();
+			}
+		}
 		imp.curr_ptr = lastele;
 		return it;
 	}
@@ -1058,12 +1072,20 @@ private:
 	constexpr pointer erase_iters_common(pointer first, pointer last) noexcept
 	{
 		auto currptr{imp.curr_ptr};
-		imp.curr_ptr = ::std::move(last, currptr, first);
-		if constexpr (!::std::is_trivially_destructible_v<value_type>)
+		if constexpr (::std::is_trivially_destructible_v<value_type>)
 		{
-			for (; last != currptr; ++last)
+			if constexpr(!::std::is_trivially_destructible_v<value_type>)
 			{
-				currptr->~value_type();
+				::std::destroy(first, last);
+			}
+			imp.curr_ptr = ::fast_io::freestanding::uninitialized_relocate(last, currptr, first);
+		}
+		else
+		{
+			imp.curr_ptr = ::std::move(last, currptr, first);
+			if constexpr(!::std::is_trivially_destructible_v<value_type>)
+			{
+				::std::destroy(last, currptr);
 			}
 		}
 		return first;
