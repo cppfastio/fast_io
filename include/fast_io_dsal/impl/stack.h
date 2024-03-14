@@ -19,12 +19,10 @@ public:
 
 	constexpr stack() noexcept = default;
 
-#ifdef __cpp_lib_containers_ranges
 	template <::std::ranges::range R>
-	explicit constexpr stack(::std::from_range_t, R &&rg)
-		: container(::std::from_range, ::std::forward<R>(rg))
+	explicit constexpr stack(::fast_io::freestanding::from_range_t, R &&rg)
+		: container(::fast_io::freestanding::from_range, ::std::forward<R>(rg))
 	{}
-#endif
 	constexpr container_type const &get_container() const noexcept
 	{
 		return container;

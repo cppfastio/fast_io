@@ -9,24 +9,20 @@ using namespace fast_io::mnp;
 int main()
 {
 	::fast_io::vector<::std::size_t> vec;
-	constexpr
-		::std::size_t n{1000000};
+	constexpr ::std::size_t n{100000};
 	vec.reserve(n);
-	for(::std::size_t i{};i!=n;++i)
+	for (::std::size_t i{}; i != n; ++i)
 	{
 		vec.push_back_unchecked(i);
 	}
 	::fast_io::ibuf_white_hole_engine eng;
-	::std::ranges::shuffle(vec,eng);
+	::std::ranges::shuffle(vec, eng);
 
-	::fast_io::list<::std::size_t> lst(vec.begin(),vec.end());
-
+	::fast_io::list<::std::size_t> lst(::fast_io::freestanding::from_range, vec);
 
 	lst.sort();
-#if 1
-	for(auto const & e : lst)
+	for (auto const &e : lst)
 	{
 		println(e);
 	}
-#endif
 }

@@ -472,6 +472,8 @@ private:
 		{
 			plst = nullptr;
 		}
+		list_destroyer(list_destroyer const &) = delete;
+		list_destroyer &operator=(list_destroyer const &) = delete;
 		constexpr ~list_destroyer()
 		{
 			if (plst == nullptr)
@@ -505,21 +507,37 @@ public:
 	{
 	}
 
+private:
 	template <::std::forward_iterator Iter, typename Sentinel>
-	explicit constexpr list(Iter first, Sentinel last)
+	constexpr void construct_list_common_impl(Iter first, Sentinel last)
+	{
+		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
+		{
+			this->construct_list_common_impl(::std::to_address(first), ::std::to_address(last));
+		}
+		else
+		{
+			list_destroyer destroyer(this);
+			for (; first != last; ++first)
+			{
+				this->push_back(*first);
+			}
+			destroyer.release();
+		}
+	}
+
+public:
+	template <::std::ranges::range R>
+	explicit constexpr list(::fast_io::freestanding::from_range_t, R &&rg)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
-		list_destroyer destroyer(this);
-		for (; first != last; ++first)
-		{
-			this->push_back(*first);
-		}
-		destroyer.release();
+		this->construct_list_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 
 	explicit constexpr list(::std::initializer_list<value_type> ilist)
-		: list(ilist.begin(), ilist.end())
+		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
+		this->construct_list_common_impl(ilist.begin(), ilist.end());
 	}
 
 	explicit constexpr list(::std::size_t n)
