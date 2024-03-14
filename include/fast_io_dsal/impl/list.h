@@ -472,6 +472,8 @@ private:
 		{
 			plst = nullptr;
 		}
+		list_destroyer(list_destroyer const &) = delete;
+		list_destroyer &operator=(list_destroyer const &) = delete;
 		constexpr ~list_destroyer()
 		{
 			if (plst == nullptr)
@@ -505,6 +507,7 @@ public:
 	{
 	}
 
+private:
 	template <::std::forward_iterator Iter, typename Sentinel>
 	explicit constexpr list(Iter first, Sentinel last)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
@@ -516,6 +519,15 @@ public:
 		}
 		destroyer.release();
 	}
+
+public:
+#ifdef __cpp_lib_ranges_to_container
+	template <::std::ranges::range R>
+	explicit constexpr vector(::std::from_range_t, R &&rg)
+	{
+		this->construct_vector_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
+	}
+#endif
 
 	explicit constexpr list(::std::initializer_list<value_type> ilist)
 		: list(ilist.begin(), ilist.end())
