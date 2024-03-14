@@ -527,23 +527,18 @@ private:
 		}
 	}
 
-	template <::std::forward_iterator Iter, typename Sentinel>
-	explicit constexpr list(Iter first, Sentinel last)
-		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
-	{
-		this->construct_list_common_impl();
-	}
-
 public:
 	template <::std::ranges::range R>
 	explicit constexpr list(::fast_io::freestanding::from_range_t, R &&rg)
-		: list(::std::ranges::begin(rg), ::std::ranges::end(rg))
+		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
+		this->construct_list_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 
 	explicit constexpr list(::std::initializer_list<value_type> ilist)
-		: list(ilist.begin(), ilist.end())
+		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
+		this->construct_list_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 
 	explicit constexpr list(::std::size_t n)
