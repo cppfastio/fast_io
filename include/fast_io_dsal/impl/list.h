@@ -521,13 +521,11 @@ private:
 	}
 
 public:
-#ifdef __cpp_lib_ranges_to_container
 	template <::std::ranges::range R>
-	explicit constexpr vector(::std::from_range_t, R &&rg)
+	explicit constexpr vector(::fast_io::freestanding::from_range_t, R &&rg)
 	{
 		this->construct_vector_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
-#endif
 
 	explicit constexpr list(::std::initializer_list<value_type> ilist)
 		: list(ilist.begin(), ilist.end())

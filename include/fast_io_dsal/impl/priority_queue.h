@@ -26,15 +26,12 @@ public:
 	{
 		return container;
 	}
-#ifdef __cpp_lib_containers_ranges
 	template <::std::ranges::range R>
-	explicit constexpr priority_queue(::std::from_range_t, R &&rg)
-		: container(::std::from_range, ::std::forward<R>(rg))
+	explicit constexpr priority_queue(::fast_io::freestanding::from_range_t, R &&rg)
+		: container(::fast_io::freestanding::from_range, ::std::forward<R>(rg))
 	{
 		::std::ranges::make_heap(this->container, value_compare{});
 	}
-#endif
-
 	constexpr void swap(priority_queue &other) noexcept
 	{
 		container.swap(other.container);

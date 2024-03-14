@@ -274,13 +274,11 @@ public:
 		des.thisvec = nullptr;
 	}
 
-#ifdef __cpp_lib_ranges_to_container
 	template <::std::ranges::range R>
-	explicit constexpr vector(::std::from_range_t, R &&rg)
+	explicit constexpr vector(::fast_io::freestanding::from_range_t, R &&rg)
 	{
 		this->construct_vector_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
-#endif
 
 	explicit constexpr vector(::std::initializer_list<value_type> ilist) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
 	{
