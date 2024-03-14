@@ -487,7 +487,7 @@ constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, ::fast_i
 		}
 		else
 		{
-			return ::std::equal(a.content, a.content + N1, b.content);
+			return ::std::equal(a.data(), a.data() + N1, b.data());
 		}
 	}
 	else
