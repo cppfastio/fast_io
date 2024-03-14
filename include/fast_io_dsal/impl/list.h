@@ -538,7 +538,7 @@ public:
 	explicit constexpr list(::std::initializer_list<value_type> ilist)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
-		this->construct_list_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
+		this->construct_list_common_impl(ilist.begin(), ilist.end());
 	}
 
 	explicit constexpr list(::std::size_t n)
