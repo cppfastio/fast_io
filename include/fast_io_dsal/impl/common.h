@@ -137,7 +137,7 @@ constexpr void move_backward_construct(Iter1 first, Iter1 last, Iter2 d_last)
 		using iter1valuetype = ::std::iter_value_t<Iter1>;
 		using iter2valuetype = ::std::iter_value_t<Iter2>;
 		if constexpr (::std::is_pointer_v<Iter1> && ::std::is_pointer_v<Iter2> &&
-					  ::std::same_as<iter1valuetype, iter2valuetype> && ::fast_io::freestanding::is_trivially_relocatable_v<iter1valuetype>)
+					  ::std::same_as<iter1valuetype, iter2valuetype> && ::std::is_trivially_copyable_v<iter1valuetype>)
 		{
 #ifdef __cpp_if_consteval
 			if !consteval
