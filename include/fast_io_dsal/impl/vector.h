@@ -638,10 +638,7 @@ public:
 	{
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
-			for (auto old_i{imp.begin_ptr}, old_e{imp.curr_ptr}; old_i != old_e; ++old_i)
-			{
-				old_i->~value_type();
-			}
+			::std::destroy(imp.begin_ptr, imp.curr_ptr);
 		}
 		imp.curr_ptr = imp.begin_ptr;
 	}
@@ -960,26 +957,11 @@ private:
 		auto currptrp1{currptr + 1};
 		if (iter != currptr) [[likely]]
 		{
-#ifdef __cpp_if_consteval
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
+			::fast_io::freestanding::uninitialized_relocate_backward(iter, currptr, currptrp1);
+			if constexpr (!::fast_io::freestanding::is_trivially_relocatable_v<value_type> &&
+						  !::std::is_trivially_destructible_v<value_type>)
 			{
-				::fast_io::freestanding::uninitialized_relocate_backward(iter, currptr, currptrp1);
 				iter->~value_type();
-			}
-			else
-			{
-				if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-				{
-					::fast_io::freestanding::uninitialized_relocate_backward(reinterpret_cast<char unsigned *>(iter), reinterpret_cast<char unsigned *>(currptr), reinterpret_cast<char unsigned *>(currptrp1));
-				}
-				else
-				{
-					::fast_io::freestanding::uninitialized_relocate_backward(iter, currptr, currptrp1);
-					iter->~value_type();
-				}
 			}
 		}
 		return iter;
