@@ -88,6 +88,11 @@ struct vector_internal
 	T *end_ptr{};
 };
 
+template <typename allocator, ::std::size_t size, ::std::size_t alignment>
+inline constexpr void vector_insert_common_aligned_impl() noexcept
+{
+}
+
 } // namespace details
 
 template <::std::movable T, typename allocator>
@@ -758,10 +763,26 @@ private:
 		imp.curr_ptr = currptrp1;
 		if (iter != currptr) [[likely]]
 		{
-			::fast_io::containers::details::move_backward_construct(iter, currptr, currptrp1);
-			if constexpr(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+#ifdef __cpp_if_consteval
+			if consteval
+#else
+			if (__builtin_is_constant_evaluated())
+#endif
 			{
+				::fast_io::containers::details::move_backward_construct(iter, currptr, currptrp1);
 				iter->~value_type();
+			}
+			else
+			{
+				if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+				{
+					::fast_io::containers::details::move_backward_construct(reinterpret_cast<char unsigned*>(iter), reinterpret_cast<char unsigned*>(currptr), reinterpret_cast<char unsigned*>(currptrp1));
+				}
+				else
+				{
+					::fast_io::containers::details::move_backward_construct(iter, currptr, currptrp1);
+					iter->~value_type();
+				}
 			}
 		}
 		return iter;
