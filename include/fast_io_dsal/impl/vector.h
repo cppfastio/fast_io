@@ -88,11 +88,6 @@ struct vector_internal
 	T *end_ptr{};
 };
 
-template <typename allocator, ::std::size_t size, ::std::size_t alignment>
-inline constexpr void vector_insert_common_aligned_impl() noexcept
-{
-}
-
 } // namespace details
 
 template <::std::movable T, typename allocator>
