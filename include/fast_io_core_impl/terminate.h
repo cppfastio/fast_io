@@ -11,7 +11,8 @@ namespace fast_io
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-[[noreturn]] inline void fast_terminate() noexcept
+[[noreturn]] inline void
+fast_terminate() noexcept
 {
 // https://llvm.org/doxygen/Compiler_8h_source.html
 #if defined(__has_builtin)
@@ -32,7 +33,8 @@ namespace fast_io
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-[[noreturn]] inline void unreachable() noexcept
+[[noreturn]] inline void
+unreachable() noexcept
 {
 #if defined(_MSC_VER) && !defined(__clang__) // MSVC
 	__assume(false);
