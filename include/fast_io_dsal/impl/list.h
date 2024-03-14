@@ -511,7 +511,6 @@ private:
 	template <::std::forward_iterator Iter, typename Sentinel>
 	constexpr void construct_list_common_impl(Iter first, Sentinel last)
 	{
-		using itvaluetype = ::std::iter_value_t<Iter>;
 		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
 		{
 			this->construct_list_common_impl(::std::to_address(first), ::std::to_address(last));
