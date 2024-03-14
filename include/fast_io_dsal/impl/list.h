@@ -509,22 +509,36 @@ public:
 
 private:
 	template <::std::forward_iterator Iter, typename Sentinel>
+	constexpr void construct_list_common_impl(Iter first, Sentinel last)
+	{
+		using itvaluetype = ::std::iter_value_t<Iter>;
+		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
+		{
+			this->list(::std::to_address(first), ::std::to_address(last));
+		}
+		else
+		{
+			list_destroyer destroyer(this);
+			for (; first != last; ++first)
+			{
+				this->push_back(*first);
+			}
+			destroyer.release();
+		}
+	}
+
+	template <::std::forward_iterator Iter, typename Sentinel>
 	explicit constexpr list(Iter first, Sentinel last)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
-		list_destroyer destroyer(this);
-		for (; first != last; ++first)
-		{
-			this->push_back(*first);
-		}
-		destroyer.release();
+		this->construct_list_common_impl();
 	}
 
 public:
 	template <::std::ranges::range R>
 	explicit constexpr list(::fast_io::freestanding::from_range_t, R &&rg)
+		: list(::std::ranges::begin(rg), ::std::ranges::end(rg))
 	{
-		this->construct_vector_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 
 	explicit constexpr list(::std::initializer_list<value_type> ilist)
