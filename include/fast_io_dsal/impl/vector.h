@@ -531,7 +531,7 @@ public:
 	}
 	constexpr void clear() noexcept
 	{
-		if constexpr (!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
 			for (auto old_i{imp.begin_ptr}, old_e{imp.curr_ptr}; old_i != old_e; ++old_i)
 			{
