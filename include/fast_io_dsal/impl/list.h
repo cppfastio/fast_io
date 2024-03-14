@@ -522,7 +522,7 @@ private:
 
 public:
 	template <::std::ranges::range R>
-	explicit constexpr vector(::fast_io::freestanding::from_range_t, R &&rg)
+	explicit constexpr list(::fast_io::freestanding::from_range_t, R &&rg)
 	{
 		this->construct_vector_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
