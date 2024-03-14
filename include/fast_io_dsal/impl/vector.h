@@ -169,6 +169,71 @@ private:
 		des.thisvec = nullptr;
 	}
 
+	template <typename Iter, typename Sentinel>
+	constexpr void construct_vector_common_impl(Iter first, Sentinel last)
+	{
+		using rvaluetype = ::std::iter_value_t<Iter>;
+		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
+		{
+			this->construct_vector_common_impl(::std::to_address(first), ::std::to_address(last));
+		}
+		else
+		{
+			if constexpr (::std::forward_iterator<Iter>)
+			{
+				size_type n{static_cast<size_type>(::std::ranges::distance(first, last))};
+				auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
+												typed_allocator_type::allocate(n)) +
+										   n};
+				if constexpr (
+					::std::is_pointer_v<Iter> &&
+					::std::is_trivially_constructible_v<value_type, rvaluetype> &&
+					::std::same_as<::std::remove_cvref_t<rvaluetype>, ::std::remove_cvref_t<value_type>>)
+				{
+					if (n) [[likely]]
+					{
+#if defined(_MSC_VER) && !defined(__clang__)
+						::std::memcpy
+#else
+						__builtin_memcpy
+#endif
+							(this->imp.curr_ptr, first, n * sizeof(value_type));
+					}
+					this->imp.curr_ptr = e;
+				}
+				else if constexpr (::std::is_nothrow_constructible_v<value_type, rvaluetype>)
+				{
+					auto curr{this->imp.begin_ptr};
+					for (; curr != e; ++curr)
+					{
+						::std::construct_at(curr, *first);
+						++first;
+					}
+					this->imp.curr_ptr = e;
+				}
+				else
+				{
+					run_destroy des(this);
+					for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+					{
+						::std::construct_at(this->imp.curr_ptr, *first);
+						++first;
+					}
+					des.thisvec = nullptr;
+				}
+			}
+			else
+			{
+				run_destroy des(this);
+				for (; first != last; ++first)
+				{
+					this->emplace_back(*first);
+				}
+				des.thisvec = nullptr;
+			}
+		}
+	}
+
 public:
 	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type> || noexcept(value_type()))
 	{
@@ -218,77 +283,14 @@ public:
 	template <::std::ranges::range R>
 	explicit constexpr vector(::std::from_range_t, R &&rg)
 	{
-		using rvaluetype = ::std::ranges::range_value_t<R>;
-		if constexpr (::std::ranges::sized_range<R> || ::std::ranges::forward_range<R>)
-		{
-			auto first{::std::ranges::begin(rg)};
-			auto last{::std::ranges::end(rg)};
-			size_type n;
-			if constexpr (::std::ranges::sized_range<R>)
-			{
-				n = ::std::ranges::size(rg);
-			}
-			else
-			{
-				n = static_cast<size_type>(::std::ranges::distance(first, last));
-			}
-			auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
-											typed_allocator_type::allocate(n)) +
-									   n};
-			if constexpr (
-				::std::ranges::contiguous_range<R> &&
-				::std::is_trivially_constructible_v<value_type, rvaluetype> &&
-				::std::same_as<::std::remove_cvref_t<rvaluetype>, ::std::remove_cvref_t<value_type>>)
-			{
-				if (n) [[likely]]
-				{
-#if defined(_MSC_VER) && !defined(__clang__)
-					::std::memcpy
-#else
-					__builtin_memcpy
-#endif
-						(this->imp.curr_ptr, ::std::ranges::data(rg), n * sizeof(value_type));
-				}
-				this->imp.curr_ptr = e;
-			}
-			else if constexpr (::std::is_nothrow_constructible_v<value_type, rvaluetype>)
-			{
-				auto curr{this->imp.begin_ptr};
-				for (; curr != e; ++curr)
-				{
-					::std::construct_at(curr, *first);
-					++first;
-				}
-				this->imp.curr_ptr = e;
-			}
-			else
-			{
-				run_destroy des(this);
-				for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
-				{
-					::std::construct_at(this->imp.curr_ptr, *first);
-					++first;
-				}
-				des.thisvec = nullptr;
-			}
-		}
-		else
-		{
-			run_destroy des(this);
-			for (auto const &e : rg)
-			{
-				this->emplace_back(e);
-			}
-			des.thisvec = nullptr;
-		}
+		this->construct_vector_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
+#endif
 
 	explicit constexpr vector(::std::initializer_list<value_type> ilist) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
-		: vector(::std::from_range, ilist)
 	{
+		this->construct_vector_common_impl(ilist.begin(), ilist.end());
 	}
-
-#endif
 
 	constexpr vector(vector const &vec)
 		requires(::std::copyable<value_type>)
