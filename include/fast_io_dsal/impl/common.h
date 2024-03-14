@@ -115,8 +115,9 @@ inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
 }
 
 template <::std::bidirectional_iterator Iter1, ::std::bidirectional_iterator Iter2>
-constexpr void move_backward_construct(Iter1 first, Iter1 last, Iter2 d_last)
+constexpr void move_backward_construct(Iter1 first, Iter1 last, Iter2 d_last) noexcept
 {
+	//we do not allow move constructor to throw EH.
 	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
 	{
 		move_backward_construct(::std::to_address(first), ::std::to_address(last),
@@ -164,6 +165,62 @@ constexpr void move_backward_construct(Iter1 first, Iter1 last, Iter2 d_last)
 			::std::construct_at(--d_last, std::move(*(--last)));
 		}
 		::std::move_backward(first, last, d_last);
+	}
+}
+
+template <::std::bidirectional_iterator Iter1, ::std::bidirectional_iterator Iter2>
+constexpr Iter2 move_destroy_construct(Iter1 first, Iter1 last, Iter2 dest) noexcept
+{
+	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
+	{
+		return move_destroy_construct(::std::to_address(first), ::std::to_address(last),
+								::std::to_address(dest))-::std::to_address(dest)+dest;
+	}
+	else if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1>)
+	{
+		return move_destroy_construct(::std::to_address(first), ::std::to_address(last),
+								dest);
+	}
+	else if constexpr (::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
+	{
+		return move_destroy_construct(first, last,
+								::std::to_address(dest))-::std::to_address(dest)+dest;
+	}
+	else
+	{
+		using iter1valuetype = ::std::iter_value_t<Iter1>;
+		using iter2valuetype = ::std::iter_value_t<Iter2>;
+		if constexpr (::std::is_pointer_v<Iter1> && ::std::is_pointer_v<Iter2> &&
+					  ::std::same_as<iter1valuetype, iter2valuetype> && ::std::is_trivially_copyable_v<iter1valuetype>)
+		{
+#ifdef __cpp_if_consteval
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+			{
+				::std::size_t n{static_cast<::std::size_t>(last - first)};
+				if (n) [[likely]]
+				{
+#if defined(_MSC_VER) && !defined(__clang__)
+					::std::memcpy
+#else
+					__builtin_memcpy
+#endif
+						(dest, first, n * sizeof(iter1valuetype));
+				}
+				return dest+n;
+			}
+		}
+		//we do not allow move constructor to throw EH.
+		while(first!=last)
+		{
+			::std::construct_at(dest, ::std::move(*first));
+			first->~iter1valuetype();
+			++first;
+			++dest;
+		}
+		return dest;
 	}
 }
 
