@@ -774,9 +774,9 @@ private:
 			}
 			else
 			{
-				if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+				if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 				{
-					::fast_io::containers::details::move_backward_construct(reinterpret_cast<char unsigned*>(iter), reinterpret_cast<char unsigned*>(currptr), reinterpret_cast<char unsigned*>(currptrp1));
+					::fast_io::containers::details::move_backward_construct(reinterpret_cast<char unsigned *>(iter), reinterpret_cast<char unsigned *>(currptr), reinterpret_cast<char unsigned *>(currptrp1));
 				}
 				else
 				{

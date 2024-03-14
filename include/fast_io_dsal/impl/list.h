@@ -673,7 +673,7 @@ public:
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
-			auto newnode = static_cast<node_type *>(list_trivially_allocate_insert_sa<allocator_type, alignof(node_type), sizeof(node_type)>(iter.iter));
+			auto newnode = static_cast<node_type *>(::fast_io::containers::details::list_trivially_allocate_insert_sa<allocator_type, alignof(node_type), sizeof(node_type)>(iter.iter));
 			::std::construct_at(
 				__builtin_addressof(newnode->element),
 				::std::forward<Args>(args)...);
