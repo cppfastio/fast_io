@@ -1050,7 +1050,7 @@ private:
 		auto lastele{imp.curr_ptr};
 		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
-			if constexpr(!::std::is_trivially_destructible_v<value_type>)
+			if constexpr (!::std::is_trivially_destructible_v<value_type>)
 			{
 				it->~value_type();
 			}
@@ -1060,7 +1060,7 @@ private:
 		{
 			::std::move(it + 1, lastele, it);
 			--lastele;
-			if constexpr(!::std::is_trivially_destructible_v<value_type>)
+			if constexpr (!::std::is_trivially_destructible_v<value_type>)
 			{
 				lastele->~value_type();
 			}
@@ -1074,7 +1074,7 @@ private:
 		auto currptr{imp.curr_ptr};
 		if constexpr (::std::is_trivially_destructible_v<value_type>)
 		{
-			if constexpr(!::std::is_trivially_destructible_v<value_type>)
+			if constexpr (!::std::is_trivially_destructible_v<value_type>)
 			{
 				::std::destroy(first, last);
 			}
@@ -1082,11 +1082,12 @@ private:
 		}
 		else
 		{
-			imp.curr_ptr = ::std::move(last, currptr, first);
-			if constexpr(!::std::is_trivially_destructible_v<value_type>)
+			auto newcurrptr = ::std::move(last, currptr, first);
+			if constexpr (!::std::is_trivially_destructible_v<value_type>)
 			{
-				::std::destroy(last, currptr);
+				::std::destroy(newcurrptr, currptr);
 			}
+			imp.curr_ptr = newcurrptr;
 		}
 		return first;
 	}
