@@ -514,7 +514,7 @@ private:
 		using itvaluetype = ::std::iter_value_t<Iter>;
 		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
 		{
-			this->list(::std::to_address(first), ::std::to_address(last));
+			this->construct_list_common_impl(::std::to_address(first), ::std::to_address(last));
 		}
 		else
 		{
