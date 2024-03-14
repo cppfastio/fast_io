@@ -39,6 +39,8 @@ template <typename T, ::std::size_t N>
 using array = ::fast_io::containers::array<T, N>;
 }
 
+using ::fast_io::containers::to_array;
+
 } // namespace fast_io
 
 #if defined(_MSC_VER) && !defined(__clang__)
