@@ -1072,7 +1072,7 @@ private:
 	constexpr pointer erase_iters_common(pointer first, pointer last) noexcept
 	{
 		auto currptr{imp.curr_ptr};
-		if constexpr (::std::is_trivially_destructible_v<value_type>)
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
 		{
 			if constexpr (!::std::is_trivially_destructible_v<value_type>)
 			{
