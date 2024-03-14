@@ -4,7 +4,6 @@ namespace fast_io::containers
 {
 
 template <typename T, ::std::size_t N>
-	requires(N != 0)
 class array
 {
 public:
@@ -247,6 +246,229 @@ public:
 	}
 };
 
+template <typename T>
+class array<T, 0>
+{
+public:
+	using value_type = T;
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+	using reference = value_type &;
+	using const_reference = value_type const &;
+	using pointer = value_type *;
+	using const_pointer = value_type const *;
+	using iterator = pointer;
+	using const_iterator = const_pointer;
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+
+	static inline constexpr bool is_empty() noexcept
+	{
+		return true;
+	}
+	static inline constexpr bool empty() noexcept
+	{
+		return true;
+	}
+	static inline constexpr size_type size() noexcept
+	{
+		return 0;
+	}
+	static inline constexpr size_type max_size() noexcept
+	{
+		constexpr size_type mxval{SIZE_MAX / sizeof(value_type)};
+		return mxval;
+	}
+	inline constexpr iterator begin() noexcept
+	{
+		return nullptr;
+	}
+	inline constexpr const_iterator begin() const noexcept
+	{
+		return nullptr;
+	}
+	inline constexpr const_iterator cbegin() const noexcept
+	{
+		return nullptr;
+	}
+	inline constexpr iterator end() noexcept
+	{
+		return nullptr;
+	}
+	inline constexpr const_iterator end() const noexcept
+	{
+		return nullptr;
+	}
+	inline constexpr const_iterator cend() const noexcept
+	{
+		return nullptr;
+	}
+
+	inline constexpr reverse_iterator rbegin() noexcept
+	{
+		return reverse_iterator(nullptr);
+	}
+	inline constexpr const_reverse_iterator rbegin() const noexcept
+	{
+		return const_reverse_iterator(nullptr);
+	}
+	inline constexpr const_reverse_iterator crbegin() const noexcept
+	{
+		return const_reverse_iterator(nullptr);
+	}
+	inline constexpr reverse_iterator rend() noexcept
+	{
+		return reverse_iterator(nullptr);
+	}
+	inline constexpr const_reverse_iterator rend() const noexcept
+	{
+		return const_reverse_iterator(nullptr);
+	}
+	inline constexpr const_reverse_iterator crend() const noexcept
+	{
+		return const_reverse_iterator(nullptr);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr const_pointer data() const noexcept
+	{
+		return nullptr;
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr pointer data() noexcept
+	{
+		return nullptr;
+	}
+
+	constexpr void fill(const_reference) noexcept
+	{
+	}
+
+	constexpr void swap(array &) noexcept
+	{
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr reference operator[](size_type) noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr const_reference operator[](size_type) const noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr reference index_unchecked(size_type idx) noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr const_reference index_unchecked(size_type idx) const noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr reference back() noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr const_reference back() const noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr reference back_unchecked() noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr const_reference back_unchecked() const noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr reference front() noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr const_reference front() const noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr reference front_unchecked() noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr const_reference front_unchecked() const noexcept
+	{
+		::fast_io::fast_terminate();
+	}
+};
+
 template <typename T, ::std::size_t N>
 constexpr void swap(::fast_io::containers::array<T, N> &a, ::fast_io::containers::array<T, N> &b) noexcept(noexcept(a.swap(b)))
 {
@@ -259,7 +481,14 @@ constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, ::fast_i
 {
 	if constexpr (N1 == N2)
 	{
-		return ::std::equal(a.content, a.content + N1, b.content);
+		if constexpr (N1 == 0)
+		{
+			return true;
+		}
+		else
+		{
+			return ::std::equal(a.content, a.content + N1, b.content);
+		}
 	}
 	else
 	{
@@ -271,7 +500,7 @@ template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::three_way_comparable<T>
 constexpr auto operator<=>(::fast_io::containers::array<T, N1> const &a, ::fast_io::containers::array<T, N2> const &b)
 {
-	return ::std::lexicographical_compare_three_way(a.content, a.content + N1, b.content, b.content + N2, ::std::compare_three_way{});
+	return ::std::lexicographical_compare_three_way(a.data(), a.data() + N1, b.data(), b.data() + N2, ::std::compare_three_way{});
 }
 
 namespace details
