@@ -35,6 +35,7 @@
 #include "../fast_io_core_impl/intrinsics/msvc/impl.h"
 #include "../fast_io_core_impl/allocation/impl.h"
 
+#include "impl/freestanding.h"
 #include "impl/common.h"
 #include "impl/list.h"
 

@@ -36,6 +36,7 @@
 #include "../fast_io_core_impl/allocation/impl.h"
 #include "../fast_io_core_impl/asan_support.h"
 
+#include "impl/freestanding.h"
 #include "impl/common.h"
 #include "impl/vector.h"
 
