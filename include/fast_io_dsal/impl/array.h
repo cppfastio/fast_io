@@ -380,18 +380,18 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr reference index_unchecked(size_type idx) noexcept
+	inline constexpr reference index_unchecked(size_type) noexcept
 	{
-		::fast_io::fast_terminate();
+		::fast_io::unreachable();
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr const_reference index_unchecked(size_type idx) const noexcept
+	inline constexpr const_reference index_unchecked(size_type) const noexcept
 	{
-		::fast_io::fast_terminate();
+		::fast_io::unreachable();
 	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -419,7 +419,7 @@ public:
 #endif
 	inline constexpr reference back_unchecked() noexcept
 	{
-		::fast_io::fast_terminate();
+		::fast_io::unreachable();
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
@@ -428,7 +428,7 @@ public:
 #endif
 	inline constexpr const_reference back_unchecked() const noexcept
 	{
-		::fast_io::fast_terminate();
+		::fast_io::unreachable();
 	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -456,7 +456,7 @@ public:
 #endif
 	inline constexpr reference front_unchecked() noexcept
 	{
-		::fast_io::fast_terminate();
+		::fast_io::unreachable();
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
@@ -465,7 +465,7 @@ public:
 #endif
 	inline constexpr const_reference front_unchecked() const noexcept
 	{
-		::fast_io::fast_terminate();
+		::fast_io::unreachable();
 	}
 };
 
