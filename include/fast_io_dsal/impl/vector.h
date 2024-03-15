@@ -970,7 +970,19 @@ public:
 		}
 		else
 		{
-			return this->insert_impl(iter, value_type(::std::forward<Args>(args)...));
+#ifdef __cpp_if_consteval
+			if consteval
+#else
+			if (__builtin_is_constant_evaluated())
+#endif
+			{
+				auto beginptr{imp.begin_ptr};
+				return this->insert_impl(iter - beginptr + beginptr, value_type(::std::forward<Args>(args)...));
+			}
+			else
+			{
+				return this->insert_impl(const_cast<pointer>(iter), value_type(::std::forward<Args>(args)...));
+			}
 		}
 	}
 
