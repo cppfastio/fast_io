@@ -622,7 +622,7 @@ private:
 #endif
 			{
 				::fast_io::containers::details::vector::grow_to_size_impl<allocator_type, sizeof(value_type), alignof(value_type)>(
-					reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
 					alignof(value_type), newcap);
 				return;
 			}
@@ -645,7 +645,7 @@ private:
 #endif
 			{
 				::fast_io::containers::details::vector::grow_twice_impl<allocator_type, sizeof(value_type), alignof(value_type)>(
-					reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)));
+					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)));
 				return;
 			}
 		}
