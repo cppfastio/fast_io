@@ -28,75 +28,31 @@ namespace detemplate
 template <typename allocator>
 inline void *grow_to_byte_size_iter_impl(vector_model &imp, void *iter, ::std::size_t newcap, ::std::size_t count, ::std::size_t alignment) noexcept
 {
-	bool const defaultaligned{alignment == allocator::default_alignment};
 	::std::byte *old_begin_ptr{imp.begin_ptr};
 	::std::byte *old_curr_ptr{imp.curr_ptr};
 	::std::byte *begin_ptr;
 	::std::byte *newiter;
 	::std::size_t const old_size{static_cast<::std::size_t>(old_curr_ptr - old_begin_ptr)};
-	if (iter == old_curr_ptr)
+
+	bool usereallocate{iter == old_curr_ptr};
+	void *reallocated_old_ptr{};
+	if (usereallocate)
 	{
-		if (defaultaligned)
-		{
-			if constexpr (allocator::has_reallocate)
-			{
-				begin_ptr = reinterpret_cast<::std::byte *>(allocator::reallocate(old_begin_ptr, newcap));
-			}
-			else
-			{
-				begin_ptr = reinterpret_cast<::std::byte *>(allocator::reallocate_n(old_begin_ptr, static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr), newcap));
-			}
-		}
-		else
-		{
-			if constexpr (allocator::has_reallocate_aligned)
-			{
-				begin_ptr = reinterpret_cast<::std::byte *>(allocator::reallocate_aligned(old_begin_ptr, alignment, newcap));
-			}
-			else
-			{
-				begin_ptr = reinterpret_cast<::std::byte *>(allocator::reallocate_aligned_n(old_begin_ptr, static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr), alignment, newcap));
-			}
-		}
+		reallocated_old_ptr = old_begin_ptr;
+	}
+	::std::size_t old_capacity{static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr)};
+	begin_ptr = reinterpret_cast<::std::byte *>(allocator::reallocate_aligned_n(reallocated_old_ptr, old_capacity, alignment, newcap));
+	if (usereallocate)
+	{
 		newiter = begin_ptr + old_size;
 	}
 	else
 	{
-		if (defaultaligned)
-		{
-			begin_ptr = reinterpret_cast<::std::byte *>(allocator::allocate(newcap));
-		}
-		else
-		{
-			begin_ptr = reinterpret_cast<::std::byte *>(allocator::allocate_aligned(newcap, alignment));
-		}
 		newiter = ::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(old_begin_ptr), reinterpret_cast<::std::byte const *>(iter),
 																	reinterpret_cast<::std::byte *>(begin_ptr));
 		::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(iter), reinterpret_cast<::std::byte const *>(old_curr_ptr),
 														  reinterpret_cast<::std::byte *>(newiter + count));
-
-		if (defaultaligned)
-		{
-			if constexpr (allocator::has_deallocate)
-			{
-				allocator::deallocate(old_begin_ptr);
-			}
-			else
-			{
-				allocator::deallocate_n(old_begin_ptr, static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr));
-			}
-		}
-		else
-		{
-			if constexpr (allocator::has_deallocate_aligned)
-			{
-				allocator::deallocate_aligned(old_begin_ptr, alignment);
-			}
-			else
-			{
-				allocator::deallocate_aligned_n(old_begin_ptr, alignment, static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr));
-			}
-		}
+		allocator::deallocate_aligned_n(old_begin_ptr, alignment, old_capacity);
 	}
 	imp.begin_ptr = begin_ptr;
 	imp.curr_ptr = begin_ptr + old_size;
