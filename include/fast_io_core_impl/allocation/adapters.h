@@ -63,47 +63,56 @@ inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, :
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()},
 			sizeofptr{sizeof(void *)},
 			mxmptr{mxn - sizeofptr};
-		if (alignment < sizeofptr)
+		constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
+		bool const alignedadjustment{defaultalignment < alignment};
+		if (alignedadjustment)
 		{
-			alignment = sizeofptr;
+			if (alignment < sizeofptr)
+			{
+				alignment = sizeofptr;
+			}
+			if (alignment > mxmptr)
+			{
+				::fast_io::fast_terminate();
+			}
+			::std::size_t total_extra_space{alignment + sizeofptr};
+			::std::size_t upperlimit{static_cast<::std::size_t>(mxn - total_extra_space)};
+			if (n > upperlimit)
+			{
+				::fast_io::fast_terminate();
+			}
+			n += total_extra_space;
 		}
-		if (alignment > mxmptr)
-		{
-			::fast_io::fast_terminate();
-		}
-		::std::size_t total_extra_space{alignment + sizeofptr};
-		::std::size_t upperlimit{static_cast<::std::size_t>(mxn - total_extra_space)};
-		if (n > upperlimit)
-		{
-			::fast_io::fast_terminate();
-		}
-		::std::size_t to_allocate{n + total_extra_space};
 		void *p;
 		if constexpr (zero)
 		{
 			if constexpr (has_allocate_zero_impl<alloc>)
 			{
-				p = alloc::allocate_zero(to_allocate);
+				p = alloc::allocate_zero(n);
 			}
 			else
 			{
-				p = alloc::allocate(to_allocate);
+				p = alloc::allocate(n);
 			}
 		}
 		else
 		{
 			if constexpr (has_allocate_impl<alloc>)
 			{
-				p = alloc::allocate(to_allocate);
+				p = alloc::allocate(n);
 			}
 			else
 			{
-				p = alloc::allocate_zero(to_allocate);
+				p = alloc::allocate_zero(n);
 			}
 		}
-		void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::size_t>(p) + alignment) & (0 - alignment))};
-		reinterpret_cast<void **>(aligned_ptr)[-1] = p;
-		return aligned_ptr;
+		if (alignedadjustment)
+		{
+			void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::size_t>(p) + alignment) & (0 - alignment))};
+			reinterpret_cast<void **>(aligned_ptr)[-1] = p;
+			p = aligned_ptr;
+		}
+		return p;
 	}
 }
 template <typename alloc, bool zero>
@@ -137,47 +146,56 @@ inline constexpr void *status_allocator_pointer_aligned_impl(typename alloc::han
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max()},
 			sizeofptr{sizeof(void *)},
 			mxmptr{mxn - sizeofptr};
-		if (alignment < sizeofptr)
+		constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
+		bool const alignedadjustment{defaultalignment < alignment};
+		if (alignedadjustment)
 		{
-			alignment = sizeofptr;
+			if (alignment < sizeofptr)
+			{
+				alignment = sizeofptr;
+			}
+			if (alignment > mxmptr)
+			{
+				::fast_io::fast_terminate();
+			}
+			::std::size_t total_extra_space{alignment + sizeofptr};
+			::std::size_t upperlimit{static_cast<::std::size_t>(mxn - total_extra_space)};
+			if (n > upperlimit)
+			{
+				::fast_io::fast_terminate();
+			}
+			n += total_extra_space;
 		}
-		if (alignment > mxmptr)
-		{
-			::fast_io::fast_terminate();
-		}
-		::std::size_t total_extra_space{alignment + sizeofptr};
-		::std::size_t upperlimit{static_cast<::std::size_t>(mxn - total_extra_space)};
-		if (n > upperlimit)
-		{
-			::fast_io::fast_terminate();
-		}
-		::std::size_t to_allocate{n + total_extra_space};
 		void *p;
 		if constexpr (zero)
 		{
-			if constexpr (has_handle_allocate_zero_impl<alloc>)
+			if constexpr (has_allocate_zero_impl<alloc>)
 			{
-				p = alloc::handle_allocate_zero(handle, to_allocate);
+				p = alloc::handle_allocate_zero(handle, n);
 			}
 			else
 			{
-				p = alloc::allocate(handle, to_allocate);
+				p = alloc::handle_allocate(handle, n);
 			}
 		}
 		else
 		{
-			if constexpr (has_handle_allocate_impl<alloc>)
+			if constexpr (has_allocate_impl<alloc>)
 			{
-				p = alloc::allocate(handle, to_allocate);
+				p = alloc::handle_allocate(handle, n);
 			}
 			else
 			{
-				p = alloc::allocate_zero(handle, to_allocate);
+				p = alloc::handle_allocate_zero(handle, n);
 			}
 		}
-		void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::size_t>(p) + alignment) & (0 - alignment))};
-		reinterpret_cast<void **>(aligned_ptr)[-1] = p;
-		return aligned_ptr;
+		if (alignedadjustment)
+		{
+			void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::size_t>(p) + alignment) & (0 - alignment))};
+			reinterpret_cast<void **>(aligned_ptr)[-1] = p;
+			p = aligned_ptr;
+		}
+		return p;
 	}
 }
 
@@ -537,11 +555,27 @@ public:
 		}
 	}
 
-	static inline constexpr bool has_deallocate_aligned = ::fast_io::details::has_deallocate_aligned_impl<alloc>;
+	static inline constexpr bool has_deallocate_aligned = (::fast_io::details::has_deallocate_aligned_impl<alloc> ||
+														   ::fast_io::details::has_deallocate_impl<alloc>);
 	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
 		requires(!has_status && has_deallocate_aligned)
 	{
-		allocator_type::deallocate_aligned(p, alignment);
+		if constexpr (::fast_io::details::has_deallocate_aligned_impl<alloc>)
+		{
+			allocator_type::deallocate_aligned(p, alignment);
+		}
+		else
+		{
+			if (p == nullptr)
+			{
+				return;
+			}
+			if (default_alignment < alignment)
+			{
+				p = reinterpret_cast<void **>(p)[-1];
+			}
+			allocator_type::deallocate(p);
+		}
 	}
 	static inline void deallocate_aligned_n(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -560,14 +594,18 @@ public:
 			{
 				return;
 			}
+			if (default_alignment < alignment)
+			{
+				p = reinterpret_cast<void **>(p)[-1];
+				n += sizeof(void *) + alignment;
+			}
 			if constexpr (::fast_io::details::has_deallocate_impl<alloc>)
 			{
-				allocator_type::deallocate(reinterpret_cast<void **>(p)[-1]);
+				allocator_type::deallocate(p);
 			}
 			else
 			{
-				::std::size_t const to_deallocate{sizeof(void *) + alignment + n};
-				allocator_type::deallocate_n(reinterpret_cast<void **>(p)[-1], to_deallocate);
+				allocator_type::deallocate_n(p, n);
 			}
 		}
 	}
@@ -926,14 +964,18 @@ public:
 			{
 				return;
 			}
-			if constexpr (::fast_io::details::has_handle_deallocate_impl<alloc>)
+			if (default_alignment < alignment)
 			{
-				allocator_type::handle_deallocate(handle, reinterpret_cast<void **>(p)[-1]);
+				p = reinterpret_cast<void **>(p)[-1];
+				n += sizeof(void *) + alignment;
+			}
+			if constexpr (::fast_io::details::has_deallocate_impl<alloc>)
+			{
+				allocator_type::handle_deallocate(handle, p);
 			}
 			else
 			{
-				::std::size_t const to_deallocate{sizeof(void *) + alignment + n};
-				allocator_type::handle_deallocate_n(handle, reinterpret_cast<void **>(p)[-1], to_deallocate);
+				allocator_type::handle_deallocate_n(handle, p, n);
 			}
 		}
 	}
