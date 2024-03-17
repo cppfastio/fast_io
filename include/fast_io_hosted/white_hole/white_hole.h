@@ -106,6 +106,11 @@ struct basic_white_hole_engine
 {
 	using handle_type = handletype;
 	using result_type = ::std::size_t;
+#if __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#elif __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#endif
 	handle_type handle;
 	static inline constexpr result_type min() noexcept
 	{
