@@ -2,6 +2,7 @@
 #include <fast_io_device.h>
 #include <queue>
 #include <vector>
+#include <fast_io_driver/timer.h>
 
 struct node
 {
@@ -12,6 +13,7 @@ using namespace fast_io::io;
 
 int main()
 {
+	::fast_io::timer timer("spfa_optimize_fastio");
 	fast_io::ibuf_file ibf("graph.txt");
 	std::size_t m, n;
 	scan(ibf, m, n);

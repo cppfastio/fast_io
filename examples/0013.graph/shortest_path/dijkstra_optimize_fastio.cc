@@ -2,6 +2,7 @@
 #include <fast_io_dsal/priority_queue.h>
 #include <fast_io.h>
 #include <fast_io_device.h>
+#include <fast_io_driver/timer.h>
 
 struct node
 {
@@ -22,6 +23,7 @@ using namespace fast_io::io;
 
 int main()
 {
+	::fast_io::timer timer("dijkstra_optimize_fastio");
 	fast_io::ibuf_file ibf("graph.txt");
 	std::size_t m, n;
 	scan(ibf, m, n);
