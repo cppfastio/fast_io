@@ -23,7 +23,7 @@ using namespace fast_io::io;
 
 int main()
 {
-	::fast_io::timer timer("dijkstra_optimize_fastio");
+	::fast_io::timer timer(u8"dijkstra_optimize_fastio");
 	fast_io::ibuf_file ibf("graph.txt");
 	std::size_t m, n;
 	scan(ibf, m, n);
