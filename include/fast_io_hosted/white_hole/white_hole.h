@@ -106,6 +106,11 @@ struct basic_white_hole_engine
 {
 	using handle_type = handletype;
 	using result_type = ::std::size_t;
+#if __has_cpp_attribute(no_unique_address)
+	[[no_unique_address]]
+#elif __has_cpp_attribute(msvc::no_unique_address)
+	[[msvc::no_unique_address]]
+#endif
 	handle_type handle;
 	static inline constexpr result_type min() noexcept
 	{
@@ -113,7 +118,8 @@ struct basic_white_hole_engine
 	}
 	static inline constexpr result_type max() noexcept
 	{
-		return SIZE_MAX;
+		constexpr result_type ret{::std::numeric_limits<result_type>::max()};
+		return ret;
 	}
 	inline constexpr double entropy() const noexcept
 	{
@@ -134,7 +140,7 @@ struct basic_white_hole_engine
 	}
 	inline result_type operator()()
 	{
-		result_type type;
+		result_type value;
 		auto instmref{::fast_io::operations::input_stream_ref(handle)};
 		if constexpr (::fast_io::details::minimum_buffer_input_stream_require_size_impl<decltype(instmref),
 																						sizeof(result_type)>)
@@ -150,16 +156,16 @@ struct basic_white_hole_engine
 				ibuffer_minimum_size_underflow_all_prepare_define(instmref);
 				currptr = ibuffer_curr(instmref);
 			}
-			::fast_io::freestanding::my_memcpy(__builtin_addressof(type), currptr, objsz);
+			::fast_io::freestanding::my_memcpy(__builtin_addressof(value), currptr, objsz);
 			ibuffer_set_curr(instmref, currptr + objsz);
 		}
 		else
 		{
 			::fast_io::operations::decay::read_all_bytes_decay(
-				instmref, reinterpret_cast<::std::byte *>(__builtin_addressof(type)),
-				reinterpret_cast<::std::byte *>(__builtin_addressof(type) + 1));
+				instmref, reinterpret_cast<::std::byte *>(__builtin_addressof(value)),
+				reinterpret_cast<::std::byte *>(__builtin_addressof(value) + 1));
 		}
-		return type;
+		return value;
 	}
 };
 
