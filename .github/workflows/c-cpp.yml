@@ -13,12 +13,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Install ninja-build tool
+      uses: seanmiddleditch/gha-setup-ninja@v4
     - name: cmake
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
-    - name: make
-      run: make -j
-    - name: make test
-      run: make test -j
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
+    - name: ninja
+      run: ninja
+    - name: ninja test
+      run: ninja test
 
   windows:
 
@@ -34,14 +36,18 @@ jobs:
     - name: ninja test
       run: ninja test
 
-  # macos:
-  #   runs-on: macos-latest
+  #macos:
 
-  #   steps:
-  #   - uses: actions/checkout@v3
-  #   - name: cmake
-  #     run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On
-  #   - name: make
-  #     run: make -j
-  #   - name: make test
-  #     run: make test -j
+  #  runs-on: macos-latest
+
+  #  steps:
+  #  - uses: actions/checkout@v3
+  #  - name: Install ninja-build tool
+  #    uses: seanmiddleditch/gha-setup-ninja@v4
+  #  - name: cmake
+  #    run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
+  #  - name: ninja
+  #    run: ninja
+  #  - name: ninja test
+  #    run: ninja test
+
