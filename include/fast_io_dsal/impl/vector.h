@@ -69,6 +69,7 @@ inline void *grow_to_size_iter_impl(vector_model &imp, void *iter, ::std::size_t
 	{
 		::fast_io::fast_terminate();
 	}
+	newcap *= size;
 #else
 	if (__builtin_mul_overflow(size, newcap, __builtin_addressof(newcap))) [[unlikely]]
 	{
