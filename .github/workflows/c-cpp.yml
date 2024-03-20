@@ -29,10 +29,10 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1.4.1
     - name: cmake
       run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
-    - name: make
-      run: make -j
-    - name: make test
-      run: make test -j
+    - name: ninja
+      run: ninja
+    - name: ninja test
+      run: ninja test
 
   # macos:
   #   runs-on: macos-latest
