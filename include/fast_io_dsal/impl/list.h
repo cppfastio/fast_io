@@ -711,7 +711,7 @@ private:
 		auto node = static_cast<node_type *>(it);
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
-			__builtin_addressof(node->element)->~value_type();
+			(__builtin_addressof(node->element))->~value_type();
 		}
 		if constexpr (alloc_with_status)
 		{
