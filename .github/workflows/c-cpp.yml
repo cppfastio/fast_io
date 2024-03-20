@@ -20,6 +20,20 @@ jobs:
     - name: make test
       run: make test -j
 
+  windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - name: cmake
+      run: cmake . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+    - name: make
+      run: make -j
+    - name: make test
+      run: make test -j
+
   # macos:
   #   runs-on: macos-latest
 
