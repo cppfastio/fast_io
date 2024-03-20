@@ -459,7 +459,7 @@ constexpr T **make_blocks_balance(T **begin, T **end, T **b, T **e) noexcept
 template <typename dequecontroltype>
 constexpr void deque_make_reserved_blocks_balance_common_impl(dequecontroltype &controller) noexcept
 {
-	::std::size_t diff{static_cast<::std::size_t>(controller.front_block.controller_ptr - controller.back_block.controller_ptr)};
+	::std::size_t diff{static_cast<::std::size_t>(controller.back_block.controller_ptr - controller.front_block.controller_ptr)};
 
 	controller.front_block.controller_ptr =
 		::fast_io::containers::details::make_blocks_balance(
