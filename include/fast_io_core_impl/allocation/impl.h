@@ -12,6 +12,9 @@
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #include "c_malloc.h"
+#if defined(_MSC_VER)
+#include "wincrt_malloc_dbg.h"
+#endif
 #endif
 
 #if (defined(__linux__) && defined(__KERNEL__)) || defined(FAST_IO_USE_LINUX_KERNEL_ALLOCATOR)
@@ -39,9 +42,17 @@ using native_global_allocator = generic_allocator_adapter<
 	(__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && !defined(_LIBCPP_FREESTANDING)) || \
 	defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(FAST_IO_USE_C_MALLOC)
+#if defined(_DEBUG) && defined(_MSC_VER)
+	wincrt_malloc_dbg_allocator
+#else
 	win32_heapalloc_allocator
+#endif
+#else
+#if defined(_DEBUG) && defined(_MSC_VER)
+	wincrt_malloc_dbg_allocator
 #else
 	c_malloc_allocator
+#endif
 #endif
 #else
 	custom_global_allocator

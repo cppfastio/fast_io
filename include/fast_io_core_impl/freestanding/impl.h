@@ -40,6 +40,7 @@ no ::std::array, ::std::copy and others
 #include "allocator.h"
 #endif
 
+#include "noexcept_call.h"
 #include "array.h"
 #include "cstr_len.h"
 #include "bytes.h"
