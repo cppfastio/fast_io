@@ -94,7 +94,7 @@ public:
 		{
 			n = 1;
 		}
-		void *p = ::fast_io::noexcept_call(_aligned_malloc_dbg, n, alignment, 0, __FILE__, __LINE__);
+		void *p = ::fast_io::noexcept_call(_aligned_malloc_dbg, n, alignment, __FILE__, __LINE__);
 		if (p == nullptr)
 		{
 			::fast_io::fast_terminate();
@@ -110,7 +110,7 @@ public:
 		{
 			n = 1;
 		}
-		p = ::fast_io::noexcept_call(_aligned_realloc_dbg, p, n, alignment, 0, __FILE__, __LINE__);
+		p = ::fast_io::noexcept_call(_aligned_realloc_dbg, p, n, alignment, __FILE__, __LINE__);
 		if (p == nullptr)
 		{
 			::fast_io::fast_terminate();

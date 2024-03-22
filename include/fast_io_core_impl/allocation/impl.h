@@ -12,7 +12,7 @@
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #include "c_malloc.h"
-#if defined(_MSC_VER)
+#if defined(_DEBUG) && defined(_MSC_VER)
 #include "wincrt_malloc_dbg.h"
 #endif
 #endif
