@@ -4,6 +4,12 @@
 #pragma warning(disable : 6308)
 #endif
 
+#if __has_include(<malloc.h>)
+#include <malloc.h>
+#elif __has_include(<malloc_np.h>)
+#include <malloc_np.h>
+#endif
+
 namespace fast_io
 {
 
@@ -85,6 +91,19 @@ public:
 		}
 		return p;
 	}
+
+#if __has_include(<malloc.h>) || __has_include(<malloc_np.h>)
+	static inline allocation_least_result allocate_at_least(::std::size_t n) noexcept
+	{
+		auto p{::fast_io::c_malloc_allocator::allocate(n)};
+		return {p, malloc_usable_size(p)};
+	}
+	static inline allocation_least_result allocate_zero_at_least(::std::size_t n) noexcept
+	{
+		auto p{::fast_io::c_malloc_allocator::allocate_zero(n)};
+		return {p, malloc_usable_size(p)};
+	}
+#endif
 	static inline void deallocate(void *p) noexcept
 	{
 		if (p == nullptr)
