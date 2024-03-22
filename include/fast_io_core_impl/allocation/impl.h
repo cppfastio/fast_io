@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "common.h"
 #if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(__WINE__)
 #include "win32_heapalloc.h"
 #include "nt_rtlheapalloc.h"
