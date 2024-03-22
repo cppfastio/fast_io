@@ -221,6 +221,7 @@ public:
 		}
 		return p;
 	}
+#if __has_include(<malloc.h>) || __has_include(<malloc_np.h>)
 	static inline allocation_least_result allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
 	{
 		auto p{::fast_io::c_malloc_allocator::allocate_aligned(alignment, n)};
@@ -244,6 +245,7 @@ public:
 		}
 		return newresult;
 	}
+#endif
 	static inline void deallocate_aligned(void *p, ::std::size_t) noexcept
 	{
 		::fast_io::c_malloc_allocator::deallocate(p);
