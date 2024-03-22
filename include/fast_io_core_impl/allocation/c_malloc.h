@@ -239,9 +239,23 @@ public:
 			}
 		}
 		auto newresult{::fast_io::c_malloc_allocator::allocate_aligned_at_least(alignment, n)};
-		if (oldp != nullptr && oldpsize != 0)
+		if (oldp != nullptr)
 		{
-			__builtin_memcpy(newresult.ptr, oldp, oldpsize);
+			if (oldpsize) [[likely]]
+			{
+				__builtin_memcpy(newresult.ptr, oldp, oldpsize);
+			}
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_free)
+			__builtin_free
+#else
+			::std::free
+#endif
+#else
+			::std::free
+#endif
+
+				(olp);
 		}
 		return newresult;
 	}
