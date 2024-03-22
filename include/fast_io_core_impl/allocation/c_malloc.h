@@ -255,7 +255,7 @@ public:
 			::std::free
 #endif
 
-				(olp);
+				(oldp);
 		}
 		return newresult;
 	}
