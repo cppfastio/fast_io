@@ -119,12 +119,12 @@ public:
 	}
 	static inline allocation_least_result allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
 	{
-		auto p{::fast_io::wincrt_malloc_dbg_allocator::allocate(alignment, n)};
+		auto p{::fast_io::wincrt_malloc_dbg_allocator::allocate_aligned(alignment, n)};
 		return {p, ::fast_io::noexcept_call(_aligned_msize_dbg, p, alignment, 0)};
 	}
-	static inline allocation_least_result reallocate_at_least(void *oldp, ::std::size_t alignment, ::std::size_t n) noexcept
+	static inline allocation_least_result reallocate_aligned_at_least(void *oldp, ::std::size_t alignment, ::std::size_t n) noexcept
 	{
-		auto p{::fast_io::wincrt_malloc_dbg_allocator::reallocate(oldp, alignment, n)};
+		auto p{::fast_io::wincrt_malloc_dbg_allocator::reallocate_aligned(oldp, alignment, n)};
 		return {p, ::fast_io::noexcept_call(_aligned_msize_dbg, p, alignment, 0)};
 	}
 	static inline void deallocate_aligned(void *p, ::std::size_t) noexcept

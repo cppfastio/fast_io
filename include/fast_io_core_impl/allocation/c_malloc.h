@@ -167,7 +167,7 @@ public:
 	}
 	static inline allocation_least_result allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
 	{
-		auto p{::fast_io::c_malloc_allocator::allocate(alignment, n)};
+		auto p{::fast_io::c_malloc_allocator::allocate_aligned(alignment, n)};
 		return {p, ::fast_io::noexcept_call(_aligned_msize, p, alignment, 0)};
 	}
 	static inline allocation_least_result reallocate_aligned_at_least(void *oldp, ::std::size_t alignment, ::std::size_t n) noexcept
