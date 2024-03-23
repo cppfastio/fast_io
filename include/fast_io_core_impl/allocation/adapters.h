@@ -54,7 +54,7 @@ inline constexpr ::std::size_t allocator_compute_aligned_total_size_impl(::std::
 	return n + total_extra_space;
 }
 
-inline constexpr void *allocator_adjust_ptr_to_aligned_impl(void *p, ::std::size_t alignment) noexcept
+inline void *allocator_adjust_ptr_to_aligned_impl(void *p, ::std::size_t alignment) noexcept
 {
 	void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::size_t>(p) + alignment) & (0 - alignment))};
 	reinterpret_cast<void **>(aligned_ptr)[-1] = p;
