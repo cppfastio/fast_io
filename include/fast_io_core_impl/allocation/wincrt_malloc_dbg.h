@@ -70,46 +70,6 @@ public:
 		::fast_io::noexcept_call(_free_dbg, p, 0);
 	}
 
-#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
-	[[__gnu__::__returns_nonnull__]]
-#endif
-	static inline void *allocate_aligned(::std::size_t alignment, ::std::size_t n) noexcept
-	{
-		if (n == 0)
-		{
-			n = 1;
-		}
-		if (alignment <= alignof(::std::max_aligned_t))
-		{
-			return allocate(n);
-		}
-		void *p = ::fast_io::noexcept_call(_aligned_malloc_dbg, n, alignment, __FILE__, __LINE__);
-		if (p == nullptr)
-		{
-			::fast_io::fast_terminate();
-		}
-		return p;
-	}
-#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
-	[[__gnu__::__returns_nonnull__]]
-#endif
-	static inline void *reallocate_aligned(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
-	{
-		if (n == 0)
-		{
-			n = 1;
-		}
-		if (alignment <= alignof(::std::max_aligned_t))
-		{
-			return reallocate(p, n);
-		}
-		p = ::fast_io::noexcept_call(_aligned_realloc_dbg, p, n, alignment, __FILE__, __LINE__);
-		if (p == nullptr)
-		{
-			::fast_io::fast_terminate();
-		}
-		return p;
-	}
 #if 0
 	static inline allocation_least_result allocate_at_least(::std::size_t n) noexcept
 	{
@@ -126,32 +86,7 @@ public:
 		auto p{::fast_io::wincrt_malloc_dbg_allocator::reallocate(oldp, n)};
 		return {p, ::fast_io::noexcept_call(_msize_dbg, p, 0)};
 	}
-	static inline allocation_least_result allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
-	{
-		auto p{::fast_io::wincrt_malloc_dbg_allocator::allocate_aligned(alignment, n)};
-		return {p, ::fast_io::noexcept_call(_aligned_msize_dbg, p, alignment, 0)};
-	}
-	static inline allocation_least_result reallocate_aligned_at_least(void *oldp, ::std::size_t alignment, ::std::size_t n) noexcept
-	{
-		auto p{::fast_io::wincrt_malloc_dbg_allocator::reallocate_aligned(oldp, alignment, n)};
-		return {p, ::fast_io::noexcept_call(_aligned_msize_dbg, p, alignment, 0)};
-	}
 #endif
-	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
-	{
-		if (p == nullptr)
-		{
-			return;
-		}
-		if (alignment <= alignof(::std::max_aligned_t))
-		{
-			::fast_io::noexcept_call(_free_dbg, p, 0);
-		}
-		else
-		{
-			::fast_io::noexcept_call(_aligned_free_dbg, p);
-		}
-	}
 };
 
 } // namespace fast_io
