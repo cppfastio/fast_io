@@ -252,6 +252,7 @@ public:
 		}
 		::fast_io::win32::HeapFree(::fast_io::win32::GetProcessHeap(), 0u, addr);
 	}
+#if 0
 	static inline ::fast_io::allocation_least_result allocate_at_least(::std::size_t n) noexcept
 	{
 		return ::fast_io::details::win32_heapalloc_least_common_impl(n, 0u);
@@ -268,6 +269,7 @@ public:
 	{
 		return ::fast_io::details::win32_heaprealloc_least_common_impl(addr, n, 0x00000008u);
 	}
+#endif
 };
 
 } // namespace fast_io

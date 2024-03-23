@@ -323,6 +323,15 @@ public:
 	{
 		return ::fast_io::details::nt_rtlreallocate_heap_common_impl(addr, n, 0x00000008u);
 	}
+	static inline void deallocate(void *addr) noexcept
+	{
+		if (addr == nullptr)
+		{
+			return;
+		}
+		::fast_io::win32::nt::RtlFreeHeap(::fast_io::win32::nt::rtl_get_process_heap(), 0u, addr);
+	}
+#if 0
 	static inline ::fast_io::allocation_least_result allocate_at_least(::std::size_t n) noexcept
 	{
 		return ::fast_io::details::nt_rtlallocate_heap_least_common_impl(n, 0u);
@@ -339,14 +348,7 @@ public:
 	{
 		return ::fast_io::details::nt_rtlreallocate_heap_least_common_impl(addr, n, 0x00000008u);
 	}
-	static inline void deallocate(void *addr) noexcept
-	{
-		if (addr == nullptr)
-		{
-			return;
-		}
-		::fast_io::win32::nt::RtlFreeHeap(::fast_io::win32::nt::rtl_get_process_heap(), 0u, addr);
-	}
+#endif
 };
 
 } // namespace fast_io
