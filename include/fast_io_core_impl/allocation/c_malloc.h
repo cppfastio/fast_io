@@ -15,7 +15,7 @@ namespace fast_io
 
 namespace details
 {
-#if __has_include(<malloc.h>) || __has_include(<malloc_np.h>)
+#if (__has_include(<malloc.h>) || __has_include(<malloc_np.h>)) && !defined(__MSDOS__) && !defined(__LLVM_LIBC__)
 
 inline ::std::size_t c_malloc_usable_size_impl(void *p) noexcept
 {
@@ -114,7 +114,7 @@ public:
 		}
 		return p;
 	}
-#if __has_include(<malloc.h>) || __has_include(<malloc_np.h>)
+#if (__has_include(<malloc.h>) || __has_include(<malloc_np.h>)) && !defined(__MSDOS__) && !defined(__LLVM_LIBC__)
 	static inline allocation_least_result allocate_at_least(::std::size_t n) noexcept
 	{
 		auto p{::fast_io::c_malloc_allocator::allocate(n)};
