@@ -1064,12 +1064,14 @@ constexpr bool operator==(vector<T, allocator1> const &lhs, vector<T, allocator2
 	return ::std::equal(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr);
 }
 
+#if defined(__cpp_lib_three_way_comparison)
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::three_way_comparable<T>
 constexpr auto operator<=>(vector<T, allocator1> const &lhs, vector<T, allocator2> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr, ::std::compare_three_way{});
 }
+#endif
 
 template <typename T, typename allocator>
 constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexcept
