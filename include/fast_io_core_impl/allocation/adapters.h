@@ -1259,7 +1259,7 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::fast_io::freestanding::allocator<T>{}.allocate(n);
+			return {::fast_io::freestanding::allocator<T>{}.allocate(n), n};
 		}
 #endif
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
@@ -1270,12 +1270,12 @@ public:
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
 			auto newres{alloc::allocate_at_least(n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
 			auto newres{alloc::allocate_aligned_at_least(n * sizeof(T), alignof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
 
@@ -1337,12 +1337,12 @@ public:
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
 			auto newres{alloc::allocate_zero_at_least(n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
 			auto newres{alloc::allocate_zero_aligned_at_least(n * sizeof(T), alignof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
 
@@ -1395,12 +1395,12 @@ public:
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
 			auto newres{alloc::reallocate_zero_at_least(n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
 			auto newres{alloc::reallocate_aligned_zero_at_least(n * sizeof(T), alignof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
 
@@ -1452,12 +1452,12 @@ public:
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
 			auto newres{alloc::reallocate_zero_at_least(ptr, n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
 			auto newres{alloc::reallocate_aligned_zero_at_least(ptr, alignof(T), n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
 
@@ -1508,12 +1508,12 @@ public:
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
 			auto newres{alloc::reallocate_n_at_least(ptr, oldn * sizeof(T), n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
 			auto newres{alloc::reallocate_aligned_n_at_least(ptr, oldn * sizeof(T), alignof(T), n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
 
@@ -1564,12 +1564,12 @@ public:
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
 			auto newres{alloc::reallocate_zero_n_at_least(ptr, oldn * sizeof(T), n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
 			auto newres{alloc::reallocate_aligned_zero_n_at_least(ptr, oldn * sizeof(T), alignof(T), n * sizeof(T))};
-			return {newres.ptr, newres.count / sizeof(T)};
+			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
 
