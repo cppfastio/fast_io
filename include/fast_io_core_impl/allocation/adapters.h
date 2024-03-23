@@ -1110,15 +1110,9 @@ public:
 		}
 	}
 
-	static inline constexpr bool has_native_reallocate_aligned_zero_n_at_least = (has_reallocate_aligned_zero &&
-																				  ::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
+	static inline constexpr bool has_native_reallocate_aligned_zero_n_at_least = (has_reallocate_aligned_zero && ::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
 
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
-		reallocate_aligned_zero_n_at_least(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
+	static inline ::fast_io::allocation_least_result reallocate_aligned_zero_n_at_least(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
 		if constexpr (::fast_io::details::has_reallocate_aligned_zero_n_at_least_impl<alloc>)
