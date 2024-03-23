@@ -1540,7 +1540,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned_zero_n(ptr, oldn * sizeof(T), n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::reallocate_aligned_zero_n(ptr, oldn * sizeof(T), alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1795,7 +1795,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_reallocate_aligned_n(handle, ptr, oldn * sizeof(T), n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_n(handle, ptr, oldn * sizeof(T), alignof(T), n * sizeof(T)));
 		}
 	}
 	static inline
