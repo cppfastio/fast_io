@@ -1394,12 +1394,12 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			auto newres{alloc::reallocate_zero_at_least(n * sizeof(T))};
+			auto newres{alloc::reallocate_zero_at_least(ptr, n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
-			auto newres{alloc::reallocate_aligned_zero_at_least(n * sizeof(T), alignof(T))};
+			auto newres{alloc::reallocate_aligned_zero_at_least(ptr, n * sizeof(T), alignof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
