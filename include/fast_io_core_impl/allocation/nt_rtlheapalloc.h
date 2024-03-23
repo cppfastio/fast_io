@@ -152,6 +152,33 @@ extern void *
 #endif
 #endif
 		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::size_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	RtlSizeHeap(void *, ::std::uint_least32_t, void *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("RtlSizeHeap@12")
+#else
+	__asm__("_RtlSizeHeap@12")
+#endif
+#else
+	__asm__("RtlSizeHeap")
+#endif
+#endif
+		;
+
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
@@ -201,13 +228,13 @@ namespace details
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 [[__gnu__::__returns_nonnull__]]
 #endif
-inline void *nt_rtlallocate_heap_common_impl(::std::size_t to_allocate, ::std::uint_least32_t flag) noexcept
+inline void *nt_rtlallocate_heap_handle_common_impl(void *heaphandle, ::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
-	if (to_allocate == 0)
+	if (n == 0)
 	{
-		to_allocate = 1;
+		n = 1;
 	}
-	auto p{::fast_io::win32::nt::RtlAllocateHeap(::fast_io::win32::nt::rtl_get_process_heap(), flag, to_allocate)};
+	auto p{::fast_io::win32::nt::RtlAllocateHeap(heaphandle, flag, n)};
 	if (p == nullptr)
 	{
 		::fast_io::fast_terminate();
@@ -218,7 +245,7 @@ inline void *nt_rtlallocate_heap_common_impl(::std::size_t to_allocate, ::std::u
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 [[__gnu__::__returns_nonnull__]]
 #endif
-inline void *nt_rtlreallocate_heap_common_impl(void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
+inline void *nt_rtlreallocate_heap_handle_common_impl(void *heaphandle, void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
 	if (n == 0)
 	{
@@ -229,15 +256,46 @@ inline void *nt_rtlreallocate_heap_common_impl(void *addr, ::std::size_t n, ::st
 		[[unlikely]]
 #endif
 	{
-		return nt_rtlallocate_heap_common_impl(n, flag);
+		return ::fast_io::details::nt_rtlallocate_heap_handle_common_impl(heaphandle, n, flag);
 	}
-	auto p{::fast_io::win32::nt::RtlReAllocateHeap(::fast_io::win32::nt::rtl_get_process_heap(), flag, addr, n)};
+	auto p{::fast_io::win32::nt::RtlReAllocateHeap(heaphandle, flag, addr, n)};
 	if (p == nullptr)
 	{
 		::fast_io::fast_terminate();
 	}
 	return p;
 }
+
+#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
+[[__gnu__::__returns_nonnull__]]
+#endif
+inline void *nt_rtlallocate_heap_common_impl(::std::size_t n, ::std::uint_least32_t flag) noexcept
+{
+	return ::fast_io::details::nt_rtlallocate_heap_handle_common_impl(::fast_io::win32::nt::rtl_get_process_heap(), n, flag);
+}
+
+#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
+[[__gnu__::__returns_nonnull__]]
+#endif
+inline void *nt_rtlreallocate_heap_common_impl(void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
+{
+	return ::fast_io::details::nt_rtlreallocate_heap_handle_common_impl(::fast_io::win32::nt::rtl_get_process_heap(), addr, n, flag);
+}
+
+inline ::fast_io::allocation_least_result nt_rtlallocate_heap_least_common_impl(::std::size_t n, ::std::uint_least32_t flag) noexcept
+{
+	auto processheap{::fast_io::win32::nt::rtl_get_process_heap()};
+	auto ptr{::fast_io::details::nt_rtlallocate_heap_handle_common_impl(processheap, n, flag)};
+	return {ptr, ::fast_io::win32::nt::RtlSizeHeap(processheap, 0, ptr)};
+}
+
+inline ::fast_io::allocation_least_result nt_rtlreallocate_heap_least_common_impl(void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
+{
+	auto processheap{::fast_io::win32::nt::rtl_get_process_heap()};
+	auto ptr{::fast_io::details::nt_rtlreallocate_heap_handle_common_impl(processheap, addr, n, flag)};
+	return {ptr, ::fast_io::win32::nt::RtlSizeHeap(processheap, 0, ptr)};
+}
+
 } // namespace details
 
 class nt_rtlallocateheap_allocator
@@ -250,7 +308,6 @@ public:
 	{
 		return ::fast_io::details::nt_rtlallocate_heap_common_impl(n, 0u);
 	}
-
 #if __has_cpp_attribute(__gnu__::__malloc__)
 	[[__gnu__::__malloc__]]
 #endif
@@ -274,6 +331,24 @@ public:
 		}
 		::fast_io::win32::nt::RtlFreeHeap(::fast_io::win32::nt::rtl_get_process_heap(), 0u, addr);
 	}
+#if 0
+	static inline ::fast_io::allocation_least_result allocate_at_least(::std::size_t n) noexcept
+	{
+		return ::fast_io::details::nt_rtlallocate_heap_least_common_impl(n, 0u);
+	}
+	static inline ::fast_io::allocation_least_result allocate_zero_at_least(::std::size_t n) noexcept
+	{
+		return ::fast_io::details::nt_rtlallocate_heap_least_common_impl(n, 0x00000008u);
+	}
+	static inline ::fast_io::allocation_least_result reallocate_at_least(void *addr, ::std::size_t n) noexcept
+	{
+		return ::fast_io::details::nt_rtlreallocate_heap_least_common_impl(addr, n, 0u);
+	}
+	static inline ::fast_io::allocation_least_result reallocate_zero_at_least(void *addr, ::std::size_t n) noexcept
+	{
+		return ::fast_io::details::nt_rtlreallocate_heap_least_common_impl(addr, n, 0x00000008u);
+	}
+#endif
 };
 
 } // namespace fast_io

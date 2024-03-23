@@ -26,37 +26,23 @@ namespace detemplate
 {
 
 template <typename allocator>
-inline void *grow_to_byte_size_iter_impl(vector_model &imp, void *iter, ::std::size_t newcap, ::std::size_t count, ::std::size_t alignment) noexcept
+inline void *grow_to_byte_size_iter_impl(vector_model &imp, void *iter, ::std::size_t newcap, ::std::size_t gap, ::std::size_t size, ::std::size_t alignment) noexcept
 {
 	::std::byte *old_begin_ptr{imp.begin_ptr};
 	::std::byte *old_curr_ptr{imp.curr_ptr};
-	::std::byte *begin_ptr;
-	::std::byte *newiter;
 	::std::size_t const old_size{static_cast<::std::size_t>(old_curr_ptr - old_begin_ptr)};
+	::std::size_t const old_capacity{static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr)};
 
-	bool usereallocate{iter == old_curr_ptr};
-	void *reallocated_old_ptr{};
-	if (usereallocate)
-	{
-		reallocated_old_ptr = old_begin_ptr;
-	}
-	::std::size_t old_capacity{static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr)};
-	begin_ptr = reinterpret_cast<::std::byte *>(allocator::reallocate_aligned_n(reallocated_old_ptr, old_capacity, alignment, newcap));
-	if (usereallocate)
-	{
-		newiter = begin_ptr + old_size;
-	}
-	else
-	{
-		newiter = ::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(old_begin_ptr), reinterpret_cast<::std::byte const *>(iter),
+	auto newres = allocator::allocate_aligned_at_least(alignment, newcap);
+	auto begin_ptr = reinterpret_cast<::std::byte *>(newres.ptr);
+	auto newiter = ::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(old_begin_ptr), reinterpret_cast<::std::byte const *>(iter),
 																	reinterpret_cast<::std::byte *>(begin_ptr));
-		::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(iter), reinterpret_cast<::std::byte const *>(old_curr_ptr),
-														  reinterpret_cast<::std::byte *>(newiter + count));
-		allocator::deallocate_aligned_n(old_begin_ptr, alignment, old_capacity);
-	}
+	::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(iter), reinterpret_cast<::std::byte const *>(old_curr_ptr),
+														reinterpret_cast<::std::byte *>(newiter + gap));
+	allocator::deallocate_aligned_n(old_begin_ptr, alignment, old_capacity);
 	imp.begin_ptr = begin_ptr;
 	imp.curr_ptr = begin_ptr + old_size;
-	imp.end_ptr = begin_ptr + newcap;
+	imp.end_ptr = begin_ptr + (newres.count/size*size);
 	return newiter;
 }
 
@@ -76,7 +62,7 @@ inline void *grow_to_size_iter_impl(vector_model &imp, void *iter, ::std::size_t
 		__builtin_trap();
 	}
 #endif
-	return grow_to_byte_size_iter_impl<allocator>(imp, iter, newcap, size, alignment);
+	return grow_to_byte_size_iter_impl<allocator>(imp, iter, newcap, size, size, alignment);
 }
 
 template <typename allocator>
@@ -111,7 +97,7 @@ inline constexpr void *grow_twice_iter_impl(vector_model &imp, void *iter, ::std
 		}
 #endif
 	}
-	return grow_to_byte_size_iter_impl<allocator>(imp, iter, toallocate, size, alignment);
+	return grow_to_byte_size_iter_impl<allocator>(imp, iter, toallocate, size, size, alignment);
 }
 
 template <typename allocator>
@@ -499,7 +485,8 @@ private:
 																																										 iter, n));
 			}
 		}
-		auto new_begin_ptr = typed_allocator_type::allocate(newcap);
+		auto newres = typed_allocator_type::allocate_at_least(newcap);
+		auto new_begin_ptr = newres.ptr;
 		auto old_begin_ptr{imp.begin_ptr};
 		auto old_curr_ptr{imp.curr_ptr};
 		size_type const old_size{static_cast<size_type>(old_curr_ptr - old_begin_ptr)};
@@ -515,7 +502,7 @@ private:
 		}
 		imp.begin_ptr = new_begin_ptr;
 		imp.curr_ptr = new_begin_ptr + old_size;
-		imp.end_ptr = new_begin_ptr + newcap;
+		imp.end_ptr = new_begin_ptr + newres.count;
 		return newiter;
 	}
 
@@ -1064,12 +1051,14 @@ constexpr bool operator==(vector<T, allocator1> const &lhs, vector<T, allocator2
 	return ::std::equal(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr);
 }
 
+#if defined(__cpp_lib_three_way_comparison)
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::three_way_comparable<T>
 constexpr auto operator<=>(vector<T, allocator1> const &lhs, vector<T, allocator2> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr, ::std::compare_three_way{});
 }
+#endif
 
 template <typename T, typename allocator>
 constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexcept

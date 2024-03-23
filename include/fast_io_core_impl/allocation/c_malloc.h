@@ -4,8 +4,31 @@
 #pragma warning(disable : 6308)
 #endif
 
+#if __has_include(<malloc.h>)
+#include <malloc.h>
+#elif __has_include(<malloc_np.h>)
+#include <malloc_np.h>
+#endif
+
 namespace fast_io
 {
+
+namespace details
+{
+#if (__has_include(<malloc.h>) || __has_include(<malloc_np.h>)) && !defined(__MSDOS__) && !defined(__LLVM_LIBC__)
+
+inline ::std::size_t c_malloc_usable_size_impl(void *p) noexcept
+{
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
+	return ::fast_io::noexcept_call(_msize, p);
+#else
+	return ::malloc_usable_size(p);
+#endif
+}
+
+#endif
+
+} // namespace details
 
 class c_malloc_allocator
 {
@@ -36,6 +59,9 @@ public:
 		}
 		return p;
 	}
+#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
+	[[__gnu__::__returns_nonnull__]]
+#endif
 	static inline void *reallocate(void *p, ::std::size_t n) noexcept
 	{
 		if (n == 0)
@@ -61,6 +87,9 @@ public:
 		}
 		return p;
 	}
+#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
+	[[__gnu__::__returns_nonnull__]]
+#endif
 	static inline void *allocate_zero(::std::size_t n) noexcept
 	{
 		if (n == 0)
@@ -85,6 +114,76 @@ public:
 		}
 		return p;
 	}
+#if (__has_include(<malloc.h>) || __has_include(<malloc_np.h>)) && !defined(__MSDOS__) && !defined(__LLVM_LIBC__)
+	static inline allocation_least_result allocate_at_least(::std::size_t n) noexcept
+	{
+		auto p{::fast_io::c_malloc_allocator::allocate(n)};
+		return {p, ::fast_io::details::c_malloc_usable_size_impl(p)};
+	}
+	static inline allocation_least_result allocate_zero_at_least(::std::size_t n) noexcept
+	{
+		auto p{::fast_io::c_malloc_allocator::allocate_zero(n)};
+		return {p, ::fast_io::details::c_malloc_usable_size_impl(p)};
+	}
+	static inline allocation_least_result reallocate_at_least(void *oldp, ::std::size_t n) noexcept
+	{
+		auto p{::fast_io::c_malloc_allocator::reallocate(oldp, n)};
+		return {p, ::fast_io::details::c_malloc_usable_size_impl(p)};
+	}
+#endif
+
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
+#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
+	[[__gnu__::__returns_nonnull__]]
+#endif
+	static inline void *allocate_aligned(::std::size_t alignment, ::std::size_t n) noexcept
+	{
+		if (n == 0)
+		{
+			n = 1;
+		}
+		void *p = ::fast_io::noexcept_call(_aligned_malloc, n, alignment);
+		if (p == nullptr)
+		{
+			::fast_io::fast_terminate();
+		}
+		return p;
+	}
+#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
+	[[__gnu__::__returns_nonnull__]]
+#endif
+	static inline void *reallocate_aligned(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
+	{
+		if (n == 0)
+		{
+			n = 1;
+		}
+		p = ::fast_io::noexcept_call(_aligned_realloc, p, n, alignment);
+		if (p == nullptr)
+		{
+			::fast_io::fast_terminate();
+		}
+		return p;
+	}
+	static inline allocation_least_result allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
+	{
+		auto p{::fast_io::c_malloc_allocator::allocate_aligned(alignment, n)};
+		return {p, ::fast_io::noexcept_call(_aligned_msize, p, alignment, 0)};
+	}
+	static inline allocation_least_result reallocate_aligned_at_least(void *oldp, ::std::size_t alignment, ::std::size_t n) noexcept
+	{
+		auto p{::fast_io::c_malloc_allocator::reallocate_aligned(oldp, alignment, n)};
+		return {p, ::fast_io::noexcept_call(_aligned_msize, p, alignment, 0)};
+	}
+	static inline void deallocate_aligned(void *p, ::std::size_t) noexcept
+	{
+		if (p == nullptr)
+		{
+			return;
+		}
+		::fast_io::noexcept_call(_aligned_free, p);
+	}
+#endif
 	static inline void deallocate(void *p) noexcept
 	{
 		if (p == nullptr)
