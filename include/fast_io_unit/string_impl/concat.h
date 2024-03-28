@@ -9,7 +9,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::string
-	concat_std(Args &&...args)
+	concat(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
@@ -32,7 +32,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::basic_string<wchar_t>
-	wconcat_std(Args &&...args)
+	wconcat(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>,
@@ -55,7 +55,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::u8string
-	u8concat_std(Args &&...args)
+	u8concat(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>,
@@ -78,7 +78,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::u16string
-	u16concat_std(Args &&...args)
+	u16concat(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
@@ -100,7 +100,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::u32string
-	u32concat_std(Args &&...args)
+	u32concat(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
@@ -122,7 +122,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::basic_string<char>
-	concatln_std(Args &&...args)
+	concatln(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
@@ -145,7 +145,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::basic_string<wchar_t>
-	wconcatln_std(Args &&...args)
+	wconcatln(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>,
@@ -168,7 +168,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::u8string
-	u8concatln_std(Args &&...args)
+	u8concatln(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>,
@@ -191,7 +191,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::u16string
-	u16concatln_std(Args &&...args)
+	u16concatln(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
@@ -213,7 +213,7 @@ template <typename... Args>
 	constexpr
 #endif
 	::std::u32string
-	u32concatln_std(Args &&...args)
+	u32concatln(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
