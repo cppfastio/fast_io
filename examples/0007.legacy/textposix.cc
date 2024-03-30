@@ -5,11 +5,10 @@ using namespace fast_io::io;
 int main()
 {
 	/*
-	Usually, at OS native API level, things like file stream are not implemented.
-	Microsoft DOS implements LF->CRLF at FILE* level.
-	Windows implement LF->CRLF at file descriptor level, but not on Win32 or NT level. It is just CRT tricks.
-	Other OSes probably implement this also at FILE* level.
-
+	Typically, file stream functionalities are not implemented at the OS native API level.
+	In Microsoft DOS, LF to CRLF conversion is carried out at the POSIX level using two systems.
+	However, in Windows, LF to CRLF conversion occurs at the file descriptor level, though not at the Win32 or NT level; rather, it involves CRT tricks.
+	It's likely that other operating systems implement this conversion at the FILE* level as well.
 	*/
 	fast_io::posix_file cfl("text.txt", fast_io::open_mode::out |
 											fast_io::open_mode::text); // add open_mode::text to open_mode flag
