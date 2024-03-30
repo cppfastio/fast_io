@@ -40,14 +40,16 @@ public:
 		return basic_c_io_observer<char_type>{details::streambuf_hack::fp_hack(fb)};
 	}
 #if !defined(__AVR__)
-	explicit operator basic_posix_io_observer<char_type>() const noexcept
+	template <posix_family fam>
+	explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 	{
-		return static_cast<basic_posix_io_observer<char_type>>(static_cast<basic_c_io_observer<char_type>>(*this));
+		return static_cast<basic_posix_family_io_observer<fam, char_type>>(static_cast<basic_c_io_observer<char_type>>(*this));
 	}
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-	explicit operator basic_win32_io_observer<char_type>() const noexcept
+	template <win32_family fam>
+	explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
 	{
-		return static_cast<basic_win32_io_observer<char_type>>(static_cast<basic_posix_io_observer<char_type>>(*this));
+		return static_cast<basic_win32_family_io_observer<fam, char_type>>(static_cast<basic_posix_io_observer<char_type>>(*this));
 	}
 	template <nt_family fam>
 	explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
@@ -60,7 +62,7 @@ public:
 #endif
 };
 
-#if __cpp_lib_three_way_comparison >= 201907L
+#ifdef __cpp_lib_three_way_comparison
 
 template <typename T>
 inline constexpr bool operator==(basic_general_streambuf_io_observer<T> a,
@@ -77,13 +79,6 @@ inline constexpr auto operator<=>(basic_general_streambuf_io_observer<T> a,
 }
 
 #endif
-
-template <typename T>
-inline constexpr basic_general_streambuf_io_observer<T>
-io_value_handle(basic_general_streambuf_io_observer<T> other) noexcept
-{
-	return other;
-}
 
 template <::std::integral CharT, typename Traits = ::std::char_traits<CharT>>
 using basic_streambuf_io_observer = basic_general_streambuf_io_observer<::std::basic_streambuf<CharT, Traits>>;
