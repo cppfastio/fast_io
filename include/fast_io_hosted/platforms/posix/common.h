@@ -33,12 +33,6 @@ inline ::std::byte const *posix_write_bytes_impl(int fd, ::std::byte const *firs
 #if defined(__linux__) && defined(__NR_write)
 	auto ret{system_call<__NR_write, ::std::ptrdiff_t>(fd, first, static_cast<::std::size_t>(last - first))};
 	::fast_io::linux_system_call_throw_error(ret);
-#elif defined(__MSDOS__)
-	unsigned ret;
-	if (::fast_io::details::my_dos_write(fd, first, ::fast_io::details::read_write_bytes_compute<unsigned>(first, last), __builtin_addressof(ret)))
-	{
-		throw_posix_error();
-	}
 #else
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 	auto ret{
@@ -67,7 +61,7 @@ inline ::std::byte *posix_dos_read_bytes_impl(int fd, ::std::byte *first, ::std:
 	{
 		throw_posix_error();
 	}
-	return ret;
+	return first + ret;
 }
 
 inline ::std::byte *posix_dos_write_bytes_impl(int fd, ::std::byte *first, ::std::byte *last)
@@ -77,7 +71,7 @@ inline ::std::byte *posix_dos_write_bytes_impl(int fd, ::std::byte *first, ::std
 	{
 		throw_posix_error();
 	}
-	return ret;
+	return first + ret;
 }
 #endif
 
