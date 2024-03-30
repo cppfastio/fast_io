@@ -32,20 +32,20 @@ inline constexpr
 #endif
 	to_native_c_mode(open_mode m) noexcept
 {
+/*
+https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/fdopen-wfdopen?view=vs-2019
+From microsoft's document. _fdopen only supports
+
+"r"	Opens for reading. If the file does not exist or cannot be found, the fopen call fails.
+"w"	Opens an empty file for writing. If the given file exists, its contents are destroyed.
+"a"	Opens for writing at the end of the file (appending). Creates the file if it does not exist.
+"r+"	Opens for both reading and writing. The file must exist.
+"w+"	Opens an empty file for both reading and writing. If the file exists, its contents are destroyed.
+"a+"	Opens for reading and appending. Creates the file if it does not exist.
+
+"x" will throw EINVAL which does not satisfy POSIX, C11 and C++17 standard.
+*/
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
-	/*
-	https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/fdopen-wfdopen?view=vs-2019
-	From microsoft's document. _fdopen only supports
-
-	"r"	Opens for reading. If the file does not exist or cannot be found, the fopen call fails.
-	"w"	Opens an empty file for writing. If the given file exists, its contents are destroyed.
-	"a"	Opens for writing at the end of the file (appending). Creates the file if it does not exist.
-	"r+"	Opens for both reading and writing. The file must exist.
-	"w+"	Opens an empty file for both reading and writing. If the file exists, its contents are destroyed.
-	"a+"	Opens for reading and appending. Creates the file if it does not exist.
-
-	"x" will throw EINVAL which does not satisfy POSIX, C11 and C++17 standard.
-	*/
 	using utype = typename ::std::underlying_type<open_mode>::type;
 #ifdef _WIN32_WINDOWS
 	switch (static_cast<utype>(native_c_supported(m)))
