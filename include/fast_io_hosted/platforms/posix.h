@@ -928,12 +928,12 @@ inline int my_posix_open(char const *pathname, int flags,
 			throw_posix_error();
 		}
 	}
-	int mode{O_TEXT};
+	int md{O_TEXT};
 	if ((static_cast<unsigned>(flags) & static_cast<unsigned>(O_BINARY)) == static_cast<unsigned>(O_BINARY))
 	{
-		mode = O_BINARY;
+		md = O_BINARY;
 	}
-	if (::fast_io::details::my_dos_setmode(fd, mode) == -1)
+	if (::fast_io::details::my_dos_setmode(fd, md) == -1)
 	{
 		::fast_io::details::my_dos_close(fd);
 		if constexpr (always_terminate)

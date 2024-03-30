@@ -2,17 +2,47 @@
 
 namespace fast_io
 {
-#if !defined(_WIN32) && !defined(__AVR__) && !defined(__MSDOS__)
+
 namespace posix
 {
+#if !defined(_WIN32) && !defined(__AVR__) && !defined(__MSDOS__)
 extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_getres");
 extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("clock_settime");
 extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_gettime");
-} // namespace posix
+#elif defined(__MSDOS__)
+struct tm *libc_localtime_r(::std::time_t const *timep, struct tm *result) noexcept
+#ifdef __MSDOS__
+	__asm__("_localtime_r")
+#else
+	__asm__("localtime_r")
 #endif
+		;
+struct tm *libc_gmtime_r(::std::time_t const *timep, struct tm *result) noexcept
+#ifdef __MSDOS__
+	__asm__("_gmtime_r")
+#else
+	__asm__("gmtime_r")
+#endif
+		;
+
+extern void libc_tzset() noexcept
+#ifdef __MSDOS__
+	__asm__("_tzset")
+#else
+	__asm__("tzset")
+#endif
+		;
+
+using libc_dos_uclock_t = long long;
+inline constexpr ::std::make_unsigned_t<libc_dos_uclock_t> libc_uclocks_per_sec{1193180};
+
+extern libc_dos_uclock_t libc_dos_uclock(void) noexcept __asm__("_uclock");
+#endif
+} // namespace posix
 
 namespace details
 {
+
 #if !defined(__AVR__)
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
@@ -211,7 +241,7 @@ inline
 	case posix_clock_id::process_cputime_id:
 	case posix_clock_id::thread_cputime_id:
 	{
-		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / UCLOCKS_PER_SEC};
+		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / ::fast_io::posix::libc_uclocks_per_sec};
 		return {0, mul_factor};
 	}
 	default:
@@ -463,10 +493,10 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	case posix_clock_id::process_cputime_id:
 	case posix_clock_id::thread_cputime_id:
 	{
-		::std::make_unsigned_t<decltype(uclock())> u(noexcept_call(::uclock));
-		::std::uint_least64_t seconds(u / UCLOCKS_PER_SEC);
-		::std::uint_least64_t subseconds(u % UCLOCKS_PER_SEC);
-		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / UCLOCKS_PER_SEC};
+		::std::uint_least64_t u{static_cast<::std::uint_least64_t>(::fast_io::posix::libc_dos_uclock())};
+		::std::uint_least64_t seconds{u / ::fast_io::posix::libc_uclocks_per_sec};
+		::std::uint_least64_t subseconds{u % ::fast_io::posix::libc_uclocks_per_sec};
+		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / ::fast_io::posix::libc_uclocks_per_sec};
 		return {static_cast<::std::int_least64_t>(seconds),
 				static_cast<::std::uint_least64_t>(subseconds) * mul_factor};
 	}
@@ -582,6 +612,21 @@ inline struct tm unix_timestamp_to_tm_impl(::std::int_least64_t seconds)
 	else
 	{
 		noexcept_call(gmtime_r, __builtin_addressof(val), __builtin_addressof(t));
+	}
+#elif defined(__MSDOS__)
+	if constexpr (local_tm)
+	{
+		if (::fast_io::posix::libc_localtime_r(__builtin_addressof(val), __builtin_addressof(t)) == 0)
+		{
+			throw_posix_error();
+		}
+	}
+	else
+	{
+		if (::fast_io::posix::libc_gmtime_r(__builtin_addressof(val), __builtin_addressof(t)) == 0)
+		{
+			throw_posix_error();
+		}
 	}
 #else
 	if constexpr (local_tm)
@@ -724,6 +769,7 @@ inline iso8601_timestamp to_iso8601_local_impl(::std::int_least64_t seconds, ::s
 #endif
 extern void m_tzset() noexcept __asm__("tzset");
 #endif
+
 } // namespace details
 
 inline void posix_tzset() noexcept
@@ -732,6 +778,8 @@ inline void posix_tzset() noexcept
 	noexcept_call(_tzset);
 #elif defined(__NEWLIB__) || defined(_PICOLIBC__)
 	details::m_tzset();
+#elif defined(__MSDOS__)
+	::fast_io::posix::libc_tzset();
 #elif !defined(__AVR__) && (!defined(__wasi__) || defined(__wasilibc_unmodified_upstream))
 	noexcept_call(tzset);
 #endif
