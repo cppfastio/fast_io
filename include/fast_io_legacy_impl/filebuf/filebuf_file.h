@@ -45,7 +45,8 @@ public:
 	}
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 #if !defined(__AVR__) && !defined(_GLIBCXX_USE_STDIO_PURE)
-	basic_filebuf_file(basic_posix_file<char_type> &&piohd, open_mode mode)
+	template <posix_family family>
+	basic_filebuf_file(basic_posix_family_file<family, char_type> &&piohd, open_mode mode)
 		: basic_filebuf_file(basic_c_file_unlocked<char_type>(::std::move(piohd), mode), mode)
 	{
 	}

@@ -703,9 +703,10 @@ public:
 		return temp;
 	}
 #if !defined(__AVR__)
-	explicit operator basic_posix_io_observer<char_type>() const noexcept
+	template <posix_family fam>
+	explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 	{
-		return basic_posix_io_observer<char_type>{details::my_fileno_impl<family>(fp)};
+		return basic_posix_family_io_observer<fam, char_type>{details::my_fileno_impl<family>(fp)};
 	}
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) || defined(__CYGWIN__)
 	template <win32_family fam>
@@ -907,7 +908,7 @@ struct
 	using native_handle_type = FILE *;
 	FILE *fp{};
 	explicit constexpr c_family_file_factory(FILE *fpp) noexcept
-		: fp(fpp){};
+		: fp(fpp) {};
 	c_family_file_factory(c_family_file_factory const &) = delete;
 	c_family_file_factory &operator=(c_family_file_factory const &) = delete;
 	~c_family_file_factory()
@@ -1019,7 +1020,8 @@ public:
 		}
 	}
 #if !defined(__AVR__)
-	basic_c_family_file(basic_posix_file<char_type> &&phd, open_mode om)
+	template <posix_family pfamily>
+	basic_c_family_file(basic_posix_family_file<pfamily, char_type> &&phd, open_mode om)
 		: basic_c_family_io_observer<family, ch_type>{::fast_io::details::my_c_file_open_impl(phd.fd, om)}
 	{
 		phd.fd = -1;
@@ -1051,7 +1053,8 @@ public:
 		: basic_c_family_file(basic_posix_file<char_type>(nate, file, om, pm), om)
 	{
 	}
-	explicit constexpr basic_c_family_file(io_construct_t, basic_posix_io_observer<ch_type> piob, open_mode om) noexcept
+	template <posix_family pfamily>
+	explicit constexpr basic_c_family_file(io_construct_t, basic_posix_family_io_observer<pfamily, ch_type> piob, open_mode om) noexcept
 		: basic_c_family_io_observer<family, char_type>{::fast_io::details::my_c_file_open_impl(piob.fd, om)}
 	{
 	}
