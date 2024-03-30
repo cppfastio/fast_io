@@ -5,16 +5,15 @@ using namespace fast_io::io;
 int main()
 {
 	/*
-	Usually, at OS native API level, things like file stream are not implemented.
-	Microsoft DOS implements LF->CRLF at FILE* level.
-	Windows implement LF->CRLF at file descriptor level, but not on Win32 or NT level. It is just CRT tricks.
-	Other OSes probably implement this also at FILE* level.
+	Typically, file stream functionalities are not implemented at the OS native API level.
+	In Microsoft DOS, LF to CRLF conversion is carried out at the POSIX level using two systems.
+	However, in Windows, LF to CRLF conversion occurs at the file descriptor level, though not at the Win32 or NT level; rather, it involves CRT tricks.
+	It's likely that other operating systems implement this conversion at the FILE* level as well.
 
-	We cannot use fast_io's ibuf_file or obuf_file to use LF to CRLF with both portability and performance.
-	Instead, we should reuse existing FILE* facilities.
-	Do not worry too much about its performance; I hacked the implementation of FILE* on all libc implementations.
-
-	c_file_unlocked will not lock FILE*
+	Utilizing fast_io's ibuf_file or obuf_file for LF to CRLF conversion lacks both portability and performance.
+	Instead, it's preferable to leverage the existing FILE* facilities.
+	Concerns regarding performance are unnecessary; I've modified the FILE* implementation across all libc implementations.
+	Note that c_file_unlocked does not lock FILE*.
 	*/
 	fast_io::c_file_unlocked cfl("text.txt", fast_io::open_mode::out |
 												 fast_io::open_mode::text); // add open_mode::text to open_mode flag
