@@ -10,14 +10,9 @@ int main()
 	Windows implement LF->CRLF at file descriptor level, but not on Win32 or NT level. It is just CRT tricks.
 	Other OSes probably implement this also at FILE* level.
 
-	We cannot use fast_io's ibuf_file or obuf_file to use LF to CRLF with both portability and performance.
-	Instead, we should reuse existing FILE* facilities.
-	Do not worry too much about its performance; I hacked the implementation of FILE* on all libc implementations.
-
-	c_file_unlocked will not lock FILE*
 	*/
-	fast_io::c_file_unlocked cfl("text.txt", fast_io::open_mode::out |
-												 fast_io::open_mode::text); // add open_mode::text to open_mode flag
+	fast_io::posix_file cfl("text.txt", fast_io::open_mode::out |
+											fast_io::open_mode::text); // add open_mode::text to open_mode flag
 	fast_io::posix_tzset();
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	using namespace fast_io::mnp;
@@ -55,9 +50,6 @@ int main()
 #else
 			"Unknown C++ standard library\n"
 #endif
-			"FILE*:",
-			handlevw(cfl.fp),
-			"\n"
 			"fd:",
 			handlevw(static_cast<fast_io::posix_io_observer>(cfl).fd)
 #ifdef _WIN32
