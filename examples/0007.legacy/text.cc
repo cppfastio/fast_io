@@ -20,6 +20,7 @@ int main()
 												 fast_io::open_mode::text); // add open_mode::text to open_mode flag
 	fast_io::posix_tzset();
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
+	using namespace fast_io::mnp;
 	println(cfl, "Unix Timestamp:", unix_ts,
 			"\n"
 			"Universe Timestamp:",
@@ -55,21 +56,21 @@ int main()
 			"Unknown C++ standard library\n"
 #endif
 			"FILE*:",
-			cfl.fp,
+			handlevw(cfl.fp),
 			"\n"
 			"fd:",
-			static_cast<fast_io::posix_io_observer>(cfl).fd
+			handlevw(static_cast<fast_io::posix_io_observer>(cfl).fd)
 #ifdef _WIN32
-			,
+				,
 			"\n"
 			"win32 HANDLE:",
-			static_cast<fast_io::win32_io_observer>(cfl).handle,
+			handlevw(static_cast<fast_io::win32_io_observer>(cfl).handle),
 			"\n"
 			"zw HANDLE:",
-			static_cast<fast_io::zw_io_observer>(cfl).handle,
+			handlevw(static_cast<fast_io::zw_io_observer>(cfl).handle),
 			"\n"
 			"nt HANDLE:",
-			static_cast<fast_io::nt_io_observer>(cfl).handle
+			handlevw(static_cast<fast_io::nt_io_observer>(cfl).handle)
 #endif
 	);
 }
