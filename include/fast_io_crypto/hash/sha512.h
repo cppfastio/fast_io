@@ -171,7 +171,7 @@ inline constexpr void sha512_do_constexpr_function(::std::uint_least64_t *__rest
 #include "sha512_simd16.h"
 #elif defined(__AVX2__) && __has_builtin(__builtin_shufflevector)
 #include "sha512_simd32_shuffle.h"
-#elif defined(__SSE2__) || defined(__wasm_simd128__)
+#elif defined(__SSE2__)
 #include "sha512_simd16.h"
 #else
 #include "sha512_scalar.h"
