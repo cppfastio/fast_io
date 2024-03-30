@@ -22,7 +22,7 @@ public:
 		{
 			n = 1;
 		}
-		void *p = ::fast_io::noexcept_call(_malloc_dbg, n, 0, __FILE__, __LINE__);
+		void *p = ::fast_io::noexcept_call(_malloc_dbg, n, 1, __FILE__, __LINE__);
 		if (p == nullptr)
 		{
 			::fast_io::fast_terminate();
@@ -38,7 +38,7 @@ public:
 		{
 			n = 1;
 		}
-		p = ::fast_io::noexcept_call(_realloc_dbg, p, n, 0, __FILE__, __LINE__);
+		p = ::fast_io::noexcept_call(_realloc_dbg, p, n, 1, __FILE__, __LINE__);
 		if (p == nullptr)
 		{
 			::fast_io::fast_terminate();
@@ -54,7 +54,7 @@ public:
 		{
 			n = 1;
 		}
-		void *p = ::fast_io::noexcept_call(_calloc_dbg, 1, n, 0, __FILE__, __LINE__);
+		void *p = ::fast_io::noexcept_call(_calloc_dbg, 1, n, 1, __FILE__, __LINE__);
 		if (p == nullptr)
 		{
 			::fast_io::fast_terminate();
@@ -67,7 +67,7 @@ public:
 		{
 			return;
 		}
-		::fast_io::noexcept_call(_free_dbg, p, 0);
+		::fast_io::noexcept_call(_free_dbg, p, 1);
 	}
 
 #if 0
