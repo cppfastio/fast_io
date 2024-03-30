@@ -895,7 +895,7 @@ inline int my_posix_open(char const *pathname, int flags,
 	}
 	else
 	{
-		ret = my_dos_open(pathname, static_cast<short unsigned>(static_cast<unsigned>(flags)), __builtin_addressof(fd));
+		ret = my_dos_open(pathname, static_cast<short unsigned>(static_cast<unsigned>(flags) & ~(static_cast<unsigned>(O_BINARY))), __builtin_addressof(fd));
 	}
 	if (ret)
 	{
@@ -1023,7 +1023,7 @@ struct
 	using native_handle_type = int;
 	int fd{-1};
 	explicit constexpr posix_file_factory(int v) noexcept
-		: fd(v){};
+		: fd(v) {};
 	posix_file_factory(posix_file_factory const &) = delete;
 	posix_file_factory &operator=(posix_file_factory const &) = delete;
 	~posix_file_factory()

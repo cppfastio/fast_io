@@ -74,17 +74,17 @@ public:
 	static inline allocation_least_result allocate_at_least(::std::size_t n) noexcept
 	{
 		auto p{::fast_io::wincrt_malloc_dbg_allocator::allocate(n)};
-		return {p, ::fast_io::noexcept_call(_msize_dbg, p, 0)};
+		return {p, ::fast_io::noexcept_call(_msize_dbg, p, 1)};
 	}
 	static inline allocation_least_result allocate_zero_at_least(::std::size_t n) noexcept
 	{
 		auto p{::fast_io::wincrt_malloc_dbg_allocator::allocate_zero(n)};
-		return {p, ::fast_io::noexcept_call(_msize_dbg, p, 0)};
+		return {p, ::fast_io::noexcept_call(_msize_dbg, p, 1)};
 	}
 	static inline allocation_least_result reallocate_at_least(void *oldp, ::std::size_t n) noexcept
 	{
 		auto p{::fast_io::wincrt_malloc_dbg_allocator::reallocate(oldp, n)};
-		return {p, ::fast_io::noexcept_call(_msize_dbg, p, 0)};
+		return {p, ::fast_io::noexcept_call(_msize_dbg, p, 1)};
 	}
 #endif
 };
