@@ -98,3 +98,12 @@ else()
 endif()
 
 endif()
+
+if(${ENABLE_TESTS})
+include(CTest)
+include_directories(include)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
+link_libraries(ntdll)
+endif()
+include(${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt)
+endif()
