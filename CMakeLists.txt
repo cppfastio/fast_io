@@ -99,6 +99,8 @@ endif()
 
 endif()
 
+option(ENABLE_TESTS "Enable tests" OFF)
+
 if(${ENABLE_TESTS})
 include(CTest)
 include_directories(include)
