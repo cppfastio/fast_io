@@ -171,7 +171,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr reference back(size_type idx) noexcept
+	inline constexpr reference back() noexcept
 	{
 		constexpr size_type nm1{N - 1};
 		return content[nm1];
@@ -181,7 +181,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr const_reference back(size_type idx) const noexcept
+	inline constexpr const_reference back() const noexcept
 	{
 		constexpr size_type nm1{N - 1};
 		return content[nm1];
