@@ -1,5 +1,19 @@
 #pragma once
 
+namespace fast_io
+{
+
+namespace containers
+{
+
+inline constexpr ::std::size_t npos{::std::numeric_limits<::std::size_t>::max()};
+
+}
+
+using ::fast_io::containers::npos;
+
+} // namespace fast_io
+
 namespace fast_io::containers::details
 {
 template <typename handle>
