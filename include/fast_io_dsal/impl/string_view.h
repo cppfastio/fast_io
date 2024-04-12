@@ -367,7 +367,6 @@ public:
 		}
 		return static_cast<size_type>(it - bg);
 	}
-
 	inline constexpr size_type find(const_pointer s, size_type pos, size_type count) const noexcept
 	{
 		size_type thisn{this->n};
@@ -391,6 +390,48 @@ public:
 	inline constexpr size_type find(basic_string_view v, size_type pos = 0) const noexcept
 	{
 		return this->find(v.ptr, pos, v.n);
+	}
+#ifdef __cpp_lib_ranges_find_last
+	inline constexpr size_type rfind_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		size_type thisn{this->n};
+		if (thisn <= pos)
+		{
+			return ::fast_io::containers::npos;
+		}
+		auto bg{this->ptr};
+		auto ed{bg + thisn};
+		auto it{::std::ranges::find_last(bg, ed, ch)};
+		if (it == ed)
+		{
+			return ::fast_io::containers::npos;
+		}
+		return static_cast<size_type>(it - bg);
+	}
+#endif
+	inline constexpr size_type rfind(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		size_type thisn{this->n};
+		if (count == 0)
+		{
+			return pos <= thisn ? pos : ::fast_io::containers::npos;
+		}
+		if (thisn <= pos)
+		{
+			return ::fast_io::containers::npos;
+		}
+		auto bg{this->ptr};
+		auto ed{bg + thisn};
+		auto it{::std::find_end(bg + pos, ed, s, s + count)};
+		if (it == ed)
+		{
+			return ::fast_io::containers::npos;
+		}
+		return static_cast<size_type>(it - bg);
+	}
+	inline constexpr size_type rfind(basic_string_view v, size_type pos = 0) const noexcept
+	{
+		return this->rfind(v.ptr, pos, v.n);
 	}
 };
 

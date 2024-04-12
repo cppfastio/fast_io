@@ -47,6 +47,11 @@ public:
 		}
 	}
 
+	constexpr operator basic_string_view<char_type>() noexcept
+	{
+		return basic_string_view<char_type>(this->ptr, this->n);
+	}
+
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, string_view_type stvw) noexcept
 		: string_view_type(stvw)
 	{
@@ -104,6 +109,18 @@ public:
 	using string_view_type::ends_with_character;
 	using string_view_type::remove_prefix;
 	using string_view_type::remove_prefix_unchecked;
+	using string_view_type::contains;
+	using string_view_type::contains_character;
+	using string_view_type::substrvw;
+	using string_view_type::substrvw_unchecked;
+	using string_view_type::copy;
+	using string_view_type::copy_unchecked;
+	using string_view_type::find_character;
+	using string_view_type::find;
+#ifdef __cpp_lib_ranges_find_last
+	using string_view_type::rfind_character;
+#endif
+	using string_view_type::rfind;
 };
 
 template <::std::integral char_type>
