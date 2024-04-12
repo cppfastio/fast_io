@@ -3,12 +3,19 @@
 
 int main()
 {
-	::fast_io::cstring_view stvw("hello \0world\n");
+	::fast_io::cstring_view stvw("hello \0world");
+	char buffer[40];
 	::fast_io::io::println(stvw,
 						   stvw == "hello world\n", "\n",
 						   "hello world\n" == stvw, "\n",
 						   stvw <=> "hello world\n", "\n",
 						   "hello world\n" <=> stvw, "\n",
 						   stvw.starts_with("hello"), "\n",
-						   stvw.ends_with("\0world\n"));
+						   stvw.ends_with("\0world\n"), "\n",
+						   stvw.substrvw(5),"\n",
+						   stvw.substrvw(5,3),"\n",
+						   stvw.find_character('w'),"\n",
+						   stvw.find_character('a'),"\n",
+						   stvw.find("\0world"),"\n",
+						   ::fast_io::string_view(buffer,stvw.copy(buffer,6,2)));
 }
