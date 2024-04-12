@@ -278,6 +278,120 @@ public:
 		this->ptr += svn;
 		this->n -= svn;
 	}
+	inline constexpr bool contains(basic_string_view vw) const noexcept
+	{
+		auto ed{this->ptr + this->n};
+		return ::std::search(this->ptr, ed, vw.ptr, vw.ptr + vw.n) != ed;
+	}
+	inline constexpr bool contains_character(char_type ch) const noexcept
+	{
+		auto ed{this->ptr + this->n};
+		return ::std::find(this->ptr, ed, ch) != ed;
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw(size_type pos = 0, size_type count = ::fast_io::containers::npos) const noexcept
+	{
+		if (this->n < pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		size_type const val{this->n - pos};
+		if (val < count)
+		{
+			count = val;
+		}
+		return basic_string_view(this->ptr + pos, count);
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw_unchecked(size_type pos = 0, size_type count = ::fast_io::containers::npos) const noexcept
+	{
+		size_type const val{this->n - pos};
+		if (val < count)
+		{
+			count = val;
+		}
+		return basic_string_view(this->ptr + pos, count);
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy(char_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		size_type const thisn{this->n};
+		if (thisn < pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return this->copy_unchecked(dest, count, pos);
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy_unchecked(char_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		size_type const thisn{this->n};
+		size_type const val{thisn - pos};
+		if (val < count)
+		{
+			count = val;
+		}
+		auto start{this->ptr + pos};
+		::std::copy(start, start + count, dest);
+		return count;
+	}
+	inline constexpr size_type find_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		size_type thisn{this->n};
+		if (thisn <= pos)
+		{
+			return ::fast_io::containers::npos;
+		}
+		auto bg{this->ptr};
+		auto ed{bg + thisn};
+		auto it{::std::find(bg, ed, ch)};
+		if (it == ed)
+		{
+			return ::fast_io::containers::npos;
+		}
+		return static_cast<size_type>(it - bg);
+	}
+
+	inline constexpr size_type find(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		size_type thisn{this->n};
+		if (count == 0)
+		{
+			return pos <= thisn ? pos : ::fast_io::containers::npos;
+		}
+		if (thisn <= pos)
+		{
+			return ::fast_io::containers::npos;
+		}
+		auto bg{this->ptr};
+		auto ed{bg + thisn};
+		auto it{::std::search(bg + pos, ed, s, s + count)};
+		if (it == ed)
+		{
+			return ::fast_io::containers::npos;
+		}
+		return static_cast<size_type>(it - bg);
+	}
+	inline constexpr size_type find(basic_string_view v, size_type pos = 0) const noexcept
+	{
+		return this->find(v.ptr, pos, v.n);
+	}
 };
 
 template <::std::integral char_type>
