@@ -63,67 +63,78 @@ public:
 	const_pointer ptr{};
 	size_type n{};
 
-	inline constexpr bool is_empty() const noexcept
+	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
 		return !n;
 	}
 
-	inline constexpr bool empty() const noexcept
+	[[nodiscard]] inline constexpr bool empty() const noexcept
 	{
 		return !n;
 	}
 
-	inline constexpr size_type size() const noexcept
+	[[nodiscard]] inline constexpr size_type size() const noexcept
 	{
 		return n;
 	}
 
-	inline static constexpr size_type max_size() noexcept
+	[[nodiscard]] inline static constexpr size_type max_size() noexcept
 	{
 		constexpr size_type mxsz{SIZE_MAX / sizeof(value_type)};
 		return mxsz;
 	}
 
-	inline constexpr const_iterator begin() const noexcept
+	[[nodiscard]] inline constexpr size_type size_bytes() const noexcept
+	{
+		return n * sizeof(value_type);
+	}
+
+	[[nodiscard]] inline constexpr size_type max_size_bytes() const noexcept
+	{
+		constexpr size_type mxsz{SIZE_MAX / sizeof(value_type) * sizeof(value_type)};
+		return mxsz;
+	}
+
+	[[nodiscard]] inline constexpr const_iterator begin() const noexcept
 	{
 		return const_iterator(ptr);
 	}
 
-	inline constexpr const_iterator cbegin() const noexcept
+	[[nodiscard]] inline constexpr const_iterator cbegin() const noexcept
 	{
 		return const_iterator(ptr);
 	}
 
-	inline constexpr const_iterator end() const noexcept
+	[[nodiscard]] inline constexpr const_iterator end() const noexcept
 	{
 		return const_iterator(ptr + n);
 	}
 
-	inline constexpr const_iterator cend() const noexcept
+	[[nodiscard]] inline constexpr const_iterator cend() const noexcept
 	{
 		return const_iterator(ptr + n);
 	}
 
-	inline constexpr const_reverse_iterator rbegin() const noexcept
+	[[nodiscard]] inline constexpr const_reverse_iterator rbegin() const noexcept
 	{
 		return const_reverse_iterator(ptr + n);
 	}
 
-	inline constexpr const_reverse_iterator crbegin() const noexcept
+	[[nodiscard]] inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
 		return const_reverse_iterator(ptr + n);
 	}
 
-	inline constexpr const_reverse_iterator rend() const noexcept
+	[[nodiscard]] inline constexpr const_reverse_iterator rend() const noexcept
 	{
 		return const_reverse_iterator(ptr);
 	}
 
-	inline constexpr const_reverse_iterator crend() const noexcept
+	[[nodiscard]] inline constexpr const_reverse_iterator crend() const noexcept
 	{
 		return const_reverse_iterator(ptr);
 	}
-
+	[[nodiscard]]
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)

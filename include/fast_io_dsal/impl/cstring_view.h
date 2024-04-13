@@ -83,7 +83,9 @@ public:
 	using string_view_type::is_empty;
 	using string_view_type::empty;
 	using string_view_type::size;
+	using string_view_type::size_bytes;
 	using string_view_type::max_size;
+	using string_view_type::max_size_bytes;
 	using string_view_type::begin;
 	using string_view_type::cbegin;
 	using string_view_type::end;
