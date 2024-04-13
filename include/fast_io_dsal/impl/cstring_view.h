@@ -109,6 +109,33 @@ public:
 	using string_view_type::remove_prefix_unchecked;
 	using string_view_type::contains;
 	using string_view_type::contains_character;
+	using string_view_type::substrvw_front;
+	using string_view_type::substrvw_front_unchecked;
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_cstring_view substrvw_back(size_type count) const noexcept
+	{
+		if (this->n < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return basic_cstring_view(this->ptr + (this->n - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_cstring_view substrvw_back_unchecked(size_type count) const noexcept
+	{
+		return basic_cstring_view(this->ptr + (this->n - count), count);
+	}
+
 	using string_view_type::substrvw;
 	using string_view_type::substrvw_unchecked;
 	using string_view_type::copy;

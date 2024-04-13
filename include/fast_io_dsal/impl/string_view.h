@@ -312,7 +312,55 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw(size_type pos = 0, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr basic_string_view substrvw_front(size_type count) const noexcept
+	{
+		if (this->n < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return basic_string_view(this->ptr, count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw_front_unchecked(size_type count) const noexcept
+	{
+		return basic_string_view(this->ptr, count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw_back(size_type count) const noexcept
+	{
+		if (this->n < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return basic_string_view(this->ptr + (this->n - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw_back_unchecked(size_type count) const noexcept
+	{
+		return basic_string_view(this->ptr + (this->n - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
 		if (this->n < pos) [[unlikely]]
 		{
@@ -321,6 +369,10 @@ public:
 		size_type const val{this->n - pos};
 		if (val < count)
 		{
+			if (count != ::fast_io::containers::npos) [[unlikely]]
+			{
+				::fast_io::fast_terminate();
+			}
 			count = val;
 		}
 		return basic_string_view(this->ptr + pos, count);
@@ -330,10 +382,10 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw_unchecked(size_type pos = 0, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr basic_string_view substrvw_unchecked(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
 		size_type const val{this->n - pos};
-		if (val < count)
+		if (count == ::fast_io::containers::npos)
 		{
 			count = val;
 		}
