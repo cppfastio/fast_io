@@ -3,6 +3,9 @@
 namespace fast_io::containers
 {
 template <::std::integral char_type>
+class basic_cstring_view;
+
+template <::std::integral char_type>
 class basic_string_view
 {
 public:
@@ -25,6 +28,11 @@ public:
 	explicit constexpr basic_string_view(const_pointer p, size_type s) noexcept
 		: ptr{p}, n{s}
 	{}
+
+	constexpr basic_string_view(basic_cstring_view<char_type> csv) noexcept
+		: ptr{csv.data()}, n{csv.size()}
+	{
+	}
 
 	template <::std::size_t N>
 	constexpr basic_string_view(char_type const (&buffer)[N]) noexcept

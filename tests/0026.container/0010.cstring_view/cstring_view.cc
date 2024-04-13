@@ -3,10 +3,14 @@
 
 int main()
 {
+	static_assert(!::std::constructible_from<::fast_io::cstring_view, ::fast_io::string_view>);
+	static_assert(::std::constructible_from<::fast_io::string_view, ::fast_io::cstring_view>);
 	::fast_io::cstring_view e;
 	::fast_io::cstring_view stvw("hello \0worldwoo");
+	::fast_io::string_view msv(stvw);
 	char buffer[40];
 	::fast_io::io::println(stvw, ::fast_io::mnp::os_c_str(e.c_str()), "\n",
+						   stvw == msv,
 						   stvw == "hello world\n", "\n",
 						   "hello world\n" == stvw, "\n",
 						   stvw <=> "hello world\n", "\n",
