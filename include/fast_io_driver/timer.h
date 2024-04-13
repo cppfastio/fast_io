@@ -1,17 +1,18 @@
 ﻿#pragma once
-#include <string_view>
+#include <fast_io.h>
+#include <fast_io_dsal/string_view.h>
 
 namespace fast_io
 {
 
 struct timer
 {
-	::std::u8string_view s;
+	::fast_io::u8string_view s;
 	unix_timestamp t0;
 #if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 #endif
-	explicit timer(::std::u8string_view strvw)
+	explicit timer(::fast_io::u8string_view strvw)
 		: s(strvw), t0(posix_clock_gettime(posix_clock_id::monotonic_raw))
 	{
 	}
