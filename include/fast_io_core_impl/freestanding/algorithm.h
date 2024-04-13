@@ -738,35 +738,55 @@ rotate(ForwardIt first, ForwardIt middle,
 	return write;
 }
 
-template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2, typename Fn>
-inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast, Fn fn)
+template <::std::bidirectional_iterator BidIt1, typename T>
+inline constexpr BidIt1 find_not(BidIt1 first, BidIt1 last, T const &val)
 {
-	for (auto it = last; first != it;)
+	for (; first != last && *first == val; ++first)
+	{
+	}
+	return first;
+}
+
+template <::std::bidirectional_iterator BidIt1, typename T>
+inline constexpr BidIt1 find_last(BidIt1 first, BidIt1 last, T const &val)
+{
+	for (auto it = last; it != first;)
 	{
 		--it;
-		for (auto it2 = sfirst; it2 != slast; ++it2)
+		if (*it == val)
 		{
-			if constexpr (::std::same_as<Fn, ::std::ranges::equal_to>)
-			{
-				if (*it == *it2)
-				{
-					return it;
-				}
-			}
-			else if constexpr (::std::same_as<Fn, ::std::ranges::not_equal_to>)
-			{
-				if (*it != *it2)
-				{
-					return it;
-				}
-			}
-			else
-			{
-				if (fn(*it, *it2))
-				{
-					return it;
-				}
-			}
+			return it;
+		}
+	}
+	return last;
+}
+
+template <::std::bidirectional_iterator BidIt1, typename T>
+inline constexpr BidIt1 find_last_not(BidIt1 first, BidIt1 last, T const &val)
+{
+	for (auto it = last; it != first;)
+	{
+		--it;
+		if (*it != val)
+		{
+			return it;
+		}
+	}
+	return last;
+}
+
+template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
+inline constexpr BidIt1 find_first_not_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+{
+	for (; first != last; ++first)
+	{
+		auto it2 = sfirst;
+		for (; it2 != slast && *it2 != *first; ++it2)
+		{
+		}
+		if (it2 == slast)
+		{
+			return first;
 		}
 	}
 	return last;
@@ -775,32 +795,12 @@ inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, B
 template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
 inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
 {
-	return ::fast_io::freestanding::find_last_of(first, last, sfirst, slast, ::std::ranges::equal_to{});
-}
-
-template <::std::bidirectional_iterator BidIt1, typename T, typename Fn>
-inline constexpr BidIt1 find_last_if(BidIt1 first, BidIt1 last, T const &val, Fn fn)
-{
-	for (auto it = last; it != first;)
+	for (auto it = last; first != it;)
 	{
 		--it;
-		if constexpr (::std::same_as<Fn, ::std::ranges::equal_to>)
+		for (auto it2 = sfirst; it2 != slast; ++it2)
 		{
-			if (*it == val)
-			{
-				return it;
-			}
-		}
-		else if constexpr (::std::same_as<Fn, ::std::ranges::not_equal_to>)
-		{
-			if (*it != val)
-			{
-				return it;
-			}
-		}
-		else
-		{
-			if (fn(*it, val))
+			if (*it == *it2)
 			{
 				return it;
 			}
@@ -809,10 +809,22 @@ inline constexpr BidIt1 find_last_if(BidIt1 first, BidIt1 last, T const &val, Fn
 	return last;
 }
 
-template <::std::bidirectional_iterator BidIt1, typename T>
-inline constexpr BidIt1 find_last(BidIt1 first, BidIt1 last, T const &val)
+template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
+inline constexpr BidIt1 find_last_not_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
 {
-	return ::fast_io::freestanding::find_last_if(first, last, val, ::std::ranges::equal_to{});
+	for (auto it = last; first != it;)
+	{
+		--it;
+		auto it2 = sfirst;
+		for (; it2 != slast && *it2 != *it; ++it2)
+		{
+		}
+		if (it2 == slast)
+		{
+			return it;
+		}
+	}
+	return last;
 }
 
 } // namespace fast_io::freestanding

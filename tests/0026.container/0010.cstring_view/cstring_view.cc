@@ -3,9 +3,10 @@
 
 int main()
 {
+	::fast_io::cstring_view e;
 	::fast_io::cstring_view stvw("hello \0worldwoo");
 	char buffer[40];
-	::fast_io::io::println(stvw,
+	::fast_io::io::println(stvw, ::fast_io::mnp::os_c_str(e.c_str()), "\n",
 						   stvw == "hello world\n", "\n",
 						   "hello world\n" == stvw, "\n",
 						   stvw <=> "hello world\n", "\n",

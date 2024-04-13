@@ -29,8 +29,14 @@ public:
 	using string_view_type::ptr;
 	using string_view_type::n;
 
-	constexpr basic_cstring_view() noexcept = default;
-
+	constexpr basic_cstring_view() noexcept
+		: string_view_type(__builtin_addressof(::fast_io::char_literal_v<0, char_type>), 0)
+	{}
+	constexpr void clear() noexcept
+	{
+		this->ptr = __builtin_addressof(::fast_io::char_literal_v<0, char_type>);
+		this->n = 0;
+	}
 	constexpr basic_cstring_view(::std::nullptr_t) = delete;
 
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, const_pointer p, size_type s) noexcept

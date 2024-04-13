@@ -371,7 +371,7 @@ private:
 		}
 		else if constexpr (situation == 1)
 		{
-			it = ::std::find_if(bg, ed, ch, ::std::ranges::not_equal_to{});
+			it = ::fast_io::freestanding::find_not(bg, ed, ch);
 		}
 		else if constexpr (situation == 2)
 		{
@@ -379,7 +379,7 @@ private:
 		}
 		else if constexpr (situation == 3)
 		{
-			it = ::fast_io::freestanding::find_last_if(bg, ed, ch, ::std::ranges::not_equal_to{});
+			it = ::fast_io::freestanding::find_last_not(bg, ed, ch);
 		}
 		if (it == ed)
 		{
@@ -434,7 +434,7 @@ private:
 		}
 		else if constexpr (situation == 1)
 		{
-			it = ::std::find_first_of(start, ed, s, sed, ::std::ranges::not_equal_to{});
+			it = ::fast_io::freestanding::find_first_not_of(start, ed, s, sed);
 		}
 		else if constexpr (situation == 2)
 		{
@@ -442,7 +442,7 @@ private:
 		}
 		else if constexpr (situation == 3)
 		{
-			it = ::fast_io::freestanding::find_last_of(start, ed, s, sed, ::std::ranges::not_equal_to{});
+			it = ::fast_io::freestanding::find_last_not_of(start, ed, s, sed);
 		}
 		if (it == ed)
 		{
@@ -531,6 +531,11 @@ public:
 	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, basic_string_view other, size_type pos2, size_type count2) const noexcept
 	{
 		return this->substrvw_unchecked(pos1) <=> other.substrvw_unchecked(pos2, count2);
+	}
+	inline constexpr void clear() noexcept
+	{
+		this->ptr = 0;
+		this->n = 0;
 	}
 };
 
