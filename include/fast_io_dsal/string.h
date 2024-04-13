@@ -105,7 +105,7 @@ constexpr inline ::fast_io::u8string u8concat_fast_io(Args &&...args)
 }
 
 template <typename... Args>
-constexpr inline ::fast_io::u16string u16concat(Args &&...args)
+constexpr inline ::fast_io::u16string u16concat_fast_io(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
 	if constexpr (type_error)
@@ -150,7 +150,7 @@ constexpr inline ::fast_io::string concatln_fast_io(Args &&...args)
 }
 
 template <typename... Args>
-constexpr inline ::fast_io::wstring wconcatln(Args &&...args)
+constexpr inline ::fast_io::wstring wconcatln_fast_io(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>, Args...>};
 	if constexpr (type_error)
