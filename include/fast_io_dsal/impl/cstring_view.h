@@ -53,11 +53,6 @@ public:
 		}
 	}
 
-	constexpr operator basic_string_view<char_type>() noexcept
-	{
-		return basic_string_view<char_type>(this->ptr, this->n);
-	}
-
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, string_view_type stvw) noexcept
 		: string_view_type(stvw)
 	{
