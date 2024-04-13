@@ -6,7 +6,7 @@ namespace fast_io::containers
 template <typename T, ::std::size_t N>
 class array
 {
-static_assert(::std::numeric_limits<::std::size_t>/sizeof(T)<=n,"N is too big");
+static_assert(N<=::std::numeric_limits<::std::size_t>/sizeof(T),"N is too big");
 public:
 	using value_type = T;
 	using size_type = ::std::size_t;
