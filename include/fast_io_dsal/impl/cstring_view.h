@@ -46,11 +46,6 @@ public:
 	constexpr basic_cstring_view(char_type const (&buffer)[N]) noexcept
 		: string_view_type(buffer)
 	{
-		constexpr ::std::size_t nm1{N - 1u};
-		if (buffer[nm1]) [[unlikely]]
-		{
-			::fast_io::fast_terminate();
-		}
 	}
 
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, string_view_type stvw) noexcept
