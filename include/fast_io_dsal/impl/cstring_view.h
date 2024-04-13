@@ -116,11 +116,17 @@ public:
 	using string_view_type::copy;
 	using string_view_type::copy_unchecked;
 	using string_view_type::find_character;
-	using string_view_type::find;
-#ifdef __cpp_lib_ranges_find_last
 	using string_view_type::rfind_character;
-#endif
+	using string_view_type::find_not_character;
+	using string_view_type::rfind_not_character;
+	using string_view_type::find;
 	using string_view_type::rfind;
+	using string_view_type::find_first_of;
+	using string_view_type::find_first_not_of;
+	using string_view_type::find_last_of;
+	using string_view_type::find_last_not_of;
+	using string_view_type::compare_three_way;
+	using string_view_type::compare_three_way_unchecked;
 };
 
 template <::std::integral char_type>

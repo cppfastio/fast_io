@@ -46,12 +46,12 @@ inline constexpr output_iter copy_n(input_iter first, ::std::size_t count, outpu
 	for (::std::size_t i{}; i != count; ++i)
 	{
 		if constexpr (sizeof(input_value_type) == 1 &&
-					  (::std::same_as<input_value_type, ::std::byte>)&&(::std::integral<output_value_type>))
+					  (::std::same_as<input_value_type, ::std::byte>) && (::std::integral<output_value_type>))
 		{
 			*result = static_cast<output_value_type>(*first);
 		}
 		else if constexpr (sizeof(output_value_type) == 1 &&
-						   (::std::same_as<output_value_type, ::std::byte>)&&(::std::integral<input_value_type>))
+						   (::std::same_as<output_value_type, ::std::byte>) && (::std::integral<input_value_type>))
 		{
 			*result = static_cast<::std::byte>(*first);
 		}
@@ -73,12 +73,12 @@ inline constexpr output_iter copy(input_iter first, input_iter last, output_iter
 	for (; first != last;)
 	{
 		if constexpr (sizeof(input_value_type) == 1 &&
-					  (::std::same_as<input_value_type, ::std::byte>)&&(::std::integral<output_value_type>))
+					  (::std::same_as<input_value_type, ::std::byte>) && (::std::integral<output_value_type>))
 		{
 			*result = static_cast<output_value_type>(*first);
 		}
 		else if constexpr (sizeof(output_value_type) == 1 &&
-						   (::std::same_as<output_value_type, ::std::byte>)&&(::std::integral<input_value_type>))
+						   (::std::same_as<output_value_type, ::std::byte>) && (::std::integral<input_value_type>))
 		{
 			*result = static_cast<::std::byte>(*first);
 		}
@@ -301,10 +301,7 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size
 					  ::std::is_trivially_copyable_v<input_value_type> &&
 					  ::std::is_trivially_copyable_v<output_value_type> &&
 					  (::std::same_as<input_value_type, output_value_type> ||
-					   ((::std::integral<input_value_type> || ::std::same_as<::std::byte, input_value_type>)&&(
-							::std::integral<output_value_type> ||
-							::std::same_as<::std::byte, output_value_type>)&&sizeof(input_value_type) ==
-						sizeof(output_value_type))))
+					   ((::std::integral<input_value_type> || ::std::same_as<::std::byte, input_value_type>) && (::std::integral<output_value_type> || ::std::same_as<::std::byte, output_value_type>) && sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			if (count) // to avoid nullptr UB
 			{
@@ -341,10 +338,7 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 					  ::std::is_trivially_copyable_v<input_value_type> &&
 					  ::std::is_trivially_copyable_v<output_value_type> &&
 					  (::std::same_as<input_value_type, output_value_type> ||
-					   ((::std::integral<input_value_type> || ::std::same_as<::std::byte, input_value_type>)&&(
-							::std::integral<output_value_type> ||
-							::std::same_as<::std::byte, output_value_type>)&&sizeof(input_value_type) ==
-						sizeof(output_value_type))))
+					   ((::std::integral<input_value_type> || ::std::same_as<::std::byte, input_value_type>) && (::std::integral<output_value_type> || ::std::same_as<::std::byte, output_value_type>) && sizeof(input_value_type) == sizeof(output_value_type))))
 		{
 			::std::size_t count{static_cast<::std::size_t>(last - first)};
 			if (count) // to avoid nullptr UB
@@ -742,6 +736,83 @@ rotate(ForwardIt first, ForwardIt middle,
 	// rotate the remaining sequence into place
 	rotate(write, next_read, last);
 	return write;
+}
+
+template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2, typename Fn>
+inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast, Fn fn)
+{
+	for (auto it = last; first != it;)
+	{
+		--it;
+		for (auto it2 = sfirst; it2 != slast; ++it2)
+		{
+			if constexpr (::std::same_as<Fn, ::std::ranges::equal_to>)
+			{
+				if (*it == *it2)
+				{
+					return it;
+				}
+			}
+			else if constexpr (::std::same_as<Fn, ::std::ranges::not_equal_to>)
+			{
+				if (*it != *it2)
+				{
+					return it;
+				}
+			}
+			else
+			{
+				if (fn(*it, *it2))
+				{
+					return it;
+				}
+			}
+		}
+	}
+	return last;
+}
+
+template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
+inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+{
+	return ::fast_io::freestanding::find_last_of(first, last, sfirst, slast, ::std::ranges::equal_to{});
+}
+
+template <::std::bidirectional_iterator BidIt1, typename T, typename Fn>
+inline constexpr BidIt1 find_last_if(BidIt1 first, BidIt1 last, T const &val, Fn fn)
+{
+	for (auto it = last; it != first;)
+	{
+		--it;
+		if constexpr (::std::same_as<Fn, ::std::ranges::equal_to>)
+		{
+			if (*it == val)
+			{
+				return it;
+			}
+		}
+		else if constexpr (::std::same_as<Fn, ::std::ranges::not_equal_to>)
+		{
+			if (*it != val)
+			{
+				return it;
+			}
+		}
+		else
+		{
+			if (fn(*it, val))
+			{
+				return it;
+			}
+		}
+	}
+	return last;
+}
+
+template <::std::bidirectional_iterator BidIt1, typename T>
+inline constexpr BidIt1 find_last(BidIt1 first, BidIt1 last, T const &val)
+{
+	return ::fast_io::freestanding::find_last_if(first, last, val, ::std::ranges::equal_to{});
 }
 
 } // namespace fast_io::freestanding

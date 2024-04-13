@@ -351,8 +351,12 @@ public:
 		::std::copy(start, start + count, dest);
 		return count;
 	}
-	inline constexpr size_type find_character(char_type ch, size_type pos = 0) const noexcept
+
+private:
+	template <size_type situation>
+	inline constexpr size_type find_character_common(char_type ch, size_type pos) const noexcept
 	{
+		static_assert(situation < 4);
 		size_type thisn{this->n};
 		if (thisn <= pos)
 		{
@@ -360,15 +364,33 @@ public:
 		}
 		auto bg{this->ptr};
 		auto ed{bg + thisn};
-		auto it{::std::find(bg, ed, ch)};
+		const_pointer it;
+		if constexpr (situation == 0)
+		{
+			it = ::std::find(bg, ed, ch);
+		}
+		else if constexpr (situation == 1)
+		{
+			it = ::std::find_if(bg, ed, ch, ::std::ranges::not_equal_to{});
+		}
+		else if constexpr (situation == 2)
+		{
+			it = ::fast_io::freestanding::find_last(bg, ed, ch);
+		}
+		else if constexpr (situation == 3)
+		{
+			it = ::fast_io::freestanding::find_last_if(bg, ed, ch, ::std::ranges::not_equal_to{});
+		}
 		if (it == ed)
 		{
 			return ::fast_io::containers::npos;
 		}
 		return static_cast<size_type>(it - bg);
 	}
-	inline constexpr size_type find(const_pointer s, size_type pos, size_type count) const noexcept
+	template <size_type situation>
+	inline constexpr size_type find_common(const_pointer s, size_type pos, size_type count) const noexcept
 	{
+		static_assert(situation < 2);
 		size_type thisn{this->n};
 		if (count == 0)
 		{
@@ -379,59 +401,136 @@ public:
 			return ::fast_io::containers::npos;
 		}
 		auto bg{this->ptr};
+		auto start{bg + pos};
 		auto ed{bg + thisn};
-		auto it{::std::search(bg + pos, ed, s, s + count)};
+		auto sed{s + count};
+		const_pointer it;
+		if constexpr (situation == 0)
+		{
+			it = ::std::search(start, ed, s, sed);
+		}
+		else if constexpr (situation == 1)
+		{
+			it = ::std::find_end(start, ed, s, sed);
+		}
 		if (it == ed)
 		{
 			return ::fast_io::containers::npos;
 		}
 		return static_cast<size_type>(it - bg);
+	}
+	template <size_type situation>
+	inline constexpr size_type find_first_last_common(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		static_assert(situation < 4);
+		auto bg{this->ptr};
+		auto start{bg + pos};
+		auto ed{bg + this->n};
+		auto sed{s + count};
+		const_pointer it;
+		if constexpr (situation == 0)
+		{
+			it = ::std::find_first_of(start, ed, s, sed);
+		}
+		else if constexpr (situation == 1)
+		{
+			it = ::std::find_first_of(start, ed, s, sed, ::std::ranges::not_equal_to{});
+		}
+		else if constexpr (situation == 2)
+		{
+			it = ::fast_io::freestanding::find_last_of(start, ed, s, sed);
+		}
+		else if constexpr (situation == 3)
+		{
+			it = ::fast_io::freestanding::find_last_of(start, ed, s, sed, ::std::ranges::not_equal_to{});
+		}
+		if (it == ed)
+		{
+			return ::fast_io::containers::npos;
+		}
+		return static_cast<size_type>(it - bg);
+	}
+
+public:
+	inline constexpr size_type find_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return this->find_character_common<0>(ch, pos);
+	}
+	inline constexpr size_type find_not_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return this->find_character_common<1>(ch, pos);
+	}
+	inline constexpr size_type rfind_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return this->find_character_common<2>(ch, pos);
+	}
+	inline constexpr size_type rfind_not_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return this->find_character_common<3>(ch, pos);
+	}
+	inline constexpr size_type find(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return this->find_common<0>(s, pos, count);
 	}
 	inline constexpr size_type find(basic_string_view v, size_type pos = 0) const noexcept
 	{
 		return this->find(v.ptr, pos, v.n);
 	}
-#ifdef __cpp_lib_ranges_find_last
-	inline constexpr size_type rfind_character(char_type ch, size_type pos = 0) const noexcept
-	{
-		size_type thisn{this->n};
-		if (thisn <= pos)
-		{
-			return ::fast_io::containers::npos;
-		}
-		auto bg{this->ptr};
-		auto ed{bg + thisn};
-		auto it{::std::ranges::data(::std::ranges::find_last(bg, ed, ch))};
-		if (it == ed)
-		{
-			return ::fast_io::containers::npos;
-		}
-		return static_cast<size_type>(it - bg);
-	}
-#endif
 	inline constexpr size_type rfind(const_pointer s, size_type pos, size_type count) const noexcept
 	{
-		size_type thisn{this->n};
-		if (count == 0)
-		{
-			return pos <= thisn ? pos : ::fast_io::containers::npos;
-		}
-		if (thisn <= pos)
-		{
-			return ::fast_io::containers::npos;
-		}
-		auto bg{this->ptr};
-		auto ed{bg + thisn};
-		auto it{::std::find_end(bg + pos, ed, s, s + count)};
-		if (it == ed)
-		{
-			return ::fast_io::containers::npos;
-		}
-		return static_cast<size_type>(it - bg);
+		return this->find_common<1>(s, pos, count);
 	}
 	inline constexpr size_type rfind(basic_string_view v, size_type pos = 0) const noexcept
 	{
 		return this->rfind(v.ptr, pos, v.n);
+	}
+	inline constexpr size_type find_first_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return this->find_first_last_common<0>(s, pos, count);
+	}
+	inline constexpr size_type find_first_of(basic_string_view s, size_type pos) const noexcept
+	{
+		return this->find_first_of(s.ptr, pos, s.n);
+	}
+	inline constexpr size_type find_first_not_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return this->find_first_last_common<1>(s, pos, count);
+	}
+	inline constexpr size_type find_first_not_of(basic_string_view s, size_type pos) const noexcept
+	{
+		return this->find_first_not_of(s.ptr, pos, s.n);
+	}
+	inline constexpr size_type find_last_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return this->find_first_last_common<2>(s, pos, count);
+	}
+	inline constexpr size_type find_last_of(basic_string_view s, size_type pos) const noexcept
+	{
+		return this->find_last_of(s.ptr, pos, s.n);
+	}
+	inline constexpr size_type find_last_not_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return this->find_first_last_common<3>(s, pos, count);
+	}
+	inline constexpr size_type find_last_not_of(basic_string_view s, size_type pos) const noexcept
+	{
+		return this->find_last_not_of(s.ptr, pos, s.n);
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> basic_string_view(s, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1) <=> basic_string_view(s, count2);
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, basic_string_view other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> other.substrvw(pos2, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, basic_string_view other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1) <=> other.substrvw_unchecked(pos2, count2);
 	}
 };
 
