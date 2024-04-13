@@ -41,14 +41,14 @@ struct string_sso_buffer
 };
 
 template <typename allocator_type, ::std::integral chtype>
-inline constexpr chtype *string_allocate_init(chtype const *first, ::std::size_t n) noexcept
+inline constexpr ::fast_io::basic_allocation_least_result<chtype*> string_allocate_init(chtype const *first, ::std::size_t n) noexcept
 {
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, chtype>;
-	::std::size_t np1{n + sizeof(chtype)};
-	auto ptr{typed_allocator_type::allocate(np1)};
-	*::fast_io::freestanding::non_overlapped_copy_n(first, n, ptr) = 0;
-	return ptr;
+	::std::size_t np1{n + 1};
+	auto res{typed_allocator_type::allocate_at_least(np1)};
+	*::fast_io::freestanding::non_overlapped_copy_n(first, n, res.ptr) = 0;
+	return res;
 }
 
 template <typename allocator_type, ::std::integral chtype>
@@ -227,9 +227,9 @@ public:
 		else
 		{
 			static_assert(n != SIZE_MAX);
-			auto ptr{::fast_io::containers::details::string_allocate_init<allocator_type>(buffer, nm1)};
-			auto ptrn{ptr + nm1};
-			this->imp = {ptr, ptrn, ptrn};
+			auto newres{::fast_io::containers::details::string_allocate_init<allocator_type>(buffer, nm1)};
+			auto ptrn{newres.ptr + nm1};
+			this->imp = {newres.ptr, ptrn, newres.ptr+newres.count};
 		}
 	}
 
@@ -704,11 +704,15 @@ constexpr bool operator==(basic_string<chtype, allocator1> const &lhs, basic_str
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
+#if defined(__cpp_lib_three_way_comparison)
+
 template <::std::integral chtype, typename allocator1, typename allocator2>
 constexpr auto operator<=>(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
 }
+
+#endif
 
 template <::std::integral chtype, typename alloctype>
 inline constexpr ::fast_io::basic_io_scatter_t<chtype>

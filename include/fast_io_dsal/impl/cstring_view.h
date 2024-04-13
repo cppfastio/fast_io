@@ -29,8 +29,14 @@ public:
 	using string_view_type::ptr;
 	using string_view_type::n;
 
-	constexpr basic_cstring_view() noexcept = default;
-
+	constexpr basic_cstring_view() noexcept
+		: string_view_type(__builtin_addressof(::fast_io::char_literal_v<0, char_type>), 0)
+	{}
+	constexpr void clear() noexcept
+	{
+		this->ptr = __builtin_addressof(::fast_io::char_literal_v<0, char_type>);
+		this->n = 0;
+	}
 	constexpr basic_cstring_view(::std::nullptr_t) = delete;
 
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, const_pointer p, size_type s) noexcept
@@ -45,6 +51,11 @@ public:
 		{
 			::fast_io::fast_terminate();
 		}
+	}
+
+	constexpr operator basic_string_view<char_type>() noexcept
+	{
+		return basic_string_view<char_type>(this->ptr, this->n);
 	}
 
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, string_view_type stvw) noexcept
@@ -104,6 +115,24 @@ public:
 	using string_view_type::ends_with_character;
 	using string_view_type::remove_prefix;
 	using string_view_type::remove_prefix_unchecked;
+	using string_view_type::contains;
+	using string_view_type::contains_character;
+	using string_view_type::substrvw;
+	using string_view_type::substrvw_unchecked;
+	using string_view_type::copy;
+	using string_view_type::copy_unchecked;
+	using string_view_type::find_character;
+	using string_view_type::rfind_character;
+	using string_view_type::find_not_character;
+	using string_view_type::rfind_not_character;
+	using string_view_type::find;
+	using string_view_type::rfind;
+	using string_view_type::find_first_of;
+	using string_view_type::find_first_not_of;
+	using string_view_type::find_last_of;
+	using string_view_type::find_last_not_of;
+	using string_view_type::compare_three_way;
+	using string_view_type::compare_three_way_unchecked;
 };
 
 template <::std::integral char_type>
