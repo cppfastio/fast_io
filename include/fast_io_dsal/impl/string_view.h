@@ -16,10 +16,15 @@ public:
 	using const_reference = value_type const &;
 	using pointer = value_type *;
 	using const_pointer = value_type const *;
-	using iterator = const_iterator;
-	using reverse_iterator = const_reverse_iterator;
+#ifdef __cpp_lib_ranges_as_const
+	using const_iterator = ::std::basic_const_iterator<iterator>;
+	using const_reverse_iterator = ::std::basic_const_iterator<reverse_iterator>;
+#else
 	using const_iterator = const_pointer;
+	using iterator = const_iterator;
+#endif
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+	using reverse_iterator = const_reverse_iterator;
 
 	constexpr basic_string_view() noexcept = default;
 
