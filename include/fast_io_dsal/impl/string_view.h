@@ -16,10 +16,10 @@ public:
 	using const_reference = value_type const &;
 	using pointer = value_type *;
 	using const_pointer = value_type const *;
-	using const_iterator = const_pointer;
 	using iterator = const_iterator;
-	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 	using reverse_iterator = const_reverse_iterator;
+	using const_iterator = const_pointer;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 
 	constexpr basic_string_view() noexcept = default;
 
@@ -61,7 +61,7 @@ public:
 	constexpr basic_string_view &operator=(basic_string_view const &) noexcept = default;
 
 	const_pointer ptr{};
-	::std::size_t n{};
+	size_type n{};
 
 	inline constexpr bool is_empty() const noexcept
 	{
@@ -86,22 +86,22 @@ public:
 
 	inline constexpr const_iterator begin() const noexcept
 	{
-		return ptr;
+		return const_iterator(ptr);
 	}
 
 	inline constexpr const_iterator cbegin() const noexcept
 	{
-		return ptr;
+		return const_iterator(ptr);
 	}
 
 	inline constexpr const_iterator end() const noexcept
 	{
-		return ptr + n;
+		return const_iterator(ptr + n);
 	}
 
 	inline constexpr const_iterator cend() const noexcept
 	{
-		return ptr + n;
+		return const_iterator(ptr + n);
 	}
 
 	inline constexpr const_reverse_iterator rbegin() const noexcept
