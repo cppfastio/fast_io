@@ -3,7 +3,7 @@
 
 int main()
 {
-	::fast_io::cstring_view stvw("hello \0worldwo");
+	::fast_io::cstring_view stvw("hello \0worldwoo");
 	char buffer[40];
 	::fast_io::io::println(stvw,
 						   stvw == "hello world\n", "\n",
@@ -18,11 +18,8 @@ int main()
 						   stvw.find_character('a'), "\n",
 						   stvw.find("\0world"), "\n",
 						   stvw.rfind("wo"), "\n",
-						   ::fast_io::string_view(buffer, stvw.copy(buffer, 6, 2))
-#ifdef __cpp_lib_ranges_find_last
-							   ,
-						   "\n",
-						   stvw.rfind_character('o')
-#endif
-	);
+						   ::fast_io::string_view(buffer, stvw.copy(buffer, 6, 2)), "\n",
+						   stvw.rfind_character('o'), "\n",
+						   stvw.rfind_not_character('o'), "\n",
+						   stvw.compare_three_way(0, 4, "hell", 4));
 }
