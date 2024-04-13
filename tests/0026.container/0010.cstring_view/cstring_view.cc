@@ -20,7 +20,8 @@ int main()
 						   stvw.rfind("wo"), "\n",
 						   ::fast_io::string_view(buffer, stvw.copy(buffer, 6, 2))
 #ifdef __cpp_lib_ranges_find_last
-							   "\n",
+							   ,
+						   "\n",
 						   stvw.rfind_character('o')
 #endif
 	);
