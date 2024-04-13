@@ -331,4 +331,20 @@ inline constexpr ::fast_io::containers::span<::std::byte> as_writable_bytes(::fa
 template <::std::ranges::contiguous_range R>
 span(R &&r) -> span<::std::ranges::range_value_t<R>>;
 
+template <typename T>
+	requires ::std::equality_comparable<T>
+constexpr bool operator==(::fast_io::containers::span<T> a, ::fast_io::containers::span<T> b) noexcept
+{
+	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
+}
+
+#ifdef __cpp_lib_three_way_comparison
+template <typename T>
+	requires ::std::three_way_comparable<T>
+constexpr auto operator<=>(::fast_io::containers::span<T> a, ::fast_io::containers::span<T> b) noexcept
+{
+	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
+}
+#endif
+
 } // namespace fast_io::containers
