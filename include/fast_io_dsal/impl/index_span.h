@@ -371,7 +371,7 @@ inline constexpr ::fast_io::containers::span<::std::byte> as_writable_bytes(::fa
 
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::equality_comparable<T>
-constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b) noexcept
+constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)
 {
 	if constexpr (N1 != N2)
 	{
@@ -386,7 +386,7 @@ constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io:
 #ifdef __cpp_lib_three_way_comparison
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::three_way_comparable<T>
-constexpr auto operator<=>(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b) noexcept
+constexpr auto operator<=>(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)
 {
 	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + N1, b.ptr, b.ptr + N2, ::std::compare_three_way{});
 }
