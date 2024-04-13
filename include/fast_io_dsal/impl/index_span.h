@@ -51,11 +51,11 @@ public:
 		: ptr{::std::ranges::data(range)}
 	{}
 	template <::std::ranges::contiguous_range R>
-		requires(::std::same_as<value_type, ::std::ranges::range_value_t<R>> && !::std::same_as<::std::remove_cvref_t<R>, ::fast_io::containers::index_span<element_type>>)
+		requires(::std::same_as<value_type, ::std::ranges::range_value_t<R>> && !::std::same_as<::std::remove_cvref_t<R>, ::fast_io::containers::index_span<element_type, N>>)
 	constexpr index_span(R &&range) noexcept(noexcept(::std::ranges::data(range)) && noexcept(::std::ranges::size(range)))
 		: ptr{::std::ranges::data(range)}
 	{
-		if (N < ::std::ranges::size(range)) [[unlikely]]
+		if (::std::ranges::size(range) < N) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -63,22 +63,23 @@ public:
 
 	inline static constexpr size_type size() noexcept
 	{
-		return n;
+		return N;
 	}
 
 	inline static constexpr size_type size_bytes() noexcept
 	{
-		return n * sizeof(element_type);
+		constexpr size_type nbs{N * sizeof(element_type)};
+		return nbs;
 	}
 
 	inline static constexpr size_type max_size() noexcept
 	{
-		return n;
+		return N;
 	}
 
 	inline static constexpr size_type max_size_bytes() noexcept
 	{
-		constexpr size_type mxsz{n * sizeof(element_type)};
+		constexpr size_type mxsz{N * sizeof(element_type)};
 		return mxsz;
 	}
 
@@ -127,7 +128,7 @@ public:
 	inline constexpr reference
 	operator[](size_type idx) const noexcept
 	{
-		if (n <= idx) [[unlikely]]
+		if (N <= idx) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
@@ -159,7 +160,7 @@ public:
 		}
 		else
 		{
-			constexpr size_type nm1{n - 1u};
+			constexpr size_type nm1{N - 1u};
 			return ptr[nm1];
 		}
 	}
@@ -205,14 +206,16 @@ public:
 		return *ptr;
 	}
 
-	inline static constexpr bool is_empty() const noexcept
+	inline static constexpr bool is_empty() noexcept
 	{
-		return !n;
+		constexpr bool emptyval{!N};
+		return emptyval;
 	}
 
-	inline static constexpr bool empty() const noexcept
+	inline static constexpr bool empty() noexcept
 	{
-		return !n;
+		constexpr bool emptyval{!N};
+		return emptyval;
 	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -299,6 +302,43 @@ public:
 		}
 		return span_type(this->ptr + pos, count);
 	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy(element_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		if (N < pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return this->copy_unchecked(dest, count, pos);
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy_unchecked(element_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		size_type const val{N - pos};
+		if (val < count)
+		{
+			count = val;
+		}
+		auto start{this->ptr + pos};
+		::std::copy(start, start + count, dest);
+		return count;
+	}
+	constexpr void fill(const_reference u) noexcept(!::std::is_const_v<element_type> && ::std::is_nothrow_copy_constructible_v<element_type>)
+	{
+		if constexpr (N)
+		{
+			::std::fill_n(this->ptr, N, u);
+		}
+	}
 };
 
 template <typename T, ::std::size_t N>
@@ -314,21 +354,19 @@ inline constexpr ::fast_io::containers::index_span<::std::byte, sizeof(T) * N> a
 	return ::fast_io::containers::index_span<::std::byte, sizeof(T) * N>(static_cast<::std::byte *>(static_cast<void *>(sp.ptr)));
 }
 
-template <typename T>
+template <typename T, ::std::size_t N>
 inline constexpr ::fast_io::containers::span<::std::byte const> as_bytes(::fast_io::containers::index_span<T, N> sp) noexcept
 {
-	constexpr
-		::std::size_t bytescount{N*sizeof(T)};
-	return ::fast_io::containers::span<::std::byte const>(static_cast<::std::byte const *>(static_cast<void const *>(sp.ptr)),bytescount);
+	constexpr ::std::size_t bytescount{N * sizeof(T)};
+	return ::fast_io::containers::span<::std::byte const>(static_cast<::std::byte const *>(static_cast<void const *>(sp.ptr)), bytescount);
 }
 
-template <typename T>
+template <typename T, ::std::size_t N>
 	requires(!::std::is_const_v<T>)
 inline constexpr ::fast_io::containers::span<::std::byte> as_writable_bytes(::fast_io::containers::index_span<T, N> sp) noexcept
 {
-	constexpr
-		::std::size_t bytescount{N*sizeof(T)};
-	return ::fast_io::containers::span<::std::byte>(static_cast<::std::byte *>(static_cast<void *>(sp.ptr)),bytescount);
+	constexpr ::std::size_t bytescount{N * sizeof(T)};
+	return ::fast_io::containers::span<::std::byte>(static_cast<::std::byte *>(static_cast<void *>(sp.ptr)), bytescount);
 }
 
 } // namespace fast_io::containers

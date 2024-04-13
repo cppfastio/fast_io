@@ -37,15 +37,15 @@ public:
 	constexpr span(Iter first, size_type count) noexcept(noexcept(::std::to_address(first)))
 		: ptr{::std::to_address(first)}, n{count}
 	{}
-	template <::std::contiguous_iterator Iter, ::std::ranges::sentinel_for<Iter> S>
+	template <::std::contiguous_iterator Iter, ::std::sentinel_for<Iter> S>
 		requires ::std::same_as<value_type, ::std::iter_value_t<Iter>>
 	constexpr span(Iter first, S snt) noexcept(noexcept(::std::to_address(first)))
 		: ptr{::std::to_address(first)}, n{snt - first}
 	{}
 	template <::std::ranges::contiguous_range R>
 		requires(::std::same_as<value_type, ::std::ranges::range_value_t<R>> && !::std::same_as<::std::remove_cvref_t<R>, ::fast_io::containers::span<element_type>>)
-	constexpr span(R &&range) noexcept(noexcept(::std::ranges::data(range)))
-		: ptr{::std::ranges::data(range)}, n{snt - first}
+	constexpr span(R &&range) noexcept(noexcept(::std::ranges::data(range)) && noexcept(::std::ranges::size(range)))
+		: ptr{::std::ranges::data(range)}, n{::std::ranges::size(range)}
 	{}
 
 	constexpr pointer data() const noexcept
@@ -281,6 +281,38 @@ public:
 		}
 		return span(this->ptr + pos, count);
 	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy(element_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		size_type const thisn{this->n};
+		if (thisn < pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return this->copy_unchecked(dest, count, pos);
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy_unchecked(element_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		size_type const thisn{this->n};
+		size_type const val{thisn - pos};
+		if (val < count)
+		{
+			count = val;
+		}
+		auto start{this->ptr + pos};
+		::std::copy(start, start + count, dest);
+		return count;
+	}
 };
 
 template <typename T>
@@ -295,5 +327,8 @@ inline constexpr ::fast_io::containers::span<::std::byte> as_writable_bytes(::fa
 {
 	return ::fast_io::containers::span<::std::byte>(static_cast<::std::byte *>(static_cast<void *>(sp.ptr)), sp.n * sizeof(T));
 }
+
+template <::std::ranges::contiguous_range R>
+span(R &&r) -> span<::std::ranges::range_value_t<R>>;
 
 } // namespace fast_io::containers
