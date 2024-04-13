@@ -42,10 +42,15 @@ public:
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, const_pointer p, size_type s) noexcept
 		: string_view_type(p, s)
 	{}
-	template <::std::size_t N>
+	template <size_type N>
 	constexpr basic_cstring_view(char_type const (&buffer)[N]) noexcept
 		: string_view_type(buffer)
 	{
+		constexpr size_type nm1{N - 1};
+		if (buffer[nm1]) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
 	}
 
 	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, string_view_type stvw) noexcept
@@ -83,7 +88,9 @@ public:
 	using string_view_type::is_empty;
 	using string_view_type::empty;
 	using string_view_type::size;
+	using string_view_type::size_bytes;
 	using string_view_type::max_size;
+	using string_view_type::max_size_bytes;
 	using string_view_type::begin;
 	using string_view_type::cbegin;
 	using string_view_type::end;
@@ -107,6 +114,33 @@ public:
 	using string_view_type::remove_prefix_unchecked;
 	using string_view_type::contains;
 	using string_view_type::contains_character;
+	using string_view_type::substrvw_front;
+	using string_view_type::substrvw_front_unchecked;
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_cstring_view substrvw_back(size_type count) const noexcept
+	{
+		if (this->n < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return basic_cstring_view(this->ptr + (this->n - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_cstring_view substrvw_back_unchecked(size_type count) const noexcept
+	{
+		return basic_cstring_view(this->ptr + (this->n - count), count);
+	}
+
 	using string_view_type::substrvw;
 	using string_view_type::substrvw_unchecked;
 	using string_view_type::copy;

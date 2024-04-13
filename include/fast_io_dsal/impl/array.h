@@ -6,6 +6,8 @@ namespace fast_io::containers
 template <typename T, ::std::size_t N>
 class array
 {
+	static_assert((N <= ::std::numeric_limits<::std::size_t>::max() / sizeof(T)), "N is too big");
+
 public:
 	using value_type = T;
 	using size_type = ::std::size_t;
@@ -37,9 +39,19 @@ public:
 	{
 		return N;
 	}
+	static inline constexpr size_type size_bytes() noexcept
+	{
+		constexpr size_type szb{N * sizeof(value_type)};
+		return szb;
+	}
 	static inline constexpr size_type max_size() noexcept
 	{
 		return N;
+	}
+	static inline constexpr size_type max_size_bytes() noexcept
+	{
+		constexpr size_type szb{N * sizeof(value_type)};
+		return szb;
 	}
 	inline constexpr iterator begin() noexcept
 	{

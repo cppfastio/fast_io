@@ -650,20 +650,20 @@ public:
 		this->emplace_back_unchecked(::std::move(value));
 	}
 
-	constexpr pointer data() noexcept
+	[[nodiscard]] constexpr pointer data() noexcept
 	{
 		return imp.begin_ptr;
 	}
-	constexpr const_pointer data() const noexcept
+	[[nodiscard]] constexpr const_pointer data() const noexcept
 	{
 		return imp.begin_ptr;
 	}
-	constexpr bool is_empty() const noexcept
+	[[nodiscard]] constexpr bool is_empty() const noexcept
 	{
 		return imp.begin_ptr == imp.curr_ptr;
 	}
 
-	constexpr bool empty() const noexcept
+	[[nodiscard]] constexpr bool empty() const noexcept
 	{
 		return imp.begin_ptr == imp.curr_ptr;
 	}
@@ -675,18 +675,30 @@ public:
 		}
 		imp.curr_ptr = imp.begin_ptr;
 	}
-	constexpr size_type size() const noexcept
+	[[nodiscard]] constexpr size_type size() const noexcept
 	{
 		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr);
 	}
-	constexpr size_type capacity() const noexcept
+	[[nodiscard]] constexpr size_type size_bytes() const noexcept
+	{
+		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr) * sizeof(value_type);
+	}
+	[[nodiscard]] constexpr size_type capacity() const noexcept
 	{
 		return static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
 	}
-
+	[[nodiscard]] constexpr size_type capacity_bytes() const noexcept
+	{
+		return static_cast<size_type>(imp.end_ptr - imp.begin_ptr) * sizeof(value_type);
+	}
 	[[nodiscard]] static inline constexpr size_type max_size() noexcept
 	{
 		constexpr size_type mx{::std::numeric_limits<size_type>::max() / sizeof(value_type)};
+		return mx;
+	}
+	[[nodiscard]] static inline constexpr size_type max_size_bytes() noexcept
+	{
+		constexpr size_type mx{::std::numeric_limits<size_type>::max() / sizeof(value_type) * sizeof(value_type)};
 		return mx;
 	}
 	[[nodiscard]] constexpr const_reference index_unchecked(size_type pos) const noexcept

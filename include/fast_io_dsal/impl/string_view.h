@@ -61,69 +61,80 @@ public:
 	constexpr basic_string_view &operator=(basic_string_view const &) noexcept = default;
 
 	const_pointer ptr{};
-	::std::size_t n{};
+	size_type n{};
 
-	inline constexpr bool is_empty() const noexcept
+	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
 		return !n;
 	}
 
-	inline constexpr bool empty() const noexcept
+	[[nodiscard]] inline constexpr bool empty() const noexcept
 	{
 		return !n;
 	}
 
-	inline constexpr size_type size() const noexcept
+	[[nodiscard]] inline constexpr size_type size() const noexcept
 	{
 		return n;
 	}
 
-	inline static constexpr size_type max_size() noexcept
+	[[nodiscard]] inline static constexpr size_type max_size() noexcept
 	{
 		constexpr size_type mxsz{SIZE_MAX / sizeof(value_type)};
 		return mxsz;
 	}
 
-	inline constexpr const_iterator begin() const noexcept
+	[[nodiscard]] inline constexpr size_type size_bytes() const noexcept
 	{
-		return ptr;
+		return n * sizeof(value_type);
 	}
 
-	inline constexpr const_iterator cbegin() const noexcept
+	[[nodiscard]] inline constexpr size_type max_size_bytes() const noexcept
 	{
-		return ptr;
+		constexpr size_type mxsz{SIZE_MAX / sizeof(value_type) * sizeof(value_type)};
+		return mxsz;
 	}
 
-	inline constexpr const_iterator end() const noexcept
+	[[nodiscard]] inline constexpr const_iterator begin() const noexcept
 	{
-		return ptr + n;
+		return const_iterator(ptr);
 	}
 
-	inline constexpr const_iterator cend() const noexcept
+	[[nodiscard]] inline constexpr const_iterator cbegin() const noexcept
 	{
-		return ptr + n;
+		return const_iterator(ptr);
 	}
 
-	inline constexpr const_reverse_iterator rbegin() const noexcept
+	[[nodiscard]] inline constexpr const_iterator end() const noexcept
+	{
+		return const_iterator(ptr + n);
+	}
+
+	[[nodiscard]] inline constexpr const_iterator cend() const noexcept
+	{
+		return const_iterator(ptr + n);
+	}
+
+	[[nodiscard]] inline constexpr const_reverse_iterator rbegin() const noexcept
 	{
 		return const_reverse_iterator(ptr + n);
 	}
 
-	inline constexpr const_reverse_iterator crbegin() const noexcept
+	[[nodiscard]] inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
 		return const_reverse_iterator(ptr + n);
 	}
 
-	inline constexpr const_reverse_iterator rend() const noexcept
+	[[nodiscard]] inline constexpr const_reverse_iterator rend() const noexcept
 	{
 		return const_reverse_iterator(ptr);
 	}
 
-	inline constexpr const_reverse_iterator crend() const noexcept
+	[[nodiscard]] inline constexpr const_reverse_iterator crend() const noexcept
 	{
 		return const_reverse_iterator(ptr);
 	}
-
+	[[nodiscard]]
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -301,7 +312,55 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw(size_type pos = 0, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr basic_string_view substrvw_front(size_type count) const noexcept
+	{
+		if (this->n < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return basic_string_view(this->ptr, count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw_front_unchecked(size_type count) const noexcept
+	{
+		return basic_string_view(this->ptr, count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw_back(size_type count) const noexcept
+	{
+		if (this->n < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return basic_string_view(this->ptr + (this->n - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw_back_unchecked(size_type count) const noexcept
+	{
+		return basic_string_view(this->ptr + (this->n - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr basic_string_view substrvw(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
 		if (this->n < pos) [[unlikely]]
 		{
@@ -310,6 +369,10 @@ public:
 		size_type const val{this->n - pos};
 		if (val < count)
 		{
+			if (count != ::fast_io::containers::npos) [[unlikely]]
+			{
+				::fast_io::fast_terminate();
+			}
 			count = val;
 		}
 		return basic_string_view(this->ptr + pos, count);
@@ -319,10 +382,10 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw_unchecked(size_type pos = 0, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr basic_string_view substrvw_unchecked(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
 		size_type const val{this->n - pos};
-		if (val < count)
+		if (count == ::fast_io::containers::npos)
 		{
 			count = val;
 		}

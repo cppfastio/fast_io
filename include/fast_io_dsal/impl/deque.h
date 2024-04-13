@@ -956,9 +956,20 @@ public:
 		return mxval;
 	}
 
+	static inline constexpr size_type max_size_bytes() noexcept
+	{
+		constexpr size_type mxval{SIZE_MAX / sizeof(value_type) * sizeof(value_type)};
+		return mxval;
+	}
+
 	constexpr size_type size() const noexcept
 	{
 		return block_size * static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) + static_cast<size_type>((controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.begin_ptr - controller.front_block.curr_ptr));
+	}
+
+	constexpr size_type size_bytes() const noexcept
+	{
+		return size() * sizeof(value_type);
 	}
 
 	constexpr iterator begin() noexcept

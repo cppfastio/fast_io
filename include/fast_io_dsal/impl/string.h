@@ -311,15 +311,29 @@ public:
 	{
 		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr);
 	}
+	constexpr size_type size_bytes() const noexcept
+	{
+		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr) * sizeof(value_type);
+	}
 
 	constexpr size_type capacity() const noexcept
 	{
 		return static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
 	}
 
+	constexpr size_type capacity_bytes() const noexcept
+	{
+		return static_cast<size_type>(imp.end_ptr - imp.begin_ptr) * sizeof(value_type);
+	}
+
 	static inline constexpr size_type max_size() noexcept
 	{
 		constexpr size_type n{SIZE_MAX / sizeof(value_type)};
+		return n;
+	}
+	static inline constexpr size_type max_size_bytes() noexcept
+	{
+		constexpr size_type n{SIZE_MAX / sizeof(value_type) * sizeof(value_type)};
 		return n;
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
