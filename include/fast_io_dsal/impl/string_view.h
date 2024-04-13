@@ -401,7 +401,7 @@ public:
 		}
 		auto bg{this->ptr};
 		auto ed{bg + thisn};
-		auto it{::std::ranges::find_last(bg, ed, ch)};
+		auto it{::std::ranges::data(::std::ranges::find_last(bg, ed, ch))};
 		if (it == ed)
 		{
 			return ::fast_io::containers::npos;
