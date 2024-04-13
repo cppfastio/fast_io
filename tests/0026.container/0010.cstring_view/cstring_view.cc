@@ -23,6 +23,7 @@ int main()
 						   stvw.find_character('a'), "\n",
 						   stvw.find("\0world"), "\n",
 						   stvw.rfind("wo"), "\n",
+						   stvw.contains("world"), "\n",
 						   ::fast_io::string_view(buffer, stvw.copy(buffer, 6, 2)), "\n",
 						   stvw.rfind_character('o'), "\n",
 						   stvw.rfind_not_character('o'), "\n",
