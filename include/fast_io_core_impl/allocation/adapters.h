@@ -106,11 +106,7 @@ public:
 						::fast_io::details::has_allocate_aligned_impl<alloc> ||
 						::fast_io::details::has_allocate_zero_impl<alloc> ||
 						::fast_io::details::has_allocate_aligned_zero_impl<alloc>)};
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
+	static inline void *
 		allocate(::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -449,11 +445,7 @@ public:
 		}
 	}
 
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
+	static inline void *
 		allocate_aligned(::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -473,11 +465,7 @@ public:
 			return ::fast_io::details::allocator_pointer_aligned_impl<alloc, false>(alignment, n);
 		}
 	}
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
+	static inline void *
 		allocate_aligned_zero(::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -662,11 +650,7 @@ public:
 														   ::fast_io::details::has_reallocate_aligned_at_least_impl<alloc> ||
 														   ::fast_io::details::has_reallocate_aligned_zero_impl<alloc> ||
 														   ::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
+	static inline void *
 		reallocate_aligned(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_aligned)
 	{
@@ -689,11 +673,7 @@ public:
 	}
 	static inline constexpr bool has_reallocate_aligned_zero = (::fast_io::details::has_reallocate_aligned_zero_impl<alloc> ||
 																::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
+	static inline void *
 		reallocate_aligned_zero(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_aligned_zero)
 	{
@@ -706,11 +686,7 @@ public:
 			return allocator_type::reallocate_aligned_zero(p, alignment, n).ptr;
 		}
 	}
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
+	static inline void *
 		reallocate_aligned_n(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -771,11 +747,7 @@ public:
 			return newptr;
 		}
 	}
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		void *
+	static inline void *
 		reallocate_aligned_zero_n(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -802,11 +774,7 @@ public:
 	static inline constexpr bool has_native_reallocate_at_least = (has_reallocate &&
 																   (::fast_io::details::has_reallocate_aligned_at_least_impl<alloc> ||
 																	::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>));
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		::fast_io::allocation_least_result
+	static inline ::fast_io::allocation_least_result
 		reallocate_at_least(void *p, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
 	{
@@ -847,11 +815,7 @@ public:
 	static inline constexpr bool has_native_reallocate_zero_at_least = (has_reallocate_zero &&
 																		(::fast_io::details::has_reallocate_zero_at_least_impl<alloc> ||
 																		 ::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>));
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		::fast_io::allocation_least_result
+	static inline ::fast_io::allocation_least_result
 		reallocate_zero_at_least(void *p, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
 	{
@@ -873,11 +837,7 @@ public:
 		}
 	}
 
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		::fast_io::allocation_least_result
+	static inline ::fast_io::allocation_least_result
 		reallocate_n_at_least(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -962,11 +922,7 @@ public:
 		}
 	}
 
-	static inline
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		::fast_io::allocation_least_result
+	static inline ::fast_io::allocation_least_result
 		reallocate_zero_n_at_least(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1205,11 +1161,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		allocate(::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1243,11 +1195,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		basic_allocation_least_result<T *>
+#endif basic_allocation_least_result<T *>
 		allocate_at_least(::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1283,11 +1231,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		allocate_zero(::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1310,11 +1254,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		basic_allocation_least_result<T *>
+#endif basic_allocation_least_result<T *>
 		allocate_zero_at_least(::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1352,11 +1292,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		reallocate(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
 	{
@@ -1379,11 +1315,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		basic_allocation_least_result<T *>
+#endif basic_allocation_least_result<T *>
 		reallocate_at_least(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
 	{
@@ -1409,11 +1341,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		reallocate_zero(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_zero)
 	{
@@ -1436,11 +1364,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		basic_allocation_least_result<T *>
+#endif basic_allocation_least_result<T *>
 		reallocate_zero_at_least(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_zero)
 	{
@@ -1465,11 +1389,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		reallocate_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1492,11 +1412,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		basic_allocation_least_result<T *>
+#endif basic_allocation_least_result<T *>
 		reallocate_n_at_least(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1521,11 +1437,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		reallocate_zero_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1548,11 +1460,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		basic_allocation_least_result<T *>
+#endif basic_allocation_least_result<T *>
 		reallocate_zero_n_at_least(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1651,11 +1559,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		handle_allocate(handle_type handle, ::std::size_t n) noexcept
 		requires(has_status)
 	{
@@ -1695,11 +1599,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		handle_allocate_zero(handle_type handle, ::std::size_t n) noexcept
 		requires(has_status)
 	{
@@ -1723,11 +1623,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		handle_reallocate(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
 	{
@@ -1750,11 +1646,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		handle_reallocate_zero(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
 	{
@@ -1776,11 +1668,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		handle_reallocate_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
 	{
@@ -1802,11 +1690,7 @@ public:
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-		__declspec(allocator)
-#endif
-		T *
+#endif T *
 		handle_reallocate_zero_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
 	{
