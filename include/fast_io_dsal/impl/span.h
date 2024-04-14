@@ -40,7 +40,7 @@ public:
 	template <::std::contiguous_iterator Iter, ::std::sentinel_for<Iter> S>
 		requires ::std::same_as<value_type, ::std::iter_value_t<Iter>>
 	constexpr span(Iter first, S snt) noexcept(noexcept(::std::to_address(first)))
-		: ptr{::std::to_address(first)}, n{snt - first}
+		: ptr{::std::to_address(first)}, n{static_cast<size_type>(snt - first)}
 	{}
 	template <::std::ranges::contiguous_range R>
 		requires(::std::same_as<value_type, ::std::ranges::range_value_t<R>> && !::std::same_as<::std::remove_cvref_t<R>, ::fast_io::containers::span<element_type>>)
@@ -314,6 +314,12 @@ public:
 		return count;
 	}
 };
+
+template <::std::contiguous_iterator Iter>
+span(Iter, ::std::size_t) -> span<::std::iter_value_t<Iter>>;
+
+template <::std::contiguous_iterator Iter, ::std::sentinel_for<Iter> S>
+span(Iter, S) -> span<::std::iter_value_t<Iter>>;
 
 template <typename T>
 inline constexpr ::fast_io::containers::span<::std::byte const> as_bytes(::fast_io::containers::span<T> sp) noexcept
