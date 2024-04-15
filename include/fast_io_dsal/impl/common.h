@@ -38,24 +38,24 @@ struct handle_holder
 		: value{}
 	{}
 	constexpr handle_holder(decltype(nullptr)) noexcept = delete;
-	constexpr handle_holder(handle small) noexcept
+	constexpr handle_holder(handle small_object) noexcept
 		requires(is_trivally_stored_allocator_handle<handle>)
-		: value(small)
+		: value(small_object)
 	{}
-	constexpr handle_holder(handle *small) noexcept
+	constexpr handle_holder(handle *small_object) noexcept
 		requires is_trivally_stored_allocator_handle<handle>
-		: value(*small)
+		: value(*small_object)
 	{}
 	template <typename A>
-	constexpr handle_holder(A &&large) noexcept
+	constexpr handle_holder(A &&large_object) noexcept
 		requires(::std::same_as<::std::remove_cvref_t<A>, handle> && !is_trivally_stored_allocator_handle<handle>)
 	{
-		value = ::fast_io::typed_generic_allocator_adapter<handle, handle>::handle_allocate(large, 1);
-		::std::construct_at(value, ::std::forward<handle>(large));
+		value = ::fast_io::typed_generic_allocator_adapter<handle, handle>::handle_allocate(large_object, 1);
+		::std::construct_at(value, ::std::forward<handle>(large_object));
 	}
-	constexpr handle_holder(handle *large) noexcept
+	constexpr handle_holder(handle *large_object) noexcept
 		requires(!is_trivally_stored_allocator_handle<handle>)
-		: value(large)
+		: value(large_object)
 	{}
 	constexpr handle_holder(handle_holder const &) noexcept = default;
 	constexpr handle_holder &operator=(handle_holder const &) noexcept = default;
