@@ -18,7 +18,7 @@ template <typename T>
 inline constexpr void destroy_basic_io_filter(T &t) noexcept
 {
 	using traits_type = typename T::traits_type;
-	using allocator_type = traits_type::allocator_type;
+	using allocator_type = typename traits_type::allocator_type;
 	constexpr auto mode{traits_type::mode};
 
 	if constexpr ((mode & buffer_mode::in) == buffer_mode::in)
