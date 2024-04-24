@@ -56,7 +56,7 @@ inline void close_allocation_file_loader_impl(int fd, char *address_begin, char 
 		::std::size_t towrite{static_cast<::std::size_t>(address_end - address_begin)};
 		if constexpr (sizeof(towritetype) < sizeof(::std::size_t))
 		{
-			::std::size_t towritemx{::std::numeric_limits<towritetype>::max()};
+			constexpr ::std::size_t towritemx{::std::numeric_limits<towritetype>::max()};
 			if (towritemx < towrite)
 			{
 				towrite = towritemx;
