@@ -43,7 +43,7 @@ constexpr Iter2 uninitialized_relocate(Iter1 first, Iter1 last, Iter2 dest) noex
 			if (!__builtin_is_constant_evaluated())
 #endif
 			{
-				return reinterpret_cast<Iter2>(::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last), reinterpret_cast<::std::byte *>(dest)));
+				return reinterpret_cast<Iter2>(::fast_io::freestanding::bytes_copy(reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last), reinterpret_cast<::std::byte *>(dest)));
 			}
 		}
 		// we do not allow move constructor to throw EH.
@@ -52,7 +52,14 @@ constexpr Iter2 uninitialized_relocate(Iter1 first, Iter1 last, Iter2 dest) noex
 			::std::construct_at(dest, ::std::move(*first));
 			if constexpr(!::std::is_trivially_destructible_v<iter1valuetype>)
 			{
-				first->~iter1valuetype();
+				if constexpr(::std::is_pointer_v<Iter1>)
+				{
+					::std::destroy_at(first);
+				}
+				else
+				{
+					::std::destroy_at(__builtin_addressof(*first));
+				}
 			}
 			++first;
 			++dest;

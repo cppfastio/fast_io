@@ -10,3 +10,6 @@ add_test(vector_shared_ptr_emplace shared_ptr)
 
 add_executable(shared_ptr_index shared_ptr_index.cc)
 add_test(vector_shared_ptr_index shared_ptr_index)
+
+add_executable(shared_ptr_index_not_trivial shared_ptr_index_not_trivial.cc)
+add_test(vector_shared_ptr_index_not_trivial shared_ptr_index_not_trivial)
