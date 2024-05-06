@@ -982,7 +982,7 @@ private:
 		{
 			::std::destroy_at(it);
 		}
-		::fast_io::freestanding::uninitialized_move(it + 1, lastele, it);
+		::fast_io::freestanding::uninitialized_relocate(it + 1, lastele, it);
 		imp.curr_ptr = lastele;
 		return it;
 	}
@@ -994,7 +994,7 @@ private:
 		{
 			::std::destroy(first, last);
 		}
-		imp.curr_ptr = ::fast_io::freestanding::uninitialized_move(last, currptr, first);
+		imp.curr_ptr = ::fast_io::freestanding::uninitialized_relocate(last, currptr, first);
 		return first;
 	}
 
