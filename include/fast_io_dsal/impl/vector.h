@@ -980,7 +980,7 @@ private:
 		auto lastele{imp.curr_ptr};
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
-			it->~value_type();
+			::std::destroy_at(it);
 		}
 		::fast_io::freestanding::uninitialized_move(it + 1, lastele, it);
 		imp.curr_ptr = lastele;
