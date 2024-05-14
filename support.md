@@ -1,6 +1,6 @@
 ## Compiler Support
-- GCC >= 14
-- Clang >= 17
+- GCC >= 15
+- Clang >= 19
 - Microsoft Visual C++ cl >= 19.36.32522
 
 ## C++ standard library support
@@ -31,6 +31,7 @@
 ## Platform Support
 - Windows 10/12
 - Windows Server 2019
+- Windows on ARM
 - Linux
 - BSD platforms (Including FreeBSD, NetBSD, OpenBSD)
 - Apple Darwin (MacOS)
