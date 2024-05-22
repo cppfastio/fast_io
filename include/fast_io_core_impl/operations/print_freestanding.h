@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
@@ -182,7 +182,7 @@ prrsvsct_byte_common_rsvsc_impl(io_scatter_t *pscatters, char_type *buffer, T t)
 }
 
 template <::std::integral char_type, typename T>
-inline auto prrsvsct_byte_common_impl(io_scatter_t *pscatters, char_type const *buffer, T t)
+inline auto prrsvsct_byte_common_impl(io_scatter_t *pscatters, char_type *buffer, T t)
 {
 	return ::fast_io::details::decay::prrsvsct_byte_common_rsvsc_impl(pscatters, buffer, t).scatters_pos_ptr;
 }
@@ -470,7 +470,7 @@ inline constexpr void print_control_single(output outstm, T t)
 					*ptr = ::fast_io::details::decay::line_scatter_common<char_type, void>;
 					++ptr;
 				}
-				::fast_io::operations::decay::scatter_write_all_bytes_decay(outstm, scattersbuffer, ptr);
+				::fast_io::operations::decay::scatter_write_all_bytes_decay(outstm, scattersbuffer, static_cast<::std::size_t>(ptr - scattersbuffer));
 				return;
 			}
 		}
@@ -484,7 +484,7 @@ inline constexpr void print_control_single(output outstm, T t)
 			*ptr = ::fast_io::details::decay::line_scatter_common<char_type>;
 			++ptr;
 		}
-		::fast_io::operations::decay::scatter_write_all_decay(outstm, scattersbuffer, ptr);
+		::fast_io::operations::decay::scatter_write_all_decay(outstm, scattersbuffer, static_cast<::std::size_t>(ptr - scattersbuffer));
 	}
 	else if constexpr (context_printable<char_type, value_type>)
 	{
@@ -1341,7 +1341,8 @@ concept print_freestanding_params_decay_okay =
 	::std::integral<char_type> &&
 	((::fast_io::printable<char_type, Args> || ::fast_io::reserve_printable<char_type, Args> ||
 	  ::fast_io::dynamic_reserve_printable<char_type, Args> || ::fast_io::scatter_printable<char_type, Args> ||
-	  ::fast_io::reserve_scatters_printable<char_type, Args> || ::fast_io::context_printable<char_type, Args>)&&...);
+	  ::fast_io::reserve_scatters_printable<char_type, Args> || ::fast_io::context_printable<char_type, Args>) &&
+	 ...);
 
 template <typename output, typename... Args>
 concept print_freestanding_okay =
