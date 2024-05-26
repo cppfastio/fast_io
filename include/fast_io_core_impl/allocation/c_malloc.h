@@ -165,6 +165,7 @@ public:
 		}
 		return p;
 	}
+#if defined(_MSC_VER) || defined(_UCRT)
 	static inline allocation_least_result allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
 	{
 		auto p{::fast_io::c_malloc_allocator::allocate_aligned(alignment, n)};
@@ -175,6 +176,7 @@ public:
 		auto p{::fast_io::c_malloc_allocator::reallocate_aligned(oldp, alignment, n)};
 		return {p, ::fast_io::noexcept_call(_aligned_msize, p, alignment, 0)};
 	}
+#endif
 	static inline void deallocate_aligned(void *p, ::std::size_t) noexcept
 	{
 		if (p == nullptr)
