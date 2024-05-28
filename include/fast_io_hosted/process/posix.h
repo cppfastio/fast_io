@@ -115,6 +115,7 @@ inline posix_wait_status posix_waitpid(pid_t pid)
 
 inline void posix_waitpid_noexcept(pid_t pid) noexcept
 {
+	if (pid == -1) return; // -1 indicates an empty process object
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call<__NR_wait4, int>(pid, nullptr, 0, nullptr);
 #else
@@ -188,18 +189,22 @@ inline void child_process_execveat(int dirfd, char const *cstr, char const *cons
 		{
 			sys_dup2<true>(pf.fd, 2);
 		}
+		sys_close(pf.fd);
 	}
 	if ((in_fd != -1) & (in_fd != 0))
 	{
 		sys_dup2<true>(in_fd, 0);
+		sys_close(in_fd);
 	}
 	if ((out_fd != -1) & (out_fd != 1))
 	{
 		sys_dup2<true>(out_fd, 1);
+		sys_close(out_fd);
 	}
 	if ((err_fd != -1) & (err_fd != 2))
 	{
 		sys_dup2<true>(err_fd, 2);
+		sys_close(err_fd);
 	}
 	posix_execveat(dirfd, cstr, args_ptr, envp_ptr);
 };
