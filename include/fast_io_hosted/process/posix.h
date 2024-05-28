@@ -188,18 +188,22 @@ inline void child_process_execveat(int dirfd, char const *cstr, char const *cons
 		{
 			sys_dup2<true>(pf.fd, 2);
 		}
+		sys_close(pf.fd);
 	}
 	if ((in_fd != -1) & (in_fd != 0))
 	{
 		sys_dup2<true>(in_fd, 0);
+		sys_close(in_fd);
 	}
 	if ((out_fd != -1) & (out_fd != 1))
 	{
 		sys_dup2<true>(out_fd, 1);
+		sys_close(out_fd);
 	}
 	if ((err_fd != -1) & (err_fd != 2))
 	{
 		sys_dup2<true>(err_fd, 2);
+		sys_close(err_fd);
 	}
 	posix_execveat(dirfd, cstr, args_ptr, envp_ptr);
 };
