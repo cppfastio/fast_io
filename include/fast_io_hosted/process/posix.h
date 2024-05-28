@@ -115,6 +115,7 @@ inline posix_wait_status posix_waitpid(pid_t pid)
 
 inline void posix_waitpid_noexcept(pid_t pid) noexcept
 {
+	if (pid == -1) return; // -1 indicates an empty process object
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call<__NR_wait4, int>(pid, nullptr, 0, nullptr);
 #else
