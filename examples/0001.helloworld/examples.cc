@@ -1,5 +1,9 @@
+#include <string>
 #include <fast_io.h>
+#include <fast_io_device.h>
 #include <fast_io_dsal/string.h>
+
+using namespace ::std::string_literals;
 
 struct point
 {
@@ -27,6 +31,10 @@ int main()
 	::fast_io::println(::fast_io::chvw('c'));
 	::fast_io::println('c'); // output : 99
 	::fast_io::println(point{2, 5});
+
+	::std::string s;
+	::fast_io::scan(::fast_io::line_get(s));
+	::fast_io::println(s);
 
 	return 0;
 }
