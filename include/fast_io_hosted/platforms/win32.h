@@ -117,7 +117,7 @@ inline void *create_win32_temp_file_impl()
 	}
 	auto arrp{arr + temp_path_size};
 	constexpr bool winver_support_rtl_gen_random{
-#if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0501
+#if !defined(_WIN32_WINDOWS) && (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0501)
 		// RtlGenRandom support starts since Windows XP
 		is_nt
 #endif
@@ -946,7 +946,7 @@ struct
 	using native_handle_type = void *;
 	void *handle{};
 	explicit constexpr win32_file_factory(void *hd) noexcept
-		: handle(hd){};
+		: handle(hd) {};
 	win32_file_factory(win32_file_factory const &) = delete;
 	win32_file_factory &operator=(win32_file_factory const &) = delete;
 	~win32_file_factory()
