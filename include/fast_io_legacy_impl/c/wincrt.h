@@ -14,7 +14,7 @@ namespace win32
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
-inline FILE *wincrt_acrt_iob_func(unsigned index) noexcept
+inline FILE *wincrt_acrt_iob_func(::std::uint_least32_t index) noexcept
 {
 #if defined(_MSC_VER) || defined(_UCRT)
 	return noexcept_call(__acrt_iob_func, index);
@@ -30,49 +30,44 @@ namespace details
 the entire stdio on windows is too broken. I want to add tie semantics to stdin and stdout to avoid troubles.
 */
 
-#if defined(_MSC_VER) || defined(_UCRT)
-
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
-	ucrt_iobuf
+	crt_iobuf
 {
 	char *_ptr;
+#if defined(_MSC_VER) || defined(_UCRT)
+	// We only supported msvc with above C++20 support so it is always ucrt
 	char *_base;
-	int _cnt;
-	long _flag;
-	long _file;
-	int _charbuf;
-	int _bufsiz;
+	::std::int_least32_t _cnt;
+#else
+	::std::int_least32_t _cnt;
+	char *_base;
+#endif
+	::std::uint_least32_t _flag;
+	::std::int_least32_t _file;
+	::std::int_least32_t _charbuf;
+	::std::int_least32_t _bufsiz;
 	char *_tmpfname;
 };
 
-#endif
-
 inline constexpr ::std::size_t wincrt_internal_buffer_size{4096};
 
-template <typename fileptr>
-inline constexpr void wincrt_fp_set_flag_dirty_impl(fileptr *__restrict fp) noexcept
-{
-	fp->_flag |= 0x0002;
-}
+inline constexpr long crt_dirty_value{0x0002};
 
-template <typename fileptr>
-inline constexpr void wincrt_fp_set_flag_mybuf_impl(fileptr *__restrict fp) noexcept
-{
+inline constexpr long crt_mybuf_value{
 #if defined(_MSC_VER) || defined(_UCRT)
-	fp->_flag |= 0x0040;
+	0x0040
 #else
-	fp->_flag |= 0x0008;
+	0x0008
 #endif
-}
+};
 
 template <typename fileptr>
 inline constexpr bool wincrt_fp_is_dirty_impl(fileptr *__restrict fp) noexcept
 {
-	constexpr unsigned mask{0x0002};
-	return (static_cast<unsigned>(fp->_flag) & mask) == mask;
+	return (static_cast<::std::uint_least32_t>(fp->_flag) & crt_dirty_value) == crt_dirty_value;
 }
 
 inline void *my_malloc_crt(::std::size_t buffer_size) noexcept
@@ -135,22 +130,18 @@ CRT heap debugging does not exist on mingw-w64
 
 inline void wincrt_fp_allocate_buffer_impl(FILE *__restrict fpp) noexcept
 {
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
 	if (fp->_bufsiz < 4)
 	{
 		fp->_bufsiz = wincrt_internal_buffer_size;
 	}
 	fp->_bufsiz >>= 2;
 	fp->_bufsiz <<= 2;
-	::std::size_t allocated_buffer_size{static_cast<::std::size_t>(static_cast<unsigned int>(fp->_bufsiz))};
+	::std::size_t allocated_buffer_size{static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz))};
 	auto new_buffer{my_malloc_crt(allocated_buffer_size)};
 	fp->_ptr = fp->_base = reinterpret_cast<char *>(new_buffer);
 	fp->_cnt = 0;
-	wincrt_fp_set_flag_mybuf_impl(fp);
+	fp->_flag |= crt_mybuf_value;
 }
 
 #if __has_cpp_attribute(__gnu__::__cold__)
@@ -159,11 +150,7 @@ inline void wincrt_fp_allocate_buffer_impl(FILE *__restrict fpp) noexcept
 inline void wincrt_fp_write_cold_malloc_case_impl(FILE *__restrict fpp, char const *__restrict first,
 												  ::std::size_t diff)
 {
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
 	if (diff == 0)
 	{
 		return;
@@ -171,16 +158,16 @@ inline void wincrt_fp_write_cold_malloc_case_impl(FILE *__restrict fpp, char con
 	::std::size_t allocated_buffer_size{wincrt_internal_buffer_size};
 	if (fp->_bufsiz >= 4)
 	{
-		allocated_buffer_size = static_cast<::std::size_t>(static_cast<unsigned>(fp->_bufsiz));
+		allocated_buffer_size = static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz));
 		allocated_buffer_size >>= 2;
 		allocated_buffer_size <<= 2;
 	}
 	if (diff >= allocated_buffer_size)
 	{
 #if 0
-		posix_write_nolock_impl(static_cast<int>(fp->_file),first,diff);
+		posix_write_nolock_impl(static_cast<::std::int_least32_t>(fp->_file),first,diff);
 #else
-		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		::fast_io::posix_io_observer piob{static_cast<::std::int_least32_t>(fp->_file)};
 		::fast_io::operations::decay::write_all_decay(piob, first, first + diff);
 #endif
 		return;
@@ -188,38 +175,34 @@ inline void wincrt_fp_write_cold_malloc_case_impl(FILE *__restrict fpp, char con
 	auto newbuffer{my_malloc_crt(allocated_buffer_size)};
 	my_memcpy(newbuffer, first, diff);
 	fp->_ptr = (fp->_base = reinterpret_cast<char *>(newbuffer)) + diff;
-	wincrt_fp_set_flag_mybuf_impl(fp);
-	fp->_bufsiz = static_cast<int>(allocated_buffer_size);
-	fp->_cnt = fp->_bufsiz - static_cast<int>(diff);
-	wincrt_fp_set_flag_dirty_impl(fp);
+	fp->_flag |= crt_mybuf_value;
+	fp->_bufsiz = static_cast<::std::int_least32_t>(allocated_buffer_size);
+	fp->_cnt = fp->_bufsiz - static_cast<::std::int_least32_t>(diff);
+	fp->_flag |= crt_dirty_value;
 }
 
 inline void wincrt_fp_write_cold_normal_case_impl(FILE *__restrict fpp, char const *__restrict first,
 												  ::std::size_t diff)
 {
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
-	::std::size_t remain{static_cast<::std::size_t>(static_cast<unsigned int>(fp->_cnt))};
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
+	::std::size_t remain{static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_cnt))};
 	non_overlapped_copy_n(first, remain, fp->_ptr);
 	diff -= remain;
 	first += remain;
 	fp->_ptr += remain;
 	fp->_cnt = 0;
-	wincrt_fp_set_flag_dirty_impl(fp);
-	::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+	fp->_flag |= crt_dirty_value;
+	::fast_io::posix_io_observer piob{static_cast<::std::int_least32_t>(fp->_file)};
 #if 0
-	posix_write_simple_impl(static_cast<int>(fp->_file),fp->_base,static_cast<::std::size_t>(fp->_ptr-fp->_base));
+	posix_write_simple_impl(static_cast<::std::int_least32_t>(fp->_file),fp->_base,static_cast<::std::size_t>(fp->_ptr-fp->_base));
 #else
 	::fast_io::operations::decay::write_all_decay(piob, fp->_base, fp->_ptr);
 #endif
-	::std::size_t const bufsiz{static_cast<::std::size_t>(static_cast<unsigned int>(fp->_bufsiz))};
+	::std::size_t const bufsiz{static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz))};
 	if (diff >= bufsiz)
 	{
 #if 0
-		posix_write_nolock_impl(static_cast<int>(fp->_file),first,diff);
+		posix_write_nolock_impl(static_cast<::std::int_least32_t>(fp->_file),first,diff);
 #else
 		::fast_io::operations::decay::write_all_decay(piob, first, first + diff);
 #endif
@@ -227,7 +210,7 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE *__restrict fpp, char con
 	else
 	{
 		fp->_ptr = non_overlapped_copy_n(first, diff, fp->_base);
-		fp->_cnt = static_cast<int>(bufsiz - diff);
+		fp->_cnt = static_cast<::std::int_least32_t>(bufsiz - diff);
 	}
 }
 
@@ -237,11 +220,7 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE *__restrict fpp, char con
 inline void wincrt_fp_write_cold_impl(FILE *__restrict fp, char const *first, char const *last)
 {
 	::std::size_t diff{static_cast<::std::size_t>(last - first)};
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fpp{reinterpret_cast<ucrt_iobuf *>(fp)};
-#else
-	FILE *fpp{fp};
-#endif
+	crt_iobuf *fpp{reinterpret_cast<crt_iobuf *>(fp)};
 	if (fpp->_base == nullptr)
 	{
 		wincrt_fp_write_cold_malloc_case_impl(fp, first, diff);
@@ -259,11 +238,7 @@ template <::std::integral char_type>
 #endif
 inline void wincrt_fp_overflow_impl(FILE *__restrict fpp, char_type ch)
 {
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
 	if (fp->_base == nullptr)
 	{
 		wincrt_fp_allocate_buffer_impl(fpp);
@@ -271,17 +246,17 @@ inline void wincrt_fp_overflow_impl(FILE *__restrict fpp, char_type ch)
 	else
 	{
 #if 0
-		posix_write_simple_impl(static_cast<int>(fp->_file),fp->_base,static_cast<::std::size_t>(static_cast<unsigned>(fp->_bufsiz)));
+		posix_write_simple_impl(static_cast<::std::int_least32_t>(fp->_file),fp->_base,static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz)));
 #else
-		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		::fast_io::posix_io_observer piob{static_cast<::std::int_least32_t>(fp->_file)};
 		::fast_io::operations::decay::write_all_decay(piob, fp->_base, fp->_base + fp->_bufsiz);
 #endif
 	}
 	fp->_ptr = fp->_base;
 	my_memcpy(fp->_ptr, __builtin_addressof(ch), sizeof(ch));
 	fp->_ptr += sizeof(ch);
-	fp->_cnt = static_cast<int>(static_cast<unsigned int>(fp->_bufsiz - static_cast<int>(sizeof(ch))));
-	wincrt_fp_set_flag_dirty_impl(fp);
+	fp->_cnt = static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz - static_cast<::std::int_least32_t>(sizeof(ch))));
+	fp->_flag |= crt_dirty_value;
 }
 
 #if __has_cpp_attribute(__gnu__::__cold__)
@@ -289,17 +264,13 @@ inline void wincrt_fp_overflow_impl(FILE *__restrict fpp, char_type ch)
 #endif
 inline void wincrt_fp_flush_stdout_impl()
 {
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(::fast_io::win32::wincrt_acrt_iob_func(1))};
-#else
-	FILE *fp{::fast_io::win32::wincrt_acrt_iob_func(1)};
-#endif
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(::fast_io::win32::wincrt_acrt_iob_func(1))};
 #if 1
 	if (fp->_ptr == fp->_base)
 	{
 		return;
 	}
-	::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+	::fast_io::posix_io_observer piob{static_cast<::std::int_least32_t>(fp->_file)};
 	::fast_io::operations::decay::write_all_decay(piob, fp->_base, fp->_ptr);
 #else
 	::std::size_t diff{static_cast<::std::size_t>(fp->_ptr - fp->_base)};
@@ -308,7 +279,7 @@ inline void wincrt_fp_flush_stdout_impl()
 	{
 		return;
 	}
-	posix_write_simple_impl(static_cast<int>(fp->_file), fp->_base, diff);
+	posix_write_simple_impl(static_cast<::std::int_least32_t>(fp->_file), fp->_base, diff);
 #endif
 	fp->_ptr = fp->_base;
 }
@@ -322,16 +293,12 @@ inline char *wincrt_fp_read_cold_impl(FILE *__restrict fpp, char *first, ::std::
 	{
 		wincrt_fp_flush_stdout_impl();
 	}
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
-	::std::size_t cnt{static_cast<::std::size_t>(static_cast<unsigned int>(fp->_cnt))};
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
+	::std::size_t cnt{static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_cnt))};
 	non_overlapped_copy_n(fp->_ptr, cnt, first);
 	first += cnt;
 	diff -= cnt;
-	::std::size_t allocated_buffer_size{static_cast<::std::size_t>(static_cast<unsigned int>(fp->_bufsiz))};
+	::std::size_t allocated_buffer_size{static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz))};
 	if (allocated_buffer_size < 4)
 	{
 		allocated_buffer_size = wincrt_internal_buffer_size;
@@ -340,9 +307,9 @@ inline char *wincrt_fp_read_cold_impl(FILE *__restrict fpp, char *first, ::std::
 	if (diff >= allocated_buffer_size)
 	{
 #if 0
-		return posix_read_impl(static_cast<int>(fp->_file),first,diff);
+		return posix_read_impl(static_cast<::std::int_least32_t>(fp->_file),first,diff);
 #else
-		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		::fast_io::posix_io_observer piob{static_cast<::std::int_least32_t>(fp->_file)};
 		return ::fast_io::operations::decay::read_some_decay(piob, first, first + diff);
 #endif
 	}
@@ -353,21 +320,21 @@ inline char *wincrt_fp_read_cold_impl(FILE *__restrict fpp, char *first, ::std::
 			auto new_buffer{my_malloc_crt(allocated_buffer_size)};
 			fp->_ptr = fp->_base = reinterpret_cast<char *>(new_buffer);
 			fp->_cnt = 0;
-			fp->_bufsiz = static_cast<int>(static_cast<unsigned int>(allocated_buffer_size));
-			wincrt_fp_set_flag_mybuf_impl(fp);
+			fp->_bufsiz = static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(allocated_buffer_size));
+			fp->_flag |= crt_mybuf_value;
 		}
 
 #if 0
-		::std::size_t readed{posix_read_impl(static_cast<int>(fp->_file),fp->_base,static_cast<::std::size_t>(static_cast<unsigned int>(fp->_bufsiz)))};
+		::std::size_t readed{posix_read_impl(static_cast<::std::int_least32_t>(fp->_file),fp->_base,static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz)))};
 #else
 		::std::size_t readed;
 		{
-			::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+			::fast_io::posix_io_observer piob{static_cast<::std::int_least32_t>(fp->_file)};
 			readed = static_cast<::std::size_t>(
 				::fast_io::operations::decay::read_some_decay(piob, fp->_base, fp->_base + fp->_bufsiz) - fp->_base);
 		}
 #endif
-		fp->_cnt = static_cast<int>(static_cast<unsigned int>(readed));
+		fp->_cnt = static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(readed));
 		fp->_ptr = fp->_base;
 		if (readed < diff)
 		{
@@ -375,7 +342,7 @@ inline char *wincrt_fp_read_cold_impl(FILE *__restrict fpp, char *first, ::std::
 		}
 		non_overlapped_copy_n(fp->_base, diff, first);
 		fp->_ptr += diff;
-		fp->_cnt -= static_cast<int>(static_cast<unsigned int>(diff));
+		fp->_cnt -= static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(diff));
 		return first + diff;
 	}
 }
@@ -390,27 +357,23 @@ inline bool wincrt_fp_underflow_impl(FILE *__restrict fpp)
 	{
 		wincrt_fp_flush_stdout_impl();
 	}
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
 	if (fp->_base == nullptr)
 	{
 		wincrt_fp_allocate_buffer_impl(fpp);
 	}
 #if 0
-	::std::size_t size{posix_read_impl(static_cast<int>(fp->_file),fp->_base,static_cast<::std::size_t>(static_cast<unsigned>(fp->_bufsiz)))};
+	::std::size_t size{posix_read_impl(static_cast<::std::int_least32_t>(fp->_file),fp->_base,static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz)))};
 #else
 	::std::size_t size;
 	{
-		::fast_io::posix_io_observer piob{static_cast<int>(fp->_file)};
+		::fast_io::posix_io_observer piob{static_cast<::std::int_least32_t>(fp->_file)};
 		size = static_cast<::std::size_t>(
 			::fast_io::operations::decay::read_some_decay(piob, fp->_base, fp->_base + fp->_bufsiz) - fp->_base);
 	}
 #endif
 	fp->_ptr = fp->_base;
-	fp->_cnt = static_cast<int>(static_cast<unsigned int>(size));
+	fp->_cnt = static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(size));
 	if constexpr (sizeof(char_type) == 1)
 	{
 		return static_cast<bool>(size);
@@ -428,11 +391,7 @@ template <typename T, ::std::size_t num>
 inline T *wincrt_get_buffer_ptr_impl(FILE *__restrict fpp) noexcept
 {
 	static_assert(num < 4);
-#if defined(_UCRT) || defined(_MSC_VER)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
 	if constexpr (num == 0)
 	{
 		return reinterpret_cast<T *>(fp->_base);
@@ -454,13 +413,9 @@ inline void wincrt_set_buffer_curr_ptr_impl(FILE *__restrict fpp,
 #endif
 											T *ptr) noexcept
 {
-#if defined(_MSC_VER) || defined(_UCRT)
-	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
-#else
-	FILE *fp{fpp};
-#endif
-	fp->_cnt -= static_cast<int>(
-		static_cast<unsigned int>(static_cast<::std::size_t>(reinterpret_cast<char *>(ptr) - fp->_ptr) / sizeof(T)));
+	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
+	fp->_cnt -= static_cast<::std::int_least32_t>(
+		static_cast<::std::uint_least32_t>(static_cast<::std::size_t>(reinterpret_cast<char *>(ptr) - fp->_ptr) / sizeof(T)));
 	fp->_ptr = reinterpret_cast<char *>(ptr);
 }
 #if defined(_MSC_VER) || defined(_UCRT)
@@ -470,12 +425,12 @@ WINE has not correctly implemented this yet. I am submitting patches.
 inline void ucrt_lock_file(FILE *__restrict fp) noexcept
 {
 	char *fp2{reinterpret_cast<char *>(fp)};
-	::fast_io::win32::EnterCriticalSection(fp2 + sizeof(ucrt_iobuf));
+	::fast_io::win32::EnterCriticalSection(fp2 + sizeof(crt_iobuf));
 }
 inline void ucrt_unlock_file(FILE *__restrict fp) noexcept
 {
 	char *fp2{reinterpret_cast<char *>(fp)};
-	::fast_io::win32::LeaveCriticalSection(fp2 + sizeof(ucrt_iobuf));
+	::fast_io::win32::LeaveCriticalSection(fp2 + sizeof(crt_iobuf));
 }
 #endif
 } // namespace details
