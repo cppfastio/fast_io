@@ -54,9 +54,9 @@ struct
 
 inline constexpr ::std::size_t wincrt_internal_buffer_size{4096};
 
-inline constexpr long crt_dirty_value{0x0002};
+inline constexpr ::std::uint_least32_t crt_dirty_value{0x0002};
 
-inline constexpr long crt_mybuf_value{
+inline constexpr ::std::uint_least32_t crt_mybuf_value{
 #if defined(_MSC_VER) || defined(_UCRT)
 	0x0040
 #else
