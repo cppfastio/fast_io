@@ -70,6 +70,14 @@ inline constexpr bool wincrt_fp_is_dirty_impl(fileptr *__restrict fp) noexcept
 	return (static_cast<::std::uint_least32_t>(fp->_flag) & crt_dirty_value) == crt_dirty_value;
 }
 
+inline constexpr int crt_block_flag{
+#if defined(_CRT_BLOCK)
+	_CRT_BLOCK
+#else
+	2 /*_CRT_BLOCK*/
+#endif
+};
+
 inline void *my_malloc_crt(::std::size_t buffer_size) noexcept
 {
 	auto ptr{
@@ -93,15 +101,7 @@ inline void *my_malloc_crt(::std::size_t buffer_size) noexcept
 		subtypes of Client blocks, shift the number left by 16 bits and OR it with _CLIENT_BLOCK. For example:
 
 		*/
-
-		::fast_io::noexcept_call(_malloc_dbg, buffer_size,
-#if defined(_CRT_BLOCK)
-								 _CRT_BLOCK
-#else
-								 2 /*_CRT_BLOCK*/
-#endif
-								 ,
-								 __FILE__, __LINE__)
+		::fast_io::noexcept_call(_malloc_dbg, buffer_size, crt_block_flag, __FILE__, __LINE__)
 // Provide Debugging information to this file so if people find out issues with hacking they can report to fast_io
 // project
 #else
