@@ -70,7 +70,7 @@ inline constexpr bool wincrt_fp_is_dirty_impl(fileptr *__restrict fp) noexcept
 	return (static_cast<::std::uint_least32_t>(fp->_flag) & crt_dirty_value) == crt_dirty_value;
 }
 
-inline constexpr int crt_block_flag{
+inline constexpr ::std::int_least32_t crt_block_flag{
 #if defined(_CRT_BLOCK)
 	_CRT_BLOCK
 #else
