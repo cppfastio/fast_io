@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC system_header
+#endif
+
 namespace fast_io::details::string_hack
 {
 

@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC system_header
+#endif
+
 namespace fast_io::details::string_hack
 {
 
@@ -40,7 +44,7 @@ inline constexpr decltype(auto) hack_scary_val(::std::basic_string<elem, traits,
 #endif
 		= typename model_t::_Scary_val *;
 	return *reinterpret_cast<scary_ptr>(reinterpret_cast<::std::byte *>(__builtin_addressof(str)) +
-										offsetof(model_t, _Mypair) + offsetof(compress_pair_type, _Myval2));
+										__builtin_addressof(model_t, _Mypair) + __builtin_addressof(compress_pair_type, _Myval2));
 }
 
 template <typename T>
