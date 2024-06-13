@@ -1,9 +1,5 @@
 #pragma once
 
-#if defined(__linux__) && defined(__NR_statx) && !defined(__statx_defined)
-#include <linux/stat.h>
-#endif
-
 #if defined(__has_builtin)
 #if !__has_builtin(__builtin_malloc) || !__has_builtin(__builtin_free)
 #include <cstdlib>
@@ -48,6 +44,36 @@ inline ::std::size_t win32_load_file_get_file_size(void *handle)
 
 namespace fast_io::details
 {
+struct linux_statx_timestamp {
+::std::int_least64_t tv_sec;
+::std::uint_least32_t tv_nsec, pad;
+};
+
+struct linux_struct_statx {
+::std::uint_least32_t stx_mask;
+::std::uint_least32_t stx_blksize;
+::std::uint_least64_t stx_attributes;
+::std::uint_least32_t stx_nlink;
+::std::uint_least32_t stx_uid;
+::std::uint_least32_t stx_gid;
+::std::uint_least16_t stx_mode;
+::std::uint_least16_t pad0[1];
+::std::uint_least64_t stx_ino;
+::std::uint_least64_t stx_size;
+::std::uint_least64_t stx_blocks;
+::std::uint_least64_t stx_attributes_mask;
+::fast_io::details::linux_statx_timestamp stx_atime;
+::fast_io::details::linux_statx_timestamp stx_btime;
+::fast_io::details::linux_statx_timestamp stx_ctime;
+::fast_io::details::linux_statx_timestamp stx_mtime;
+::std::uint_least32_t stx_rdev_major;
+::std::uint_least32_t stx_rdev_minor;
+::std::uint_least32_t stx_dev_major;
+::std::uint_least32_t stx_dev_minor;
+::std::uint_least64_t pad1[14];
+};
+
+inline constexpr ::std::uint_least32_t linux_statx_size{0x200U};
 
 inline ::std::size_t posix_loader_get_file_size(int fd)
 {
@@ -58,7 +84,7 @@ inline ::std::size_t posix_loader_get_file_size(int fd)
 #elif defined(__linux__) && defined(__NR_statx)
 	// Linux kernel provides new __NR_statx syscall. That allows us to only extract part of information and avoid libc
 	// braindeath beneath.
-	struct statx statxbuf;
+	linux_struct_statx statxbuf;
 	system_call_throw_error(system_call<__NR_statx, int>(fd, reinterpret_cast<char const *>(u8""),
 #if defined(AT_EMPTY_PATH)
 														 AT_EMPTY_PATH
@@ -67,7 +93,7 @@ inline ::std::size_t posix_loader_get_file_size(int fd)
 																// might not be available for all libcs
 #endif
 														 ,
-														 STATX_SIZE, __builtin_addressof(statxbuf)));
+														 linux_statx_size, __builtin_addressof(statxbuf)));
 	using stx_size_unsigned_type = ::std::make_unsigned_t<decltype(statxbuf.stx_size)>;
 	if constexpr (sizeof(stx_size_unsigned_type) > sizeof(::std::size_t))
 	{
