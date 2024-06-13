@@ -44,29 +44,33 @@ inline ::std::size_t win32_load_file_get_file_size(void *handle)
 
 namespace fast_io::details
 {
+struct statx_timestamp {
+::std::int_least64_t tv_sec;
+::std::uint_least32_t tv_nsec, pad;
+};
 
 struct linux_struct_statx {
-uint32_t stx_mask;
-uint32_t stx_blksize;
-uint64_t stx_attributes;
-uint32_t stx_nlink;
-uint32_t stx_uid;
-uint32_t stx_gid;
-uint16_t stx_mode;
-uint16_t pad0[1];
-uint64_t stx_ino;
-uint64_t stx_size;
-uint64_t stx_blocks;
-uint64_t stx_attributes_mask;
-struct statx_timestamp stx_atime;
-struct statx_timestamp stx_btime;
-struct statx_timestamp stx_ctime;
-struct statx_timestamp stx_mtime;
-uint32_t stx_rdev_major;
-uint32_t stx_rdev_minor;
-uint32_t stx_dev_major;
-uint32_t stx_dev_minor;
-uint64_t pad1[14];
+::std::uint_least32_t stx_mask;
+::std::uint_least32_t stx_blksize;
+::std::uint_least64_t stx_attributes;
+::std::uint_least32_t stx_nlink;
+::std::uint_least32_t stx_uid;
+::std::uint_least32_t stx_gid;
+::std::uint_least16_t stx_mode;
+::std::uint_least16_t pad0[1];
+::std::uint_least64_t stx_ino;
+::std::uint_least64_t stx_size;
+::std::uint_least64_t stx_blocks;
+::std::uint_least64_t stx_attributes_mask;
+linux_statx_timestamp stx_atime;
+linux_statx_timestamp stx_btime;
+linux_statx_timestamp stx_ctime;
+linux_statx_timestamp stx_mtime;
+::std::uint_least32_t stx_rdev_major;
+::std::uint_least32_t stx_rdev_minor;
+::std::uint_least32_t stx_dev_major;
+::std::uint_least32_t stx_dev_minor;
+::std::uint_least64_t pad1[14];
 };
 
 inline constexpr ::std::uint_least32_t linux_statx_size{0x200U};
