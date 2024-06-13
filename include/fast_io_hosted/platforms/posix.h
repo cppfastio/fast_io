@@ -885,7 +885,7 @@ inline posix_file_status fstat_impl(int fd)
 {
 #if (defined(_WIN32)&&!defined(__WINE__)&&!defined(__BIONIC__)) && !defined(__CYGWIN__)
 	struct __stat64 st;
-#elif defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
+#elif defined(__linux__) && defined(__USE_LARGEFILE64)
 	struct stat64 st;
 #else
 	struct stat st;
@@ -897,7 +897,7 @@ _fstat64
 #else
 _fstati64
 #endif
-#elif defined(__linux__) && !defined(__MLIBC_O_CLOEXEC)
+#elif defined(__linux__) && defined(__USE_LARGEFILE64)
 fstat64
 #else
 fstat

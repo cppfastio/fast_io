@@ -141,7 +141,7 @@ inline posix_file_status posix_fstatat_impl(int dirfd, char const* pathname, int
 {
 #if defined(__linux__)
 
-#if !defined(__MLIBC_O_CLOEXEC) && (defined(__NR_newfstatat) || defined(__NR_fstatat64))
+#if defined(__USE_LARGEFILE64) && (defined(__NR_newfstatat) || defined(__NR_fstatat64))
 	struct stat64 buf;
 #else
 	struct stat buf;
