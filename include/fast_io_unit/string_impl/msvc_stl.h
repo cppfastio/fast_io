@@ -44,7 +44,7 @@ inline constexpr decltype(auto) hack_scary_val(::std::basic_string<elem, traits,
 #endif
 		= typename model_t::_Scary_val *;
 	return *reinterpret_cast<scary_ptr>(reinterpret_cast<::std::byte *>(__builtin_addressof(str)) +
-										__builtin_addressof(model_t, _Mypair) + __builtin_addressof(compress_pair_type, _Myval2));
+										__builtin_offsetof(model_t, _Mypair) + __builtin_offsetof(compress_pair_type, _Myval2));
 }
 
 template <typename T>
