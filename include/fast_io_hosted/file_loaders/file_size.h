@@ -1,9 +1,5 @@
 #pragma once
 
-#if defined(__linux__) && defined(__NR_statx) && !defined(__statx_defined)
-#include <linux/stat.h>
-#endif
-
 #if defined(__has_builtin)
 #if !__has_builtin(__builtin_malloc) || !__has_builtin(__builtin_free)
 #include <cstdlib>
@@ -49,6 +45,32 @@ inline ::std::size_t win32_load_file_get_file_size(void *handle)
 namespace fast_io::details
 {
 
+struct linux_struct_statx {
+uint32_t stx_mask;
+uint32_t stx_blksize;
+uint64_t stx_attributes;
+uint32_t stx_nlink;
+uint32_t stx_uid;
+uint32_t stx_gid;
+uint16_t stx_mode;
+uint16_t pad0[1];
+uint64_t stx_ino;
+uint64_t stx_size;
+uint64_t stx_blocks;
+uint64_t stx_attributes_mask;
+struct statx_timestamp stx_atime;
+struct statx_timestamp stx_btime;
+struct statx_timestamp stx_ctime;
+struct statx_timestamp stx_mtime;
+uint32_t stx_rdev_major;
+uint32_t stx_rdev_minor;
+uint32_t stx_dev_major;
+uint32_t stx_dev_minor;
+uint64_t pad1[14];
+};
+
+inline constexpr ::std::uint_least32_t linux_statx_size{0x200U};
+
 inline ::std::size_t posix_loader_get_file_size(int fd)
 {
 #if defined(_WIN32) && !defined(__BIONIC__) && !defined(__WINE__)
@@ -58,7 +80,7 @@ inline ::std::size_t posix_loader_get_file_size(int fd)
 #elif defined(__linux__) && defined(__NR_statx)
 	// Linux kernel provides new __NR_statx syscall. That allows us to only extract part of information and avoid libc
 	// braindeath beneath.
-	struct statx statxbuf;
+	linux_struct_statx statxbuf;
 	system_call_throw_error(system_call<__NR_statx, int>(fd, reinterpret_cast<char const *>(u8""),
 #if defined(AT_EMPTY_PATH)
 														 AT_EMPTY_PATH
@@ -67,7 +89,7 @@ inline ::std::size_t posix_loader_get_file_size(int fd)
 																// might not be available for all libcs
 #endif
 														 ,
-														 STATX_SIZE, __builtin_addressof(statxbuf)));
+														 linux_statx_size, __builtin_addressof(statxbuf)));
 	using stx_size_unsigned_type = ::std::make_unsigned_t<decltype(statxbuf.stx_size)>;
 	if constexpr (sizeof(stx_size_unsigned_type) > sizeof(::std::size_t))
 	{
