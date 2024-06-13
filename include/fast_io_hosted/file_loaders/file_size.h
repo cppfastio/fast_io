@@ -44,7 +44,7 @@ inline ::std::size_t win32_load_file_get_file_size(void *handle)
 
 namespace fast_io::details
 {
-struct statx_timestamp {
+struct linux_statx_timestamp {
 ::std::int_least64_t tv_sec;
 ::std::uint_least32_t tv_nsec, pad;
 };
@@ -62,10 +62,10 @@ struct linux_struct_statx {
 ::std::uint_least64_t stx_size;
 ::std::uint_least64_t stx_blocks;
 ::std::uint_least64_t stx_attributes_mask;
-linux_statx_timestamp stx_atime;
-linux_statx_timestamp stx_btime;
-linux_statx_timestamp stx_ctime;
-linux_statx_timestamp stx_mtime;
+::fast_io::details::linux_statx_timestamp stx_atime;
+::fast_io::details::linux_statx_timestamp stx_btime;
+::fast_io::details::linux_statx_timestamp stx_ctime;
+::fast_io::details::linux_statx_timestamp stx_mtime;
 ::std::uint_least32_t stx_rdev_major;
 ::std::uint_least32_t stx_rdev_minor;
 ::std::uint_least32_t stx_dev_major;
