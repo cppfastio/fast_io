@@ -110,10 +110,13 @@ On Windows 95 or 95 Plus! you can enable `-O3` but not `-Ofast`. You'll also nee
 - MSVCRT
 - Universal CRT
 - Universal CRT with MSVC debugging
-- Wine's Emulated MSVCRT
-- Wine's Emulated UCRT
-- ReactOS Emulated MSVCRT
-- ReactOS Emulated UCRT
+- Wine's MSVCRT
+- Wine's UCRT 9.11+
+
+See wine bug [PR53960](https://gitlab.winehq.org/wine/wine/-/merge_requests/5752)
+
+- ReactOS MSVCRT
+- ReactOS UCRT
 - BSD libc/Apple Darwin
 - MUSL libc
 - DJGPP
