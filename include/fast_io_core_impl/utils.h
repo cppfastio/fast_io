@@ -163,6 +163,21 @@ concept my_floating_point = ::std::floating_point<T>
 #ifdef __SIZEOF_FLOAT128__
 							|| ::std::same_as<::std::remove_cv_t<T>, __float128>
 #endif
+#ifdef __STDCPP_BFLOAT16_T__
+							|| ::std::same_as<::std::remove_cv_t<T>, decltype(0.0bf16)>
+#endif
+#ifdef __STDCPP_FLOAT16_T__
+							|| ::std::same_as<::std::remove_cv_t<T>, _Float16>
+#endif
+#ifdef __STDCPP_FLOAT32_T__
+							|| ::std::same_as<::std::remove_cv_t<T>, _Float32>
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+							|| ::std::same_as<::std::remove_cv_t<T>, _Float64>
+#endif
+#ifdef __STDCPP_FLOAT128_T__
+							|| ::std::same_as<::std::remove_cv_t<T>, _Float128>
+#endif
 	;
 
 #ifdef __SIZEOF_INT128__
