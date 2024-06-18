@@ -10,255 +10,814 @@ namespace details
 
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
-[[__gnu__::__may_alias__]]
+	[[__gnu__::__may_alias__]]
 #endif
-vector_model
+	vector_model
 {
-	char8_t* begin_ptr;
-	char8_t* curr_ptr;
-	char8_t* end_ptr;
+	::std::byte *begin_ptr;
+	::std::byte *curr_ptr;
+	::std::byte *end_ptr;
 };
 
-inline constexpr void swap(vector_model& lhs, vector_model& rhs) noexcept
+namespace vector
 {
-	auto tmp = lhs;
-	lhs = rhs;
-	rhs = tmp;
-}
 
-template<typename allocator>
-inline void grow_to_size_common_impl(vector_model* m,::std::size_t newcap) noexcept
+namespace detemplate
 {
-	auto begin_ptr{m->begin_ptr};
 
-	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr-begin_ptr)};
-	if constexpr(allocator::has_reallocate)
-	{
-		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate(begin_ptr,newcap));
-	}
-	else
-	{
-		auto end_ptr{m->end_ptr};
-		::std::size_t const old_cap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
-		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_n(begin_ptr,old_cap,newcap));
-	}
-	m->begin_ptr=begin_ptr;
-	m->curr_ptr=begin_ptr+old_size;
-	m->end_ptr=begin_ptr+newcap;
+template <typename allocator>
+inline void *grow_to_byte_size_iter_impl(vector_model &imp, void *iter, ::std::size_t newcap, ::std::size_t gap, ::std::size_t size, ::std::size_t alignment) noexcept
+{
+	::std::byte *old_begin_ptr{imp.begin_ptr};
+	::std::byte *old_curr_ptr{imp.curr_ptr};
+	::std::size_t const old_size{static_cast<::std::size_t>(old_curr_ptr - old_begin_ptr)};
+	::std::size_t const old_capacity{static_cast<::std::size_t>(imp.end_ptr - old_begin_ptr)};
+
+	auto newres = allocator::allocate_aligned_at_least(alignment, newcap);
+	auto begin_ptr = reinterpret_cast<::std::byte *>(newres.ptr);
+	auto newiter = ::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(old_begin_ptr), reinterpret_cast<::std::byte const *>(iter),
+																	reinterpret_cast<::std::byte *>(begin_ptr));
+	::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(iter), reinterpret_cast<::std::byte const *>(old_curr_ptr),
+														reinterpret_cast<::std::byte *>(newiter + gap));
+	allocator::deallocate_aligned_n(old_begin_ptr, alignment, old_capacity);
+	imp.begin_ptr = begin_ptr;
+	imp.curr_ptr = begin_ptr + old_size;
+	imp.end_ptr = begin_ptr + (newres.count/size*size);
+	return newiter;
 }
 
 template <typename allocator>
-inline void zero_init_grow_to_size_common_impl(vector_model* m, ::std::size_t newcap) noexcept
+inline void *grow_to_size_iter_impl(vector_model &imp, void *iter, ::std::size_t newcap, ::std::size_t size, ::std::size_t alignment) noexcept
 {
-	auto begin_ptr{ m->begin_ptr };
-	::std::size_t const old_size{ static_cast<::std::size_t>(m->curr_ptr - begin_ptr) };
-	if constexpr (allocator::has_reallocate_zero)
-	{
-		begin_ptr = reinterpret_cast<char8_t*>(allocator::reallocate_zero(begin_ptr, newcap));
-	}
-	else
-	{
-		auto end_ptr{ m->end_ptr };
-		::std::size_t const old_cap{ static_cast<::std::size_t>(end_ptr - begin_ptr) };
-		begin_ptr = reinterpret_cast<char8_t*>(allocator::reallocate_zero_n(begin_ptr, old_cap, newcap));
-	}
-	m->begin_ptr = begin_ptr;
-	m->curr_ptr = begin_ptr + old_size;
-	m->end_ptr = begin_ptr + newcap;
-}
-
-template<typename allocator>
-inline void grow_to_size_common_aligned_impl(vector_model* m,::std::size_t alignment,::std::size_t newcap) noexcept
-{
-	auto begin_ptr{m->begin_ptr};
-	::std::size_t const old_size{static_cast<::std::size_t>(m->curr_ptr-begin_ptr)};
-	if constexpr(allocator::has_reallocate_aligned)
-	{
-		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_aligned(begin_ptr,alignment,newcap));
-	}
-	else
-	{
-		auto end_ptr{m->end_ptr};
-		::std::size_t const oldcap{static_cast<::std::size_t>(end_ptr-begin_ptr)};
-		begin_ptr=reinterpret_cast<char8_t*>(allocator::reallocate_aligned_n(begin_ptr,oldcap,alignment,newcap));
-	}
-	m->begin_ptr=begin_ptr;
-	m->curr_ptr=begin_ptr+old_size;
-	m->end_ptr=begin_ptr+newcap;
-}
-
-template <typename allocator>
-inline void zero_init_grow_to_size_aligned_impl(vector_model* m, ::std::size_t alignment, ::std::size_t newcap) noexcept
-{
-	auto begin_ptr{ m->begin_ptr };
-	::std::size_t const old_size{ static_cast<::std::size_t>(m->curr_ptr - begin_ptr) };
-	if constexpr (allocator::has_reallocate_aligned)
-	{
-		begin_ptr = reinterpret_cast<char8_t*>(allocator::reallocate_aligned_zero(begin_ptr, alignment, newcap));
-	}
-	else
-	{
-		auto end_ptr{ m->end_ptr };
-		::std::size_t const oldcap{ static_cast<::std::size_t>(end_ptr - begin_ptr) };
-		begin_ptr = reinterpret_cast<char8_t*>(allocator::reallocate_aligned_zero_n(begin_ptr, oldcap, alignment, newcap));
-	}
-	m->begin_ptr = begin_ptr;
-	m->curr_ptr = begin_ptr + old_size;
-	m->end_ptr = begin_ptr + newcap;
-}
-
-template<::std::size_t size,bool trivial>
-inline constexpr ::std::size_t cal_grow_twice_size(::std::size_t cap) noexcept
-{
-	constexpr 
-		::std::size_t mx_value2{::std::numeric_limits<::std::size_t>::max()/size};
-	constexpr
-		::std::size_t mx_value{trivial?mx_value2*size:mx_value2};
-	constexpr 
-		::std::size_t mx_half_value{mx_value>>1u};
-	if(cap==mx_value)
+#if defined(_MSC_VER) && !defined(__clang__)
+	::std::size_t mx{SIZE_MAX / size};
+	if (newcap > mx) [[unlikely]]
 	{
 		::fast_io::fast_terminate();
 	}
-	else if(cap>mx_half_value)
+	newcap *= size;
+#else
+	if (__builtin_mul_overflow(size, newcap, __builtin_addressof(newcap))) [[unlikely]]
 	{
-		if constexpr(trivial)
-		{
-			return mx_value;
-		}
-		else
-		{
-			return 1;
-		}
+		__builtin_trap();
 	}
-	else if(cap==0)
+#endif
+	return grow_to_byte_size_iter_impl<allocator>(imp, iter, newcap, size, size, alignment);
+}
+
+template <typename allocator>
+inline void *grow_to_size_impl(vector_model &imp, ::std::size_t newcap, ::std::size_t size, ::std::size_t alignment) noexcept
+{
+	return grow_to_size_iter_impl<allocator>(imp, imp.curr_ptr, newcap, size, alignment);
+}
+
+template <typename allocator>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void *grow_twice_iter_impl(vector_model &imp, void *iter, ::std::size_t size, ::std::size_t alignment) noexcept
+{
+	auto begin_ptr{imp.begin_ptr};
+	auto end_ptr{imp.end_ptr};
+	::std::size_t toallocate{size};
+	::std::size_t diff{static_cast<::std::size_t>(end_ptr - begin_ptr)};
+	if (diff) [[likely]]
 	{
-		return size;
+#if defined(_MSC_VER) && !defined(__clang__)
+		constexpr ::std::size_t mx{SIZE_MAX / 2};
+		if (diff > mx) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		toallocate = (diff << 1u);
+#else
+		if (__builtin_mul_overflow(diff, 2u, __builtin_addressof(toallocate))) [[unlikely]]
+		{
+			__builtin_trap();
+		}
+#endif
 	}
-	return static_cast<std::size_t>(cap<<1);
+	return grow_to_byte_size_iter_impl<allocator>(imp, iter, toallocate, size, size, alignment);
 }
 
-template<typename allocator,::std::size_t size>
-inline constexpr void grow_twice_common_impl(vector_model* m) noexcept
+template <typename allocator>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void *grow_twice_impl(vector_model &imp, ::std::size_t size, ::std::size_t alignment) noexcept
 {
-	auto begin_ptr{m->begin_ptr};
-	auto end_ptr{m->end_ptr};
-	grow_to_size_common_impl<allocator>(m,
-		cal_grow_twice_size<size,true>(static_cast<::std::size_t>(end_ptr-begin_ptr)));
+	return grow_twice_iter_impl<allocator>(imp, imp.curr_ptr, size, alignment);
 }
 
-template<typename allocator,::std::size_t size>
-inline constexpr void grow_twice_common_aligned_impl(vector_model* m,::std::size_t alignment) noexcept
+template <typename allocator>
+inline constexpr void *move_backward_impl(vector_model &imp, void *iter, ::std::size_t size, ::std::size_t alignment) noexcept
 {
-	auto begin_ptr{m->begin_ptr};
-	auto end_ptr{m->end_ptr};
-	grow_to_size_common_aligned_impl<allocator>(m,
-		alignment,
-		cal_grow_twice_size<size,true>(static_cast<::std::size_t>(end_ptr-begin_ptr)));
-}
-
-inline constexpr void add_zero_towards(vector_model* m, char8_t* end) noexcept
-{
-	if (end <= m->curr_ptr)
+	if (imp.curr_ptr == imp.end_ptr) [[unlikely]]
 	{
-		m->curr_ptr = end;
+		return grow_twice_iter_impl<allocator>(imp, iter, size, alignment);
+	}
+	auto currptr{imp.curr_ptr};
+	auto currptrp1{currptr + size};
+	::fast_io::freestanding::uninitialized_move_backward(reinterpret_cast<::std::byte *>(iter), currptr, currptrp1);
+	return iter;
+}
+
+} // namespace detemplate
+
+template <typename allocator, ::std::size_t size, ::std::size_t alignment>
+inline constexpr void *grow_to_size_iter_impl(vector_model &imp, void *iter, ::std::size_t newcap) noexcept
+{
+	if constexpr (alignment < allocator::default_alignment)
+	{
+		return ::fast_io::containers::details::vector::grow_to_size_iter_impl<allocator, size, allocator::default_alignment>(imp, iter, newcap);
 	}
 	else
 	{
-		::fast_io::freestanding::my_memset(m->curr_ptr, 0, static_cast<std::size_t>(end - m->curr_ptr));
-		m->curr_ptr = end;
+		return ::fast_io::containers::details::vector::detemplate::grow_to_size_iter_impl<allocator>(imp, iter, newcap, size, alignment);
 	}
 }
 
-template <typename allocator>
-inline constexpr void check_size_and_assign(vector_model* m, char8_t const* begin, char8_t const* end) noexcept
+template <typename allocator, ::std::size_t size, ::std::size_t alignment>
+inline constexpr void *grow_to_size_impl(vector_model &imp, ::std::size_t newcap) noexcept
 {
-	auto const newcap{ static_cast<::std::size_t>(end - begin) };
-	if (static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) < newcap)
+	if constexpr (alignment < allocator::default_alignment)
 	{
-		grow_to_size_common_impl<allocator>(m, newcap);
-	}
-	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->begin_ptr);
-}
-
-template <typename allocator>
-inline constexpr void check_size_and_construct(vector_model* m, char8_t const* begin, char8_t const* end) noexcept
-{
-	auto const new_size{ static_cast<::std::size_t>(end - begin) };
-	m->begin_ptr = reinterpret_cast<char8_t*>(allocator::allocate(new_size));
-	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
-	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
-}
-
-template <typename allocator>
-inline constexpr void check_size_and_assign_align(vector_model* m, ::std::size_t alignment, char8_t const* begin, char8_t const* end) noexcept
-{
-	auto const newcap{ static_cast<::std::size_t>(m->end_ptr - m->begin_ptr) };
-	if ( newcap < static_cast<std::size_t>(end - begin))
-	{
-		grow_to_size_common_aligned_impl<allocator>(m, alignment, newcap);
-	}
-	m->curr_ptr = ::fast_io::details::non_overlapped_copy_n(begin, newcap, m->begin_ptr);
-}
-
-template <typename allocator>
-inline constexpr void check_size_and_construct_align(vector_model* m, ::std::size_t alignment, char8_t const* begin, char8_t const* end) noexcept
-{
-	auto const new_size{ static_cast<::std::size_t>(end - begin) };
-	m->begin_ptr = allocator::allocate_aligned(alignment, new_size);
-	m->curr_ptr = m->end_ptr = m->begin_ptr + new_size;
-	::fast_io::freestanding::non_overlapped_copy_n(begin, new_size, m->begin_ptr);
-}
-
-inline void erase_impl(vector_model* m, char8_t* first, char8_t* last) noexcept
-{
-	if (last == m->curr_ptr) // no need to memmove
-	{
-		m->curr_ptr = first;
+		return ::fast_io::containers::details::vector::grow_to_size_impl<allocator, size, allocator::default_alignment>(imp, newcap);
 	}
 	else
 	{
-		std::size_t const length{static_cast<std::size_t>(m->curr_ptr - last)};
-		::fast_io::freestanding::my_memmove(first, last, length);
-		m->curr_ptr -= last - first;
+		return ::fast_io::containers::details::vector::detemplate::grow_to_size_impl<allocator>(imp, newcap, size, alignment);
 	}
 }
 
-template<typename T>
+template <typename allocator, ::std::size_t size, ::std::size_t alignment>
+inline constexpr void *grow_twice_impl(vector_model &imp) noexcept
+{
+	if constexpr (alignment < allocator::default_alignment)
+	{
+		return ::fast_io::containers::details::vector::grow_twice_impl<allocator, size, allocator::default_alignment>(imp);
+	}
+	else
+	{
+		return ::fast_io::containers::details::vector::detemplate::grow_twice_impl<allocator>(imp, size, alignment);
+	}
+}
+
+template <typename allocator, ::std::size_t size, ::std::size_t alignment>
+inline constexpr void *grow_twice_iter_impl(vector_model &imp, void *iter) noexcept
+{
+	if constexpr (alignment < allocator::default_alignment)
+	{
+		return ::fast_io::containers::details::vector::grow_twice_iter_impl<allocator, size, allocator::default_alignment>(imp, iter);
+	}
+	else
+	{
+		return ::fast_io::containers::details::vector::detemplate::grow_twice_iter_impl<allocator>(imp, iter, size, alignment);
+	}
+}
+
+template <typename allocator, ::std::size_t size, ::std::size_t alignment>
+inline constexpr void *move_backward_impl(vector_model &imp, void *iter) noexcept
+{
+	if constexpr (alignment < allocator::default_alignment)
+	{
+		return ::fast_io::containers::details::vector::move_backward_impl<allocator, size, allocator::default_alignment>(imp, iter);
+	}
+	else
+	{
+		return ::fast_io::containers::details::vector::detemplate::move_backward_impl<allocator>(imp, iter, size, alignment);
+	}
+}
+
+} // namespace vector
+
+template <typename T>
 struct vector_internal
 {
-	T* begin_ptr{};
-	T* curr_ptr{};
-	T* end_ptr{};
+	T *begin_ptr{};
+	T *curr_ptr{};
+	T *end_ptr{};
 };
 
-}
+} // namespace details
 
-template<::std::movable T,typename allocator>
-class
-#if __has_cpp_attribute(clang::trivial_abi)
-[[clang::trivial_abi]]
-#endif
-vector
+template <::std::movable T, typename allocator>
+class vector
 {
 public:
 	using allocator_type = allocator;
 	using value_type = T;
+
 private:
-	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type,value_type>;
+	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, value_type>;
+
 public:
-	using pointer = value_type*;
-	using const_pointer = value_type const*;
+	using pointer = value_type *;
+	using const_pointer = value_type const *;
 
-	using reference = value_type&;
-	using const_reference = value_type const&;
+	using reference = value_type &;
+	using const_reference = value_type const &;
 
-	using iterator = value_type*;
-	using const_iterator = value_type const*;
+	using iterator = value_type *;
+	using const_iterator = value_type const *;
+
+	using reverse_iterator = ::std::reverse_iterator<iterator>;
+	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
 	::fast_io::containers::details::vector_internal<T> imp;
+
+	explicit constexpr vector() noexcept = default;
+
+private:
+	constexpr void destroy() noexcept
+	{
+		clear();
+		if constexpr (!typed_allocator_type::has_deallocate)
+		{
+			typed_allocator_type::deallocate(imp.begin_ptr);
+		}
+		else
+		{
+			typed_allocator_type::deallocate_n(imp.begin_ptr,
+											   static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+		}
+	}
+	struct run_destroy
+	{
+		vector *thisvec{};
+		constexpr run_destroy() noexcept = default;
+		explicit constexpr run_destroy(vector *p) noexcept
+			: thisvec(p)
+		{}
+		run_destroy(run_destroy const &) = delete;
+		run_destroy &operator=(run_destroy const &) = delete;
+		constexpr ~run_destroy()
+		{
+			if (thisvec)
+			{
+				thisvec->destroy();
+			}
+		}
+	};
+
+	constexpr void default_construct_impl(size_type n)
+	{
+		auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
+										typed_allocator_type::allocate(n)) +
+								   n};
+		run_destroy des(this);
+		for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+		{
+			::std::construct_at(this->imp.curr_ptr);
+		}
+		des.thisvec = nullptr;
+	}
+
+	template <typename Iter, typename Sentinel>
+	constexpr void construct_vector_common_impl(Iter first, Sentinel last)
+	{
+		using rvaluetype = ::std::iter_value_t<Iter>;
+		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
+		{
+			this->construct_vector_common_impl(::std::to_address(first), ::std::to_address(last));
+		}
+		else
+		{
+			if constexpr (::std::forward_iterator<Iter>)
+			{
+				size_type n{static_cast<size_type>(::std::ranges::distance(first, last))};
+				auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
+												typed_allocator_type::allocate(n)) +
+										   n};
+				if constexpr (
+					::std::is_pointer_v<Iter> &&
+					::std::is_trivially_constructible_v<value_type, rvaluetype> &&
+					::std::same_as<::std::remove_cvref_t<rvaluetype>, ::std::remove_cvref_t<value_type>>)
+				{
+					if (n) [[likely]]
+					{
+#if defined(_MSC_VER) && !defined(__clang__)
+						::std::memcpy
+#else
+						__builtin_memcpy
+#endif
+							(this->imp.curr_ptr, first, n * sizeof(value_type));
+					}
+					this->imp.curr_ptr = e;
+				}
+				else if constexpr (::std::is_nothrow_constructible_v<value_type, rvaluetype>)
+				{
+					auto curr{this->imp.begin_ptr};
+					for (; curr != e; ++curr)
+					{
+						::std::construct_at(curr, *first);
+						++first;
+					}
+					this->imp.curr_ptr = e;
+				}
+				else
+				{
+					run_destroy des(this);
+					for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+					{
+						::std::construct_at(this->imp.curr_ptr, *first);
+						++first;
+					}
+					des.thisvec = nullptr;
+				}
+			}
+			else
+			{
+				run_destroy des(this);
+				for (; first != last; ++first)
+				{
+					this->emplace_back(*first);
+				}
+				des.thisvec = nullptr;
+			}
+		}
+	}
+
+public:
+	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type> || noexcept(value_type()))
+	{
+		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+		{
+			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		}
+		else
+		{
+			this->default_construct_impl(n);
+		}
+	}
+
+	explicit constexpr vector(size_type n, ::fast_io::for_overwrite_t) noexcept(::std::is_trivially_default_constructible_v<value_type> || ::fast_io::freestanding::is_zero_default_constructible_v<value_type> || noexcept(value_type()))
+	{
+		if constexpr (::std::is_trivially_default_constructible_v<value_type>)
+		{
+			imp.begin_ptr = typed_allocator_type::allocate(n);
+			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		}
+		else if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
+		{
+			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
+			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
+		}
+		else
+		{
+			this->default_construct_impl(n);
+		}
+	}
+
+	explicit constexpr vector(size_type n, const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		auto e{this->imp.end_ptr = (this->imp.curr_ptr = this->imp.begin_ptr =
+										typed_allocator_type::allocate(n)) +
+								   n};
+		run_destroy des(this);
+		for (; this->imp.curr_ptr != e; ++this->imp.curr_ptr)
+		{
+			::std::construct_at(this->imp.curr_ptr, val);
+		}
+		des.thisvec = nullptr;
+	}
+
+	template <::std::ranges::range R>
+	explicit constexpr vector(::fast_io::freestanding::from_range_t, R &&rg)
+	{
+		this->construct_vector_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
+	}
+
+	explicit constexpr vector(::std::initializer_list<value_type> ilist) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		this->construct_vector_common_impl(ilist.begin(), ilist.end());
+	}
+
+	constexpr vector(vector const &vec)
+		requires(::std::copyable<value_type>)
+	{
+		std::size_t const vecsize{static_cast<std::size_t>(vec.imp.curr_ptr - vec.imp.begin_ptr)};
+		if (vecsize == 0)
+		{
+			return;
+		}
+		imp.begin_ptr = typed_allocator_type::allocate(vecsize);
+		if constexpr (::std::is_trivially_copyable_v<value_type>)
+		{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
+			{
+				::fast_io::freestanding::nonoverlapped_bytes_copy(
+					reinterpret_cast<::std::byte const *>(vec.imp.begin_ptr),
+					reinterpret_cast<::std::byte const *>(vec.imp.curr_ptr),
+					reinterpret_cast<::std::byte *>(this->imp.begin_ptr));
+				imp.end_ptr = imp.curr_ptr = imp.begin_ptr + vecsize;
+				return;
+			}
+		}
+		run_destroy des(this);
+		this->imp.curr_ptr = this->imp.begin_ptr;
+		this->imp.end_ptr = this->imp.begin_ptr + vecsize;
+		for (auto i{vec.imp.begin_ptr}; i != vec.imp.curr_ptr; ++i)
+		{
+			::std::construct_at(this->imp.curr_ptr, *i);
+			++this->imp.curr_ptr;
+		}
+		des.thisvec = nullptr;
+	}
+	constexpr vector(vector const &vec) = delete;
+	constexpr vector &operator=(vector const &vec)
+		requires(::std::copyable<value_type>)
+	{
+		vector newvec(vec);
+		this->operator=(::std::move(newvec));
+		return *this;
+	}
+	constexpr vector &operator=(vector const &vec) = delete;
+	constexpr vector(vector &&vec) noexcept
+		: imp(vec.imp)
+	{
+		vec.imp = {};
+	}
+	constexpr vector &operator=(vector &&vec) noexcept
+	{
+		this->destroy();
+		this->imp = vec.imp;
+		vec.imp = nullptr;
+		return *this;
+	}
+	constexpr ~vector()
+	{
+		destroy();
+	}
+
+	template <typename... Args>
+		requires std::constructible_from<value_type, Args...>
+	constexpr reference emplace_back_unchecked(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	{
+		auto p{::std::construct_at(imp.curr_ptr, ::std::forward<Args>(args)...)};
+		++imp.curr_ptr;
+		return *p;
+	}
+
+private:
+	inline constexpr pointer grow_to_size_iter_impl(size_type newcap, pointer iter, size_type n) noexcept
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
+			{
+				return reinterpret_cast<pointer>(::fast_io::containers::details::vector::grow_to_size_iter_impl<allocator_type, sizeof(value_type), alignof(value_type)>(*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+																																										 iter, n));
+			}
+		}
+		auto newres = typed_allocator_type::allocate_at_least(newcap);
+		auto new_begin_ptr = newres.ptr;
+		auto old_begin_ptr{imp.begin_ptr};
+		auto old_curr_ptr{imp.curr_ptr};
+		size_type const old_size{static_cast<size_type>(old_curr_ptr - old_begin_ptr)};
+		auto newiter{::fast_io::freestanding::uninitialized_relocate(old_begin_ptr, iter, new_begin_ptr)};
+		::fast_io::freestanding::uninitialized_relocate(iter, old_curr_ptr, newiter + n);
+		if constexpr (typed_allocator_type::has_deallocate)
+		{
+			typed_allocator_type::deallocate(old_begin_ptr);
+		}
+		else
+		{
+			typed_allocator_type::deallocate_n(old_begin_ptr, static_cast<size_type>(imp.end_ptr - old_begin_ptr));
+		}
+		imp.begin_ptr = new_begin_ptr;
+		imp.curr_ptr = new_begin_ptr + old_size;
+		imp.end_ptr = new_begin_ptr + newres.count;
+		return newiter;
+	}
+
+#if __has_cpp_attribute(__gnu__::__cold__)
+	[[__gnu__::__cold__]]
+#endif
+	inline constexpr pointer grow_twice_iter_impl(pointer iter) noexcept
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
+			{
+				return reinterpret_cast<pointer>(::fast_io::containers::details::vector::grow_twice_iter_impl<allocator_type, sizeof(value_type), alignof(value_type)>(*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+																																									   iter));
+			}
+		}
+		std::size_t const cap{static_cast<size_type>(imp.end_ptr - imp.begin_ptr)};
+		return this->grow_to_size_iter_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false>(cap), iter, 1);
+	}
+	constexpr pointer move_backward_common_impl(pointer iter) noexcept
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+#ifdef __cpp_if_consteval
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+			{
+				return reinterpret_cast<pointer>(::fast_io::containers::details::vector::move_backward_impl<allocator, sizeof(value_type), alignof(value_type)>(
+					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
+					iter));
+			}
+		}
+		if (imp.curr_ptr == imp.end_ptr) [[unlikely]]
+		{
+			return this->grow_twice_iter_impl(iter);
+		}
+		auto currptr{imp.curr_ptr};
+		auto currptrp1{currptr + 1};
+		::fast_io::freestanding::uninitialized_move_backward(iter, currptr, currptrp1);
+		return iter;
+	}
+
+	inline constexpr void grow_to_size_impl(size_type newcap) noexcept
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
+			{
+				::fast_io::containers::details::vector::grow_to_size_impl<allocator_type, sizeof(value_type), alignof(value_type)>(
+					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)), newcap);
+				return;
+			}
+		}
+		this->grow_to_size_iter_impl(newcap, imp.curr_ptr, 1);
+	}
+#if __has_cpp_attribute(__gnu__::__cold__)
+	[[__gnu__::__cold__]]
+#endif
+	inline constexpr void grow_twice_impl() noexcept
+	{
+		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		{
+#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+#endif
+			{
+				::fast_io::containers::details::vector::grow_twice_impl<allocator_type, sizeof(value_type), alignof(value_type)>(
+					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)));
+				return;
+			}
+		}
+		std::size_t const cap{static_cast<size_type>(imp.end_ptr - imp.begin_ptr)};
+		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false>(cap));
+	}
+
+public:
+	constexpr void reserve(size_type n) noexcept
+	{
+		if (n <= static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
+		{
+			return;
+		}
+		grow_to_size_impl(n);
+	}
+
+	constexpr void shrink_to_fit() noexcept
+	{
+		if (imp.curr_ptr == imp.end_ptr)
+		{
+			return;
+		}
+		grow_to_size_impl(static_cast<std::size_t>(imp.curr_ptr - imp.begin_ptr));
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	constexpr void pop_back() noexcept
+	{
+		if (imp.curr_ptr == imp.begin_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		(--imp.curr_ptr)->~value_type();
+	}
+
+	constexpr void pop_back_unchecked() noexcept
+	{
+		(--imp.curr_ptr)->~value_type();
+	}
+
+	constexpr void push_back(T const &value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		this->emplace_back(value);
+	}
+	constexpr void push_back(T &&value) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		this->emplace_back(::std::move(value));
+	}
+	constexpr void push_back_unchecked(T const &value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		this->emplace_back_unchecked(value);
+	}
+	constexpr void push_back_unchecked(T &&value) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		this->emplace_back_unchecked(::std::move(value));
+	}
+
+	[[nodiscard]] constexpr pointer data() noexcept
+	{
+		return imp.begin_ptr;
+	}
+	[[nodiscard]] constexpr const_pointer data() const noexcept
+	{
+		return imp.begin_ptr;
+	}
+	[[nodiscard]] constexpr bool is_empty() const noexcept
+	{
+		return imp.begin_ptr == imp.curr_ptr;
+	}
+
+	[[nodiscard]] constexpr bool empty() const noexcept
+	{
+		return imp.begin_ptr == imp.curr_ptr;
+	}
+	constexpr void clear() noexcept
+	{
+		if constexpr (!::std::is_trivially_destructible_v<value_type>)
+		{
+			::std::destroy(imp.begin_ptr, imp.curr_ptr);
+		}
+		imp.curr_ptr = imp.begin_ptr;
+	}
+	[[nodiscard]] constexpr size_type size() const noexcept
+	{
+		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr);
+	}
+	[[nodiscard]] constexpr size_type size_bytes() const noexcept
+	{
+		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr) * sizeof(value_type);
+	}
+	[[nodiscard]] constexpr size_type capacity() const noexcept
+	{
+		return static_cast<size_type>(imp.end_ptr - imp.begin_ptr);
+	}
+	[[nodiscard]] constexpr size_type capacity_bytes() const noexcept
+	{
+		return static_cast<size_type>(imp.end_ptr - imp.begin_ptr) * sizeof(value_type);
+	}
+	[[nodiscard]] static inline constexpr size_type max_size() noexcept
+	{
+		constexpr size_type mx{::std::numeric_limits<size_type>::max() / sizeof(value_type)};
+		return mx;
+	}
+	[[nodiscard]] static inline constexpr size_type max_size_bytes() noexcept
+	{
+		constexpr size_type mx{::std::numeric_limits<size_type>::max() / sizeof(value_type) * sizeof(value_type)};
+		return mx;
+	}
+	[[nodiscard]] constexpr const_reference index_unchecked(size_type pos) const noexcept
+	{
+		return imp.begin_ptr[pos];
+	}
+	[[nodiscard]] constexpr reference index_unchecked(size_type pos) noexcept
+	{
+		return imp.begin_ptr[pos];
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr const_reference
+	operator[](size_type pos) const noexcept
+	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return begin_ptr[pos];
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr reference
+	operator[](size_type pos) noexcept
+	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (static_cast<::std::size_t>(curr_ptr - begin_ptr) <= pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return begin_ptr[pos];
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr const_reference
+	front() const noexcept
+	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return *begin_ptr;
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr reference
+	front() noexcept
+	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return *begin_ptr;
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr const_reference
+	back() const noexcept
+	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return curr_ptr[-1];
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	[[nodiscard]] constexpr reference
+	back() noexcept
+	{
+		auto begin_ptr{imp.begin_ptr}, curr_ptr{imp.curr_ptr};
+		if (begin_ptr == curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return curr_ptr[-1];
+	}
+
+	[[nodiscard]] constexpr const_reference front_unchecked() const noexcept
+	{
+		return *imp.begin_ptr;
+	}
+	[[nodiscard]] constexpr reference front_unchecked() noexcept
+	{
+		return *imp.begin_ptr;
+	}
+	[[nodiscard]] constexpr const_reference back_unchecked() const noexcept
+	{
+		return imp.curr_ptr[-1];
+	}
+	[[nodiscard]] constexpr reference back_unchecked() noexcept
+	{
+		return imp.curr_ptr[-1];
+	}
 
 	[[nodiscard]] constexpr iterator begin() noexcept
 	{
@@ -285,913 +844,256 @@ public:
 		return imp.curr_ptr;
 	}
 
-	[[nodiscard]] constexpr pointer data() noexcept
+	[[nodiscard]] constexpr reverse_iterator rbegin() noexcept
 	{
-		return imp.begin_ptr;
+		return reverse_iterator{imp.curr_ptr};
 	}
-	[[nodiscard]] constexpr const_pointer data() const noexcept
+	[[nodiscard]] constexpr reverse_iterator rend() noexcept
 	{
-		return imp.begin_ptr;
+		return reverse_iterator{imp.begin_ptr};
 	}
-	[[nodiscard]] constexpr bool is_empty() const noexcept
+	[[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept
 	{
-		return imp.begin_ptr == imp.curr_ptr;
+		return const_reverse_iterator{imp.curr_ptr};
 	}
-
-	[[nodiscard]] constexpr bool empty() const noexcept
+	[[nodiscard]] constexpr const_reverse_iterator rend() const noexcept
 	{
-		return imp.begin_ptr == imp.curr_ptr;
+		return const_reverse_iterator{imp.begin_ptr};
 	}
-	constexpr void clear() noexcept
+	[[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept
 	{
-		if constexpr(!::std::is_trivially_destructible_v<value_type>)
-		{
-			for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
-			{
-				old_i->~value_type();
-			}
-		}
-		imp.curr_ptr = imp.begin_ptr;
+		return const_reverse_iterator{imp.curr_ptr};
 	}
-	[[nodiscard]] constexpr size_type size() const noexcept
+	[[nodiscard]] constexpr const_reverse_iterator crend() const noexcept
 	{
-		return static_cast<size_type>(imp.curr_ptr-imp.begin_ptr);
-	}
-	[[nodiscard]] constexpr size_type capacity() const noexcept
-	{
-		return static_cast<size_type>(imp.end_ptr-imp.begin_ptr);
-	}
-	[[nodiscard]] static inline constexpr size_type max_size() noexcept
-	{
-		constexpr
-			size_type mx{::std::numeric_limits<size_type>::max()/sizeof(value_type)};
-		return mx;
-	}
-	constexpr vector() noexcept = default;
-
-	constexpr void swap(vector& other) noexcept
-	{
-		using ::std::swap;
-		swap(*reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)), *reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(other.imp)));
+		return const_reverse_iterator{imp.begin_ptr};
 	}
 
-private:
-	void destroy() noexcept
-	{
-		clear();
-		if constexpr(typed_allocator_type::has_deallocate)
-		{
-			typed_allocator_type::deallocate(imp.begin_ptr);
-		}
-		else
-		{
-			typed_allocator_type::deallocate_n(imp.begin_ptr,
-				static_cast<::std::size_t>(imp.end_ptr-imp.begin_ptr));
-		}
-	}
-	struct run_destroy
-	{
-		vector* thisvec{};
-		constexpr run_destroy() noexcept=default;
-		explicit constexpr run_destroy(vector* p) noexcept:thisvec(p){}
-		run_destroy(run_destroy const&)=delete;
-		run_destroy& operator=(run_destroy const&)=delete;
-		constexpr ~run_destroy()
-		{
-			if(thisvec)
-			{
-				thisvec->destroy();
-			}
-		}
-	};
-	struct partial_destroy
-	{
-		iterator begin{};
-		vector* thisvec{};
-		constexpr partial_destroy() noexcept = default;
-		explicit constexpr partial_destroy(iterator b, vector* p) noexcept :begin(b), thisvec(p) {}
-		partial_destroy(partial_destroy const&) = delete;
-		partial_destroy& operator=(partial_destroy const&) = delete;
-		constexpr ~partial_destroy()
-		{
-			if (!begin || !thisvec) return;
-			for (; begin != thisvec->imp.curr_ptr; ++begin)
-				begin->~value_type();
-			thisvec->imp.curr_ptr = begin;
-		}
-	};
-public:
-
-	explicit constexpr vector(size_type n,::fast_io::for_overwrite_t) noexcept(::std::is_trivially_constructible_v<value_type> || ::std::is_nothrow_default_constructible_v<value_type>)
-	{
-		if constexpr (::std::is_trivially_constructible_v<value_type>)
-		{
-			imp.begin_ptr = typed_allocator_type::allocate(n);
-			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
-		}
-		else
-		{
-			auto begin_ptr{ typed_allocator_type::allocate(n) };
-			if constexpr (::std::is_nothrow_default_constructible_v<value_type>)
-			{
-				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
-				for (auto p{ begin_ptr }; p != e; ++p)
-				{
-					new (p) value_type;
-				}
-			}
-			else
-			{
-				imp.curr_ptr = imp.begin_ptr = begin_ptr;
-				auto e = imp.end_ptr = imp.begin_ptr + n;
-				run_destroy des(this);
-				for (; imp.curr_ptr != e; ++imp.curr_ptr)
-				{
-					new (imp.curr_ptr) value_type;
-				}
-				des.thisvec = nullptr;
-			}
-		}
-	}
-
-	explicit constexpr vector(size_type n) noexcept(::fast_io::freestanding::is_zero_default_constructible_v<value_type> || ::std::is_nothrow_default_constructible_v<value_type>)
-	{
-		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
-		{
-			imp.begin_ptr = typed_allocator_type::allocate_zero(n);
-			imp.end_ptr = imp.curr_ptr = imp.begin_ptr + n;
-		}
-		else
-		{
-			auto begin_ptr{ typed_allocator_type::allocate(n) };
-			if constexpr (::std::is_nothrow_default_constructible_v<value_type>)
-			{
-				auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr = begin_ptr) + n;
-				for (auto p{ begin_ptr }; p != e; ++p)
-				{
-					new (p) value_type();
-				}
-			}
-			else
-			{
-				imp.curr_ptr = imp.begin_ptr = begin_ptr;
-				auto e = imp.end_ptr = imp.begin_ptr + n;
-				run_destroy des(this);
-				for (; imp.curr_ptr != e; ++imp.curr_ptr)
-				{
-					new (imp.curr_ptr) value_type();
-				}
-				des.thisvec = nullptr;
-			}
-		}
-	}
-	constexpr vector(size_type n, value_type const& value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
-	{
-		auto begin_ptr{typed_allocator_type::allocate(n)};
-		if constexpr(::std::is_nothrow_copy_constructible_v<value_type>)
-		{
-			auto e = imp.end_ptr = imp.curr_ptr = (imp.begin_ptr=begin_ptr) + n;
-			for (auto p{begin_ptr}; p != e; ++p)
-			{
-				new (p) value_type(value);
-			}
-		}
-		else
-		{
-			imp.curr_ptr = imp.begin_ptr = begin_ptr;
-			auto e = imp.end_ptr = imp.begin_ptr + n;
-			run_destroy des(this);
-			for (; imp.curr_ptr != e; ++imp.curr_ptr)
-			{
-				new (imp.curr_ptr) value_type(value);
-			}
-			des.thisvec = nullptr;
-		}
-	}
-	template <::std::input_iterator InputIt>
-	constexpr vector(InputIt first, InputIt last) noexcept
-		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		if constexpr (::std::contiguous_iterator<InputIt>)
-		{
-			using char8_const_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-			[[__gnu__::__may_alias__]]
-#endif
-			= char8_t const*;
-			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-			{
-				::fast_io::containers::details::check_size_and_construct<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
-					reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
-			}
-			else
-			{
-				::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					alignof(value_type),
-					reinterpret_cast<char8_const_ptr>(::std::to_address(first)),
-					reinterpret_cast<char8_const_ptr>(::std::to_address(last)));
-			}
-		}
-		else
-		{
-			auto const size{ static_cast<std::size_t>(last - first) };
-			new (this) vector(size);
-			assign_common_impl(first, last);
-		}
-	}
-	template <::std::input_iterator InputIt>
-	constexpr vector(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
-		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		auto const size{ static_cast<std::size_t>(last - first) };
-		imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocator(size);
-		auto e = imp.end_ptr = imp.begin_ptr + size;
-		run_destroy des{ this };
-		assign_common_impl(first, last);
-		des.thisvec = nullptr;
-	}
-	constexpr vector(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
-	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-			using char8_const_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-			[[__gnu__::__may_alias__]]
-#endif
-			= char8_t const*;
-			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-			{
-				::fast_io::containers::details::check_size_and_construct<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_const_ptr>(ilist.begin()),
-					reinterpret_cast<char8_const_ptr>(ilist.end()));
-			}
-			else
-			{
-				::fast_io::containers::details::check_size_and_construct_align<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					alignof(value_type),
-					reinterpret_cast<char8_const_ptr>(ilist.begin()),
-					reinterpret_cast<char8_const_ptr>(ilist.end()));
-			}
-		}
-		else
-		{
-			auto const size{ ilist.size() };
-			imp.curr_ptr = imp.begin_ptr = typed_allocator_type::allocate(size);
-			imp.end_ptr = imp.begin_ptr + size;
-			run_destroy des{ this };
-			assign_common_impl(ilist.begin(), ilist.end());
-			des.thisvec = nullptr;
-		}
-	}
-
-	constexpr vector(vector const& vec) requires(::std::copyable<value_type>)
-	{
-		std::size_t const vecsize{static_cast<std::size_t>(vec.imp.curr_ptr-vec.imp.begin_ptr)};
-		if(vecsize==0)
-		{
-			return;
-		}
-		imp.begin_ptr=typed_allocator_type::allocate(vecsize);
-		if constexpr(::std::is_trivially_copyable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if(!__builtin_is_constant_evaluated())
-#endif
-#endif
-		{
-			std::size_t const n{vecsize*sizeof(value_type)};
-			::fast_io::freestanding::my_memcpy(imp.begin_ptr, vec.imp.begin_ptr, n);
-			imp.end_ptr=imp.curr_ptr=imp.begin_ptr+vecsize;
-			return;
-		}
-		}
-		run_destroy des(this);
-		this->imp.curr_ptr=this->imp.begin_ptr;
-		this->imp.end_ptr=this->imp.begin_ptr+vecsize;
-		for(auto i{vec.imp.begin_ptr};i!=vec.imp.curr_ptr;++i)
-		{
-			new (this->imp.curr_ptr) value_type(*i);
-			++this->imp.curr_ptr;
-		}
-		des.thisvec=nullptr;
-	}
-	constexpr vector(vector const& vec) = delete;
-	constexpr vector& operator=(vector const& vec) requires(::std::copyable<value_type>)
-	{
-		vector newvec(vec);
-		this->operator=(::std::move(newvec));
-		return *this;
-	}
-	constexpr vector& operator=(vector const& vec) = delete;
-	constexpr vector(vector&& vec) noexcept:imp(vec.imp)
-	{
-		vec.imp={};
-	}
-	constexpr vector& operator=(vector&& vec) noexcept
+	constexpr void clear_destroy() noexcept
 	{
 		this->destroy();
-		this->imp=vec.imp;
-		vec.imp={};
-		return *this;
-	}
-	constexpr ~vector()
-	{
-		destroy();
+		imp = {};
 	}
 
-	template<typename... Args>
-	requires std::constructible_from<value_type,Args...>
-	constexpr reference emplace_back_unchecked(Args&& ...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
+	template <typename... Args>
+		requires std::constructible_from<value_type, Args...>
+	constexpr reference emplace_back(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
-		auto p{::new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
-		++imp.curr_ptr;
-		return *p;
-	}
-
-private:
-	inline constexpr void grow_to_size_impl(size_type newcap) noexcept
-	{
-		// assert(newcap >= size())
-		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if(!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				constexpr
-					::std::size_t mxv{max_size()};
-				if constexpr(1<sizeof(value_type))
-				{
-					if(mxv<newcap)
-					{
-						::fast_io::fast_terminate();
-					}
-				}
-				newcap*=sizeof(value_type);
-				if constexpr(alignof(value_type)<=allocator_type::default_alignment)
-				{
-					::fast_io::containers::details::grow_to_size_common_impl<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-						newcap);
-				}
-				else
-				{
-					::fast_io::containers::details::grow_to_size_common_aligned_impl<allocator_type>(
-						reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-						alignof(value_type),newcap);
-				}
-				return;
-			}
-		}
-		std::size_t cap;
-		if constexpr(!typed_allocator_type::has_deallocate)
-		{
-			cap = static_cast<size_type>(imp.end_ptr-imp.begin_ptr);
-		}
-		auto new_begin_ptr=typed_allocator_type::allocate(newcap);
-		auto new_i{new_begin_ptr};
-		for(auto old_i{imp.begin_ptr},old_e{imp.curr_ptr};old_i!=old_e;++old_i)
-		{
-			new (new_i) value_type(::std::move(*old_i));
-			old_i->~value_type();
-			++new_i;
-		}
-		if constexpr(typed_allocator_type::has_deallocate)
-		{
-			typed_allocator_type::deallocate(imp.begin_ptr);
-		}
-		else
-		{
-			typed_allocator_type::deallocate_n(imp.begin_ptr,cap);
-		}
-		imp.begin_ptr=new_begin_ptr;
-		imp.curr_ptr=new_i;
-		imp.end_ptr=new_begin_ptr+newcap;
-	}
-	inline constexpr void grow_twice_impl() noexcept
-	{
-		if constexpr(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if(!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				if constexpr(alignof(value_type)<=allocator_type::default_alignment)
-				{
-					::fast_io::containers::details::grow_twice_common_impl<allocator_type,sizeof(value_type)>(
-						reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)));
-				}
-				else
-				{
-					::fast_io::containers::details::grow_twice_common_aligned_impl<allocator_type,sizeof(value_type)>(
-						reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-						alignof(value_type));
-				}
-				return;
-			}
-		}
-		std::size_t const cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
-		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type),false>(cap));
-	}
-	inline constexpr void grow_to_size_nearest_impl(size_type leastcap) noexcept
-	{
-		constexpr 
-			::std::size_t mx_value2{(::std::numeric_limits<::std::size_t>::max()/sizeof(value_type))};
-		constexpr 
-			::std::size_t mx_value{mx_value2>>1};
-		std::size_t cap{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
-		if(mx_value<cap)
-		{
-			cap=mx_value2;
-		}
-		else
-		{
-			cap<<=1;
-		}
-		if(cap<leastcap)
-		{
-			cap=leastcap;
-		}
-		if constexpr(1<sizeof(value_type))
-		{
-			if(mx_value2<cap)
-			{
-				::fast_io::fast_terminate();
-			}
-		}
-		grow_to_size_impl(cap);
-	}
-	template <typename InputIt>
-		requires(::std::input_iterator<InputIt>)
-	inline constexpr void assign_common_impl(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
-	{
-		auto ptr{ imp.begin_ptr };
-		for (; first != last; ++first, ++ptr)
-		{
-			new (ptr) value_type(*first);
-		}
-		imp.curr_ptr = ptr;
-	}
-public:
-	constexpr void reserve(size_type n) noexcept
-	{
-		if(n<=static_cast<std::size_t>(imp.end_ptr-imp.begin_ptr))
-		{
-			return;
-		}
-		grow_to_size_impl(n);
-	}
-
-	constexpr void assign(size_type n, value_type const& value) noexcept
-		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		if (n > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
-			grow_to_size_impl(n);
-		::fast_io::freestanding::fill_n(imp.begin_ptr, n, value);
-		imp.curr_ptr = imp.begin_ptr + n;
-	}
-	constexpr void assign(size_type n, value_type const& value) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		clear();
-		if (n > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
-			grow_to_size_impl(n);
-		run_destroy des{ this };
-		for (auto end{imp.begin_ptr + n}; imp.curr_ptr != end; ++imp.curr_ptr)
-		{
-			new (imp.curr_ptr) value_type(value);
-		}
-		des.thisvec = nullptr;
-	}
-	template <::std::input_iterator InputIt>
-	constexpr void assign(InputIt first, InputIt last) noexcept
-		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		if constexpr (::std::contiguous_iterator<InputIt>)
-		{
-			using char8_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-			[[__gnu__::__may_alias__]]
-#endif
-			= char8_t*;
-			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-				::fast_io::containers::details::check_size_and_assign<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_ptr>(::std::to_address(first)),
-					reinterpret_cast<char8_ptr>(::std::to_address(last)));
-			else
-				::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					alignof(value_type),
-					reinterpret_cast<char8_ptr>(::std::to_address(first)),
-					reinterpret_cast<char8_ptr>(::std::to_address(last)));
-		}
-		else
-		{
-			auto const size{ static_cast<std::size_t>(last - first) };
-			if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
-				grow_to_size_impl(size);
-			assign_common_impl(first, last);
-		}
-	}
-	template <::std::input_iterator InputIt>
-	constexpr void assign(InputIt first, InputIt last) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		clear();
-		auto const size{ static_cast<std::size_t>(last - first) };
-		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
-			grow_to_size_impl(size);
-		run_destroy des{ this };
-		if constexpr (::std::contiguous_iterator<InputIt>)
-			assign_common_impl(::std::to_address(first),
-				::std::to_address(last));
-		else
-			assign_common_impl(first, last);
-		des.thisvec = nullptr;
-	}
-	constexpr void assign(::std::initializer_list<T> ilist) noexcept
-		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		using char8_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-		[[__gnu__::__may_alias__]]
-#endif
-		= char8_t*;
-		if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-			::fast_io::containers::details::check_size_and_assign<allocator_type>(
-				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-				reinterpret_cast<char8_ptr>(ilist.begin()),
-				reinterpret_cast<char8_ptr>(ilist.end()));
-		else
-			::fast_io::containers::details::check_size_and_assign_align<allocator_type>(
-				reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-				alignof(value_type),
-				reinterpret_cast<char8_ptr>(ilist.begin()),
-				reinterpret_cast<char8_ptr>(ilist.end()));
-	}
-	constexpr void assign(::std::initializer_list<T> ilist) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		clear();
-		auto const size{ ilist.size() };
-		if (size > static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
-			grow_to_size_impl(size);
-		run_destroy des{ this };
-		assign_common_impl(ilist.begin(), ilist.end());
-		des.thisvec = nullptr;
-	}
-	constexpr void resize(size_type n) noexcept(::std::is_nothrow_default_constructible_v<value_type>)
-		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
-		{
-			if (n <= static_cast<std::size_t>(imp.end_ptr - imp.begin_ptr))
-			{
-				using char8_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-				[[__gnu__::__may_alias__]]
-#endif
-				= char8_t*;
-				::fast_io::containers::details::add_zero_towards(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_ptr>(imp.begin_ptr + n));
-				return;
-			}
-			// else (n > capacity())
-			constexpr ::std::size_t mxv{ max_size() };
-			if constexpr (1 < sizeof(value_type))
-			{
-				if (mxv < n)
-				{
-					::fast_io::fast_terminate();
-				}
-			}
-			if constexpr (alignof(value_type) <= allocator_type::default_alignment)
-			{
-				::fast_io::containers::details::zero_init_grow_to_size_common_impl<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					n * sizeof(value_type));
-			}
-			else
-			{
-				::fast_io::containers::details::zero_init_grow_to_size_aligned_impl<allocator_type>(
-					reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					alignof(value_type), n * sizeof(value_type));
-			}
-			imp.curr_ptr = imp.begin_ptr + n;
-			return;
-		}
-		// else (that is, not zero-initialized)
-		auto new_e{ imp.begin_ptr + n };
-		if (new_e <= imp.curr_ptr)
-		{
-			imp.curr_ptr = new_e;
-			return;
-		}
-		else if (new_e <= imp.end_ptr)
-		{
-			for (; imp.curr_ptr != new_e; ++imp.curr_ptr)
-				new (imp.curr_ptr) value_type();
-			return;
-		}
-		// else (n > capacity())
-		grow_to_size_impl(n);
-		for (; imp.curr_ptr != imp.end_ptr; ++imp.curr_ptr)
-		{
-			new(imp.curr_ptr) value_type();
-		}
-		return;
-	}
-	constexpr void resize(size_type n, value_type const& value) noexcept
-		requires(::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		auto new_e{ imp.begin_ptr + n };
-		if (new_e <= imp.curr_ptr)
-		{
-			imp.curr_ptr = new_e;
-			return;
-		}
-		else if (new_e > imp.end_ptr)
-		{
-			grow_to_size_impl(n);
-			// fallthrough
-		}
-		for (; imp.curr_ptr != imp.end_ptr; ++imp.curr_ptr)
-		{
-			new(imp.curr_ptr) value_type(value);
-		}
-		return;
-	}
-	constexpr void resize(size_type n, value_type const& value = value_type{}) noexcept(::std::is_nothrow_copy_constructible_v<value_type>) // weak exception guarantee
-		requires(!::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-	{
-		auto new_e{ imp.begin_ptr + n };
-		if (new_e <= imp.curr_ptr)
-		{
-			for (auto ptr{ new_e }; ptr != imp.curr_ptr; ++ptr)
-				ptr->~value_type();
-			imp.curr_ptr = new_e;
-			return;
-		}
-		if (new_e > imp.end_ptr)
-		{
-			grow_to_size_impl(n);
-			new_e = imp.begin_ptr + n;
-			// fallthrough
-		}
-		partial_destroy des{ imp.curr_ptr, this };
-		for (; imp.curr_ptr != new_e; ++imp.curr_ptr)
-		{
-			new (imp.curr_ptr) value_type(value);
-		}
-		des.begin = nullptr;
-		des.thisvec = nullptr;
-	}
-	constexpr iterator erase(const_iterator pos) noexcept
-	{
-		auto mut_pos{ const_cast<iterator>(pos) };
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				using char8_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-				[[__gnu__::__may_alias__]]
-#endif
-				= char8_t*;
-				erase_impl(reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_ptr>(mut_pos),
-					reinterpret_cast<char8_ptr>(mut_pos + 1));
-				return mut_pos;
-			}
-		}
-		// else
-		mut_pos->~value_type();
-		for (auto ptr{ mut_pos + 1 }; ptr != imp.curr_ptr; ++ptr)
-		{
-			*(ptr - 1) = ::std::move(*ptr);
-		}
-		--imp.curr_ptr;
-		return mut_pos;
-	}
-	constexpr iterator erase(const_iterator first, const_iterator last) noexcept
-	{
-		if (first == last) return imp.end_ptr;
-		auto mut_first = const_cast<iterator>(first);
-		auto mut_last = const_cast<iterator>(last);
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				using char8_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-				[[__gnu__::__may_alias__]]
-#endif
-				= char8_t*;
-				erase_impl(reinterpret_cast<::fast_io::containers::details::vector_model*>(__builtin_addressof(imp)),
-					reinterpret_cast<char8_ptr>(mut_first),
-					reinterpret_cast<char8_ptr>(mut_last));
-				return mut_first;
-			}
-		}
-		// else
-		for (auto ptr{ mut_first }; ptr != mut_last; ++ptr)
-		{
-			ptr->~value_type();
-		}
-		auto to_ptr{ mut_first };
-		for (auto from_ptr{ mut_last }; from_ptr != imp.curr_ptr; ++to_ptr, ++from_ptr)
-		{
-			*to_ptr = ::std::move(*from_ptr);
-		}
-		imp.curr_ptr = to_ptr;
-		return mut_first;
-	}
-	constexpr void shrink_to_fit() noexcept
-	{
-		if(imp.curr_ptr==imp.end_ptr)
-		{
-			return;
-		}
-		grow_to_size_impl(static_cast<std::size_t>(imp.curr_ptr-imp.begin_ptr));
-	}
-	constexpr void pop_back() noexcept
-	{
-		(--imp.curr_ptr)->~value_type();
-	}
-	[[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
-	{
-		return imp.begin_ptr[pos];
-	}
-	[[nodiscard]] constexpr reference operator[](size_type pos) noexcept
-	{
-		return imp.begin_ptr[pos];
-	}
-	[[nodiscard]] constexpr const_reference front() const noexcept
-	{
-		return *imp.begin_ptr;
-	}
-	[[nodiscard]] constexpr reference front() noexcept
-	{
-		return *imp.begin_ptr;
-	}
-	constexpr void push_back(T const& value) noexcept(noexcept(this->emplace_back(value)))
-	{
-		this->emplace_back(value);
-	}
-	constexpr void push_back(T&& value) noexcept(noexcept(this->emplace_back(::std::move(value))))
-	{
-		this->emplace_back(::std::move(value));
-	}
-	constexpr void push_back_unchecked(T const& value) noexcept(noexcept(this->emplace_back_unchecked(value)))
-	{
-		this->emplace_back_unchecked(value);
-	}
-	constexpr void push_back_unchecked(T&& value) noexcept(noexcept(this->emplace_back_unchecked(::std::move(value))))
-	{
-		this->emplace_back_unchecked(::std::move(value));
-	}
-
-private:
-
-	template<::std::input_or_output_iterator Iter>
-	constexpr void append_impl(Iter first, Iter last) noexcept(noexcept(this->push_back(*first)))
-	{
-		if constexpr(::std::forward_iterator<Iter>)
-		{
-			auto dis{::std::distance(first,last)};
-			::std::size_t const remain_space{static_cast<size_type>(imp.end_ptr-imp.curr_ptr)};
-			auto sum{remain_space + static_cast<::std::size_t>(dis)};
-			::std::size_t const capcty{static_cast<size_type>(imp.end_ptr-imp.begin_ptr)};
-			if(capcty < sum)
-			{
-				if constexpr(SIZE_MAX<::std::numeric_limits<decltype(sum)>::max())
-				{
-					if(SIZE_MAX<sum)
-					{
-						::fast_io::fast_terminate();
-					}
-				}
-				this->grow_to_size_nearest_impl(sum);
-			}
-			this->imp.curr_ptr=::fast_io::freestanding::uninitialized_copy(first,last,this->imp.curr_ptr);
-		}
-		else
-		{
-			for(;first!=last;++first)
-			{
-				this->push_back(*first);
-			}
-		}
-	}
-
-public:
-
-	template<::std::ranges::input_range R>
-	constexpr void append_range(R && rg) noexcept(noexcept(this->append_impl(::std::ranges::begin(rg),::std::ranges::end(rg))))
-	{
-		this->append_impl(::std::ranges::begin(rg),::std::ranges::end(rg));
-	}
-
-	[[nodiscard]] constexpr const_reference back() const noexcept
-	{
-		return imp.curr_ptr[-1];
-	}
-	[[nodiscard]] constexpr reference back() noexcept
-	{
-		return imp.curr_ptr[-1];
-	}
-	template<typename... Args>
-	requires std::constructible_from<value_type,Args...>
-	constexpr reference emplace_back(Args&& ...args) noexcept(noexcept(value_type(::std::forward<Args>(args)...)))
-	{
-		if(imp.curr_ptr==imp.end_ptr)
+		if (imp.curr_ptr == imp.end_ptr)
 #if __has_cpp_attribute(unlikely)
-		[[unlikely]]
+			[[unlikely]]
 #endif
 		{
 			grow_twice_impl();
 		}
-		auto p{new (imp.curr_ptr) value_type(::std::forward<Args>(args)...)};
+		auto p{::std::construct_at(imp.curr_ptr, ::std::forward<Args>(args)...)};
 		++imp.curr_ptr;
 		return *p;
 	}
 
+private:
+	constexpr iterator insert_impl(pointer iter, value_type &&tmp) noexcept
+	{
+		auto ret = ::std::construct_at(this->move_backward_common_impl(iter), ::std::move(tmp));
+		++imp.curr_ptr;
+		return ret;
+	}
+
+public:
+	template <typename... Args>
+		requires std::constructible_from<value_type, Args...>
+	constexpr iterator emplace(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	{
+		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
+		{
+			pointer ret;
+#ifdef __cpp_if_consteval
+			if consteval
+#else
+			if (__builtin_is_constant_evaluated())
+#endif
+			{
+				auto beginptr{imp.begin_ptr};
+				ret = ::std::construct_at(this->move_backward_common_impl(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
+			}
+			else
+			{
+				ret = ::std::construct_at(this->move_backward_common_impl(const_cast<pointer>(iter)), ::std::forward<Args>(args)...);
+			}
+			++imp.curr_ptr;
+			return ret;
+		}
+		else
+		{
+#ifdef __cpp_if_consteval
+			if consteval
+#else
+			if (__builtin_is_constant_evaluated())
+#endif
+			{
+				auto beginptr{imp.begin_ptr};
+				return this->insert_impl(iter - beginptr + beginptr, value_type(::std::forward<Args>(args)...));
+			}
+			else
+			{
+				return this->insert_impl(const_cast<pointer>(iter), value_type(::std::forward<Args>(args)...));
+			}
+		}
+	}
+
+	template <typename... Args>
+		requires std::constructible_from<value_type, Args...>
+	constexpr reference emplace_index(size_type idx, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	{
+		auto beginptr{imp.begin_ptr};
+		size_type sz{static_cast<size_type>(imp.curr_ptr - beginptr)};
+		if (sz < idx)
+		{
+			::fast_io::fast_terminate();
+		}
+		return *this->emplace(beginptr + idx, ::std::forward<Args>(args)...);
+	}
+
+	constexpr iterator insert(const_iterator iter, const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		return this->emplace(iter, val);
+	}
+
+	constexpr iterator insert(const_iterator iter, value_type &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		return this->emplace(iter, ::std::move(val));
+	}
+
+	constexpr reference insert_index(size_type idx, const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		return this->emplace_index(idx, val);
+	}
+
+	constexpr reference insert_index(size_type idx, value_type &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		return this->emplace_index(idx, ::std::move(val));
+	}
+
+private:
+	constexpr pointer erase_common(pointer it) noexcept
+	{
+		auto lastele{imp.curr_ptr};
+		if constexpr (!::std::is_trivially_destructible_v<value_type>)
+		{
+			::std::destroy_at(it);
+		}
+		::fast_io::freestanding::uninitialized_relocate(it + 1, lastele, it);
+		imp.curr_ptr = lastele;
+		return it;
+	}
+
+	constexpr pointer erase_iters_common(pointer first, pointer last) noexcept
+	{
+		auto currptr{imp.curr_ptr};
+		if constexpr (!::std::is_trivially_destructible_v<value_type>)
+		{
+			::std::destroy(first, last);
+		}
+		imp.curr_ptr = ::fast_io::freestanding::uninitialized_relocate(last, currptr, first);
+		return first;
+	}
+
+public:
+	constexpr iterator erase(const_iterator it) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return this->erase_common(it - imp.begin_ptr + imp.begin_ptr);
+		}
+		else
+		{
+			return this->erase_common(const_cast<pointer>(it));
+		}
+	}
+
+	constexpr void erase_index(size_type idx) noexcept
+	{
+		auto beginptr{imp.begin_ptr};
+		auto currptr{imp.curr_ptr};
+		size_type sz{static_cast<size_type>(currptr - beginptr)};
+		if (sz <= idx)
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_common(beginptr + idx);
+	}
+
+	constexpr iterator erase(const_iterator first, const_iterator last) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return this->erase_iters_common(first - imp.begin_ptr + imp.begin_ptr, last - imp.begin_ptr + imp.begin_ptr);
+		}
+		else
+		{
+			return this->erase_iters_common(const_cast<pointer>(first), const_cast<pointer>(last));
+		}
+	}
+
+	constexpr void erase_index(size_type firstidx, size_type lastidx) noexcept
+	{
+		auto beginptr{imp.begin_ptr};
+		auto currptr{imp.curr_ptr};
+		size_type sz{static_cast<size_type>(currptr - beginptr)};
+		if (lastidx < firstidx || sz <= lastidx)
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_iters_common(beginptr + firstidx, beginptr + lastidx);
+	}
 };
 
-template<typename T, typename allocator>
-constexpr auto operator<=>(vector<T, allocator>& lhs, vector<T, allocator>& rhs) noexcept
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::equality_comparable<T>
+constexpr bool operator==(vector<T, allocator1> const &lhs, vector<T, allocator2> const &rhs) noexcept
 {
-	using ordering_category_t = decltype(T{} <=> T{});
-	// copied from cppreference: lexicographical_compare
-	auto first1 = lhs.imp.begin_ptr, last1 = lhs.imp.curr_ptr,
-		first2 = rhs.imp.begin_ptr, last2 = rhs.imp.curr_ptr;
-	for (; (first1 != last1) && (first2 != last2); ++first1, (void) ++first2) {
-		if (auto result = *first1 <=> *first2; result != 0)
-			return result;
-	}
-	if (first1 == last1)
-		return ordering_category_t(first2 <=> last2);
-	return ordering_category_t(::std::strong_ordering::greater);
+	return ::std::equal(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr);
 }
 
-template<typename T, typename allocator>
-constexpr bool operator==(vector<T, allocator>& lhs, vector<T, allocator>& rhs) noexcept
+#if defined(__cpp_lib_three_way_comparison)
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::three_way_comparable<T>
+constexpr auto operator<=>(vector<T, allocator1> const &lhs, vector<T, allocator2> const &rhs) noexcept
 {
-	return (lhs <=> rhs) == 0;
+	return ::std::lexicographical_compare_three_way(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr, ::std::compare_three_way{});
 }
+#endif
 
 template <typename T, typename allocator>
-constexpr void swap(vector<T, allocator>& lhs, vector<T, allocator>& rhs) noexcept
+constexpr void swap(vector<T, allocator> &lhs, vector<T, allocator> &rhs) noexcept
 {
 	lhs.swap(rhs);
 }
 
-}
+} // namespace containers
 
 namespace freestanding
 {
 
-template<typename T,typename Alloc>
-struct is_trivially_relocatable<::fast_io::containers::vector<T,Alloc>>
+template <typename T, typename Alloc>
+struct is_trivially_relocatable<::fast_io::containers::vector<T, Alloc>>
 {
 	inline static constexpr bool value = true;
 };
 
-template<typename T,typename Alloc>
-struct is_zero_default_constructible<::fast_io::containers::vector<T,Alloc>>
+template <typename T, typename Alloc>
+struct is_zero_default_constructible<::fast_io::containers::vector<T, Alloc>>
 {
 	inline static constexpr bool value = true;
 };
 
-}
-}
+} // namespace freestanding
+} // namespace fast_io
