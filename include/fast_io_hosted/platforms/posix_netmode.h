@@ -753,45 +753,45 @@ inline int posix_accept_posix_socket_impl(int fd, void *addr, posix_socklen_t *a
 #endif
 }
 
-inline int posix_recvfrom_posix_socket_impl(int fd, void *buf, ::std::size_t len, int flags, void *src_addr, posix_socklen_t *addrlen)
+inline ::std::ptrdiff_t posix_recvfrom_posix_socket_impl(int fd, void *buf, ::std::size_t len, int flags, void *src_addr, posix_socklen_t *addrlen)
 {
 #if defined(__linux__) && defined(__NR_recvfrom)
-	int socfd{system_call<__NR_recvfrom, int>(fd, buf, len, flags, src_addr, addrlen)};
-	system_call_throw_error(socfd);
-	return socfd;
+	::std::ptrdiff_t ret{system_call<__NR_recvfrom, ::std::ptrdiff_t>(fd, buf, len, flags, src_addr, addrlen)};
+	system_call_throw_error(ret);
+	return ret;
 #else
 	using sockaddr_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr *;
-	int socfd{::recvfrom(fd, buf, len, flags, reinterpret_cast<sockaddr_alias_ptr>(src_addr), addrlen)};
-	if (socfd == -1)
+	::std::ptrdiff_t ret{::recvfrom(fd, buf, len, flags, reinterpret_cast<sockaddr_alias_ptr>(src_addr), addrlen)};
+	if (ret == -1)
 	{
 		throw_posix_error();
 	}
-	return socfd;
+	return ret;
 #endif
 }
 
-inline int posix_sendto_posix_socket_impl(int fd, void const *buf, ::std::size_t len, int flags, const void *src_addr, posix_socklen_t addrlen)
+inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, ::std::size_t len, int flags, const void *src_addr, posix_socklen_t addrlen)
 {
 #if defined(__linux__) && defined(__NR_sendto)
-	int socfd{system_call<__NR_sendto, int>(fd, buf, len, flags, src_addr, addrlen)};
-	system_call_throw_error(socfd);
-	return socfd;
+	::std::ptrdiff_t ret{system_call<__NR_sendto, ::std::ptrdiff_t>(fd, buf, len, flags, src_addr, addrlen)};
+	system_call_throw_error(ret);
+	return ret;
 #else
 	using sockaddr_const_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr const*;
-	int socfd{::sendto(fd, buf, len, flags, reinterpret_cast<sockaddr_const_alias_ptr>(src_addr), addrlen)};
-	if (socfd == -1)
+	::std::ptrdiff_t ret{::sendto(fd, buf, len, flags, reinterpret_cast<sockaddr_const_alias_ptr>(src_addr), addrlen)};
+	if (ret == -1)
 	{
 		throw_posix_error();
 	}
-	return socfd;
+	return ret;
 #endif
 }
 
