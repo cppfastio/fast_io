@@ -142,7 +142,25 @@ public:
 		{
 			n = 1;
 		}
-		void *p = ::fast_io::noexcept_call(_aligned_malloc, n, alignment);
+		void *p;
+		if (alignment <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+		{
+			p =
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_malloc)
+				__builtin_malloc
+#else
+				::std::malloc
+#endif
+#else
+				::std::malloc
+#endif
+				(n);
+		}
+		else
+		{
+			p = ::fast_io::noexcept_call(_aligned_malloc, n, alignment);
+		}
 		if (p == nullptr)
 		{
 			::fast_io::fast_terminate();
@@ -158,32 +176,54 @@ public:
 		{
 			n = 1;
 		}
-		p = ::fast_io::noexcept_call(_aligned_realloc, p, n, alignment);
+		if (alignment <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+		{
+			p =
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_realloc)
+				__builtin_realloc
+#else
+				::std::realloc
+#endif
+#else
+				::std::realloc
+#endif
+
+				(p, n);
+		}
+		else
+		{
+			p = ::fast_io::noexcept_call(_aligned_realloc, p, n, alignment);
+		}
 		if (p == nullptr)
 		{
 			::fast_io::fast_terminate();
 		}
 		return p;
 	}
-#if defined(_MSC_VER) || defined(_UCRT)
-	static inline allocation_least_result allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
-	{
-		auto p{::fast_io::c_malloc_allocator::allocate_aligned(alignment, n)};
-		return {p, ::fast_io::noexcept_call(_aligned_msize, p, alignment, 0)};
-	}
-	static inline allocation_least_result reallocate_aligned_at_least(void *oldp, ::std::size_t alignment, ::std::size_t n) noexcept
-	{
-		auto p{::fast_io::c_malloc_allocator::reallocate_aligned(oldp, alignment, n)};
-		return {p, ::fast_io::noexcept_call(_aligned_msize, p, alignment, 0)};
-	}
-#endif
-	static inline void deallocate_aligned(void *p, ::std::size_t) noexcept
+	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
 	{
 		if (p == nullptr)
 		{
 			return;
 		}
-		::fast_io::noexcept_call(_aligned_free, p);
+		if (alignment <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+		{
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_free)
+			__builtin_free
+#else
+			::std::free
+#endif
+#else
+			::std::free
+#endif
+				(p);
+		}
+		else
+		{
+			::fast_io::noexcept_call(_aligned_free, p);
+		}
 	}
 #endif
 	static inline void deallocate(void *p) noexcept
