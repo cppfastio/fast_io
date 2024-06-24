@@ -30,6 +30,9 @@ public:
 };
 
 template <typename char_type, typename traits_type>
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
+#endif
 inline FILE *fp_hack_impl(::std::basic_filebuf<char_type, traits_type> *fbuf) noexcept
 {
 	using hack_filebuf_type = hack_libstdcxx_basic_filebuf<char_type, traits_type>;
@@ -40,36 +43,56 @@ inline FILE *fp_hack_impl(::std::basic_filebuf<char_type, traits_type> *fbuf) no
 }
 
 template <typename char_type, typename traits_type>
-inline FILE *fp_hack(::std::basic_filebuf<char_type, traits_type> *fbuf) noexcept
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
+#endif
+inline FILE *fp_hack_fbf(::std::basic_filebuf<char_type, traits_type> *fbuf) noexcept
 {
 	if (fbuf == nullptr)
 	{
 		return nullptr;
 	}
-	return fp_hack_impl(fbuf);
+	return ::fast_io::details::streambuf_hack::fp_hack_impl(fbuf);
 }
 
 template <typename T>
-	requires(::std::same_as<T, ::std::basic_streambuf<typename T::char_type, typename T::traits_type>>)
-inline FILE *fp_hack([[maybe_unused]] T *cio) noexcept
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
+#endif
+inline FILE *fp_hack(T *fb) noexcept
 {
-#ifdef __cpp_rtti
 	using char_type = typename T::char_type;
 	using traits_type = typename T::traits_type;
-	if (cio) [[likely]]
+	if constexpr (::std::derived_from<T, ::std::basic_filebuf<char_type, traits_type>>)
 	{
-		auto fbuf{dynamic_cast<::std::basic_filebuf<char_type, traits_type> *>(cio)};
-		if (fbuf)
+		return ::fast_io::details::streambuf_hack::fp_hack_fbf(fb);
+	}
+	else if constexpr (::std::same_as<T, ::std::basic_streambuf<char_type, traits_type>> &&
+					   ::std::same_as<std::char_traits<char_type>, traits_type>)
+	{
+		if (fb) [[likely]]
 		{
-			return fp_hack_impl(fbuf);
-		}
-		auto sync_fbuf = dynamic_cast<__gnu_cxx::stdio_sync_filebuf<char_type, traits_type> *>(cio);
-		if (sync_fbuf)
-		{
-			return sync_fbuf->file();
+			char const *my_type{::fast_io::rtti_hack::abi_type_info_name_or_nullptr(fb)};
+			if constexpr (::std::same_as<char_type, char> || ::std::same_as<char_type, wchar_t> ||
+						  ::std::same_as<char_type, char8_t> || ::std::same_as<char_type, char16_t> ||
+						  ::std::same_as<char_type, char32_t>)
+			{
+				if (my_type)
+				{
+					::std::size_t mytypelen{::fast_io::cstr_len(my_type)};
+					if (::fast_io::details::symbol_cmp_equal(::fast_io::details::libstdcxx_streambufname<2, char_type>, my_type, mytypelen))
+					{
+						return static_cast<__gnu_cxx::stdio_sync_filebuf<char_type, traits_type> *>(fb)->file();
+					}
+					else if (::fast_io::details::symbol_cmp_equal(::fast_io::details::libstdcxx_streambufname<0, char_type>, my_type, mytypelen) ||
+							 ::fast_io::details::symbol_cmp_equal(::fast_io::details::libstdcxx_streambufname<1, char_type>, my_type, mytypelen))
+					{
+						return ::fast_io::details::streambuf_hack::fp_hack_impl(static_cast<::std::basic_filebuf<char_type, traits_type> *>(fb));
+					}
+				}
+			}
 		}
 	}
-#endif
 	return nullptr;
 }
 
