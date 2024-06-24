@@ -4,7 +4,6 @@
 
 #if defined(_MSC_VER)
 #include "msvc.h"
-
 #else
 #include "itanium.h"
 #endif
