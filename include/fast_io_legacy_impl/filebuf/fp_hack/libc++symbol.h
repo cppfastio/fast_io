@@ -84,27 +84,27 @@ inline constexpr auto compute_libcxx_stdinoutbufname() noexcept
 			if constexpr (::std::same_as<char_type, char>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char>");
 			}
 			else if constexpr (::std::same_as<char_type, wchar_t>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<wchar_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<wchar_t>");
 			}
 			else if constexpr (::std::same_as<char_type, char8_t>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char8_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char8_t>");
 			}
 			else if constexpr (::std::same_as<char_type, char16_t>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char16_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char16_t>");
 			}
 			else
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char32_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char32_t>");
 			}
 		}
 		else
@@ -112,27 +112,27 @@ inline constexpr auto compute_libcxx_stdinoutbufname() noexcept
 			if constexpr (::std::same_as<char_type, char>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char>");
 			}
 			else if constexpr (::std::same_as<char_type, wchar_t>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<wchar_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<wchar_t>");
 			}
 			else if constexpr (::std::same_as<char_type, char8_t>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char8_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char8_t>");
 			}
 			else if constexpr (::std::same_as<char_type, char16_t>)
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char16_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char16_t>");
 			}
 			else
 			{
 				return ::fast_io::details::compute_libcxx_msvcabi_symbol(
-					u8"class ::std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char32_t>");
+					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char32_t>");
 			}
 		}
 	}
