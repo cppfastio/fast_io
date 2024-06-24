@@ -53,14 +53,6 @@ inline FILE *fp_hack_fbf(::std::basic_filebuf<char_type, traits_type> *fbuf) noe
 	return ::fast_io::details::streambuf_hack::fp_hack_impl(fbuf);
 }
 
-inline constexpr ::std::size_t test_strlen(char const *ptr) noexcept
-{
-	char const *ptr1{ptr};
-	for (; *ptr; ++ptr)
-		;
-	return static_cast<::std::size_t>(ptr1 - ptr);
-}
-
 template <typename T>
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
