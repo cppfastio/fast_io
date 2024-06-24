@@ -131,11 +131,11 @@ inline FILE *fp_hack(T *fb) noexcept
 	{
 		if (fb) [[likely]]
 		{
-			char const *my_type{::fast_io::rtti_hack::abi_type_info_name_or_nullptr(fb)};
 			if constexpr (::std::same_as<char_type, char> || ::std::same_as<char_type, wchar_t> ||
 						  ::std::same_as<char_type, char8_t> || ::std::same_as<char_type, char16_t> ||
 						  ::std::same_as<char_type, char32_t>)
 			{
+				char const *my_type{::fast_io::rtti_hack::abi_type_info_name_or_nullptr(fb)};
 				if (my_type)
 				{
 					::std::size_t mytypelen{::std::strlen(my_type)};

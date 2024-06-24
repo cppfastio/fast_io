@@ -53,6 +53,14 @@ inline FILE *fp_hack_fbf(::std::basic_filebuf<char_type, traits_type> *fbuf) noe
 	return ::fast_io::details::streambuf_hack::fp_hack_impl(fbuf);
 }
 
+inline constexpr ::std::size_t test_strlen(char const *ptr) noexcept
+{
+	char const *ptr1{ptr};
+	for (; *ptr; ++ptr)
+		;
+	return static_cast<::std::size_t>(ptr1 - ptr);
+}
+
 template <typename T>
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
@@ -70,17 +78,29 @@ inline FILE *fp_hack(T *fb) noexcept
 	{
 		if (fb) [[likely]]
 		{
-			char const *my_type{::fast_io::rtti_hack::abi_type_info_name_or_nullptr(fb)};
+#ifdef __cpp_rtti
+			auto syncfb{dynamic_cast<::__gnu_cxx::stdio_sync_filebuf<char_type, traits_type> *>(fb)};
+			if (syncfb)
+			{
+				return syncfb->file();
+			}
+			auto fbfb{dynamic_cast<::std::basic_filebuf<char_type, traits_type> *>(fb)};
+			if (fbfb)
+			{
+				return ::fast_io::details::streambuf_hack::fp_hack_impl(fbfb);
+			}
+#else
 			if constexpr (::std::same_as<char_type, char> || ::std::same_as<char_type, wchar_t> ||
 						  ::std::same_as<char_type, char8_t> || ::std::same_as<char_type, char16_t> ||
 						  ::std::same_as<char_type, char32_t>)
 			{
+				char const *my_type{::fast_io::rtti_hack::abi_type_info_name_or_nullptr(fb)};
 				if (my_type)
 				{
 					::std::size_t mytypelen{::fast_io::cstr_len(my_type)};
 					if (::fast_io::details::symbol_cmp_equal(::fast_io::details::libstdcxx_streambufname<2, char_type>, my_type, mytypelen))
 					{
-						return static_cast<__gnu_cxx::stdio_sync_filebuf<char_type, traits_type> *>(fb)->file();
+						return static_cast<::__gnu_cxx::stdio_sync_filebuf<char_type, traits_type> *>(fb)->file();
 					}
 					else if (::fast_io::details::symbol_cmp_equal(::fast_io::details::libstdcxx_streambufname<0, char_type>, my_type, mytypelen) ||
 							 ::fast_io::details::symbol_cmp_equal(::fast_io::details::libstdcxx_streambufname<1, char_type>, my_type, mytypelen))
@@ -89,6 +109,7 @@ inline FILE *fp_hack(T *fb) noexcept
 					}
 				}
 			}
+#endif
 		}
 	}
 	return nullptr;

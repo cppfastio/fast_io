@@ -80,6 +80,9 @@ inline FILE *fp_hack(T *fb) noexcept
 	{
 		if (fb) [[likely]]
 		{
+#ifdef __cpp_rtti
+			return ::fast_io::details::streambuf_hack::fp_hack_impl(dynamic_cast<::std::basic_filebuf<char_type, traits_type> *>(fb));
+#else
 			char const *my_type{::fast_io::rtti_hack::abi_type_info_name_or_nullptr(fb)};
 			if constexpr (::std::same_as<char_type, char> || ::std::same_as<char_type, wchar_t> ||
 						  ::std::same_as<char_type, char8_t> || ::std::same_as<char_type, char16_t> ||
@@ -94,6 +97,7 @@ inline FILE *fp_hack(T *fb) noexcept
 					}
 				}
 			}
+#endif
 		}
 	}
 	return nullptr;
