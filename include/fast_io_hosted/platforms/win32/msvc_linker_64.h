@@ -388,3 +388,9 @@
 #pragma comment( \
 	linker,      \
 	"/alternatename:__imp_?ZwQueryObject@nt@win32@fast_io@@YAIPEAXW4object_information_class@123@0IPEAI@Z=__imp_ZwQueryObject")
+
+#if defined(_DLL)
+#pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__imp___RTtypeid")
+#else
+#pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__RTtypeid")
+#endif

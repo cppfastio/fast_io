@@ -8,8 +8,6 @@
 https://github.com/llvm/llvm-project/blob/main/libcxx/src/std_stream.h
 */
 
-#include "libc++symbol.h"
-
 namespace fast_io::details::streambuf_hack
 {
 
@@ -95,68 +93,65 @@ inline constexpr ::std::size_t libcxx_om_location{
 	__builtin_offsetof(libcxx_basic_filebuf_model<char_type, traits_type>, __om_)};
 
 template <typename char_type, typename traits_type>
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
+#endif
 inline FILE *fp_hack_impl(::std::basic_filebuf<char_type, traits_type> *fbuf) noexcept
 {
-	FILE *fp{};
-	// we can only do this or ubsanitizer will complain. Do not do down_cast
-	::fast_io::details::my_memcpy(__builtin_addressof(fp),
-								  reinterpret_cast<::std::byte *>(fbuf) + libcxx_fp_location<char_type, traits_type>,
-								  sizeof(fp));
-	return fp;
+	return *reinterpret_cast<FILE **>(reinterpret_cast<::std::byte *>(fbuf) + libcxx_fp_location<char_type, traits_type>);
 }
 
 template <typename char_type, typename traits_type>
-inline FILE *fp_hack(::std::basic_filebuf<char_type, traits_type> *fbuf) noexcept
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
+#endif
+inline FILE *fp_hack_fbf(::std::basic_filebuf<char_type, traits_type> *fbuf) noexcept
 {
 	if (fbuf == nullptr)
 	{
 		return nullptr;
 	}
-	return fp_hack_impl(fbuf);
+	return ::fast_io::details::streambuf_hack::fp_hack_impl(fbuf);
 }
 
 template <typename T>
-	requires(::std::same_as<T, ::std::basic_streambuf<typename T::char_type, typename T::traits_type>>)
-inline FILE *fp_hack([[maybe_unused]] T *stdbuf) noexcept
+#if __has_cpp_attribute(__gnu__::__pure__)
+[[__gnu__::__pure__]]
+#endif
+inline FILE *fp_hack(T *fb) noexcept
 {
-#ifdef __cpp_rtti
 	using char_type = typename T::char_type;
 	using traits_type = typename T::traits_type;
-#ifdef __cpp_exceptions
-	try
+	if constexpr (::std::derived_from<T, ::std::basic_filebuf<char_type, traits_type>>)
 	{
-#endif
-		if (stdbuf) [[likely]]
+		return ::fast_io::details::streambuf_hack::fp_hack_fbf(fb);
+	}
+	else if constexpr (::std::same_as<T, ::std::basic_streambuf<char_type, traits_type>> &&
+					   ::std::same_as<std::char_traits<char_type>, traits_type>)
+	{
+		if (fb) [[likely]]
 		{
+			char const *my_type{::fast_io::rtti_hack::abi_type_info_name_or_nullptr(fb)};
 			if constexpr (::std::same_as<char_type, char> || ::std::same_as<char_type, wchar_t> ||
 						  ::std::same_as<char_type, char8_t> || ::std::same_as<char_type, char16_t> ||
 						  ::std::same_as<char_type, char32_t>)
 			{
-				char const *my_type{typeid(*stdbuf).name()};
-				::std::size_t mytypelen{::std::strlen(my_type)};
-				if ((mytypelen == ::fast_io::details::libcxx_stdinoutbufname<false, char_type>.size() &&
-					 ::std::memcmp(my_type, ::fast_io::details::libcxx_stdinoutbufname<false, char_type>.data(),
-								   mytypelen) == 0) ||
-					(mytypelen == ::fast_io::details::libcxx_stdinoutbufname<true, char_type>.size() &&
-					 ::std::memcmp(my_type, ::fast_io::details::libcxx_stdinoutbufname<true, char_type>.data(),
-								   mytypelen) == 0))
+				if (my_type)
 				{
-					return stdinbuf_stdoutbuf_fp_hack(stdbuf);
+					::std::size_t mytypelen{::std::strlen(my_type)};
+					if (::fast_io::details::symbol_cmp_equal(::fast_io::details::libcxx_streambufname<0, char_type>, my_type, mytypelen) ||
+						::fast_io::details::symbol_cmp_equal(::fast_io::details::libcxx_streambufname<1, char_type>, my_type, mytypelen))
+					{
+						return ::fast_io::details::streambuf_hack::stdinbuf_stdoutbuf_fp_hack(fb);
+					}
+					else if (::fast_io::details::symbol_cmp_equal(::fast_io::details::libcxx_streambufname<2, char_type>, my_type, mytypelen))
+					{
+						return ::fast_io::details::streambuf_hack::fp_hack_impl(static_cast<::std::basic_filebuf<char_type, traits_type> *>(fb));
+					}
 				}
 			}
-			auto fbf{dynamic_cast<::std::basic_filebuf<char_type, traits_type> *>(stdbuf)};
-			if (fbf)
-			{
-				return fp_hack_impl(fbf);
-			}
 		}
-#ifdef __cpp_exceptions
 	}
-	catch (...)
-	{
-	}
-#endif
-#endif
 	return nullptr;
 }
 

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "rtti_hack/impl.h"
 #include "fp_hack/impl.h"
 
 namespace fast_io
