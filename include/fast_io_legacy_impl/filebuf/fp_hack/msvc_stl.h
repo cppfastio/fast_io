@@ -87,6 +87,7 @@ inline FILE *fp_hack(T *fb) noexcept
 			{
 				if (my_type)
 				{
+					::std::size_t mytypelen{::fast_io::cstr_len(my_type)};
 					if (::fast_io::details::symbol_cmp_equal(::fast_io::details::libstdcxx_streambufname<0, char_type>, my_type, mytypelen))
 					{
 						return ::fast_io::details::streambuf_hack::fp_hack_impl(static_cast<::std::basic_filebuf<char_type, traits_type> *>(fb));

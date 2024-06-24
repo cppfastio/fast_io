@@ -1,8 +1,6 @@
 ﻿#pragma once
 // https://www.ginac.de/~kreckel/fileno/
-#ifdef __cpp_rtti
 #include <ext/stdio_sync_filebuf.h>
-#endif
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC system_header
 #endif
