@@ -3,7 +3,7 @@
 #ifdef __cpp_rtti
 #include <ext/stdio_sync_filebuf.h>
 #endif
-#ifdef __GNUC__
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC system_header
 #endif
 
