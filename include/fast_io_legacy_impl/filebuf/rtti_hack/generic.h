@@ -8,12 +8,13 @@ namespace rtti_hack
 template <typename T>
 inline char const *abi_type_info_name_or_nullptr(T *mythis) noexcept
 {
-#if (defined(_MSC_VER) && _HAS_RTTI != 0) || (!defined(_MSC_VER) && defined(__cpp_rtti))
+#ifdef __cpp_rtti
 #if (defined(_MSC_VER) && _HAS_EXCEPTIONS != 0) || (!defined(_MSC_VER) && defined(__cpp_exceptions))
 	try
 	{
 #endif
-		return typeid(*mythis).name();
+		auto& dereferencethis{*mythis};
+		return typeid(dereferencethis).name();
 #if (defined(_MSC_VER) && _HAS_EXCEPTIONS != 0) || (!defined(_MSC_VER) && defined(__cpp_exceptions))
 	}
 	catch (...)
