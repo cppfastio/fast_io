@@ -1,2 +1,2 @@
-add_executable(kreckel_file main.cpp fileno.cpp)
-test(kreckel_file kreckel_file)
+add_executable(kreckelfileno main.cpp fileno.cpp)
+add_test(kreckelfileno kreckelfileno)
