@@ -11,7 +11,7 @@ namespace fast_io
 {
 namespace msvc
 {
-extern 
+extern
 #if defined(_DLL) && !defined(__WINE__)
 	__declspec(dllimport)
 #endif
@@ -27,7 +27,7 @@ extern
 	__asm__("__RTtypeid")
 #endif
 #endif
-;
+		;
 
 } // namespace msvc
 
@@ -40,7 +40,7 @@ inline char const *abi_type_info_name_or_nullptr(void *mythis) noexcept
 		return ::__std_type_info_name(reinterpret_cast<::__std_type_info_data *>(reinterpret_cast<char *>(::fast_io::msvc::msvc__RTtypeid(mythis)) + sizeof(void *)),
 									  __builtin_addressof(::__type_info_root_node));
 	}
-	__except(1)
+	__except (1)
 	{
 		return nullptr;
 	}
