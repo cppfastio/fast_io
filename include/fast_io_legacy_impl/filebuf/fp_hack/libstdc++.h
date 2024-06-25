@@ -66,7 +66,7 @@ inline FILE *fp_hack(T *fb) noexcept
 		return ::fast_io::details::streambuf_hack::fp_hack_fbf(fb);
 	}
 	else if constexpr (::std::same_as<T, ::std::basic_streambuf<char_type, traits_type>> &&
-					   ::std::same_as<std::char_traits<char_type>, traits_type>)
+					   ::std::same_as<::std::char_traits<char_type>, traits_type>)
 	{
 		if (fb) [[likely]]
 		{
