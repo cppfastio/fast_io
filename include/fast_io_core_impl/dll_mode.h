@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class dll_mode : ::std::uint_least32_t
+FAST_IO_MODULE_EXPORT enum class dll_mode : ::std::uint_least32_t
 {
 	none = 0,
 	posix_rtld_lazy = static_cast<::std::uint_least32_t>(1) << 0,
