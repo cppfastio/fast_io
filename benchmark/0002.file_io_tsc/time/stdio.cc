@@ -1,7 +1,7 @@
 ﻿#include <fast_io.h>
 #include <fast_io_device.h>
 #include <fast_io_driver/timer.h>
-#include <vector>
+#include <fast_io_dsal/vector.h>
 
 int main()
 {
@@ -14,7 +14,7 @@ int main()
 			fprintf(obf.fp, "%zu\n", i);
 		}
 	}
-	std::vector<std::size_t> vec(N);
+	fast_io::vector<std::size_t> vec(N);
 	{
 		fast_io::timer t(u8"input");
 		fast_io::c_file ibf(u8"stdio.txt", fast_io::open_mode::in);
