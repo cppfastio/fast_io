@@ -1,3 +1,5 @@
+WE REFUSE TO SUPPORT C++20 MODULE. FUCK YOU WG21 FOR THIS BS.
+
 # fast_io
 
 fast_io represents a cutting-edge input/output (I/O) library for C++20, designed to achieve [exceptional speed](readme.md#Benchmarks). Its primary purpose is to supersede the widely used `<iostream>` and `<cstdio>` libraries. This header-only library is distributed under the permissive [MIT license](license.txt), simplifying integration into any project. However, its utilization mandates a C++20 compiler with support for concepts.
