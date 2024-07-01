@@ -64,7 +64,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_cold_impl(instmtyp
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char_type> *;
-		return ::fast_io::details::scatter_pread_some_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(pscatters),
+		return ::fast_io::details::scatter_pread_some_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatters)),
 																n, off);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype> &&
@@ -97,7 +97,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_impl(instmtype ins
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{
 			::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::scatter_pread_some_bytes_impl(
-			::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm), pscatters, n, off);
+			::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm), const_cast<::fast_io::io_scatter_t *>(pscatters), n, off);
 	}
 	else
 	{
@@ -176,7 +176,7 @@ inline constexpr void scatter_pread_all_bytes_cold_impl(instmtype insm, io_scatt
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char_type> *;
-		::fast_io::details::scatter_pread_all_impl(insm, reinterpret_cast<scattermayalias_ptr>(pscatters), n, off);
+		::fast_io::details::scatter_pread_all_impl(insm, reinterpret_cast<scattermayalias_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatters)), n, off);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype> &&
 					   (::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>))
