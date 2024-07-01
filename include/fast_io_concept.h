@@ -17,9 +17,6 @@
 #if !defined(__cpp_concepts)
 #error "fast_io requires at least a C++20 standard compiler."
 #else
-#ifdef __cpp_modules
-#error "fast_io does not support C++20 Module. FUCK YOU WG21 for this BS"
-#endif
 #include<version>
 #include<cstddef>
 #include<type_traits>
