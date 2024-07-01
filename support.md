@@ -1,7 +1,7 @@
 ## Compiler Support
 - GCC >= 14
 - Clang >= 17
-- Remove msvc support since it support module which fast_io does not support
+- Microsoft Visual C++
 
 ## C++ standard library support
 - GCC libstdc++
