@@ -22,6 +22,33 @@ jobs:
     - name: ninja test
       run: ninja test
 
+  windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - name: cmake
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+    - name: ninja
+      run: ninja
+    - name: ninja test
+      run: ninja test
+
+  windows-debug:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - name: cmake
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+    - name: ninja
+      run: ninja
+    - name: ninja test
+      run: ninja test
 
   #macos:
 
