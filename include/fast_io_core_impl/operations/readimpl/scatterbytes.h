@@ -52,7 +52,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char_type> *;
-		return ::fast_io::details::scatter_read_some_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(pscatters),
+		return ::fast_io::details::scatter_read_some_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatters)),
 															   n);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype> &&
@@ -72,7 +72,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char_type> *;
-		auto ret{scatter_pread_some_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(pscatters), n, 0)};
+		auto ret{scatter_pread_some_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatters)), n, 0)};
 		::fast_io::operations::decay::input_stream_seek_decay(insm, ::fast_io::fposoffadd_scatters(0, pscatters, ret),
 															  ::fast_io::seekdir::cur);
 		return ret;
@@ -220,7 +220,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char_type> *;
-		::fast_io::details::scatter_read_all_impl(insm, reinterpret_cast<scattermayalias_ptr>(pscatters), n);
+		::fast_io::details::scatter_read_all_impl(insm, reinterpret_cast<scattermayalias_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatters)), n);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype> &&
 					   (::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>))
@@ -238,7 +238,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char_type> *;
-		scatter_pread_all_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(pscatters), n, 0);
+		scatter_pread_all_cold_impl(insm, reinterpret_cast<scattermayalias_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatters)), n, 0);
 		::fast_io::operations::decay::input_stream_seek_decay(
 			insm, ::fast_io::fposoffadd_scatters(0, pscatters, {n, 0}), ::fast_io::seekdir::cur);
 	}
