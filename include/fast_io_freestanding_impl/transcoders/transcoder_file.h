@@ -6,8 +6,10 @@ namespace fast_io
 struct transcoder_file_base
 {
 	virtual constexpr bool transcode_always_none() const = 0;
+	virtual constexpr ::std::size_t transcode_bytes_minsize() const = 0;
 	virtual constexpr ::std::size_t transcode_bytes_size(::std::byte const *, ::std::byte const *, ::std::size_t) const = 0;
 	virtual constexpr transcode_bytes_result transcode_bytes(::std::byte const *, ::std::byte const *, ::std::byte *, ::std::byte *) = 0;
+	virtual constexpr ::std::size_t transcode_bytes_eof_minsize() const = 0;
 	virtual constexpr ::std::size_t transcode_bytes_eof_size(::std::byte const *, ::std::byte const *, ::std::size_t) const = 0;
 	virtual constexpr transcode_bytes_result transcode_bytes_eof(::std::byte const *, ::std::byte const *, ::std::byte *, ::std::byte *) = 0;
 	virtual void destroy() noexcept = 0;
@@ -36,6 +38,10 @@ struct transcoder_file_derived : transcoder_file_base
 			return false;
 		}
 	}
+	constexpr ::std::size_t transcode_bytes_minsize() const override
+	{
+		return object.transcode_bytes_minsize();
+	}
 	constexpr ::std::size_t transcode_bytes_size(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz) const override
 	{
 		return object.transcode_bytes_size(fromfirst, fromlast, mxsz);
@@ -43,6 +49,19 @@ struct transcoder_file_derived : transcoder_file_base
 	constexpr transcode_bytes_result transcode_bytes(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::byte *tofirst, ::std::byte *tolast) override
 	{
 		return object.transcode_bytes(fromfirst, fromlast, tofirst, tolast);
+	}
+	constexpr ::std::size_t transcode_bytes_eof_minsize() const override
+	{
+		if constexpr (requires() {
+						  { object.transcode_bytes_eof_minsize() } -> std::same_as<::std::size_t>;
+					  })
+		{
+			return object.transcode_bytes_eof_minsize();
+		}
+		else
+		{
+			return object.transcode_bytes_minsize();
+		}
 	}
 	constexpr ::std::size_t transcode_bytes_eof_size(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz) override
 	{
@@ -96,19 +115,27 @@ public:
 	{
 		return transhandle->transcode_always_none();
 	}
+	constexpr ::std::size_t transcode_bytes_minsize() const
+	{
+		return transhandle->transcode_bytes_minsize();
+	}
 	constexpr ::std::size_t transcode_bytes_size(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz) const
 	{
 		return transhandle->transcode_bytes_size(fromfirst, fromlast, mxsz);
 	}
-	constexpr transcode_bytes_result transcode_bytes(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::byte *tofirst, ::std::byte *tolast) override
+	constexpr transcode_bytes_result transcode_bytes(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::byte *tofirst, ::std::byte *tolast)
 	{
 		return transhandle->transcode_bytes(fromfirst, fromlast, tofirst, tolast);
+	}
+	constexpr ::std::size_t transcode_bytes_eof_minsize() const
+	{
+		return transhandle->transcode_bytes_eof_minsize();
 	}
 	constexpr ::std::size_t transcode_bytes_eof_size(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz) const
 	{
 		return transhandle->transcode_bytes_eof_size(fromfirst, fromlast, mxsz);
 	}
-	constexpr transcode_bytes_result transcode_bytes_eof(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::byte *tofirst, ::std::byte *tolast) override
+	constexpr transcode_bytes_result transcode_bytes_eof(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::byte *tofirst, ::std::byte *tolast)
 	{
 		return transhandle->transcode_bytes_eof(fromfirst, fromlast, tofirst, tolast);
 	}
