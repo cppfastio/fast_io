@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class mmap_prot
+enum class mmap_prot : ::std::uint_least32_t
 {
 	prot_read = 0x1,             /* page can be read */
 	prot_write = 0x2,            /* page can be written */
@@ -53,7 +53,7 @@ inline constexpr mmap_prot &operator^=(mmap_prot &x, mmap_prot y) noexcept
 	return x = x ^ y;
 }
 
-enum class mmap_flags
+enum class mmap_flags : ::std::uint_least32_t
 {
 	map_file = 0, /* compatibility flags */
 	map_nocore = map_file,
