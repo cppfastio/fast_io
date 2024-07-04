@@ -5,7 +5,8 @@ namespace fast_io
 
 struct transcoder_file_base
 {
-	virtual constexpr bool transcode_always_none() = 0;
+	virtual constexpr bool transcode_always_none() const = 0;
+	virtual constexpr ::std::size_t transcode_size(::std::byte const*, ::std::byte const*, ::std::size_t) const = 0;
 	virtual constexpr transcode_bytes_result transcode_bytes(::std::byte const*, ::std::byte const*, ::std::byte*, ::std::byte*) = 0;
 	virtual constexpr transcode_bytes_result transcode_bytes_eof(::std::byte const*, ::std::byte const*, ::std::byte*, ::std::byte*) = 0;
 	virtual constexpr ~transcoder_file_base() noexcept = 0;
@@ -19,7 +20,7 @@ struct transcoder_file_derived:transcoder_file_base
 	explicit constexpr basic_transcoder_file(::fast_io::io_cookie_type_t<T>, Args&& args...):object(::std::forward<Args>(args)...)
 	{
 	}
-	constexpr bool transcode_always_none() override
+	constexpr bool transcode_always_none() const override
 	{
 		if constexpr(requires()
 		{
@@ -33,13 +34,17 @@ struct transcoder_file_derived:transcoder_file_base
 			return false;
 		}
 	}
+	constexpr ::std::size_t transcode_size(::std::byte const* fromfirst, ::std::byte const* fromlast, ::std::size_t mxsz) const override
+	{
+		return object.transcode_size(fromfirst,fromlast,mxsz);
+	}
 	constexpr transcode_bytes_result transcode_bytes(::std::byte const* fromfirst, ::std::byte const* fromlast, ::std::byte* tofirst, ::std::byte* tolast) override
 	{
-		return {fromfirst,tofirst};
+		return object.transcode_bytes(fromfirst,fromlast,tofirst,tolast);
 	}
 	constexpr transcode_bytes_result transcode_bytes_eof(::std::byte const* fromfirst, ::std::byte const* fromlast, ::std::byte* tofirst, ::std::byte* tolast) override
 	{
-		return {fromfirst,tofirst};
+		return object.transcode_bytes_eof(fromfirst,fromlast,tofirst,tolast);
 	}
 };
 
@@ -57,6 +62,22 @@ public:
 	constexpr native_handle_type native_handle() const noexcept
 	{
 		return this->transhandle;
+	}
+	constexpr bool transcode_always_none() const
+	{
+		return transhandle->transcode_always_none();
+	}
+	constexpr ::std::size_t transcode_size(::std::byte const* fromfirst, ::std::byte const* fromlast, ::std::size_t mxsz) const
+	{
+		return transhandle->transcode_size(fromfirst,fromlast,mxsz);
+	}
+	constexpr transcode_bytes_result transcode_bytes(::std::byte const* fromfirst, ::std::byte const* fromlast, ::std::byte* tofirst, ::std::byte* tolast) override
+	{
+		return transhandle->transcode_bytes(fromfirst,fromlast,tofirst,tolast);
+	}
+	constexpr transcode_bytes_result transcode_bytes_eof(::std::byte const* fromfirst, ::std::byte const* fromlast, ::std::byte* tofirst, ::std::byte* tolast) override
+	{
+		return transhandle->transcode_bytes_eof(fromfirst,fromlast,tofirst,tolast);
 	}
 };
 
@@ -92,8 +113,34 @@ public:
 	{
 		other.transhandle = nullptr;
 	}
+	constexpr basic_transcoder_file& operator=(basic_transcoder_file&& other) noexcept
+	{
+		if(__builtin_addressof(other)==this)
+		{
+			return *this;
+		}
+		this->transhandle = other.transhandle;
+		other.transhandle = nullptr;
+		return *this;
+	}
+private:
+	constexpr void destroy() noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			delete this->transhandle;
+		}
+	}
+public:
+	constexpr void close() noexcept
+	{
 
 
+	}
 	constexpr ~basic_transcoder_file()
 	{
 		::std::destroy_at();
