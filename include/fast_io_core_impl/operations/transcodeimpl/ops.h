@@ -116,7 +116,7 @@ inline constexpr ::std::byte const *transcode_bytes_imaginary_decay(T t,
 		for (; (n && ::fast_io::operations::decay::transcode_bytes_tosize_decay(t, fromfirst, fromfirst + n) <= mxsz); n >>= 1u)
 		{
 		}
-		return n;
+		return fromfirst + n;
 	}
 }
 
@@ -265,8 +265,8 @@ template <typename T>
 			  (sizeof(typename T::from_value_type) == 1 && sizeof(typename T::to_value_type) == 1)) ||
 			 ::fast_io::operations::decay::defines::has_transcode_bytes_imaginary_decay_define<T> ||
 			 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
-inline constexpr ::std::size_t transcode_imaginary_decay(T t,
-														 typename T::from_value_type const *fromfirst, typename T::from_value_type const *fromlast, ::std::size_t mxsz)
+inline constexpr typename T::from_value_type const *transcode_imaginary_decay(T t,
+																			  typename T::from_value_type const *fromfirst, typename T::from_value_type const *fromlast, ::std::size_t mxsz)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 	{
@@ -289,7 +289,7 @@ inline constexpr ::std::size_t transcode_imaginary_decay(T t,
 		for (; (n && ::fast_io::operations::decay::transcode_tosize_decay(t, fromfirst, fromfirst + n) <= mxsz); n >>= 1u)
 		{
 		}
-		return n;
+		return fromfirst + n;
 	}
 }
 

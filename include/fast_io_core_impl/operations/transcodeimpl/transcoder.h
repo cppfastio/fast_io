@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-namespace manipulators
+inline namespace manipulators
 {
 
 template<::std::integral chartype, typename T>
