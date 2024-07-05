@@ -227,7 +227,6 @@ inline constexpr ::std::size_t transcode_tosize_decay(T t,
 					   (sizeof(typename T::from_value_type) == 1 && sizeof(typename T::to_value_type) == 1))
 	{
 		using from_value_type = typename T::from_value_type;
-		using to_value_type = typename T::to_value_type;
 		using from_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 			[[__gnu__::__may_alias__]]

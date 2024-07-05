@@ -2,6 +2,7 @@
 
 #include "defines.h"
 #include "ops.h"
+#include "transcoder.h"
 
 namespace fast_io
 {
