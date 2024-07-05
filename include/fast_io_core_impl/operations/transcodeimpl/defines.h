@@ -119,15 +119,15 @@ concept has_transcode_bytes_imaginary_define = requires(T &t, ::std::byte const 
 };
 } // namespace operations::defines
 
-template <::std::integral to_char_type, typename T>
-concept transcode_printable =
-	((sizeof(to_char_type) == sizeof(typename T::to_value_type)) &&
-	 ::fast_io::operations::decay::defines::has_transcode_decay_define<T> &&
-	 ::fast_io::operations::decay::defines::has_transcode_min_tosize_decay_define<T> &&
-	 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>) ||
-	((sizeof(to_char_type) == 1) &&
-	 ::fast_io::operations::decay::defines::has_transcode_bytes_decay_define<T> &&
-	 ::fast_io::operations::decay::defines::has_transcode_bytes_min_tosize_decay_define<T> &&
-	 ::fast_io::operations::decay::defines::has_transcode_bytes_imaginary_decay_define<T>);
+template <typename to_char_type, typename T>
+concept transcode_imaginary_printable = ::std::integral<to_char_type> &&
+										(((sizeof(to_char_type) == sizeof(typename T::to_value_type)) &&
+										  ::fast_io::operations::decay::defines::has_transcode_decay_define<T> &&
+										  ::fast_io::operations::decay::defines::has_transcode_min_tosize_decay_define<T> &&
+										  ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>) ||
+										 ((sizeof(to_char_type) == 1) &&
+										  ::fast_io::operations::decay::defines::has_transcode_bytes_decay_define<T> &&
+										  ::fast_io::operations::decay::defines::has_transcode_bytes_min_tosize_decay_define<T> &&
+										  ::fast_io::operations::decay::defines::has_transcode_bytes_imaginary_decay_define<T>));
 
 } // namespace fast_io
