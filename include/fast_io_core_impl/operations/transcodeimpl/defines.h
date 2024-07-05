@@ -11,14 +11,6 @@ struct transcode_reserve_t
 template <typename T>
 inline constexpr transcode_reserve_t<T> transcode_reserve{};
 
-template <::std::integral char_type,typename T>
-struct transcode_reserve_type_t
-{
-	explicit constexpr transcode_reserve_type_t() noexcept = default;
-};
-template <::std::integral char_type,typename T>
-inline constexpr transcode_reserve_type_t<char_type,T> transcode_reserve_type{};
-
 template <typename T>
 struct transcoder_ref
 {
@@ -32,11 +24,11 @@ struct transcode_result
 {
 	using from_value_type = fromvtype;
 	using to_value_type = tovtype;
-	from_value_type const* fromit{};
-	to_value_type* toit{};
+	from_value_type const *fromit{};
+	to_value_type *toit{};
 };
 
-using transcode_bytes_result = transcode_result<::std::byte,::std::byte>;
+using transcode_bytes_result = transcode_result<::std::byte, ::std::byte>;
 
 namespace operations::defines
 {
@@ -68,8 +60,8 @@ concept has_transcode_bytes_decay_define = requires(T t, ::std::byte const *ptr)
 };
 
 template <typename T>
-concept has_transcode_bytes_max_tosize_decay_define = requires(T t, ::std::byte const *ptr) {
-	{ transcode_bytes_max_tosize_decay_define(t, ptr, ptr) } -> ::std::same_as<::std::size_t>;
+concept has_transcode_bytes_tosize_decay_define = requires(T t, ::std::byte const *ptr) {
+	{ transcode_bytes_tosize_decay_define(t, ptr, ptr) } -> ::std::same_as<::std::size_t>;
 };
 
 template <typename T>
@@ -78,30 +70,28 @@ concept has_transcode_bytes_min_tosize_decay_define = requires() {
 };
 
 template <typename T>
-concept has_transcode_bytes_fromsize_decay_define = requires(T t, ::std::byte const *ptr, ::std::size_t mxsz) {
-	{ transcode_bytes_fromsize_decay_define(t, ptr, ptr, mxsz) } -> ::std::same_as<::std::size_t>;
+concept has_transcode_bytes_imaginary_decay_define = requires(T t, ::std::byte const *ptr, ::std::size_t mxsz) {
+	{ transcode_bytes_imaginary_decay_define(t, ptr, ptr, mxsz) } -> ::std::same_as<::std::byte const *>;
 };
-
-
 
 template <typename T>
 concept has_transcode_decay_define = requires(T t, typename T::from_value_type const *fromit, typename T::to_value_type *toit) {
-	{ transcode_decay_define(t, fromit, fromit, toit, toit) } -> ::std::same_as<::fast_io::transcode_result<typename T::from_value_type,typename T::to_value_type>>;
+	{ transcode_decay_define(t, fromit, fromit, toit, toit) } -> ::std::same_as<::fast_io::transcode_result<typename T::from_value_type, typename T::to_value_type>>;
 };
 
 template <typename T>
-concept has_transcode_max_tosize_decay_define = requires(T t, typename T::from_value_type const *fromit) {
-	{ transcode_max_tosize_decay_define(t, fromit, fromit) } -> ::std::same_as<::std::size_t>;
+concept has_transcode_tosize_decay_define = requires(T t, typename T::from_value_type const *fromit) {
+	{ transcode_tosize_decay_define(t, fromit, fromit) } -> ::std::same_as<::std::size_t>;
 };
 
 template <typename T>
 concept has_transcode_min_tosize_decay_define = requires() {
-	{ transcode_min_tosize_decay_define(::fast_io::transcode_reserve_type<typename T::from_value_type,T>) } -> ::std::same_as<::std::size_t>;
+	{ transcode_min_tosize_decay_define(::fast_io::transcode_reserve<T>) } -> ::std::same_as<::std::size_t>;
 };
 
 template <typename T>
-concept has_transcode_fromsize_decay_define = requires(T t, typename T::from_value_type const *fromit, ::std::size_t mxsz) {
-	{ transcode_fromsize_decay_define(t, fromit, fromit, mxsz) } -> ::std::same_as<::std::size_t>;
+concept has_transcode_imaginary_decay_define = requires(T t, typename T::from_value_type const *fromit, ::std::size_t mxsz) {
+	{ transcode_imaginary_decay_define(t, fromit, fromit, mxsz) } -> ::std::same_as<typename T::from_value_type const *>;
 };
 
 } // namespace operations::decay::defines
@@ -124,9 +114,20 @@ concept has_transcode_bytes_min_tosize_define = requires(T &t) {
 };
 
 template <typename T>
-concept has_transcode_bytes_fromsize_define = requires(T &t, ::std::byte const *ptr, ::std::size_t mxsz) {
-	{ transcode_bytes_fromsize_decay(::fast_io::transcode_ref(t), ptr, ptr, mxsz) } -> ::std::same_as<::std::size_t>;
+concept has_transcode_bytes_imaginary_define = requires(T &t, ::std::byte const *ptr, ::std::size_t mxsz) {
+	{ transcode_bytes_imaginary_decay(::fast_io::transcode_ref(t), ptr, ptr, mxsz) } -> ::std::same_as<::std::byte const *>;
 };
 } // namespace operations::defines
+
+template <::std::integral to_char_type, typename T>
+concept transcode_printable =
+	((sizeof(to_char_type) == sizeof(typename T::to_value_type)) &&
+	 ::fast_io::operations::decay::defines::has_transcode_decay_define<T> &&
+	 ::fast_io::operations::decay::defines::has_transcode_min_tosize_decay_define<T> &&
+	 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>) ||
+	((sizeof(to_char_type) == 1) &&
+	 ::fast_io::operations::decay::defines::has_transcode_bytes_decay_define<T> &&
+	 ::fast_io::operations::decay::defines::has_transcode_bytes_min_tosize_decay_define<T> &&
+	 ::fast_io::operations::decay::defines::has_transcode_bytes_imaginary_decay_define<T>);
 
 } // namespace fast_io
