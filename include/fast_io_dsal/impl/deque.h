@@ -842,7 +842,7 @@ public:
 		{
 			grow_front();
 		}
-		if constexpr (::std::is_trivially_constructible_v<value_type>)
+		if constexpr (!::std::is_trivially_constructible_v<value_type>)
 		{
 			::std::construct_at(--controller.front_block.curr_ptr, ::std::forward<Args>(args)...);
 		}
