@@ -28,6 +28,9 @@ concept minimum_buffer_input_stream_require_size_impl =
 	 (!defined(__linux__) && __has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__DARWIN_C_LEVEL)
 #include "linux_getrandom.h"
 #endif
+#if ((defined(__linux__) && defined(__GLIBC__)) || (defined(__BSD_VISIBLE) && !defined(__DARWIN_C_LEVEL))) && 0
+#include "bsd_arc4random.h"
+#endif
 #include "posix_dev_urandom.h"
 
 namespace fast_io
@@ -73,6 +76,8 @@ using basic_native_white_hole =
 #endif
 #elif defined(__wasi__)
 	basic_wasi_random_get<char_type>;
+#elif (((defined(__linux__) && defined(__GLIBC__)) || (defined(__BSD_VISIBLE) && !defined(__DARWIN_C_LEVEL)))) && 0
+	basic_bsd_arc4random<char_type>;
 #elif (defined(__linux__) && defined(__NR_getrandom)) || \
 	(!defined(__linux__) && __has_include(<sys/random.h>)) && !defined(__DARWIN_C_LEVEL)
 	basic_linux_getrandom<char_type>;
