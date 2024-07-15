@@ -10,6 +10,7 @@ enum class mmap_prot : ::std::uint_least32_t
 	prot_exec = 0x4,             /* page can be executed */
 	prot_sem = 0x8,              /* page may be used for atomic ops */
 	prot_none = 0x0,             /* page can not be accessed */
+	prot_mte = 0x20,             /* page is protected with Memory Tagging (ARM MTE for example) */
 	prot_growsdown = 0x01000000, /* mprotect flag: extend change to start of growsdown vma */
 	prot_growsup = 0x02000000,   /* mprotect flag: extend change to end of growsup vma */
 };

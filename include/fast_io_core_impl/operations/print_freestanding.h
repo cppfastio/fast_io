@@ -486,6 +486,10 @@ inline constexpr void print_control_single(output outstm, T t)
 		}
 		::fast_io::operations::decay::scatter_write_all_decay(outstm, scattersbuffer, static_cast<::std::size_t>(ptr - scattersbuffer));
 	}
+	else if constexpr (::fast_io::transcode_imaginary_printable<char_type, value_type>)
+	{
+		//todo?
+	}
 	else if constexpr (context_printable<char_type, value_type>)
 	{
 		typename ::std::remove_cvref_t<decltype(print_context_type(io_reserve_type<char_type, value_type>))>::type st;
@@ -1229,7 +1233,6 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm, T t, Args
 					if constexpr (needprintlf)
 					{
 						*bcurr = ::fast_io::char_literal_v<u8'\n', char_type>;
-						;
 						++bcurr;
 					}
 					obuffer_set_curr(optstm, bcurr);
@@ -1341,7 +1344,8 @@ concept print_freestanding_params_decay_okay =
 	::std::integral<char_type> &&
 	((::fast_io::printable<char_type, Args> || ::fast_io::reserve_printable<char_type, Args> ||
 	  ::fast_io::dynamic_reserve_printable<char_type, Args> || ::fast_io::scatter_printable<char_type, Args> ||
-	  ::fast_io::reserve_scatters_printable<char_type, Args> || ::fast_io::context_printable<char_type, Args>) &&
+	  ::fast_io::reserve_scatters_printable<char_type, Args> || ::fast_io::context_printable<char_type, Args> ||
+	  ::fast_io::transcode_imaginary_printable<char_type, Args>) &&
 	 ...);
 
 template <typename output, typename... Args>
