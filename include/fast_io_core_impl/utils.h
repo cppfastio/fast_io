@@ -154,7 +154,7 @@ template <typename T>
 concept my_unsigned_integral = my_integral<T> && !my_signed_integral<T>;
 
 template <typename T>
-concept my_floating_point = ::std::is_floating_point<T>
+concept my_floating_point = ::std::floating_point<T>
 #ifdef __SIZEOF_FLOAT16__
 							|| ::std::same_as<::std::remove_cv_t<T>, __float16>
 #endif
