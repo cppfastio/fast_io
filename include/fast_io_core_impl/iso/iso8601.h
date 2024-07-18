@@ -1,5 +1,13 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/intrinsics.h"
+#include "fast_io_core_impl/iso/isos.h"
+#include "fast_io_core_impl/terminate.h"
+#include "fast_io_core_impl/integers/impl.h"
+#include "fast_io_core_impl/char_category.h"
+#include "fast_io_core_impl/integers/sto/sto_contiguous.h"
+#include <cstdint>
+#include <concepts>
 namespace fast_io
 {
 

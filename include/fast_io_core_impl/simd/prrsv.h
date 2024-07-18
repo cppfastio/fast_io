@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/literals/literal.h"
+#include "fast_io_core_impl/simd/generic.h"
+#include <iterator>
+#include <cstdint>
+
 namespace fast_io
 {
 namespace details

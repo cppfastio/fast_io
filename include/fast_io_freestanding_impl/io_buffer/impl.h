@@ -6,6 +6,8 @@
 #include "output.h"
 #include "input.h"
 #include "destroy.h"
+#include "fast_io_core_impl/allocation/impl.h"
+#include "fast_io_core_impl/operations/refs/base.h"
 
 namespace fast_io
 {

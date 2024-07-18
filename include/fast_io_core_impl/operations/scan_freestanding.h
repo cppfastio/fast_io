@@ -1,5 +1,11 @@
 ﻿#pragma once
 
+#include <type_traits>
+#include "fast_io_core_impl/concepts/operation.h"
+#include "fast_io_core_impl/concepts/parse_code.h"
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/asan_support.h"
+#include "fast_io_core_impl/operations/readimpl/decay.h"
 namespace fast_io
 {
 

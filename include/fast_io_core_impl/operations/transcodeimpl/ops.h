@@ -1,5 +1,9 @@
 #pragma once
 
+#include <limits>
+#include "fast_io_core_impl/operations/transcodeimpl/defines.h"
+#include "fast_io_core_impl/terminate.h"
+
 namespace fast_io
 {
 

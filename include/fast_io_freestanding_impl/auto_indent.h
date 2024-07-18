@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/intrinsics.h"
+#include <concepts>
+#include <cstdint>
+#include <utility>
 namespace fast_io
 {
 

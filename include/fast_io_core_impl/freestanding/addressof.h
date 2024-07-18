@@ -8,6 +8,7 @@ https://github.com/gcc-mirror/gcc/blob/master/libstdc++-v3/include/bits/move.h
 C++ freestanding does not provide ::std::addressof, ::std::move and ::std::forward. We need to define them by ourselves.
 */
 
+#include <type_traits>
 namespace fast_io::freestanding
 {
 

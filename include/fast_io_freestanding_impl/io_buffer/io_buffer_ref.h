@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include "fast_io_freestanding_impl/io_buffer/io_buffer.h"
+#include "fast_io_freestanding_impl/io_buffer/mode.h"
+#include "fast_io_core_impl/operations/refs/output_stream.h"
 namespace fast_io
 {
 

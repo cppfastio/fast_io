@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/operations/refs/seek.h"
+#include "fast_io_core_impl/operations/refs/input_stream.h"
+#include "fast_io_core_impl/operations/common.h"
+#include "fast_io_core_impl/operations/refs/mutex.h"
+#include "fast_io_core_impl/operations/lockguard.h"
 namespace fast_io::operations
 {
 

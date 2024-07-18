@@ -1,5 +1,11 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/operations/refs/input_stream.h"
+#include "fast_io_core_impl/operations/common.h"
+#include "fast_io_core_impl/operations/readimpl/puntil_eof.h"
+#include "fast_io_core_impl/operations/readimpl/basis.h"
+
 namespace fast_io
 {
 namespace details

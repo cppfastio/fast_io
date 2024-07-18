@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include <cstdint>
+// #include "fast_io_freestanding_impl/io_buffer/io_buffer_ref.h"
+//
+// #include "fast_io_core_impl/operations/refs/base.h"
+// #include "fast_io_core_impl/operations/refs/output_stream.h"
 namespace fast_io
 {
 namespace details

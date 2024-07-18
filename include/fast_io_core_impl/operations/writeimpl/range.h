@@ -1,5 +1,14 @@
 ﻿#pragma once
 
+#include <iterator>
+#include "fast_io_core_impl/freestanding/array.h"
+#include "fast_io_core_impl/freestanding/algorithm.h"
+#include "fast_io_core_impl/freestanding/bytes.h"
+#include "fast_io_core_impl/operations/refs/output_stream.h"
+#include "fast_io_core_impl/operations/writeimpl/decay.h"
+#include "fast_io_core_impl/operations/multiblock_iterator_view/impl.h"
+#include "fast_io_core_impl/freestanding/relocatable.h"
+
 namespace fast_io
 {
 

@@ -1,5 +1,12 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/operations/readimpl/basis.h"
+#include "fast_io_core_impl/operations/readimpl/scatter.h"
+#include "fast_io_core_impl/operations/readimpl/scatterbytes.h"
+#include "fast_io_core_impl/operations/readimpl/pbasis.h"
+#include "fast_io_core_impl/operations/readimpl/scatterp.h"
+#include "fast_io_core_impl/operations/readimpl/scatterpbytes.h"
+
 namespace fast_io::operations::decay
 {
 

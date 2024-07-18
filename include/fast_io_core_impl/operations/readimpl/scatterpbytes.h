@@ -1,4 +1,14 @@
-﻿namespace fast_io
+﻿#pragma once
+
+#include <cstddef>
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/operations/refs/input_stream.h"
+#include "fast_io_core_impl/operations/readimpl/pbasis.h"
+#include "fast_io_core_impl/operations/readimpl/scatter.h"
+#include "fast_io_core_impl/operations/readimpl/scatterbytes.h"
+#include "fast_io_core_impl/operations/readimpl/scatterp.h"
+
+namespace fast_io
 {
 
 namespace details

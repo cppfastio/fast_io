@@ -3,6 +3,10 @@
 #include <type_traits>
 #include "fast_io_core_impl/concepts/parse_code.h"
 #include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/concepts/operation.h"
+#include "fast_io_core_impl/freestanding/addressof.h"
+#include "fast_io_core_impl/concepts/details.h"
+
 namespace fast_io
 {
 

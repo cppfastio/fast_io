@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/concepts/parse_code.h"
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/error.h"
+#include <concepts>
+#include <cstdint>
 namespace fast_io
 {
 namespace details

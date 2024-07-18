@@ -1,5 +1,18 @@
 #pragma once
 
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/literals/literal.h"
+#include "fast_io_core_impl/intrinsics.h"
+#include "fast_io_core_impl/concepts/operation.h"
+#include "fast_io_core_impl/asan_support.h"
+#include "fast_io_core_impl/operations/refs/output_stream.h"
+#include "fast_io_core_impl/operations/writeimpl/decay.h"
+#include "fast_io_core_impl/terminate.h"
+#include "fast_io_core_impl/local_new_array_ptr.h"
+#include "fast_io_core_impl/operations/transcodeimpl/transcoder.h"
+#include "fast_io_core_impl/alias.h"
+
+
 namespace fast_io
 {
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+#include <type_traits>
 namespace fast_io
 {
 

@@ -1,5 +1,13 @@
 ﻿#pragma once
 
+#include <cstdint>
+#include <concepts>
+#include <type_traits>
+#include "fast_io_core_impl/integers/impl.h"
+#include "fast_io_core_impl/integers/sto/sto_contiguous.h"
+#include "fast_io_core_impl/socket/posix_sockaddr.h"
+#include "fast_io_core_impl/socket/addrprt.h"
+
 namespace fast_io
 {
 

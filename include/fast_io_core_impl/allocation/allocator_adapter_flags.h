@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <type_traits>
+
 enum class allocator_adapter_flags
 {
 	none = 0,

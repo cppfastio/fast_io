@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <cstddef>
+#include <iterator>
+#include "fast_io_core_impl/operations/multiblock_iterator_view/impl.h"
+
 namespace fast_io
 {
 

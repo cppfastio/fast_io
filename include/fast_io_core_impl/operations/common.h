@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <cstddef>
+#include <limits>
+#include "fast_io_core_impl/concepts/type.h"
 namespace fast_io
 {
 

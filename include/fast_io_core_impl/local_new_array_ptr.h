@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <cstddef>
+#include "fast_io_core_impl/allocation/impl.h"
+#include "fast_io_core_impl/secure_clear_guard.h"
 namespace fast_io::details
 {
 template <typename char_type, typename allocator = ::fast_io::native_thread_local_allocator>

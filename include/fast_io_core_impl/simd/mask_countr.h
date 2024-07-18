@@ -1,5 +1,13 @@
 ﻿#pragma once
 
+#include <cstddef>
+#include <concepts>
+#include <cstdint>
+#include <limits>
+#include <bit>
+#include "fast_io_core_impl/simd/generic.h"
+#include "fast_io_core_impl/simd/is_all_zeros.h"
+
 namespace fast_io
 {
 

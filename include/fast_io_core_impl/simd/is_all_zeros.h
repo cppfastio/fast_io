@@ -1,5 +1,11 @@
 ﻿#pragma once
 
+#include <cstddef>
+#include <concepts>
+#include <cstdint>
+#include "fast_io_core_impl/simd/cpu_flags.h"
+#include "fast_io_core_impl/simd/generic.h"
+
 namespace fast_io
 {
 

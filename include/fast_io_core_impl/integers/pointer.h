@@ -1,5 +1,12 @@
 ﻿#pragma once
 
+#include <cstddef>
+#include <concepts>
+#include <iterator>
+#include "fast_io_core_impl/concepts/operation.h"
+#include "fast_io_core_impl/concepts/operation_details.h"
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/freestanding/cstr_len.h"
 namespace fast_io
 {
 

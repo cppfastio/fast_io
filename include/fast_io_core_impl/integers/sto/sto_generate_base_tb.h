@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include <type_traits>
+#include <limits>
+#include "fast_io_core_impl/terminate.h"
+#include "fast_io_core_impl/freestanding/array.h"
+
 namespace fast_io
 {
 

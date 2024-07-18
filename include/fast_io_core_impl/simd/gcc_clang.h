@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <cstddef>
+#include <type_traits>
+#include <concepts>
+#include <cstdint>
 #ifdef __GNUC__
 #pragma GCC system_header
 #endif

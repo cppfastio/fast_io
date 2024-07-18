@@ -1,6 +1,16 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/freestanding/algorithm.h"
+#include "fast_io_core_impl/freestanding/array.h"
 #include <type_traits>
+#include <concepts>
+#include <cstdint>
+#include <bit>
+#include <cstddef>
+#include <iterator>
+#include <limits>
+
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC system_header
 #endif

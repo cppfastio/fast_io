@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <type_traits>
+#include <concepts>
 namespace fast_io
 {
 namespace decorators

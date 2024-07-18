@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cstdint>
 namespace fast_io
 {
 #if defined(_MSC_VER) && !defined(__clang__)

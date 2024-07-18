@@ -6,7 +6,6 @@
 #include "fast_io_core_impl/concepts/operation.h"
 #include "fast_io_core_impl/concepts/type.h"
 #include "fast_io_core_impl/integers/pointer.h"
-#include "fast_io_core_impl/codecvt/utf.h"
 #include "fast_io_core_impl/utils.h"
 #include <cstddef>
 #include <concepts>

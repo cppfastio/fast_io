@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include <concepts>
+#include <cstdint>
+#include "fast_io_core_impl/allocation/impl.h"
+#include "fast_io_core_impl/freestanding/algorithm.h"
+
 namespace fast_io
 {
 

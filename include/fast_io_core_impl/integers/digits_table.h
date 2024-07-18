@@ -1,5 +1,10 @@
 ﻿#pragma once
 
+#include <concepts>
+#include "fast_io_core_impl/literals/literal.h"
+#include "fast_io_core_impl/freestanding/array.h"
+#include "fast_io_core_impl/ebcdic.h"
+
 namespace fast_io::details
 {
 

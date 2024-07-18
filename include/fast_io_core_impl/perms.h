@@ -1,5 +1,11 @@
 ﻿#pragma once
 
+#include <cstdint>
+#include <type_traits>
+#include <concepts>
+#include "fast_io_core_impl/literals/literal.h"
+#include "fast_io_core_impl/mode.h"
+
 namespace fast_io
 {
 // https://github.com/gcc-mirror/gcc/blob/master/libstdc++-v3/include/bits/fs_fwd.h

@@ -3,6 +3,8 @@
 #include <concepts>
 #include <limits>
 #include <cstdint>
+#include "fast_io_core_impl/ebcdic.h"
+
 namespace fast_io
 {
 

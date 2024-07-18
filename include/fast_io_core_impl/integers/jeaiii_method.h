@@ -5,6 +5,11 @@ Algorithm: JEAIII
 Author: jeaiii
 */
 
+#include <concepts>
+#include <cstdint>
+#include "fast_io_core_impl/integers/digits_table.h"
+#include "fast_io_core_impl/intrinsics.h"
+
 namespace fast_io::details::jeaiii
 {
 

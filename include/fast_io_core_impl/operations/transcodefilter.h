@@ -1,6 +1,7 @@
 ﻿#pragma once
 
-#pragma once
+#include "fast_io_core_impl/freestanding/addressof.h"
+#include "fast_io_core_impl/operations/decofilter.h"
 
 namespace fast_io
 {

@@ -2,6 +2,7 @@
 
 #include "fast_io_core_impl/codecvt/utf.h"
 #include "fast_io_core_impl/concepts/type.h"
+#include "fast_io_core_impl/codecvt/general.h"
 #include <concepts>
 #include <iterator>
 namespace fast_io

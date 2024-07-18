@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/iso/iso8601.h"
+#include <cstdint>
 namespace fast_io
 {
 

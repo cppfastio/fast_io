@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include <cstdint>
+#include <limits>
+#include <bit>
+#include "fast_io_core_impl/intrinsics/carry.h"
 namespace fast_io
 {
 

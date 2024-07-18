@@ -1,5 +1,14 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/allocation/common.h"
+#include <concepts>
+
+namespace fast_io
+{
+
+namespace details
+{
+
 template <typename alloc>
 concept has_allocate_impl = requires(::std::size_t n) {
 	{ alloc::allocate(n) } -> ::std::same_as<void *>;
@@ -206,7 +215,6 @@ concept has_handle_reallocate_aligned_zero_n_impl = requires(typename alloc::han
 	{ alloc::handle_reallocate_aligned_zero_n(handle, p, n, n, n) } -> ::std::same_as<void *>;
 };
 
-
 template <typename alloc>
 concept has_handle_allocate_at_least_impl = requires(typename alloc::handle_type handle, ::std::size_t n) {
 	{ alloc::handle_allocate_at_least(handle, n) } -> ::std::same_as<::fast_io::allocation_least_result>;
@@ -267,7 +275,6 @@ concept has_handle_reallocate_aligned_zero_n_at_least_impl = requires(typename a
 	{ alloc::handle_reallocate_aligned_zero_n_at_least(handle, p, n, n, n) } -> ::std::same_as<::fast_io::allocation_least_result>;
 };
 
-
 template <typename alloc>
 concept has_handle_deallocate_impl = requires(typename alloc::handle_type handle, void *p) {
 	{ alloc::handle_deallocate(handle, p) } -> ::std::same_as<void>;
@@ -287,3 +294,7 @@ template <typename alloc>
 concept has_handle_deallocate_aligned_n_impl = requires(typename alloc::handle_type handle, void *p, ::std::size_t n) {
 	{ alloc::handle_deallocate_aligned_n(handle, p, n, n) } -> ::std::same_as<void>;
 };
+
+} // namespace details
+
+} // namespace fast_io

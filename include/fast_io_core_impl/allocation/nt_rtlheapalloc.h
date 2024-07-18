@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <cstdint>
+#include "fast_io_core_impl/terminate.h"
+#include "fast_io_core_impl/allocation/common.h"
 #if defined(_MSC_VER) && !defined(_KERNEL_MODE) && !defined(_WIN32_WINDOWS)
 #pragma comment(lib, "ntdll.lib")
 #endif
