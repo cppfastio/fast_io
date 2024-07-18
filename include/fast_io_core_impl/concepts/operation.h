@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <type_traits>
+#include "fast_io_core_impl/concepts/parse_code.h"
+#include "fast_io_core_impl/concepts/type.h"
 namespace fast_io
 {
 

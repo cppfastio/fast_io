@@ -1,5 +1,15 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/codecvt/gb18030.h"
+#include "fast_io_core_impl/codecvt/utf_util_table.h"
+#include "fast_io_core_impl/terminate.h"
+#include "fast_io_core_impl/ebcdic.h"
+#include "fast_io_core_impl/simd/x86_64.h"
+#include <concepts>
+#include <bit>
+#include <limits>
+#include <cstdint>
+
 namespace fast_io
 {
 

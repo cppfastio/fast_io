@@ -1,111 +1,156 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(fast_io)
+project(
+  fast_io
+  LANGUAGES CXX
+  VERSION 2.0)
 
-INSTALL (DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
-INSTALL (DIRECTORY ${CMAKE_SOURCE_DIR}/man/ DESTINATION man/man3)
+# Set a default build type if none was specified
+set(default_build_type "Release")
+if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  set(default_build_type "Debug")
+endif()
 
-option(BUILD_I18N_DLLS "build i18n runtime dlls" OFF)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
-if(BUILD_I18N_DLLS)
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_SHARED_MODULE_PREFIX "fast_io_i18n.locale.")
-file(GLOB localefiles ${CMAKE_SOURCE_DIR}/src/i18n_data/locale/*.cc)
-
-include(CheckCXXCompilerFlag)
-
-function(compilelocaleencoding encoding localelist)
-
-if(${encoding} STREQUAL "UTF-8")
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		set(compilerencodingtoggle "/utf-8")
-		CHECK_CXX_COMPILER_FLAG(${compilerencodingtoggle} COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
-	else()
-		set(compilerencodingtoggle "")
-		set(COMPILER_SUPPORT_EXECUTION_CHARSET_UTF-8 1)
-	endif()
+if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+  set(${PROJECT_NAME}_DEFAULT_VAL ON)
 else()
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		set(compilerencodingtoggle "/execution-charset:${encoding}")
-	else()
-		set(compilerencodingtoggle "-fexec-charset=${encoding}")
-	endif()
-	CHECK_CXX_COMPILER_FLAG(${compilerencodingtoggle} COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
+  set(${PROJECT_NAME}_DEFAULT_VAL OFF)
 endif()
 
-if(I18N_INSTALL_DIR)
-else()
-	set(I18N_INSTALL_DIR lib)
+
+option(${PROJECT_NAME}_INSTALL_MANUALS "Install manuals" ${${PROJECT_NAME}_DEFAULT_VAL})
+option(${PROJECT_NAME}_ENABLE_TESTS "Enable tests" ${${PROJECT_NAME}_DEFAULT_VAL})
+option(${PROJECT_NAME}_BUILD_I18N_DLLS "Build i18n runtime dlls" ON)
+if(${${PROJECT_NAME}_ENABLE_TESTS})  
+  option(${PROJECT_NAME}_ENABLE_TESTS_ADD_ASAN "Build tests with address sanitizer" ON)
+  option(${PROJECT_NAME}_ENABLE_TESTS_ADD_MSAN "Build tests with memory sanitizer" OFF)
+  option(${PROJECT_NAME}_ENABLE_TESTS_ADD_UBSAN "Build tests with undefined behaviour sanitizer" OFF)
+endif()
+option(${PROJECT_NAME}_BUILD_FUZZERS "Build fuzzers" ${${PROJECT_NAME}_DEFAULT_VAL})
+if(${${PROJECT_NAME}_BUILD_FUZZERS})  
+  option(${PROJECT_NAME}_BUILD_FUZZERS_ADD_ASAN "Build fuzzers with address sanitizer" ON)
+  option(${PROJECT_NAME}_BUILD_FUZZERS_ADD_MSAN "Build fuzzers with memory sanitizer" OFF)
+  option(${PROJECT_NAME}_BUILD_FUZZERS_ADD_UBSAN "Build fuzzers with undefined behaviour sanitizer" OFF)
+endif()
+option(${PROJECT_NAME}_BUILD_EXAMPLES "Build examples" ${${PROJECT_NAME}_DEFAULT_VAL})
+if(${${PROJECT_NAME}_BUILD_EXAMPLES})  
+  option(${PROJECT_NAME}_BUILD_EXAMPLES_ADD_ASAN  "Build examples with address sanitizer" ON)
+  option(${PROJECT_NAME}_BUILD_EXAMPLES_ADD_MSAN  "Build examples with memory sanitizer" OFF)
+  option(${PROJECT_NAME}_BUILD_EXAMPLES_ADD_UBSAN "Build examples with undefined behaviour sanitizer" OFF)
+endif()
+option(${PROJECT_NAME}_BUILD_BENCHMARKS "Build benchmarks" ${${PROJECT_NAME}_DEFAULT_VAL})
+if(${${PROJECT_NAME}_BUILD_EXAMPLES})  
+  option(${PROJECT_NAME}_BUILD_BENCHMARKS_ADD_ASAN  "Build benchmarks with address sanitizer" OFF)
+  option(${PROJECT_NAME}_BUILD_BENCHMARKS_ADD_MSAN  "Build benchmarks with memory sanitizer" OFF)
+  option(${PROJECT_NAME}_BUILD_BENCHMARKS_ADD_UBSAN "Build benchmarks with undefined behaviour sanitizer" OFF)
 endif()
 
-if(COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
-	if(localelist)
-		foreach(filename ${localelist})
-			string(REPLACE "@" "_" purfilename ${filename})
-			add_library(${purfilename}.${encoding} MODULE "${CMAKE_SOURCE_DIR}/src/i18n_data/locale/${localelist}.cc")
-			set_target_properties(${purfilename}.${encoding} PROPERTIES OUTPUT_NAME ${filename}.${encoding})
-			if (NOT ${compilerencodingtoggle} STREQUAL "")
-				target_compile_options(${purfilename}.${encoding} PRIVATE ${compilerencodingtoggle})
-			endif()
-			target_compile_definitions(${purfilename}.${encoding} PUBLIC
-				FAST_IO_LOCALE_ENCODING="${encoding}"
-				FAST_IO_LOCALE_LENCODING=L"${encoding}"
-				FAST_IO_LOCALE_u8ENCODING=u8"${encoding}"
-				FAST_IO_LOCALE_uENCODING=u"${encoding}"
-				FAST_IO_LOCALE_UENCODING=U"${encoding}")
-			install(TARGETS ${purfilename}.${encoding}
-				LIBRARY DESTINATION ${I18N_INSTALL_DIR})
-		endforeach()
 
-	else()
-		foreach(filepath ${localefiles})
-			get_filename_component(filename ${filepath} NAME_WE)
-			string(REPLACE "@" "_" purfilename ${filename})
-			add_library(${purfilename}.${encoding} MODULE ${filepath})
-			set_target_properties(${purfilename}.${encoding} PROPERTIES OUTPUT_NAME ${filename}.${encoding})
-			if (NOT ${compilerencodingtoggle} STREQUAL "")
-				target_compile_options(${purfilename}.${encoding} PRIVATE ${compilerencodingtoggle})
-			endif()
-			target_compile_definitions(${purfilename}.${encoding} PUBLIC
-				FAST_IO_LOCALE_ENCODING="${encoding}"
-				FAST_IO_LOCALE_LENCODING=L"${encoding}"
-				FAST_IO_LOCALE_u8ENCODING=u8"${encoding}"
-				FAST_IO_LOCALE_uENCODING=u"${encoding}"
-				FAST_IO_LOCALE_UENCODING=U"${encoding}")
-			install(TARGETS ${purfilename}.${encoding}
-				LIBRARY DESTINATION ${I18N_INSTALL_DIR})
-		endforeach()
-	endif()
-else()
-	message("Compiler does not support \"${compilerencodingtoggle}\"; locale under ${encoding} execution charset will not build.")
-endif()
-endfunction()
 
-compilelocaleencoding("UTF-8" false)
-compilelocaleencoding("GB18030" false)
-if(I18N_LOCALE_ENCODINGS)
-foreach(encoding ${I18N_LOCALE_ENCODINGS})
-	if (NOT proj STREQUAL "UTF-8" AND NOT encoding STREQUAL "GB18030")
-		if(I18N_LOCALE_LIST)
-			compilelocaleencoding(${encoding} ${I18N_LOCALE_LIST})
-		else()
-			compilelocaleencoding(${encoding} false)
-		endif()
-	endif()
-endforeach()
-else()
+file(GLOB_RECURSE ${PROJECT_NAME}_headers CONFIGURE_DEPENDS
+     "${CMAKE_CURRENT_SOURCE_DIR}/include/**.h")
+message(DEBUG "${PROJECT_NAME}_headers: ${${PROJECT_NAME}_headers}")
+
+add_library(${PROJECT_NAME} INTERFACE)
+
+# if it was not header-only ... # being a cross-platform target, we enforce
+# standards conformance on MSVC target_compile_options(${PROJECT_NAME} PUBLIC
+# "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive->")
+
+target_include_directories(
+  ${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                            $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20)
+
+if(${${PROJECT_NAME}_BUILD_I18N_DLLS})
+  add_subdirectory(src)
 endif()
 
+
+if(${${PROJECT_NAME}_BUILD_FUZZERS})
+  add_subdirectory(fuzzing)
 endif()
 
-option(ENABLE_TESTS "Enable tests" OFF)
-
-if(${ENABLE_TESTS})
-include(CTest)
-include_directories(include)
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
-link_libraries(ntdll)
+if(${${PROJECT_NAME}_BUILD_BENCHMARKS}) 
+  add_subdirectory(benchmark)
 endif()
-include(${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt)
+
+
+if(${${PROJECT_NAME}_ENABLE_TESTS})
+  include(CTest)
+  add_subdirectory(tests)
+endif()
+
+if(${${PROJECT_NAME}_BUILD_EXAMPLES}) 
+  add_subdirectory(examples)
+endif()
+
+
+# ======================== INSTALL ==========================
+
+string(TOLOWER ${PROJECT_NAME}/version.h VERSION_HEADER_LOCATION)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/get_cpm.cmake)
+include(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/packages/packageProject.cmake/add_package.cmake
+)
+packageproject(
+  # the name of the target to export
+  NAME
+  ${PROJECT_NAME}
+  # the version of the target to export
+  VERSION
+  ${PROJECT_VERSION}
+  # a temporary directory to create the config files
+  BINARY_DIR
+  ${PROJECT_BINARY_DIR}
+  # location of the target's public headers
+  INCLUDE_DIR
+  ${PROJECT_SOURCE_DIR}/include
+  # should match the target's INSTALL_INTERFACE include directory
+  INCLUDE_DESTINATION
+  include/${PROJECT_NAME}
+  # dir for .cmake files related to scripts for finding targets from the project
+  # . We need to change it because it's not multilib and is header-only lib.
+  INSTALL_CMAKEDIR
+  share/${PROJECT_NAME}/cmake
+  # (optional) option to install only header files with matching pattern
+  # INCLUDE_HEADER_PATTERN "*.h" semicolon separated list of the project's
+  # dependencies DEPENDENCIES "fmt 7.1.3;cxxopts 2.2.0" (optional) create a
+  # header containing the version info Note: that the path to headers should be
+  # lowercase
+  VERSION_HEADER
+  "${PROJECT_NAME}/version.h"
+  # (optional) create a export header using GenerateExportHeader module
+  EXPORT_HEADER
+  "${PROJECT_NAME}/export.h"
+  # (optional) install your library with a namespace (Note: do NOT add extra
+  # '::') NAMESPACE ${PROJECT_NAMESPACE} (optional) define the project's version
+  # compatibility, defaults to `AnyNewerVersion` supported values:
+  # `AnyNewerVersion|SameMajorVersion|SameMinorVersion|ExactVersion`
+  COMPATIBILITY
+  AnyNewerVersion
+  # (optional) option to disable the versioning of install destinations
+  DISABLE_VERSION_SUFFIX
+  YES
+  # (optional) option to ignore target architecture for package resolution
+  # defaults to YES for header only (i.e. INTERFACE) libraries
+  ARCH_INDEPENDENT
+  YES
+  # (optional) option to generate CPack variables
+  CPACK
+  YES)
+
+if(${PROJECT_NAME}_INSTALL_MANUALS)
+  install(DIRECTORY ${CMAKE_SOURCE_DIR}/man/ DESTINATION share/man/man3)
 endif()

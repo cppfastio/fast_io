@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <concepts>
+#include <limits>
+#include <cstdint>
 namespace fast_io
 {
 

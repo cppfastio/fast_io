@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include "fast_io_core_impl/codecvt/utf.h"
+#include "fast_io_core_impl/concepts/type.h"
+#include <concepts>
+#include <iterator>
 namespace fast_io
 {
 

@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <concepts>
+#include "fast_io_core_impl/utils.h"
 namespace fast_io::details
 {
 
