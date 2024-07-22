@@ -113,7 +113,7 @@ On Windows 95 or 95 Plus! you can enable `-O3` but not `-Ofast`. You'll also nee
 - Universal CRT
 - Universal CRT with MSVC debugging
 - Wine's MSVCRT
-- Wine's UCRT 9.11+
+- Wine's UCRT 9.13+
 
 See wine bug [PR53960](https://gitlab.winehq.org/wine/wine/-/merge_requests/5752)
 
@@ -147,3 +147,4 @@ See wine bug [PR53960](https://gitlab.winehq.org/wine/wine/-/merge_requests/5752
 - LLVM Address Sanitizer
 - Full freestanding support (which means we do not have any headers besides freestanding headers. Tested with GCC's --disable-hosted-libstdcxx without any libc, including newlib)
 - Pintool support
+- ARM MTE support

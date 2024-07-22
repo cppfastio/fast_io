@@ -48,7 +48,12 @@ struct posix_mmap_options
 			prottemp |= PROT_EXEC;
 		}
 #endif
-
+#ifdef PROT_MTE
+		if ((protv & ::fast_io::mmap_prot::prot_mte) == ::fast_io::mmap_prot::prot_mte)
+		{
+			prottemp |= PROT_MTE;
+		}
+#endif
 #ifdef PROT_SEM
 		if ((protv & ::fast_io::mmap_prot::prot_sem) == ::fast_io::mmap_prot::prot_sem)
 		{
