@@ -1,7 +1,7 @@
 ## Compiler Support
 - GCC >= 15
-- Clang >= 19
-- REMOVE MSVC SUPPORT SINCE IT SUPPORTS MODULE
+- Clang >= 20
+- MSVC
 
 ## C++ standard library support
 - GCC libstdc++
