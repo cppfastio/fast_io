@@ -1,0 +1,4 @@
+.fast_io_module.mod.cmd
+.kernel.o.cmd
+fast_io_module.mod
+kernel.o
