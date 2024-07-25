@@ -15,4 +15,3 @@ function(SUBDIRLIST result_var curdir)
       PARENT_SCOPE
   )
 endfunction()
-
