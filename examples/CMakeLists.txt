@@ -1,8 +1,22 @@
-# set(CMAKE_CXX_STANDARD 23) add_subdirectory(examples/0001.helloworld)
-# add_subdirectory(examples/0002.a+b) add_subdirectory(examples/0003.manipulators)
-# add_subdirectory(examples/0004.time) add_subdirectory(examples/0005.sha)
-# add_subdirectory(examples/0006.file_io) add_subdirectory(examples/0007.legacy)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/apply.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/create_exe_default.cmake)
 
+function(apply_to_examples_in_subdir subdir command)
+  apply_for_every_compilation_unit_in_subdir(
+    ${CMAKE_CURRENT_LIST_DIR} ${CMAKE_CURRENT_LIST_DIR} ${subdir} example_${PROJECT_NAME}
+    ${command}
+  )
+endfunction()
+
+function(apply_to_sources_examples sources_list_name command)
+  apply_for_every_compilation_unit(${sources_list_name} example_${PROJECT_NAME} ${command})
+endfunction()
+
+function(create_exe_default_example name source)
+  cmake_language(CALL create_exe_default "EXAMPLES" ${name} ${source})
+endfunction()
+
+# cmake-format: off
 set(simple_examples
     0000.compile;
     0001.helloworld;
@@ -20,11 +34,11 @@ set(simple_examples
     0013.graph;
     0014.random;
     0015.match;
-    # 0016.dll;
+    # 0016.dll; # idk where "a.dll"
     0017.network;
-    0018.i18n;
+    # 0018.i18n;
     0019.llvm;
-    # 0020.operating_system; 
+    # 0020.operating_system;
     # 0021.kernel_driver;
     0022.complex;
     0023.to;
@@ -41,51 +55,151 @@ set(simple_examples
     # 0033.pulseaudio
 )
 
-set(complex_examples
+set(examples_complicated
+  # 0020.operating_system; # There's no cmake # TODO
+  0021.kernel_driver;
+  0030.binary_serialization;
+)
+
+set(examples_openssl 
     0008.openssl;
+)
+
+set(examples_qt 
     0011.qt;
-    0016.dll;
-    0020.operating_system;
-    0021.kernel_driver;
-    0025.winrt;
+)
+
+set(examples_windows
+    0016.dll; # idk where "a.dll"
+)
+
+set(examples_winrt
+    0025.winrt
+)
+
+set(examples_lua
     0026.lua;
-    0028.python;
-    0030.binary_serialization;
+)
+
+set(examples_python
+    0028.python
+)
+
+set(examples_pulseaudio
     0033.pulseaudio
 )
 
-foreach(subdir ${simple_examples})
-  file(
-    GLOB_RECURSE sources CONFIGURE_DEPENDS
-    RELATIVE "${CMAKE_CURRENT_LIST_DIR}/${subdir}"
-    "${CMAKE_CURRENT_LIST_DIR}/${subdir}/**.cc"
-  )
-  message(DEBUG "sources ${subdir}: ${sources}")
-  foreach(source ${sources})
-    message(DEBUG "Before: examples_${PROJECT_NAME}_${subdir}_${source}")
-    string(REGEX REPLACE "/" "_" name ${source})
-    string(REGEX REPLACE "(\.cc|\.cpp|\.cxx)" "" name ${name})
-    message(DEBUG "After: examples_${PROJECT_NAME}_${subdir}_${name}")
-    add_executable(examples_${PROJECT_NAME}_${subdir}_${name} ${subdir}/${source})
-    target_link_libraries(examples_${PROJECT_NAME}_${subdir}_${name} PRIVATE ${PROJECT_NAME})
-    set_target_properties(examples_${PROJECT_NAME}_${subdir}_${name} PROPERTIES CXX_STANDARD 20)
-    # https://llvm.org/docs/LibFuzzer.html #id24
-    target_compile_options(examples_${PROJECT_NAME}_${subdir}_${name} PRIVATE -fsanitize=fuzzer)
-    if(${${PROJECT_NAME}_BUILD_EXAMPLES_ADD_ASAN})
-      target_compile_options(examples_${PROJECT_NAME}_${subdir}_${name} PRIVATE -fsanitize=address)
-    endif()
-    if(${${PROJECT_NAME}_BUILD_EXAMPLES_ADD_MSAN})
-      target_compile_options(examples_${PROJECT_NAME}_${subdir}_${name} PRIVATE -fsanitize=memory)
-    endif()
-    if(${${PROJECT_NAME}_BUILD_EXAMPLES_ADD_UBSAN})
-      target_compile_options(examples_${PROJECT_NAME}_${subdir}_${name} PRIVATE -fsanitize=undefined)
-    endif()
+# cmake-format: on
 
-    if(CMAKE_SYSTEM_NAME STREQUAL "Windows"
-       OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin"
-       OR CMAKE_SYSTEM_NAME STREQUAL "Msys"
-    )
-      target_link_libraries(examples_${PROJECT_NAME}_${subdir}_${name} PRIVATE ntdll)
-    endif()
+set(examples_to_compile "")
+list(APPEND examples_to_compile ${simple_examples})
+
+find_package(OpenSSL COMPONENTS Crypto SSL)
+if(${OPENSSL_FOUND})
+  list(APPEND examples_to_compile ${examples_openssl})
+endif()
+
+find_package(Qt5 COMPONENTS Core)
+find_package(Qt6 COMPONENTS Core)
+if(${QT5_FOUND} OR ${QT6_FOUND})
+  list(APPEND examples_to_compile ${examples_qt})
+endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  list(APPEND examples_to_compile ${examples_windows})
+  list(APPEND examples_to_compile ${examples_winrt})
+endif()
+
+find_package(Lua)
+if(${LUA_FOUND})
+  list(APPEND examples_to_compile ${examples_lua})
+endif()
+
+find_package(Python COMPONENTS Development)
+if(${Python_Development_FOUND})
+  list(APPEND examples_to_compile ${examples_python})
+endif()
+
+find_package(PulseAudio)
+if(${PulseAudio_FOUND})
+  list(APPEND examples_to_compile ${examples_pulseaudio})
+endif()
+
+foreach(subdir ${examples_to_compile})
+  apply_to_examples_in_subdir(${subdir} create_exe_default_example)
+endforeach()
+
+function(link_openssl name source)
+  target_link_libraries(${name} PRIVATE OpenSSL::Crypto OpenSSL::SSL)
+  if(WIN32)
+    target_link_libraries(${name} PRIVATE OpenSSL::applink)
+  endif()
+endfunction()
+
+if(${OPENSSL_FOUND})
+  foreach(subdir ${examples_openssl})
+    apply_to_examples_in_subdir(${subdir} link_openssl)
   endforeach()
+endif()
+
+function(link_qt_core name source)
+  if(${QT5_FOUND})
+    target_link_libraries(${name} PRIVATE Qt5::Core)
+  else()
+    target_link_libraries(${name} PRIVATE Qt6::Core)
+  endif()
+endfunction()
+
+if(${QT5_FOUND} OR ${QT6_FOUND})
+  foreach(subdir ${examples_qt})
+    apply_to_examples_in_subdir(${subdir} link_qt_core)
+  endforeach()
+endif()
+
+function(link_winrt name source)
+  set_target_properties(${NAME} PROPERTIES VS_WINRT_COMPONENT TRUE)
+endfunction()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  foreach(subdir ${examples_winrt})
+    apply_to_examples_in_subdir(${subdir} link_winrt)
+  endforeach()
+endif()
+
+function(link_lua name source)
+  target_link_libraries(${name} PRIVATE ${LUA_LIBRARIES})
+  target_include_directories(${name} PRIVATE ${LUA_INCLUDE_DIR})
+endfunction()
+
+if(${LUA_FOUND})
+  foreach(subdir ${examples_lua})
+    apply_to_examples_in_subdir(${subdir} link_lua)
+  endforeach()
+endif()
+
+function(link_python name source)
+  target_link_libraries(${name} PRIVATE Python::Module)
+  target_include_directories(${name} PRIVATE ${Python_INCLUDE_DIR})
+  target_link_options(${name} PRIVATE ${Python_LINK_OPTIONS})
+endfunction()
+
+if(${Python_Development_FOUND})
+  foreach(subdir ${examples_python})
+    apply_to_examples_in_subdir(${subdir} link_python)
+  endforeach()
+endif()
+
+function(link_pulseaudio name source)
+  target_link_libraries(${name} PRIVATE ${PulseAudio_LIBRARIES} ${PulseAudio_MAINLOOP_LIBRARY})
+  target_include_directories(${name} PRIVATE ${PulseAudio_INCLUDE_DIRS})
+endfunction()
+
+if(${PulseAudio_FOUND})
+  foreach(subdir ${examples_pulseaudio})
+    apply_to_examples_in_subdir(${subdir} link_pulseaudio)
+  endforeach()
+endif()
+
+foreach(subdir ${examples_complicated})
+  add_subdirectory(${subdir})
 endforeach()

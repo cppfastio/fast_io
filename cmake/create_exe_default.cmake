@@ -1,0 +1,23 @@
+function(create_exe_default type name source)
+  add_executable(${name} ${source})
+  target_link_libraries(${name} PRIVATE ${PROJECT_NAME})
+  set_target_properties(${name} PROPERTIES CXX_STANDARD 20)
+  if(${${PROJECT_NAME}_ENABLE_${TYPE}_ADD_ASAN})
+    target_compile_options(${name} PRIVATE -fsanitize=address)
+    target_link_options(${name} PRIVATE -fsanitize=address)
+  endif()
+  if(${${PROJECT_NAME}_ENABLE_${TYPE}_ADD_MSAN})
+    target_compile_options(${name} PRIVATE -fsanitize=memory)
+    target_link_options(${name} PRIVATE -fsanitize=memory)
+  endif()
+  if(${${PROJECT_NAME}_ENABLE_${TYPE}_ADD_UBSAN})
+    target_compile_options(${name} PRIVATE -fsanitize=undefined)
+    target_link_options(${name} PRIVATE -fsanitize=undefined)
+  endif()
+  if(CMAKE_SYSTEM_NAME STREQUAL "Windows"
+     OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin"
+     OR CMAKE_SYSTEM_NAME STREQUAL "Msys"
+  )
+    target_link_libraries(${name} PRIVATE ntdll)
+  endif()
+endfunction()
