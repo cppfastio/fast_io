@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <cstddef>
-#include "fast_io_core_impl/simd/generic_operations.h"
 namespace fast_io
 {
 

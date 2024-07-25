@@ -1,9 +1,5 @@
 ﻿#pragma once
 
-#include <concepts>
-#include <limits>
-#include "fast_io_core_impl/literals/literal.h"
-#include "lc.h"
 namespace fast_io
 {
 

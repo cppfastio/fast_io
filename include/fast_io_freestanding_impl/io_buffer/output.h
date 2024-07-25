@@ -1,11 +1,5 @@
 ﻿#pragma once
 
-#include <cstddef>
-#include <concepts>
-#include "fast_io_core_impl/concepts/type.h"
-#include "fast_io_freestanding_impl/io_buffer/mode.h"
-#include "fast_io_core_impl/allocation/adapters.h"
-
 namespace fast_io
 {
 

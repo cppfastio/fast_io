@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <type_traits>
 namespace fast_io::freestanding
 {
 

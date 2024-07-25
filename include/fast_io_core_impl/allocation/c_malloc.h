@@ -1,8 +1,4 @@
 ﻿#pragma once
-#include <cstddef>
-#include "fast_io_core_impl/allocation/common.h"
-#include "fast_io_core_impl/terminate.h"
-
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 6308)

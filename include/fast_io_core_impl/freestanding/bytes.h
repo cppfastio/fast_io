@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <cstddef>
 namespace fast_io::details
 {
 #if __has_cpp_attribute(__gnu__::__always_inline__)

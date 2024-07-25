@@ -1,9 +1,4 @@
 ﻿#pragma once
-#include <cstddef>
-#include <cstdint>
-#include <bit>
-#include <limits>
-#include <concepts>
 #if defined(_MSC_VER) && !defined(__clang__)
 #include <intrin.h>
 #pragma warning(push)

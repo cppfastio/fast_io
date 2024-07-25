@@ -26,7 +26,7 @@
 #include "mimalloc_driver.h"
 #endif
 
-
+#include "custom.h"
 #include "adapters.h"
 
 namespace fast_io

@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <concepts>
 namespace fast_io::details
 {
 // clang-format off

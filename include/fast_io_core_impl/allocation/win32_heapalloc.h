@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <cstdint>
-#include "fast_io_core_impl/terminate.h"
-#include "fast_io_core_impl/allocation/common.h"
 namespace fast_io
 {
 

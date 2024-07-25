@@ -1,9 +1,5 @@
 ﻿#pragma once
 
-#include <concepts>
-#include <cstdint>
-#include <iterator>
-
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC system_header
 #endif

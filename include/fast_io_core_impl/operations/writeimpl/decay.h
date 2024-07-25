@@ -1,12 +1,5 @@
 ﻿#pragma once
 
-#include <cstddef>
-#include "fast_io_core_impl/concepts/type.h"
-#include "fast_io_core_impl/operations/writeimpl/basis.h"
-#include "fast_io_core_impl/operations/writeimpl/pbasis.h"
-#include "fast_io_core_impl/operations/writeimpl/scatterp.h"
-#include "fast_io_core_impl/operations/writeimpl/scatterpbytes.h"
-
 namespace fast_io::operations::decay
 {
 
@@ -43,14 +36,14 @@ inline constexpr io_scatter_status_t
 scatter_write_some_decay(outstmtype outsm, basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 						 ::std::size_t n)
 {
-	return scatter_write_some_decay(outsm, pscatters, n);
+	return ::fast_io::details::scatter_write_some_impl(outsm, pscatters, n);
 }
 
 template <typename outstmtype>
 inline constexpr io_scatter_status_t scatter_write_some_bytes_decay(outstmtype outsm, io_scatter_t const *pscatters,
 																	::std::size_t n)
 {
-	return scatter_write_some_bytes_decay(outsm, pscatters, n);
+	return ::fast_io::details::scatter_write_some_bytes_impl(outsm, pscatters, n);
 }
 
 template <typename outstmtype>
@@ -58,13 +51,13 @@ inline constexpr void
 scatter_write_all_decay(outstmtype outsm, basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 						::std::size_t n)
 {
-	scatter_write_all_decay(outsm, pscatters, n);
+	::fast_io::details::scatter_write_all_impl(outsm, pscatters, n);
 }
 
 template <typename outstmtype>
 inline constexpr void scatter_write_all_bytes_decay(outstmtype outsm, io_scatter_t const *pscatters, ::std::size_t n)
 {
-	scatter_write_all_bytes_decay(outsm, pscatters, n);
+	::fast_io::details::scatter_write_all_bytes_impl(outsm, pscatters, n);
 }
 
 template <typename outstmtype>

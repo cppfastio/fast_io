@@ -5,10 +5,9 @@
 #include "scatterbytes.h"
 #include "pbasis.h"
 #include "scatterp.h"
-// #include "scatterpbytes.h"
-// #include "decay.h"
-// #include "range.h"
-#include "fast_io_core_impl/operations/writeimpl/scatterpbytes.h"
+#include "scatterpbytes.h"
+#include "decay.h"
+#include "range.h"
 
 namespace fast_io
 {

@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include "fast_io_core_impl/terminate.h"
-#include <cstddef>
 namespace fast_io
 {
 namespace mimalloc

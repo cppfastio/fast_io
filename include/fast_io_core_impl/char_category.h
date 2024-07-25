@@ -1,9 +1,5 @@
 ﻿#pragma once
 
-#include <concepts>
-#include "fast_io_core_impl/ebcdic.h"
-#include "fast_io_core_impl/literals/literal.h"
-
 namespace fast_io::char_category
 {
 

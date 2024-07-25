@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <cstddef>
-#include "fast_io_core_impl/terminate.h"
 namespace fast_io
 {
 

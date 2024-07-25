@@ -1,10 +1,5 @@
 ﻿#pragma once
 
-#include "fast_io_core_impl/concepts/type.h"
-#include "fast_io_core_impl/operations/refs/output_stream.h"
-#include "fast_io_core_impl/operations/writeimpl/basis.h"
-#include "fast_io_core_impl/freestanding/algorithm.h"
-#include <cstddef>
 namespace fast_io
 {
 

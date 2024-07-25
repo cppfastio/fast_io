@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <type_traits>
-#include <utility>
-#include "fast_io_freestanding_impl/io_buffer/mode.h"
 namespace fast_io
 {
 

@@ -1,12 +1,5 @@
 ﻿#pragma once
 
-#include "fast_io_core_impl/concat/concat_buffer.h"
-#include "fast_io_core_impl/concepts/operation.h"
-#include "fast_io_core_impl/concepts/strlike.h"
-#include "fast_io_core_impl/literals/literal.h"
-#include "fast_io_core_impl/operations/print_freestanding.h"
-#include <concepts>
-#include <cstddef>
 namespace fast_io::details::decay
 {
 

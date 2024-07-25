@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <cstddef>
 namespace fast_io
 {
 

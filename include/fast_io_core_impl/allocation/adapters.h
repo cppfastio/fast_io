@@ -5,14 +5,6 @@
 // https://github.com/microsoft/STL/issues/4002 gcc and clang provide constexpr new, but still won't compile.
 // ::std::allocator<T> is NOT freestanding.
 
-#include <cstddef>
-#include <limits>
-#include "fast_io_core_impl/terminate.h"
-#include "fast_io_core_impl/allocation/common.h"
-#include "fast_io_core_impl/allocation/has_methods_detect.h"
-#include "fast_io_core_impl/freestanding/bytes.h"
-#include "fast_io_core_impl/freestanding/allocator.h"
-
 #pragma push_macro("new")
 #undef new
 
@@ -22,6 +14,7 @@ namespace fast_io
 namespace details
 {
 
+#include "has_methods_detect.h"
 
 template <typename alloc>
 concept has_default_alignment_impl = requires(::std::size_t n) { alloc::default_alignment; };

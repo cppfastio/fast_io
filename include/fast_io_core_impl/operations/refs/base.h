@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "fast_io_core_impl/freestanding/addressof.h"
+
 namespace fast_io::operations
 {
 

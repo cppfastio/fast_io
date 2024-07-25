@@ -1,13 +1,4 @@
-﻿#pragma once
-
-#include "fast_io_core_impl/concepts/type.h"
-#include "fast_io_core_impl/operations/refs/output_stream.h"
-#include "fast_io_core_impl/operations/writeimpl/pbasis.h"
-#include "fast_io_core_impl/operations/writeimpl/scatterp.h"
-#include "fast_io_core_impl/operations/writeimpl/scatter.h"
-#include "fast_io_core_impl/operations/writeimpl/scatterbytes.h"
-
-namespace fast_io
+﻿namespace fast_io
 {
 
 namespace details

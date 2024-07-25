@@ -1,14 +1,5 @@
 ﻿#pragma once
 
-#include <type_traits>
-#include <cstdint>
-#include <limits>
-#include <bit>
-#include <concepts>
-#include "fast_io_core_impl/freestanding/array.h"
-#include "fast_io_core_impl/simd/cpu_flags.h"
-#include "fast_io_core_impl/utils.h"
-
 #if !defined(_MSC_VER) || defined(__clang__)
 #if defined(__x86_64__) || defined(__i386__)
 #include <immintrin.h>

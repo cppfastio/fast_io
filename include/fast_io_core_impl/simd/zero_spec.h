@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include "fast_io_core_impl/simd/generic.h"
-
 namespace fast_io::intrinsics
 {
 

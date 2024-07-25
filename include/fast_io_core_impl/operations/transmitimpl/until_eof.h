@@ -1,12 +1,5 @@
 ﻿#pragma once
 
-#include <cstddef>
-#include "fast_io_core_impl/concepts/type.h"
-#include "fast_io_core_impl/operations/transmitimpl/common.h"
-#include "fast_io_core_impl/local_new_array_ptr.h"
-#include "fast_io_core_impl/operations/readimpl/decay.h"
-#include "fast_io_core_impl/operations/writeimpl/decay.h"
-
 namespace fast_io
 {
 
