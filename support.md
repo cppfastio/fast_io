@@ -8,23 +8,25 @@
 - LLVM libc++
 - MSVC STL
 
-## Architecture Support
-- alpha
+## Mainstream Architecture Support
 - i686
 - x86_64
 - arm
 - aarch64
-- riscv
-- riscv64
-- powerpc64
 - wasm32-wasi
 - wasm64-wasi
+- loongarch64
+
+## Architecture Support
+- alpha
+- riscv (RISC-V is crap. Stop using it)
+- riscv64
+- powerpc64
 - mips-abi32
 - mips-abin32
 - mips-abi64
 - avr
 - ia64
-- loongarch64
 - xtensa-esp32
 - All other architectures should work, they just aren't tested due to time not being infinite.
 
