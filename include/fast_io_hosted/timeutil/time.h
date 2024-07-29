@@ -5,9 +5,15 @@ namespace fast_io
 #if !defined(_WIN32) && !defined(__AVR__) && !defined(__MSDOS__)
 namespace posix
 {
+#ifdef __DARWIN_C_LEVEL
+extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("_clock_getres");
+extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("_clock_settime");
+extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("_clock_gettime");
+#else
 extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_getres");
-extern int libc_clock_settime(clockid_t clk_id, struct timespec const* tp) noexcept __asm__("clock_settime");
-extern int libc_clock_gettime(clockid_t clk_id, struct timespec* tp) noexcept __asm__("clock_gettime");
+extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("clock_settime");
+extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_gettime");
+#endif
 }
 #endif
 
