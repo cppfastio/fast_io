@@ -5,6 +5,25 @@ namespace fast_io
 
 namespace posix
 {
+#ifdef __DARWIN_C_LEVEL
+extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
+extern int libc_renameat(int olddirfd, char const *oldpath, int newdirfd, char const *newpath) noexcept
+	__asm__("_renameat");
+extern int libc_linkat(int olddirfd, char const *oldpath, int newdirfd, char const *newpath, int flags) noexcept
+	__asm__("_linkat");
+extern int libc_symlinkat(char const *oldpath, int newdirfd, char const *newpath) noexcept __asm__("_symlinkat");
+extern int libc_fchmodat(int dirfd, char const *pathname, mode_t mode, int flags) noexcept __asm__("_fchmodat");
+extern int libc_utimensat(int dirfd, char const *pathname, struct timespec const *times, int flags) noexcept
+	__asm__("_utimensat");
+extern int libc_fchownat(int dirfd, char const *pathname, uid_t owner, gid_t group, int flags) noexcept
+	__asm__("_fchownat");
+extern int libc_fstatat(int dirfd, char const *pathname, struct stat *buf, int flags) noexcept __asm__("_fstatat");
+extern int libc_mkdirat(int dirfd, char const *pathname, mode_t mode) noexcept __asm__("_mkdirat");
+extern int libc_mknodat(int dirfd, char const *pathname, mode_t mode, dev_t dev) noexcept __asm__("_mknodat");
+extern int libc_unlinkat(int dirfd, char const *pathname, int flags) noexcept __asm__("_unlinkat");
+extern int libc_readlinkat(int dirfd, char const *pathname, char *buf, ::std::size_t bufsiz) noexcept
+	__asm__("_readlinkat");
+#else
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_renameat(int olddirfd, char const *oldpath, int newdirfd, char const *newpath) noexcept
 	__asm__("renameat");
@@ -22,6 +41,7 @@ extern int libc_mknodat(int dirfd, char const *pathname, mode_t mode, dev_t dev)
 extern int libc_unlinkat(int dirfd, char const *pathname, int flags) noexcept __asm__("unlinkat");
 extern int libc_readlinkat(int dirfd, char const *pathname, char *buf, ::std::size_t bufsiz) noexcept
 	__asm__("readlinkat");
+#endif
 } // namespace posix
 
 namespace details
