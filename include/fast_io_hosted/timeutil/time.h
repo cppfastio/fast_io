@@ -1,13 +1,40 @@
-﻿#pragma once
+#pragma once
+
+#if !defined(_WIN32) && !defined(__AVR__) && !defined(__MSDOS__) && defined(__APPLE__)
+#    if __has_include(<AvailabilityMacros.h>)
+#        include <AvailabilityMacros.h>
+#    endif
+#endif
 
 namespace fast_io
 {
+
 #if !defined(_WIN32) && !defined(__AVR__) && !defined(__MSDOS__)
 namespace posix
 {
-extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_getres");
-extern int libc_clock_settime(clockid_t clk_id, struct timespec const* tp) noexcept __asm__("clock_settime");
-extern int libc_clock_gettime(clockid_t clk_id, struct timespec* tp) noexcept __asm__("clock_gettime");
+
+extern int libc_clock_getres(clockid_t clk_id, struct timespec* tp) noexcept
+#if defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
+__asm__("_clock_getres")
+#else
+__asm__("clock_getres")
+#endif
+;
+extern int libc_clock_settime(clockid_t clk_id, struct timespec const* tp) noexcept
+#if defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
+__asm__("_clock_settime")
+#else
+__asm__("clock_settime")
+#endif
+;
+extern int libc_clock_gettime(clockid_t clk_id, struct timespec* tp) noexcept
+#if defined(AVAILABLE_MAC_OS_X_VERSION_10_12_AND_LATER)
+__asm__("_clock_gettime")
+#else
+__asm__("clock_gettime")
+#endif
+;
+
 }
 #endif
 
