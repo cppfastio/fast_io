@@ -55,6 +55,11 @@
 #include "posix_file_lock.h"
 #endif
 
+#if defined(__MSDOS__)
+#include <libc/fd_props.h>
+#include "../../fast_io_dsal/string.h"
+#endif
+
 namespace fast_io
 {
 
@@ -806,7 +811,19 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 }
 
 #else
-#if defined(__NEWLIB__) || defined(__MSDOS__) || defined(_PICOLIBC__)
+
+#if defined(__MSDOS__)
+template <bool always_terminate = false>
+inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
+{
+	auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
+	::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), "\\", ::fast_io::mnp::os_c_str(pathname))};
+	int fd{::open(pn.c_str(), flags, mode)};
+	system_call_throw_error<always_terminate>(fd);
+	return fd;
+}
+
+#elif defined(__NEWLIB__) || defined(_PICOLIBC__)
 
 template <bool always_terminate = false>
 inline int my_posix_openat(int, char const *, int, mode_t)
@@ -894,7 +911,7 @@ inline int my_posix_open(char const *pathname, int flags,
 #endif
 						 mode_t mode)
 {
-#ifdef __MSDOS__
+#if 0
 	/*
 	Referenced from
 	https://dl.acm.org/doi/pdf/10.1145/70931.70935?casa_token=rWDy5JyhhkMAAAAA:BdkF0zbbWgurns3mU3yEJI2HnHXWhe6wyYGtKxjRewlEgLg6lk-cGGNLZTTdr3vUjtFg6Cnia2b4
@@ -946,7 +963,8 @@ inline int my_posix_open(char const *pathname, int flags,
 		}
 	}
 	return fd;
-#elif (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
+#endif
+#if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
 	int fd{::open(pathname, flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
 	return fd;
@@ -981,7 +999,7 @@ struct my_posix_open_paramter
 	}
 };
 
-#if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
+#if (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
 
 template <::fast_io::constructible_to_os_c_str T>
 inline constexpr int posix_openat_file_impl(int, T const &, open_mode, perms)
@@ -1324,6 +1342,8 @@ public:
 		int a2[2]{-1, -1};
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 		if (noexcept_call(_pipe, a2, 131072u, _O_BINARY) == -1)
+#elif (defined(__MSDOS__) || defined(__DJGPP__)) || (defined(__APPLE__) || defined(__DARWIN_C_LEVEL))
+		if (noexcept_call(::pipe, a2) == -1)
 #else
 		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
 #endif
