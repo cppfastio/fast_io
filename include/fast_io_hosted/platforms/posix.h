@@ -57,7 +57,6 @@
 
 #if defined(__MSDOS__)
 #include <libc/fd_props.h>
-#include "../../fast_io_dsal/string.h"
 #endif
 
 namespace fast_io
