@@ -65,7 +65,7 @@ inline constexpr bool msvc_stl_xstring_activate_string_annotation{
 #endif
 };
 
-inline constexpr bool msvc_stl_xstring_get_asan_string_should_annotate() noexcept
+inline _CONSTEXPR20 bool msvc_stl_xstring_get_asan_string_should_annotate() noexcept
 {
 #ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
 	if constexpr (::fast_io::details::string_hack::msvc_stl_xstring_activate_string_annotation)
@@ -79,21 +79,16 @@ inline constexpr bool msvc_stl_xstring_get_asan_string_should_annotate() noexcep
 	return false;
 }
 
-#ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
 inline _CONSTEXPR20 void msvc_stl_sanitizer_annotate_contiguous_container(
-	void const *_First, void const *_End, void const *_Old_last, void const *_New_last) noexcept
+	[[maybe_unused]] void const *_First, [[maybe_unused]] void const *_End, [[maybe_unused]] void const *_Old_last, [[maybe_unused]] void const *_New_last) noexcept
 {
+#ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
 	if (!__builtin_is_constant_evaluated())
 	{
 		_CSTD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
 	}
-}
-#else
-inline _CONSTEXPR20 void msvc_stl_sanitizer_annotate_contiguous_container(
-	void const *, void const *, void const *, void const *) noexcept
-{
-}
 #endif
+}
 /*
 https://github.com/microsoft/STL/blob/a357ff1750d3f6dffd54b10d537e93e0accfcc92/stl/inc/xstring#L617
 */
