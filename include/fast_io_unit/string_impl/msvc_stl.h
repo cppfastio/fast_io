@@ -70,20 +70,23 @@ inline constexpr bool msvc_stl_xstring_get_asan_string_should_annotate() noexcep
 #ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
 	if constexpr (::fast_io::details::string_hack::msvc_stl_xstring_activate_string_annotation)
 	{
-		return ::_Asan_string_should_annotate;
+		if (!__builtin_is_constant_evaluated())
+		{
+			return ::_Asan_string_should_annotate;
+		}
 	}
-	else
 #endif
-	{
-		return false;
-	}
+	return false;
 }
 
 #ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
 inline constexpr void msvc_stl_sanitizer_annotate_contiguous_container(
 	void const *_First, void const *_End, void const *_Old_last, void const *_New_last) noexcept
 {
-	_CSTD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+	if (!__builtin_is_constant_evaluated())
+	{
+		_CSTD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+	}
 }
 #else
 inline constexpr void msvc_stl_sanitizer_annotate_contiguous_container(
