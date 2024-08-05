@@ -65,6 +65,11 @@ inline constexpr bool msvc_stl_xstring_activate_string_annotation{
 #endif
 };
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline _CONSTEXPR20 bool msvc_stl_xstring_get_asan_string_should_annotate() noexcept
 {
 #ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
@@ -79,8 +84,13 @@ inline _CONSTEXPR20 bool msvc_stl_xstring_get_asan_string_should_annotate() noex
 	return false;
 }
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
 inline _CONSTEXPR20 void msvc_stl_sanitizer_annotate_contiguous_container(
-	[[maybe_unused]] void const *_First, [[maybe_unused]] void const *_End, [[maybe_unused]] void const *_Old_last, [[maybe_unused]] void const *_New_last) noexcept
+	[[maybe_unused]] void const *_First, [[maybe_unused]] void const *_End, [[maybe_unused]] void const *_Old_last, [[maybe_unused]] void const *_New_last)
 {
 #ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
 	if (!__builtin_is_constant_evaluated())
