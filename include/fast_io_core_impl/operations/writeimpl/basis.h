@@ -511,7 +511,7 @@ inline constexpr void write_all_impl(outstmtype outsm, typename outstmtype::outp
 		::std::ptrdiff_t bfddiff{ed - curr};
 		::std::ptrdiff_t itdiff{last - first};
 		if (itdiff < bfddiff)
-#if __has_cpp_attribute(__gnu__::__may_alias__)
+#if __has_cpp_attribute(likely)
 			[[likely]]
 #endif
 		{
@@ -542,7 +542,7 @@ inline constexpr ::std::byte const *write_some_bytes_impl(outstmtype outsm, ::st
 		::std::ptrdiff_t bfddiff{ed - curr};
 		::std::ptrdiff_t itdiff{last - first};
 		if (itdiff < bfddiff)
-#if __has_cpp_attribute(__gnu__::__may_alias__)
+#if __has_cpp_attribute(likely)
 			[[likely]]
 #endif
 		{
