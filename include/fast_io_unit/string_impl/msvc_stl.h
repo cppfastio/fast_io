@@ -80,7 +80,7 @@ inline constexpr bool msvc_stl_xstring_get_asan_string_should_annotate() noexcep
 }
 
 #ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
-inline constexpr void msvc_stl_sanitizer_annotate_contiguous_container(
+inline _CONSTEXPR20 void msvc_stl_sanitizer_annotate_contiguous_container(
 	void const *_First, void const *_End, void const *_Old_last, void const *_New_last) noexcept
 {
 	if (!__builtin_is_constant_evaluated())
@@ -89,7 +89,7 @@ inline constexpr void msvc_stl_sanitizer_annotate_contiguous_container(
 	}
 }
 #else
-inline constexpr void msvc_stl_sanitizer_annotate_contiguous_container(
+inline _CONSTEXPR20 void msvc_stl_sanitizer_annotate_contiguous_container(
 	void const *, void const *, void const *, void const *) noexcept
 {
 }
