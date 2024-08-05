@@ -47,16 +47,58 @@ inline constexpr decltype(auto) hack_scary_val(::std::basic_string<elem, traits,
 										__builtin_offsetof(model_t, _Mypair) + __builtin_offsetof(compress_pair_type, _Myval2));
 }
 
-#ifdef _ACTIVATE_STRING_ANNOTATION
+#if !defined(_DISABLE_STL_ANNOTATION) && !defined(_DISABLE_STRING_ANNOTATION)
+#ifdef __SANITIZE_ADDRESS__
+#define FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
+#endif
+#endif
+#endif
+
+// we leave this FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION macro for users to use
+
+inline constexpr bool msvc_stl_xstring_activate_string_annotation{
+#ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
+	true
+#endif
+};
+
+inline constexpr bool msvc_stl_xstring_get_asan_string_should_annotate() noexcept
+{
+#ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
+	if constexpr (::fast_io::details::string_hack::msvc_stl_xstring_activate_string_annotation)
+	{
+		return ::_Asan_string_should_annotate;
+	}
+	else
+#endif
+	{
+		return false;
+	}
+}
+
+#ifdef FAST_IO_MSVC_STL_INSERT_STRING_ANNOTATION
+inline constexpr void msvc_stl_sanitizer_annotate_contiguous_container(
+	void const *_First, void const *_End, void const *_Old_last, void const *_New_last) noexcept
+{
+	_CSTD __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+}
+#else
+inline constexpr void msvc_stl_sanitizer_annotate_contiguous_container(
+	void const *, void const *, void const *, void const *) noexcept
+{
+}
+#endif
 /*
 https://github.com/microsoft/STL/blob/a357ff1750d3f6dffd54b10d537e93e0accfcc92/stl/inc/xstring#L617
 */
-
 template <typename elem, typename traits, typename alloc>
-inline _CONSTEXPR20 void msvc_stl_xstring_Apply_annotation(::std::basic_string<elem, traits, alloc>::value_type const *const _First, 
-								::std::basic_string<elem, traits, alloc>::size_type const _Capacity,
-								::std::basic_string<elem, traits, alloc>::size_type const _Old_size,
-								::std::basic_string<elem, traits, alloc>::size_type const _New_size) noexcept
+inline _CONSTEXPR20 void msvc_stl_xstring_Apply_annotation(typename ::std::basic_string<elem, traits, alloc>::value_type const *const _First,
+														   typename ::std::basic_string<elem, traits, alloc>::size_type const _Capacity,
+														   typename ::std::basic_string<elem, traits, alloc>::size_type const _Old_size,
+														   typename ::std::basic_string<elem, traits, alloc>::size_type const _New_size) noexcept
 {
 #if _HAS_CXX20
 	if (_STD is_constant_evaluated())
@@ -64,8 +106,13 @@ inline _CONSTEXPR20 void msvc_stl_xstring_Apply_annotation(::std::basic_string<e
 		return;
 	}
 #endif // _HAS_CXX20
+	using model_t = model<elem, traits, alloc>;
+	using _Scary_val = typename model_t::_Scary_val;
+	using size_type = typename ::std::basic_string<elem, traits, alloc>::size_type;
+	constexpr size_type _Small_string_capacity = _Scary_val::_BUF_SIZE - 1;
+
 	// Don't annotate small strings; only annotate on the heap.
-	if (_Capacity <= _Small_string_capacity || !_Asan_string_should_annotate)
+	if (_Capacity <= _Small_string_capacity || !::fast_io::details::string_hack::msvc_stl_xstring_get_asan_string_should_annotate())
 	{
 		return;
 	}
@@ -76,12 +123,12 @@ inline _CONSTEXPR20 void msvc_stl_xstring_Apply_annotation(::std::basic_string<e
 	void const *const _New_last = _First + _New_size + 1;
 
 	constexpr bool _Large_string_always_asan_aligned =
-		(_Container_allocation_minimum_asan_alignment<::std::basic_string<elem, traits, alloc>>) >= _Asan_granularity;
+		(_STD _Container_allocation_minimum_asan_alignment<::std::basic_string<elem, traits, alloc>>) >= _STD _Asan_granularity;
 
 	// for the non-aligned buffer options, the buffer must always have size >= 9 bytes,
 	// so it will always end at least one shadow memory section.
 
-	_Asan_aligned_pointers _Aligned;
+	_STD _Asan_aligned_pointers _Aligned;
 	if constexpr (_Large_string_always_asan_aligned)
 	{
 		_Aligned = {_First, _STD _Get_asan_aligned_after(_End)};
@@ -110,31 +157,31 @@ inline _CONSTEXPR20 void msvc_stl_xstring_Apply_annotation(::std::basic_string<e
 	//   [_Aligned._First, _New_fixed) valid
 	//   [_New_fixed, _Aligned._End) poison
 	//   [_Aligned._End, _End) valid
-	_CSTD __sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
+	::fast_io::details::string_hack::msvc_stl_sanitizer_annotate_contiguous_container(_Aligned._First, _Aligned._End, _Old_fixed, _New_fixed);
 }
 
 template <typename elem, typename traits, typename alloc>
-inline _CONSTEXPR20 void msvc_stl_xstring_Modify_annotation(T &_My_data,
-	::std::basic_string<elem, traits, alloc>::size_type const _Old_size,
-	::std::basic_string<elem, traits, alloc>::size_type const _New_size) const noexcept
+inline _CONSTEXPR20 void msvc_stl_xstring_Modify_annotation(::std::basic_string<elem, traits, alloc> &str,
+															typename ::std::basic_string<elem, traits, alloc>::size_type const _Old_size,
+															typename ::std::basic_string<elem, traits, alloc>::size_type const _New_size) noexcept
 {
 	if (_Old_size == _New_size)
 	{
 		return;
 	}
-
-	::fast_io::details::string_hack::msvc_stl_xstring_Apply_annotation(_My_data._Myptr(), _My_data._Myres, _Old_size, _New_size);
+	decltype(auto) _My_data{::fast_io::details::string_hack::hack_scary_val(str)};
+	::fast_io::details::string_hack::msvc_stl_xstring_Apply_annotation<elem, traits, alloc>(_My_data._Myptr(), _My_data._Myres, _Old_size, _New_size);
 }
-#endif
 
 template <typename T>
 inline constexpr void set_end_ptr(T &str, typename T::value_type *ptr) noexcept
 {
 	decltype(auto) scv{hack_scary_val(str)};
 	::std::size_t newsize{static_cast<::std::size_t>(ptr - str.data())};
-#ifdef _ACTIVATE_STRING_ANNOTATION
-	::fast_io::details::string_hack::sanitizer_annotate_contiguous_container(scv, scv._Mysize, newsize);
-#endif
+	if constexpr (::fast_io::details::string_hack::msvc_stl_xstring_activate_string_annotation)
+	{
+		::fast_io::details::string_hack::msvc_stl_xstring_Modify_annotation(str, scv._Mysize, newsize);
+	}
 	scv._Mysize = newsize;
 }
 
