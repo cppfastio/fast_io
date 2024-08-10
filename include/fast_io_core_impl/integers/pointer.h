@@ -161,12 +161,15 @@ inline consteval my_constant_passer<char_type, n> compute_char_literal_array_typ
 	return {};
 }
 
+template<typename T>
+concept printaliascarray = ::std::is_array_v<::std::remove_reference_t<T>> &&
+			 ::std::integral<::std::remove_extent_t<::std::remove_cvref_t<T>>> &&
+			 requires(T const &s) { ::fast_io::details::compute_char_literal_array_type(s); };
+
 } // namespace details
 
 template <typename T>
-	requires(::std::is_array_v<::std::remove_reference_t<T>> &&
-			 ::std::integral<::std::remove_extent_t<::std::remove_cvref_t<T>>> &&
-			 requires(T const &s) { ::fast_io::details::compute_char_literal_array_type(s); })
+	requires(::fast_io::details::printaliascarray<T>)
 inline constexpr auto print_alias_define(io_alias_t, T const &s) noexcept
 {
 	using constanttype = decltype(::fast_io::details::compute_char_literal_array_type(s));
