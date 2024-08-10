@@ -458,7 +458,7 @@ struct ps_create_info
 		// PsCreateInitialState
 		struct
 		{
-			union
+			union u1union
 			{
 				::std::uint_least32_t InitFlags;
 				struct
@@ -496,7 +496,7 @@ struct ps_create_info
 		// PsCreateSuccess
 		struct
 		{
-			union
+			union u2union
 			{
 				::std::uint_least32_t OutputFlags;
 				struct
@@ -521,7 +521,7 @@ struct ps_create_info
 			::std::uint_least64_t ManifestAddress;
 			::std::uint_least32_t ManifestSize;
 		} SuccessState;
-	};
+	} stateunion;
 };
 
 struct ps_attribute
@@ -659,6 +659,11 @@ struct rtl_unicode_string_buffer
 	unicode_string String;
 	rtl_buffer ByteBuffer;
 	char16_t MinimumStaticBufferForTerminalNul;
+};
+
+struct rtl_srwlock
+{
+	void *Ptr;
 };
 
 } // namespace fast_io::win32::nt

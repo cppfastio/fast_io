@@ -2,7 +2,7 @@
 
 using namespace fast_io::io;
 
-fast_io::out_buf_type_mutex globalstdout{fast_io::out()};
+fast_io::out_buf_type_lockable globalstdout{fast_io::out()};
 
 int main()
 {
