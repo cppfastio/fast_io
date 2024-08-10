@@ -43,11 +43,13 @@ namespace details
 template <typename T, typename Allocator>
 struct heap_allocate_guard
 {
+	using value_type = T;
 	using native_handle_type = T *;
 	using allocator_type = Allocator;
+	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type, value_type>;
 	native_handle_type ptr;
-	explicit constexpr heap_allocate_guard(native_handle_type h) noexcept
-		: ptr{h}
+	explicit constexpr heap_allocate_guard() noexcept
+		: ptr{typed_allocator_type::allocate(1)}
 	{
 	}
 	heap_allocate_guard(heap_allocate_guard const &) = delete;
@@ -60,7 +62,7 @@ struct heap_allocate_guard
 	}
 	constexpr ~heap_allocate_guard()
 	{
-		::fast_io::typed_generic_allocator_adapter<allocator_type, T>::deallocate(ptr, 1);
+		typed_allocator_type::deallocate_n(ptr, 1);
 	}
 };
 
@@ -77,17 +79,19 @@ struct basic_general_io_lockable
 	using mutex_type = Mutex;
 	using unlocked_handle_type = T;
 	using allocator_type = Allocator;
-	using native_handle_type = ::fast_io::basic_general_io_lockable_nonmovable<mutex_type, unlocked_handle_type> *;
+	using io_lockable_nonmovable_type = ::fast_io::basic_general_io_lockable_nonmovable<unlocked_handle_type, mutex_type>;
+	using native_handle_type = io_lockable_nonmovable_type *;
 	native_handle_type ptr{};
 
 	template <typename... Args>
-		requires ::std::constructible_from<T, Args...>
-	explicit constexpr basic_general_io_lockable(Args &&...args)
+		requires (::std::constructible_from<T, Args...>&&(sizeof...(Args)!=1||((!::std::same_as<Args,::fast_io::for_overwrite_t>)&&...)))
+	explicit constexpr basic_general_io_lockable(Args&& ...args)
 	{
-		::fast_io::details::heap_allocate_guard<::fast_io::basic_general_io_lockable_nonmovable<mutex_type, unlocked_handle_type>, allocator_type> g{::fast_io::typed_generic_allocator_adapter<Allocator, basic_general_io_lockable_nonmovable<mutex_type, unlocked_handle_type>>::allocate(1)};
-		this->ptr = ::std::construct_at(ptr, ::std::forward<Args>(args)...);
-		g.release();
+		::fast_io::details::heap_allocate_guard<io_lockable_nonmovable_type, allocator_type> g;
+		::std::construct_at(g.ptr, ::std::forward<Args>(args)...);
+		this->ptr = g.release();
 	}
+	explicit constexpr basic_general_io_lockable(::fast_io::for_overwrite_t) noexcept {}
 	basic_general_io_lockable(basic_general_io_lockable const &) = delete;
 	basic_general_io_lockable &operator=(basic_general_io_lockable const &) = delete;
 	constexpr basic_general_io_lockable(basic_general_io_lockable &&other) noexcept
@@ -112,12 +116,22 @@ private:
 	{
 		if (this->ptr)
 		{
-			::std::destroy(this->ptr);
-			::fast_io::typed_generic_allocator_adapter<Allocator, basic_general_io_lockable_nonmovable<mutex_type, unlocked_handle_type>>::deallocate(ptr, 1);
+			::std::destroy_at(this->ptr);
+			::fast_io::typed_generic_allocator_adapter<allocator_type, io_lockable_nonmovable_type>::deallocate_n(ptr, 1);
 		}
 	}
 
 public:
+
+	template <typename... Args>
+		requires (::std::constructible_from<T, Args...>)
+	constexpr void reopen(Args&& ...args)
+	{
+		this->close();
+		::fast_io::details::heap_allocate_guard<io_lockable_nonmovable_type, allocator_type> g;
+		::std::construct_at(g.ptr, ::std::forward<Args>(args)...);
+		this->ptr = g.release();
+	}
 	constexpr void close() noexcept
 	{
 		this->destroy();
@@ -196,9 +210,9 @@ struct basic_general_mutex_movable
 private:
 	constexpr void construct_default() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
 	{
-		::fast_io::details::heap_allocate_guard<mutex_type, allocator_type> g{::fast_io::typed_generic_allocator_adapter<allocator_type, mutex_type>::allocate(1)};
-		this->pmutex = ::std::construct_at(pmutex);
-		g.release();
+		::fast_io::details::heap_allocate_guard<mutex_type, allocator_type> g;
+		::std::construct_at(pmutex);
+		this->pmutex = g.release();
 	}
 
 public:
@@ -216,8 +230,8 @@ private:
 	{
 		if (pmutex)
 		{
-			::std::destroy(this->pmutex);
-			::fast_io::typed_generic_allocator_adapter<allocator_type, mutex_type>::deallocate(pmutex, 1);
+			::std::destroy_at(this->pmutex);
+			::fast_io::typed_generic_allocator_adapter<allocator_type, mutex_type>::deallocate_n(pmutex, 1);
 		}
 	}
 
@@ -229,7 +243,7 @@ public:
 	}
 	constexpr void reopen() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
 	{
-		this->destroy();
+		this->close();
 		this->construct_default();
 	}
 

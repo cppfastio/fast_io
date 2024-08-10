@@ -36,4 +36,13 @@ using native_mutex =
 #endif
 	;
 
+template <typename Mutex>
+using basic_mutex_movable = ::fast_io::basic_general_mutex_movable<Mutex, ::fast_io::native_global_allocator>;
+using native_mutex_movable = ::fast_io::basic_mutex_movable<native_mutex>;
+
+template <typename T>
+using basic_io_lockable_nonmovable = ::fast_io::basic_general_io_lockable_nonmovable<T, ::fast_io::native_mutex>;
+template <typename T>
+using basic_io_lockable = ::fast_io::basic_general_io_lockable<T, ::fast_io::native_mutex, ::fast_io::native_global_allocator>;
+
 } // namespace fast_io
