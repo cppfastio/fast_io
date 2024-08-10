@@ -207,7 +207,7 @@ chrono_scan_decimal_fraction_part_never_overflow_impl(char_type const *begin, ch
 	{
 		return {itr, parse_code::invalid};
 	}
-	::std::size_t zero_cnt{digitsm1 - (itr - begin)};
+	::std::size_t zero_cnt{digitsm1 - static_cast<::std::size_t>(itr - begin)};
 	for (::std::size_t i{}; i < zero_cnt; ++i)
 	{
 		retval *= 10;

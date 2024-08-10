@@ -111,8 +111,8 @@ strlike_set_curr(io_strlike_type_t<char_type, ::std::basic_string<char_type, tra
 	else
 #endif
 	{
-		traits_type::assign(*p, char_type());
 		::fast_io::details::string_hack::set_end_ptr(str, p);
+		traits_type::assign(*p, char_type());
 	}
 }
 
