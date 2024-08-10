@@ -49,8 +49,7 @@ struct basic_general_io_lockable_nonmovable
 		}
 		else
 		{
-			::std::destroy_at(__builtin_addressof(handle));
-			::std::construct_at(__builtin_addressof(handle), ::std::forward<Args>(args)...);
+			this->handle = T(::std::forward<Args>(args)...);
 		}
 	}
 	constexpr void close() noexcept(noexcept(handle.close()))
