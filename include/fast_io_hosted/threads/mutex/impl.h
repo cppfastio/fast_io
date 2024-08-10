@@ -37,7 +37,8 @@ using native_mutex =
 	;
 
 template <typename Mutex>
-using basic_mutex_movable = ::fast_io::basic_general_mutex_movable<Mutex, ::fast_io::native_global_allocator>;
+using basic_mutex_movable = ::std::conditional_t<::std::movable<Mutex>, Mutex,
+												 ::fast_io::basic_general_mutex_movable<Mutex, ::fast_io::native_global_allocator>>;
 using native_mutex_movable = ::fast_io::basic_mutex_movable<native_mutex>;
 
 template <typename T>
