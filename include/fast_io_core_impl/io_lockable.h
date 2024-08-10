@@ -35,6 +35,29 @@ struct basic_general_io_lockable_nonmovable
 		: handle(::std::forward<Args>(args)...)
 	{
 	}
+
+	template <typename... Args>
+		requires(::std::constructible_from<T, Args...>)
+	constexpr void reopen(Args &&...args)
+	{
+		::fast_io::io_lock_guard guard(mutex);
+		if constexpr (requires() {
+						  handle.reopen(::std::forward<Args>(args)...);
+					  })
+		{
+			handle.reopen(::std::forward<Args>(args)...);
+		}
+		else
+		{
+			::std::destroy_at(__builtin_addressof(handle));
+			::std::construct_at(__builtin_addressof(handle), ::std::forward<Args>(args)...);
+		}
+	}
+	constexpr void close() noexcept(noexcept(handle.close()))
+	{
+		::fast_io::io_lock_guard guard(mutex);
+		handle.close();
+	}
 };
 
 namespace details
@@ -68,81 +91,6 @@ struct heap_allocate_guard
 
 } // namespace details
 
-template <typename T, typename Mutex, typename Allocator>
-	requires requires(Mutex &&m) {
-		m.lock();
-		m.unlock();
-		m.try_lock();
-	}
-struct basic_general_io_lockable
-{
-	using mutex_type = Mutex;
-	using unlocked_handle_type = T;
-	using allocator_type = Allocator;
-	using io_lockable_nonmovable_type = ::fast_io::basic_general_io_lockable_nonmovable<unlocked_handle_type, mutex_type>;
-	using native_handle_type = io_lockable_nonmovable_type *;
-	native_handle_type ptr{};
-
-	template <typename... Args>
-		requires (::std::constructible_from<T, Args...>&&(sizeof...(Args)!=1||((!::std::same_as<Args,::fast_io::for_overwrite_t>)&&...)))
-	explicit constexpr basic_general_io_lockable(Args&& ...args)
-	{
-		::fast_io::details::heap_allocate_guard<io_lockable_nonmovable_type, allocator_type> g;
-		::std::construct_at(g.ptr, ::std::forward<Args>(args)...);
-		this->ptr = g.release();
-	}
-	explicit constexpr basic_general_io_lockable(::fast_io::for_overwrite_t) noexcept {}
-	basic_general_io_lockable(basic_general_io_lockable const &) = delete;
-	basic_general_io_lockable &operator=(basic_general_io_lockable const &) = delete;
-	constexpr basic_general_io_lockable(basic_general_io_lockable &&other) noexcept
-		: ptr{other.ptr}
-	{
-		other.ptr = nullptr;
-	}
-	constexpr basic_general_io_lockable &operator=(basic_general_io_lockable &&other) noexcept
-	{
-		if (__builtin_addressof(other) == this)
-		{
-			return *this;
-		}
-		this->destroy();
-		this->ptr = other.ptr;
-		other.ptr = nullptr;
-		return *this;
-	}
-
-private:
-	constexpr void destroy() noexcept
-	{
-		if (this->ptr)
-		{
-			::std::destroy_at(this->ptr);
-			::fast_io::typed_generic_allocator_adapter<allocator_type, io_lockable_nonmovable_type>::deallocate_n(ptr, 1);
-		}
-	}
-
-public:
-
-	template <typename... Args>
-		requires (::std::constructible_from<T, Args...>)
-	constexpr void reopen(Args&& ...args)
-	{
-		this->close();
-		::fast_io::details::heap_allocate_guard<io_lockable_nonmovable_type, allocator_type> g;
-		::std::construct_at(g.ptr, ::std::forward<Args>(args)...);
-		this->ptr = g.release();
-	}
-	constexpr void close() noexcept
-	{
-		this->destroy();
-		this->ptr = nullptr;
-	}
-	constexpr ~basic_general_io_lockable()
-	{
-		this->destroy();
-	}
-};
-
 template <typename T, typename Mutex>
 struct basic_general_io_lockable_ref
 {
@@ -175,29 +123,6 @@ inline constexpr basic_general_io_lockable_ref<T, Mutex> io_stream_ref_define(::
 	return {__builtin_addressof(m)};
 }
 
-template <typename T, typename Mutex, typename Allocator>
-	requires ::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>
-inline constexpr basic_general_io_lockable_ref<T, Mutex>
-output_stream_ref_define(::fast_io::basic_general_io_lockable<T, Mutex, Allocator> &m) noexcept
-{
-	return {m.ptr};
-}
-
-template <typename T, typename Mutex, typename Allocator>
-	requires ::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>
-inline constexpr basic_general_io_lockable_ref<T, Mutex>
-input_stream_ref_define(::fast_io::basic_general_io_lockable<T, Mutex, Allocator> &m) noexcept
-{
-	return {m.ptr};
-}
-
-template <typename T, typename Mutex, typename Allocator>
-	requires ::fast_io::operations::defines::has_io_stream_ref_define<T>
-inline constexpr basic_general_io_lockable_ref<T, Mutex> io_stream_ref_define(::fast_io::basic_general_io_lockable<T, Mutex, Allocator> &m) noexcept
-{
-	return {m.ptr};
-}
-
 template <typename Mutex, typename Allocator>
 	requires ::std::default_initializable<Mutex>
 struct basic_general_mutex_movable
@@ -211,7 +136,7 @@ private:
 	constexpr void construct_default() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
 	{
 		::fast_io::details::heap_allocate_guard<mutex_type, allocator_type> g;
-		::std::construct_at(pmutex);
+		::std::construct_at(g.ptr);
 		this->pmutex = g.release();
 	}
 

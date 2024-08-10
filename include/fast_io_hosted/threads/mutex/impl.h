@@ -43,6 +43,6 @@ using native_mutex_movable = ::fast_io::basic_mutex_movable<native_mutex>;
 template <typename T>
 using basic_io_lockable_nonmovable = ::fast_io::basic_general_io_lockable_nonmovable<T, ::fast_io::native_mutex>;
 template <typename T>
-using basic_io_lockable = ::fast_io::basic_general_io_lockable<T, ::fast_io::native_mutex, ::fast_io::native_global_allocator>;
+using basic_io_lockable = ::fast_io::basic_general_io_lockable_nonmovable<T, ::fast_io::native_mutex_movable>;
 
 } // namespace fast_io
