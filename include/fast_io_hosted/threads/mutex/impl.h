@@ -23,7 +23,7 @@ using native_mutex =
 #ifdef __USING_MCFGTHREAD__
 	mcf_gthread_mutex
 #elif (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600) && !defined(_WIN32_WINDOWS)
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600) && !defined(_WIN32_WINDOWS) && 0
 	win32_srwlock
 #else
 	win32_critical_section
