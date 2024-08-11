@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined(__has_builtin)
 #if !__has_builtin(__builtin_malloc) || !__has_builtin(__builtin_free)

@@ -1,4 +1,4 @@
-#include <algorithm>
+﻿#include <algorithm>
 #include <ranges>
 #include <string>
 #include <fast_io.h>

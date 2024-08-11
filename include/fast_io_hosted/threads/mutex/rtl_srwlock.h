@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 Referenced from
 https://learn.microsoft.com/en-us/archive/msdn-magazine/2012/november/windows-with-c-the-evolution-of-synchronization-in-windows-and-c

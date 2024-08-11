@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 Referenced from
 https://stackoverflow.com/questions/44618230/in-the-msvc-abi-how-do-i-reliably-find-the-vtable-given-only-a-void

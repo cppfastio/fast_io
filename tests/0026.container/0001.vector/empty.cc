@@ -1,4 +1,4 @@
-#include <fast_io.h>
+﻿#include <fast_io.h>
 #include <fast_io_dsal/vector.h>
 using namespace fast_io::io;
 using namespace fast_io::mnp;
