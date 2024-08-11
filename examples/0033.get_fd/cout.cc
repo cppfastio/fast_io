@@ -1,4 +1,4 @@
-#include <fast_io_legacy.h>
+﻿#include <fast_io_legacy.h>
 #include <fast_io_driver/timer.h>
 #include <iostream>
 

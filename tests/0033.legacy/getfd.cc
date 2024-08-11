@@ -1,4 +1,4 @@
-#include<fast_io_legacy.h>
+﻿#include<fast_io_legacy.h>
 #ifdef __GLIBCXX__
 #include<ext/stdio_sync_filebuf.h>
 #include<ext/stdio_filebuf.h>

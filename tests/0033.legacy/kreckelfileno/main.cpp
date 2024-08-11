@@ -1,4 +1,4 @@
-/*
+﻿/*
 https://www.ginac.de/~kreckel/fileno/main.cpp
 */
 #include <iostream>
