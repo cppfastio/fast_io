@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // clang-format off
 #pragma comment(linker,"/alternatename:__imp_?BCryptOpenAlgorithmProvider@win32@fast_io@@YGIPAPAXPB_S1I@Z=__imp__BCryptOpenAlgorithmProvider@16")

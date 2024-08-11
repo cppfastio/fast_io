@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // clang-format off
 #pragma comment(linker,"/alternatename:__imp_?GetLastError@win32@fast_io@@YGIXZ=__imp__GetLastError@0")
