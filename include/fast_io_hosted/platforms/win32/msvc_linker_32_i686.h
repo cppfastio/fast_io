@@ -397,6 +397,24 @@
 #pragma comment( \
 	linker,      \
 	"/alternatename:__imp_?ZwQueryObject@nt@win32@fast_io@@YGIPAXW4object_information_class@123@0IPAI@Z=__imp__ZwQueryObject@20")
+#pragma comment( \
+	linker,      \
+	"/alternatename:__imp_?RtlAcquireSRWLockExclusive@nt@win32@fast_io@@YGXPAX@Z=__imp__RtlAcquireSRWLockExclusive@4")
+#pragma comment( \
+	linker,      \
+	"/alternatename:__imp_?RtlTryAcquireSRWLockExclusive@nt@win32@fast_io@@YGIPAX@Z=__imp__RtlTryAcquireSRWLockExclusive@4")
+#pragma comment( \
+	linker,      \
+	"/alternatename:__imp_?RtlReleaseSRWLockExclusive@nt@win32@fast_io@@YGXPAX@Z=__imp__RtlReleaseSRWLockExclusive@4")
+#pragma comment( \
+	linker,      \
+	"/alternatename:__imp_?AcquireSRWLockExclusive@win32@fast_io@@YGXPAX@Z=__imp__AcquireSRWLockExclusive@4")
+#pragma comment( \
+	linker,      \
+	"/alternatename:__imp_?TryAcquireSRWLockExclusive@win32@fast_io@@YGIPAX@Z=__imp__TryAcquireSRWLockExclusive@4")
+#pragma comment( \
+	linker,      \
+	"/alternatename:__imp_?ReleaseSRWLockExclusive@win32@fast_io@@YGXPAX@Z=__imp__ReleaseSRWLockExclusive@4")
 
 
 #if defined(_DLL)
