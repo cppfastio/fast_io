@@ -1,7 +1,7 @@
 ﻿#include <fast_io.h>
 #include <fast_io_device.h>
 #include <fast_io_driver/timer.h>
-#include <vector>
+#include <fast_io_dsal/vector.h>
 
 int main()
 {
@@ -14,7 +14,7 @@ int main()
 			write(obf, __builtin_addressof(i), __builtin_addressof(i) + 1);
 		}
 	}
-	std::vector<std::size_t> vec(N, u8'0');
+	::fast_io::vector<std::size_t> vec(N);
 	{
 		fast_io::timer t(u8"input");
 		fast_io::ibuf_file ibf(u8"iobuf_file_bin.txt");
