@@ -15,7 +15,7 @@ int main()
 			println(obf, i);
 		}
 	}
-	fast_io::vector<std::size_t> vec(N);
+	::fast_io::vector<std::size_t> vec(N);
 	{
 		fast_io::timer t(u8"input");
 		fast_io::ibuf_file ibf("iobuf_file.txt");

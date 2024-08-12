@@ -1,7 +1,7 @@
 ﻿#include <fast_io.h>
 #include <fast_io_device.h>
 #include <fast_io_driver/timer.h>
-#include <vector>
+#include <fast_io_dsal/vector.h>
 #include <fast_io_i18n.h>
 using namespace fast_io::io;
 

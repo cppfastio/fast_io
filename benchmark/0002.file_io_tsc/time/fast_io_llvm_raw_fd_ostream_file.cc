@@ -2,7 +2,7 @@
 #include <fast_io_device.h>
 #include <fast_io_driver/llvm.h>
 #include <fast_io_driver/timer.h>
-#include <vector>
+#include <fast_io_dsal/vector.h>
 using namespace fast_io::io;
 
 int main()
