@@ -3,6 +3,7 @@
 Referenced from Linux Kernel Header File
 */
 
+#define __WINE_UNIX_ERRNO_SUCCESS	 0	/* No error */
 #define __WINE_UNIX_ERRNO_EPERM		 1	/* Operation not permitted */
 #define __WINE_UNIX_ERRNO_ENOENT		 2	/* No such file or directory */
 #define __WINE_UNIX_ERRNO_ESRCH		 3	/* No such process */
