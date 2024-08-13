@@ -6,14 +6,7 @@ namespace fast_io
 enum class wine_family : ::std::uint_least32_t
 {
 	unspecified_host = 0,
-	linux_host = 1,
-	cygwin_host = 2,
-	native =
-#if defined(_WIN32_WINE_LINUX)
-		linux_host
-#else
-		unspecified_host
-#endif
+	native = unspecified_host
 };
 
 using wine_host_fd_t = ::std::common_type_t<::std::intptr_t,::std::int_least32_t>;
