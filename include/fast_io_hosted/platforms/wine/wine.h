@@ -16,12 +16,14 @@ enum class wine_family : ::std::uint_least32_t
 #endif
 };
 
+using wine_host_fd_t = ::std::common_type_t<::std::intptr_t,::std::int_least32_t>;
+
 template <wine_family family, ::std::integral ch_type>
 class basic_wine_family_io_observer
 {
 public:
 	using char_type = ch_type;
-	using native_handle_type = int;
+	using native_handle_type = ::fast_io::wine_host_fd_t;
 	native_handle_type host_fd{-1};
 	constexpr native_handle_type native_handle() const noexcept
 	{
@@ -46,9 +48,9 @@ struct
 #endif
 	wine_family_file_factory
 {
-	using native_handle_type = int;
-	int host_fd{-1};
-	explicit constexpr wine_family_file_factory(int v) noexcept
+	using native_handle_type = ::fast_io::wine_host_fd_t;
+	native_handle_type host_fd{-1};
+	explicit constexpr wine_family_file_factory(native_handle_type v) noexcept
 		: host_fd(v){};
 	wine_family_file_factory(wine_family_file_factory const &) = delete;
 	wine_family_file_factory &operator=(wine_family_file_factory const &) = delete;
