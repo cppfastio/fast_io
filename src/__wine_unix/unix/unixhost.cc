@@ -36,12 +36,6 @@ inline constexpr bool value_out_of_int_range(T val) noexcept
 	return val < intmn || intmx < val;
 }
 
-#define DETECT_VALUE_OUT_OF_INT_RANGE(t)            \
-	if (::__wine_unix::value_out_of_int_range((t))) \
-	{                                               \
-		return {__WINE_UNIX_ERRNO_EINVAL};          \
-	}
-
 } // namespace __wine_unix
 
 extern "C"
