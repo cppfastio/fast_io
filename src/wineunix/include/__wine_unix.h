@@ -36,18 +36,18 @@ typedef __wine_host_fd_t __wine_host_mode_t;
 
 typedef struct
 {
-	size_t errcode;
+	__wine_errno_t errcode;
 }__wine_unix_result0_t;
 
 typedef struct
 {
-	size_t errcode;
+	__wine_errno_t errcode;
 	size_t value0;
 }__wine_unix_result1_t;
 
 typedef struct
 {
-	size_t errcode;
+	__wine_errno_t errcode;
 	size_t value0;
 	size_t value1;
 
@@ -55,7 +55,7 @@ typedef struct
 
 typedef struct
 {
-	size_t errcode;
+	__wine_errno_t errcode;
 	size_t value0;
 	size_t value1;
 	size_t value2;
