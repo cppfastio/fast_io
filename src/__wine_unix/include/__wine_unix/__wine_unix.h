@@ -73,7 +73,7 @@ __WINE_UNIX_DLLEXPORT __wine_host_errno_t __WINE_UNIX_DEFAULTCALL __wine_unix_wi
 __WINE_UNIX_DLLEXPORT __wine_unix_result3_t __WINE_UNIX_DEFAULTCALL __wine_unix_ret_writev(__wine_host_fd_t, __wine_unix_iovec_t const*, size_t) __WINE_UNIX_NOEXCEPT;
 __WINE_UNIX_DLLEXPORT __wine_unix_result3_t __WINE_UNIX_DEFAULTCALL __wine_unix_ret_readv(__wine_host_fd_t, __wine_unix_iovec_t*, size_t) __WINE_UNIX_NOEXCEPT;
 __WINE_UNIX_DLLEXPORT __wine_unix_result1_t __WINE_UNIX_DEFAULTCALL __wine_unix_ret_openat(__wine_host_fd_t, void const*, size_t, __wine_host_flags_t, __wine_host_mode_t) __WINE_UNIX_NOEXCEPT;
-__WINE_UNIX_DLLEXPORT __wine_unix_result0_t __WINE_UNIX_DEFAULTCALL __wine_unix_ret_close(__wine_host_fd_t) __WINE_UNIX_NOEXCEPT;
+__WINE_UNIX_DLLEXPORT __wine_errno_t __WINE_UNIX_DEFAULTCALL __wine_unix_ret_close(__wine_host_fd_t) __WINE_UNIX_NOEXCEPT;
 
 #ifdef __cplusplus
 }
