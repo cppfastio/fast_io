@@ -2,6 +2,7 @@
 
 #include<stdint.h>
 #include<limits.h>
+#include<stddef.h>
 
 #if defined(_WIN32) && !defined(__WINE__) || defined(__CYGWIN__)
 #define __WINE_UNIX_DLLEXPORT __declspec(dllexport)
