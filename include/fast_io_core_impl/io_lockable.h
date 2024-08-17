@@ -150,7 +150,7 @@ public:
 	}
 
 private:
-	constexpr void destroy()
+	constexpr void destroy() noexcept
 	{
 		if (pmutex)
 		{
@@ -171,7 +171,7 @@ public:
 		this->construct_default();
 	}
 
-	constexpr native_handle_type release()
+	constexpr native_handle_type release() noexcept
 	{
 		auto temp{this->pmutex};
 		this->pmutex = nullptr;
