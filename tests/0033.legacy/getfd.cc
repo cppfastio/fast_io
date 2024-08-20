@@ -29,7 +29,7 @@ int main()
 	auto& wcoutrdbuf{*std::wcout.rdbuf()};
 	auto& cinrdbuf{*std::cin.rdbuf()};
 	auto& wcinrdbuf{*std::wcin.rdbuf()};
-	println(
+	::fast_io::io::println(
 		"char: ",os_c_str(typeid(coutrdbuf).name()),"\n"
 		"wchar_t: ",os_c_str(typeid(wcoutrdbuf).name()),"\n"
 		"char: ",os_c_str(typeid(cinrdbuf).name()),"\n"
