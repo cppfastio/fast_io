@@ -279,10 +279,12 @@ struct iso8601_timestamp
 	std::int_least32_t timezone{};
 };
 
-template<std::integral char_type,std::int_least64_t off_to_epoch>
-inline constexpr std::size_t print_reserve_size(io_reserve_type_t<char_type,basic_timestamp<off_to_epoch>>) noexcept
+template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, basic_timestamp<off_to_epoch>>) noexcept
 {
-	return print_reserve_size(io_reserve_type<char_type,std::int_least64_t>)+std::numeric_limits<std::uint_least64_t>::digits10;
+	constexpr ::std::size_t sz{print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 1u +
+							   ::std::numeric_limits<::std::uint_least64_t>::digits10};
+	return sz;
 }
 
 namespace details
