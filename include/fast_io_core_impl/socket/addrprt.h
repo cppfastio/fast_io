@@ -364,7 +364,7 @@ print_reserve_define(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipula
 	}
 }
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <ip_flags flags, ::fast_io::details::iptypesimpl iptype>

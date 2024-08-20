@@ -16,7 +16,7 @@ using u8qt_qdebug = basic_qt_qdebug<char8_t>;
 using u16qt_qdebug = basic_qt_qdebug<char16_t>;
 using u32qt_qdebug = basic_qt_qdebug<char32_t>;
 
-inline namespace manipulators
+namespace manipulators
 {
 
 inline ::fast_io::qt_qdebug qtdbg(QDebug qdbg)

@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-inline namespace manipulators
+namespace manipulators
 {
 template <typename T>
 struct basic_matcher_t
@@ -82,7 +82,7 @@ scan_alias_define(io_alias_t, char_type const (&s)[n]) noexcept
 }
 
 #if 0
-inline namespace manipulators
+namespace manipulators
 {
 template<typename rg>
 //requires (::std::integral<::std::ranges::range_value_t<rg>>)

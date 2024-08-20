@@ -11,7 +11,7 @@ inline constexpr ::fast_io::manipulators::scalar_flags strlike_default_scalar_fl
 
 }
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <typename T>

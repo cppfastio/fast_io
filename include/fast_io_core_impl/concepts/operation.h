@@ -222,7 +222,7 @@ concept precise_reserve_scannable_no_error =
 		} -> ::std::same_as<void>;
 	};
 
-inline namespace manipulators
+namespace manipulators
 {
 }
 

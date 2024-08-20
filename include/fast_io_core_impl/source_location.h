@@ -81,7 +81,7 @@ print_reserve_scatters_define(::fast_io::io_reserve_type_t<char_type, ::std::sou
 	return ::fast_io::details::prrsv_reserve_scatters_source_location_define_impl(pscatters, pbuffer, location);
 }
 
-inline namespace manipulators
+namespace manipulators
 {
 
 inline
