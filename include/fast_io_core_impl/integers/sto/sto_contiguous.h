@@ -1358,7 +1358,7 @@ bin_get(scalar_type &t) noexcept
 }
 
 template <bool noskipws = false, bool skipzero = false, bool prefix = false, ::fast_io::details::my_integral scalar_type>
-inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<10, noskipws, prefix, skipzero>,
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<8, noskipws, prefix, skipzero>,
 								scalar_type &>
 oct_get(scalar_type &t) noexcept
 {
