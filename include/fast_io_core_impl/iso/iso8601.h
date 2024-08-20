@@ -706,8 +706,9 @@ inline constexpr char_type *print_reserve_bsc_timestamp_impl(char_type *iter, un
 template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, basic_timestamp<off_to_epoch>>) noexcept
 {
-	return print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 1 +
-		   ::std::numeric_limits<::std::uint_least64_t>::digits10;
+	constexpr ::std::size_t sz{print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 1u +
+							   ::std::numeric_limits<::std::uint_least64_t>::digits10};
+	return sz;
 }
 
 template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
@@ -1930,11 +1931,11 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 	}
 	else if (precision < subsecondslen)
 	{
-		::std::uint_least64_t v{::fast_io::details::d10_reverse_table<::std::uint_least64_t>[static_cast<::std::size_t>(precision-1u)]};
+		::std::uint_least64_t v{::fast_io::details::d10_reverse_table<::std::uint_least64_t>[static_cast<::std::size_t>(precision - 1u)]};
 		::std::uint_least64_t vhalf{v >> 1u};
 		::std::uint_least64_t quotient{subseconds / v};
 		::std::uint_least64_t remainder{subseconds % v};
-		
+
 		if (vhalf < remainder || ((quotient & 1 == 0) && vhalf == remainder))
 		{
 			++quotient;
