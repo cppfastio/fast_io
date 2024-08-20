@@ -282,6 +282,7 @@ inline constexpr basic_timestamp<off_to_epoch> &operator/=(basic_timestamp<off_t
 		return a;
 	}
 }
+
 /*
 https://www.epochconverter.com/seconds-days-since-y0
 Seconds since year 0 (MySQL compatible)
@@ -313,13 +314,6 @@ struct iso8601_timestamp
 	::std::uint_least64_t subseconds{};
 	::std::int_least32_t timezone{};
 };
-
-template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
-inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, basic_timestamp<off_to_epoch>>) noexcept
-{
-	return print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) +
-		   ::std::numeric_limits<::std::uint_least64_t>::digits10;
-}
 
 namespace details
 {
@@ -709,14 +703,11 @@ inline constexpr char_type *print_reserve_bsc_timestamp_impl(char_type *iter, un
 
 } // namespace details
 
-template <::std::integral char_type>
-inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, iso8601_timestamp>) noexcept
+template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, basic_timestamp<off_to_epoch>>) noexcept
 {
-	// ISO 8601 timestamp example : 2021-01-03T10:29:56Z
-	// ISO 8601 timestamp with timezone : 2021-01-03T10:29:56.999999+99:99
-	return print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 16 +
-		   print_reserve_size(io_reserve_type<char_type, ::std::uint_least64_t>) +
-		   ::fast_io::details::print_reserve_size_timezone_impl_v<char_type> + 3 + 2;
+	return print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 1 +
+		   ::std::numeric_limits<::std::uint_least64_t>::digits10;
 }
 
 template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
@@ -731,6 +722,16 @@ inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ba
 	{
 		return details::print_reserve_bsc_timestamp_impl(iter, {timestamp.seconds, timestamp.subseconds});
 	}
+}
+
+template <::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, iso8601_timestamp>) noexcept
+{
+	// ISO 8601 timestamp example : 2021-01-03T10:29:56Z
+	// ISO 8601 timestamp with timezone : 2021-01-03T10:29:56.999999+99:99
+	return print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 16 +
+		   print_reserve_size(io_reserve_type<char_type, ::std::uint_least64_t>) +
+		   ::fast_io::details::print_reserve_size_timezone_impl_v<char_type> + 3 + 2;
 }
 
 template <::std::integral char_type>
@@ -1855,6 +1856,127 @@ scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_
 	{
 		return parse_code::end_of_file;
 	}
+}
+
+namespace manipulators
+{
+template <::std::int_least64_t off_to_epoch>
+inline constexpr auto fixed(basic_timestamp<off_to_epoch> t, ::std::size_t n) noexcept
+{
+	return ::fast_io::manipulators::scalar_manip_precision_t<
+		::fast_io::details::dcmfloat_mani_flags_cache<false, false, ::fast_io::manipulators::floating_format::fixed>,
+		::fast_io::unix_timestamp>{{t.seconds, t.subseconds}, n};
+}
+
+template <::std::int_least64_t off_to_epoch>
+inline constexpr auto comma_fixed(basic_timestamp<off_to_epoch> t, ::std::size_t n) noexcept
+{
+	return ::fast_io::manipulators::scalar_manip_precision_t<
+		::fast_io::details::dcmfloat_mani_flags_cache<false, true, ::fast_io::manipulators::floating_format::fixed>,
+		::fast_io::unix_timestamp>{{t.seconds, t.subseconds}, n};
+}
+} // namespace manipulators
+
+namespace details
+{
+
+template <::std::integral char_type>
+inline constexpr char_type *prsv_fill_zero_impl(char_type *iter, ::std::size_t n) noexcept
+{
+	auto ed{iter + n};
+	for (; iter != ed; ++iter)
+	{
+		*iter = ::fast_io::char_literal_v<u8'0', char_type>;
+	}
+	return ed;
+}
+
+template <::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size_fixed_precision_unix_timestamp_impl(::std::size_t precision) noexcept
+{
+	constexpr ::std::size_t mnsize{print_reserve_size(::fast_io::io_reserve_type<char_type, ::std::int_least64_t>) + 3};
+	constexpr ::std::size_t precisionmx{::std::numeric_limits<::std::size_t>::max() - mnsize};
+	if (precisionmx < precision)
+	{
+		::fast_io::fast_terminate();
+	}
+	return precision + mnsize;
+}
+
+template <bool comma, bool showpos, ::std::integral char_type>
+inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_impl(char_type *iter, ::std::int_least64_t seconds, ::std::uint_least64_t subseconds, ::std::size_t precision) noexcept
+{
+	constexpr ::std::size_t fullprecision{::std::numeric_limits<::std::uint_least64_t>::digits10};
+	constexpr ::std::uint_least64_t zero{};
+	::std::uint_least64_t u64seconds{static_cast<::std::uint_least64_t>(seconds)};
+	if (seconds < 0)
+	{
+		u64seconds = zero - u64seconds;
+		*iter = ::fast_io::char_literal_v<u8'-', char_type>;
+		++iter;
+	}
+	else if constexpr (showpos)
+	{
+		*iter = ::fast_io::char_literal_v<u8'+', char_type>;
+		++iter;
+	}
+	::std::size_t subsecondslen{fullprecision};
+	if (precision == 0)
+	{
+		if (subseconds)
+		{
+			++u64seconds;
+		}
+	}
+	else if (precision < subsecondslen)
+	{
+		::std::uint_least64_t v{::fast_io::details::d10_reverse_table<::std::uint_least64_t>[static_cast<::std::size_t>(precision-1u)]};
+		::std::uint_least64_t vhalf{v >> 1u};
+		::std::uint_least64_t quotient{subseconds / v};
+		::std::uint_least64_t remainder{subseconds % v};
+		
+		if (vhalf < remainder || ((quotient & 1 == 0) && vhalf == remainder))
+		{
+			++quotient;
+			if (quotient * v == uint_least64_subseconds_per_second)
+			{
+				++u64seconds;
+				quotient = 0u;
+			}
+		}
+		subseconds = quotient;
+		subsecondslen = precision;
+	}
+	iter = print_reserve_define(::fast_io::io_reserve_type<char_type, ::std::uint_least64_t>, iter, u64seconds);
+	if (!precision)
+	{
+		return iter;
+	}
+	*iter = ::fast_io::char_literal_v<(comma ? u8',' : u8'.'), char_type>;
+	++iter;
+	::fast_io::details::print_reserve_integral_main_impl<10, false>(iter += subsecondslen, subseconds, subsecondslen);
+	return ::fast_io::details::prsv_fill_zero_impl(iter, precision - subsecondslen);
+}
+
+} // namespace details
+
+template <::fast_io::manipulators::scalar_flags flags, ::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp>>,
+	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp> const &e) noexcept
+{
+	static_assert(flags.base == 10 && flags.floating == ::fast_io::manipulators::floating_format::fixed && !flags.full);
+	return ::fast_io::details::print_reserve_size_fixed_precision_unix_timestamp_impl<char_type>(e.precision);
+}
+
+template <::fast_io::manipulators::scalar_flags flags, ::std::integral char_type>
+inline constexpr char_type *print_reserve_define(
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp>>,
+	char_type *iter,
+	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp> const &e) noexcept
+{
+	static_assert(flags.base == 10 && flags.floating == ::fast_io::manipulators::floating_format::fixed && !flags.full);
+	return ::fast_io::details::print_reserve_define_fixed_precision_unix_timestamp_impl<flags.comma, flags.showpos>(iter, e.reference.seconds, e.reference.subseconds, e.precision);
 }
 
 } // namespace fast_io
