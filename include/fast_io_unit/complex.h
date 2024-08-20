@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-inline namespace manipulators
+namespace manipulators
 {
 template <bool uppercase = false, typename scalar_type>
 	requires(::fast_io::details::my_floating_point<scalar_type>)

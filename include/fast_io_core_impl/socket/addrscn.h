@@ -647,7 +647,7 @@ scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_
 
 } // namespace details
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <ip_scan_flags flags, ::fast_io::details::iptypesimpl iptype>

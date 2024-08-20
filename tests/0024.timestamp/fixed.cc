@@ -5,7 +5,7 @@ inline void test_val(::fast_io::unix_timestamp ts)
 {
 	using namespace ::fast_io::mnp;
 	using namespace ::fast_io::io;
-	println(
+	println("val:",ts,"\n",
 		fixed(ts,0),"\n",
 		fixed(ts,1),"\n",
 		fixed(ts,2),"\n",
@@ -14,6 +14,7 @@ inline void test_val(::fast_io::unix_timestamp ts)
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10-3),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10-2),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10-1),"\n",
+		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10+1),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10+2),"\n",
 		fixed(ts,0));

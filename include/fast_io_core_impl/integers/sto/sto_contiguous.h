@@ -1325,7 +1325,7 @@ inline constexpr parse_code scan_context_eof_define_parse_impl(State &st, T &t) 
 
 } // namespace details
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <typename char_type>

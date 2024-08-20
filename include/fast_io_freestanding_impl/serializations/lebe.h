@@ -65,7 +65,7 @@ inline constexpr ::std::size_t size_lebe_float_size{::fast_io::details::cal_size
 namespace fast_io
 {
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <::std::size_t sz, typename value_type>
