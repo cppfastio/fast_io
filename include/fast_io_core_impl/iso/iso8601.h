@@ -1859,7 +1859,7 @@ scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_
 	}
 }
 
-namespace manipulators
+inline namespace manipulators
 {
 template <::std::int_least64_t off_to_epoch>
 inline constexpr auto fixed(basic_timestamp<off_to_epoch> t, ::std::size_t n) noexcept
