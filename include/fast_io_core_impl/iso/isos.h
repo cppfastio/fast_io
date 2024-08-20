@@ -38,20 +38,34 @@ inline constexpr ::std::uint_least64_t cal_uint_least64_d10_max() noexcept
 	return value;
 }
 
-template <::std::unsigned_integral T>
+template <bool reverse, ::std::unsigned_integral T>
 inline constexpr auto cal_uint_least64_d10_all_table() noexcept
 {
 	::fast_io::freestanding::array<T, ::std::numeric_limits<T>::digits10> array;
-	array.back() = 1;
-	for (::std::size_t i{array.size() - 1}; i--;)
+	if constexpr (reverse)
 	{
-		array[i] = array[i + 1] * 10u;
+		array.back() = 1;
+		for (::std::size_t i{array.size() - 1}; i--;)
+		{
+			array[i] = array[i + 1] * 10u;
+		}
+	}
+	else
+	{
+		array.front() = 1;
+		for (::std::size_t i{1}, sz{array.size()}; i != sz; ++i)
+		{
+			array[i + 1] = array[i] * 10u;
+		}
 	}
 	return array;
 }
 
 template <::std::unsigned_integral T>
-inline constexpr auto d10_reverse_table{cal_uint_least64_d10_all_table<T>()};
+inline constexpr auto d10_table{cal_uint_least64_d10_all_table<false, T>()};
+
+template <::std::unsigned_integral T>
+inline constexpr auto d10_reverse_table{cal_uint_least64_d10_all_table<true, T>()};
 } // namespace details
 
 inline constexpr ::std::uint_least64_t uint_least64_subseconds_per_second{details::cal_uint_least64_d10_max()};
