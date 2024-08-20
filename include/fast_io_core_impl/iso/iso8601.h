@@ -1936,7 +1936,7 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 		::std::uint_least64_t quotient{subseconds / v};
 		::std::uint_least64_t remainder{subseconds % v};
 
-		if (vhalf < remainder || ((quotient & 1 == 0) && vhalf == remainder))
+		if ((vhalf < remainder) || ((quotient & 1 == 0) && (vhalf == remainder)))
 		{
 			++quotient;
 			if (quotient * v == uint_least64_subseconds_per_second)
