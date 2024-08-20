@@ -3,15 +3,6 @@
 namespace fast_io::details
 {
 
-template<::std::integral char_type>
-inline constexpr char_type* prsv_fill_zero_impl(char_type* iter, ::std::size_t n) noexcept
-{
-	auto ed{iter+n};
-	for(;iter!=ed;++iter)
-		*iter=::fast_io::char_literal_v<u8'0', char_type>;
-	return ed;
-}
-
 template<bool comma, ::std::integral char_type>
 inline constexpr char_type* prsv_fp_zero_precision_impl(char_type* iter, ::std::size_t precision) noexcept
 {
