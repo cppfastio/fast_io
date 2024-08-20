@@ -5,7 +5,7 @@ inline void test_val(::fast_io::unix_timestamp ts)
 {
 	using namespace ::fast_io::mnp;
 	using namespace ::fast_io::io;
-	println(
+	println("val:",ts,"\n",
 		fixed(ts,0),"\n",
 		fixed(ts,1),"\n",
 		fixed(ts,2),"\n",
