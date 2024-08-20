@@ -11,6 +11,7 @@ inline void test_val(::fast_io::unix_timestamp ts)
 		fixed(ts,2),"\n",
 		fixed(ts,3),"\n",
 		fixed(ts,4),"\n",
+		fixed(ts,5),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10-3),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10-2),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10-1),"\n",
@@ -28,6 +29,8 @@ int main()
 	test_val({0,::fast_io::uint_least64_subseconds_per_second-1u});
 	test_val({0,::fast_io::uint_least64_subseconds_per_second>>1u});
 	test_val({0,(::fast_io::uint_least64_subseconds_per_second/10u)>>1u});
+	test_val({0,(::fast_io::uint_least64_subseconds_per_second/100u)>>1u});
+	test_val({0,(3*(::fast_io::uint_least64_subseconds_per_second/100u))>>1u});
 	test_val({::std::numeric_limits<::std::int_least64_t>::max(),::fast_io::uint_least64_subseconds_per_second-1u});
 	test_val({::std::numeric_limits<::std::int_least64_t>::max(),::fast_io::uint_least64_subseconds_per_second>>1u});
 	test_val({::std::numeric_limits<::std::int_least64_t>::max(),(::fast_io::uint_least64_subseconds_per_second/10u)>>1u});
