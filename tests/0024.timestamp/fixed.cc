@@ -36,8 +36,6 @@ inline void test_val(::fast_io::unix_timestamp ts)
 
 int main()
 {
-	using namespace ::fast_io::mnp;
-	using namespace ::fast_io::io;
 	test_val({0, 0});
 	test_val({0, ::fast_io::uint_least64_subseconds_per_second - 1u});
 	test_val({0, ::fast_io::uint_least64_subseconds_per_second >> 1u});
