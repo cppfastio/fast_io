@@ -1925,7 +1925,7 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 	if (precision == 0)
 	{
 		constexpr auto vhalf{::fast_io::uint_least64_subseconds_per_second >> 1};
-		if ((vhalf < subseconds) || (((u64seconds & 1u) == 0) && (vhalf == remainder)))
+		if ((vhalf < subseconds) || (((u64seconds & 1u) == 0) && (vhalf == subseconds)))
 		{
 			++u64seconds;
 		}
