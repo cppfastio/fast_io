@@ -1924,7 +1924,8 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 	::std::size_t subsecondslen{fullprecision};
 	if (precision == 0)
 	{
-		if (subseconds)
+		constexpr auto vhalf{::fast_io::uint_least64_subseconds_per_second >> 1};
+		if ((vhalf < subseconds) || (((u64seconds & 1u) == 0) && (vhalf == remainder)))
 		{
 			++u64seconds;
 		}
@@ -1939,7 +1940,7 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 		if ((vhalf < remainder) || (((quotient & 1u) == 0) && (vhalf == remainder)))
 		{
 			++quotient;
-			if (quotient * v == uint_least64_subseconds_per_second)
+			if (quotient * v == ::fast_io::uint_least64_subseconds_per_second)
 			{
 				++u64seconds;
 				quotient = 0u;

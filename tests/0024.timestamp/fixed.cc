@@ -16,8 +16,8 @@ inline void test_val(::fast_io::unix_timestamp ts)
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10-1),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10),"\n",
 		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10+1),"\n",
-		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10+2),"\n",
-		fixed(ts,0));
+		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10+2),"\n"
+		fixed(ts,::std::numeric_limits<::std::uint_least64_t>::digits10*2));
 }
 
 int main()
