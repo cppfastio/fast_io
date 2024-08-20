@@ -19,6 +19,6 @@ int main()
 	lst.insert(lst.cbegin(), std::make_shared<int>(4));
 	for (auto const &e : lst)
 	{
-		println(::fast_io::mnp::pointervw(e.get()), " use_count: ", e.use_count());
+		::fast_io::io::println(::fast_io::mnp::pointervw(e.get()), " use_count: ", e.use_count());
 	}
 }
