@@ -18,7 +18,20 @@ inline void test_val(::fast_io::unix_timestamp ts)
 			fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10), "\n",
 			fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 + 1), "\n",
 			fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 + 2), "\n",
-			fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 * 2));
+			fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 * 2), "\n",
+			comma_fixed(ts, 0), "\n",
+			comma_fixed(ts, 1), "\n",
+			comma_fixed(ts, 2), "\n",
+			comma_fixed(ts, 3), "\n",
+			comma_fixed(ts, 4), "\n",
+			comma_fixed(ts, 5), "\n",
+			comma_fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 - 3), "\n",
+			comma_fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 - 2), "\n",
+			comma_fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 - 1), "\n",
+			comma_fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10), "\n",
+			comma_fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 + 1), "\n",
+			comma_fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 + 2), "\n",
+			comma_fixed(ts, ::std::numeric_limits<::std::uint_least64_t>::digits10 * 2));
 }
 
 int main()
