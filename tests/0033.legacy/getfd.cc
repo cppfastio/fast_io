@@ -11,18 +11,18 @@ int main()
 	::fast_io::wfilebuf_file fb(u8"testgetfd.txt",::fast_io::open_mode::out);
 
 	::fast_io::wstreambuf_io_observer smiob{fb.fb};
-	println(::fast_io::mnp::handlevw(static_cast<::fast_io::wposix_io_observer>(smiob).fd));
+	::fast_io::io::println(::fast_io::mnp::handlevw(static_cast<::fast_io::wposix_io_observer>(smiob).fd));
 
 	::fast_io::streambuf_io_observer siob{::std::cout.rdbuf()};
-	println(::fast_io::mnp::handlevw(static_cast<::fast_io::posix_io_observer>(siob).fd));
+	::fast_io::io::println(::fast_io::mnp::handlevw(static_cast<::fast_io::posix_io_observer>(siob).fd));
 
 	::std::ios::sync_with_stdio(false);
 	siob.fb=::std::cerr.rdbuf();
-	println(::fast_io::mnp::handlevw(static_cast<::fast_io::posix_io_observer>(siob).fd));
+	::fast_io::io::println(::fast_io::mnp::handlevw(static_cast<::fast_io::posix_io_observer>(siob).fd));
 
 	::std::ios::sync_with_stdio(true);
 	siob.fb=::std::cin.rdbuf();
-	println(::fast_io::mnp::handlevw(static_cast<::fast_io::posix_io_observer>(siob).fd));
+	::fast_io::io::println(::fast_io::mnp::handlevw(static_cast<::fast_io::posix_io_observer>(siob).fd));
 
 	using namespace ::fast_io::mnp;
 	auto& coutrdbuf{*std::cout.rdbuf()};
