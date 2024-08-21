@@ -516,12 +516,24 @@ io_bytes_stream_ref_define(basic_posix_family_io_observer<family, ch_type> other
 
 inline constexpr posix_at_entry posix_at_fdcwd() noexcept
 {
-	return posix_at_entry(AT_FDCWD);
+	return posix_at_entry(
+#ifdef __DJGPP__
+		-100
+#else
+		AT_FDCWD
+#endif
+	);
 }
 
 inline constexpr posix_at_entry at_fdcwd() noexcept
 {
-	return posix_at_entry(AT_FDCWD);
+	return posix_at_entry(
+#ifdef __DJGPP__
+		-100
+#else
+		AT_FDCWD
+#endif
+	);
 }
 
 #endif
@@ -815,11 +827,54 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
-	auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
-	::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), "\\", ::fast_io::mnp::os_c_str(pathname))};
-	int fd{::open(pn.c_str(), flags, mode)};
-	system_call_throw_error<always_terminate>(fd);
-	return fd;
+	if (pathname == nullptr) [[unlikely]]
+	{
+		system_call_throw_error<always_terminate>(-1);
+		return -1;
+	}
+
+	if (dirfd == -100)
+	{
+		int fd(::open(pathname, flags, mode));
+		system_call_throw_error<always_terminate>(fd);
+		return fd;
+	}
+	else
+	{
+		auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
+		if (pathname_cstr == nullptr) [[unlikely]]
+		{
+			system_call_throw_error<always_terminate>(-1);
+			return -1;
+		}
+
+		// check vaildity
+		::fast_io::cstring_view para_pathname{::fast_io::mnp::os_c_str(pathname)};
+		if (auto const sz{para_pathname.size()}; sz == 0 || sz > 255) [[unlikely]]
+		{
+			return -1;
+		}
+
+		if (auto const fc{para_pathname.front_unchecked()}; fc == '+' || fc == '-' || fc == '.') [[unlikely]]
+		{
+			return -1;
+		}
+
+		for (auto const fc : para_pathname)
+		{
+			if (fc == '/' || fc == '\\' || fc == '\t' || fc == '\b' || fc == '@' || fc == '#' || fc == '$' || fc == '%' || fc == '^' || fc == '&' ||
+				fc == '*' || fc == '(' || fc == ')' || fc == '[' || fc == ']') [[unlikely]]
+			{
+				return -1;
+			}
+		}
+
+		// concat
+		::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), "\\", para_pathname)};
+		int fd{::open(pn.c_str(), flags, mode)};
+		system_call_throw_error<always_terminate>(fd);
+		return fd;
+	}
 }
 
 #elif defined(__NEWLIB__) || defined(_PICOLIBC__)
