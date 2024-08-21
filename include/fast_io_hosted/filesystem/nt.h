@@ -128,14 +128,14 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 		}
 		throw_nt_error(status);
 	}
-	auto ful_dir_info{d_info.IdFullDirInfo};
+	auto id_ful_dir_info{d_info.IdFullDirInfo};
 
-	entry->d_ino = static_cast<::std::uint_least64_t>(ful_dir_info->FileId.QuadPart);
+	entry->d_ino = static_cast<::std::uint_least64_t>(id_ful_dir_info->FileId.QuadPart);
 
-	entry->native_d_namlen = ful_dir_info->FileNameLength / sizeof(char16_t);
+	entry->native_d_namlen = id_ful_dir_info->FileNameLength / sizeof(char16_t);
 
-	::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte const *>(ful_dir_info->FileName),
-														ful_dir_info->FileNameLength,
+	::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte const *>(id_ful_dir_info->FileName),
+														id_ful_dir_info->FileNameLength,
 														reinterpret_cast<::std::byte *>(entry->native_d_name));
 	entry->native_d_name[entry->native_d_namlen] = 0;
 
@@ -154,7 +154,7 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 	= DT_DIR; else data->entries[data->index].d_type = DT_REG;
 	*/
 
-	::std::uint_least32_t attribute{ful_dir_info->FileAttributes};
+	::std::uint_least32_t attribute{id_ful_dir_info->FileAttributes};
 	if (attribute & 0x400)
 	{
 		entry->d_type = file_type::symlink;
