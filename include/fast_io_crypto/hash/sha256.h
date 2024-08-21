@@ -84,7 +84,7 @@ inline
 		for (; i < 16; ++i)
 		{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-			if (::std::is_constant_evaluated())
+			if (__builtin_is_constant_evaluated())
 			{
 				X[i] = B2U32(data[0], 24) | B2U32(data[1], 16) | B2U32(data[2], 8) | B2U32(data[3], 0);
 			}

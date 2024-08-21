@@ -21,6 +21,7 @@ struct nt_dirent
 {
 	void *d_handle{};
 	file_type d_type{};
+	::std::uint_least64_t d_ino{};
 	char16_t native_d_name[0x2001];
 	::std::size_t native_d_namlen{};
 	char8_t u8d_name[0x8004];
@@ -118,7 +119,7 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 	::fast_io::win32::nt::dir_information d_info{buffer};
 	auto status{nt_query_directory_file<family == nt_family::zw>(
 		entry->d_handle, nullptr, nullptr, nullptr, __builtin_addressof(block), d_info.DirInfo, ul32_buffer_size,
-		file_information_class::FileFullDirectoryInformation, true, nullptr, start)};
+		file_information_class::FileIdFullDirectoryInformation , true, nullptr, start)};
 	if (status)
 	{
 		if (status == 2147483654) [[likely]]
@@ -127,7 +128,10 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 		}
 		throw_nt_error(status);
 	}
-	auto ful_dir_info{d_info.FullDirInfo};
+	auto ful_dir_info{d_info.IdFullDirInfo};
+
+	entry->d_ino = static_cast<::std::uint_least64_t>(ful_dir_info->FileId.QuadPart);
+
 	entry->native_d_namlen = ful_dir_info->FileNameLength / sizeof(char16_t);
 
 	::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte const *>(ful_dir_info->FileName),

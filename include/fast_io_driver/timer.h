@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include <fast_io.h>
-#include <fast_io_dsal/string_view.h>
+#include "../fast_io.h"
+#include "../fast_io_dsal/string_view.h"
 
 namespace fast_io
 {

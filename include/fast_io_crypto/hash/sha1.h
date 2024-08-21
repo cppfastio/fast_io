@@ -66,7 +66,7 @@ inline
 	for (::std::byte const *data(blocks_start), *ed(blocks_start + blocks_bytes); data != ed; data += block_size)
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-		if (::std::is_constant_evaluated())
+		if (__builtin_is_constant_evaluated())
 		{
 			for (::std::size_t j{}; j != 16; ++j)
 			{

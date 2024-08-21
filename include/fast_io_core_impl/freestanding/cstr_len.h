@@ -31,7 +31,7 @@ inline constexpr ::std::size_t dummy_cstr_nlen(char_type const *cstr, ::std::siz
 template <::std::integral char_type>
 inline constexpr ::std::size_t cstr_len(char_type const *cstr) noexcept
 {
-#ifdef __cpp_if_consteval
+#if __cpp_if_consteval >= 202106L
 	if consteval
 	{
 		return details::dummy_cstr_len(cstr);
@@ -66,7 +66,7 @@ inline constexpr ::std::size_t cstr_len(char_type const *cstr) noexcept
 template <::std::integral char_type>
 inline constexpr ::std::size_t cstr_nlen(char_type const *cstr, ::std::size_t n) noexcept
 {
-#ifdef __cpp_if_consteval
+#if __cpp_if_consteval >= 202106L
 	if consteval
 	{
 		return details::dummy_cstr_nlen(cstr, n);

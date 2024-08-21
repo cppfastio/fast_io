@@ -211,7 +211,7 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 		}
 		else
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-		if (::std::is_constant_evaluated())
+		if (__builtin_is_constant_evaluated())
 		{
 			return add_carry_naive(carry, a, b, out);
 		}
@@ -404,7 +404,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 			return sub_borrow_naive(borrow, a, b, out);
 		}
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-		if (::std::is_constant_evaluated())
+		if (__builtin_is_constant_evaluated())
 		{
 			return sub_borrow_naive(borrow, a, b, out);
 		}
@@ -633,7 +633,7 @@ inline
 	}
 	else
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 	{
 		__uint128_t res{static_cast<__uint128_t>(a) * b};
 		high = static_cast<::std::uint_least64_t>(res >> 64u);
@@ -689,7 +689,7 @@ inline
 	}
 	else
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 	{
 		return umul_least_64_emulated(a, b, high);
 	}
@@ -752,7 +752,7 @@ inline
 	}
 	else
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 	{
 		return umul_least64_high_emulated(a, b);
 	}
@@ -770,7 +770,7 @@ inline constexpr ::std::size_t add_or_overflow_die(::std::size_t a, ::std::size_
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 #if __cpp_lib_is_constant_evaluated >= 201811L
-	if (!::std::is_constant_evaluated())
+	if (!__builtin_is_constant_evaluated())
 	{
 #if defined(_M_X64)
 		::std::size_t res;
@@ -957,7 +957,7 @@ template <typename U>
 inline constexpr U shiftright(U low_part, U high_part, ::std::uint_least8_t shift) noexcept
 {
 #if __cpp_lib_is_constant_evaluated >= 201811L
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 	{
 		return shiftright_naive(low_part, high_part, shift);
 	}

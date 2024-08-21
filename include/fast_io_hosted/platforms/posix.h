@@ -477,13 +477,13 @@ public:
 	}
 };
 
-#ifdef __cpp_lib_three_way_comparison
-
 template <::fast_io::posix_family family, ::std::integral ch_type>
 inline constexpr bool operator==(basic_posix_family_io_observer<family, ch_type> a, basic_posix_family_io_observer<family, ch_type> b) noexcept
 {
 	return a.fd == b.fd;
 }
+
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <::fast_io::posix_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_posix_family_io_observer<family, ch_type> a, basic_posix_family_io_observer<family, ch_type> b) noexcept
@@ -516,29 +516,26 @@ io_bytes_stream_ref_define(basic_posix_family_io_observer<family, ch_type> other
 
 inline constexpr posix_at_entry posix_at_fdcwd() noexcept
 {
-	return posix_at_entry(
-#ifdef __DJGPP__
-		-100
-#else
-		AT_FDCWD
-#endif
-	);
+	return posix_at_entry(AT_FDCWD);
 }
 
 inline constexpr posix_at_entry at_fdcwd() noexcept
 {
-	return posix_at_entry(
-#ifdef __DJGPP__
-		-100
-#else
-		AT_FDCWD
-#endif
-	);
+	return posix_at_entry(AT_FDCWD);
+}
+#elif defined(__MSDOS__) || defined(__DJGPP__)
+
+inline constexpr posix_at_entry posix_at_fdcwd() noexcept
+{
+	return posix_at_entry(-100);
 }
 
+inline constexpr posix_at_entry at_fdcwd() noexcept
+{
+	return posix_at_entry(-100);
+}
 #endif
 
-#if (!defined(__NEWLIB__) || defined(__CYGWIN__)) && (!defined(_WIN32) || defined(__WINE__))
 namespace details
 {
 
@@ -724,19 +721,20 @@ inline posix_file_status fstat_impl(int fd)
 #else
 	struct stat st;
 #endif
-	if (
+	if (::fast_io::noexcept_call(
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 #if (!defined(__MINGW32__) || __has_include(<_mingw_stat64.h>))
-		_fstat64
+			_fstat64
 #else
-		_fstati64
+			_fstati64
 #endif
 #elif defined(__linux__) && defined(__USE_LARGEFILE64)
-		fstat64
+			fstat64
 #else
-		fstat
+			fstat
 #endif
-		(fd, __builtin_addressof(st)) < 0)
+			,
+			fd, __builtin_addressof(st)) < 0)
 		throw_posix_error();
 	return struct_stat_to_posix_file_status(st);
 }
@@ -752,8 +750,6 @@ inline posix_file_status status(basic_posix_family_io_observer<family, ch_type> 
 	return details::fstat_impl(piob.fd);
 #endif
 }
-
-#endif
 
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 template <::fast_io::posix_family family, ::std::integral ch_type>
@@ -892,14 +888,17 @@ inline int my_posix_openat(int, char const *, int, mode_t)
 	}
 }
 #else
+
+extern int my_posix_openat_noexcept(int fd, const char *path, int aflag, ... /*mode_t mode*/) noexcept __asm__("openat");
+
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
 	int fd{
-#if defined(__linux__)
+#if defined(__linux__) && defined(__NR_openat)
 		system_call<__NR_openat, int>
 #else
-		::openat
+		my_posix_openat_noexcept
 #endif
 		(dirfd, pathname, flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
@@ -966,6 +965,8 @@ inline int my_posix_open(char const *pathname, int flags,
 						 mode_t mode)
 {
 #if 0
+	// MSDOS
+
 	/*
 	Referenced from
 	https://dl.acm.org/doi/pdf/10.1145/70931.70935?casa_token=rWDy5JyhhkMAAAAA:BdkF0zbbWgurns3mU3yEJI2HnHXWhe6wyYGtKxjRewlEgLg6lk-cGGNLZTTdr3vUjtFg6Cnia2b4
@@ -999,12 +1000,12 @@ inline int my_posix_open(char const *pathname, int flags,
 			throw_posix_error();
 		}
 	}
-	int md{O_TEXT};
+	int dos_mode{O_TEXT};
 	if ((static_cast<unsigned>(flags) & static_cast<unsigned>(O_BINARY)) == static_cast<unsigned>(O_BINARY))
 	{
-		md = O_BINARY;
+		dos_mode = O_BINARY;
 	}
-	if (::fast_io::details::my_dos_setmode(fd, md) == -1)
+	if (::fast_io::details::my_dos_setmode(fd, dos_mode) == -1)
 	{
 		::fast_io::details::my_dos_close(fd);
 		if constexpr (always_terminate)
@@ -1018,6 +1019,7 @@ inline int my_posix_open(char const *pathname, int flags,
 	}
 	return fd;
 #endif
+
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
 	int fd{::open(pathname, flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
@@ -1395,7 +1397,7 @@ public:
 #else
 		int a2[2]{-1, -1};
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
-		if (noexcept_call(_pipe, a2, 131072u, _O_BINARY) == -1)
+		if (noexcept_call(::_pipe, a2, 131072u, _O_BINARY) == -1)
 #elif (defined(__MSDOS__) || defined(__DJGPP__)) || (defined(__APPLE__) || defined(__DARWIN_C_LEVEL))
 		if (noexcept_call(::pipe, a2) == -1)
 #else

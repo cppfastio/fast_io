@@ -344,7 +344,7 @@ constexpr bool operator==(::fast_io::containers::span<T> a, ::fast_io::container
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }
 
-#ifdef __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison >= 201907L
 template <typename T>
 	requires ::std::three_way_comparable<T>
 constexpr auto operator<=>(::fast_io::containers::span<T> a, ::fast_io::containers::span<T> b)

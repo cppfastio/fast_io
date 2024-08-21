@@ -33,7 +33,7 @@ inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::ui
 namespace fast_io
 {
 
-#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 using native_at_entry = nt_at_entry;
 using native_fs_dirent = nt_fs_dirent;
 

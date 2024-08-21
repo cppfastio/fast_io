@@ -41,7 +41,7 @@ struct string_sso_buffer
 };
 
 template <typename allocator_type, ::std::integral chtype>
-inline constexpr ::fast_io::basic_allocation_least_result<chtype*> string_allocate_init(chtype const *first, ::std::size_t n) noexcept
+inline constexpr ::fast_io::basic_allocation_least_result<chtype *> string_allocate_init(chtype const *first, ::std::size_t n) noexcept
 {
 	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, chtype>;
@@ -229,7 +229,7 @@ public:
 			static_assert(n != SIZE_MAX);
 			auto newres{::fast_io::containers::details::string_allocate_init<allocator_type>(buffer, nm1)};
 			auto ptrn{newres.ptr + nm1};
-			this->imp = {newres.ptr, ptrn, newres.ptr+newres.count};
+			this->imp = {newres.ptr, ptrn, newres.ptr + newres.count};
 		}
 	}
 
@@ -718,7 +718,7 @@ constexpr bool operator==(basic_string<chtype, allocator1> const &lhs, basic_str
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
-#if defined(__cpp_lib_three_way_comparison)
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <::std::integral chtype, typename allocator1, typename allocator2>
 constexpr auto operator<=>(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept

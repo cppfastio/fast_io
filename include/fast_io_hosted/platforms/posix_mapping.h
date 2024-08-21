@@ -8,7 +8,7 @@ namespace fast_io
 namespace details
 {
 
-inline ::std::byte *sys_mmap(void *addr, size_t len, int prot, int flags, int fd, ::std::uintmax_t offset)
+inline ::std::byte *sys_mmap(void *addr, ::std::size_t len, int prot, int flags, int fd, ::std::uintmax_t offset)
 {
 #if defined(__linux__) && defined(__NR_mmap) && !defined(__NR_mmap2)
 	if constexpr (sizeof(::std::uintmax_t) > sizeof(off_t))
@@ -44,7 +44,7 @@ inline ::std::byte *sys_mmap(void *addr, size_t len, int prot, int flags, int fd
 		}
 	}
 	auto ret{reinterpret_cast<::std::byte *>(
-		mmap(addr, len, prot, flags, fd, static_cast<off_t>(static_cast<my_make_unsigned_t<off_t>>(offset))))};
+		::mmap(addr, len, prot, flags, fd, static_cast<off_t>(static_cast<my_make_unsigned_t<off_t>>(offset))))};
 	if (ret == MAP_FAILED)
 	{
 		throw_posix_error();
@@ -53,13 +53,29 @@ inline ::std::byte *sys_mmap(void *addr, size_t len, int prot, int flags, int fd
 #endif
 }
 
-inline int sys_munmap(void *addr, size_t len)
+inline int sys_mprotect(void *start, ::std::size_t len, int prot)
+{
+	auto const result{
+#if defined(__linux__) && defined(__NR_mprotect)
+		system_call<__NR_mprotect, int>(start, len, prot)
+#else
+		::mprotect(start, len, prot)
+#endif
+	};
+	if (result) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+	return result;
+}
+
+inline int sys_munmap(void *addr, ::std::size_t len)
 {
 	return
 #if defined(__linux__) && defined(__NR_munmap)
 		system_call<__NR_munmap, int>(addr, len);
 #else
-		munmap(addr, len);
+		::munmap(addr, len);
 #endif
 }
 

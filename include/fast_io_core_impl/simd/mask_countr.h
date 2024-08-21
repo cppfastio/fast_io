@@ -101,7 +101,7 @@ inline
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 #endif
 	{
 		return vector_mask_countr_common_no_intrinsics_impl<ctzero>(vec);

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 // clang-format off
+// WIN32
 #pragma comment(linker,"/alternatename:__imp_?GetLastError@win32@fast_io@@YGIXZ=__imp__GetLastError@0")
 #pragma comment(linker,"/alternatename:__imp_?LoadLibraryA@win32@fast_io@@YGPAXPBD@Z=__imp__LoadLibraryA@4")
 #pragma comment(linker,"/alternatename:__imp_?LoadLibraryW@win32@fast_io@@YGPAXPB_S@Z=__imp__LoadLibraryW@4")
@@ -116,6 +117,10 @@
 #pragma comment(linker,"/alternatename:__imp_?AcquireSRWLockExclusive@win32@fast_io@@YGXPAX@Z=__imp__AcquireSRWLockExclusive@4")
 #pragma comment(linker,"/alternatename:__imp_?TryAcquireSRWLockExclusive@win32@fast_io@@YGIPAX@Z=__imp__TryAcquireSRWLockExclusive@4")
 #pragma comment(linker,"/alternatename:__imp_?ReleaseSRWLockExclusive@win32@fast_io@@YGXPAX@Z=__imp__ReleaseSRWLockExclusive@4")
+#pragma comment(linker,"/alternatename:__imp_?GetSystemInfo@win32@fast_io@@YGXPAUsystem_info@12@@Z=__imp__GetSystemInfo@4")
+#pragma comment(linker,"/alternatename:__imp_?SetFileInformationByHandle@win32@fast_io@@YGHPAXW4file_info_by_handle_class@12@0I@Z=__imp__SetFileInformationByHandle@16")
+#pragma comment(linker,"/alternatename:__imp_?SetFileTime@win32@fast_io@@YGHPAXPBUfiletime@12@11@Z=__imp__SetFileTime@16")
+// NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YGII@Z=__imp__RtlNtStatusToDosError@4")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YGIPAX@Z=__imp__NtClose@4")
 #pragma comment(linker,"/alternatename:__imp_?ZwClose@nt@win32@fast_io@@YGIPAX@Z=__imp__ZwClose@4")
@@ -189,6 +194,13 @@
 #pragma comment(linker,"/alternatename:__imp_?RtlAcquireSRWLockExclusive@nt@win32@fast_io@@YGXPAX@Z=__imp__RtlAcquireSRWLockExclusive@4")
 #pragma comment(linker,"/alternatename:__imp_?RtlTryAcquireSRWLockExclusive@nt@win32@fast_io@@YGIPAX@Z=__imp__RtlTryAcquireSRWLockExclusive@4")
 #pragma comment(linker,"/alternatename:__imp_?RtlReleaseSRWLockExclusive@nt@win32@fast_io@@YGXPAX@Z=__imp__RtlReleaseSRWLockExclusive@4")
+#pragma comment(linker,"/alternatename:__imp_?NtQueryObject@nt@win32@fast_io@@YGIPAXW4object_information_class@123@0IPAI@Z=__imp__NtQueryObject@20")
+#pragma comment(linker,"/alternatename:__imp_?ZwQueryObject@nt@win32@fast_io@@YGIPAXW4object_information_class@123@0IPAI@Z=__imp__ZwQueryObject@20")
+#pragma comment(linker,"/alternatename:__imp_?NtQuerySystemInformation@nt@win32@fast_io@@YGIW4system_information_class@123@PAXIPAI@Z=__imp__NtQuerySystemInformation@16")
+#pragma comment(linker,"/alternatename:__imp_?ZwQuerySystemInformation@nt@win32@fast_io@@YGIW4system_information_class@123@PAXIPAI@Z=__imp__ZwQuerySystemInformation@16")
+#pragma comment(linker,"/alternatename:__imp_?NtFreeVirtualMemory@nt@win32@fast_io@@YGIPAXPAPAXPAII@Z=__imp__NtFreeVirtualMemory@16")
+#pragma comment(linker,"/alternatename:__imp_?ZwFreeVirtualMemory@nt@win32@fast_io@@YGIPAXPAPAXPAII@Z=__imp__ZwFreeVirtualMemory@16")
+// msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp____RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=___RTtypeid")
 // clang-format on

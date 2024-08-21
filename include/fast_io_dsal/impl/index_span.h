@@ -383,7 +383,7 @@ constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io:
 	}
 }
 
-#ifdef __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison >= 201907L
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::three_way_comparable<T>
 constexpr auto operator<=>(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)

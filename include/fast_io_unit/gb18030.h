@@ -72,7 +72,7 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030(char32_t cdpt, T *p_dst) no
 												   ::std::endian::native == ::std::endian::big))
 		{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-			if (!::std::is_constant_evaluated())
+			if (!__builtin_is_constant_evaluated())
 			{
 				if constexpr (::std::endian::native == ::std::endian::big)
 				{
@@ -98,7 +98,7 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030(char32_t cdpt, T *p_dst) no
 											   ::std::endian::native == ::std::endian::big))
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-		if (!::std::is_constant_evaluated())
+		if (!__builtin_is_constant_evaluated())
 		{
 			if constexpr (::std::endian::native == ::std::endian::big)
 			{
@@ -182,7 +182,7 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T *p_ds
 												   ::std::endian::native == ::std::endian::big))
 		{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-			if (!::std::is_constant_evaluated())
+			if (!__builtin_is_constant_evaluated())
 			{
 				if constexpr (::std::endian::native == ::std::endian::big)
 				{
@@ -212,7 +212,7 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T *p_ds
 											   ::std::endian::native == ::std::endian::big))
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
-		if (!::std::is_constant_evaluated())
+		if (!__builtin_is_constant_evaluated())
 		{
 			if constexpr (::std::endian::native == ::std::endian::big)
 			{
