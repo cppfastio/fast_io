@@ -26,7 +26,7 @@ concept has_scalar_manip_detail_tag =
 
 } // namespace details
 
-inline namespace manipulators
+namespace manipulators
 {
 
 enum class scalar_placement : char8_t
@@ -446,7 +446,7 @@ concept scalar_integrals = ::fast_io::details::my_integral<scalar_type> ||
 
 } // namespace details
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <scalar_flags flags, typename T>

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Usage:
  *     ./list_files [directory]
  */

@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 			continue;
 		}
 		fast_io::obuf_file obf(drt(ent), fast_io::open_mode::out);
-		write(obf, utf8bom.cbegin(), utf8bom.cend());
+		::fast_io::operations::write_all_range(obf, utf8bom);
 		print(obf, loader);
 	}
 }

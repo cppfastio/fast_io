@@ -74,11 +74,11 @@ using out_buf_type = basic_obuf<native_io_observer>;
 using u8in_buf_type = basic_ibuf<u8native_io_observer>;
 using u8out_buf_type = basic_obuf<u8native_io_observer>;
 
-using in_buf_type_mutex = basic_iomutex<in_buf_type>;
-using out_buf_type_mutex = basic_iomutex<out_buf_type>;
+using in_buf_type_lockable = basic_io_lockable<in_buf_type>;
+using out_buf_type_lockable = basic_io_lockable<out_buf_type>;
 
-using u8in_buf_type_mutex = basic_iomutex<u8in_buf_type>;
-using u8out_buf_type_mutex = basic_iomutex<u8out_buf_type>;
+using u8in_buf_type_lockable = basic_io_lockable<u8in_buf_type>;
+using u8out_buf_type_lockable = basic_io_lockable<u8out_buf_type>;
 
 #endif
 

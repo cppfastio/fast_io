@@ -1,25 +1,24 @@
 ﻿#include <fast_io.h>
 #include <fast_io_device.h>
 #include <fast_io_driver/timer.h>
-#include <vector>
+#include <fast_io_dsal/vector.h>
 using namespace fast_io::io;
 
 int main()
 {
 	constexpr std::size_t N(10000000);
-	constexpr fast_io::unsafe_rt_format_string_view view("{}\n", 3);
 	{
 		fast_io::timer t(u8"output");
-		fast_io::obuf_file obf("iobuf_file_unsafe_rt_fprint.txt");
+		fast_io::obuf_file_lockable obf(u8"iobuf_file_lockable.txt");
 		for (std::size_t i{}; i != N; ++i)
 		{
-			unsafe_rt_fprint(obf, view, i);
+			println(obf, i);
 		}
 	}
-	std::vector<std::size_t> vec(N);
+	::fast_io::vector<std::size_t> vec(N);
 	{
 		fast_io::timer t(u8"input");
-		fast_io::ibuf_file ibf("iobuf_file_unsafe_rt_fprint.txt");
+		fast_io::ibuf_file_lockable ibf(u8"iobuf_file_lockable.txt");
 		for (std::size_t i{}; i != N; ++i)
 		{
 			scan(ibf, vec[i]);

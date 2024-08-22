@@ -576,7 +576,7 @@ inline constexpr bool print_alias_test_codecvt_impl() noexcept
 
 } // namespace details::codecvt
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <encoding_scheme src_scheme, encoding_scheme dst_scheme, ::std::integral char_type>

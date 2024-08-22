@@ -221,7 +221,7 @@ status_io_print_forward(io_alias_type_t<char_type>, pyobject_io_observer piob) n
 	}
 }
 
-inline namespace manipulators
+namespace manipulators
 {
 
 inline constexpr pyobject_io_observer pyobj(PyObject *p) noexcept

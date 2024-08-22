@@ -1325,7 +1325,7 @@ inline constexpr parse_code scan_context_eof_define_parse_impl(State &st, T &t) 
 
 } // namespace details
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <typename char_type>
@@ -1341,24 +1341,40 @@ inline constexpr ch_get_t<T &> ch_get(T &reference) noexcept
 	return {reference};
 }
 
-template <::std::size_t bs, bool noskipws = false, bool skipzero = false, ::fast_io::details::my_integral scalar_type>
-inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<bs, noskipws, false, skipzero>,
+template <::std::size_t bs, bool noskipws = false, bool skipzero = false, bool prefix = false, ::fast_io::details::my_integral scalar_type>
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<bs, noskipws, (bs == 10 ? false : prefix), skipzero>,
 								scalar_type &>
 base_get(scalar_type &t) noexcept
 {
 	return {t};
 }
 
-template <bool noskipws = false, bool skipzero = false, ::fast_io::details::my_integral scalar_type>
-inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<2, noskipws, false, skipzero>,
+template <bool noskipws = false, bool skipzero = false, bool prefix = false, ::fast_io::details::my_integral scalar_type>
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<2, noskipws, prefix, skipzero>,
 								scalar_type &>
 bin_get(scalar_type &t) noexcept
 {
 	return {t};
 }
 
+template <bool noskipws = false, bool skipzero = false, bool prefix = false, ::fast_io::details::my_integral scalar_type>
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<8, noskipws, prefix, skipzero>,
+								scalar_type &>
+oct_get(scalar_type &t) noexcept
+{
+	return {t};
+}
+
 template <bool noskipws = false, bool skipzero = false, ::fast_io::details::my_integral scalar_type>
-inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<16, noskipws, false, skipzero>,
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<10, noskipws, false, skipzero>,
+								scalar_type &>
+dec_get(scalar_type &t) noexcept
+{
+	return {t};
+}
+
+template <bool noskipws = false, bool skipzero = false, bool prefix = false, ::fast_io::details::my_integral scalar_type>
+inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<16, noskipws, prefix, skipzero>,
 								scalar_type &>
 hex_get(scalar_type &t) noexcept
 {

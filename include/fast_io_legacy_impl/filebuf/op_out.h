@@ -15,7 +15,7 @@ concept printable_to_cxx_ostringstream =
 namespace fast_io
 {
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <typename... Args>

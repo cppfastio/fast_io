@@ -16,7 +16,7 @@ concept cond_value_transferable = ::std::is_trivially_copyable_v<::std::remove_c
 	;
 } // namespace details
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <typename T1, typename T2>

@@ -8,7 +8,7 @@ https://github.com/sunfishcode/wasm-reference-manual/blob/master/WebAssembly.md#
 namespace fast_io
 {
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <::std::floating_point T>

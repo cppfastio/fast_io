@@ -1,4 +1,4 @@
-#include<fast_io_dsal/array.h>
+﻿#include<fast_io_dsal/array.h>
 #include<fast_io_dsal/span.h>
 #include<fast_io.h>
 

@@ -111,7 +111,7 @@ inline constexpr void write_all_bytes_overflow_define(basic_crypto_hash_as_file<
 	t.ptr->update(first, last);
 }
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <::std::contiguous_iterator Iter>
@@ -196,7 +196,7 @@ inline constexpr ::fast_io::basic_crypto_hash_as_file<char32_t, T> u32as_file(T 
 
 } // namespace manipulators
 
-inline namespace manipulators
+namespace manipulators
 {
 
 template <typename T>

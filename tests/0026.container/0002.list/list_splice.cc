@@ -1,4 +1,4 @@
-#include <fast_io.h>
+﻿#include <fast_io.h>
 #include <fast_io_dsal/list.h>
 #include <iterator>
 
@@ -12,11 +12,11 @@ int main()
 
 	list1.splice(it, std::move(list2));
 
-	println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
+	::fast_io::println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
 			::fast_io::mnp::rgvw(list2, " "));
 
 	list2.splice(list2.begin(), it, list1.end());
 
-	println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
+	::fast_io::println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
 			::fast_io::mnp::rgvw(list2, " "));
 }

@@ -110,6 +110,7 @@
 #include "fast_io_core_impl/to.h"
 
 #include "fast_io_core_impl/http_header.h"
+#include "fast_io_core_impl/io_lockable.h"
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
