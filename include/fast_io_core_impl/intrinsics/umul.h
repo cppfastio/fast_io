@@ -136,7 +136,7 @@ inline constexpr U umulh_least_generic(U a, U b) noexcept
 #endif
 	{
 		T v{static_cast<T>(a) * b};
-		return static_cast<U>(v >> (::std::numeric_limits<U>::digits))
+		return static_cast<U>(v >> (::std::numeric_limits<U>::digits));
 	}
 }
 
