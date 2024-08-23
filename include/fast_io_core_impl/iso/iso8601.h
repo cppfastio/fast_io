@@ -21,7 +21,7 @@ struct basic_timestamp
 	explicit constexpr operator flt_type() noexcept
 	{
 		// I know this is not accurate. but it is better than nothing
-		constexpr flt_type precision{static_cast<flt_type>(uint_least64_subseconds_per_second)};
+		constexpr flt_type precision{static_cast<flt_type>(::fast_io::uint_least64_subseconds_per_second)};
 		return static_cast<flt_type>(seconds) + static_cast<flt_type>(subseconds) / precision;
 	}
 };
@@ -55,44 +55,22 @@ struct timestamp_u
 	::std::uint_least64_t subseconds;
 };
 
-inline constexpr timestamp_u add_impl(timestamp_u a, timestamp_u b) noexcept
+inline constexpr timestamp_u add_impl(::std::uint_least64_t aseconds, ::std::uint_least64_t asubseconds, ::std::uint_least64_t bseconds, ::std::uint_least64_t bsubseconds) noexcept
 {
-	constexpr ::std::uint_least64_t max_digit{::std::numeric_limits<::std::uint_least64_t>::max() /
-											  uint_least64_subseconds_per_second};
-	::std::uint_least64_t res;
-	bool cf;
-	if constexpr (max_digit == 1)
-	{
-		cf = intrinsics::add_carry(false, a.subseconds, b.subseconds, res);
-		if (uint_least64_subseconds_per_second <= res)
-		{
-			res -= uint_least64_subseconds_per_second;
-			cf = true;
-		}
-	}
-	else
-	{
-		if ((cf = (uint_least64_subseconds_per_second <= res)))
-		{
-			res -= uint_least64_subseconds_per_second;
-		}
-	}
-	::std::uint_least64_t seconds;
-	intrinsics::add_carry(cf, a.seconds, b.seconds, seconds);
-	return {seconds, res};
+	bool carry{};
+	::std::uint_least64_t res{::fast_io::intrinsics::addc(asubseconds, bsubseconds, carry, carry)};
+	bool carry2{};
+	::fast_io::intrinsics::subc(res, ::fast_io::uint_least64_subseconds_per_second, carry2, carry2);
+	res += (static_cast<::std::uint_least64_t>(0u - static_cast<::std::uint_least64_t>(carry2)) & ::fast_io::uint_least64_subseconds_per_second);
+	return {::fast_io::intrinsics::addc(aseconds, bseconds, carry | carry2, carry), res};
 }
 
-inline constexpr timestamp_u sub_impl(timestamp_u a, timestamp_u b) noexcept
+inline constexpr timestamp_u sub_impl(::std::uint_least64_t aseconds, ::std::uint_least64_t asubseconds, ::std::uint_least64_t bseconds, ::std::uint_least64_t bsubseconds) noexcept
 {
-	::std::uint_least64_t res;
-	::std::uint_least64_t seconds;
-	bool borrow{intrinsics::sub_borrow(false, a.subseconds, b.subseconds, res)};
-	intrinsics::sub_borrow(borrow, a.seconds, b.seconds, seconds);
-	if (borrow)
-	{
-		res += uint_least64_subseconds_per_second;
-	}
-	return {seconds, res};
+	bool carry{};
+	::std::uint_least64_t res{::fast_io::intrinsics::subc(asubseconds, bsubseconds, carry, carry)};
+	res += (static_cast<::std::uint_least64_t>(0u - static_cast<::std::uint_least64_t>(carry)) & ::fast_io::uint_least64_subseconds_per_second);
+	return {::fast_io::intrinsics::subc(aseconds, bseconds, carry, carry), res};
 }
 
 inline constexpr basic_timestamp<0> div_uint(::std::int_least64_t rseconds, ::std::uint_least64_t subseconds,
@@ -110,7 +88,7 @@ inline constexpr basic_timestamp<0> div_uint(::std::int_least64_t rseconds, ::st
 		seconds = zero - seconds;
 	}
 #ifdef __SIZEOF_INT128__
-	__uint128_t total_subseconds{static_cast<__uint128_t>(seconds) * uint_least64_subseconds_per_second + subseconds};
+	__uint128_t total_subseconds{static_cast<__uint128_t>(seconds) * ::fast_io::uint_least64_subseconds_per_second + subseconds};
 	::std::uint_least64_t mid{d >> 1};
 	__uint128_t rr{total_subseconds % d};
 	::std::uint_least64_t r{static_cast<::std::uint_least64_t>(rr)};
@@ -126,8 +104,8 @@ inline constexpr basic_timestamp<0> div_uint(::std::int_least64_t rseconds, ::st
 			++q;
 		}
 	}
-	::std::uint_least64_t result_seconds{static_cast<::std::uint_least64_t>(q / uint_least64_subseconds_per_second)};
-	::std::uint_least64_t result_subseconds{static_cast<::std::uint_least64_t>(q % uint_least64_subseconds_per_second)};
+	::std::uint_least64_t result_seconds{static_cast<::std::uint_least64_t>(q / ::fast_io::uint_least64_subseconds_per_second)};
+	::std::uint_least64_t result_subseconds{static_cast<::std::uint_least64_t>(q % ::fast_io::uint_least64_subseconds_per_second)};
 	if (minus)
 	{
 		result_seconds = zero - result_seconds;
@@ -137,7 +115,7 @@ inline constexpr basic_timestamp<0> div_uint(::std::int_least64_t rseconds, ::st
 	constexpr ::std::uint_least64_t one{1};
 	::std::uint_least64_t total_seconds_high;
 	::std::uint_least64_t total_seconds_low{
-		intrinsics::umul(seconds, uint_least64_subseconds_per_second, total_seconds_high)};
+		::fast_io::intrinsics::umul(seconds, ::fast_io::uint_least64_subseconds_per_second, total_seconds_high)};
 
 	bool carry{};
 
@@ -153,13 +131,103 @@ inline constexpr basic_timestamp<0> div_uint(::std::int_least64_t rseconds, ::st
 		q_high = ::fast_io::intrinsics::addc(q_high, zero, carry, carry);
 	}
 	auto [result_seconds_low, result_seconds_high, result_subseconds_low, result_subseconds_high] =
-		::fast_io::intrinsics::udivmod(q_low, q_high, uint_least64_subseconds_per_second, zero);
+		::fast_io::intrinsics::udivmod(q_low, q_high, ::fast_io::uint_least64_subseconds_per_second, zero);
 	if (minus)
 	{
 		result_seconds_low = zero - result_seconds_low;
 	}
 	return {static_cast<::std::int_least64_t>(result_seconds_low), result_subseconds_low};
 #endif
+}
+
+inline constexpr basic_timestamp<0> div_unix_timestamp(::std::int_least64_t dividend_seconds, ::std::uint_least64_t dividend_subseconds,
+													   ::std::int_least64_t divisor_seconds, ::std::uint_least64_t divisor_subseconds) noexcept
+{
+	if (divisor_seconds == 0 && divisor_subseconds == 0)
+	{
+		::fast_io::fast_terminate();
+	}
+	bool const dividend_negative{dividend_seconds < 0};
+	bool const divisor_negative{divisor_seconds < 0};
+	bool const result_negative{(static_cast<char unsigned>(divisor_negative) ^ static_cast<char unsigned>(dividend_negative)) != 0};
+	constexpr ::std::uint_least64_t zero{};
+	::std::uint_least64_t udividend_seconds{static_cast<::std::uint_least64_t>(dividend_seconds)};
+	::std::uint_least64_t udivisor_seconds{static_cast<::std::uint_least64_t>(divisor_seconds)};
+
+	if (dividend_negative)
+	{
+		udividend_seconds = zero - udividend_seconds;
+	}
+	if (divisor_negative)
+	{
+		udivisor_seconds = zero - udivisor_seconds;
+	}
+
+	::std::uint_least64_t dividend_total_seconds_high;
+	::std::uint_least64_t dividend_total_seconds_low{
+		::fast_io::intrinsics::umul(udividend_seconds, ::fast_io::uint_least64_subseconds_per_second, dividend_total_seconds_high)};
+
+	bool carry{};
+
+	dividend_total_seconds_low = ::fast_io::intrinsics::addc(dividend_total_seconds_low, dividend_subseconds, carry, carry);
+	dividend_total_seconds_high = ::fast_io::intrinsics::addc(dividend_total_seconds_high, zero, carry, carry);
+
+	::std::uint_least64_t divisor_total_seconds_high;
+	::std::uint_least64_t divisor_total_seconds_low{
+		::fast_io::intrinsics::umul(udivisor_seconds, ::fast_io::uint_least64_subseconds_per_second, divisor_total_seconds_high)};
+
+	carry = 0;
+
+	divisor_total_seconds_low = ::fast_io::intrinsics::addc(divisor_total_seconds_low, divisor_subseconds, carry, carry);
+	divisor_total_seconds_high = ::fast_io::intrinsics::addc(divisor_total_seconds_high, zero, carry, carry);
+
+	auto [q_low, q_high, r_low, r_high] = ::fast_io::intrinsics::udivmod(dividend_total_seconds_low, dividend_total_seconds_high, divisor_total_seconds_low, divisor_total_seconds_high);
+
+	auto divisor_total_seconds_div2_low{::fast_io::intrinsics::shiftright(divisor_total_seconds_low, divisor_total_seconds_high, 1u)};
+	auto divisor_total_seconds_div2_high{divisor_total_seconds_high >> 1u};
+
+	carry = false;
+
+	::fast_io::intrinsics::subc(divisor_total_seconds_div2_low, r_low, carry, carry);
+	::fast_io::intrinsics::subc(divisor_total_seconds_div2_high, r_high, carry, carry);
+	if ((!carry) && (((divisor_total_seconds_low & 1u) == 0u) && (r_low == divisor_total_seconds_div2_low || r_high == divisor_total_seconds_div2_high)))
+	{
+		// mid point case
+		carry = ((q_low & 1u) != 0u);
+	}
+	q_low = ::fast_io::intrinsics::addc(q_low, zero, carry, carry);
+	q_high = ::fast_io::intrinsics::addc(q_high, zero, carry, carry);
+	if (carry)
+	{
+		::fast_io::fast_terminate();
+	}
+	auto [seconds_low, seconds_high, subseconds_low, subseconds_high] = ::fast_io::intrinsics::udivmod(q_low, q_high, ::fast_io::uint_least64_subseconds_per_second, zero);
+#if __has_cpp_attribute(assume)
+	[[assume(subseconds_high == 0u)]];
+#endif
+	if (seconds_high || subseconds_high)
+	{
+		::fast_io::fast_terminate();
+	}
+
+	if (result_negative)
+	{
+		constexpr ::std::uint_least64_t mx{(::std::numeric_limits<::std::uint_least64_t>::max() >> 1u) + 1u};
+		if (mx < seconds_low)
+		{
+			::fast_io::fast_terminate();
+		}
+		seconds_low = static_cast<::std::uint_least64_t>(zero - seconds_low);
+	}
+	else
+	{
+		constexpr ::std::uint_least64_t mx{(::std::numeric_limits<::std::uint_least64_t>::max() >> 1u)};
+		if (mx < seconds_low)
+		{
+			::fast_io::fast_terminate();
+		}
+	}
+	return {static_cast<::std::int_least64_t>(seconds_low), subseconds_low};
 }
 
 } // namespace details
@@ -184,7 +252,7 @@ inline constexpr basic_timestamp<off_to_epoch> operator+(basic_timestamp<off_to_
 		{
 			::std::uint_least64_t b_abs{static_cast<::std::uint_least64_t>(b.seconds)};
 			b_abs = 0u - b_abs;
-			auto res{details::add_impl({a_abs, a.subseconds}, {b_abs, b.subseconds})};
+			auto res{::fast_io::details::add_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
 			res.seconds = 0u - res.seconds;
 			return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
 		}
@@ -193,12 +261,12 @@ inline constexpr basic_timestamp<off_to_epoch> operator+(basic_timestamp<off_to_
 			::std::uint_least64_t b_abs{static_cast<::std::uint_least64_t>(b.seconds)};
 			if (a_abs < b_abs || (a_abs == b_abs && a.subseconds < b.subseconds))
 			{
-				auto res{details::sub_impl({b_abs, b.subseconds}, {a_abs, a.subseconds})};
+				auto res{::fast_io::details::sub_impl(b_abs, b.subseconds, a_abs, a.subseconds)};
 				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
 			}
 			else
 			{
-				auto res{details::sub_impl({a_abs, a.subseconds}, {b_abs, b.subseconds})};
+				auto res{::fast_io::details::sub_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
 				res.seconds = 0u - res.seconds;
 				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
 			}
@@ -213,20 +281,20 @@ inline constexpr basic_timestamp<off_to_epoch> operator+(basic_timestamp<off_to_
 			b_abs = 0u - b_abs;
 			if (a_abs < b_abs || (a_abs == b_abs && a.subseconds < b.subseconds))
 			{
-				auto res{details::sub_impl({b_abs, b.subseconds}, {a_abs, a.subseconds})};
+				auto res{::fast_io::details::sub_impl(b_abs, b.subseconds, a_abs, a.subseconds)};
 				res.seconds = 0u - res.seconds;
 				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
 			}
 			else
 			{
-				auto res{details::sub_impl({a_abs, a.subseconds}, {b_abs, b.subseconds})};
+				auto res{::fast_io::details::sub_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
 				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
 			}
 		}
 		else
 		{
 			::std::uint_least64_t b_abs{static_cast<::std::uint_least64_t>(b.seconds)};
-			auto res{details::add_impl({a_abs, a.subseconds}, {b_abs, b.subseconds})};
+			auto res{::fast_io::details::add_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
 			return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
 		}
 	}
@@ -257,11 +325,11 @@ inline constexpr basic_timestamp<off_to_epoch> operator/(basic_timestamp<off_to_
 {
 	if constexpr (off_to_epoch == 0)
 	{
-		return details::div_uint(a.seconds, a.subseconds, b);
+		return ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
 	}
 	else
 	{
-		auto [seconds, subseconds] = details::div_uint(a.seconds, a.subseconds, b);
+		auto [seconds, subseconds] = ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
 		return {seconds, subseconds};
 	}
 }
@@ -272,17 +340,49 @@ inline constexpr basic_timestamp<off_to_epoch> &operator/=(basic_timestamp<off_t
 {
 	if constexpr (off_to_epoch == 0)
 	{
-		return a = details::div_uint(a.seconds, a.subseconds, b);
+		return a = ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
 	}
 	else
 	{
-		auto [seconds, subseconds] = details::div_uint(a.seconds, a.subseconds, b);
+		auto [seconds, subseconds] = ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
+		a.seconds = seconds;
+		a.subseconds = subseconds;
+		return a;
+	}
+}
+#if 0
+template <::std::int_least64_t off_to_epoch>
+inline constexpr basic_timestamp<off_to_epoch> &operator/=(basic_timestamp<off_to_epoch> &a,
+														   basic_timestamp<off_to_epoch> b) noexcept
+{
+	if constexpr (off_to_epoch == 0)
+	{
+		return a = ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
+	}
+	else
+	{
+		auto [seconds, subseconds] = ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
 		a.seconds = seconds;
 		a.subseconds = subseconds;
 		return a;
 	}
 }
 
+template <::std::int_least64_t off_to_epoch>
+inline constexpr basic_timestamp<off_to_epoch> operator/(basic_timestamp<off_to_epoch> a,
+														 basic_timestamp<off_to_epoch> b) noexcept
+{
+	if constexpr (off_to_epoch == 0)
+	{
+		return ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
+	}
+	else
+	{
+		auto [seconds, subseconds] = ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
+		return {seconds, subseconds};
+	}
+}
+#endif
 /*
 https://www.epochconverter.com/seconds-days-since-y0
 Seconds since year 0 (MySQL compatible)
@@ -746,7 +846,7 @@ inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t 
 {
 	::std::uint_least64_t seconds{ftu64 / 10000000ULL};
 	::std::uint_least64_t subseconds{ftu64 % 10000000ULL};
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
+	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000u};
 	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
 }
 
