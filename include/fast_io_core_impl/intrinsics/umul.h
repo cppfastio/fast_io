@@ -54,7 +54,7 @@ inline constexpr T pack_generic(U low, U high) noexcept
 	}
 	else if constexpr (::std::endian::native == ::std::endian::big)
 	{
-		return __builtin_bit_cast(T, ::fast_io::intrinsics::ul_generic_x2_little_endian<U>{high, low}); // get around gcc bug
+		return __builtin_bit_cast(T, ::fast_io::intrinsics::ul_generic_x2_big_endian<U>{high, low}); // get around gcc bug
 	}
 	else
 	{
