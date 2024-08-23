@@ -175,7 +175,7 @@ inline constexpr U umul(U a, U b, U &high) noexcept
 		else
 #endif
 		{
-			return ::fast_io::intrinsics::msvc::_umul128(a, b, __builtin_addressof(high));
+			return ::fast_io::intrinsics::msvc::x86::_umul128(a, b, __builtin_addressof(high));
 		}
 #else
 		return ::fast_io::intrinsics::details::umul_least_generic_emulated(a, b, high);
