@@ -46,7 +46,7 @@ inline constexpr U unpack_generic(T a, U &high) noexcept
 
 template <typename T, typename U>
 	requires(sizeof(T) == sizeof(U) * 2)
-inline constexpr T pack_generic(T a, U &high) noexcept
+inline constexpr T pack_generic(U low, U high) noexcept
 {
 	if constexpr (::std::endian::native == ::std::endian::little)
 	{
@@ -134,7 +134,7 @@ inline constexpr U umul(U a, U b, U &high) noexcept
 			return static_cast<::std::uint_least64_t>(res);
 		}
 		else
-#elif __cpp_lib_is_constant_evaluated >= 201811L
+#elif defined(__cpp_lib_is_constant_evaluated)
 		if (::std::is_constant_evaluated())
 		{
 			__uint128_t res{static_cast<__uint128_t>(a) * b};
@@ -145,35 +145,12 @@ inline constexpr U umul(U a, U b, U &high) noexcept
 
 #endif
 		{
-#if defined(__has_builtin)
+#if defined(__cpp_lib_bit_cast)
 			if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
 			{
-				struct u64x2_little_endian_t
-				{
-					::std::uint_least64_t low, high;
-				};
-				struct u64x2_big_endian_t
-				{
-					::std::uint_least64_t high, low;
-				};
-				using u64x2_t = ::std::conditional_t<::std::endian::native == ::std::endian::little, u64x2_little_endian_t,
-													 u64x2_big_endian_t>;
-				static_assert(sizeof(__uint128_t) == sizeof(u64x2_t));
-#if __has_builtin(__builtin_bit_cast)
-				auto u{__builtin_bit_cast(u64x2_t, static_cast<__uint128_t>(a) * b)};
+				auto u{__builtin_bit_cast(::fast_io::intrinsics::ul64x2, static_cast<__uint128_t>(a) * b)};
 				high = u.high;
 				return u.low;
-#else
-				__uint128_t res{static_cast<__uint128_t>(a) * b};
-				u64x2_t u;
-#if __has_builtin(__builtin_memcpy)
-				__builtin_memcpy(__builtin_addressof(u), __builtin_addressof(res), sizeof(u64x2_t));
-#else
-				::std::memcpy(__builtin_addressof(u), __builtin_addressof(res), sizeof(u64x2_t));
-#endif
-				high = u.high;
-				return u.low;
-#endif
 			}
 			else
 #endif
