@@ -126,23 +126,18 @@ inline constexpr U umul(U a, U b, U &high) noexcept
 	if constexpr (sizeof(U) == sizeof(::std::uint_least64_t))
 	{
 #ifdef __SIZEOF_INT128__
-#if __cpp_if_consteval >= 202106L
+#if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
+#if defined(__cpp_if_consteval)
 		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
 		{
 			__uint128_t res{static_cast<__uint128_t>(a) * b};
 			high = static_cast<::std::uint_least64_t>(res >> 64u);
 			return static_cast<::std::uint_least64_t>(res);
 		}
 		else
-#elif defined(__cpp_lib_is_constant_evaluated)
-		if (::std::is_constant_evaluated())
-		{
-			__uint128_t res{static_cast<__uint128_t>(a) * b};
-			high = static_cast<::std::uint_least64_t>(res >> 64u);
-			return static_cast<::std::uint_least64_t>(res);
-		}
-		else
-
 #endif
 		{
 #if defined(__cpp_lib_bit_cast)
