@@ -94,24 +94,26 @@ inline constexpr ::std::int_least32_t mul_ln10_div_ln2_floor(::std::int_least32_
 inline constexpr ::std::uint_least64_t mulshift_float64(::std::uint_least64_t x, ::std::uint_least64_t ylow,
 														::std::uint_least64_t yhigh) noexcept
 {
-	::std::uint_least64_t p0high{intrinsics::umul_least64_high(x, ylow)};
+	::std::uint_least64_t p0high{::fast_io::intrinsics::umulh(x, ylow)};
 	::std::uint_least64_t p1high;
-	::std::uint_least64_t p1low{intrinsics::umul(x, yhigh, p1high)};
+	::std::uint_least64_t p1low{::fast_io::intrinsics::umul(x, yhigh, p1high)};
 	constexpr ::std::uint_least64_t zero{};
-	intrinsics::add_carry(intrinsics::add_carry(false, p1low, p0high, p1low), p1high, zero, p1high);
+	bool carry{};
+	::fast_io::intrinsics::addc(p1low, p0high, carry, carry);
+	p1high = ::fast_io::intrinsics::addc(p1high, zero, carry, carry);
 	return p1high;
 }
 
 inline constexpr ::std::uint_least32_t mulshift_float32(::std::uint_least32_t x, ::std::uint_least64_t y) noexcept
 {
-	return static_cast<::std::uint_least32_t>(intrinsics::umul_least64_high(x, y));
+	return static_cast<::std::uint_least32_t>(::fast_io::intrinsics::umulh(x, y));
 }
 
 inline constexpr bool mul_parity_float64(::std::uint_least64_t two_f, ::std::uint_least64_t pow10_low,
 										 ::std::uint_least64_t pow10_high, ::std::int_least32_t beta_minus_1) noexcept
 {
 	::std::uint_least64_t const p01{two_f * pow10_high};
-	::std::uint_least64_t const p10{intrinsics::umul_least64_high(two_f, pow10_low)};
+	::std::uint_least64_t const p10{::fast_io::intrinsics::umulh(two_f, pow10_low)};
 	::std::uint_least64_t const mid{p01 + p10};
 	constexpr ::std::uint_least64_t one{1};
 	return (mid & (one << (64 - beta_minus_1)));
