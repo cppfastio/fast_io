@@ -417,91 +417,11 @@ template <typename flt>
 inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type>
 dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32_t e2) noexcept
 {
-	using mantissa_type = typename iec559_traits<flt>::mantissa_type;
 	auto [m10, e10] = dragonbox_main<flt>(m2, e2);
 	// m10 should not ==0
 	auto [v, n] = ::fast_io::bitops::rtz_iec559(m10);
-
 	e10+=static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(n));
-
 	return {v, e10};
-#if 0
-	if constexpr (sizeof(::std::size_t) >= sizeof(::std::uint_least64_t) ||
-				  sizeof(mantissa_type) < sizeof(::std::uint_least64_t))
-	{
-		if constexpr (sizeof(::std::uint_least64_t) <= sizeof(mantissa_type))
-		{
-			auto tmp_div100000000(m10 / 100000000u);
-			auto tmp_mod100000000(m10 % 100000000u);
-			if (tmp_mod100000000 == 0u) [[unlikely]]
-			{
-				m10 = tmp_div100000000;
-				e10 += 8;
-			}
-		}
-		for (;;)
-		{
-			auto tmp_div100(m10 / 100u);
-			auto tmp_mod100(m10 % 100u);
-			if (tmp_mod100)
-			{
-				break;
-			}
-			m10 = tmp_div100;
-			e10 += 2;
-		}
-		auto tmp_div10{m10 / 10u};
-		auto tmp_mod10{m10 % 10u};
-		if (!tmp_mod10)
-		{
-			m10 = tmp_div10;
-			++e10;
-		}
-		return {m10, e10};
-	}
-	else
-	{
-		auto tmp_div100000000(m10 / 100000000u);
-		auto tmp_mod100000000(m10 % 100000000u);
-		if (tmp_mod100000000 == 0u) [[unlikely]]
-		{
-			m10 = tmp_div100000000;
-			e10 += 8;
-		}
-		// 4294967296
-		while (m10 >= 1000000000u)
-		{
-			auto tmp_div100(m10 / 100u);
-			auto tmp_mod100(m10 % 100u);
-			if (tmp_mod100)
-			{
-				auto tmp_div10{m10 / 10u};
-				auto tmp_mod10{m10 % 10u};
-				if (!tmp_mod10)
-				{
-					m10 = tmp_div10;
-					++e10;
-				}
-				return {m10, e10};
-			}
-			m10 = tmp_div100;
-			e10 += 2;
-		}
-		::std::uint_least32_t m10ul32{static_cast<::std::uint_least32_t>(m10)};
-		for (;;)
-		{
-			auto tmp_div100{m10ul32 / 100u};
-			auto tmp_mod100{m10ul32 % 100u};
-			if (tmp_mod100)
-			{
-				break;
-			}
-			m10ul32 = tmp_div100;
-			e10 += 2;
-		}
-		return {static_cast<mantissa_type>(m10ul32), e10};
-	}
-#endif
 }
 
 template <bool comma, ::std::integral char_type, my_unsigned_integral U>
