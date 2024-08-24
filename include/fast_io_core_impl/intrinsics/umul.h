@@ -16,8 +16,8 @@ struct ul_generic_x2_big_endian
 
 template <typename U>
 using ul_generic_x2 = ::std::conditional_t<::std::endian::native == ::std::endian::big,
-										::fast_io::intrinsics::ul_generic_x2_big_endian<U>,
-										::fast_io::intrinsics::ul_generic_x2_little_endian<U>>;
+										   ::fast_io::intrinsics::ul_generic_x2_big_endian<U>,
+										   ::fast_io::intrinsics::ul_generic_x2_little_endian<U>>;
 
 using ul32x2 = ::fast_io::intrinsics::ul_generic_x2<::std::uint_least32_t>;
 using ul64x2 = ::fast_io::intrinsics::ul_generic_x2<::std::uint_least64_t>;
@@ -88,37 +88,57 @@ inline constexpr U umul_least_generic(U a, U b, U &high) noexcept
 	}
 }
 
-template <typename T>
+template <typename T, typename U>
 	requires(sizeof(T) == sizeof(::std::uint_least64_t))
-inline constexpr T umul_least_generic_emulated(T a, T b, T &high) noexcept
+inline constexpr T umul_least64_generic_emulated(U a, T b, U &high) noexcept
 {
-	using U = ::std::uint_least32_t;
-	U a1;
-	U a0{::fast_io::intrinsics::unpack_generic<T, U>(a, a1)};
-	U b1;
-	U b0{::fast_io::intrinsics::unpack_generic<T, U>(b, b1)};
-	U c1;
-	U c0{::fast_io::intrinsics::details::umul_least_generic<T, U>(a0, b0, c1)};
-	U a0b1h;
-	U a0b1l{::fast_io::intrinsics::details::umul_least_generic<T, U>(a0, b1, a0b1h)};
-	U a1b0h;
-	U a1b0l{::fast_io::intrinsics::details::umul_least_generic<T, U>(a1, b0, a1b0h)};
-	U c3;
-	U c2{::fast_io::intrinsics::details::umul_least_generic<T, U>(a1, b1, c3)};
-	constexpr U zero{};
-	bool carry{};
-	c1 = ::fast_io::intrinsics::addc(c1, a0b1l, carry, carry);
-	c2 = ::fast_io::intrinsics::addc(c2, a0b1h, carry, carry);
-	c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
-	carry = false;
-	c1 = ::fast_io::intrinsics::addc(c1, a1b0l, carry, carry);
-	c2 = ::fast_io::intrinsics::addc(c2, a1b0h, carry, carry);
-	c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
+	using S = ::std::uint_least32_t;
+	if constexpr (sizeof(U) == sizeof(T))
+	{
+		S a1;
+		S a0{::fast_io::intrinsics::unpack_generic<T, S>(a, a1)};
+		S b1;
+		S b0{::fast_io::intrinsics::unpack_generic<T, S>(b, b1)};
+		S c1;
+		S c0{::fast_io::intrinsics::details::umul_least_generic<T, S>(a0, b0, c1)};
+		S a0b1h;
+		S a0b1l{::fast_io::intrinsics::details::umul_least_generic<T, S>(a0, b1, a0b1h)};
+		S a1b0h;
+		S a1b0l{::fast_io::intrinsics::details::umul_least_generic<T, S>(a1, b0, a1b0h)};
+		S c3;
+		S c2{::fast_io::intrinsics::details::umul_least_generic<T, S>(a1, b1, c3)};
+		constexpr S zero{};
+		bool carry{};
+		c1 = ::fast_io::intrinsics::addc(c1, a0b1l, carry, carry);
+		c2 = ::fast_io::intrinsics::addc(c2, a0b1h, carry, carry);
+		c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
+		carry = false;
+		c1 = ::fast_io::intrinsics::addc(c1, a1b0l, carry, carry);
+		c2 = ::fast_io::intrinsics::addc(c2, a1b0h, carry, carry);
+		c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
 
-	high = ::fast_io::intrinsics::pack_generic<T, U>(c2, c3);
-	return ::fast_io::intrinsics::pack_generic<T, U>(c0, c1);
+		high = ::fast_io::intrinsics::pack_generic<T, S>(c2, c3);
+		return ::fast_io::intrinsics::pack_generic<T, S>(c0, c1);
+	}
+	else
+	{
+		S a0{a};
+		S b1;
+		S b0{::fast_io::intrinsics::unpack_generic<T, S>(b, b1)};
+		S c1;
+		S c0{::fast_io::intrinsics::details::umul_least_generic<T, S>(a0, b0, c1)};
+		S a0b1h;
+		S a0b1l{::fast_io::intrinsics::details::umul_least_generic<T, S>(a0, b1, a0b1h)};
+
+		constexpr S zero{};
+		bool carry{};
+		c1 = ::fast_io::intrinsics::addc(c1, a0b1l, carry, carry);
+		a0b1h = ::fast_io::intrinsics::addc(zero, a0b1h, carry, carry);
+
+		high = a0b1h;
+		return ::fast_io::intrinsics::pack_generic<T, S>(c0, c1);
+	}
 }
-
 
 template <typename T, typename U>
 	requires(sizeof(T) == sizeof(U) * 2)
@@ -140,65 +160,64 @@ inline constexpr U umulh_least_generic(U a, U b) noexcept
 	}
 }
 
-template <typename T>
+template <typename T, typename U>
 	requires(sizeof(T) == sizeof(::std::uint_least64_t))
-inline constexpr T umulh_least_generic_emulated(T a, T b) noexcept
+inline constexpr U umulh_least64_generic_emulated(U a, T b) noexcept
 {
-	using U = ::std::uint_least32_t;
-	U a1;
-	U a0{::fast_io::intrinsics::unpack_generic<T, U>(a, a1)};
-	U b1;
-	U b0{::fast_io::intrinsics::unpack_generic<T, U>(b, b1)};
+	using S = ::std::uint_least32_t;
+	if constexpr (sizeof(U) == sizeof(T))
+	{
+		S a1;
+		S a0{::fast_io::intrinsics::unpack_generic<T, S>(a, a1)};
+		S b1;
+		S b0{::fast_io::intrinsics::unpack_generic<T, S>(b, b1)};
 
-#if 0
-	U c1;
-	U c0{::fast_io::intrinsics::details::umul_least_generic<T, U>(a0, b0, c1)};
-	U a0b1h;
-	U a0b1l{::fast_io::intrinsics::details::umul_least_generic<T, U>(a0, b1, a0b1h)};
-	U a1b0h;
-	U a1b0l{::fast_io::intrinsics::details::umul_least_generic<T, U>(a1, b0, a1b0h)};
-	U c3;
-	U c2{::fast_io::intrinsics::details::umul_least_generic<T, U>(a1, b1, c3)};
-	constexpr U zero{};
-	bool carry{};
-	c1 = ::fast_io::intrinsics::addc(c1, a0b1l, carry, carry);
-	c2 = ::fast_io::intrinsics::addc(c2, a0b1h, carry, carry);
-	c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
-	carry = false;
-	c1 = ::fast_io::intrinsics::addc(c1, a1b0l, carry, carry);
-	c2 = ::fast_io::intrinsics::addc(c2, a1b0h, carry, carry);
-	c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
+		S c1{::fast_io::intrinsics::details::umulh_least_generic<T, S>(a0, b0)};
+		S a0b1h;
+		S a0b1l{::fast_io::intrinsics::details::umul_least_generic<T, S>(a0, b1, a0b1h)};
+		S a1b0h;
+		S a1b0l{::fast_io::intrinsics::details::umul_least_generic<T, S>(a1, b0, a1b0h)};
+		S c3;
+		S c2{::fast_io::intrinsics::details::umul_least_generic<T, S>(a1, b1, c3)};
+		constexpr S zero{};
+		bool carry{};
+		c1 = ::fast_io::intrinsics::addc(c1, a0b1l, carry, carry);
+		c2 = ::fast_io::intrinsics::addc(c2, a0b1h, carry, carry);
+		c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
+		carry = false;
+		c1 = ::fast_io::intrinsics::addc(c1, a1b0l, carry, carry);
+		c2 = ::fast_io::intrinsics::addc(c2, a1b0h, carry, carry);
+		c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
 
-	high = ::fast_io::intrinsics::pack_generic<T, U>(c2, c3);
-	return ::fast_io::intrinsics::pack_generic<T, U>(c0, c1);
-#else
-	U c1{::fast_io::intrinsics::details::umulh_least_generic<T, U>(a0, b0)};
-	U a0b1h;
-	U a0b1l{::fast_io::intrinsics::details::umul_least_generic<T, U>(a0, b1, a0b1h)};
-	U a1b0h;
-	U a1b0l{::fast_io::intrinsics::details::umul_least_generic<T, U>(a1, b0, a1b0h)};
-	U c3;
-	U c2{::fast_io::intrinsics::details::umul_least_generic<T, U>(a1, b1, c3)};
-	constexpr U zero{};
-	bool carry{};
-	c1 = ::fast_io::intrinsics::addc(c1, a0b1l, carry, carry);
-	c2 = ::fast_io::intrinsics::addc(c2, a0b1h, carry, carry);
-	c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
-	carry = false;
-	c1 = ::fast_io::intrinsics::addc(c1, a1b0l, carry, carry);
-	c2 = ::fast_io::intrinsics::addc(c2, a1b0h, carry, carry);
-	c3 = ::fast_io::intrinsics::addc(c3, zero, carry, carry);
+		return ::fast_io::intrinsics::pack_generic<T, S>(c2, c3);
+	}
+	else
+	{
+		S a0{a};
+		S b1;
+		S b0{::fast_io::intrinsics::unpack_generic<T, S>(b, b1)};
 
-	return ::fast_io::intrinsics::pack_generic<T, U>(c2, c3);
-#endif
+		S c1{::fast_io::intrinsics::details::umulh_least_generic<T, S>(a0, b0)};
+		S a0b1h;
+		S a0b1l{::fast_io::intrinsics::details::umul_least_generic<T, S>(a0, b1, a0b1h)};
+		constexpr S zero{};
+		bool carry{};
+		::fast_io::intrinsics::addc(c1, a0b1l, carry, carry);
+
+		return ::fast_io::intrinsics::addc(zero, a0b1h, carry, carry);
+	}
 }
+
+template <typename U>
+concept umul_unsigned_integral = ::std::unsigned_integral<U> || ::std::same_as<U, ::fast_io::intrinsics::ul64x2>;
 
 } // namespace details
 
-template <::std::unsigned_integral U>
-inline constexpr U umul(U a, U b, U &high) noexcept
+template <::fast_io::intrinsics::details::umul_unsigned_integral U, ::fast_io::intrinsics::details::umul_unsigned_integral T>
+	requires(sizeof(U) <= sizeof(T))
+inline constexpr T umul(U a, T b, U &high) noexcept
 {
-	if constexpr (sizeof(U) == sizeof(::std::uint_least64_t))
+	if constexpr (sizeof(T) == sizeof(::std::uint_least64_t))
 	{
 #ifdef __SIZEOF_INT128__
 #if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
@@ -208,9 +227,9 @@ inline constexpr U umul(U a, U b, U &high) noexcept
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			__uint128_t res{static_cast<__uint128_t>(a) * b};
-			high = static_cast<::std::uint_least64_t>(res >> 64u);
-			return static_cast<::std::uint_least64_t>(res);
+			__uint128_t res{a * static_cast<__uint128_t>(b)};
+			high = static_cast<U>(res >> 64u);
+			return static_cast<T>(res);
 		}
 		else
 #endif
@@ -218,16 +237,16 @@ inline constexpr U umul(U a, U b, U &high) noexcept
 #if defined(__cpp_lib_bit_cast)
 			if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
 			{
-				auto u{__builtin_bit_cast(::fast_io::intrinsics::ul64x2, static_cast<__uint128_t>(a) * b)};
-				high = u.high;
+				auto u{__builtin_bit_cast(::fast_io::intrinsics::ul64x2, a * static_cast<__uint128_t>(b))};
+				high = static_cast<U>(u.high);
 				return u.low;
 			}
 			else
 #endif
 			{
-				__uint128_t res{static_cast<__uint128_t>(a) * b};
-				high = static_cast<::std::uint_least64_t>(res >> 64u);
-				return static_cast<::std::uint_least64_t>(res);
+				__uint128_t res{a * static_cast<__uint128_t>(b)};
+				high = static_cast<U>(res >> 64u);
+				return static_cast<T>(res);
 			}
 		}
 #elif defined(_MSC_VER) && defined(_M_X64)
@@ -238,35 +257,56 @@ inline constexpr U umul(U a, U b, U &high) noexcept
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::fast_io::intrinsics::details::umul_least_generic_emulated(a, b, high);
+			return ::fast_io::intrinsics::details::umul_least64_generic_emulated(a, b, high);
 		}
 		else
 #endif
 		{
-			return ::fast_io::intrinsics::msvc::x86::_umul128(a, b, __builtin_addressof(high));
+			if constexpr (sizeof(U) == sizeof(::std::uint_least64_t))
+			{
+				return ::fast_io::intrinsics::msvc::x86::_umul128(a, b, __builtin_addressof(high));
+			}
+			else
+			{
+				T h;
+				T low{::fast_io::intrinsics::msvc::x86::_umul128(a, b, __builtin_addressof(high))};
+				high = static_cast<U>(h);
+				return low;
+			}
 		}
 #else
-		return ::fast_io::intrinsics::details::umul_least_generic_emulated(a, b, high);
+		return ::fast_io::intrinsics::details::umul_least64_generic_emulated(a, b, high);
 #endif
 	}
-	else if constexpr (sizeof(U) == sizeof(::std::uint_least32_t))
+	else if constexpr (sizeof(T) == sizeof(::std::uint_least32_t))
 	{
-		return ::fast_io::intrinsics::details::umul_least_generic<::std::uint_least64_t, U>(a, b, high);
+		return ::fast_io::intrinsics::details::umul_least_generic<::std::uint_least64_t, T>(a, b, high);
 	}
-	else if constexpr (sizeof(U) == sizeof(::std::uint_least16_t))
+	else if constexpr (sizeof(T) == sizeof(::std::uint_least16_t))
 	{
-		return ::fast_io::intrinsics::details::umul_least_generic<::std::uint_least32_t, U>(a, b, high);
+		return ::fast_io::intrinsics::details::umul_least_generic<::std::uint_least32_t, T>(a, b, high);
 	}
-	else if constexpr (sizeof(U) == sizeof(::std::uint_least8_t))
+	else if constexpr (sizeof(T) == sizeof(::std::uint_least8_t))
 	{
-		return ::fast_io::intrinsics::details::umul_least_generic<::std::uint_least16_t, U>(a, b, high);
+		return ::fast_io::intrinsics::details::umul_least_generic<::std::uint_least16_t, T>(a, b, high);
 	}
 }
 
-template <::std::unsigned_integral U>
-inline constexpr U umulh(U a, U b) noexcept
+template <::fast_io::intrinsics::details::umul_unsigned_integral U, ::fast_io::intrinsics::details::umul_unsigned_integral T>
+	requires(sizeof(U) <= sizeof(T))
+inline constexpr T umull(U a, T b) noexcept
 {
-	if constexpr (sizeof(U) == sizeof(::std::uint_least64_t))
+	if constexpr (sizeof(T) <= sizeof(::std::uint_least64_t))
+	{
+		return static_cast<T>(a * b);
+	}
+}
+
+template <::fast_io::intrinsics::details::umul_unsigned_integral U, ::fast_io::intrinsics::details::umul_unsigned_integral T>
+	requires(sizeof(U) <= sizeof(T))
+inline constexpr U umulh(U a, T b) noexcept
+{
+	if constexpr (sizeof(T) == sizeof(::std::uint_least64_t))
 	{
 #ifdef __SIZEOF_INT128__
 #if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
@@ -276,9 +316,8 @@ inline constexpr U umulh(U a, U b) noexcept
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			__uint128_t res{static_cast<__uint128_t>(a) * b};
-			high = static_cast<::std::uint_least64_t>(res >> 64u);
-			return static_cast<::std::uint_least64_t>(res);
+			__uint128_t res{a * static_cast<__uint128_t>(b)};
+			return static_cast<U>(res >> 64u);
 		}
 		else
 #endif
@@ -286,16 +325,14 @@ inline constexpr U umulh(U a, U b) noexcept
 #if defined(__cpp_lib_bit_cast)
 			if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
 			{
-				auto u{__builtin_bit_cast(::fast_io::intrinsics::ul64x2, static_cast<__uint128_t>(a) * b)};
-				high = u.high;
-				return u.low;
+				auto u{__builtin_bit_cast(::fast_io::intrinsics::ul64x2, a * static_cast<__uint128_t>(b))};
+				return u.high;
 			}
 			else
 #endif
 			{
-				__uint128_t res{static_cast<__uint128_t>(a) * b};
-				high = static_cast<::std::uint_least64_t>(res >> 64u);
-				return static_cast<::std::uint_least64_t>(res);
+				__uint128_t res{a * static_cast<__uint128_t>(b)};
+				return static_cast<U>(res >> 64u);
 			}
 		}
 #elif defined(_MSC_VER) && defined(_M_X64)
@@ -306,26 +343,26 @@ inline constexpr U umulh(U a, U b) noexcept
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::fast_io::intrinsics::details::umulh_least_generic_emulated(a, b);
+			return ::fast_io::intrinsics::details::umulh_least64_generic_emulated(a, b);
 		}
 		else
 #endif
 		{
-			return ::fast_io::intrinsics::msvc::x86::_umulh(a, b);
+			return static_cast<U>(::fast_io::intrinsics::msvc::x86::_umulh(a, b));
 		}
 #else
-		return ::fast_io::intrinsics::details::umulh_least_generic_emulated(a, b);
+		return ::fast_io::intrinsics::details::umulh_least64_generic_emulated(a, b);
 #endif
 	}
-	else if constexpr (sizeof(U) == sizeof(::std::uint_least32_t))
+	else if constexpr (sizeof(T) == sizeof(::std::uint_least32_t))
 	{
 		return ::fast_io::intrinsics::details::umulh_least_generic<::std::uint_least64_t, U>(a, b);
 	}
-	else if constexpr (sizeof(U) == sizeof(::std::uint_least16_t))
+	else if constexpr (sizeof(T) == sizeof(::std::uint_least16_t))
 	{
 		return ::fast_io::intrinsics::details::umulh_least_generic<::std::uint_least32_t, U>(a, b);
 	}
-	else if constexpr (sizeof(U) == sizeof(::std::uint_least8_t))
+	else if constexpr (sizeof(T) == sizeof(::std::uint_least8_t))
 	{
 		return ::fast_io::intrinsics::details::umulh_least_generic<::std::uint_least16_t, U>(a, b);
 	}

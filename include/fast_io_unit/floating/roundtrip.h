@@ -106,7 +106,7 @@ inline constexpr ::std::uint_least64_t mulshift_float64(::std::uint_least64_t x,
 
 inline constexpr ::std::uint_least32_t mulshift_float32(::std::uint_least32_t x, ::std::uint_least64_t y) noexcept
 {
-	return static_cast<::std::uint_least32_t>(::fast_io::intrinsics::umulh(x, y));
+	return ::fast_io::intrinsics::umulh(x, y);
 }
 
 inline constexpr bool mul_parity_float64(::std::uint_least64_t two_f, ::std::uint_least64_t pow10_low,
