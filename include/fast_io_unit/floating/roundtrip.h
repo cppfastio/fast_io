@@ -420,6 +420,12 @@ dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32
 	using mantissa_type = typename iec559_traits<flt>::mantissa_type;
 	auto [m10, e10] = dragonbox_main<flt>(m2, e2);
 	// m10 should not ==0
+	auto [v, n] = ::fast_io::bitops::rtz_iec559(m10);
+
+	e10+=static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(n));
+
+	return {v, e10};
+#if 0
 	if constexpr (sizeof(::std::size_t) >= sizeof(::std::uint_least64_t) ||
 				  sizeof(mantissa_type) < sizeof(::std::uint_least64_t))
 	{
@@ -495,6 +501,7 @@ dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32
 		}
 		return {static_cast<mantissa_type>(m10ul32), e10};
 	}
+#endif
 }
 
 template <bool comma, ::std::integral char_type, my_unsigned_integral U>
