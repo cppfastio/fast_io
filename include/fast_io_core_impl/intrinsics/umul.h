@@ -63,6 +63,18 @@ inline constexpr T pack_generic(U low, U high) noexcept
 	}
 }
 
+inline constexpr ::fast_io::intrinsics::ul64x2 pack_ul64(::std::uint_least64_t low, ::std::uint_least64_t high) noexcept
+{
+	if constexpr (::std::endian::native == ::std::endian::big)
+	{
+		return {high,low};
+	}
+	else
+	{
+		return {low,high};
+	}
+}
+
 namespace details
 {
 template <typename U>
