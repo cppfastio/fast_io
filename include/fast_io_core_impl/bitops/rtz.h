@@ -40,7 +40,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 			if constexpr(!iec559)
 			{
 				constexpr ::std::uint_least64_t c0{230079197716545u};
-				::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 16)};
+				::std::uint_least64_t r{::std::rotr(static_cast<std::uint64_t>(n * c0), 16)};
 				constexpr ::std::uint_least64_t d0{1845u};
 				bool b{r < d0};
 				s += s;
@@ -49,7 +49,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 			}
 
 			constexpr ::std::uint_least64_t c0{28999941890838049u};
-			::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 8)};
+			::std::uint_least64_t r{::std::rotr(static_cast<std::uint64_t>(n * c0), 8)};
 			constexpr ::std::uint_least64_t d0{184467440738u};
 			bool b{r < d0};
 			s += s;
