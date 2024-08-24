@@ -1,7 +1,7 @@
 ﻿#pragma once
 /*
 Reference from
-https://github.com/jk-jeon/rtz_benchmark
+https://github.com/cppalliance/decimal/blob/develop/include/boost/decimal/detail/remove_trailing_zeros.hpp
 granlund_montgomery_branchless
 */
 namespace fast_io::bitops
@@ -15,8 +15,11 @@ struct rtz_result
 	std::size_t n;
 };
 
-template <::std::unsigned_integral T>
-inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
+namespace details
+{
+
+template <bool iec559, typename T>
+inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 {
 	if constexpr (::std::numeric_limits<T>::digits == 64)
 	{
@@ -24,9 +27,9 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
 		{
 #ifdef __cpp_lib_bit_cast
 			return __builtin_bit_cast(::fast_io::bitops::rtz_result<T>,
-									  ::fast_io::bitops::rtz(static_cast<::std::uint_least64_t>(n)));
+									  ::fast_io::bitops::details::rtz_impl<iec559>(static_cast<::std::uint_least64_t>(n)));
 #else
-			auto [v, s] = ::fast_io::bitops::rtz(static_cast<::std::uint_least64_t>(n));
+			auto [v, s] = ::fast_io::bitops::details::rtz_impl<iec559>(static_cast<::std::uint_least64_t>(n));
 			return {v, s};
 #endif
 		}
@@ -34,8 +37,19 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
 		{
 			std::size_t s{};
 
+			if constexpr(!iec559)
+			{
+				constexpr ::std::uint_least64_t c0{230079197716545u};
+				::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 16)};
+				constexpr ::std::uint_least64_t d0{1845u};
+				bool b{r < d0};
+				s += s;
+				s += b;
+				n = b ? r : n;
+			}
+
 			constexpr ::std::uint_least64_t c0{28999941890838049u};
-			::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 4)};
+			::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 8)};
 			constexpr ::std::uint_least64_t d0{184467440738u};
 			bool b{r < d0};
 			s += s;
@@ -43,7 +57,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
 			n = b ? r : n;
 
 			constexpr ::std::uint_least64_t c1{182622766329724561u};
-			r = ::std::rotr(static_cast<std::uint64_t>(n * c1), 2);
+			r = ::std::rotr(static_cast<std::uint64_t>(n * c1), 4);
 			constexpr ::std::uint_least64_t d1{1844674407370956u};
 			b = r < d1;
 			s += s;
@@ -51,7 +65,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
 			n = b ? r : n;
 
 			constexpr ::std::uint_least64_t c2{10330176681277348905u};
-			r = ::std::rotr(static_cast<std::uint64_t>(n * c2), 1);
+			r = ::std::rotr(static_cast<std::uint64_t>(n * c2), 2);
 			constexpr ::std::uint_least64_t d2{184467440737095517u};
 			b = r < d2;
 			s += s;
@@ -75,15 +89,26 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
 		{
 #ifdef __cpp_lib_bit_cast
 			return __builtin_bit_cast(::fast_io::bitops::rtz_result<T>,
-									  ::fast_io::bitops::rtz(static_cast<::std::uint_least32_t>(n)));
+									  ::fast_io::bitops::details::rtz_impl<iec559>(static_cast<::std::uint_least32_t>(n)));
 #else
-			auto [v, s] = ::fast_io::bitops::rtz(static_cast<::std::uint_least32_t>(n));
+			auto [v, s] = ::fast_io::bitops::details::rtz_impl<iec559>(static_cast<::std::uint_least32_t>(n));
 			return {v, s};
 #endif
 		}
 		else
 		{
 			std::size_t s{};
+
+			if constexpr(!iec559)
+			{
+				constexpr ::std::uint_least64_t c0{15273505u};
+				::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 8)};
+				constexpr ::std::uint_least64_t d0{43u};
+				bool b{r < d0};
+				s += s;
+				s += b;
+				n = b ? r : n;
+			}
 
 			constexpr ::std::uint_least32_t c0{184254097u};
 			::std::uint_least32_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 4)};
@@ -111,9 +136,28 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
 			return {n, s};
 		}
 	}
+#if 0
+	else if constexpr (::std::numeric_limits<T>::digits == 16)
+	{
+		if constexpr (!::std::same_as<T, ::std::uint_least16_t>)
+		{
+#ifdef __cpp_lib_bit_cast
+			return __builtin_bit_cast(::fast_io::bitops::rtz_result<T>,
+									  ::fast_io::bitops::details::rtz_impl<iec559>(static_cast<::std::uint_least32_t>(n)));
+#else
+			auto [v, s] = ::fast_io::bitops::details::rtz_impl<false>(static_cast<::std::uint_least32_t>(n));
+			return {v, s};
+#endif
+		}
+		else
+		{
+
+		}
+	}
+#endif
 	else if constexpr (::std::numeric_limits<T>::digits == 16 || ::std::numeric_limits<T>::digits == 8)
 	{
-		auto [v, s] = ::fast_io::bitops::rtz(static_cast<::std::uint_least32_t>(n));
+		auto [v, s] = ::fast_io::bitops::details::rtz_impl<true>(static_cast<::std::uint_least32_t>(n));
 		return {static_cast<T>(v), s};
 	}
 	else
@@ -140,6 +184,21 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
 		}
 		return {n, s};
 	}
+}
+
+
+}
+
+template <typename T>
+inline constexpr ::fast_io::bitops::rtz_result<T> rtz_iec559(T n) noexcept
+{
+	return ::fast_io::bitops::details::rtz_impl<true>(n);
+}
+
+template <typename T>
+inline constexpr ::fast_io::bitops::rtz_result<T> rtz(T n) noexcept
+{
+	return ::fast_io::bitops::details::rtz_impl<false>(n);
 }
 
 } // namespace fast_io::bitops
