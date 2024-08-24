@@ -23,7 +23,7 @@ using ul32x2 = ::fast_io::intrinsics::ul_generic_x2<::std::uint_least32_t>;
 using ul64x2 = ::fast_io::intrinsics::ul_generic_x2<::std::uint_least64_t>;
 
 template <typename T, typename U>
-	requires(sizeof(T) == sizeof(U) * 2)
+	requires(sizeof(U) * 2 <= sizeof(T))
 inline constexpr U unpack_generic(T a, U &high) noexcept
 {
 	if constexpr (::std::endian::native == ::std::endian::little)
@@ -46,7 +46,7 @@ inline constexpr U unpack_generic(T a, U &high) noexcept
 }
 
 template <typename T, typename U>
-	requires(sizeof(T) == sizeof(U) * 2)
+	requires(sizeof(U) * 2 <= sizeof(T))
 inline constexpr T pack_generic(U low, U high) noexcept
 {
 	if constexpr (::std::endian::native == ::std::endian::little)
@@ -67,11 +67,11 @@ inline constexpr ::fast_io::intrinsics::ul64x2 pack_ul64(::std::uint_least64_t l
 {
 	if constexpr (::std::endian::native == ::std::endian::big)
 	{
-		return {high,low};
+		return {high, low};
 	}
 	else
 	{
-		return {low,high};
+		return {low, high};
 	}
 }
 
@@ -97,7 +97,7 @@ namespace details
 {
 
 template <typename T, typename U>
-	requires(sizeof(T) == sizeof(U) * 2)
+	requires(sizeof(U) * 2 <= sizeof(T))
 inline constexpr U umul_least_generic(U a, U b, U &high) noexcept
 {
 #if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
@@ -171,7 +171,7 @@ inline constexpr T umul_least64_generic_emulated(U a, T b, U &high) noexcept
 }
 
 template <typename T, typename U>
-	requires(sizeof(T) == sizeof(U) * 2)
+	requires(sizeof(U) * 2 <= sizeof(T))
 inline constexpr U umulh_least_generic(U a, U b) noexcept
 {
 #if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
