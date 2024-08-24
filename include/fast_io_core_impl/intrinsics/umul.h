@@ -348,7 +348,7 @@ inline constexpr U umulh(U a, T b) noexcept
 		else
 #endif
 		{
-			return static_cast<U>(::fast_io::intrinsics::msvc::x86::_umulh(a, b));
+			return static_cast<U>(::fast_io::intrinsics::msvc::x86::__umulh(a, b));
 		}
 #else
 		return ::fast_io::intrinsics::details::umulh_least64_generic_emulated(a, b);
