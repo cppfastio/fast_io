@@ -302,9 +302,7 @@ inline constexpr ::fast_io::intrinsics::ul64x2 umull_least128_generic_emulated(:
 {
 	::std::uint_least64_t c1;
 	::std::uint_least64_t c0{::fast_io::intrinsics::umul(a0, b0, c1)};
-	::std::uint_least64_t a0b1h;
 	::std::uint_least64_t a0b1l{a0 * b1};
-	::std::uint_least64_t a1b0h;
 	::std::uint_least64_t a1b0l{a1 * b0};
 	c1 += a0b1l;
 	c1 += a1b0l;
