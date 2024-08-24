@@ -326,7 +326,7 @@ inline constexpr U umulh(U a, T b) noexcept
 			if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
 			{
 				auto u{__builtin_bit_cast(::fast_io::intrinsics::ul64x2, a * static_cast<__uint128_t>(b))};
-				return u.high;
+				return static_cast<U>(u.high);
 			}
 			else
 #endif
