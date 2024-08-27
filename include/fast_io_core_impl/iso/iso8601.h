@@ -59,10 +59,10 @@ inline constexpr timestamp_u add_impl(::std::uint_least64_t aseconds, ::std::uin
 {
 	bool carry{};
 	::std::uint_least64_t res{::fast_io::intrinsics::addc(asubseconds, bsubseconds, carry, carry)};
-	bool carry2{};
-	::fast_io::intrinsics::subc(res, ::fast_io::uint_least64_subseconds_per_second, carry2, carry2);
-	res += (static_cast<::std::uint_least64_t>(0u - static_cast<::std::uint_least64_t>(carry2)) & ::fast_io::uint_least64_subseconds_per_second);
-	return {::fast_io::intrinsics::addc(aseconds, bseconds, carry | carry2, carry), res};
+	carry|=(::fast_io::uint_least64_subseconds_per_second<=res);
+	res-=carry?::fast_io::uint_least64_subseconds_per_second:0;
+	::std::uint_least64_t secs{::fast_io::intrinsics::addc(aseconds, bseconds, carry, carry)};
+	return {secs, res};
 }
 
 inline constexpr timestamp_u sub_impl(::std::uint_least64_t aseconds, ::std::uint_least64_t asubseconds, ::std::uint_least64_t bseconds, ::std::uint_least64_t bsubseconds) noexcept
