@@ -18,7 +18,7 @@ struct basic_timestamp
 	}
 
 	template <::std::floating_point flt_type>
-	explicit constexpr operator flt_type() noexcept
+	explicit constexpr operator flt_type() const noexcept
 	{
 		// I know this is not accurate. but it is better than nothing
 		constexpr flt_type precision{static_cast<flt_type>(::fast_io::uint_least64_subseconds_per_second)};
