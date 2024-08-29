@@ -91,27 +91,11 @@ inline constexpr ::std::int_least32_t mul_ln10_div_ln2_floor(::std::int_least32_
 	return (e * 1741647) >> 19;
 }
 
-inline constexpr ::std::uint_least64_t mulshift_float64(::std::uint_least64_t x, ::std::uint_least64_t ylow,
-														::std::uint_least64_t yhigh) noexcept
-{
-	::std::uint_least64_t p0high{intrinsics::umul_least64_high(x, ylow)};
-	::std::uint_least64_t p1high;
-	::std::uint_least64_t p1low{intrinsics::umul(x, yhigh, p1high)};
-	constexpr ::std::uint_least64_t zero{};
-	intrinsics::add_carry(intrinsics::add_carry(false, p1low, p0high, p1low), p1high, zero, p1high);
-	return p1high;
-}
-
-inline constexpr ::std::uint_least32_t mulshift_float32(::std::uint_least32_t x, ::std::uint_least64_t y) noexcept
-{
-	return static_cast<::std::uint_least32_t>(intrinsics::umul_least64_high(x, y));
-}
-
 inline constexpr bool mul_parity_float64(::std::uint_least64_t two_f, ::std::uint_least64_t pow10_low,
 										 ::std::uint_least64_t pow10_high, ::std::int_least32_t beta_minus_1) noexcept
 {
 	::std::uint_least64_t const p01{two_f * pow10_high};
-	::std::uint_least64_t const p10{intrinsics::umul_least64_high(two_f, pow10_low)};
+	::std::uint_least64_t const p10{::fast_io::intrinsics::umulh(two_f, pow10_low)};
 	::std::uint_least64_t const mid{p01 + p10};
 	constexpr ::std::uint_least64_t one{1};
 	return (mid & (one << (64 - beta_minus_1)));
@@ -341,7 +325,7 @@ dragonbox_main(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32
 		::std::uint_least64_t const pow10_hi{pow10.hi};
 		::std::uint_least32_t const delta{static_cast<::std::uint_least32_t>(pow10_hi >> (63 - beta_minus_1))};
 		::std::uint_least64_t const two_fc{m2 << 1}, two_fl{two_fc - 1}, two_fr{two_fc + 1};
-		::std::uint_least64_t const zi{mulshift_float64(two_fr << beta_minus_1, pow10_lo, pow10_hi)};
+		::std::uint_least64_t const zi{::fast_io::intrinsics::umulh(two_fr << beta_minus_1, ::fast_io::intrinsics::pack_ul64(pow10_lo, pow10_hi))};
 		::std::uint_least64_t q;
 		::std::uint_least32_t r;
 		q = zi / big_divisor;
@@ -384,7 +368,7 @@ dragonbox_main(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32
 	{
 		::std::uint_least64_t const pow10{compute_pow10_float32[plus_k]};
 		::std::uint_least32_t const two_fc{m2 << 1}, two_fl{two_fc - 1}, two_fr{two_fc + 1};
-		::std::uint_least32_t const zi{mulshift_float32(two_fr << beta_minus_1, pow10)};
+		::std::uint_least32_t const zi{::fast_io::intrinsics::umulh(two_fr << beta_minus_1, pow10)};
 		::std::uint_least32_t q{zi / big_divisor};
 		::std::uint_least32_t r{zi % big_divisor};
 		::std::uint_least32_t const delta{static_cast<::std::uint_least32_t>(pow10 >> (63 - beta_minus_1))};
@@ -433,84 +417,11 @@ template <typename flt>
 inline constexpr m10_result<typename iec559_traits<flt>::mantissa_type>
 dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32_t e2) noexcept
 {
-	using mantissa_type = typename iec559_traits<flt>::mantissa_type;
 	auto [m10, e10] = dragonbox_main<flt>(m2, e2);
 	// m10 should not ==0
-	if constexpr (sizeof(::std::size_t) >= sizeof(::std::uint_least64_t) ||
-				  sizeof(mantissa_type) < sizeof(::std::uint_least64_t))
-	{
-		if constexpr (sizeof(::std::uint_least64_t) <= sizeof(mantissa_type))
-		{
-			auto tmp_div100000000(m10 / 100000000u);
-			auto tmp_mod100000000(m10 % 100000000u);
-			if (tmp_mod100000000 == 0u) [[unlikely]]
-			{
-				m10 = tmp_div100000000;
-				e10 += 8;
-			}
-		}
-		for (;;)
-		{
-			auto tmp_div100(m10 / 100u);
-			auto tmp_mod100(m10 % 100u);
-			if (tmp_mod100)
-			{
-				break;
-			}
-			m10 = tmp_div100;
-			e10 += 2;
-		}
-		auto tmp_div10{m10 / 10u};
-		auto tmp_mod10{m10 % 10u};
-		if (!tmp_mod10)
-		{
-			m10 = tmp_div10;
-			++e10;
-		}
-		return {m10, e10};
-	}
-	else
-	{
-		auto tmp_div100000000(m10 / 100000000u);
-		auto tmp_mod100000000(m10 % 100000000u);
-		if (tmp_mod100000000 == 0u) [[unlikely]]
-		{
-			m10 = tmp_div100000000;
-			e10 += 8;
-		}
-		// 4294967296
-		while (m10 >= 1000000000u)
-		{
-			auto tmp_div100(m10 / 100u);
-			auto tmp_mod100(m10 % 100u);
-			if (tmp_mod100)
-			{
-				auto tmp_div10{m10 / 10u};
-				auto tmp_mod10{m10 % 10u};
-				if (!tmp_mod10)
-				{
-					m10 = tmp_div10;
-					++e10;
-				}
-				return {m10, e10};
-			}
-			m10 = tmp_div100;
-			e10 += 2;
-		}
-		::std::uint_least32_t m10ul32{static_cast<::std::uint_least32_t>(m10)};
-		for (;;)
-		{
-			auto tmp_div100{m10ul32 / 100u};
-			auto tmp_mod100{m10ul32 % 100u};
-			if (tmp_mod100)
-			{
-				break;
-			}
-			m10ul32 = tmp_div100;
-			e10 += 2;
-		}
-		return {static_cast<mantissa_type>(m10ul32), e10};
-	}
+	auto [v, n] = ::fast_io::bitops::rtz_iec559(m10);
+	e10+=static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(n));
+	return {v, e10};
 }
 
 template <bool comma, ::std::integral char_type, my_unsigned_integral U>
