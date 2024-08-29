@@ -146,7 +146,7 @@
 #pragma comment(linker,"/alternatename:__imp_?NtCreateProcess@nt@win32@fast_io@@YAIPAPAXIPAUobject_attributes@123@PAXI222@Z=__imp_NtCreateProcess")
 #pragma comment(linker,"/alternatename:__imp_?ZwCreateProcess@nt@win32@fast_io@@YAIPAPAXIPAUobject_attributes@123@PAXI222@Z=__imp_ZwCreateProcess")
 #pragma comment(linker,"/alternatename:__imp_?rtl_dos_path_name_to_nt_path_name_u@nt@win32@fast_io@@YAEPB_WPAUunicode_string@123@PAPB_WPAUrtl_relative_name_u@123@@Z=__imp_RtlDosPathNameToNtPathName_U")
-#pragma comment(linker,"/alternatename:__imp_?rtl_dos_path_name_to_nt_path_name_u_with_status@nt@win32@fast_io@@YAIPB_WPAUunicode_string@123@PAPB_WPAUrtl_relative_name_u@123@@Z=__imp_RtlDosPathNameToNtPathName_U_WithStatus")
+#pragma comment(linker,"/alternatename:__imp_?rtl_dos_path_name_to_nt_path_name_u_with_status@nt@win32@fast_io@@YAIPEB_SPEAUunicode_string@123@PEAPEB_SPEAUrtl_relative_name_u@123@@Z=__imp_RtlDosPathNameToNtPathName_U_WithStatus")
 #pragma comment(linker,"/alternatename:__imp_?rtl_free_unicode_string@nt@win32@fast_io@@YAXPAUunicode_string@123@@Z=__imp_RtlFreeUnicodeString")
 #pragma comment(linker,"/alternatename:__imp_?RtlInitializeCriticalSection@nt@win32@fast_io@@YAXPAX@Z=__imp_RtlInitializeCriticalSection")
 #pragma comment(linker,"/alternatename:__imp_?RtlEnterCriticalSection@nt@win32@fast_io@@YAXPAX@Z=__imp_RtlEnterCriticalSection")
