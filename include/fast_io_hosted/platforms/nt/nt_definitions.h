@@ -29,7 +29,7 @@ struct object_attributes
 
 struct io_status_block
 {
-	union
+	union dummyunion
 	{
 		::std::uint_least32_t Status;
 		void *Pointer;
