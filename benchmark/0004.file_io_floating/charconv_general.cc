@@ -26,7 +26,7 @@ int main()
 			auto [res, ec] = std::to_chars(buffer, start + 40, e, std::chars_format::general);
 			*res = '\n';
 			++res;
-			write(file, start, res);
+			::fast_io::operations::write_all(file, start, res);
 		}
 	}
 }

@@ -10,12 +10,9 @@ template <::std::integral char_type>
 inline constexpr char_type *output_iso8601_subseconds_main(char_type *iter, ::std::uint_least64_t subseconds) noexcept
 {
 	constexpr ::std::size_t digitsm1(::std::numeric_limits<::std::uint_least64_t>::digits10);
-	::std::size_t sz(digitsm1);
-	for (; subseconds % 10 == 0; --sz)
-	{
-		subseconds /= 10;
-	}
-	print_reserve_integral_main_impl<10, false>(iter += sz, subseconds, sz);
+	auto [v,n] = ::fast_io::bitops::rtz(subseconds);
+	::std::size_t sz{static_cast<::std::size_t>(digitsm1-n)};
+	print_reserve_integral_main_impl<10, false>(iter += sz, v, sz);
 	return iter;
 }
 
