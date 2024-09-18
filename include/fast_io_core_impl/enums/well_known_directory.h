@@ -10,7 +10,7 @@ https://wicg.github.io/file-system-access/
 namespace fast_io
 {
 
-enum well_known_directory : ::std::uint_least32_t
+enum class well_known_directory : ::std::uint_least32_t
 {
 	desktop,
 	documents,
