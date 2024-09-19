@@ -27,10 +27,17 @@ struct
 
 namespace details
 {
+#ifdef __DARWIN_C_LEVEL
+extern int libc_getaddrinfo(char const *node, char const *service, posix_addrinfo const *hints,
+							posix_addrinfo **res) noexcept __asm__("_getaddrinfo");
+
+extern void libc_freeaddrinfo(posix_addrinfo *res) noexcept __asm__("_freeaddrinfo");
+#else
 extern int libc_getaddrinfo(char const *node, char const *service, posix_addrinfo const *hints,
 							posix_addrinfo **res) noexcept __asm__("getaddrinfo");
 
 extern void libc_freeaddrinfo(posix_addrinfo *res) noexcept __asm__("freeaddrinfo");
+#endif
 } // namespace details
 
 class posix_dns_io_observer
