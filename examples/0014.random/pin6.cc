@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 	{
 		n = fast_io::to<std::size_t>(fast_io::mnp::os_c_str(argv[1]));
 	}
-	fast_io::u8obuf_file obf(u"pin.txt");
+	fast_io::u8obuf_file obf(u"pin6.txt");
 	fast_io::ibuf_white_hole_engine eng;
 	std::uniform_int_distribution<unsigned> ud(0, 9);
 	for (std::size_t i{}; i != n; ++i)
