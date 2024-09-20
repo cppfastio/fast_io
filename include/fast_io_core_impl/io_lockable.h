@@ -249,7 +249,7 @@ inline constexpr ::fast_io::basic_mutex_ref<Mutex> mutex_ref_define(::fast_io::b
 	return {mtx.pmutex};
 }
 
-namespace operations::define
+namespace operations::defines
 {
 
 template <typename T>
@@ -257,12 +257,12 @@ concept has_mutex_ref_define = requires(T t) {
 	mutex_ref_define(t);
 };
 
-} // namespace operations::define
+} // namespace operations::defines
 
 template <typename T, typename Mutex>
 inline constexpr decltype(auto) io_stream_mutex_ref_define(::fast_io::basic_general_io_lockable_ref<T, Mutex> mtx)
 {
-	if constexpr (::fast_io::operations::define::has_mutex_ref_define<Mutex>)
+	if constexpr (::fast_io::operations::defines::has_mutex_ref_define<Mutex>)
 	{
 		return mutex_ref_define(mtx.ptr->mutex);
 	}
