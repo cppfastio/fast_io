@@ -43,7 +43,6 @@ struct string_sso_buffer
 template <typename allocator_type, ::std::integral chtype>
 inline constexpr ::fast_io::basic_allocation_least_result<chtype*> string_allocate_init(chtype const *first, ::std::size_t n) noexcept
 {
-	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, chtype>;
 	::std::size_t np1{n + 1};
 	auto res{typed_allocator_type::allocate_at_least(np1)};
@@ -503,11 +502,24 @@ private:
 	{
 		if (other.imp.begin_ptr == other.ssobuffer.buffer)
 		{
-			this->ssobuffer = other.ssobuffer;
+			::std::size_t const othern{static_cast<::std::size_t>(other.imp.curr_ptr - other.imp.begin_ptr)};
+			if (othern == 0)
+			{
+				*this->ssobuffer.buffer=0;
+			}
+			else
+			{
+				::std::size_t const othernp1{static_cast<::std::size_t>(othern+1u)};
+#if __has_cpp_attribute(assume)
+				[[assume(othernp1!=0zu)]];
+#endif
+				::fast_io::freestanding::non_overlapped_copy_n(other.ssobuffer.buffer, othernp1, this->ssobuffer.buffer);
+			}
 			this->imp.begin_ptr = this->ssobuffer.buffer;
-			this->imp.curr_ptr = this->ssobuffer.buffer + (other.imp.curr_ptr - other.imp.begin_ptr);
+			this->imp.curr_ptr = this->ssobuffer.buffer + othern;
 			this->imp.end_ptr = this->ssobuffer.buffer + ::fast_io::containers::details::string_sso_sizem1<char_type>;
 			other.imp.curr_ptr = other.ssobuffer.buffer;
+
 		}
 		else
 		{
