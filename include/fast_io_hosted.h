@@ -105,8 +105,9 @@ freestanding ones.
 #endif
 
 #if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)
-#if 1
 #include "fast_io_unit/string.h"
+#if 0
+#include "fast_io_hosted/pretty_print_error_report.h"
 #endif
 #endif
 
