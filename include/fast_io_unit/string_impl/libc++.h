@@ -116,7 +116,7 @@ inline decltype(auto) hack_rep(::std::basic_string<elem, traits, alloc> &str) no
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
 #endif
-		= typename __rep *;
+		= __rep *;
 	return *reinterpret_cast<alias_pointer>(reinterpret_cast<::std::byte *>(__builtin_addressof(str)) +
 											__builtin_offsetof(model_t, __rep_));
 #else
