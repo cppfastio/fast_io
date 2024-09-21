@@ -99,7 +99,9 @@ int main()
 	auto concat_std_time = benchmark(color_concat_std);
 	auto u32concat_fast_io_time = benchmark(color_u32concat_fast_io);
 	auto u32concat_std_time = benchmark(color_u32concat_std);
+#if !defined(DISABLE_OSTRINGSTREAM_BENCH)
 	auto ostringstream_time = benchmark(color_ostringstream);
+#endif
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 	auto fmt_format_time = benchmark(color_fmt_format);
 #if __has_include(<fmt/compile.h>)
@@ -124,9 +126,11 @@ int main()
 		"fast_io::u32concat_std (total size: ",
 		u32concat_std_time.total_size, ") took ", u32concat_std_time.timestamp,
 		"s.\n"
+#if !defined(DISABLE_OSTRINGSTREAM_BENCH)
 		"std::ostringstream (total size: ",
 		ostringstream_time.total_size, ") took ", ostringstream_time.timestamp,
 		"s.\n"
+#endif
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 		"fmt::format (total size:",
 		fmt_format_time.total_size, ") took ", fmt_format_time.timestamp,
