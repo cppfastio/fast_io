@@ -4,12 +4,12 @@ namespace fast_io
 {
 
 template <typename... Args>
-[[deprecated("use ::fast_io::concat_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::string
-	concat(Args &&...args)
+	concat_std(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
@@ -27,12 +27,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::wconcat_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::basic_string<wchar_t>
-	wconcat(Args &&...args)
+	wconcat_std(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>,
@@ -50,12 +50,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::u8concat_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::u8string
-	u8concat(Args &&...args)
+	u8concat_std(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>,
@@ -73,12 +73,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::u16concat_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::u16string
-	u16concat(Args &&...args)
+	u16concat_std(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
@@ -95,12 +95,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::u32concat_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::u32string
-	u32concat(Args &&...args)
+	u32concat_std(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
@@ -117,12 +117,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::concatln_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::basic_string<char>
-	concatln(Args &&...args)
+	concatln_std(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
@@ -140,12 +140,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::wconcatln_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::basic_string<wchar_t>
-	wconcatln(Args &&...args)
+	wconcatln_std(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>,
@@ -163,12 +163,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::u8concatln_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::u8string
-	u8concatln(Args &&...args)
+	u8concatln_std(Args &&...args)
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>,
@@ -186,12 +186,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::u16concatln_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::u16string
-	u16concatln(Args &&...args)
+	u16concatln_std(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
@@ -208,12 +208,12 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[deprecated("use ::fast_io::u32concatln_std instead"), nodiscard]] inline
+[[nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
 	::std::u32string
-	u32concatln(Args &&...args)
+	u32concatln_std(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
