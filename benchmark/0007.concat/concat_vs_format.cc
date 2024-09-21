@@ -51,9 +51,19 @@ inline ::fast_io::string color_concat_fast_io(std::uint_least8_t r, std::uint_le
 	return ::fast_io::concat_fast_io("Red: ", r, ", Green: ", g, ", Blue: ", b);
 }
 
-inline ::std::string color_concat(std::uint_least8_t r, std::uint_least8_t g, std::uint_least8_t b)
+inline ::std::string color_concat_std(std::uint_least8_t r, std::uint_least8_t g, std::uint_least8_t b)
 {
-	return ::fast_io::concat("Red: ", r, ", Green: ", g, ", Blue: ", b);
+	return ::fast_io::concat_std("Red: ", r, ", Green: ", g, ", Blue: ", b);
+}
+
+inline ::fast_io::u32string color_u32concat_fast_io(std::uint_least8_t r, std::uint_least8_t g, std::uint_least8_t b)
+{
+	return ::fast_io::u32concat_fast_io(U"Red: ", r, U", Green: ", g, U", Blue: ", b);
+}
+
+inline ::std::u32string color_u32concat_std(std::uint_least8_t r, std::uint_least8_t g, std::uint_least8_t b)
+{
+	return ::fast_io::u32concat_std(U"Red: ", r, U", Green: ", g, U", Blue: ", b);
 }
 
 inline std::string color_ostringstream(std::uint_least8_t r, std::uint_least8_t g, std::uint_least8_t b)
@@ -86,7 +96,9 @@ int main()
 	auto format_time = benchmark(color_format);
 #endif
 	auto concat_fast_io_time = benchmark(color_concat_fast_io);
-	auto concat_time = benchmark(color_concat);
+	auto concat_std_time = benchmark(color_concat_std);
+	auto u32concat_fast_io_time = benchmark(color_u32concat_fast_io);
+	auto u32concat_std_time = benchmark(color_u32concat_std);
 	auto ostringstream_time = benchmark(color_ostringstream);
 #if __has_include(<fmt/core.h>) && defined(ENABLE_FMT_BENCH)
 	auto fmt_format_time = benchmark(color_fmt_format);
@@ -103,8 +115,14 @@ int main()
 		"fast_io::concat_fast_io (total size: ",
 		concat_fast_io_time.total_size, ") took ", concat_fast_io_time.timestamp,
 		"s.\n"
-		"fast_io::concat (total size: ",
-		concat_time.total_size, ") took ", concat_time.timestamp,
+		"fast_io::concat_std (total size: ",
+		concat_std_time.total_size, ") took ", concat_std_time.timestamp,
+		"s.\n"
+		"fast_io::u32concat_fast_io (total size: ",
+		u32concat_fast_io_time.total_size, ") took ", u32concat_fast_io_time.timestamp,
+		"s.\n"
+		"fast_io::u32concat_std (total size: ",
+		u32concat_std_time.total_size, ") took ", u32concat_std_time.timestamp,
 		"s.\n"
 		"std::ostringstream (total size: ",
 		ostringstream_time.total_size, ") took ", ostringstream_time.timestamp,

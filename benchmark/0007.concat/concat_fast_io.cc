@@ -8,11 +8,11 @@ int main()
 {
 	constexpr std::size_t N(10000000);
 	{
-		fast_io::timer t(u8"concat_string");
-		fast_io::obuf_file obf("concat_string.txt");
+		fast_io::timer t(u8"concat_fast_io");
+		fast_io::obuf_file obf("concat_fast_io.txt");
 		for (std::size_t i{}; i != N; ++i)
 		{
-			print(obf, fast_io::concatln(i));
+			print(obf, fast_io::concatln_fast_io(i));
 		}
 	}
 }
