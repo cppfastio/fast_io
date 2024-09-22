@@ -59,7 +59,7 @@ inline constexpr void string_heap_dilate_uncheck(::fast_io::containers::details:
 	}
 	else
 	{
-		auto [newptr, newcap] = typed_allocator_type::reallocate_at_least_n(beginptr, bfsize, rsize + 1u);
+		auto [newptr, newcap] = typed_allocator_type::reallocate_n_at_least(beginptr, bfsize, rsize + 1u);
 		ptr = newptr;
 		rsize = newcap - 1u;
 	}
