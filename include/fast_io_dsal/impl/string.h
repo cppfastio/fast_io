@@ -46,23 +46,24 @@ inline constexpr void string_heap_dilate_uncheck(::fast_io::containers::details:
 
 	chtype *ptr;
 	auto beginptr{imp.begin_ptr};
+	bool const is_sso{beginptr == pnullterminate};
 	if (beginptr == pnullterminate)
 	{
 		beginptr = nullptr;
 	}
-	if constexpr (typed_allocator_type::has_reallocate_at_least)
+	if constexpr (typed_allocator_type::has_reallocate)
 	{
 		auto [newptr, newcap] = typed_allocator_type::reallocate_at_least(beginptr, rsize + 1u);
 		ptr = newptr;
-		rsize = newcap;
+		rsize = newcap - 1u;
 	}
 	else
 	{
 		auto [newptr, newcap] = typed_allocator_type::reallocate_at_least_n(beginptr, bfsize, rsize + 1u);
 		ptr = newptr;
-		rsize = newcap;
+		rsize = newcap - 1u;
 	}
-	if (beginptr == pnullterminate)
+	if (is_sso)
 	{
 		*ptr = 0;
 	}
@@ -84,7 +85,7 @@ inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::de
 		::fast_io::fast_terminate();
 	}
 	::std::size_t const bfsizep1mul2{bfsizep1 << 1u};
-	return ::fast_io::containers::details::string_heap_dilate_uncheck(imp, bfsizep1mul2, pnullterminate);
+	return ::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(imp, bfsizep1mul2, pnullterminate);
 }
 
 } // namespace details
