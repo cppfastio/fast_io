@@ -205,7 +205,6 @@ template<::std::input_or_output_iterator Iter, typename T>
 inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const& ele)
 {
 	using itervaluetype = ::std::iter_value_t<Iter>;
-	using valuetype = ::std::remove_cvref_t<T>;
 	if constexpr(::std::contiguous_iterator<itervaluetype>)
 	{
 		if constexpr(::std::is_trivially_copyable_v<itervaluetype>&&
