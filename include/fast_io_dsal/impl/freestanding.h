@@ -201,4 +201,43 @@ constexpr Iter2 uninitialized_move_backward(Iter1 first, Iter1 last, Iter2 d_las
 	}
 }
 
+template<::std::input_or_output_iterator Iter, typename T>
+inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const& ele)
+{
+	using itervaluetype = ::std::iter_value_t<Iter>;
+	using valuetype = ::std::remove_cvref_t<T>;
+	if constexpr(::std::contiguous_iterator<itervaluetype>)
+	{
+		if constexpr(::std::is_trivially_copyable_v<itervaluetype>&&
+			::std::is_scalar_v<itervaluetype>&&sizeof(itervaluetype)==1)
+		{
+#ifdef __cpp_if_consteval
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+			{
+#ifdef __has_builtin
+#if __has_builtin(__builtin_memset)
+			__builtin_memset
+#else
+			::std::memset
+#endif
+#else
+			::std::memset
+#endif
+			(::std::to_address(first),
+				static_cast<itervaluetype>(ele),
+				static_cast<::std::size_t>(last-first));
+			return last;
+			}
+		}
+	}
+	for (;first!=last;++first)
+	{
+		::std::construct_at(*first, ele);
+	}
+	return last;
+}
+
 } // namespace fast_io::freestanding
