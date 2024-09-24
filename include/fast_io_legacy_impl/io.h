@@ -20,7 +20,7 @@ template <typename T, typename... Args>
 #endif
 inline constexpr void print(T &&t, Args &&...args)
 {
-	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
@@ -65,7 +65,7 @@ template <typename T, typename... Args>
 #endif
 inline constexpr void println(T &&t, Args &&...args)
 {
-	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
@@ -103,7 +103,7 @@ static_assert(device_and_type_ok, "some types are not printable for println");
 template <typename T, typename... Args>
 inline constexpr void perr(T &&t, Args &&...args)
 {
-	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
@@ -142,7 +142,7 @@ static_assert(device_and_type_ok, "some types are not printable for perr");
 template <typename T, typename... Args>
 inline constexpr void perrln(T &&t, Args &&...args)
 {
-	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
@@ -222,7 +222,7 @@ template <typename... Args>
 template <typename T, typename... Args>
 inline constexpr void debug_print(T &&t, Args &&...args)
 {
-	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
@@ -261,7 +261,7 @@ static_assert(device_and_type_ok, "some types are not printable for debug_print 
 template <typename T, typename... Args>
 inline constexpr void debug_println(T &&t, Args &&...args)
 {
-	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
 	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
