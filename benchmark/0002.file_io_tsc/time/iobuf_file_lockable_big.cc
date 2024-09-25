@@ -16,7 +16,7 @@ int main()
 			println(obf.unlocked_handle(), i);
 		}
 	}
-	std::vector<std::size_t> vec(N);
+	::fast_io::vector<std::size_t> vec(N);
 	{
 		fast_io::timer t(u8"input");
 		fast_io::ibuf_file_lockable ibf(u8"iobuf_file_lockable_big.txt");

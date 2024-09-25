@@ -14,7 +14,7 @@ int main()
 			fprintf(obf.fp, "%zu\n", i);
 		}
 	}
-	std::vector<std::size_t> vec(N);
+	::fast_io::vector<std::size_t> vec(N);
 	{
 		fast_io::timer t(u8"input");
 		fast_io::c_file ibf(u8"stdiotext.txt", fast_io::open_mode::in | fast_io::open_mode::text);
