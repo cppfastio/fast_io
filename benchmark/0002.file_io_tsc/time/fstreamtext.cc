@@ -17,7 +17,7 @@ int main()
 			obf.fb->sputc('\n');
 		}
 	}
-	std::vector<std::size_t> vec(N);
+	::fast_io::vector<std::size_t> vec(N);
 	{
 		fast_io::timer t(u8"input");
 		fast_io::filebuf_file ibf(u8"fsmtext.txt", fast_io::open_mode::in | fast_io::open_mode::text);

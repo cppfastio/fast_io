@@ -287,6 +287,7 @@ inline constexpr ::std::size_t get_gb18030_code_units_unhappy_pdstsz(char32_t u3
 	return get_gb18030_invalid_code_units(p_dst);
 }
 
+template <>
 inline constexpr ::std::size_t get_gb18030_code_units(char32_t cdpt, char *p_dst) noexcept
 {
 	if (cdpt < 0x80) [[likely]]

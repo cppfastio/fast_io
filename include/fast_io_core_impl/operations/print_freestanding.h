@@ -1340,7 +1340,7 @@ namespace decay::defines
 {
 
 template <typename char_type, typename... Args>
-concept print_freestanding_params_decay_okay =
+concept print_freestanding_params_okay =
 	::std::integral<char_type> &&
 	((::fast_io::printable<char_type, Args> || ::fast_io::reserve_printable<char_type, Args> ||
 	  ::fast_io::dynamic_reserve_printable<char_type, Args> || ::fast_io::scatter_printable<char_type, Args> ||
@@ -1351,13 +1351,17 @@ concept print_freestanding_params_decay_okay =
 template <typename output, typename... Args>
 concept print_freestanding_okay =
 	::fast_io::operations::defines::has_output_or_io_stream_ref_define<output> &&
-	::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<typename output::output_char_type,
+	::fast_io::operations::decay::defines::print_freestanding_params_okay<typename output::output_char_type,
 																				Args...>;
 
 } // namespace decay::defines
 
 namespace defines
 {
+
+template <typename char_type, typename... Args>
+concept print_freestanding_params_okay = ::fast_io::operations::decay::defines::print_freestanding_params_okay<char_type,
+	decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(::std::declval<Args>())))...>;
 
 template <typename output, typename... Args>
 concept print_freestanding_okay = ::fast_io::operations::decay::defines::print_freestanding_okay<

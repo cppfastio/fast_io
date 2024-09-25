@@ -279,7 +279,7 @@ template <typename char_type, typename T, typename... Args>
 concept inplace_to_decay_detect =
 	::std::integral<char_type> &&
 	(sizeof...(Args) != 0 &&
-	 ::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<char_type, Args...> &&
+	 ::fast_io::operations::decay::defines::print_freestanding_params_okay<char_type, Args...> &&
 	 (contiguous_scannable<char_type, T> || context_scannable<char_type, T>));
 
 } // namespace details
