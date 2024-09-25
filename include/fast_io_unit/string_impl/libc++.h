@@ -99,7 +99,11 @@ struct
 			__raw __r;
 		};
 	};
+#ifdef _LIBCPP_COMPRESSED_PAIR
+	_LIBCPP_COMPRESSED_PAIR(__rep, __rep_, allocator_type, __alloc_);
+#else
 	::std::__compressed_pair<__rep, allocator_type> __r_;
+#endif
 };
 
 template <typename elem, typename traits, typename alloc>
@@ -107,6 +111,15 @@ inline decltype(auto) hack_rep(::std::basic_string<elem, traits, alloc> &str) no
 {
 	using model_t = model<elem, traits, alloc>;
 	using __rep = typename model_t::__rep;
+#ifdef _LIBCPP_COMPRESSED_PAIR
+	using alias_pointer
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= __rep *;
+	return *reinterpret_cast<alias_pointer>(reinterpret_cast<::std::byte *>(__builtin_addressof(str)) +
+											__builtin_offsetof(model_t, __rep_));
+#else
 	using alias_pointer
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
@@ -115,6 +128,7 @@ inline decltype(auto) hack_rep(::std::basic_string<elem, traits, alloc> &str) no
 	return reinterpret_cast<alias_pointer>(reinterpret_cast<::std::byte *>(__builtin_addressof(str)) +
 										   __builtin_offsetof(model_t, __r_))
 		->first();
+#endif
 }
 
 template <typename elem, typename traits, typename alloc>
