@@ -20,12 +20,12 @@ void cmake_gen_rec_dir_def(fast_io::u8obuf_file& cmake_file, fast_io::native_io_
 	std::u8string new_prefix{fast_io::u8concat(prefix, filename, u8"__")};
 	fast_io::dir_file dir{at(nio), filename};
 	if (!gen_cmake_file(dir, new_prefix)) return;
-	print(cmake_file, u8"include(${CMAKE_CURRENT_LIST_DIR}/", filename, u8")\n");
+	print(cmake_file, u8"include(${CMAKE_CURRENT_LIST_DIR}/", filename, u8"/CMakeLists.txt)\n");
 }
 
-void cmake_gen_file_def(fast_io::u8obuf_file& cmake_file, std::u8string_view prefix, auto&& filename) {
-	print(cmake_file, u8"add_executable(", prefix, filename, u8" ", filename, u8")\n");
-	print(cmake_file, u8"add_test(", prefix, filename, u8" ", prefix, filename, u8")\n");
+void cmake_gen_file_def(fast_io::u8obuf_file& cmake_file, std::u8string_view targetname, auto&& filename) {
+	print(cmake_file, u8"add_executable(", targetname, u8" ", filename, u8")\n");
+	print(cmake_file, u8"add_test(", targetname, u8" ", targetname, u8")\n");
 }
 
 bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix) {
@@ -58,7 +58,7 @@ bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix) 
 		default:
 			std::u8string_view ext{u8extension(entry)};
 			if (ext == u8".cpp" || ext == u8".cc") {
-				cmake_gen_file_def(cmake_file, prefix, filename);
+				cmake_gen_file_def(cmake_file, fast_io::u8concat_std(prefix, u8stem(entry)), filename);
 				generated = true;
 			}
 			break;
