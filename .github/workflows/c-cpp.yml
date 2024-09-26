@@ -13,8 +13,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Install gcc
-      run: sudo apt-get update && sudo apt-get upgrade gcc -y
     - name: Install ninja-build tool
       uses: seanmiddleditch/gha-setup-ninja@v5
     - name: prebuild
