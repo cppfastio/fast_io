@@ -48,6 +48,9 @@ bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix) 
 				continue;
 			}
 			u8fv.curr_ptr += line.size();
+			line = line.substr(0, line.find_first_of(u8'#'));
+			line = line.substr(0, std::ranges::find_last_if_not(line, fast_io::char_category::is_c_space<char8_t>).begin() - line.begin() + 1);
+			if (line.empty()) continue;
 			ignore_files.emplace_back(std::move(line));
 		}
 	} catch (...) {}
