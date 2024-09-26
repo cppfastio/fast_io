@@ -1,0 +1,8 @@
+add_executable(benchmark__0005.time__fast_io.cc fast_io.cc)
+add_test(benchmark__0005.time__fast_io.cc benchmark__0005.time__fast_io.cc)
+add_executable(benchmark__0005.time__glibc_nl_langinfo.cc glibc_nl_langinfo.cc)
+add_test(benchmark__0005.time__glibc_nl_langinfo.cc benchmark__0005.time__glibc_nl_langinfo.cc)
+add_executable(benchmark__0005.time__iso8601.cc iso8601.cc)
+add_test(benchmark__0005.time__iso8601.cc benchmark__0005.time__iso8601.cc)
+add_executable(benchmark__0005.time__put_time.cc put_time.cc)
+add_test(benchmark__0005.time__put_time.cc benchmark__0005.time__put_time.cc)

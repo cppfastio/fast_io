@@ -1,11 +1,10 @@
-add_executable(list_loop list_loop.cc)
-add_test(list_looptest list_loop)
-
-add_executable(list_merge list_merge.cc)
-add_test(list_mergetest list_merge)
-
-add_executable(list_splice list_splice.cc)
-add_test(list_splicetest list_splice)
-
-add_executable(shared_ptr_insert shared_ptr_insert.cc)
-add_test(shared_ptr_inserttest shared_ptr_insert)
+add_executable(tests__0026.container__0002.list__list_loop.cc list_loop.cc)
+add_test(tests__0026.container__0002.list__list_loop.cc tests__0026.container__0002.list__list_loop.cc)
+add_executable(tests__0026.container__0002.list__list_merge.cc list_merge.cc)
+add_test(tests__0026.container__0002.list__list_merge.cc tests__0026.container__0002.list__list_merge.cc)
+add_executable(tests__0026.container__0002.list__list_sort.cc list_sort.cc)
+add_test(tests__0026.container__0002.list__list_sort.cc tests__0026.container__0002.list__list_sort.cc)
+add_executable(tests__0026.container__0002.list__list_splice.cc list_splice.cc)
+add_test(tests__0026.container__0002.list__list_splice.cc tests__0026.container__0002.list__list_splice.cc)
+add_executable(tests__0026.container__0002.list__shared_ptr_insert.cc shared_ptr_insert.cc)
+add_test(tests__0026.container__0002.list__shared_ptr_insert.cc tests__0026.container__0002.list__shared_ptr_insert.cc)

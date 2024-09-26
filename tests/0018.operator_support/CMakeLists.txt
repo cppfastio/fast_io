@@ -1,0 +1,2 @@
+add_executable(tests__0018.operator_support__operator_output.cc operator_output.cc)
+add_test(tests__0018.operator_support__operator_output.cc tests__0018.operator_support__operator_output.cc)

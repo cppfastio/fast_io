@@ -1,0 +1,6 @@
+add_executable(tests__0020.scanners__contiguous_line_scanner.cc contiguous_line_scanner.cc)
+add_test(tests__0020.scanners__contiguous_line_scanner.cc tests__0020.scanners__contiguous_line_scanner.cc)
+add_executable(tests__0020.scanners__getline.cc getline.cc)
+add_test(tests__0020.scanners__getline.cc tests__0020.scanners__getline.cc)
+add_executable(tests__0020.scanners__line_scanner.cc line_scanner.cc)
+add_test(tests__0020.scanners__line_scanner.cc tests__0020.scanners__line_scanner.cc)

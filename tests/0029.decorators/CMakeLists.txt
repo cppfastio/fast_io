@@ -1,0 +1,4 @@
+add_executable(tests__0029.decorators__decopartial.cc decopartial.cc)
+add_test(tests__0029.decorators__decopartial.cc tests__0029.decorators__decopartial.cc)
+add_executable(tests__0029.decorators__decopartialiobuf.cc decopartialiobuf.cc)
+add_test(tests__0029.decorators__decopartialiobuf.cc tests__0029.decorators__decopartialiobuf.cc)

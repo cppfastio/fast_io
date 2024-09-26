@@ -1,0 +1,2 @@
+add_executable(tests__0016.address_sanitizer__reserve_printable.cc reserve_printable.cc)
+add_test(tests__0016.address_sanitizer__reserve_printable.cc tests__0016.address_sanitizer__reserve_printable.cc)

@@ -1,0 +1,4 @@
+add_executable(examples__0031.concat__concat.cc concat.cc)
+add_test(examples__0031.concat__concat.cc examples__0031.concat__concat.cc)
+add_executable(examples__0031.concat__concat_code_cvt.cc concat_code_cvt.cc)
+add_test(examples__0031.concat__concat_code_cvt.cc examples__0031.concat__concat_code_cvt.cc)

@@ -1,0 +1,8 @@
+add_executable(examples__0000.compile__compile.cc compile.cc)
+add_test(examples__0000.compile__compile.cc examples__0000.compile__compile.cc)
+add_executable(examples__0000.compile__compile_freestanding.cc compile_freestanding.cc)
+add_test(examples__0000.compile__compile_freestanding.cc examples__0000.compile__compile_freestanding.cc)
+add_executable(examples__0000.compile__compile_hosted.cc compile_hosted.cc)
+add_test(examples__0000.compile__compile_hosted.cc examples__0000.compile__compile_hosted.cc)
+add_executable(examples__0000.compile__compile_legacy.cc compile_legacy.cc)
+add_test(examples__0000.compile__compile_legacy.cc examples__0000.compile__compile_legacy.cc)

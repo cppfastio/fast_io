@@ -1,0 +1,2 @@
+add_executable(examples__0033.pulseaudio__pulseaudio.cc pulseaudio.cc)
+add_test(examples__0033.pulseaudio__pulseaudio.cc examples__0033.pulseaudio__pulseaudio.cc)

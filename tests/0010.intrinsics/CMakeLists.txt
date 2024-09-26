@@ -1,0 +1,6 @@
+add_executable(tests__0010.intrinsics__udivins.cc udivins.cc)
+add_test(tests__0010.intrinsics__udivins.cc tests__0010.intrinsics__udivins.cc)
+add_executable(tests__0010.intrinsics__udivmod.cc udivmod.cc)
+add_test(tests__0010.intrinsics__udivmod.cc tests__0010.intrinsics__udivmod.cc)
+add_executable(tests__0010.intrinsics__umul.cc umul.cc)
+add_test(tests__0010.intrinsics__umul.cc tests__0010.intrinsics__umul.cc)

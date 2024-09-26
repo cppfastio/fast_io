@@ -1,2 +1,2 @@
-add_executable(test_array test_array.cc)
-add_test(test_arraytest test_array)
+add_executable(tests__0026.container__0007.array__test_array.cc test_array.cc)
+add_test(tests__0026.container__0007.array__test_array.cc tests__0026.container__0007.array__test_array.cc)

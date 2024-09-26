@@ -1,0 +1,8 @@
+add_executable(examples__0030.binary_serialization__leb128.cc leb128.cc)
+add_test(examples__0030.binary_serialization__leb128.cc examples__0030.binary_serialization__leb128.cc)
+add_executable(examples__0030.binary_serialization__leb128_input.cc leb128_input.cc)
+add_test(examples__0030.binary_serialization__leb128_input.cc examples__0030.binary_serialization__leb128_input.cc)
+add_executable(examples__0030.binary_serialization__lec559_lebe.cc lec559_lebe.cc)
+add_test(examples__0030.binary_serialization__lec559_lebe.cc examples__0030.binary_serialization__lec559_lebe.cc)
+add_executable(examples__0030.binary_serialization__wasm.cc wasm.cc)
+add_test(examples__0030.binary_serialization__wasm.cc examples__0030.binary_serialization__wasm.cc)

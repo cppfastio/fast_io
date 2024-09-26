@@ -1,0 +1,2 @@
+add_executable(examples__0020.operating_system__limine__kernel__kernel.cc kernel.cc)
+add_test(examples__0020.operating_system__limine__kernel__kernel.cc examples__0020.operating_system__limine__kernel__kernel.cc)

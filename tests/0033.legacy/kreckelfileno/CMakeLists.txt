@@ -1,2 +1,4 @@
-add_executable(kreckelfileno main.cpp fileno.cpp)
-add_test(kreckelfileno kreckelfileno)
+add_executable(tests__0033.legacy__kreckelfileno__fileno.cpp fileno.cpp)
+add_test(tests__0033.legacy__kreckelfileno__fileno.cpp tests__0033.legacy__kreckelfileno__fileno.cpp)
+add_executable(tests__0033.legacy__kreckelfileno__main.cpp main.cpp)
+add_test(tests__0033.legacy__kreckelfileno__main.cpp tests__0033.legacy__kreckelfileno__main.cpp)

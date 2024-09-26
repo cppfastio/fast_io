@@ -1,0 +1,4 @@
+add_executable(tests__0007.multiparas__11args.cc 11args.cc)
+add_test(tests__0007.multiparas__11args.cc tests__0007.multiparas__11args.cc)
+add_executable(tests__0007.multiparas__11args_unlocked.cc 11args_unlocked.cc)
+add_test(tests__0007.multiparas__11args_unlocked.cc tests__0007.multiparas__11args_unlocked.cc)

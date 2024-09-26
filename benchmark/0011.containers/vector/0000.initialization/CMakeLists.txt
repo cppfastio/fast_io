@@ -1,0 +1,4 @@
+add_executable(benchmark__0011.containers__vector__0000.initialization__fast_io.cc fast_io.cc)
+add_test(benchmark__0011.containers__vector__0000.initialization__fast_io.cc benchmark__0011.containers__vector__0000.initialization__fast_io.cc)
+add_executable(benchmark__0011.containers__vector__0000.initialization__std.cc std.cc)
+add_test(benchmark__0011.containers__vector__0000.initialization__std.cc benchmark__0011.containers__vector__0000.initialization__std.cc)

@@ -1,2 +1,2 @@
-add_executable(test_stack test_stack.cc)
-add_test(test_stacktest test_stack)
+add_executable(tests__0026.container__0005.stack__test_stack.cc test_stack.cc)
+add_test(tests__0026.container__0005.stack__test_stack.cc tests__0026.container__0005.stack__test_stack.cc)

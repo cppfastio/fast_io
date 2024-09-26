@@ -1,0 +1,6 @@
+add_executable(examples__0024.mfc__atl_file.cc atl_file.cc)
+add_test(examples__0024.mfc__atl_file.cc examples__0024.mfc__atl_file.cc)
+add_executable(examples__0024.mfc__mfc.cc mfc.cc)
+add_test(examples__0024.mfc__mfc.cc examples__0024.mfc__mfc.cc)
+add_executable(examples__0024.mfc__mfc_file.cc mfc_file.cc)
+add_test(examples__0024.mfc__mfc_file.cc examples__0024.mfc__mfc_file.cc)

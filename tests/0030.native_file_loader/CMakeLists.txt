@@ -1,0 +1,6 @@
+add_executable(tests__0030.native_file_loader__nt.cc nt.cc)
+add_test(tests__0030.native_file_loader__nt.cc tests__0030.native_file_loader__nt.cc)
+add_executable(tests__0030.native_file_loader__posix.cc posix.cc)
+add_test(tests__0030.native_file_loader__posix.cc tests__0030.native_file_loader__posix.cc)
+add_executable(tests__0030.native_file_loader__win32.cc win32.cc)
+add_test(tests__0030.native_file_loader__win32.cc tests__0030.native_file_loader__win32.cc)

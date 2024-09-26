@@ -1,0 +1,2 @@
+add_executable(examples__0026.lua__hello_fast_io.cc hello_fast_io.cc)
+add_test(examples__0026.lua__hello_fast_io.cc examples__0026.lua__hello_fast_io.cc)

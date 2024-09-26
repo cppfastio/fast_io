@@ -1,2 +1,2 @@
-add_executable(string_view string_view.cc)
-add_test(string_view string_view)
+add_executable(tests__0026.container__0009.string_view__string_view.cc string_view.cc)
+add_test(tests__0026.container__0009.string_view__string_view.cc tests__0026.container__0009.string_view__string_view.cc)

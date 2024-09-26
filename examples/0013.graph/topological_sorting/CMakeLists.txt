@@ -1,0 +1,4 @@
+add_executable(examples__0013.graph__topological_sorting__generate_graph.cc generate_graph.cc)
+add_test(examples__0013.graph__topological_sorting__generate_graph.cc examples__0013.graph__topological_sorting__generate_graph.cc)
+add_executable(examples__0013.graph__topological_sorting__topsort.cc topsort.cc)
+add_test(examples__0013.graph__topological_sorting__topsort.cc examples__0013.graph__topological_sorting__topsort.cc)

@@ -1,0 +1,6 @@
+add_executable(examples__0008.openssl__bio.cc bio.cc)
+add_test(examples__0008.openssl__bio.cc examples__0008.openssl__bio.cc)
+add_executable(examples__0008.openssl__bio_cookie.cc bio_cookie.cc)
+add_test(examples__0008.openssl__bio_cookie.cc examples__0008.openssl__bio_cookie.cc)
+add_executable(examples__0008.openssl__construct_bio_from_syscall.cc construct_bio_from_syscall.cc)
+add_test(examples__0008.openssl__construct_bio_from_syscall.cc examples__0008.openssl__construct_bio_from_syscall.cc)

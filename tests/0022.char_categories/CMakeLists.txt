@@ -1,0 +1,2 @@
+add_executable(tests__0022.char_categories__fullwidth.cc fullwidth.cc)
+add_test(tests__0022.char_categories__fullwidth.cc tests__0022.char_categories__fullwidth.cc)

@@ -1,2 +1,2 @@
-add_executable(test_priority_queue test_priority_queue.cc)
-add_test(test_priority_queuetest test_priority_queue)
+add_executable(tests__0026.container__0008.priority_queue__test_priority_queue.cc test_priority_queue.cc)
+add_test(tests__0026.container__0008.priority_queue__test_priority_queue.cc tests__0026.container__0008.priority_queue__test_priority_queue.cc)

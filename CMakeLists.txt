@@ -99,6 +99,20 @@ endif()
 
 endif()
 
+option(TESTS_PREBUILD "prebuild cmake files for test" OFF)
+
+if(${TESTS_PREBUILD})
+include_directories(include)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
+link_libraries(ntdll)
+add_executable(test_prebuild gentests.cc)
+add_custom_command(TARGET test_prebuild
+	POST_BUILD
+	COMMAND test_prebuild
+	WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+)
+endif()
+
 option(ENABLE_TESTS "Enable tests" OFF)
 
 if(${ENABLE_TESTS})
@@ -108,5 +122,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" O
 link_libraries(ntdll)
 endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt)
+include(${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt)
 include(${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt)
 endif()

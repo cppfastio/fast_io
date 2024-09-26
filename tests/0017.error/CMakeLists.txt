@@ -1,0 +1,6 @@
+add_executable(tests__0017.error__error.cc error.cc)
+add_test(tests__0017.error__error.cc tests__0017.error__error.cc)
+add_executable(tests__0017.error__reject.cc reject.cc)
+add_test(tests__0017.error__reject.cc tests__0017.error__reject.cc)
+add_executable(tests__0017.error__reject_filename.cc reject_filename.cc)
+add_test(tests__0017.error__reject_filename.cc tests__0017.error__reject_filename.cc)

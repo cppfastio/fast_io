@@ -1,0 +1,6 @@
+add_executable(benchmark__0014.codecvt__u16utf8_file.cc u16utf8_file.cc)
+add_test(benchmark__0014.codecvt__u16utf8_file.cc benchmark__0014.codecvt__u16utf8_file.cc)
+add_executable(benchmark__0014.codecvt__u32utf8_file.cc u32utf8_file.cc)
+add_test(benchmark__0014.codecvt__u32utf8_file.cc benchmark__0014.codecvt__u32utf8_file.cc)
+add_executable(benchmark__0014.codecvt__u8iobuf_file.cc u8iobuf_file.cc)
+add_test(benchmark__0014.codecvt__u8iobuf_file.cc benchmark__0014.codecvt__u8iobuf_file.cc)

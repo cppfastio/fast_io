@@ -1,0 +1,6 @@
+add_executable(tests__0027.rwreflect__tall__family.cc family.cc)
+add_test(tests__0027.rwreflect__tall__family.cc tests__0027.rwreflect__tall__family.cc)
+add_executable(tests__0027.rwreflect__tall__fmily.cc fmily.cc)
+add_test(tests__0027.rwreflect__tall__fmily.cc tests__0027.rwreflect__tall__fmily.cc)
+add_executable(tests__0027.rwreflect__tall__trns.cc trns.cc)
+add_test(tests__0027.rwreflect__tall__trns.cc tests__0027.rwreflect__tall__trns.cc)

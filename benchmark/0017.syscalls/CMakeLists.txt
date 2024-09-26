@@ -1,0 +1,6 @@
+add_executable(benchmark__0017.syscalls__nt_file.cc nt_file.cc)
+add_test(benchmark__0017.syscalls__nt_file.cc benchmark__0017.syscalls__nt_file.cc)
+add_executable(benchmark__0017.syscalls__posix_file.cc posix_file.cc)
+add_test(benchmark__0017.syscalls__posix_file.cc benchmark__0017.syscalls__posix_file.cc)
+add_executable(benchmark__0017.syscalls__win32_file.cc win32_file.cc)
+add_test(benchmark__0017.syscalls__win32_file.cc benchmark__0017.syscalls__win32_file.cc)

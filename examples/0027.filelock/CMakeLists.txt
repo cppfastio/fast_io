@@ -1,0 +1,8 @@
+add_executable(examples__0027.filelock__buffered_file_with_file_lock.cc buffered_file_with_file_lock.cc)
+add_test(examples__0027.filelock__buffered_file_with_file_lock.cc examples__0027.filelock__buffered_file_with_file_lock.cc)
+add_executable(examples__0027.filelock__buffer_lock.cc buffer_lock.cc)
+add_test(examples__0027.filelock__buffer_lock.cc examples__0027.filelock__buffer_lock.cc)
+add_executable(examples__0027.filelock__filelock.cc filelock.cc)
+add_test(examples__0027.filelock__filelock.cc examples__0027.filelock__filelock.cc)
+add_executable(examples__0027.filelock__filelock_request.cc filelock_request.cc)
+add_test(examples__0027.filelock__filelock_request.cc examples__0027.filelock__filelock_request.cc)

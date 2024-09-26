@@ -1,0 +1,2 @@
+add_executable(examples__0021.kernel_driver__linux__main.cc main.cc)
+add_test(examples__0021.kernel_driver__linux__main.cc examples__0021.kernel_driver__linux__main.cc)

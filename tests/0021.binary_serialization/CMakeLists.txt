@@ -1,0 +1,4 @@
+add_executable(tests__0021.binary_serialization__le_get32.cc le_get32.cc)
+add_test(tests__0021.binary_serialization__le_get32.cc tests__0021.binary_serialization__le_get32.cc)
+add_executable(tests__0021.binary_serialization__str_get_all.cc str_get_all.cc)
+add_test(tests__0021.binary_serialization__str_get_all.cc tests__0021.binary_serialization__str_get_all.cc)

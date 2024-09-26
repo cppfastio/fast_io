@@ -1,0 +1,2 @@
+add_executable(tests__0011.manipulators__os_c_str.cc os_c_str.cc)
+add_test(tests__0011.manipulators__os_c_str.cc tests__0011.manipulators__os_c_str.cc)

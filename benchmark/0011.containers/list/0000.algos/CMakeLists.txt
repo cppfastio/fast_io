@@ -1,0 +1,4 @@
+add_executable(benchmark__0011.containers__list__0000.algos__fast_io.cc fast_io.cc)
+add_test(benchmark__0011.containers__list__0000.algos__fast_io.cc benchmark__0011.containers__list__0000.algos__fast_io.cc)
+add_executable(benchmark__0011.containers__list__0000.algos__std.cc std.cc)
+add_test(benchmark__0011.containers__list__0000.algos__std.cc benchmark__0011.containers__list__0000.algos__std.cc)

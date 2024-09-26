@@ -1,0 +1,4 @@
+add_executable(tests__0006.output_device__constant_buffer_output_stream.cc constant_buffer_output_stream.cc)
+add_test(tests__0006.output_device__constant_buffer_output_stream.cc tests__0006.output_device__constant_buffer_output_stream.cc)
+add_executable(tests__0006.output_device__simplest.cc simplest.cc)
+add_test(tests__0006.output_device__simplest.cc tests__0006.output_device__simplest.cc)

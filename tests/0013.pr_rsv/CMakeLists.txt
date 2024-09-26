@@ -1,0 +1,8 @@
+add_executable(tests__0013.pr_rsv__bounds_checking_array.cc bounds_checking_array.cc)
+add_test(tests__0013.pr_rsv__bounds_checking_array.cc tests__0013.pr_rsv__bounds_checking_array.cc)
+add_executable(tests__0013.pr_rsv__bounds_checking_c_array.cc bounds_checking_c_array.cc)
+add_test(tests__0013.pr_rsv__bounds_checking_c_array.cc tests__0013.pr_rsv__bounds_checking_c_array.cc)
+add_executable(tests__0013.pr_rsv__pr_rsv.cc pr_rsv.cc)
+add_test(tests__0013.pr_rsv__pr_rsv.cc tests__0013.pr_rsv__pr_rsv.cc)
+add_executable(tests__0013.pr_rsv__pr_rsv_scientific.cc pr_rsv_scientific.cc)
+add_test(tests__0013.pr_rsv__pr_rsv_scientific.cc tests__0013.pr_rsv__pr_rsv_scientific.cc)

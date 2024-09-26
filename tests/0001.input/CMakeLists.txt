@@ -1,0 +1,2 @@
+add_executable(tests__0001.input__invalid_number.cc invalid_number.cc)
+add_test(tests__0001.input__invalid_number.cc tests__0001.input__invalid_number.cc)

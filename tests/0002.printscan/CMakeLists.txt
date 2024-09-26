@@ -1,4 +1,4 @@
-add_executable(print print.cc)
-add_test(print print)
-add_executable(scan scan.cc)
-add_test(scan scan)
+add_executable(tests__0002.printscan__print.cc print.cc)
+add_test(tests__0002.printscan__print.cc tests__0002.printscan__print.cc)
+add_executable(tests__0002.printscan__scan.cc scan.cc)
+add_test(tests__0002.printscan__scan.cc tests__0002.printscan__scan.cc)

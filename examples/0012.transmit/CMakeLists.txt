@@ -1,0 +1,2 @@
+add_executable(examples__0012.transmit__transmit.cc transmit.cc)
+add_test(examples__0012.transmit__transmit.cc examples__0012.transmit__transmit.cc)

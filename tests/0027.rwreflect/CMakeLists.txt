@@ -1,0 +1,5 @@
+add_executable(tests__0027.rwreflect__read_some.cc read_some.cc)
+add_test(tests__0027.rwreflect__read_some.cc tests__0027.rwreflect__read_some.cc)
+include(${CMAKE_CURRENT_LIST_DIR}/tall)
+add_executable(tests__0027.rwreflect__write_some.cc write_some.cc)
+add_test(tests__0027.rwreflect__write_some.cc tests__0027.rwreflect__write_some.cc)
