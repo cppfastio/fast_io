@@ -12,7 +12,7 @@ int main()
 		fast_io::obuf_file obf("iobuf_file.txt");
 		for (std::size_t i{}; i != N; ++i)
 		{
-			print(obf, i, fast_io::mnp::strvw(filled_chars<typename decltype(obf)::char_type>));
+			print(obf, i, fast_io::mnp::strvw(filled_chars<typename decltype(obf)::output_char_type>));
 		}
 	}
 	std::vector<std::size_t> vec(N);

@@ -13,7 +13,7 @@ int main()
 		for (std::size_t i{}; i != N; ++i)
 		{
 			[[maybe_unused]] auto _ = fprintf(obf.fp, "%zu", i);
-			[[maybe_unused]] auto _ = fwrite(filled_chars<char_type>.data(), filled_chars<char_type>.size(), sizeof(char_type), obf.fp);
+			[[maybe_unused]] auto __ = fwrite(filled_chars<char_type>.data(), filled_chars<char_type>.size(), sizeof(char_type), obf.fp);
 		}
 	}
 	std::vector<std::size_t> vec(N);
