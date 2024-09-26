@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install ninja-build tool
-      uses: seanmiddleditch/gha-setup-ninja@v4
+      uses: seanmiddleditch/gha-setup-ninja@v5
     - name: prebuild
       run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 && ninja && ninja run_test_prebuild
     - name: cmake
@@ -30,7 +30,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - uses: ilammy/msvc-dev-cmd@v1.13.0
     - name: prebuild
       run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On
     - name: cmake
@@ -46,7 +46,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - uses: ilammy/msvc-dev-cmd@v1.13.0
     - name: prebuild
       run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On
     - name: cmake
