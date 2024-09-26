@@ -1,2 +1,2 @@
-add_executable(tests__0026.container__0007.array__test_array.cc test_array.cc)
-add_test(tests__0026.container__0007.array__test_array.cc tests__0026.container__0007.array__test_array.cc)
+add_executable(tests.0026.container.0007.array.test_array ${CMAKE_CURRENT_LIST_DIR}/test_array.cc)
+add_test(tests.0026.container.0007.array.test_array tests.0026.container.0007.array.test_array)

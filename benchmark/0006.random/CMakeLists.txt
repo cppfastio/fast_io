@@ -1,1 +1,1 @@
-include(${CMAKE_CURRENT_LIST_DIR}/password)
+include(${CMAKE_CURRENT_LIST_DIR}/password/CMakeLists.txt)

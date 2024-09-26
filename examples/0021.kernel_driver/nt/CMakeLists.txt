@@ -1,2 +1,2 @@
-add_executable(examples__0021.kernel_driver__nt__kernel_entry.cc kernel_entry.cc)
-add_test(examples__0021.kernel_driver__nt__kernel_entry.cc examples__0021.kernel_driver__nt__kernel_entry.cc)
+add_executable(examples.0021.kernel_driver.nt.kernel_entry ${CMAKE_CURRENT_LIST_DIR}/kernel_entry.cc)
+add_test(examples.0021.kernel_driver.nt.kernel_entry examples.0021.kernel_driver.nt.kernel_entry)

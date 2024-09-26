@@ -1,2 +1,2 @@
-add_executable(examples__0012.transmit__transmit.cc transmit.cc)
-add_test(examples__0012.transmit__transmit.cc examples__0012.transmit__transmit.cc)
+add_executable(examples.0012.transmit.transmit ${CMAKE_CURRENT_LIST_DIR}/transmit.cc)
+add_test(examples.0012.transmit.transmit examples.0012.transmit.transmit)

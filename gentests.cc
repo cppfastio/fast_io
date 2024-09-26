@@ -24,7 +24,7 @@ void cmake_gen_rec_dir_def(fast_io::u8obuf_file& cmake_file, fast_io::native_io_
 }
 
 void cmake_gen_file_def(fast_io::u8obuf_file& cmake_file, std::u8string_view targetname, auto&& filename) {
-	print(cmake_file, u8"add_executable(", targetname, u8" ", filename, u8")\n");
+	print(cmake_file, u8"add_executable(", targetname, u8" ${CMAKE_CURRENT_LIST_DIR}/", filename, u8")\n");
 	print(cmake_file, u8"add_test(", targetname, u8" ", targetname, u8")\n");
 }
 

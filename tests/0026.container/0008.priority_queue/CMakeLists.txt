@@ -1,2 +1,2 @@
-add_executable(tests__0026.container__0008.priority_queue__test_priority_queue.cc test_priority_queue.cc)
-add_test(tests__0026.container__0008.priority_queue__test_priority_queue.cc tests__0026.container__0008.priority_queue__test_priority_queue.cc)
+add_executable(tests.0026.container.0008.priority_queue.test_priority_queue ${CMAKE_CURRENT_LIST_DIR}/test_priority_queue.cc)
+add_test(tests.0026.container.0008.priority_queue.test_priority_queue tests.0026.container.0008.priority_queue.test_priority_queue)

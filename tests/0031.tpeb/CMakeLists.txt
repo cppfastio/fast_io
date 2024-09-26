@@ -1,4 +1,4 @@
-add_executable(tests__0031.tpeb__peb.cc peb.cc)
-add_test(tests__0031.tpeb__peb.cc tests__0031.tpeb__peb.cc)
-add_executable(tests__0031.tpeb__stdout.cc stdout.cc)
-add_test(tests__0031.tpeb__stdout.cc tests__0031.tpeb__stdout.cc)
+add_executable(tests.0031.tpeb.peb ${CMAKE_CURRENT_LIST_DIR}/peb.cc)
+add_test(tests.0031.tpeb.peb tests.0031.tpeb.peb)
+add_executable(tests.0031.tpeb.stdout ${CMAKE_CURRENT_LIST_DIR}/stdout.cc)
+add_test(tests.0031.tpeb.stdout tests.0031.tpeb.stdout)

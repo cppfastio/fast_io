@@ -1,4 +1,4 @@
-add_executable(tests__0029.decorators__decopartial.cc decopartial.cc)
-add_test(tests__0029.decorators__decopartial.cc tests__0029.decorators__decopartial.cc)
-add_executable(tests__0029.decorators__decopartialiobuf.cc decopartialiobuf.cc)
-add_test(tests__0029.decorators__decopartialiobuf.cc tests__0029.decorators__decopartialiobuf.cc)
+add_executable(tests.0029.decorators.decopartial ${CMAKE_CURRENT_LIST_DIR}/decopartial.cc)
+add_test(tests.0029.decorators.decopartial tests.0029.decorators.decopartial)
+add_executable(tests.0029.decorators.decopartialiobuf ${CMAKE_CURRENT_LIST_DIR}/decopartialiobuf.cc)
+add_test(tests.0029.decorators.decopartialiobuf tests.0029.decorators.decopartialiobuf)

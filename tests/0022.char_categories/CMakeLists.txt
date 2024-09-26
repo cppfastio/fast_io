@@ -1,2 +1,2 @@
-add_executable(tests__0022.char_categories__fullwidth.cc fullwidth.cc)
-add_test(tests__0022.char_categories__fullwidth.cc tests__0022.char_categories__fullwidth.cc)
+add_executable(tests.0022.char_categories.fullwidth ${CMAKE_CURRENT_LIST_DIR}/fullwidth.cc)
+add_test(tests.0022.char_categories.fullwidth tests.0022.char_categories.fullwidth)

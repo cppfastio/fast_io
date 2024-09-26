@@ -1,2 +1,2 @@
-add_executable(tests__0032.process__nt.cc nt.cc)
-add_test(tests__0032.process__nt.cc tests__0032.process__nt.cc)
+add_executable(tests.0032.process.nt ${CMAKE_CURRENT_LIST_DIR}/nt.cc)
+add_test(tests.0032.process.nt tests.0032.process.nt)

@@ -1,2 +1,2 @@
-add_executable(tests__0034.string__stringtest.cc stringtest.cc)
-add_test(tests__0034.string__stringtest.cc tests__0034.string__stringtest.cc)
+add_executable(tests.0034.string.stringtest ${CMAKE_CURRENT_LIST_DIR}/stringtest.cc)
+add_test(tests.0034.string.stringtest tests.0034.string.stringtest)

@@ -1,4 +1,4 @@
-add_executable(tests__0007.multiparas__11args.cc 11args.cc)
-add_test(tests__0007.multiparas__11args.cc tests__0007.multiparas__11args.cc)
-add_executable(tests__0007.multiparas__11args_unlocked.cc 11args_unlocked.cc)
-add_test(tests__0007.multiparas__11args_unlocked.cc tests__0007.multiparas__11args_unlocked.cc)
+add_executable(tests.0007.multiparas.11args ${CMAKE_CURRENT_LIST_DIR}/11args.cc)
+add_test(tests.0007.multiparas.11args tests.0007.multiparas.11args)
+add_executable(tests.0007.multiparas.11args_unlocked ${CMAKE_CURRENT_LIST_DIR}/11args_unlocked.cc)
+add_test(tests.0007.multiparas.11args_unlocked tests.0007.multiparas.11args_unlocked)

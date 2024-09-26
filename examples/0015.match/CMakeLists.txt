@@ -1,2 +1,2 @@
-add_executable(examples__0015.match__ipv4.cc ipv4.cc)
-add_test(examples__0015.match__ipv4.cc examples__0015.match__ipv4.cc)
+add_executable(examples.0015.match.ipv4 ${CMAKE_CURRENT_LIST_DIR}/ipv4.cc)
+add_test(examples.0015.match.ipv4 examples.0015.match.ipv4)

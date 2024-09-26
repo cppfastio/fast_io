@@ -1,2 +1,2 @@
-add_executable(tests__0023.bitset__bitset.cc bitset.cc)
-add_test(tests__0023.bitset__bitset.cc tests__0023.bitset__bitset.cc)
+add_executable(tests.0023.bitset.bitset ${CMAKE_CURRENT_LIST_DIR}/bitset.cc)
+add_test(tests.0023.bitset.bitset tests.0023.bitset.bitset)

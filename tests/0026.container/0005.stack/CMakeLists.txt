@@ -1,2 +1,2 @@
-add_executable(tests__0026.container__0005.stack__test_stack.cc test_stack.cc)
-add_test(tests__0026.container__0005.stack__test_stack.cc tests__0026.container__0005.stack__test_stack.cc)
+add_executable(tests.0026.container.0005.stack.test_stack ${CMAKE_CURRENT_LIST_DIR}/test_stack.cc)
+add_test(tests.0026.container.0005.stack.test_stack tests.0026.container.0005.stack.test_stack)

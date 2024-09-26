@@ -1,2 +1,2 @@
-add_executable(tests__0012.umul__umul.cc umul.cc)
-add_test(tests__0012.umul__umul.cc tests__0012.umul__umul.cc)
+add_executable(tests.0012.umul.umul ${CMAKE_CURRENT_LIST_DIR}/umul.cc)
+add_test(tests.0012.umul.umul tests.0012.umul.umul)

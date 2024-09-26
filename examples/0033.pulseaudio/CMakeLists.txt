@@ -1,2 +1,2 @@
-add_executable(examples__0033.pulseaudio__pulseaudio.cc pulseaudio.cc)
-add_test(examples__0033.pulseaudio__pulseaudio.cc examples__0033.pulseaudio__pulseaudio.cc)
+add_executable(examples.0033.pulseaudio.pulseaudio ${CMAKE_CURRENT_LIST_DIR}/pulseaudio.cc)
+add_test(examples.0033.pulseaudio.pulseaudio examples.0033.pulseaudio.pulseaudio)

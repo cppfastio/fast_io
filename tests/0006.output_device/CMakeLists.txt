@@ -1,4 +1,4 @@
-add_executable(tests__0006.output_device__constant_buffer_output_stream.cc constant_buffer_output_stream.cc)
-add_test(tests__0006.output_device__constant_buffer_output_stream.cc tests__0006.output_device__constant_buffer_output_stream.cc)
-add_executable(tests__0006.output_device__simplest.cc simplest.cc)
-add_test(tests__0006.output_device__simplest.cc tests__0006.output_device__simplest.cc)
+add_executable(tests.0006.output_device.constant_buffer_output_stream ${CMAKE_CURRENT_LIST_DIR}/constant_buffer_output_stream.cc)
+add_test(tests.0006.output_device.constant_buffer_output_stream tests.0006.output_device.constant_buffer_output_stream)
+add_executable(tests.0006.output_device.simplest ${CMAKE_CURRENT_LIST_DIR}/simplest.cc)
+add_test(tests.0006.output_device.simplest tests.0006.output_device.simplest)

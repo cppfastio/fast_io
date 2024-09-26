@@ -1,1 +1,1 @@
-include(${CMAKE_CURRENT_LIST_DIR}/limine)
+include(${CMAKE_CURRENT_LIST_DIR}/limine/CMakeLists.txt)

@@ -1,2 +1,2 @@
-add_executable(tests__0026.container__0010.cstring_view__cstring_view.cc cstring_view.cc)
-add_test(tests__0026.container__0010.cstring_view__cstring_view.cc tests__0026.container__0010.cstring_view__cstring_view.cc)
+add_executable(tests.0026.container.0010.cstring_view.cstring_view ${CMAKE_CURRENT_LIST_DIR}/cstring_view.cc)
+add_test(tests.0026.container.0010.cstring_view.cstring_view tests.0026.container.0010.cstring_view.cstring_view)

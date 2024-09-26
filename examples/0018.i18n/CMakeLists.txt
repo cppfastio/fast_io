@@ -1,4 +1,4 @@
-add_executable(examples__0018.i18n__l10n.cc l10n.cc)
-add_test(examples__0018.i18n__l10n.cc examples__0018.i18n__l10n.cc)
-add_executable(examples__0018.i18n__l10n_info.cc l10n_info.cc)
-add_test(examples__0018.i18n__l10n_info.cc examples__0018.i18n__l10n_info.cc)
+add_executable(examples.0018.i18n.l10n ${CMAKE_CURRENT_LIST_DIR}/l10n.cc)
+add_test(examples.0018.i18n.l10n examples.0018.i18n.l10n)
+add_executable(examples.0018.i18n.l10n_info ${CMAKE_CURRENT_LIST_DIR}/l10n_info.cc)
+add_test(examples.0018.i18n.l10n_info examples.0018.i18n.l10n_info)

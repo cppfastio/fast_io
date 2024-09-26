@@ -1,2 +1,2 @@
-add_executable(tests__0018.operator_support__operator_output.cc operator_output.cc)
-add_test(tests__0018.operator_support__operator_output.cc tests__0018.operator_support__operator_output.cc)
+add_executable(tests.0018.operator_support.operator_output ${CMAKE_CURRENT_LIST_DIR}/operator_output.cc)
+add_test(tests.0018.operator_support.operator_output tests.0018.operator_support.operator_output)

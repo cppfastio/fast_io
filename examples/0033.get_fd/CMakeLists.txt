@@ -1,4 +1,4 @@
-add_executable(examples__0033.get_fd__cout.cc cout.cc)
-add_test(examples__0033.get_fd__cout.cc examples__0033.get_fd__cout.cc)
-add_executable(examples__0033.get_fd__coutfp.cc coutfp.cc)
-add_test(examples__0033.get_fd__coutfp.cc examples__0033.get_fd__coutfp.cc)
+add_executable(examples.0033.get_fd.cout ${CMAKE_CURRENT_LIST_DIR}/cout.cc)
+add_test(examples.0033.get_fd.cout examples.0033.get_fd.cout)
+add_executable(examples.0033.get_fd.coutfp ${CMAKE_CURRENT_LIST_DIR}/coutfp.cc)
+add_test(examples.0033.get_fd.coutfp examples.0033.get_fd.coutfp)

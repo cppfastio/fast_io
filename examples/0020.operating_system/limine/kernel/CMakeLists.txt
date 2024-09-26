@@ -1,2 +1,2 @@
-add_executable(examples__0020.operating_system__limine__kernel__kernel.cc kernel.cc)
-add_test(examples__0020.operating_system__limine__kernel__kernel.cc examples__0020.operating_system__limine__kernel__kernel.cc)
+add_executable(examples.0020.operating_system.limine.kernel.kernel ${CMAKE_CURRENT_LIST_DIR}/kernel.cc)
+add_test(examples.0020.operating_system.limine.kernel.kernel examples.0020.operating_system.limine.kernel.kernel)

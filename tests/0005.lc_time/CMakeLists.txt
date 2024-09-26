@@ -1,4 +1,4 @@
-add_executable(tests__0005.lc_time__all_date_format.cc all_date_format.cc)
-add_test(tests__0005.lc_time__all_date_format.cc tests__0005.lc_time__all_date_format.cc)
-add_executable(tests__0005.lc_time__lc_time.cc lc_time.cc)
-add_test(tests__0005.lc_time__lc_time.cc tests__0005.lc_time__lc_time.cc)
+add_executable(tests.0005.lc_time.all_date_format ${CMAKE_CURRENT_LIST_DIR}/all_date_format.cc)
+add_test(tests.0005.lc_time.all_date_format tests.0005.lc_time.all_date_format)
+add_executable(tests.0005.lc_time.lc_time ${CMAKE_CURRENT_LIST_DIR}/lc_time.cc)
+add_test(tests.0005.lc_time.lc_time tests.0005.lc_time.lc_time)

@@ -1,2 +1,2 @@
-add_executable(tests__0011.manipulators__os_c_str.cc os_c_str.cc)
-add_test(tests__0011.manipulators__os_c_str.cc tests__0011.manipulators__os_c_str.cc)
+add_executable(tests.0011.manipulators.os_c_str ${CMAKE_CURRENT_LIST_DIR}/os_c_str.cc)
+add_test(tests.0011.manipulators.os_c_str tests.0011.manipulators.os_c_str)

@@ -1,2 +1,2 @@
-add_executable(examples__0023.to__to.cc to.cc)
-add_test(examples__0023.to__to.cc examples__0023.to__to.cc)
+add_executable(examples.0023.to.to ${CMAKE_CURRENT_LIST_DIR}/to.cc)
+add_test(examples.0023.to.to examples.0023.to.to)
