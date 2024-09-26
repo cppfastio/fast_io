@@ -1,4 +1,8 @@
-fstream_std_format.cc # CI doesn't support <format>
-iobuf_file_lockable_big.cc # TODO: crash. why?
+# CI doesn't support <format>
+fstream_std_format.cc
+iobuf_file_std_format_locale.cc
+# TODO: crash. why?
+iobuf_file_lockable_big.cc
+iobuf_file_bin.cc
 # TODO: locale unfinished
 iobuf_file_l10n.cc
