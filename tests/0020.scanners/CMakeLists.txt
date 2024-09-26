@@ -1,6 +1,0 @@
-add_executable(tests.0020.scanners.contiguous_line_scanner ${CMAKE_CURRENT_LIST_DIR}/contiguous_line_scanner.cc)
-add_test(tests.0020.scanners.contiguous_line_scanner tests.0020.scanners.contiguous_line_scanner)
-add_executable(tests.0020.scanners.getline ${CMAKE_CURRENT_LIST_DIR}/getline.cc)
-add_test(tests.0020.scanners.getline tests.0020.scanners.getline)
-add_executable(tests.0020.scanners.line_scanner ${CMAKE_CURRENT_LIST_DIR}/line_scanner.cc)
-add_test(tests.0020.scanners.line_scanner tests.0020.scanners.line_scanner)

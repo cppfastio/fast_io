@@ -1,6 +1,0 @@
-add_executable(tests.0026.container.0003.deque.dequeasm ${CMAKE_CURRENT_LIST_DIR}/dequeasm.cc)
-add_test(tests.0026.container.0003.deque.dequeasm tests.0026.container.0003.deque.dequeasm)
-add_executable(tests.0026.container.0003.deque.deque_push ${CMAKE_CURRENT_LIST_DIR}/deque_push.cc)
-add_test(tests.0026.container.0003.deque.deque_push tests.0026.container.0003.deque.deque_push)
-add_executable(tests.0026.container.0003.deque.test_deque ${CMAKE_CURRENT_LIST_DIR}/test_deque.cc)
-add_test(tests.0026.container.0003.deque.test_deque tests.0026.container.0003.deque.test_deque)

@@ -1,6 +1,0 @@
-add_executable(benchmark.0008.seperate_short.charconv_no_c_str ${CMAKE_CURRENT_LIST_DIR}/charconv_no_c_str.cc)
-add_test(benchmark.0008.seperate_short.charconv_no_c_str benchmark.0008.seperate_short.charconv_no_c_str)
-add_executable(benchmark.0008.seperate_short.dragonbox_no_c_str ${CMAKE_CURRENT_LIST_DIR}/dragonbox_no_c_str.cc)
-add_test(benchmark.0008.seperate_short.dragonbox_no_c_str benchmark.0008.seperate_short.dragonbox_no_c_str)
-add_executable(benchmark.0008.seperate_short.fast_io_no_c_str ${CMAKE_CURRENT_LIST_DIR}/fast_io_no_c_str.cc)
-add_test(benchmark.0008.seperate_short.fast_io_no_c_str benchmark.0008.seperate_short.fast_io_no_c_str)

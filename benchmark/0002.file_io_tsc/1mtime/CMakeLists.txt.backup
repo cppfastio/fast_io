@@ -1,6 +1,0 @@
-add_executable(fstream fstream.cc)
-add_test(fstream fstream)
-add_executable(iobuf_file iobuf_file.cc)
-add_test(iobuf_file iobuf_file)
-add_executable(stdio stdio.cc)
-add_test(stdio stdio)

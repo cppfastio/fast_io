@@ -1,6 +1,0 @@
-add_executable(examples.0002.a+b.a+b ${CMAKE_CURRENT_LIST_DIR}/a+b.cc)
-add_test(examples.0002.a+b.a+b examples.0002.a+b.a+b)
-add_executable(examples.0002.a+b.base36_a+b ${CMAKE_CURRENT_LIST_DIR}/base36_a+b.cc)
-add_test(examples.0002.a+b.base36_a+b examples.0002.a+b.base36_a+b)
-add_executable(examples.0002.a+b.hex_a+b ${CMAKE_CURRENT_LIST_DIR}/hex_a+b.cc)
-add_test(examples.0002.a+b.hex_a+b examples.0002.a+b.hex_a+b)

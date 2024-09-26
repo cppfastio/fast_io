@@ -1,6 +1,0 @@
-add_executable(benchmark.0002.file_io_tsc.1mtime.fstream ${CMAKE_CURRENT_LIST_DIR}/fstream.cc)
-add_test(benchmark.0002.file_io_tsc.1mtime.fstream benchmark.0002.file_io_tsc.1mtime.fstream)
-add_executable(benchmark.0002.file_io_tsc.1mtime.iobuf_file ${CMAKE_CURRENT_LIST_DIR}/iobuf_file.cc)
-add_test(benchmark.0002.file_io_tsc.1mtime.iobuf_file benchmark.0002.file_io_tsc.1mtime.iobuf_file)
-add_executable(benchmark.0002.file_io_tsc.1mtime.stdio ${CMAKE_CURRENT_LIST_DIR}/stdio.cc)
-add_test(benchmark.0002.file_io_tsc.1mtime.stdio benchmark.0002.file_io_tsc.1mtime.stdio)

@@ -1,8 +1,0 @@
-add_executable(examples.0027.filelock.buffered_file_with_file_lock ${CMAKE_CURRENT_LIST_DIR}/buffered_file_with_file_lock.cc)
-add_test(examples.0027.filelock.buffered_file_with_file_lock examples.0027.filelock.buffered_file_with_file_lock)
-add_executable(examples.0027.filelock.buffer_lock ${CMAKE_CURRENT_LIST_DIR}/buffer_lock.cc)
-add_test(examples.0027.filelock.buffer_lock examples.0027.filelock.buffer_lock)
-add_executable(examples.0027.filelock.filelock ${CMAKE_CURRENT_LIST_DIR}/filelock.cc)
-add_test(examples.0027.filelock.filelock examples.0027.filelock.filelock)
-add_executable(examples.0027.filelock.filelock_request ${CMAKE_CURRENT_LIST_DIR}/filelock_request.cc)
-add_test(examples.0027.filelock.filelock_request examples.0027.filelock.filelock_request)

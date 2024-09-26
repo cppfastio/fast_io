@@ -1,6 +1,0 @@
-add_executable(tests.0017.error.error ${CMAKE_CURRENT_LIST_DIR}/error.cc)
-add_test(tests.0017.error.error tests.0017.error.error)
-add_executable(tests.0017.error.reject ${CMAKE_CURRENT_LIST_DIR}/reject.cc)
-add_test(tests.0017.error.reject tests.0017.error.reject)
-add_executable(tests.0017.error.reject_filename ${CMAKE_CURRENT_LIST_DIR}/reject_filename.cc)
-add_test(tests.0017.error.reject_filename tests.0017.error.reject_filename)

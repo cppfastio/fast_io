@@ -1,2 +1,0 @@
-add_executable(examples.0019.llvm.construct_llvm_raw_fd_ostream_from_syscall ${CMAKE_CURRENT_LIST_DIR}/construct_llvm_raw_fd_ostream_from_syscall.cc)
-add_test(examples.0019.llvm.construct_llvm_raw_fd_ostream_from_syscall examples.0019.llvm.construct_llvm_raw_fd_ostream_from_syscall)

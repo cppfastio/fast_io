@@ -1,6 +1,0 @@
-add_executable(tests.0030.native_file_loader.nt ${CMAKE_CURRENT_LIST_DIR}/nt.cc)
-add_test(tests.0030.native_file_loader.nt tests.0030.native_file_loader.nt)
-add_executable(tests.0030.native_file_loader.posix ${CMAKE_CURRENT_LIST_DIR}/posix.cc)
-add_test(tests.0030.native_file_loader.posix tests.0030.native_file_loader.posix)
-add_executable(tests.0030.native_file_loader.win32 ${CMAKE_CURRENT_LIST_DIR}/win32.cc)
-add_test(tests.0030.native_file_loader.win32 tests.0030.native_file_loader.win32)

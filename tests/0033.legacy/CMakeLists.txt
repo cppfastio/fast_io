@@ -1,5 +1,0 @@
-add_executable(tests.0033.legacy.getfd ${CMAKE_CURRENT_LIST_DIR}/getfd.cc)
-add_test(tests.0033.legacy.getfd tests.0033.legacy.getfd)
-add_executable(tests.0033.legacy.hackstdoutptr ${CMAKE_CURRENT_LIST_DIR}/hackstdoutptr.cc)
-add_test(tests.0033.legacy.hackstdoutptr tests.0033.legacy.hackstdoutptr)
-include(${CMAKE_CURRENT_LIST_DIR}/kreckelfileno/CMakeLists.txt)

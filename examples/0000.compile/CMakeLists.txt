@@ -1,8 +1,0 @@
-add_executable(examples.0000.compile.compile ${CMAKE_CURRENT_LIST_DIR}/compile.cc)
-add_test(examples.0000.compile.compile examples.0000.compile.compile)
-add_executable(examples.0000.compile.compile_freestanding ${CMAKE_CURRENT_LIST_DIR}/compile_freestanding.cc)
-add_test(examples.0000.compile.compile_freestanding examples.0000.compile.compile_freestanding)
-add_executable(examples.0000.compile.compile_hosted ${CMAKE_CURRENT_LIST_DIR}/compile_hosted.cc)
-add_test(examples.0000.compile.compile_hosted examples.0000.compile.compile_hosted)
-add_executable(examples.0000.compile.compile_legacy ${CMAKE_CURRENT_LIST_DIR}/compile_legacy.cc)
-add_test(examples.0000.compile.compile_legacy examples.0000.compile.compile_legacy)

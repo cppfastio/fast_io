@@ -1,6 +1,0 @@
-add_executable(benchmark.0014.codecvt.u16utf8_file ${CMAKE_CURRENT_LIST_DIR}/u16utf8_file.cc)
-add_test(benchmark.0014.codecvt.u16utf8_file benchmark.0014.codecvt.u16utf8_file)
-add_executable(benchmark.0014.codecvt.u32utf8_file ${CMAKE_CURRENT_LIST_DIR}/u32utf8_file.cc)
-add_test(benchmark.0014.codecvt.u32utf8_file benchmark.0014.codecvt.u32utf8_file)
-add_executable(benchmark.0014.codecvt.u8iobuf_file ${CMAKE_CURRENT_LIST_DIR}/u8iobuf_file.cc)
-add_test(benchmark.0014.codecvt.u8iobuf_file benchmark.0014.codecvt.u8iobuf_file)

@@ -1,8 +1,0 @@
-add_executable(tests.0013.pr_rsv.bounds_checking_array ${CMAKE_CURRENT_LIST_DIR}/bounds_checking_array.cc)
-add_test(tests.0013.pr_rsv.bounds_checking_array tests.0013.pr_rsv.bounds_checking_array)
-add_executable(tests.0013.pr_rsv.bounds_checking_c_array ${CMAKE_CURRENT_LIST_DIR}/bounds_checking_c_array.cc)
-add_test(tests.0013.pr_rsv.bounds_checking_c_array tests.0013.pr_rsv.bounds_checking_c_array)
-add_executable(tests.0013.pr_rsv.pr_rsv ${CMAKE_CURRENT_LIST_DIR}/pr_rsv.cc)
-add_test(tests.0013.pr_rsv.pr_rsv tests.0013.pr_rsv.pr_rsv)
-add_executable(tests.0013.pr_rsv.pr_rsv_scientific ${CMAKE_CURRENT_LIST_DIR}/pr_rsv_scientific.cc)
-add_test(tests.0013.pr_rsv.pr_rsv_scientific tests.0013.pr_rsv.pr_rsv_scientific)

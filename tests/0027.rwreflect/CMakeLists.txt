@@ -1,5 +1,0 @@
-add_executable(tests.0027.rwreflect.read_some ${CMAKE_CURRENT_LIST_DIR}/read_some.cc)
-add_test(tests.0027.rwreflect.read_some tests.0027.rwreflect.read_some)
-include(${CMAKE_CURRENT_LIST_DIR}/tall/CMakeLists.txt)
-add_executable(tests.0027.rwreflect.write_some ${CMAKE_CURRENT_LIST_DIR}/write_some.cc)
-add_test(tests.0027.rwreflect.write_some tests.0027.rwreflect.write_some)

@@ -1,6 +1,0 @@
-add_executable(benchmark.0011.containers.list.0002.multi_push_back.fast_io ${CMAKE_CURRENT_LIST_DIR}/fast_io.cc)
-add_test(benchmark.0011.containers.list.0002.multi_push_back.fast_io benchmark.0011.containers.list.0002.multi_push_back.fast_io)
-add_executable(benchmark.0011.containers.list.0002.multi_push_back.std ${CMAKE_CURRENT_LIST_DIR}/std.cc)
-add_test(benchmark.0011.containers.list.0002.multi_push_back.std benchmark.0011.containers.list.0002.multi_push_back.std)
-add_executable(benchmark.0011.containers.list.0002.multi_push_back.std_mimalloc ${CMAKE_CURRENT_LIST_DIR}/std_mimalloc.cc)
-add_test(benchmark.0011.containers.list.0002.multi_push_back.std_mimalloc benchmark.0011.containers.list.0002.multi_push_back.std_mimalloc)

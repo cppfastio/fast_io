@@ -1,6 +1,0 @@
-add_executable(examples.0024.mfc.atl_file ${CMAKE_CURRENT_LIST_DIR}/atl_file.cc)
-add_test(examples.0024.mfc.atl_file examples.0024.mfc.atl_file)
-add_executable(examples.0024.mfc.mfc ${CMAKE_CURRENT_LIST_DIR}/mfc.cc)
-add_test(examples.0024.mfc.mfc examples.0024.mfc.mfc)
-add_executable(examples.0024.mfc.mfc_file ${CMAKE_CURRENT_LIST_DIR}/mfc_file.cc)
-add_test(examples.0024.mfc.mfc_file examples.0024.mfc.mfc_file)

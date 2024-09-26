@@ -1,6 +1,0 @@
-add_executable(tests.0027.rwreflect.tall.family ${CMAKE_CURRENT_LIST_DIR}/family.cc)
-add_test(tests.0027.rwreflect.tall.family tests.0027.rwreflect.tall.family)
-add_executable(tests.0027.rwreflect.tall.fmily ${CMAKE_CURRENT_LIST_DIR}/fmily.cc)
-add_test(tests.0027.rwreflect.tall.fmily tests.0027.rwreflect.tall.fmily)
-add_executable(tests.0027.rwreflect.tall.trns ${CMAKE_CURRENT_LIST_DIR}/trns.cc)
-add_test(tests.0027.rwreflect.tall.trns tests.0027.rwreflect.tall.trns)

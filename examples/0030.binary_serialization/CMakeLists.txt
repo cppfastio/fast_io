@@ -1,8 +1,0 @@
-add_executable(examples.0030.binary_serialization.leb128 ${CMAKE_CURRENT_LIST_DIR}/leb128.cc)
-add_test(examples.0030.binary_serialization.leb128 examples.0030.binary_serialization.leb128)
-add_executable(examples.0030.binary_serialization.leb128_input ${CMAKE_CURRENT_LIST_DIR}/leb128_input.cc)
-add_test(examples.0030.binary_serialization.leb128_input examples.0030.binary_serialization.leb128_input)
-add_executable(examples.0030.binary_serialization.lec559_lebe ${CMAKE_CURRENT_LIST_DIR}/lec559_lebe.cc)
-add_test(examples.0030.binary_serialization.lec559_lebe examples.0030.binary_serialization.lec559_lebe)
-add_executable(examples.0030.binary_serialization.wasm ${CMAKE_CURRENT_LIST_DIR}/wasm.cc)
-add_test(examples.0030.binary_serialization.wasm examples.0030.binary_serialization.wasm)

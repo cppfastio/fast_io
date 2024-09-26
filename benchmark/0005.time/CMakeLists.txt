@@ -1,8 +1,0 @@
-add_executable(benchmark.0005.time.fast_io ${CMAKE_CURRENT_LIST_DIR}/fast_io.cc)
-add_test(benchmark.0005.time.fast_io benchmark.0005.time.fast_io)
-add_executable(benchmark.0005.time.glibc_nl_langinfo ${CMAKE_CURRENT_LIST_DIR}/glibc_nl_langinfo.cc)
-add_test(benchmark.0005.time.glibc_nl_langinfo benchmark.0005.time.glibc_nl_langinfo)
-add_executable(benchmark.0005.time.iso8601 ${CMAKE_CURRENT_LIST_DIR}/iso8601.cc)
-add_test(benchmark.0005.time.iso8601 benchmark.0005.time.iso8601)
-add_executable(benchmark.0005.time.put_time ${CMAKE_CURRENT_LIST_DIR}/put_time.cc)
-add_test(benchmark.0005.time.put_time benchmark.0005.time.put_time)

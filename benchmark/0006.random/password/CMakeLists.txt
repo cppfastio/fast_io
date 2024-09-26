@@ -1,6 +1,0 @@
-add_executable(benchmark.0006.random.password.ibuf_white_hole_engine ${CMAKE_CURRENT_LIST_DIR}/ibuf_white_hole_engine.cc)
-add_test(benchmark.0006.random.password.ibuf_white_hole_engine benchmark.0006.random.password.ibuf_white_hole_engine)
-add_executable(benchmark.0006.random.password.mt19937_64 ${CMAKE_CURRENT_LIST_DIR}/mt19937_64.cc)
-add_test(benchmark.0006.random.password.mt19937_64 benchmark.0006.random.password.mt19937_64)
-add_executable(benchmark.0006.random.password.random_device ${CMAKE_CURRENT_LIST_DIR}/random_device.cc)
-add_test(benchmark.0006.random.password.random_device benchmark.0006.random.password.random_device)

@@ -1,6 +1,0 @@
-add_executable(tests.0010.intrinsics.udivins ${CMAKE_CURRENT_LIST_DIR}/udivins.cc)
-add_test(tests.0010.intrinsics.udivins tests.0010.intrinsics.udivins)
-add_executable(tests.0010.intrinsics.udivmod ${CMAKE_CURRENT_LIST_DIR}/udivmod.cc)
-add_test(tests.0010.intrinsics.udivmod tests.0010.intrinsics.udivmod)
-add_executable(tests.0010.intrinsics.umul ${CMAKE_CURRENT_LIST_DIR}/umul.cc)
-add_test(tests.0010.intrinsics.umul tests.0010.intrinsics.umul)

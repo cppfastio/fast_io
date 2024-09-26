@@ -1,6 +1,0 @@
-add_executable(benchmark.0011.containers.vector.0001.push_back.fast_io ${CMAKE_CURRENT_LIST_DIR}/fast_io.cc)
-add_test(benchmark.0011.containers.vector.0001.push_back.fast_io benchmark.0011.containers.vector.0001.push_back.fast_io)
-add_executable(benchmark.0011.containers.vector.0001.push_back.fast_io_unchecked ${CMAKE_CURRENT_LIST_DIR}/fast_io_unchecked.cc)
-add_test(benchmark.0011.containers.vector.0001.push_back.fast_io_unchecked benchmark.0011.containers.vector.0001.push_back.fast_io_unchecked)
-add_executable(benchmark.0011.containers.vector.0001.push_back.std ${CMAKE_CURRENT_LIST_DIR}/std.cc)
-add_test(benchmark.0011.containers.vector.0001.push_back.std benchmark.0011.containers.vector.0001.push_back.std)

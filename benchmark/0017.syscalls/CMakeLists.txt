@@ -1,6 +1,0 @@
-add_executable(benchmark.0017.syscalls.nt_file ${CMAKE_CURRENT_LIST_DIR}/nt_file.cc)
-add_test(benchmark.0017.syscalls.nt_file benchmark.0017.syscalls.nt_file)
-add_executable(benchmark.0017.syscalls.posix_file ${CMAKE_CURRENT_LIST_DIR}/posix_file.cc)
-add_test(benchmark.0017.syscalls.posix_file benchmark.0017.syscalls.posix_file)
-add_executable(benchmark.0017.syscalls.win32_file ${CMAKE_CURRENT_LIST_DIR}/win32_file.cc)
-add_test(benchmark.0017.syscalls.win32_file benchmark.0017.syscalls.win32_file)

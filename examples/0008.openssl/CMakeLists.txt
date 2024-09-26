@@ -1,6 +1,0 @@
-add_executable(examples.0008.openssl.bio ${CMAKE_CURRENT_LIST_DIR}/bio.cc)
-add_test(examples.0008.openssl.bio examples.0008.openssl.bio)
-add_executable(examples.0008.openssl.bio_cookie ${CMAKE_CURRENT_LIST_DIR}/bio_cookie.cc)
-add_test(examples.0008.openssl.bio_cookie examples.0008.openssl.bio_cookie)
-add_executable(examples.0008.openssl.construct_bio_from_syscall ${CMAKE_CURRENT_LIST_DIR}/construct_bio_from_syscall.cc)
-add_test(examples.0008.openssl.construct_bio_from_syscall examples.0008.openssl.construct_bio_from_syscall)
