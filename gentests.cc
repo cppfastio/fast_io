@@ -41,7 +41,13 @@ bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix) 
 	std::vector<std::u8string> ignore_files;
 	try {
 		fast_io::native_file_loader ignore_file{at(nio), R"(.test_ignore)"};
-		for (std::u8string line; scan<true>(ignore_file, fast_io::mnp::line_get<char8_t>(line));) {
+		fast_io::u8ibuffer_view u8fv{reinterpret_cast<char8_t*>(ignore_file.begin()), reinterpret_cast<char8_t*>(ignore_file.end())};
+		for (std::u8string line; scan<true>(u8fv, fast_io::mnp::line_get<char8_t>(line));) {
+			if (line.empty()) {
+				u8fv.curr_ptr += 1;
+				continue;
+			}
+			u8fv.curr_ptr += line.size();
 			ignore_files.emplace_back(std::move(line));
 		}
 	} catch (...) {}

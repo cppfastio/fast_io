@@ -8,5 +8,3 @@ add_executable(benchmark.0002.file_io_tsc.longspaces.stdio ${CMAKE_CURRENT_LIST_
 add_test(benchmark.0002.file_io_tsc.longspaces.stdio benchmark.0002.file_io_tsc.longspaces.stdio)
 add_executable(benchmark.0002.file_io_tsc.longspaces.u32iobuf_file ${CMAKE_CURRENT_LIST_DIR}/u32iobuf_file.cc)
 add_test(benchmark.0002.file_io_tsc.longspaces.u32iobuf_file benchmark.0002.file_io_tsc.longspaces.u32iobuf_file)
-add_executable(benchmark.0002.file_io_tsc.longspaces.u32utf8_file ${CMAKE_CURRENT_LIST_DIR}/u32utf8_file.cc)
-add_test(benchmark.0002.file_io_tsc.longspaces.u32utf8_file benchmark.0002.file_io_tsc.longspaces.u32utf8_file)
