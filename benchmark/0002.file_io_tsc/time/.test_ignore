@@ -1,5 +1,6 @@
 # CI doesn't support <format>
 fstream_std_format.cc
+iobuf_file_std_format.cc
 iobuf_file_std_format_locale.cc
 # no llvm env in CI
 fast_io_llvm_raw_fd_ostream_file_l10n.cc
