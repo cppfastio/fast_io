@@ -9,7 +9,7 @@ int main()
 	{
 		fast_io::timer t(u8"output");
 		fast_io::c_file obf(u8"stdio.txt", fast_io::open_mode::out);
-		using char_type = typename decltype(obf)::char_type;
+		using char_type = typename decltype(obf)::output_char_type;
 		for (std::size_t i{}; i != N; ++i)
 		{
 			[[maybe_unused]] auto _ = fprintf(obf.fp, "%zu", i);
