@@ -12,8 +12,8 @@ int main()
 		using char_type = typename decltype(obf)::char_type;
 		for (std::size_t i{}; i != N; ++i)
 		{
-			fprintf(obf.fp, "%zu", i);
-			fwrite(filled_chars<char_type>.data(), filled_chars<char_type>.size(), sizeof(char_type), obf.fp);
+			[[maybe_unused]] auto i = fprintf(obf.fp, "%zu", i);
+			[[maybe_unused]] auto i = fwrite(filled_chars<char_type>.data(), filled_chars<char_type>.size(), sizeof(char_type), obf.fp);
 		}
 	}
 	std::vector<std::size_t> vec(N);
@@ -22,7 +22,7 @@ int main()
 		fast_io::c_file ibf(u8"stdio.txt", fast_io::open_mode::in);
 		for (std::size_t i{}; i != N; ++i)
 		{
-			fscanf(ibf.fp, "%zu", vec.data() + i);
+			[[maybe_unused]] auto i = fscanf(ibf.fp, "%zu", vec.data() + i);
 		}
 	}
 }
