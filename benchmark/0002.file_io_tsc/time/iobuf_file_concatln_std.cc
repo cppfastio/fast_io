@@ -13,7 +13,7 @@ int main()
 		fast_io::obuf_file obf("iobuf_file_concatln.txt");
 		for (std::size_t i{}; i != N; ++i)
 		{
-			print(obf, fast_io::concatln(i));
+			print(obf, fast_io::concatln_std(i));
 		}
 	}
 }
