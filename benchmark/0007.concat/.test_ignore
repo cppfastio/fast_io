@@ -1,0 +1,7 @@
+# no need to install those env in CI
+concat_cstring.cc
+concat_hstring.cc
+concat_qstring.cc
+to_hstring.cc
+# CI doesn't support <format>
+concat_vs_format.cc
