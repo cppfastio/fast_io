@@ -611,7 +611,7 @@ template<bool shbase=false,typename scalar_type>
 requires (::fast_io::details::scalar_integrals<scalar_type>)
 inline constexpr auto uhexupperfull(scalar_type t) noexcept
 {
-	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,true,shbase,true>>(t);
+	return ::fast_io::details::scalar_flags_int_cache<::fast_io::details::base_mani_flags_cache<16,true,shbase,true>>(static_cast<::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<scalar_type>>>(t));
 }
 
 template<bool shbase=false,bool full=false,typename scalar_type>
