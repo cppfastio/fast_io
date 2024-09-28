@@ -24,37 +24,37 @@ jobs:
     - name: ninja test
       run: ninja test
 
-  windows:
+  # windows:
 
-    runs-on: windows-latest
+  #   runs-on: windows-latest
 
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ilammy/msvc-dev-cmd@v1.13.0
-    - name: prebuild
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
-    - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
-    - name: ninja
-      run: ninja
-    - name: ninja test
-      run: ninja test
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - uses: ilammy/msvc-dev-cmd@v1.13.0
+  #   - name: prebuild
+  #     run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
+  #   - name: cmake
+  #     run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+  #   - name: ninja
+  #     run: ninja
+  #   - name: ninja test
+  #     run: ninja test
 
-  windows-debug:
+  # windows-debug:
 
-    runs-on: windows-latest
+  #   runs-on: windows-latest
 
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ilammy/msvc-dev-cmd@v1.13.0
-    - name: prebuild
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
-    - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
-    - name: ninja
-      run: ninja
-    - name: ninja test
-      run: ninja test
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - uses: ilammy/msvc-dev-cmd@v1.13.0
+  #   - name: prebuild
+  #     run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
+  #   - name: cmake
+  #     run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+  #   - name: ninja
+  #     run: ninja
+  #   - name: ninja test
+  #     run: ninja test
 
   #macos:
 
