@@ -1,0 +1,9 @@
+# no need to install those env in CI
+cryptopp_md5.cc
+cryptopp_sha256.cc
+cryptopp_sha512.cc
+ossl_evp.cc
+ossl_md5.cc
+ossl_sha1.cc
+ossl_sha256.cc
+ossl_sha512.cc

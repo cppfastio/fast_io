@@ -14,7 +14,7 @@ inline void test(T u1)
 {
 	T u2;
 	using namespace fast_io::mnp;
-	auto buffer{fast_io::concat(wasm_float_put(u1))};
+	auto buffer{fast_io::concat_std(wasm_float_put(u1))};
 	scan(fast_io::ibuffer_view{buffer}, wasm_float_get(u2));
 	println(std::source_location::current(), "\tu1 == u2: ", boolalpha(u1 == u2));
 }
@@ -24,7 +24,7 @@ inline void testvarint(T u1)
 {
 	T u2;
 	using namespace fast_io::mnp;
-	auto buffer{fast_io::concat(wasm_varint_put(u1))};
+	auto buffer{fast_io::concat_std(wasm_varint_put(u1))};
 	scan(fast_io::ibuffer_view{buffer}, wasm_varint_get(u2));
 	println(std::source_location::current(), "\tu1=", u1, "\tu2=", u2, "\tu1 == u2: ", boolalpha(u1 == u2));
 }
@@ -34,7 +34,7 @@ inline void testuint32(T u1)
 {
 	T u2;
 	using namespace fast_io::mnp;
-	auto buffer{fast_io::concat(wasm_uint32_put(u1))};
+	auto buffer{fast_io::concat_std(wasm_uint32_put(u1))};
 	scan(fast_io::ibuffer_view{buffer}, wasm_uint32_get(u2));
 	println(std::source_location::current(), "\tu1=", u1, "\tu2=", u2, "\tu1 == u2: ", boolalpha(u1 == u2));
 }
