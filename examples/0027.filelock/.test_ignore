@@ -1,0 +1,3 @@
+buffer_lock.cc # undefined symbol: file_lock
+# crash. why?
+buffered_file_with_file_lock.cc

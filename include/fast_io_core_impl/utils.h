@@ -83,7 +83,7 @@ struct io_flush_guard
 		{
 #endif
 #endif
-			flush(device);
+			::fast_io::flush(device);
 #if (defined(_MSC_VER) && _HAS_EXCEPTIONS != 0) || (!defined(_MSC_VER) && __cpp_exceptions)
 #if __cpp_exceptions
 		}
