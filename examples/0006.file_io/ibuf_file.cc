@@ -15,5 +15,5 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	fast_io::ibuf_file ibf(fast_io::mnp::os_c_str(argv[1]));
-	fast_io::operations::transmit_all(fast_io::c_stdout(), ibf); // Transmit all bytes to FILE* stdout
+	transmit(fast_io::c_stdout(), ibf); // Transmit all bytes to FILE* stdout
 }
