@@ -1,1 +1,2 @@
 binary_to_text.cc # transmit api changes
+gcc_symlink_install.cc # unrefined symbol: native_symlinkat

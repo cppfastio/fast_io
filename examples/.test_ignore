@@ -4,6 +4,7 @@
 0026.lua
 0020.operating_system
 0024.mfc
+0025.winrt
 0028.python
 # TODO: vector no longer available
 0029.containers
