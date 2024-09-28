@@ -6,7 +6,7 @@ using namespace fast_io::io;
 int main()
 {
 	using namespace fast_io::mnp;
-	println(fast_io::concatln(middle(hex<true>(42), 8, '-'), "\t", addrvw(42)), middle(hex<true>(42), 8, '-'), "\t",
+	println(fast_io::concatln_std(middle(hex<true>(42), 8, '-'), "\t", addrvw(42)), middle(hex<true>(42), 8, '-'), "\t",
 			addrvw(42));
 }
 
