@@ -25,7 +25,7 @@ int main()
 	::fast_io::println("Hello world!");
 	::fast_io::string str{"string"};
 	::fast_io::println(str);
-	::fast_io::println(::fast_io::os_c_str(str.data()));
+	::fast_io::println(::fast_io::mnp::os_c_str(str.data()));
 	::fast_io::println(::fast_io::pointervw(&str));
 	::fast_io::println(::fast_io::rgvw(str, ","));
 	::fast_io::println(::fast_io::chvw('c'));
