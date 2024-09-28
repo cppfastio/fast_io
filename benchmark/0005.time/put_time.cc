@@ -10,7 +10,6 @@ using namespace fast_io::io;
 int main()
 {
 	auto glibc_locale{newlocale(LC_ALL, "", locale_t(0))};
-	constexpr std::size_t buffer_size{10000};
 	constexpr std::size_t N(10000000);
 
 	std::time_t t{};
