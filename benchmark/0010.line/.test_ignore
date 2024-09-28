@@ -1,0 +1,4 @@
+# no need to install those env in CI
+scan_qstring_u16utf8.cc
+scan_qstring.cc
+scan_winrt_hstring.cc
