@@ -1,0 +1,6 @@
+# no need to install those env in CI
+0019.boost
+# platform-dependent
+0031.tpeb
+# TODO: locale unfinished
+0005.lc_time
