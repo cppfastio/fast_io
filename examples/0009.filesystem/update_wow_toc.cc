@@ -34,7 +34,6 @@ int main(int argc, char **argv)
 		if (ext == u8".toc"sv)
 		{
 			fast_io::allocation_file_loader loader(drt(ent));
-			auto i{loader.cbegin()};
 			auto bg{loader.data()};
 			auto ed{loader.data() + loader.size()};
 			auto it{std::search(bg, ed, searcher)};

@@ -2,7 +2,9 @@
 
 using namespace fast_io::io;
 
+inline void function() {}
+
 int main()
 {
-	println(main);
+	println(function);
 }
