@@ -1,2 +1,6 @@
-binary_to_text.cc # transmit api changes
-gcc_symlink_install.cc # unrefined symbol: native_symlinkat
+# transmit api changes
+binary_to_text.cc
+text_to_binary.cc
+# undefined symbol
+gcc_symlink_install.cc
+rename_all_files_uppercase_to_lowercase.cc
