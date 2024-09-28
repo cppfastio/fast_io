@@ -10,5 +10,7 @@ llvm_raw_fd_ostream.cc
 iobuf_file_lockable_big.cc
 iobuf_file_bin.cc
 iobuf_io_file_eol.cc
+iobuf_io_file_eol_dbg.cc
+iobuf_io_file_lf_crlf.cc
 # TODO: locale unfinished
 iobuf_file_l10n.cc
