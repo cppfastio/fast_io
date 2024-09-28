@@ -7,6 +7,7 @@ ossl_md5.cc
 ossl_sha1.cc
 ossl_sha256.cc
 ossl_sha512.cc
+native_hash_file.cc
 # deprecated algorithm. only for examples
 sha1.cc
 md5.cc
