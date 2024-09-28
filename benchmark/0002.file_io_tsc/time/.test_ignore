@@ -9,5 +9,6 @@ llvm_raw_fd_ostream.cc
 # TODO: crash. why?
 iobuf_file_lockable_big.cc
 iobuf_file_bin.cc
+iobuf_io_file_eol.cc
 # TODO: locale unfinished
 iobuf_file_l10n.cc
