@@ -33,7 +33,7 @@ int main()
 	::fast_io::println(point{2, 5});
 
 	::std::string s;
-	::fast_io::scan(::fast_io::line_get(s));
+	::fast_io::scan(::fast_io::mnp::line_get(s));
 	::fast_io::println(s);
 
 	return 0;
