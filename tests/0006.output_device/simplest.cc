@@ -18,7 +18,7 @@ inline void write(foo, char8_t const *first, char8_t const *last)
 	{
 		val ^= *first;
 	}
-	println(fast_io::out(), diff, " ", val);
+	println(fast_io::u8out(), diff, " ", val);
 }
 
 struct new_type
@@ -45,8 +45,8 @@ using namespace fast_io::io;
 int main()
 {
 	foo f;
-	println(fast_io::u8c_stdout(), f, u8"Hello World\n", 4, u8" ", 20, u8" ", new_type{});
-	println(fast_io::u8c_stdout(), f, u8"Hello World\n", 4, u8" ", 20, new_type{}, u8" ", new_type{});
-	println(fast_io::u8c_stdout(), f, u8"Hello World\n", 4, u8" ", 20, new_type{}, u8" ", new_type{});
-	println(fast_io::u8c_stdout(), f, u8"Hello World\n", 4, u8" ", 20, new_type{}, u8" ", new_type{});
+	println(f, u8"Hello World\n", 4, u8" ", 20, u8" ", new_type{});
+	println(f, u8"Hello World\n", 4, u8" ", 20, new_type{}, u8" ", new_type{});
+	println(f, u8"Hello World\n", 4, u8" ", 20, new_type{}, u8" ", new_type{});
+	println(f, u8"Hello World\n", 4, u8" ", 20, new_type{}, u8" ", new_type{});
 }
