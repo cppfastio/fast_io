@@ -1,5 +1,7 @@
 # no need to install those env in CI
 0019.boost
+# compiler in CI is old
+0023.bitset
 # platform-dependent
 0031.tpeb
 # TODO: locale unfinished
