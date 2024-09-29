@@ -10,3 +10,5 @@ auto udivmod64(
 {
 	return ::fast_io::intrinsics::udivmod(dividendlow, dividendhigh, divisorlow, divisorhigh);
 }
+
+int main() {}
