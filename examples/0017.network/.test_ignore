@@ -1,1 +1,6 @@
 tcp_client.cc # TODO: transmit api changes
+# interactive programs
+http.cc
+dns.cc
+raw.cc
+tcp_server.cc

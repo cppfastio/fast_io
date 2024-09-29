@@ -1,2 +1,4 @@
 helloworld_android_remote_dbg.cc # no android env in CI
 helloworld_dbg.cc # TODO: crash. why?
+# interactive programs
+examples.cc
