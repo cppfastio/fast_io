@@ -15,11 +15,7 @@ inline constexpr foo output_stream_ref_define(foo f) noexcept
 	return f;
 }
 
-inline
-#ifndef USE_FAKE
-constexpr
-#endif
-::std::byte const *write_some_bytes_overflow_define(
+inline constexpr ::std::byte const *write_some_bytes_overflow_define(
 	foo,
 	::std::byte const *first,
 	::std::byte const *last)
