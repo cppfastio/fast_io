@@ -5,7 +5,7 @@ struct foo
 	using char_type = char8_t;
 };
 
-inline constexpr foo io_value_handle(foo f) noexcept
+inline constexpr foo output_stream_ref_define(foo f) noexcept
 {
 	return f;
 }
