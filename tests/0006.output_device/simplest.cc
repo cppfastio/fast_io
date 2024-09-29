@@ -2,7 +2,7 @@
 
 struct foo
 {
-	using char_type = char8_t;
+	using output_char_type = char8_t;
 };
 
 inline constexpr foo output_stream_ref_define(foo f) noexcept
