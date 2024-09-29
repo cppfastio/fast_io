@@ -1,4 +1,4 @@
-# transmit api changes
+# TODO: transmit api changes
 binary_to_text.cc
 text_to_binary.cc
 # undefined symbol
