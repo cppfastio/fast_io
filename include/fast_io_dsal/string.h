@@ -33,6 +33,8 @@
 #include "../fast_io_core.h"
 #include "impl/freestanding.h"
 #include "impl/common.h"
+#include "impl/string_view.h"
+#include "impl/cstring_view.h"
 #include "impl/string.h"
 
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
