@@ -45,7 +45,7 @@ int main()
 	str20.erase_index(1,3);
 	str20.resize_and_overwrite(40,[](char8_t* buf, ::std::size_t n) noexcept
 	{
-		return static_cast<::std::size_t>(::std::fill_n(buf, 20u, u8'z') - buf);
+		return static_cast<::std::size_t>(::std::fill_n(buf, n, u8'z') - buf);
 	});
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
