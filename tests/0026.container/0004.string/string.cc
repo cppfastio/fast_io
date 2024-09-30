@@ -48,5 +48,11 @@ int main()
 		u8"\nstr11=", str11,
 		u8"\nstr12=", str12,
 		u8"\nstr13=", str13,
-		u8"\nstr14=", str14);
+		u8"\nstr14=", str14,
+		u8"\nstr4==str5:",str4==str5,
+		u8"\nstr10<=>str14:",str10<=>str14,
+		u8"\nstr4==u8\"hello world\":",str4==u8"hello world",
+		u8"\nstr11<=>u8\"hello world\":",str11==u8"hello world",
+		u8"\nstr4==u8cstrvw:",str4==u8cstrvw,
+		u8"\nstr10<=>u8cstrvw:",str10<=>u8cstrvw);
 }

@@ -1147,6 +1147,20 @@ constexpr bool operator==(::fast_io::containers::basic_string_view<chtype> lhs, 
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr bool operator==(::fast_io::containers::basic_string<char_type, allocator1> a, char_type const (&buffer)[n]) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::equal(a.cbegin(), a.cend(), buffer, buffer + nm1);
+}
+
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_string<char_type, allocator1> a) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::equal(buffer, buffer + nm1, a.cbegin(), a.cend());
+}
+
 #if defined(__cpp_lib_three_way_comparison)
 
 template <::std::integral chtype, typename allocator1, typename allocator2>
@@ -1165,6 +1179,20 @@ template <::std::integral chtype, typename allocator1>
 constexpr auto operator<=>(::fast_io::containers::basic_string_view<chtype> lhs, ::fast_io::containers::basic_string<chtype, allocator1> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr auto operator<=>(::fast_io::containers::basic_string<char_type, allocator1> a, char_type const (&buffer)[n]) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::lexicographical_compare_three_way(a.cbegin(), a.cend(), buffer, buffer + nm1, ::std::compare_three_way{});
+}
+
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_string<char_type, allocator1> a) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::lexicographical_compare_three_way(buffer, buffer + nm1, a.cbegin(), a.cend(), ::std::compare_three_way{});
 }
 
 #endif
