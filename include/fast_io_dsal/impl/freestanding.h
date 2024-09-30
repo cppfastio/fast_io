@@ -234,9 +234,16 @@ inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const& ele)
 	}
 	for (;first!=last;++first)
 	{
-		::std::construct_at(*first, ele);
+		::std::construct_at(__builtin_addressof(*first), ele);
 	}
 	return last;
 }
+
+template<::std::input_or_output_iterator Iter, typename T>
+inline constexpr Iter uninitialized_fill_n(Iter first, ::std::size_t n, T const& ele)
+{
+	return ::fast_io::freestanding::uninitialized_fill(first, first+n, ele);	
+}
+
 
 } // namespace fast_io::freestanding
