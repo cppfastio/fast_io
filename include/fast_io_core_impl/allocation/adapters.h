@@ -1296,7 +1296,7 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::fast_io::freestanding::allocator<T>{}.allocate(n);
+			return {::fast_io::freestanding::allocator<T>{}.allocate(n), n};
 		}
 #endif
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
