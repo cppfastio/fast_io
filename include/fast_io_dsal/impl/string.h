@@ -742,8 +742,9 @@ public:
 
 private:
 	constexpr void destroy() noexcept
-		auto beginptr{this->imp.begin_ptr};
 	{
+		auto beginptr{this->imp.begin_ptr};
+
 		if (beginptr != __builtin_addressof(this->nullterminator))
 		{
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
