@@ -1271,26 +1271,24 @@ public:
 	}
 };
 
-#if 0
-template <::std::integral chtype, typename allocator1>
-inline constexpr basic_string<chtype, allocator1> * uninitialized_relocate_define(basic_string<chtype, allocator1> *first, basic_string<chtype, allocator1> *last, basic_string<chtype, allocator1> *dest)
+template <::std::integral chtype, typename allocator1, typename U>
+inline constexpr void erase(::fast_io::containers::basic_string<chtype, allocator1> const &c, U const &value)
 {
-	::fast_io::freestanding::bytes_copy(reinterpret_cast<::std::byte const*>(first),
-		reinterpret_cast<::std::byte const*>(last),
-		reinterpret_cast<::std::byte *>(dest));
-	for(auto it{first};it!=last;++it)
-	{
-		if(it->imp.begin_ptr==__builtin_addressof(it->nullterminator))
-		{
-			dest->imp = {__builtin_addressof(dest->nullterminator),
-				__builtin_addressof(dest->nullterminator),
-				__builtin_addressof(dest->nullterminator)};
-		}
-		++dest;
-	}
-	return dest;
+	auto it = ::std::remove(c.begin(), c.end(), value);
+	auto r = c.end() - it;
+	c.erase(it, c.end());
+	return r;
 }
-#endif
+
+template <::std::integral chtype, typename allocator1, typename Pred>
+inline constexpr void erase_if(::fast_io::containers::basic_string<chtype, allocator1> const &c, Pred pred)
+{
+	auto it = ::std::remove_if(c.begin(), c.end(), pred);
+	auto r = c.end() - it;
+	c.erase(it, c.end());
+	return r;
+}
+
 template <::std::integral chtype, typename allocator1, typename allocator2>
 constexpr bool operator==(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string<chtype, allocator2> const &rhs) noexcept
 {
