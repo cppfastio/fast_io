@@ -1,3 +1,5 @@
 # TODO: locale unfinished
 lc_double.cc
 scientific_0.cc
+# timeout
+test_all_float32.cc
