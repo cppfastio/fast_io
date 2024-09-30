@@ -74,8 +74,6 @@ inline constexpr void string_heap_dilate_uncheck(::fast_io::containers::details:
 template <typename allocator_type, ::std::integral chtype>
 inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::details::string_internal<chtype> &imp, chtype *pnullterminate) noexcept
 {
-	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
-	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 
 	::std::size_t const bfsize{static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr)};
 	::std::size_t const bfsizep1{bfsize + 1u};
@@ -744,8 +742,8 @@ public:
 
 private:
 	constexpr void destroy() noexcept
-	{
 		auto beginptr{this->imp.begin_ptr};
+	{
 		if (beginptr != __builtin_addressof(this->nullterminator))
 		{
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
