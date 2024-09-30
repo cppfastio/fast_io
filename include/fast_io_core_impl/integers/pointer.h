@@ -60,16 +60,28 @@ print_alias_define(io_alias_t, basic_os_str_known_size_without_null_terminated<c
 }
 
 template <::std::integral T>
-inline constexpr basic_os_c_str_with_known_size<T> os_c_str(T const *ch, ::std::size_t n) noexcept
+inline constexpr basic_os_str_known_size_without_null_terminated<T> os_c_str(T const *ch, ::std::size_t n) noexcept
 {
 	return {ch, ::fast_io::cstr_nlen(ch, n)};
 }
 
 template <::std::integral char_type, ::std::size_t n>
 	requires(n != 0)
-inline constexpr basic_os_c_str_with_known_size<char_type> os_c_str_arr(char_type const (&cstr)[n]) noexcept
+inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_c_str_arr(char_type const (&cstr)[n]) noexcept
 {
 	return os_c_str(cstr, n);
+}
+
+template <::std::integral T>
+inline constexpr basic_os_str_known_size_without_null_terminated<T> os_c_str(T const *ch, ::std::size_t n) noexcept
+{
+	return {ch, ::fast_io::cstr_nlen(ch, n)};
+}
+
+template <::std::integral T>
+inline constexpr basic_os_c_str_with_known_size<char_type> os_c_str_null_terminated(T const *ch, ::std::size_t n) noexcept
+{
+	return {ch, n};
 }
 
 template <::std::integral char_type, ::std::size_t n>
@@ -121,7 +133,7 @@ inline constexpr basic_io_scatter_t<::std::remove_cvref_t<::std::ranges::range_v
 
 template <::std::ranges::contiguous_range rg>
 	requires(::std::integral<::std::ranges::range_value_t<rg>>)
-inline constexpr basic_os_c_str_with_known_size<::std::remove_cvref_t<::std::ranges::range_value_t<rg>>>
+inline constexpr basic_os_str_known_size_without_null_terminated<::std::remove_cvref_t<::std::ranges::range_value_t<rg>>>
 os_c_str(rg &&r) noexcept
 {
 	auto p{::std::ranges::data(r)};
@@ -161,10 +173,10 @@ inline consteval my_constant_passer<char_type, n> compute_char_literal_array_typ
 	return {};
 }
 
-template<typename T>
+template <typename T>
 concept printaliascarray = ::std::is_array_v<::std::remove_reference_t<T>> &&
-			 ::std::integral<::std::remove_extent_t<::std::remove_cvref_t<T>>> &&
-			 requires(T const &s) { ::fast_io::details::compute_char_literal_array_type(s); };
+						   ::std::integral<::std::remove_extent_t<::std::remove_cvref_t<T>>> &&
+						   requires(T const &s) { ::fast_io::details::compute_char_literal_array_type(s); };
 
 } // namespace details
 
