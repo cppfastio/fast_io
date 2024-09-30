@@ -76,10 +76,6 @@ inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_c
 template <::std::integral char_type>
 inline constexpr basic_os_c_str_with_known_size<char_type> os_c_str_null_terminated(char_type const *ch, ::std::size_t n) noexcept
 {
-	if (ch[n] != 0) [[unlikely]]
-	{
-		::fast_io::fast_terminate();
-	}
 	return {ch, n};
 }
 
