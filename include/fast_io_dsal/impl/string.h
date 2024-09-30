@@ -576,7 +576,7 @@ private:
 		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
 		size_type newsize{thissize + othern};
 		bool const needreallocate{thiscap < newsize};
-		if (needreallocate)
+		if (needreallocate) [[unlikely]]
 		{
 			this->append_cold_impl(otherptr, othern);
 			return;
