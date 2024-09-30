@@ -29,7 +29,7 @@ template <typename allocator_type, ::std::integral chtype>
 inline constexpr ::fast_io::basic_allocation_least_result<chtype *> string_allocate_init(chtype const *first, ::std::size_t n) noexcept
 {
 	using typed_allocator_type = typed_generic_allocator_adapter<allocator_type, chtype>;
-	//n is not possible to SIZE_MAX since that would overflow the memory which is not possible
+	// n is not possible to SIZE_MAX since that would overflow the memory which is not possible
 	::std::size_t np1{n + 1};
 	auto [ptr, allocn]{typed_allocator_type::allocate_at_least(np1)};
 	*::fast_io::freestanding::non_overlapped_copy_n(first, n, ptr) = 0;
@@ -137,7 +137,7 @@ public:
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 			constexpr size_type mx{::std::numeric_limits<size_type>::max()};
-			if (n==mx)
+			if (n == mx)
 			{
 				::fast_io::fast_terminate();
 			}
@@ -160,7 +160,7 @@ public:
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 			constexpr size_type mx{::std::numeric_limits<size_type>::max()};
-			if (n==mx)
+			if (n == mx)
 			{
 				::fast_io::fast_terminate();
 			}
@@ -492,7 +492,7 @@ public:
 		if (thiscap < n)
 		{
 			constexpr size_type mx{::std::numeric_limits<size_type>::max()};
-			if (n==mx)
+			if (n == mx)
 			{
 				::fast_io::fast_terminate();
 			}
@@ -522,23 +522,24 @@ public:
 		this->assign_impl(other.imp.begin_ptr, static_cast<::std::size_t>(other.imp.curr_ptr - other.imp.begin_ptr));
 		return *this;
 	}
+
 private:
 #if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 #endif
-	constexpr void append_cold_impl(char_type const* otherptr, size_type othern) noexcept
+	constexpr void append_cold_impl(char_type const *otherptr, size_type othern) noexcept
 	{
 		using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 		using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 		constexpr size_type mx{::std::numeric_limits<size_type>::max()};
-		constexpr size_type mxdiv2{::std::numeric_limits<size_type>::max()/2u};
-		constexpr size_type mxm1{static_cast<size_type>(mx-1u)};
+		constexpr size_type mxdiv2{::std::numeric_limits<size_type>::max() / 2u};
+		constexpr size_type mxm1{static_cast<size_type>(mx - 1u)};
 
-		auto beginptr{this->imp.begin_ptr},currptr{this->imp.curr_ptr},endptr{this->imp.end_ptr};
-		bool const is_sso{this->imp.begin_ptr==__builtin_addressof(this->nullterminator)};
-		size_type thissize{static_cast<size_type>(currptr-beginptr)};
-		size_type thiscap{static_cast<size_type>(endptr-beginptr)};
-		size_type newsize{thissize+othern};
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
+		bool const is_sso{this->imp.begin_ptr == __builtin_addressof(this->nullterminator)};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+		size_type newsize{thissize + othern};
 
 		size_type bigcap;
 		if (mxdiv2 <= thiscap)
@@ -547,53 +548,54 @@ private:
 		}
 		else
 		{
-			bigcap = static_cast<size_type>(thiscap<<1u);
+			bigcap = static_cast<size_type>(thiscap << 1u);
 		}
 		size_type newcap{newsize};
-		if(newcap < bigcap)
+		if (newcap < bigcap)
 		{
 			newcap = bigcap;
 		}
-		if (newcap==mx)
+		if (newcap == mx)
 		{
 			::fast_io::fast_terminate();
 		}
-		size_type const newcapp1{static_cast<size_type>(newcap+1u)};
+		size_type const newcapp1{static_cast<size_type>(newcap + 1u)};
 		auto [ptr, allocn]{typed_allocator_type::allocate_at_least(newcapp1)};
 		this->imp.begin_ptr = ptr;
-		this->imp.end_ptr = ptr+static_cast<size_type>(allocn-1u);
+		this->imp.end_ptr = ptr + static_cast<size_type>(allocn - 1u);
 		auto it{ptr};
-		it = ::fast_io::freestanding::non_overlapped_copy(beginptr,currptr,it);
-		it = ::fast_io::freestanding::non_overlapped_copy_n(otherptr,othern,it);
+		it = ::fast_io::freestanding::non_overlapped_copy(beginptr, currptr, it);
+		it = ::fast_io::freestanding::non_overlapped_copy_n(otherptr, othern, it);
 		*it = 0;
 		this->imp.curr_ptr = it;
-		if(!is_sso)
+		if (!is_sso)
 		{
 			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(endptr - beginptr) + 1u));
 		}
 	}
-	constexpr void append_impl(char_type const* otherptr, size_type othern) noexcept
+	constexpr void append_impl(char_type const *otherptr, size_type othern) noexcept
 	{
-		auto beginptr{this->imp.begin_ptr},currptr{this->imp.curr_ptr},endptr{this->imp.end_ptr};
-		size_type thissize{static_cast<size_type>(currptr-beginptr)};
-		size_type thiscap{static_cast<size_type>(endptr-beginptr)};
-		size_type newsize{thissize+othern};
-		bool const needreallocate{thiscap<newsize};
-		if(needreallocate)
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+		size_type newsize{thissize + othern};
+		bool const needreallocate{thiscap < newsize};
+		if (needreallocate)
 		{
 			this->append_cold_impl(otherptr, othern);
 			return;
 		}
-		*(this->imp.curr_ptr = ::fast_io::freestanding::my_copy_n(otherptr,othern,currptr))=0;
+		*(this->imp.curr_ptr = ::fast_io::freestanding::my_copy_n(otherptr, othern, currptr)) = 0;
 	}
+
 public:
 	constexpr void append(::fast_io::containers::basic_string_view<char_type> vw) noexcept
 	{
-		this->append_impl(vw.data(),vw.size());
+		this->append_impl(vw.data(), vw.size());
 	}
-	constexpr void append(basic_string const& other) noexcept
+	constexpr void append(basic_string const &other) noexcept
 	{
-		this->append_impl(other.data(),other.size());
+		this->append_impl(other.data(), other.size());
 	}
 
 	constexpr void clear() noexcept
@@ -807,7 +809,7 @@ inline constexpr auto
 strlike_construct_define(io_strlike_type_t<char_type, basic_string<char_type, allocator_type>>,
 						 char_type const *first, char_type const *last)
 {
-	return basic_string<char_type, allocator_type>(::fast_io::containers::basic_string_view<char_type>(first, static_cast<::std::size_t>(last-first)));
+	return basic_string<char_type, allocator_type>(::fast_io::containers::basic_string_view<char_type>(first, static_cast<::std::size_t>(last - first)));
 }
 
 template <::std::integral char_type, typename allocator_type>
