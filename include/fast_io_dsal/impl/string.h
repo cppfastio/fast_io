@@ -1269,6 +1269,50 @@ public:
 	{
 		return this->substrvw_unchecked(pos1, count1) <=> other.substrvw_unchecked(pos2, count2);
 	}
+
+	template <typename Operation>
+	inline constexpr void resize_and_overwrite(size_type count, Operation op) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		if (thissize < count)
+		{
+			auto endptr{this->imp.end_ptr};
+			size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+			if (thiscap < count)
+			{
+				::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, count, __builtin_addressof(this->nullterminator));
+				beginptr = this->imp.begin_ptr;
+			}
+		}
+		*(this->imp.curr_ptr = (beginptr + op(beginptr, count))) = 0;
+	}
+
+	inline constexpr void resize(size_type count, char_type ch) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		if (count <= thissize)
+		{
+			if (count != thissize)
+			{
+				*(this->imp.curr_ptr -= static_cast<size_type>(thissize - count)) = 0;
+			}
+			return;
+		}
+		auto endptr{this->imp.end_ptr};
+		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+		if (thiscap < count)
+		{
+			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, count, __builtin_addressof(this->nullterminator));
+			currptr = this->imp.curr_ptr;
+		}
+		*(this->imp.curr_ptr = ::fast_io::freestanding::uninitialized_fill_n(currptr, static_cast<size_type>(count - thissize), ch)) = 0;
+	}
+	inline constexpr void resize(size_type count) noexcept
+	{
+		this->resize(count, 0);
+	}
 };
 
 template <::std::integral chtype, typename allocator1, typename U>
