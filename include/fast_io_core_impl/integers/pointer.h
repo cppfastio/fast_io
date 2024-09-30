@@ -70,16 +70,12 @@ template <::std::integral char_type, ::std::size_t n>
 inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_c_str_carr(char_type const (&cstr)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{static_cast<::std::size_t>(n - 1u)};
-	return os_c_str(cstr, n);
+	return os_c_str(cstr, nm1);
 }
 
 template <::std::integral char_type>
 inline constexpr basic_os_c_str_with_known_size<char_type> os_c_str_null_terminated(char_type const *ch, ::std::size_t n) noexcept
 {
-	if (ch[n] != 0) [[unlikely]]
-	{
-		::fast_io::fast_terminate();
-	}
 	return {ch, n};
 }
 
