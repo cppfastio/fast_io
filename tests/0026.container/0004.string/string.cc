@@ -40,6 +40,8 @@ int main()
 	::std::ranges::swap(str17,str18);
 	::std::ranges::swap(str19,str19);
 	::std::ranges::swap(str19,str18);
+	auto str20(str16);
+	str20.erase_index(1,3);
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,
@@ -62,6 +64,7 @@ int main()
 		u8"\nstr17(str9)=", str17,
 		u8"\nstr18(str16)=", str18,
 		u8"\nstr19=", str19,
+		u8"\nstr20=", str20,
 		u8"\nstr4==str5:",str4==str5,
 		u8"\nstr10<=>str14:",str10<=>str14,
 		u8"\nstr4==u8\"hello world\":",str4==u8"hello world",

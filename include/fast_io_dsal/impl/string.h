@@ -876,6 +876,11 @@ private:
 		return first;
 	}
 
+	constexpr pointer erase_impl(pointer first) noexcept
+	{
+		return this->erase_impl(first, first + 1);
+	}
+
 public:
 	constexpr iterator erase(const_iterator first, const_iterator last) noexcept
 	{
@@ -898,11 +903,38 @@ public:
 		auto beginptr{this->imp.begin_ptr};
 		auto currptr{this->imp.curr_ptr};
 		size_type const sz{static_cast<size_type>(currptr - beginptr)};
-		if (lastidx < firstidx || sz <= lastidx) [[unlikely]]
+		if (lastidx < firstidx || sz < lastidx) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
 		this->erase_impl(beginptr + firstidx, beginptr + lastidx);
+	}
+	constexpr iterator erase(const_iterator it) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{this->imp.begin_ptr};
+			return this->erase_impl(beginptr + (it - beginptr));
+		}
+		else
+		{
+			return this->erase_impl(const_cast<pointer>(it));
+		}
+	}
+	constexpr void erase_index(size_type idx) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const sz{static_cast<size_type>(currptr - beginptr)};
+		if (sz <= idx) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_impl(beginptr + idx);
 	}
 	constexpr void swap(basic_string &other) noexcept
 	{
