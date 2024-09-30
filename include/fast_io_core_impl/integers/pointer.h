@@ -59,29 +59,36 @@ print_alias_define(io_alias_t, basic_os_str_known_size_without_null_terminated<c
 	return {bas.ptr, bas.n};
 }
 
-template <::std::integral T>
-inline constexpr basic_os_str_known_size_without_null_terminated<T> os_c_str(T const *ch, ::std::size_t n) noexcept
+template <::std::integral char_type>
+inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_c_str(char_type const *ch, ::std::size_t n) noexcept
 {
 	return {ch, ::fast_io::cstr_nlen(ch, n)};
 }
 
 template <::std::integral char_type, ::std::size_t n>
 	requires(n != 0)
-inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_c_str_arr(char_type const (&cstr)[n]) noexcept
+inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_c_str_carr(char_type const (&cstr)[n]) noexcept
 {
+	constexpr ::std::size_t nm1{static_cast<::std::size_t>(n - 1u)};
 	return os_c_str(cstr, n);
 }
 
-template <::std::integral T>
-inline constexpr basic_os_str_known_size_without_null_terminated<T> os_c_str(T const *ch, ::std::size_t n) noexcept
+template <::std::integral char_type>
+inline constexpr basic_os_c_str_with_known_size<char_type> os_c_str_null_terminated(char_type const *ch, ::std::size_t n) noexcept
 {
-	return {ch, ::fast_io::cstr_nlen(ch, n)};
+	if (ch[n] != 0) [[unlikely]]
+	{
+		::fast_io::fast_terminate();
+	}
+	return {ch, n};
 }
 
-template <::std::integral T>
-inline constexpr basic_os_c_str_with_known_size<char_type> os_c_str_null_terminated(T const *ch, ::std::size_t n) noexcept
+template <::std::integral char_type, ::std::size_t n>
+	requires(n != 0)
+inline constexpr basic_os_str_known_size_without_null_terminated<char_type> os_c_str_null_terminated_carr(char_type const (&cstr)[n]) noexcept
 {
-	return {ch, n};
+	constexpr ::std::size_t nm1{static_cast<::std::size_t>(n - 1u)};
+	return os_c_str_null_terminated(cstr, nm1);
 }
 
 template <::std::integral char_type, ::std::size_t n>
