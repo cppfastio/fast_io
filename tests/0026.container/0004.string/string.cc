@@ -22,6 +22,7 @@ int main()
 	::fast_io::u8string str9;
 	str9.append(str9);//self append for empty string
 	str9.append(str7);
+	str9.append(::fast_io::u8concat_fast_io(u8"concat:", str9.size(), u8"\tok"));
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,

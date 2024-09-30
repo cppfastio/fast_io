@@ -807,7 +807,7 @@ inline constexpr auto
 strlike_construct_define(io_strlike_type_t<char_type, basic_string<char_type, allocator_type>>,
 						 char_type const *first, char_type const *last)
 {
-	return basic_string<char_type, allocator_type>(first, last);
+	return basic_string<char_type, allocator_type>(::fast_io::containers::basic_string_view<char_type>(first, static_cast<::std::size_t>(last-first)));
 }
 
 template <::std::integral char_type, typename allocator_type>
