@@ -522,11 +522,10 @@ public:
 	}
 
 private:
-
 #if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 #endif
-	constexpr pointer insert_cold_impl(pointer insertpos, char_type const* otherptr, size_type othern) noexcept
+	constexpr pointer insert_cold_impl(pointer insertpos, char_type const *otherptr, size_type othern) noexcept
 	{
 		using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 		using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
@@ -625,7 +624,7 @@ private:
 			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(endptr - beginptr) + 1u));
 		}
 #else
-		this->insert_cold_impl(this->imp.curr_ptr,otherptr,othern);
+		this->insert_cold_impl(this->imp.curr_ptr, otherptr, othern);
 #endif
 	}
 	constexpr void append_impl(char_type const *otherptr, size_type othern) noexcept
@@ -817,8 +816,7 @@ public:
 	}
 
 private:
-
-	constexpr pointer insert_impl(pointer ptr, char_type const* otherptr, size_type othern) noexcept
+	constexpr pointer insert_impl(pointer ptr, char_type const *otherptr, size_type othern) noexcept
 	{
 		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
 		size_type thissize{static_cast<size_type>(currptr - beginptr)};
@@ -829,14 +827,14 @@ private:
 		{
 			return this->insert_cold_impl(ptr, otherptr, othern);
 		}
-		auto newcurrptr{currptr+othern};
+		auto newcurrptr{currptr + othern};
 		*newcurrptr = 0;
 		auto lastptr{::fast_io::freestanding::copy_backward(ptr, currptr, newcurrptr)};
-		auto retptr{::fast_io::freestanding::copy_backward(otherptr, otherptr+othern, lastptr)};
+		auto retptr{::fast_io::freestanding::copy_backward(otherptr, otherptr + othern, lastptr)};
 		this->imp.curr_ptr = newcurrptr;
 		return retptr;
 	}
-	constexpr size_type insert_index_impl(size_type idx, char_type const* otherptr, size_type othern) noexcept
+	constexpr size_type insert_index_impl(size_type idx, char_type const *otherptr, size_type othern) noexcept
 	{
 		auto beginptr{this->imp.begin_ptr};
 		size_type sz{static_cast<size_type>(this->imp.curr_ptr - beginptr)};
@@ -844,9 +842,10 @@ private:
 		{
 			::fast_io::fast_terminate();
 		}
-		auto itr{this->insert_impl(beginptr+idx, otherptr, othern)};
-		return static_cast<size_type>(itr-this->imp.begin_ptr);
+		auto itr{this->insert_impl(beginptr + idx, otherptr, othern)};
+		return static_cast<size_type>(itr - this->imp.begin_ptr);
 	}
+
 public:
 	constexpr size_type insert_index(size_type idx, string_view_type vw) noexcept
 	{
@@ -860,18 +859,18 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return this->insert_impl(this->imp.begin_ptr+(ptr-this->imp.begin_ptr), vw.data(), vw.size());
+			return this->insert_impl(this->imp.begin_ptr + (ptr - this->imp.begin_ptr), vw.data(), vw.size());
 		}
 		else
 		{
 			return this->insert_impl(const_cast<pointer>(ptr), vw.data(), vw.size());
 		}
 	}
-	constexpr size_type insert_index(size_type idx, basic_string const& other) noexcept
+	constexpr size_type insert_index(size_type idx, basic_string const &other) noexcept
 	{
 		return this->insert_index_impl(idx, other.data(), other.size());
 	}
-	constexpr iterator insert(const_iterator ptr, basic_string const& other) noexcept
+	constexpr iterator insert(const_iterator ptr, basic_string const &other) noexcept
 	{
 #ifdef __cpp_if_consteval
 		if consteval
@@ -879,7 +878,7 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return this->insert_impl(this->imp.begin_ptr+(ptr-this->imp.begin_ptr), other.data(), other.size());
+			return this->insert_impl(this->imp.begin_ptr + (ptr - this->imp.begin_ptr), other.data(), other.size());
 		}
 		else
 		{
@@ -887,6 +886,227 @@ public:
 		}
 	}
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr cstring_view_type substrvw_back(size_type count) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const thisn{static_cast<size_type>(currptr - beginptr)};
+		if (thisn < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return cstring_view_type(::fast_io::containers::null_terminated, beginptr + (thisn - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr cstring_view_type substrvw_back_unchecked(size_type count) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const thisn{static_cast<size_type>(currptr - beginptr)};
+		return cstring_view_type(::fast_io::containers::null_terminated, beginptr + (thisn - count), count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr string_view_type substrvw_front(size_type count) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const thisn{static_cast<size_type>(currptr - beginptr)};
+		if (thisn < count) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return string_view_type(beginptr, count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr string_view_type substrvw_front_unchecked(size_type count) const noexcept
+	{
+		return string_view_type(this->imp.begin_ptr, count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr string_view_type substrvw(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const thisn{static_cast<size_type>(currptr - beginptr)};
+		if (thisn < pos) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		size_type const val{thisn - pos};
+		if (val < count)
+		{
+			if (count != ::fast_io::containers::npos) [[unlikely]]
+			{
+				::fast_io::fast_terminate();
+			}
+			count = val;
+		}
+		return string_view_type(beginptr + pos, count);
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr string_view_type substrvw_unchecked(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		if (count == ::fast_io::containers::npos)
+		{
+			auto currptr{this->imp.curr_ptr};
+			size_type const thisn{static_cast<size_type>(currptr - beginptr)};
+			size_type const val{thisn - pos};
+			count = val;
+		}
+		return string_view_type(beginptr + pos, count);
+	}
+
+	inline constexpr basic_string substr_back(size_type count) const noexcept
+	{
+		return basic_string(this->substrvw_back(count));
+	}
+
+	inline constexpr basic_string substr_front(size_type count) const noexcept
+	{
+		return basic_string(this->substrvw_front(count));
+	}
+
+	inline constexpr basic_string substr(size_type idx, size_type count = ::fast_io::containers::npos) const noexcept
+	{
+		return basic_string(this->substrvw(idx, count));
+	}
+
+	inline constexpr size_type find_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_character(ch, pos);
+	}
+	inline constexpr size_type find_not_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_not_character(ch, pos);
+	}
+	inline constexpr size_type rfind_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind_character(ch, pos);
+	}
+	inline constexpr size_type rfind_not_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind_not_character(ch, pos);
+	}
+	inline constexpr size_type find(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find(s, pos, count);
+	}
+	inline constexpr size_type find(string_view_type v, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find(v, pos);
+	}
+	inline constexpr size_type rfind(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind(s, pos, count);
+	}
+	inline constexpr size_type rfind(string_view_type v, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind(v.data(), v.size(), pos);
+	}
+	inline constexpr size_type rfind(basic_string const &v, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind(v.data(), v.size(), pos);
+	}
+
+	inline constexpr size_type find_first_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_of(s, pos, count);
+	}
+	inline constexpr size_type find_first_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_of(s, pos);
+	}
+	inline constexpr size_type find_first_not_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_of(s, pos, count);
+	}
+	inline constexpr size_type find_first_not_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_not_of(s, pos);
+	}
+	inline constexpr size_type find_first_not_of(basic_string const &s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_not_of(s.data(), s.size(), pos);
+	}
+	inline constexpr size_type find_last_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_of(s, pos, count);
+	}
+	inline constexpr size_type find_last_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_of(s, pos);
+	}
+	inline constexpr size_type find_last_of(basic_string const &s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_of(s.data(), pos, s.size());
+	}
+	inline constexpr size_type find_last_not_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_not_of(s, pos, count);
+	}
+	inline constexpr size_type find_last_not_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_not_of(s.ptr, pos, s.n);
+	}
+	inline constexpr size_type find_last_not_of(basic_string const &s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_not_of(s.data(), pos, s.size());
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> string_view_type(s, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1, count1) <=> string_view_type(s, count2);
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, string_view_type other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> other.substrvw(pos2, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, string_view_type other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1, count1) <=> other.substrvw_unchecked(pos2, count2);
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, basic_string const &other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> other.substrvw(pos2, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, basic_string const &other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1, count1) <=> other.substrvw_unchecked(pos2, count2);
+	}
 };
 
 #if 0
@@ -910,17 +1130,69 @@ inline constexpr basic_string<chtype, allocator1> * uninitialized_relocate_defin
 }
 #endif
 template <::std::integral chtype, typename allocator1, typename allocator2>
-constexpr bool operator==(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept
+constexpr bool operator==(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string<chtype, allocator2> const &rhs) noexcept
 {
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr bool operator==(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string_view<chtype> rhs) noexcept
+{
+	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr bool operator==(::fast_io::containers::basic_string_view<chtype> lhs, ::fast_io::containers::basic_string<chtype, allocator1> const &rhs) noexcept
+{
+	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr bool operator==(::fast_io::containers::basic_string<char_type, allocator1> a, char_type const (&buffer)[n]) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::equal(a.cbegin(), a.cend(), buffer, buffer + nm1);
+}
+
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_string<char_type, allocator1> a) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::equal(buffer, buffer + nm1, a.cbegin(), a.cend());
 }
 
 #if defined(__cpp_lib_three_way_comparison)
 
 template <::std::integral chtype, typename allocator1, typename allocator2>
-constexpr auto operator<=>(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept
+constexpr auto operator<=>(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string<chtype, allocator2> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr auto operator<=>(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string_view<chtype> rhs) noexcept
+{
+	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr auto operator<=>(::fast_io::containers::basic_string_view<chtype> lhs, ::fast_io::containers::basic_string<chtype, allocator1> const &rhs) noexcept
+{
+	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr auto operator<=>(::fast_io::containers::basic_string<char_type, allocator1> a, char_type const (&buffer)[n]) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::lexicographical_compare_three_way(a.cbegin(), a.cend(), buffer, buffer + nm1, ::std::compare_three_way{});
+}
+
+template <::std::integral char_type, typename allocator1, ::std::size_t n>
+constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_string<char_type, allocator1> a) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::std::lexicographical_compare_three_way(buffer, buffer + nm1, a.cbegin(), a.cend(), ::std::compare_three_way{});
 }
 
 #endif
