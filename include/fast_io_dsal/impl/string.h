@@ -1001,6 +1001,112 @@ public:
 	{
 		return basic_string(this->substrvw(idx, count));
 	}
+
+	inline constexpr size_type find_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_character(ch, pos);
+	}
+	inline constexpr size_type find_not_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_not_character(ch, pos);
+	}
+	inline constexpr size_type rfind_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind_character(ch, pos);
+	}
+	inline constexpr size_type rfind_not_character(char_type ch, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind_not_character(ch, pos);
+	}
+	inline constexpr size_type find(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find(s, pos, count);
+	}
+	inline constexpr size_type find(string_view_type v, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find(v, pos);
+	}
+	inline constexpr size_type rfind(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind(s, pos, count);
+	}
+	inline constexpr size_type rfind(string_view_type v, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind(v.data(), v.size(), pos);
+	}
+	inline constexpr size_type rfind(basic_string const &v, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).rfind(v.data(), v.size(), pos);
+	}
+
+	inline constexpr size_type find_first_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_of(s, pos, count);
+	}
+	inline constexpr size_type find_first_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_of(s, pos);
+	}
+	inline constexpr size_type find_first_not_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_of(s, pos, count);
+	}
+	inline constexpr size_type find_first_not_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_not_of(s, pos);
+	}
+	inline constexpr size_type find_first_not_of(basic_string const &s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_first_not_of(s.data(), s.size(), pos);
+	}
+	inline constexpr size_type find_last_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_of(s, pos, count);
+	}
+	inline constexpr size_type find_last_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_of(s, pos);
+	}
+	inline constexpr size_type find_last_of(basic_string const &s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_of(s.data(), pos, s.size());
+	}
+	inline constexpr size_type find_last_not_of(const_pointer s, size_type pos, size_type count) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_not_of(s, pos, count);
+	}
+	inline constexpr size_type find_last_not_of(string_view_type s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_not_of(s.ptr, pos, s.n);
+	}
+	inline constexpr size_type find_last_not_of(basic_string const &s, size_type pos) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).find_last_not_of(s.data(), pos, s.size());
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> string_view_type(s, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1, count1) <=> string_view_type(s, count2);
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, string_view_type other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> other.substrvw(pos2, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, string_view_type other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1, count1) <=> other.substrvw_unchecked(pos2, count2);
+	}
+	inline constexpr auto compare_three_way(size_type pos1, size_type count1, basic_string const &other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw(pos1, count1) <=> other.substrvw(pos2, count2);
+	}
+	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, basic_string const &other, size_type pos2, size_type count2) const noexcept
+	{
+		return this->substrvw_unchecked(pos1, count1) <=> other.substrvw_unchecked(pos2, count2);
+	}
 };
 
 #if 0
@@ -1024,7 +1130,19 @@ inline constexpr basic_string<chtype, allocator1> * uninitialized_relocate_defin
 }
 #endif
 template <::std::integral chtype, typename allocator1, typename allocator2>
-constexpr bool operator==(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept
+constexpr bool operator==(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string<chtype, allocator2> const &rhs) noexcept
+{
+	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr bool operator==(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string_view<chtype> rhs) noexcept
+{
+	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr bool operator==(::fast_io::containers::basic_string_view<chtype> lhs, ::fast_io::containers::basic_string<chtype, allocator1> const &rhs) noexcept
 {
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
@@ -1032,7 +1150,19 @@ constexpr bool operator==(basic_string<chtype, allocator1> const &lhs, basic_str
 #if defined(__cpp_lib_three_way_comparison)
 
 template <::std::integral chtype, typename allocator1, typename allocator2>
-constexpr auto operator<=>(basic_string<chtype, allocator1> const &lhs, basic_string<chtype, allocator2> const &rhs) noexcept
+constexpr auto operator<=>(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string<chtype, allocator2> const &rhs) noexcept
+{
+	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr auto operator<=>(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string_view<chtype> rhs) noexcept
+{
+	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
+template <::std::integral chtype, typename allocator1>
+constexpr auto operator<=>(::fast_io::containers::basic_string_view<chtype> lhs, ::fast_io::containers::basic_string<chtype, allocator1> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
 }
