@@ -786,15 +786,14 @@ public:
 		::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap, __builtin_addressof(this->nullterminator));
 	}
 
-#if 0
 	constexpr void shrink_to_fit() noexcept
 	{
-		if(this->imp.curr_ptr==this->imp.end_ptr)
+		if (this->imp.curr_ptr == this->imp.end_ptr)
 		{
 			return;
 		}
+		::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, static_cast<size_type>(this->imp.curr_ptr - this->imp.begin_ptr), __builtin_addressof(this->nullterminator));
 	}
-#endif
 
 private:
 	constexpr void destroy() noexcept
@@ -834,7 +833,7 @@ private:
 		this->imp.curr_ptr = newcurrptr;
 		return retptr;
 	}
-	constexpr size_type insert_index_impl(size_type idx, char_type const *otherptr, size_type othern) noexcept
+	constexpr void insert_index_impl(size_type idx, char_type const *otherptr, size_type othern) noexcept
 	{
 		auto beginptr{this->imp.begin_ptr};
 		size_type sz{static_cast<size_type>(this->imp.curr_ptr - beginptr)};
@@ -842,12 +841,11 @@ private:
 		{
 			::fast_io::fast_terminate();
 		}
-		auto itr{this->insert_impl(beginptr + idx, otherptr, othern)};
-		return static_cast<size_type>(itr - this->imp.begin_ptr);
+		this->insert_impl(beginptr + idx, otherptr, othern);
 	}
 
 public:
-	constexpr size_type insert_index(size_type idx, string_view_type vw) noexcept
+	constexpr void insert_index(size_type idx, string_view_type vw) noexcept
 	{
 		return this->insert_index_impl(idx, vw.data(), vw.size());
 	}
@@ -866,9 +864,93 @@ public:
 			return this->insert_impl(const_cast<pointer>(ptr), vw.data(), vw.size());
 		}
 	}
-	constexpr size_type insert_index(size_type idx, basic_string const &other) noexcept
+	constexpr void insert_index(size_type idx, basic_string const &other) noexcept
 	{
 		return this->insert_index_impl(idx, other.data(), other.size());
+	}
+
+private:
+	constexpr pointer erase_impl(pointer first, pointer last) noexcept
+	{
+		*(this->imp.curr_ptr = ::fast_io::freestanding::my_copy(last, this->imp.curr_ptr, first)) = 0;
+		return first;
+	}
+
+	constexpr pointer erase_impl(pointer first) noexcept
+	{
+		return this->erase_impl(first, first + 1);
+	}
+
+public:
+	constexpr iterator erase(const_iterator first, const_iterator last) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{this->imp.begin_ptr};
+			return this->erase_impl(beginptr + (first - beginptr), beginptr + (last - beginptr));
+		}
+		else
+		{
+			return this->erase_impl(const_cast<pointer>(first), const_cast<pointer>(last));
+		}
+	}
+	constexpr void erase_index(size_type firstidx, size_type lastidx) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const sz{static_cast<size_type>(currptr - beginptr)};
+		if (lastidx < firstidx || sz < lastidx) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_impl(beginptr + firstidx, beginptr + lastidx);
+	}
+	constexpr iterator erase(const_iterator it) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{this->imp.begin_ptr};
+			return this->erase_impl(beginptr + (it - beginptr));
+		}
+		else
+		{
+			return this->erase_impl(const_cast<pointer>(it));
+		}
+	}
+	constexpr void erase_index(size_type idx) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const sz{static_cast<size_type>(currptr - beginptr)};
+		if (sz <= idx) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_impl(beginptr + idx);
+	}
+	constexpr void swap(basic_string &other) noexcept
+	{
+		::std::swap(other.imp, this->imp);
+		if (other.imp.begin_ptr == __builtin_addressof(this->nullterminator))
+		{
+			other.imp = {__builtin_addressof(other.nullterminator),
+						 __builtin_addressof(other.nullterminator),
+						 __builtin_addressof(other.nullterminator)};
+		}
+		if (this->imp.begin_ptr == __builtin_addressof(other.nullterminator))
+		{
+			this->imp = {__builtin_addressof(this->nullterminator),
+						 __builtin_addressof(this->nullterminator),
+						 __builtin_addressof(this->nullterminator)};
+		}
 	}
 	constexpr iterator insert(const_iterator ptr, basic_string const &other) noexcept
 	{
@@ -985,6 +1067,86 @@ public:
 			count = val;
 		}
 		return string_view_type(beginptr + pos, count);
+	}
+
+	inline constexpr bool starts_with(string_view_type sv) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).starts_with(sv);
+	}
+	inline constexpr bool starts_with(basic_string const &other) const noexcept
+	{
+		return this->starts_with(string_view_type(other));
+	}
+
+	inline constexpr bool starts_with_character(value_type ch) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).starts_with_character(ch);
+	}
+	inline constexpr bool ends_with(string_view_type sv) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).ends_with(sv);
+	}
+	inline constexpr bool ends_with(basic_string const &other) const noexcept
+	{
+		return this->ends_with(string_view_type(other));
+	}
+
+	inline constexpr bool ends_with_character(value_type ch) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).ends_with_character(ch);
+	}
+
+	inline constexpr void remove_suffix(size_type svn) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const thisn{static_cast<size_type>(currptr - beginptr)};
+		if (thisn < svn) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		currptr -= svn;
+		*(this->imp.curr_ptr = currptr) = 0;
+	}
+
+	inline constexpr void remove_suffix_unchecked(size_type svn) noexcept
+	{
+		*(this->imp.curr_ptr -= svn) = 0;
+	}
+
+	inline constexpr bool contains(string_view_type vw) const noexcept
+	{
+		auto ed{this->imp.curr_ptr};
+		return ::std::search(this->imp.begin_ptr, ed, vw.ptr, vw.ptr + vw.n) != ed;
+	}
+	inline constexpr bool contains(basic_string const &other) const noexcept
+	{
+		auto ed{this->imp.curr_ptr};
+		return ::std::search(this->imp.begin_ptr, ed, other.cbegin(), other.cend()) != ed;
+	}
+	inline constexpr bool contains_character(char_type ch) const noexcept
+	{
+		auto ed{this->imp.curr_ptr};
+		return ::std::find(this->imp.begin_ptr, ed, ch) != ed;
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy(char_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).copy(dest, count, pos);
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy_unchecked(char_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).copy_unchecked(dest, count, pos);
 	}
 
 	inline constexpr basic_string substr_back(size_type count) const noexcept
@@ -1107,28 +1269,70 @@ public:
 	{
 		return this->substrvw_unchecked(pos1, count1) <=> other.substrvw_unchecked(pos2, count2);
 	}
+
+	template <typename Operation>
+	inline constexpr void resize_and_overwrite(size_type count, Operation op) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		if (thissize < count)
+		{
+			auto endptr{this->imp.end_ptr};
+			size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+			if (thiscap < count)
+			{
+				::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, count, __builtin_addressof(this->nullterminator));
+				beginptr = this->imp.begin_ptr;
+			}
+		}
+		*(this->imp.curr_ptr = (beginptr + op(beginptr, count))) = 0;
+	}
+
+	inline constexpr void resize(size_type count, char_type ch) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		if (count <= thissize)
+		{
+			if (count != thissize)
+			{
+				*(this->imp.curr_ptr -= static_cast<size_type>(thissize - count)) = 0;
+			}
+			return;
+		}
+		auto endptr{this->imp.end_ptr};
+		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+		if (thiscap < count)
+		{
+			::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, count, __builtin_addressof(this->nullterminator));
+			currptr = this->imp.curr_ptr;
+		}
+		*(this->imp.curr_ptr = ::fast_io::freestanding::uninitialized_fill_n(currptr, static_cast<size_type>(count - thissize), ch)) = 0;
+	}
+	inline constexpr void resize(size_type count) noexcept
+	{
+		this->resize(count, 0);
+	}
 };
 
-#if 0
-template <::std::integral chtype, typename allocator1>
-inline constexpr basic_string<chtype, allocator1> * uninitialized_relocate_define(basic_string<chtype, allocator1> *first, basic_string<chtype, allocator1> *last, basic_string<chtype, allocator1> *dest)
+template <::std::integral chtype, typename allocator1, typename U>
+inline constexpr void erase(::fast_io::containers::basic_string<chtype, allocator1> const &c, U const &value)
 {
-	::fast_io::freestanding::bytes_copy(reinterpret_cast<::std::byte const*>(first),
-		reinterpret_cast<::std::byte const*>(last),
-		reinterpret_cast<::std::byte *>(dest));
-	for(auto it{first};it!=last;++it)
-	{
-		if(it->imp.begin_ptr==__builtin_addressof(it->nullterminator))
-		{
-			dest->imp = {__builtin_addressof(dest->nullterminator),
-				__builtin_addressof(dest->nullterminator),
-				__builtin_addressof(dest->nullterminator)};
-		}
-		++dest;
-	}
-	return dest;
+	auto it = ::std::remove(c.begin(), c.end(), value);
+	auto r = c.end() - it;
+	c.erase(it, c.end());
+	return r;
 }
-#endif
+
+template <::std::integral chtype, typename allocator1, typename Pred>
+inline constexpr void erase_if(::fast_io::containers::basic_string<chtype, allocator1> const &c, Pred pred)
+{
+	auto it = ::std::remove_if(c.begin(), c.end(), pred);
+	auto r = c.end() - it;
+	c.erase(it, c.end());
+	return r;
+}
+
 template <::std::integral chtype, typename allocator1, typename allocator2>
 constexpr bool operator==(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string<chtype, allocator2> const &rhs) noexcept
 {
@@ -1253,6 +1457,12 @@ template <::std::integral chtype, typename alloctype>
 inline constexpr ::fast_io::io_strlike_reference_wrapper<chtype, basic_string<chtype, alloctype>> io_strlike_ref(::fast_io::io_alias_t, basic_string<chtype, alloctype> &str) noexcept
 {
 	return {__builtin_addressof(str)};
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr void swap(::fast_io::containers::basic_string<chtype, alloctype> &a, ::fast_io::containers::basic_string<chtype, alloctype> &b) noexcept
+{
+	a.swap(b);
 }
 
 } // namespace fast_io::containers

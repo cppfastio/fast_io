@@ -1048,7 +1048,7 @@ public:
 		auto beginptr{imp.begin_ptr};
 		auto currptr{imp.curr_ptr};
 		size_type sz{static_cast<size_type>(currptr - beginptr)};
-		if (lastidx < firstidx || sz <= lastidx)
+		if (lastidx < firstidx || sz < lastidx)
 		{
 			::fast_io::fast_terminate();
 		}

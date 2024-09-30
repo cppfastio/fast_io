@@ -1,5 +1,6 @@
 ﻿#include <fast_io_dsal/string.h>
 #include <fast_io.h>
+#include <algorithm>
 
 int main()
 {
@@ -32,6 +33,20 @@ int main()
 	auto str12(str11.substr_front(3));
 	auto str13(str11.substr_back(3));
 	auto str14(str11.substr(4,11));
+	auto str15{str14},str16{str14};
+	str15.erase_index(3,5);
+	str16.remove_suffix(3);
+	auto str17(str9),str18(str16);
+	::fast_io::u8string str19;
+	::std::ranges::swap(str17,str18);
+	::std::ranges::swap(str19,str19);
+	::std::ranges::swap(str19,str18);
+	auto str20(str16);
+	str20.erase_index(1,3);
+	str20.resize_and_overwrite(40,[](char8_t* buf, ::std::size_t n) noexcept
+	{
+		return static_cast<::std::size_t>(::std::fill_n(buf, n, u8'z') - buf);
+	});
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,
@@ -49,6 +64,12 @@ int main()
 		u8"\nstr12=", str12,
 		u8"\nstr13=", str13,
 		u8"\nstr14=", str14,
+		u8"\nstr15=", str15,
+		u8"\nstr16=", str16,
+		u8"\nstr17(str9)=", str17,
+		u8"\nstr18(str16)=", str18,
+		u8"\nstr19=", str19,
+		u8"\nstr20=", str20,
 		u8"\nstr4==str5:",str4==str5,
 		u8"\nstr10<=>str14:",str10<=>str14,
 		u8"\nstr4==u8\"hello world\":",str4==u8"hello world",
