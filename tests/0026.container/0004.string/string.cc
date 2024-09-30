@@ -11,21 +11,21 @@ int main()
 	::fast_io::u8string str4(str3);
 	str4 = str2;
 	::fast_io::u8string str5;
-	::fast_io::u8string str6,str7;
+	::fast_io::u8string str6, str7;
 	str6 = str5;
 	str5 = str4;
 	str7.assign(u8"hello you");
 	::fast_io::u8string str8;
-	str8.assign_characters(20,'b');
+	str8.assign_characters(20, u8'b');
 	str8.append(str7);
-	str8.append(str8);//self append
+	str8.append(str8); // self append
 	::fast_io::u8string str9;
-	str9.append(str9);//self append for empty string
+	str9.append(str9); // self append for empty string
 	str9.append(str7);
 	str9.append(::fast_io::u8concat_fast_io(u8"concat:", str9.size(), u8"\tok"));
 	constexpr ::fast_io::containers::basic_cstring_view<char8_t> u8cstrvw(u8"hello c_str");
 	::fast_io::u8string str10(u8cstrvw);
-	constexpr char8_t const* oldstylecstr{u8"old style char8_t coonst* ptr"};
+	constexpr char8_t const *oldstylecstr{u8"old style char8_t coonst* ptr"};
 	::fast_io::u8string str11(::fast_io::mnp::os_c_str(oldstylecstr));
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
