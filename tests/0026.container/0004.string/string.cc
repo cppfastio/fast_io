@@ -29,6 +29,9 @@ int main()
 	::fast_io::u8string str11(::fast_io::mnp::os_c_str(oldstylecstr));
 	str11.insert_index(4, u8"stupid ");
 	str11.insert_index(4, u8"shit ");
+	auto str12(str11.substr_front(3));
+	auto str13(str11.substr_back(3));
+	auto str14(str11.substr(4,11));
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,
@@ -42,5 +45,8 @@ int main()
 		u8"\nstr8=", str8,
 		u8"\nstr9=", str9,
 		u8"\nstr10=", str10,
-		u8"\nstr11=", str11);
+		u8"\nstr11=", str11,
+		u8"\nstr12=", str12,
+		u8"\nstr13=", str13,
+		u8"\nstr14=", str14);
 }
