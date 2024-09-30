@@ -2,5 +2,5 @@
 dijkstra_optimize.cc
 # timeout
 dijkstra.cc
-dijkstra_optimize_fast_io.cc
-dijkstra_optimize_fast_io_unchecked.cc
+dijkstra_optimize_fastio.cc
+dijkstra_optimize_fastio_unchecked.cc
