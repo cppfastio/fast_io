@@ -873,6 +873,7 @@ private:
 	constexpr pointer erase_impl(pointer first, pointer last) noexcept
 	{
 		*(this->imp.curr_ptr = ::fast_io::freestanding::my_copy(last, this->imp.curr_ptr, first)) = 0;
+		return first;
 	}
 
 public:
