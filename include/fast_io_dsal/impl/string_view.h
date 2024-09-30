@@ -56,6 +56,9 @@ public:
 	constexpr basic_string_view(::fast_io::manipulators::basic_os_c_str_with_known_size<char_type> osstr) noexcept
 		: ptr(osstr.ptr), n(osstr.n)
 	{}
+	constexpr basic_string_view(::fast_io::manipulators::basic_os_str_known_size_without_null_terminated<char_type> osstr) noexcept
+		: ptr(osstr.ptr), n(osstr.n)
+	{}
 
 	constexpr basic_string_view(basic_string_view const &) noexcept = default;
 	constexpr basic_string_view &operator=(basic_string_view const &) noexcept = default;
