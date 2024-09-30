@@ -179,8 +179,6 @@ private:
 		}
 		else
 		{
-			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
-			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 			auto newres{::fast_io::containers::details::string_allocate_init<allocator_type>(otherptr, othern)};
 			auto ptrn{newres.ptr + othern};
 			this->imp = {newres.ptr, ptrn, newres.ptr + newres.count};
