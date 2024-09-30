@@ -833,7 +833,7 @@ private:
 		this->imp.curr_ptr = newcurrptr;
 		return retptr;
 	}
-	constexpr size_type insert_index_impl(size_type idx, char_type const *otherptr, size_type othern) noexcept
+	constexpr void insert_index_impl(size_type idx, char_type const *otherptr, size_type othern) noexcept
 	{
 		auto beginptr{this->imp.begin_ptr};
 		size_type sz{static_cast<size_type>(this->imp.curr_ptr - beginptr)};
@@ -841,12 +841,11 @@ private:
 		{
 			::fast_io::fast_terminate();
 		}
-		auto itr{this->insert_impl(beginptr + idx, otherptr, othern)};
-		return static_cast<size_type>(itr - this->imp.begin_ptr);
+		this->insert_impl(beginptr + idx, otherptr, othern);
 	}
 
 public:
-	constexpr size_type insert_index(size_type idx, string_view_type vw) noexcept
+	constexpr void insert_index(size_type idx, string_view_type vw) noexcept
 	{
 		return this->insert_index_impl(idx, vw.data(), vw.size());
 	}
@@ -865,9 +864,44 @@ public:
 			return this->insert_impl(const_cast<pointer>(ptr), vw.data(), vw.size());
 		}
 	}
-	constexpr size_type insert_index(size_type idx, basic_string const &other) noexcept
+	constexpr void insert_index(size_type idx, basic_string const &other) noexcept
 	{
 		return this->insert_index_impl(idx, other.data(), other.size());
+	}
+
+private:
+	constexpr pointer erase_impl(pointer first, pointer last) noexcept
+	{
+		*(this->imp.curr_ptr = ::fast_io::freestanding::my_copy(last, this->imp.curr_ptr, first)) = 0;
+	}
+
+public:
+	constexpr iterator erase(const_iterator first, const_iterator last) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{this->imp.begin_ptr};
+			return this->erase_impl(beginptr + (first - beginptr), beginptr + (last - beginptr));
+		}
+		else
+		{
+			return this->erase_impl(const_cast<pointer>(first), const_cast<pointer>(last));
+		}
+	}
+	constexpr void erase_index(size_type firstidx, size_type lastidx) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const sz{static_cast<size_type>(currptr - beginptr)};
+		if (lastidx < firstidx || sz <= lastidx) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_impl(beginptr + firstidx, beginptr + lastidx);
 	}
 	constexpr void swap(basic_string &other) noexcept
 	{
