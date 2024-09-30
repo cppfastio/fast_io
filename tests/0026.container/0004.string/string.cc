@@ -23,6 +23,8 @@ int main()
 	str9.append(str9);//self append for empty string
 	str9.append(str7);
 	str9.append(::fast_io::u8concat_fast_io(u8"concat:", str9.size(), u8"\tok"));
+	constexpr ::fast_io::containers::basic_cstring_view<char8_t> u8cstrvw(u8"hello c_str");
+	::fast_io::u8string str10(u8cstrvw);
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,
@@ -34,5 +36,6 @@ int main()
 		u8"\nstr6=", str6,
 		u8"\nstr7=", str7,
 		u8"\nstr8=", str8,
-		u8"\nstr9=", str9);
+		u8"\nstr9=", str9,
+		u8"\nstr10=", str10);
 }
