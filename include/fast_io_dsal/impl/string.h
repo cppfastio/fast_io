@@ -870,6 +870,22 @@ public:
 	{
 		return this->insert_index_impl(idx, other.data(), other.size());
 	}
+	constexpr void swap(basic_string &other) noexcept
+	{
+		::std::swap(other.imp, this->imp);
+		if (other.imp.begin_ptr == __builtin_addressof(this->nullterminator))
+		{
+			other.imp = {__builtin_addressof(other.nullterminator),
+						 __builtin_addressof(other.nullterminator),
+						 __builtin_addressof(other.nullterminator)};
+		}
+		if (this->imp.begin_ptr == __builtin_addressof(other.nullterminator))
+		{
+			this->imp = {__builtin_addressof(this->nullterminator),
+						 __builtin_addressof(this->nullterminator),
+						 __builtin_addressof(this->nullterminator)};
+		}
+	}
 	constexpr iterator insert(const_iterator ptr, basic_string const &other) noexcept
 	{
 #ifdef __cpp_if_consteval
@@ -985,6 +1001,86 @@ public:
 			count = val;
 		}
 		return string_view_type(beginptr + pos, count);
+	}
+
+	inline constexpr bool starts_with(string_view_type sv) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).starts_with(sv);
+	}
+	inline constexpr bool starts_with(basic_string const &other) const noexcept
+	{
+		return this->starts_with(string_view_type(other));
+	}
+
+	inline constexpr bool starts_with_character(value_type ch) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).starts_with_character(ch);
+	}
+	inline constexpr bool ends_with(string_view_type sv) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).ends_with(sv);
+	}
+	inline constexpr bool ends_with(basic_string const &other) const noexcept
+	{
+		return this->ends_with(string_view_type(other));
+	}
+
+	inline constexpr bool ends_with_character(value_type ch) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).ends_with_character(ch);
+	}
+
+	inline constexpr void remove_suffix(size_type svn) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const thisn{static_cast<size_type>(currptr - beginptr)};
+		if (thisn < svn) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		currptr -= svn;
+		*(this->imp.curr_ptr = currptr) = 0;
+	}
+
+	inline constexpr void remove_suffix_unchecked(size_type svn) noexcept
+	{
+		*(this->imp.curr_ptr -= svn) = 0;
+	}
+
+	inline constexpr bool contains(string_view_type vw) const noexcept
+	{
+		auto ed{this->imp.curr_ptr};
+		return ::std::search(this->imp.begin_ptr, ed, vw.ptr, vw.ptr + vw.n) != ed;
+	}
+	inline constexpr bool contains(basic_string const &other) const noexcept
+	{
+		auto ed{this->imp.curr_ptr};
+		return ::std::search(this->imp.begin_ptr, ed, other.cbegin(), other.cend()) != ed;
+	}
+	inline constexpr bool contains_character(char_type ch) const noexcept
+	{
+		auto ed{this->imp.curr_ptr};
+		return ::std::find(this->imp.begin_ptr, ed, ch) != ed;
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy(char_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).copy(dest, count, pos);
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	inline constexpr size_type copy_unchecked(char_type *dest, size_type count, size_type pos = 0) const noexcept
+	{
+		return string_view_type(this->data(), this->size()).copy_unchecked(dest, count, pos);
 	}
 
 	inline constexpr basic_string substr_back(size_type count) const noexcept
@@ -1253,6 +1349,12 @@ template <::std::integral chtype, typename alloctype>
 inline constexpr ::fast_io::io_strlike_reference_wrapper<chtype, basic_string<chtype, alloctype>> io_strlike_ref(::fast_io::io_alias_t, basic_string<chtype, alloctype> &str) noexcept
 {
 	return {__builtin_addressof(str)};
+}
+
+template <::std::integral chtype, typename alloctype>
+inline constexpr void swap(::fast_io::containers::basic_string<chtype, alloctype> &a, ::fast_io::containers::basic_string<chtype, alloctype> &b) noexcept
+{
+	a.swap(b);
 }
 
 } // namespace fast_io::containers
