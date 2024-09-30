@@ -786,15 +786,14 @@ public:
 		::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, new_cap, __builtin_addressof(this->nullterminator));
 	}
 
-#if 0
 	constexpr void shrink_to_fit() noexcept
 	{
-		if(this->imp.curr_ptr==this->imp.end_ptr)
+		if (this->imp.curr_ptr == this->imp.end_ptr)
 		{
 			return;
 		}
+		::fast_io::containers::details::string_heap_dilate_uncheck<allocator_type>(this->imp, static_cast<size_type>(this->imp.curr_ptr - this->imp.begin_ptr), __builtin_addressof(this->nullterminator));
 	}
-#endif
 
 private:
 	constexpr void destroy() noexcept
