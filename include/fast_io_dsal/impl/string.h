@@ -110,6 +110,8 @@ public:
 	using const_iterator = const_pointer;
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+	using string_view_type = ::fast_io::containers::basic_string_view<char_type>;
+	using cstring_view_type = ::fast_io::containers::basic_cstring_view<char_type>;
 
 	::fast_io::containers::details::string_internal<char_type> imp;
 	char_type nullterminator;
@@ -186,7 +188,7 @@ private:
 	}
 
 public:
-	explicit constexpr basic_string(::fast_io::containers::basic_string_view<char_type> othervw) noexcept
+	explicit constexpr basic_string(string_view_type othervw) noexcept
 	{
 		this->construct_impl(othervw.data(), othervw.size());
 	}
@@ -476,7 +478,7 @@ private:
 	}
 
 public:
-	constexpr void assign(::fast_io::containers::basic_string_view<char_type> myview) noexcept
+	constexpr void assign(string_view_type myview) noexcept
 	{
 		this->assign_impl(myview.data(), myview.size());
 	}
@@ -520,11 +522,65 @@ public:
 	}
 
 private:
+
+#if __has_cpp_attribute(__gnu__::__cold__)
+	[[__gnu__::__cold__]]
+#endif
+	constexpr pointer insert_cold_impl(pointer insertpos, char_type const* otherptr, size_type othern) noexcept
+	{
+		using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+		using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
+		constexpr size_type mx{::std::numeric_limits<size_type>::max()};
+		constexpr size_type mxdiv2{::std::numeric_limits<size_type>::max() / 2u};
+		constexpr size_type mxm1{static_cast<size_type>(mx - 1u)};
+
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
+		bool const is_sso{this->imp.begin_ptr == __builtin_addressof(this->nullterminator)};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+		size_type newsize{thissize + othern};
+
+		size_type bigcap;
+		if (mxdiv2 <= thiscap)
+		{
+			bigcap = mxm1;
+		}
+		else
+		{
+			bigcap = static_cast<size_type>(thiscap << 1u);
+		}
+		size_type newcap{newsize};
+		if (newcap < bigcap)
+		{
+			newcap = bigcap;
+		}
+		if (newcap == mx)
+		{
+			::fast_io::fast_terminate();
+		}
+		size_type const newcapp1{static_cast<size_type>(newcap + 1u)};
+		auto [ptr, allocn]{typed_allocator_type::allocate_at_least(newcapp1)};
+		this->imp.begin_ptr = ptr;
+		this->imp.end_ptr = ptr + static_cast<size_type>(allocn - 1u);
+		auto it{ptr};
+		it = ::fast_io::freestanding::non_overlapped_copy(beginptr, insertpos, it);
+		auto retit{it};
+		it = ::fast_io::freestanding::non_overlapped_copy_n(otherptr, othern, it);
+		it = ::fast_io::freestanding::non_overlapped_copy(insertpos, currptr, it);
+		*it = 0;
+		this->imp.curr_ptr = it;
+		if (!is_sso)
+		{
+			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(endptr - beginptr) + 1u));
+		}
+		return retit;
+	}
 #if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 #endif
 	constexpr void append_cold_impl(char_type const *otherptr, size_type othern) noexcept
 	{
+#if 0
 		using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 		using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 		constexpr size_type mx{::std::numeric_limits<size_type>::max()};
@@ -568,6 +624,9 @@ private:
 		{
 			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(endptr - beginptr) + 1u));
 		}
+#else
+		this->insert_cold_impl(this->imp.curr_ptr,otherptr,othern);
+#endif
 	}
 	constexpr void append_impl(char_type const *otherptr, size_type othern) noexcept
 	{
@@ -585,7 +644,7 @@ private:
 	}
 
 public:
-	constexpr void append(::fast_io::containers::basic_string_view<char_type> vw) noexcept
+	constexpr void append(string_view_type vw) noexcept
 	{
 		this->append_impl(vw.data(), vw.size());
 	}
@@ -756,6 +815,78 @@ public:
 	{
 		this->destroy();
 	}
+
+private:
+
+	constexpr pointer insert_impl(pointer ptr, char_type const* otherptr, size_type othern) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+		size_type newsize{thissize + othern};
+		bool const needreallocate{thiscap < newsize};
+		if (needreallocate) [[unlikely]]
+		{
+			return this->insert_cold_impl(ptr, otherptr, othern);
+		}
+		auto newcurrptr{currptr+othern};
+		*newcurrptr = 0;
+		auto lastptr{::fast_io::freestanding::copy_backward(ptr, currptr, newcurrptr)};
+		auto retptr{::fast_io::freestanding::copy_backward(otherptr, otherptr+othern, lastptr)};
+		this->imp.curr_ptr = newcurrptr;
+		return retptr;
+	}
+	constexpr size_type insert_index_impl(size_type idx, char_type const* otherptr, size_type othern) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		size_type sz{static_cast<size_type>(this->imp.curr_ptr - beginptr)};
+		if (sz < idx)
+		{
+			::fast_io::fast_terminate();
+		}
+		auto itr{this->insert_impl(beginptr+idx, otherptr, othern)};
+		return static_cast<size_type>(itr-this->imp.begin_ptr);
+	}
+public:
+	constexpr size_type insert_index(size_type idx, string_view_type vw) noexcept
+	{
+		return this->insert_index_impl(idx, vw.data(), vw.size());
+	}
+	constexpr iterator insert(const_iterator ptr, string_view_type vw) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return this->insert_impl(this->imp.begin_ptr+(ptr-this->imp.begin_ptr), vw.data(), vw.size());
+		}
+		else
+		{
+			return this->insert_impl(const_cast<pointer>(ptr), vw.data(), vw.size());
+		}
+	}
+	constexpr size_type insert_index(size_type idx, basic_string const& other) noexcept
+	{
+		return this->insert_index_impl(idx, other.data(), other.size());
+	}
+	constexpr iterator insert(const_iterator ptr, basic_string const& other) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			return this->insert_impl(this->imp.begin_ptr+(ptr-this->imp.begin_ptr), other.data(), other.size());
+		}
+		else
+		{
+			return this->insert_impl(const_cast<pointer>(ptr), other.data(), other.size());
+		}
+	}
+
 };
 
 #if 0

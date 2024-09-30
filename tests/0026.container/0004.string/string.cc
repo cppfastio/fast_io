@@ -27,6 +27,8 @@ int main()
 	::fast_io::u8string str10(u8cstrvw);
 	constexpr char8_t const *oldstylecstr{u8"old style char8_t coonst* ptr"};
 	::fast_io::u8string str11(::fast_io::mnp::os_c_str(oldstylecstr));
+	str11.insert_index(4, u8"stupid ");
+	str11.insert_index(4, u8"shit ");
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,
