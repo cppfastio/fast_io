@@ -944,12 +944,14 @@ public:
 			other.imp = {__builtin_addressof(other.nullterminator),
 						 __builtin_addressof(other.nullterminator),
 						 __builtin_addressof(other.nullterminator)};
+			other.nullterminator = 0;
 		}
 		if (this->imp.begin_ptr == __builtin_addressof(other.nullterminator))
 		{
 			this->imp = {__builtin_addressof(this->nullterminator),
 						 __builtin_addressof(this->nullterminator),
 						 __builtin_addressof(this->nullterminator)};
+			this->nullterminator = 0;
 		}
 	}
 	constexpr iterator insert(const_iterator ptr, basic_string const &other) noexcept
