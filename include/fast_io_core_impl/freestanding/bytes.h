@@ -43,6 +43,7 @@ inline constexpr ::std::byte *bytes_copy_naive_n_impl(::std::byte const *first, 
 		{
 			dest[i] = tempbufferptr[i];
 		}
+		return dest + n;
 	}
 	else
 #endif
