@@ -11,7 +11,7 @@ int main()
 		fast_io::c_file cf(u8"stdio.txt", ::fast_io::open_mode::out);
 		for (auto &e : tb)
 		{
-			fprintf(cf.fp, "%zu\n", e);
+			[[maybe_unused]] auto _ = fprintf(cf.fp, "%zu\n", e);
 		}
 	}
 	::fast_io::vector<std::size_t> vec(N);
@@ -20,7 +20,7 @@ int main()
 		fast_io::c_file cf(u8"stdio.txt", ::fast_io::open_mode::in);
 		for (std::size_t i{}; i != N; ++i)
 		{
-			fscanf(cf.fp, "%zu", vec.data() + i);
+			[[maybe_unused]] auto _ = fscanf(cf.fp, "%zu", vec.data() + i);
 		}
 	}
 }

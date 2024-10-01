@@ -10,9 +10,9 @@ inline void test(std::uint_least64_t s)
 {
 	char buffer[fast_io::pr_rsv_size<char, std::uint_least64_t>];
 	char charconv_buffer[fast_io::pr_rsv_size<char, std::uint_least64_t> * 2];
-	auto [p, ec] = std::to_chars(charconv_buffer, charconv_buffer + sizeof(charconv_buffer), s);
+	[[maybe_unused]] auto [p, ec] = std::to_chars(charconv_buffer, charconv_buffer + sizeof(charconv_buffer), s);
 	auto it{fast_io::pr_rsv_to_c_array(buffer, s)};
-	std::size_t my_size{static_cast<std::size_t>(it - buffer)};
+	[[maybe_unused]] std::size_t my_size{static_cast<std::size_t>(it - buffer)};
 	assert(my_size == static_cast<std::size_t>(p - charconv_buffer) && memcmp(charconv_buffer, buffer, my_size) == 0);
 }
 

@@ -1,2 +1,0 @@
-add_executable(test_priority_queue test_priority_queue.cc)
-add_test(test_priority_queuetest test_priority_queue)

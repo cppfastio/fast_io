@@ -13,6 +13,6 @@ int main()
 	Just for demo purpose
 	This is dangerous. use fprintf to print string is awful.
 	*/
-	std::fprintf(cfl.fp, "Hello World from FILE* danger\n");
-	std::fprintf(cfl.fp, "%s", "Hello World from FILE* safe\n");
+	[[maybe_unused]] auto _ = std::fprintf(cfl.fp, "Hello World from FILE* danger\n");
+	[[maybe_unused]] auto __ = std::fprintf(cfl.fp, "%s", "Hello World from FILE* safe\n");
 }

@@ -18,7 +18,7 @@ inline void charconv_fast_io(std::vector<double> const &vec)
 		auto [p, ec] = std::to_chars(buf, buf + buf_size, e, std::chars_format::scientific);
 		*p = '\n';
 		++p;
-		write(file, buf, p);
+		fast_io::operations::write_all(file, buf, p);
 	}
 }
 

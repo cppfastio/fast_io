@@ -11,8 +11,8 @@ inline void test_type()
 	for (std::size_t i{}; i <= n; ++i)
 	{
 		println(i, " ", hex(u));
-		u <<= 4u;
-		u |= 0xF;
+		u = static_cast<U>(u << 4u);
+		u = static_cast<U>(u | 0xF);
 	}
 	print("\n");
 }

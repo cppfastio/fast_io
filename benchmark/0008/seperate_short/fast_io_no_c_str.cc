@@ -17,7 +17,7 @@ inline void fast_io_fast_io(std::vector<double> const &vec)
 		auto i{fast_io::pr_rsv_to_c_array(buf, fast_io::mnp::scientific(e))};
 		*i = '\n';
 		++i;
-		write(file, buf, i);
+		fast_io::operations::write_all(file, buf, i);
 	}
 }
 
