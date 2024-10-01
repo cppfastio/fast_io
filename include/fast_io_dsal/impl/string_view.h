@@ -315,7 +315,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw_front(size_type count) const noexcept
+	inline constexpr basic_string_view subview_front(size_type count) const noexcept
 	{
 		if (this->n < count) [[unlikely]]
 		{
@@ -329,7 +329,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw_front_unchecked(size_type count) const noexcept
+	inline constexpr basic_string_view subview_front_unchecked(size_type count) const noexcept
 	{
 		return basic_string_view(this->ptr, count);
 	}
@@ -339,7 +339,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw_back(size_type count) const noexcept
+	inline constexpr basic_string_view subview_back(size_type count) const noexcept
 	{
 		if (this->n < count) [[unlikely]]
 		{
@@ -353,7 +353,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw_back_unchecked(size_type count) const noexcept
+	inline constexpr basic_string_view subview_back_unchecked(size_type count) const noexcept
 	{
 		return basic_string_view(this->ptr + (this->n - count), count);
 	}
@@ -363,7 +363,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr basic_string_view subview(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
 		if (this->n < pos) [[unlikely]]
 		{
@@ -385,7 +385,7 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view substrvw_unchecked(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr basic_string_view subview_unchecked(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
 		size_type const val{this->n - pos};
 		if (count == ::fast_io::containers::npos)
@@ -592,19 +592,19 @@ public:
 	}
 	inline constexpr auto compare_three_way(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
 	{
-		return this->substrvw(pos1, count1) <=> basic_string_view(s, count2);
+		return this->subview(pos1, count1) <=> basic_string_view(s, count2);
 	}
 	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, const_pointer s, size_type count2) const noexcept
 	{
-		return this->substrvw_unchecked(pos1, count1) <=> basic_string_view(s, count2);
+		return this->subview_unchecked(pos1, count1) <=> basic_string_view(s, count2);
 	}
 	inline constexpr auto compare_three_way(size_type pos1, size_type count1, basic_string_view other, size_type pos2, size_type count2) const noexcept
 	{
-		return this->substrvw(pos1, count1) <=> other.substrvw(pos2, count2);
+		return this->subview(pos1, count1) <=> other.subview(pos2, count2);
 	}
 	inline constexpr auto compare_three_way_unchecked(size_type pos1, size_type count1, basic_string_view other, size_type pos2, size_type count2) const noexcept
 	{
-		return this->substrvw_unchecked(pos1, count1) <=> other.substrvw_unchecked(pos2, count2);
+		return this->subview_unchecked(pos1, count1) <=> other.subview_unchecked(pos2, count2);
 	}
 	inline constexpr void clear() noexcept
 	{
