@@ -7,6 +7,8 @@
 
 #include <crtdbg.h>
 
+no;
+
 namespace fast_io
 {
 
