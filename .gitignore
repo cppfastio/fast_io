@@ -11,5 +11,6 @@ build
 *.obj
 *.html
 *.txt
-!CMakeLists.txt
+CMakeLists.txt
+!/CMakeLists.txt
 compile_commands.json
