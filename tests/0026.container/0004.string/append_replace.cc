@@ -13,8 +13,8 @@ int main()
 	s.erase_index(11, 14);     // s == "C++ Primer Ed."
 	s.insert_index(11, "5th"); // s == "C++ Primer 5th Ed."
 	// starting at position 11, erase three characters and then insert "5th"
-	s2.replace_index(11, 14, "5th");  // equivalent: s == s2
-	::fast_io::io::println("equivalent: s <=> s2: ",s<=>s2);
+	s2.replace_index(11, 14, "5th"); // equivalent: s == s2
+	::fast_io::io::println("equivalent: s <=> s2: ", s <=> s2);
 	s.replace_index(11, 14, "Fifth"); // s == "C++ Primer Fifth Ed."
 	::fast_io::io::println("s=", s, "\ns2=", s2);
 }
