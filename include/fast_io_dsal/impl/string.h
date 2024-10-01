@@ -1027,7 +1027,6 @@ private:
 	constexpr pointer replace_impl(pointer first, pointer last, const_pointer otherdata, size_type othersize) noexcept
 	{
 		size_type const toremoven{static_cast<size_type>(last - first)};
-		auto beginptr{this->imp.begin_ptr};
 		auto currptr{this->imp.curr_ptr};
 		if (othersize < toremoven) [[likely]]
 		{
