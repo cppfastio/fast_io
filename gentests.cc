@@ -31,13 +31,12 @@ void cmake_gen_file_def(fast_io::u8obuf_file& cmake_file, std::u8string_view tar
 bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix) {
 	bool generated{};
 	fast_io::u8obuf_file cmake_file;
-	//try {
-	//	cmake_file = std::move(fast_io::u8obuf_file{at(nio), R"(CMakeLists.txt)", fast_io::open_mode::creat | fast_io::open_mode::excl});
-	//} catch (...) {
-	//	perr(fast_io::u8err(), u8"CMakeLists.txt alreay exists in ", prefix, u8". \n");
-	//	return false;
-	//}
-	cmake_file = std::move(fast_io::u8obuf_file{at(nio), R"(CMakeLists.txt)"});
+	try {
+		cmake_file = std::move(fast_io::u8obuf_file{at(nio), R"(CMakeLists.txt)", fast_io::open_mode::creat | fast_io::open_mode::excl});
+	} catch (...) {
+		perr(fast_io::u8err(), u8"CMakeLists.txt alreay exists in ", prefix, u8". \n");
+		return true;
+	}
 	std::vector<std::u8string> ignore_files;
 	try {
 		fast_io::native_file_loader ignore_file{at(nio), R"(.test_ignore)"};
