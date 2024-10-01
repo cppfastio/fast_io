@@ -48,9 +48,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: ilammy/msvc-dev-cmd@v1.13.0
     - name: prebuild
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreadedDebugDLL" -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
     - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="/fsanitize=address /EHsc" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreadedDebugDLL" -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="/fsanitize=address /EHsc" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
     - name: ninja
       run: ninja
     - name: ninja test
