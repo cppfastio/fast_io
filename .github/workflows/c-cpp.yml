@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install ninja-build tool
-      uses: seanmiddleditch/gha-setup-ninja@v4
+      uses: seanmiddleditch/gha-setup-ninja@v5
+    - name: prebuild
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
     - name: cmake
       run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
     - name: ninja
@@ -27,10 +29,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1.13.0
+    - name: prebuild
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
     - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="/EHsc" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
     - name: ninja
       run: ninja
     - name: ninja test
@@ -41,10 +45,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: ilammy/msvc-dev-cmd@v1.4.1
+    - uses: actions/checkout@v4
+    - uses: ilammy/msvc-dev-cmd@v1.13.0
+    - name: prebuild
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DTESTS_PREBUILD=On -DCMAKE_CXX_STANDARD=23 -DCMAKE_CXX_EXTENSIONS=OFF && ninja && ninja run_test_prebuild
     - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreadedDebugDLL" -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreadedDebugDLL" -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="/fsanitize=address /EHsc" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
     - name: ninja
       run: ninja
     - name: ninja test

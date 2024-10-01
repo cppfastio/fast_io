@@ -11,7 +11,7 @@ FetchContent_MakeAvailable(dragonbox)
  
 add_executable(
     comparison
-    comparison.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/comparison.cpp
 )
 target_include_directories(comparison PRIVATE ../include)
 target_compile_features(comparison PRIVATE cxx_std_20)

@@ -34,7 +34,6 @@ int main(int argc, char **argv)
 		if (ext == u8".toc"sv)
 		{
 			fast_io::allocation_file_loader loader(drt(ent));
-			auto i{loader.cbegin()};
 			auto bg{loader.data()};
 			auto ed{loader.data() + loader.size()};
 			auto it{std::search(bg, ed, searcher)};
@@ -49,9 +48,9 @@ int main(int argc, char **argv)
 			auto itvwsze{it + vw.size()};
 			auto nextn{std::find(itvwsze, ed, u8'\n')};
 			fast_io::obuf_file obf(drt(ent));
-			write(obf, bg, itvwsze);
+			fast_io::operations::write_all(obf, bg, itvwsze);
 			print(obf, versionstring);
-			write(obf, nextn, ed);
+			fast_io::operations::write_all(obf, nextn, ed);
 		}
 	}
 }

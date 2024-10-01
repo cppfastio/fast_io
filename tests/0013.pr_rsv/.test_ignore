@@ -1,0 +1,6 @@
+# expect not to compile
+bounds_checking_array.cc
+bounds_checking_c_array.cc
+# TODO: crash. why?
+pr_rsv_scientific.cc
+pr_rsv.cc

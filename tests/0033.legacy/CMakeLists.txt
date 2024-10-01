@@ -1,5 +1,0 @@
-add_executable(getfd getfd.cc)
-add_executable(hackstdoutptr hackstdoutptr.cc)
-add_test(getfd getfd)
-add_test(hackstdoutptr hackstdoutptr)
-add_subdirectory(kreckelfileno)
