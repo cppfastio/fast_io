@@ -27,9 +27,9 @@ inline constexpr ::std::byte *bytes_copy_naive_n_impl(::std::byte const *first, 
 													  ::std::byte *dest) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
 	if consteval
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
 	if (__builtin_is_constant_evaluated())
 #endif
 	{
