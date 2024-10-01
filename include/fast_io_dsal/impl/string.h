@@ -474,7 +474,7 @@ private:
 			auto [ptr, allocn] = ::fast_io::containers::details::string_allocate_init<allocator_type>(otherptr, othern);
 			this->imp.end_ptr = (this->imp.begin_ptr = thisbegin = ptr) + allocn;
 		}
-		*(this->imp.curr_ptr = ::fast_io::freestanding::my_copy_n(otherptr, othern, thisbegin)) = 0;
+		*(this->imp.curr_ptr = ::fast_io::freestanding::overlapped_copy_n(otherptr, othern, thisbegin)) = 0;
 	}
 
 public:
@@ -639,7 +639,7 @@ private:
 			this->append_cold_impl(otherptr, othern);
 			return;
 		}
-		*(this->imp.curr_ptr = ::fast_io::freestanding::my_copy_n(otherptr, othern, currptr)) = 0;
+		*(this->imp.curr_ptr = ::fast_io::freestanding::overlapped_copy_n(otherptr, othern, currptr)) = 0;
 	}
 
 public:
@@ -968,6 +968,152 @@ public:
 		{
 			return this->insert_impl(const_cast<pointer>(ptr), other.data(), other.size());
 		}
+	}
+
+private:
+#if __has_cpp_attribute(__gnu__::__cold__)
+	[[__gnu__::__cold__]]
+#endif
+	constexpr pointer replace_cold_impl(pointer first, pointer last, const_pointer otherptr, size_type othern) noexcept
+	{
+		using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+		using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
+		constexpr size_type mx{::std::numeric_limits<size_type>::max()};
+		constexpr size_type mxdiv2{::std::numeric_limits<size_type>::max() / 2u};
+		constexpr size_type mxm1{static_cast<size_type>(mx - 1u)};
+
+		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
+		bool const is_sso{this->imp.begin_ptr == __builtin_addressof(this->nullterminator)};
+		size_type thissize{static_cast<size_type>(currptr - beginptr)};
+		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
+		size_type const toremoven{static_cast<size_type>(last - first)};
+		size_type newsize{thissize + othern - toremoven};
+
+		size_type bigcap;
+		if (mxdiv2 <= thiscap)
+		{
+			bigcap = mxm1;
+		}
+		else
+		{
+			bigcap = static_cast<size_type>(thiscap << 1u);
+		}
+		size_type newcap{newsize};
+		if (newcap < bigcap)
+		{
+			newcap = bigcap;
+		}
+		if (newcap == mx)
+		{
+			::fast_io::fast_terminate();
+		}
+		size_type const newcapp1{static_cast<size_type>(newcap + 1u)};
+		auto [ptr, allocn]{typed_allocator_type::allocate_at_least(newcapp1)};
+		this->imp.begin_ptr = ptr;
+		this->imp.end_ptr = ptr + static_cast<size_type>(allocn - 1u);
+		auto it{ptr};
+		it = ::fast_io::freestanding::non_overlapped_copy(beginptr, first, it);
+		auto retit{it};
+		it = ::fast_io::freestanding::non_overlapped_copy_n(otherptr, othern, it);
+		it = ::fast_io::freestanding::non_overlapped_copy(last, currptr, it);
+		*it = 0;
+		this->imp.curr_ptr = it;
+		if (!is_sso)
+		{
+			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(endptr - beginptr) + 1u));
+		}
+		return retit;
+	}
+	constexpr pointer replace_impl(pointer first, pointer last, const_pointer otherdata, size_type othersize) noexcept
+	{
+		size_type const toremoven{static_cast<size_type>(last - first)};
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		if (othersize < toremoven) [[likely]]
+		{
+			auto itr{::fast_io::freestanding::overlapped_copy_n(otherdata, othersize, first)};
+			if (itr != last)
+			{
+				*(this->imp.curr_ptr = ::fast_io::freestanding::copy_backward(itr, last, currptr)) = 0;
+			}
+			return first;
+		}
+		return this->replace_cold_impl(first, last, otherdata, othersize);
+	}
+
+	constexpr void replace_index_impl(size_type firstidx, size_type lastidx, const_pointer otherdata, size_type othersize) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		size_type const sz{static_cast<size_type>(currptr - beginptr)};
+		if (lastidx < firstidx || sz < lastidx) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		this->replace_impl(beginptr + firstidx, beginptr + lastidx, otherdata, othersize);
+	}
+
+public:
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	constexpr iterator replace(const_iterator first, const_iterator last, string_view_type view) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{this->imp.begin_ptr};
+			return this->replace_impl(beginptr + (first - beginptr), beginptr + (last - beginptr), view.data(), view.size());
+		}
+		else
+		{
+			return this->replace_impl(const_cast<pointer>(first), const_cast<pointer>(last), view.data(), view.size());
+		}
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	constexpr iterator replace(const_iterator first, const_iterator last, basic_string const &view) noexcept
+	{
+#ifdef __cpp_if_consteval
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
+		{
+			auto beginptr{this->imp.begin_ptr};
+			return this->replace_impl(beginptr + (first - beginptr), beginptr + (last - beginptr), view.data(), view.size());
+		}
+		else
+		{
+			return this->replace_impl(const_cast<pointer>(first), const_cast<pointer>(last), view.data(), view.size());
+		}
+	}
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	constexpr void replace_index(size_type firstidx, size_type lastidx, string_view_type view) noexcept
+	{
+		return this->replace_index_impl(firstidx, lastidx, view.data(), view.size());
+	}
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	constexpr void replace_index(size_type firstidx, size_type lastidx, basic_string const &view) noexcept
+	{
+		return this->replace_index_impl(firstidx, lastidx, view.data(), view.size());
 	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)

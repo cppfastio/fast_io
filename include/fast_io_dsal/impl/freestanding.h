@@ -22,6 +22,67 @@ concept has_uninitialized_move_backward_define = requires(T *ptr) {
 namespace fast_io::freestanding
 {
 
+template <::std::random_access_iterator Iter1, ::std::random_access_iterator Iter2>
+constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noexcept
+{
+	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
+	{
+		return overlapped_copy(::std::to_address(first), ::std::to_address(last),
+							   ::std::to_address(dest)) -
+			   ::std::to_address(dest) + dest;
+	}
+	else if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1>)
+	{
+		return overlapped_copy(::std::to_address(first), ::std::to_address(last),
+							   dest);
+	}
+	else if constexpr (::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
+	{
+		return overlapped_copy(first, last, ::std::to_address(dest)) -
+			   ::std::to_address(dest) + dest;
+	}
+	else
+	{
+		using iter1valuetype = ::std::iter_value_t<Iter1>;
+		using iter2valuetype = ::std::iter_value_t<Iter2>;
+		if constexpr (::std::is_pointer_v<Iter1> && ::std::is_pointer_v<Iter2> &&
+					  (::std::is_trivially_copyable_v<iter1valuetype> &&
+					   ::std::is_trivially_copyable_v<iter2valuetype> &&
+					   (::std::same_as<iter1valuetype, iter2valuetype> ||
+						((::std::integral<iter1valuetype> || ::std::same_as<iter1valuetype, ::std::byte>) &&
+						 (::std::integral<iter2valuetype> || ::std::same_as<iter2valuetype, ::std::byte>) &&
+						 sizeof(iter1valuetype) == sizeof(iter2valuetype)))))
+		{
+#if __cpp_if_consteval >= 202106L
+			if !consteval
+#else
+			if (!__builtin_is_constant_evaluated())
+#endif
+			{
+				return reinterpret_cast<Iter2>(::fast_io::freestanding::bytes_copy(reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last), reinterpret_cast<::std::byte *>(dest)));
+			}
+		}
+
+		// we do not allow move constructor to throw EH.
+		if (first <= dest && dest < last)
+		{
+			auto res{dest + (last - first)};
+			::std::copy_backward(first, last, res);
+			return res;
+		}
+		else
+		{
+			return ::std::copy(first, last, dest);
+		}
+	}
+}
+
+template <::std::random_access_iterator Iter1, ::std::random_access_iterator Iter2>
+constexpr Iter2 overlapped_copy_n(Iter1 first, ::std::size_t n, Iter2 dest) noexcept
+{
+	return overlapped_copy(first, first + n, dest);
+}
+
 /*
 uninitialized_relocate requires two range are not overlapped.
 */
@@ -201,14 +262,14 @@ constexpr Iter2 uninitialized_move_backward(Iter1 first, Iter1 last, Iter2 d_las
 	}
 }
 
-template<::std::input_or_output_iterator Iter, typename T>
-inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const& ele)
+template <::std::input_or_output_iterator Iter, typename T>
+inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const &ele)
 {
 	using itervaluetype = ::std::iter_value_t<Iter>;
-	if constexpr(::std::contiguous_iterator<itervaluetype>)
+	if constexpr (::std::contiguous_iterator<itervaluetype>)
 	{
-		if constexpr(::std::is_trivially_copyable_v<itervaluetype>&&
-			::std::is_scalar_v<itervaluetype>&&sizeof(itervaluetype)==1)
+		if constexpr (::std::is_trivially_copyable_v<itervaluetype> &&
+					  ::std::is_scalar_v<itervaluetype> && sizeof(itervaluetype) == 1)
 		{
 #ifdef __cpp_if_consteval
 			if !consteval
@@ -218,32 +279,31 @@ inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const& ele)
 			{
 #ifdef __has_builtin
 #if __has_builtin(__builtin_memset)
-			__builtin_memset
+				__builtin_memset
 #else
-			::std::memset
+				::std::memset
 #endif
 #else
-			::std::memset
+				::std::memset
 #endif
-			(::std::to_address(first),
-				static_cast<itervaluetype>(ele),
-				static_cast<::std::size_t>(last-first));
-			return last;
+					(::std::to_address(first),
+					 static_cast<itervaluetype>(ele),
+					 static_cast<::std::size_t>(last - first));
+				return last;
 			}
 		}
 	}
-	for (;first!=last;++first)
+	for (; first != last; ++first)
 	{
 		::std::construct_at(__builtin_addressof(*first), ele);
 	}
 	return last;
 }
 
-template<::std::input_or_output_iterator Iter, typename T>
-inline constexpr Iter uninitialized_fill_n(Iter first, ::std::size_t n, T const& ele)
+template <::std::input_or_output_iterator Iter, typename T>
+inline constexpr Iter uninitialized_fill_n(Iter first, ::std::size_t n, T const &ele)
 {
-	return ::fast_io::freestanding::uninitialized_fill(first, first+n, ele);	
+	return ::fast_io::freestanding::uninitialized_fill(first, first + n, ele);
 }
-
 
 } // namespace fast_io::freestanding
