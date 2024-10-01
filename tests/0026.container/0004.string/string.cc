@@ -47,6 +47,9 @@ int main()
 	{
 		return static_cast<::std::size_t>(::std::fill_n(buf, n, u8'z') - buf);
 	});
+	auto str21(str20);
+	str21.replace_index(0,10, u8"helloworld");
+	str21.replace_index(38,40, str21.substrvw_front(10));
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,
@@ -70,6 +73,7 @@ int main()
 		u8"\nstr18(str16)=", str18,
 		u8"\nstr19=", str19,
 		u8"\nstr20=", str20,
+		u8"\nstr21=", str21,
 		u8"\nstr4==str5:",str4==str5,
 		u8"\nstr10<=>str14:",str10<=>str14,
 		u8"\nstr4==u8\"hello world\":",str4==u8"hello world",

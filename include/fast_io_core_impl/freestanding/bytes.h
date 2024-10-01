@@ -10,11 +10,29 @@ namespace fast_io::details
 inline constexpr ::std::byte *bytes_copy_naive_n_impl(::std::byte const *first, ::std::size_t n,
 													  ::std::byte *dest) noexcept
 {
-	for (::std::size_t i{}; i != n; ++i)
+	auto ed{first + n};
+	auto dested{dest + n};
+	if (first <= dest && dest < ed)
 	{
-		dest[i] = first[i];
+		auto firstit{ed};
+		auto destit{dested};
+		while (firstit != first)
+		{
+			*(--destit) = *(--firstit);
+		}
 	}
-	return dest + n;
+	else
+	{
+		auto firstit{first};
+		auto destit{dest};
+		while (firstit != ed)
+		{
+			*destit = *firstit;
+			++firstit;
+			++destit;
+		}
+	}
+	return dested;
 }
 
 } // namespace fast_io::details
@@ -63,8 +81,8 @@ inline constexpr ::std::byte *bytes_copy(::std::byte const *first, ::std::byte c
 	return ::fast_io::freestanding::bytes_copy_n(first, static_cast<::std::size_t>(last - first), dest);
 }
 
-inline constexpr ::std::byte *nonoverlapped_bytes_copy_n(::std::byte const * first, ::std::size_t n,
-														 ::std::byte * dest) noexcept
+inline constexpr ::std::byte *nonoverlapped_bytes_copy_n(::std::byte const *first, ::std::size_t n,
+														 ::std::byte *dest) noexcept
 {
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 #if __cpp_if_consteval >= 202106L
