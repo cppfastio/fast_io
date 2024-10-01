@@ -6,14 +6,13 @@
 #if !defined(__cpp_concepts)
 #error "fast_io requires at least C++20 standard compiler."
 #else
+
 #include "fast_io_hosted.h"
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4514)
-#endif
+#include "fast_io_core_impl/misc/push_warnings.h"
+
 #include "fast_io_legacy_impl/io.h"
-#endif
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
+
+#include "fast_io_core_impl/misc/pop_warnings.h"
+
 #endif

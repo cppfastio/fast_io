@@ -11,14 +11,7 @@
 
 #include "fast_io_core.h"
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4514)
-#pragma warning(disable : 4554)
-#pragma warning(disable : 4668)
-#pragma warning(disable : 4820)
-#pragma warning(disable : 4710)
-#endif
+#include "fast_io_core_impl/misc/push_macros.h"
 
 #include "fast_io_freestanding_impl/exception.h"
 // #include"fast_io_freestanding_impl/posix_error.h"
@@ -42,7 +35,6 @@
 #include "fast_io_unit/bitset.h"
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
+#include "fast_io_core_impl/misc/pop_warnings.h"
+
 #endif

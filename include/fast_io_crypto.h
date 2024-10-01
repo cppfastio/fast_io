@@ -12,20 +12,12 @@
 
 #include "fast_io_core.h"
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4514)
-#pragma warning(disable : 4623)
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4668)
-#endif
+#include "fast_io_core_impl/misc/push_warnings.h"
 
 // #include"fast_io_crypto/symmetric_crypto.h"
 // #include"fast_io_crypto/hash/intrin_include.h"
 #include "fast_io_crypto/hash/impl.h"
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
+#include "fast_io_core_impl/misc/pop_warnings.h"
 
 #endif
