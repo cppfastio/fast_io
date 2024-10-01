@@ -1,7 +1,3 @@
-#ifndef FAST_IO_PUSH_WARNINGS
-
-#define FAST_IO_PUSH_WARNINGS
-
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4061)
@@ -16,6 +12,4 @@
 #pragma warning(disable : 4820)
 #pragma warning(disable : 5027)
 #pragma warning(disable : 5045)
-#endif
-
 #endif

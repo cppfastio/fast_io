@@ -17,10 +17,6 @@
 #include <compare>
 #endif
 
-#ifdef __cpp_lib_source_location
-#include <source_location>
-#endif
-
 #include "fast_io_concept.h"
 
 #include "fast_io_core_impl/misc/push_warnings.h"
@@ -72,6 +68,7 @@
 #include "fast_io_core_impl/buffer_view.h"
 
 #ifdef __cpp_lib_source_location
+#include <source_location>
 #include "fast_io_core_impl/source_location.h"
 #endif
 

@@ -90,7 +90,7 @@ freestanding ones.
 #endif
 #endif
 
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include "fast_io_hosted/platforms/win32_box.h"
 #endif
 

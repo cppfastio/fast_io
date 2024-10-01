@@ -1,6 +1,3 @@
-#ifndef FAST_IO_PUSH_MACROS
-#define FAST_IO_PUSH_MACROS
-
 #pragma push_macro("min")
 #undef min
 
@@ -15,5 +12,3 @@
 
 #pragma push_macro("erase")
 #undef erase
-
-#endif
