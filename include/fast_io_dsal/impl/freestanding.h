@@ -23,6 +23,7 @@ namespace fast_io::freestanding
 {
 
 template <::std::random_access_iterator Iter1, ::std::random_access_iterator Iter2>
+	requires ::std::is_trivially_constructible_v<Iter2>
 constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noexcept
 {
 	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
@@ -63,16 +64,31 @@ constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noexcept
 			}
 		}
 
-		// we do not allow move constructor to throw EH.
-		if (first <= dest && dest < last)
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+		if consteval
+#else
+		if (__builtin_is_constant_evaluated())
+#endif
 		{
-			auto res{dest + (last - first)};
-			::std::copy_backward(first, last, res);
-			return res;
+			::fast_io::details::overlapped_copy_buffer_ptr<iter2valuetype> tempbuffer(static_cast<::std::size_t>(::std::distance(first, last)));
+			auto buffered{::std::copy(first, last, tempbuffer.ptr)};
+			return ::std::move(tempbuffer.ptr, buffered, dest);
 		}
 		else
+#endif
 		{
-			return ::std::copy(first, last, dest);
+			// we do not allow move constructor to throw EH.
+			if (first <= dest && dest < last)
+			{
+				auto res{dest + (last - first)};
+				::std::copy_backward(first, last, res);
+				return res;
+			}
+			else
+			{
+				return ::std::copy(first, last, dest);
+			}
 		}
 	}
 }
