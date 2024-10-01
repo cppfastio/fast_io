@@ -11,7 +11,7 @@ template<std::integral ch_type>
 #endif
 inline constexpr ch_type char_literal(char8_t ch) noexcept
 {
-#if 'A' != u8'A' || L'A' !=u8'A'
+#if (('A' != 0x41) || (L'A' != 0x41))
 #include"none_ascii.h"
 #endif
 	{
