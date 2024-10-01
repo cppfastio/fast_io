@@ -584,7 +584,7 @@ template <bool shbase = false, typename scalar_type>
 inline constexpr auto uhexfull(scalar_type t) noexcept
 {
 	return ::fast_io::details::scalar_flags_int_cache<
-		::fast_io::details::base_mani_flags_cache<16, false, shbase, true>>(static_cast<::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<scalar_type>>>(t));
+		::fast_io::details::base_mani_flags_cache<16, false, shbase, true>>(t);
 }
 
 template <bool uppercase = false, typename scalar_type>

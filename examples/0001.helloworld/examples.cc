@@ -25,15 +25,15 @@ int main()
 	::fast_io::println("Hello world!");
 	::fast_io::string str{"string"};
 	::fast_io::println(str);
-	::fast_io::println(::fast_io::os_c_str(str.data()));
-	::fast_io::println(::fast_io::pointervw(&str));
-	::fast_io::println(::fast_io::rgvw(str, ","));
-	::fast_io::println(::fast_io::chvw('c'));
+	::fast_io::println(::fast_io::mnp::os_c_str(str.data()));
+	::fast_io::println(::fast_io::mnp::pointervw(&str));
+	::fast_io::println(::fast_io::mnp::rgvw(str, ","));
+	::fast_io::println(::fast_io::mnp::chvw('c'));
 	::fast_io::println('c'); // output : 99
 	::fast_io::println(point{2, 5});
 
 	::std::string s;
-	::fast_io::scan(::fast_io::line_get(s));
+	::fast_io::scan(::fast_io::mnp::line_get(s));
 	::fast_io::println(s);
 
 	return 0;

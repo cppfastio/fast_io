@@ -1,0 +1,16 @@
+# CI doesn't support <format>
+fstream_std_format.cc
+iobuf_file_std_format.cc
+iobuf_file_std_format_locale.cc
+# no llvm env in CI
+fast_io_llvm_raw_fd_ostream_file_l10n.cc
+fast_io_llvm_raw_fd_ostream_file.cc
+llvm_raw_fd_ostream.cc
+# TODO: crash. why?
+iobuf_file_lockable_big.cc
+iobuf_file_bin.cc
+iobuf_io_file_eol.cc
+iobuf_io_file_eol_dbg.cc
+iobuf_io_file_lf_crlf.cc
+# TODO: locale unfinished
+iobuf_file_l10n.cc

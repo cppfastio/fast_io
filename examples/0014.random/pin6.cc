@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 	std::uniform_int_distribution<unsigned> ud(0, 9);
 	for (std::size_t i{}; i != n; ++i)
 	{
-		for (std::size_t j{}; j != 6zu; ++j)
+		for (std::size_t j{}; j != 6u; ++j)
 		{
 			char8_t ch(static_cast<char8_t>(ud(eng)));
 			ch += u8'0';

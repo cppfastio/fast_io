@@ -18,7 +18,7 @@ inline void dragonbox_fast_io(std::vector<double> const &vec)
 		auto i{jkj::dragonbox::to_chars(e, buf)};
 		*i = '\n';
 		++i;
-		write(file, buf, i);
+		fast_io::operations::write_all(file, buf, i);
 	}
 }
 

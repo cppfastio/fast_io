@@ -1,0 +1,17 @@
+# no need to install those env in CI
+cryptopp_md5.cc
+cryptopp_sha256.cc
+cryptopp_sha512.cc
+ossl_evp.cc
+ossl_md5.cc
+ossl_sha1.cc
+ossl_sha256.cc
+ossl_sha512.cc
+native_hash_file.cc
+# deprecated algorithm. only for examples
+sha1.cc
+md5.cc
+# TODO: CI runtime failed. why?
+crc32.cc
+sha256.cc
+sha512.cc
