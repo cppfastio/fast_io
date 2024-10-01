@@ -2,6 +2,22 @@
 
 namespace fast_io::details
 {
+
+template <typename T>
+struct overlapped_copy_buffer_ptr
+{
+	T *ptr;
+	explicit constexpr overlapped_copy_buffer_ptr(::std::size_t n) noexcept
+		: ptr(new T[n])
+	{}
+	overlapped_copy_buffer_ptr(overlapped_copy_buffer_ptr const &) = delete;
+	overlapped_copy_buffer_ptr &operator=(overlapped_copy_buffer_ptr const &) = delete;
+	constexpr ~overlapped_copy_buffer_ptr()
+	{
+		delete[] ptr;
+	}
+};
+
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -10,29 +26,51 @@ namespace fast_io::details
 inline constexpr ::std::byte *bytes_copy_naive_n_impl(::std::byte const *first, ::std::size_t n,
 													  ::std::byte *dest) noexcept
 {
-	auto ed{first + n};
-	auto dested{dest + n};
-	if (first <= dest && dest < ed)
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+	if consteval
+#elif __cpp_lib_is_constant_evaluated >= 201811L
+	if (__builtin_is_constant_evaluated())
+#endif
 	{
-		auto firstit{ed};
-		auto destit{dested};
-		while (firstit != first)
+		::fast_io::details::overlapped_copy_buffer_ptr<::std::byte> tempbuffer(n);
+		auto tempbufferptr{tempbuffer.ptr};
+		for (::std::size_t i{}; i != n; ++i)
 		{
-			*(--destit) = *(--firstit);
+			tempbufferptr[i] = first[i];
+		}
+		for (::std::size_t i{}; i != n; ++i)
+		{
+			dest[i] = tempbufferptr[i];
 		}
 	}
 	else
+#endif
 	{
-		auto firstit{first};
-		auto destit{dest};
-		while (firstit != ed)
+		auto ed{first + n};
+		auto dested{dest + n};
+		if (first <= dest && dest < ed)
 		{
-			*destit = *firstit;
-			++firstit;
-			++destit;
+			auto firstit{ed};
+			auto destit{dested};
+			while (firstit != first)
+			{
+				*(--destit) = *(--firstit);
+			}
 		}
+		else
+		{
+			auto firstit{first};
+			auto destit{dest};
+			while (firstit != ed)
+			{
+				*destit = *firstit;
+				++firstit;
+				++destit;
+			}
+		}
+		return dested;
 	}
-	return dested;
 }
 
 } // namespace fast_io::details
