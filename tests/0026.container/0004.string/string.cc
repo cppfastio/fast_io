@@ -49,7 +49,7 @@ int main()
 	});
 	auto str21(str20);
 	str21.replace_index(0,10, u8"helloworld");
-	str21.replace_index(38,40, str21.substrvw_front(10));
+	str21.replace_index(38,40, str21.subview_front(10));
 	::fast_io::io::println(
 		::fast_io::u8c_stdout(),
 		u8"u8vw=", u8vw,
