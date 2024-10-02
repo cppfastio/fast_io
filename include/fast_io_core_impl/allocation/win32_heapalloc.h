@@ -186,12 +186,43 @@ inline void *win32_heaprealloc_handle_common_impl(void *heaphandle, void *addr, 
 	return p;
 }
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+[[nodiscard]]
+#if __has_cpp_attribute(__gnu__::__artificial__)
+[[__gnu__::__artificial__]]
+#endif
+#if __has_cpp_attribute(__gnu__::__const__)
+[[__gnu__::__const__]]
+#endif
+inline void *win32_get_process_heap() noexcept
+{
+	constexpr bool intrinsicssupported{
+#if (defined(__GNUC__) || defined(__clang__) || defined(_MSC_VER)) &&                     \
+	(defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_AMD64) || \
+	 defined(__aarch64__) || defined(__arm64ec__))
+		true
+#endif
+	};
+	if constexpr (intrinsicssupported)
+	{
+		return ::fast_io::win32::nt::rtl_get_process_heap();
+	}
+	else
+	{
+		return ::fast_io::win32::GetProcessHeap();
+	}
+}
+
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 [[__gnu__::__returns_nonnull__]]
 #endif
 inline void *win32_heapalloc_common_impl(::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
-	return ::fast_io::details::win32_heapalloc_handle_common_impl(::fast_io::win32::GetProcessHeap(), n, flag);
+	return ::fast_io::details::win32_heapalloc_handle_common_impl(::fast_io::details::win32_get_process_heap(), n, flag);
 }
 
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
@@ -199,19 +230,19 @@ inline void *win32_heapalloc_common_impl(::std::size_t n, ::std::uint_least32_t 
 #endif
 inline void *win32_heaprealloc_common_impl(void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
-	return ::fast_io::details::win32_heaprealloc_handle_common_impl(::fast_io::win32::GetProcessHeap(), addr, n, flag);
+	return ::fast_io::details::win32_heaprealloc_handle_common_impl(::fast_io::details::win32_get_process_heap(), addr, n, flag);
 }
 
 inline ::fast_io::allocation_least_result win32_heapalloc_least_common_impl(::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
-	auto processheap{::fast_io::win32::GetProcessHeap()};
+	auto processheap{::fast_io::details::win32_get_process_heap()};
 	auto ptr{::fast_io::details::win32_heapalloc_handle_common_impl(processheap, n, flag)};
 	return {ptr, ::fast_io::win32::HeapSize(processheap, 0, ptr)};
 }
 
 inline ::fast_io::allocation_least_result win32_heaprealloc_least_common_impl(void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
-	auto processheap{::fast_io::win32::GetProcessHeap()};
+	auto processheap{::fast_io::details::win32_get_process_heap()};
 	auto ptr{::fast_io::details::win32_heaprealloc_handle_common_impl(processheap, addr, n, flag)};
 	return {ptr, ::fast_io::win32::HeapSize(processheap, 0, ptr)};
 }
@@ -250,7 +281,7 @@ public:
 		{
 			return;
 		}
-		::fast_io::win32::HeapFree(::fast_io::win32::GetProcessHeap(), 0u, addr);
+		::fast_io::win32::HeapFree(::fast_io::details::win32_get_process_heap(), 0u, addr);
 	}
 #if 0
 	static inline ::fast_io::allocation_least_result allocate_at_least(::std::size_t n) noexcept
