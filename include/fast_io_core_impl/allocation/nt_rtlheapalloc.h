@@ -227,7 +227,7 @@ inline peb *nt_get_current_peb() noexcept
 	return ::fast_io::win32::nt::RtlGetCurrentPeb();
 #endif
 #elif defined(_MSC_VER)
-#if defined(__aarch64__) || defined(__arm64ec__)
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
 	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::__getReg(18))->ProcessEnvironmentBlock;
 #elif defined(_M_AMD64)
 	return reinterpret_cast<::fast_io::win32::nt::peb *>(::fast_io::intrinsics::msvc::x86::__readgsqword(0x60));
