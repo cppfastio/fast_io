@@ -13,12 +13,12 @@
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 #include "fast_io_hosted.h"
 
-#include "fast_io_dsal/impl/push_warnings.h"
+#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include "fast_io_crypto/platforms/impl.h"
 
 #endif
 
-#include "fast_io_dsal/impl/pop_warnings.h"
+#include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif

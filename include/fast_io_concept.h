@@ -13,13 +13,13 @@
 #include <concepts>
 #include <cstdint>
 
-#include "fast_io_dsal/impl/push_macros.h"
-#include "fast_io_dsal/impl/push_warnings.h"
+#include "fast_io_dsal/impl/misc/push_macros.h"
+#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include "fast_io_core_impl/freestanding/addressof.h"
 #include "fast_io_core_impl/concepts/impl.h"
 
-#include "fast_io_dsal/impl/pop_macros.h"
-#include "fast_io_dsal/impl/pop_warnings.h"
+#include "fast_io_dsal/impl/misc/pop_macros.h"
+#include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif

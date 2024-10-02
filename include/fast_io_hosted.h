@@ -39,7 +39,7 @@ freestanding ones.
 #include "fast_io_hosted/platforms/errc_impl.h"
 #endif
 
-#include "fast_io_dsal/impl/push_warnings.h"
+#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include "fast_io_hosted/posix_error_scatter/impl.h"
 #include "fast_io_hosted/posix_error.h"
@@ -127,6 +127,6 @@ freestanding ones.
 
 #endif
 
-#include "fast_io_dsal/impl/pop_warnings.h"
+#include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif
