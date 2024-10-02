@@ -8,8 +8,8 @@
 #error "You must be using a C++ compiler"
 #endif
 
-#include "../fast_io_core_impl/misc/push_macros.h"
-#include "../fast_io_core_impl/misc/push_warnings.h"
+#include "impl/push_macros.h"
+#include "impl/push_warnings.h"
 
 #include "span.h"
 #include "impl/index_span.h"
@@ -27,5 +27,5 @@ using ::fast_io::containers::index_span;
 
 } // namespace fast_io
 
-#include "../fast_io_core_impl/misc/pop_macros.h"
-#include "../fast_io_core_impl/misc/pop_warnings.h"
+#include "impl/pop_macros.h"
+#include "impl/pop_warnings.h"

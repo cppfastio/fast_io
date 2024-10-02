@@ -11,7 +11,7 @@
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 
-#include "fast_io_core_impl/misc/push_warnings.h"
+#include "fast_io_dsal/impl/push_warnings.h"
 
 #include <streambuf>
 #include <fstream>
@@ -30,7 +30,7 @@
 #endif
 #include "fast_io_legacy_impl/filebuf/op_out.h"
 
-#include "fast_io_core_impl/misc/pop_warnings.h"
+#include "fast_io_dsal/impl/pop_warnings.h"
 
 #endif
 

@@ -9,10 +9,10 @@
 
 #include "fast_io_hosted.h"
 
-#include "fast_io_core_impl/misc/push_warnings.h"
+#include "fast_io_dsal/impl/push_warnings.h"
 
 #include "fast_io_legacy_impl/io.h"
 
-#include "fast_io_core_impl/misc/pop_warnings.h"
+#include "fast_io_dsal/impl/pop_warnings.h"
 
 #endif

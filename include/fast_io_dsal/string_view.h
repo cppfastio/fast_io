@@ -8,8 +8,8 @@
 #error "You must be using a C++ compiler"
 #endif
 
-#include "../fast_io_core_impl/misc/push_macros.h"
-#include "../fast_io_core_impl/misc/push_warnings.h"
+#include "impl/push_macros.h"
+#include "impl/push_warnings.h"
 
 #include <version>
 #include <type_traits>
@@ -64,5 +64,5 @@ using u32cstring_view = ::fast_io::containers::basic_cstring_view<char32_t>;
 
 } // namespace fast_io
 
-#include "../fast_io_core_impl/misc/pop_macros.h"
-#include "../fast_io_core_impl/misc/pop_warnings.h"
+#include "impl/pop_macros.h"
+#include "impl/pop_warnings.h"

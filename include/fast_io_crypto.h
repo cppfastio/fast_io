@@ -12,12 +12,12 @@
 
 #include "fast_io_core.h"
 
-#include "fast_io_core_impl/misc/push_warnings.h"
+#include "fast_io_dsal/impl/push_warnings.h"
 
 // #include"fast_io_crypto/symmetric_crypto.h"
 // #include"fast_io_crypto/hash/intrin_include.h"
 #include "fast_io_crypto/hash/impl.h"
 
-#include "fast_io_core_impl/misc/pop_warnings.h"
+#include "fast_io_dsal/impl/pop_warnings.h"
 
 #endif
