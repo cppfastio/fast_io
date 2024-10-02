@@ -11,7 +11,7 @@
 
 #include "fast_io_core.h"
 
-#include "fast_io_dsal/impl/misc/push_macros.h"
+#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include "fast_io_freestanding_impl/exception.h"
 // #include"fast_io_freestanding_impl/posix_error.h"

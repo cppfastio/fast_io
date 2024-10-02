@@ -1,8 +1,4 @@
 ﻿#pragma once
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 6308)
-#endif
 
 #if __has_include(<malloc.h>)
 #include <malloc.h>
@@ -247,7 +243,3 @@ public:
 };
 
 } // namespace fast_io
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif

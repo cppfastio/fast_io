@@ -1,10 +1,5 @@
 ﻿#pragma once
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 6308)
-#endif
-
 #include <crtdbg.h>
 
 namespace fast_io
@@ -90,7 +85,3 @@ public:
 };
 
 } // namespace fast_io
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
