@@ -5,9 +5,6 @@
 // https://github.com/microsoft/STL/issues/4002 gcc and clang provide constexpr new, but still won't compile.
 // ::std::allocator<T> is NOT freestanding.
 
-#pragma push_macro("new")
-#undef new
-
 namespace fast_io
 {
 
@@ -1987,5 +1984,3 @@ inline constexpr ::fast_io::allocation_least_result status_allocator_pointer_ali
 } // namespace details
 
 } // namespace fast_io
-
-#pragma pop_macro("new")

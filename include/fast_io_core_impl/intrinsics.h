@@ -1,9 +1,7 @@
 ﻿#pragma once
+
 #if defined(_MSC_VER) && !defined(__clang__)
 #include <intrin.h>
-#pragma warning(push)
-#pragma warning(disable : 4668)
-#pragma warning(disable : 4800)
 #endif
 
 namespace fast_io::details::intrinsics
@@ -978,7 +976,3 @@ inline constexpr U shiftright(U low_part, U high_part, ::std::uint_least8_t shif
 }
 
 } // namespace fast_io::details::intrinsics
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif

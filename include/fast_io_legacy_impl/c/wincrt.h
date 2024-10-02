@@ -1,11 +1,5 @@
 ﻿#pragma once
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4820)
-#endif
-
 namespace fast_io
 {
 
@@ -605,7 +599,3 @@ inline u32c_io_observer u32c_stderr() noexcept
 }
 
 } // namespace fast_io
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif

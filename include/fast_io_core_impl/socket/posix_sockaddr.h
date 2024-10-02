@@ -2,10 +2,7 @@
 
 namespace fast_io
 {
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push, _STL_WARNING_LEVEL)
-#pragma warning(disable : 4324)
-#endif
+
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
@@ -58,7 +55,4 @@ struct
 	::std::uint_least16_t ss_family{};
 };
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
 } // namespace fast_io

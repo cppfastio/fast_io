@@ -2,10 +2,6 @@
 #include <windows.h>
 #include <wininet.h>
 
-#undef min
-#undef max
-#undef interface
-
 namespace fast_io
 {
 

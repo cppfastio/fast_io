@@ -1,8 +1,4 @@
 ﻿#pragma once
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4061)
-#endif
 #include "sto_generate_base_tb.h"
 
 namespace fast_io
@@ -1474,6 +1470,3 @@ inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type,
 }
 
 } // namespace fast_io
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
