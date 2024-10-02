@@ -1,4 +1,4 @@
-﻿#include <fast_io_dsal/cstring_view.h>
+﻿#include <fast_io_dsal/string_view.h>
 #include <fast_io.h>
 
 int main()
