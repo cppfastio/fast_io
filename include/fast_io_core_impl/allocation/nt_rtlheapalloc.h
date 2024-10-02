@@ -98,6 +98,20 @@ struct peb
 	::std::uint_least32_t SessionId;
 };
 
+struct teb
+{
+	void *Reserved1[12];
+	peb *ProcessEnvironmentBlock;
+	void *Reserved2[399];
+	char unsigned Reserved3[1952];
+	void *TlsSlots[64];
+	char unsigned Reserved4[8];
+	void *Reserved5[26];
+	void *ReservedForOle;
+	void *Reserved6[4];
+	void *TlsExpansionSlots;
+};
+
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
 #elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
@@ -179,12 +193,20 @@ extern ::std::size_t
 #endif
 		;
 
+#if (defined(__GNUC__) || defined(__clang__)) && \
+	(defined(__aarch64__) || defined(__arm64ec__))
+register ::fast_io::win32::nt::teb *fast_io_nt_current_teb __asm__("x18");
+#endif
+
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
 inline peb *nt_get_current_peb() noexcept
 {
-#if (defined(__clang__) || defined(__GNUC__)) && (defined(__i386__) || defined(__x86_64__))
+#if (defined(__GNUC__) || defined(__clang__))
+#if defined(__aarch64__) || defined(__arm64ec__)
+	return ::fast_io::win32::nt::fast_io_nt_current_teb->ProcessEnvironmentBlock;
+#elif defined(__i386__) || defined(__x86_64__)
 	if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least64_t))
 	{
 		peb *ppeb;
@@ -201,17 +223,33 @@ inline peb *nt_get_current_peb() noexcept
 	{
 		return ::fast_io::win32::nt::RtlGetCurrentPeb();
 	}
-#elif defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64))
-#if defined(_M_AMD64)
-	return reinterpret_cast<peb *>(::fast_io::intrinsics::msvc::x86::__readgsqword(0x60));
 #else
-	return reinterpret_cast<peb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(0x30));
+	return ::fast_io::win32::nt::RtlGetCurrentPeb();
+#endif
+#elif defined(_MSC_VER)
+#if defined(__aarch64__) || defined(__arm64ec__)
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::__getReg(18))->ProcessEnvironmentBlock;
+#elif defined(_M_AMD64)
+	return reinterpret_cast<::fast_io::win32::nt::peb *>(::fast_io::intrinsics::msvc::x86::__readgsqword(0x60));
+#elif defined(_M_IX86)
+	return reinterpret_cast<::fast_io::win32::nt::peb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(0x30));
+#else
+	return ::fast_io::win32::nt::RtlGetCurrentPeb();
 #endif
 #else
 	return ::fast_io::win32::nt::RtlGetCurrentPeb();
 #endif
 }
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+[[nodiscard]]
+#if __has_cpp_attribute(__gnu__::__artificial__)
+[[__gnu__::__artificial__]]
+#endif
 #if __has_cpp_attribute(__gnu__::__const__)
 [[__gnu__::__const__]]
 #endif
