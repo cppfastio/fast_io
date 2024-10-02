@@ -4,8 +4,8 @@
 #error "You must be using a C++ compiler"
 #endif
 
-#include "impl/push_macros.h"
-#include "impl/push_warnings.h"
+#include "impl/misc/push_macros.h"
+#include "impl/misc/push_warnings.h"
 
 #include <version>
 #include <type_traits>
@@ -358,5 +358,5 @@ constexpr inline ::fast_io::tlc::u32string u32concatln_fast_io_tlc(Args &&...arg
 
 #endif
 
-#include "impl/pop_macros.h"
-#include "impl/pop_warnings.h"
+#include "impl/misc/pop_macros.h"
+#include "impl/misc/pop_warnings.h"
