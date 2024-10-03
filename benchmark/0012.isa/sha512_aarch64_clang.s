@@ -4,29 +4,15 @@
 	.p2align	2
 	.type	_Z14sha512_invokerPmPKSt4byteS2_,@function
 _Z14sha512_invokerPmPKSt4byteS2_:       // @_Z14sha512_invokerPmPKSt4byteS2_
-	.cfi_startproc
 // %bb.0:
 	sub	sp, sp, #256
-	.cfi_def_cfa_offset 256
+	cmp	x1, x2
 	stp	x29, x30, [sp, #160]            // 16-byte Folded Spill
 	stp	x28, x27, [sp, #176]            // 16-byte Folded Spill
 	stp	x26, x25, [sp, #192]            // 16-byte Folded Spill
 	stp	x24, x23, [sp, #208]            // 16-byte Folded Spill
 	stp	x22, x21, [sp, #224]            // 16-byte Folded Spill
 	stp	x20, x19, [sp, #240]            // 16-byte Folded Spill
-	.cfi_offset w19, -8
-	.cfi_offset w20, -16
-	.cfi_offset w21, -24
-	.cfi_offset w22, -32
-	.cfi_offset w23, -40
-	.cfi_offset w24, -48
-	.cfi_offset w25, -56
-	.cfi_offset w26, -64
-	.cfi_offset w27, -72
-	.cfi_offset w28, -80
-	.cfi_offset w30, -88
-	.cfi_offset w29, -96
-	cmp	x1, x2
 	str	x2, [sp, #16]                   // 8-byte Folded Spill
 	b.eq	.LBB0_6
 // %bb.1:
@@ -962,23 +948,9 @@ _Z14sha512_invokerPmPKSt4byteS2_:       // @_Z14sha512_invokerPmPKSt4byteS2_
 	ldp	x28, x27, [sp, #176]            // 16-byte Folded Reload
 	ldp	x29, x30, [sp, #160]            // 16-byte Folded Reload
 	add	sp, sp, #256
-	.cfi_def_cfa_offset 0
-	.cfi_restore w19
-	.cfi_restore w20
-	.cfi_restore w21
-	.cfi_restore w22
-	.cfi_restore w23
-	.cfi_restore w24
-	.cfi_restore w25
-	.cfi_restore w26
-	.cfi_restore w27
-	.cfi_restore w28
-	.cfi_restore w30
-	.cfi_restore w29
 	ret
 .Lfunc_end0:
 	.size	_Z14sha512_invokerPmPKSt4byteS2_, .Lfunc_end0-_Z14sha512_invokerPmPKSt4byteS2_
-	.cfi_endproc
                                         // -- End function
 	.type	_ZN7fast_io7details6sha51210k512scalarE,@object // @_ZN7fast_io7details6sha51210k512scalarE
 	.section	.rodata._ZN7fast_io7details6sha51210k512scalarE,"aG",@progbits,_ZN7fast_io7details6sha51210k512scalarE,comdat
