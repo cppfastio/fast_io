@@ -1350,9 +1350,7 @@ concept print_freestanding_params_okay =
 
 template <typename output, typename... Args>
 concept print_freestanding_okay =
-	::fast_io::operations::defines::has_output_or_io_stream_ref_define<output> &&
-	::fast_io::operations::decay::defines::print_freestanding_params_okay<typename output::output_char_type,
-																				Args...>;
+	::fast_io::operations::decay::defines::print_freestanding_params_okay<typename output::output_char_type, Args...>;
 
 } // namespace decay::defines
 
