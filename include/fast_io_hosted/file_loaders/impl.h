@@ -8,7 +8,7 @@
 #endif
 
 #if !defined(_WIN32) && !defined(__MSDOS__) && (!defined(__wasm__) || defined(_WASI_EMULATED_MMAN)) && \
-	!defined(_PICOLIBC__)
+	!defined(_PICOLIBC__) && (!defined(__NEWLIB__) || defined(__CYGWIN__))
 #include "posix_file_loader.h"
 #endif
 
