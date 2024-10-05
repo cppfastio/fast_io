@@ -27,6 +27,7 @@ inline constexpr char_type const *write_some(outstmtype &&outstm, char_type cons
 }
 
 template <typename outstmtype, ::std::integral char_type>
+	requires ::fast_io::operations::decay::defines::writable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -38,6 +39,7 @@ inline constexpr void write_all(outstmtype &&outstm, char_type const *first, cha
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_writable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -50,6 +52,7 @@ inline constexpr ::std::byte const *write_some_bytes(outstmtype &&outstm, ::std:
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_writable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -61,6 +64,7 @@ inline constexpr void write_all_bytes(outstmtype &&outstm, ::std::byte const *fi
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_writable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 inline constexpr io_scatter_status_t scatter_write_some_bytes(outstmtype &&outstm, io_scatter_t const *pscatter,
 															  ::std::size_t len)
 {
@@ -69,12 +73,14 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes(outstmtype &&outst
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_writable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 inline constexpr void scatter_write_all_bytes(outstmtype &&outstm, io_scatter_t const *pscatter, ::std::size_t len)
 {
 	::fast_io::details::scatter_write_all_bytes_impl(::fast_io::operations::output_stream_ref(outstm), pscatter, len);
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::writable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -90,6 +96,7 @@ inline constexpr io_scatter_status_t scatter_write_some(
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::writable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -105,6 +112,7 @@ inline constexpr void scatter_write_all(
 }
 
 template <typename outstmtype, ::std::integral char_type>
+	requires ::fast_io::operations::decay::defines::pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -117,6 +125,7 @@ inline constexpr char_type const *pwrite_some(outstmtype &&outstm, char_type con
 }
 
 template <typename outstmtype, ::std::integral char_type>
+	requires ::fast_io::operations::decay::defines::pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -129,6 +138,7 @@ inline constexpr void pwrite_all(outstmtype &&outstm, char_type const *first, ch
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -142,6 +152,7 @@ inline constexpr ::std::byte const *pwrite_some_bytes(outstmtype &&outstm, ::std
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -155,6 +166,7 @@ inline constexpr void pwrite_all_bytes(outstmtype &&outstm, ::std::byte const *f
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -168,6 +180,7 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes(outstmtype &&outs
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::bytes_pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -181,6 +194,7 @@ inline constexpr void scatter_pwrite_all_bytes(outstmtype &&outstm, io_scatter_t
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -197,6 +211,7 @@ inline constexpr io_scatter_status_t scatter_pwrite_some(
 }
 
 template <typename outstmtype>
+	requires ::fast_io::operations::decay::defines::pwritable<decltype(output_stream_ref(::std::declval<outstmtype>()))>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -212,13 +227,6 @@ inline constexpr void scatter_pwrite_all(
 													   off);
 }
 
-/**
- * @brief Writes a single character to the output stream.
- * @tparam outstmtype The type of the output stream to write to, which should satisfy the output_stream concept.
- * @param outstm The output stream to write to.
- * @param ch The character to write to the output stream.
- * @note This function is marked constexpr, allowing its invocation in constant expressions.
- */
 template <typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
