@@ -103,20 +103,22 @@ if(WIN32)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-option(TESTS_PREBUILD "prebuild cmake files for test" OFF)
+option(GENERATE_TESTS "generate cmake files for test" OFF)
 
-if(${TESTS_PREBUILD})
+if(${GENERATE_TESTS})
 include_directories(include)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_EXTENSION OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
 link_libraries(ntdll)
 endif()
-add_executable(test_prebuild gentests.cc)
-add_custom_target(run_test_prebuild
-    COMMAND test_prebuild
-    DEPENDS test_prebuild
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+add_executable(gentests ${CMAKE_CURRENT_SOURCE_DIR}/src/gentests.cc)
+add_custom_command(
+	OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/benchmark/CMakeLists.txt
+		   ${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt
+		   ${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt
+	COMMAND gentests
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 endif()
 
