@@ -5,15 +5,6 @@
 #include <fast_io_device.h>
 using namespace fast_io::io;
 
-bool if_exist(fast_io::native_io_observer nio, std::u8string_view filename) {
-	try {
-		[[maybe_unused]] fast_io::ibuf_file _{at(nio), filename};
-	} catch (...) {
-		return false;
-	}
-	return true;
-}
-
 bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix);
 
 void cmake_gen_rec_dir_def(fast_io::u8obuf_file& cmake_file, fast_io::native_io_observer nio, std::u8string_view filename, std::u8string_view prefix) {

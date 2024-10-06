@@ -8,11 +8,13 @@
 #pragma warning(disable : 4623)
 #pragma warning(disable : 4626)
 #pragma warning(disable : 4668)
+#pragma warning(disable : 4702)
 #pragma warning(disable : 4710)
 #pragma warning(disable : 4711)
 #pragma warning(disable : 4800)
 #pragma warning(disable : 4820)
 #pragma warning(disable : 5027)
+#pragma warning(disable : 5031)
 #pragma warning(disable : 5045)
 #pragma warning(disable : 6308)
 #endif
