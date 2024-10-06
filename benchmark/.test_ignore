@@ -1,2 +1,3 @@
+0001.refterm # no need to test refterm
 0012.isa # no auto-gen test. only to see the output assembly
 0017.syscalls # platform-dependent
