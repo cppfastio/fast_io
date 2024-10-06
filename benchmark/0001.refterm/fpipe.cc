@@ -15,7 +15,6 @@ inline void test()
 int main()
 {
 	fast_io::u8obuf_file timer_obf(u"fpipe.txt");
-	auto t0{posix_clock_gettime(fast_io::posix_clock_id::monotonic)};
+	fast_io::timer t(u8"fpipe");
 	test();
-	print(timer_obf, posix_clock_gettime(fast_io::posix_clock_id::monotonic) - t0, u8"s\n");
 }

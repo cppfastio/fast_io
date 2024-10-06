@@ -112,10 +112,10 @@ set(CMAKE_CXX_STANDARD_EXTENSION OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
 link_libraries(ntdll)
 endif()
-add_executable(test_prebuild gentests.cc)
-add_custom_target(run_test_prebuild
-    COMMAND test_prebuild
-    DEPENDS test_prebuild
+add_executable(tests_prebuild tests/0000.tests_prebuild/gentests.cc)
+add_custom_target(run_tests_prebuild
+    COMMAND tests_prebuild
+    DEPENDS tests_prebuild
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 endif()

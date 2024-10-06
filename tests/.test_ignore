@@ -1,3 +1,4 @@
+0000.tests_prebuild
 # no need to install those env in CI
 0019.boost
 # compiler in CI is old
