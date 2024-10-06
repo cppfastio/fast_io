@@ -2,43 +2,47 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "master", "next" ]
+    branches: ["master", "next"]
   pull_request:
-    branches: [ "master", "next" ]
+    branches: ["master", "next"]
 
 jobs:
   ubuntu:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Install ninja-build tool
-      uses: seanmiddleditch/gha-setup-ninja@v5
-    - name: prebuild
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On && ninja && ninja run_tests_prebuild
-    - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
-    - name: ninja
-      run: ninja
-    - name: ninja test
-      run: ninja test
+      - uses: actions/checkout@v4
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v5
+      - name: Generate tests
+        run: |
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On .
+          cmake --build .
+          cmake --target run_tests_prebuild --build .
+      - name: CMake configure
+        run: cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On .
+      - name: CMake build
+        run: cmake --build .
+      - name: CMake test
+        run: cmake --target test --build .
 
   windows:
-
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - uses: ilammy/msvc-dev-cmd@v1.13.0
-    - name: prebuild
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On && ninja && ninja run_tests_prebuild
-    - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="/EHsc /sdl /W3 /WX" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
-    - name: ninja
-      run: ninja
-    - name: ninja test
-      run: ninja test
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
+      - name: Generate tests
+        run: |
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On .
+          cmake --build .
+          cmake --target run_tests_prebuild --build .
+      - name: CMake configure
+        run: cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl" -DENABLE_TESTS=On .
+      - name: CMake build
+        run: cmake --build .
+      - name: CMake test
+        run: cmake --target test --build .
 
   # windows-debug:
 
@@ -59,7 +63,7 @@ jobs:
   # macos:
 
   #   runs-on: macos-latest
- 
+
   #   steps:
   #   - uses: actions/checkout@v3
   #   - name: Install ninja-build tool
@@ -70,4 +74,3 @@ jobs:
   #     run: ninja
   #   - name: ninja test
   #     run: ninja test
-
