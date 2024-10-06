@@ -1,19 +1,29 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(fast_io)
+project(fast_io C CXX)
 
-INSTALL (DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
-INSTALL (DIRECTORY ${CMAKE_SOURCE_DIR}/man/ DESTINATION man/man3)
+set(CMAKE_CXX_STANDARD 20)
 
 option(BUILD_I18N_DLLS "build i18n runtime dlls" OFF)
+option(BUILD_TESTING "build tests" OFF)
+option(GEN_TESTS "generate cmake files for test" OFF)
+
+include(GNUInstallDirs)
+include(CheckCXXCompilerFlag)
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include TYPE INCLUDE)
+install(FILES ${CMAKE_SOURCE_DIR}/man/*.3 DESTINATION ${CMAKE_INSTALL_MANDIR}/man3)
+
+include_directories(include)
+
+if(WIN32)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
 
 if(BUILD_I18N_DLLS)
 
-set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_SHARED_MODULE_PREFIX "fast_io_i18n.locale.")
 file(GLOB localefiles ${CMAKE_SOURCE_DIR}/src/i18n_data/locale/*.cc)
-
-include(CheckCXXCompilerFlag)
 
 function(compilelocaleencoding encoding localelist)
 
@@ -99,32 +109,23 @@ endif()
 
 endif()
 
-if(WIN32)
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
-endif()
-
-option(TESTS_PREBUILD "prebuild cmake files for test" OFF)
-
-if(${TESTS_PREBUILD})
+if(${GEN_TESTS})
 include_directories(include)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_EXTENSION OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
 link_libraries(ntdll)
 endif()
-add_executable(test_prebuild gentests.cc)
-add_custom_target(run_test_prebuild
-    COMMAND test_prebuild
-    DEPENDS test_prebuild
+add_executable(gentests gentests.cc)
+add_custom_target(run_gentests
+    COMMAND gentests
+    DEPENDS gentests
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 endif()
 
-option(ENABLE_TESTS "Enable tests" OFF)
-
-if(${ENABLE_TESTS})
+if(${BUILD_TESTING})
 include(CTest)
-include_directories(include)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_EXTENSION OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
