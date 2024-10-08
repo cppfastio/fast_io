@@ -61,7 +61,19 @@ inline constexpr basic_ibuffer_view_ref<ch_type> input_stream_ref_define(basic_i
 }
 
 template <::std::integral ch_type>
+inline constexpr basic_ibuffer_view_ref<ch_type> input_stream_ref_define(basic_ibuffer_view<ch_type> &&other) noexcept
+{
+	return {__builtin_addressof(other)};
+}
+
+template <::std::integral ch_type>
 inline constexpr basic_ibuffer_view_ref<ch_type> input_bytes_stream_ref_define(basic_ibuffer_view<ch_type> &other) noexcept
+{
+	return {__builtin_addressof(other)};
+}
+
+template <::std::integral ch_type>
+inline constexpr basic_ibuffer_view_ref<ch_type> input_bytes_stream_ref_define(basic_ibuffer_view<ch_type> &&other) noexcept
 {
 	return {__builtin_addressof(other)};
 }
