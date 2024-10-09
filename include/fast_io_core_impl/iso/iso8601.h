@@ -1186,11 +1186,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 	default:
 		break;
 	}
-#ifdef __has_builtin
-#if __has_builtin(__builtin_unreachable)
-	__builtin_unreachable();
-#endif
-#endif
+	::fast_io::unreachable();
 }
 
 template <::std::integral char_type>
