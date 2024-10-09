@@ -20,7 +20,7 @@ jobs:
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild linux
       - name: CMake configure
-        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On
+        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3 -fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On
       - name: CMake build
         run: cmake --build fast_io_build
       - name: CMake test
@@ -38,7 +38,7 @@ jobs:
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild windows msvc
       - name: CMake configure
-        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl" -DENABLE_TESTS=On
+        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/O2 /EHsc /W3 /WX /sdl" -DENABLE_TESTS=On
       - name: CMake build
         run: cmake --build fast_io_build
       - name: CMake test
