@@ -1,0 +1,14 @@
+["scan_qstring_u16utf8.cc"] # no need to install those env in CI
+ignore = true
+
+["scan_qstring.cc"] # no need to install those env in CI
+ignore = true
+
+["scan_winrt_hstring.cc"] # no need to install those env in CI
+ignore = true
+
+["scan_u16string_u16utf8.cc"] # TODO: no longer support codecvt file. use mnp::codecvt instead
+ignore = true
+
+["scan_strlike.cc"] # TODO: missing test file
+ignore = true

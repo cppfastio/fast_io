@@ -1,0 +1,14 @@
+["tcp_client.cc"] # TODO: transmit api changes
+ignore = true
+
+["http.cc"]
+interactive = true
+
+["dns.cc"]
+interactive = true
+
+["raw.cc"]
+interactive = true
+
+["tcp_server.cc"]
+interactive = true

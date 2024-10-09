@@ -1,0 +1,2 @@
+["construct_fstream_from_syscall_l10n.cc"] # TODO: locale unfinished
+ignore = true

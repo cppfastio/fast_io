@@ -1,0 +1,2 @@
+["reserve_printable.cc"] # expect not to compile
+will_fail = "compiletime"

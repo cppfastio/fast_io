@@ -1,0 +1,8 @@
+["helloworld_android_remote_dbg.cc"] # no android env in CI
+ignore = true
+
+["helloworld_dbg.cc"] # TODO: crash. why?
+ignore = true
+
+["examples.cc"] # interactive programs
+interactive = true

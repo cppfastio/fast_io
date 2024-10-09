@@ -1,0 +1,8 @@
+["a+b.cc"]
+interactive = true
+
+["base36_a+b.cc"]
+interactive = true
+
+["hex_a+b.cc"]
+interactive = true

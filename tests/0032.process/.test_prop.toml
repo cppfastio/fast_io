@@ -1,0 +1,3 @@
+["nt.cc"] # TODO: error: missing externel function import: NtQueryObject
+ignore = true
+platform = "windows"

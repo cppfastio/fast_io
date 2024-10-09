@@ -1,2 +1,0 @@
-# no need to install those env in CI
-std_mimalloc.cc

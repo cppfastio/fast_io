@@ -1,2 +1,0 @@
-kreckelfileno # no need to install those env in CI
-getfd.cc # deprecated

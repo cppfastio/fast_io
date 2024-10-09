@@ -1,3 +1,0 @@
-# no dragonbox env in CI
-dragonbox_no_c_str.cc
-dragonbox.cc

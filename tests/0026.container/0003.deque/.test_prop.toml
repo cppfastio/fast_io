@@ -1,0 +1,2 @@
+["dequeasm.cc"] # no auto-gen test. only to see the output assembly
+ignore = true

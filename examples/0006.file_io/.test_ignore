@@ -1,6 +1,0 @@
-utf8_to_utf16.cc # TODO: no longer support codecvt file. use mnp::codecvt instead
-ibuf_file.cc # TODO: transmit api changes
-# interactive programs
-file_loader.cc
-file_loader_options.cc
-count_all_spaces_in_file.cc

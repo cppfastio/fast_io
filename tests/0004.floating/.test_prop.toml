@@ -1,0 +1,5 @@
+["lc_double.cc"] # TODO: locale unfinished
+ignore = true
+
+["scientific_0.cc"] # TODO: locale unfinished
+ignore = true

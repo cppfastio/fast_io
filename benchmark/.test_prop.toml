@@ -1,0 +1,8 @@
+["0001.refterm"] # no need to test refterm
+ignore = true
+
+["0011.containers"]
+asan = true
+
+["0012.isa"] # no auto-gen test. only to see the output assembly
+ignore = true
