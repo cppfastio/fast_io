@@ -1,6 +1,0 @@
-# TODO: CI runtime failed. why?
-dijkstra_optimize.cc
-# timeout
-dijkstra.cc
-dijkstra_optimize_fastio.cc
-dijkstra_optimize_fastio_unchecked.cc

@@ -1,2 +1,0 @@
-integer.cc # we now doesn't allow print stdout
-constexpr.cc # compiler in CI is old

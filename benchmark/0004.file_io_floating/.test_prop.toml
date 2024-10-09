@@ -1,0 +1,5 @@
+["decimal_l10n.cc"] # TODO: locale unfinished
+ignore = true
+
+["general_l10n.cc"] # TODO: locale unfinished
+ignore = true

@@ -1,0 +1,11 @@
+["nt.cc"]
+interactive = true
+platform = "windows"
+
+["win32.cc"]
+interactive = true
+platform = "windows"
+
+["posix.cc"]
+interactive = true
+platform = "linux"

@@ -1,3 +1,0 @@
-# TODO: no longer support codecvt file. use mnp::codecvt instead
-u16utf8_file.cc
-u32utf8_file.cc

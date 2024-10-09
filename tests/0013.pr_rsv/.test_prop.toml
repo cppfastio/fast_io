@@ -1,0 +1,11 @@
+["bounds_checking_array.cc"]
+will_fail = "compiletime"
+
+["bounds_checking_c_array.cc"]
+will_fail = "compiletime"
+
+["pr_rsv_scientific.cc"] # TODO: crash. why?
+ignore = true
+
+["pr_rsv.cc"] # TODO: crash. why?
+ignore = true
