@@ -164,6 +164,32 @@ inline constexpr void *forward_list_trivially_allocate_insert_after_sa(void *ite
 	}
 }
 
+inline constexpr void forward_list_splice_before_after_iter(void *posptr, void *beforefirstptr) noexcept
+{
+	auto pos = static_cast<::fast_io::containers::details::forward_list_node_common *>(posptr);
+	auto beforefirst = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr);
+	auto posnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(pos->next);
+	auto first = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next);
+	auto firstnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(first->next);
+
+	pos->next = firstnext;
+	beforefirst->next = firstnext;
+	first->next = posnext;
+}
+
+inline constexpr void forward_list_splice_before_after_range_common(void *posptr, void *beforefirstptr, void *beforelastptr) noexcept
+{
+	auto pos = static_cast<::fast_io::containers::details::forward_list_node_common *>(posptr);
+	auto beforefirst = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr);
+	auto beforelast = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforelastptr);
+	auto posnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(pos->next);
+	auto first = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next);
+	auto last = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforelast->next);
+	beforefirst->next = last;
+	beforelast->next = posnext;
+	pos->next = first;
+}
+
 #if 0
 
 template <typename allocator>
@@ -771,6 +797,15 @@ public:
 			other.imp = nullptr;
 		}
 		return *this;
+	}
+
+	constexpr void splice_before_after(const_iterator pos, const_iterator beforeit) noexcept
+	{
+		::fast_io::containers::details::forward_list_splice_before_after_iter(pos.iter, beforeit.iter);
+	}
+	constexpr void splice_before_after(const_iterator pos, const_iterator beforefirst, const_iterator beforelast) noexcept
+	{
+		::fast_io::containers::details::forward_list_splice_before_after_range_common(pos.iter, beforefirst.iter, beforelast.iter);
 	}
 };
 
