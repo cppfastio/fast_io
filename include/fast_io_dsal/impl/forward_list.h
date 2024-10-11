@@ -735,29 +735,30 @@ public:
 		this->emplace_front(::std::move(val));
 	}
 
-#if 0
 	constexpr forward_list(forward_list const &other)
 		requires(::std::copyable<value_type>)
 	{
 		forward_list_destroyer destroyer(this);
+		void *itt{__builtin_addressof(this->imp)};
+		node_type *it{static_cast<node_type *>(itt)};
 		for (auto const &ele : other)
 		{
-			this->insert_after(ele);
+			it = this->emplace_after_impl(it, ele);
 		}
 		destroyer.release();
 	}
-#endif
 	constexpr forward_list(forward_list const &) = delete;
 
-#if 0
 	constexpr forward_list &operator=(forward_list const &other)
 		requires(::std::copyable<value_type>)
 	{
-		forward_list temp(other);
-		this->operator=(::std::move(temp));
+		if (this != __builtin_addressof(other))
+		{
+			forward_list temp(other);
+			this->operator=(::std::move(temp));
+		}
 		return *this;
 	}
-#endif
 	constexpr forward_list &operator=(forward_list const &) = delete;
 
 	constexpr forward_list(forward_list &&other) noexcept
