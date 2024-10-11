@@ -16,6 +16,10 @@ int main()
 	}
 	lst.pop_front();
 	println("front:", lst.front());
+	::fast_io::forward_list<::std::size_t> lst2(lst);
 	lst.erase_after(lst.cbefore_begin(), lst.cend());
-	println("is_empty? ", lst.is_empty());
+	// unfinished
+	println("lst is_empty? ", lst.is_empty(), "\n"
+											  "lst2 is empty? ",
+			lst2.is_empty());
 }
