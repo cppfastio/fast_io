@@ -16,4 +16,6 @@ int main()
 	}
 	lst.pop_front();
 	println("front:", lst.front());
+	lst.erase_after(lst.cbefore_begin(), lst.cend());
+	println("is_empty? ", lst.is_empty());
 }
