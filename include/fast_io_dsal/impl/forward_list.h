@@ -707,7 +707,17 @@ public:
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr iterator emplace_after(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
-		return {this->emplace_after_impl(iter.iter), ::std::forward<Args>(args)...};
+		return {this->emplace_after_impl(iter.iter, ::std::forward<Args>(args)...)};
+	}
+
+	constexpr iterator insert_after(const_iterator iter, const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		return {this->emplace_after_impl(iter.iter, val)};
+	}
+
+	constexpr iterator insert_after(const_iterator iter, value_type &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		return {this->emplace_after_impl(iter.iter, ::std::move(val))};
 	}
 
 	template <typename... Args>
@@ -720,7 +730,7 @@ public:
 	{
 		this->emplace_front(val);
 	}
-	constexpr void push_front(T &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	constexpr void push_front(value_type &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
 	{
 		this->emplace_front(::std::move(val));
 	}
