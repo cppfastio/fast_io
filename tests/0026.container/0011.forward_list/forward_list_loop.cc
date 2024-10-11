@@ -21,5 +21,6 @@ int main()
 	// unfinished
 	println("lst is_empty? ", lst.is_empty(), "\n"
 											  "lst2 is empty? ",
-			lst2.is_empty());
+			lst2.is_empty(),"\n"
+		"lst<=>lst2:",lst<=>lst2);
 }
