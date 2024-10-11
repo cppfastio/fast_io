@@ -491,11 +491,11 @@ private:
 			if constexpr (::std::is_trivially_destructible_v<value_type> && !alloc_with_status)
 			{
 				::fast_io::containers::details::forward_list_trivially_destroy_sa<allocator_type,
-																				  alignof(node_type), sizeof(node_type)>(this->imp, __builtin_addressof(imp));
+																				  alignof(node_type), sizeof(node_type)>(this->imp, nullptr);
 				return;
 			}
 		}
-		for (void *it{imp}, *ed{__builtin_addressof(imp)}; it != ed;)
+		for (void *it{imp}; it != nullptr;)
 		{
 			auto next{*static_cast<void **>(it)};
 			this->destroy_node(it);
@@ -627,7 +627,7 @@ public:
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr reference emplace_front(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
-		return this->emplace_after_impl(this->imp, ::std::forward<Args>(args)...)->element;
+		return this->emplace_after_impl(__builtin_addressof(this->imp), ::std::forward<Args>(args)...)->element;
 	}
 	constexpr void push_front(const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
