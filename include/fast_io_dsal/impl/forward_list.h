@@ -135,36 +135,36 @@ inline constexpr void forward_list_main_erase_after_ptr_common(void *iter) noexc
 	node->next = next->next;
 }
 
-#if 0
-
 template <typename allocator>
-inline constexpr void *forward_list_trivially_allocate_insert(void *iter, ::std::size_t sz) noexcept
+inline constexpr void *forward_list_trivially_allocate_insert_after(void *iter, ::std::size_t sz) noexcept
 {
 	void *newnode = generic_allocator_adapter<allocator>::allocate(sz);
-	forward_list_main_insert_ptr_common(newnode, iter);
+	forward_list_main_insert_after_ptr_common(newnode, iter);
 	return newnode;
 }
 
 template <typename allocator>
-inline constexpr void *forward_list_trivially_allocate_insert_aligned(void *iter, ::std::size_t align, ::std::size_t sz) noexcept
+inline constexpr void *forward_list_trivially_allocate_insert_after_aligned(void *iter, ::std::size_t align, ::std::size_t sz) noexcept
 {
 	void *newnode = generic_allocator_adapter<allocator>::allocate_aligned(align, sz);
-	forward_list_main_insert_ptr_common(newnode, iter);
+	forward_list_main_insert_after_ptr_common(newnode, iter);
 	return newnode;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz>
-inline constexpr void *forward_list_trivially_allocate_insert_sa(void *iter) noexcept
+inline constexpr void *forward_list_trivially_allocate_insert_after_sa(void *iter) noexcept
 {
 	if constexpr (align <= allocator::default_alignment)
 	{
-		return ::fast_io::containers::details::forward_list_trivially_allocate_insert<allocator>(iter, sz);
+		return ::fast_io::containers::details::forward_list_trivially_allocate_insert_after<allocator>(iter, sz);
 	}
 	else
 	{
-		return ::fast_io::containers::details::forward_list_trivially_allocate_insert_aligned<allocator>(iter, align, sz);
+		return ::fast_io::containers::details::forward_list_trivially_allocate_insert_after_aligned<allocator>(iter, align, sz);
 	}
 }
+
+#if 0
 
 template <typename allocator>
 inline constexpr void *forward_list_trivially_allocate_push_front(void *imp, ::std::size_t sz) noexcept
@@ -368,8 +368,6 @@ inline constexpr void forward_list_sort_common(void *firstptr, void *lastptr, Cm
 
 } // namespace details
 
-} // namespace containers
-
 template <typename T, typename allocator>
 class forward_list
 {
@@ -497,7 +495,7 @@ private:
 				return;
 			}
 		}
-		for (void *it{imp.next}, *ed{__builtin_addressof(imp)}; it != ed;)
+		for (void *it{imp}, *ed{__builtin_addressof(imp)}; it != ed;)
 		{
 			auto next{*static_cast<void **>(it)};
 			this->destroy_node(it);
@@ -596,32 +594,40 @@ public:
 		return {nullptr};
 	}
 
+private:
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr iterator emplace_after(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	constexpr node_type *emplace_after_impl(void *ptr, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
-			auto newnode = static_cast<node_type *>(::fast_io::containers::details::forward_list_trivially_allocate_insert_sa<allocator_type, alignof(node_type), sizeof(node_type)>(iter.iter));
+			auto newnode = static_cast<node_type *>(::fast_io::containers::details::forward_list_trivially_allocate_insert_after_sa<allocator_type, alignof(node_type), sizeof(node_type)>(ptr));
 			::std::construct_at(
 				__builtin_addressof(newnode->element),
 				::std::forward<Args>(args)...);
-			return {newnodecons};
+			return newnode;
 		}
 		else
 		{
 			auto newnodecons = this->allocate_construct_new_node(::std::forward<Args>(args)...);
-			::fast_io::containers::details::forward_list_main_insert_after_ptr_common(newnodecons, iter.iter);
-			return {newnodecons};
+			::fast_io::containers::details::forward_list_main_insert_after_ptr_common(newnodecons, ptr);
+			return newnodecons;
 		}
-		//		this->imp = pos;
+	}
+
+public:
+	template <typename... Args>
+		requires ::std::constructible_from<value_type, Args...>
+	constexpr iterator emplace_after(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	{
+		return {this->emplace_after_impl(iter.iter), ::std::forward<Args>(args)...};
 	}
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr reference emplace_front(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
-		return *this->emplace_after(this->imp, ::std::forward<Args>(args)...);
+		return this->emplace_after_impl(this->imp, ::std::forward<Args>(args)...)->element;
 	}
 	constexpr void push_front(const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
 	{
@@ -674,5 +680,7 @@ public:
 		return *this;
 	}
 };
-// namespace fast_io
-// namespace fast_io
+
+} // namespace containers
+
+} // namespace fast_io
