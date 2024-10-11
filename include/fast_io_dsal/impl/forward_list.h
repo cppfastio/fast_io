@@ -549,61 +549,61 @@ public:
 		this->destroy();
 	}
 
-	constexpr iterator before_begin() noexcept
+	[[nodiscard]] constexpr iterator before_begin() noexcept
 	{
 		return {__builtin_addressof(imp)};
 	}
 
-	constexpr const_iterator before_begin() const noexcept
+	[[nodiscard]] constexpr const_iterator before_begin() const noexcept
 	{
 		return {__builtin_addressof(imp)};
 	}
 
-	constexpr const_iterator cbefore_begin() const noexcept
+	[[nodiscard]] constexpr const_iterator cbefore_begin() const noexcept
 	{
 		return {__builtin_addressof(imp)};
 	}
 
-	constexpr iterator begin() noexcept
+	[[nodiscard]] constexpr iterator begin() noexcept
 	{
 		return {imp};
 	}
 
-	constexpr const_iterator begin() const noexcept
+	[[nodiscard]] constexpr const_iterator begin() const noexcept
 	{
 		return {imp};
 	}
 
-	constexpr const_iterator cbegin() const noexcept
+	[[nodiscard]] constexpr const_iterator cbegin() const noexcept
 	{
 		return {imp};
 	}
 
-	constexpr iterator end() noexcept
+	[[nodiscard]] constexpr iterator end() noexcept
 	{
 		return {nullptr};
 	}
 
-	constexpr const_iterator end() const noexcept
+	[[nodiscard]] constexpr const_iterator end() const noexcept
 	{
 		return {nullptr};
 	}
 
-	constexpr const_iterator cend() const noexcept
+	[[nodiscard]] constexpr const_iterator cend() const noexcept
 	{
 		return {nullptr};
 	}
 
-	constexpr bool empty() const noexcept
+	[[nodiscard]] constexpr bool empty() const noexcept
 	{
 		return this->imp == nullptr;
 	}
-	constexpr bool is_empty() const noexcept
+	[[nodiscard]] constexpr bool is_empty() const noexcept
 	{
 		return this->imp == nullptr;
 	}
 
-	constexpr reference front() noexcept
+	[[nodiscard]] constexpr reference front() noexcept
 	{
 		if (this->imp == nullptr) [[unlikely]]
 		{
@@ -611,7 +611,7 @@ public:
 		}
 		return this->imp->element;
 	}
-	constexpr const_reference front() const noexcept
+	[[nodiscard]] constexpr const_reference front() const noexcept
 	{
 		if (this->imp == nullptr) [[unlikely]]
 		{
@@ -620,11 +620,11 @@ public:
 		return this->imp->element;
 	}
 
-	constexpr reference front_unchecked() noexcept
+	[[nodiscard]] constexpr reference front_unchecked() noexcept
 	{
 		return this->imp->element;
 	}
-	constexpr const_reference front_unchecked() const noexcept
+	[[nodiscard]] constexpr const_reference front_unchecked() const noexcept
 	{
 		return this->imp->element;
 	}
