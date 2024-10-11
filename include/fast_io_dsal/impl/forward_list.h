@@ -561,17 +561,12 @@ public:
 
 	[[nodiscard]] constexpr const_iterator before_begin() const noexcept
 	{
-		return {const_cast<void *>(__builtin_addressof(this->imp))};
+		return {const_cast<void *>(static_cast<void const *>(__builtin_addressof(this->imp)))};
 	}
 
 	[[nodiscard]] constexpr const_iterator cbefore_begin() const noexcept
 	{
-		return {const_cast<void *>(__builtin_addressof(this->imp))};
-	}
-
-	[[nodiscard]] constexpr const_iterator cbefore_begin() noexcept
-	{
-		return {__builtin_addressof(this->imp)};
+		return {const_cast<void *>(static_cast<void const *>(__builtin_addressof(this->imp)))};
 	}
 
 	[[nodiscard]] constexpr iterator begin() noexcept
