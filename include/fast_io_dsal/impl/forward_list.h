@@ -131,7 +131,8 @@ inline constexpr void forward_list_main_push_front_ptr_common(void *newnodevp, v
 inline constexpr void forward_list_main_erase_after_ptr_common(void *iter) noexcept
 {
 	auto node = static_cast<::fast_io::containers::details::forward_list_node_common *>(iter);
-	node->next = node->next->next;
+	auto next = static_cast<::fast_io::containers::details::forward_list_node_common *>(node);
+	node->next = next->next;
 }
 
 #if 0
@@ -448,11 +449,11 @@ private:
 		explicit constexpr forward_list_destroyer(forward_list<T, allocator> *pl) noexcept
 			: plst(pl)
 		{}
-		constexpr void release()
+		constexpr void release() noexcept
 		{
 			plst = nullptr;
 		}
-		forward_list_destroyer(list_destroyer const &) = delete;
+		forward_list_destroyer(forward_list_destroyer const &) = delete;
 		forward_list_destroyer &operator=(forward_list_destroyer const &) = delete;
 		constexpr ~forward_list_destroyer()
 		{
@@ -492,7 +493,7 @@ private:
 			if constexpr (::std::is_trivially_destructible_v<value_type> && !alloc_with_status)
 			{
 				::fast_io::containers::details::forward_list_trivially_destroy_sa<allocator_type,
-																				  alignof(node_type), sizeof(node_type)>(imp.next, __builtin_addressof(imp));
+																				  alignof(node_type), sizeof(node_type)>(this->imp, __builtin_addressof(imp));
 				return;
 			}
 		}
@@ -536,8 +537,8 @@ public:
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
 
-	using iterator = ::fast_io::containers::details::list_iterator<T, false>;
-	using const_iterator = ::fast_io::containers::details::list_iterator<T, true>;
+	using iterator = ::fast_io::containers::details::forward_list_iterator<T, false>;
+	using const_iterator = ::fast_io::containers::details::forward_list_iterator<T, true>;
 
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
@@ -614,6 +615,21 @@ public:
 			return {newnodecons};
 		}
 		//		this->imp = pos;
+	}
+
+	template <typename... Args>
+		requires ::std::constructible_from<value_type, Args...>
+	constexpr reference emplace_front(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	{
+		return *this->emplace_after(this->imp, ::std::forward<Args>(args)...);
+	}
+	constexpr void push_front(const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		this->emplace_front(val);
+	}
+	constexpr void push_front(T &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		this->emplace_front(::std::move(val));
 	}
 
 #if 0
