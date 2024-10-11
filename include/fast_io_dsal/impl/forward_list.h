@@ -480,7 +480,7 @@ private:
 		}
 	}
 
-	constexpr void destroy() noexcept
+	constexpr void destroy_impl(void *first, void *last) noexcept
 	{
 #if __cpp_if_consteval >= 202106L
 		if !consteval
@@ -491,16 +491,21 @@ private:
 			if constexpr (::std::is_trivially_destructible_v<value_type> && !alloc_with_status)
 			{
 				::fast_io::containers::details::forward_list_trivially_destroy_sa<allocator_type,
-																				  alignof(node_type), sizeof(node_type)>(this->imp, nullptr);
+																				  alignof(node_type), sizeof(node_type)>(first, last);
 				return;
 			}
 		}
-		for (void *it{imp}; it != nullptr;)
+		for (void *it{first}; it != last;)
 		{
 			auto next{*static_cast<void **>(it)};
 			this->destroy_node(it);
 			it = next;
 		}
+	}
+
+	constexpr void destroy() noexcept
+	{
+		this->destroy_impl(this->imp, nullptr);
 	}
 
 	template <typename... Args>
@@ -630,6 +635,13 @@ public:
 	}
 
 private:
+	constexpr void erase_after_impl(void *first, void *last) noexcept
+	{
+		auto node = static_cast<::fast_io::containers::details::forward_list_node_common *>(first);
+		auto next = static_cast<::fast_io::containers::details::forward_list_node_common *>(node)->next;
+		node->next = last;
+		this->destroy_impl(next, last);
+	}
 	constexpr void erase_after_impl(void *ptr) noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::forward_list_node_common *>(ptr);
@@ -643,6 +655,11 @@ public:
 	constexpr void erase_after(const_iterator iter) noexcept
 	{
 		this->erase_after_impl(iter.iter);
+	}
+
+	constexpr void erase_after(const_iterator first, const_iterator last) noexcept
+	{
+		this->erase_after_impl(first.iter, last.iter);
 	}
 
 	constexpr void pop_front_unchecked() noexcept
