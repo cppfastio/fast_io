@@ -14,5 +14,6 @@ int main()
 	{
 		println(e);
 	}
+	lst.pop_front();
 	println("front:", lst.front());
 }

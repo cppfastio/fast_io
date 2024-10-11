@@ -630,6 +630,36 @@ public:
 	}
 
 private:
+	constexpr void erase_after_impl(void *ptr) noexcept
+	{
+		auto node = static_cast<::fast_io::containers::details::forward_list_node_common *>(ptr);
+		auto next = static_cast<::fast_io::containers::details::forward_list_node_common *>(node)->next;
+		auto nextnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(next)->next;
+		node->next = nextnext;
+		this->destroy_node(next);
+	}
+
+public:
+	constexpr void erase_after(const_iterator iter) noexcept
+	{
+		this->erase_after_impl(iter.iter);
+	}
+
+	constexpr void pop_front_unchecked() noexcept
+	{
+		this->erase_after_impl(__builtin_addressof(this->imp));
+	}
+
+	constexpr void pop_front() noexcept
+	{
+		if (this->imp == nullptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_after_impl(__builtin_addressof(this->imp));
+	}
+
+private:
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
 	constexpr node_type *emplace_after_impl(void *ptr, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
