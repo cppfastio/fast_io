@@ -14,4 +14,5 @@ int main()
 	{
 		println(e);
 	}
+	println("front:", lst.front());
 }

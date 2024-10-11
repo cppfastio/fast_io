@@ -541,7 +541,7 @@ public:
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 
-	void *imp{};
+	node_type *imp{};
 	constexpr forward_list() noexcept = default;
 
 	constexpr ~forward_list()
@@ -592,6 +592,41 @@ public:
 	constexpr const_iterator cend() const noexcept
 	{
 		return {nullptr};
+	}
+
+	constexpr bool empty() const noexcept
+	{
+		return this->imp == nullptr;
+	}
+	constexpr bool is_empty() const noexcept
+	{
+		return this->imp == nullptr;
+	}
+
+	constexpr reference front() noexcept
+	{
+		if (this->imp == nullptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return this->imp->element;
+	}
+	constexpr const_reference front() const noexcept
+	{
+		if (this->imp == nullptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return this->imp->element;
+	}
+
+	constexpr reference front_unchecked() noexcept
+	{
+		return this->imp->element;
+	}
+	constexpr const_reference front_unchecked() const noexcept
+	{
+		return this->imp->element;
 	}
 
 private:
