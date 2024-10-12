@@ -171,7 +171,6 @@ inline constexpr void forward_list_splice_before_after_iter(void *posptr, void *
 	auto posnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(pos->next);
 	auto first = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next);
 	auto firstnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(first->next);
-
 	pos->next = firstnext;
 	beforefirst->next = firstnext;
 	first->next = posnext;
