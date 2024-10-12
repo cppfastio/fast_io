@@ -775,7 +775,8 @@ public:
 		if (this != __builtin_addressof(other))
 		{
 			forward_list temp(other);
-			this->operator=(::std::move(temp));
+			this->imp = temp.imp;
+			temp.imp = nullptr;
 		}
 		return *this;
 	}
