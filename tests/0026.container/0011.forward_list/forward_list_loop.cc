@@ -10,30 +10,18 @@ int main()
 	{
 		lst.push_front(i);
 	}
-	print("lst:\n");
-	for (auto const &e : lst)
-	{
-		println(e);
-	}
-	println("front:", lst.front());
+	println("lst:\n", ::fast_io::mnp::rgvw(lst, "\n"),
+			"\nfront:", lst.front());
 	::fast_io::forward_list<::std::size_t> lst2(lst);
 	lst2.splice_before_after(lst2.cbefore_begin(), lst.cbefore_begin(), lst.cbegin());
 	lst2.splice_before_after(lst2.cbefore_begin(), lst.cbefore_begin(), lst.cbefore_begin());
 	lst.erase_after(lst.cbefore_begin(), lst.cbegin());
 	lst.pop_front();
-	print("lst2:\n");
-	for (auto const &e : lst2)
-	{
-		println(e);
-	}
-	print("lst after operations:\n");
-	for (auto const &e : lst)
-	{
-		println(e);
-	}
-	// unfinished
-	println("lst is empty? ", lst.empty(), "\n"
-										   "lst2 is empty? ",
+	println("lst2:\n", ::fast_io::mnp::rgvw(lst2, "\n"),
+			"\nlst after operations:\n", ::fast_io::mnp::rgvw(lst, "\n"),
+			// unfinished
+			"\nlst is empty? ", lst.empty(), "\n"
+											 "lst2 is empty? ",
 			lst2.is_empty(), "\n"
 							 "lst<=>lst2:",
 			lst <=> lst2);

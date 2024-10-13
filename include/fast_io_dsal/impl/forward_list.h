@@ -395,29 +395,71 @@ inline constexpr void forward_list_sort_common(void *firstptr, void *lastptr, Cm
 
 #endif
 
+inline constexpr void forward_list_reverse_after_common(void *beforefirstptr, void *lastptr) noexcept
+{
+	auto beforefirst{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr)};
+
+	auto first{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next)};
+	auto last{static_cast<::fast_io::containers::details::forward_list_node_common *>(lastptr)};
+	if (first == last)
+	{
+		return;
+	}
+	auto beforeit{beforefirst}, it{first};
+	while (it != last)
+	{
+		auto nextit{static_cast<::fast_io::containers::details::forward_list_node_common *>(it->next)};
+		it->next = beforeit;
+		beforeit = it;
+		it = nextit;
+	}
+	beforefirst->next = beforeit;
+	first->next = last;
+}
+
+inline constexpr void forward_list_reverse_common(void *beforefirstptr) noexcept
+{
+	return ::fast_io::containers::details::forward_list_reverse_after_common(beforefirstptr, nullptr);
+}
+
 #if 0
+
+inline constexpr void *forward_list_ptr_advance(void *iter, ::std::size_t n) noexcept
+{
+	for (; n; --n)
+	{
+		iter = static_cast<::fast_io::containers::details::forward_list_node_common *>(iter)->next;
+	}
+	return iter;
+}
+
 template <typename T, typename Cmp>
 inline constexpr void forward_list_sort_before_common_n(void *beforefirstptr, void *beforelastptr, ::std::size_t n, Cmp cmp)
 {
-	auto beforefirst{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr)};
+	auto beforefirst{static_cast<::fast_io::containers::details::forward_list_node<T> *>(beforefirstptr)};
 	switch (n)
 	{
 	case 2:
-		auto it1{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next)};
-		auto it2{static_cast<::fast_io::containers::details::forward_list_node_common *>(it1->next) 1};
-		if (cmp(*it2, *it1))
+		auto it1{static_cast<::fast_io::containers::details::forward_list_node<T> *>(beforefirst->next)};
+		auto it2{static_cast<::fast_io::containers::details::forward_list_node<T> *>(it1->next)};
+		if (cmp(it2->element, it1->element))
 		{
 			it1->next = it2->next;
 			it2->next = it1;
 			beforefirst->next = it2;
-			;
 		}
 		break;
 	case 1:
 	case 0:
 		break;
 	default:
-		
+		::std::size_t const halfn{static_cast<::std::size_t>(n>>1u)};
+		auto beforemiddle{static_cast<::fast_io::containers::details::forward_list_node<T> *>(forward_list_ptr_advance(beforefirstptr, halfn))};
+		auto beforelast{static_cast<::fast_io::containers::details::forward_list_node<T> *>(beforelastptr)};
+		forward_list_sort_before_common_n<T, Cmp>(beforefirst, beforemiddle, halfn, cmp);
+		forward_list_sort_before_common_n<T, Cmp>(beforemiddle, beforelast, static_cast<::std::size_t>(n-halfn), cmp);
+//		forward_list_merge_common<T, Cmp>(beforefirst, __builtin_addressof(leftdetacher),
+//								  beforemiddle, __builtin_addressof(rightdetacher), cmp);
 	}
 }
 
@@ -886,6 +928,14 @@ public:
 	constexpr void splice_before_after(const_iterator pos, const_iterator beforefirst, const_iterator beforelast) noexcept
 	{
 		::fast_io::containers::details::forward_list_splice_before_after_range_common(pos.iter, beforefirst.iter, beforelast.iter);
+	}
+	constexpr void reverse_after(const_iterator beforefirst, const_iterator last) noexcept
+	{
+		::fast_io::containers::details::forward_list_reverse_after_common(beforefirst.iter, last.iter);
+	}
+	constexpr void reverse() noexcept
+	{
+		::fast_io::containers::details::forward_list_reverse_common(__builtin_addressof(this->imp));
 	}
 };
 

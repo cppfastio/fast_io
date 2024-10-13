@@ -22,4 +22,6 @@ int main()
 #endif
 	::fast_io::forward_list<::std::size_t> flst2{1, 3, 5, 7, 9};
 	::fast_io::io::println("flst:\n", ::fast_io::mnp::rgvw(flst, "\n"), "\nflst2:\n", ::fast_io::mnp::rgvw(flst2, "\n"));
+	flst2.reverse();
+	::fast_io::io::println("flst2:\n", ::fast_io::mnp::rgvw(flst2, "\n"));
 }
