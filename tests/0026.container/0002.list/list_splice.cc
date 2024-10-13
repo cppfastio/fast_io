@@ -19,4 +19,10 @@ int main()
 
 	::fast_io::println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
 			::fast_io::mnp::rgvw(list2, " "));
+
+	list2.splice(list2.cbegin(), list1.cbegin(), list1.cbegin());
+
+	::fast_io::println("list1:", ::fast_io::mnp::rgvw(list1, " "), "\nlist2:",
+			::fast_io::mnp::rgvw(list2, " "));
 }
+
