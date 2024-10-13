@@ -395,6 +395,34 @@ inline constexpr void forward_list_sort_common(void *firstptr, void *lastptr, Cm
 
 #endif
 
+#if 0
+template <typename T, typename Cmp>
+inline constexpr void forward_list_sort_before_common_n(void *beforefirstptr, void *beforelastptr, ::std::size_t n, Cmp cmp)
+{
+	auto beforefirst{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr)};
+	switch (n)
+	{
+	case 2:
+		auto it1{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next)};
+		auto it2{static_cast<::fast_io::containers::details::forward_list_node_common *>(it1->next) 1};
+		if (cmp(*it2, *it1))
+		{
+			it1->next = it2->next;
+			it2->next = it1;
+			beforefirst->next = it2;
+			;
+		}
+		break;
+	case 1:
+	case 0:
+		break;
+	default:
+		
+	}
+}
+
+#endif
+
 } // namespace details
 
 template <typename T, typename allocator>
@@ -577,6 +605,54 @@ public:
 
 	node_type *imp{};
 	constexpr forward_list() noexcept = default;
+
+private:
+	template <typename Iter, typename Sentinel>
+	constexpr void forward_list_range_init_common(Iter first, Sentinel last)
+	{
+		forward_list_destroyer destroyer(this);
+		void *beforeit{__builtin_addressof(this->imp)};
+		for (; first != last; ++first)
+		{
+			beforeit = this->emplace_after_impl(beforeit, *first);
+		}
+		destroyer.release();
+	}
+
+public:
+	template <std::ranges::input_range Rg>
+	explicit constexpr forward_list(::fast_io::freestanding::from_range_t, Rg &&rg)
+	{
+		if constexpr (::std::ranges::contiguous_range<Rg>)
+		{
+			this->forward_list_range_init_common(::std::to_address(::std::ranges::cbegin(rg)), ::std::to_address(::std::ranges::cend(rg)));
+		}
+		else
+		{
+			this->forward_list_range_init_common(::std::ranges::cbegin(rg), ::std::ranges::cend(rg));
+		}
+	}
+
+	explicit constexpr forward_list(::std::initializer_list<value_type> ilist)
+		: forward_list(::fast_io::freestanding::from_range, ilist)
+	{
+	}
+
+	explicit constexpr forward_list(::std::size_t n, const_reference r) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		forward_list_destroyer destroyer(this);
+		void *beforeit{__builtin_addressof(this->imp)};
+		for (::std::size_t i{}; i != n; ++i)
+		{
+			beforeit = this->emplace_after_impl(beforeit, r);
+		}
+		destroyer.release();
+	}
+
+	explicit constexpr forward_list(::std::size_t n) noexcept(::std::is_nothrow_default_constructible_v<value_type> && ::std::is_nothrow_copy_constructible_v<value_type>)
+		: forward_list(n, value_type())
+	{
+	}
 
 	constexpr ~forward_list()
 	{
