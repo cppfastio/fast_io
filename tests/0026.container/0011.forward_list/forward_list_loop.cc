@@ -18,9 +18,7 @@ int main()
 	println("front:", lst.front());
 	::fast_io::forward_list<::std::size_t> lst2(lst);
 	lst2.splice_before_after(lst2.cbefore_begin(), lst.cbefore_begin(), lst.cbegin());
-#if 0
 	lst2.splice_before_after(lst2.cbefore_begin(), lst.cbefore_begin(), lst.cbefore_begin());
-#endif
 	lst.erase_after(lst.cbefore_begin(), lst.cbegin());
 	lst.pop_front();
 	print("lst2:\n");

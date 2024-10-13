@@ -178,6 +178,10 @@ inline constexpr void forward_list_splice_before_after_iter(void *posptr, void *
 
 inline constexpr void forward_list_splice_before_after_range_common(void *posptr, void *beforefirstptr, void *beforelastptr) noexcept
 {
+	if (beforefirstptr == beforelastptr) [[unlikely]]
+	{
+		return;
+	}
 	auto pos = static_cast<::fast_io::containers::details::forward_list_node_common *>(posptr);
 	auto beforefirst = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr);
 	auto beforelast = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforelastptr);
