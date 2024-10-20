@@ -472,10 +472,9 @@ inline ::std::uint_least64_t nt_calculate_current_file_offset(void *__restrict h
 {
 	::fast_io::win32::nt::io_status_block block;
 	::std::uint_least64_t fps{};
-	auto status{::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(
-		handle, __builtin_addressof(block), __builtin_addressof(fps),
-		static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
-		::fast_io::win32::nt::file_information_class::FilePositionInformation)};
+	auto status{::fast_io::win32::nt::nt_query_information_file < family == ::fast_io::nt_family::zw > (handle, __builtin_addressof(block), __builtin_addressof(fps),
+																										static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
+																										::fast_io::win32::nt::file_information_class::FilePositionInformation)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -496,9 +495,8 @@ inline ::std::byte *nt_read_pread_some_bytes_common_impl(void *__restrict handle
 {
 	// some poeple in zwclose7 forum said we do not need to initialize io_status_block
 	::fast_io::win32::nt::io_status_block block;
-	auto const status{::fast_io::win32::nt::nt_read_file<family == ::fast_io::nt_family::zw>(
-		handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
-		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
+	auto const status{::fast_io::win32::nt::nt_read_file < family == ::fast_io::nt_family::zw > (handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
+																								 ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -527,9 +525,8 @@ inline ::std::byte const *nt_write_pwrite_some_bytes_common_impl(void *__restric
 																 ::std::int_least64_t *pbyteoffset)
 {
 	::fast_io::win32::nt::io_status_block block;
-	auto const status{::fast_io::win32::nt::nt_write_file<family == ::fast_io::nt_family::zw>(
-		handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
-		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
+	auto const status{::fast_io::win32::nt::nt_write_file < family == ::fast_io::nt_family::zw > (handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
+																								  ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -1021,7 +1018,7 @@ template <nt_family family, ::std::integral ch_type>
 inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_nt_family_io_observer<family, ch_type> handle,
 														::fast_io::intfpos_t offset, seekdir s)
 {
-	return ::fast_io::win32::nt::details::nt_seek_impl<family == nt_family::zw>(handle.handle, offset, s);
+	return ::fast_io::win32::nt::details::nt_seek_impl < family == nt_family::zw > (handle.handle, offset, s);
 }
 
 template <nt_family family, ::std::integral ch_type>
@@ -1057,7 +1054,7 @@ struct nt_family_file_lock
 		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
 	inline bool try_lock(basic_flock_request<int_type> &__restrict t) noexcept
 	{
-		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl<family == nt_family::zw>(this->handle, t);
+		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl < family == nt_family::zw > (this->handle, t);
 	}
 };
 
@@ -1080,7 +1077,7 @@ struct
 	using native_handle_type = void *;
 	void *handle{};
 	explicit constexpr nt_family_file_factory(void *hd) noexcept
-		: handle(hd){};
+		: handle(hd) {};
 	nt_family_file_factory(nt_family_file_factory const &) = delete;
 	nt_family_file_factory &operator=(nt_family_file_factory const &) = delete;
 	~nt_family_file_factory()
@@ -1122,13 +1119,12 @@ public:
 	}
 	explicit basic_nt_family_file(io_dup_t, basic_nt_family_io_observer<family, ch_type> wiob)
 		: basic_nt_family_io_observer<family, ch_type>{
-			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(wiob.handle)}
+			  ::fast_io::win32::nt::details::nt_dup_impl < family == nt_family::zw > (wiob.handle)}
 	{
 	}
 	explicit basic_nt_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, char_type>{
-			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl<family == nt_family::zw>(
-				  fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
+			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl < family == nt_family::zw > (fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
@@ -1163,7 +1159,7 @@ public:
 	{
 		if (this->handle) [[likely]]
 		{
-			auto status{::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle)};
+			auto status{::fast_io::win32::nt::nt_close < family == nt_family::zw > (this->handle)};
 			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
 			if (status) [[unlikely]]
 			{
@@ -1181,12 +1177,12 @@ public:
 	}
 	basic_nt_family_file(basic_nt_family_file const &other)
 		: basic_nt_family_io_observer<family, ch_type>(
-			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(other.handle))
+			  ::fast_io::win32::nt::details::nt_dup_impl < family == nt_family::zw > (other.handle))
 	{
 	}
 	basic_nt_family_file &operator=(basic_nt_family_file const &other)
 	{
-		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
+		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl < family == nt_family::zw > (other.handle, this->handle);
 		return *this;
 	}
 	constexpr basic_nt_family_file(basic_nt_family_file &&__restrict other) noexcept

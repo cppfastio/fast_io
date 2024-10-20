@@ -420,7 +420,7 @@ dragonbox_impl(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32
 	auto [m10, e10] = dragonbox_main<flt>(m2, e2);
 	// m10 should not ==0
 	auto [v, n] = ::fast_io::bitops::rtz_iec559(m10);
-	e10+=static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(n));
+	e10 += static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(n));
 	return {v, e10};
 }
 

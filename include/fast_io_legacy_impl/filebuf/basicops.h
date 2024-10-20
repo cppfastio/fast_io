@@ -131,7 +131,7 @@ inline typename T::char_type const *write_some_overflow_define(::fast_io::basic_
 
 template <typename T>
 inline typename T::char_type *read_some_underflow_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-														typename T::char_type *first, typename T::char_type *last)
+														 typename T::char_type *first, typename T::char_type *last)
 {
 	return ::fast_io::details::streambuf_read_report_eh_impl(fb.fb, first, last);
 }

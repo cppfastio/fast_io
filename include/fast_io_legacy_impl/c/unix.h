@@ -165,9 +165,7 @@ inline bool bsd_underflow_impl(FILE *__restrict fp)
 	--fp->_p;
 	return !eof;
 #else
-	struct _reent rent
-	{
-	};
+	struct _reent rent{};
 	bool eof{__sgetc_r(__builtin_addressof(rent), fp) != EOF};
 	if (!eof && ((fp->_flags & __SERR) != 0)) [[unlikely]]
 	{
