@@ -131,39 +131,69 @@ inline constexpr void forward_list_main_push_front_ptr_common(void *newnodevp, v
 inline constexpr void forward_list_main_erase_after_ptr_common(void *iter) noexcept
 {
 	auto node = static_cast<::fast_io::containers::details::forward_list_node_common *>(iter);
-	node->next = node->next->next;
+	auto next = static_cast<::fast_io::containers::details::forward_list_node_common *>(node);
+	node->next = next->next;
 }
 
-#if 0
-
 template <typename allocator>
-inline constexpr void *forward_list_trivially_allocate_insert(void *iter, ::std::size_t sz) noexcept
+inline constexpr void *forward_list_trivially_allocate_insert_after(void *iter, ::std::size_t sz) noexcept
 {
 	void *newnode = generic_allocator_adapter<allocator>::allocate(sz);
-	forward_list_main_insert_ptr_common(newnode, iter);
+	forward_list_main_insert_after_ptr_common(newnode, iter);
 	return newnode;
 }
 
 template <typename allocator>
-inline constexpr void *forward_list_trivially_allocate_insert_aligned(void *iter, ::std::size_t align, ::std::size_t sz) noexcept
+inline constexpr void *forward_list_trivially_allocate_insert_after_aligned(void *iter, ::std::size_t align, ::std::size_t sz) noexcept
 {
 	void *newnode = generic_allocator_adapter<allocator>::allocate_aligned(align, sz);
-	forward_list_main_insert_ptr_common(newnode, iter);
+	forward_list_main_insert_after_ptr_common(newnode, iter);
 	return newnode;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz>
-inline constexpr void *forward_list_trivially_allocate_insert_sa(void *iter) noexcept
+inline constexpr void *forward_list_trivially_allocate_insert_after_sa(void *iter) noexcept
 {
 	if constexpr (align <= allocator::default_alignment)
 	{
-		return ::fast_io::containers::details::forward_list_trivially_allocate_insert<allocator>(iter, sz);
+		return ::fast_io::containers::details::forward_list_trivially_allocate_insert_after<allocator>(iter, sz);
 	}
 	else
 	{
-		return ::fast_io::containers::details::forward_list_trivially_allocate_insert_aligned<allocator>(iter, align, sz);
+		return ::fast_io::containers::details::forward_list_trivially_allocate_insert_after_aligned<allocator>(iter, align, sz);
 	}
 }
+
+inline constexpr void forward_list_splice_before_after_iter(void *posptr, void *beforefirstptr) noexcept
+{
+	auto pos = static_cast<::fast_io::containers::details::forward_list_node_common *>(posptr);
+	auto beforefirst = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr);
+	auto posnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(pos->next);
+	auto first = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next);
+	auto firstnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(first->next);
+	pos->next = firstnext;
+	beforefirst->next = firstnext;
+	first->next = posnext;
+}
+
+inline constexpr void forward_list_splice_before_after_range_common(void *posptr, void *beforefirstptr, void *beforelastptr) noexcept
+{
+	if (beforefirstptr == beforelastptr) [[unlikely]]
+	{
+		return;
+	}
+	auto pos = static_cast<::fast_io::containers::details::forward_list_node_common *>(posptr);
+	auto beforefirst = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr);
+	auto beforelast = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforelastptr);
+	auto posnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(pos->next);
+	auto first = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next);
+	auto last = static_cast<::fast_io::containers::details::forward_list_node_common *>(beforelast->next);
+	beforefirst->next = last;
+	beforelast->next = posnext;
+	pos->next = first;
+}
+
+#if 0
 
 template <typename allocator>
 inline constexpr void *forward_list_trivially_allocate_push_front(void *imp, ::std::size_t sz) noexcept
@@ -365,9 +395,77 @@ inline constexpr void forward_list_sort_common(void *firstptr, void *lastptr, Cm
 
 #endif
 
-} // namespace details
+inline constexpr void forward_list_reverse_after_common(void *beforefirstptr, void *lastptr) noexcept
+{
+	auto beforefirst{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirstptr)};
 
-} // namespace containers
+	auto first{static_cast<::fast_io::containers::details::forward_list_node_common *>(beforefirst->next)};
+	auto last{static_cast<::fast_io::containers::details::forward_list_node_common *>(lastptr)};
+	if (first == last)
+	{
+		return;
+	}
+	auto beforeit{beforefirst}, it{first};
+	while (it != last)
+	{
+		auto nextit{static_cast<::fast_io::containers::details::forward_list_node_common *>(it->next)};
+		it->next = beforeit;
+		beforeit = it;
+		it = nextit;
+	}
+	beforefirst->next = beforeit;
+	first->next = last;
+}
+
+inline constexpr void forward_list_reverse_common(void *beforefirstptr) noexcept
+{
+	return ::fast_io::containers::details::forward_list_reverse_after_common(beforefirstptr, nullptr);
+}
+
+#if 0
+
+inline constexpr void *forward_list_ptr_advance(void *iter, ::std::size_t n) noexcept
+{
+	for (; n; --n)
+	{
+		iter = static_cast<::fast_io::containers::details::forward_list_node_common *>(iter)->next;
+	}
+	return iter;
+}
+
+template <typename T, typename Cmp>
+inline constexpr void forward_list_sort_before_common_n(void *beforefirstptr, void *beforelastptr, ::std::size_t n, Cmp cmp)
+{
+	auto beforefirst{static_cast<::fast_io::containers::details::forward_list_node<T> *>(beforefirstptr)};
+	switch (n)
+	{
+	case 2:
+		auto it1{static_cast<::fast_io::containers::details::forward_list_node<T> *>(beforefirst->next)};
+		auto it2{static_cast<::fast_io::containers::details::forward_list_node<T> *>(it1->next)};
+		if (cmp(it2->element, it1->element))
+		{
+			it1->next = it2->next;
+			it2->next = it1;
+			beforefirst->next = it2;
+		}
+		break;
+	case 1:
+	case 0:
+		break;
+	default:
+		::std::size_t const halfn{static_cast<::std::size_t>(n>>1u)};
+		auto beforemiddle{static_cast<::fast_io::containers::details::forward_list_node<T> *>(forward_list_ptr_advance(beforefirstptr, halfn))};
+		auto beforelast{static_cast<::fast_io::containers::details::forward_list_node<T> *>(beforelastptr)};
+		forward_list_sort_before_common_n<T, Cmp>(beforefirst, beforemiddle, halfn, cmp);
+		forward_list_sort_before_common_n<T, Cmp>(beforemiddle, beforelast, static_cast<::std::size_t>(n-halfn), cmp);
+//		forward_list_merge_common<T, Cmp>(beforefirst, __builtin_addressof(leftdetacher),
+//								  beforemiddle, __builtin_addressof(rightdetacher), cmp);
+	}
+}
+
+#endif
+
+} // namespace details
 
 template <typename T, typename allocator>
 class forward_list
@@ -448,11 +546,11 @@ private:
 		explicit constexpr forward_list_destroyer(forward_list<T, allocator> *pl) noexcept
 			: plst(pl)
 		{}
-		constexpr void release()
+		constexpr void release() noexcept
 		{
 			plst = nullptr;
 		}
-		forward_list_destroyer(list_destroyer const &) = delete;
+		forward_list_destroyer(forward_list_destroyer const &) = delete;
 		forward_list_destroyer &operator=(forward_list_destroyer const &) = delete;
 		constexpr ~forward_list_destroyer()
 		{
@@ -481,7 +579,7 @@ private:
 		}
 	}
 
-	constexpr void destroy() noexcept
+	constexpr void destroy_impl(void *first, void *last) noexcept
 	{
 #if __cpp_if_consteval >= 202106L
 		if !consteval
@@ -492,16 +590,21 @@ private:
 			if constexpr (::std::is_trivially_destructible_v<value_type> && !alloc_with_status)
 			{
 				::fast_io::containers::details::forward_list_trivially_destroy_sa<allocator_type,
-																				  alignof(node_type), sizeof(node_type)>(imp.next, __builtin_addressof(imp));
+																				  alignof(node_type), sizeof(node_type)>(first, last);
 				return;
 			}
 		}
-		for (void *it{imp.next}, *ed{__builtin_addressof(imp)}; it != ed;)
+		for (void *it{first}; it != last;)
 		{
 			auto next{*static_cast<void **>(it)};
 			this->destroy_node(it);
 			it = next;
 		}
+	}
+
+	constexpr void destroy() noexcept
+	{
+		this->destroy_impl(this->imp, nullptr);
 	}
 
 	template <typename... Args>
@@ -536,109 +639,269 @@ public:
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
 
-	using iterator = ::fast_io::containers::details::list_iterator<T, false>;
-	using const_iterator = ::fast_io::containers::details::list_iterator<T, true>;
+	using iterator = ::fast_io::containers::details::forward_list_iterator<T, false>;
+	using const_iterator = ::fast_io::containers::details::forward_list_iterator<T, true>;
 
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 
-	void *imp{};
+	node_type *imp{};
 	constexpr forward_list() noexcept = default;
+
+private:
+	template <typename Iter, typename Sentinel>
+	constexpr void forward_list_range_init_common(Iter first, Sentinel last)
+	{
+		forward_list_destroyer destroyer(this);
+		void *beforeit{__builtin_addressof(this->imp)};
+		for (; first != last; ++first)
+		{
+			beforeit = this->emplace_after_impl(beforeit, *first);
+		}
+		destroyer.release();
+	}
+
+public:
+	template <std::ranges::input_range Rg>
+	explicit constexpr forward_list(::fast_io::freestanding::from_range_t, Rg &&rg)
+	{
+		if constexpr (::std::ranges::contiguous_range<Rg>)
+		{
+			this->forward_list_range_init_common(::std::to_address(::std::ranges::cbegin(rg)), ::std::to_address(::std::ranges::cend(rg)));
+		}
+		else
+		{
+			this->forward_list_range_init_common(::std::ranges::cbegin(rg), ::std::ranges::cend(rg));
+		}
+	}
+
+	explicit constexpr forward_list(::std::initializer_list<value_type> ilist)
+		: forward_list(::fast_io::freestanding::from_range, ilist)
+	{
+	}
+
+	explicit constexpr forward_list(::std::size_t n, const_reference r) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		forward_list_destroyer destroyer(this);
+		void *beforeit{__builtin_addressof(this->imp)};
+		for (::std::size_t i{}; i != n; ++i)
+		{
+			beforeit = this->emplace_after_impl(beforeit, r);
+		}
+		destroyer.release();
+	}
+
+	explicit constexpr forward_list(::std::size_t n) noexcept(::std::is_nothrow_default_constructible_v<value_type> && ::std::is_nothrow_copy_constructible_v<value_type>)
+		: forward_list(n, value_type())
+	{
+	}
 
 	constexpr ~forward_list()
 	{
 		this->destroy();
 	}
 
-	constexpr iterator before_begin() noexcept
+	[[nodiscard]] constexpr iterator before_begin() noexcept
 	{
 		return {__builtin_addressof(imp)};
 	}
 
-	constexpr const_iterator before_begin() const noexcept
+	[[nodiscard]] constexpr const_iterator before_begin() const noexcept
 	{
-		return {__builtin_addressof(imp)};
+		return {const_cast<void *>(static_cast<void const *>(__builtin_addressof(this->imp)))};
 	}
 
-	constexpr const_iterator cbefore_begin() const noexcept
+	[[nodiscard]] constexpr const_iterator cbefore_begin() const noexcept
 	{
-		return {__builtin_addressof(imp)};
+		return {const_cast<void *>(static_cast<void const *>(__builtin_addressof(this->imp)))};
 	}
 
-	constexpr iterator begin() noexcept
-	{
-		return {imp};
-	}
-
-	constexpr const_iterator begin() const noexcept
+	[[nodiscard]] constexpr iterator begin() noexcept
 	{
 		return {imp};
 	}
 
-	constexpr const_iterator cbegin() const noexcept
+	[[nodiscard]] constexpr const_iterator begin() const noexcept
 	{
 		return {imp};
 	}
 
-	constexpr iterator end() noexcept
+	[[nodiscard]] constexpr const_iterator cbegin() const noexcept
+	{
+		return {imp};
+	}
+
+	[[nodiscard]] constexpr iterator end() noexcept
 	{
 		return {nullptr};
 	}
 
-	constexpr const_iterator end() const noexcept
+	[[nodiscard]] constexpr const_iterator end() const noexcept
 	{
 		return {nullptr};
 	}
 
-	constexpr const_iterator cend() const noexcept
+	[[nodiscard]] constexpr const_iterator cend() const noexcept
 	{
 		return {nullptr};
 	}
 
+	[[nodiscard]] constexpr bool empty() const noexcept
+	{
+		return this->imp == nullptr;
+	}
+	[[nodiscard]] constexpr bool is_empty() const noexcept
+	{
+		return this->imp == nullptr;
+	}
+
+	[[nodiscard]] constexpr reference front() noexcept
+	{
+		if (this->imp == nullptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return this->imp->element;
+	}
+	[[nodiscard]] constexpr const_reference front() const noexcept
+	{
+		if (this->imp == nullptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		return this->imp->element;
+	}
+
+	[[nodiscard]] constexpr reference front_unchecked() noexcept
+	{
+		return this->imp->element;
+	}
+	[[nodiscard]] constexpr const_reference front_unchecked() const noexcept
+	{
+		return this->imp->element;
+	}
+
+private:
+	constexpr void erase_after_impl(void *first, void *last) noexcept
+	{
+		auto node = static_cast<::fast_io::containers::details::forward_list_node_common *>(first);
+		auto next = static_cast<::fast_io::containers::details::forward_list_node_common *>(node)->next;
+		node->next = last;
+		this->destroy_impl(next, last);
+	}
+	constexpr void erase_after_impl(void *ptr) noexcept
+	{
+		auto node = static_cast<::fast_io::containers::details::forward_list_node_common *>(ptr);
+		auto next = static_cast<::fast_io::containers::details::forward_list_node_common *>(node)->next;
+		auto nextnext = static_cast<::fast_io::containers::details::forward_list_node_common *>(next)->next;
+		node->next = nextnext;
+		this->destroy_node(next);
+	}
+
+public:
+	constexpr void erase_after(const_iterator iter) noexcept
+	{
+		this->erase_after_impl(iter.iter);
+	}
+
+	constexpr void erase_after(const_iterator first, const_iterator last) noexcept
+	{
+		this->erase_after_impl(first.iter, last.iter);
+	}
+
+	constexpr void pop_front_unchecked() noexcept
+	{
+		this->erase_after_impl(__builtin_addressof(this->imp));
+	}
+
+	constexpr void pop_front() noexcept
+	{
+		if (this->imp == nullptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+		this->erase_after_impl(__builtin_addressof(this->imp));
+	}
+
+private:
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr iterator emplace_after(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	constexpr node_type *emplace_after_impl(void *ptr, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
-			auto newnode = static_cast<node_type *>(::fast_io::containers::details::forward_list_trivially_allocate_insert_sa<allocator_type, alignof(node_type), sizeof(node_type)>(iter.iter));
+			auto newnode = static_cast<node_type *>(::fast_io::containers::details::forward_list_trivially_allocate_insert_after_sa<allocator_type, alignof(node_type), sizeof(node_type)>(ptr));
 			::std::construct_at(
 				__builtin_addressof(newnode->element),
 				::std::forward<Args>(args)...);
-			return {newnodecons};
+			return newnode;
 		}
 		else
 		{
 			auto newnodecons = this->allocate_construct_new_node(::std::forward<Args>(args)...);
-			::fast_io::containers::details::forward_list_main_insert_after_ptr_common(newnodecons, iter.iter);
-			return {newnodecons};
+			::fast_io::containers::details::forward_list_main_insert_after_ptr_common(newnodecons, ptr);
+			return newnodecons;
 		}
-		//		this->imp = pos;
 	}
 
-#if 0
+public:
+	template <typename... Args>
+		requires ::std::constructible_from<value_type, Args...>
+	constexpr iterator emplace_after(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	{
+		return {this->emplace_after_impl(iter.iter, ::std::forward<Args>(args)...)};
+	}
+
+	constexpr iterator insert_after(const_iterator iter, const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		return {this->emplace_after_impl(iter.iter, val)};
+	}
+
+	constexpr iterator insert_after(const_iterator iter, value_type &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		return {this->emplace_after_impl(iter.iter, ::std::move(val))};
+	}
+
+	template <typename... Args>
+		requires ::std::constructible_from<value_type, Args...>
+	constexpr reference emplace_front(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	{
+		return this->emplace_after_impl(__builtin_addressof(this->imp), ::std::forward<Args>(args)...)->element;
+	}
+	constexpr void push_front(const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		this->emplace_front(val);
+	}
+	constexpr void push_front(value_type &&val) noexcept(::std::is_nothrow_move_constructible_v<value_type>)
+	{
+		this->emplace_front(::std::move(val));
+	}
+
 	constexpr forward_list(forward_list const &other)
 		requires(::std::copyable<value_type>)
 	{
 		forward_list_destroyer destroyer(this);
+		void *itt{__builtin_addressof(this->imp)};
+		node_type *it{static_cast<node_type *>(itt)};
 		for (auto const &ele : other)
 		{
-			this->insert_after(ele);
+			it = this->emplace_after_impl(it, ele);
 		}
 		destroyer.release();
 	}
-#endif
 	constexpr forward_list(forward_list const &) = delete;
 
-#if 0
 	constexpr forward_list &operator=(forward_list const &other)
 		requires(::std::copyable<value_type>)
 	{
-		forward_list temp(other);
-		this->operator=(::std::move(temp));
+		if (this != __builtin_addressof(other))
+		{
+			forward_list temp(other);
+			this->imp = temp.imp;
+			temp.imp = nullptr;
+		}
 		return *this;
 	}
-#endif
 	constexpr forward_list &operator=(forward_list const &) = delete;
 
 	constexpr forward_list(forward_list &&other) noexcept
@@ -657,6 +920,43 @@ public:
 		}
 		return *this;
 	}
+
+	constexpr void splice_before_after(const_iterator pos, const_iterator beforeit) noexcept
+	{
+		::fast_io::containers::details::forward_list_splice_before_after_iter(pos.iter, beforeit.iter);
+	}
+	constexpr void splice_before_after(const_iterator pos, const_iterator beforefirst, const_iterator beforelast) noexcept
+	{
+		::fast_io::containers::details::forward_list_splice_before_after_range_common(pos.iter, beforefirst.iter, beforelast.iter);
+	}
+	constexpr void reverse_after(const_iterator beforefirst, const_iterator last) noexcept
+	{
+		::fast_io::containers::details::forward_list_reverse_after_common(beforefirst.iter, last.iter);
+	}
+	constexpr void reverse() noexcept
+	{
+		::fast_io::containers::details::forward_list_reverse_common(__builtin_addressof(this->imp));
+	}
 };
-// namespace fast_io
-// namespace fast_io
+
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::equality_comparable<T>
+constexpr bool operator==(::fast_io::containers::forward_list<T, allocator1> const &lhs, ::fast_io::containers::forward_list<T, allocator2> const &rhs) noexcept
+{
+	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+}
+
+#if defined(__cpp_lib_three_way_comparison)
+
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::three_way_comparable<T>
+constexpr auto operator<=>(::fast_io::containers::forward_list<T, allocator1> const &lhs, ::fast_io::containers::forward_list<T, allocator2> const &rhs) noexcept
+{
+	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+}
+
+#endif
+
+} // namespace containers
+
+} // namespace fast_io
