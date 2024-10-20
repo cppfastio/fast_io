@@ -42,9 +42,7 @@ inline ::std::size_t c_fwrite_unlocked_impl(void const *__restrict begin, ::std:
 		return 0;
 	}
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-	struct _reent rent
-	{
-	};
+	struct _reent rent{};
 	::std::size_t written_count{
 #if defined(__IMPL_UNLOCKED__)
 		noexcept_call(_fwrite_unlocked_r, __builtin_addressof(rent), begin, type_size, count, fp)
@@ -96,9 +94,7 @@ inline ::std::size_t c_fread_unlocked_impl(void *__restrict begin, ::std::size_t
 		::fast_io::noexcept_call(::fflush, stdout);
 	}
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-	struct _reent rent
-	{
-	};
+	struct _reent rent{};
 	::std::size_t read_count{
 #if defined(__IMPL_UNLOCKED__)
 		noexcept_call(_fread_unlocked_r, __builtin_addressof(rent), begin, type_size, count, fp)
@@ -176,9 +172,7 @@ inline ::std::size_t c_fwrite_impl(void const *__restrict begin, ::std::size_t t
 		return 0;
 	}
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-	struct _reent rent
-	{
-	};
+	struct _reent rent{};
 	::std::size_t written_count{noexcept_call(_fwrite_r, __builtin_addressof(rent), begin, type_size, count, fp)};
 	if (!written_count) [[unlikely]]
 	{
@@ -213,9 +207,7 @@ inline ::std::size_t c_fread_impl(void *__restrict begin, ::std::size_t type_siz
 		::fast_io::noexcept_call(::fflush, stdout);
 	}
 #if defined(__NEWLIB__)
-	struct _reent rent
-	{
-	};
+	struct _reent rent{};
 	::std::size_t read_count{noexcept_call(_fread_r, __builtin_addressof(rent), begin, type_size, count, fp)};
 	if (read_count == 0) [[unlikely]]
 	{

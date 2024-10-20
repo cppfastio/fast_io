@@ -13,7 +13,7 @@ inline char const *abi_type_info_name_or_nullptr(T *mythis) noexcept
 	try
 	{
 #endif
-		auto& dereferencethis{*mythis};
+		auto &dereferencethis{*mythis};
 		return typeid(dereferencethis).name();
 #if (defined(_MSC_VER) && _HAS_EXCEPTIONS != 0) || (!defined(_MSC_VER) && defined(__cpp_exceptions))
 	}

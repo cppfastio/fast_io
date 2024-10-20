@@ -177,6 +177,6 @@ using u16crlf_to_lf = basic_eol<char16_t, eol_scheme::crlf, eol_scheme::lf>;
 using u32lf_to_crlf = basic_eol<char32_t, eol_scheme::lf, eol_scheme::crlf>;
 using u32crlf_to_lf = basic_eol<char32_t, eol_scheme::crlf, eol_scheme::lf>;
 
-} // namespace decorators
+} // namespace transcoders
 
 } // namespace fast_io

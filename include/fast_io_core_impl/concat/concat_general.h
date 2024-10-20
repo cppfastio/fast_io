@@ -169,7 +169,8 @@ inline constexpr T basic_general_concat_decay_impl(Args... args)
 		}
 	}
 	else if constexpr (((reserve_printable<ch_type, Args> || scatter_printable<ch_type, Args> ||
-						 dynamic_reserve_printable<ch_type, Args>)&&...))
+						 dynamic_reserve_printable<ch_type, Args>) &&
+						...))
 	{
 		constexpr ::std::size_t sz{calculate_scatter_reserve_size<ch_type, Args...>()};
 		if constexpr (line)
@@ -269,7 +270,8 @@ template <bool line, ::std::integral ch_type, typename T, typename... Args>
 inline constexpr void basic_general_concat_decay_ref_impl(T &str, Args... args)
 {
 	if constexpr (((reserve_printable<ch_type, Args> || scatter_printable<ch_type, Args> ||
-					dynamic_reserve_printable<ch_type, Args>)&&...))
+					dynamic_reserve_printable<ch_type, Args>) &&
+				   ...))
 	{
 		constexpr ::std::size_t sz{calculate_scatter_reserve_size<ch_type, Args...>()};
 		if constexpr (line)

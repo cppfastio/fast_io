@@ -54,9 +54,7 @@ inline void posix_file_lock_lock_impl(int fd, basic_flock_request<int_type> cons
 			throw_posix_error(EINVAL);
 		}
 	}
-	struct flock temp
-	{
-	};
+	struct flock temp{};
 	temp.l_type = flock_type_to_native(t.type);
 	temp.l_start = static_cast<flock_off_type>(t.start);
 	temp.l_whence = static_cast<short>(t.whence);
@@ -88,9 +86,7 @@ inline bool posix_file_lock_try_lock_impl(int fd, basic_flock_request<int_type> 
 			return false;
 		}
 	}
-	struct flock temp
-	{
-	};
+	struct flock temp{};
 	temp.l_type = flock_type_to_native(t.type);
 	temp.l_start = static_cast<flock_off_type>(t.start);
 	temp.l_whence = static_cast<short>(t.whence);
@@ -112,9 +108,7 @@ inline void posix_file_lock_unlock_impl(int fd, basic_flock_request<int_type> co
 			return;
 		}
 	}
-	struct flock temp
-	{
-	};
+	struct flock temp{};
 	temp.l_type = flock_type_to_native(t.type);
 	temp.l_start = static_cast<flock_off_type>(t.start);
 	temp.l_whence = static_cast<short>(t.whence);

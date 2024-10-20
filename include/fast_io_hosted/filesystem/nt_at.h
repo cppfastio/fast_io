@@ -220,7 +220,7 @@ template <nt_family family, ::fast_io::details::posix_api_1x dsp, typename path_
 inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args)
 {
 	return nt_api_common(
-		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...); });
+		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher < family == nt_family::zw, dsp > (dir_handle, path_c_str, path_size, args...); });
 }
 
 template <nt_family family, ::fast_io::details::posix_api_22 dsp, typename oldpath_type, typename newpath_type>
@@ -231,9 +231,8 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 							 return nt_api_common(newpath,
 												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-													  return nt22_api_dispatcher<family == nt_family::zw, dsp>(
-														  olddirhd, oldpath_c_str, oldpath_size, newdirhd,
-														  newpath_c_str, newpath_size);
+													  return nt22_api_dispatcher < family == nt_family::zw, dsp > (olddirhd, oldpath_c_str, oldpath_size, newdirhd,
+																												   newpath_c_str, newpath_size);
 												  });
 						 });
 }

@@ -37,7 +37,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 		{
 			std::size_t s{};
 
-			if constexpr(!iec559)
+			if constexpr (!iec559)
 			{
 				constexpr ::std::uint_least64_t c0{230079197716545u};
 				::std::uint_least64_t r{::std::rotr(static_cast<std::uint64_t>(n * c0), 16)};
@@ -99,7 +99,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 		{
 			std::size_t s{};
 
-			if constexpr(!iec559)
+			if constexpr (!iec559)
 			{
 				constexpr ::std::uint_least64_t c0{15273505u};
 				::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 8)};
@@ -187,7 +187,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 }
 
 
-}
+} // namespace details
 
 template <typename T>
 inline constexpr ::fast_io::bitops::rtz_result<T> rtz_iec559(T n) noexcept

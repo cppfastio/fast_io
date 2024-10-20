@@ -410,7 +410,7 @@ constexpr void deque_reallocate_controller_block_common_impl(dequecontroltype &c
 	controller.back_block.controller_ptr = controller.controller_block.controller_start_ptr + back_block_index;
 }
 
-template<typename T>
+template <typename T>
 constexpr T **make_blocks_balance(T **begin, T **end, T **b, T **e) noexcept
 {
 	::std::size_t external_diff{static_cast<::std::size_t>(end - begin)};
@@ -544,7 +544,7 @@ constexpr void deque_grow_front_common_impl(dequecontroltype &controller) noexce
 		}
 	}
 
-	controller.front_block.curr_ptr = controller.front_block.end_ptr = static_cast<dequecontroltype::replacetype*>(controller.front_block.begin_ptr = *--controller.front_block.controller_ptr) + block_size;
+	controller.front_block.curr_ptr = controller.front_block.end_ptr = static_cast<dequecontroltype::replacetype *>(controller.front_block.begin_ptr = *--controller.front_block.controller_ptr) + block_size;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz, ::std::size_t block_size, typename dequecontroltype>
@@ -598,7 +598,7 @@ constexpr void deque_grow_back_common_impl(dequecontroltype &controller) noexcep
 		}
 	}
 
-	controller.back_block.end_ptr = static_cast<dequecontroltype::replacetype*>(controller.back_block.curr_ptr = controller.back_block.begin_ptr = *++controller.back_block.controller_ptr) + block_size;
+	controller.back_block.end_ptr = static_cast<dequecontroltype::replacetype *>(controller.back_block.curr_ptr = controller.back_block.begin_ptr = *++controller.back_block.controller_ptr) + block_size;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz, ::std::size_t block_size, typename dequecontroltype>
@@ -633,7 +633,8 @@ public:
 	::fast_io::containers::details::deque_controller<T> controller;
 	static inline constexpr size_type block_size{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 	constexpr deque() noexcept
-		: controller{{}, {}, {}} {}
+		: controller{{}, {}, {}}
+	{}
 
 	constexpr deque(deque const &) = delete;
 	constexpr deque &operator=(deque const &) = delete;

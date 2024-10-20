@@ -16,4 +16,3 @@
 #endif
 #include "scan_str_ctx_impl.h"
 #include "concat_std.h"
-
