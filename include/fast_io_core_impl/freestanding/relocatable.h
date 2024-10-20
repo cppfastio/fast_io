@@ -7,9 +7,9 @@ template <typename T>
 struct is_trivially_relocatable
 {
 #if defined(__clang__) && defined(__cpp_impl_trivially_relocatable)
-        inline static constexpr bool value = __is_trivially_relocatable(T);
+	inline static constexpr bool value = __is_trivially_relocatable(T);
 #else
-        inline static constexpr bool value = ::std::is_trivially_copyable_v<T>;
+	inline static constexpr bool value = ::std::is_trivially_copyable_v<T>;
 #endif
 };
 

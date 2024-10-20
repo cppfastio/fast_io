@@ -13,7 +13,8 @@ struct cannot_output_type
 
 template <typename T>
 concept alias_return_lvalue_ref = !(::std::is_function_v<::std::remove_cvref_t<T>> ||
-									alias_printable<::std::remove_cvref_t<T>>)&&::std::is_lvalue_reference_v<T>;
+									alias_printable<::std::remove_cvref_t<T>>) &&
+								  ::std::is_lvalue_reference_v<T>;
 
 } // namespace details
 

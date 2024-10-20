@@ -11,10 +11,10 @@ concept cond_ok_lc_scatter_printable_impl =
 
 template <typename char_type, typename T1, typename T2>
 concept cond_ok_lc_dynamic_reserve_printable_impl =
-	(lc_dynamic_reserve_printable<char_type, T1> || lc_scatter_printable<char_type, T1>)&&(
-		lc_dynamic_reserve_printable<char_type, T2> || lc_scatter_printable<char_type, T2> ||
-		reserve_printable<char_type, T2> || dynamic_reserve_printable<char_type, T2> ||
-		scatter_printable<char_type, T2>);
+	(lc_dynamic_reserve_printable<char_type, T1> || lc_scatter_printable<char_type, T1>) &&
+	(lc_dynamic_reserve_printable<char_type, T2> || lc_scatter_printable<char_type, T2> ||
+	 reserve_printable<char_type, T2> || dynamic_reserve_printable<char_type, T2> ||
+	 scatter_printable<char_type, T2>);
 
 template <typename char_type, typename T1>
 concept cond_ok_lc_printable_impl = cond_ok_printable_impl<char_type, T1> && lc_printable<char_type, T1>;

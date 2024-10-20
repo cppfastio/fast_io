@@ -63,11 +63,10 @@ concept auxiliary_strlike = strlike<char_type, T> && requires(T &t, char_type ch
 
 template <typename char_type, typename T>
 concept sso_buffer_strlike = buffer_strlike<char_type, T> &&
-	requires()
-{
-	{
-		strlike_sso_size(io_strlike_type<char_type, T>)
-	} -> ::std::same_as<::std::size_t>;
-};
+							 requires {
+								 {
+									 strlike_sso_size(io_strlike_type<char_type, T>)
+								 } -> ::std::same_as<::std::size_t>;
+							 };
 
 } // namespace fast_io

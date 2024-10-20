@@ -15,7 +15,7 @@ inline constexpr auto width(scalar_placement placement, T &&t, ::std::size_t n) 
 		return width_runtime_t<decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			placement, print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -40,7 +40,7 @@ inline constexpr auto width(scalar_placement placement, T &&t, ::std::size_t n, 
 		return width_runtime_ch_t<decltype(print_alias_define(io_alias, ::std::forward<T>(t))), char_type>{
 			placement, print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -64,7 +64,7 @@ inline constexpr auto left(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::left, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -89,7 +89,7 @@ inline constexpr auto middle(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::middle, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -114,7 +114,7 @@ inline constexpr auto right(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::right, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -139,7 +139,7 @@ inline constexpr auto internal(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::internal, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -164,7 +164,7 @@ inline constexpr auto left(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::left, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -189,7 +189,7 @@ inline constexpr auto middle(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::middle, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -214,7 +214,7 @@ inline constexpr auto right(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::right, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -239,7 +239,7 @@ inline constexpr auto internal(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::internal, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else

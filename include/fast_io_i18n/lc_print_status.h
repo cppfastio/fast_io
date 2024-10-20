@@ -141,7 +141,7 @@ lc_scatter_print_with_dynamic_reserve_recursive(basic_lc_all<char_type> const *_
 	}
 	if constexpr (sizeof...(Args) != 0)
 	{
-		if constexpr (((!lc_dynamic_reserve_printable<char_type, Args> && !lc_scatter_printable<char_type, Args>)&&...))
+		if constexpr (((!lc_dynamic_reserve_printable<char_type, Args> && !lc_scatter_printable<char_type, Args>) && ...))
 		{
 			scatter_print_with_dynamic_reserve_recursive(arr + 1, ptr, dynamic_buffer_ptr, args...);
 		}
@@ -190,7 +190,7 @@ lc_scatter_print_with_dynamic_only_reserve_recursive(basic_lc_all<char_type> con
 	}
 	if constexpr (sizeof...(Args) != 0)
 	{
-		if constexpr (((!lc_dynamic_reserve_printable<char_type, Args> && !lc_scatter_printable<char_type, Args>)&&...))
+		if constexpr (((!lc_dynamic_reserve_printable<char_type, Args> && !lc_scatter_printable<char_type, Args>) && ...))
 		{
 			scatter_print_with_dynamic_only_reserve_recursive(arr + 1, dynamic_buffer_ptr, args...);
 		}
@@ -334,7 +334,7 @@ inline constexpr void lc_scatter_print_recursive(basic_lc_all<char_type> const *
 	}
 	if constexpr (sizeof...(Args) != 0)
 	{
-		if constexpr (((!lc_scatter_printable<char_type, Args>)&&...))
+		if constexpr (((!lc_scatter_printable<char_type, Args>) && ...))
 		{
 			scatter_print_recursive<char_type>(arr + 1, args...);
 		}
@@ -356,15 +356,15 @@ inline constexpr void lc_print_fallback(basic_lc_all<typename output::char_type>
 	{
 		print_freestanding_decay_no_status<ln>(out, args...);
 	}
-	else if constexpr ((scatter_output_stream<output> || scatter_constant_output_stream<output>)&&(
-						   (reserve_printable<char_type, Args> || dynamic_reserve_printable<char_type, Args> ||
-							lc_dynamic_reserve_printable<char_type, Args> || scatter_printable<char_type, Args> ||
-							lc_scatter_printable<char_type, Args>)&&...))
+	else if constexpr ((scatter_output_stream<output> || scatter_constant_output_stream<output>) && ((reserve_printable<char_type, Args> || dynamic_reserve_printable<char_type, Args> ||
+																									  lc_dynamic_reserve_printable<char_type, Args> || scatter_printable<char_type, Args> ||
+																									  lc_scatter_printable<char_type, Args>) &&
+																									 ...))
 	{
 		constexpr ::std::size_t args_num{sizeof...(Args)};
 		constexpr ::std::size_t scatters_num{args_num + static_cast<::std::size_t>(ln)};
 		io_scatter_t scatters[scatters_num];
-		if constexpr (((scatter_printable<char_type, Args> || lc_scatter_printable<char_type, Args>)&&...))
+		if constexpr (((scatter_printable<char_type, Args> || lc_scatter_printable<char_type, Args>) && ...))
 		{
 			lc_scatter_print_recursive(lc, scatters, args...);
 			if constexpr (ln)
@@ -460,14 +460,11 @@ lc_print_status_define_further_decay(basic_lc_all<typename output::char_type> co
 		}
 	}
 	else if constexpr (sizeof...(Args) == 1 &&
-					   (!ln || output_stream_with_writeln<output>)&&(
-						   (printable<output, Args> || scatter_printable<char_type, Args> ||
-							lc_scatter_printable<char_type, Args> || lc_dynamic_reserve_printable<char_type, Args> ||
-							reserve_printable<char_type, Args> || dynamic_reserve_printable<char_type, Args>)&&...))
+					   (!ln || output_stream_with_writeln<output>) && ((printable<output, Args> || scatter_printable<char_type, Args> || lc_scatter_printable<char_type, Args> || lc_dynamic_reserve_printable<char_type, Args> || reserve_printable<char_type, Args> || dynamic_reserve_printable<char_type, Args>) && ...))
 	{
 		lc_print_controls_line<ln>(lc, out, args...);
 	}
-	else if constexpr (sizeof...(Args) == 1 && ln && ((lc_dynamic_reserve_printable<char_type, Args>)&&...))
+	else if constexpr (sizeof...(Args) == 1 && ln && ((lc_dynamic_reserve_printable<char_type, Args>) && ...))
 	{
 		(lc_print_control<true>(lc, out, args), ...);
 	}
@@ -484,7 +481,8 @@ concept lc_print_status_define_okay_character_type =
 	::std::integral<char_type> &&
 	(((printable<char_type, Args> || reserve_printable<char_type, Args> || dynamic_reserve_printable<char_type, Args> ||
 	   scatter_printable<char_type, Args> || lc_printable<char_type, Args> ||
-	   lc_dynamic_reserve_printable<char_type, Args> || lc_scatter_printable<char_type, Args>)&&...));
+	   lc_dynamic_reserve_printable<char_type, Args> || lc_scatter_printable<char_type, Args>) &&
+	  ...));
 
 template <bool line, output_stream output, typename... Args>
 	requires lc_print_status_define_okay_character_type<typename output::char_type, Args...>

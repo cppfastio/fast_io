@@ -14,23 +14,23 @@ inline constexpr auto charliteralofnumber(char8_t v) noexcept
 	{
 		if (v < 19u)
 		{
-			return ::fast_io::char_literal_add < char_type,
-				   upper ? u8'A' : u8'a' > (static_cast<char8_t>(v - UINT8_C(10)));
+			return ::fast_io::char_literal_add<char_type,
+											   upper ? u8'A' : u8'a'>(static_cast<char8_t>(v - UINT8_C(10)));
 		}
 		else if (v < 28u)
 		{
-			return ::fast_io::char_literal_add < char_type,
-				   upper ? u8'J' : u8'j' > (static_cast<char8_t>(v - UINT8_C(19)));
+			return ::fast_io::char_literal_add<char_type,
+											   upper ? u8'J' : u8'j'>(static_cast<char8_t>(v - UINT8_C(19)));
 		}
 		else
 		{
-			return ::fast_io::char_literal_add < char_type,
-				   upper ? u8'S' : u8's' > (static_cast<char8_t>(v - UINT8_C(28)));
+			return ::fast_io::char_literal_add<char_type,
+											   upper ? u8'S' : u8's'>(static_cast<char8_t>(v - UINT8_C(28)));
 		}
 	}
 	else
 	{
-		return ::fast_io::char_literal_add < char_type, upper ? u8'A' : u8'a' > (static_cast<char8_t>(v - UINT8_C(10)));
+		return ::fast_io::char_literal_add<char_type, upper ? u8'A' : u8'a'>(static_cast<char8_t>(v - UINT8_C(10)));
 	}
 }
 

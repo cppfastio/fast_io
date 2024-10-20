@@ -452,9 +452,7 @@ inline FILE *my_c_file_open_impl(int fd, open_mode mode)
 #else
 	char const *cmode{to_native_c_mode(mode)};
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-	struct _reent ent
-	{
-	};
+	struct _reent ent{};
 	auto fp{noexcept_call(_fdopen_r, __builtin_addressof(ent), fd, cmode)};
 	if (fp == nullptr)
 	{
@@ -473,9 +471,7 @@ inline FILE *my_c_file_open_impl(int fd, open_mode mode)
 #if defined(__NEWLIB__)
 inline void my_c_io_newlib_flush_impl(FILE *fp)
 {
-	struct _reent ent
-	{
-	};
+	struct _reent ent{};
 	if (noexcept_call(_fflush_r, __builtin_addressof(ent), fp))
 	{
 		throw_posix_error(ent._errno);
@@ -588,9 +584,7 @@ inline ::fast_io::intfpos_t my_c_io_seek_impl(FILE *fp, ::fast_io::intfpos_t off
 	{
 
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-		struct _reent ent
-		{
-		};
+		struct _reent ent{};
 		if (noexcept_call(_fseeko_r, __builtin_addressof(ent), fp, static_cast<_off_t>(offset), static_cast<int>(s)))
 		{
 			throw_posix_error(ent._errno);
@@ -916,9 +910,7 @@ struct
 		if (fp) [[likely]]
 		{
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-			struct _reent ent
-			{
-			};
+			struct _reent ent{};
 			noexcept_call(_fclose_r, __builtin_addressof(ent), this->fp);
 #else
 			details::my_fclose_impl<family>(this->fp);
@@ -968,9 +960,7 @@ public:
 		if (this->fp) [[likely]]
 		{
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-			struct _reent ent
-			{
-			};
+			struct _reent ent{};
 			noexcept_call(_fclose_r, __builtin_addressof(ent), this->fp);
 #else
 			details::my_fclose_impl<family>(this->fp);
@@ -987,9 +977,7 @@ public:
 			return;
 		}
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-		struct _reent ent
-		{
-		};
+		struct _reent ent{};
 		int ret{noexcept_call(_fclose_r, __builtin_addressof(ent), this->fp)};
 		this->fp = nullptr;
 		if (ret == EOF)
@@ -1010,9 +998,7 @@ public:
 		if (this->fp) [[likely]]
 		{
 #if defined(__NEWLIB__) && !defined(__CYGWIN__)
-			struct _reent ent
-			{
-			};
+			struct _reent ent{};
 			noexcept_call(_fclose_r, __builtin_addressof(ent), this->fp);
 #else
 			details::my_fclose_impl<family>(this->fp);

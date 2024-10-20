@@ -182,8 +182,7 @@ concept printable_internal_shift = requires(T t) {
 template <typename char_type, typename T>
 concept precise_reserve_printable =
 	::std::integral<char_type> &&
-	(reserve_printable<char_type, T> || dynamic_reserve_printable<char_type, T>)&&requires(T t, char_type *ptr,
-																						   ::std::size_t n) {
+	(reserve_printable<char_type, T> || dynamic_reserve_printable<char_type, T>) && requires(T t, char_type *ptr, ::std::size_t n) {
 		{
 			print_reserve_precise_size(io_reserve_type<char_type, ::std::remove_cvref_t<T>>, t)
 		} -> ::std::convertible_to<::std::size_t>;

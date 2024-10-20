@@ -10,7 +10,7 @@ struct transcoder_file_base
 	virtual constexpr ::std::size_t transcode_bytes_size(::std::byte const *, ::std::byte const *, ::std::size_t) const = 0;
 	virtual constexpr transcode_bytes_result transcode_bytes(::std::byte const *, ::std::byte const *, ::std::byte *, ::std::byte *) = 0;
 	virtual constexpr ::std::size_t transcode_bytes_do_final_tosize() const = 0;
-	virtual constexpr ::std::byte* transcode_bytes_do_final(::std::byte *, ::std::byte *) = 0;
+	virtual constexpr ::std::byte *transcode_bytes_do_final(::std::byte *, ::std::byte *) = 0;
 	virtual void destroy() noexcept = 0;
 	constexpr ~transcoder_file_base() = default;
 };
@@ -48,20 +48,19 @@ struct transcoder_file_derived final : transcoder_file_base
 		}
 		else if (!has_transcode_bytes_min_tosize)
 		{
-			return object.transcode_min_tosize()*sizeof(typename T::to_value_type);
+			return object.transcode_min_tosize() * sizeof(typename T::to_value_type);
 		}
 	}
 	constexpr ::std::size_t transcode_bytes_size(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz) const override
 	{
-		concept has_transcode_bytes_size = requires()
-		{
+		concept has_transcode_bytes_size = requires() {
 			{ object.transcode_bytes_size(fromfirst, fromlast, mxsz) } -> ::std::same_as<::std::size_t>;
 		};
-		if constexpr(has_transcode_bytes_size)
+		if constexpr (has_transcode_bytes_size)
 		{
 			return object.transcode_bytes_size(fromfirst, fromlast, mxsz);
 		}
-		else if constexpr(!has_transcode_bytes_size)
+		else if constexpr (!has_transcode_bytes_size)
 		{
 			using from_value_type = typename T::from_value_type;
 			using to_value_type = typename T::to_value_type;
@@ -69,19 +68,19 @@ struct transcoder_file_derived final : transcoder_file_base
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 				[[__gnu__::__may_alias__]]
 #endif
-			= from_value_type const*;
+				= from_value_type const *;
 			return object.transcode_size(reinterpret_cast<from_const_ptr_may_alias>(fromfirst),
-				reinterpret_cast<from_const_ptr_may_alias>(fromfirst)+static_cast<::std::size_t>(fromlast-fromfirst)/sizeof(from_value_type),
-				mxsz/sizeof(to_value_type))*sizeof(from_value_type);
+										 reinterpret_cast<from_const_ptr_may_alias>(fromfirst) + static_cast<::std::size_t>(fromlast - fromfirst) / sizeof(from_value_type),
+										 mxsz / sizeof(to_value_type)) *
+				   sizeof(from_value_type);
 		}
 	}
 	constexpr transcode_bytes_result transcode_bytes(::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::byte *tofirst, ::std::byte *tolast) override
 	{
-		concept has_transcode_bytes = requires()
-		{
+		concept has_transcode_bytes = requires() {
 			{ object.transcode_bytes(fromfirst, fromlast, tofirst, tolast) } -> ::std::same_as<transcode_bytes_result>;
 		};
-		if constexpr(transcode_bytes_result)
+		if constexpr (transcode_bytes_result)
 		{
 			return object.transcode_bytes(fromfirst, fromlast, tofirst, tolast);
 		}
@@ -93,17 +92,17 @@ struct transcoder_file_derived final : transcoder_file_base
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 				[[__gnu__::__may_alias__]]
 #endif
-			= from_value_type const*;
+				= from_value_type const *;
 			using to_ptr_may_alias
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 				[[__gnu__::__may_alias__]]
 #endif
-			= to_value_type*;
-			auto [fromit,toit] = object.transcode(reinterpret_cast<from_const_ptr_may_alias>(fromfirst),
-				reinterpret_cast<from_const_ptr_may_alias>(fromfirst)+static_cast<::std::size_t>(fromlast-fromfirst)/sizeof(from_value_type),
-				reinterpret_cast<to_ptr_may_alias>(tofirst),
-				reinterpret_cast<to_ptr_may_alias>(tofirst)+static_cast<::std::size_t>(tolast-tofirst)/sizeof(to_value_type));
-			return {reinterpret_cast<::std::byte const*>(fromit), reinterpret_cast<::std::byte*>(toit)};
+				= to_value_type *;
+			auto [fromit, toit] = object.transcode(reinterpret_cast<from_const_ptr_may_alias>(fromfirst),
+												   reinterpret_cast<from_const_ptr_may_alias>(fromfirst) + static_cast<::std::size_t>(fromlast - fromfirst) / sizeof(from_value_type),
+												   reinterpret_cast<to_ptr_may_alias>(tofirst),
+												   reinterpret_cast<to_ptr_may_alias>(tofirst) + static_cast<::std::size_t>(tolast - tofirst) / sizeof(to_value_type));
+			return {reinterpret_cast<::std::byte const *>(fromit), reinterpret_cast<::std::byte *>(toit)};
 		}
 	}
 	constexpr ::std::size_t transcode_bytes_do_final_tosize() override
@@ -114,45 +113,40 @@ struct transcoder_file_derived final : transcoder_file_base
 		{
 			return object.transcode_bytes_do_final_tosize();
 		}
-		else if constexpr(requires()
-			{
-				{object.transcode_do_final_tosize()}->::std::same_as<::std::size_t>;
-			}
-		)
+		else if constexpr (requires() {
+							   { object.transcode_do_final_tosize() } -> ::std::same_as<::std::size_t>;
+						   })
 		{
-			return object.transcode_do_final_tosize()*sizeof(typename T::to_value_type);
+			return object.transcode_do_final_tosize() * sizeof(typename T::to_value_type);
 		}
 		else
 		{
 			return 0;
 		}
 	}
-	constexpr ::std::byte* transcode_bytes_do_final(::std::byte* tofirst, ::std::byte* tolast) override
+	constexpr ::std::byte *transcode_bytes_do_final(::std::byte *tofirst, ::std::byte *tolast) override
 	{
 		if constexpr (requires() {
-						  { object.transcode_bytes_do_final(tofirst,tolast) } -> ::std::same_as<::std::byte*>;
+						  { object.transcode_bytes_do_final(tofirst, tolast) } -> ::std::same_as<::std::byte *>;
 					  })
 		{
-			return object.transcode_bytes_do_final(tofirst,tolast);
+			return object.transcode_bytes_do_final(tofirst, tolast);
 		}
-		else if constexpr(requires()
-			{
-				typename T::to_value_type;
-				requires(typename T::to_value_type* tovtpit)
-				{
-					{object.transcode_do_final(tovtpit,tovtpit)}->::std::same_as<typename T::to_value_type*>;
-				};
-			}
-		)
+		else if constexpr (requires() {
+							   typename T::to_value_type;
+							   requires(typename T::to_value_type * tovtpit) {
+								   { object.transcode_do_final(tovtpit, tovtpit) } -> ::std::same_as<typename T::to_value_type *>;
+							   };
+						   })
 		{
 			using to_value_type = typename T::to_value_type;
 			using to_ptr_may_alias
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 				[[__gnu__::__may_alias__]]
 #endif
-			= to_value_type*;
-			return reinterpret_cast<::std::byte*>(object.transcode_do_final(reinterpret_cast<to_ptr_may_alias>(tofirst),
-					reinterpret_cast<to_ptr_may_alias>(tofirst)+static_cast<::std::size_t>(tolast-tofirst)/sizeof(to_value_type)));
+				= to_value_type *;
+			return reinterpret_cast<::std::byte *>(object.transcode_do_final(reinterpret_cast<to_ptr_may_alias>(tofirst),
+																			 reinterpret_cast<to_ptr_may_alias>(tofirst) + static_cast<::std::size_t>(tolast - tofirst) / sizeof(to_value_type)));
 		}
 		else
 		{
@@ -202,7 +196,7 @@ public:
 		return transhandle->transcode_bytes_do_final_tosize();
 	}
 
-	constexpr ::std::byte* transcode_bytes_do_final(::std::byte *tofirst, ::std::byte *tolast)
+	constexpr ::std::byte *transcode_bytes_do_final(::std::byte *tofirst, ::std::byte *tolast)
 	{
 		return transhandle->transcode_bytes_do_final(tofirst, tolast);
 	}
