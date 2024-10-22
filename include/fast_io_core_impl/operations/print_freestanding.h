@@ -8,12 +8,14 @@ namespace details::decay
 
 struct static_reserve_attribute_t
 {
-	::std::size_t scatters_count;
-	::std::size_t reserved_space;
-	bool last_is_reserve;
-	bool has_dynamic_reserve;
+	::std::size_t scatters_count; //< the number of scatters needed
+	::std::size_t reserved_space; //< the size of the buffer needed
+	bool last_is_reserve;         //< whether the last arg is a reserve_printable or dynamic_reserve_printable
+	bool has_dynamic_reserve;     //< whether there's any dynamic_reserve_printable, so that the buffer needs to be allocated on heap
 };
 
+/// @brief    count_static_reserve_attribute
+/// @details  Get the information above.
 template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_ind>
 inline constexpr static_reserve_attribute_t count_static_reserve_attribute(static_reserve_attribute_t previous = {}) noexcept
 {
@@ -72,6 +74,8 @@ template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_in
 	requires(end_ind <= sizeof...(Args))
 inline constexpr static_reserve_attribute_t count_static_reserve_attribute_v = count_static_reserve_attribute<char_type, beg_ind, end_ind, Args...>();
 
+/// @brief    add_line_scatter
+/// @details  Add the size of a line feed to the reserved space if the last arg is *any*_reserve_printable or add one scatter.
 template <bool line, ::std::integral char_type>
 inline constexpr static_reserve_attribute_t add_line_scatter(static_reserve_attribute_t attr) noexcept
 {
@@ -89,6 +93,8 @@ inline constexpr static_reserve_attribute_t add_line_scatter(static_reserve_attr
 	return attr;
 }
 
+/// @brief    refine_static_reserve_attribute
+/// @details  Make sure the number of the things to allocate is not 0, to fight against the compiler.
 inline constexpr static_reserve_attribute_t refine_static_reserve_attribute(static_reserve_attribute_t attr) noexcept
 {
 	// fight against the compiler, cannot allocate an array of constant size 0
@@ -103,6 +109,8 @@ inline constexpr static_reserve_attribute_t refine_static_reserve_attribute(stat
 	return attr;
 }
 
+/// @brief    calculate_all_dynamic_reserve_size
+/// @details  Calculate the total size of all `dynamic_reserve_printable` args between beg_ind and end_ind.
 template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_ind>
 	requires(end_ind == 0)
 inline constexpr ::std::size_t calculate_all_dynamic_reserve_size() noexcept
@@ -136,6 +144,8 @@ inline constexpr ::std::size_t calculate_all_dynamic_reserve_size(T t, Args... a
 	}
 }
 
+/// @brief    find_continuous_reserve_printable
+/// @details  Count the number of continuous `reserve_printable` args between beg_ind and end_ind.
 template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_ind>
 inline constexpr ::std::size_t find_continuous_reserve_printable() noexcept
 {
@@ -170,6 +180,8 @@ template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_in
 	requires(end_ind <= sizeof...(Args))
 inline constexpr ::std::size_t find_continuous_reserve_printable_v = find_continuous_reserve_printable<char_type, beg_ind, end_ind, Args...>();
 
+/// @brief    find_continuous_any_scatter_printable
+/// @details  Count the number of continuous `reserve_printable` or `dynamic_reserve_printable` args between beg_ind and end_ind.
 template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_ind>
 inline constexpr ::std::size_t find_continuous_any_reserve_printable() noexcept
 {
@@ -204,6 +216,8 @@ template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_in
 	requires(end_ind <= sizeof...(Args))
 inline constexpr ::std::size_t find_continuous_any_reserve_printable_v = find_continuous_any_reserve_printable<char_type, beg_ind, end_ind, Args...>();
 
+/// @brief    find_continuous_any_scatter_printable
+/// @details  Count the number of continuous `scatter_printable` or `reserve_scatters_printable` args between beg_ind and end_ind.
 template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_ind>
 inline constexpr ::std::size_t find_continuous_any_scatter_printable() noexcept
 {
@@ -238,6 +252,8 @@ template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_in
 	requires(end_ind <= sizeof...(Args))
 inline constexpr ::std::size_t find_continuous_any_scatter_printable_v = find_continuous_any_scatter_printable<char_type, beg_ind, end_ind, Args...>();
 
+/// @brief    calculate_next_n_reserve_printable_size
+/// @details  Calculate the total size of the next N `reserve_printable` args.
 template <::std::integral char_type, ::std::size_t N>
 inline constexpr ::std::size_t calculate_next_n_reserve_printable_size() noexcept
 {
@@ -261,6 +277,8 @@ template <::std::integral char_type, ::std::size_t N, typename... Args>
 	requires(N <= sizeof...(Args))
 inline constexpr ::std::size_t calculate_next_n_reserve_printable_size_v = calculate_next_n_reserve_printable_size<char_type, N, Args...>();
 
+/// @brief    calculate_next_n_any_reserve_printable_size
+/// @details  Calculate the total size of the next N `reserve_printable` or `dynamic_reserve_printable` args.
 template <::std::integral char_type, ::std::size_t beg_ind, ::std::size_t end_ind>
 	requires(end_ind == 0)
 inline constexpr ::std::size_t calculate_next_n_any_reserve_printable_size() noexcept
@@ -297,6 +315,9 @@ inline constexpr ::std::size_t calculate_next_n_any_reserve_printable_size(T t, 
 	}
 }
 
+/// @brief    print_next_n_continuous_any_reserve_printable
+/// @details  Print the next N `reserve_printable` or `dynamic_reserve_printable` args.
+/// @note     There're no good printing them in a single function, since it's recursively called. The only benifit is that the calculation of the size is done only once.
 template <::std::integral char_type, ::std::size_t N>
 	requires(N == 0)
 inline constexpr char_type *print_next_n_continuous_any_reserve_printable(char_type *buffer)
@@ -317,12 +338,17 @@ inline constexpr char_type *print_next_n_continuous_any_reserve_printable(char_t
 	}
 }
 
+/// @brief    cast_to_scatter_void
+/// @details  Cast the length of the scatter from char_type to bytes.
 template <::std::integral char_type>
 inline constexpr void cast_to_scatter_void(::fast_io::basic_io_scatter_t<char_type> &sct) noexcept
 {
 	sct.len *= sizeof(char_type);
 }
 
+/// @brief    print_control_fallback_single
+/// @details  Print a single argument. Usually used as a fallback function for `print_control_impl ` and `print_control_buffer_impl`,
+/// @note     Since it's the fallback case, no optimizations are considered.
 template <typename output, typename T>
 inline constexpr void print_control_fallback_single(output outstm, T t)
 {
@@ -425,6 +451,26 @@ inline constexpr void print_control_fallback_single(output outstm, T t)
 	return;
 }
 
+/// @name     print_control
+/// @details  Print control functions prints the args to non-buffered stream based on scatter_write, or writev in posix.
+///           The printing consists of three stages:
+///               1. Calculate the size of the buffer and counts the number of scatters needed, and allocate.
+///               2. Use a huge loop to print the args to the buffer.
+///               3. Handle the line feed and scatter-write the buffer to the stream.
+/// @{
+
+/// @brief    print_control_write_back_impl
+/// @details  It's the 3rd stage of print control. Write back the buffer to the stream, and handle the line feed if required.
+/// @note     Unsafe memory operation if last_is_reserve is set true.
+/// @tparam   line                                          whether to print an additional line feed at the end
+/// @tparam   write_bytes                                   whether the stream type prints bytes or char_type
+/// @tparam   last_is_reserve                               whether the last arg is a reserve_printable or dynamic_reserve_printable
+///                                                         if true, the function will write the line feed to the last existing scatter
+/// @tparam   output                                        <auto-inferred>
+/// @param    scatters_base                                 pointer to the begin of the scatters array
+/// @param    scatters                                      pointer to the current scatter
+/// @param    outstm                                        the output stream
+/// @return   void
 template <bool line, bool write_bytes, bool last_is_reserve, typename output>
 inline constexpr void print_control_write_back_impl(::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters_base, ::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters, output outstm)
 {
@@ -470,6 +516,21 @@ inline constexpr void print_control_write_back_impl(::fast_io::basic_io_scatter_
 	}
 }
 
+/// @brief    print_control_main_loop_impl
+/// @details  It's the 2nd stage of print control. Print the args to the buffer.
+/// @tparam   line                                          whether to print an additional line feed at the end, used in the 3rd stage
+/// @tparam   beg_ind                                       the index of the first arg to print
+/// @tparam   end_ind                                       the index of the last arg to print
+/// @tparam   write_bytes                                   whether the stream type prints bytes or char_type, used in the 3rd stage
+/// @tparam   last_is_reserve                               whether the last arg is a reserve_printable or dynamic_reserve_printable, used in the 3rd stage
+/// @tparam   output                                        <auto-inferred>
+/// @tparam   Args...                                       <auto-inferred>
+/// @param    scatters_base                                 pointer to the begin of the scatters array
+/// @param    scatters                                      pointer to the current scatter
+/// @param    buffer                                        pointer to the current buffer
+/// @param    outstm                                        the output stream
+/// @param    args...                                       the args to print
+/// @return   void
 template <bool line, ::std::size_t beg_ind, ::std::size_t end_ind, bool write_bytes, bool last_is_reserve, typename output>
 	requires(end_ind == 0)
 inline constexpr void print_control_main_loop_impl(::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters_base, ::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters,
@@ -536,17 +597,19 @@ inline constexpr void print_control_main_loop_impl(::fast_io::basic_io_scatter_t
 	}
 }
 
-template <bool line, ::std::size_t beg_ind, ::std::size_t end_ind, typename output, typename T, typename... Args>
+/// @brief    print_control_impl
+/// @details  It's the 1st stage of print control. Calculate the size of the buffer and counts the number of scatters needed, and allocate.
+/// @tparam   line                                          whether to print an additional line feed at the end, used in the 3rd stage
+/// @tparam   beg_ind                                       the index of the first arg to print
+/// @tparam   end_ind                                       the index of the last arg to print
+/// @tparam   output                                        <auto-inferred>
+/// @tparam   Args...                                       <auto-inferred>
+/// @param    outstm                                        the output stream
+/// @param    args...                                       the args to print
+/// @return   void
+template <bool line, ::std::size_t beg_ind, ::std::size_t end_ind, typename output>
 	requires(end_ind == 0)
-inline constexpr void print_control_impl(output outstm,
-#if __has_cpp_attribute(maybe_unused)
-										 [[maybe_unused]]
-#endif
-										 T t,
-#if __has_cpp_attribute(maybe_unused)
-										 [[maybe_unused]]
-#endif
-										 Args... args)
+inline constexpr void print_control_impl(output outstm)
 {
 	if constexpr (line)
 	{
@@ -604,6 +667,8 @@ inline constexpr void print_control_impl(output outstm, T t, Args... args)
 		}
 	}
 }
+/// @brief    print_control_all_args_impl
+/// @details  Print all args to the stream, which will forward all things to `print_control_impl`
 template <bool line, typename output, typename... Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -615,6 +680,19 @@ inline constexpr void print_control_all_args_impl(output outstm, Args... args)
 	return ::fast_io::details::decay::print_control_impl<line, 0, sizeof...(Args)>(outstm, args...);
 }
 
+/// @}
+
+/// @name     print_control_buffer
+/// @details  Print control buffer series functions prints the args to buffered stream based on just copying contents to the buffer.
+///           The stream can satisfy `::fast_io::operations::decay::defines::has_obuffer_minimum_size_operations` or `::fast_io::operations::decay::defines::has_obuffer_flush_reserve_define`
+///           to provide more control to the buffer, so that we can avoid unnecessary space allocation and copying.
+///           Fix-sized buffer and string-like types are the common instances of these two concepts.
+/// @{
+
+/// @brief    pcb_continuous_N_any_reserve_printable_impl
+/// @details  Print the next N `reserve_printable` or `dynamic_reserve_printable` args, only used in print_control_buffer series functions
+/// @note     This function doesn't accept 0 args, since it's privately used.
+///           The tparam `N` may be got by `find_continuous_any_reserve_printable_v`
 template <::std::size_t N, typename output, typename T, typename... Args>
 inline constexpr void pcb_continuous_N_any_reserve_printable_impl(output outstm, T t, Args... args)
 {
@@ -807,6 +885,9 @@ inline constexpr void pcb_continuous_N_any_reserve_printable_impl(output outstm,
 	}
 }
 
+/// @brief    pcb_context_printable_impl
+/// @details  Print the next `context_printable` arg, only used in print_control_buffer series functions
+/// @note     This function makes most use of the buffer from the output.
 template <typename output, typename T>
 inline constexpr void pcb_context_printable_impl(output outstm, T t)
 {
@@ -843,6 +924,16 @@ inline constexpr void pcb_context_printable_impl(output outstm, T t)
 	}
 }
 
+/// @brief    print_control_buffer_impl
+/// @details  Print the args from beg_ind to end_ind, to the buffered output stream.
+/// @tparam   line                                          whether to print an additional line feed at the end
+/// @tparam   beg_ind                                       the index of the first arg to print, which, in c++26, args...[beg_ind]
+/// @tparam   end_ind                                       the index to the last arg to print, which, in c++26, args...[end_ind]
+/// @tparam   output                                        <auto-inferred>
+/// @tparam   Args...                                       <auto-inferred>
+/// @param    outstm                                        the output stream
+/// @param    args...                                       the args to print
+/// @return   void
 template <bool line, ::std::size_t beg_ind, ::std::size_t end_ind, typename output>
 	requires(end_ind == 0)
 inline constexpr void print_control_buffer_impl(output outstm)
@@ -907,6 +998,8 @@ inline constexpr void print_control_buffer_impl(output outstm, T t, Args... args
 		}
 	}
 }
+/// @brief    print_control_buffer_all_args_impl
+/// @details  Print all args to buffered output stream, which will forward all things to `print_control_buffer_impl`
 template <bool line, typename output, typename... Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
@@ -917,6 +1010,8 @@ inline constexpr void print_control_buffer_all_args_impl(output outstm, Args... 
 {
 	return ::fast_io::details::decay::print_control_buffer_impl<line, 0, sizeof...(Args)>(outstm, args...);
 }
+
+/// @}
 
 } // namespace details::decay
 
