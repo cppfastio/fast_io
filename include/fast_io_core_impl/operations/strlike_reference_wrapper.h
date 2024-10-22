@@ -60,6 +60,13 @@ inline constexpr void obuffer_set_curr(io_strlike_reference_wrapper<char_type, T
 	return strlike_set_curr(::fast_io::io_strlike_type<char_type, T>, *bref.ptr, i);
 }
 
+template <::std::integral char_type, typename T>
+	requires buffer_strlike<char_type, T>
+inline constexpr void obuffer_flush_reserve_define(io_strlike_reference_wrapper<char_type, T> bref, ::std::size_t to_reserve) noexcept
+{
+	return strlike_reserve(::fast_io::io_strlike_type<char_type, T>, *bref.ptr, to_reserve);
+}
+
 namespace details
 {
 

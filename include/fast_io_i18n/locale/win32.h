@@ -397,12 +397,12 @@ status_io_print_forward(io_alias_type_t<char_type>, win32_family_l10n<family> co
 	return status_io_print_forward(io_alias_type<char_type>, loc.loc);
 }
 
-template <::fast_io::win32_family family, stream stm>
+template <::fast_io::win32_family family, typename stm>
 	requires(::std::is_lvalue_reference_v<stm> || ::std::is_trivially_copyable_v<stm>)
 inline constexpr auto imbue(win32_family_l10n<family> &loc, stm &&out) noexcept
 {
 	using char_type = typename ::std::remove_cvref_t<stm>::char_type;
-	return imbue(get_all<char_type>(loc.loc), ::std::forward<stm>(out));
+	return imbue(get_lc<char_type>(loc.loc), ::std::forward<stm>(out));
 }
 
 using win32_l10n_9xa = win32_family_l10n<::fast_io::win32_family::ansi_9x>;
