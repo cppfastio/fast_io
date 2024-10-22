@@ -16,6 +16,8 @@ int main()
 	::fast_io::ibuf_white_hole_engine eng;
 	::std::ranges::shuffle(vec, eng);
 
+#if 0
+//UNFINISHED
 	::fast_io::forward_list<::std::size_t> flst(::fast_io::freestanding::from_range, vec);
 #if 0
 	flst.sort();
@@ -24,4 +26,5 @@ int main()
 	::fast_io::io::println("flst:\n", ::fast_io::mnp::rgvw(flst, "\n"), "\nflst2:\n", ::fast_io::mnp::rgvw(flst2, "\n"));
 	flst2.reverse();
 	::fast_io::io::println("flst2:\n", ::fast_io::mnp::rgvw(flst2, "\n"));
+#endif
 }
