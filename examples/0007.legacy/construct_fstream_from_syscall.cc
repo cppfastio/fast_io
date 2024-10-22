@@ -54,9 +54,11 @@ FILE* or fstream apis
 			"GNU C Library ",
 			__GLIBC__, ".", __GLIBC_MINOR__,
 #ifdef __GLIBC_SOURCE__
-			" (Source: ",__GLIBC_SOURCE__, ".", __GLIBC_MINOR_SOURCE__,")"
+			" (Source: ", __GLIBC_SOURCE__, ".", __GLIBC_MINOR_SOURCE__, ")"
 #endif
-			"\n"
+																		 "\n"
+#elif defined(__BIONIC__)
+			"bionic\n"
 #elif defined(__CYGWIN__) || defined(__NEWLIB__)
 			"Newlib cygwin\n"
 #elif defined(_WIN32) && !defined(__WINE__)
@@ -69,7 +71,7 @@ FILE* or fstream apis
 #endif
 #endif
 #if defined(_LIBCPP_VERSION)
-			"LLVM libc++ ",
+																		 "LLVM libc++ ",
 			_LIBCPP_VERSION,
 			"\n"
 #elif defined(__GLIBCXX__)
