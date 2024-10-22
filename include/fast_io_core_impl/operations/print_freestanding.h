@@ -538,7 +538,15 @@ inline constexpr void print_control_main_loop_impl(::fast_io::basic_io_scatter_t
 
 template <bool line, ::std::size_t beg_ind, ::std::size_t end_ind, typename output, typename T, typename... Args>
 	requires(end_ind == 0)
-inline constexpr void print_control_impl(output outstm, T t, Args... args)
+inline constexpr void print_control_impl(output outstm,
+#if __has_cpp_attribute(maybe_unused)
+										 [[maybe_unused]]
+#endif
+										 T t,
+#if __has_cpp_attribute(maybe_unused)
+										 [[maybe_unused]]
+#endif
+										 Args... args)
 {
 	if constexpr (line)
 	{
@@ -651,7 +659,7 @@ inline constexpr void pcb_continuous_N_any_reserve_printable_impl(output outstm,
 			if constexpr (::fast_io::reserve_printable<char_type, T>)
 			{
 				constexpr auto size{print_reserve_size(::fast_io::io_reserve_type<char_type, T>)};
-				constexpr auto obuffer_minimum_size_define_v{obuffer_minimum_size_define(::fast_io::io_reserve_type<char_type, outstm>)};
+				constexpr auto obuffer_minimum_size_define_v{obuffer_minimum_size_define(::fast_io::io_reserve_type<char_type, output>)};
 				if constexpr (size > obuffer_minimum_size_define_v)
 				{
 					if (size <= diff_nonneg) [[unlikely]]
@@ -711,7 +719,7 @@ inline constexpr void pcb_continuous_N_any_reserve_printable_impl(output outstm,
 				}
 				else
 				{
-					constexpr auto obuffer_minimum_size_define_v{obuffer_minimum_size_define(::fast_io::io_reserve_type<char_type, outstm>)};
+					constexpr auto obuffer_minimum_size_define_v{obuffer_minimum_size_define(::fast_io::io_reserve_type<char_type, output>)};
 					if (size <= obuffer_minimum_size_define_v) [[likely]]
 					{
 						obuffer_minimum_size_flush_prepare_define(outstm);
