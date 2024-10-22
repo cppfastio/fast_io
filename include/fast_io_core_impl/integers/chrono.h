@@ -99,7 +99,7 @@ inline constexpr parse_code chrono_scan_two_digits_unsafe_impl(char_type const *
 	{
 		return parse_code::invalid;
 	}
-	retval += static_cast<T>(ch - char_literal_v<u8'0', char_type>) * 10;
+	retval = static_cast<T>(retval + static_cast<T>(ch - char_literal_v<u8'0', char_type>) * 10);
 	++begin;
 	ch = *begin;
 	if (!::fast_io::char_category::is_c_digit(ch)) [[unlikely]]

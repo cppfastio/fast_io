@@ -159,15 +159,15 @@ inline void posix_listen(basic_win32_family_socket_io_observer<family, ch_type> 
 }
 
 template <win32_family family, ::std::integral ch_type>
-inline ::std::ptrdiff_t posix_recvfrom(basic_win32_family_socket_io_observer<family, ch_type> h, void *buf, ::std::size_t len, 
-	int flags, void *src_addr, win32_socklen_t *addrlen)
+inline ::std::ptrdiff_t posix_recvfrom(basic_win32_family_socket_io_observer<family, ch_type> h, void *buf, ::std::size_t len,
+									   int flags, void *src_addr, win32_socklen_t *addrlen)
 {
 	return win32::details::posix_recvfrom_win32_socket_impl(h.hsocket, buf, len, flags, src_addr, addrlen);
 }
 
 template <win32_family family, ::std::integral ch_type>
 inline ::std::ptrdiff_t posix_sendto(basic_win32_family_socket_io_observer<family, ch_type> h, void const *msg, ::std::size_t len,
-	int flags, void const *to, win32_socklen_t tolen)
+									 int flags, void const *to, win32_socklen_t tolen)
 {
 	return win32::details::posix_sendto_win32_socket_impl(h.hsocket, msg, len, flags, to, tolen);
 }

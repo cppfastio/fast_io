@@ -551,8 +551,7 @@ inline basic_timestamp<off_to_epoch> nt_family_clock_settime(posix_clock_id pclk
 			::std::uint_least64_t tms(static_cast<::std::uint_least64_t>(timestamp.seconds) * 10000000ULL +
 									  timestamp.subseconds / mul_factor);
 			::std::uint_least64_t old_tms{};
-			auto ntstatus{win32::nt::nt_set_system_time<family == nt_family::zw>(__builtin_addressof(tms),
-																				 __builtin_addressof(old_tms))};
+			auto ntstatus{win32::nt::nt_set_system_time<(family == nt_family::zw)>(__builtin_addressof(tms), __builtin_addressof(old_tms))};
 			if (ntstatus)
 			{
 				throw_nt_error(ntstatus);
@@ -871,9 +870,7 @@ inline bool posix_daylight()
 	return m_daylight;
 #else
 	::std::time_t t{};
-	struct tm stm
-	{
-	};
+	struct tm stm{};
 	if (noexcept_call(localtime_r, __builtin_addressof(t), __builtin_addressof(stm)) == 0)
 	{
 		throw_posix_error();
@@ -979,10 +976,8 @@ inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe
 #elif (!defined(__NEWLIB__) || defined(_POSIX_TIMERS)) && \
 	(!defined(__wasi__) || defined(__wasilibc_unmodified_upstream))
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
-	struct timespec res
-	{
-		static_cast<::std::time_t>(timestamp.seconds), static_cast<long>(timestamp.subseconds / mul_factor)
-	};
+	struct timespec res{
+		static_cast<::std::time_t>(timestamp.seconds), static_cast<long>(timestamp.subseconds / mul_factor)};
 	auto clk{details::posix_clock_id_to_native_value(pclk_id)};
 #ifdef __linux__
 	system_call_throw_error(system_call<__NR_clock_settime, int>(clk, __builtin_addressof(res)));

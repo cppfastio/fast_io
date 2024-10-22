@@ -11,14 +11,7 @@
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4514)
-#pragma warning(disable : 4668)
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4711)
-#pragma warning(disable : 4820)
-#endif
+#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include <streambuf>
 #include <fstream>
@@ -36,9 +29,8 @@
 #include "fast_io_legacy_impl/filebuf/filebuf_file.h"
 #endif
 #include "fast_io_legacy_impl/filebuf/op_out.h"
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
+
+#include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif
 

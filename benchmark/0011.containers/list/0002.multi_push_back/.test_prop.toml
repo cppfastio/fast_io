@@ -1,0 +1,2 @@
+["std_mimalloc.cc"] # no need to install those env in CI
+ignore = true

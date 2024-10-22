@@ -20,7 +20,7 @@ using namespace fast_io::io;
 int main()
 {
 	using namespace fast_io::mnp;
-	println(fast_io::concatln(hex_middle_8(42), "\t", addrvw(42)), hex_middle_8(42), "\t", addrvw(42));
+	println(fast_io::concatln_std(hex_middle_8(42), "\t", addrvw(42)), hex_middle_8(42), "\t", addrvw(42));
 }
 
 /*

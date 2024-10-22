@@ -68,8 +68,8 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030(char32_t cdpt, T *p_dst) no
 	char16_t v2{static_cast<char16_t>(v)};
 	if (static_cast<char32_t>(v2) == v)
 	{
-		if constexpr ((!::std::is_volatile_v<T>)&&(::std::endian::native == ::std::endian::little ||
-												   ::std::endian::native == ::std::endian::big))
+		if constexpr ((!::std::is_volatile_v<T>) && (::std::endian::native == ::std::endian::little ||
+													 ::std::endian::native == ::std::endian::big))
 		{
 #if __cpp_lib_is_constant_evaluated >= 201811L
 			if (!__builtin_is_constant_evaluated())
@@ -94,8 +94,8 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030(char32_t cdpt, T *p_dst) no
 		}
 		return 2;
 	}
-	if constexpr ((!::std::is_volatile_v<T>)&&(::std::endian::native == ::std::endian::little ||
-											   ::std::endian::native == ::std::endian::big))
+	if constexpr ((!::std::is_volatile_v<T>) && (::std::endian::native == ::std::endian::little ||
+												 ::std::endian::native == ::std::endian::big))
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
 		if (!__builtin_is_constant_evaluated())
@@ -178,8 +178,8 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T *p_ds
 		{
 			return 0;
 		}
-		if constexpr ((!::std::is_volatile_v<T>)&&(::std::endian::native == ::std::endian::little ||
-												   ::std::endian::native == ::std::endian::big))
+		if constexpr ((!::std::is_volatile_v<T>) && (::std::endian::native == ::std::endian::little ||
+													 ::std::endian::native == ::std::endian::big))
 		{
 #if __cpp_lib_is_constant_evaluated >= 201811L
 			if (!__builtin_is_constant_evaluated())
@@ -208,8 +208,8 @@ inline constexpr ::std::size_t lookup_uni_to_gb18030_pdsz(char32_t cdpt, T *p_ds
 	{
 		return 0;
 	}
-	if constexpr ((!::std::is_volatile_v<T>)&&(::std::endian::native == ::std::endian::little ||
-											   ::std::endian::native == ::std::endian::big))
+	if constexpr ((!::std::is_volatile_v<T>) && (::std::endian::native == ::std::endian::little ||
+												 ::std::endian::native == ::std::endian::big))
 	{
 #if __cpp_lib_is_constant_evaluated >= 201811L
 		if (!__builtin_is_constant_evaluated())

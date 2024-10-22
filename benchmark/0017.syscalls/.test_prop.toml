@@ -1,0 +1,8 @@
+["nt_file.cc"]
+platform = "windows"
+
+["win32_file.cc"]
+platform = "windows"
+
+["posix_file.cc"]
+platform = "linux"

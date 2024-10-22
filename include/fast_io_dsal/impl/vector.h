@@ -36,13 +36,13 @@ inline void *grow_to_byte_size_iter_impl(vector_model &imp, void *iter, ::std::s
 	auto newres = allocator::allocate_aligned_at_least(alignment, newcap);
 	auto begin_ptr = reinterpret_cast<::std::byte *>(newres.ptr);
 	auto newiter = ::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(old_begin_ptr), reinterpret_cast<::std::byte const *>(iter),
-																	reinterpret_cast<::std::byte *>(begin_ptr));
+																	 reinterpret_cast<::std::byte *>(begin_ptr));
 	::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(iter), reinterpret_cast<::std::byte const *>(old_curr_ptr),
-														reinterpret_cast<::std::byte *>(newiter + gap));
+													  reinterpret_cast<::std::byte *>(newiter + gap));
 	allocator::deallocate_aligned_n(old_begin_ptr, alignment, old_capacity);
 	imp.begin_ptr = begin_ptr;
 	imp.curr_ptr = begin_ptr + old_size;
-	imp.end_ptr = begin_ptr + (newres.count/size*size);
+	imp.end_ptr = begin_ptr + (newres.count / size * size);
 	return newiter;
 }
 
@@ -1056,7 +1056,7 @@ public:
 		auto beginptr{imp.begin_ptr};
 		auto currptr{imp.curr_ptr};
 		size_type sz{static_cast<size_type>(currptr - beginptr)};
-		if (lastidx < firstidx || sz <= lastidx)
+		if (lastidx < firstidx || sz < lastidx)
 		{
 			::fast_io::fast_terminate();
 		}

@@ -291,11 +291,12 @@ inline constexpr void basic_inplace_to_decay(T t, Args... args)
 	if constexpr (failed)
 	{
 		if constexpr (((reserve_printable<char_type, Args> || dynamic_reserve_printable<char_type, Args> ||
-						scatter_printable<char_type, Args>)&&...))
+						scatter_printable<char_type, Args>) &&
+					   ...))
 		{
-			constexpr bool all_scatters{((scatter_printable<char_type, Args>)&&...)};
+			constexpr bool all_scatters{((scatter_printable<char_type, Args>) && ...)};
 			constexpr bool no_need_dynamic_reserve{
-				((reserve_printable<char_type, Args> || scatter_printable<char_type, Args>)&&...)};
+				((reserve_printable<char_type, Args> || scatter_printable<char_type, Args>) && ...)};
 			if constexpr (context_scannable<char_type, T> &&
 						  (!(contiguous_scannable<char_type, T> && sizeof...(args) == 1)))
 			{
@@ -326,7 +327,7 @@ inline constexpr void basic_inplace_to_decay(T t, Args... args)
 				{
 					::fast_io::details::to_deal_with_contiguous_single_scatter<char_type>(t, args...);
 				}
-				else if constexpr (((reserve_printable<char_type, Args>)&&...))
+				else if constexpr (((reserve_printable<char_type, Args>) && ...))
 				{
 					constexpr ::std::size_t total_size{
 						::fast_io::details::decay::calculate_scatter_reserve_size<char_type, Args...>()};

@@ -59,8 +59,8 @@ inline constexpr timestamp_u add_impl(::std::uint_least64_t aseconds, ::std::uin
 {
 	bool carry{};
 	::std::uint_least64_t res{::fast_io::intrinsics::addc(asubseconds, bsubseconds, carry, carry)};
-	carry|=(::fast_io::uint_least64_subseconds_per_second<=res);
-	res-=carry?::fast_io::uint_least64_subseconds_per_second:0;
+	carry |= (::fast_io::uint_least64_subseconds_per_second <= res);
+	res -= carry ? ::fast_io::uint_least64_subseconds_per_second : 0;
 	::std::uint_least64_t secs{::fast_io::intrinsics::addc(aseconds, bseconds, carry, carry)};
 	return {secs, res};
 }
@@ -1186,11 +1186,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 	default:
 		break;
 	}
-#ifdef __has_builtin
-#if __has_builtin(__builtin_unreachable)
-	__builtin_unreachable();
-#endif
-#endif
+	::fast_io::unreachable();
 }
 
 template <::std::integral char_type>

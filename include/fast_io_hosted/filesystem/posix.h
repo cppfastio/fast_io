@@ -56,8 +56,7 @@ inline DIR *sys_dup_dir(DIR *dirp)
 	{
 		throw_posix_error(EBADF);
 	}
-	auto fd
-	{
+	auto fd{
 #if defined(__CYGWIN__)
 		dirp->__d_fd
 #else

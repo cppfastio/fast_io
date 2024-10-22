@@ -42,7 +42,7 @@ inline void close_nt_user_process_information(nt_user_process_information hnt_us
 template <nt_family family>
 inline ::std::uint_least32_t nt_wait_user_process_or_thread(void *hprocess_thread) noexcept
 {
-	return ::fast_io::win32::nt::nt_wait_for_single_object<family == nt_family::zw>(hprocess_thread, false, nullptr);
+	return ::fast_io::win32::nt::nt_wait_for_single_object < family == nt_family::zw > (hprocess_thread, false, nullptr);
 }
 
 template <nt_family family, bool throw_eh = false>
@@ -53,7 +53,7 @@ inline void nt_wait_and_close_user_process_or_thread(void *&handle) noexcept(!th
 		return;
 	}
 	auto status{nt_wait_user_process_or_thread<family>(handle)};
-	auto status2{::fast_io::win32::nt::nt_close<family == nt_family::zw>(handle)};
+	auto status2{::fast_io::win32::nt::nt_close < family == nt_family::zw > (handle)};
 	handle = nullptr;
 	if constexpr (throw_eh)
 	{
@@ -200,8 +200,8 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 
 template <nt_family family>
 inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fhandle, char16_t const *args,
-									  char16_t const *envs,
-									  win32_process_io const &__restrict processio)
+															 char16_t const *envs,
+															 win32_process_io const &__restrict processio)
 {
 	/****************************************************************************************************
 	 * A large number of security related checks are conducted in kernel32, and this API is not secure. *
@@ -249,7 +249,7 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 
 	// Call Windows Server
 	// to do
-	
+
 	// Resume Thread
 	::std::uint_least32_t lprevcount{};
 	check_nt_status(::fast_io::win32::nt::nt_resume_thread<zw>(hthread, __builtin_addressof(lprevcount)));
@@ -258,8 +258,8 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 
 template <nt_family family>
 inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args,
-									  char16_t const *envs,
-									  win32_process_io const &__restrict processio)
+															 char16_t const *envs,
+															 win32_process_io const &__restrict processio)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -311,7 +311,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
 		&hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF, nullptr, nullptr,
 		0x00, 0x00, rtl_temp, &CreateInfo, &AttributeList));
-	
+
 	return {hProcess, hThread};
 }
 

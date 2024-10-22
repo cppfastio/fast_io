@@ -76,8 +76,8 @@ inline
 #endif
 }
 
-}
+} // namespace freestanding
 
 using ::fast_io::freestanding::noexcept_call;
 
-}
+} // namespace fast_io

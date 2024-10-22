@@ -488,7 +488,7 @@ inline constexpr void print_control_single(output outstm, T t)
 	}
 	else if constexpr (::fast_io::transcode_imaginary_printable<char_type, value_type>)
 	{
-		//todo?
+		// todo?
 	}
 	else if constexpr (context_printable<char_type, value_type>)
 	{
@@ -1350,9 +1350,7 @@ concept print_freestanding_params_okay =
 
 template <typename output, typename... Args>
 concept print_freestanding_okay =
-	::fast_io::operations::defines::has_output_or_io_stream_ref_define<output> &&
-	::fast_io::operations::decay::defines::print_freestanding_params_okay<typename output::output_char_type,
-																				Args...>;
+	::fast_io::operations::decay::defines::print_freestanding_params_okay<typename output::output_char_type, Args...>;
 
 } // namespace decay::defines
 
@@ -1361,7 +1359,7 @@ namespace defines
 
 template <typename char_type, typename... Args>
 concept print_freestanding_params_okay = ::fast_io::operations::decay::defines::print_freestanding_params_okay<char_type,
-	decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(::std::declval<Args>())))...>;
+																											   decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(::std::declval<Args>())))...>;
 
 template <typename output, typename... Args>
 concept print_freestanding_okay = ::fast_io::operations::decay::defines::print_freestanding_okay<
@@ -1369,7 +1367,7 @@ concept print_freestanding_okay = ::fast_io::operations::decay::defines::print_f
 	decltype(::fast_io::io_print_forward<typename decltype(::fast_io::operations::output_stream_ref(
 				 ::std::declval<output>()))::output_char_type>(::fast_io::io_print_alias(::std::declval<Args>())))...>;
 
-}
+} // namespace defines
 
 template <bool line, typename output, typename... Args>
 #if __has_cpp_attribute(__gnu__::__always_inline__)

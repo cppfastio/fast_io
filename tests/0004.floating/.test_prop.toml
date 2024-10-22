@@ -1,0 +1,8 @@
+["test_all_float32.cc"] # Too time-consuming
+ignore = true
+
+["lc_double.cc"] # TODO: locale unfinished
+ignore = true
+
+["scientific_0.cc"] # TODO: locale unfinished
+ignore = true

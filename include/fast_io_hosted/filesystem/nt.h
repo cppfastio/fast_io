@@ -117,9 +117,8 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 	constexpr ::std::uint_least32_t ul32_buffer_size{0x4000};
 	::std::byte buffer[ul32_buffer_size];
 	::fast_io::win32::nt::dir_information d_info{buffer};
-	auto status{nt_query_directory_file<family == nt_family::zw>(
-		entry->d_handle, nullptr, nullptr, nullptr, __builtin_addressof(block), d_info.DirInfo, ul32_buffer_size,
-		file_information_class::FileIdFullDirectoryInformation , true, nullptr, start)};
+	auto status{nt_query_directory_file<(family == nt_family::zw)>(entry->d_handle, nullptr, nullptr, nullptr, __builtin_addressof(block), d_info.DirInfo, ul32_buffer_size,
+																   file_information_class::FileFullDirectoryInformation, true, nullptr, start)};
 	if (status)
 	{
 		if (status == 2147483654) [[likely]]

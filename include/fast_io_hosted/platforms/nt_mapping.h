@@ -84,9 +84,8 @@ inline void *create_file_mapping_impl(void *handle, file_map_attribute attr)
 	::fast_io::win32::nt::object_attributes objAttr{};
 	objAttr.Length = sizeof(::fast_io::win32::nt::object_attributes);
 	void *h_section{};
-	auto status{::fast_io::win32::nt::nt_create_section<family == ::fast_io::nt_family::zw>(
-		__builtin_addressof(h_section), static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)),
-		__builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
+	auto status{::fast_io::win32::nt::nt_create_section < family == ::fast_io::nt_family::zw > (__builtin_addressof(h_section), static_cast<::std::uint_least32_t>(to_nt_file_map_attribute(attr)),
+																								__builtin_addressof(objAttr), nullptr, static_cast<::std::uint_least32_t>(attr), 0x08000000, handle)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -125,11 +124,10 @@ public:
 			win32::nt::details::create_file_mapping_impl<family>(bf.handle, attr)};
 		void *base_ptr{};
 		void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
-		auto status{::fast_io::win32::nt::nt_map_view_of_section<family == ::fast_io::nt_family::zw>(
-			mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0,
-			reinterpret_cast<::fast_io::win32::nt::large_integer const *>(__builtin_addressof(start_address)),
-			__builtin_addressof(bytes), ::fast_io::win32::nt::section_inherit::ViewShare, 0,
-			static_cast<::std::uint_least32_t>(attr))};
+		auto status{::fast_io::win32::nt::nt_map_view_of_section < family == ::fast_io::nt_family::zw > (mapping_file.handle, current_process_handle, __builtin_addressof(base_ptr), 0, 0,
+																										 reinterpret_cast<::fast_io::win32::nt::large_integer const *>(__builtin_addressof(start_address)),
+																										 __builtin_addressof(bytes), ::fast_io::win32::nt::section_inherit::ViewShare, 0,
+																										 static_cast<::std::uint_least32_t>(attr))};
 		if (status)
 		{
 			throw_nt_error(status);
@@ -250,8 +248,7 @@ public:
 		if (this->address_begin) [[likely]]
 		{
 			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
-			auto ret{::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(
-				current_process_handle, this->address_begin)};
+			auto ret{::fast_io::win32::nt::nt_unmap_view_of_section < family == ::fast_io::nt_family::zw > (current_process_handle, this->address_begin)};
 
 			this->address_end = this->address_begin = nullptr;
 			if (ret)

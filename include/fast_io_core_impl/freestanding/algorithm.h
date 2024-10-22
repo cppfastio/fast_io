@@ -3,10 +3,6 @@
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC system_header
 #endif
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4365)
-#endif
 
 #if 0
 //__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
@@ -843,7 +839,3 @@ using ::fast_io::freestanding::non_overlapped_copy;
 using ::fast_io::freestanding::non_overlapped_copy_n;
 
 } // namespace fast_io::details
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif

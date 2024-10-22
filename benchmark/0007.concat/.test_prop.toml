@@ -1,0 +1,14 @@
+["concat_cstring.cc"] # no need to install those env in CI
+ignore = true
+
+["concat_hstring.cc"] # no need to install those env in CI
+ignore = true
+
+["concat_qstring.cc"] # no need to install those env in CI
+ignore = true
+
+["to_hstring.cc"] # no need to install those env in CI
+ignore = true
+
+["concat_vs_format.cc"] # CI doesn't support <format>
+ignore = true

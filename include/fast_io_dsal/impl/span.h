@@ -316,10 +316,10 @@ public:
 };
 
 template <::std::contiguous_iterator Iter>
-span(Iter, ::std::size_t) -> span<::std::iter_value_t<Iter>>;
+span(Iter, ::std::size_t) -> span<::std::remove_reference_t<::std::iter_reference_t<Iter>>>;
 
 template <::std::contiguous_iterator Iter, ::std::sentinel_for<Iter> S>
-span(Iter, S) -> span<::std::iter_value_t<Iter>>;
+span(Iter, S) -> span<::std::remove_reference_t<::std::iter_reference_t<Iter>>>;
 
 template <typename T>
 inline constexpr ::fast_io::containers::span<::std::byte const> as_bytes(::fast_io::containers::span<T> sp) noexcept

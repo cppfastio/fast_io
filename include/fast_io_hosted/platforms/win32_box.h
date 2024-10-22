@@ -67,7 +67,7 @@ inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<famil
 {
 	using chtypenocref = ::std::remove_cvref_t<ch_type>;
 	if constexpr (family == ::fast_io::win32_family::ansi_9x &&
-				  ((!::std::same_as<chtypenocref, char8_t>)&&sizeof(chtypenocref) == sizeof(char8_t) &&
+				  ((!::std::same_as<chtypenocref, char8_t>) && sizeof(chtypenocref) == sizeof(char8_t) &&
 				   ::fast_io::execution_charset_encoding_scheme<chtypenocref>() == ::fast_io::encoding_scheme::utf))
 	{
 		using scatter_may_alias_ptr
@@ -79,7 +79,7 @@ inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<famil
 																  n);
 	}
 	else if constexpr (family == ::fast_io::win32_family::wide_nt &&
-					   ((!::std::same_as<chtypenocref, char16_t>)&&sizeof(chtypenocref) == sizeof(char16_t) &&
+					   ((!::std::same_as<chtypenocref, char16_t>) && sizeof(chtypenocref) == sizeof(char16_t) &&
 						::fast_io::execution_charset_encoding_scheme<chtypenocref>() ==
 							::fast_io::encoding_scheme::utf))
 	{

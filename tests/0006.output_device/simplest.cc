@@ -2,10 +2,10 @@
 
 struct foo
 {
-	using char_type = char8_t;
+	using output_char_type = char8_t;
 };
 
-inline constexpr foo io_value_handle(foo f) noexcept
+inline constexpr foo output_stream_ref_define(foo f) noexcept
 {
 	return f;
 }
@@ -18,7 +18,7 @@ inline void write(foo, char8_t const *first, char8_t const *last)
 	{
 		val ^= *first;
 	}
-	println(fast_io::out(), diff, " ", val);
+	println(fast_io::u8out(), diff, " ", val);
 }
 
 struct new_type
