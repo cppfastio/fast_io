@@ -140,7 +140,7 @@ inline
 		if constexpr (::fast_io::details::cpu_flags::sse2_supported)
 		{
 			__m128i a = __builtin_bit_cast(__m128i, vec);
-			::std::uint_least16_t const value{static_cast<::std::uint_least16_t>(_mm_movemask_epi8(a, a))};
+			::std::uint_least16_t const value{static_cast<::std::uint_least16_t>(_mm_movemask_epi8(a))};
 			if constexpr (ctzero)
 			{
 				d = static_cast<unsigned>(::std::countr_zero(value));
@@ -172,7 +172,7 @@ inline
 		if constexpr (::fast_io::details::cpu_flags::avx2_supported)
 		{
 			__m256i a = __builtin_bit_cast(__m256i, vec);
-			::std::uint_least32_t const value{static_cast<::std::uint_least32_t>(_mm256_movemask_epi8(a, a))};
+			::std::uint_least32_t const value{static_cast<::std::uint_least32_t>(_mm256_movemask_epi8(a))};
 			if constexpr (ctzero)
 			{
 				d = static_cast<unsigned>(::std::countr_zero(value));
