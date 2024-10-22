@@ -472,7 +472,12 @@ inline constexpr void print_control_write_back_impl(::fast_io::basic_io_scatter_
 
 template <bool line, ::std::size_t beg_ind, ::std::size_t end_ind, bool write_bytes, bool last_is_reserve, typename output>
 	requires(end_ind == 0)
-inline constexpr void print_control_main_loop_impl(::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters_base, ::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters, typename output::output_char_type *buffer, output outstm)
+inline constexpr void print_control_main_loop_impl(::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters_base, ::fast_io::basic_io_scatter_t<typename output::output_char_type> *scatters,
+#if __has_cpp_attribute(maybe_unused)
+												   [[maybe_unused]]
+#endif
+												   typename output::output_char_type *buffer,
+												   output outstm)
 {
 	return print_control_write_back_impl<line, write_bytes, last_is_reserve>(scatters_base, scatters, outstm);
 }
@@ -646,7 +651,8 @@ inline constexpr void pcb_continuous_N_any_reserve_printable_impl(output outstm,
 			if constexpr (::fast_io::reserve_printable<char_type, T>)
 			{
 				constexpr auto size{print_reserve_size(::fast_io::io_reserve_type<char_type, T>)};
-				if constexpr (size > obuffer_minimum_size_define(outstm))
+				constexpr auto obuffer_minimum_size_define_v{obuffer_minimum_size_define(::fast_io::io_reserve_type<char_type, outstm>)};
+				if constexpr (size > obuffer_minimum_size_define_v)
 				{
 					if (size <= diff_nonneg) [[unlikely]]
 					{
@@ -705,7 +711,7 @@ inline constexpr void pcb_continuous_N_any_reserve_printable_impl(output outstm,
 				}
 				else
 				{
-					constexpr auto obuffer_minimum_size_define_v{obuffer_minimum_size_define(outstm)};
+					constexpr auto obuffer_minimum_size_define_v{obuffer_minimum_size_define(::fast_io::io_reserve_type<char_type, outstm>)};
 					if (size <= obuffer_minimum_size_define_v) [[likely]]
 					{
 						obuffer_minimum_size_flush_prepare_define(outstm);
