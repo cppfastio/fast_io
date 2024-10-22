@@ -4,7 +4,7 @@ namespace fast_io
 {
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::concat_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -27,7 +27,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::wconcat_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -50,7 +50,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::u8concat_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -73,7 +73,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::u16concat_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -95,7 +95,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::u32concat_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -117,7 +117,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::concatln_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -140,7 +140,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::wconcatln_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -163,7 +163,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::u8concatln_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -186,7 +186,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::u16concatln_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
@@ -208,7 +208,7 @@ template <typename... Args>
 }
 
 template <typename... Args>
-[[nodiscard]] inline
+[[deprecated("use ::fast_io::u32concatln_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
 	constexpr
 #endif
