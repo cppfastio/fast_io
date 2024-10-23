@@ -1465,7 +1465,7 @@ inline basic_win32_io_observer<char_type> win32_stderr() noexcept
 	return {::fast_io::win32::GetStdHandle(win32_stderr_number)};
 }
 
-#if !defined(__CYGWIN__) && !defined(__WINE__)
+#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__) && defined(_WIN32_WINDOWS)
 template <::std::integral char_type = char>
 inline basic_win32_io_observer<char_type> native_stdin() noexcept
 {

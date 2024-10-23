@@ -188,6 +188,11 @@ private:
 	}
 
 public:
+	explicit constexpr basic_string(char_type const *f, char_type const *e) noexcept
+	{
+		this->construct_impl(f, static_cast<size_type>(e - f));
+	}
+
 	explicit constexpr basic_string(string_view_type othervw) noexcept
 	{
 		this->construct_impl(othervw.data(), othervw.size());
