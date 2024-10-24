@@ -21,9 +21,9 @@ cxxflags = $(FLAGS) \
             -nostartfiles \
             -fno-rtti \
             -fno-exceptions \
-            -std=c++20 \
+            -std=c++26 \
 	    -O3 \
-	    -mcmodel=kernel -ffreestanding -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -D__KERNEL__
+	    -mcmodel=kernel -ffreestanding -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -D__KERNEL__ -I../../../include
 
 obj-m += $(MOD_NAME).o
 
