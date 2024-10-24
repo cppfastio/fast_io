@@ -178,7 +178,7 @@ inline constexpr T lc_concat_decay_impl(basic_lc_all<typename T::value_type> con
 	{
 		T str;
 		basic_ostring_ref<ch_type, typename T::traits_type, typename T::allocator_type> ref{__builtin_addressof(str)};
-		lc_print_status_define_further_decay<line>(all, ref, args...);
+		lc_status_print_define_further_decay<line>(all, ref, args...);
 		return str;
 	}
 }

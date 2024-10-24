@@ -111,7 +111,7 @@ inline void linux_kpr_raw_write(::fast_io::kern k, void const *start, void const
 }
 
 template <bool line, ::std::integral ch_type, typename T>
-inline constexpr void print_status_define_single_line_impl(basic_kpr<ch_type> kpr, T t)
+inline constexpr void status_print_define_single_line_impl(basic_kpr<ch_type> kpr, T t)
 {
 	basic_io_scatter_t<ch_type> scatter{print_scatter_define(io_reserve_type<ch_type, T>, t)};
 	auto base{scatter.base};

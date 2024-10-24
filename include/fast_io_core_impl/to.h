@@ -16,7 +16,7 @@ inline constexpr void
 inplace_to_decay_context_impl(basic_dynamic_output_buffer_ref<basic_dynamic_output_buffer<char_type>> buffer, state &s,
 							  T t, Arg1 arg, Args... args)
 {
-	::fast_io::details::decay::print_control_single<false>(buffer, arg);
+	::fast_io::details::decay::print_control_fallback_single(buffer, arg);
 	char_type *buffer_beg{buffer.ptr->buffer_begin};
 	char_type const *buffer_begin{buffer_beg};
 	char_type const *buffer_curr{buffer.ptr->buffer_curr};

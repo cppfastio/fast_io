@@ -96,9 +96,6 @@ freestanding ones.
 
 #if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)
 #include "fast_io_unit/string.h"
-#if 0
-#include "fast_io_hosted/pretty_print_error_report.h"
-#endif
 #endif
 
 #if defined(_GLIBCXX_CHRONO) || defined(_LIBCPP_CHRONO) || defined(_CHRONO_)

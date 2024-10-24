@@ -3,17 +3,14 @@
 namespace fast_io
 {
 
-template <stream stm>
-	requires(value_based_stream<stm> &&
-			 requires(stm sm) {
-				 { io_value_handle(sm) } -> ::std::same_as<stm>;
-			 } && ::std::is_trivially_copyable_v<stm>)
+template <typename stm>
 struct lc_imbuer
 {
 	using handle_type = stm;
 	using char_type = typename handle_type::char_type;
-	using lc_all_type = basic_lc_all<char_type>;
-	lc_all_type const *all{};
+	using output_char_type = char_type;
+	using lc_type = ::fast_io::basic_lc_object<char_type>;
+	lc_type const *locale{};
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
@@ -24,24 +21,17 @@ struct lc_imbuer
 	handle_type handle{};
 };
 
-template <stream stm>
-inline constexpr lc_imbuer<stm> io_value_handle(lc_imbuer<stm> sm) noexcept
+template <typename stm>
+inline constexpr lc_imbuer<stm> output_stream_ref_define(lc_imbuer<stm> t) noexcept
 {
-	return sm;
+	return t;
 }
 
-template <stream stm>
-	requires(::std::is_lvalue_reference_v<stm> || ::std::is_trivially_copyable_v<stm>)
-inline constexpr auto imbue(basic_lc_all<typename ::std::remove_cvref_t<stm>::char_type> const *all, stm &&out) noexcept
+template <typename stm>
+	requires(std::is_lvalue_reference_v<stm> || std::is_trivially_copyable_v<stm>)
+inline constexpr auto imbue(::fast_io::basic_lc_object<typename std::remove_cvref_t<stm>::char_type> const &locale, stm &&out) noexcept
 {
-	if constexpr (value_based_stream<stm>)
-	{
-		return lc_imbuer<decltype(io_value_handle(out))>{all, io_value_handle(out)};
-	}
-	else
-	{
-		return lc_imbuer<decltype(io_ref(out))>{all, io_ref(out)};
-	}
+	return lc_imbuer{__builtin_addressof(locale), ::fast_io::operations::output_stream_ref(out)};
 }
 
 } // namespace fast_io

@@ -18,7 +18,7 @@
 #include "fast_io_i18n/locale/impl.h"
 #endif
 #include "fast_io_i18n/imbuer.h"
-#include "fast_io_i18n/lc_print_status.h"
+#include "fast_io_i18n/lc_status_print.h"
 #include "fast_io_i18n/lc_numbers/impl.h"
 
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \

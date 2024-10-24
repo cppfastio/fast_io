@@ -236,6 +236,11 @@ concept has_obuffer_minimum_size_operations = requires(T outstm) {
 	obuffer_minimum_size_flush_prepare_define(outstm);
 };
 
+template <typename T>
+concept has_obuffer_flush_reserve_define = requires(T outstm, ::std::size_t to_reserve) {
+	obuffer_flush_reserve_define(outstm, to_reserve);
+};
+
 } // namespace operations::decay::defines
 
 } // namespace fast_io
