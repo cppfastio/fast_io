@@ -289,7 +289,7 @@ struct basic_lc_data_storage
 	std::vector<basic_lc_time_era<char_type>> eras{};
 	std::vector<basic_scatter<char_type>> strings{};
 	template <typename T, typename Self>
-	[[nodiscard]] inline decltype(auto) get_storage(this Self &&self) noexcept
+	[[nodiscard]] inline constexpr decltype(auto) get_storage(this Self &&self) noexcept
 	{
 		if constexpr (std::same_as<T, char_type>)
 		{
@@ -321,31 +321,31 @@ using u16lc_data_storage = basic_lc_data_storage<char16_t>;
 using u32lc_data_storage = basic_lc_data_storage<char32_t>;
 
 template <typename char_type>
-struct basic_lc
+struct basic_lc_object
 {
 	basic_lc_data_storage<char_type> data_storage{};
 	basic_lc_all<char_type> all{};
 };
 
-using lc = basic_lc<char>;
-using wlc = basic_lc<wchar_t>;
-using u8lc = basic_lc<char8_t>;
-using u16lc = basic_lc<char16_t>;
-using u32lc = basic_lc<char32_t>;
+using lc_object = basic_lc_object<char>;
+using wlc_object = basic_lc_object<wchar_t>;
+using u8lc_object = basic_lc_object<char8_t>;
+using u16lc_object = basic_lc_object<char16_t>;
+using u32lc_object = basic_lc_object<char32_t>;
 
 struct lc_locale
 {
-	lc const *lc;
-	wlc const *wlc;
-	u8lc const *u8lc;
-	u16lc const *u16lc;
-	u32lc const *u32lc;
+	lc_object const *lc;
+	wlc_object const *wlc;
+	u8lc_object const *u8lc;
+	u16lc_object const *u16lc;
+	u32lc_object const *u32lc;
 };
 
 template <std::integral char_type>
 	requires(std::same_as<char_type, char> || std::same_as<char_type, wchar_t> ||
 			 std::same_as<char_type, char8_t> || std::same_as<char_type, char16_t> || std::same_as<char_type, char32_t>)
-inline constexpr basic_lc<char_type> const *get_lc(lc_locale const &loc) noexcept
+inline constexpr basic_lc_object<char_type> const *get_lc(lc_locale const &loc) noexcept
 {
 	if constexpr (std::same_as<char_type, char>)
 	{
