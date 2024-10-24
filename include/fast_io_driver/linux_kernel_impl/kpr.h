@@ -336,14 +336,15 @@ inline void deal_with_kpr_common(basic_kpr<char_type> kpr, Args... args)
 
 } // namespace details
 
-template <::std::integral char_type, ::std::contiguous_iterator Iter>
-inline void write(basic_kpr<char_type> kpr, Iter first, Iter last) noexcept
+
+template <::std::integral char_type>
+inline void write_all_bytes_overflow_define(basic_kpr<char_type> kpr, ::std::byte const *first, ::std::byte const *last) noexcept
 {
-	details::linux_kpr_raw_write<false>(kpr.level, ::std::to_address(first), ::std::to_address(last));
+	::fast_io::details::linux_kpr_raw_write<false>(kpr.level, first, last);
 }
 
 template <::std::integral ch_type>
-inline constexpr basic_kpr<ch_type> io_value_handle(basic_kpr<ch_type> linuxkpr) noexcept
+inline constexpr basic_kpr<ch_type> output_stream_ref_define(basic_kpr<ch_type> linuxkpr) noexcept
 {
 	return linuxkpr;
 }
@@ -355,8 +356,12 @@ using u16kpr = basic_kpr<char16_t>;
 using u32kpr = basic_kpr<char32_t>;
 
 template <bool line, ::std::integral ch_type, typename... Args>
-	requires(print_freestanding_decay_okay_character_type_no_status<ch_type, Args...> && sizeof(ch_type) == 1 &&
-			 (!::fast_io::details::is_ebcdic<ch_type>))
+	requires(
+#if 0
+print_freestanding_decay_okay_character_type_no_status<ch_type, Args...> &&
+#endif
+		sizeof(ch_type) == 1 &&
+		(!::fast_io::details::is_ebcdic<ch_type>))
 inline constexpr void print_status_define(basic_kpr<ch_type> k, Args... args)
 {
 	if constexpr ((::fast_io::details::kpr_total_print_reserve_size_less_or_equal_than512<ch_type, Args...>(0)))
