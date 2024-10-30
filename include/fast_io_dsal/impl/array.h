@@ -479,6 +479,26 @@ public:
 	}
 };
 
+namespace details
+{
+
+template<class First, class... Rest>
+struct enforce_same
+{
+	static_assert(
+		(::std::same_as<First, Rest> && ...),
+		"Mandates: (::std::same_as<T, U> && ...) is true"
+	);
+	using type = First;
+};
+
+}
+
+template<class T, class... U>
+array(T, U...) -> array<typename details::enforce_same<T, U...>::type, 1 + sizeof...(U)>;
+
+
+
 template <typename T, ::std::size_t N>
 constexpr void swap(::fast_io::containers::array<T, N> &a, ::fast_io::containers::array<T, N> &b) noexcept(noexcept(a.swap(b)))
 {
