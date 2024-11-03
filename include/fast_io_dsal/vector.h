@@ -51,13 +51,19 @@ vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::val
 template <::std::ranges::input_range R>
 vector(::std::from_range_t, R &&) -> vector<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
 #endif
+
+
+template <typename T, typename... U>
+	requires(::std::constructible_from<T, U> && ...)
+vector(T, U...)->::fast_io::vector<T>;
+
 } // namespace containers
 
 namespace tlc
 {
 template <typename T, typename Alloc = ::fast_io::native_thread_local_allocator>
 using vector = ::fast_io::containers::vector<T, Alloc>;
-}
+} // namespace tlc
 
 } // namespace fast_io
 
