@@ -167,8 +167,8 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 	if (args)
 	{
 		ps_para.Buffer = const_cast<char16_t *>(args);
-		ps_para.Length = ::fast_io::cstr_len(args) * sizeof(char16_t);
-		ps_para.MaximumLength = ps_para.Length + sizeof(char16_t);
+		ps_para.Length = static_cast<decltype(ps_para.Length)>(::fast_io::cstr_len(args) * sizeof(char16_t));
+		ps_para.MaximumLength = static_cast<decltype(ps_para.MaximumLength)>(ps_para.Length + sizeof(char16_t));
 	}
 	rtl_user_process_parameters *rtl_up{};
 	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParameters(
@@ -279,8 +279,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	if (args)
 	{
 		ps_para.Buffer = const_cast<char16_t *>(args);
-		ps_para.Length = ::fast_io::cstr_len(args) * sizeof(char16_t);
-		ps_para.MaximumLength = ps_para.Length + sizeof(char16_t);
+		ps_para.Length = static_cast<decltype(ps_para.Length)>(::fast_io::cstr_len(args) * sizeof(char16_t));
+		ps_para.MaximumLength = static_cast<decltype(ps_para.MaximumLength)>(ps_para.Length + sizeof(char16_t));
 	}
 	rtl_user_process_parameters *rtl_temp{};
 	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(

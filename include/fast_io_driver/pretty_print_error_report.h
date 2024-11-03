@@ -1,8 +1,11 @@
 #pragma once
 
+#if !((defined(__cpp_static_assert) && __cpp_static_assert >= 202306L) && (defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)))
+#error "pretty error needs user-defined string literal for static_assert"
+#endif
+
 namespace fast_io
 {
-#if (defined(__cpp_static_assert) && __cpp_static_assert >= 202306L) && (defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_))
 
 template <::std::size_t index, ::std::integral char_type, typename T, typename... Args>
 struct print_freestanding_params_assert_okay_type
@@ -23,17 +26,10 @@ struct print_freestanding_params_assert_okay_type<index, char_type, T>
 template <::std::integral char_type, typename... Args>
 inline constexpr bool print_freestanding_params_assert_okay_v{print_freestanding_params_assert_okay_type<0, char_type, Args...>::value};
 
-#else
-
-template <::std::size_t index, ::std::integral char_type, typename... Args>
-struct print_freestanding_params_assert_okay_type
+template <typename output, typename... Args>
+inline constexpr bool print_freestanding_params_assert_okay(output &&, Args &&...) noexcept
 {
-	inline static constexpr bool value{(::fast_io::operations::defines::print_freestanding_params_okay<char_type, Args> && ...)};
-	static_assert(value, "some type(s) are not printable for print on this char type");
-};
+	return print_freestanding_params_assert_okay_v<typename ::fast_io::details::print_freestanding_output_decay_t<output>::output_char_type, Args...>;
+}
 
-template <::std::integral char_type, typename... Args>
-inline constexpr bool print_freestanding_params_assert_okay_v{print_freestanding_params_assert_okay_type<0, char_type, Args...>::value};
-
-#endif
 } // namespace fast_io

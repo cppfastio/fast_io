@@ -145,22 +145,22 @@ inline constexpr char_type *print_reserve_define(basic_lc_all<char_type> const *
 	}
 }
 
-template <::std::integral char_type, typename T1, typename T2, ::fast_io::buffer_output_stream bop>
-	requires((::fast_io::details::cond_ok_lc_printable_impl<char_type, T1> ||
-			  ::fast_io::details::cond_ok_lc_printable_impl<char_type, T2>) &&
-			 (!(::fast_io::details::cond_ok_lc_dynamic_rsv_printable_impl<char_type, T1>) ||
-			  ::fast_io::details::cond_ok_lc_dynamic_rsv_printable_impl<char_type, T2>))
-inline constexpr void print_define(basic_lc_all<char_type> const *__restrict all, bop b,
-								   ::fast_io::manipulators::condition<T1, T2> c)
-{
-	if (c.pred)
-	{
-		print_freestanding(imbue(all, b), c.t1);
-	}
-	else
-	{
-		print_freestanding(imbue(all, b), c.t2);
-	}
-}
+// template <::std::integral char_type, typename T1, typename T2, ::fast_io::buffer_output_stream bop>
+//	requires((::fast_io::details::cond_ok_lc_printable_impl<char_type, T1> ||
+//			  ::fast_io::details::cond_ok_lc_printable_impl<char_type, T2>) &&
+//			 (!(::fast_io::details::cond_ok_lc_dynamic_rsv_printable_impl<char_type, T1>) ||
+//			  ::fast_io::details::cond_ok_lc_dynamic_rsv_printable_impl<char_type, T2>))
+// inline constexpr void print_define(basic_lc_all<char_type> const *__restrict all, bop b,
+//								   ::fast_io::manipulators::condition<T1, T2> c)
+//{
+//	if (c.pred)
+//	{
+//		print_freestanding(imbue(all, b), c.t1);
+//	}
+//	else
+//	{
+//		print_freestanding(imbue(all, b), c.t2);
+//	}
+// }
 
 } // namespace fast_io
