@@ -536,7 +536,8 @@ to_array_rvalueref_impl(T (&&a)[N], ::std::index_sequence<I...>)
 } // namespace details
 
 template <typename T, typename... U>
-array(T, U...) -> ::fast_io::containers::array<T, 1 + sizeof...(U)>;
+	requires(::std::constructible_from<T, U> && ...)
+array(T, U...) -> array<T, 1 + sizeof...(U)>;
 
 template <typename T, ::std::size_t N>
 	requires(!::std::is_array_v<T>)
