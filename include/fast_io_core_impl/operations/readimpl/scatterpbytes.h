@@ -23,13 +23,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_cold_impl(instmtyp
 	{
 		return scatter_pread_some_bytes_underflow_define(insm, pscatters, n, off);
 	}
-	else if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_until_eof_bytes_underflow_define<
-						   instmtype>)
-	{
-		return scatter_pread_until_eof_bytes_underflow_define(insm, pscatters, n, off);
-	}
-	else if constexpr (::fast_io::operations::decay::defines::has_pread_some_bytes_underflow_define<instmtype> ||
-					   ::fast_io::operations::decay::defines::has_pread_until_eof_underflow_define<instmtype>)
+	else if constexpr (::fast_io::operations::decay::defines::has_pread_some_bytes_underflow_define<instmtype>)
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{

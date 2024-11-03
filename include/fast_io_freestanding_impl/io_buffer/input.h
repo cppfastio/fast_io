@@ -72,7 +72,7 @@ inline constexpr char_type *read_some_underflow_size_impl(instmtype instm,
 			{first, static_cast<::std::size_t>(reinterpret_cast<::std::byte const *>(last) -
 											   reinterpret_cast<::std::byte const *>(first))},
 			{pointers.buffer_begin, bfsz * sizeof(char_type)}};
-		auto [pos, scpos]{::fast_io::operations::decay::scatter_some_eof_bytes_decay(instm, scatters, 2)};
+		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_some_bytes_decay(instm, scatters, 2)};
 		if (pos == 2)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + bfsz;
@@ -93,7 +93,7 @@ inline constexpr char_type *read_some_underflow_size_impl(instmtype instm,
 	{
 		basic_io_scatter_t<char_type> scatters[2]{{first, static_cast<::std::size_t>(last - first)},
 												  {pointers.buffer_begin, bfsz}};
-		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_until_eof_decay(instm, scatters, 2)};
+		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_some_decay(instm, scatters, 2)};
 		if (pos == 2)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + bfsz;
@@ -117,7 +117,7 @@ inline constexpr char_type *read_some_underflow_impl(instmtype instm,
 														  basic_io_buffer_pointers<char_type> &__restrict pointers,
 														  char_type *first, char_type *last)
 {
-	return ::fast_io::details::io_buffer::read_somr_underflow_size_impl<allocatortype>(instm, pointers, first,
+	return ::fast_io::details::io_buffer::read_some_underflow_size_impl<allocatortype>(instm, pointers, first,
 																							last, bfsz);
 }
 

@@ -3,13 +3,14 @@
 namespace fast_io
 {
 
+
 namespace operations::decay
 {
 template <typename instmtype>
-inline constexpr ::std::byte *read_until_eof_bytes_decay(instmtype insm, ::std::byte *first, ::std::byte *last);
+inline constexpr ::std::byte *read_some_bytes_decay(instmtype insm, ::std::byte *first, ::std::byte *last);
 
 template <typename instmtype>
-inline constexpr ::std::byte *pread_until_eof_bytes_decay(instmtype insm, ::std::byte *first, ::std::byte *last,
+inline constexpr ::std::byte *pread_some_bytes_decay(instmtype insm, ::std::byte *first, ::std::byte *last,
 														  ::fast_io::intfpos_t);
 
 } // namespace operations::decay
@@ -41,13 +42,6 @@ template <typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr io_scatter_status_t scatter_read_until_eof_cold_impl(
-	instmtype insm, basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters, ::std::size_t n);
-
-template <typename instmtype>
-#if __has_cpp_attribute(__gnu__::__cold__)
-[[__gnu__::__cold__]]
-#endif
 inline constexpr io_scatter_status_t
 scatter_read_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters,
 							::std::size_t n)
@@ -57,12 +51,7 @@ scatter_read_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 	{
 		return scatter_read_some_underflow_define(insm, pscatters, n);
 	}
-	else if constexpr (::fast_io::operations::decay::defines::has_scatter_read_until_eof_underflow_define<instmtype>)
-	{
-		return scatter_read_until_eof_underflow_define(insm, pscatters, n);
-	}
-	else if constexpr (::fast_io::operations::decay::defines::has_read_some_underflow_define<instmtype> ||
-					   ::fast_io::operations::decay::defines::has_read_until_eof_underflow_define<instmtype>)
+	else if constexpr (::fast_io::operations::decay::defines::has_read_some_underflow_define<instmtype>)
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -113,7 +102,7 @@ scatter_read_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 				{
 					::std::size_t dfd{sizeof(char_type) - md};
 					auto readedend{readed + dfd};
-					auto it{::fast_io::operations::decay::read_until_eof_bytes_decay(insm, readed, readedend)};
+					auto it{::fast_io::operations::decay::read_some_bytes_decay(insm, readed, readedend)};
 					if (it == readedend)
 					{
 						++sz;
@@ -221,15 +210,6 @@ scatter_read_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtype
 		{
 			auto [base, len] = *i;
 			::fast_io::details::read_all_impl(insm, base, base + len);
-		}
-	}
-	else if constexpr (::fast_io::operations::decay::defines::has_scatter_read_until_eof_underflow_define<instmtype> ||
-					   ::fast_io::operations::decay::defines::has_read_until_eof_underflow_define<instmtype>)
-	{
-		auto [pos, scpos]{::fast_io::details::scatter_read_until_eof_cold_impl(insm, pscatters, n)};
-		if (!pos)
-		{
-			::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
 		}
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_scatter_read_some_underflow_define<instmtype>)

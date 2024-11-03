@@ -32,12 +32,7 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 	{
 		return scatter_pread_some_underflow_define(insm, pscatters, n);
 	}
-	else if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_until_eof_underflow_define<instmtype>)
-	{
-		return scatter_pread_until_eof_underflow_define(insm, pscatters, n);
-	}
-	else if constexpr (::fast_io::operations::decay::defines::has_pread_some_underflow_define<instmtype> ||
-					   ::fast_io::operations::decay::defines::has_scatter_pread_until_eof_underflow_define<instmtype>)
+	else if constexpr (::fast_io::operations::decay::defines::has_pread_some_underflow_define<instmtype>)
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
