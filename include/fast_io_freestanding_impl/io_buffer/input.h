@@ -16,7 +16,7 @@ inline constexpr bool ibuffer_underflow_rl_size_impl(instmtype insm, basic_io_bu
 		ibuffer.buffer_end = ibuffer.buffer_curr = ibuffer.buffer_begin = typed_allocator_type::allocate(bfsz);
 	}
 	ibuffer.buffer_end =
-		::fast_io::operations::decay::read_until_eof_decay(insm, ibuffer.buffer_begin, ibuffer.buffer_begin + bfsz);
+		::fast_io::operations::decay::read_some_decay(insm, ibuffer.buffer_begin, ibuffer.buffer_begin + bfsz);
 	ibuffer.buffer_curr = ibuffer.buffer_begin;
 	return ibuffer.buffer_begin != ibuffer.buffer_end;
 }
@@ -56,7 +56,7 @@ inline constexpr void ibuffer_minimum_size_underflow_all_prepare_impl(instmtype 
 }
 
 template <typename allocator_type, ::std::integral char_type, typename instmtype>
-inline constexpr char_type *read_until_eof_underflow_size_impl(instmtype instm,
+inline constexpr char_type *read_some_underflow_size_impl(instmtype instm,
 															   basic_io_buffer_pointers<char_type> &__restrict pointers,
 															   char_type *first, char_type *last, ::std::size_t bfsz)
 {
@@ -72,7 +72,7 @@ inline constexpr char_type *read_until_eof_underflow_size_impl(instmtype instm,
 			{first, static_cast<::std::size_t>(reinterpret_cast<::std::byte const *>(last) -
 											   reinterpret_cast<::std::byte const *>(first))},
 			{pointers.buffer_begin, bfsz * sizeof(char_type)}};
-		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_until_eof_bytes_decay(instm, scatters, 2)};
+		auto [pos, scpos]{::fast_io::operations::decay::scatter_some_eof_bytes_decay(instm, scatters, 2)};
 		if (pos == 2)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + bfsz;
@@ -113,18 +113,18 @@ inline constexpr char_type *read_until_eof_underflow_size_impl(instmtype instm,
 }
 
 template <::std::size_t bfsz, typename allocatortype, ::std::integral char_type, typename instmtype>
-inline constexpr char_type *read_until_eof_underflow_impl(instmtype instm,
+inline constexpr char_type *read_some_underflow_impl(instmtype instm,
 														  basic_io_buffer_pointers<char_type> &__restrict pointers,
 														  char_type *first, char_type *last)
 {
-	return ::fast_io::details::io_buffer::read_until_eof_underflow_size_impl<allocatortype>(instm, pointers, first,
+	return ::fast_io::details::io_buffer::read_somr_underflow_size_impl<allocatortype>(instm, pointers, first,
 																							last, bfsz);
 }
 
 } // namespace details::io_buffer
 
 template <typename io_buffer_type, ::std::integral char_type>
-inline constexpr char_type *read_until_eof_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+inline constexpr char_type *read_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
 															char_type *first, char_type *last)
 {
 	constexpr auto mode{io_buffer_type::traits_type::mode};
@@ -132,7 +132,7 @@ inline constexpr char_type *read_until_eof_underflow_define(basic_io_buffer_ref<
 	{
 		output_stream_buffer_flush_define(iobref);
 	}
-	return ::fast_io::details::io_buffer::read_until_eof_underflow_impl<
+	return ::fast_io::details::io_buffer::read_some_underflow_impl<
 		io_buffer_type::traits_type::input_buffer_size, typename io_buffer_type::traits_type::allocator_type>(
 		::fast_io::operations::input_stream_ref(iobref.iobptr->handle), iobref.iobptr->input_buffer, first, last);
 }
