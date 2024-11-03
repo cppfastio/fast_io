@@ -328,7 +328,7 @@ public:
 		delete this->handle;
 	}
 };
-#if 0
+
 template <typename T>
 class basic_general_io_file_ref
 {
@@ -375,7 +375,7 @@ inline constexpr auto io_stream_transcode_deco_filter_define(
 			basic_io_deco_filt<basic_general_io_file<inchar_type, outchar_type, allocatortype>, dectrefnocvref>>,
 		::fast_io::freestanding::forward<dectref>(deco), ::fast_io::freestanding::move(*rf.giofptr));
 }
-#endif
+
 template <::std::integral char_type>
 using basic_io_io_observer = basic_general_io_io_observer<char_type, char_type>;
 
