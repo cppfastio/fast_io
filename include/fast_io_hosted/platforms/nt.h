@@ -482,11 +482,18 @@ inline ::std::uint_least64_t nt_calculate_current_file_offset(void *__restrict h
 	return fps;
 }
 
-template <::fast_io::nt_family family>
-inline ::std::int_least64_t nt_calculate_offset_impl(void *__restrict handle, ::fast_io::intfpos_t off)
+inline ::std::int_least64_t nt_calculate_offset_impl(::fast_io::intfpos_t off)
 {
-	return ::fast_io::details::nt_fpos_offset_addition(
-		::fast_io::win32::nt::details::nt_calculate_current_file_offset<family>(handle), off);
+	if constexpr (sizeof(::fast_io::intfpos_t) > sizeof(::std::int_least64_t))
+	{
+		constexpr ::std::int_least64_t mn{::std::numeric_limits<::std::int_least64_t>::min()},
+			mx{::std::numeric_limits<::std::int_least64_t>::max()};
+		if (off < 0 || off > mx)
+		{
+			throw_nt_error(0xC0000106);
+		}
+	}
+	return static_cast<::std::int_least64_t>(off);
 }
 
 template <nt_family family>
@@ -514,7 +521,7 @@ template <nt_family family>
 inline ::std::byte *nt_pread_some_bytes_impl(void *__restrict handle, ::std::byte *first, ::std::byte *last,
 											 ::fast_io::intfpos_t off)
 {
-	::std::int_least64_t offs{nt_calculate_offset_impl<family>(handle, off)};
+	::std::int_least64_t offs{nt_calculate_offset_impl(off)};
 	return ::fast_io::win32::nt::details::nt_read_pread_some_bytes_common_impl<family>(handle, first, last,
 																					   __builtin_addressof(offs));
 }
@@ -545,7 +552,7 @@ template <nt_family family>
 inline ::std::byte const *nt_pwrite_some_bytes_impl(void *__restrict handle, ::std::byte const *first,
 													::std::byte const *last, ::fast_io::intfpos_t off)
 {
-	::std::int_least64_t offs{nt_calculate_offset_impl<family>(handle, off)};
+	::std::int_least64_t offs{nt_calculate_offset_impl(off)};
 	return ::fast_io::win32::nt::details::nt_write_pwrite_some_bytes_common_impl<family>(handle, first, last,
 																						 __builtin_addressof(offs));
 }

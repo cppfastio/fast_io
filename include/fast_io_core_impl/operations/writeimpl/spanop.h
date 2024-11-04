@@ -131,7 +131,7 @@ inline constexpr void pwrite_all_span(outstmtype &&outstm, ::fast_io::span<char_
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
-	::fast_io::details::pwrite_some_impl(::fast_io::operations::output_stream_ref(outstm), first, last, off);
+	::fast_io::details::pwrite_all_impl(::fast_io::operations::output_stream_ref(outstm), first, last, off);
 }
 
 template <typename outstmtype, ::std::integral char_type>
@@ -169,7 +169,7 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_span(outstmtype &
 }
 
 template <typename outstmtype>
-inline constexpr void scatter_pwrite_all_bytes_span(outstmtype &&outstm, ::fast_io::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp, ::fast_io::intfpos_t off)
+inline constexpr void scatter_pwrite_all_bytes_span(outstmtype &&outstm, ::fast_io::span<::fast_io::io_scatter_t const> sp, ::fast_io::intfpos_t off)
 {
 	::fast_io::details::scatter_pwrite_all_bytes_impl(::fast_io::operations::output_stream_ref(outstm),
 													  sp.data(), sp.size(), off);

@@ -1,23 +1,4 @@
 ﻿#include <fast_io.h>
-#include <fast_io_core_impl/rwreflect/impl.h>
-#include <fast_io_core_impl/rwreflect/reflectread.h>
-
-namespace fast_io
-{
-
-inline ::std::byte *read_some_bytes_define(
-	::fast_io::posix_io_observer piob, ::std::byte *first, ::std::byte *last)
-{
-	return read(piob, first, last);
-}
-
-inline ::std::byte const *write_some_bytes_define(
-	::fast_io::posix_io_observer piob, ::std::byte const *first, ::std::byte const *last)
-{
-	return write(piob, first, last);
-}
-
-} // namespace fast_io
 
 int main()
 {
