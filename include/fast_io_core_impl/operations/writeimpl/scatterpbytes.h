@@ -71,7 +71,7 @@ scatter_pwrite_some_bytes_cold_impl(outstmtype outsm, io_scatter_t const *pscatt
 							outstmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, off, ::fast_io::seekdir::beg);
 		auto ret{::fast_io::details::scatter_write_some_bytes_cold_impl(outsm, pscatters, n)};
 		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, oldoff, ::fast_io::seekdir::beg);
 		return ret;
@@ -84,7 +84,7 @@ scatter_pwrite_some_bytes_cold_impl(outstmtype outsm, io_scatter_t const *pscatt
 						::fast_io::operations::decay::defines::has_scatter_write_some_overflow_define<outstmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_decay(outsm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::output_stream_seek_decay(outsm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_decay(outsm, off, ::fast_io::seekdir::beg);
 		auto ret{::fast_io::details::scatter_write_some_bytes_cold_impl(outsm, pscatters, n)};
 		::fast_io::operations::decay::output_stream_seek_decay(outsm, oldoff, ::fast_io::seekdir::beg);
 		return ret;
@@ -190,7 +190,7 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm, io_sc
 							outstmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, off, ::fast_io::seekdir::beg);
 		::fast_io::details::scatter_write_all_bytes_impl(outsm, pscatters, n);
 		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, oldoff, ::fast_io::seekdir::beg);
 	}
@@ -202,7 +202,7 @@ inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm, io_sc
 						::fast_io::operations::decay::defines::has_scatter_write_some_overflow_define<outstmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_decay(outsm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::output_stream_seek_decay(outsm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::output_stream_seek_decay(outsm, off, ::fast_io::seekdir::beg);
 		::fast_io::details::scatter_write_all_bytes_impl(outsm, pscatters, n);
 		::fast_io::operations::decay::output_stream_seek_decay(outsm, oldoff, ::fast_io::seekdir::beg);
 	}
