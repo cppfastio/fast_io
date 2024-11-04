@@ -1,6 +1,7 @@
 ﻿#include <fast_io.h>
 #include <fast_io_dsal/array.h>
 #include <fast_io_dsal/string_view.h>
+#include <fast_io_dsal/span.h>
 #include <fast_io_device.h>
 
 int main()
