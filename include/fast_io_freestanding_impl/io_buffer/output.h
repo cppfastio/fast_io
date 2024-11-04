@@ -210,6 +210,43 @@ inline constexpr void write_all_overflow_define(basic_io_buffer_ref<io_buffer_ty
 		::fast_io::operations::output_stream_ref(iobref.iobptr->handle), iobref.iobptr->output_buffer, first, last);
 }
 
+
+template <typename io_buffer_type>
+inline constexpr typename io_buffer_type::output_char_type const *
+pwrite_some_overflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+							typename io_buffer_type::output_char_type const *first,
+							typename io_buffer_type::output_char_type const *last,
+							::fast_io::intfpos_t off)
+{
+	return ::fast_io::operations::decay::pwrite_some_decay(::fast_io::operations::output_stream_ref(iobref.iobptr->handle), first, last, off);
+}
+
+template <typename io_buffer_type>
+inline constexpr void pwrite_all_overflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+												 typename io_buffer_type::output_char_type const *first,
+												 typename io_buffer_type::output_char_type const *last,
+												 ::fast_io::intfpos_t off)
+{
+	::fast_io::operations::decay::pwrite_all_decay(::fast_io::operations::output_stream_ref(iobref.iobptr->handle), first, last, off);
+}
+
+template <typename io_buffer_type>
+inline constexpr ::fast_io::io_scatter_status_t
+scatter_pwrite_some_overflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+									::fast_io::basic_io_scatter_t<typename io_buffer_type::output_char_type> pscatters,
+									::std::size_t n, ::fast_io::intfpos_t off)
+{
+	return ::fast_io::operations::decay::scatter_pwrite_some_decay(::fast_io::operations::output_stream_ref(iobref.iobptr->handle), pscatters, n, off);
+}
+
+template <typename io_buffer_type>
+inline constexpr void scatter_pwrite_all_overflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+														 ::fast_io::basic_io_scatter_t<typename io_buffer_type::output_char_type> pscatters,
+														 ::std::size_t n, ::fast_io::intfpos_t off)
+{
+	::fast_io::operations::decay::scatter_pwrite_all_decay(::fast_io::operations::output_stream_ref(iobref.iobptr->handle), pscatters, n, off);
+}
+
 template <typename io_buffer_type>
 inline constexpr void output_stream_buffer_flush_define(basic_io_buffer_ref<io_buffer_type> iobref)
 {

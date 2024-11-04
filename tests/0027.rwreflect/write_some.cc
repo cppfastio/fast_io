@@ -1,25 +1,22 @@
 ﻿#include <fast_io.h>
-#include <fast_io_core_impl/rwreflect/impl.h>
-
-namespace fast_io
-{
-
-inline ::std::byte const *write_some_bytes_define(
-	::fast_io::posix_io_observer piob, ::std::byte const *first, ::std::byte const *last)
-{
-	return write(piob, first, last);
-}
-
-} // namespace fast_io
+#include <fast_io_dsal/array.h>
+#include <fast_io_dsal/string_view.h>
+#include <fast_io_device.h>
 
 int main()
 {
-	::fast_io::posix_file nf(u8"wsme.txt", ::fast_io::open_mode::out);
-	char buffer[20] = "abcde\nf";
-	char buffer1[20] = "ppppp\nf";
+	::fast_io::obuf_file nf(u8"wsme.txt");
 
-	::fast_io::io_scatter_t scat[2]{{buffer, 6}, {buffer1, 6}};
+	constexpr ::fast_io::string_view view1("Hello World\n");
+	constexpr ::fast_io::string_view view2("Do something\n");
 
-	::fast_io::scatter_write_all_bytes(nf, scat, 2);
-	::fast_io::write_all(nf, buffer, buffer + 6);
+	::fast_io::array scat{::fast_io::io_scatter_t{view1.data(), view1.size()}, ::fast_io::io_scatter_t{view2.data(), view2.size()}};
+
+	::fast_io::operations::scatter_write_all_bytes_span(nf, scat);
+	constexpr ::fast_io::string_view view("Goodby, Cruel World\n");
+	::fast_io::operations::write_all_span(nf, ::fast_io::span(view));
+
+	constexpr ::fast_io::string_view view4("Yes, Offset World\n");
+	::fast_io::operations::pwrite_all_span(nf, ::fast_io::span(view1), 10);
+	::fast_io::operations::scatter_pwrite_all_bytes_span(nf, scat, 30);
 }

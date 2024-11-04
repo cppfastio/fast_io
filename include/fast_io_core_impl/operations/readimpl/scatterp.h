@@ -32,12 +32,7 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 	{
 		return scatter_pread_some_underflow_define(insm, pscatters, n);
 	}
-	else if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_until_eof_underflow_define<instmtype>)
-	{
-		return scatter_pread_until_eof_underflow_define(insm, pscatters, n);
-	}
-	else if constexpr (::fast_io::operations::decay::defines::has_pread_some_underflow_define<instmtype> ||
-					   ::fast_io::operations::decay::defines::has_scatter_pread_until_eof_underflow_define<instmtype>)
+	else if constexpr (::fast_io::operations::decay::defines::has_pread_some_underflow_define<instmtype>)
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -140,10 +135,6 @@ scatter_pread_some_impl(instmtype insm, basic_io_scatter_t<typename instmtype::i
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm));
-		}
 		return ::fast_io::details::scatter_pread_some_cold_impl(insm, pscatters, n, off);
 	}
 }
@@ -158,7 +149,7 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 {
 	if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_all_underflow_define<instmtype>)
 	{
-		scatter_pread_all_underflow_define(insm, pscatters, n);
+		scatter_pread_all_underflow_define(insm, pscatters, n, off);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_pread_all_underflow_define<instmtype>)
 	{
@@ -214,7 +205,7 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 				[[__gnu__::__may_alias__]]
 #endif
-				= io_scatter_t *;
+				= io_scatter_t const *;
 			::fast_io::details::scatter_pread_all_bytes_cold_impl(
 				insm, reinterpret_cast<scattermayalias_ptr>(pscatters), n, off);
 		}
@@ -263,10 +254,6 @@ inline constexpr void scatter_pread_all_impl(instmtype insm,
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm));
-		}
 		return ::fast_io::details::scatter_pread_all_cold_impl(insm, pscatters, n, off);
 	}
 }

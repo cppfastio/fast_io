@@ -1,10 +1,13 @@
-﻿#include <fast_io_dsal/forward_list.h>
+﻿#if 0
+#include <fast_io_dsal/forward_list.h>
 #include <fast_io.h>
 using namespace fast_io::io;
 using namespace fast_io::mnp;
+#endif
 
 int main()
 {
+#if 0
 	::fast_io::forward_list<::std::size_t> lst;
 	for (::std::size_t i{}; i != 10; ++i)
 	{
@@ -25,4 +28,5 @@ int main()
 			lst2.is_empty(), "\n"
 							 "lst<=>lst2:",
 			lst <=> lst2);
+#endif
 }

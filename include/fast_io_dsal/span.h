@@ -23,7 +23,6 @@
 #if __cpp_lib_three_way_comparison >= 201907L
 #include <compare>
 #endif
-#include <algorithm>
 #include "../fast_io_core.h"
 #include "impl/common.h"
 #include "impl/span.h"
