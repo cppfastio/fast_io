@@ -8,5 +8,5 @@
 #include "scatterpbytes.h"
 #include "decay.h"
 #include "range.h"
-#include "spanop.h"
+#include "spanops.h"
 #include "ptrops.h"

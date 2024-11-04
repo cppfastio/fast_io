@@ -10,11 +10,11 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr ::fast_io::span<char_type const> write_some_span(outstmtype &&outstm, ::fast_io::span<char_type const> sp)
+inline constexpr ::fast_io::containers::span<char_type const> write_some_span(outstmtype &&outstm, ::fast_io::containers::span<char_type const> sp)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
-	return ::fast_io::span<char_type const>(first, ::fast_io::details::write_some_impl(::fast_io::operations::output_stream_ref(outstm), first, last));
+	return ::fast_io::containers::span<char_type const>(first, ::fast_io::details::write_some_impl(::fast_io::operations::output_stream_ref(outstm), first, last));
 }
 
 template <typename outstmtype, ::std::integral char_type>
@@ -23,7 +23,7 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void write_all_span(outstmtype &&outstm, ::fast_io::span<char_type const> sp)
+inline constexpr void write_all_span(outstmtype &&outstm, ::fast_io::containers::span<char_type const> sp)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
@@ -36,11 +36,11 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr ::fast_io::span<::std::byte const> write_some_bytes_span(outstmtype &&outstm, ::fast_io::span<::std::byte const> sp)
+inline constexpr ::fast_io::containers::span<::std::byte const> write_some_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::std::byte const> sp)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
-	return ::fast_io::span<::std::byte const>(first, ::fast_io::details::write_some_bytes_impl(::fast_io::operations::output_stream_ref(outstm), first, last));
+	return ::fast_io::containers::span<::std::byte const>(first, ::fast_io::details::write_some_bytes_impl(::fast_io::operations::output_stream_ref(outstm), first, last));
 }
 
 template <typename outstmtype, ::std::integral char_type>
@@ -49,7 +49,7 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void write_all_bytes_span(outstmtype &&outstm, ::fast_io::span<::std::byte const> sp)
+inline constexpr void write_all_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::std::byte const> sp)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
@@ -57,7 +57,7 @@ inline constexpr void write_all_bytes_span(outstmtype &&outstm, ::fast_io::span<
 }
 
 template <typename outstmtype>
-inline constexpr io_scatter_status_t scatter_write_some_bytes_span(outstmtype &&outstm, ::fast_io::span<::fast_io::io_scatter_t const> sp)
+inline constexpr io_scatter_status_t scatter_write_some_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::io_scatter_t const> sp)
 {
 	using io_scatter_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -70,7 +70,7 @@ inline constexpr io_scatter_status_t scatter_write_some_bytes_span(outstmtype &&
 }
 
 template <typename outstmtype>
-inline constexpr void scatter_write_all_bytes_span(outstmtype &&outstm, ::fast_io::span<::fast_io::io_scatter_t const> sp)
+inline constexpr void scatter_write_all_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::io_scatter_t const> sp)
 {
 	using io_scatter_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -83,7 +83,7 @@ inline constexpr void scatter_write_all_bytes_span(outstmtype &&outstm, ::fast_i
 }
 
 template <typename outstmtype>
-inline constexpr io_scatter_status_t scatter_write_some_span(outstmtype &&outstm, ::fast_io::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp)
+inline constexpr io_scatter_status_t scatter_write_some_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp)
 {
 	using io_scatter_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -96,7 +96,7 @@ inline constexpr io_scatter_status_t scatter_write_some_span(outstmtype &&outstm
 }
 
 template <typename outstmtype>
-inline constexpr void scatter_write_all_span(outstmtype &&outstm, ::fast_io::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp)
+inline constexpr void scatter_write_all_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp)
 {
 	using io_scatter_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -114,11 +114,11 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr ::fast_io::span<char_type const> pwrite_some_span(outstmtype &&outstm, ::fast_io::span<char_type const> sp, ::fast_io::intfpos_t off)
+inline constexpr ::fast_io::containers::span<char_type const> pwrite_some_span(outstmtype &&outstm, ::fast_io::containers::span<char_type const> sp, ::fast_io::intfpos_t off)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
-	return ::fast_io::span<char_type const>(first, ::fast_io::details::pwrite_some_impl(::fast_io::operations::output_stream_ref(outstm), first, last, off));
+	return ::fast_io::containers::span<char_type const>(first, ::fast_io::details::pwrite_some_impl(::fast_io::operations::output_stream_ref(outstm), first, last, off));
 }
 
 template <typename outstmtype, ::std::integral char_type>
@@ -127,7 +127,7 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void pwrite_all_span(outstmtype &&outstm, ::fast_io::span<char_type const> sp, ::fast_io::intfpos_t off)
+inline constexpr void pwrite_all_span(outstmtype &&outstm, ::fast_io::containers::span<char_type const> sp, ::fast_io::intfpos_t off)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
@@ -140,11 +140,11 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr ::fast_io::span<::std::byte const> pwrite_some_bytes_span(outstmtype &&outstm, ::fast_io::span<::std::byte const> sp, ::fast_io::intfpos_t off)
+inline constexpr ::fast_io::containers::span<::std::byte const> pwrite_some_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::std::byte const> sp, ::fast_io::intfpos_t off)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
-	return ::fast_io::span<::std::byte const>(first, ::fast_io::details::pwrite_some_bytes_impl(::fast_io::operations::output_stream_ref(outstm), first, last, off));
+	return ::fast_io::containers::span<::std::byte const>(first, ::fast_io::details::pwrite_some_bytes_impl(::fast_io::operations::output_stream_ref(outstm), first, last, off));
 }
 
 template <typename outstmtype, ::std::integral char_type>
@@ -153,7 +153,7 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr void pwrite_all_bytes_span(outstmtype &&outstm, ::fast_io::span<::std::byte const> sp, ::fast_io::intfpos_t off)
+inline constexpr void pwrite_all_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::std::byte const> sp, ::fast_io::intfpos_t off)
 {
 	auto first{sp.data()};
 	auto last{first + sp.size()};
@@ -161,7 +161,7 @@ inline constexpr void pwrite_all_bytes_span(outstmtype &&outstm, ::fast_io::span
 }
 
 template <typename outstmtype>
-inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_span(outstmtype &&outstm, ::fast_io::span<::fast_io::io_scatter_t const> sp, ::fast_io::intfpos_t off)
+inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::io_scatter_t const> sp, ::fast_io::intfpos_t off)
 {
 
 	return ::fast_io::details::scatter_pwrite_some_bytes_impl(::fast_io::operations::output_stream_ref(outstm),
@@ -169,21 +169,21 @@ inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_span(outstmtype &
 }
 
 template <typename outstmtype>
-inline constexpr void scatter_pwrite_all_bytes_span(outstmtype &&outstm, ::fast_io::span<::fast_io::io_scatter_t const> sp, ::fast_io::intfpos_t off)
+inline constexpr void scatter_pwrite_all_bytes_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::io_scatter_t const> sp, ::fast_io::intfpos_t off)
 {
 	::fast_io::details::scatter_pwrite_all_bytes_impl(::fast_io::operations::output_stream_ref(outstm),
 													  sp.data(), sp.size(), off);
 }
 
 template <typename outstmtype>
-inline constexpr io_scatter_status_t scatter_pwrite_some_span(outstmtype &&outstm, ::fast_io::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp, ::fast_io::intfpos_t off)
+inline constexpr io_scatter_status_t scatter_pwrite_some_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp, ::fast_io::intfpos_t off)
 {
 	return ::fast_io::details::scatter_pwrite_some_impl(::fast_io::operations::output_stream_ref(outstm),
 														sp.data(), sp.size(), off);
 }
 
 template <typename outstmtype>
-inline constexpr void scatter_pwrite_all_span(outstmtype &&outstm, ::fast_io::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp, ::fast_io::intfpos_t off)
+inline constexpr void scatter_pwrite_all_span(outstmtype &&outstm, ::fast_io::containers::span<::fast_io::basic_io_scatter_t<typename decltype(::fast_io::operations::output_stream_ref(outstm))::output_char_type> const> sp, ::fast_io::intfpos_t off)
 {
 
 	::fast_io::details::scatter_pwrite_all_impl(::fast_io::operations::output_stream_ref(outstm), sp.data(), sp.size(), off);
