@@ -65,7 +65,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_cold_impl(instmtyp
 					   (::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::beg);
 		auto ret{::fast_io::details::scatter_read_some_bytes_cold_impl(insm, pscatters, n)};
 		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, oldoff, ::fast_io::seekdir::beg);
 		return ret;
@@ -75,7 +75,7 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_cold_impl(instmtyp
 					   ::fast_io::operations::decay::defines::has_any_of_read_operations<instmtype>)
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::beg);
 		auto ret{::fast_io::details::scatter_read_some_bytes_cold_impl(insm, pscatters, n)};
 		::fast_io::operations::decay::input_stream_seek_decay(insm, oldoff, ::fast_io::seekdir::beg);
 		return ret;
@@ -173,7 +173,7 @@ inline constexpr void scatter_pread_all_bytes_cold_impl(instmtype insm, io_scatt
 					   (::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::beg);
 		::fast_io::details::scatter_read_all_bytes_impl(insm, pscatters, n);
 		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, oldoff, ::fast_io::seekdir::beg);
 	}
@@ -182,7 +182,7 @@ inline constexpr void scatter_pread_all_bytes_cold_impl(instmtype insm, io_scatt
 					   ::fast_io::operations::decay::defines::has_any_of_read_operations<instmtype>)
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::beg);
 		::fast_io::details::scatter_read_all_bytes_impl(insm, pscatters, n);
 		::fast_io::operations::decay::input_stream_seek_decay(insm, oldoff, ::fast_io::seekdir::beg);
 	}

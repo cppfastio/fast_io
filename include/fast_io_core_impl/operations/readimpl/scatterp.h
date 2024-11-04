@@ -105,7 +105,7 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 					   ::fast_io::operations::decay::defines::has_any_of_read_operations<instmtype>)
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::beg);
 		auto status{::fast_io::details::scatter_read_some_cold_impl(insm, pscatters, n)};
 		::fast_io::operations::decay::input_stream_seek_decay(insm, oldoff, ::fast_io::seekdir::beg);
 		return status;
@@ -114,7 +114,7 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 					   (::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::beg);
 		auto status{::fast_io::details::scatter_read_some_cold_impl(insm, pscatters, n)};
 		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, oldoff, ::fast_io::seekdir::beg);
 		return status;
@@ -226,7 +226,7 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 					   ::fast_io::operations::decay::defines::has_any_of_read_operations<instmtype>)
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_decay(insm, off, ::fast_io::seekdir::beg);
 		::fast_io::details::scatter_read_all_cold_impl(insm, pscatters, n);
 		::fast_io::operations::decay::input_stream_seek_decay(insm, oldoff, ::fast_io::seekdir::beg);
 	}
@@ -234,7 +234,7 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 					   (::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>))
 	{
 		auto oldoff{::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, 0, ::fast_io::seekdir::cur)};
-		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::cur);
+		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, off, ::fast_io::seekdir::beg);
 		::fast_io::details::scatter_read_all_cold_impl(insm, pscatters, n);
 		::fast_io::operations::decay::input_stream_seek_bytes_decay(insm, oldoff, ::fast_io::seekdir::beg);
 	}
