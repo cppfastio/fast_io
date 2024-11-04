@@ -365,10 +365,6 @@ pread_some_impl(instmtype insm, typename instmtype::input_char_type *first, type
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm), off);
-		}
 		return ::fast_io::details::pread_some_cold_impl(insm, first, last, off);
 	}
 }
@@ -386,10 +382,6 @@ inline constexpr void pread_all_impl(instmtype insm, typename instmtype::input_c
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm), off);
-		}
 		::fast_io::details::pread_all_cold_impl(insm, first, last, off);
 	}
 }
@@ -407,10 +399,6 @@ inline constexpr ::std::byte *pread_some_bytes_impl(instmtype insm, ::std::byte 
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm), off);
-		}
 		return ::fast_io::details::pread_some_bytes_cold_impl(insm, first, last, off);
 	}
 }
@@ -428,10 +416,6 @@ inline constexpr void pread_all_bytes_impl(instmtype insm, ::std::byte *first, :
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm), off);
-		}
 		::fast_io::details::pread_all_bytes_cold_impl(insm, first, last, off);
 	}
 }

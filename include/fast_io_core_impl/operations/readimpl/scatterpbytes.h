@@ -95,10 +95,6 @@ inline constexpr io_scatter_status_t scatter_pread_some_bytes_impl(instmtype ins
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm));
-		}
 		return ::fast_io::details::scatter_pread_some_bytes_cold_impl(insm, pscatters, n, off);
 	}
 }
@@ -144,7 +140,8 @@ inline constexpr void scatter_pread_all_bytes_cold_impl(instmtype insm, io_scatt
 			if (pisc)
 			{
 				auto pi = pscatters[ret.position];
-				::fast_io::details::pread_all_bytes_impl(insm, pi.base + pisc, pi.base + pi.len, off);
+				::std::byte *pibase{reinterpret_cast<::std::byte *>(const_cast<void *>(pi.base))};
+				::fast_io::details::pread_all_bytes_impl(insm, pibase + pisc, pibase + pi.len, off);
 				off = ::fast_io::fposoffadd_nonegative(off, pi.len - pisc);
 				++retpos;
 			}
@@ -204,10 +201,6 @@ inline constexpr void scatter_pread_all_bytes_impl(instmtype insm, io_scatter_t 
 	}
 	else
 	{
-		if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
-		{
-			off = ::fast_io::details::adjust_instm_offset(ibuffer_end(insm) - ibuffer_curr(insm));
-		}
 		return ::fast_io::details::scatter_pread_all_bytes_cold_impl(insm, pscatters, n, off);
 	}
 }
