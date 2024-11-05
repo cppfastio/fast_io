@@ -535,6 +535,10 @@ to_array_rvalueref_impl(T (&&a)[N], ::std::index_sequence<I...>)
 }
 } // namespace details
 
+template <typename T, typename... U>
+	requires(::std::constructible_from<T, U> && ...)
+array(T, U...) -> array<T, 1 + sizeof...(U)>;
+
 template <typename T, ::std::size_t N>
 	requires(!::std::is_array_v<T>)
 constexpr ::fast_io::containers::array<::std::remove_cv_t<T>, N> to_array(T (&a)[N]) noexcept(::std::is_nothrow_copy_constructible_v<T>)

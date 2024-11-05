@@ -142,7 +142,7 @@ public:
 				::fast_io::fast_terminate();
 			}
 			auto [ptr, newcap]{typed_allocator_type::allocate_zero_at_least(n + 1u)};
-			this->imp = {ptr, ptr, ptr + static_cast<size_type>(newcap - 1u)};
+			this->imp = {ptr, ptr + n, ptr + static_cast<size_type>(newcap - 1u)};
 		}
 	}
 

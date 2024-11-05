@@ -191,7 +191,6 @@ inline constexpr U umulh_least_generic(U a, U b) noexcept
 }
 
 template <typename T, typename U>
-	requires(sizeof(T) == sizeof(::std::uint_least64_t))
 inline constexpr U umulh_least64_generic_emulated(U a, T b) noexcept
 {
 	using S = ::std::uint_least32_t;

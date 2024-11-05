@@ -754,42 +754,8 @@ inline ::fast_io::intfpos_t seek_impl(void *handle, ::fast_io::intfpos_t offset,
 inline void win32_calculate_offset_impl(void *__restrict handle, ::fast_io::win32::overlapped &overlap,
 										::fast_io::intfpos_t off)
 {
-#if defined(_WIN32_WINDOWS) || _WIN32_WINNT <= 0x0500
-	::fast_io::intfpos_t currentoff{
-		static_cast<::std::int_least64_t>(::fast_io::win32::details::seek_impl(handle, 0, ::fast_io::seekdir::cur))};
-	::std::int_least64_t u64off{static_cast<::std::int_least64_t>(currentoff)};
-	if (off < 0)
-	{
-		::fast_io::uintfpos_t offabs{static_cast<::fast_io::uintfpos_t>(static_cast<::fast_io::uintfpos_t>(0) -
-																		static_cast<::fast_io::uintfpos_t>(off))};
-		if (static_cast<::std::uint_least64_t>(u64off) < offabs)
-		{
-			u64off = 0;
-		}
-		else
-		{
-			u64off -= static_cast<::std::uint_least64_t>(offabs);
-		}
-	}
-	else
-	{
-		constexpr ::std::uint_least64_t l64mx{static_cast<::std::uint_least64_t>(INT_LEAST64_MAX)};
-		::fast_io::uintfpos_t offabs{static_cast<::fast_io::uintfpos_t>(off)};
-		auto const mxval{l64mx - static_cast<::fast_io::uintfpos_t>(u64off)};
-		if (mxval < offabs)
-		{
-			u64off = l64mx;
-		}
-		else
-		{
-			u64off += static_cast<::std::uint_least64_t>(offabs);
-		}
-	}
-
-#else
 	::std::uint_least64_t u64off{static_cast<::std::uint_least64_t>(
-		::fast_io::win32::nt::details::nt_calculate_offset_impl<::fast_io::nt_family::nt>(handle, off))};
-#endif
+		::fast_io::win32::nt::details::nt_calculate_offset_impl(off))};
 	overlap.dummy_union_name.dummy_struct_name = {static_cast<::std::uint_least32_t>(u64off),
 												  static_cast<::std::uint_least32_t>(u64off >> 32)};
 }

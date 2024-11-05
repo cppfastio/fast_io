@@ -45,7 +45,7 @@ public:
 	template <::std::ranges::contiguous_range rg>
 		requires(::std::same_as<::std::ranges::range_value_t<rg>, char_type> && !::std::is_array_v<::std::remove_cvref_t<rg>> &&
 				 !::std::is_rvalue_reference_v<rg>)
-	explicit constexpr basic_string_view(::fast_io::freestanding::from_range_t, rg const &&r) noexcept
+	explicit constexpr basic_string_view(::fast_io::freestanding::from_range_t, rg &&r) noexcept
 		: ptr{::std::ranges::cdata(r)}, n{::std::ranges::size(r)}
 	{
 	}
