@@ -8,8 +8,15 @@ extern int dup(int) noexcept __asm__("_dup");
 extern int dup2(int, int) noexcept __asm__("_dup2");
 extern int _close(int) noexcept __asm__("_close");
 #elif defined(__wasi__)
-extern int dup(int) noexcept __asm__("dup");
-extern int dup2(int, int) noexcept __asm__("dup2");
+inline int dup(int) noexcept
+{
+	return -1;
+}
+
+inline int dup2(int old_fd, int new_fd) noexcept
+{
+	return ::fast_io::noexcept_call(__wasi_fd_renumber, old_fd, new_fd);
+}
 #endif
 
 inline int sys_dup(int old_fd)

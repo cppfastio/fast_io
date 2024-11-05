@@ -481,13 +481,13 @@ inline ::std::byte const *write_some_bytes_overflow_define(basic_bio_io_observer
 	return ::fast_io::details::bio_write_impl(iob.bio, first, last);
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
 template <::std::integral ch_type>
 inline constexpr bool operator==(basic_bio_io_observer<ch_type> a, basic_bio_io_observer<ch_type> b) noexcept
 {
 	return a.bio == b.bio;
 }
 
+#if __cpp_lib_three_way_comparison >= 201907L
 template <::std::integral ch_type>
 inline constexpr auto operator<=>(basic_bio_io_observer<ch_type> a, basic_bio_io_observer<ch_type> b) noexcept
 {

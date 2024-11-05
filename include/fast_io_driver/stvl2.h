@@ -621,7 +621,7 @@ inline constexpr char_type *print_reserve_define_impl_for_stvl2_firmware_flags(c
 
 inline constexpr ::std::size_t constexpr_stvl2_u8strlen(char8_t const *strlen) noexcept
 {
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 	{
 		::std::size_t len{};
 		for (; strlen[len]; ++len)

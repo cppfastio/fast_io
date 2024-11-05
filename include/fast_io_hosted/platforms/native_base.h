@@ -33,18 +33,24 @@ inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::ui
 namespace fast_io
 {
 
-#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 using native_at_entry = nt_at_entry;
 using native_fs_dirent = nt_fs_dirent;
 
+#if defined(_WIN32_WINDOWS)
 template <::std::integral ch_type>
 using basic_native_io_observer = basic_win32_io_observer<ch_type>;
 template <::std::integral ch_type>
 using basic_native_file = basic_win32_file<ch_type>;
-using native_process_io = win32_process_io;
-
+#else
+template <::std::integral ch_type>
+using basic_native_io_observer = basic_nt_io_observer<ch_type>;
+template <::std::integral ch_type>
+using basic_native_file = basic_nt_file<ch_type>;
+#endif
 template <::std::integral ch_type>
 using basic_native_pipe = basic_win32_pipe<ch_type>;
+using native_process_io = win32_process_io;
 
 #else
 

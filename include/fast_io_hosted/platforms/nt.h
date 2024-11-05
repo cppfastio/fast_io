@@ -690,14 +690,14 @@ inline ::std::byte const *pwrite_some_bytes_overflow_define(basic_nt_family_io_o
 	return ::fast_io::win32::nt::details::nt_pwrite_some_bytes_impl<family>(niob.handle, first, last, off);
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
-
 template <nt_family family, ::std::integral ch_type>
 inline constexpr bool operator==(basic_nt_family_io_observer<family, ch_type> a,
 								 basic_nt_family_io_observer<family, ch_type> b) noexcept
 {
 	return a.handle == b.handle;
 }
+
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <nt_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_nt_family_io_observer<family, ch_type> a,
@@ -1323,7 +1323,7 @@ inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
-#if !defined(_WIN32_WINDOWS) && 0
+#if !defined(__WINE__) && !defined(__CYGWIN__) && !defined(__BIONIC__) && !defined(_WIN32_WINDOWS)
 template <::std::integral char_type = char>
 inline basic_nt_io_observer<char_type> native_stdin() noexcept
 {

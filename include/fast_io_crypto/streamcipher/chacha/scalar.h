@@ -43,7 +43,7 @@ inline
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #else
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 #endif
 	{
 		for (::std::size_t i{}; i != n; ++i)
@@ -83,7 +83,7 @@ inline
 #if __cpp_if_consteval >= 202106L
 		if consteval
 #else
-		if (::std::is_constant_evaluated())
+		if (__builtin_is_constant_evaluated())
 #endif
 		{
 			auto v{::std::bit_cast<::fast_io::freestanding::array<::std::byte, sizeof(::std::uint_least32_t)>>(res)};

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <libc/fd_props.h>
 #include <dirent.h>

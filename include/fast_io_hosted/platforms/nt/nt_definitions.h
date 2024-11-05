@@ -29,7 +29,7 @@ struct object_attributes
 
 struct io_status_block
 {
-	union
+	union dummyunion
 	{
 		::std::uint_least32_t Status;
 		void *Pointer;
@@ -165,6 +165,23 @@ struct file_full_dir_information
 	char16_t FileName[1];
 };
 
+struct file_id_full_dir_information
+{
+	::std::uint_least32_t NextEntryOffset;
+	::std::uint_least32_t FileIndex;
+	::std::int_least64_t CreationTime;
+	::std::int_least64_t LastAccessTime;
+	::std::int_least64_t LastWriteTime;
+	::std::int_least64_t ChangeTime;
+	::std::int_least64_t EndOfFile;
+	::std::int_least64_t AllocationSize;
+	::std::uint_least32_t FileAttributes;
+	::std::uint_least32_t FileNameLength;
+	::std::uint_least32_t EaSize;
+	large_integer FileId;
+	char16_t FileName[1];
+};
+
 struct file_both_dir_information
 {
 	::std::uint_least32_t NextEntryOffset;
@@ -183,11 +200,32 @@ struct file_both_dir_information
 	char16_t FileName[1];
 };
 
+struct file_id_both_dir_information
+{
+	::std::uint_least32_t NextEntryOffset;
+	::std::uint_least32_t FileIndex;
+	::std::int_least64_t CreationTime;
+	::std::int_least64_t LastAccessTime;
+	::std::int_least64_t LastWriteTime;
+	::std::int_least64_t ChangeTime;
+	::std::int_least64_t EndOfFile;
+	::std::int_least64_t AllocationSize;
+	::std::uint_least32_t FileAttributes;
+	::std::uint_least32_t FileNameLength;
+	::std::uint_least32_t EaSize;
+	char ShortNameLength;
+	char16_t ShortName[12];
+	large_integer FileId;
+	char16_t FileName[1];
+};
+
 union dir_information
 {
 	void *DirInfo;
 	file_full_dir_information *FullDirInfo;
+	file_id_full_dir_information *IdFullDirInfo;
 	file_both_dir_information *BothDirInfo;
+	file_id_both_dir_information *IdBothDirInfo;
 };
 
 struct file_standard_information
@@ -659,6 +697,71 @@ struct rtl_unicode_string_buffer
 	unicode_string String;
 	rtl_buffer ByteBuffer;
 	char16_t MinimumStaticBufferForTerminalNul;
+};
+
+enum class system_information_class
+{
+	SystemBasicInformation,
+	SystemProcessorInformation,
+	SystemPerformanceInformation,
+	SystemTimeOfDayInformation,
+	SystemPathInformation,
+	SystemProcessInformation,
+	SystemCallCountInformation,
+	SystemDeviceInformation,
+	SystemProcessorPerformanceInformation,
+	SystemFlagsInformation,
+	SystemCallTimeInformation,
+	SystemModuleInformation,
+	SystemLocksInformation,
+	SystemStackTraceInformation,
+	SystemPagedPoolInformation,
+	SystemNonPagedPoolInformation,
+	SystemHandleInformation,
+	SystemObjectInformation,
+	SystemPageFileInformation,
+	SystemVdmInstemulInformation,
+	SystemVdmBopInformation,
+	SystemFileCacheInformation,
+	SystemPoolTagInformation,
+	SystemInterruptInformation,
+	SystemDpcBehaviorInformation,
+	SystemFullMemoryInformation,
+	SystemLoadGdiDriverInformation,
+	SystemUnloadGdiDriverInformation,
+	SystemTimeAdjustmentInformation,
+	SystemSummaryMemoryInformation,
+	SystemNextEventIdInformation,
+	SystemEventIdsInformation,
+	SystemCrashDumpInformation,
+	SystemExceptionInformation,
+	SystemCrashDumpStateInformation,
+	SystemKernelDebuggerInformation,
+	SystemContextSwitchInformation,
+	SystemRegistryQuotaInformation,
+	SystemExtendServiceTableInformation,
+	SystemPrioritySeperation,
+	SystemPlugPlayBusInformation,
+	SystemDockInformation,
+	SystemPowerInformation,
+	SystemProcessorSpeedInformation,
+	SystemCurrentTimeZoneInformation,
+	SystemLookasideInformation
+};
+
+struct system_basic_information
+{
+	::std::uint_least32_t Reserved;
+	::std::uint_least32_t TimerResolution;
+	::std::uint_least32_t PageSize;
+	::std::uint_least32_t NumberOfPhysicalPages;
+	::std::uint_least32_t LowestPhysicalPageNumber;
+	::std::uint_least32_t HighestPhysicalPageNumber;
+	::std::uint_least32_t AllocationGranularity;
+	::std::size_t MinimumUserModeAddress;
+	::std::size_t MaximumUserModeAddress;
+	::std::size_t ActiveProcessorsAffinityMask;
+	char NumberOfProcessors;
 };
 
 struct rtl_srwlock
