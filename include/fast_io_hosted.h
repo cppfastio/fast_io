@@ -73,7 +73,7 @@ freestanding ones.
 #include "fast_io_hosted/timeutil/impl.h"
 #endif
 
-#include "fast_io_hosted/threads/mutex/impl.h"
+#include "fast_io_hosted/threads/threads.h"
 
 #include "fast_io_dsal/impl/common.h"
 #include "fast_io_dsal/impl/vector.h"
