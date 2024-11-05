@@ -55,7 +55,7 @@ vector(::std::from_range_t, R &&) -> vector<::std::ranges::range_value_t<R>, ::f
 
 template <typename T, typename... U>
 	requires(::std::constructible_from<T, U> && ...)
-vector(T, U...) -> vector<T, , ::fast_io::native_global_allocator>;
+vector(T, U...) -> vector<T, ::fast_io::native_global_allocator>;
 
 } // namespace containers
 
