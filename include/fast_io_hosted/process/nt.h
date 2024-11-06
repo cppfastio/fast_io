@@ -233,7 +233,7 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 	// Process
 	void *hprocess{};
 	check_nt_status(::fast_io::win32::nt::nt_create_process<zw>(
-		__builtin_addressof(hprocess), 0x000F0000U | 0x00100000U | 0xFFF /*PROCESS_ALL_ACCESS*/, nullptr,
+		__builtin_addressof(hprocess), 0x2000000, nullptr,
 		current_process, true, hsection, nullptr, nullptr));
 	basic_nt_family_file<family, char> process(hprocess);
 
@@ -322,7 +322,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	void *hProcess{};
 	void *hThread{};
 	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
-		&hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF, nullptr, nullptr,
+		&hProcess, &hThread, 0x2000000, 0x2000000, nullptr, nullptr,
 		0x00, 0x00, rtl_temp, &CreateInfo, &AttributeList));
 
 	return {hProcess, hThread};
