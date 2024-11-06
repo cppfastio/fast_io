@@ -964,62 +964,6 @@ inline int my_posix_open(char const *pathname, int flags,
 #endif
 						 mode_t mode)
 {
-#if 0
-	// MSDOS
-
-	/*
-	Referenced from
-	https://dl.acm.org/doi/pdf/10.1145/70931.70935?casa_token=rWDy5JyhhkMAAAAA:BdkF0zbbWgurns3mU3yEJI2HnHXWhe6wyYGtKxjRewlEgLg6lk-cGGNLZTTdr3vUjtFg6Cnia2b4
-	An Example of Multiple Inheritance in C++: A Model of the Iostream Library
-	*/
-	int fd{-1};
-	unsigned int ret{};
-	if (((flags & O_CREAT) == O_CREAT))
-	{
-		if ((flags & O_EXCL) != O_EXCL)
-		{
-			ret = my_dos_creat(pathname, 0, __builtin_addressof(fd));
-		}
-		else
-		{
-			ret = my_dos_creatnew(pathname, 0, __builtin_addressof(fd));
-		}
-	}
-	else
-	{
-		ret = my_dos_open(pathname, static_cast<short unsigned>(static_cast<unsigned>(flags) & ~(static_cast<unsigned>(O_BINARY))), __builtin_addressof(fd));
-	}
-	if (ret)
-	{
-		if constexpr (always_terminate)
-		{
-			fast_terminate();
-		}
-		else
-		{
-			throw_posix_error();
-		}
-	}
-	int dos_mode{O_TEXT};
-	if ((static_cast<unsigned>(flags) & static_cast<unsigned>(O_BINARY)) == static_cast<unsigned>(O_BINARY))
-	{
-		dos_mode = O_BINARY;
-	}
-	if (::fast_io::details::my_dos_setmode(fd, dos_mode) == -1)
-	{
-		::fast_io::details::my_dos_close(fd);
-		if constexpr (always_terminate)
-		{
-			fast_terminate();
-		}
-		else
-		{
-			throw_posix_error();
-		}
-	}
-	return fd;
-#endif
-
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
 	int fd{::open(pathname, flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
