@@ -49,17 +49,13 @@ inline void nt_wait_and_close_user_process_or_thread(void *handle) noexcept(!thr
 		return;
 	}
 	auto status{nt_wait_user_process_or_thread<family>(handle)};
-	auto status2{::fast_io::win32::nt::nt_close<family == nt_family::zw>(handle)};
+	::fast_io::win32::nt::nt_close<family == nt_family::zw>(handle);
 
 	if constexpr (throw_eh)
 	{
 		if (status) [[unlikely]]
 		{
 			throw_nt_error(status);
-		}
-		if (status2) [[unlikely]]
-		{
-			throw_nt_error(status2);
 		}
 	}
 }
@@ -71,14 +67,7 @@ close_nt_user_process_information_and_wait(nt_user_process_information hnt_user_
 	// only need to wait hprocess
 	nt_wait_and_close_user_process_or_thread<family, throw_eh>(hnt_user_process_info.hprocess);
 	// close hthread (main thread)
-	auto status{::fast_io::win32::nt::nt_close<family == nt_family::zw>(hnt_user_process_info.hthread)};
-	if constexpr (throw_eh)
-	{
-		if (status) [[unlikely]]
-		{
-			throw_nt_error(status);
-		}
-	}
+	::fast_io::win32::nt::nt_close<family == nt_family::zw>(hnt_user_process_info.hthread);
 }
 
 template <nt_family family>
@@ -131,8 +120,18 @@ struct rtl_guard
 		if (rtl_up) [[likely]]
 		{
 			::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
+			rtl_up = nullptr;
+
 		}
 	};
+	constexpr void clear() noexcept
+	{
+		if (rtl_up) [[likely]]
+		{
+			::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
+			rtl_up = nullptr;
+		}
+	}
 };
 
 struct unicode_string_guard
@@ -146,8 +145,17 @@ struct unicode_string_guard
 		if (us) [[likely]]
 		{
 			::fast_io::native_thread_local_allocator::deallocate(us);
+			us = nullptr;
 		}
 	};
+	constexpr void clear() noexcept
+	{
+		if (us) [[likely]]
+		{
+			::fast_io::native_thread_local_allocator::deallocate(us);
+			us = nullptr;
+		}
+	}
 };
 
 template <bool zw>
@@ -392,7 +400,7 @@ public:
 template <nt_family family>
 inline void detach(nt_family_process_observer<family> &ppob) noexcept
 {
-	win32::nt::details::close_nt_user_process_information<family == nt_family::zw>(ppob.hnt_user_process_info);
+	win32::nt::details::close_nt_user_process_information<family>(ppob.hnt_user_process_info);
 	ppob.hnt_user_process_info = {};
 }
 
@@ -400,12 +408,6 @@ struct nt_wait_status
 {
 	::std::uint_least32_t exit_code{};
 };
-
-template <nt_family family>
-	requires(family == nt_family::nt || family == nt_family::zw)
-inline nt_wait_status query_process_basic_info(nt_family_process_observer<family> ppob)
-{
-}
 
 template <nt_family family, bool throw_eh = true>
 	requires(family == nt_family::nt || family == nt_family::zw)
@@ -461,6 +463,7 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 }
 
 template <nt_family family>
+	requires(family == nt_family::nt || family == nt_family::zw)
 class nt_family_process : public nt_family_process_observer<family>
 {
 public:
