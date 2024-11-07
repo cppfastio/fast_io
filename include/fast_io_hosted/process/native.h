@@ -2,7 +2,8 @@
 
 #if !defined(__MSDOS__) && !defined(__NEWLIB__) && !defined(__wasi__) && !defined(_PICOLIBC__)
 #include "base.h"
-#if (defined(_WIN32) && !defined(_WIN32_WINDOWS) && !defined(__WINE__)) || defined(__CYGWIN__)
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+#include "win32.h"
 #include "nt.h"
 #endif
 
@@ -18,10 +19,8 @@ namespace fast_io
 using native_process_observer = ::fast_io::nt_process_observer;
 using native_process = ::fast_io::nt_process;
 #else
-#if 0
 using native_process_observer = ::fast_io::win32_process_observer;
 using native_process = ::fast_io::win32_process;
-#endif
 #endif
 #else
 using native_process_observer = ::fast_io::posix_process_observer;

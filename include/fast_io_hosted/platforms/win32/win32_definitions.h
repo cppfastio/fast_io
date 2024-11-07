@@ -24,7 +24,28 @@ struct security_attributes
 	void *lpSecurityDescriptor;
 	int bInheritHandle;
 };
-struct startupinfo
+struct startupinfoa
+{
+	::std::uint_least32_t cb;
+	char *lpReserved;
+	char *lpDesktop;
+	char *lpTitle;
+	::std::uint_least32_t dwX;
+	::std::uint_least32_t dwY;
+	::std::uint_least32_t dwXSize;
+	::std::uint_least32_t dwYSize;
+	::std::uint_least32_t dwXCountChars;
+	::std::uint_least32_t dwYCountChars;
+	::std::uint_least32_t dwFillAttribute;
+	::std::uint_least32_t dwFlags;
+	::std::uint_least16_t wShowWindow;
+	::std::uint_least16_t cbReserved2;
+	::std::uint_least8_t *lpReserved2;
+	void *hStdInput;
+	void *hStdOutput;
+	void *hStdError;
+};
+struct startupinfow
 {
 	::std::uint_least32_t cb;
 	char16_t *lpReserved;
@@ -40,7 +61,7 @@ struct startupinfo
 	::std::uint_least32_t dwFlags;
 	::std::uint_least16_t wShowWindow;
 	::std::uint_least16_t cbReserved2;
-	int *lpReserved2;
+	::std::uint_least8_t *lpReserved2;
 	void *hStdInput;
 	void *hStdOutput;
 	void *hStdError;
@@ -374,5 +395,6 @@ struct file_basic_info
 	large_integer ChangeTime;
 	::std::uint_least32_t FileAttributes;
 };
+
 
 } // namespace fast_io::win32
