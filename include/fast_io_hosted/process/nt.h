@@ -121,7 +121,6 @@ struct rtl_guard
 		{
 			::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
 			rtl_up = nullptr;
-
 		}
 	};
 	constexpr void clear() noexcept
@@ -302,28 +301,62 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	rtl_guard rtlm{rtl_temp};
 
 	// Duplicate Process Std Handles
-	rtl_temp->StandardInput = processio.in.win32_handle;
-	rtl_temp->StandardOutput = processio.out.win32_handle;
-	rtl_temp->StandardError = processio.err.win32_handle;
+	auto const peb{::fast_io::win32::nt::nt_get_current_peb()};
+	rtl_temp->StandardInput = processio.in.win32_handle ? processio.in.win32_handle : peb->ProcessParameters->StandardInput;
+	rtl_temp->StandardOutput = processio.out.win32_handle ? processio.out.win32_handle : peb->ProcessParameters->StandardOutput;
+	rtl_temp->StandardError = processio.err.win32_handle ? processio.err.win32_handle : peb->ProcessParameters->StandardError;
+
+	// 0 == create new window, 4 == current windows, 0xfffffffffffffffd == no windows (background)
+	rtl_temp->ConsoleHandle = reinterpret_cast<void *>(0x4);
 
 	// Initialize the PS_CREATE_INFO structure
 	ps_create_info CreateInfo{};
 	CreateInfo.Size = sizeof(CreateInfo);
 	CreateInfo.State = ps_create_state::PsCreateInitialState;
+	CreateInfo.stateunion.InitState.u1.s1.ProhibitedImageCharacteristics = 0x2000;
+	CreateInfo.stateunion.InitState.AdditionalFileAccess = 129;
 
 	// Initialize the PS_ATTRIBUTE_LIST structure
 	ps_attribute_list AttributeList{};
-	AttributeList.TotalLength = sizeof(ps_attribute_list) - sizeof(ps_attribute);
+	AttributeList.TotalLength = 5 * sizeof(ps_attribute) + sizeof(::std::size_t);
+
 	AttributeList.Attributes[0].Attribute = 131077;
 	AttributeList.Attributes[0].Size = NtImagePath->Length;
+	AttributeList.Attributes[0].ReturnLength = 0;
 	AttributeList.Attributes[0].Value = reinterpret_cast<::std::size_t>(NtImagePath->Buffer);
+
+	AttributeList.Attributes[1].Attribute = 65539; // PS_ATTRIBUTE_CLIENT_ID
+	::fast_io::win32::nt::client_id cid{};
+	AttributeList.Attributes[1].Size = sizeof(cid);
+	AttributeList.Attributes[1].ReturnLength = 0;
+	AttributeList.Attributes[1].ValuePtr = __builtin_addressof(cid);
+
+	AttributeList.Attributes[2].Attribute = 6; // PS_ATTRIBUTE_IMAGE_INFO
+	::fast_io::win32::nt::section_image_information sif{};
+	AttributeList.Attributes[2].Size = sizeof(sif);
+	AttributeList.Attributes[2].ReturnLength = 0;
+	AttributeList.Attributes[2].ValuePtr = __builtin_addressof(sif);
+
+	AttributeList.Attributes[3].Attribute = 393242; // PS_ATTRIBUTE_CHPE
+	AttributeList.Attributes[3].Size = 1;
+	AttributeList.Attributes[3].ReturnLength = 0;
+	AttributeList.Attributes[3].Value = 1;
+
+	AttributeList.Attributes[4].Attribute = 131082; // PS_ATTRIBUTE_STD_HANDLE_INFO
+	::fast_io::win32::nt::ps_std_handle_info pshi{};
+	pshi.StdHandleSubsystemType = 3; // IMAGE_SUBSYSTEM_WINDOWS_CUI
+	pshi.StdHandleState = 2;         // PsAlwaysDuplicate == (win32) bInheritHandles
+	pshi.PseudoHandleMask = 0;
+	AttributeList.Attributes[4].Size = sizeof(pshi);
+	AttributeList.Attributes[4].ReturnLength = 0;
+	AttributeList.Attributes[4].ValuePtr = __builtin_addressof(pshi);
 
 	// Create the process
 	void *hProcess{};
 	void *hThread{};
 	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
 		&hProcess, &hThread, 0x2000000, 0x2000000, nullptr, nullptr,
-		0x00, 0x00, rtl_temp, &CreateInfo, &AttributeList));
+		512, 0x00, rtl_temp, &CreateInfo, &AttributeList));
 
 	return {hProcess, hThread};
 }

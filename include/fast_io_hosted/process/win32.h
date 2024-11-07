@@ -221,12 +221,14 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 		// create process
 		::fast_io::win32::startupinfow si{sizeof(si)};
-		si.hStdInput = processio.in.win32_handle;
-		si.hStdOutput = processio.out.win32_handle;
-		si.hStdError = processio.err.win32_handle;
+
+		si.hStdInput = processio.in.win32_handle ? processio.in.win32_handle : ::fast_io::win32_stdin().handle;
+		si.hStdOutput = processio.out.win32_handle ? processio.out.win32_handle : ::fast_io::win32_stdout().handle;
+		si.hStdError = processio.err.win32_handle ? processio.err.win32_handle : ::fast_io::win32_stderr().handle;
+		si.dwFlags = 0x00000100;
 
 		::fast_io::win32::process_information pi{};
-		if (!::fast_io::win32::CreateProcessW(address_begin, const_cast<char16_t *>(args), nullptr, nullptr, 0, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
+		if (!::fast_io::win32::CreateProcessW(address_begin, const_cast<char16_t *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 		{
 			throw_win32_error();
 		}
@@ -271,12 +273,13 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		// do not need to change nt path to dos path (9x)
 		// create process
 		::fast_io::win32::startupinfow si{sizeof(si)};
-		si.hStdInput = processio.in.win32_handle;
-		si.hStdOutput = processio.out.win32_handle;
-		si.hStdError = processio.err.win32_handle;
+		si.hStdInput = processio.in.win32_handle ? processio.in.win32_handle : ::fast_io::win32_stdin().handle;
+		si.hStdOutput = processio.out.win32_handle ? processio.out.win32_handle : ::fast_io::win32_stdout().handle;
+		si.hStdError = processio.err.win32_handle ? processio.err.win32_handle : ::fast_io::win32_stderr().handle;
+		si.dwFlags = 0x00000100;
 
 		::fast_io::win32::process_information pi{};
-		if (!::fast_io::win32::CreateProcessA(pszFilename, const_cast<char *>(args), nullptr, nullptr, 0, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
+		if (!::fast_io::win32::CreateProcessA(pszFilename, const_cast<char *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 		{
 			throw_win32_error();
 		}
