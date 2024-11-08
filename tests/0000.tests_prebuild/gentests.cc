@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Generate CMakeLists.txt for tests, examples and benchmarks
  *
  * test properties are read from .test_prop.toml file in the directory

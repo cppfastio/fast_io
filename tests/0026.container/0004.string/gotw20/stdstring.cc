@@ -1,4 +1,4 @@
-/*
+﻿/*
  * herb sutter's http://www.gotw.ca/gotw/020.htm
  * */
 #include <string>
