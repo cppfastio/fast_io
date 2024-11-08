@@ -1,4 +1,4 @@
-// Please keep it in reverse order with the macros in push_macros.h
+﻿// Please keep it in reverse order with the macros in push_macros.h
 #pragma pop_macro("refresh")
 #pragma pop_macro("new")
 #pragma pop_macro("move")

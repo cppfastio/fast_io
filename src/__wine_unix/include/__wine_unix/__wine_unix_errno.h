@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 /*
 Referenced from Linux Kernel Header File
 */
