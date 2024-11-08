@@ -1295,14 +1295,14 @@ inline file_type file_type_impl(::std::uint_least32_t DeviceType)
 	return file_type::regular;
 }
 
-
 template <nt_family family>
 inline posix_file_status nt_status_impl(void *__restrict handle)
 {
-	::fast_io::win32::nt::io_status_block isb{};
+	::fast_io::win32::nt::io_status_block isb;
 
-	::fast_io::win32::nt::file_fs_device_type ffdt{};
-	auto status{::fast_io::win32::nt::nt_query_volume_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(ffdt), sizeof(ffdt),
+	::fast_io::win32::nt::file_fs_device_type ffdt;
+	auto status{::fast_io::win32::nt::nt_query_volume_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(ffdt),
+																										   static_cast<::std::uint_least32_t>(sizeof(ffdt)),
 																										   ::fast_io::win32::nt::fs_information_class::FileFsDeviceInformation)};
 	if (status) [[unlikely]]
 	{
@@ -1332,8 +1332,9 @@ inline posix_file_status nt_status_impl(void *__restrict handle)
 								 0};
 	}
 
-	::fast_io::win32::nt::file_basic_information fbi{};
-	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fbi), sizeof(fbi),
+	::fast_io::win32::nt::file_basic_information fbi;
+	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fbi),
+																								 static_cast<::std::uint_least32_t>(sizeof(fbi)),
 																								 ::fast_io::win32::nt::file_information_class::FileBasicInformation);
 
 	if (status) [[unlikely]]
@@ -1341,8 +1342,9 @@ inline posix_file_status nt_status_impl(void *__restrict handle)
 		throw_nt_error(status);
 	}
 
-	::fast_io::win32::nt::file_internal_information fii{};
-	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fii), sizeof(fii),
+	::fast_io::win32::nt::file_internal_information fii;
+	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fii),
+																								 static_cast<::std::uint_least32_t>(sizeof(fii)),
 																								 ::fast_io::win32::nt::file_information_class::FileInternalInformation);
 
 	if (status) [[unlikely]]
@@ -1356,15 +1358,17 @@ inline posix_file_status nt_status_impl(void *__restrict handle)
 		char16_t Name[255];
 	} ffvi;
 
-	status = ::fast_io::win32::nt::nt_query_volume_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(ffvi), sizeof(ffvi),
+	status = ::fast_io::win32::nt::nt_query_volume_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb),
+																										__builtin_addressof(ffvi), static_cast<::std::uint_least32_t>(sizeof(ffvi)),
 																										::fast_io::win32::nt::fs_information_class::FileFsVolumeInformation);
 	if (status) [[unlikely]]
 	{
 		throw_nt_error(status);
 	}
 
-	::fast_io::win32::nt::file_standard_information fsi{};
-	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fsi), sizeof(fsi),
+	::fast_io::win32::nt::file_standard_information fsi;
+	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fsi),
+																								 static_cast<::std::uint_least32_t>(sizeof(fsi)),
 																								 ::fast_io::win32::nt::file_information_class::FileStandardInformation);
 
 	if (status) [[unlikely]]
