@@ -194,30 +194,35 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		mg1.clear();
 		hg1.clear();
 
-		// change nt path to dos path
-		char16_t DosDevice[4]{};
-		char16_t NtPath[64];
-		char16_t *RetStr{};
-		::std::size_t NtPathLen{};
-		for (char16_t i{65}; i < static_cast<char16_t>(26 + 65); i++)
-		{
-			DosDevice[0] = i;
-			DosDevice[1] = u':';
-			if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
-			{
-				NtPathLen = ::fast_io::cstr_len(NtPath);
+		auto address_begin{pszFilename};
 
-				if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char16_t)) == 0) [[unlikely]]
+		// change nt path to dos path
+		if (pszFilename[0] == u'\\')
+		{
+			char16_t DosDevice[4]{};
+			char16_t NtPath[64];
+			char16_t *RetStr{};
+			::std::size_t NtPathLen{};
+			for (char16_t i{65}; i < static_cast<char16_t>(26 + 65); i++)
+			{
+				DosDevice[0] = i;
+				DosDevice[1] = u':';
+				if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
 				{
-					goto next;
+					NtPathLen = ::fast_io::cstr_len(NtPath);
+
+					if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char16_t)) == 0) [[unlikely]]
+					{
+						goto next;
+					}
 				}
 			}
+			throw_win32_error(0x3);
+		next:
+			address_begin += NtPathLen - 2;
+			address_begin[0] = DosDevice[0];
+			address_begin[1] = u':';
 		}
-		throw_win32_error(0x3);
-	next:
-		auto address_begin{pszFilename + NtPathLen - 2};
-		address_begin[0] = DosDevice[0];
-		address_begin[1] = u':';
 
 		// create process
 		::fast_io::win32::startupinfow si{sizeof(si)};
