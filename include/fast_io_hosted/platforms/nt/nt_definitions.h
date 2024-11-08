@@ -3,6 +3,21 @@
 namespace fast_io::win32::nt
 {
 
+union large_integer
+{
+	struct DUMMYSTRUCTNAMETYPE
+	{
+		::std::uint_least32_t LowPart;
+		::std::int_least32_t HighPart;
+	} DUMMYSTRUCTNAME;
+	struct uTYPE
+	{
+		::std::uint_least32_t LowPart;
+		::std::int_least32_t HighPart;
+	} u;
+	::std::int_least64_t QuadPart;
+};
+
 struct ansi_string
 {
 	::std::uint_least16_t Length;
@@ -178,7 +193,7 @@ struct file_id_full_dir_information
 	::std::uint_least32_t FileAttributes;
 	::std::uint_least32_t FileNameLength;
 	::std::uint_least32_t EaSize;
-	large_integer FileId;
+	::std::uint_least64_t FileId;
 	char16_t FileName[1];
 };
 
@@ -215,7 +230,7 @@ struct file_id_both_dir_information
 	::std::uint_least32_t EaSize;
 	char ShortNameLength;
 	char16_t ShortName[12];
-	large_integer FileId;
+	::std::uint_least64_t FileId;
 	char16_t FileName[1];
 };
 
@@ -235,6 +250,20 @@ struct file_standard_information
 	::std::uint_least32_t number_of_links;
 	int delete_pending;
 	int directory;
+};
+
+struct file_basic_information
+{
+	::std::uint_least64_t CreationTime;
+	::std::uint_least64_t LastAccessTime;
+	::std::uint_least64_t LastWriteTime;
+	::std::uint_least64_t ChangeTime;
+	::std::uint_least32_t FileAttributes;
+};
+
+struct file_internal_information
+{
+	::std::uint_least64_t IndexNumber;
 };
 
 enum class process_information_class
@@ -648,21 +677,6 @@ enum class object_information_class
 	ObjectHandleInformation = 4
 };
 
-union large_integer
-{
-	struct DUMMYSTRUCTNAMETYPE
-	{
-		::std::uint_least32_t LowPart;
-		::std::int_least32_t HighPart;
-	} DUMMYSTRUCTNAME;
-	struct uTYPE
-	{
-		::std::uint_least32_t LowPart;
-		::std::int_least32_t HighPart;
-	} u;
-	::std::int_least64_t QuadPart;
-};
-
 enum class section_inherit
 {
 	ViewShare = 1,
@@ -792,4 +806,37 @@ struct ps_std_handle_info
 	::std::uint_least32_t StdHandleSubsystemType;
 };
 
+enum class fs_information_class
+{
+	FileFsVolumeInformation = 1,
+	FileFsLabelInformation,
+	FileFsSizeInformation,
+	FileFsDeviceInformation,
+	FileFsAttributeInformation,
+	FileFsControlInformation,
+	FileFsFullSizeInformation,
+	FileFsObjectIdInformation,
+	FileFsDriverPathInformation,
+	FileFsVolumeFlagsInformation,
+	FileFsSectorSizeInformation,
+	FileFsDataCopyInformation,
+	FileFsMetadataSizeInformation,
+	FileFsFullSizeInformationEx,
+	FileFsMaximumInformation
+};
+
+struct file_fs_device_type
+{
+	::std::uint_least32_t DeviceType;
+	::std::uint_least32_t Characteristics;
+};
+
+struct file_fs_volume_information
+{
+	::std::uint_least64_t VolumeCreationTime;
+	::std::uint_least32_t VolumeSerialNumber;
+	::std::uint_least32_t VolumeLabelLength;
+	::std::uint_least8_t SupportsObjects;
+	char16_t VolumeLabel[1];
+};
 } // namespace fast_io::win32::nt

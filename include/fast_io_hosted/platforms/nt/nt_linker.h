@@ -2514,4 +2514,72 @@ extern void
 #endif
 		;
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtQueryVolumeInformationFile(void *__restrict, io_status_block *__restrict, void *__restrict, ::std::uint_least32_t,
+								 fs_information_class) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtQueryVolumeInformationFile@20")
+#else
+	__asm__("_NtQueryVolumeInformationFile@20")
+#endif
+#else
+	__asm__("NtQueryVolumeInformationFile")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwQueryVolumeInformationFile(void *__restrict, io_status_block *__restrict, void *__restrict, ::std::uint_least32_t,
+								 fs_information_class) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwQueryVolumeInformationFile@20")
+#else
+	__asm__("_ZwQueryVolumeInformationFile@20")
+#endif
+#else
+	__asm__("ZwQueryVolumeInformationFile")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_query_volume_information_file(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwQueryVolumeInformationFile(args...);
+	}
+	else
+	{
+		return NtQueryVolumeInformationFile(args...);
+	}
+}
+
 } // namespace fast_io::win32::nt

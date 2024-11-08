@@ -129,7 +129,7 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 	}
 	auto id_ful_dir_info{d_info.IdFullDirInfo};
 
-	entry->d_ino = static_cast<::std::uint_least64_t>(id_ful_dir_info->FileId.QuadPart);
+	entry->d_ino = static_cast<::std::uint_least64_t>(id_ful_dir_info->FileId);
 
 	entry->native_d_namlen = id_ful_dir_info->FileNameLength / sizeof(char16_t);
 
