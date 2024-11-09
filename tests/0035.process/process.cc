@@ -12,5 +12,5 @@ int main(int argc, char** argv)
 	}
 	::fast_io::native_process p{::fast_io::mnp::os_c_str(argv[1]), {}, {}, {}};
 	auto ec{wait(p)};
-	::fast_io::io::perrln(::fast_io::mnp::os_c_str(*argv), "Exit code: ", static_cast<int>(ec.wait_loc));
+	::fast_io::io::perrln(::fast_io::mnp::os_c_str(*argv), " -> Exit code: ", static_cast<int>(ec.wait_loc));
 }
