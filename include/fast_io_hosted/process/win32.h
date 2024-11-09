@@ -283,6 +283,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		{
 			using QueryDosDeviceA_t = ::std::uint_least32_t (*)(char const *, char *, ::std::uint_least32_t) noexcept;
 
+			// win95 may not have this function, need check (?)
 			auto QueryDosDeviceA_p{reinterpret_cast<QueryDosDeviceA_t>(::fast_io::win32::GetProcAddress(k32_module, "QueryDosDeviceA"))};
 			if (QueryDosDeviceA_p)
 			{
@@ -301,12 +302,12 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 							if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char)) == 0) [[unlikely]]
 							{
-								goto next;
+								goto next2;
 							}
 						}
 					}
 					throw_win32_error(0x3);
-				next:
+				next2:
 					address_begin += NtPathLen - 2;
 					address_begin[0] = DosDevice[0];
 					address_begin[1] = ':';
