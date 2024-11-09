@@ -358,7 +358,7 @@ inline void detach(win32_family_process_observer<family> &ppob) noexcept
 
 struct win32_wait_status
 {
-	::std::uint_least32_t exit_code{};
+	::std::uint_least32_t wait_loc{}; // exit code
 };
 
 template <win32_family family, bool throw_eh = true>

@@ -766,10 +766,10 @@ inline ::std::byte *read_or_pread_some_bytes_common_impl(void *__restrict handle
 	::std::uint_least32_t number_of_bytes{};
 	if (!::fast_io::win32::ReadFile(handle, first,
 									::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last),
-									__builtin_addressof(number_of_bytes), lpoverlapped))
+									__builtin_addressof(number_of_bytes), lpoverlapped)) [[unlikely]]
 	{
 		auto err(::fast_io::win32::GetLastError());
-		if (err == 109)
+		if (err == 109) [[likely]]
 		{
 			return first;
 		}

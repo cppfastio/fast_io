@@ -439,7 +439,7 @@ inline void detach(nt_family_process_observer<family> &ppob) noexcept
 
 struct nt_wait_status
 {
-	::std::uint_least32_t exit_code{};
+	::std::uint_least32_t wait_loc{}; // exit code
 };
 
 template <nt_family family, bool throw_eh = true>
