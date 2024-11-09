@@ -7,7 +7,7 @@
 #pragma comment(lib, "bcrypt.lib")
 #endif
 
-#if defined(_MSC_VER) && !(!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x601) && !defined(_KERNEL_MODE)
+#if defined(_MSC_VER) && !(!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x601) && !defined(_WIN32_WINDOWS) && !defined(_KERNEL_MODE)
 #pragma comment(lib, "psapi.lib")
 #endif
 
