@@ -72,6 +72,12 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	open_mode value{ompm.om};
 	perms pm{ompm.pm};
 	nt_open_mode mode;
+
+	constexpr auto default_write_attribute{0x00020000L /*READ_CONTROL*/ | 0x0002 /*FILE_WRITE_DATA*/ | 0x0004 /*FILE_APPEND_DATA*/};
+	constexpr auto default_read_attribute{0x00020000L/*READ_CONTROL*/ | 0x0001 /*FILE_READ_DATA*/};
+
+	mode.DesiredAccess |= 0x00100000L /*SYNCHRONIZE*/ | 0x0080 /*FILE_READ_ATTRIBUTES*/;
+
 	if ((value & open_mode::no_shared_read) == open_mode::none)
 	{
 		mode.ShareAccess |= 1; // FILE_SHARE_READ
@@ -91,16 +97,16 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	}
 	else if ((value & open_mode::out) != open_mode::none)
 	{
-		mode.DesiredAccess |= 0x120196; // FILE_GENERIC_WRITE | FILE_READ_ATTRIBUTES
+		mode.DesiredAccess |= default_write_attribute; 
 		generic_write = true;
 	}
 	if (((value & open_mode::in) != open_mode::none) || ((value & open_mode::app) != open_mode::none))
 	{
-		mode.DesiredAccess |= 0x120089; // FILE_GENERIC_READ
+		mode.DesiredAccess |= default_read_attribute; 
 		if ((value & open_mode::out) != open_mode::none &&
 			((value & open_mode::app) != open_mode::none && (value & open_mode::trunc) != open_mode::none))
 		{
-			mode.DesiredAccess |= 0x120116;
+			mode.DesiredAccess |= default_write_attribute;
 			generic_write = true;
 		}
 	}
@@ -250,7 +256,7 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	{
 		if (mode.CreateDisposition == 0)
 		{
-			mode.DesiredAccess |= 0x120089;      // FILE_GENERIC_READ
+			mode.DesiredAccess |= default_read_attribute; // FILE_GENERIC_READ
 			mode.CreateDisposition = 0x00000001; // OPEN_EXISTING
 		}
 		mode.CreateOptions |= 0x00004000; // FILE_OPEN_FOR_BACKUP_INTENT
@@ -261,7 +267,7 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 		}
 		if ((value & open_mode::creat) != open_mode::none)
 		{
-			mode.DesiredAccess |= UINT32_C(0x120116) | UINT32_C(0x120089); // GENERIC_READ | GENERIC_WRITE
+			mode.DesiredAccess |= default_write_attribute | default_read_attribute; // GENERIC_READ | GENERIC_WRITE
 		}
 	}
 	if ((value & open_mode::no_block) == open_mode::none)

@@ -199,14 +199,13 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		// change nt path to dos path
 		if (pszFilename[0] == u'\\')
 		{
-			char16_t DosDevice[4]{};
+			char16_t DosDevice[4]{0, u':', 0, 0};
 			char16_t NtPath[64];
 			char16_t *RetStr{};
 			::std::size_t NtPathLen{};
 			for (char16_t i{65}; i < static_cast<char16_t>(26 + 65); i++)
 			{
 				DosDevice[0] = i;
-				DosDevice[1] = u':';
 				if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
 				{
 					NtPathLen = ::fast_io::cstr_len(NtPath);
