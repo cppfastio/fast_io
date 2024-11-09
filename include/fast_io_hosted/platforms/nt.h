@@ -91,7 +91,7 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	}
 	else if ((value & open_mode::out) != open_mode::none)
 	{
-		mode.DesiredAccess |= 0x120116; // FILE_GENERIC_WRITE
+		mode.DesiredAccess |= 0x120196; // FILE_GENERIC_WRITE | FILE_READ_ATTRIBUTES
 		generic_write = true;
 	}
 	if (((value & open_mode::in) != open_mode::none) || ((value & open_mode::app) != open_mode::none))
@@ -504,8 +504,12 @@ inline ::std::byte *nt_read_pread_some_bytes_common_impl(void *__restrict handle
 	::fast_io::win32::nt::io_status_block block;
 	auto const status{::fast_io::win32::nt::nt_read_file<family == ::fast_io::nt_family::zw>(handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
 																							 ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
-	if (status)
+	if (status) [[unlikely]]
 	{
+		if (status == 0xC0000011) [[likely]]
+		{
+			return first;
+		}
 		throw_nt_error(status);
 	}
 	return first + block.Information;
