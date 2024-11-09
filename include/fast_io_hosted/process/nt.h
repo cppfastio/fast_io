@@ -239,7 +239,7 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 	// PROCESS_BASIC_INFO
 	process_basic_information pb_info{};
 	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(
-		hprocess, process_information_class::ProcessBasicInformation, __builtin_addressof(pb_info), sizeof(pb_info),
+		hprocess, process_information_class::ProcessBasicInformation, __builtin_addressof(pb_info), static_cast<::std::uint_least32_t>(sizeof(pb_info)),
 		nullptr));
 
 	// Push Process Parameters and Duplicate Process Std Handles
@@ -478,7 +478,7 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 		::fast_io::win32::nt::nt_query_information_process<family == nt_family::zw>(ppob.hnt_user_process_info.hprocess,
 																					::fast_io::win32::nt::process_information_class::ProcessBasicInformation,
 																					__builtin_addressof(pbi),
-																					sizeof(pbi),
+																					static_cast<::std::uint_least32_t>(sizeof(pbi)),
 																					nullptr)};
 	if (status2) [[unlikely]]
 	{
