@@ -46,7 +46,14 @@ using native_global_allocator = generic_allocator_adapter<
 #if defined(_DEBUG) && defined(_MSC_VER)
 	wincrt_malloc_dbg_allocator
 #else
-	::std::conditional_t<::fast_io::asan::asan_status::current == ::fast_io::asan::asan_status::none, win32_heapalloc_allocator, c_malloc_allocator>
+	::std::conditional_t<::fast_io::asan::asan_status::current == ::fast_io::asan::asan_status::none,
+#ifdef _WIN32_WINDOWS
+						 win32_heapalloc_allocator
+#else
+						 nt_rtlallocateheap_allocator
+#endif
+						 ,
+						 c_malloc_allocator>
 #endif
 #else
 #if defined(_DEBUG) && defined(_MSC_VER)
