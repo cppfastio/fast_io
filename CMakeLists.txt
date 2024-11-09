@@ -113,6 +113,7 @@ if(${ENABLE_TESTS})
 	endif()
 	if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
 		link_libraries(ntdll)
+		link_libraries(psapi)
 	endif()
 
 	option(TESTS_PREBUILD "prebuild cmake files for test" OFF)

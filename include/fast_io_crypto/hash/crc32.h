@@ -23,7 +23,7 @@ inline constexpr void crc32_to_byte_ptr_commom_impl(::std::uint_least32_t crc, :
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 #endif
 	{
 		auto a{::std::bit_cast<::fast_io::freestanding::array<::std::byte, sizeof(::std::uint_least32_t)>>(crc)};

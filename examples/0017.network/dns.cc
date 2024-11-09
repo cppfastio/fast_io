@@ -14,7 +14,16 @@ int main(int argc, char const **argv)
 		return 1;
 	}
 	fast_io::net_service service;
-	fast_io::native_dns_file dnsfile(::fast_io::mnp::os_c_str(argv[1]));
+	fast_io::native_dns_file dnsfile;
+	try
+	{
+		dnsfile = fast_io::native_dns_file(::fast_io::mnp::os_c_str(argv[1]));
+	}
+	catch (::fast_io::error e)
+	{
+		::fast_io::io::perrln(e);
+		return -1;
+	}
 	for (auto ent : dnsfile)
 	{
 		println(to_ip_address(ent));

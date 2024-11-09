@@ -1,4 +1,4 @@
-#if defined(_MSC_VER) && !defined(__clang__)
+﻿#if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push)
 #pragma warning(disable : 4061)
 #pragma warning(disable : 4324)

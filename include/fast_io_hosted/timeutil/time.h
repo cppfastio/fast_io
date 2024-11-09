@@ -277,7 +277,7 @@ namespace win32::details
 inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 {
 	::fast_io::win32::filetime ftm;
-#if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
 	::fast_io::win32::GetSystemTimePreciseAsFileTime(__builtin_addressof(ftm));
 #else
 	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));

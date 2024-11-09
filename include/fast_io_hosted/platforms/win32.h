@@ -608,14 +608,14 @@ public:
 	}
 };
 
-#if __cpp_lib_three_way_comparison >= 201907L
-
 template <win32_family family, ::std::integral ch_type>
 inline constexpr bool operator==(basic_win32_family_io_observer<family, ch_type> a,
 								 basic_win32_family_io_observer<family, ch_type> b) noexcept
 {
 	return a.handle == b.handle;
 }
+
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <win32_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_win32_family_io_observer<family, ch_type> a,
@@ -766,10 +766,10 @@ inline ::std::byte *read_or_pread_some_bytes_common_impl(void *__restrict handle
 	::std::uint_least32_t number_of_bytes{};
 	if (!::fast_io::win32::ReadFile(handle, first,
 									::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last),
-									__builtin_addressof(number_of_bytes), lpoverlapped))
+									__builtin_addressof(number_of_bytes), lpoverlapped)) [[unlikely]]
 	{
 		auto err(::fast_io::win32::GetLastError());
-		if (err == 109)
+		if (err == 109) [[likely]]
 		{
 			return first;
 		}
@@ -1431,7 +1431,7 @@ inline basic_win32_io_observer<char_type> win32_stderr() noexcept
 	return {::fast_io::win32::GetStdHandle(win32_stderr_number)};
 }
 
-#if !defined(__CYGWIN__) && !defined(__WINE__)
+#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__) && defined(_WIN32_WINDOWS)
 template <::std::integral char_type = char>
 inline basic_win32_io_observer<char_type> native_stdin() noexcept
 {

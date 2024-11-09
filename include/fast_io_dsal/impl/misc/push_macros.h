@@ -1,4 +1,4 @@
-#pragma push_macro("erase")
+﻿#pragma push_macro("erase")
 #undef erase
 
 #pragma push_macro("interface")

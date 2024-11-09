@@ -63,7 +63,6 @@ public:
 #endif
 };
 
-#ifdef __cpp_lib_three_way_comparison
 
 template <typename T>
 inline constexpr bool operator==(basic_general_streambuf_io_observer<T> a,
@@ -72,6 +71,7 @@ inline constexpr bool operator==(basic_general_streambuf_io_observer<T> a,
 	return a.fb == b.fb;
 }
 
+#if __cpp_lib_three_way_comparison >= 201907L
 template <typename T>
 inline constexpr auto operator<=>(basic_general_streambuf_io_observer<T> a,
 								  basic_general_streambuf_io_observer<T> b) noexcept

@@ -55,12 +55,13 @@ scatter_pwrite_some_cold_impl(outstmtype outsm,
 		::fast_io::details::scatter_pwrite_all_bytes_cold_impl(outsm, pscatters, n, off);
 		return {n, 0};
 	}
-	else if constexpr ((::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype> ||
-						::fast_io::operations::decay::defines::has_scatter_pwrite_all_bytes_overflow_define<
-							outstmtype> ||
-						::fast_io::operations::decay::defines::has_pwrite_some_bytes_overflow_define<outstmtype> ||
-						::fast_io::operations::decay::defines::has_scatter_pwrite_some_bytes_overflow_define<
-							outstmtype>))
+	else
+#if 0
+		if constexpr ((::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype> ||
+#endif
+	/*
+	 * The implementation of synthesizing pwrite through write+seek is missing
+	 */
 	{
 		if constexpr (sizeof(char_type) == 1)
 		{
@@ -178,12 +179,18 @@ scatter_pwrite_all_cold_impl(outstmtype outsm,
 			off = ::fast_io::fposoffadd_nonegative(off, len);
 		}
 	}
-	else if constexpr ((::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype> ||
+	else
+#if 0
+if constexpr ((::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype> ||
 						::fast_io::operations::decay::defines::has_scatter_pwrite_all_bytes_overflow_define<
 							outstmtype> ||
 						::fast_io::operations::decay::defines::has_pwrite_some_bytes_overflow_define<outstmtype> ||
 						::fast_io::operations::decay::defines::has_scatter_pwrite_some_bytes_overflow_define<
 							outstmtype>))
+#endif
+	/*
+	 * The implementation of synthesizing pwrite through write+seek is missing
+	 */
 	{
 		using char_type = typename outstmtype::output_char_type;
 		if constexpr (sizeof(char_type) == 1)

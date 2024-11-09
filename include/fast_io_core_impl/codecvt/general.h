@@ -197,7 +197,7 @@ general_code_cvt(src_char_type const *src_first, src_char_type const *src_last, 
 		if constexpr (src_encoding != encoding_scheme::utf_ebcdic && encoding != encoding_scheme::utf_ebcdic &&
 					  1 == sizeof(src_char_type) && (1 == sizeof(dest_char_type) || encoding_is_utf(encoding)))
 		{
-			if (!::std::is_constant_evaluated())
+			if (!__builtin_is_constant_evaluated())
 			{
 				constexpr ::std::size_t m128i_size{16};
 				while (m128i_size < static_cast<::std::size_t>(src_last - src_first))

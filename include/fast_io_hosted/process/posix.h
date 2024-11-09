@@ -91,7 +91,7 @@ inline pid_t posix_fork()
 	system_call_throw_error(pid);
 #else
 	pid_t pid{noexcept_call(::fork)};
-	if (pid == -1)
+	if (pid == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}
@@ -134,7 +134,7 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 	fast_terminate();
 #else
 	int fd{::openat(dirfd, path, O_RDONLY | O_EXCL, 0644)};
-	if (fd == -1)
+	if (fd == -1) [[unlikely]]
 	{
 		fast_terminate();
 	}
@@ -403,6 +403,7 @@ public:
 	~posix_process()
 	{
 		details::posix_waitpid_noexcept(this->pid);
+		this->pid = -1;
 	}
 };
 

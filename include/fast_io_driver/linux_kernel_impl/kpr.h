@@ -342,6 +342,31 @@ inline void write_all_bytes_overflow_define(basic_kpr<char_type> kpr, ::std::byt
 {
 	::fast_io::details::linux_kpr_raw_write<false>(kpr.level, first, last);
 }
+#endif
+
+template <::std::integral ch_type>
+inline constexpr basic_kpr<ch_type> io_stream_ref_define(basic_kpr<ch_type> other) noexcept
+{
+	return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr basic_kpr<ch_type> io_bytes_stream_ref_define(basic_kpr<ch_type> other) noexcept
+{
+	return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr void write_all_bytes_overflow_define(basic_kpr<ch_type> d, ::std::byte const *first, ::std::byte const *last) noexcept
+{
+	details::linux_kpr_raw_write<false>(kpr.level, first, last);
+}
+
+template <::std::integral ch_type>
+inline constexpr void pwrite_all_bytes_overflow_define(basic_kpr<ch_type> d, ::std::byte const *first, ::std::byte const *last) noexcept
+{
+	details::linux_kpr_raw_write<false>(kpr.level, first, last);
+}
 
 template <::std::integral ch_type>
 inline constexpr basic_kpr<ch_type> output_stream_ref_define(basic_kpr<ch_type> linuxkpr) noexcept

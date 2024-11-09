@@ -3,11 +3,7 @@
 namespace fast_io
 {
 
-struct nt_user_process_information
-{
-	void *hprocess{};
-	void *hthread{};
-};
+using nt_user_process_information = win32_user_process_information;
 
 struct nt_process_args
 {
@@ -42,28 +38,24 @@ inline void close_nt_user_process_information(nt_user_process_information hnt_us
 template <nt_family family>
 inline ::std::uint_least32_t nt_wait_user_process_or_thread(void *hprocess_thread) noexcept
 {
-	return ::fast_io::win32::nt::nt_wait_for_single_object < family == nt_family::zw > (hprocess_thread, false, nullptr);
+	return ::fast_io::win32::nt::nt_wait_for_single_object<family == nt_family::zw>(hprocess_thread, false, nullptr);
 }
 
 template <nt_family family, bool throw_eh = false>
-inline void nt_wait_and_close_user_process_or_thread(void *&handle) noexcept(!throw_eh)
+inline void nt_wait_and_close_user_process_or_thread(void *handle) noexcept(!throw_eh)
 {
-	if (handle == nullptr)
+	if (handle == nullptr) [[unlikely]]
 	{
 		return;
 	}
 	auto status{nt_wait_user_process_or_thread<family>(handle)};
-	auto status2{::fast_io::win32::nt::nt_close < family == nt_family::zw > (handle)};
-	handle = nullptr;
+	::fast_io::win32::nt::nt_close<family == nt_family::zw>(handle);
+
 	if constexpr (throw_eh)
 	{
-		if (status)
+		if (status) [[unlikely]]
 		{
 			throw_nt_error(status);
-		}
-		if (status2)
-		{
-			throw_nt_error(status2);
 		}
 	}
 }
@@ -72,14 +64,16 @@ template <nt_family family, bool throw_eh = false>
 inline void
 close_nt_user_process_information_and_wait(nt_user_process_information hnt_user_process_info) noexcept(!throw_eh)
 {
-	nt_wait_and_close_user_process_or_thread<family, throw_eh>(hnt_user_process_info.hthread);
+	// only need to wait hprocess
 	nt_wait_and_close_user_process_or_thread<family, throw_eh>(hnt_user_process_info.hprocess);
+	// close hthread (main thread)
+	::fast_io::win32::nt::nt_close<family == nt_family::zw>(hnt_user_process_info.hthread);
 }
 
 template <nt_family family>
 inline void nt_duplicate_object_std(void *parent_process, void *&standard_io_handle, void *process_handle)
 {
-	if (standard_io_handle == nullptr)
+	if (standard_io_handle == nullptr) [[unlikely]]
 	{
 		return;
 	}
@@ -126,8 +120,17 @@ struct rtl_guard
 		if (rtl_up) [[likely]]
 		{
 			::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
+			rtl_up = nullptr;
 		}
 	};
+	constexpr void clear() noexcept
+	{
+		if (rtl_up) [[likely]]
+		{
+			::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
+			rtl_up = nullptr;
+		}
+	}
 };
 
 struct unicode_string_guard
@@ -141,8 +144,17 @@ struct unicode_string_guard
 		if (us) [[likely]]
 		{
 			::fast_io::native_thread_local_allocator::deallocate(us);
+			us = nullptr;
 		}
 	};
+	constexpr void clear() noexcept
+	{
+		if (us) [[likely]]
+		{
+			::fast_io::native_thread_local_allocator::deallocate(us);
+			us = nullptr;
+		}
+	}
 };
 
 template <bool zw>
@@ -220,14 +232,14 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 	// Process
 	void *hprocess{};
 	check_nt_status(::fast_io::win32::nt::nt_create_process<zw>(
-		__builtin_addressof(hprocess), 0x000F0000U | 0x00100000U | 0xFFF /*PROCESS_ALL_ACCESS*/, nullptr,
+		__builtin_addressof(hprocess), 0x2000000, nullptr,
 		current_process, true, hsection, nullptr, nullptr));
 	basic_nt_family_file<family, char> process(hprocess);
 
 	// PROCESS_BASIC_INFO
 	process_basic_information pb_info{};
 	check_nt_status(::fast_io::win32::nt::nt_query_information_process<zw>(
-		hprocess, process_information_class::ProcessBasicInformation, __builtin_addressof(pb_info), sizeof(pb_info),
+		hprocess, process_information_class::ProcessBasicInformation, __builtin_addressof(pb_info), static_cast<::std::uint_least32_t>(sizeof(pb_info)),
 		nullptr));
 
 	// Push Process Parameters and Duplicate Process Std Handles
@@ -248,7 +260,7 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 	basic_nt_family_file<family, char> thread(hthread);
 
 	// Call Windows Server
-	// to do
+	// to do !!!
 
 	// Resume Thread
 	::std::uint_least32_t lprevcount{};
@@ -289,28 +301,62 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	rtl_guard rtlm{rtl_temp};
 
 	// Duplicate Process Std Handles
-	rtl_temp->StandardInput = processio.in.win32_handle;
-	rtl_temp->StandardOutput = processio.out.win32_handle;
-	rtl_temp->StandardError = processio.err.win32_handle;
+	auto const peb{::fast_io::win32::nt::nt_get_current_peb()};
+	rtl_temp->StandardInput = processio.in.win32_handle ? processio.in.win32_handle : peb->ProcessParameters->StandardInput;
+	rtl_temp->StandardOutput = processio.out.win32_handle ? processio.out.win32_handle : peb->ProcessParameters->StandardOutput;
+	rtl_temp->StandardError = processio.err.win32_handle ? processio.err.win32_handle : peb->ProcessParameters->StandardError;
+
+	// 0 == create new window, 4 == current windows, 0xfffffffffffffffd == no windows (background)
+	rtl_temp->ConsoleHandle = reinterpret_cast<void *>(0x4);
 
 	// Initialize the PS_CREATE_INFO structure
 	ps_create_info CreateInfo{};
 	CreateInfo.Size = sizeof(CreateInfo);
 	CreateInfo.State = ps_create_state::PsCreateInitialState;
+	CreateInfo.stateunion.InitState.u1.s1.ProhibitedImageCharacteristics = 0x2000;
+	CreateInfo.stateunion.InitState.AdditionalFileAccess = 129;
 
 	// Initialize the PS_ATTRIBUTE_LIST structure
 	ps_attribute_list AttributeList{};
-	AttributeList.TotalLength = sizeof(ps_attribute_list) - sizeof(ps_attribute);
+	AttributeList.TotalLength = 5 * sizeof(ps_attribute) + sizeof(::std::size_t);
+
 	AttributeList.Attributes[0].Attribute = 131077;
 	AttributeList.Attributes[0].Size = NtImagePath->Length;
+	AttributeList.Attributes[0].ReturnLength = 0;
 	AttributeList.Attributes[0].Value = reinterpret_cast<::std::size_t>(NtImagePath->Buffer);
+
+	AttributeList.Attributes[1].Attribute = 65539; // PS_ATTRIBUTE_CLIENT_ID
+	::fast_io::win32::nt::client_id cid{};
+	AttributeList.Attributes[1].Size = sizeof(cid);
+	AttributeList.Attributes[1].ReturnLength = 0;
+	AttributeList.Attributes[1].ValuePtr = __builtin_addressof(cid);
+
+	AttributeList.Attributes[2].Attribute = 6; // PS_ATTRIBUTE_IMAGE_INFO
+	::fast_io::win32::nt::section_image_information sif{};
+	AttributeList.Attributes[2].Size = sizeof(sif);
+	AttributeList.Attributes[2].ReturnLength = 0;
+	AttributeList.Attributes[2].ValuePtr = __builtin_addressof(sif);
+
+	AttributeList.Attributes[3].Attribute = 393242; // PS_ATTRIBUTE_CHPE
+	AttributeList.Attributes[3].Size = 1;
+	AttributeList.Attributes[3].ReturnLength = 0;
+	AttributeList.Attributes[3].Value = 1;
+
+	AttributeList.Attributes[4].Attribute = 131082; // PS_ATTRIBUTE_STD_HANDLE_INFO
+	::fast_io::win32::nt::ps_std_handle_info pshi{};
+	pshi.StdHandleSubsystemType = 3; // IMAGE_SUBSYSTEM_WINDOWS_CUI
+	pshi.StdHandleState = 2;         // PsAlwaysDuplicate == (win32) bInheritHandles
+	pshi.PseudoHandleMask = 0;
+	AttributeList.Attributes[4].Size = sizeof(pshi);
+	AttributeList.Attributes[4].ReturnLength = 0;
+	AttributeList.Attributes[4].ValuePtr = __builtin_addressof(pshi);
 
 	// Create the process
 	void *hProcess{};
 	void *hThread{};
 	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
-		&hProcess, &hThread, 0x000F0000U | 0x00100000U | 0xFFFF, 0x000F0000U | 0x00100000U | 0xFFFF, nullptr, nullptr,
-		0x00, 0x00, rtl_temp, &CreateInfo, &AttributeList));
+		&hProcess, &hThread, 0x2000000, 0x2000000, nullptr, nullptr,
+		512, 0x00, rtl_temp, &CreateInfo, &AttributeList));
 
 	return {hProcess, hThread};
 }
@@ -387,43 +433,70 @@ public:
 template <nt_family family>
 inline void detach(nt_family_process_observer<family> &ppob) noexcept
 {
-	win32::nt::details::close_nt_user_process_information<family == nt_family::zw>(ppob.hnt_user_process_info);
-	ppob.hnt_user_process_info = nullptr;
+	win32::nt::details::close_nt_user_process_information<family>(ppob.hnt_user_process_info);
+	ppob.hnt_user_process_info = {};
 }
 
-#if 0
 struct nt_wait_status
 {
-	::std::uint_least32_t exit_code{};
+	::std::uint_least32_t wait_loc{}; // exit code
 };
 
-inline nt_wait_status query_process_basic_info(nt_process_observer ppob)
+template <nt_family family, bool throw_eh = true>
+	requires(family == nt_family::nt || family == nt_family::zw)
+inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!throw_eh)
 {
-	
-}
-
-inline nt_wait_status wait(nt_process_observer ppob)
-{
-	if(handle==nullptr)
-		throw_nt_status(0xC0000008);
-	win32::nt::details_wait_and_close_user_process_or_thread<true>(ppob.hnt_user_process_info->hthread);
-	auto& hprocess=ppob.hnt_user_process_info->hprocess;
-	auto status{nt_wait_user_process_or_thread(hprocess)};
-
-	auto status2{win32::nt::nt_close(hprocess)};
-
-	hprocess=nullptr;
-	if constexpr(throw_eh)
+	if (ppob.hnt_user_process_info.hprocess == nullptr) [[unlikely]]
 	{
-		if(status)
-			throw_nt_error(status);
-		if(status2)
-			throw_nt_error(status2);
+		if constexpr (throw_eh)
+		{
+			throw_nt_error(0xC0000008);
+		}
+		else
+		{
+			return {static_cast<::std::uint_least32_t>(-1)};
+		}
 	}
+
+	// wait for process
+	auto const status{win32::nt::details::nt_wait_user_process_or_thread<family>(ppob.hnt_user_process_info.hprocess)};
+	if (status) [[unlikely]]
+	{
+		if constexpr (throw_eh)
+		{
+			throw_nt_error(status);
+		}
+		else
+		{
+			return {static_cast<::std::uint_least32_t>(-1)};
+		}
+	}
+
+	// get exit code
+	::fast_io::win32::nt::process_basic_information pbi{};
+	auto const status2{
+		::fast_io::win32::nt::nt_query_information_process<family == nt_family::zw>(ppob.hnt_user_process_info.hprocess,
+																					::fast_io::win32::nt::process_information_class::ProcessBasicInformation,
+																					__builtin_addressof(pbi),
+																					static_cast<::std::uint_least32_t>(sizeof(pbi)),
+																					nullptr)};
+	if (status2) [[unlikely]]
+	{
+		if constexpr (throw_eh)
+		{
+			throw_nt_error(status);
+		}
+		else
+		{
+			return {static_cast<::std::uint_least32_t>(-1)};
+		}
+	}
+
+	return {pbi.ExitStatus};
 }
-#endif
 
 template <nt_family family>
+	requires(family == nt_family::nt || family == nt_family::zw)
 class nt_family_process : public nt_family_process_observer<family>
 {
 public:
@@ -474,6 +547,7 @@ public:
 	~nt_family_process()
 	{
 		win32::nt::details::close_nt_user_process_information_and_wait<family>(this->hnt_user_process_info);
+		this->hnt_user_process_info = {};
 	}
 };
 

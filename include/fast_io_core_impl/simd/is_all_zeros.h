@@ -81,7 +81,7 @@ inline
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (!::std::is_constant_evaluated())
+	if (!__builtin_is_constant_evaluated())
 #endif
 	{
 		if constexpr (sizeof(::fast_io::intrinsics::simd_vector<T, n>) == 16)

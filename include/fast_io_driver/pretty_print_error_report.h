@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if !((defined(__cpp_static_assert) && __cpp_static_assert >= 202306L) && (defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)))
 #error "pretty error needs user-defined string literal for static_assert"
