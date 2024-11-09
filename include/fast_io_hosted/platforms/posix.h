@@ -16,6 +16,10 @@
 #include <sys/stat.h>
 #endif
 
+#if defined(__MSDOS__)
+#include "../../fast_io_dsal/string_view.h"
+#endif
+
 #if (!defined(_WIN32) || defined(__WINE__) || defined(__BIONIC__)) || defined(__CYGWIN__)
 
 #if __has_include(<features.h>)
