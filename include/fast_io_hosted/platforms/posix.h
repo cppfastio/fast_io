@@ -848,11 +848,13 @@ inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mo
 		::fast_io::cstring_view para_pathname{::fast_io::mnp::os_c_str(pathname)};
 		if (auto const sz{para_pathname.size()}; sz == 0 || sz > 255) [[unlikely]]
 		{
+			system_call_throw_error<always_terminate>(-1);
 			return -1;
 		}
 
 		if (auto const fc{para_pathname.front_unchecked()}; fc == '+' || fc == '-' || fc == '.') [[unlikely]]
 		{
+			system_call_throw_error<always_terminate>(-1);
 			return -1;
 		}
 
@@ -861,6 +863,7 @@ inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mo
 			if (fc == '/' || fc == '\\' || fc == '\t' || fc == '\b' || fc == '@' || fc == '#' || fc == '$' || fc == '%' || fc == '^' || fc == '&' ||
 				fc == '*' || fc == '(' || fc == ')' || fc == '[' || fc == ']') [[unlikely]]
 			{
+				system_call_throw_error<always_terminate>(-1);
 				return -1;
 			}
 		}
