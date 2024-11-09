@@ -1027,14 +1027,6 @@ public:
 		this->erase_common(beginptr + idx);
 	}
 
-	constexpr void erase_index_unchecked(size_type idx) noexcept
-	{
-		auto beginptr{imp.begin_ptr};
-		auto currptr{imp.curr_ptr};
-		size_type sz{static_cast<size_type>(currptr - beginptr)};
-		this->erase_common(beginptr + idx);
-	}
-
 	constexpr iterator erase(const_iterator first, const_iterator last) noexcept
 	{
 #ifdef __cpp_if_consteval
@@ -1063,13 +1055,6 @@ public:
 		this->erase_iters_common(beginptr + firstidx, beginptr + lastidx);
 	}
 	
-	constexpr void erase_index_unchecked(size_type firstidx, size_type lastidx) noexcept
-	{
-		auto beginptr{imp.begin_ptr};
-		auto currptr{imp.curr_ptr};
-		size_type sz{static_cast<size_type>(currptr - beginptr)};
-		this->erase_iters_common(beginptr + firstidx, beginptr + lastidx);
-	}
 };
 
 template <typename T, typename allocator1, typename allocator2>
