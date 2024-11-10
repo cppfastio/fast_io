@@ -11,6 +11,7 @@ struct win9x_DIR
 	::fast_io::string path{};
 };
 
+
 namespace win32::details
 {
 inline ::fast_io::string get_file_full_path_from_path_handle(void *fhandle)

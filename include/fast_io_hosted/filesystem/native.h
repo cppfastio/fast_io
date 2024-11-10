@@ -10,7 +10,6 @@
 
 #if (defined(_WIN32) || defined(__CYGWIN__))
 #if defined(_WIN32_WINDOWS)
-#include "../../fast_io_dsal/string.h"
 #include "win9x.h"
 #include "win9x_at.h"
 #else

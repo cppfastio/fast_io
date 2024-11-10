@@ -16,10 +16,6 @@
 #include <sys/stat.h>
 #endif
 
-#if defined(__MSDOS__)
-#include "../../fast_io_dsal/string_view.h"
-#endif
-
 #if (!defined(_WIN32) || defined(__WINE__) || defined(__BIONIC__)) || defined(__CYGWIN__)
 
 #if __has_include(<features.h>)
@@ -1143,6 +1139,10 @@ public:
 		: basic_posix_family_file(basic_win32_file<char_type>(fsdirent, om, pm), om)
 	{
 	}
+	basic_posix_family_file(win9x_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_posix_family_file(basic_win32_file<char_type>(fsdirent, om, pm), om)
+	{
+	}
 	template <::fast_io::constructible_to_os_c_str T>
 	basic_posix_family_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(basic_win32_file<char_type>(file, om, pm), om)
@@ -1150,6 +1150,11 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str T>
 	basic_posix_family_file(nt_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_posix_family_file(basic_win32_file<char_type>(nate, file, om, pm), om)
+	{
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	basic_posix_family_file(win9x_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(basic_win32_file<char_type>(nate, file, om, pm), om)
 	{
 	}
