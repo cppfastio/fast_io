@@ -316,12 +316,14 @@ inline basic_win9x_recursive_directory_iterator<StackType> &operator++(basic_win
 {
 	for (;;)
 	{
+		prdit.finish = false;
 		if (prdit.stack.empty())
 		{
 			prdit.entry->d_handle = prdit.root_handle;
 			prdit.entry->file_struct = prdit.root_file_struct;
 			if (!win32::details::win9x_dirent_next(*prdit.entry))
 			{
+				prdit.finish = true;
 				return prdit;
 			}
 		}
@@ -337,6 +339,7 @@ inline basic_win9x_recursive_directory_iterator<StackType> &operator++(basic_win
 			}
 			if (!win32::details::win9x_dirent_next(*prdit.entry))
 			{
+				prdit.finish = true;
 				prdit.stack.pop_back();
 
 				continue;
@@ -438,14 +441,14 @@ template <typename StackType>
 inline bool operator!=(::std::default_sentinel_t sntnl,
 					   basic_win9x_recursive_directory_iterator<StackType> const &b) noexcept
 {
-	return !(b.stack.empty() && !b.finish);
+	return !(b.stack.empty() && b.finish);
 }
 
 template <typename StackType>
 inline bool operator!=(basic_win9x_recursive_directory_iterator<StackType> const &b,
 					   ::std::default_sentinel_t sntnl) noexcept
 {
-	return !(b.stack.empty() && !b.finish);
+	return !(b.stack.empty() && b.finish);
 }
 
 inline win9x_recursive_directory_generator recursive(win9x_at_entry nate)
