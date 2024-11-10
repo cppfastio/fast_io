@@ -980,7 +980,7 @@ inline win9x_dir_handle win9x_create_dir_file_at_fs_dirent_impl(win9x_dir_handle
 		}
 	}
 
-	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", ::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len))};
+	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", ::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len)))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return {handle, ::std::move(str)};
 }
@@ -989,7 +989,7 @@ template <typename T>
 	requires(::fast_io::constructible_to_os_c_str<T>)
 inline win9x_dir_handle win9x_create_dir_file_impl(T const &t, open_mode_perms ompm)
 {
-	::fast_io::string path{::fast_io::concat_fast_io(t)};
+	::fast_io::string path{::fast_io::concat_fast_io(::fast_io::mnp::code_cvt(t))};
 	for (auto& c : path)
 	{
 		if (c == '/')
@@ -1146,7 +1146,7 @@ inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory
 
 	}
 
-	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", t)};
+	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", ::fast_io::mnp::code_cvt(t))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return {handle, ::std::move(str)};
 }
@@ -1192,7 +1192,7 @@ inline void *win9x_create_file_at_fs_dirent_impl(win9x_dir_handle directory_hand
 		}
 	}
 
-	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", ::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len))};
+	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", ::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len)))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return handle;
 }
@@ -1337,7 +1337,7 @@ inline void *win9x_create_file_at_impl(win9x_dir_handle directory_handle, T cons
 		}
 	}
 
-	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", t)};
+	::fast_io::string str{::fast_io::concat_fast_io(directory_handle.path, "\\", ::fast_io::mnp::code_cvt(t))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return handle;
 }
@@ -1405,6 +1405,21 @@ public:
 		return temp;
 	}
 };
+inline constexpr bool operator==(win9x_dir_io_observer const &a,
+								 win9x_dir_io_observer const &b) noexcept
+{
+	return a.handle.handle == b.handle.handle;
+}
+
+#if __cpp_lib_three_way_comparison >= 201907L
+
+inline constexpr auto operator<=>(win9x_dir_io_observer const &a,
+								  win9x_dir_io_observer const &b) noexcept
+{
+	return a.handle.handle <=> b.handle.handle;
+}
+
+#endif
 
 class win9x_dir : public win9x_dir_io_observer
 {
