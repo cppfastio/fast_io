@@ -44,6 +44,60 @@ jobs:
       - name: CMake test
         run: cmake --build fast_io_build --target test
 
+  win7:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
+      - name: Generate tests
+        run: |
+          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+          cmake --build fast_io_prebuild
+          ./fast_io_prebuild/tests_prebuild windows msvc
+      - name: CMake configure
+        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl /D_WIN32_WINNT=0x601" -DENABLE_TESTS=On
+      - name: CMake build
+        run: cmake --build fast_io_build
+      - name: CMake test
+        run: cmake --build fast_io_build --target test
+
+  winxp:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
+      - name: Generate tests
+        run: |
+          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+          cmake --build fast_io_prebuild
+          ./fast_io_prebuild/tests_prebuild windows msvc
+      - name: CMake configure
+        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl /D_WIN32_WINNT=0x501" -DENABLE_TESTS=On
+      - name: CMake build
+        run: cmake --build fast_io_build
+      - name: CMake test
+        run: cmake --build fast_io_build --target test
+
+  win9x:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
+      - name: Generate tests
+        run: |
+          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+          cmake --build fast_io_prebuild
+          ./fast_io_prebuild/tests_prebuild windows msvc
+      - name: CMake configure
+        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl /D_WIN32_WINNT=0x400 /D_WIN32_WINDOWS=0x400" -DENABLE_TESTS=On
+      - name: CMake build
+        run: cmake --build fast_io_build
+      - name: CMake test
+        run: cmake --build fast_io_build --target test
+
   # macos:
 
   #   runs-on: macos-latest
