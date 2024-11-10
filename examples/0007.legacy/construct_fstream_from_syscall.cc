@@ -58,12 +58,16 @@ FILE* or fstream apis
 #endif
 																		 "\n"
 #elif defined(__BIONIC__)
-			"bionic\n"
+			"Bionic\n"
 #elif defined(__CYGWIN__) || defined(__NEWLIB__)
 			"Newlib cygwin\n"
 #elif defined(_WIN32) && !defined(__WINE__)
 #if defined(_UCRT) || defined(_MSC_VER)
-			"Universal CRT\n"
+			"Universal CRT"
+#if defined(__MINGW32__)
+			"(GNU)"
+#endif
+			"\n"
 #elif defined(__MSVCRT_VERSION__)
 			"MSVCRT ",
 			fast_io::mnp::hex0x(__MSVCRT_VERSION__),
