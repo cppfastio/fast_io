@@ -1041,17 +1041,63 @@ public:
 	}
 };
 
-#if 0
 template<win32_family family,::std::integral ch_type>
 inline void truncate(basic_win32_family_io_observer<family,ch_type> handle,::fast_io::uintfpos_t size)
 {
-	io_stream_seek_bytes_define(handle,size,seekdir::beg);
+	win32::details::seek_impl(handle, size, seekdir::beg);
 	if(!::fast_io::win32::SetEndOfFile(handle.handle))
 		throw_win32_error();
 }
-#endif
+
 namespace win32::details
 {
+struct handle_guard
+{
+	void *h{};
+	constexpr handle_guard() noexcept = default;
+	constexpr handle_guard(void *r) noexcept
+		: h{r} {};
+	constexpr ~handle_guard()
+	{
+		if (h) [[likely]]
+		{
+			::fast_io::win32::CloseHandle(h);
+			h = nullptr;
+		}
+	};
+	constexpr void clear() noexcept
+	{
+		if (h) [[likely]]
+		{
+			::fast_io::win32::CloseHandle(h);
+			h = nullptr;
+		}
+	}
+};
+
+struct map_guard
+{
+	void *map{};
+	constexpr map_guard() noexcept = default;
+	constexpr map_guard(void *r) noexcept
+		: map{r} {};
+	constexpr ~map_guard()
+	{
+		if (map) [[likely]]
+		{
+			::fast_io::win32::UnmapViewOfFile(map);
+			map = nullptr;
+		}
+	};
+	constexpr void clear() noexcept
+	{
+		if (map) [[likely]]
+		{
+			::fast_io::win32::UnmapViewOfFile(map);
+			map = nullptr;
+		}
+	}
+};
 
 inline file_type file_type_impl(void *handle)
 {

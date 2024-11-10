@@ -105,54 +105,6 @@ inline void win32_duplicate_object_std(void *parent_process, void *&standard_io_
 template <win32_family family>
 using win32_process_char_type = ::std::conditional_t<family == win32_family::wide_nt, char16_t, char>;
 
-struct map_guard
-{
-	void *map{};
-	constexpr map_guard() noexcept = default;
-	constexpr map_guard(void *r) noexcept
-		: map{r} {};
-	constexpr ~map_guard()
-	{
-		if (map) [[likely]]
-		{
-			::fast_io::win32::UnmapViewOfFile(map);
-			map = nullptr;
-		}
-	};
-	constexpr void clear() noexcept
-	{
-		if (map) [[likely]]
-		{
-			::fast_io::win32::UnmapViewOfFile(map);
-			map = nullptr;
-		}
-	}
-};
-
-struct handle_guard
-{
-	void *h{};
-	constexpr handle_guard() noexcept = default;
-	constexpr handle_guard(void *r) noexcept
-		: h{r} {};
-	constexpr ~handle_guard()
-	{
-		if (h) [[likely]]
-		{
-			::fast_io::win32::CloseHandle(h);
-			h = nullptr;
-		}
-	};
-	constexpr void clear() noexcept
-	{
-		if (h) [[likely]]
-		{
-			::fast_io::win32::CloseHandle(h);
-			h = nullptr;
-		}
-	}
-};
-
 template <win32_family family>
 inline win32_user_process_information win32_process_create_impl(void *__restrict fhandle, win32_process_char_type<family> const *args,
 																win32_process_char_type<family> const *envs,

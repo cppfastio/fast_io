@@ -1043,188 +1043,6 @@ inline void truncate(basic_nt_family_io_observer<family, ch_type> handle, ::std:
 {
 	::fast_io::win32::nt::details::nt_truncate_impl<family == nt_family::zw>(handle.handle, newfilesize);
 }
-#if 0
-template<nt_family family,::std::integral ch_type>
-inline posix_file_status status(basic_nt_family_io_observer<family,ch_type> handle)
-{
-	return ::fast_io::win32::nt::details::nt_status_impl<family==nt_family::zw>(handle.handle);
-}
-#endif
-
-template <nt_family family>
-struct nt_family_file_lock
-{
-	void *handle{};
-	template <::std::signed_integral int_type>
-		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
-	inline void lock(basic_flock_request<int_type> &__restrict t)
-	{
-		::fast_io::win32::nt::details::nt_family_file_lock_impl<family == nt_family::zw>(this->handle, t);
-	}
-	template <::std::signed_integral int_type>
-		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
-	inline void unlock(basic_flock_request<int_type> &__restrict t) noexcept
-	{
-		::fast_io::win32::nt::details::nt_family_file_unlock_impl<family == nt_family::zw>(this->handle, t);
-	}
-	template <::std::signed_integral int_type>
-		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
-	inline bool try_lock(basic_flock_request<int_type> &__restrict t) noexcept
-	{
-		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl<family == nt_family::zw>(this->handle, t);
-	}
-};
-
-using nt_file_lock = nt_family_file_lock<nt_family::nt>;
-using zw_file_lock = nt_family_file_lock<nt_family::zw>;
-
-template <nt_family family, ::std::integral char_type>
-inline constexpr nt_family_file_lock<family> file_lock(basic_nt_family_io_observer<family, char_type> niob) noexcept
-{
-	return {niob};
-}
-
-template <nt_family family>
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	nt_family_file_factory
-{
-	using native_handle_type = void *;
-	void *handle{};
-	explicit constexpr nt_family_file_factory(void *hd) noexcept
-		: handle(hd) {};
-	nt_family_file_factory(nt_family_file_factory const &) = delete;
-	nt_family_file_factory &operator=(nt_family_file_factory const &) = delete;
-	~nt_family_file_factory()
-	{
-		if (handle) [[likely]]
-		{
-			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
-		}
-	}
-};
-
-using nt_file_factory = nt_family_file_factory<nt_family::nt>;
-using zw_file_factory = nt_family_file_factory<nt_family::zw>;
-
-template <nt_family family, ::std::integral ch_type>
-class basic_nt_family_file : public basic_nt_family_io_observer<family, ch_type>
-{
-public:
-	using typename basic_nt_family_io_observer<family, ch_type>::char_type;
-	using typename basic_nt_family_io_observer<family, ch_type>::input_char_type;
-	using typename basic_nt_family_io_observer<family, ch_type>::output_char_type;
-	using typename basic_nt_family_io_observer<family, ch_type>::native_handle_type;
-	using file_factory_type = nt_family_file_factory<family>;
-	constexpr basic_nt_family_file() noexcept = default;
-	constexpr basic_nt_family_file(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
-	constexpr basic_nt_family_file &operator=(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
-
-	template <typename native_hd>
-		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr basic_nt_family_file(native_hd hd) noexcept
-		: basic_nt_family_io_observer<family, ch_type>{hd}
-	{
-	}
-	constexpr basic_nt_family_file(decltype(nullptr)) noexcept = delete;
-	explicit constexpr basic_nt_family_file(nt_family_file_factory<family> &&hd) noexcept
-		: basic_nt_family_io_observer<family, ch_type>{hd}
-	{
-		hd.handle = nullptr;
-	}
-	explicit basic_nt_family_file(io_dup_t, basic_nt_family_io_observer<family, ch_type> wiob)
-		: basic_nt_family_io_observer<family, ch_type>{
-			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(wiob.handle)}
-	{
-	}
-	explicit basic_nt_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
-		: basic_nt_family_io_observer<family, char_type>{
-			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl<family == nt_family::zw>(fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
-	{
-	}
-	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(T const &t, open_mode om, perms pm = static_cast<perms>(436))
-		: basic_nt_family_io_observer<family, ch_type>{
-			  ::fast_io::win32::nt::details::nt_create_file_impl<family == nt_family::zw>(t, {om, pm})}
-	{
-	}
-	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(nt_at_entry ent, T const &t, open_mode om, perms pm = static_cast<perms>(436))
-		: basic_nt_family_io_observer<family, ch_type>{
-			  ::fast_io::win32::nt::details::nt_create_file_at_impl<family == nt_family::zw>(ent.handle, t, {om, pm})}
-	{
-	}
-
-	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(io_kernel_t, T const &t, open_mode om, perms pm = static_cast<perms>(436))
-		: basic_nt_family_io_observer<family, ch_type>{
-			  ::fast_io::win32::nt::details::nt_create_file_kernel_impl<family == nt_family::zw>(t, {om, pm})}
-	{
-	}
-	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(io_kernel_t, nt_at_entry ent, T const &t, open_mode om,
-								  perms pm = static_cast<perms>(436))
-		: basic_nt_family_io_observer<family, ch_type>{
-			  ::fast_io::win32::nt::details::nt_create_file_at_impl<family == nt_family::zw, true>(ent.handle, t,
-																								   {om, pm})}
-	{
-	}
-
-	void close()
-	{
-		if (this->handle) [[likely]]
-		{
-			auto status{::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle)};
-			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
-			if (status) [[unlikely]]
-			{
-				throw_nt_error(status);
-			}
-		}
-	}
-	void reset(native_handle_type newhandle = nullptr) noexcept
-	{
-		if (this->handle) [[likely]]
-		{
-			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
-		}
-		this->handle = newhandle;
-	}
-	basic_nt_family_file(basic_nt_family_file const &other)
-		: basic_nt_family_io_observer<family, ch_type>(
-			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(other.handle))
-	{
-	}
-	basic_nt_family_file &operator=(basic_nt_family_file const &other)
-	{
-		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
-		return *this;
-	}
-	constexpr basic_nt_family_file(basic_nt_family_file &&__restrict other) noexcept
-		: basic_nt_family_io_observer<family, ch_type>{other.handle}
-	{
-		other.handle = nullptr;
-	}
-	basic_nt_family_file &operator=(basic_nt_family_file &&__restrict other) noexcept
-	{
-		if (this->handle) [[likely]]
-		{
-			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
-		}
-		this->handle = other.handle;
-		other.handle = nullptr;
-		return *this;
-	}
-	~basic_nt_family_file()
-	{
-		if (this->handle) [[likely]]
-		{
-			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
-		}
-	}
-};
 
 namespace win32::nt::details
 {
@@ -1426,6 +1244,181 @@ inline posix_file_status status(basic_nt_family_io_observer<family, ch_type> wio
 {
 	return win32::nt::details::nt_status_impl<family>(wiob.handle);
 }
+
+template <nt_family family>
+struct nt_family_file_lock
+{
+	void *handle{};
+	template <::std::signed_integral int_type>
+		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
+	inline void lock(basic_flock_request<int_type> &__restrict t)
+	{
+		::fast_io::win32::nt::details::nt_family_file_lock_impl<family == nt_family::zw>(this->handle, t);
+	}
+	template <::std::signed_integral int_type>
+		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
+	inline void unlock(basic_flock_request<int_type> &__restrict t) noexcept
+	{
+		::fast_io::win32::nt::details::nt_family_file_unlock_impl<family == nt_family::zw>(this->handle, t);
+	}
+	template <::std::signed_integral int_type>
+		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
+	inline bool try_lock(basic_flock_request<int_type> &__restrict t) noexcept
+	{
+		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl<family == nt_family::zw>(this->handle, t);
+	}
+};
+
+using nt_file_lock = nt_family_file_lock<nt_family::nt>;
+using zw_file_lock = nt_family_file_lock<nt_family::zw>;
+
+template <nt_family family, ::std::integral char_type>
+inline constexpr nt_family_file_lock<family> file_lock(basic_nt_family_io_observer<family, char_type> niob) noexcept
+{
+	return {niob};
+}
+
+template <nt_family family>
+struct
+#if __has_cpp_attribute(clang::trivially_relocatable)
+	[[clang::trivially_relocatable]]
+#endif
+	nt_family_file_factory
+{
+	using native_handle_type = void *;
+	void *handle{};
+	explicit constexpr nt_family_file_factory(void *hd) noexcept
+		: handle(hd) {};
+	nt_family_file_factory(nt_family_file_factory const &) = delete;
+	nt_family_file_factory &operator=(nt_family_file_factory const &) = delete;
+	~nt_family_file_factory()
+	{
+		if (handle) [[likely]]
+		{
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
+		}
+	}
+};
+
+using nt_file_factory = nt_family_file_factory<nt_family::nt>;
+using zw_file_factory = nt_family_file_factory<nt_family::zw>;
+
+template <nt_family family, ::std::integral ch_type>
+class basic_nt_family_file : public basic_nt_family_io_observer<family, ch_type>
+{
+public:
+	using typename basic_nt_family_io_observer<family, ch_type>::char_type;
+	using typename basic_nt_family_io_observer<family, ch_type>::input_char_type;
+	using typename basic_nt_family_io_observer<family, ch_type>::output_char_type;
+	using typename basic_nt_family_io_observer<family, ch_type>::native_handle_type;
+	using file_factory_type = nt_family_file_factory<family>;
+	constexpr basic_nt_family_file() noexcept = default;
+	constexpr basic_nt_family_file(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
+	constexpr basic_nt_family_file &operator=(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
+
+	template <typename native_hd>
+		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
+	explicit constexpr basic_nt_family_file(native_hd hd) noexcept
+		: basic_nt_family_io_observer<family, ch_type>{hd}
+	{
+	}
+	constexpr basic_nt_family_file(decltype(nullptr)) noexcept = delete;
+	explicit constexpr basic_nt_family_file(nt_family_file_factory<family> &&hd) noexcept
+		: basic_nt_family_io_observer<family, ch_type>{hd}
+	{
+		hd.handle = nullptr;
+	}
+	explicit basic_nt_family_file(io_dup_t, basic_nt_family_io_observer<family, ch_type> wiob)
+		: basic_nt_family_io_observer<family, ch_type>{
+			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(wiob.handle)}
+	{
+	}
+	explicit basic_nt_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_nt_family_io_observer<family, char_type>{
+			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl<family == nt_family::zw>(fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
+	{
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	explicit basic_nt_family_file(T const &t, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_nt_family_io_observer<family, ch_type>{
+			  ::fast_io::win32::nt::details::nt_create_file_impl<family == nt_family::zw>(t, {om, pm})}
+	{
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	explicit basic_nt_family_file(nt_at_entry ent, T const &t, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_nt_family_io_observer<family, ch_type>{
+			  ::fast_io::win32::nt::details::nt_create_file_at_impl<family == nt_family::zw>(ent.handle, t, {om, pm})}
+	{
+	}
+
+	template <::fast_io::constructible_to_os_c_str T>
+	explicit basic_nt_family_file(io_kernel_t, T const &t, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_nt_family_io_observer<family, ch_type>{
+			  ::fast_io::win32::nt::details::nt_create_file_kernel_impl<family == nt_family::zw>(t, {om, pm})}
+	{
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	explicit basic_nt_family_file(io_kernel_t, nt_at_entry ent, T const &t, open_mode om,
+								  perms pm = static_cast<perms>(436))
+		: basic_nt_family_io_observer<family, ch_type>{
+			  ::fast_io::win32::nt::details::nt_create_file_at_impl<family == nt_family::zw, true>(ent.handle, t,
+																								   {om, pm})}
+	{
+	}
+
+	void close()
+	{
+		if (this->handle) [[likely]]
+		{
+			auto status{::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle)};
+			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
+			if (status) [[unlikely]]
+			{
+				throw_nt_error(status);
+			}
+		}
+	}
+	void reset(native_handle_type newhandle = nullptr) noexcept
+	{
+		if (this->handle) [[likely]]
+		{
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
+		}
+		this->handle = newhandle;
+	}
+	basic_nt_family_file(basic_nt_family_file const &other)
+		: basic_nt_family_io_observer<family, ch_type>(
+			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(other.handle))
+	{
+	}
+	basic_nt_family_file &operator=(basic_nt_family_file const &other)
+	{
+		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
+		return *this;
+	}
+	constexpr basic_nt_family_file(basic_nt_family_file &&__restrict other) noexcept
+		: basic_nt_family_io_observer<family, ch_type>{other.handle}
+	{
+		other.handle = nullptr;
+	}
+	basic_nt_family_file &operator=(basic_nt_family_file &&__restrict other) noexcept
+	{
+		if (this->handle) [[likely]]
+		{
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
+		}
+		this->handle = other.handle;
+		other.handle = nullptr;
+		return *this;
+	}
+	~basic_nt_family_file()
+	{
+		if (this->handle) [[likely]]
+		{
+			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);
+		}
+	}
+};
 
 template <::std::integral char_type>
 using basic_nt_io_observer = basic_nt_family_io_observer<nt_family::nt, char_type>;
