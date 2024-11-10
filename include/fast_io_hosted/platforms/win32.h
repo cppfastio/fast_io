@@ -989,7 +989,7 @@ template <typename T>
 	requires(::fast_io::constructible_to_os_c_str<T>)
 inline win9x_dir_handle win9x_create_dir_file_impl(T const &t, open_mode_perms ompm)
 {
-	return {::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(t, ompm), ::fast_io::concat_fast_io(::fast_io::mnp::os_c_str(t))};
+	return {::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(t, ompm), ::fast_io::concat_fast_io(t)};
 }
 
 template <typename T>
