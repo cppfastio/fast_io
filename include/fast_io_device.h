@@ -22,7 +22,7 @@ However, they are still capable of doing I/O.
 */
 
 using dir_file = directory_file_wrapper<
-#if (defined(_WIN32) || defined(__CYGWIN__) && defined(_WIN32_WINDOWS))
+#if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS))
 	win9x_dir
 #else
 	basic_native_file<char>
