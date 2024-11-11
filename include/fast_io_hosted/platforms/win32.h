@@ -981,8 +981,7 @@ inline win9x_dir_handle win9x_create_dir_file_at_fs_dirent_impl(win9x_dir_handle
 	}
 
 	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len)))};
-	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
-	return {handle, ::std::move(str)};
+	return {nullptr, ::std::move(str)};
 }
 
 template <typename T>
@@ -1002,6 +1001,7 @@ inline win9x_dir_handle win9x_create_dir_file_impl(T const &t, open_mode_perms o
 		path.pop_back_unchecked();
 	}
 	return {::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(t, ompm), ::std::move(path)};
+	return {nullptr, ::std::move(path)};
 }
 
 template <typename T>
@@ -1147,8 +1147,7 @@ inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory
 	}
 
 	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
-	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
-	return {handle, ::std::move(str)};
+	return {nullptr, ::std::move(str)};
 }
 
 } // namespace win32::details
