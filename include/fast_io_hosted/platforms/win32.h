@@ -1360,6 +1360,29 @@ struct win9x_at_entry
 	{}
 };
 
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline win9x_at_entry win9x_at_fdcwd() noexcept
+{
+	constexpr ::std::ptrdiff_t value{-3}; // use -3 as at_fdwcd handle
+	return win9x_at_entry{{::fast_io::bit_cast<void *>(value), ::fast_io::u8concat_fast_io(u8".")}};
+}
+
+#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__) && defined(_WIN32_WINDOWS)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline win9x_at_entry at_fdcwd() noexcept
+{
+	return win9x_at_fdcwd();
+}
+#endif
+
 struct
 #if __has_cpp_attribute(clang::trivially_relocatable)
 	[[clang::trivially_relocatable]]

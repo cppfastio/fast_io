@@ -602,7 +602,7 @@ inline nt_at_entry nt_at_fdcwd() noexcept
 	return nt_at_entry{bit_cast<void *>(value)};
 }
 
-#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
+#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__) && !defined(_WIN32_WINDOWS)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
