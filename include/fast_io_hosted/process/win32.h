@@ -230,13 +230,13 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		auto address_begin{pszFilename};
 
 		// change nt path to dos path
-		auto k32_module{::fast_io::win32::GetModuleHandleA("Kernel32.dll")};
+		auto k32_module{::fast_io::win32::GetModuleHandleA(reinterpret_cast<char const *>(u8"Kernel32.dll"))};
 		if (k32_module)
 		{
 			using QueryDosDeviceA_t = ::std::uint_least32_t (*)(char const *, char *, ::std::uint_least32_t) noexcept;
 
 			// win95 may not have this function, need check (?)
-			auto QueryDosDeviceA_p{reinterpret_cast<QueryDosDeviceA_t>(::fast_io::win32::GetProcAddress(k32_module, "QueryDosDeviceA"))};
+			auto QueryDosDeviceA_p{reinterpret_cast<QueryDosDeviceA_t>(::fast_io::win32::GetProcAddress(k32_module, reinterpret_cast<char const *>(u8"QueryDosDeviceA")))};
 			if (QueryDosDeviceA_p)
 			{
 				if (pszFilename[0] == '\\')
