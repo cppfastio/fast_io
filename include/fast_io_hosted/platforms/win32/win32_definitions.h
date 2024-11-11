@@ -396,5 +396,43 @@ struct file_basic_info
 	::std::uint_least32_t FileAttributes;
 };
 
+struct win32_find_dataa
+{
+	::std::uint_least32_t dwFileAttributes;
+	filetime ftCreationTime;
+	filetime ftLastAccessTime;
+	filetime ftLastWriteTime;
+	::std::uint_least32_t nFileSizeHigh;
+	::std::uint_least32_t nFileSizeLow;
+	::std::uint_least32_t dwReserved0;
+	::std::uint_least32_t dwReserved1;
+	char cFileName[260];
+	char cAlternateFileName[14];
+#ifdef _MAC
+	::std::uint_least32_t dwFileType;
+	::std::uint_least32_t dwCreatorType;
+	::std::uint_least16_t wFinderFlags;
+#endif
+};
+
+struct win32_find_dataw
+{
+	::std::uint_least32_t dwFileAttributes;
+	filetime ftCreationTime;
+	filetime ftLastAccessTime;
+	filetime ftLastWriteTime;
+	::std::uint_least32_t nFileSizeHigh;
+	::std::uint_least32_t nFileSizeLow;
+	::std::uint_least32_t dwReserved0;
+	::std::uint_least32_t dwReserved1;
+	char16_t cFileName[260];
+	char16_t cAlternateFileName[14];
+#if defined(_68K_) || defined(_MPPC_)
+	::std::uint_least32_t dwFileType;
+	::std::uint_least32_t dwCreatorType;
+	::std::uint_least16_t wFinderFlags;
+#endif
+} ;
+
 
 } // namespace fast_io::win32

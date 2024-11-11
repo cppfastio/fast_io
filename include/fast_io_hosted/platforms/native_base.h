@@ -17,6 +17,7 @@ inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::ui
 
 #include "nt.h"
 // #include"win32_iocp_overlapped.h"
+
 #include "win32.h"
 #include "win32_network/win32.h"
 #endif
@@ -34,8 +35,13 @@ namespace fast_io
 {
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
+#if defined(_WIN32_WINDOWS)
+using native_at_entry = win9x_at_entry;
+using native_fs_dirent = win9x_fs_dirent;
+#else
 using native_at_entry = nt_at_entry;
 using native_fs_dirent = nt_fs_dirent;
+#endif
 
 #if defined(_WIN32_WINDOWS)
 template <::std::integral ch_type>

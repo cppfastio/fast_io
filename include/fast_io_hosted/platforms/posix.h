@@ -1139,6 +1139,10 @@ public:
 		: basic_posix_family_file(basic_win32_file<char_type>(fsdirent, om, pm), om)
 	{
 	}
+	basic_posix_family_file(win9x_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_posix_family_file(basic_win32_file<char_type>(fsdirent, om, pm), om)
+	{
+	}
 	template <::fast_io::constructible_to_os_c_str T>
 	basic_posix_family_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(basic_win32_file<char_type>(file, om, pm), om)
@@ -1146,6 +1150,11 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str T>
 	basic_posix_family_file(nt_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_posix_family_file(basic_win32_file<char_type>(nate, file, om, pm), om)
+	{
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	basic_posix_family_file(win9x_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(basic_win32_file<char_type>(nate, file, om, pm), om)
 	{
 	}

@@ -60,9 +60,8 @@ freestanding ones.
 #endif
 
 #if !defined(__AVR__)
-#if defined(__MSDOS__)
+#include "fast_io_dsal/string_view.h"
 #include "fast_io_dsal/string.h"
-#endif
 #include "fast_io_hosted/platforms/native.h"
 #include "fast_io_hosted/file_loaders/impl.h"
 #include "fast_io_hosted/wrapper.h"

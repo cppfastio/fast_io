@@ -542,7 +542,6 @@ inline void *win32_create_file_at_fs_dirent_impl(void *directory_handle, char_ty
 	return ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl<false>(directory_handle, filename_c_str,
 																					  filename_c_str_len, ompm);
 }
-
 } // namespace details
 
 struct win32_io_redirection
@@ -920,9 +919,640 @@ struct
 		if (handle) [[likely]]
 		{
 			::fast_io::win32::CloseHandle(handle);
+			handle = nullptr;
 		}
 	}
 };
+
+struct win9x_dir_handle
+{
+	void *handle;
+	::fast_io::u8string path;
+};
+
+namespace win32::details
+{
+inline void close_win9x_dir_handle(win9x_dir_handle &h) noexcept
+{
+	::fast_io::win32::CloseHandle(h.handle);
+	h.path.clear();
+}
+
+inline win9x_dir_handle win9x_dir_dup_impl(win9x_dir_handle const &h) noexcept
+{
+	return {::fast_io::win32::details::win32_dup_impl(h.handle), h.path};
+}
+
+template <::std::integral char_type>
+inline win9x_dir_handle win9x_create_dir_file_at_fs_dirent_impl(win9x_dir_handle directory_handle, char_type const *filename_c_str,
+																::std::size_t filename_c_str_len, open_mode_perms ompm)
+{
+	auto c{filename_c_str};
+
+	if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', char_type> ||
+						   fc == ::fast_io::char_literal_v<u8'-', char_type> ||
+						   fc == ::fast_io::char_literal_v<u8'.', char_type>) [[unlikely]]
+	{
+		throw_win32_error(3221225530);
+	}
+
+	++c;
+	for (; c != filename_c_str + filename_c_str_len; ++c)
+	{
+		auto fc{*c};
+		if (fc == ::fast_io::char_literal_v<u8'/', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'\\', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'\t', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'\b', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'@', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'#', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'$', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'%', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'^', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'&', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'*', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'(', char_type> ||
+			fc == ::fast_io::char_literal_v<u8')', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'[', char_type> ||
+			fc == ::fast_io::char_literal_v<u8']', char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+	}
+
+	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len)))};
+	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
+	return {handle, ::std::move(str)};
+}
+
+template <typename T>
+	requires(::fast_io::constructible_to_os_c_str<T>)
+inline win9x_dir_handle win9x_create_dir_file_impl(T const &t, open_mode_perms ompm)
+{
+	::fast_io::u8string path{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(t))};
+	for (auto& c : path)
+	{
+		if (c == u8'/')
+		{
+			c = u8'\\';
+		}
+	}
+	if (path.back() == u8'\\')
+	{
+		path.pop_back_unchecked();
+	}
+	return {::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(t, ompm), ::std::move(path)};
+}
+
+template <typename T>
+	requires(::fast_io::constructible_to_os_c_str<T>)
+inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory_handle, T const &t, open_mode_perms ompm)
+{
+	if constexpr (::std::is_array_v<T>)
+	{
+		using cstr_char_type = ::std::remove_extent_t<T>;
+		auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
+
+		auto c{t};
+
+		if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'-', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'.', cstr_char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+
+		++c;
+		for (; c != t + size; ++c)
+		{
+			auto fc{*c};
+			if (fc == ::fast_io::char_literal_v<u8'/', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\\', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\t', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\b', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'@', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'#', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'$', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'%', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'^', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'&', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'*', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'(', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8')', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'[', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8']', cstr_char_type>) [[unlikely]]
+			{
+				throw_win32_error(3221225530);
+			}
+		}
+
+	}
+	else if constexpr (type_has_c_str_method<T>)
+	{
+		using cstr_char_type = ::std::remove_pointer_t<decltype(t.c_str())>;
+		cstr_char_type const *b{};
+		::std::size_t size{};
+
+		if constexpr (::std::ranges::contiguous_range<::std::remove_cvref_t<T>>)
+		{
+			b = ::std::ranges::data(t);
+			size = ::std::ranges::size(t);
+		}
+		else if constexpr (::fast_io::details::cxx_std_filesystem_pseudo_concept<::std::remove_cvref_t<T>>)
+		{
+			auto const &native{t.native()};
+			b = native.c_str();
+			size = native.size();
+		}
+		else
+		{
+			auto ptr{t.c_str()};
+			b = ptr;
+			size = ::fast_io::cstr_len(ptr);
+		}
+
+		auto c{b};
+
+		if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'-', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'.', cstr_char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+
+		++c;
+		for (; c != b + size; ++c)
+		{
+			auto fc{*c};
+			if (fc == ::fast_io::char_literal_v<u8'/', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\\', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\t', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\b', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'@', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'#', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'$', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'%', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'^', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'&', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'*', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'(', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8')', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'[', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8']', cstr_char_type>) [[unlikely]]
+			{
+				throw_win32_error(3221225530);
+			}
+		}
+
+	}
+	else // types like ::std::basic_string_view, we must allocate new space to hold that type
+	{
+		using strvw_char_type = ::std::remove_pointer_t<decltype(t.data())>;
+		strvw_char_type const *b{t.data()};
+		::std::size_t size{t.length()};
+
+		auto c{b};
+
+		if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', strvw_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'-', strvw_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'.', strvw_char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+
+		++c;
+		for (; c != b + size; ++c)
+		{
+			auto fc{*c};
+			if (fc == ::fast_io::char_literal_v<u8'/', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\\', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\t', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\b', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'@', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'#', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'$', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'%', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'^', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'&', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'*', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'(', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8')', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'[', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8']', strvw_char_type>) [[unlikely]]
+			{
+				throw_win32_error(3221225530);
+			}
+		}
+
+	}
+
+	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
+	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
+	return {handle, ::std::move(str)};
+}
+
+} // namespace win32::details
+
+namespace details
+{
+template <::std::integral char_type>
+inline void *win9x_create_file_at_fs_dirent_impl(win9x_dir_handle directory_handle, char_type const *filename_c_str,
+												 ::std::size_t filename_c_str_len, open_mode_perms ompm)
+{
+	auto c{filename_c_str};
+
+	if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', char_type> ||
+						   fc == ::fast_io::char_literal_v<u8'-', char_type> ||
+						   fc == ::fast_io::char_literal_v<u8'.', char_type>) [[unlikely]]
+	{
+		throw_win32_error(3221225530);
+	}
+
+	++c;
+	for (; c != filename_c_str + filename_c_str_len; ++c)
+	{
+		auto fc{*c};
+		if (fc == ::fast_io::char_literal_v<u8'/', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'\\', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'\t', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'\b', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'@', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'#', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'$', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'%', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'^', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'&', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'*', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'(', char_type> ||
+			fc == ::fast_io::char_literal_v<u8')', char_type> ||
+			fc == ::fast_io::char_literal_v<u8'[', char_type> ||
+			fc == ::fast_io::char_literal_v<u8']', char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+	}
+
+	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len)))};
+	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
+	return handle;
+}
+
+
+template <typename T>
+	requires(::fast_io::constructible_to_os_c_str<T>)
+inline void *win9x_create_file_at_impl(win9x_dir_handle directory_handle, T const &t, open_mode_perms ompm)
+{
+	if constexpr (::std::is_array_v<T>)
+	{
+		using cstr_char_type = ::std::remove_extent_t<T>;
+		auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
+
+		auto c{t};
+
+		if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'-', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'.', cstr_char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+
+		++c;
+		for (; c != t + size; ++c)
+		{
+			auto fc{*c};
+			if (fc == ::fast_io::char_literal_v<u8'/', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\\', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\t', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\b', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'@', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'#', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'$', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'%', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'^', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'&', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'*', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'(', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8')', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'[', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8']', cstr_char_type>) [[unlikely]]
+			{
+				throw_win32_error(3221225530);
+			}
+		}
+	}
+	else if constexpr (type_has_c_str_method<T>)
+	{
+		using cstr_char_type = ::std::remove_pointer_t<decltype(t.c_str())>;
+		cstr_char_type const *b{};
+		::std::size_t size{};
+
+		if constexpr (::std::ranges::contiguous_range<::std::remove_cvref_t<T>>)
+		{
+			b = ::std::ranges::data(t);
+			size = ::std::ranges::size(t);
+		}
+		else if constexpr (::fast_io::details::cxx_std_filesystem_pseudo_concept<::std::remove_cvref_t<T>>)
+		{
+			auto const &native{t.native()};
+			b = native.c_str();
+			size = native.size();
+		}
+		else
+		{
+			auto ptr{t.c_str()};
+			b = ptr;
+			size = ::fast_io::cstr_len(ptr);
+		}
+
+		auto c{b};
+
+		if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'-', cstr_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'.', cstr_char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+
+		++c;
+		for (; c != b + size; ++c)
+		{
+			auto fc{*c};
+			if (fc == ::fast_io::char_literal_v<u8'/', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\\', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\t', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\b', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'@', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'#', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'$', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'%', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'^', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'&', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'*', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'(', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8')', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'[', cstr_char_type> ||
+				fc == ::fast_io::char_literal_v<u8']', cstr_char_type>) [[unlikely]]
+			{
+				throw_win32_error(3221225530);
+			}
+		}
+	}
+	else // types like ::std::basic_string_view, we must allocate new space to hold that type
+	{
+		using strvw_char_type = ::std::remove_pointer_t<decltype(t.data())>;
+		strvw_char_type const *b{t.data()};
+		::std::size_t size{t.length()};
+
+		auto c{b};
+
+		if (auto const fc{*c}; fc == ::fast_io::char_literal_v<u8'+', strvw_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'-', strvw_char_type> ||
+							   fc == ::fast_io::char_literal_v<u8'.', strvw_char_type>) [[unlikely]]
+		{
+			throw_win32_error(3221225530);
+		}
+
+		++c;
+		for (; c != b + size; ++c)
+		{
+			auto fc{*c};
+			if (fc == ::fast_io::char_literal_v<u8'/', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\\', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\t', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'\b', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'@', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'#', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'$', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'%', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'^', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'&', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'*', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'(', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8')', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8'[', strvw_char_type> ||
+				fc == ::fast_io::char_literal_v<u8']', strvw_char_type>) [[unlikely]]
+			{
+				throw_win32_error(3221225530);
+			}
+		}
+	}
+
+	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
+	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
+	return handle;
+}
+
+} // namespace details
+
+struct win9x_fs_dirent
+{
+	win9x_dir_handle handle{};                                                // path
+	::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> filename{}; // file
+};
+
+struct win9x_at_entry
+{
+	using native_handle_type = win9x_dir_handle;
+	native_handle_type handle{};
+	explicit constexpr win9x_at_entry() noexcept = default;
+	explicit constexpr win9x_at_entry(native_handle_type mhandle) noexcept
+		: handle(::std::move(mhandle))
+	{}
+};
+
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline win9x_at_entry win9x_at_fdcwd() noexcept
+{
+	constexpr ::std::ptrdiff_t value{-3}; // use -3 as at_fdwcd handle
+	return win9x_at_entry{{::fast_io::bit_cast<void *>(value), ::fast_io::u8concat_fast_io(u8".")}};
+}
+
+#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__) && defined(_WIN32_WINDOWS)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline win9x_at_entry at_fdcwd() noexcept
+{
+	return win9x_at_fdcwd();
+}
+#endif
+
+struct
+#if __has_cpp_attribute(clang::trivially_relocatable)
+	[[clang::trivially_relocatable]]
+#endif
+	win9x_dir_file_factory
+{
+	using native_handle_type = win9x_dir_handle;
+	win9x_dir_handle handle{};
+	explicit constexpr win9x_dir_file_factory(native_handle_type hd) noexcept
+		: handle(::std::move(hd)) {};
+	win9x_dir_file_factory(win9x_dir_file_factory const &) = delete;
+	win9x_dir_file_factory &operator=(win9x_dir_file_factory const &) = delete;
+	~win9x_dir_file_factory()
+	{
+		if (handle.handle) [[likely]]
+		{
+			::fast_io::win32::details::close_win9x_dir_handle(handle);
+			handle.handle = nullptr;
+		}
+	}
+};
+
+class win9x_dir_io_observer
+{
+public:
+	using native_handle_type = win9x_dir_handle;
+	using char_type = char8_t;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
+	native_handle_type handle{};
+	constexpr native_handle_type native_handle() const noexcept
+	{
+		return handle;
+	}
+	explicit operator bool() const noexcept
+	{
+		return handle.handle != nullptr && handle.handle != reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1));
+	}
+	constexpr native_handle_type release() noexcept
+	{
+		auto temp{::std::move(handle)};
+		handle.handle = nullptr;
+		return temp;
+	}
+};
+inline constexpr bool operator==(win9x_dir_io_observer const &a,
+								 win9x_dir_io_observer const &b) noexcept
+{
+	return a.handle.handle == b.handle.handle;
+}
+
+#if __cpp_lib_three_way_comparison >= 201907L
+
+inline constexpr auto operator<=>(win9x_dir_io_observer const &a,
+								  win9x_dir_io_observer const &b) noexcept
+{
+	return a.handle.handle <=> b.handle.handle;
+}
+
+#endif
+
+class win9x_dir : public win9x_dir_io_observer
+{
+public:
+	using typename win9x_dir_io_observer::char_type;
+	using typename win9x_dir_io_observer::input_char_type;
+	using typename win9x_dir_io_observer::output_char_type;
+	using typename win9x_dir_io_observer::native_handle_type;
+	using win9x_dir_io_observer::native_handle;
+	using file_factory_type = win9x_dir_file_factory;
+	explicit constexpr win9x_dir() noexcept = default;
+
+	constexpr win9x_dir(win9x_dir_io_observer) noexcept = delete;
+	constexpr win9x_dir &operator=(win9x_dir_io_observer) noexcept = delete;
+
+	win9x_dir(win9x_dir const &other)
+		: win9x_dir_io_observer{win32::details::win9x_dir_dup_impl(other.handle)}
+	{
+	}
+	win9x_dir &operator=(win9x_dir const &other)
+	{
+		this->handle = win32::details::win9x_dir_dup_impl(other.handle);
+		return *this;
+	}
+	win9x_dir(win9x_dir &&__restrict b) noexcept
+		: win9x_dir_io_observer{b.release()}
+	{
+	}
+	win9x_dir &operator=(win9x_dir &&__restrict b) noexcept
+	{
+		if (*this) [[likely]]
+		{
+			win32::details::close_win9x_dir_handle(this->handle);
+		}
+		this->handle = b.release();
+		return *this;
+	}
+	void reset(native_handle_type newhandle = {}) noexcept
+	{
+		if (*this) [[likely]]
+		{
+			::fast_io::win32::details::close_win9x_dir_handle(this->handle);
+		}
+		this->handle = ::std::move(newhandle);
+	}
+	void close()
+	{
+		if (*this) [[likely]]
+		{
+			::fast_io::win32::details::close_win9x_dir_handle(this->handle);
+			this->handle.handle = nullptr;
+		}
+	}
+
+	template <typename native_hd>
+		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
+	explicit constexpr win9x_dir(native_hd handle1) noexcept
+		: win9x_dir_io_observer{::std::move(handle1)}
+	{
+	}
+
+	win9x_dir(io_dup_t, win9x_dir_io_observer wiob)
+		: win9x_dir_io_observer{::fast_io::win32::details::win9x_dir_dup_impl(wiob.handle)}
+	{
+	}
+
+	explicit constexpr win9x_dir(win9x_dir_file_factory &&fact) noexcept
+		: win9x_dir_io_observer{::std::move(fact.handle)}
+	{
+		fact.handle.handle = nullptr;
+	}
+
+	explicit constexpr win9x_dir(decltype(nullptr)) noexcept = delete;
+
+	explicit win9x_dir(win9x_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: win9x_dir_io_observer{
+			  ::fast_io::win32::details::win9x_create_dir_file_at_fs_dirent_impl(
+				  fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
+	{
+	}
+
+	template <::fast_io::constructible_to_os_c_str T>
+	explicit win9x_dir(T const &filename, open_mode om, perms pm = static_cast<perms>(436))
+		: win9x_dir_io_observer{
+			  ::fast_io::win32::details::win9x_create_dir_file_impl(filename, {om, pm})}
+	{
+	}
+
+	template <::fast_io::constructible_to_os_c_str T>
+	explicit win9x_dir(win9x_at_entry nate, T const &filename, open_mode om,
+					   perms pm = static_cast<perms>(436))
+		: win9x_dir_io_observer{
+			  ::fast_io::win32::details::win9x_create_dir_file_at_impl(nate.handle, filename, {om, pm})}
+	{
+	}
+
+	~win9x_dir()
+	{
+		if (*this) [[likely]]
+		{
+			::fast_io::win32::details::close_win9x_dir_handle(this->handle);
+			this->handle.handle = nullptr;
+		}
+	}
+};
+
+inline win9x_at_entry at(win9x_dir const &wiob) noexcept
+{
+	return win9x_at_entry{wiob.handle};
+}
 
 template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_file : public basic_win32_family_io_observer<family, ch_type>
@@ -1000,14 +1630,24 @@ public:
 	{
 		fact.handle = nullptr;
 	}
+
 	explicit constexpr basic_win32_family_file(decltype(nullptr)) noexcept = delete;
+
 	explicit basic_win32_family_file(io_temp_t)
 		: basic_win32_family_io_observer<family, char_type>{::fast_io::details::create_win32_temp_file_impl<family>()}
 	{
 	}
+
 	explicit basic_win32_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_win32_family_io_observer<family, char_type>{
 			  ::fast_io::details::win32_create_file_at_fs_dirent_impl<family>(
+				  fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
+	{
+	}
+
+	explicit basic_win32_family_file(win9x_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_win32_family_io_observer<family, char_type>{
+			  ::fast_io::details::win9x_create_file_at_fs_dirent_impl(
 				  fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
 	{
 	}
@@ -1027,6 +1667,14 @@ public:
 	{
 	}
 
+	template <::fast_io::constructible_to_os_c_str T>
+	explicit basic_win32_family_file(win9x_at_entry nate, T const &filename, open_mode om,
+									 perms pm = static_cast<perms>(436))
+		: basic_win32_family_io_observer<family, char_type>{
+			  ::fast_io::details::win9x_create_file_at_impl(nate.handle, filename, {om, pm})}
+	{
+	}
+
 	explicit basic_win32_family_file(io_async_t)
 		requires(::std::same_as<char_type, char>)
 		: basic_win32_family_io_observer<family, char_type>{details::create_io_completion_port_impl()}
@@ -1037,21 +1685,70 @@ public:
 		if (*this) [[likely]]
 		{
 			::fast_io::win32::CloseHandle(this->handle);
+			this->handle = nullptr;
 		}
 	}
 };
 
-#if 0
-template<win32_family family,::std::integral ch_type>
-inline void truncate(basic_win32_family_io_observer<family,ch_type> handle,::fast_io::uintfpos_t size)
+template <win32_family family, ::std::integral ch_type>
+inline void truncate(basic_win32_family_io_observer<family, ch_type> handle, ::fast_io::uintfpos_t size)
 {
-	io_stream_seek_bytes_define(handle,size,seekdir::beg);
-	if(!::fast_io::win32::SetEndOfFile(handle.handle))
+	win32::details::seek_impl(handle, size, seekdir::beg);
+	if (!::fast_io::win32::SetEndOfFile(handle.handle))
+	{
 		throw_win32_error();
+	}
 }
-#endif
+
 namespace win32::details
 {
+struct handle_guard
+{
+	void *h{};
+	constexpr handle_guard() noexcept = default;
+	constexpr handle_guard(void *r) noexcept
+		: h{r} {};
+	constexpr ~handle_guard()
+	{
+		if (h) [[likely]]
+		{
+			::fast_io::win32::CloseHandle(h);
+			h = nullptr;
+		}
+	};
+	constexpr void clear() noexcept
+	{
+		if (h) [[likely]]
+		{
+			::fast_io::win32::CloseHandle(h);
+			h = nullptr;
+		}
+	}
+};
+
+struct map_guard
+{
+	void *map{};
+	constexpr map_guard() noexcept = default;
+	constexpr map_guard(void *r) noexcept
+		: map{r} {};
+	constexpr ~map_guard()
+	{
+		if (map) [[likely]]
+		{
+			::fast_io::win32::UnmapViewOfFile(map);
+			map = nullptr;
+		}
+	};
+	constexpr void clear() noexcept
+	{
+		if (map) [[likely]]
+		{
+			::fast_io::win32::UnmapViewOfFile(map);
+			map = nullptr;
+		}
+	}
+};
 
 inline file_type file_type_impl(void *handle)
 {

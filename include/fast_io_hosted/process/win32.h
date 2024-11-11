@@ -105,54 +105,6 @@ inline void win32_duplicate_object_std(void *parent_process, void *&standard_io_
 template <win32_family family>
 using win32_process_char_type = ::std::conditional_t<family == win32_family::wide_nt, char16_t, char>;
 
-struct map_guard
-{
-	void *map{};
-	constexpr map_guard() noexcept = default;
-	constexpr map_guard(void *r) noexcept
-		: map{r} {};
-	constexpr ~map_guard()
-	{
-		if (map) [[likely]]
-		{
-			::fast_io::win32::UnmapViewOfFile(map);
-			map = nullptr;
-		}
-	};
-	constexpr void clear() noexcept
-	{
-		if (map) [[likely]]
-		{
-			::fast_io::win32::UnmapViewOfFile(map);
-			map = nullptr;
-		}
-	}
-};
-
-struct handle_guard
-{
-	void *h{};
-	constexpr handle_guard() noexcept = default;
-	constexpr handle_guard(void *r) noexcept
-		: h{r} {};
-	constexpr ~handle_guard()
-	{
-		if (h) [[likely]]
-		{
-			::fast_io::win32::CloseHandle(h);
-			h = nullptr;
-		}
-	};
-	constexpr void clear() noexcept
-	{
-		if (h) [[likely]]
-		{
-			::fast_io::win32::CloseHandle(h);
-			h = nullptr;
-		}
-	}
-};
-
 template <win32_family family>
 inline win32_user_process_information win32_process_create_impl(void *__restrict fhandle, win32_process_char_type<family> const *args,
 																win32_process_char_type<family> const *envs,
@@ -274,7 +226,46 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		mg1.clear();
 		hg1.clear();
 
-		// do not need to change nt path to dos path (9x)
+		// change nt path to dos path (9x)
+		auto address_begin{pszFilename};
+
+		// change nt path to dos path
+		auto k32_module{::fast_io::win32::GetModuleHandleA(reinterpret_cast<char const *>(u8"Kernel32.dll"))};
+		if (k32_module)
+		{
+			using QueryDosDeviceA_t = ::std::uint_least32_t (*)(char const *, char *, ::std::uint_least32_t) noexcept;
+
+			// win95 may not have this function, need check (?)
+			auto QueryDosDeviceA_p{reinterpret_cast<QueryDosDeviceA_t>(::fast_io::win32::GetProcAddress(k32_module, reinterpret_cast<char const *>(u8"QueryDosDeviceA")))};
+			if (QueryDosDeviceA_p)
+			{
+				if (pszFilename[0] == '\\')
+				{
+					char DosDevice[4]{0, ':', 0, 0};
+					char NtPath[64];
+					char *RetStr{};
+					::std::size_t NtPathLen{};
+					for (char i{65}; i < static_cast<char>(26 + 65); i++)
+					{
+						DosDevice[0] = i;
+						if (QueryDosDeviceA_p(DosDevice, NtPath, 64))
+						{
+							NtPathLen = ::fast_io::cstr_len(NtPath);
+
+							if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char)) == 0) [[unlikely]]
+							{
+								goto next2;
+							}
+						}
+					}
+					throw_win32_error(0x3);
+				next2:
+					address_begin += NtPathLen - 2;
+					address_begin[0] = DosDevice[0];
+					address_begin[1] = ':';
+				}
+			}
+		}
 		// create process
 		::fast_io::win32::startupinfoa si{sizeof(si)};
 		si.hStdInput = processio.in.win32_handle ? processio.in.win32_handle : ::fast_io::win32_stdin().handle;
@@ -283,7 +274,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		si.dwFlags = 0x00000100;
 
 		::fast_io::win32::process_information pi{};
-		if (!::fast_io::win32::CreateProcessA(pszFilename, const_cast<char *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
+		if (!::fast_io::win32::CreateProcessA(address_begin, const_cast<char *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 		{
 			throw_win32_error();
 		}
