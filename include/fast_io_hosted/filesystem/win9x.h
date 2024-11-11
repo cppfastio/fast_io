@@ -82,16 +82,6 @@ struct win9x_directory_entry
 	using native_char_type = char8_t;
 	using char_type = char8_t;
 	win9x_dirent *entry{};
-	template <nt_family family, ::std::integral ch_type>
-	explicit constexpr operator basic_nt_family_io_observer<family, ch_type>() const noexcept
-	{
-		return {entry->d_handle.handle};
-	}
-	template <win32_family family, ::std::integral ch_type>
-	explicit constexpr operator basic_win32_family_io_observer<family, ch_type>() const noexcept
-	{
-		return {entry->d_handle.handle};
-	}
 	explicit constexpr operator win9x_dir_io_observer() const noexcept
 	{
 		return {entry->d_handle};
@@ -202,18 +192,15 @@ struct basic_win9x_directory_generator
 	basic_win9x_directory_generator(basic_win9x_directory_generator &&__restrict other) noexcept
 		: entry(::std::move(other.entry))
 	{
-		other.entry.d_handle.handle = nullptr;
 	}
 	basic_win9x_directory_generator &
 	operator=(basic_win9x_directory_generator &&__restrict other) noexcept
 	{
 		entry = ::std::move(other.entry);
-		other.entry.d_handle.handle = nullptr;
 		return *this;
 	}
 	~basic_win9x_directory_generator()
 	{
-		entry.d_handle.handle = nullptr;
 	}
 };
 
@@ -273,8 +260,6 @@ struct basic_win9x_recursive_directory_generator
 		basic_win9x_recursive_directory_generator &&__restrict other) noexcept
 		: root_handle(::std::move(other.root_handle)), entry(::std::move(other.entry))
 	{
-		other.root_handle.handle = nullptr;
-		entry.d_handle.handle = nullptr;
 	}
 	constexpr basic_win9x_recursive_directory_generator &
 	operator=(basic_win9x_recursive_directory_generator &&__restrict other) noexcept
