@@ -177,7 +177,16 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 
 	if ((flags & nt_at_flags::empty_path) == nt_at_flags::empty_path)
 	{
-		file = ::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char>{olddirhd};
+        if (oldpath_size != 0)
+        {
+    		basic_file = ::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char>{
+			    nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
+		file = basic_file;
+        }
+        else
+        {
+		    file = ::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char>{olddirhd};
+        }
 	}
 	else
 	{
