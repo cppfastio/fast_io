@@ -347,20 +347,20 @@ inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
 }
 
 template <posix_api_22 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
-		  ::fast_io::constructible_to_os_c_str new_path_type>
-inline auto posix_deal_with22(int olddirfd, old_path_type const &oldpath, int newdirfd, new_path_type const &newpath)
+		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
+inline auto posix_deal_with22(int olddirfd, old_path_type const &oldpath, int newdirfd, new_path_type const &newpath, Args... args)
 {
 	return fast_io::posix_api_common(
 		oldpath,
 		[&](char const *oldpath_c_str) {
 			return fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return posix22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str); });
+				newpath, [&](char const *newpath_c_str) { return posix22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str, args...); });
 		});
 }
 
 template <posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type>
-inline auto posix_deal_with12(old_path_type const &oldpath, int newdirfd, old_path_type const &newpath)
+inline auto posix_deal_with12(old_path_type const &oldpath, int newdirfd, new_path_type const &newpath)
 {
 	return fast_io::posix_api_common(
 		oldpath,
