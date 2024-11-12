@@ -152,13 +152,13 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
 {
 	bool const is_root{oldpath_c_str[0] == u'\\' ||
-						(oldpath_size > 1 && ::fast_io::char_category::is_c_upper(oldpath_c_str[0]) && oldpath_c_str[1] == u':')};
-	
+					   (oldpath_size > 1 && ::fast_io::char_category::is_c_upper(oldpath_c_str[0]) && oldpath_c_str[1] == u':')};
+
 	constexpr nt_open_mode md{
-		.DesiredAccess = 0x00100000 | 0x0080,              // SYNCHRONIZE | FILE_READ_ATTRIBUTES 
-		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
-		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
-		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
+		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
 	};
 
 	void *olddirhd{newdirhd};
@@ -231,8 +231,12 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		}
 	}
 	::std::size_t const cbReparseData{
-#if __has_builtin(__builtin_offsetof)
+#if defined(__has_builtin) && __has_builtin(__builtin_offsetof)
+#if defined(_MSC_VER) && defined(__clang__)
 		__builtin_offsetof(SymbolicLinkReparseBuffer.PathBuffer, reparse_data_buffer)
+#else
+		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
+#endif
 #else
 		offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
 #endif
@@ -253,8 +257,12 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 
 	pReparseData->ReparseTag = 0xA000000CL; // IO_REPARSE_TAG_SYMLINK
 	pReparseData->ReparseDataLength = static_cast<::std::uint_least16_t>(cbReparseData -
-#if __has_builtin(__builtin_offsetof)
+#if defined(__has_builtin) && __has_builtin(__builtin_offsetof)
+#if defined(_MSC_VER) && defined(__clang__)
 																		 __builtin_offsetof(GenericReparseBuffer, reparse_data_buffer)
+#else
+																		 __builtin_offsetof(reparse_data_buffer, GenericReparseBuffer)
+#endif
 #else
 																		 offsetof(reparse_data_buffer, GenericReparseBuffer)
 #endif
