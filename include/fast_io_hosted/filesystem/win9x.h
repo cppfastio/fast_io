@@ -9,7 +9,7 @@ struct win9x_dirent
 
 	::fast_io::win9x_dir_handle d_handle{};
 	file_type d_type{};
-	::std::uint_least64_t d_ino{};
+	[[maybe_unused]] ::std::uint_least64_t d_ino{};
 	::fast_io::u8string filename{};
 
 	~win9x_dirent()
