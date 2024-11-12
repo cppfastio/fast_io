@@ -151,14 +151,22 @@ template <bool zw>
 inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
 {
+	bool const is_root{oldpath_c_str[0] == u'\\' ||
+						(oldpath_size > 1 && ::fast_io::char_category::is_c_upper(oldpath_c_str[0]) && oldpath_c_str[1] == u':')};
+	
 	constexpr nt_open_mode md{
-		.DesiredAccess = 0x00100000 | 0x0080 | 0x00010000, // SYNCHRONIZE | FILE_READ_ATTRIBUTES | DELETE
+		.DesiredAccess = 0x00100000 | 0x0080,              // SYNCHRONIZE | FILE_READ_ATTRIBUTES 
 		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
 
-	auto [handle, status]{nt_call_callback_without_directory_handle(oldpath_c_str, oldpath_size, nt_create_nothrow_callback<zw>{md})};
+	void *olddirhd{newdirhd};
+	if (is_root)
+	{
+		olddirhd = reinterpret_cast<void *>(::std::ptrdiff_t(-3));
+	}
+	auto [handle, status]{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_nothrow_callback<zw>{md})};
 
 	if (status)
 	{
@@ -168,11 +176,23 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		}
 	}
 
-	// file exist
+	// use nt path in root
+	char16_t const *oldpath_real_c_str{oldpath_c_str};
+	::std::size_t oldpath_real_size{oldpath_size};
+	::fast_io::win32::nt::unicode_string us{};
+	if (is_root)
+	{
+		if (::fast_io::win32::nt::rtl_dos_path_name_to_nt_path_name_u(oldpath_real_c_str, &us, nullptr, nullptr)) [[likely]]
+		{
+			oldpath_real_c_str = us.Buffer;
+			oldpath_real_size = us.Length / 2;
+		}
+	}
 
+	// Check if exists to set the file type
 	::fast_io::win32::nt::io_status_block isb;
 	::std::uint_least32_t attribute{};
-	if (handle)
+	if (!status)
 	{
 
 		::fast_io::win32::nt::file_basic_information fbi;
@@ -221,7 +241,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
 #endif
 		+
-		oldpath_size * sizeof(char16_t) * 2};
+		oldpath_real_size * sizeof(char16_t) * 2};
 
 	using reparse_data_buffer_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -250,18 +270,17 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	pReparseData->Reserved = 0;
 
 	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameOffset = 0;
-	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength = oldpath_size * sizeof(char16_t);
-	::fast_io::freestanding::non_overlapped_copy_n(oldpath_c_str, oldpath_size, pBufTail);
+	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength = oldpath_real_size * sizeof(char16_t);
+	::fast_io::freestanding::non_overlapped_copy_n(oldpath_real_c_str, oldpath_real_size, pBufTail);
 
-	pReparseData->SymbolicLinkReparseBuffer.PrintNameOffset = pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength;
-	pReparseData->SymbolicLinkReparseBuffer.PrintNameLength = oldpath_size * sizeof(char16_t);
-	pBufTail += oldpath_size;
-	::fast_io::freestanding::non_overlapped_copy_n(oldpath_c_str, oldpath_size, pBufTail);
+	pReparseData->SymbolicLinkReparseBuffer.PrintNameOffset = oldpath_real_size * sizeof(char16_t);
+	pReparseData->SymbolicLinkReparseBuffer.PrintNameLength = oldpath_real_size * sizeof(char16_t);
+	pBufTail += oldpath_real_size;
+	::fast_io::freestanding::non_overlapped_copy_n(oldpath_real_c_str, oldpath_real_size, pBufTail);
 
 	// Check whether it is the root directory: nt[0] == u'\\', is_c_upper(win32[0]) && (win32[1] == u':')
 	pReparseData->SymbolicLinkReparseBuffer.Flags =
-		static_cast<::std::uint_least32_t>(!(oldpath_c_str[0] == u'\\' ||
-											 (oldpath_size > 1 && ::fast_io::char_category::is_c_upper(oldpath_c_str[0]) && oldpath_c_str[1] == u':')));
+		static_cast<::std::uint_least32_t>(!is_root);
 
 	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> new_file(
 		nt_call_callback(newdirhd, newpath_c_str, newpath_size, nt_create_callback<zw>{symbol_mode}));
