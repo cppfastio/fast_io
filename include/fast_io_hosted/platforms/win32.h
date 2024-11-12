@@ -1107,13 +1107,13 @@ inline win9x_dir_handle win9x_create_dir_file_at_fs_dirent_impl(win9x_dir_handle
 
 template <typename T>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory_handle, T const &t)
+inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle const &directory_handle, T const &t)
 {
 	return win32_api_common_9xa(t, win9x_create_dir_file_at_fs_dirent{__builtin_addressof(directory_handle)});
 }
 
 template <::std::integral char_type>
-inline void *win9x_create_file_at_fs_dirent_impl(win9x_dir_handle directory_handle, char_type const *filename_c_str,
+inline void *win9x_create_file_at_fs_dirent_impl(win9x_dir_handle const &directory_handle, char_type const *filename_c_str,
 												 ::std::size_t filename_c_str_len, open_mode_perms ompm)
 {
 	return win32_api_common_9xa(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len),
@@ -1122,7 +1122,7 @@ inline void *win9x_create_file_at_fs_dirent_impl(win9x_dir_handle directory_hand
 
 template <typename T>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline void *win9x_create_file_at_impl(win9x_dir_handle directory_handle, T const &t, open_mode_perms ompm)
+inline void *win9x_create_file_at_impl(win9x_dir_handle const &directory_handle, T const &t, open_mode_perms ompm)
 {
 	return win32_api_common_9xa(t, win9x_create_file_at_fs_dirent{__builtin_addressof(directory_handle), ompm});
 }
