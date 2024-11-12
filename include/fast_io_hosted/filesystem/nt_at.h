@@ -172,8 +172,20 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 						   char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags)
 {
 	nt_open_mode const md{calculate_nt_link_flag(flags)};
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(
-		nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md}));
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> basic_file{};
+	::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char> file{};
+
+	if ((flags & nt_at_flags::empty_path) == nt_at_flags::empty_path)
+	{
+		file = ::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char>{olddirhd};
+	}
+	else
+	{
+		basic_file = ::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char>{
+			nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
+		file = basic_file;
+	}
+
 	nt_call_callback(
 		newdirhd, newpath_c_str, newpath_size,
 		[&](void *directory_hd, win32::nt::unicode_string const *ustr) {
