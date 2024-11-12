@@ -975,7 +975,7 @@ inline win9x_dir_handle basic_win9x_create_dir_file_at_fs_dirent_impl(win9x_dir_
 #endif
 		= char8_t const *;
 
-	auto beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
+	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
 	auto curr{beg};
 
 	if (auto const fc{*beg}; fc == u8'+' ||
@@ -1021,7 +1021,7 @@ inline void *basic_win9x_create_file_at_fs_dirent_impl(win9x_dir_handle const *d
 #endif
 		= char8_t const *;
 
-	auto beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
+	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
 	auto curr{beg};
 
 	if (auto const fc{*beg}; fc == u8'+' ||
