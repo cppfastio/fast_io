@@ -986,8 +986,18 @@ template <typename T>
 	requires(::fast_io::constructible_to_os_c_str<T>)
 inline win9x_dir_handle win9x_create_dir_file_impl(T const &t, open_mode_perms ompm)
 {
-	::fast_io::u8string path{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(t))};
-	for (auto& c : path)
+	::fast_io::u8string path;
+	if constexpr (::std::is_array_v<T>)
+	{
+		using cstr_char_type = ::std::remove_extent_t<T>;
+		auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
+		path = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(t, size)));
+	}
+	else
+	{
+		path = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(t));
+	}
+	for (auto &c : path)
 	{
 		if (c == u8'/')
 		{
@@ -1043,6 +1053,8 @@ inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory
 			}
 		}
 
+		::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(t, size)))};
+		return {::std::move(str)};
 	}
 	else if constexpr (type_has_c_str_method<T>)
 	{
@@ -1100,7 +1112,8 @@ inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory
 				throw_win32_error(3221225530);
 			}
 		}
-
+		::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
+		return {::std::move(str)};
 	}
 	else // types like ::std::basic_string_view, we must allocate new space to hold that type
 	{
@@ -1140,11 +1153,9 @@ inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory
 				throw_win32_error(3221225530);
 			}
 		}
-
+		::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
+		return {::std::move(str)};
 	}
-
-	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
-	return {::std::move(str)};
 }
 
 } // namespace win32::details
@@ -1235,6 +1246,9 @@ inline void *win9x_create_file_at_impl(win9x_dir_handle directory_handle, T cons
 				throw_win32_error(3221225530);
 			}
 		}
+		::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(t, size)))};
+		auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
+		return handle;
 	}
 	else if constexpr (type_has_c_str_method<T>)
 	{
@@ -1292,6 +1306,9 @@ inline void *win9x_create_file_at_impl(win9x_dir_handle directory_handle, T cons
 				throw_win32_error(3221225530);
 			}
 		}
+		::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
+		auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
+		return handle;
 	}
 	else // types like ::std::basic_string_view, we must allocate new space to hold that type
 	{
@@ -1331,18 +1348,17 @@ inline void *win9x_create_file_at_impl(win9x_dir_handle directory_handle, T cons
 				throw_win32_error(3221225530);
 			}
 		}
+		::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
+		auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
+		return handle;
 	}
-
-	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle.path), u8"\\", ::fast_io::mnp::code_cvt(t))};
-	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
-	return handle;
 }
 
 } // namespace details
 
 struct win9x_fs_dirent
 {
-	win9x_dir_handle handle{};                                                // path
+	win9x_dir_handle handle{};                                                   // path
 	::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> filename{}; // file
 };
 
