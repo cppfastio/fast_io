@@ -990,7 +990,10 @@ inline win9x_dir_handle win9x_create_dir_file_impl(T const &t, open_mode_perms o
 	if constexpr (::std::is_array_v<T>)
 	{
 		using cstr_char_type = ::std::remove_extent_t<T>;
-		auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
+#if !(defined(_MSC_VER) && !defined(__clang__))
+		constexpr
+#endif
+			auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
 		path = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(t, size)));
 	}
 	else
@@ -1018,7 +1021,10 @@ inline win9x_dir_handle win9x_create_dir_file_at_impl(win9x_dir_handle directory
 	if constexpr (::std::is_array_v<T>)
 	{
 		using cstr_char_type = ::std::remove_extent_t<T>;
-		auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
+#if !(defined(_MSC_VER) && !defined(__clang__))
+		constexpr
+#endif
+			auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
 
 		auto c{t};
 
@@ -1212,7 +1218,10 @@ inline void *win9x_create_file_at_impl(win9x_dir_handle directory_handle, T cons
 	if constexpr (::std::is_array_v<T>)
 	{
 		using cstr_char_type = ::std::remove_extent_t<T>;
-		auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
+#if !(defined(_MSC_VER) && !defined(__clang__))
+		constexpr
+#endif
+			auto size{::fast_io::details::cal_array_size<cstr_char_type>(t)};
 
 		auto c{t};
 
