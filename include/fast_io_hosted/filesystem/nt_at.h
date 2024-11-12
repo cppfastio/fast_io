@@ -58,7 +58,7 @@ inline constexpr nt_open_mode calculate_nt_delete_flag(nt_at_flags flags) noexce
 {
 	nt_open_mode mode{
 		.DesiredAccess = 0x00010000,     // FILE_GENERIC_READ
-		.FileAttributes = 0x80,          // FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,          // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,       // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001, /*OPEN_EXISTING	=>	FILE_OPEN*/
 		.CreateOptions = 0x00001000      /*FILE_DELETE_ON_CLOSE*/
@@ -108,13 +108,192 @@ inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size
 	}
 }
 
+struct nt_create_file_nothrow_common_return_t
+{
+	void *handle;
+	::std::uint_least32_t status;
+};
+
+template <bool zw>
+inline nt_create_file_nothrow_common_return_t nt_create_file_nothrow_common(void *directory, ::fast_io::win32::nt::unicode_string *relative_path, nt_open_mode const &mode) noexcept
+{
+	::fast_io::win32::security_attributes sec_attr{sizeof(::fast_io::win32::security_attributes), nullptr, true};
+	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
+												.RootDirectory = directory,
+												.ObjectName = relative_path,
+												.Attributes = mode.ObjAttributes,
+												.SecurityDescriptor =
+													mode.ObjAttributes & 0x00000002 ? __builtin_addressof(sec_attr) : nullptr,
+												.SecurityQualityOfService = nullptr};
+	void *handle;
+	::fast_io::win32::nt::io_status_block block;
+	auto const status{::fast_io::win32::nt::nt_create_file<zw>(
+		__builtin_addressof(handle), mode.DesiredAccess, __builtin_addressof(obj), __builtin_addressof(block), nullptr,
+		mode.FileAttributes, mode.ShareAccess, mode.CreateDisposition, mode.CreateOptions, nullptr, 0u)};
+	return {handle, status};
+}
+
+template <bool zw>
+struct nt_create_nothrow_callback
+{
+	nt_open_mode const &mode;
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+	[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+	[[msvc::forceinline]]
+#endif
+	auto operator()(void *directory_handle, ::fast_io::win32::nt::unicode_string *relative_path) const
+	{
+		return nt_create_file_nothrow_common<zw>(directory_handle, relative_path, mode); // get rid of this pointer
+	}
+};
+template <bool zw>
+inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
+							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
+{
+	constexpr nt_open_mode md{
+		.DesiredAccess = 0x00100000 | 0x0080 | 0x00010000, // SYNCHRONIZE | FILE_READ_ATTRIBUTES | DELETE
+		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
+	};
+
+	auto [handle, status]{nt_call_callback_without_directory_handle(oldpath_c_str, oldpath_size, nt_create_nothrow_callback<zw>{md})};
+
+	if (status)
+	{
+		if (status != 0xC0000034) [[unlikely]]
+		{
+			throw_nt_error(status);
+		}
+	}
+
+	// file exist
+
+	::fast_io::win32::nt::io_status_block isb;
+	::std::uint_least32_t attribute{};
+	if (handle)
+	{
+
+		::fast_io::win32::nt::file_basic_information fbi;
+		status = ::fast_io::win32::nt::nt_query_information_file<zw>(handle, __builtin_addressof(isb), __builtin_addressof(fbi),
+																	 static_cast<::std::uint_least32_t>(sizeof(fbi)),
+																	 ::fast_io::win32::nt::file_information_class::FileBasicInformation);
+		if (status) [[unlikely]]
+		{
+			throw_nt_error(status);
+		}
+		::fast_io::win32::nt::nt_close<zw>(handle);
+		attribute = fbi.FileAttributes;
+	}
+
+	nt_open_mode symbol_mode{
+		.DesiredAccess = 0x00100000 | 0x0100 | 0x00010000, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | DELETE
+		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000002,                   // FILE_OVERWRITE_IF
+		.CreateOptions = 0x00000020 | 0x00200000           // FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_REPARSE_POINT
+	};
+
+	if (status == 0xC0000034) // file not exit
+	{
+		symbol_mode.CreateOptions |= 0x00000040; // file
+	}
+	else
+	{
+		if ((attribute & 0x10) == 0x10)
+		{
+			symbol_mode.CreateOptions |= 0x00000001; // directory
+		}
+		else
+		{
+			symbol_mode.CreateOptions |= 0x00000040; // file
+		}
+	}
+	::std::size_t const cbReparseData{
+#if __has_builtin(__builtin_offsetof)
+#if defined(_MSC_VER) && !defined(__clang__)
+		__builtin_offsetof(SymbolicLinkReparseBuffer.PathBuffer, reparse_data_buffer)
+#else
+		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
+#endif
+#else
+		offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
+#endif
+		+
+		oldpath_size * sizeof(char16_t) * 2};
+
+	using reparse_data_buffer_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= reparse_data_buffer *;
+
+	::fast_io::details::local_operator_new_array_ptr<char> buffer(cbReparseData);
+
+	reparse_data_buffer_may_alias_ptr pReparseData{reinterpret_cast<reparse_data_buffer_may_alias_ptr>(buffer.get())};
+
+	auto pBufTail{reinterpret_cast<char16_t *>(pReparseData->SymbolicLinkReparseBuffer.PathBuffer)};
+
+	pReparseData->ReparseTag = 0xA000000CL; // IO_REPARSE_TAG_SYMLINK
+	pReparseData->ReparseDataLength = static_cast<::std::uint_least16_t>(cbReparseData -
+#if __has_builtin(__builtin_offsetof)
+#if defined(_MSC_VER) && !defined(__clang__)
+																		 __builtin_offsetof(GenericReparseBuffer, reparse_data_buffer)
+#else
+																		 __builtin_offsetof(reparse_data_buffer, GenericReparseBuffer)
+#endif
+#else
+																		 offsetof(reparse_data_buffer, GenericReparseBuffer)
+#endif
+	);
+	pReparseData->Reserved = 0;
+
+	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameOffset = 0;
+	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength = oldpath_size * sizeof(char16_t);
+	::fast_io::freestanding::non_overlapped_copy_n(oldpath_c_str, oldpath_size, pBufTail);
+
+	pReparseData->SymbolicLinkReparseBuffer.PrintNameOffset = pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength;
+	pReparseData->SymbolicLinkReparseBuffer.PrintNameLength = oldpath_size * sizeof(char16_t);
+	pBufTail += oldpath_size;
+	::fast_io::freestanding::non_overlapped_copy_n(oldpath_c_str, oldpath_size, pBufTail);
+
+	// Check whether it is the root directory: nt[0] == u'\\', is_c_upper(win32[0]) && (win32[1] == u':')
+	pReparseData->SymbolicLinkReparseBuffer.Flags =
+		static_cast<::std::uint_least32_t>(!(oldpath_c_str[0] == u'\\' ||
+											 (oldpath_size > 1 && ::fast_io::char_category::is_c_upper(oldpath_c_str[0]) && oldpath_c_str[1] == u':')));
+
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> new_file(
+		nt_call_callback(newdirhd, newpath_c_str, newpath_size, nt_create_callback<zw>{symbol_mode}));
+
+	status = ::fast_io::win32::nt::nt_fs_control_file<zw>(
+		new_file.native_handle(),
+		nullptr,
+		nullptr,
+		nullptr,
+		__builtin_addressof(isb),
+		589988,
+		pReparseData,
+		cbReparseData,
+		nullptr,
+		0);
+
+	if (status) [[unlikely]]
+	{
+		::fast_io::win32::nt::file_disposition_information DispInfo{1};
+		::fast_io::win32::nt::nt_set_information_file<zw>(new_file.native_handle(), __builtin_addressof(isb), __builtin_addressof(DispInfo),
+														  sizeof(DispInfo), ::fast_io::win32::nt::file_information_class::FileDispositionInformation);
+		throw_nt_error(status);
+	}
+}
+
 template <bool zw>
 inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 							 void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
 {
 	constexpr nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080 | 0x00010000, // SYNCHRONIZE | FILE_READ_ATTRIBUTES | DELETE
-		.FileAttributes = 0x80,                            // FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
@@ -156,7 +335,7 @@ inline constexpr nt_open_mode calculate_nt_link_flag(nt_at_flags flags) noexcept
 {
 	nt_open_mode mode{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
-		.FileAttributes = 0x80,               // FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,      /*OPEN_EXISTING	=>	FILE_OPEN*/
 	};
@@ -232,6 +411,16 @@ inline auto nt22_api_dispatcher(void *olddirhd, char16_t const *oldpath_c_str, :
 	}
 }
 
+template <bool zw, ::fast_io::details::posix_api_12 dsp, typename... Args>
+inline auto nt12_api_dispatcher(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
+								void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
+{
+	if constexpr (dsp == ::fast_io::details::posix_api_12::symlinkat)
+	{
+		nt_symlinkat_impl<zw>(oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size);
+	}
+}
+
 template <bool zw, ::fast_io::details::posix_api_1x dsp, typename... Args>
 inline auto nt1x_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::std::size_t path_size, Args... args)
 {
@@ -265,6 +454,18 @@ inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args
 		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...); });
 }
 
+template <nt_family family, ::fast_io::details::posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
+		  ::fast_io::constructible_to_os_c_str new_path_type>
+inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_path_type const &newpath)
+{
+	return nt_api_common(
+		oldpath,
+		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
+			return nt_api_common(
+				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) { return nt12_api_dispatcher<family == nt_family::zw, dsp>(oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size); });
+		});
+}
+
 template <nt_family family, ::fast_io::details::posix_api_22 dsp, typename oldpath_type, typename newpath_type, typename... Args>
 inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *newdirhd, newpath_type const &newpath, Args... args)
 {
@@ -283,42 +484,62 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 // 1x
 template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline void nt_family_mkdirat(nt_at_entry ent, path_type const &path, perms pm = static_cast<perms>(436))
+inline void nt_family_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::mkdirat>(ent.handle, path, pm);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void nt_mkdirat(nt_at_entry ent, path_type const &path, perms pm = static_cast<perms>(436))
+inline void nt_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void zw_mkdirat(nt_at_entry ent, path_type const &path, perms pm = static_cast<perms>(436))
+inline void zw_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::mkdirat>(ent.handle, path, pm);
 }
 
 template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline void nt_family_unlinkat(nt_at_entry ent, path_type const &path, nt_at_flags flags = {})
+inline void nt_family_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::unlinkat>(ent.handle, path, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void nt_unlinkat(nt_at_entry ent, path_type const &path, nt_at_flags flags = {})
+inline void nt_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::unlinkat>(ent.handle, path,
 																								  flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void zw_unlinkat(nt_at_entry ent, path_type const &path, nt_at_flags flags = {})
+inline void zw_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::unlinkat>(ent.handle, path,
 																								  flags);
+}
+
+// 12
+template <nt_family family, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+	requires(family == nt_family::nt || family == nt_family::zw)
+inline void nt_family_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with12<family, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void nt_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::nt, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void zw_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::zw, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
 }
 
 // 22
@@ -386,6 +607,12 @@ inline void native_fchownat(nt_at_entry, path_type &&, ::std::size_t, ::std::siz
 {
 	// windows does not use POSIX user group system. stub it and it is perfectly fine. But nt_fchownat, zw_fchownat will
 	// not be provided since they do not exist.
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void native_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::nt, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>

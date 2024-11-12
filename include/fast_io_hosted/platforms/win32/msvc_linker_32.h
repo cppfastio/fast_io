@@ -216,6 +216,8 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwFreeVirtualMemory@nt@win32@fast_io@@YAIPAXPAPAXPAII@Z=__imp_ZwFreeVirtualMemory")
 #pragma comment(linker,"/alternatename:__imp_?NtQueryVolumeInformationFile@nt@win32@fast_io@@YAIPIAXPIAUio_status_block@123@0IW4fs_information_class@123@@Z=__imp_NtQueryVolumeInformationFile")
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryVolumeInformationFile@nt@win32@fast_io@@YAIPIAXPIAUio_status_block@123@0IW4fs_information_class@123@@Z=__imp_ZwQueryVolumeInformationFile")
+#pragma comment(linker,"/alternatename:__imp_?NtFsControlFile@nt@win32@fast_io@@YAIPIAX0PIAP6AXPAXPAUio_status_block@123@I@_E12I1I1I@Z=__imp_NtFsControlFile")
+#pragma comment(linker,"/alternatename:__imp_?ZwFsControlFile@nt@win32@fast_io@@YAIPIAX0PIAP6AXPAXPAUio_status_block@123@I@_E12I1I1I@Z=__imp_ZwFsControlFile")
 //msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp___RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__RTtypeid")
