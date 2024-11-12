@@ -839,4 +839,20 @@ struct file_fs_volume_information
 	::std::uint_least8_t SupportsObjects;
 	char16_t VolumeLabel[1];
 };
+
+struct file_link_information
+{
+	::std::uint_least8_t ReplaceIfExists;
+	void* RootDirectory;
+	::std::uint_least32_t FileNameLength;
+	char16_t FileName[1];
+};
+
+struct file_rename_information
+{
+	::std::uint_least8_t ReplaceIfExists;
+	void* RootDirectory;
+	::std::uint_least32_t FileNameLength;
+	char16_t FileName[1];
+};
 } // namespace fast_io::win32::nt
