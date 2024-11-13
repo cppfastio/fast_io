@@ -473,7 +473,9 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	case posix_clock_id::monotonic_coarse:
 	case posix_clock_id::monotonic_raw:
 	case posix_clock_id::boottime:
-		//		return win32::details::win32_posix_clock_gettime_boottime_impl();
+#if 0
+		return win32::details::win32_posix_clock_gettime_boottime_impl();
+#endif
 		return win32::details::win32_posix_clock_gettime_boottime_xp_impl();
 	case posix_clock_id::process_cputime_id:
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<false>();

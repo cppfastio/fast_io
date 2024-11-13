@@ -1422,11 +1422,30 @@ public:
 
 namespace win32::nt::details
 {
-
 template <bool zw>
-inline unix_timestamp nt_get_process_times() noexcept
+inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
 {
+	::std::int_least64_t counter;
+	::std::int_least64_t freq;
 
+	auto status{::fast_io::win32::nt::nt_query_performance_counter<zw>(__builtin_addressof(counter), __builtin_addressof(freq))};
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	if (counter < 0 || freq < 0) [[unlikely]]
+	{
+		throw_nt_error(0xC0000003);
+	}
+
+	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
+	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq};
+	::std::uint_least64_t dv{ucounter / freq};
+	::std::uint_least64_t md{ucounter % freq};
+	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
+						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
 }
 
 template <bool zw>
@@ -1434,8 +1453,10 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 {
 	auto current_teb{::fast_io::win32::nt::nt_current_teb()};
 	::std::size_t uniprocess{reinterpret_cast<::std::size_t>(current_teb->ClientId.UniqueProcess)};
-	// use process_uni_id and process_time as pipe unique id
-	auto process_time{nt_get_process_times<zw>()};
+	// Win32 uses counters, because there is only one kernel32.dll called by the program.
+	// But fast_io is different. It will be linked statically and cause the counter to repeat.
+	// Therefore, boottime time is the most correct method
+	auto process_time{nt_posix_clock_gettime_boottime_impl<zw>()};
 
 	constexpr ::std::size_t size_of_buffer{
 		33 /*u"\\Device\\NamedPipe\\fast_io_pipes-"*/ +
@@ -1447,8 +1468,9 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	char16_t buffer[size_of_buffer];
 	::fast_io::u16obuffer_view buf_view{buffer, buffer + size_of_buffer};
 
+	// u"\\Device\\NamedPipe\\fast_io_pipes-0000000000006628-88644.4697977"
 	::fast_io::operations::print_freestanding<false>(buf_view, u"\\Device\\NamedPipe\\fast_io_pipes-", ::fast_io::mnp::hexupper<false, true>(uniprocess), u"-", process_time);
-	// to do
+	
 }
 } // namespace win32::nt::details
 

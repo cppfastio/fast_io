@@ -2720,4 +2720,70 @@ inline ::std::uint_least32_t nt_create_named_pipe_file(Args... args) noexcept
 	}
 }
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtQueryPerformanceCounter(::std::int_least64_t *, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtQueryPerformanceCounter@8")
+#else
+	__asm__("_NtQueryPerformanceCounter@8")
+#endif
+#else
+	__asm__("NtQueryPerformanceCounter")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwQueryPerformanceCounter(::std::int_least64_t *, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwQueryPerformanceCounter@8")
+#else
+	__asm__("_ZwQueryPerformanceCounter@8")
+#endif
+#else
+	__asm__("ZwQueryPerformanceCounter")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 2)
+inline ::std::uint_least32_t nt_query_performance_counter(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwQueryPerformanceCounter(args...);
+	}
+	else
+	{
+		return NtQueryPerformanceCounter(args...);
+	}
+}
+
 } // namespace fast_io::win32::nt
