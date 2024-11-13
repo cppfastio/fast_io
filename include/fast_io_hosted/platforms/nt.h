@@ -1447,7 +1447,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	constexpr auto str1_size{sizeof(str1) / sizeof(char16_t) - 1};
 	curr_buffer= ::fast_io::freestanding::non_overlapped_copy_n(str1, str1_size, curr_buffer);
 	curr_buffer = ::fast_io::pr_rsv_to_iterator_unchecked(curr_buffer, ::fast_io::mnp::hexupper<false, true>(uniprocess));
-	curr_buffer = ::fast_io::pr_rsv_to_iterator_unchecked(curr_buffer, u".");
+	*curr_buffer++ = u'.';
 	constexpr ::std::uint_least32_t uuid_buffer_sz{16};
 	::std::byte uuid_buffer[uuid_buffer_sz];
 	if (!::fast_io::win32::SystemFunction036(uuid_buffer, uuid_buffer_sz)) [[unlikely]]

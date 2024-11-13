@@ -352,7 +352,6 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
 }
 
 } // namespace win32::details
-#endif
 
 namespace win32::nt::details
 {
@@ -382,7 +381,8 @@ inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
 						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
 }
 
-}
+} // namespace win32::nt::details
+#endif
 
 #ifdef __MSDOS__
 namespace details
