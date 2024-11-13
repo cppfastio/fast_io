@@ -855,4 +855,40 @@ struct file_rename_information
 	::std::uint_least32_t FileNameLength;
 	char16_t FileName[1];
 };
+
+struct reparse_data_buffer
+{
+	::std::uint_least32_t ReparseTag;
+	::std::uint_least16_t ReparseDataLength;
+	::std::uint_least16_t Reserved;
+	union
+	{
+		struct
+		{
+			::std::uint_least16_t SubstituteNameOffset;
+			::std::uint_least16_t SubstituteNameLength;
+			::std::uint_least16_t PrintNameOffset;
+			::std::uint_least16_t PrintNameLength;
+			::std::uint_least32_t Flags;
+			char16_t PathBuffer[1];
+		} SymbolicLinkReparseBuffer;
+		struct
+		{
+			::std::uint_least16_t SubstituteNameOffset;
+			::std::uint_least16_t SubstituteNameLength;
+			::std::uint_least16_t PrintNameOffset;
+			::std::uint_least16_t PrintNameLength;
+			char16_t PathBuffer[1];
+		} MountPointReparseBuffer;
+		struct
+		{
+			::std::uint_least8_t DataBuffer[1];
+		} GenericReparseBuffer;
+	};
+};
+
+struct file_disposition_information
+{
+	::std::uint_least8_t DeleteFile;
+};
 } // namespace fast_io::win32::nt
