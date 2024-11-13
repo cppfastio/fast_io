@@ -231,11 +231,15 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		}
 	}
 	::std::size_t const cbReparseData{
-#if defined(__has_builtin) && __has_builtin(__builtin_offsetof)
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_offsetof)
 #if defined(_MSC_VER) && defined(__clang__)
 		__builtin_offsetof(SymbolicLinkReparseBuffer.PathBuffer, reparse_data_buffer)
 #else
 		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
+#endif
+#else
+		offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
 #endif
 #else
 		offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
@@ -257,11 +261,15 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 
 	pReparseData->ReparseTag = 0xA000000CL; // IO_REPARSE_TAG_SYMLINK
 	pReparseData->ReparseDataLength = static_cast<::std::uint_least16_t>(cbReparseData -
-#if defined(__has_builtin) && __has_builtin(__builtin_offsetof)
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_offsetof)
 #if defined(_MSC_VER) && defined(__clang__)
 																		 __builtin_offsetof(GenericReparseBuffer, reparse_data_buffer)
 #else
 																		 __builtin_offsetof(reparse_data_buffer, GenericReparseBuffer)
+#endif
+#else
+																		 offsetof(reparse_data_buffer, GenericReparseBuffer)
 #endif
 #else
 																		 offsetof(reparse_data_buffer, GenericReparseBuffer)
