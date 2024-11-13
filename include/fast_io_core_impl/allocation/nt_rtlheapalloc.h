@@ -286,7 +286,7 @@ inline teb *nt_current_teb() noexcept
 #elif defined(_M_IX86)
 	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(24));
 #else
-	return reinterpret_cast<::fast_io::win32::nt::teb *>(static_cast<::std::size_t>(::fast_io::intrinsics::msvc::arm::_MoveFromCoprocessor(15, 0, 13, 0, 2)));
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::_MoveFromCoprocessor(15, 0, 13, 0, 2));
 #endif
 #else
 	::fast_io::fast_terminate(); // Unsupported compiler
