@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "nt_preliminary_definition.h"
+
 namespace fast_io::win32::nt
 {
 
@@ -25,12 +27,7 @@ struct ansi_string
 	char *Buffer;
 };
 
-struct unicode_string
-{
-	::std::uint_least16_t Length;
-	::std::uint_least16_t MaximumLength;
-	char16_t *Buffer;
-};
+struct unicode_string; // defined in nt_preliminary_definition.h
 
 struct object_attributes
 {
@@ -399,11 +396,7 @@ struct rtl_drive_letter_curdir
 
 inline constexpr ::std::size_t rtl_max_drive_letters{32};
 
-struct client_id
-{
-	void *hprocess;
-	void *hthread;
-};
+struct client_id; // defined in nt_preliminary_definition.h
 
 enum class section_information_class
 {

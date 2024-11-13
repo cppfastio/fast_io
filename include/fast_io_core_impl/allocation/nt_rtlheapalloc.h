@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "../../fast_io_hosted/platforms/nt/nt_preliminary_definition.h"
+
 #if defined(_MSC_VER) && !defined(_KERNEL_MODE) && !defined(_WIN32_WINDOWS)
 #pragma comment(lib, "ntdll.lib")
 #endif
@@ -60,57 +62,6 @@ extern char unsigned
 #endif
 #endif
 		;
-
-struct peb_ldr_data;
-struct rtl_user_process_parameters;
-using pps_post_process_init_routine = void(
-#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-	__stdcall
-#elif (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-	__attribute__((__stdcall__))
-#endif
-		*)(void) noexcept;
-
-struct peb
-{
-	char unsigned InheritedAddressSpace;
-	char unsigned ReadImageFileExecOptions;
-	char unsigned BeingDebugged;
-	char unsigned SpareBool;
-	void *Mutant;
-	void *ImageBaseAddress;
-	peb_ldr_data *Ldr;
-	rtl_user_process_parameters *ProcessParameters; // PRTL_USER_PROCESS_PARAMETERS
-	void *SubSystemData;
-	void *ProcessHeap;
-	void *FastPebLock;
-	void *FastPebLockRoutine;
-	void *FastPebUnlockRoutine;
-	::std::uint_least32_t Reserved6;
-	void *Reserved7;
-	::std::uint_least32_t Reserved8;
-	::std::uint_least32_t AtlThunkSListPtr32;
-	void *Reserved9[45];
-	char unsigned Reserved10[96];
-	pps_post_process_init_routine PostProcessInitRoutine;
-	char unsigned Reserved11[128];
-	void *Reserved12[1];
-	::std::uint_least32_t SessionId;
-};
-
-struct teb
-{
-	void *Reserved1[12];
-	peb *ProcessEnvironmentBlock;
-	void *Reserved2[399];
-	char unsigned Reserved3[1952];
-	void *TlsSlots[64];
-	char unsigned Reserved4[8];
-	void *Reserved5[26];
-	void *ReservedForOle;
-	void *Reserved6[4];
-	void *TlsExpansionSlots;
-};
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -224,7 +175,16 @@ inline peb *nt_get_current_peb() noexcept
 		return ::fast_io::win32::nt::RtlGetCurrentPeb();
 	}
 #else
-	return ::fast_io::win32::nt::RtlGetCurrentPeb();
+	if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least32_t))
+	{
+		teb *pteb;
+		__asm__("{MRC p15, 0, %0, c13, c0, 2}" : "=r"(pteb));
+		return pteb->ProcessEnvironmentBlock;
+	}
+	else
+	{
+		return ::fast_io::win32::nt::RtlGetCurrentPeb();
+	}
 #endif
 #elif defined(_MSC_VER)
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -234,7 +194,7 @@ inline peb *nt_get_current_peb() noexcept
 #elif defined(_M_IX86)
 	return reinterpret_cast<::fast_io::win32::nt::peb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(0x30));
 #else
-	return ::fast_io::win32::nt::RtlGetCurrentPeb();
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::_MoveFromCoprocessor(15, 0, 13, 0, 2))->ProcessEnvironmentBlock;
 #endif
 #else
 	return ::fast_io::win32::nt::RtlGetCurrentPeb();
