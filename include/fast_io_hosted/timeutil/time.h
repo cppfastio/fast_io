@@ -354,6 +354,36 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
 } // namespace win32::details
 #endif
 
+namespace win32::nt::details
+{
+template <bool zw>
+inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
+{
+	::std::int_least64_t counter;
+	::std::int_least64_t freq;
+
+	auto status{::fast_io::win32::nt::nt_query_performance_counter<zw>(__builtin_addressof(counter), __builtin_addressof(freq))};
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	if (counter < 0 || freq < 0) [[unlikely]]
+	{
+		throw_nt_error(0xC0000003);
+	}
+
+	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
+	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq};
+	::std::uint_least64_t dv{ucounter / freq};
+	::std::uint_least64_t md{ucounter % freq};
+	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
+						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
+}
+
+}
+
 #ifdef __MSDOS__
 namespace details
 {
@@ -473,10 +503,16 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	case posix_clock_id::monotonic_coarse:
 	case posix_clock_id::monotonic_raw:
 	case posix_clock_id::boottime:
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT > 0x500) && !defined(_WIN32_WINDOWS)
+		return win32::nt::details::nt_posix_clock_gettime_boottime_impl<false>();
+#else
 #if 0
+		// Gets the current unbiased interrupt-time count, in units of 100 nanoseconds. 
+		// The unbiased interrupt-time count does not include time the system spends in sleep or hibernation.
 		return win32::details::win32_posix_clock_gettime_boottime_impl();
 #endif
 		return win32::details::win32_posix_clock_gettime_boottime_xp_impl();
+#endif 
 	case posix_clock_id::process_cputime_id:
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<false>();
 	case posix_clock_id::thread_cputime_id:

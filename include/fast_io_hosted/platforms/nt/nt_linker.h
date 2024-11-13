@@ -2664,7 +2664,7 @@ extern ::std::uint_least32_t
 #endif
 	NtCreateNamedPipeFile(void **__restrict, ::std::uint_least32_t, object_attributes *__restrict, io_status_block *__restrict,
 						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t,
-						  ::std::uint_least8_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least64_t*) noexcept
+						  ::std::uint_least8_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::int_least64_t*) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)
@@ -2692,7 +2692,7 @@ extern ::std::uint_least32_t
 #endif
 	ZwCreateNamedPipeFile(void **__restrict, ::std::uint_least32_t, object_attributes *__restrict, io_status_block *__restrict,
 						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t,
-						  ::std::uint_least8_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least64_t *) noexcept
+						  ::std::uint_least8_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::int_least64_t *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

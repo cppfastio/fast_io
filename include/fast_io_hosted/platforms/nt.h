@@ -1422,31 +1422,6 @@ public:
 
 namespace win32::nt::details
 {
-template <bool zw>
-inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
-{
-	::std::int_least64_t counter;
-	::std::int_least64_t freq;
-
-	auto status{::fast_io::win32::nt::nt_query_performance_counter<zw>(__builtin_addressof(counter), __builtin_addressof(freq))};
-
-	if (status) [[unlikely]]
-	{
-		throw_nt_error(status);
-	}
-
-	if (counter < 0 || freq < 0) [[unlikely]]
-	{
-		throw_nt_error(0xC0000003);
-	}
-
-	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
-	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq};
-	::std::uint_least64_t dv{ucounter / freq};
-	::std::uint_least64_t md{ucounter % freq};
-	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
-						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
-}
 
 template <bool zw>
 inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
@@ -1459,18 +1434,78 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	auto process_time{nt_posix_clock_gettime_boottime_impl<zw>()};
 
 	constexpr ::std::size_t size_of_buffer{
-		33 /*u"\\Device\\NamedPipe\\fast_io_pipes-"*/ +
-		::fast_io::pr_rsv_size<char16_t, decltype(::fast_io::mnp::hexupper<false, true>(uniprocess))> + 
-		1 /*u"-"*/ +
-		::fast_io::pr_rsv_size<char16_t, decltype(process_time)>
+		33 /* u"\\Device\\NamedPipe\\fast_io_pipes." */ +
+		::fast_io::pr_rsv_size<char16_t, decltype(::fast_io::mnp::hexupper<false, true>(uniprocess))> +
+		1 /* u"." */ +
+		36 /* uuid */ +
+		1 /* u'\0'*/
 	};
 
 	char16_t buffer[size_of_buffer];
-	::fast_io::u16obuffer_view buf_view{buffer, buffer + size_of_buffer};
+	auto curr_buffer{buffer};
+	constexpr decltype(auto) str1{u"\\Device\\NamedPipe\\fast_io_pipes."};
+	constexpr auto str1_size{sizeof(str1) / sizeof(char16_t) - 1};
+	curr_buffer= ::fast_io::freestanding::non_overlapped_copy_n(str1, str1_size, curr_buffer);
+	curr_buffer = ::fast_io::pr_rsv_to_iterator_unchecked(curr_buffer, ::fast_io::mnp::hexupper<false, true>(uniprocess));
+	curr_buffer = ::fast_io::pr_rsv_to_iterator_unchecked(curr_buffer, u".");
+	constexpr ::std::uint_least32_t uuid_buffer_sz{16};
+	::std::byte uuid_buffer[uuid_buffer_sz];
+	if (!::fast_io::win32::SystemFunction036(uuid_buffer, uuid_buffer_sz)) [[unlikely]]
+	{
+		throw_win32_error();
+	}
+	curr_buffer = ::fast_io::details::pr_rsv_uuid<true>(curr_buffer, uuid_buffer);
+	*curr_buffer++ = u'\0';
 
-	// u"\\Device\\NamedPipe\\fast_io_pipes-0000000000006628-88644.4697977"
-	::fast_io::operations::print_freestanding<false>(buf_view, u"\\Device\\NamedPipe\\fast_io_pipes-", ::fast_io::mnp::hexupper<false, true>(uniprocess), u"-", process_time);
+	auto buffer_size{static_cast<::std::size_t>(curr_buffer - buffer)};
+
+	::fast_io::win32::nt::io_status_block isb;
+	::fast_io::win32::nt::unicode_string us{
+		.Length = static_cast<::std::uint_least16_t>(buffer_size * sizeof(char16_t)),
+		.MaximumLength = static_cast<::std::uint_least16_t>(buffer_size * sizeof(char16_t)),
+		.Buffer = buffer};
+	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
+												.RootDirectory = reinterpret_cast<void *>(-3),
+												.ObjectName = __builtin_addressof(us),
+												.Attributes = 0x00000040L/*OBJ_CASE_INSENSITIVE*/,
+												.SecurityDescriptor = nullptr,
+												.SecurityQualityOfService = nullptr};
+
+	::std::int_least64_t DefaultTimeout{-1200000000};
+
+	void *ReadPipeHandle;
+	auto status{::fast_io::win32::nt::nt_create_named_pipe_file<zw>(__builtin_addressof(ReadPipeHandle),
+																	0x80000000L | 0x0100 | 0x00100000L /*GENERIC_READ | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE*/,
+																	__builtin_addressof(obj),
+																	__builtin_addressof(isb),
+																	0x01 | 0x04 /*FILE_SHARE_READ | FILE_SHARE_WRITE*/,
+																	0x00000002 /*FILE_CREATE*/,
+																	0x00000020 /*FILE_SYNCHRONOUS_IO_NONALERT*/,
+																	0x00000000 /*FILE_PIPE_BYTE_STREAM_TYPE*/,
+																	0x00000000 /*FILE_PIPE_BYTE_STREAM_MODE*/,
+																	0x00000000 /*FILE_PIPE_QUEUE_OPERATION*/,
+																	1,
+																	0x1000 /*buffer size*/,
+																	0x1000 /*buffer size*/,
+																	__builtin_addressof(DefaultTimeout))};
+
+	if (status)
+	{
+		::fast_io::throw_nt_error(status);
+	}
+
+	void *WritePipeHandle;
+	status = ::fast_io::win32::nt::nt_create_file<zw>(
+		__builtin_addressof(WritePipeHandle), 0x120116 /*FILE_GENERIC_WRITE*/, __builtin_addressof(obj), __builtin_addressof(isb), nullptr,
+		0x80 /*FILE_ATTRIBUTE_NORMAL*/, 1 /*FILE_SHARE_READ*/, 0x00000003 /*FILE_OPEN_IF*/, 0x00000020 | 0x00000040 /*FILE_SYNCHRONOUS_IO_NONALERT | FILE_NON_DIRECTORY_FILE*/, nullptr, 0u);
 	
+	if (status)
+	{
+		::fast_io::throw_nt_error(status);
+	}
+
+	*hReadPipe = ReadPipeHandle;
+	*hWritePipe = WritePipeHandle;
 }
 } // namespace win32::nt::details
 
@@ -1482,7 +1517,7 @@ public:
 	basic_nt_family_file<family, ch_type> pipes[2];
 	basic_nt_family_pipe()
 	{
-		win32::nt::details::nt_create_pipe(__builtin_addressof(pipes[0].handle), __builtin_addressof(pipes[1].handle));
+		win32::nt::details::nt_create_pipe<family == nt_family::zw>(__builtin_addressof(pipes[0].handle), __builtin_addressof(pipes[1].handle));
 	}
 	constexpr auto &in() noexcept
 	{
