@@ -253,13 +253,13 @@ inline teb *nt_current_teb() noexcept
 	if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least64_t))
 	{
 		teb *pteb;
-		__asm__("{movq\t%%gs:0x48, %0|mov\t%0, %%gs:[0x48]}" : "=r"(pteb));
+		__asm__("{movq\t%%gs:0x30, %0|mov\t%0, %%gs:[0x30]}" : "=r"(pteb));
 		return pteb;
 	}
 	else if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least32_t))
 	{
 		teb *pteb;
-		__asm__("{movl\t%%fs:0x14, %0|mov\t%0, %%fs:[0x14]}" : "=r"(pteb));
+		__asm__("{movl\t%%fs:0x18, %0|mov\t%0, %%fs:[0x18]}" : "=r"(pteb));
 		return pteb;
 	}
 	else
@@ -282,9 +282,9 @@ inline teb *nt_current_teb() noexcept
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::__getReg(18));
 #elif defined(_M_AMD64)
-	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readgsqword(48));
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readgsqword(0x30));
 #elif defined(_M_IX86)
-	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(24));
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(0x18));
 #else
 	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::_MoveFromCoprocessor(15, 0, 13, 0, 2));
 #endif
