@@ -230,22 +230,9 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 			symbol_mode.CreateOptions |= 0x00000040; // file
 		}
 	}
-	::std::size_t const cbReparseData{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_offsetof)
-#if defined(_MSC_VER) && defined(__clang__)
-		__builtin_offsetof(SymbolicLinkReparseBuffer.PathBuffer, reparse_data_buffer)
-#else
-		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
-#endif
-#else
-		offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
-#endif
-#else
-		offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)
-#endif
-		+
-		oldpath_real_size * sizeof(char16_t) * 2};
+	constexpr ::std::size_t pathbufferoffset{
+		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)};
+	::std::size_t const cbReparseData{pathbufferoffset + oldpath_real_size * sizeof(char16_t) * 2};
 
 	using reparse_data_buffer_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -260,21 +247,8 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	auto pBufTail{reinterpret_cast<char16_t *>(pReparseData->SymbolicLinkReparseBuffer.PathBuffer)};
 
 	pReparseData->ReparseTag = 0xA000000CL; // IO_REPARSE_TAG_SYMLINK
-	pReparseData->ReparseDataLength = static_cast<::std::uint_least16_t>(cbReparseData -
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_offsetof)
-#if defined(_MSC_VER) && defined(__clang__)
-																		 __builtin_offsetof(GenericReparseBuffer, reparse_data_buffer)
-#else
-																		 __builtin_offsetof(reparse_data_buffer, GenericReparseBuffer)
-#endif
-#else
-																		 offsetof(reparse_data_buffer, GenericReparseBuffer)
-#endif
-#else
-																		 offsetof(reparse_data_buffer, GenericReparseBuffer)
-#endif
-	);
+	constexpr ::std::size_t reparsebufferoffset{__builtin_offsetof(reparse_data_buffer, GenericReparseBuffer)};
+	pReparseData->ReparseDataLength = static_cast<::std::uint_least16_t>(cbReparseData - reparsebufferoffset);
 	pReparseData->Reserved = 0;
 
 	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameOffset = 0;
@@ -383,11 +357,11 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 
 	if ((flags & nt_at_flags::empty_path) == nt_at_flags::empty_path && oldpath_size == 0)
 	{
-		file = ::fast_io::basic_nt_family_io_observer < zw ? nt_family::zw : nt_family::nt, char > {olddirhd};
+		file = ::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char>{olddirhd};
 	}
 	else
 	{
-		basic_file = ::fast_io::basic_nt_family_file < zw ? nt_family::zw : nt_family::nt, char > {nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
+		basic_file = ::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char>{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
 		file = basic_file;
 	}
 
@@ -478,7 +452,7 @@ template <nt_family family, ::fast_io::details::posix_api_1x dsp, typename path_
 inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args)
 {
 	return nt_api_common(
-		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...); });
+		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher < family == nt_family::zw, dsp > (dir_handle, path_c_str, path_size, args...); });
 }
 
 template <nt_family family, ::fast_io::details::posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
@@ -489,7 +463,7 @@ inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_pat
 		oldpath,
 		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 			return nt_api_common(
-				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) { return nt12_api_dispatcher<family == nt_family::zw, dsp>(oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size); });
+				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) { return nt12_api_dispatcher < family == nt_family::zw, dsp > (oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size); });
 		});
 }
 
@@ -500,8 +474,8 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 							 return nt_api_common(newpath,
 												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-													  return nt22_api_dispatcher<family == nt_family::zw, dsp>(olddirhd, oldpath_c_str, oldpath_size, newdirhd,
-																											   newpath_c_str, newpath_size, args...);
+													  return nt22_api_dispatcher < family == nt_family::zw, dsp > (olddirhd, oldpath_c_str, oldpath_size, newdirhd,
+																												   newpath_c_str, newpath_size, args...);
 												  });
 						 });
 }
