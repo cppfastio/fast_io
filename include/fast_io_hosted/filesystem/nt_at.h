@@ -166,7 +166,10 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	{
 		olddirhd = reinterpret_cast<void *>(::std::ptrdiff_t(-3));
 	}
+
 	auto [handle, status]{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_nothrow_callback<zw>{md})};
+	
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> check_file{};
 
 	if (status)
 	{
@@ -174,6 +177,10 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		{
 			throw_nt_error(status);
 		}
+	}
+	else
+	{
+		check_file.handle = handle;
 	}
 
 	// use nt path in root
@@ -203,7 +210,9 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		{
 			throw_nt_error(status);
 		}
-		::fast_io::win32::nt::nt_close<zw>(handle);
+
+		check_file.close();
+
 		attribute = fbi.FileAttributes;
 	}
 
