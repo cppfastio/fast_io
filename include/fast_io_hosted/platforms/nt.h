@@ -1422,19 +1422,32 @@ public:
 
 namespace win32::nt::details
 {
+
+template <bool zw>
+inline unix_timestamp nt_get_process_times() noexcept
+{
+
+}
+
 template <bool zw>
 inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 {
-	constexpr ::std::size_t size_of_buffer{64};
+	auto current_teb{::fast_io::win32::nt::nt_current_teb()};
+	::std::size_t uniprocess{reinterpret_cast<::std::size_t>(current_teb->ClientId.UniqueProcess)};
+	// use process_uni_id and process_time as pipe unique id
+	auto process_time{nt_get_process_times<zw>()};
+
+	constexpr ::std::size_t size_of_buffer{
+		33 /*u"\\Device\\NamedPipe\\fast_io_pipes-"*/ +
+		::fast_io::pr_rsv_size<char16_t, decltype(::fast_io::mnp::hexupper<false, true>(uniprocess))> + 
+		1 /*u"-"*/ +
+		::fast_io::pr_rsv_size<char16_t, decltype(process_time)>
+	};
+
 	char16_t buffer[size_of_buffer];
 	::fast_io::u16obuffer_view buf_view{buffer, buffer + size_of_buffer};
 
-	auto current_teb{::fast_io::win32::nt::nt_current_teb()};
-	::std::size_t uniprocess{reinterpret_cast<::std::size_t>(current_teb->ClientId.UniqueProcess)};
-	::std::int_least32_t PipeId{};
-
-	::fast_io::operations::print_freestanding<false>(buf_view, u"\\Device\\NamedPipe\\Win32Pipes.", ::fast_io::mnp::hexupper<false, true>(uniprocess), u".", ::fast_io::mnp::hex<false, true>(PipeId));
-
+	::fast_io::operations::print_freestanding<false>(buf_view, u"\\Device\\NamedPipe\\fast_io_pipes-", ::fast_io::mnp::hexupper<false, true>(uniprocess), u"-", process_time);
 	// to do
 }
 } // namespace win32::nt::details
