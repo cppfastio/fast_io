@@ -199,11 +199,12 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		status = ::fast_io::win32::nt::nt_query_information_file<zw>(handle, __builtin_addressof(isb), __builtin_addressof(fbi),
 																	 static_cast<::std::uint_least32_t>(sizeof(fbi)),
 																	 ::fast_io::win32::nt::file_information_class::FileBasicInformation);
+		::fast_io::win32::nt::nt_close<zw>(handle);
+        handle = nullptr;
 		if (status) [[unlikely]]
 		{
 			throw_nt_error(status);
 		}
-		::fast_io::win32::nt::nt_close<zw>(handle);
 		attribute = fbi.FileAttributes;
 	}
 
