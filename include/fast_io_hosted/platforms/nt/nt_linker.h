@@ -2650,5 +2650,74 @@ inline ::std::uint_least32_t nt_fs_control_file(Args... args) noexcept
 	}
 }
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtCreateNamedPipeFile(void **__restrict, ::std::uint_least32_t, object_attributes *__restrict, io_status_block *__restrict,
+						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t,
+						  ::std::uint_least8_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least64_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtCreateNamedPipeFile@56")
+#else
+	__asm__("_NtCreateNamedPipeFile@56")
+#endif
+#else
+	__asm__("NtCreateNamedPipeFile")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwCreateNamedPipeFile(void **__restrict, ::std::uint_least32_t, object_attributes *__restrict, io_status_block *__restrict,
+						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t,
+						  ::std::uint_least8_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwCreateNamedPipeFile@56")
+#else
+	__asm__("_ZwCreateNamedPipeFile@56")
+#endif
+#else
+	__asm__("ZwCreateNamedPipeFile")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 14)
+inline ::std::uint_least32_t nt_create_named_pipe_file(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwCreateNamedPipeFile(args...);
+	}
+	else
+	{
+		return NtCreateNamedPipeFile(args...);
+	}
+}
 
 } // namespace fast_io::win32::nt

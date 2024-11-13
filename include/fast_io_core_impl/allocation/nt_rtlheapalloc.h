@@ -228,7 +228,7 @@ inline peb *nt_get_current_peb() noexcept
 #endif
 #elif defined(_MSC_VER)
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::__getReg(18))->ProcessEnvironmentBlock;
+	return reinterpret_cast<::fast_io::win32::nt::peb *>(::fast_io::intrinsics::msvc::arm::__getReg(18))->ProcessEnvironmentBlock;
 #elif defined(_M_AMD64)
 	return reinterpret_cast<::fast_io::win32::nt::peb *>(::fast_io::intrinsics::msvc::x86::__readgsqword(0x60));
 #elif defined(_M_IX86)
@@ -238,6 +238,49 @@ inline peb *nt_get_current_peb() noexcept
 #endif
 #else
 	return ::fast_io::win32::nt::RtlGetCurrentPeb();
+#endif
+}
+
+#if __has_cpp_attribute(__gnu__::__const__)
+[[__gnu__::__const__]]
+#endif
+inline teb *nt_current_teb() noexcept
+{
+#if (defined(__GNUC__) || defined(__clang__))
+#if defined(__aarch64__) || defined(__arm64ec__)
+	return ::fast_io::win32::nt::fast_io_nt_current_teb;
+#elif defined(__i386__) || defined(__x86_64__)
+	if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least64_t))
+	{
+		teb *pteb;
+		__asm__("{movq\t%%gs:0x48, %0|mov\t%0, %%gs:[0x48]}" : "=r"(pteb));
+		return pteb;
+	}
+	else if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least32_t))
+	{
+		teb *pteb;
+		__asm__("{movl\t%%fs:0x48, %0|mov\t%0, %%fs:[0x48]}" : "=r"(pteb));
+		return pteb;
+	}
+	else
+	{
+		::fast_io::fast_terminate();
+	}
+#else
+	::fast_io::fast_terminate();
+#endif
+#elif defined(_MSC_VER)
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::__getReg(18));
+#elif defined(_M_AMD64)
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readgsqword(48));
+#elif defined(_M_IX86)
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(24));
+#else
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::_MoveFromCoprocessor(15, 0, 13, 0, 2));
+#endif
+#else
+	::fast_io::fast_terminate();
 #endif
 }
 

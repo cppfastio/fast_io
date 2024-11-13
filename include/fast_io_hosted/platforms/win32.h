@@ -544,14 +544,6 @@ inline void *win32_create_file_at_fs_dirent_impl(void *directory_handle, char_ty
 }
 } // namespace details
 
-struct win32_io_redirection
-{
-	void *win32_pipe_in_handle{};
-	void *win32_pipe_out_handle{};
-	void *win32_handle{};
-	bool is_dev_null{};
-};
-
 struct win32_io_redirection_std : win32_io_redirection
 {
 	constexpr win32_io_redirection_std() noexcept = default;
@@ -1696,15 +1688,15 @@ public:
 	basic_win32_family_pipe()
 	{
 		win32::security_attributes sec_attr{sizeof(win32::security_attributes), nullptr, true};
-		if (!::fast_io::win32::CreatePipe(__builtin_addressof(pipes.front().handle),
-										  __builtin_addressof(pipes.back().handle), __builtin_addressof(sec_attr), 0))
+		if (!::fast_io::win32::CreatePipe(__builtin_addressof(pipes[0].handle),
+										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0))
 		{
 			throw_win32_error();
 		}
 	}
 	constexpr auto &in() noexcept
 	{
-		return *pipes;
+		return pipes[0];
 	}
 	constexpr auto &out() noexcept
 	{
@@ -1712,13 +1704,11 @@ public:
 	}
 };
 
-#if 0
-template<win32_family family,::std::integral ch_type>
-inline ::fast_io::freestanding::array<void*,2> redirect(basic_win32_family_pipe<family,ch_type>& hd)
+template <win32_family family, ::std::integral ch_type>
+inline constexpr win32_io_redirection redirect(basic_win32_family_pipe<family, ch_type> &hd)
 {
-	return {hd.in().handle,hd.out().handle};
+	return {.win32_pipe_in_handle = hd.in().handle, .win32_pipe_out_handle = hd.out().handle};
 }
-#endif
 
 template <win32_family family, ::std::integral ch_type>
 inline void clear_screen(basic_win32_family_io_observer<family, ch_type> wiob)
