@@ -259,15 +259,24 @@ inline teb *nt_current_teb() noexcept
 	else if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least32_t))
 	{
 		teb *pteb;
-		__asm__("{movl\t%%fs:0x48, %0|mov\t%0, %%fs:[0x48]}" : "=r"(pteb));
+		__asm__("{movl\t%%fs:0x14, %0|mov\t%0, %%fs:[0x14]}" : "=r"(pteb));
 		return pteb;
 	}
 	else
 	{
-		::fast_io::fast_terminate();
+		::fast_io::fast_terminate(); // Unsupported architecture
 	}
 #else
-	::fast_io::fast_terminate();
+	if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least32_t))
+	{
+		teb *pteb;
+		__asm__("{MRC p15, 0, %0, c13, c0, 2}" : "=r"(pteb));
+		return pteb;
+	}
+	else
+	{
+		::fast_io::fast_terminate(); // Unsupported architecture
+	}
 #endif
 #elif defined(_MSC_VER)
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
@@ -277,10 +286,10 @@ inline teb *nt_current_teb() noexcept
 #elif defined(_M_IX86)
 	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::x86::__readfsdword(24));
 #else
-	return reinterpret_cast<::fast_io::win32::nt::teb *>(::fast_io::intrinsics::msvc::arm::_MoveFromCoprocessor(15, 0, 13, 0, 2));
+	return reinterpret_cast<::fast_io::win32::nt::teb *>(static_cast<::std::size_t>(::fast_io::intrinsics::msvc::arm::_MoveFromCoprocessor(15, 0, 13, 0, 2)));
 #endif
 #else
-	::fast_io::fast_terminate();
+	::fast_io::fast_terminate(); // Unsupported compiler
 #endif
 }
 
