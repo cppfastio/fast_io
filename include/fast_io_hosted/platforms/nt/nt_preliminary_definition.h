@@ -451,7 +451,7 @@ inline peb *nt_get_current_peb() noexcept
 	if constexpr (sizeof(::std::size_t) == sizeof(::std::uint_least32_t))
 	{
 		teb *pteb;
-		__asm__("{MRC p15, 0, %0, c13, c0, 2}" : "=r"(pteb));
+		__asm__("MRC p15, 0, %0, c13, c0, 2" : "=r"(pteb));
 		return pteb->ProcessEnvironmentBlock;
 	}
 	else
