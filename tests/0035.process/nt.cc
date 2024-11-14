@@ -1,6 +1,6 @@
 #include <fast_io.h>
 
-int main(int argc, char **argv)
+int main()
 {
 
 	::fast_io::nt_process p{u8"test.exe", {}, {}, {}};
