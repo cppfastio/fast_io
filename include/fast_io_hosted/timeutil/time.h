@@ -285,7 +285,7 @@ inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 	return static_cast<unix_timestamp>(to_win32_timestamp(ftm));
 }
 
-inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
+inline unix_timestamp win32_posix_clock_gettime_uptime_impl()
 {
 	::std::uint_least64_t ftm{};
 	if (!::fast_io::win32::QueryUnbiasedInterruptTime(__builtin_addressof(ftm)))
@@ -330,7 +330,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
 }
 
-inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
+inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 {
 	::std::uint_least64_t freq{
 		static_cast<::std::uint_least64_t>(::fast_io::details::win32_query_performance_frequency())};
@@ -506,12 +506,7 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 #if (!defined(_WIN32_WINNT) || _WIN32_WINNT > 0x500) && !defined(_WIN32_WINDOWS)
 		return win32::nt::details::nt_posix_clock_gettime_boottime_impl<false>();
 #else
-#if 0
-		// Gets the current unbiased interrupt-time count, in units of 100 nanoseconds. 
-		// The unbiased interrupt-time count does not include time the system spends in sleep or hibernation.
 		return win32::details::win32_posix_clock_gettime_boottime_impl();
-#endif
-		return win32::details::win32_posix_clock_gettime_boottime_xp_impl();
 #endif 
 	case posix_clock_id::process_cputime_id:
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<false>();

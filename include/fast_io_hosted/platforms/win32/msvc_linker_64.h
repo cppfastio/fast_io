@@ -217,8 +217,8 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryVolumeInformationFile@nt@win32@fast_io@@YAIPEIAXPEIAUio_status_block@123@0IW4fs_information_class@123@@Z=__imp_ZwQueryVolumeInformationFile")
 #pragma comment(linker,"/alternatename:__imp_?NtFsControlFile@nt@win32@fast_io@@YAIPEIAX0PEIAP6AXPEAXPEAUio_status_block@123@I@_E12I1I1I@Z=__imp_NtFsControlFile")
 #pragma comment(linker,"/alternatename:__imp_?ZwFsControlFile@nt@win32@fast_io@@YAIPEIAX0PEIAP6AXPEAXPEAUio_status_block@123@I@_E12I1I1I@Z=__imp_ZwFsControlFile")
-#pragma comment(linker,"/alternatename:__imp_?NtCreateNamedPipeFile@nt@win32@fast_io@@YAIPEIAPEAXIPEIAUobject_attributes@123@PEIAUio_status_block@123@IIIEEEIIIPEA_J@Z=__imp_NtCreateNamedPipeFile")
-#pragma comment(linker,"/alternatename:__imp_?ZwCreateNamedPipeFile@nt@win32@fast_io@@YAIPEIAPEAXIPEIAUobject_attributes@123@PEIAUio_status_block@123@IIIEEEIIIPEA_J@Z=__imp_ZwCreateNamedPipeFile")
+#pragma comment(linker,"/alternatename:__imp_?NtCreateNamedPipeFile@nt@win32@fast_io@@YAIPEIAPEAXIPEIAUobject_attributes@123@PEIAUio_status_block@123@IIIIIIIIIPEA_J@Z=__imp_NtCreateNamedPipeFile")
+#pragma comment(linker,"/alternatename:__imp_?ZwCreateNamedPipeFile@nt@win32@fast_io@@YAIPEIAPEAXIPEIAUobject_attributes@123@PEIAUio_status_block@123@IIIIIIIIIPEA_J@Z=__imp_ZwCreateNamedPipeFile")
 #pragma comment(linker,"/alternatename:__imp_?NtQueryPerformanceCounter@nt@win32@fast_io@@YAIPEA_J0@Z=__imp_NtQueryPerformanceCounter")
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryPerformanceCounter@nt@win32@fast_io@@YAIPEA_J0@Z=__imp_ZwQueryPerformanceCounter")
 // msvc
