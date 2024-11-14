@@ -285,7 +285,7 @@ inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 	return static_cast<unix_timestamp>(to_win32_timestamp(ftm));
 }
 
-inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
+inline unix_timestamp win32_posix_clock_gettime_uptime_impl()
 {
 	::std::uint_least64_t ftm{};
 	if (!::fast_io::win32::QueryUnbiasedInterruptTime(__builtin_addressof(ftm)))
@@ -330,7 +330,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
 }
 
-inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
+inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 {
 	::std::uint_least64_t freq{
 		static_cast<::std::uint_least64_t>(::fast_io::details::win32_query_performance_frequency())};
@@ -352,6 +352,36 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
 }
 
 } // namespace win32::details
+
+namespace win32::nt::details
+{
+template <bool zw>
+inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
+{
+	::std::int_least64_t counter;
+	::std::int_least64_t freq;
+
+	auto status{::fast_io::win32::nt::nt_query_performance_counter<zw>(__builtin_addressof(counter), __builtin_addressof(freq))};
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	if (counter < 0 || freq < 0) [[unlikely]]
+	{
+		throw_nt_error(0xC0000003);
+	}
+
+	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
+	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq};
+	::std::uint_least64_t dv{ucounter / freq};
+	::std::uint_least64_t md{ucounter % freq};
+	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
+						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
+}
+
+} // namespace win32::nt::details
 #endif
 
 #ifdef __MSDOS__
@@ -473,8 +503,11 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	case posix_clock_id::monotonic_coarse:
 	case posix_clock_id::monotonic_raw:
 	case posix_clock_id::boottime:
-		//		return win32::details::win32_posix_clock_gettime_boottime_impl();
-		return win32::details::win32_posix_clock_gettime_boottime_xp_impl();
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT > 0x500) && !defined(_WIN32_WINDOWS)
+		return win32::nt::details::nt_posix_clock_gettime_boottime_impl<false>();
+#else
+		return win32::details::win32_posix_clock_gettime_boottime_impl();
+#endif 
 	case posix_clock_id::process_cputime_id:
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<false>();
 	case posix_clock_id::thread_cputime_id:

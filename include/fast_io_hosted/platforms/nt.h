@@ -74,7 +74,7 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	nt_open_mode mode;
 
 	constexpr auto default_write_attribute{0x00020000L /*READ_CONTROL*/ | 0x0002 /*FILE_WRITE_DATA*/ | 0x0004 /*FILE_APPEND_DATA*/};
-	constexpr auto default_read_attribute{0x00020000L/*READ_CONTROL*/ | 0x0001 /*FILE_READ_DATA*/};
+	constexpr auto default_read_attribute{0x00020000L /*READ_CONTROL*/ | 0x0001 /*FILE_READ_DATA*/};
 
 	mode.DesiredAccess |= 0x00100000L /*SYNCHRONIZE*/ | 0x0080 /*FILE_READ_ATTRIBUTES*/;
 
@@ -97,12 +97,12 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	}
 	else if ((value & open_mode::out) != open_mode::none)
 	{
-		mode.DesiredAccess |= default_write_attribute; 
+		mode.DesiredAccess |= default_write_attribute;
 		generic_write = true;
 	}
 	if (((value & open_mode::in) != open_mode::none) || ((value & open_mode::app) != open_mode::none))
 	{
-		mode.DesiredAccess |= default_read_attribute; 
+		mode.DesiredAccess |= default_read_attribute;
 		if ((value & open_mode::out) != open_mode::none &&
 			((value & open_mode::app) != open_mode::none && (value & open_mode::trunc) != open_mode::none))
 		{
@@ -257,7 +257,7 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 		if (mode.CreateDisposition == 0)
 		{
 			mode.DesiredAccess |= default_read_attribute; // FILE_GENERIC_READ
-			mode.CreateDisposition = 0x00000001; // OPEN_EXISTING
+			mode.CreateDisposition = 0x00000001;          // OPEN_EXISTING
 		}
 		mode.CreateOptions |= 0x00004000; // FILE_OPEN_FOR_BACKUP_INTENT
 		mode.CreateOptions |= 0x00000001; // FILE_DIRECTORY_FILE
@@ -1420,26 +1420,169 @@ public:
 	}
 };
 
+namespace win32::nt::details
+{
+
+template <bool zw>
+inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
+{
+	::fast_io::win32::nt::io_status_block isb;
+	constexpr decltype(auto) namedpipe_part{u"\\Device\\NamedPipe\\"};
+	::fast_io::win32::nt::unicode_string us{
+		.Length = sizeof(namedpipe_part) - sizeof(char16_t),
+		.MaximumLength = sizeof(namedpipe_part),
+		.Buffer = const_cast<char16_t *>(namedpipe_part)
+
+	};
+	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
+												.RootDirectory = nullptr,
+												.ObjectName = __builtin_addressof(us),
+												.Attributes = 0,
+												.SecurityDescriptor = nullptr,
+												.SecurityQualityOfService = nullptr};
+
+	void *namedpipedir;
+	auto status = ::fast_io::win32::nt::nt_create_file<zw>(
+		__builtin_addressof(namedpipedir), 0x80100000, __builtin_addressof(obj), __builtin_addressof(isb), nullptr,
+		0x80, 3, 0x00000003, 0x00000020, nullptr, 0u);
+
+	if (status)
+	{
+		throw_nt_error(status);
+	}
+
+
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(namedpipedir);
+
+
+	::std::int_least64_t DefaultTimeout{-1200000000};
+
+	void *ReadPipeHandle;
+	::fast_io::win32::nt::unicode_string us2{};
+	::fast_io::win32::nt::object_attributes obj2{.Length = sizeof(::fast_io::win32::nt::object_attributes),
+												 .RootDirectory = file.native_handle(),
+												 .ObjectName = __builtin_addressof(us2),
+												 .Attributes = 0x40,
+												 .SecurityDescriptor = nullptr,
+												 .SecurityQualityOfService = nullptr};
+
+	status = ::fast_io::win32::nt::nt_create_named_pipe_file<zw>(__builtin_addressof(ReadPipeHandle),
+																 0x80000000L | 0x0100 | 0x00100000L /*GENERIC_READ | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE*/,
+																 __builtin_addressof(obj2),
+																 __builtin_addressof(isb),
+																 0x01 | 0x02 /*FILE_SHARE_READ | FILE_SHARE_DELETE*/,
+																 0x00000002 /*FILE_CREATE*/,
+																 0x00000020 /*FILE_SYNCHRONOUS_IO_NONALERT*/,
+																 0x00000000 /*FILE_PIPE_BYTE_STREAM_TYPE*/,
+																 0x00000000 /*FILE_PIPE_BYTE_STREAM_MODE*/,
+																 0x00000000 /*FILE_PIPE_QUEUE_OPERATION*/,
+																 1,
+																 0x1000 /*buffer size*/,
+																 0x1000 /*buffer size*/,
+																 __builtin_addressof(DefaultTimeout));
+
+	if (status)
+	{
+		::fast_io::throw_nt_error(status);
+	}
+
+	void *WritePipeHandle;
+	status = ::fast_io::win32::nt::nt_create_file<zw>(
+		__builtin_addressof(WritePipeHandle), 0x40100080, __builtin_addressof(obj), __builtin_addressof(isb), nullptr,
+		0x80, 3, 0x00000003, 0x00000020 | 0x00000040, nullptr, 0u);
+
+	if (status)
+	{
+		::fast_io::throw_nt_error(status);
+	}
+
+	*hReadPipe = ReadPipeHandle;
+	*hWritePipe = WritePipeHandle;
+}
+} // namespace win32::nt::details
+
+template <nt_family family, ::std::integral ch_type>
+class basic_nt_family_pipe
+{
+public:
+	using char_type = ch_type;
+	basic_nt_family_file<family, ch_type> pipes[2];
+	basic_nt_family_pipe()
+	{
+		win32::nt::details::nt_create_pipe<family == nt_family::zw>(__builtin_addressof(pipes[0].handle), __builtin_addressof(pipes[1].handle));
+	}
+	constexpr auto &in() noexcept
+	{
+		return *pipes;
+	}
+	constexpr auto &out() noexcept
+	{
+		return pipes[1];
+	}
+};
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr win32_io_redirection redirect(basic_nt_family_pipe<family, ch_type> &hd)
+{
+	return {.win32_pipe_in_handle = hd.in().handle, .win32_pipe_out_handle = hd.out().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, ch_type>
+input_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.in().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, char>
+input_bytes_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.in().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, ch_type>
+output_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.out().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, char>
+output_bytes_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.out().handle};
+}
+
 template <::std::integral char_type>
 using basic_nt_io_observer = basic_nt_family_io_observer<nt_family::nt, char_type>;
 
 template <::std::integral char_type>
 using basic_nt_file = basic_nt_family_file<nt_family::nt, char_type>;
 
+template <::std::integral char_type>
+using basic_nt_pipe = basic_nt_family_pipe<nt_family::nt, char_type>;
+
 using nt_io_observer = basic_nt_io_observer<char>;
 using nt_file = basic_nt_file<char>;
+using nt_pipe = basic_nt_pipe<char>;
 
 using wnt_io_observer = basic_nt_io_observer<wchar_t>;
 using wnt_file = basic_nt_file<wchar_t>;
+using wnt_pipe = basic_nt_pipe<wchar_t>;
 
 using u8nt_io_observer = basic_nt_io_observer<char8_t>;
 using u8nt_file = basic_nt_file<char8_t>;
+using u8nt_pipe = basic_nt_pipe<char8_t>;
 
 using u16nt_io_observer = basic_nt_io_observer<char16_t>;
 using u16nt_file = basic_nt_file<char16_t>;
+using u16nt_pipe = basic_nt_pipe<char16_t>;
 
 using u32nt_io_observer = basic_nt_io_observer<char32_t>;
 using u32nt_file = basic_nt_file<char32_t>;
+using u32nt_pipe = basic_nt_pipe<char32_t>;
 
 namespace details
 {
@@ -1494,20 +1637,28 @@ using basic_zw_io_observer = basic_nt_family_io_observer<nt_family::zw, char_typ
 template <::std::integral char_type>
 using basic_zw_file = basic_nt_family_file<nt_family::zw, char_type>;
 
+template <::std::integral char_type>
+using basic_zw_pipe = basic_nt_family_pipe<nt_family::zw, char_type>;
+
 using zw_io_observer = basic_zw_io_observer<char>;
 using zw_file = basic_zw_file<char>;
+using zw_pipe = basic_zw_pipe<char>;
 
 using wzw_io_observer = basic_zw_io_observer<wchar_t>;
 using wzw_file = basic_zw_file<wchar_t>;
+using wzw_pipe = basic_zw_pipe<wchar_t>;
 
 using u8zw_io_observer = basic_zw_io_observer<char8_t>;
 using u8zw_file = basic_zw_file<char8_t>;
+using u8zw_pipe = basic_zw_pipe<char8_t>;
 
 using u16zw_io_observer = basic_zw_io_observer<char16_t>;
 using u16zw_file = basic_zw_file<char16_t>;
+using u16zw_pipe = basic_zw_pipe<char16_t>;
 
 using u32zw_io_observer = basic_zw_io_observer<char32_t>;
 using u32zw_file = basic_zw_file<char32_t>;
+using u32zw_pipe = basic_zw_pipe<char32_t>;
 
 template <::std::integral char_type = char>
 inline basic_zw_io_observer<char_type> zw_stdin() noexcept
