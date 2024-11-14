@@ -189,9 +189,68 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 	rtl_guard rtlm{rtl_up};
 
 	/* Duplicate Process Std Handles */
-	rtl_up->StandardInput = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.in);
-	rtl_up->StandardOutput = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.out);
-	rtl_up->StandardError = nt_duplicate_process_std_handle_impl<zw>(hprocess, processio.err);
+
+	auto const current_peb{::fast_io::win32::nt::nt_get_current_peb()};
+
+	if (!processio.in.is_dev_null)
+	{
+		if (processio.in.win32_pipe_in_handle)
+		{
+			rtl_up->StandardInput = processio.in.win32_pipe_in_handle;
+		}
+		else if (processio.in.win32_handle)
+		{
+			rtl_up->StandardInput = processio.in.win32_handle;
+		}
+		else
+		{
+			rtl_up->StandardInput = current_peb->ProcessParameters->StandardInput;
+		}
+	}
+	else
+	{
+		rtl_up->StandardInput = nullptr;
+	}
+
+	if (!processio.out.is_dev_null)
+	{
+		if (processio.out.win32_pipe_out_handle)
+		{
+			rtl_up->StandardOutput = processio.out.win32_pipe_out_handle;
+		}
+		else if (processio.out.win32_handle)
+		{
+			rtl_up->StandardOutput = processio.out.win32_handle;
+		}
+		else
+		{
+			rtl_up->StandardOutput = current_peb->ProcessParameters->StandardOutput;
+		}
+	}
+	else
+	{
+		rtl_up->StandardOutput = nullptr;
+	}
+
+	if (!processio.err.is_dev_null)
+	{
+		if (processio.err.win32_pipe_out_handle)
+		{
+			rtl_up->StandardError = processio.err.win32_pipe_out_handle;
+		}
+		else if (processio.err.win32_handle)
+		{
+			rtl_up->StandardError = processio.err.win32_handle;
+		}
+		else
+		{
+			rtl_up->StandardError = current_peb->ProcessParameters->StandardError;
+		}
+	}
+	else
+	{
+		rtl_up->StandardError = nullptr;
+	}
 
 	/* Allocate and Initialize new Environment Block */
 	rtl_user_process_parameters *RemoteParameters{};
@@ -301,10 +360,68 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	rtl_guard rtlm{rtl_temp};
 
 	// Duplicate Process Std Handles
-	auto const peb{::fast_io::win32::nt::nt_get_current_peb()};
-	rtl_temp->StandardInput = processio.in.win32_handle ? processio.in.win32_handle : peb->ProcessParameters->StandardInput;
-	rtl_temp->StandardOutput = processio.out.win32_handle ? processio.out.win32_handle : peb->ProcessParameters->StandardOutput;
-	rtl_temp->StandardError = processio.err.win32_handle ? processio.err.win32_handle : peb->ProcessParameters->StandardError;
+	auto const current_peb{::fast_io::win32::nt::nt_get_current_peb()};
+
+	if (!processio.in.is_dev_null)
+	{
+		if (processio.in.win32_pipe_in_handle)
+		{
+			rtl_temp->StandardInput = processio.in.win32_pipe_in_handle;
+
+		}
+		else if (processio.in.win32_handle)
+		{
+			rtl_temp->StandardInput = processio.in.win32_handle;
+		}
+		else
+		{
+			rtl_temp->StandardInput = current_peb->ProcessParameters->StandardInput;
+		}
+	}
+	else
+	{
+		rtl_temp->StandardInput = nullptr;
+	}
+
+	if (!processio.out.is_dev_null)
+	{
+		if (processio.out.win32_pipe_out_handle)
+		{
+			rtl_temp->StandardOutput = processio.out.win32_pipe_out_handle;
+		}
+		else if (processio.out.win32_handle)
+		{
+			rtl_temp->StandardOutput = processio.out.win32_handle;
+		}
+		else
+		{
+			rtl_temp->StandardOutput = current_peb->ProcessParameters->StandardOutput;
+		}
+	}
+	else
+	{
+		rtl_temp->StandardOutput = nullptr;
+	}
+
+	if (!processio.err.is_dev_null)
+	{
+		if (processio.err.win32_pipe_out_handle)
+		{
+			rtl_temp->StandardError = processio.err.win32_pipe_out_handle;
+		}
+		else if (processio.err.win32_handle)
+		{
+			rtl_temp->StandardError = processio.err.win32_handle;
+		}
+		else
+		{
+			rtl_temp->StandardError = current_peb->ProcessParameters->StandardError;
+		}
+	}
+	else
+	{
+		rtl_temp->StandardError = nullptr;
+	}
 
 	// 0 == create new window, 4 == current windows, 0xfffffffffffffffd == no windows (background)
 	rtl_temp->ConsoleHandle = reinterpret_cast<void *>(0x4);
