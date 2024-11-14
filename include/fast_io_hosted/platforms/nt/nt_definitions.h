@@ -41,11 +41,11 @@ struct object_attributes
 
 struct io_status_block
 {
-	union dummyunion
+	union
 	{
 		::std::uint_least32_t Status;
 		void *Pointer;
-	} DUMMYUNIONNAME;
+	};
 	::std::size_t Information;
 };
 
