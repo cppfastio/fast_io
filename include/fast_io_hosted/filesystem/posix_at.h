@@ -366,7 +366,7 @@ inline auto posix_deal_with12(old_path_type const &oldpath, int newdirfd, new_pa
 		oldpath,
 		[&](char const *oldpath_c_str) {
 			return fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return posix1x_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str); });
+				newpath, [&](char const *newpath_c_str) { return posix12_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str); });
 		});
 }
 

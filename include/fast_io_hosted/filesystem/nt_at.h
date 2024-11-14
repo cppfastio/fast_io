@@ -261,11 +261,11 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	pReparseData->Reserved = 0;
 
 	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameOffset = 0;
-	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength = oldpath_real_size * sizeof(char16_t);
+	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
 	::fast_io::freestanding::non_overlapped_copy_n(oldpath_real_c_str, oldpath_real_size, pBufTail);
 
-	pReparseData->SymbolicLinkReparseBuffer.PrintNameOffset = oldpath_real_size * sizeof(char16_t);
-	pReparseData->SymbolicLinkReparseBuffer.PrintNameLength = oldpath_real_size * sizeof(char16_t);
+	pReparseData->SymbolicLinkReparseBuffer.PrintNameOffset = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
+	pReparseData->SymbolicLinkReparseBuffer.PrintNameLength = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
 	pBufTail += oldpath_real_size;
 	::fast_io::freestanding::non_overlapped_copy_n(oldpath_real_c_str, oldpath_real_size, pBufTail);
 
@@ -292,7 +292,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	{
 		::fast_io::win32::nt::file_disposition_information DispInfo{1};
 		::fast_io::win32::nt::nt_set_information_file<zw>(new_file.native_handle(), __builtin_addressof(isb), __builtin_addressof(DispInfo),
-														  sizeof(DispInfo), ::fast_io::win32::nt::file_information_class::FileDispositionInformation);
+														  static_cast<::std::uint_least32_t>(sizeof(DispInfo)), ::fast_io::win32::nt::file_information_class::FileDispositionInformation);
 		throw_nt_error(status);
 	}
 }
