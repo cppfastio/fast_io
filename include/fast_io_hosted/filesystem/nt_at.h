@@ -284,7 +284,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		__builtin_addressof(isb),
 		589988,
 		pReparseData,
-		cbReparseData,
+		static_cast<::std::uint_least32_t>(cbReparseData),
 		nullptr,
 		0);
 
