@@ -3,7 +3,7 @@
 int main()
 {
 
-	::fast_io::win32_process p{u8"test.exe", {}, {}, {}};
+	::fast_io::win32_process p{u8"tests.0035.process.test", {}, {}, {}};
 	auto ec{wait(p)};
 	if (::std::bit_cast<int>(ec) != 114514)
 	{
