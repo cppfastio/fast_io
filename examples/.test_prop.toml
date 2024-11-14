@@ -36,3 +36,6 @@ ignore = true
 
 ["0036.native_at"]
 interactive = true
+
+["0037.pipe"]
+interactive = true
