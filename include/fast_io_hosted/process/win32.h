@@ -177,10 +177,66 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 		// create process
 		::fast_io::win32::startupinfow si{sizeof(si)};
+		if (!processio.in.is_dev_null)
+		{
+			if (processio.in.win32_pipe_in_handle)
+			{
+				si.hStdInput = processio.in.win32_pipe_in_handle;
+			}
+			else if (processio.in.win32_handle)
+			{
+				si.hStdInput = processio.in.win32_handle;
+			}
+			else
+			{
+				si.hStdInput = ::fast_io::win32_stdin().handle;
+			}
+		}
+		else
+		{
+			si.hStdInput = nullptr;
+		}
 
-		si.hStdInput = processio.in.win32_handle ? processio.in.win32_handle : ::fast_io::win32_stdin().handle;
-		si.hStdOutput = processio.out.win32_handle ? processio.out.win32_handle : ::fast_io::win32_stdout().handle;
-		si.hStdError = processio.err.win32_handle ? processio.err.win32_handle : ::fast_io::win32_stderr().handle;
+		if (!processio.out.is_dev_null)
+		{
+			if (processio.out.win32_pipe_out_handle)
+			{
+				si.hStdOutput = processio.out.win32_pipe_out_handle;
+			}
+			else if (processio.out.win32_handle)
+			{
+				si.hStdOutput = processio.out.win32_handle;
+			}
+			else
+			{
+				si.hStdOutput = ::fast_io::win32_stdout().handle;
+			}
+		}
+		else
+		{
+			si.hStdOutput = nullptr;
+		}
+
+		if (!processio.err.is_dev_null)
+		{
+			if (processio.err.win32_pipe_out_handle)
+			{
+				si.hStdError = processio.err.win32_pipe_out_handle;
+			}
+			else if (processio.err.win32_handle)
+			{
+				si.hStdError = processio.err.win32_handle;
+			}
+			else
+			{
+				si.hStdError = ::fast_io::win32_stderr().handle;
+			}
+		}
+		else
+		{
+			si.hStdError = nullptr;
+		}
+
 		si.dwFlags = 0x00000100;
 
 		::fast_io::win32::process_information pi{};
