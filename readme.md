@@ -85,6 +85,30 @@ Refer to either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.
   2. Coroutine support for asynchronous I/O
   3. Code improvement and refactoring following the integration of [Zero-overhead deterministic exceptions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0709r0.pdf) into the standard
 
+### fast_io supported type on Windows NT
+``` txt
+nt api supported:
+1. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
+2. NT Device Path  (Only right slash can be used) = \Device\HardiskVolume6\Plans\Marshall
+
+fast_io nt_file supported:
+1. Dos Relative path (Left slash available) = ..\HAL 9000
+2. DOS Drive path (Left slash available) = C:\Program FIle\HAL 9000
+3. UNC path (Left slash available) = \\Media\Pictures\Worth\1000 words
+4. UNC Device path (literal)  (Left slash available) = \\?\D:\Plans\Marshall
+5. UNC Device path (normalized)  (Left slash available) = \\.\D:\Plans\Marshall
+6. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
+7. NT Device Path  (Only right slash can be used) = \Device\HardiskVolume6\Plans\Marshall
+
+win32 api and fast_io win32_file supported:
+1. Dos Relative path (Left slash available) = ..\HAL 9000
+2. DOS Drive path (Left slash available) = C:\Program FIle\HAL 9000
+3. UNC path (Left slash available) = \\Media\Pictures\Worth\1000 words
+4. UNC Device path (literal)  (Left slash available) = \\?\D:\Plans\Marshall
+5. UNC Device path (normalized)  (Left slash available) = \\.\D:\Plans\Marshall
+6. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
+```
+
 ## Benchmarks
 
 1. I/O for 10 Million Integers
