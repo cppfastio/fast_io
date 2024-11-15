@@ -18,7 +18,7 @@
 #endif
 #endif
 
-#if defined(__MSDOS__)
+#if defined(__MSDOS__) || defined(__DJGPP__)
 #include "dos.h"
 #include "dos_at.h"
 #endif

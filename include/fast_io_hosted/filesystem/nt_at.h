@@ -151,8 +151,33 @@ template <bool zw>
 inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
 {
-	bool const is_root{oldpath_c_str[0] == u'\\' ||
-					   (oldpath_size > 1 && ::fast_io::char_category::is_c_upper(oldpath_c_str[0]) && oldpath_c_str[1] == u':')};
+	// No need to check the length, it will always jump out when '\0'
+	bool const is_nt_root{oldpath_c_str[0] == u'\\' && (oldpath_c_str[1] != u'\\' && oldpath_c_str[1] != u'/')};
+	bool const is_dos_root{::fast_io::char_category::is_c_alpha(oldpath_c_str[0]) && oldpath_c_str[1] == u':'};
+	bool const is_unc_root{(oldpath_c_str[0] == u'\\' || oldpath_c_str[0] == u'/') &&
+						   (oldpath_c_str[1] == u'\\' || oldpath_c_str[1] == u'/')};
+
+	bool const is_root{is_nt_root || is_dos_root || is_unc_root};
+
+	char16_t const *oldpath_real_c_str{oldpath_c_str};
+	::std::size_t oldpath_real_size{oldpath_size};
+
+	// use nt path in root
+	::fast_io::win32::nt::unicode_string us{};
+	::fast_io::win32::nt::rtl_unicode_string_unique_ptr us_guard{};
+
+	if (is_dos_root || is_unc_root)
+	{
+		// get nt root path
+		char16_t const *tmp_part_name{};
+		win32::nt::rtl_relative_name_u tmp_relative_name{};
+		::fast_io::win32::nt::details::nt_file_rtl_path(
+			oldpath_real_c_str, us, tmp_part_name, tmp_relative_name);
+
+		oldpath_real_c_str = us.Buffer;
+		oldpath_real_size = us.Length / sizeof(char16_t);
+		us_guard.heap_ptr = __builtin_addressof(us); // need free
+	}
 
 	constexpr nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
@@ -162,14 +187,16 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	};
 
 	void *olddirhd{newdirhd};
+
 	if (is_root)
 	{
 		olddirhd = reinterpret_cast<void *>(::std::ptrdiff_t(-3));
 	}
 
-	auto [handle, status]{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_nothrow_callback<zw>{md})};
-	
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> check_file{};
+	// Check if exists to get the target file type
+	auto [handle, status]{nt_call_callback(olddirhd, oldpath_real_c_str, oldpath_real_size, nt_create_nothrow_callback<zw>{md})};
+
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> check_file{};
 
 	if (status)
 	{
@@ -180,20 +207,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	}
 	else
 	{
-		check_file.handle = handle;
-	}
-
-	// use nt path in root
-	char16_t const *oldpath_real_c_str{oldpath_c_str};
-	::std::size_t oldpath_real_size{oldpath_size};
-	::fast_io::win32::nt::unicode_string us{};
-	if (is_root)
-	{
-		if (::fast_io::win32::nt::rtl_dos_path_name_to_nt_path_name_u(oldpath_real_c_str, &us, nullptr, nullptr)) [[likely]]
-		{
-			oldpath_real_c_str = us.Buffer;
-			oldpath_real_size = us.Length / 2;
-		}
+		check_file.handle = handle; // need to close
 	}
 
 	// Check if exists to set the file type
@@ -224,21 +238,15 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		.CreateOptions = 0x00000020 | 0x00200000           // FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_REPARSE_POINT
 	};
 
-	if (status == 0xC0000034) // file not exit
+	if ((attribute & 0x10) == 0x10)
 	{
-		symbol_mode.CreateOptions |= 0x00000040; // file
+		symbol_mode.CreateOptions |= 0x00000001; // directory
 	}
 	else
 	{
-		if ((attribute & 0x10) == 0x10)
-		{
-			symbol_mode.CreateOptions |= 0x00000001; // directory
-		}
-		else
-		{
-			symbol_mode.CreateOptions |= 0x00000040; // file
-		}
+		symbol_mode.CreateOptions |= 0x00000040; // file
 	}
+
 	constexpr ::std::size_t pathbufferoffset{
 		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)};
 	::std::size_t const cbReparseData{pathbufferoffset + oldpath_real_size * sizeof(char16_t) * 2};
@@ -273,7 +281,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	pReparseData->SymbolicLinkReparseBuffer.Flags =
 		static_cast<::std::uint_least32_t>(!is_root);
 
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> new_file(
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> new_file(
 		nt_call_callback(newdirhd, newpath_c_str, newpath_size, nt_create_callback<zw>{symbol_mode}));
 
 	status = ::fast_io::win32::nt::nt_fs_control_file<zw>(
@@ -308,7 +316,7 @@ inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::st
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
 
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file(
 		nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md}));
 
 	nt_call_callback(
@@ -361,16 +369,16 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 						   char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags)
 {
 	nt_open_mode const md{calculate_nt_link_flag(flags)};
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> basic_file{};
-	::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char> file{};
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> basic_file{};
+	::fast_io::basic_nt_family_io_observer<(zw ? nt_family::zw : nt_family::nt), char> file{};
 
 	if ((flags & nt_at_flags::empty_path) == nt_at_flags::empty_path && oldpath_size == 0)
 	{
-		file = ::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char>{olddirhd};
+		file = ::fast_io::basic_nt_family_io_observer<(zw ? nt_family::zw : nt_family::nt), char>{olddirhd};
 	}
 	else
 	{
-		basic_file = ::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char>{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
+		basic_file = ::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char>{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
 		file = basic_file;
 	}
 
@@ -461,7 +469,7 @@ template <nt_family family, ::fast_io::details::posix_api_1x dsp, typename path_
 inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args)
 {
 	return nt_api_common(
-		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher < family == nt_family::zw, dsp > (dir_handle, path_c_str, path_size, args...); });
+		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...); });
 }
 
 template <nt_family family, ::fast_io::details::posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
@@ -472,7 +480,7 @@ inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_pat
 		oldpath,
 		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 			return nt_api_common(
-				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) { return nt12_api_dispatcher < family == nt_family::zw, dsp > (oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size); });
+				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) { return nt12_api_dispatcher<family == nt_family::zw, dsp>(oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size); });
 		});
 }
 
@@ -483,8 +491,8 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 							 return nt_api_common(newpath,
 												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-													  return nt22_api_dispatcher < family == nt_family::zw, dsp > (olddirhd, oldpath_c_str, oldpath_size, newdirhd,
-																												   newpath_c_str, newpath_size, args...);
+													  return nt22_api_dispatcher<family == nt_family::zw, dsp>(olddirhd, oldpath_c_str, oldpath_size, newdirhd,
+																											   newpath_c_str, newpath_size, args...);
 												  });
 						 });
 }

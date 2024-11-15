@@ -222,6 +222,9 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwCreateNamedPipeFile@nt@win32@fast_io@@YGIPIAPAXIPIAUobject_attributes@123@PIAUio_status_block@123@IIIIIIIIIPA_J@Z=__imp__ZwCreateNamedPipeFile@56")
 #pragma comment(linker,"/alternatename:__imp_?NtQueryPerformanceCounter@nt@win32@fast_io@@YGIPA_J0@Z=__imp__NtQueryPerformanceCounter@8")
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryPerformanceCounter@nt@win32@fast_io@@YGIPA_J0@Z=__imp__ZwQueryPerformanceCounter@8")
+#pragma comment(linker,"/alternatename:__imp_?RtlGetSystemTimePrecise@nt@win32@fast_io@@YG_JXZ=__imp__RtlGetSystemTimePrecise@0")
+#pragma comment(linker,"/alternatename:__imp_?NtQueryInformationThread@nt@win32@fast_io@@YGHPIAXW4thread_information_class@123@PAXIPAI@Z=__imp__NtQueryInformationThread@20")
+#pragma comment(linker,"/alternatename:__imp_?ZwQueryInformationThread@nt@win32@fast_io@@YGHPIAXW4thread_information_class@123@PAXIPAI@Z=__imp__ZwQueryInformationThread@20")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp____RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=___RTtypeid")

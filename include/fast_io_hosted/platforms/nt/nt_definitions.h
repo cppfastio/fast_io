@@ -884,4 +884,46 @@ struct file_disposition_information
 {
 	::std::uint_least8_t DeleteFile;
 };
+
+struct kernel_user_times
+{
+	::std::int_least64_t CreateTime;
+	::std::int_least64_t ExitTime;
+	::std::int_least64_t KernelTime;
+	::std::int_least64_t UserTime;
+};
+
+enum class thread_information_class
+{
+	ThreadBasicInformation,
+	ThreadTimes,
+	ThreadPriority,
+	ThreadBasePriority,
+	ThreadAffinityMask,
+	ThreadImpersonationToken,
+	ThreadDescriptorTableEntry,
+	ThreadEnableAlignmentFaultFixup,
+	ThreadEventPair_Reusable,
+	ThreadQuerySetWin32StartAddress,
+	ThreadZeroTlsCell,
+	ThreadPerformanceCount,
+	ThreadAmILastThread,
+	ThreadIdealProcessor,
+	ThreadPriorityBoost,
+	ThreadSetTlsArrayAddress,
+	ThreadIsIoPending,
+	ThreadHideFromDebugger,
+	ThreadBreakOnTermination,
+	ThreadSwitchLegacyState,
+	ThreadIsTerminated,
+	ThreadLastSystemCall,
+	ThreadIoPriority,
+	ThreadCycleTime,
+	ThreadPagePriority,
+	ThreadActualBasePriority,
+	ThreadTebInformation,
+	ThreadCSwitchMon,
+	MaxThreadInfoClass
+};
+
 } // namespace fast_io::win32::nt
