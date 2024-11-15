@@ -403,7 +403,7 @@ inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
 				hthread,
 				::fast_io::win32::nt::thread_information_class::ThreadTimes,
 				__builtin_addressof(kut),
-				sizeof(kut),
+				static_cast<::std::uint_least32_t>(sizeof(kut)),
 				nullptr)};
 
 		if (status) [[unlikely]]
@@ -424,7 +424,7 @@ inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
 				hprocess,
 				::fast_io::win32::nt::process_information_class::ProcessTimes,
 				__builtin_addressof(kut),
-				sizeof(kut),
+				static_cast<::std::uint_least32_t>(sizeof(kut)),
 				nullptr)};
 
 		if (status) [[unlikely]]
