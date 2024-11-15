@@ -173,7 +173,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 
 	auto [handle, status]{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_nothrow_callback<zw>{md})};
 
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> check_file{};
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> check_file{};
 
 	if (status)
 	{
@@ -191,6 +191,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	char16_t const *oldpath_real_c_str{oldpath_c_str};
 	::std::size_t oldpath_real_size{oldpath_size};
 	::fast_io::win32::nt::unicode_string us{};
+	::fast_io::win32::nt::rtl_unicode_string_unique_ptr us_guard{};
 
 	if (is_dos_root)
 	{
@@ -201,6 +202,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		{
 			oldpath_real_c_str = us.Buffer;
 			oldpath_real_size = us.Length / sizeof(char16_t);
+			us_guard.heap_ptr = __builtin_addressof(us); // need free
 		}
 	}
 
@@ -281,7 +283,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	pReparseData->SymbolicLinkReparseBuffer.Flags =
 		static_cast<::std::uint_least32_t>(!is_root);
 
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> new_file(
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> new_file(
 		nt_call_callback(newdirhd, newpath_c_str, newpath_size, nt_create_callback<zw>{symbol_mode}));
 
 	status = ::fast_io::win32::nt::nt_fs_control_file<zw>(
@@ -316,7 +318,7 @@ inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::st
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
 
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file(
 		nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md}));
 
 	nt_call_callback(
@@ -369,16 +371,16 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 						   char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags)
 {
 	nt_open_mode const md{calculate_nt_link_flag(flags)};
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> basic_file{};
-	::fast_io::basic_nt_family_io_observer<zw ? nt_family::zw : nt_family::nt, char> file{};
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> basic_file{};
+	::fast_io::basic_nt_family_io_observer<(zw ? nt_family::zw : nt_family::nt), char> file{};
 
 	if ((flags & nt_at_flags::empty_path) == nt_at_flags::empty_path && oldpath_size == 0)
 	{
-		file = ::fast_io::basic_nt_family_io_observer < zw ? nt_family::zw : nt_family::nt, char > {olddirhd};
+		file = ::fast_io::basic_nt_family_io_observer<(zw ? nt_family::zw : nt_family::nt), char>{olddirhd};
 	}
 	else
 	{
-		basic_file = ::fast_io::basic_nt_family_file < zw ? nt_family::zw : nt_family::nt, char > {nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
+		basic_file = ::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char>{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_callback<zw>{md})};
 		file = basic_file;
 	}
 

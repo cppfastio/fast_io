@@ -83,6 +83,8 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filena
 	if constexpr (::std::same_as<char_type, char16_t>)
 	{
 		win32::nt::unicode_string nt_name;
+		win32::nt::rtl_unicode_string_unique_ptr us_ptr{};
+
 		if (*filename_c_str == u'\\')
 		{
 			// nt root path: must start with a right slash ('\\') and all right slashes
@@ -97,8 +99,7 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filena
 			char16_t const *part_name{};
 			win32::nt::rtl_relative_name_u relative_name{};
 			nt_file_rtl_path(filename_c_str, nt_name, part_name, relative_name);
-			win32::nt::rtl_unicode_string_unique_ptr us_ptr{__builtin_addressof(nt_name)};
-			win32::nt::unicode_string nt_name{};
+			us_ptr.heap_ptr = __builtin_addressof(nt_name); // need free
 		}
 		return callback(nullptr, __builtin_addressof(nt_name));
 	}
