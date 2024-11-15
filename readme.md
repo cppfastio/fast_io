@@ -91,7 +91,7 @@ nt api supported:
 1. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
 2. NT Device Path  (Only right slash can be used) = \Device\HardiskVolume6\Plans\Marshall
 
-fast_io nt_file supported:
+fast_io::nt_file supported:
 1. Dos Relative path (Left slash available) = ..\HAL 9000
 2. DOS Drive path (Left slash available) = C:\Program FIle\HAL 9000
 3. UNC path (Left slash available) = \\Media\Pictures\Worth\1000 words
@@ -100,7 +100,7 @@ fast_io nt_file supported:
 6. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
 7. NT Device Path  (Only right slash can be used) = \Device\HardiskVolume6\Plans\Marshall
 
-win32 api and fast_io win32_file supported:
+win32 api and fast_io::win32_file supported:
 1. Dos Relative path (Left slash available) = ..\HAL 9000
 2. DOS Drive path (Left slash available) = C:\Program FIle\HAL 9000
 3. UNC path (Left slash available) = \\Media\Pictures\Worth\1000 words
