@@ -223,6 +223,8 @@
 #pragma comment(linker,"/alternatename:__imp_?NtQueryPerformanceCounter@nt@win32@fast_io@@YAIPA_J0@Z=__imp_NtQueryPerformanceCounter")
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryPerformanceCounter@nt@win32@fast_io@@YAIPA_J0@Z=__imp_ZwQueryPerformanceCounter")
 #pragma comment(linker,"/alternatename:__imp_?RtlGetSystemTimePrecise@nt@win32@fast_io@@YA_JXZ=__imp_RtlGetSystemTimePrecise")
+#pragma comment(linker,"/alternatename:__imp_?NtQueryInformationThread@nt@win32@fast_io@@YA_JPIAXW4thread_information_class@123@PAXIPAI@Z=__imp_NtQueryInformationThread")
+#pragma comment(linker,"/alternatename:__imp_?ZwQueryInformationThread@nt@win32@fast_io@@YA_JPIAXW4thread_information_class@123@PAXIPAI@Z=__imp_ZwQueryInformationThread")
 //msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp___RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__RTtypeid")

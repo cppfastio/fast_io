@@ -304,7 +304,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	::fast_io::win32::filetime creation_time, exit_time, kernel_time, user_time;
 	if constexpr (is_thread)
 	{
-		auto hthread{bit_cast<void *>(::std::ptrdiff_t(-2))};
+		auto hthread{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-2))};
 		if (!::fast_io::win32::GetThreadTimes(hthread, __builtin_addressof(creation_time),
 											  __builtin_addressof(exit_time), __builtin_addressof(kernel_time),
 											  __builtin_addressof(user_time)))
@@ -314,7 +314,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	}
 	else
 	{
-		auto hprocess{bit_cast<void *>(::std::ptrdiff_t(-1))};
+		auto hprocess{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 		if (!::fast_io::win32::GetProcessTimes(hprocess, __builtin_addressof(creation_time),
 											   __builtin_addressof(exit_time), __builtin_addressof(kernel_time),
 											   __builtin_addressof(user_time)))
@@ -357,7 +357,8 @@ namespace win32::nt::details
 {
 inline unix_timestamp nt602_posix_clock_gettime_tai_impl() noexcept
 {
-	return static_cast<unix_timestamp>(::fast_io::win32::to_win32_timestamp_ftu64(::fast_io::win32::nt::RtlGetSystemTimePrecise()));
+	return static_cast<unix_timestamp>(::fast_io::win32::to_win32_timestamp_ftu64(
+		static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise())));
 }
 
 template <bool zw>
@@ -384,6 +385,62 @@ inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
 	::std::uint_least64_t md{ucounter % freq};
 	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
 						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
+}
+
+template <bool zw, bool is_thread>
+inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
+{
+	::std::int_least64_t kernel_time;
+	::std::int_least64_t user_time;
+
+	if constexpr (is_thread)
+	{
+		auto hthread{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-2))};
+		::fast_io::win32::nt::kernel_user_times kut;
+
+		auto status{
+			::fast_io::win32::nt::nt_query_information_thread<zw>(
+				hthread,
+				::fast_io::win32::nt::thread_information_class::ThreadTimes,
+				__builtin_addressof(kut),
+				sizeof(kut),
+				nullptr)};
+
+		if (status) [[unlikely]]
+		{
+			throw_nt_error(status);
+		}
+
+		kernel_time = kut.KernelTime;
+		user_time = kut.UserTime;
+	}
+	else
+	{
+		auto hprocess{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
+		::fast_io::win32::nt::kernel_user_times kut;
+
+		auto status{
+			::fast_io::win32::nt::nt_query_information_process<zw>(
+				hprocess,
+				::fast_io::win32::nt::process_information_class::ProcessTimes,
+				__builtin_addressof(kut),
+				sizeof(kut),
+				nullptr)};
+
+		if (status) [[unlikely]]
+		{
+			throw_nt_error(status);
+		}
+
+		kernel_time = kut.KernelTime;
+		user_time = kut.UserTime;
+	}
+	::std::uint_least64_t ftm{static_cast<::std::uint_least64_t>(kernel_time) +
+							  static_cast<::std::uint_least64_t>(user_time)};
+	::std::uint_least64_t seconds{ftm / 10000000ULL};
+	::std::uint_least64_t subseconds{ftm % 10000000ULL};
+	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
+	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
 }
 
 } // namespace win32::nt::details
@@ -516,11 +573,19 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 		return win32::nt::details::nt_posix_clock_gettime_boottime_impl<false>();
 #else
 		return win32::details::win32_posix_clock_gettime_boottime_impl();
-#endif 
+#endif
 	case posix_clock_id::process_cputime_id:
+#if defined(_WIN32_WINDOWS)
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<false>();
+#else
+		return win32::nt::details::nt_posix_clock_gettime_process_or_thread_time_impl<false, false>();
+#endif
 	case posix_clock_id::thread_cputime_id:
+#if defined(_WIN32_WINDOWS)
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<true>();
+#else
+		return win32::nt::details::nt_posix_clock_gettime_process_or_thread_time_impl<false, true>();
+#endif
 	default:
 		throw_win32_error(0x00000057);
 	}
