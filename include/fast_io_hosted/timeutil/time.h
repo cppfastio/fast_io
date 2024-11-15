@@ -287,7 +287,7 @@ inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 
 inline unix_timestamp win32_posix_clock_gettime_uptime_impl()
 {
-	::std::uint_least64_t ftm{};
+	::std::uint_least64_t ftm;
 	if (!::fast_io::win32::QueryUnbiasedInterruptTime(__builtin_addressof(ftm)))
 	{
 		throw_win32_error();
@@ -334,7 +334,7 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 {
 	::std::uint_least64_t freq{
 		static_cast<::std::uint_least64_t>(::fast_io::details::win32_query_performance_frequency())};
-	::std::int_least64_t counter{};
+	::std::int_least64_t counter;
 	if (!::fast_io::win32::QueryPerformanceCounter(__builtin_addressof(counter)))
 	{
 		throw_win32_error();
