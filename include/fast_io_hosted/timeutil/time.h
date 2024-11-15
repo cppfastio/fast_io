@@ -355,6 +355,11 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 
 namespace win32::nt::details
 {
+inline unix_timestamp nt602_posix_clock_gettime_tai_impl() noexcept
+{
+	return static_cast<unix_timestamp>(::fast_io::win32::to_win32_timestamp_ftu64(::fast_io::win32::nt::RtlGetSystemTimePrecise()));
+}
+
 template <bool zw>
 inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
 {
@@ -498,7 +503,11 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	case posix_clock_id::realtime_alarm:
 	case posix_clock_id::realtime_coarse:
 	case posix_clock_id::tai:
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT > 0x602) && !defined(_WIN32_WINDOWS)
+		return win32::nt::details::nt602_posix_clock_gettime_tai_impl();
+#else
 		return win32::details::win32_posix_clock_gettime_tai_impl();
+#endif
 	case posix_clock_id::monotonic:
 	case posix_clock_id::monotonic_coarse:
 	case posix_clock_id::monotonic_raw:
