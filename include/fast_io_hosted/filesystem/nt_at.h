@@ -196,6 +196,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 
 	if (is_dos_root || is_unc_root)
 	{
+		// get nt path
 		char16_t const *tmp_part_name{};
 		win32::nt::rtl_relative_name_u tmp_relative_name{};
 		::fast_io::win32::nt::details::nt_file_rtl_path(
@@ -233,7 +234,6 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		.CreateDisposition = 0x00000002,                   // FILE_OVERWRITE_IF
 		.CreateOptions = 0x00000020 | 0x00200000           // FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_REPARSE_POINT
 	};
-
 
 	if ((attribute & 0x10) == 0x10)
 	{
