@@ -85,7 +85,7 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filena
 		win32::nt::unicode_string nt_name;
 		win32::nt::rtl_unicode_string_unique_ptr us_ptr{};
 
-		if (*filename_c_str == u'\\')
+		if (*filename_c_str == u'\\' && filename_c_str[1] != u'\\')
 		{
 			// nt root path: must start with a right slash ('\\') and all right slashes
 			auto const filename_size{::fast_io::cstr_len(filename_c_str)};
@@ -95,7 +95,7 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filena
 		}
 		else
 		{
-			// dos root path or relative path. You can use a left slash instead of a right slash
+			// UNC path, dos root path or relative path. You can use a left slash instead of a right slash
 			char16_t const *part_name{};
 			win32::nt::rtl_relative_name_u relative_name{};
 			nt_file_rtl_path(filename_c_str, nt_name, part_name, relative_name);
