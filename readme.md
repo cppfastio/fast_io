@@ -85,7 +85,7 @@ Refer to either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.
   2. Coroutine support for asynchronous I/O
   3. Code improvement and refactoring following the integration of [Zero-overhead deterministic exceptions](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0709r0.pdf) into the standard
 
-### fast_io supported type on Windows NT
+### fast_io path formats supported on Windows NT
 ``` txt
 nt api supported:
 1. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
