@@ -151,13 +151,33 @@ template <bool zw>
 inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
 {
-	// No need to check the length, it will always jump out when '\0', like "\0", "\\\0", "C\0" ...
+	// No need to check the length, it will always jump out when '\0'
 	bool const is_nt_root{oldpath_c_str[0] == u'\\' && (oldpath_c_str[1] != u'\\' && oldpath_c_str[1] != u'/')};
 	bool const is_dos_root{::fast_io::char_category::is_c_alpha(oldpath_c_str[0]) && oldpath_c_str[1] == u':'};
 	bool const is_unc_root{(oldpath_c_str[0] == u'\\' || oldpath_c_str[0] == u'/') &&
 						   (oldpath_c_str[1] == u'\\' || oldpath_c_str[1] == u'/')};
 
 	bool const is_root{is_nt_root || is_dos_root || is_unc_root};
+
+	char16_t const *oldpath_real_c_str{oldpath_c_str};
+	::std::size_t oldpath_real_size{oldpath_size};
+
+	// use nt path in root
+	::fast_io::win32::nt::unicode_string us{};
+	::fast_io::win32::nt::rtl_unicode_string_unique_ptr us_guard{};
+
+	if (is_dos_root || is_unc_root)
+	{
+		// get nt root path
+		char16_t const *tmp_part_name{};
+		win32::nt::rtl_relative_name_u tmp_relative_name{};
+		::fast_io::win32::nt::details::nt_file_rtl_path(
+			oldpath_real_c_str, us, tmp_part_name, tmp_relative_name);
+
+		oldpath_real_c_str = us.Buffer;
+		oldpath_real_size = us.Length / sizeof(char16_t);
+		us_guard.heap_ptr = __builtin_addressof(us); // need free
+	}
 
 	constexpr nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
@@ -173,7 +193,8 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		olddirhd = reinterpret_cast<void *>(::std::ptrdiff_t(-3));
 	}
 
-	auto [handle, status]{nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_create_nothrow_callback<zw>{md})};
+	// Check if exists to get the target file type
+	auto [handle, status]{nt_call_callback(olddirhd, oldpath_real_c_str, oldpath_real_size, nt_create_nothrow_callback<zw>{md})};
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> check_file{};
 
@@ -186,26 +207,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	}
 	else
 	{
-		check_file.handle = handle;
-	}
-
-	// use nt path in root
-	char16_t const *oldpath_real_c_str{oldpath_c_str};
-	::std::size_t oldpath_real_size{oldpath_size};
-	::fast_io::win32::nt::unicode_string us{};
-	::fast_io::win32::nt::rtl_unicode_string_unique_ptr us_guard{};
-
-	if (is_dos_root || is_unc_root)
-	{
-		// get nt path
-		char16_t const *tmp_part_name{};
-		win32::nt::rtl_relative_name_u tmp_relative_name{};
-		::fast_io::win32::nt::details::nt_file_rtl_path(
-			oldpath_real_c_str, us, tmp_part_name, tmp_relative_name);
-
-		oldpath_real_c_str = us.Buffer;
-		oldpath_real_size = us.Length / sizeof(char16_t);
-		us_guard.heap_ptr = __builtin_addressof(us); // need free
+		check_file.handle = handle; // need to close
 	}
 
 	// Check if exists to set the file type
