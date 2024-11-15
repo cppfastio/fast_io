@@ -2820,7 +2820,7 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern ::std::int_least64_t
+extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
@@ -2847,7 +2847,7 @@ __declspec(dllimport)
 #if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
 [[__gnu__::__stdcall__]]
 #endif
-extern ::std::int_least64_t
+extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
