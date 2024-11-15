@@ -76,6 +76,26 @@ inline auto nt_call_invoke_with_directory_handle_impl(void *directory, char_type
 	}
 }
 
+inline void map_nt_unc_and_dos_path_to_nt_path(char16_t const *filename_c_str, win32::nt::unicode_string &us, win32::nt::rtl_unicode_string_unique_ptr& us_ptr)
+{
+	if (*filename_c_str == u'\\' && (filename_c_str[1] != u'\\' && filename_c_str[1] != u'/'))
+	{
+		// nt root path: must start with a right slash ('\\') and all right slashes
+		auto const filename_size{::fast_io::cstr_len(filename_c_str)};
+		us.Length = static_cast<::std::uint_least16_t>(filename_size * sizeof(char16_t));
+		us.MaximumLength = static_cast<::std::uint_least16_t>((filename_size + 1) * sizeof(char16_t));
+		us.Buffer = const_cast<char16_t *>(filename_c_str);
+	}
+	else
+	{
+		// UNC path, dos root path or relative path. You can use a left slash instead of a right slash
+		char16_t const *part_name{};
+		win32::nt::rtl_relative_name_u relative_name{};
+		nt_file_rtl_path(filename_c_str, us, part_name, relative_name);
+		us_ptr.heap_ptr = __builtin_addressof(us); // need free
+	}
+}
+
 template <::std::integral char_type, typename func>
 	requires(sizeof(char_type) == sizeof(char16_t))
 inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filename_c_str, func callback)
@@ -84,23 +104,7 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filena
 	{
 		win32::nt::unicode_string nt_name;
 		win32::nt::rtl_unicode_string_unique_ptr us_ptr{};
-
-		if (*filename_c_str == u'\\' && (filename_c_str[1] != u'\\' && filename_c_str[1] != u'/'))
-		{
-			// nt root path: must start with a right slash ('\\') and all right slashes
-			auto const filename_size{::fast_io::cstr_len(filename_c_str)};
-			nt_name.Length = static_cast<::std::uint_least16_t>(filename_size * sizeof(char16_t));
-			nt_name.MaximumLength = static_cast<::std::uint_least16_t>((filename_size + 1) * sizeof(char16_t));
-			nt_name.Buffer = const_cast<char16_t *>(filename_c_str);
-		}
-		else
-		{
-			// UNC path, dos root path or relative path. You can use a left slash instead of a right slash
-			char16_t const *part_name{};
-			win32::nt::rtl_relative_name_u relative_name{};
-			nt_file_rtl_path(filename_c_str, nt_name, part_name, relative_name);
-			us_ptr.heap_ptr = __builtin_addressof(nt_name); // need free
-		}
+		map_nt_unc_and_dos_path_to_nt_path(filename_c_str, nt_name, us_ptr);
 		return callback(nullptr, __builtin_addressof(nt_name));
 	}
 	else
