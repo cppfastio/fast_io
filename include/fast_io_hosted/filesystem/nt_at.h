@@ -154,7 +154,8 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	// No need to check the length, it will always jump out when '\0', like "\0", "\\\0", "C\0" ...
 	bool const is_nt_root{oldpath_c_str[0] == u'\\' && oldpath_c_str[1] != u'\\'};
 	bool const is_dos_root{::fast_io::char_category::is_c_alpha(oldpath_c_str[0]) && oldpath_c_str[1] == u':'};
-	bool const is_unc_root{oldpath_c_str[0] == u'\\' && oldpath_c_str[1] == u'\\'};
+	bool const is_unc_root{(oldpath_c_str[0] == u'\\' || oldpath_c_str[0] == u'/') &&
+						   (oldpath_c_str[1] == u'\\' || oldpath_c_str[1] == u'/')};
 
 	bool const is_root{is_nt_root || is_dos_root || is_unc_root};
 
