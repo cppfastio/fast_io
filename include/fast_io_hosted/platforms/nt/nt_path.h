@@ -85,7 +85,7 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filena
 		win32::nt::unicode_string nt_name;
 		win32::nt::rtl_unicode_string_unique_ptr us_ptr{};
 
-		if (*filename_c_str == u'\\' && filename_c_str[1] != u'\\')
+		if (*filename_c_str == u'\\' && (filename_c_str[1] != u'\\' && filename_c_str[1] != u'/'))
 		{
 			// nt root path: must start with a right slash ('\\') and all right slashes
 			auto const filename_size{::fast_io::cstr_len(filename_c_str)};
