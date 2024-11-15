@@ -933,6 +933,34 @@ inline win9x_dir_handle win9x_dir_dup_impl(win9x_dir_handle const &h) noexcept
 	return {h.path};
 }
 
+struct find_struct_guard
+{
+	void *file_struct{};
+
+	~find_struct_guard()
+	{
+		if (file_struct) [[likely]]
+		{
+			::fast_io::win32::FindClose(file_struct);
+		}
+	}
+};
+
+inline void check_win9x_dir_is_valid(win9x_dir_handle const& h)
+{
+	::fast_io::win32::win32_find_dataa wfda{};
+	auto temp_find_path{::fast_io::tlc::u8concat_fast_io_tlc(h.path, u8"\\*")};
+	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
+	if (find_struct == reinterpret_cast<void*>(static_cast<::std::ptrdiff_t>(-1)))
+	{
+		throw_win32_error(0x5);
+	}
+	else
+	{
+		::fast_io::win32::FindClose(find_struct);
+	}
+}
+
 inline win9x_dir_handle basic_win9x_create_dir_file_impl(char const *filename_c_str, ::std::size_t filename_c_str_len)
 {
 	using char8_t_const_may_alias_ptr
@@ -955,7 +983,12 @@ inline win9x_dir_handle basic_win9x_create_dir_file_impl(char const *filename_c_
 	{
 		path.pop_back_unchecked();
 	}
-	return {::std::move(path)};
+
+	win9x_dir_handle ret{::std::move(path)};
+
+	check_win9x_dir_is_valid(ret);
+
+	return ret;
 }
 
 inline win9x_dir_handle basic_win9x_create_dir_file_at_fs_dirent_impl(win9x_dir_handle const *directory_handle, char const *filename_c_str,
@@ -1001,7 +1034,11 @@ inline win9x_dir_handle basic_win9x_create_dir_file_at_fs_dirent_impl(win9x_dir_
 		}
 	}
 
-	return {::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+	win9x_dir_handle ret{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+
+	check_win9x_dir_is_valid(ret);
+
+	return ret;
 }
 
 inline void *basic_win9x_create_file_at_fs_dirent_impl(win9x_dir_handle const *directory_handle, char const *filename_c_str,

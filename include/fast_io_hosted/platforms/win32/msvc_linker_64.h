@@ -134,6 +134,8 @@
 #pragma comment(linker,"/alternatename:__imp_?FindNextFileW@win32@fast_io@@YAHPEAXPEAUwin32_find_dataw@12@@Z=__imp_FindNextFileW")
 #pragma comment(linker,"/alternatename:__imp_?FindNextFileA@win32@fast_io@@YAHPEAXPEAUwin32_find_dataa@12@@Z=__imp_FindNextFileA")
 #pragma comment(linker,"/alternatename:__imp_?FindClose@win32@fast_io@@YAHPEAX@Z=__imp_FindClose")
+#pragma comment(linker,"/alternatename:__imp_?ShellExecuteW@win32@fast_io@@YAPEAXPEAXPEB_S111H@Z=__imp_ShellExecuteW")
+#pragma comment(linker,"/alternatename:__imp_?ShellExecuteA@win32@fast_io@@YAPEAXPEAXPEBD111H@Z=__imp_ShellExecuteA")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YAII@Z=__imp_RtlNtStatusToDosError")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YAIPEAX@Z=__imp_NtClose")
