@@ -197,13 +197,12 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	{
 		char16_t const *tmp_part_name{};
 		win32::nt::rtl_relative_name_u tmp_relative_name{};
-		if (::fast_io::win32::nt::details::nt_file_rtl_path(
-				oldpath_real_c_str, us, tmp_part_name, tmp_relative_name)) [[likely]]
-		{
-			oldpath_real_c_str = us.Buffer;
-			oldpath_real_size = us.Length / sizeof(char16_t);
-			us_guard.heap_ptr = __builtin_addressof(us); // need free
-		}
+		::fast_io::win32::nt::details::nt_file_rtl_path(
+			oldpath_real_c_str, us, tmp_part_name, tmp_relative_name);
+
+		oldpath_real_c_str = us.Buffer;
+		oldpath_real_size = us.Length / sizeof(char16_t);
+		us_guard.heap_ptr = __builtin_addressof(us); // need free
 	}
 
 	// Check if exists to set the file type
