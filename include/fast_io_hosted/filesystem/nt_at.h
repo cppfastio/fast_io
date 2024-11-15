@@ -233,21 +233,16 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		.CreateOptions = 0x00000020 | 0x00200000           // FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_REPARSE_POINT
 	};
 
-	if (status == 0xC0000034) // file not exit
+
+	if ((attribute & 0x10) == 0x10)
 	{
-		symbol_mode.CreateOptions |= 0x00000040; // file
+		symbol_mode.CreateOptions |= 0x00000001; // directory
 	}
 	else
 	{
-		if ((attribute & 0x10) == 0x10)
-		{
-			symbol_mode.CreateOptions |= 0x00000001; // directory
-		}
-		else
-		{
-			symbol_mode.CreateOptions |= 0x00000040; // file
-		}
+		symbol_mode.CreateOptions |= 0x00000040; // file
 	}
+
 	constexpr ::std::size_t pathbufferoffset{
 		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)};
 	::std::size_t const cbReparseData{pathbufferoffset + oldpath_real_size * sizeof(char16_t) * 2};
