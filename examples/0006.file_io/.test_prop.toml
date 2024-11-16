@@ -12,3 +12,6 @@ interactive = true
 
 ["count_all_spaces_in_file.cc"]
 interactive = true
+
+["dir_file.cc"]
+interactive = true

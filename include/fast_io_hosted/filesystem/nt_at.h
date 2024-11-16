@@ -446,6 +446,8 @@ inline auto nt1x_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::
 	if constexpr(dsp==::fast_io::details::posix_api_1x::faccessat)
 		nt_faccessat_impl<zw>(dir_handle,path_c_str,path_size,args...);
 	else if constexpr(dsp==::fast_io::details::posix_api_1x::fchmodat)
+		// Windows does not use POSIX user group system. stub it and it is perfectly fine. 
+		// But nt_fchownat, zw_fchownat will not be provided since they do not exist.
 		nt_fchmodat_impl<zw>(dir_handle,path_c_str,path_size,args...);
 	else if constexpr(dsp==::fast_io::details::posix_api_1x::fstatat)
 		nt_fstatat_impl<zw>(dir_handle,path_c_str,path_size,args...);
@@ -617,14 +619,6 @@ inline void native_unlinkat(nt_at_entry ent, path_type &&path, native_at_flags f
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, ::fast_io::details::posix_api_1x::unlinkat>(
 		ent.handle, path, flags);
-}
-
-template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_fchownat(nt_at_entry, path_type &&, ::std::size_t, ::std::size_t,
-							[[maybe_unused]] nt_at_flags flags = nt_at_flags::symlink_nofollow)
-{
-	// windows does not use POSIX user group system. stub it and it is perfectly fine. But nt_fchownat, zw_fchownat will
-	// not be provided since they do not exist.
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
