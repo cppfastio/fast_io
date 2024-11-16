@@ -823,12 +823,6 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
-	if (pathname == nullptr) [[unlikely]]
-	{
-		system_call_throw_error<always_terminate>(-1);
-		return -1;
-	}
-
 	if (dirfd == -100)
 	{
 		int fd(::open(pathname, flags, mode));

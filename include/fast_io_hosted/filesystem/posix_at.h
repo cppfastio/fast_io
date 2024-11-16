@@ -82,18 +82,24 @@ inline auto posix22_api_dispatcher(int olddirfd, char const *oldpath, int newdir
 		posix_linkat_impl(olddirfd, oldpath, newdirfd, newpath, args...);
 	}
 }
+
+inline void posix_symlinkat_impl(char const *oldpath, int newdirfd, char const *newpath)
+{
+	system_call_throw_error(
+#if defined(__linux__)
+		system_call<__NR_symlinkat, int>
+#else
+		::fast_io::posix::libc_symlinkat
+#endif
+		(oldpath, newdirfd, newpath));
+}
+
 template <posix_api_12 dsp>
 inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath)
 {
 	if constexpr (dsp == posix_api_12::symlinkat)
 	{
-		system_call_throw_error(
-#if defined(__linux__)
-			system_call<__NR_symlinkat, int>
-#else
-			::fast_io::posix::libc_symlinkat
-#endif
-			(oldpath, newdirfd, newpath));
+		posix_symlinkat_impl(oldpath, newdirfd, newpath));
 	}
 }
 
