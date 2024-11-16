@@ -143,6 +143,7 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		// Like mounted ntfs in wsl, all files and dirs are executable
 		return;
 	case ::fast_io::access_how::w_ok:
+	{
 		::fast_io::win32::nt::file_basic_information fbi;
 		::fast_io::win32::nt::io_status_block isb;
 
@@ -161,6 +162,7 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 			throw_nt_error(0xC000001E); // no access
 		}
 		return;
+	}
 	case ::fast_io::access_how::r_ok:
 		return;
 	default:
@@ -235,6 +237,8 @@ template <bool zw>
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
 
+	// Windows does not use POSIX user group system. stub it and it is perfectly fine.
+	// But nt_fchownat, zw_fchownat will not be provided since they do not exist.
 	throw_nt_error(0xC0000002);
 }
 
@@ -251,7 +255,7 @@ inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
 
-	return ::fast_io::win32::nt::details::nt_status_impl<zw>(file.native_handle());
+	return ::fast_io::win32::nt::details::nt_status_impl<(zw ? nt_family::zw : nt_family::nt)>(file.native_handle());
 }
 
 template <bool zw>
@@ -817,21 +821,21 @@ inline void zw_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t
 
 template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline void nt_family_nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline posix_file_status nt_family_nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fstatat>(ent.handle, path, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline posix_file_status nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void zw_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline posix_file_status zw_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags);
 }
 
 template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
@@ -984,9 +988,9 @@ inline void native_fchownat(nt_at_entry ent, path_type const &path, ::std::uintm
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline posix_file_status native_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
