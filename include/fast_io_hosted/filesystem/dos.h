@@ -55,7 +55,7 @@ public:
 	}
 };
 
-namespace details
+namespace posix
 {
 // extern char const* my_dos_get_fd_name(int) noexcept __asm__("___get_fd_name");
 extern DIR *my_dos_opendir(char const *) noexcept __asm__("_opendir");
@@ -81,7 +81,7 @@ inline dos_DIR sys_dup_dir(dos_DIR dirp)
 		throw_posix_error();
 	}
 	auto newfd{details::sys_dup(fd)};
-	auto newdir{my_dos_fdopendir(newfd)};
+	auto newdir{posix::my_dos_fdopendir(newfd)};
 	if (newdir == nullptr) [[unlikely]]
 	{
 		details::sys_close(newfd);
@@ -109,7 +109,7 @@ public:
 	}
 
 	dos_directory_file(posix_file &&pioh)
-		: dos_directory_io_observer{details::my_dos_fdopendir(pioh.fd), pioh.fd}
+		: dos_directory_io_observer{posix::my_dos_fdopendir(pioh.fd), pioh.fd}
 	{
 		if (this->dirp.dirp == nullptr)
 		{
