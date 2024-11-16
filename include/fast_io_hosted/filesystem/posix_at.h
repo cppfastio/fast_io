@@ -200,7 +200,7 @@ inline posix_file_status posix_fstatat_impl(int dirfd, char const *pathname, int
 	struct stat buf;
 	system_call_throw_error(::fast_io::posix::libc_fstatat(dirfd, pathname, __builtin_addressof(buf), flags));
 #endif
-	return struct_stat_to_posix_file_status(buf);
+	return ::fast_io::details::struct_stat_to_posix_file_status(buf);
 }
 
 inline void posix_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
@@ -332,7 +332,7 @@ inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
 	}
 	else if constexpr (dsp == posix_api_1x::fstatat)
 	{
-		posix_fstatat_impl(dirfd, path, args...);
+		return posix_fstatat_impl(dirfd, path, args...);
 	}
 	else if constexpr (dsp == posix_api_1x::mkdirat)
 	{

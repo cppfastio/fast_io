@@ -138,7 +138,7 @@ inline posix_file_status dos_fstatat_impl(int dirfd, char const *pathname, [[may
 	struct stat buf;
 
 	system_call_throw_error(posix::my_dos_stat(my_dos_concat_path(dirfd, pathname).c_str(), __builtin_addressof(buf)));
-	return struct_stat_to_posix_file_status(buf);
+	return ::fast_io::details::struct_stat_to_posix_file_status(buf);
 }
 
 inline void dos_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
@@ -214,7 +214,7 @@ inline auto dos1x_api_dispatcher(int dirfd, char const *path, Args... args)
 	}
 	else if constexpr (dsp == posix_api_1x::fstatat)
 	{
-		dos_fstatat_impl(dirfd, path, args...);
+		return dos_fstatat_impl(dirfd, path, args...);
 	}
 	else if constexpr (dsp == posix_api_1x::mkdirat)
 	{
