@@ -99,7 +99,7 @@ inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const
 {
 	if constexpr (dsp == posix_api_12::symlinkat)
 	{
-		posix_symlinkat_impl(oldpath, newdirfd, newpath));
+		posix_symlinkat_impl(oldpath, newdirfd, newpath);
 	}
 }
 
