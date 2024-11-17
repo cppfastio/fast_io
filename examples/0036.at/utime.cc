@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 			iso8601_ts = ::fast_io::to<::fast_io::iso8601_timestamp>(fast_io::mnp::os_c_str(argv[2]));
 			succussed = true;
 		}
-		catch (::fast_io::error e)
+		catch (::fast_io::error)
 		{
 			succussed = false;
 		}
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 			iso8601_ts = ::fast_io::to<::fast_io::iso8601_timestamp>(fast_io::mnp::os_c_str(argv[3]));
 			succussed = true;
 		}
-		catch (::fast_io::error e)
+		catch (::fast_io::error)
 		{
 			succussed = false;
 		}
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 			iso8601_ts = ::fast_io::to<::fast_io::iso8601_timestamp>(fast_io::mnp::os_c_str(argv[4]));
 			succussed = true;
 		}
-		catch (::fast_io::error e)
+		catch (::fast_io::error)
 		{
 			succussed = false;
 		}
