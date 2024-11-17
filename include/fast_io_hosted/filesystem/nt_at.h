@@ -286,14 +286,17 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	current_time = static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32) | ftm.dwLowDateTime;
 #endif
 
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1'000'000'000u};
+	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000ULL};
 
 	switch (creation_time.flags)
 	{
 	case ::fast_io::utime_flags::none:
-		fbi.CreationTime = static_cast<::std::uint_least64_t>(creation_time.timestamp.seconds) * 1'000'000'000u +
-						   creation_time.timestamp.subseconds / mul_factor;
+	{
+		auto const win32_time{static_cast<::fast_io::win32_timestamp>(creation_time.timestamp)};
+		fbi.CreationTime = static_cast<::std::uint_least64_t>(win32_time.seconds) * 10000000ULL +
+						   win32_time.subseconds / mul_factor;
 		break;
+	}
 	case ::fast_io::utime_flags::now:
 		fbi.CreationTime = current_time;
 		break;
@@ -307,9 +310,12 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	switch (last_access_time.flags)
 	{
 	case ::fast_io::utime_flags::none:
-		fbi.LastAccessTime = static_cast<::std::uint_least64_t>(last_access_time.timestamp.seconds) * 1'000'000'000u +
-							 last_access_time.timestamp.subseconds / mul_factor;
+	{
+		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_access_time.timestamp)};
+		fbi.LastAccessTime = static_cast<::std::uint_least64_t>(win32_time.seconds) * 10000000ULL +
+							 win32_time.subseconds / mul_factor;
 		break;
+	}
 	case ::fast_io::utime_flags::now:
 		fbi.LastAccessTime = current_time;
 		break;
@@ -323,9 +329,12 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	switch (last_modification_time.flags)
 	{
 	case ::fast_io::utime_flags::none:
-		fbi.LastWriteTime = static_cast<::std::uint_least64_t>(last_modification_time.timestamp.seconds) * 1'000'000'000u +
-							last_modification_time.timestamp.subseconds / mul_factor;
+	{
+		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_modification_time.timestamp)};
+		fbi.LastWriteTime = static_cast<::std::uint_least64_t>(win32_time.seconds) * 10000000ULL +
+							win32_time.subseconds / mul_factor;
 		break;
+	}
 	case ::fast_io::utime_flags::now:
 		fbi.LastWriteTime = current_time;
 		break;
@@ -985,8 +994,8 @@ inline posix_file_status native_fstatat(nt_at_entry ent, path_type const &path, 
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
-						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+							 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+							 nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
 }
