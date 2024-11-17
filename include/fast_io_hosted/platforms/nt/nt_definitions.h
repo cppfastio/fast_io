@@ -416,6 +416,32 @@ struct rtl_critical_section
 	::std::size_t spin_count;
 };
 
+namespace details
+{
+struct Detailed_SubSystemVersion_t
+{
+	::std::uint_least16_t SubSystemMinorVersion;
+	::std::uint_least16_t SubSystemMajorVersion;
+};
+
+struct Detailed_OperatingSystemVersion_t
+{
+	::std::uint_least16_t MajorOperatingSystemVersion;
+	::std::uint_least16_t MinorOperatingSystemVersion;
+};
+
+struct Detailed_ImageFlags_t
+{
+	::std::uint_least8_t ComPlusNativeReady : 1;
+	::std::uint_least8_t ComPlusILOnly : 1;
+	::std::uint_least8_t ImageDynamicallyRelocated : 1;
+	::std::uint_least8_t ImageMappedFlat : 1;
+	::std::uint_least8_t BaseBelow4gb : 1;
+	::std::uint_least8_t ComPlusPrefer32bit : 1;
+	::std::uint_least8_t Reserved : 2;
+};
+} // namespace details
+
 struct section_image_information
 {
 	void *TransferAddress;
@@ -425,22 +451,13 @@ struct section_image_information
 	::std::uint_least32_t SubSystemType;
 	union
 	{
-		struct Detailed_SubSystemVersion_t
-		{
-			::std::uint_least16_t SubSystemMinorVersion;
-			::std::uint_least16_t SubSystemMajorVersion;
-		};
-		Detailed_SubSystemVersion_t Detailed_SubSystemVersion;
+		details::Detailed_SubSystemVersion_t Detailed_SubSystemVersion;
 		::std::uint_least32_t SubSystemVersion;
 	};
 	union
 	{
-		struct Detailed_OperatingSystemVersion_t
-		{
-			::std::uint_least16_t MajorOperatingSystemVersion;
-			::std::uint_least16_t MinorOperatingSystemVersion;
-		};
-		Detailed_OperatingSystemVersion_t Detailed_OperatingSystemVersion;
+
+		details::Detailed_OperatingSystemVersion_t Detailed_OperatingSystemVersion;
 		::std::uint_least32_t OperatingSystemVersion;
 	};
 	::std::uint_least16_t ImageCharacteristics;
@@ -450,17 +467,7 @@ struct section_image_information
 	union
 	{
 		::std::uint_least8_t ImageFlags;
-		struct Detailed_ImageFlags_t
-		{
-			::std::uint_least8_t ComPlusNativeReady : 1;
-			::std::uint_least8_t ComPlusILOnly : 1;
-			::std::uint_least8_t ImageDynamicallyRelocated : 1;
-			::std::uint_least8_t ImageMappedFlat : 1;
-			::std::uint_least8_t BaseBelow4gb : 1;
-			::std::uint_least8_t ComPlusPrefer32bit : 1;
-			::std::uint_least8_t Reserved : 2;
-		};
-		Detailed_ImageFlags_t Detailed_ImageFlags;
+		details::Detailed_ImageFlags_t Detailed_ImageFlags;
 	};
 	::std::uint_least32_t LoaderFlags;
 	::std::uint_least32_t ImageFileSize;
@@ -788,17 +795,21 @@ struct rtl_srwlock
 	void *Ptr;
 };
 
+namespace details
+{
+struct Detailed_flag_t
+{
+	::std::uint_least32_t StdHandleState : 2;   // PS_STD_HANDLE_STATE
+	::std::uint_least32_t PseudoHandleMask : 3; // PS_STD_*
+};
+} // namespace details
+
 struct ps_std_handle_info
 {
 	union
 	{
 		::std::uint_least32_t Flags; // 0x121 = 100100001
-		struct detailed_flag_t
-		{
-			::std::uint_least32_t StdHandleState : 2;   // PS_STD_HANDLE_STATE
-			::std::uint_least32_t PseudoHandleMask : 3; // PS_STD_*
-		};
-		detailed_flag_t detailed_flags;
+		details::Detailed_flag_t detailed_flags;
 	};
 	::std::uint_least32_t StdHandleSubsystemType;
 };
@@ -840,7 +851,7 @@ struct file_fs_volume_information
 struct file_link_information
 {
 	::std::uint_least8_t ReplaceIfExists;
-	void* RootDirectory;
+	void *RootDirectory;
 	::std::uint_least32_t FileNameLength;
 	char16_t FileName[1];
 };
@@ -848,7 +859,7 @@ struct file_link_information
 struct file_rename_information
 {
 	::std::uint_least8_t ReplaceIfExists;
-	void* RootDirectory;
+	void *RootDirectory;
 	::std::uint_least32_t FileNameLength;
 	char16_t FileName[1];
 };

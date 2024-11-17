@@ -530,9 +530,8 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	pBufTail += oldpath_real_size;
 	::fast_io::freestanding::non_overlapped_copy_n(oldpath_real_c_str, oldpath_real_size, pBufTail);
 
-	// Check whether it is the root directory: nt[0] == u'\\', is_c_upper(win32[0]) && (win32[1] == u':')
-	pReparseData->SymbolicLinkReparseBuffer.Flags =
-		static_cast<::std::uint_least32_t>(!is_root);
+	// Check whether it is the root directory
+	pReparseData->SymbolicLinkReparseBuffer.Flags = static_cast<::std::uint_least32_t>(!is_root);
 
 	// You need to check whether or not the authorization process has SeCreateSymbolicLinkPrivilege privilege
 
