@@ -276,16 +276,6 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	::fast_io::win32::nt::file_basic_information fbi;
 	::fast_io::win32::nt::io_status_block isb;
 
-	auto status{::fast_io::win32::nt::nt_query_information_file<zw>(
-		file.native_handle(), __builtin_addressof(isb), __builtin_addressof(fbi),
-		static_cast<::std::uint_least32_t>(sizeof(fbi)),
-		::fast_io::win32::nt::file_information_class::FileBasicInformation)};
-
-	if (status) [[unlikely]]
-	{
-		throw_nt_error(status);
-	}
-
 	::std::uint_least64_t current_time;
 
 #if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
@@ -359,10 +349,10 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	fbi.ChangeTime = 0;
 	fbi.FileAttributes = 0;
 
-	status = ::fast_io::win32::nt::nt_set_information_file<zw>(
+	auto status{::fast_io::win32::nt::nt_set_information_file<zw>(
 		file.native_handle(), __builtin_addressof(isb), __builtin_addressof(fbi),
 		static_cast<::std::uint_least32_t>(sizeof(fbi)),
-		::fast_io::win32::nt::file_information_class::FileBasicInformation);
+		::fast_io::win32::nt::file_information_class::FileBasicInformation)};
 
 	if (status) [[unlikely]]
 	{
