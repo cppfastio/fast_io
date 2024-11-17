@@ -460,7 +460,7 @@ struct section_image_information
 			::std::uint_least8_t ComPlusPrefer32bit : 1;
 			::std::uint_least8_t Reserved : 2;
 		};
-		Detailed_ImageFlags_t Detailed_ImageFlags{};
+		Detailed_ImageFlags_t Detailed_ImageFlags;
 	};
 	::std::uint_least32_t LoaderFlags;
 	::std::uint_least32_t ImageFileSize;
@@ -798,7 +798,7 @@ struct ps_std_handle_info
 			::std::uint_least32_t StdHandleState : 2;   // PS_STD_HANDLE_STATE
 			::std::uint_least32_t PseudoHandleMask : 3; // PS_STD_*
 		};
-		detailed_flag_t detailed_flags{};
+		detailed_flag_t detailed_flags;
 	};
 	::std::uint_least32_t StdHandleSubsystemType;
 };
