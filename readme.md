@@ -87,11 +87,11 @@ Refer to either https://ewindy.gitee.io/fast_io_rst/index.html or https://gitee.
 
 ### path formats supported on Windows NT
 ``` txt
-nt api supported:
+nt api (NtCreateFile) supported:
 1. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
 2. NT Device Path  (Only right slash can be used) = \Device\HardiskVolume6\Plans\Marshall
 
-fast_io::nt_file (default) supported:
+::fast_io::nt_file (default) supported:
 1. Dos Relative path (Left slash available) = ..\HAL 9000
 2. DOS Drive path (Left slash available) = C:\Program FIle\HAL 9000
 3. UNC path (Left slash available) = \\Media\Pictures\Worth\1000 words
@@ -100,7 +100,7 @@ fast_io::nt_file (default) supported:
 6. NT path (Only right slash can be used) = \??\D:\Plans\Marshall
 7. NT Device Path  (Only right slash can be used) = \Device\HardiskVolume6\Plans\Marshall
 
-win32 api and fast_io::win32_file supported:
+win32 api (CreateFile) and ::fast_io::win32_file supported:
 1. Dos Relative path (Left slash available) = ..\HAL 9000
 2. DOS Drive path (Left slash available) = C:\Program FIle\HAL 9000
 3. UNC path (Left slash available) = \\Media\Pictures\Worth\1000 words
