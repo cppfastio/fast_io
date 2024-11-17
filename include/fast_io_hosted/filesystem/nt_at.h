@@ -108,6 +108,249 @@ inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size
 	}
 }
 
+template <bool zw>
+inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, access_how mode, [[maybe_unused]] nt_at_flags flags)
+{
+	switch (mode)
+	{
+	case ::fast_io::access_how::f_ok:
+		[[fallthrough]];
+	case ::fast_io::access_how::x_ok:
+		[[fallthrough]];
+	case ::fast_io::access_how::w_ok:
+		[[fallthrough]];
+	case ::fast_io::access_how::r_ok:
+		break;
+	default:
+		throw_nt_error(0xC0000003);
+	}
+
+	constexpr nt_open_mode md{
+		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
+	};
+
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
+		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
+
+	switch (mode)
+	{
+	case ::fast_io::access_how::f_ok:
+		return;
+	case ::fast_io::access_how::x_ok:
+		// Like mounted ntfs in wsl, all files and dirs are executable
+		return;
+	case ::fast_io::access_how::w_ok:
+	{
+		::fast_io::win32::nt::file_basic_information fbi;
+		::fast_io::win32::nt::io_status_block isb;
+
+		auto status{::fast_io::win32::nt::nt_query_information_file<zw>(
+			file.native_handle(), __builtin_addressof(isb), __builtin_addressof(fbi),
+			static_cast<::std::uint_least32_t>(sizeof(fbi)),
+			::fast_io::win32::nt::file_information_class::FileBasicInformation)};
+
+		if (status) [[unlikely]]
+		{
+			throw_nt_error(status);
+		}
+
+		if ((fbi.FileAttributes & 0x1) == 0x1) // READ_ONLY
+		{
+			throw_nt_error(0xC000001E); // no access
+		}
+		return;
+	}
+	case ::fast_io::access_how::r_ok:
+		return;
+	default:
+		::fast_io::unreachable();
+	}
+}
+
+template <bool zw>
+inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, [[maybe_unused]] nt_at_flags flags)
+{
+	constexpr nt_open_mode md{
+		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
+	};
+
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
+		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
+
+	::fast_io::win32::nt::file_basic_information fbi;
+	::fast_io::win32::nt::io_status_block isb;
+
+	auto status{::fast_io::win32::nt::nt_query_information_file<zw>(
+		file.native_handle(), __builtin_addressof(isb), __builtin_addressof(fbi),
+		static_cast<::std::uint_least32_t>(sizeof(fbi)),
+		::fast_io::win32::nt::file_information_class::FileBasicInformation)};
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	if ((pm & perms::owner_write) == perms::none)
+	{
+		fbi.FileAttributes |= 0x00000001; // FILE_ATTRIBUTE_READONLY
+	}
+	else
+	{
+		fbi.FileAttributes &= ~static_cast<::std::uint_least32_t>(0x00000001);
+	}
+
+	// If this is set to 0 in a FILE_BASIC_INFO structure passed to func then none of the attributes are changed.
+	fbi.CreationTime = 0;
+	fbi.LastAccessTime = 0;
+	fbi.LastWriteTime = 0;
+	fbi.ChangeTime = 0;
+
+	status = ::fast_io::win32::nt::nt_set_information_file<zw>(
+		file.native_handle(), __builtin_addressof(isb), __builtin_addressof(fbi),
+		static_cast<::std::uint_least32_t>(sizeof(fbi)),
+		::fast_io::win32::nt::file_information_class::FileBasicInformation);
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+}
+
+template <bool zw>
+[[noreturn]] inline void nt_fchownat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size,
+										  [[maybe_unused]] ::std::uintmax_t owner, [[maybe_unused]] ::std::uintmax_t group, [[maybe_unused]] nt_at_flags flags)
+{
+	constexpr nt_open_mode md{
+		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
+	};
+
+	// check if file exist
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
+		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
+
+	// Windows does not use POSIX user group system. stub it and it is perfectly fine.
+	// But nt_fchownat, zw_fchownat will not be provided since they do not exist.
+	throw_nt_error(0xC0000002);
+}
+
+template <bool zw>
+inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, [[maybe_unused]] nt_at_flags flags)
+{
+	constexpr nt_open_mode md{
+		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
+	};
+
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
+		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
+
+	return ::fast_io::win32::nt::details::nt_status_impl<(zw ? nt_family::zw : nt_family::nt)>(file.native_handle());
+}
+
+template <bool zw>
+inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, unix_timestamp_option creation_time,
+							  unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+							  [[maybe_unused]] nt_at_flags flags)
+{
+	constexpr nt_open_mode md{
+		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
+	};
+
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
+		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
+
+	::fast_io::win32::nt::file_basic_information fbi;
+	::fast_io::win32::nt::io_status_block isb;
+
+	::std::uint_least64_t current_time;
+
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
+	current_time = static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise());
+#else
+	::fast_io::win32::filetime ftm;
+	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
+	current_time = static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32) | ftm.dwLowDateTime;
+#endif
+
+	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1'000'000'000u};
+
+	switch (creation_time.flags)
+	{
+	case ::fast_io::utime_flags::none:
+		fbi.CreationTime = static_cast<::std::uint_least64_t>(creation_time.timestamp.seconds) * 1'000'000'000u +
+						   creation_time.timestamp.subseconds / mul_factor;
+		break;
+	case ::fast_io::utime_flags::now:
+		fbi.CreationTime = current_time;
+		break;
+	case ::fast_io::utime_flags::omit:
+		fbi.CreationTime = 0;
+		break;
+	default:
+		throw_nt_error(0xC0000003);
+	}
+
+	switch (last_access_time.flags)
+	{
+	case ::fast_io::utime_flags::none:
+		fbi.LastAccessTime = static_cast<::std::uint_least64_t>(last_access_time.timestamp.seconds) * 1'000'000'000u +
+							 last_access_time.timestamp.subseconds / mul_factor;
+		break;
+	case ::fast_io::utime_flags::now:
+		fbi.LastAccessTime = current_time;
+		break;
+	case ::fast_io::utime_flags::omit:
+		fbi.LastAccessTime = 0;
+		break;
+	default:
+		throw_nt_error(0xC0000003);
+	}
+
+	switch (last_modification_time.flags)
+	{
+	case ::fast_io::utime_flags::none:
+		fbi.LastWriteTime = static_cast<::std::uint_least64_t>(last_modification_time.timestamp.seconds) * 1'000'000'000u +
+							last_modification_time.timestamp.subseconds / mul_factor;
+		break;
+	case ::fast_io::utime_flags::now:
+		fbi.LastWriteTime = current_time;
+		break;
+	case ::fast_io::utime_flags::omit:
+		fbi.LastWriteTime = 0;
+		break;
+	default:
+		throw_nt_error(0xC0000003);
+	}
+
+	// If this is set to 0 in a FILE_BASIC_INFO structure passed to func then none of the attributes are changed.
+	fbi.ChangeTime = 0;
+	fbi.FileAttributes = 0;
+
+	auto status{::fast_io::win32::nt::nt_set_information_file<zw>(
+		file.native_handle(), __builtin_addressof(isb), __builtin_addressof(fbi),
+		static_cast<::std::uint_least32_t>(sizeof(fbi)),
+		::fast_io::win32::nt::file_information_class::FileBasicInformation)};
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+}
+
 struct nt_create_file_nothrow_common_return_t
 {
 	void *handle;
@@ -147,6 +390,7 @@ struct nt_create_nothrow_callback
 		return nt_create_file_nothrow_common<zw>(directory_handle, relative_path, mode); // get rid of this pointer
 	}
 };
+
 template <bool zw>
 inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
@@ -442,18 +686,24 @@ inline auto nt12_api_dispatcher(char16_t const *oldpath_c_str, ::std::size_t old
 template <bool zw, ::fast_io::details::posix_api_1x dsp, typename... Args>
 inline auto nt1x_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::std::size_t path_size, Args... args)
 {
-#if 0
-	if constexpr(dsp==::fast_io::details::posix_api_1x::faccessat)
-		nt_faccessat_impl<zw>(dir_handle,path_c_str,path_size,args...);
-	else if constexpr(dsp==::fast_io::details::posix_api_1x::fchmodat)
-		// Windows does not use POSIX user group system. stub it and it is perfectly fine. 
-		// But nt_fchownat, zw_fchownat will not be provided since they do not exist.
-		nt_fchmodat_impl<zw>(dir_handle,path_c_str,path_size,args...);
-	else if constexpr(dsp==::fast_io::details::posix_api_1x::fstatat)
-		nt_fstatat_impl<zw>(dir_handle,path_c_str,path_size,args...);
-	else
-#endif
-	if constexpr (dsp == ::fast_io::details::posix_api_1x::mkdirat)
+
+	if constexpr (dsp == ::fast_io::details::posix_api_1x::faccessat)
+	{
+		nt_faccessat_impl<zw>(dir_handle, path_c_str, path_size, args...);
+	}
+	else if constexpr (dsp == ::fast_io::details::posix_api_1x::fchmodat)
+	{
+		nt_fchmodat_impl<zw>(dir_handle, path_c_str, path_size, args...);
+	}
+	else if constexpr (dsp == ::fast_io::details::posix_api_1x::fchownat)
+	{
+		nt_fchownat_impl<zw>(dir_handle, path_c_str, path_size, args...);
+	}
+	else if constexpr (dsp == ::fast_io::details::posix_api_1x::fstatat)
+	{
+		return nt_fstatat_impl<zw>(dir_handle, path_c_str, path_size, args...);
+	}
+	else if constexpr (dsp == ::fast_io::details::posix_api_1x::mkdirat)
 	{
 		nt_mkdirat_impl<zw>(dir_handle, path_c_str, path_size, args...);
 	}
@@ -461,10 +711,10 @@ inline auto nt1x_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::
 	{
 		nt_unlinkat_impl<zw>(dir_handle, path_c_str, path_size, args...);
 	}
-#if 0
-	else if constexpr(dsp==::fast_io::details::posix_api_1x::unlinkat::utimensat)
-		nt_utimensat_impl<zw>(dir_handle,path_c_str,path_size,args...);
-#endif
+	else if constexpr (dsp == ::fast_io::details::posix_api_1x::utimensat)
+	{
+		nt_utimensat_impl<zw>(dir_handle, path_c_str, path_size, args...);
+	}
 }
 
 template <nt_family family, ::fast_io::details::posix_api_1x dsp, typename path_type, typename... Args>
@@ -502,6 +752,107 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 } // namespace win32::nt::details
 
 // 1x
+template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+	requires(family == nt_family::nt || family == nt_family::zw)
+inline void nt_family_nt_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+}
+
+template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+	requires(family == nt_family::nt || family == nt_family::zw)
+inline void nt_family_nt_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+}
+
+template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+	requires(family == nt_family::nt || family == nt_family::zw)
+inline void nt_family_nt_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+}
+
+template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+	requires(family == nt_family::nt || family == nt_family::zw)
+inline posix_file_status nt_family_nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline posix_file_status nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline posix_file_status zw_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+}
+
+template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+	requires(family == nt_family::nt || family == nt_family::zw)
+inline void nt_family_nt_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+								   unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+								   nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+}
+
 template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
@@ -607,6 +958,38 @@ inline void zw_linkat(native_at_entry oldent, old_path_type &&oldpath, native_at
 
 #if !defined(__CYGWIN__) && !defined(__WINE__)
 using native_at_flags = nt_at_flags;
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void native_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void native_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void native_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline posix_file_status native_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void native_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+}
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))

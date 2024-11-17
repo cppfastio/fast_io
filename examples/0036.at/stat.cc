@@ -16,8 +16,7 @@ int main(int argc, char **argv)
 	try
 #endif
 	{
-		::fast_io::native_file f{fast_io::mnp::os_c_str(argv[1]), ::fast_io::open_mode::in};
-		::fast_io::io::perrln(status(f));
+		::fast_io::io::perrln(::fast_io::native_fstatat(::fast_io::at_fdcwd(), fast_io::mnp::os_c_str(argv[1])));
 	}
 #if __cpp_exceptions
 	catch (fast_io::error e)
