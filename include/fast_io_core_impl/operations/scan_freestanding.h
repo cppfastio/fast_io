@@ -333,15 +333,16 @@ template <typename input, typename... Args>
 	{
 		return (::fast_io::details::scan_single_impl(instm, args) && ...);
 	}
-#if 0
-	else
+	else if constexpr (::fast_io::operations::defines::available_add_ibuf<input>)
 	{
-		unget_temp_buffer in_buffer(io_ref(in));
-		return scan_freestanding_decay(io_ref(in_buffer),args...);
+		static_assert(::fast_io::operations::decay::defines::has_status_scan_define<input>, 
+			"If you want to scan this type of file, please add ::fast_io::basic_ibuf. "
+			"At the same time, please ensure that this type of file is not blocked, or scanning will block the endless loop.");
+		return false;
 	}
-#endif
 	else
 	{
+		static_assert(::fast_io::operations::decay::defines::has_status_scan_define<input>, "type not scannable.");
 		return false;
 	}
 }

@@ -462,8 +462,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	AttributeList.Attributes[4].Attribute = 131082; // PS_ATTRIBUTE_STD_HANDLE_INFO
 	::fast_io::win32::nt::ps_std_handle_info pshi{};
 	pshi.StdHandleSubsystemType = 3; // IMAGE_SUBSYSTEM_WINDOWS_CUI
-	pshi.StdHandleState = 2;         // PsAlwaysDuplicate == (win32) bInheritHandles
-	pshi.PseudoHandleMask = 0;
+	pshi.detailed_flags.StdHandleState = 2; // PsAlwaysDuplicate == (win32) bInheritHandles
+	pshi.detailed_flags.PseudoHandleMask = 0;
 	AttributeList.Attributes[4].Size = sizeof(pshi);
 	AttributeList.Attributes[4].ReturnLength = 0;
 	AttributeList.Attributes[4].ValuePtr = __builtin_addressof(pshi);

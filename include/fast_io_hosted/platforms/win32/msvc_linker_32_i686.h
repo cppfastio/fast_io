@@ -227,6 +227,7 @@
 #pragma comment(linker,"/alternatename:__imp_?RtlGetSystemTimePrecise@nt@win32@fast_io@@YG_JXZ=__imp__RtlGetSystemTimePrecise@0")
 #pragma comment(linker,"/alternatename:__imp_?NtQueryInformationThread@nt@win32@fast_io@@YGHPIAXW4thread_information_class@123@PAXIPAI@Z=__imp__NtQueryInformationThread@20")
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryInformationThread@nt@win32@fast_io@@YGHPIAXW4thread_information_class@123@PAXIPAI@Z=__imp__ZwQueryInformationThread@20")
+#pragma comment(linker,"/alternatename:__imp_?RtlAdjustPrivilege@nt@win32@fast_io@@YGHIEEPAE@Z=__imp__RtlAdjustPrivilege@16")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp____RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=___RTtypeid")
