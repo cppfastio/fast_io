@@ -4,7 +4,7 @@ namespace fast_io::freestanding
 {
 
 template <typename T, ::std::size_t N>
-	requires(sizeof(N) != 0)
+	requires(N != 0)
 struct array
 {
 	using value_type = T;
