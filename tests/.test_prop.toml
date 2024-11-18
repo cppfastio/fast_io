@@ -23,4 +23,4 @@ ignore = true
 ignore = true
 
 ["0032.process"]
-interactive = true
+ignore = true
