@@ -1429,11 +1429,9 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	::fast_io::win32::nt::io_status_block isb;
 	constexpr decltype(auto) namedpipe_part{u"\\Device\\NamedPipe\\"};
 	::fast_io::win32::nt::unicode_string us{
-		.Length = sizeof(namedpipe_part) - sizeof(char16_t),
-		.MaximumLength = sizeof(namedpipe_part),
-		.Buffer = const_cast<char16_t *>(namedpipe_part)
-
-	};
+		.Length = static_cast<::std::uint_least16_t>(sizeof(namedpipe_part) - sizeof(char16_t)),
+		.MaximumLength = static_cast<::std::uint_least16_t>(sizeof(namedpipe_part)),
+		.Buffer = const_cast<char16_t *>(namedpipe_part)};
 
 	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
 												.RootDirectory = nullptr,
@@ -1452,9 +1450,8 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 		throw_nt_error(status);
 	}
 
-
-	//::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(namedpipedir);
-
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(namedpipedir);
+	//_InterlockedCompareExchange(&dword_1023FF24, static_cast<long>(namedpipedir), 0);
 
 	::std::int_least64_t DefaultTimeout{-1200000000};
 
@@ -1512,7 +1509,16 @@ public:
 	basic_nt_family_file<family, ch_type> pipes[2];
 	basic_nt_family_pipe()
 	{
+#if 0
 		win32::nt::details::nt_create_pipe<family == nt_family::zw>(__builtin_addressof(pipes[0].handle), __builtin_addressof(pipes[1].handle));
+#else
+		::fast_io::win32::security_attributes sec_attr{sizeof(::fast_io::win32::security_attributes), nullptr, 1};
+		if (!::fast_io::win32::CreatePipe(__builtin_addressof(pipes[0].handle),
+										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0))
+		{
+			throw_win32_error();
+		}
+#endif
 	}
 	constexpr auto &in() noexcept
 	{
