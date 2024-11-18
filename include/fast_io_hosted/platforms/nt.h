@@ -1462,7 +1462,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	::fast_io::win32::nt::object_attributes obj2{.Length = sizeof(::fast_io::win32::nt::object_attributes),
 												 .RootDirectory = file.native_handle(),
 												 .ObjectName = __builtin_addressof(us2),
-												 .Attributes = 0x40,
+												 .Attributes = 0x42 /* InheritHandle */,
 												 .SecurityDescriptor = nullptr,
 												 .SecurityQualityOfService = nullptr};
 
@@ -1488,7 +1488,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 
 	void *WritePipeHandle;
 	status = ::fast_io::win32::nt::nt_create_file<zw>(
-		__builtin_addressof(WritePipeHandle), 0x40100080, __builtin_addressof(obj), __builtin_addressof(isb), nullptr,
+		__builtin_addressof(WritePipeHandle), 0x40100080, __builtin_addressof(obj2), __builtin_addressof(isb), nullptr,
 		0x80, 3, 0x00000003, 0x00000020 | 0x00000040, nullptr, 0u);
 
 	if (status)
