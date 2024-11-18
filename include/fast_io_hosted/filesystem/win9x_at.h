@@ -237,19 +237,92 @@ inline void win9x_fchmodat_impl(::fast_io::win9x_dir_handle const &dirhd, char8_
 
 inline posix_file_status win9x_fstatat_impl(::fast_io::win9x_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, [[maybe_unused]] win9x_at_flags flags)
 {
-	auto path{concat_tlc_win9x_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto path{::fast_io::win32::details::basic_win9x_create_file_at_fs_dirent_impl(__builtin_addressof(dirhd), reinterpret_cast<char const *>(path_c_str), path_size, {::fast_io::open_mode::in, static_cast<perms>(436)})};
 
-	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
-	
-	if (attr == -1) [[unlikely]]
-	{
-		// dir not support on win9x
-		throw_win32_error(0x2);
-	}
-
-	::fast_io::win32_file_9xa f{path, ::fast_io::open_mode::in};
+	::fast_io::win32_file_9xa f{path};
 
 	return ::fast_io::win32::details::win32_status_impl(f.native_handle());
+}
+
+inline void win9x_utimensat_impl(::fast_io::win9x_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, unix_timestamp_option creation_time,
+								 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, [[maybe_unused]] win9x_at_flags flags)
+{
+	auto path{::fast_io::win32::details::basic_win9x_create_file_at_fs_dirent_impl(__builtin_addressof(dirhd), reinterpret_cast<char const *>(path_c_str), path_size, {::fast_io::open_mode::in, static_cast<perms>(436)})};
+
+	::fast_io::win32_file_9xa f{path};
+
+	::fast_io::win32::filetime ftm;
+	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
+
+	::std::uint_least64_t current_time{(static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32) | ftm.dwLowDateTime};
+
+	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000ULL};
+	
+	::fast_io::win32::filetime CreationTime;
+	::fast_io::win32::filetime *pCreationTime{__builtin_addressof(CreationTime)};
+	::fast_io::win32::filetime LastAccessTime;
+	::fast_io::win32::filetime *pLastAccessTime{__builtin_addressof(LastAccessTime)};
+	::fast_io::win32::filetime LastWriteTime;
+	::fast_io::win32::filetime *pLastWriteTime{__builtin_addressof(LastWriteTime)};
+
+	switch (creation_time.flags)
+	{
+	case ::fast_io::utime_flags::none:
+	{
+		auto const win32_time{static_cast<::fast_io::win32_timestamp>(creation_time.timestamp)};
+		CreationTime = ::fast_io::win32::win32_timestamp_to_filetime(win32_time);
+		break;
+	}
+	case ::fast_io::utime_flags::now:
+		CreationTime = ftm;
+		break;
+	case ::fast_io::utime_flags::omit:
+		pCreationTime = nullptr;
+		break;
+	default:
+		throw_win32_error(0x57);
+	}
+
+	switch (last_access_time.flags)
+	{
+	case ::fast_io::utime_flags::none:
+	{
+		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_access_time.timestamp)};
+		LastAccessTime = ::fast_io::win32::win32_timestamp_to_filetime(win32_time);
+		break;
+	}
+	case ::fast_io::utime_flags::now:
+		LastAccessTime = ftm;
+		break;
+	case ::fast_io::utime_flags::omit:
+		pLastAccessTime = nullptr;
+		break;
+	default:
+		throw_win32_error(0x57);
+	}
+
+	switch (last_modification_time.flags)
+	{
+	case ::fast_io::utime_flags::none:
+	{
+		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_modification_time.timestamp)};
+		LastWriteTime = ::fast_io::win32::win32_timestamp_to_filetime(win32_time);
+		break;
+	}
+	case ::fast_io::utime_flags::now:
+		LastWriteTime = ftm;
+		break;
+	case ::fast_io::utime_flags::omit:
+		pLastWriteTime = nullptr;
+		break;
+	default:
+		throw_win32_error(0x57);
+	}
+
+	if (!::fast_io::win32::SetFileTime(f.native_handle(), pCreationTime, pLastAccessTime, pLastWriteTime))
+	{
+		throw_win32_error();
+	}
 }
 
 template <::fast_io::details::posix_api_22 dsp, typename... Args>
@@ -306,7 +379,7 @@ inline auto win9x_1x_api_dispatcher(::fast_io::win9x_dir_handle const &dir_handl
 	}
 	else if constexpr (dsp == ::fast_io::details::posix_api_1x::utimensat)
 	{
-		// win9x_utimensat_impl(dir_handle, path_c_str, path_size, args...);
+		win9x_utimensat_impl(dir_handle, path_c_str, path_size, args...);
 	}
 }
 
@@ -434,5 +507,21 @@ template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status native_fstatat(::fast_io::win9x_at_entry const &ent, path_type const &path, win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
 {
 	return ::fast_io::win32::details::win9x_deal_with1x<details::posix_api_1x::fstatat>(ent.handle, path, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void win9x_utimensat(::fast_io::win9x_at_entry const &ent, path_type const &path, unix_timestamp_option creation_time,
+						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+							win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::details::win9x_deal_with1x<details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void native_utimensat(::fast_io::win9x_at_entry const &ent, path_type const &path, unix_timestamp_option creation_time,
+							unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+							win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::details::win9x_deal_with1x<details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
 }
 } // namespace fast_io
