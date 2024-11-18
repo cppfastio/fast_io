@@ -109,7 +109,7 @@ inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size
 }
 
 template <bool zw>
-inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, access_how mode, [[maybe_unused]] nt_at_flags flags)
+inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, access_how mode, nt_at_flags flags)
 {
 	switch (mode)
 	{
@@ -125,12 +125,17 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		throw_nt_error(0xC0000003);
 	}
 
-	constexpr nt_open_mode md{
+	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
 		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
 	};
+
+	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	{
+		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
+	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
@@ -171,14 +176,19 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 }
 
 template <bool zw>
-inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, [[maybe_unused]] nt_at_flags flags)
+inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, nt_at_flags flags)
 {
-	constexpr nt_open_mode md{
+	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
 		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
+
+	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	{
+		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
+	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
@@ -224,14 +234,19 @@ inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 
 template <bool zw>
 [[noreturn]] inline void nt_fchownat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size,
-										  [[maybe_unused]] ::std::uintmax_t owner, [[maybe_unused]] ::std::uintmax_t group, [[maybe_unused]] nt_at_flags flags)
+										  [[maybe_unused]] ::std::uintmax_t owner, [[maybe_unused]] ::std::uintmax_t group, nt_at_flags flags)
 {
-	constexpr nt_open_mode md{
+	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
 		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
 	};
+
+	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	{
+		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
+	}
 
 	// check if file exist
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
@@ -243,14 +258,19 @@ template <bool zw>
 }
 
 template <bool zw>
-inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, [[maybe_unused]] nt_at_flags flags)
+inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags)
 {
-	constexpr nt_open_mode md{
+	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
 		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
 	};
+
+	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	{
+		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
+	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
@@ -260,15 +280,19 @@ inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str
 
 template <bool zw>
 inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, unix_timestamp_option creation_time,
-							  unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
-							  [[maybe_unused]] nt_at_flags flags)
+							  unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, nt_at_flags flags)
 {
-	constexpr nt_open_mode md{
+	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
 		.FileAttributes = 0x80,                            // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,                         // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
+
+	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	{
+		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
+	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_callback(dirhd, path_c_str, path_size, nt_create_callback<zw>{md})};
