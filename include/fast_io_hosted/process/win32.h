@@ -345,9 +345,9 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 			auto QueryDosDeviceA_p{reinterpret_cast<QueryDosDeviceA_t>(::fast_io::win32::GetProcAddress(k32_module, reinterpret_cast<char const *>(u8"QueryDosDeviceA")))};
 			if (QueryDosDeviceA_p)
 			{
-				if (pszFilename[0] == '\\')
+				if (pszFilename[0] == u8'\\')
 				{
-					char DosDevice[4]{0, ':', 0, 0};
+					char DosDevice[4]{0, u8':', 0, 0};
 					char NtPath[64];
 					char *RetStr{};
 					::std::size_t NtPathLen{};
@@ -368,7 +368,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 				next2:
 					address_begin += NtPathLen - 2;
 					address_begin[0] = DosDevice[0];
-					address_begin[1] = ':';
+					address_begin[1] = u8':';
 				}
 			}
 		}
