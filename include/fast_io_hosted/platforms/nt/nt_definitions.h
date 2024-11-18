@@ -673,11 +673,14 @@ struct security_descriptor
 
 enum class object_information_class
 {
-	ObjectBasicInformation = 0,
-	ObjectNameInformation = 1,
-	ObjectTypeInformation = 2,
-	ObjectAllTypesInformation = 3,
-	ObjectHandleInformation = 4
+	ObjectBasicInformation,         // q: OBJECT_BASIC_INFORMATION
+	ObjectNameInformation,          // q: OBJECT_NAME_INFORMATION
+	ObjectTypeInformation,          // q: OBJECT_TYPE_INFORMATION
+	ObjectTypesInformation,         // q: OBJECT_TYPES_INFORMATION
+	ObjectHandleFlagInformation,    // qs: OBJECT_HANDLE_FLAG_INFORMATION
+	ObjectSessionInformation,       // s: void // change object session // (requires SeTcbPrivilege)
+	ObjectSessionObjectInformation, // s: void // change object session // (requires SeTcbPrivilege)
+	MaxObjectInfoClass
 };
 
 enum class section_inherit
@@ -941,4 +944,9 @@ enum class thread_information_class
 	MaxThreadInfoClass
 };
 
+struct object_handle_attribute_information
+{
+	::std::uint_least8_t Inherit;
+	::std::uint_least8_t ProtectFromClose;
+};
 } // namespace fast_io::win32::nt

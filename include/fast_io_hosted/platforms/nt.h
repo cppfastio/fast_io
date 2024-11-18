@@ -512,7 +512,7 @@ inline ::std::byte *nt_read_pread_some_bytes_common_impl(void *__restrict handle
 																							 ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
 	if (status) [[unlikely]]
 	{
-		if (status == 0xC0000011) [[likely]]
+		if (status == 0xC0000011 /*file*/ || status == 0xC000014B /*pipe*/) [[likely]]
 		{
 			return first;
 		}
@@ -1429,11 +1429,10 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	::fast_io::win32::nt::io_status_block isb;
 	constexpr decltype(auto) namedpipe_part{u"\\Device\\NamedPipe\\"};
 	::fast_io::win32::nt::unicode_string us{
-		.Length = sizeof(namedpipe_part) - sizeof(char16_t),
-		.MaximumLength = sizeof(namedpipe_part),
-		.Buffer = const_cast<char16_t *>(namedpipe_part)
+		.Length = static_cast<::std::uint_least16_t>(sizeof(namedpipe_part) - sizeof(char16_t)),
+		.MaximumLength = static_cast<::std::uint_least16_t>(sizeof(namedpipe_part)),
+		.Buffer = const_cast<char16_t *>(namedpipe_part)};
 
-	};
 	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
 												.RootDirectory = nullptr,
 												.ObjectName = __builtin_addressof(us),
@@ -1443,17 +1442,15 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 
 	void *namedpipedir;
 	auto status = ::fast_io::win32::nt::nt_create_file<zw>(
-		__builtin_addressof(namedpipedir), 0x80100000, __builtin_addressof(obj), __builtin_addressof(isb), nullptr,
-		0x80, 3, 0x00000003, 0x00000020, nullptr, 0u);
+		__builtin_addressof(namedpipedir), 0x80100000, __builtin_addressof(obj),
+		__builtin_addressof(isb), nullptr, 0, 3, 0x00000001, 0x00000020, nullptr, 0u);
 
 	if (status)
 	{
 		throw_nt_error(status);
 	}
 
-
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(namedpipedir);
-
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file{namedpipedir};
 
 	::std::int_least64_t DefaultTimeout{-1200000000};
 
@@ -1462,7 +1459,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	::fast_io::win32::nt::object_attributes obj2{.Length = sizeof(::fast_io::win32::nt::object_attributes),
 												 .RootDirectory = file.native_handle(),
 												 .ObjectName = __builtin_addressof(us2),
-												 .Attributes = 0x40,
+												 .Attributes = 0x42 /* InheritHandle */,
 												 .SecurityDescriptor = nullptr,
 												 .SecurityQualityOfService = nullptr};
 
@@ -1486,10 +1483,12 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 		::fast_io::throw_nt_error(status);
 	}
 
+	obj2.RootDirectory = ReadPipeHandle;
+
 	void *WritePipeHandle;
 	status = ::fast_io::win32::nt::nt_create_file<zw>(
-		__builtin_addressof(WritePipeHandle), 0x40100080, __builtin_addressof(obj), __builtin_addressof(isb), nullptr,
-		0x80, 3, 0x00000003, 0x00000020 | 0x00000040, nullptr, 0u);
+		__builtin_addressof(WritePipeHandle), 0x40100080, __builtin_addressof(obj2), __builtin_addressof(isb), nullptr,
+		0, 3, 0x00000001, 0x00000020 | 0x00000040, nullptr, 0u);
 
 	if (status)
 	{
@@ -1524,7 +1523,7 @@ public:
 template <nt_family family, ::std::integral ch_type>
 inline constexpr win32_io_redirection redirect(basic_nt_family_pipe<family, ch_type> &hd)
 {
-	return {.win32_pipe_in_handle = hd.in().handle, .win32_pipe_out_handle = hd.out().handle};
+	return {.win32_pipe_in_handle = __builtin_addressof(hd.in().handle), .win32_pipe_out_handle = __builtin_addressof(hd.out().handle)};
 }
 
 template <nt_family family, ::std::integral ch_type>

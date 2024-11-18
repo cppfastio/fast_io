@@ -177,11 +177,22 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 		// create process
 		::fast_io::win32::startupinfow si{sizeof(si)};
+
+		void **in_need_close{};
+		void **out_need_close{};
+		void **err_need_close{};
+
 		if (!processio.in.is_dev_null)
 		{
-			if (processio.in.win32_pipe_in_handle)
+			if (processio.in.win32_pipe_in_handle && *processio.in.win32_pipe_in_handle)
 			{
-				si.hStdInput = processio.in.win32_pipe_in_handle;
+				si.hStdInput = *processio.in.win32_pipe_in_handle;
+				in_need_close = processio.in.win32_pipe_in_handle;
+
+				if (!::fast_io::win32::SetHandleInformation(*processio.in.win32_pipe_out_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+				{
+					throw_win32_error();
+				}
 			}
 			else if (processio.in.win32_handle)
 			{
@@ -199,9 +210,15 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 		if (!processio.out.is_dev_null)
 		{
-			if (processio.out.win32_pipe_out_handle)
+			if (processio.out.win32_pipe_out_handle && *processio.out.win32_pipe_out_handle)
 			{
-				si.hStdOutput = processio.out.win32_pipe_out_handle;
+				si.hStdOutput = *processio.out.win32_pipe_out_handle;
+				out_need_close = processio.out.win32_pipe_out_handle;
+
+				if (!::fast_io::win32::SetHandleInformation(*processio.out.win32_pipe_in_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+				{
+					throw_win32_error();
+				}
 			}
 			else if (processio.out.win32_handle)
 			{
@@ -219,9 +236,15 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 		if (!processio.err.is_dev_null)
 		{
-			if (processio.err.win32_pipe_out_handle)
+			if (processio.err.win32_pipe_out_handle && *processio.err.win32_pipe_out_handle)
 			{
-				si.hStdError = processio.err.win32_pipe_out_handle;
+				si.hStdError = *processio.err.win32_pipe_out_handle;
+				err_need_close = processio.err.win32_pipe_out_handle;
+
+				if (!::fast_io::win32::SetHandleInformation(*processio.err.win32_pipe_in_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+				{
+					throw_win32_error();
+				}
 			}
 			else if (processio.err.win32_handle)
 			{
@@ -243,6 +266,33 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		if (!::fast_io::win32::CreateProcessW(address_begin, const_cast<char16_t *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 		{
 			throw_win32_error();
+		}
+
+		if (in_need_close && *in_need_close)
+		{
+			if (!::fast_io::win32::CloseHandle(*in_need_close))
+			{
+				throw_win32_error();
+			}
+			*in_need_close = nullptr;
+		}
+
+		if (out_need_close && *out_need_close)
+		{
+			if (!::fast_io::win32::CloseHandle(*out_need_close))
+			{
+				throw_win32_error();
+			}
+			*out_need_close = nullptr;
+		}
+
+		if (err_need_close && *err_need_close)
+		{
+			if (!::fast_io::win32::CloseHandle(*err_need_close))
+			{
+				throw_win32_error();
+			}
+			*err_need_close = nullptr;
 		}
 
 		return {pi.hProcess, pi.hThread};
@@ -324,15 +374,122 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		}
 		// create process
 		::fast_io::win32::startupinfoa si{sizeof(si)};
-		si.hStdInput = processio.in.win32_handle ? processio.in.win32_handle : ::fast_io::win32_stdin().handle;
-		si.hStdOutput = processio.out.win32_handle ? processio.out.win32_handle : ::fast_io::win32_stdout().handle;
-		si.hStdError = processio.err.win32_handle ? processio.err.win32_handle : ::fast_io::win32_stderr().handle;
+
+		void **in_need_close{};
+		void **out_need_close{};
+		void **err_need_close{};
+
+		if (!processio.in.is_dev_null)
+		{
+			if (processio.in.win32_pipe_in_handle && *processio.in.win32_pipe_in_handle)
+			{
+				si.hStdInput = *processio.in.win32_pipe_in_handle;
+				in_need_close = processio.in.win32_pipe_in_handle;
+
+				if (!::fast_io::win32::SetHandleInformation(*processio.in.win32_pipe_out_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+				{
+					throw_win32_error();
+				}
+			}
+			else if (processio.in.win32_handle)
+			{
+				si.hStdInput = processio.in.win32_handle;
+			}
+			else
+			{
+				si.hStdInput = ::fast_io::win32_stdin().handle;
+			}
+		}
+		else
+		{
+			si.hStdInput = nullptr;
+		}
+
+		if (!processio.out.is_dev_null)
+		{
+			if (processio.out.win32_pipe_out_handle && *processio.out.win32_pipe_out_handle)
+			{
+				si.hStdOutput = *processio.out.win32_pipe_out_handle;
+				out_need_close = processio.out.win32_pipe_out_handle;
+
+				if (!::fast_io::win32::SetHandleInformation(*processio.out.win32_pipe_in_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+				{
+					throw_win32_error();
+				}
+			}
+			else if (processio.out.win32_handle)
+			{
+				si.hStdOutput = processio.out.win32_handle;
+			}
+			else
+			{
+				si.hStdOutput = ::fast_io::win32_stdout().handle;
+			}
+		}
+		else
+		{
+			si.hStdOutput = nullptr;
+		}
+
+		if (!processio.err.is_dev_null)
+		{
+			if (processio.err.win32_pipe_out_handle && *processio.err.win32_pipe_out_handle)
+			{
+				si.hStdError = *processio.err.win32_pipe_out_handle;
+				err_need_close = processio.err.win32_pipe_out_handle;
+
+				if (!::fast_io::win32::SetHandleInformation(*processio.err.win32_pipe_in_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+				{
+					throw_win32_error();
+				}
+			}
+			else if (processio.err.win32_handle)
+			{
+				si.hStdError = processio.err.win32_handle;
+			}
+			else
+			{
+				si.hStdError = ::fast_io::win32_stderr().handle;
+			}
+		}
+		else
+		{
+			si.hStdError = nullptr;
+		}
+
 		si.dwFlags = 0x00000100;
 
 		::fast_io::win32::process_information pi{};
 		if (!::fast_io::win32::CreateProcessA(address_begin, const_cast<char *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 		{
 			throw_win32_error();
+		}
+
+		if (in_need_close && *in_need_close)
+		{
+			if (!::fast_io::win32::CloseHandle(*in_need_close))
+			{
+				throw_win32_error();
+			}
+			*in_need_close = nullptr;
+		}
+
+		if (out_need_close && *out_need_close)
+		{
+			if (!::fast_io::win32::CloseHandle(*out_need_close))
+			{
+				throw_win32_error();
+			}
+			*out_need_close = nullptr;
+		}
+
+		if (err_need_close && *err_need_close)
+		{
+			if (!::fast_io::win32::CloseHandle(*err_need_close))
+			{
+				throw_win32_error();
+			}
+			*err_need_close = nullptr;
 		}
 
 		return {pi.hProcess, pi.hThread};

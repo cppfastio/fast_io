@@ -1487,6 +1487,7 @@ public:
 		: basic_win32_family_io_observer<family, char_type>{details::create_io_completion_port_impl()}
 	{
 	}
+
 	~basic_win32_family_file()
 	{
 		if (*this) [[likely]]
@@ -1724,7 +1725,7 @@ public:
 	basic_win32_family_file<family, ch_type> pipes[2];
 	basic_win32_family_pipe()
 	{
-		win32::security_attributes sec_attr{sizeof(win32::security_attributes), nullptr, true};
+		win32::security_attributes sec_attr{sizeof(win32::security_attributes), nullptr, 1};
 		if (!::fast_io::win32::CreatePipe(__builtin_addressof(pipes[0].handle),
 										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0))
 		{
@@ -1744,7 +1745,7 @@ public:
 template <win32_family family, ::std::integral ch_type>
 inline constexpr win32_io_redirection redirect(basic_win32_family_pipe<family, ch_type> &hd)
 {
-	return {.win32_pipe_in_handle = hd.in().handle, .win32_pipe_out_handle = hd.out().handle};
+	return {.win32_pipe_in_handle = __builtin_addressof(hd.in().handle), .win32_pipe_out_handle = __builtin_addressof(hd.out().handle)};
 }
 
 template <win32_family family, ::std::integral ch_type>

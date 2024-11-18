@@ -228,6 +228,8 @@
 #pragma comment(linker,"/alternatename:__imp_?NtQueryInformationThread@nt@win32@fast_io@@YGHPIAXW4thread_information_class@123@PAXIPAI@Z=__imp__NtQueryInformationThread@20")
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryInformationThread@nt@win32@fast_io@@YGHPIAXW4thread_information_class@123@PAXIPAI@Z=__imp__ZwQueryInformationThread@20")
 #pragma comment(linker,"/alternatename:__imp_?RtlAdjustPrivilege@nt@win32@fast_io@@YGHIEEPAE@Z=__imp__RtlAdjustPrivilege@16")
+#pragma comment(linker,"/alternatename:__imp_?NtSetInformationObject@nt@win32@fast_io@@YGHPIAXW4object_information_class@123@PAXI@Z=__imp__NtSetInformationObject@16")
+#pragma comment(linker,"/alternatename:__imp_?ZwSetInformationObject@nt@win32@fast_io@@YGHPIAXW4object_information_class@123@PAXI@Z=__imp__ZwSetInformationObject@16")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp____RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=___RTtypeid")

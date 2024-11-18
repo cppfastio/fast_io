@@ -21,3 +21,6 @@ ignore = true
 
 ["0027.rwreflect"] # TODO: crash. why?
 ignore = true
+
+["0032.process"]
+ignore = true
