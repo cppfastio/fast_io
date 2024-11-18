@@ -512,7 +512,7 @@ inline ::std::byte *nt_read_pread_some_bytes_common_impl(void *__restrict handle
 																							 ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
 	if (status) [[unlikely]]
 	{
-		if (status == 0xC0000011) [[likely]]
+		if (status == 0xC0000011 /*file*/ || status == 0xC000014B /*pipe*/) [[likely]]
 		{
 			return first;
 		}
@@ -1450,15 +1450,14 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 		throw_nt_error(status);
 	}
 
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(namedpipedir);
-	//_InterlockedCompareExchange(&dword_1023FF24, static_cast<long>(namedpipedir), 0);
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file{namedpipedir};
 
 	::std::int_least64_t DefaultTimeout{-1200000000};
 
 	void *ReadPipeHandle;
 	::fast_io::win32::nt::unicode_string us2{};
 	::fast_io::win32::nt::object_attributes obj2{.Length = sizeof(::fast_io::win32::nt::object_attributes),
-												 .RootDirectory = namedpipedir,
+												 .RootDirectory = file.native_handle(),
 												 .ObjectName = __builtin_addressof(us2),
 												 .Attributes = 0x42 /* InheritHandle */,
 												 .SecurityDescriptor = nullptr,
@@ -1509,16 +1508,7 @@ public:
 	basic_nt_family_file<family, ch_type> pipes[2];
 	basic_nt_family_pipe()
 	{
-#if 0
 		win32::nt::details::nt_create_pipe<family == nt_family::zw>(__builtin_addressof(pipes[0].handle), __builtin_addressof(pipes[1].handle));
-#else
-		::fast_io::win32::security_attributes sec_attr{sizeof(::fast_io::win32::security_attributes), nullptr, 1};
-		if (!::fast_io::win32::CreatePipe(__builtin_addressof(pipes[0].handle),
-										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0))
-		{
-			throw_win32_error();
-		}
-#endif
 	}
 	constexpr auto &in() noexcept
 	{
