@@ -239,37 +239,17 @@ inline posix_file_status win9x_fstatat_impl(::fast_io::win9x_dir_handle const &d
 {
 	auto path{concat_tlc_win9x_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 
-	auto attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
-
+	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
+	
 	if (attr == -1) [[unlikely]]
 	{
+		// dir not support on win9x
 		throw_win32_error(0x2);
 	}
 
-	::fast_io::file_type ft{::fast_io::file_type::directory};
+	::fast_io::win32_file_9xa f{path, ::fast_io::open_mode::in};
 
-	if ((attr & 0x10) == 0x10)
-	{
-		ft = ::fast_io::file_type::regular;
-	}
-
-	return posix_file_status{0,
-							 0,
-							 static_cast<perms>(attr),
-							 ft,
-							 0,
-							 0,
-							 0,
-							 0,
-							 0,
-							 131072,
-							 0,
-							 0,
-							 0,
-							 0,
-							 0,
-							 0,
-							 0};
+	return ::fast_io::win32::details::win32_status_impl(f.native_handle());
 }
 
 template <::fast_io::details::posix_api_22 dsp, typename... Args>
@@ -314,7 +294,7 @@ inline auto win9x_1x_api_dispatcher(::fast_io::win9x_dir_handle const &dir_handl
 	}
 	else if constexpr (dsp == ::fast_io::details::posix_api_1x::fstatat)
 	{
-		// return win9x_fstatat_impl(dir_handle, path_c_str, path_size, args...);
+		return win9x_fstatat_impl(dir_handle, path_c_str, path_size, args...);
 	}
 	else if constexpr (dsp == ::fast_io::details::posix_api_1x::mkdirat)
 	{
@@ -442,5 +422,17 @@ template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchownat(::fast_io::win9x_at_entry const &ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::details::win9x_deal_with1x<details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline posix_file_status win9x_fstatat(::fast_io::win9x_at_entry const &ent, path_type const &path, win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::details::win9x_deal_with1x<details::posix_api_1x::fstatat>(ent.handle, path, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline posix_file_status native_fstatat(::fast_io::win9x_at_entry const &ent, path_type const &path, win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::details::win9x_deal_with1x<details::posix_api_1x::fstatat>(ent.handle, path, flags);
 }
 } // namespace fast_io
