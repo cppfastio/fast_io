@@ -1434,6 +1434,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 		.Buffer = const_cast<char16_t *>(namedpipe_part)
 
 	};
+
 	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
 												.RootDirectory = nullptr,
 												.ObjectName = __builtin_addressof(us),
@@ -1443,8 +1444,8 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 
 	void *namedpipedir;
 	auto status = ::fast_io::win32::nt::nt_create_file<zw>(
-		__builtin_addressof(namedpipedir), 0x80100000, __builtin_addressof(obj), __builtin_addressof(isb), nullptr,
-		0x80, 3, 0x00000003, 0x00000020, nullptr, 0u);
+		__builtin_addressof(namedpipedir), 0x80100000, __builtin_addressof(obj),
+		__builtin_addressof(isb), nullptr, 0x80, 3, 0x00000003, 0x00000020, nullptr, 0u);
 
 	if (status)
 	{
@@ -1452,7 +1453,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	}
 
 
-	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(namedpipedir);
+	//::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file(namedpipedir);
 
 
 	::std::int_least64_t DefaultTimeout{-1200000000};
@@ -1460,7 +1461,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	void *ReadPipeHandle;
 	::fast_io::win32::nt::unicode_string us2{};
 	::fast_io::win32::nt::object_attributes obj2{.Length = sizeof(::fast_io::win32::nt::object_attributes),
-												 .RootDirectory = file.native_handle(),
+												 .RootDirectory = namedpipedir,
 												 .ObjectName = __builtin_addressof(us2),
 												 .Attributes = 0x42 /* InheritHandle */,
 												 .SecurityDescriptor = nullptr,
@@ -1485,6 +1486,8 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	{
 		::fast_io::throw_nt_error(status);
 	}
+
+	obj2.RootDirectory = ReadPipeHandle;
 
 	void *WritePipeHandle;
 	status = ::fast_io::win32::nt::nt_create_file<zw>(
