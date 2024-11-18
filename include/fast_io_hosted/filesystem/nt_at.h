@@ -1032,7 +1032,7 @@ inline void native_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_unlinkat(nt_at_entry ent, path_type &&path, native_at_flags flags = {})
+inline void native_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, ::fast_io::details::posix_api_1x::unlinkat>(
 		ent.handle, path, flags);
