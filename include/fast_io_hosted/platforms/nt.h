@@ -1445,7 +1445,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	void *namedpipedir;
 	auto status = ::fast_io::win32::nt::nt_create_file<zw>(
 		__builtin_addressof(namedpipedir), 0x80100000, __builtin_addressof(obj),
-		__builtin_addressof(isb), nullptr, 0x80, 3, 0x00000003, 0x00000020, nullptr, 0u);
+		__builtin_addressof(isb), nullptr, 0, 3, 0x00000001, 0x00000020, nullptr, 0u);
 
 	if (status)
 	{
@@ -1492,7 +1492,7 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 	void *WritePipeHandle;
 	status = ::fast_io::win32::nt::nt_create_file<zw>(
 		__builtin_addressof(WritePipeHandle), 0x40100080, __builtin_addressof(obj2), __builtin_addressof(isb), nullptr,
-		0x80, 3, 0x00000003, 0x00000020 | 0x00000040, nullptr, 0u);
+		0, 3, 0x00000001, 0x00000020 | 0x00000040, nullptr, 0u);
 
 	if (status)
 	{
