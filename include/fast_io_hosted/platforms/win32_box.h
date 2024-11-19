@@ -75,8 +75,7 @@ inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<famil
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char8_t> const *;
-		::fast_io::details::win32_box_converter_scatter_path_impl(
-			bx, reinterpret_cast<scatter_may_alias_ptr>(scatters), n);
+		::fast_io::details::win32_box_converter_scatter_path_impl(bx, reinterpret_cast<scatter_may_alias_ptr>(scatters), n);
 	}
 	else if constexpr (family == ::fast_io::win32_family::wide_nt &&
 					   ((!::std::same_as<chtypenocref, char16_t>) && sizeof(chtypenocref) == sizeof(char16_t) &&
@@ -88,8 +87,7 @@ inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<famil
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char16_t> const *;
-		::fast_io::details::win32_box_converter_scatter_path_impl(bx, reinterpret_cast<scatter_may_alias_ptr>(scatters),
-																  n);
+		::fast_io::details::win32_box_converter_scatter_path_impl(bx, reinterpret_cast<scatter_may_alias_ptr>(scatters), n);
 	}
 	else
 	{
