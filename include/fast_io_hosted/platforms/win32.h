@@ -261,11 +261,11 @@ inline constexpr win32_open_mode calculate_win32_open_mode(open_mode_perms ompm)
 	}
 	if ((value & open_mode::no_shared_write) == open_mode::none)
 	{
-		mode.dwShareMode |= 2; // FILE_SHARE_DELETE
+		mode.dwShareMode |= 2; // FILE_SHARE_WRITE
 	}
 	if ((value & open_mode::shared_delete) != open_mode::none)
 	{
-		mode.dwShareMode |= 4; // FILE_SHARE_WRITE
+		mode.dwShareMode |= 4; // FILE_SHARE_DELETE
 	}
 	if ((value & open_mode::app) != open_mode::none)
 	{

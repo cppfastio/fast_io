@@ -235,21 +235,41 @@ inline void win9x_fchmodat_impl(::fast_io::win9x_dir_handle const &dirhd, char8_
 	throw_win32_error(0x1);
 }
 
+inline constexpr auto calculate_win9x_onlyread_open_mode(bool write_attribute, bool fsymlink_nofollow) noexcept
+{
+	::fast_io::details::win32_open_mode md;
+	md.dwShareMode = 3;
+	md.dwDesiredAccess = 0x40000000 | 0x80000000 | 0x0080;
+	md.dwCreationDisposition = 3;
+
+	if (write_attribute)
+	{
+		md.dwDesiredAccess |= 0x0100;
+	}
+
+	if (fsymlink_nofollow)
+	{
+		md.dwFlagsAndAttributes = 0x00200000;
+	}
+	return md;
+}
+
 inline posix_file_status win9x_fstatat_impl(::fast_io::win9x_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, [[maybe_unused]] win9x_at_flags flags)
 {
-	auto path{::fast_io::win32::details::basic_win9x_create_file_at_fs_dirent_impl(__builtin_addressof(dirhd), reinterpret_cast<char const *>(path_c_str), path_size, {::fast_io::open_mode::in, static_cast<perms>(436)})};
-
-	::fast_io::win32_file_9xa f{path};
+	auto path{concat_tlc_win9x_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto md{calculate_win9x_onlyread_open_mode(false, (flags & win9x_at_flags::symlink_nofollow) != win9x_at_flags::symlink_nofollow)};
+	::fast_io::win32_file_9xa f{::fast_io::details::win32_family_create_file_internal_impl<win32_family::ansi_9x>(reinterpret_cast<char const *>(path.c_str()), md)};
 
 	return ::fast_io::win32::details::win32_status_impl(f.native_handle());
+	
 }
 
 inline void win9x_utimensat_impl(::fast_io::win9x_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, unix_timestamp_option creation_time,
 								 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, [[maybe_unused]] win9x_at_flags flags)
 {
-	auto path{::fast_io::win32::details::basic_win9x_create_file_at_fs_dirent_impl(__builtin_addressof(dirhd), reinterpret_cast<char const *>(path_c_str), path_size, {::fast_io::open_mode::in, static_cast<perms>(436)})};
-
-	::fast_io::win32_file_9xa f{path};
+	auto path{concat_tlc_win9x_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto md{calculate_win9x_onlyread_open_mode(true, (flags & win9x_at_flags::symlink_nofollow) != win9x_at_flags::symlink_nofollow)};
+	::fast_io::win32_file_9xa f{::fast_io::details::win32_family_create_file_internal_impl<win32_family::ansi_9x>(reinterpret_cast<char const *>(path.c_str()), md)};
 
 	::fast_io::win32::filetime ftm;
 	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
@@ -325,17 +345,62 @@ inline void win9x_utimensat_impl(::fast_io::win9x_dir_handle const &dirhd, char8
 	}
 }
 
+inline void win9x_symlinkat_impl(char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
+								 ::fast_io::win9x_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
+{
+	::fast_io::u8cstring_view path{::fast_io::containers::null_terminated, oldpath_c_str, oldpath_size};
+
+	::fast_io::u8win32_file_9xa f{::fast_io::win32::details::basic_win9x_create_file_at_fs_dirent_impl(
+		__builtin_addressof(newdirhd), reinterpret_cast<char const *>(newpath_c_str), newpath_size,
+		{::fast_io::open_mode::out | ::fast_io::open_mode::excl, static_cast<perms>(436)})};
+
+	char8_t buffer[510];
+	::fast_io::freestanding::my_memset(buffer, u8' ', 510);
+	::fast_io::u8obuffer_view u8obv{buffer, buffer + 510};
+
+	::fast_io::operations::print_freestanding<false>(u8obv, u8"!<symlink>", path, u8"\nThis is just a text to force symlink file to be 510 bytes long. Do not delete it nor spaces following it.");
+
+	::fast_io::operations::write_all(f, buffer, buffer + 510);
+}
+
+inline void win9x_linkat_impl(::fast_io::win9x_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size, 
+	::fast_io::win9x_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size,[[maybe_unused]] win9x_at_flags flags)
+{
+	auto oldpath{concat_tlc_win9x_path_uncheck_whether_exist(olddirhd, oldpath_c_str, oldpath_size)};
+	auto newpath{concat_tlc_win9x_path_uncheck_whether_exist(newdirhd, newpath_c_str, newpath_size)};
+	
+	// Because of limitations of win9x, this function doesn't really link two files together. 
+	// However, it simulates a real link by copying the file at exists to new.
+
+	if (!::fast_io::win32::CopyFileA(reinterpret_cast<char const *>(oldpath.c_str()), reinterpret_cast<char const *>(newpath.c_str()), 1))
+	{
+		throw_win32_error();
+	}
+}
+
+inline void win9x_renameat_impl(::fast_io::win9x_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
+							 ::fast_io::win9x_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
+{
+	auto oldpath{concat_tlc_win9x_path_uncheck_whether_exist(olddirhd, oldpath_c_str, oldpath_size)};
+	auto newpath{concat_tlc_win9x_path_uncheck_whether_exist(newdirhd, newpath_c_str, newpath_size)};
+
+	if (!::fast_io::win32::MoveFileA(reinterpret_cast<char const *>(oldpath.c_str()), reinterpret_cast<char const *>(newpath.c_str())))
+	{
+		throw_win32_error();
+	}
+}
+
 template <::fast_io::details::posix_api_22 dsp, typename... Args>
 inline auto win9x_22_api_dispatcher(::fast_io::win9x_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 									::fast_io::win9x_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size, Args... args)
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_22::renameat)
 	{
-		// win9x_renameat_impl(olddirhd, oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size, args...);
+		win9x_renameat_impl(olddirhd, oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size, args...);
 	}
 	else if constexpr (dsp == ::fast_io::details::posix_api_22::linkat)
 	{
-		// win9x_linkat_impl(olddirhd, oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size, args...);
+		win9x_linkat_impl(olddirhd, oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size, args...);
 	}
 }
 
@@ -345,7 +410,7 @@ inline auto win9x_12_api_dispatcher(char8_t const *oldpath_c_str, ::std::size_t 
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_12::symlinkat)
 	{
-		// win9x_symlinkat_impl(oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size);
+		win9x_symlinkat_impl(oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size);
 	}
 }
 
@@ -437,6 +502,7 @@ inline auto win9x_deal_with22(::fast_io::win9x_dir_handle const &olddirhd, oldpa
 
 using native_at_flags = win9x_at_flags;
 
+// 1x
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void win9x_unlinkat(::fast_io::win9x_at_entry const &ent, path_type &&path, win9x_at_flags flags = {})
 {
@@ -524,4 +590,43 @@ inline void native_utimensat(::fast_io::win9x_at_entry const &ent, path_type con
 {
 	::fast_io::win32::details::win9x_deal_with1x<details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
 }
+
+// 12
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void win9x_symlinkat(old_path_type &&oldpath, win9x_at_entry const &newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::details::win9x_deal_with12<details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void native_symlinkat(old_path_type &&oldpath, win9x_at_entry const &newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::details::win9x_deal_with12<details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
+}
+
+// 22
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void win9x_linkat(win9x_at_entry const &oldent, old_path_type &&oldpath, win9x_at_entry const &newent, new_path_type &&newpath, win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::details::win9x_deal_with22<::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath, newent.handle, newpath, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void native_linkat(win9x_at_entry const &oldent, old_path_type &&oldpath, win9x_at_entry const &newent, new_path_type &&newpath, win9x_at_flags flags = win9x_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::details::win9x_deal_with22<::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath, newent.handle, newpath, flags);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void win9x_renameat(win9x_at_entry const &oldent, old_path_type &&oldpath, win9x_at_entry const &newent, new_path_type &&newpath)
+{
+	::fast_io::win32::details::win9x_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath, newent.handle, newpath);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void native_renameat(win9x_at_entry const &oldent, old_path_type &&oldpath, win9x_at_entry const &newent, new_path_type &&newpath)
+{
+	::fast_io::win32::details::win9x_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath, newent.handle, newpath);
+}
+
 } // namespace fast_io

@@ -146,6 +146,10 @@
 #pragma comment(linker,"/alternatename:__imp_?SetFileAttributesA@win32@fast_io@@YAHPBDI@Z=__imp_SetFileAttributesA")
 #pragma comment(linker,"/alternatename:__imp_?GetFileAttributesW@win32@fast_io@@YAIPB_S@Z=__imp_GetFileAttributesW")
 #pragma comment(linker,"/alternatename:__imp_?GetFileAttributesA@win32@fast_io@@YAIPBD@Z=__imp_GetFileAttributesA")
+#pragma comment(linker,"/alternatename:__imp_?CopyFileW@win32@fast_io@@YAHPB_S0H@Z=__imp_CopyFileW")
+#pragma comment(linker,"/alternatename:__imp_?CopyFileA@win32@fast_io@@YAHPBD0H@Z=__imp_CopyFileA")
+#pragma comment(linker,"/alternatename:__imp_?MoveFileW@win32@fast_io@@YAHPB_S0@Z=__imp_MoveFileW")
+#pragma comment(linker,"/alternatename:__imp_?MoveFileA@win32@fast_io@@YAHPBD0@Z=__imp_MoveFileA")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YAII@Z=__imp_RtlNtStatusToDosError")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YAIPAX@Z=__imp_NtClose")
