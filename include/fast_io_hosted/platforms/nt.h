@@ -1523,7 +1523,7 @@ public:
 template <nt_family family, ::std::integral ch_type>
 inline constexpr win32_io_redirection redirect(basic_nt_family_pipe<family, ch_type> &hd)
 {
-	return {.win32_pipe_in_handle = __builtin_addressof(hd.in().handle), .win32_pipe_out_handle = __builtin_addressof(hd.out().handle)};
+	return {.win32_pipe_in_handle = hd.in().handle, .win32_pipe_out_handle = hd.out().handle};
 }
 
 template <nt_family family, ::std::integral ch_type>
