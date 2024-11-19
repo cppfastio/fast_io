@@ -58,14 +58,14 @@ inline void win32_box_converter_path_impl(char_type const *first, char_type cons
 	win32_box_write_impl<family>(converter.buffer_data, converter.buffer_data_end);
 }
 
-template <::fast_io::win32_family family, ::std::integral ch_type>
+template <::fast_io::win32_family family, ::std::integral ch_type, ::std::integral write_ch_type>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<family, ch_type> bx,
-												  basic_io_scatter_t<ch_type> const *scatters, ::std::size_t n)
+												  basic_io_scatter_t<write_ch_type> const *scatters, ::std::size_t n)
 {
-	using chtypenocref = ::std::remove_cvref_t<ch_type>;
+	using chtypenocref = ::std::remove_cvref_t<write_ch_type>;
 	if constexpr (family == ::fast_io::win32_family::ansi_9x &&
 				  ((!::std::same_as<chtypenocref, char8_t>) && sizeof(chtypenocref) == sizeof(char8_t) &&
 				   ::fast_io::execution_charset_encoding_scheme<chtypenocref>() == ::fast_io::encoding_scheme::utf))
@@ -75,8 +75,7 @@ inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<famil
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char8_t> const *;
-		::fast_io::details::win32_box_converter_scatter_path_impl(bx, reinterpret_cast<scatter_may_alias_ptr>(scatters),
-																  n);
+		::fast_io::details::win32_box_converter_scatter_path_impl(bx, reinterpret_cast<scatter_may_alias_ptr>(scatters), n);
 	}
 	else if constexpr (family == ::fast_io::win32_family::wide_nt &&
 					   ((!::std::same_as<chtypenocref, char16_t>) && sizeof(chtypenocref) == sizeof(char16_t) &&
@@ -88,8 +87,7 @@ inline void win32_box_converter_scatter_path_impl(basic_win32_family_box_t<famil
 			[[__gnu__::__may_alias__]]
 #endif
 			= basic_io_scatter_t<char16_t> const *;
-		::fast_io::details::win32_box_converter_scatter_path_impl(bx, reinterpret_cast<scatter_may_alias_ptr>(scatters),
-																  n);
+		::fast_io::details::win32_box_converter_scatter_path_impl(bx, reinterpret_cast<scatter_may_alias_ptr>(scatters), n);
 	}
 	else
 	{

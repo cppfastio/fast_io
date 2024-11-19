@@ -373,13 +373,24 @@ inline constexpr posix_dev_null_t posix_dev_null() noexcept
 {
 	return {};
 }
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+
+inline constexpr win32_io_redirection redirect(posix_dev_null_t) noexcept
+{
+	return {.is_dev_null = true};
+}
+
+#else
 
 inline constexpr posix_io_redirection redirect(posix_dev_null_t) noexcept
 {
 	return {.dev_null = true};
 }
 
+#endif
+
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+
 namespace details
 {
 

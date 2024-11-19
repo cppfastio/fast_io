@@ -8,7 +8,13 @@ namespace fast_io
 
 namespace posix
 {
+#ifdef __DARWIN_C_LEVEL
+extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
+extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
+#else
+extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
+#endif
 }
 
 struct posix_wait_status
@@ -229,6 +235,8 @@ inline void parent_process_deal_with_process_io(posix_io_redirection const &red)
 inline pid_t posix_fork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args,
 											 char const *const *envp, posix_process_io const &pio)
 {
+	system_call_throw_error(::fast_io::posix::libc_faccessat(dirfd, cstr, X_OK, AT_SYMLINK_NOFOLLOW));
+
 	pid_t pid{posix_fork()};
 	if (pid)
 	{
