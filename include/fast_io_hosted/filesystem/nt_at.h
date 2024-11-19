@@ -949,42 +949,42 @@ inline void zw_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path
 
 // 22
 template <nt_family family, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void nt_family_renameat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath)
+inline void nt_family_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<family, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
 																									  newent.handle, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void nt_renameat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath)
+inline void nt_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
 																											 newent.handle, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void zw_renameat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath)
+inline void zw_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::zw, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
 																											 newent.handle, newpath);
 }
 
 template <nt_family family, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void nt_family_linkat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void nt_family_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<family, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
 																									newent.handle, newpath, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void nt_linkat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void nt_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
 																										   newent.handle, newpath, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void zw_linkat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void zw_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::zw, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
 																										   newent.handle, newpath, flags);
@@ -1032,7 +1032,7 @@ inline void native_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_unlinkat(nt_at_entry ent, path_type &&path, native_at_flags flags = {})
+inline void native_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, ::fast_io::details::posix_api_1x::unlinkat>(
 		ent.handle, path, flags);
@@ -1045,14 +1045,14 @@ inline void native_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_renameat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath)
+inline void native_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
 																											 newent.handle, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_linkat(native_at_entry oldent, old_path_type &&oldpath, native_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void native_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
 																										   newent.handle, newpath, flags);
