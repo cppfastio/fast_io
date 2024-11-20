@@ -443,6 +443,18 @@ inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
 	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
 }
 
+template <bool zw>
+inline ::std::uint_least64_t nt10x_get_auxiliary_counter_frequency()
+{
+	::std::uint_least64_t feq;
+	auto status{::fast_io::win32::nt::nt_query_auxiliary_counter_frequency<zw>(__builtin_addressof(feq))};
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+	return feq;
+}
+
 } // namespace win32::nt::details
 #endif
 
