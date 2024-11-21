@@ -302,13 +302,22 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 
 	::std::uint_least64_t current_time;
 
+	constexpr bool is_nt_above_win7{
 #if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
-	current_time = static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise());
-#else
-	::fast_io::win32::filetime ftm;
-	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
-	current_time = static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32) | ftm.dwLowDateTime;
+		true
 #endif
+	};
+
+	if constexpr (is_nt_above_win7)
+	{
+		current_time = static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise());
+	}
+	else
+	{
+		::fast_io::win32::filetime ftm;
+		::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
+		current_time = (static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32u) | ftm.dwLowDateTime;
+	}
 
 	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000ULL};
 
@@ -755,7 +764,7 @@ template <nt_family family, ::fast_io::details::posix_api_1x dsp, typename path_
 inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args)
 {
 	return nt_api_common(
-		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...); });
+		path, [&](char16_t const *path_c_str, ::std::size_t path_size) { return nt1x_api_dispatcher < family == nt_family::zw, dsp > (dir_handle, path_c_str, path_size, args...); });
 }
 
 template <nt_family family, ::fast_io::details::posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
@@ -766,7 +775,7 @@ inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_pat
 		oldpath,
 		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 			return nt_api_common(
-				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) { return nt12_api_dispatcher<family == nt_family::zw, dsp>(oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size); });
+				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) { return nt12_api_dispatcher < family == nt_family::zw, dsp > (oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size); });
 		});
 }
 
@@ -777,8 +786,8 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 							 return nt_api_common(newpath,
 												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-													  return nt22_api_dispatcher<family == nt_family::zw, dsp>(olddirhd, oldpath_c_str, oldpath_size, newdirhd,
-																											   newpath_c_str, newpath_size, args...);
+													  return nt22_api_dispatcher < family == nt_family::zw, dsp > (olddirhd, oldpath_c_str, oldpath_size, newdirhd,
+																												   newpath_c_str, newpath_size, args...);
 												  });
 						 });
 }
