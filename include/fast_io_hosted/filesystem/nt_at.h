@@ -9,7 +9,8 @@ enum class nt_at_flags : ::std::uint_least32_t
 	symlink_nofollow = static_cast<::std::uint_least32_t>(1) << 1,
 	no_automount = static_cast<::std::uint_least32_t>(1) << 2,
 	removedir = static_cast<::std::uint_least32_t>(1) << 3,
-	empty_path = static_cast<::std::uint_least32_t>(1) << 4
+	empty_path = static_cast<::std::uint_least32_t>(1) << 4,
+	nt_path = static_cast<::std::uint_least32_t>(1) << 5
 };
 
 constexpr nt_at_flags operator&(nt_at_flags x, nt_at_flags y) noexcept
@@ -426,15 +427,23 @@ struct nt_create_nothrow_callback
 
 template <bool zw>
 inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
-							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size)
+							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags)
 {
 	// No need to check the length, it will always jump out when '\0'
-	bool const is_nt_root{oldpath_c_str[0] == u'\\' && (oldpath_c_str[1] != u'\\' && oldpath_c_str[1] != u'/')};
-	bool const is_dos_root{::fast_io::char_category::is_c_alpha(oldpath_c_str[0]) && oldpath_c_str[1] == u':'};
-	bool const is_unc_root{(oldpath_c_str[0] == u'\\' || oldpath_c_str[0] == u'/') &&
-						   (oldpath_c_str[1] == u'\\' || oldpath_c_str[1] == u'/')};
-
-	bool const is_root{is_nt_root || is_dos_root || is_unc_root};
+	bool const nt_path{(flags & nt_at_flags::nt_path) == nt_at_flags::nt_path};
+	bool is_root;
+	if (nt_path)
+	{
+		bool const is_nt_root{oldpath_c_str[0] == u'\\'};
+		is_root = is_nt_root;
+	}
+	else
+	{
+		bool const is_dos_root{::fast_io::char_category::is_c_alpha(oldpath_c_str[0]) && oldpath_c_str[1] == u':'};
+		// unc and current driver root
+		bool const is_dos_root2{oldpath_c_str[0] == u'\\' || oldpath_c_str[0] == u'/'};
+		is_root = is_dos_root || is_dos_root2;
+	}
 
 	char16_t const *oldpath_real_c_str{oldpath_c_str};
 	::std::size_t oldpath_real_size{oldpath_size};
@@ -443,7 +452,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	::fast_io::win32::nt::unicode_string us{};
 	::fast_io::win32::nt::rtl_unicode_string_unique_ptr us_guard{};
 
-	if (is_dos_root || is_unc_root)
+	if (!nt_path && is_root)
 	{
 		// get nt root path
 		char16_t const *tmp_part_name{};
