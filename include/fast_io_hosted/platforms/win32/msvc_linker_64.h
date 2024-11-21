@@ -245,6 +245,8 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwSetInformationObject@nt@win32@fast_io@@YAHPEIAXW4object_information_class@123@PEAXI@Z=__imp_ZwSetInformationObject")
 #pragma comment(linker,"/alternatename:__imp_?NtQueryAuxiliaryCounterFrequency@nt@win32@fast_io@@YAHPEA_K@Z=__imp_NtQueryAuxiliaryCounterFrequency")
 #pragma comment(linker,"/alternatename:__imp_?ZwQueryAuxiliaryCounterFrequency@nt@win32@fast_io@@YAHPEA_K@Z=__imp_ZwQueryAuxiliaryCounterFrequency")
+#pragma comment(linker,"/alternatename:__imp_?RtlDetermineDosPathNameType_U@nt@win32@fast_io@@YA?AW4rtl_path_type@123@PEB_S@Z=__imp_RtlDetermineDosPathNameType_U")
+#pragma comment(linker,"/alternatename:__imp_?RtlGetFullPathName_U@nt@win32@fast_io@@YAIPEB_SIPEA_SPEAPEA_S@Z=__imp_RtlGetFullPathName_U")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__imp___RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__RTtypeid")

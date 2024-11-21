@@ -949,4 +949,16 @@ struct object_handle_attribute_information
 	::std::uint_least8_t Inherit;
 	::std::uint_least8_t ProtectFromClose;
 };
+
+enum class rtl_path_type
+{
+	RtlPathTypeUnknown,
+	RtlPathTypeUncAbsolute,
+	RtlPathTypeDriveAbsolute,
+	RtlPathTypeDriveRelative,
+	RtlPathTypeRooted,
+	RtlPathTypeRelative,
+	RtlPathTypeLocalDevice,
+	RtlPathTypeRootLocalDevice,
+};
 } // namespace fast_io::win32::nt

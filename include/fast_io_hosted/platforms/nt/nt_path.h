@@ -76,9 +76,9 @@ inline auto nt_call_invoke_with_directory_handle_impl(void *directory, char_type
 	}
 }
 
-inline void map_nt_unc_and_dos_path_to_nt_path(char16_t const *filename_c_str, win32::nt::unicode_string &us, win32::nt::rtl_unicode_string_unique_ptr& us_ptr)
+inline void map_nt_unc_and_dos_path_to_nt_path(char16_t const *filename_c_str, win32::nt::unicode_string &us, win32::nt::rtl_unicode_string_unique_ptr& us_ptr, bool nt_path)
 {
-	if (*filename_c_str == u'\\' && (filename_c_str[1] != u'\\' && filename_c_str[1] != u'/'))
+	if (nt_path)
 	{
 		// nt root path: must start with a right slash ('\\') and all right slashes
 		auto const filename_size{::fast_io::cstr_len(filename_c_str)};
@@ -98,13 +98,13 @@ inline void map_nt_unc_and_dos_path_to_nt_path(char16_t const *filename_c_str, w
 
 template <::std::integral char_type, typename func>
 	requires(sizeof(char_type) == sizeof(char16_t))
-inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filename_c_str, func callback)
+inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filename_c_str, bool nt_path, func callback)
 {
 	if constexpr (::std::same_as<char_type, char16_t>)
 	{
 		win32::nt::unicode_string nt_name;
 		win32::nt::rtl_unicode_string_unique_ptr us_ptr{};
-		map_nt_unc_and_dos_path_to_nt_path(filename_c_str, nt_name, us_ptr);
+		map_nt_unc_and_dos_path_to_nt_path(filename_c_str, nt_name, us_ptr, nt_path);
 		return callback(nullptr, __builtin_addressof(nt_name));
 	}
 	else
@@ -115,13 +115,12 @@ inline auto nt_call_invoke_without_directory_handle_impl(char_type const *filena
 #endif
 			= char16_t const *;
 		return nt_call_invoke_without_directory_handle_impl(
-			reinterpret_cast<char16_may_alias_const_ptr>(filename_c_str), callback);
+			reinterpret_cast<char16_may_alias_const_ptr>(filename_c_str), nt_path, callback);
 	}
 }
 
 template <::std::integral char_type, typename func>
-inline auto nt_call_invoke_without_directory_handle(char_type const *filename, ::std::size_t filename_len,
-													func callback)
+inline auto nt_call_invoke_without_directory_handle(char_type const *filename, ::std::size_t filename_len, bool nt_path, func callback)
 {
 	using char16_may_alias_const_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -130,19 +129,18 @@ inline auto nt_call_invoke_without_directory_handle(char_type const *filename, :
 		= char16_t const *;
 	if constexpr (sizeof(char_type) == sizeof(char16_t))
 	{
-		return nt_call_invoke_without_directory_handle_impl(reinterpret_cast<char16_may_alias_const_ptr>(filename),
-															callback);
+		return nt_call_invoke_without_directory_handle_impl(reinterpret_cast<char16_may_alias_const_ptr>(filename), nt_path, callback);
 	}
 	else
 	{
 		nt_api_encoding_converter converter(filename, filename_len);
 		return nt_call_invoke_without_directory_handle_impl(
-			reinterpret_cast<char16_may_alias_const_ptr>(converter.c_str()), callback);
+			reinterpret_cast<char16_may_alias_const_ptr>(converter.c_str()), nt_path, callback);
 	}
 }
 
 template <::std::integral char_type, typename func>
-inline auto nt_call_callback(void *directory, char_type const *filename, ::std::size_t filename_len, func callback)
+inline auto nt_call_callback(void *directory, char_type const *filename, ::std::size_t filename_len, [[maybe_unused]] bool nt_path, func callback)
 {
 	if (directory == nullptr)
 	{
@@ -150,16 +148,15 @@ inline auto nt_call_callback(void *directory, char_type const *filename, ::std::
 	}
 	else if (directory == reinterpret_cast<void *>(::std::ptrdiff_t(-3)))
 	{
-		return nt_call_invoke_without_directory_handle(filename, filename_len, callback);
+		return nt_call_invoke_without_directory_handle(filename, filename_len, nt_path, callback);
 	}
 	return nt_call_invoke_with_directory_handle_impl(directory, filename, filename_len, callback);
 }
 
 template <::std::integral char_type, typename func>
-inline auto nt_call_callback_without_directory_handle(char_type const *filename, ::std::size_t filename_len,
-													  func callback)
+inline auto nt_call_callback_without_directory_handle(char_type const *filename, ::std::size_t filename_len, bool nt_path, func callback)
 {
-	return nt_call_invoke_without_directory_handle(filename, filename_len, callback);
+	return nt_call_invoke_without_directory_handle(filename, filename_len, nt_path, callback);
 }
 
 template <typename func>
