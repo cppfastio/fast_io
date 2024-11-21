@@ -288,7 +288,7 @@ enum class open_mode : ::std::uint_least64_t
 	tty_init = static_cast<::std::uint_least64_t>(1) << 32,
 	//	POSIX O_TTY_INIT
 	nt_path = static_cast<::std::uint_least64_t>(1) << 33,
-	//  [Windows] use nt path on nt file
+	//  [Windows NT] use nt path on nt file
 };
 
 constexpr open_mode operator&(open_mode x, open_mode y) noexcept

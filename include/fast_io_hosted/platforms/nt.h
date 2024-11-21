@@ -1067,7 +1067,7 @@ inline constexpr unix_timestamp to_unix_timestamp(::std::uint_least64_t date_tim
 			static_cast<::std::uint_least64_t>(unix_time % 10000000ULL) * mul_factor};
 }
 
-inline file_type file_type_impl(::std::uint_least32_t DeviceType)
+inline constexpr file_type file_type_impl(::std::uint_least32_t DeviceType) noexcept
 {
 	if (DeviceType > 0x2B)
 	{
