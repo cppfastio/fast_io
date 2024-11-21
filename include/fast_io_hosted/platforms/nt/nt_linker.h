@@ -3038,4 +3038,55 @@ inline ::std::uint_least32_t nt_query_auxiliary_counter_frequency(Args... args) 
 	}
 }
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern rtl_path_type
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	RtlDetermineDosPathNameType_U(char16_t const *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("RtlDetermineDosPathNameType_U@4")
+#else
+	__asm__("_RtlDetermineDosPathNameType_U@4")
+#endif
+#else
+	__asm__("RtlDetermineDosPathNameType_U")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	RtlGetFullPathName_U(char16_t const *, ::std::uint_least32_t, char16_t *, char16_t **) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("RtlGetFullPathName_U@16")
+#else
+	__asm__("_RtlGetFullPathName_U@16")
+#endif
+#else
+	__asm__("RtlGetFullPathName_U")
+#endif
+#endif
+		;
 } // namespace fast_io::win32::nt
