@@ -351,7 +351,7 @@ private:
 		{
 			return fd_devnull;
 		}
-#ifdef __linux__
+#ifdef O_CLOEXEC
 		fd_devnull = my_posix_open<true>("/dev/null", O_RDWR | O_CLOEXEC, 0644);
 #else
 		fd_devnull = my_posix_open<true>("/dev/null", O_RDWR, 0644);
@@ -362,20 +362,29 @@ private:
 };
 
 // only used in vfork_execveat_common_impl()
-[[noreturn]]
 inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno) noexcept
 {
 #if defined(__linux__) && defined(__NR_execveat)
-	system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW);
+	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW)};
+	if (::fast_io::linux_system_call_fails(ret))
+	{
+		t_errno = -ret;
+	}
+	else
+	{
+		t_errno = 0;
+	}
+	system_call<__NR_exit>(127);
 #else
 	int fd{noexcept_call(::openat, dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
 	if (fd != -1) [[likely]]
 	{
 		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(argv), const_cast<char *const *>(envp));
 	}
-#endif
 	t_errno = errno;
 	noexcept_call(::_exit, 127);
+#endif
+	__builtin_trap();
 }
 
 inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
@@ -513,7 +522,11 @@ public:
 	}
 	posix_process &operator=(posix_process &&__restrict other) noexcept
 	{
-		details::posix_waitpid_noexcept(this->pid);
+		if (__builtin_addressof(other) != this)
+		{
+			return *this;
+		}
+		::fast_io::details::posix_waitpid_noexcept(this->pid);
 		this->pid = other.pid;
 		other.pid = -1;
 		return *this;
