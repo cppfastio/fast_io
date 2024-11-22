@@ -91,4 +91,47 @@ inline void sys_close_throw_error(int &fd)
 	system_call_throw_error(ret);
 }
 
+template <typename T>
+inline int sys_fcntl(int fd, int op, T &&third_arg)
+{
+#if defined(__linux__) && defined(__NR_fcntl)
+	int result{system_call<__NR_fcntl, int>(fd, op, ::std::forward<T>(third_arg))};
+	system_call_throw_error(result);
+	return result;
+#else
+	auto result{
+#if defined(_WIN32) && !defined(__BIONIC__)
+		_fcntl
+#else
+		fcntl
+#endif
+		(fd, op, ::std::forward<T>(third_arg))};
+#endif
+	if (result == -1)
+	{
+		throw_posix_error();
+	}
+}
+
+inline int sys_fcntl(int fd, int op)
+{
+#if defined(__linux__) && defined(__NR_fcntl)
+	int result{system_call<__NR_fcntl, int>(fd, op)};
+	system_call_throw_error(result);
+	return result;
+#else
+	auto result{
+#if defined(_WIN32) && !defined(__BIONIC__)
+		_fcntl
+#else
+		fcntl
+#endif
+		(fd, op)};
+#endif
+	if (result == -1)
+	{
+		throw_posix_error();
+	}
+}
+
 } // namespace fast_io::details

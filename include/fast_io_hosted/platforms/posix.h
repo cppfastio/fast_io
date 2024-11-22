@@ -343,6 +343,12 @@ struct posix_io_redirection
 	int *pipe_fds{};
 	int fd{-1};
 	bool dev_null{};
+
+	// return true when a redirection is needed
+	operator bool() const
+	{
+		return pipe_fds || fd != -1 || dev_null;
+	}
 };
 
 struct posix_io_redirection_std : posix_io_redirection
@@ -897,7 +903,7 @@ inline int my_posix_openat(int, char const *, int, mode_t)
 }
 #else
 
-extern int my_posix_openat_noexcept(int fd, const char *path, int aflag, ... /*mode_t mode*/) noexcept __asm__("openat");
+extern int my_posix_openat_noexcept(int fd, char const *path, int aflag, ... /*mode_t mode*/) noexcept __asm__("openat");
 
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
