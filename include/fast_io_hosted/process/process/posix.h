@@ -393,7 +393,7 @@ inline pid_t posix_vfork()
 	pid_t pid{system_call<__NR_vfork, pid_t>()};
 	system_call_throw_error(pid);
 #else
-	pid_t pid{noexcept_call(::fork)};
+	pid_t pid{noexcept_call(::vfork)};
 	if (pid == -1) [[unlikely]]
 	{
 		throw_posix_error();
