@@ -374,7 +374,7 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	{
 		t_errno = 0;
 	}
-	system_call<__NR_exit>(127);
+	::fast_io::fast_exit(127);
 #else
 	int fd{noexcept_call(::openat, dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
 	if (fd != -1) [[likely]]
@@ -384,7 +384,7 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	t_errno = errno;
 	noexcept_call(::_exit, 127);
 #endif
-	__builtin_trap();
+	__builtin_unreachable();
 }
 
 inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
