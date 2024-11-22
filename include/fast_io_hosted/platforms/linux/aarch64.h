@@ -29,6 +29,7 @@ inline void system_call_no_return(auto p1) noexcept
 	register ::std::uint_least64_t x8 __asm__("x8") = syscall_number;
 	register ::std::uint_least64_t x0 __asm__("x0") = (::std::uint_least64_t)p1;
 	__asm__ __volatile__("svc 0" : "=r"(x0) : "r"(x8), "0"(x0) : "memory", "cc");
+	__builtin_unreachable();
 }
 
 template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
@@ -103,7 +104,6 @@ template <::std::integral I>
 inline void fast_exit(I ret) noexcept
 {
 	system_call_no_return<__NR_exit>(ret);
-	__builtin_unreachable();
 }
 
 } // namespace fast_io

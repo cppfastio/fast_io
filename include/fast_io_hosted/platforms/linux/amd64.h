@@ -31,7 +31,6 @@ inline return_value_type system_call(auto p1) noexcept
 }
 
 template <::std::size_t syscall_number>
-[[noreturn]]
 inline void system_call_no_return(auto p1) noexcept
 {
 	::std::size_t ret;
@@ -40,6 +39,7 @@ inline void system_call_no_return(auto p1) noexcept
 						 // EDI      RSI       RDX
 						 : "0"(syscall_number), "D"(p1)
 						 : "memory", "cc", "r11", "cx");
+	__builtin_unreachable();
 }
 
 template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
