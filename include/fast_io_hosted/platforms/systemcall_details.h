@@ -92,14 +92,6 @@ inline void sys_close_throw_error(int &fd)
 }
 #if (!defined(__NEWLIB__) || defined(__CYGWIN__)) && !defined(_WIN32) && __has_include(<dirent.h>) && !defined(_PICOLIBC__)
 
-extern int my_fcntl(int fd, int cmd, ... /* arg */) noexcept
-#if !defined(__MSDOS__)
-	__asm__("fcntl")
-#else
-	__asm__("_fcntl")
-#endif
-		;
-
 template <typename... Args>
 	requires(::std::is_scalar_v<Args> && ...)
 inline int sys_fcntl(int fd, int op, Args... args)
@@ -109,13 +101,7 @@ inline int sys_fcntl(int fd, int op, Args... args)
 	system_call_throw_error(result);
 	return result;
 #else
-	auto result{
-#if defined(_WIN32) && !defined(__BIONIC__)
-		_fcntl
-#else
-		fcntl
-#endif
-		(fd, op, args...)};
+	auto result{fcntl(fd, op, args...)};
 #endif
 	if (result == -1)
 	{
