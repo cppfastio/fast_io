@@ -568,7 +568,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 						val = (val * base_char_type) + (val >> 8);
 						val = (((val & mask) * mul1) + (((val >> 16) & mask) * mul2)) >> 32;
-						res = res * pow_base_sizeof_u64 + val;
+						res = static_cast<T>(res * pow_base_sizeof_u64 + val);
 						first += sizeof(::std::uint_least64_t);
 					}
 
@@ -589,7 +589,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 							val = (val * base_char_type) + (val >> 8);
 							val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
-							res = res * pow_base_sizeof_u32 + val;
+							res = static_cast<T>(res * pow_base_sizeof_u32 + val);
 							first += sizeof(::std::uint_least32_t);
 						}
 					}
@@ -620,7 +620,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 						val = (val * base_char_type) + (val >> 8);
 						val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
-						res = res * pow_base_sizeof_u32 + val;
+						res = static_cast<T>(res * pow_base_sizeof_u32 + val);
 						first += sizeof(::std::uint_least32_t);
 					}
 				}
