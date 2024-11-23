@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	} 
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -212,7 +212,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -230,7 +230,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -266,7 +266,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -284,7 +284,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -302,7 +302,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -320,7 +320,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -338,7 +338,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -356,7 +356,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -374,7 +374,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -392,7 +392,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -410,7 +410,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -428,7 +428,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -446,7 +446,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -464,7 +464,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -482,7 +482,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -500,7 +500,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -518,7 +518,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -536,7 +536,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -554,7 +554,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -572,7 +572,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -590,7 +590,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -608,7 +608,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -626,7 +626,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -644,7 +644,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -662,7 +662,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -680,7 +680,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -698,7 +698,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -716,7 +716,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -734,7 +734,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -752,7 +752,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -770,7 +770,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -788,7 +788,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -806,7 +806,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -824,7 +824,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -842,7 +842,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -860,7 +860,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -878,7 +878,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -896,7 +896,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -914,7 +914,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -932,7 +932,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -950,7 +950,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
@@ -968,7 +968,7 @@ int main(int argc, char** argv)
 			::fast_io::details::scan_int_contiguous_none_space_part_define_impl<base>(buf, buf + 128, res);
 			if (res != i)
 			{
-				::fast_io::io::panic("error\n");
+				::fast_io::io::panicln("error: ", i);
 			}
 		}
 	}
