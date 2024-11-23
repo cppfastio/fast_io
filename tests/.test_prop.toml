@@ -24,3 +24,6 @@ ignore = true
 
 ["0032.process"]
 ignore = true
+
+["0036.sto"]
+ignore = true
