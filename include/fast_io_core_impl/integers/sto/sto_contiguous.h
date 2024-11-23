@@ -544,7 +544,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 			{
 				if constexpr (sizeof(char_type) == sizeof(char8_t))
 				{
-					while (first_phase_last - first >= sizeof(::std::uint_least64_t))
+					while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least64_t))
 					{
 						::std::uint_least64_t val;
 						::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
@@ -572,7 +572,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 						first += sizeof(::std::uint_least64_t);
 					}
 
-					if (first_phase_last - first >= sizeof(::std::uint_least32_t))
+					if (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least32_t))
 					{
 						::std::uint_least32_t val;
 						::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
@@ -600,7 +600,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 			{
 				if constexpr (sizeof(char_type) == sizeof(char8_t))
 				{
-					while (first_phase_last - first >= sizeof(::std::uint_least32_t))
+					while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least32_t))
 					{
 						::std::uint_least32_t val;
 						::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
