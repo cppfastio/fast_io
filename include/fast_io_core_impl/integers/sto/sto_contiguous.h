@@ -552,7 +552,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 						constexpr ::std::uint_least64_t pow_base_sizeof_u64{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), sizeof(::std::uint_least64_t))};
 						constexpr ::std::uint_least64_t first_bound{0x4646464646464646 + 0x0101010101010101 * (10 - base_char_type)};
 
-						if ((((val + first_bound) | (val - 0x3030303030303030)) & 0x8080808080808080)) [[unlikely]]
+						if (((val + first_bound) | (val - 0x3030303030303030)) & 0x8080808080808080) [[unlikely]]
 						{
 							break;
 						}
@@ -580,20 +580,18 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 						constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
 						constexpr ::std::uint_least32_t first_bound{0x46464646 + 0x01010101 * (10 - base_char_type)};
 
-						if ((((val + first_bound) | (val - 0x30303030)) & 0x80808080)) [[unlikely]]
+						if (!(((val + first_bound) | (val - 0x30303030)) & 0x80808080)) [[likely]]
 						{
-							break;
+							constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
+
+							constexpr ::std::uint_least32_t mask{0x000000FF};
+							val -= 0x30303030;
+
+							val = (val * base_char_type) + (val >> 8);
+							val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
+							res = res * pow_base_sizeof_u32 + val;
+							first += sizeof(::std::uint_least32_t);
 						}
-
-						constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
-
-						constexpr ::std::uint_least32_t mask{0x000000FF};
-						val -= 0x30303030;
-
-						val = (val * base_char_type) + (val >> 8);
-						val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask)) >> 32;
-						res = res * pow_base_sizeof_u32 + val;
-						first += sizeof(::std::uint_least32_t);
 					}
 
 				}
@@ -610,7 +608,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 						constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
 						constexpr ::std::uint_least32_t first_bound{0x46464646 + 0x01010101 * (10 - base_char_type)};
 
-						if ((((val + first_bound) | (val - 0x30303030)) & 0x80808080)) [[unlikely]]
+						if (((val + first_bound) | (val - 0x30303030)) & 0x80808080) [[unlikely]]
 						{
 							break;
 						}
@@ -621,7 +619,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 						val -= 0x30303030;
 
 						val = (val * base_char_type) + (val >> 8);
-						val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask)) >> 32;
+						val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
 						res = res * pow_base_sizeof_u32 + val;
 						first += sizeof(::std::uint_least32_t);
 					}
