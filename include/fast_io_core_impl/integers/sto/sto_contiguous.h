@@ -728,6 +728,9 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 				{
 					if constexpr (sizeof(char_type) == sizeof(char8_t))
 					{
+						// It seems that it is unnecessary to read 4-bit data in base11-hexadecimal system,
+						// and the time for 4-bit data reading of this algorithm even exceeds 4 times of cyclic reading
+#if 0
 						if constexpr (max_size >= sizeof(::std::uint_least32_t))
 						{
 							while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least32_t))
@@ -761,6 +764,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 								first += sizeof(::std::uint_least32_t);
 							}
 						}
+#endif
 					}
 				}
 			}
