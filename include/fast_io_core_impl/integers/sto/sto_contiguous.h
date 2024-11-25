@@ -666,7 +666,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 										((val + first_bound2) | (val - 0x60606060))) |
 									   ~(((val + 0x3f3f3f3f) | (val - 0x40404040)) &
 										 ((val + 0x1f1f1f1f) | (val - 0x60606060)))) &
-									  0x80808080)) [[unlikely]]
+									  0x80808080)) [[likely]]
 								{
 									constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
 
