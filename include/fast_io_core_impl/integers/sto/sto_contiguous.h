@@ -539,9 +539,9 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 		if constexpr (!::fast_io::details::is_ebcdic<char_type>)
 		{
 			// Decimal:
-			// https://github.com/fastfloat/fast_float 
+			// https://github.com/fastfloat/fast_float
 			// Copyright(c) 2021 The fast_float authors
-			// 
+			//
 			// Binary to Hexadecimal:
 			// Copyright(c) 2024 MacroModel
 
@@ -623,14 +623,12 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 								constexpr ::std::uint_least64_t first_bound1{0x3939393939393939 + 0x0101010101010101 * (16 - base_char_type)};
 								constexpr ::std::uint_least64_t first_bound2{0x1919191919191919 + 0x0101010101010101 * (16 - base_char_type)};
 
-								if (static_cast<bool>((((val + 0x4646464646464646) | (val - 0x3030303030303030)) &
-													   ((val + first_bound1) | (val - 0x4040404040404040)) &
-													   ((val + first_bound2) | (val - 0x6060606060606060))) &
-													  0x8080808080808080) ||
-									static_cast<bool>(((((val + 0x3f3f3f3f3f3f3f3f) | (val - 0x4040404040404040)) &
-														((val + 0x1f1f1f1f1f1f1f1f) | (val - 0x6060606060606060))) &
-													   0x8080808080808080) -
-													  0x8080808080808080)) [[unlikely]]
+								if (((((val + 0x4646464646464646) | (val - 0x3030303030303030)) &
+									  ((val + first_bound1) | (val - 0x4040404040404040)) &
+									  ((val + first_bound2) | (val - 0x6060606060606060))) |
+									 ~(((val + 0x3f3f3f3f3f3f3f3f) | (val - 0x4040404040404040)) &
+									   ((val + 0x1f1f1f1f1f1f1f1f) | (val - 0x6060606060606060)))) &
+									0x8080808080808080) [[unlikely]]
 								{
 									break;
 								}
@@ -663,14 +661,12 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 								constexpr ::std::uint_least32_t first_bound1{0x39393939 + 0x01010101 * (16 - base_char_type)};
 								constexpr ::std::uint_least32_t first_bound2{0x19191919 + 0x01010101 * (16 - base_char_type)};
 
-								if (!static_cast<bool>((((val + 0x46464646) | (val - 0x30303030)) &
-														((val + first_bound1) | (val - 0x40404040)) &
-														((val + first_bound2) | (val - 0x60606060))) &
-													   0x80808080) &&
-									!static_cast<bool>(((((val + 0x3f3f3f3f) | (val - 0x40404040)) &
-														 ((val + 0x1f1f1f1f) | (val - 0x60606060))) &
-														0x80808080) -
-													   0x80808080)) [[likely]]
+								if (!(((((val + 0x46464646) | (val - 0x30303030)) &
+										((val + first_bound1) | (val - 0x40404040)) &
+										((val + first_bound2) | (val - 0x60606060))) |
+									   ~(((val + 0x3f3f3f3f) | (val - 0x40404040)) &
+										 ((val + 0x1f1f1f1f) | (val - 0x60606060)))) &
+									  0x80808080)) [[likely]]
 								{
 									constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
 
@@ -738,14 +734,12 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 								constexpr ::std::uint_least32_t first_bound1{0x39393939 + 0x01010101 * (16 - base_char_type)};
 								constexpr ::std::uint_least32_t first_bound2{0x19191919 + 0x01010101 * (16 - base_char_type)};
 
-								if (static_cast<bool>((((val + 0x46464646) | (val - 0x30303030)) &
-													   ((val + first_bound1) | (val - 0x40404040)) &
-													   ((val + first_bound2) | (val - 0x60606060))) &
-													  0x80808080) ||
-									static_cast<bool>(((((val + 0x3f3f3f3f) | (val - 0x40404040)) &
-														((val + 0x1f1f1f1f) | (val - 0x60606060))) &
-													   0x80808080) -
-													  0x80808080)) [[unlikely]]
+								if (((((val + 0x46464646) | (val - 0x30303030)) &
+									  ((val + first_bound1) | (val - 0x40404040)) &
+									  ((val + first_bound2) | (val - 0x60606060))) |
+									 ~(((val + 0x3f3f3f3f) | (val - 0x40404040)) &
+									   ((val + 0x1f1f1f1f) | (val - 0x60606060)))) &
+									0x80808080) [[unlikely]]
 								{
 									break;
 								}
