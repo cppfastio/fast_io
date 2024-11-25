@@ -418,7 +418,7 @@ inline constexpr T umul(U a, T b, U &high) noexcept
 				return static_cast<T>(res);
 			}
 		}
-#elif defined(_MSC_VER) && defined(_M_X64)
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
 #if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
 #if defined(__cpp_if_consteval)
 		if consteval
@@ -526,7 +526,7 @@ inline constexpr U umulh(U a, T b) noexcept
 				return static_cast<U>(res >> 64u);
 			}
 		}
-#elif defined(_MSC_VER) && defined(_M_X64)
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
 #if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
 #if defined(__cpp_if_consteval)
 		if consteval
