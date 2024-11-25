@@ -146,6 +146,13 @@ public:
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
+	inline explicit win32_family_file_loader(win9x_fs_dirent fsdirent, open_mode om = open_mode::in,
+											 perms pm = static_cast<perms>(436))
+	{
+		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(fsdirent, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(T const &filename, open_mode om = open_mode::in,
 											 perms pm = static_cast<perms>(436))
@@ -156,6 +163,14 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(nt_at_entry ent, T const &filename, open_mode om = open_mode::in,
+											 perms pm = static_cast<perms>(436))
+	{
+		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(ent, filename, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit win32_family_file_loader(win9x_at_entry ent, T const &filename, open_mode om = open_mode::in,
 											 perms pm = static_cast<perms>(436))
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(ent, filename, om, pm)};

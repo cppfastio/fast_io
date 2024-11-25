@@ -146,7 +146,7 @@ inline constexpr void write_all_overflow_define(io_strlike_reference_wrapper<ch_
 		auto curr{strlike_curr(::fast_io::io_strlike_type<ch_type, T>, strref)};
 		::std::size_t const bufferdiff{
 			static_cast<::std::size_t>(strlike_end(::fast_io::io_strlike_type<ch_type, T>, strref) - curr)};
-		curr = non_overlapped_copy_n(first, bufferdiff, curr);
+		curr = ::fast_io::freestanding::non_overlapped_copy_n(first, bufferdiff, curr);
 		first += bufferdiff;
 		strlike_set_curr(::fast_io::io_strlike_type<ch_type, T>, strref, curr);
 		auto bptr{strlike_begin(::fast_io::io_strlike_type<ch_type, T>, strref)};
@@ -161,7 +161,7 @@ inline constexpr void write_all_overflow_define(io_strlike_reference_wrapper<ch_
 		}
 		strlike_reserve(::fast_io::io_strlike_type<ch_type, T>, strref, new_cap);
 		auto curr_ptr{strlike_curr(::fast_io::io_strlike_type<ch_type, T>, strref)};
-		curr_ptr = non_overlapped_copy(first, last, curr_ptr);
+		curr_ptr = ::fast_io::freestanding::non_overlapped_copy(first, last, curr_ptr);
 		strlike_set_curr(::fast_io::io_strlike_type<ch_type, T>, strref, curr_ptr);
 	}
 }

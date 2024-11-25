@@ -72,6 +72,12 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	open_mode value{ompm.om};
 	perms pm{ompm.pm};
 	nt_open_mode mode;
+
+	constexpr auto default_write_attribute{0x00020000L /*READ_CONTROL*/ | 0x0002 /*FILE_WRITE_DATA*/ | 0x0004 /*FILE_APPEND_DATA*/};
+	constexpr auto default_read_attribute{0x00020000L /*READ_CONTROL*/ | 0x0001 /*FILE_READ_DATA*/};
+
+	mode.DesiredAccess |= 0x00100000L /*SYNCHRONIZE*/ | 0x0080 /*FILE_READ_ATTRIBUTES*/;
+
 	if ((value & open_mode::no_shared_read) == open_mode::none)
 	{
 		mode.ShareAccess |= 1; // FILE_SHARE_READ
@@ -91,16 +97,16 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	}
 	else if ((value & open_mode::out) != open_mode::none)
 	{
-		mode.DesiredAccess |= 0x120116; // FILE_GENERIC_WRITE
+		mode.DesiredAccess |= default_write_attribute;
 		generic_write = true;
 	}
 	if (((value & open_mode::in) != open_mode::none) || ((value & open_mode::app) != open_mode::none))
 	{
-		mode.DesiredAccess |= 0x120089; // FILE_GENERIC_READ
+		mode.DesiredAccess |= default_read_attribute;
 		if ((value & open_mode::out) != open_mode::none &&
 			((value & open_mode::app) != open_mode::none && (value & open_mode::trunc) != open_mode::none))
 		{
-			mode.DesiredAccess |= 0x120116;
+			mode.DesiredAccess |= default_write_attribute;
 			generic_write = true;
 		}
 	}
@@ -250,8 +256,8 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	{
 		if (mode.CreateDisposition == 0)
 		{
-			mode.DesiredAccess |= 0x120089;      // FILE_GENERIC_READ
-			mode.CreateDisposition = 0x00000001; // OPEN_EXISTING
+			mode.DesiredAccess |= default_read_attribute; // FILE_GENERIC_READ
+			mode.CreateDisposition = 0x00000001;          // OPEN_EXISTING
 		}
 		mode.CreateOptions |= 0x00004000; // FILE_OPEN_FOR_BACKUP_INTENT
 		mode.CreateOptions |= 0x00000001; // FILE_DIRECTORY_FILE
@@ -261,7 +267,7 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 		}
 		if ((value & open_mode::creat) != open_mode::none)
 		{
-			mode.DesiredAccess |= UINT32_C(0x120116) | UINT32_C(0x120089); // GENERIC_READ | GENERIC_WRITE
+			mode.DesiredAccess |= default_write_attribute | default_read_attribute; // GENERIC_READ | GENERIC_WRITE
 		}
 	}
 	if ((value & open_mode::no_block) == open_mode::none)
@@ -356,7 +362,8 @@ template <bool zw>
 inline void *nt_family_create_file_impl(char16_t const *filename_cstr, open_mode_perms ompm)
 {
 	return ::fast_io::win32::nt::details::nt_call_invoke_without_directory_handle_impl(
-		filename_cstr, nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(ompm)});
+		filename_cstr, static_cast<bool>(ompm.om & ::fast_io::open_mode::nt_path),
+		nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(ompm)});
 }
 
 template <bool zw>
@@ -394,7 +401,7 @@ inline void *nt_family_create_file_at_impl(void *directory_handle, char16_t cons
 	else
 	{
 		return ::fast_io::win32::nt::details::nt_call_callback(
-			directory_handle, filename_c_str, filename_c_str_len,
+			directory_handle, filename_c_str, filename_c_str_len, static_cast<bool>(md.om & ::fast_io::open_mode::nt_path),
 			nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(md)});
 	}
 }
@@ -472,9 +479,9 @@ inline ::std::uint_least64_t nt_calculate_current_file_offset(void *__restrict h
 {
 	::fast_io::win32::nt::io_status_block block;
 	::std::uint_least64_t fps{};
-	auto status{::fast_io::win32::nt::nt_query_information_file < family == ::fast_io::nt_family::zw > (handle, __builtin_addressof(block), __builtin_addressof(fps),
-																										static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
-																										::fast_io::win32::nt::file_information_class::FilePositionInformation)};
+	auto status{::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(block), __builtin_addressof(fps),
+																									static_cast<::std::uint_least32_t>(sizeof(::std::uint_least64_t)),
+																									::fast_io::win32::nt::file_information_class::FilePositionInformation)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -502,10 +509,14 @@ inline ::std::byte *nt_read_pread_some_bytes_common_impl(void *__restrict handle
 {
 	// some poeple in zwclose7 forum said we do not need to initialize io_status_block
 	::fast_io::win32::nt::io_status_block block;
-	auto const status{::fast_io::win32::nt::nt_read_file < family == ::fast_io::nt_family::zw > (handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
-																								 ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
-	if (status)
+	auto const status{::fast_io::win32::nt::nt_read_file<family == ::fast_io::nt_family::zw>(handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
+																							 ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
+	if (status) [[unlikely]]
 	{
+		if (status == 0xC0000011 /*file*/ || status == 0xC000014B /*pipe*/) [[likely]]
+		{
+			return first;
+		}
 		throw_nt_error(status);
 	}
 	return first + block.Information;
@@ -532,8 +543,8 @@ inline ::std::byte const *nt_write_pwrite_some_bytes_common_impl(void *__restric
 																 ::std::int_least64_t *pbyteoffset)
 {
 	::fast_io::win32::nt::io_status_block block;
-	auto const status{::fast_io::win32::nt::nt_write_file < family == ::fast_io::nt_family::zw > (handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
-																								  ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
+	auto const status{::fast_io::win32::nt::nt_write_file<family == ::fast_io::nt_family::zw>(handle, nullptr, nullptr, nullptr, __builtin_addressof(block), first,
+																							  ::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(first, last), pbyteoffset, nullptr)};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -592,7 +603,7 @@ inline nt_at_entry nt_at_fdcwd() noexcept
 	return nt_at_entry{bit_cast<void *>(value)};
 }
 
-#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
+#if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__) && !defined(_WIN32_WINDOWS)
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
@@ -690,14 +701,14 @@ inline ::std::byte const *pwrite_some_bytes_overflow_define(basic_nt_family_io_o
 	return ::fast_io::win32::nt::details::nt_pwrite_some_bytes_impl<family>(niob.handle, first, last, off);
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
-
 template <nt_family family, ::std::integral ch_type>
 inline constexpr bool operator==(basic_nt_family_io_observer<family, ch_type> a,
 								 basic_nt_family_io_observer<family, ch_type> b) noexcept
 {
 	return a.handle == b.handle;
 }
+
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <nt_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_nt_family_io_observer<family, ch_type> a,
@@ -1025,7 +1036,7 @@ template <nt_family family, ::std::integral ch_type>
 inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_nt_family_io_observer<family, ch_type> handle,
 														::fast_io::intfpos_t offset, seekdir s)
 {
-	return ::fast_io::win32::nt::details::nt_seek_impl < family == nt_family::zw > (handle.handle, offset, s);
+	return ::fast_io::win32::nt::details::nt_seek_impl<family == nt_family::zw>(handle.handle, offset, s);
 }
 
 template <nt_family family, ::std::integral ch_type>
@@ -1033,13 +1044,207 @@ inline void truncate(basic_nt_family_io_observer<family, ch_type> handle, ::std:
 {
 	::fast_io::win32::nt::details::nt_truncate_impl<family == nt_family::zw>(handle.handle, newfilesize);
 }
-#if 0
-template<nt_family family,::std::integral ch_type>
-inline posix_file_status status(basic_nt_family_io_observer<family,ch_type> handle)
+
+namespace win32::nt::details
 {
-	return ::fast_io::win32::nt::details::nt_status_impl<family==nt_family::zw>(handle.handle);
+inline constexpr unix_timestamp to_unix_timestamp(::std::uint_least64_t date_time) noexcept
+{
+	/*
+	116444736000000000
+	18446744073709551616
+	 999999999
+	1000000000
+	*/
+
+	constexpr ::std::uint_least64_t gap{11644473600000ULL * 10000ULL};
+	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
+	::std::uint_least64_t unix_time{date_time - gap};
+	if (date_time < gap) [[unlikely]]
+	{
+		unix_time = 0;
+	}
+	return {static_cast<::std::int_least64_t>(unix_time / 10000000ULL),
+			static_cast<::std::uint_least64_t>(unix_time % 10000000ULL) * mul_factor};
 }
-#endif
+
+inline constexpr file_type file_type_impl(::std::uint_least32_t DeviceType) noexcept
+{
+	if (DeviceType > 0x2B)
+	{
+		if (DeviceType != 80) [[unlikely]]
+		{
+			return file_type::unknown;
+		}
+		return file_type::character;
+	}
+	if (DeviceType == 43 || DeviceType == 21)
+	{
+		return file_type::character;
+	}
+	if (DeviceType > 0x15)
+	{
+		if (DeviceType > 0x1D)
+		{
+			if (DeviceType != 31 && DeviceType != 32 && DeviceType != 33 && DeviceType != 34 && DeviceType == 36) [[likely]]
+			{
+				return file_type::regular;
+			}
+			return file_type::unknown;
+		}
+		switch (DeviceType)
+		{
+		case 0x1D:
+			[[fallthrough]];
+		case 0x16:
+			return file_type::character;
+		case 0x17:
+			[[unlikely]] return file_type::unknown;
+		case 0x18:
+			[[fallthrough]];
+		case 0x1B:
+			[[fallthrough]];
+		case 0x28:
+			return file_type::character;
+		default:
+			[[unlikely]] return file_type::unknown;
+		}
+	}
+	if (DeviceType > 8)
+	{
+		if (DeviceType != 11 && DeviceType != 15)
+		{
+			if (DeviceType == 17) [[likely]]
+			{
+				return file_type::fifo;
+			}
+			return file_type::unknown;
+		}
+		return file_type::character;
+	}
+	return file_type::regular;
+}
+
+template <nt_family family>
+inline posix_file_status nt_status_impl(void *__restrict handle)
+{
+	::fast_io::win32::nt::io_status_block isb;
+
+	::fast_io::win32::nt::file_fs_device_type ffdt;
+	auto status{::fast_io::win32::nt::nt_query_volume_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(ffdt),
+																										   static_cast<::std::uint_least32_t>(sizeof(ffdt)),
+																										   ::fast_io::win32::nt::fs_information_class::FileFsDeviceInformation)};
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	auto ft{file_type_impl(ffdt.DeviceType)};
+
+	if (ft == file_type::fifo || ft == file_type::character)
+	{
+		return posix_file_status{0,
+								 0,
+								 static_cast<perms>(436),
+								 ft,
+								 1,
+								 0,
+								 0,
+								 static_cast<::std::uintmax_t>(reinterpret_cast<::std::size_t>(handle)),
+								 0,
+								 131072,
+								 0,
+								 {},
+								 {},
+								 {},
+								 {},
+								 0,
+								 0};
+	}
+
+	::fast_io::win32::nt::file_basic_information fbi;
+	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fbi),
+																								 static_cast<::std::uint_least32_t>(sizeof(fbi)),
+																								 ::fast_io::win32::nt::file_information_class::FileBasicInformation);
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	::fast_io::win32::nt::file_internal_information fii;
+	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fii),
+																								 static_cast<::std::uint_least32_t>(sizeof(fii)),
+																								 ::fast_io::win32::nt::file_information_class::FileInternalInformation);
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	struct
+	{
+		::fast_io::win32::nt::file_fs_volume_information FileFsVolume;
+		char16_t Name[255];
+	} ffvi;
+
+	status = ::fast_io::win32::nt::nt_query_volume_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb),
+																										__builtin_addressof(ffvi), static_cast<::std::uint_least32_t>(sizeof(ffvi)),
+																										::fast_io::win32::nt::fs_information_class::FileFsVolumeInformation);
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	::fast_io::win32::nt::file_standard_information fsi;
+	status = ::fast_io::win32::nt::nt_query_information_file<family == ::fast_io::nt_family::zw>(handle, __builtin_addressof(isb), __builtin_addressof(fsi),
+																								 static_cast<::std::uint_least32_t>(sizeof(fsi)),
+																								 ::fast_io::win32::nt::file_information_class::FileStandardInformation);
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	::std::uintmax_t file_size{static_cast<::std::uintmax_t>(fsi.end_of_file)};
+	::std::underlying_type_t<perms> pm{0444};
+	if ((fbi.FileAttributes & 0x1) == 0x0)
+	{
+		pm |= 0222;
+	}
+	if ((fbi.FileAttributes & 0x400) == 0x400)
+	{
+		ft = file_type::symlink;
+	}
+	else if ((fbi.FileAttributes & 0x10) == 0x10)
+	{
+		ft = file_type::directory;
+	}
+	return posix_file_status{static_cast<::std::uintmax_t>(ffvi.FileFsVolume.VolumeSerialNumber),
+							 static_cast<::std::uintmax_t>(fii.IndexNumber),
+							 static_cast<perms>(pm),
+							 ft,
+							 static_cast<::std::uintmax_t>(fsi.number_of_links),
+							 0,
+							 0,
+							 0,
+							 file_size,
+							 131072,
+							 file_size >> 9,
+							 to_unix_timestamp(fbi.LastAccessTime),
+							 to_unix_timestamp(fbi.LastWriteTime),
+							 to_unix_timestamp(fbi.ChangeTime),
+							 to_unix_timestamp(fbi.CreationTime),
+							 0,
+							 0};
+}
+
+} // namespace win32::nt::details
+
+template <nt_family family, ::std::integral ch_type>
+inline posix_file_status status(basic_nt_family_io_observer<family, ch_type> wiob)
+{
+	return win32::nt::details::nt_status_impl<family>(wiob.handle);
+}
 
 template <nt_family family>
 struct nt_family_file_lock
@@ -1061,7 +1266,7 @@ struct nt_family_file_lock
 		requires(sizeof(int_type) >= sizeof(::std::int_least64_t))
 	inline bool try_lock(basic_flock_request<int_type> &__restrict t) noexcept
 	{
-		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl < family == nt_family::zw > (this->handle, t);
+		return ::fast_io::win32::nt::details::nt_family_file_try_lock_impl<family == nt_family::zw>(this->handle, t);
 	}
 };
 
@@ -1126,12 +1331,12 @@ public:
 	}
 	explicit basic_nt_family_file(io_dup_t, basic_nt_family_io_observer<family, ch_type> wiob)
 		: basic_nt_family_io_observer<family, ch_type>{
-			  ::fast_io::win32::nt::details::nt_dup_impl < family == nt_family::zw > (wiob.handle)}
+			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(wiob.handle)}
 	{
 	}
 	explicit basic_nt_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, char_type>{
-			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl < family == nt_family::zw > (fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
+			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl<family == nt_family::zw>(fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
@@ -1166,7 +1371,7 @@ public:
 	{
 		if (this->handle) [[likely]]
 		{
-			auto status{::fast_io::win32::nt::nt_close < family == nt_family::zw > (this->handle)};
+			auto status{::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle)};
 			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
 			if (status) [[unlikely]]
 			{
@@ -1184,12 +1389,12 @@ public:
 	}
 	basic_nt_family_file(basic_nt_family_file const &other)
 		: basic_nt_family_io_observer<family, ch_type>(
-			  ::fast_io::win32::nt::details::nt_dup_impl < family == nt_family::zw > (other.handle))
+			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(other.handle))
 	{
 	}
 	basic_nt_family_file &operator=(basic_nt_family_file const &other)
 	{
-		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl < family == nt_family::zw > (other.handle, this->handle);
+		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
 		return *this;
 	}
 	constexpr basic_nt_family_file(basic_nt_family_file &&__restrict other) noexcept
@@ -1216,26 +1421,168 @@ public:
 	}
 };
 
+namespace win32::nt::details
+{
+
+template <bool zw>
+inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
+{
+	::fast_io::win32::nt::io_status_block isb;
+	constexpr decltype(auto) namedpipe_part{u"\\Device\\NamedPipe\\"};
+	::fast_io::win32::nt::unicode_string us{
+		.Length = static_cast<::std::uint_least16_t>(sizeof(namedpipe_part) - sizeof(char16_t)),
+		.MaximumLength = static_cast<::std::uint_least16_t>(sizeof(namedpipe_part)),
+		.Buffer = const_cast<char16_t *>(namedpipe_part)};
+
+	::fast_io::win32::nt::object_attributes obj{.Length = sizeof(::fast_io::win32::nt::object_attributes),
+												.RootDirectory = nullptr,
+												.ObjectName = __builtin_addressof(us),
+												.Attributes = 0,
+												.SecurityDescriptor = nullptr,
+												.SecurityQualityOfService = nullptr};
+
+	void *namedpipedir;
+	auto status = ::fast_io::win32::nt::nt_create_file<zw>(
+		__builtin_addressof(namedpipedir), 0x80100000, __builtin_addressof(obj),
+		__builtin_addressof(isb), nullptr, 0, 3, 0x00000001, 0x00000020, nullptr, 0u);
+
+	if (status)
+	{
+		throw_nt_error(status);
+	}
+
+	::fast_io::basic_nt_family_file<zw ? nt_family::zw : nt_family::nt, char> file{namedpipedir};
+
+	::std::int_least64_t DefaultTimeout{-1200000000};
+
+	void *ReadPipeHandle;
+	::fast_io::win32::nt::unicode_string us2{};
+	::fast_io::win32::nt::object_attributes obj2{.Length = sizeof(::fast_io::win32::nt::object_attributes),
+												 .RootDirectory = file.native_handle(),
+												 .ObjectName = __builtin_addressof(us2),
+												 .Attributes = 0x42 /* InheritHandle */,
+												 .SecurityDescriptor = nullptr,
+												 .SecurityQualityOfService = nullptr};
+
+	status = ::fast_io::win32::nt::nt_create_named_pipe_file<zw>(__builtin_addressof(ReadPipeHandle),
+																 0x80000000L | 0x0100 | 0x00100000L /*GENERIC_READ | FILE_WRITE_ATTRIBUTES | SYNCHRONIZE*/,
+																 __builtin_addressof(obj2),
+																 __builtin_addressof(isb),
+																 0x01 | 0x02 /*FILE_SHARE_READ | FILE_SHARE_DELETE*/,
+																 0x00000002 /*FILE_CREATE*/,
+																 0x00000020 /*FILE_SYNCHRONOUS_IO_NONALERT*/,
+																 0x00000000 /*FILE_PIPE_BYTE_STREAM_TYPE*/,
+																 0x00000000 /*FILE_PIPE_BYTE_STREAM_MODE*/,
+																 0x00000000 /*FILE_PIPE_QUEUE_OPERATION*/,
+																 1,
+																 0x1000 /*buffer size*/,
+																 0x1000 /*buffer size*/,
+																 __builtin_addressof(DefaultTimeout));
+
+	if (status)
+	{
+		::fast_io::throw_nt_error(status);
+	}
+
+	obj2.RootDirectory = ReadPipeHandle;
+
+	void *WritePipeHandle;
+	status = ::fast_io::win32::nt::nt_create_file<zw>(
+		__builtin_addressof(WritePipeHandle), 0x40100080, __builtin_addressof(obj2), __builtin_addressof(isb), nullptr,
+		0, 3, 0x00000001, 0x00000020 | 0x00000040, nullptr, 0u);
+
+	if (status)
+	{
+		::fast_io::throw_nt_error(status);
+	}
+
+	*hReadPipe = ReadPipeHandle;
+	*hWritePipe = WritePipeHandle;
+}
+} // namespace win32::nt::details
+
+template <nt_family family, ::std::integral ch_type>
+class basic_nt_family_pipe
+{
+public:
+	using char_type = ch_type;
+	basic_nt_family_file<family, ch_type> pipes[2];
+	basic_nt_family_pipe()
+	{
+		win32::nt::details::nt_create_pipe<family == nt_family::zw>(__builtin_addressof(pipes[0].handle), __builtin_addressof(pipes[1].handle));
+	}
+	constexpr auto &in() noexcept
+	{
+		return *pipes;
+	}
+	constexpr auto &out() noexcept
+	{
+		return pipes[1];
+	}
+};
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr win32_io_redirection redirect(basic_nt_family_pipe<family, ch_type> &hd)
+{
+	return {.win32_pipe_in_handle = hd.in().handle, .win32_pipe_out_handle = hd.out().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, ch_type>
+input_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.in().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, char>
+input_bytes_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.in().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, ch_type>
+output_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.out().handle};
+}
+
+template <nt_family family, ::std::integral ch_type>
+inline constexpr basic_nt_family_io_observer<family, char>
+output_bytes_stream_ref_define(basic_nt_family_pipe<family, ch_type> &pp) noexcept
+{
+	return {pp.out().handle};
+}
+
 template <::std::integral char_type>
 using basic_nt_io_observer = basic_nt_family_io_observer<nt_family::nt, char_type>;
 
 template <::std::integral char_type>
 using basic_nt_file = basic_nt_family_file<nt_family::nt, char_type>;
 
+template <::std::integral char_type>
+using basic_nt_pipe = basic_nt_family_pipe<nt_family::nt, char_type>;
+
 using nt_io_observer = basic_nt_io_observer<char>;
 using nt_file = basic_nt_file<char>;
+using nt_pipe = basic_nt_pipe<char>;
 
 using wnt_io_observer = basic_nt_io_observer<wchar_t>;
 using wnt_file = basic_nt_file<wchar_t>;
+using wnt_pipe = basic_nt_pipe<wchar_t>;
 
 using u8nt_io_observer = basic_nt_io_observer<char8_t>;
 using u8nt_file = basic_nt_file<char8_t>;
+using u8nt_pipe = basic_nt_pipe<char8_t>;
 
 using u16nt_io_observer = basic_nt_io_observer<char16_t>;
 using u16nt_file = basic_nt_file<char16_t>;
+using u16nt_pipe = basic_nt_pipe<char16_t>;
 
 using u32nt_io_observer = basic_nt_io_observer<char32_t>;
 using u32nt_file = basic_nt_file<char32_t>;
+using u32nt_pipe = basic_nt_pipe<char32_t>;
 
 namespace details
 {
@@ -1290,20 +1637,28 @@ using basic_zw_io_observer = basic_nt_family_io_observer<nt_family::zw, char_typ
 template <::std::integral char_type>
 using basic_zw_file = basic_nt_family_file<nt_family::zw, char_type>;
 
+template <::std::integral char_type>
+using basic_zw_pipe = basic_nt_family_pipe<nt_family::zw, char_type>;
+
 using zw_io_observer = basic_zw_io_observer<char>;
 using zw_file = basic_zw_file<char>;
+using zw_pipe = basic_zw_pipe<char>;
 
 using wzw_io_observer = basic_zw_io_observer<wchar_t>;
 using wzw_file = basic_zw_file<wchar_t>;
+using wzw_pipe = basic_zw_pipe<wchar_t>;
 
 using u8zw_io_observer = basic_zw_io_observer<char8_t>;
 using u8zw_file = basic_zw_file<char8_t>;
+using u8zw_pipe = basic_zw_pipe<char8_t>;
 
 using u16zw_io_observer = basic_zw_io_observer<char16_t>;
 using u16zw_file = basic_zw_file<char16_t>;
+using u16zw_pipe = basic_zw_pipe<char16_t>;
 
 using u32zw_io_observer = basic_zw_io_observer<char32_t>;
 using u32zw_file = basic_zw_file<char32_t>;
+using u32zw_pipe = basic_zw_pipe<char32_t>;
 
 template <::std::integral char_type = char>
 inline basic_zw_io_observer<char_type> zw_stdin() noexcept
@@ -1323,7 +1678,7 @@ inline basic_zw_io_observer<char_type> zw_stderr() noexcept
 	return {::fast_io::details::nt_get_stdhandle<2>()};
 }
 
-#if !defined(_WIN32_WINDOWS) && 0
+#if !defined(__WINE__) && !defined(__CYGWIN__) && !defined(__BIONIC__) && !defined(_WIN32_WINDOWS)
 template <::std::integral char_type = char>
 inline basic_nt_io_observer<char_type> native_stdin() noexcept
 {

@@ -18,13 +18,37 @@ struct overlapped
 	} dummy_union_name;
 	void *hEvent;
 };
+
 struct security_attributes
 {
 	::std::uint_least32_t nLength;
 	void *lpSecurityDescriptor;
 	int bInheritHandle;
 };
-struct startupinfo
+
+struct startupinfoa
+{
+	::std::uint_least32_t cb;
+	char *lpReserved;
+	char *lpDesktop;
+	char *lpTitle;
+	::std::uint_least32_t dwX;
+	::std::uint_least32_t dwY;
+	::std::uint_least32_t dwXSize;
+	::std::uint_least32_t dwYSize;
+	::std::uint_least32_t dwXCountChars;
+	::std::uint_least32_t dwYCountChars;
+	::std::uint_least32_t dwFillAttribute;
+	::std::uint_least32_t dwFlags;
+	::std::uint_least16_t wShowWindow;
+	::std::uint_least16_t cbReserved2;
+	::std::uint_least8_t *lpReserved2;
+	void *hStdInput;
+	void *hStdOutput;
+	void *hStdError;
+};
+
+struct startupinfow
 {
 	::std::uint_least32_t cb;
 	char16_t *lpReserved;
@@ -40,11 +64,12 @@ struct startupinfo
 	::std::uint_least32_t dwFlags;
 	::std::uint_least16_t wShowWindow;
 	::std::uint_least16_t cbReserved2;
-	int *lpReserved2;
+	::std::uint_least8_t *lpReserved2;
 	void *hStdInput;
 	void *hStdOutput;
 	void *hStdError;
 };
+
 struct process_information
 {
 	void *hProcess;
@@ -52,9 +77,11 @@ struct process_information
 	::std::uint_least32_t dwProcessId;
 	::std::uint_least32_t dwThreadId;
 };
+
 /*
 https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getfileinformationbyhandleex
 */
+
 struct file_standard_info
 {
 	::std::int_least64_t AllocationSize;
@@ -69,6 +96,7 @@ struct file_attribute_tag_info
 	::std::uint_least32_t FileAttributes;
 	::std::uint_least32_t ReparseTag;
 };
+
 enum class file_info_by_handle_class
 {
 	FileBasicInfo,
@@ -324,5 +352,77 @@ struct time_zone_information
 	systemtime DaylightDate;
 	::std::int_least32_t DaylightBias;
 };
+
+struct system_info
+{
+	union
+	{
+		::std::uint_least32_t dwOemId; // Obsolete field...do not use
+
+		struct
+		{
+			::std::uint_least16_t wProcessorArchitecture;
+			::std::uint_least16_t wReserved;
+		} DUMMYSTRUCTNAME;
+	} DUMMYUNIONNAME;
+
+	::std::uint_least32_t dwPageSize;
+	void *lpMinimumApplicationAddress;
+	void *lpMaximumApplicationAddress;
+	::std::size_t dwActiveProcessorMask;
+	::std::uint_least32_t dwNumberOfProcessors;
+	::std::uint_least32_t dwProcessorType;
+	::std::uint_least32_t dwAllocationGranularity;
+	::std::uint_least16_t wProcessorLevel;
+	::std::uint_least16_t wProcessorRevision;
+};
+
+struct file_basic_info
+{
+	::std::int_least64_t CreationTime;
+	::std::int_least64_t LastAccessTime;
+	::std::int_least64_t LastWriteTime;
+	::std::int_least64_t ChangeTime;
+	::std::uint_least32_t FileAttributes;
+};
+
+struct win32_find_dataa
+{
+	::std::uint_least32_t dwFileAttributes;
+	filetime ftCreationTime;
+	filetime ftLastAccessTime;
+	filetime ftLastWriteTime;
+	::std::uint_least32_t nFileSizeHigh;
+	::std::uint_least32_t nFileSizeLow;
+	::std::uint_least32_t dwReserved0;
+	::std::uint_least32_t dwReserved1;
+	char cFileName[260];
+	char cAlternateFileName[14];
+#ifdef _MAC
+	::std::uint_least32_t dwFileType;
+	::std::uint_least32_t dwCreatorType;
+	::std::uint_least16_t wFinderFlags;
+#endif
+};
+
+struct win32_find_dataw
+{
+	::std::uint_least32_t dwFileAttributes;
+	filetime ftCreationTime;
+	filetime ftLastAccessTime;
+	filetime ftLastWriteTime;
+	::std::uint_least32_t nFileSizeHigh;
+	::std::uint_least32_t nFileSizeLow;
+	::std::uint_least32_t dwReserved0;
+	::std::uint_least32_t dwReserved1;
+	char16_t cFileName[260];
+	char16_t cAlternateFileName[14];
+#if defined(_68K_) || defined(_MPPC_)
+	::std::uint_least32_t dwFileType;
+	::std::uint_least32_t dwCreatorType;
+	::std::uint_least16_t wFinderFlags;
+#endif
+} ;
+
 
 } // namespace fast_io::win32

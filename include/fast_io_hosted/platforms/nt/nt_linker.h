@@ -2264,6 +2264,72 @@ extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	NtFreeVirtualMemory(void *, void **, ::std::size_t *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtFreeVirtualMemory@16")
+#else
+	__asm__("_NtFreeVirtualMemory@16")
+#endif
+#else
+	__asm__("NtFreeVirtualMemory")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwFreeVirtualMemory(void *, void **, ::std::size_t *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwFreeVirtualMemory@16")
+#else
+	__asm__("_ZwFreeVirtualMemory@16")
+#endif
+#else
+	__asm__("ZwFreeVirtualMemory")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 4)
+inline ::std::uint_least32_t nt_free_virtual_memory(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwFreeVirtualMemory(args...);
+	}
+	else
+	{
+		return NtFreeVirtualMemory(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	RtlInitUnicodeString(unicode_string *, char16_t *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -2303,6 +2369,72 @@ extern ::std::uint_least32_t
 #endif
 #endif
 		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtQuerySystemInformation(system_information_class, void *, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtQuerySystemInformation@16")
+#else
+	__asm__("_NtQuerySystemInformation@16")
+#endif
+#else
+	__asm__("NtQuerySystemInformation")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwQuerySystemInformation(system_information_class, void *, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwQuerySystemInformation@16")
+#else
+	__asm__("_ZwQuerySystemInformation@16")
+#endif
+#else
+	__asm__("ZwQuerySystemInformation")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 4)
+inline ::std::uint_least32_t nt_query_system_information(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwQuerySystemInformation(args...);
+	}
+	else
+	{
+		return NtQuerySystemInformation(args...);
+	}
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -2382,4 +2514,579 @@ extern void
 #endif
 		;
 
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtQueryVolumeInformationFile(void *__restrict, io_status_block *__restrict, void *__restrict, ::std::uint_least32_t,
+								 fs_information_class) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtQueryVolumeInformationFile@20")
+#else
+	__asm__("_NtQueryVolumeInformationFile@20")
+#endif
+#else
+	__asm__("NtQueryVolumeInformationFile")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwQueryVolumeInformationFile(void *__restrict, io_status_block *__restrict, void *__restrict, ::std::uint_least32_t,
+								 fs_information_class) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwQueryVolumeInformationFile@20")
+#else
+	__asm__("_ZwQueryVolumeInformationFile@20")
+#endif
+#else
+	__asm__("ZwQueryVolumeInformationFile")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_query_volume_information_file(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwQueryVolumeInformationFile(args...);
+	}
+	else
+	{
+		return NtQueryVolumeInformationFile(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtFsControlFile(void *__restrict, void *__restrict, pio_apc_routine *__restrict, void *, io_status_block *,
+					::std::uint_least32_t, void *, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtFsControlFile@40")
+#else
+	__asm__("_NtFsControlFile@40")
+#endif
+#else
+	__asm__("NtFsControlFile")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwFsControlFile(void *__restrict, void *__restrict, pio_apc_routine *__restrict, void *, io_status_block *,
+					::std::uint_least32_t, void *, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwFsControlFile@40")
+#else
+	__asm__("_ZwFsControlFile@40")
+#endif
+#else
+	__asm__("ZwFsControlFile")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 10)
+inline ::std::uint_least32_t nt_fs_control_file(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwFsControlFile(args...);
+	}
+	else
+	{
+		return NtFsControlFile(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtCreateNamedPipeFile(void **__restrict, ::std::uint_least32_t, object_attributes *__restrict, io_status_block *__restrict,
+						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t,
+						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtCreateNamedPipeFile@56")
+#else
+	__asm__("_NtCreateNamedPipeFile@56")
+#endif
+#else
+	__asm__("NtCreateNamedPipeFile")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwCreateNamedPipeFile(void **__restrict, ::std::uint_least32_t, object_attributes *__restrict, io_status_block *__restrict,
+						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t,
+						  ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwCreateNamedPipeFile@56")
+#else
+	__asm__("_ZwCreateNamedPipeFile@56")
+#endif
+#else
+	__asm__("ZwCreateNamedPipeFile")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 14)
+inline ::std::uint_least32_t nt_create_named_pipe_file(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwCreateNamedPipeFile(args...);
+	}
+	else
+	{
+		return NtCreateNamedPipeFile(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtQueryPerformanceCounter(::std::int_least64_t *, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtQueryPerformanceCounter@8")
+#else
+	__asm__("_NtQueryPerformanceCounter@8")
+#endif
+#else
+	__asm__("NtQueryPerformanceCounter")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwQueryPerformanceCounter(::std::int_least64_t *, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwQueryPerformanceCounter@8")
+#else
+	__asm__("_ZwQueryPerformanceCounter@8")
+#endif
+#else
+	__asm__("ZwQueryPerformanceCounter")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 2)
+inline ::std::uint_least32_t nt_query_performance_counter(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwQueryPerformanceCounter(args...);
+	}
+	else
+	{
+		return NtQueryPerformanceCounter(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least64_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	RtlGetSystemTimePrecise() noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("RtlGetSystemTimePrecise@0")
+#else
+	__asm__("_RtlGetSystemTimePrecise@0")
+#endif
+#else
+	__asm__("RtlGetSystemTimePrecise")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtQueryInformationThread(void *__restrict, thread_information_class, void *, ::std::uint_least32_t,
+							 ::std::uint_least32_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtQueryInformationThread@20")
+#else
+	__asm__("_NtQueryInformationThread@20")
+#endif
+#else
+	__asm__("NtQueryInformationThread")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwQueryInformationThread(void *__restrict, thread_information_class, void *, ::std::uint_least32_t,
+							 ::std::uint_least32_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwQueryInformationThread@20")
+#else
+	__asm__("_ZwQueryInformationThread@20")
+#endif
+#else
+	__asm__("ZwQueryInformationThread")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_query_information_thread(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwQueryInformationThread(args...);
+	}
+	else
+	{
+		return NtQueryInformationThread(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	RtlAdjustPrivilege(::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t, ::std::uint_least8_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("RtlAdjustPrivilege@16")
+#else
+	__asm__("_RtlAdjustPrivilege@16")
+#endif
+#else
+	__asm__("RtlAdjustPrivilege")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtSetInformationObject(void *__restrict, object_information_class, void *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtSetInformationObject@16")
+#else
+	__asm__("_NtSetInformationObject@16")
+#endif
+#else
+	__asm__("NtSetInformationObject")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwSetInformationObject(void *__restrict, object_information_class, void *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwSetInformationObject@16")
+#else
+	__asm__("_ZwSetInformationObject@16")
+#endif
+#else
+	__asm__("ZwSetInformationObject")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 4)
+inline ::std::uint_least32_t nt_set_information_object(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwSetInformationObject(args...);
+	}
+	else
+	{
+		return NtSetInformationObject(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtQueryAuxiliaryCounterFrequency(::std::uint_least64_t*) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtQueryAuxiliaryCounterFrequency@4")
+#else
+	__asm__("_NtQueryAuxiliaryCounterFrequency@4")
+#endif
+#else
+	__asm__("NtQueryAuxiliaryCounterFrequency")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwQueryAuxiliaryCounterFrequency(::std::uint_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwQueryAuxiliaryCounterFrequency@4")
+#else
+	__asm__("_ZwQueryAuxiliaryCounterFrequency@4")
+#endif
+#else
+	__asm__("ZwQueryAuxiliaryCounterFrequency")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 1)
+inline ::std::uint_least32_t nt_query_auxiliary_counter_frequency(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwQueryAuxiliaryCounterFrequency(args...);
+	}
+	else
+	{
+		return NtQueryAuxiliaryCounterFrequency(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern rtl_path_type
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	RtlDetermineDosPathNameType_U(char16_t const *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("RtlDetermineDosPathNameType_U@4")
+#else
+	__asm__("_RtlDetermineDosPathNameType_U@4")
+#endif
+#else
+	__asm__("RtlDetermineDosPathNameType_U")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::uint_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	RtlGetFullPathName_U(char16_t const *, ::std::uint_least32_t, char16_t *, char16_t **) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("RtlGetFullPathName_U@16")
+#else
+	__asm__("_RtlGetFullPathName_U@16")
+#endif
+#else
+	__asm__("RtlGetFullPathName_U")
+#endif
+#endif
+		;
 } // namespace fast_io::win32::nt

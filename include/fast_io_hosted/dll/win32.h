@@ -18,8 +18,7 @@ inline constexpr ::std::uint_least32_t dll_mode_to_win32_ex_flags(dll_mode mode)
 	{
 		flags |= 0x00000002;
 	}
-	if ((mode & dll_mode::win32_load_library_as_datafile_exclusive) ==
-		dll_mode::win32_load_library_as_datafile_exclusive)
+	if ((mode & dll_mode::win32_load_library_as_datafile_exclusive) == dll_mode::win32_load_library_as_datafile_exclusive)
 	{
 		flags |= 0x00000040;
 	}
@@ -27,8 +26,7 @@ inline constexpr ::std::uint_least32_t dll_mode_to_win32_ex_flags(dll_mode mode)
 	{
 		flags |= 0x00000020;
 	}
-	if ((mode & dll_mode::win32_load_library_search_application_dir) ==
-		dll_mode::win32_load_library_search_application_dir)
+	if ((mode & dll_mode::win32_load_library_search_application_dir) == dll_mode::win32_load_library_search_application_dir)
 	{
 		flags |= 0x00000200;
 	}
@@ -52,8 +50,7 @@ inline constexpr ::std::uint_least32_t dll_mode_to_win32_ex_flags(dll_mode mode)
 	{
 		flags |= 0x00000008;
 	}
-	if ((mode & dll_mode::win32_load_library_require_signed_target) ==
-		dll_mode::win32_load_library_require_signed_target)
+	if ((mode & dll_mode::win32_load_library_require_signed_target) == dll_mode::win32_load_library_require_signed_target)
 	{
 		flags |= 0x00000080;
 	}

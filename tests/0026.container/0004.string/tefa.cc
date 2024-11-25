@@ -1,4 +1,4 @@
-/*
+﻿/*
 This is an example to explain why address sanitizers suck
 */
 #include <fast_io.h>

@@ -60,9 +60,9 @@ freestanding ones.
 #endif
 
 #if !defined(__AVR__)
-#if defined(__MSDOS__)
+#include "fast_io_dsal/string_view.h"
 #include "fast_io_dsal/string.h"
-#endif
+
 #include "fast_io_hosted/platforms/native.h"
 #include "fast_io_hosted/file_loaders/impl.h"
 #include "fast_io_hosted/wrapper.h"
@@ -73,14 +73,14 @@ freestanding ones.
 #include "fast_io_hosted/timeutil/impl.h"
 #endif
 
-#include "fast_io_hosted/threads/mutex/impl.h"
+#include "fast_io_hosted/threads/threads.h"
 
 #include "fast_io_dsal/impl/common.h"
 #include "fast_io_dsal/impl/vector.h"
 
 #include "fast_io_hosted/filesystem/native.h"
 #include "fast_io_hosted/dll/dll.h"
-#include "fast_io_hosted/process/native.h"
+#include "fast_io_hosted/process/process.h"
 
 #include "fast_io_hosted/io_file.h"
 

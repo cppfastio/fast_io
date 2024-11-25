@@ -164,19 +164,19 @@ concept my_floating_point = ::std::floating_point<T>
 							|| ::std::same_as<::std::remove_cv_t<T>, __float128>
 #endif
 #ifdef __STDCPP_BFLOAT16_T__
-							|| ::std::same_as<::std::remove_cv_t<T>, decltype(0.0bf16)>
+                            || ::std::same_as<::std::remove_cv_t<T>, decltype(0.0bf16)>
 #endif
 #ifdef __STDCPP_FLOAT16_T__
-							|| ::std::same_as<::std::remove_cv_t<T>, _Float16>
+                            || ::std::same_as<::std::remove_cv_t<T>, _Float16>
 #endif
 #ifdef __STDCPP_FLOAT32_T__
-							|| ::std::same_as<::std::remove_cv_t<T>, _Float32>
+                            || ::std::same_as<::std::remove_cv_t<T>, _Float32>
 #endif
 #ifdef __STDCPP_FLOAT64_T__
-							|| ::std::same_as<::std::remove_cv_t<T>, _Float64>
+                            || ::std::same_as<::std::remove_cv_t<T>, _Float64>
 #endif
 #ifdef __STDCPP_FLOAT128_T__
-							|| ::std::same_as<::std::remove_cv_t<T>, _Float128>
+                            || ::std::same_as<::std::remove_cv_t<T>, _Float128>
 #endif
 	;
 
@@ -271,7 +271,7 @@ inline constexpr U byte_swap(U a) noexcept
 #else
 
 #if __cpp_lib_is_constant_evaluated >= 201811L
-		if (::std::is_constant_evaluated())
+		if (__builtin_is_constant_evaluated())
 		{
 			return details::byte_swap_naive_impl(a);
 		}

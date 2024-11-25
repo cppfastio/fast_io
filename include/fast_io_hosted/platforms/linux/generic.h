@@ -10,7 +10,7 @@ template <::std::size_t syscall_number, ::std::signed_integral return_value_type
 inline return_value_type system_call(Args... args) noexcept
 {
 	long ret{::syscall(syscall_number, args...)};
-	if (ret == -1)
+	if (ret == -1) [[unlikely]]
 	{
 		return static_cast<return_value_type>(-errno);
 	}
@@ -18,13 +18,14 @@ inline return_value_type system_call(Args... args) noexcept
 }
 
 template <::std::size_t syscall_number>
-[[noreturn]] inline void system_call_no_return(auto p1) noexcept
+inline void system_call_no_return(auto p1) noexcept
 {
 	::syscall(syscall_number, p1);
+	__builtin_unreachable();
 }
 
 template <::std::integral I>
-[[noreturn]] inline void fast_exit(I ret) noexcept
+inline void fast_exit(I ret) noexcept
 {
 	system_call_no_return<__NR_exit>(ret);
 }

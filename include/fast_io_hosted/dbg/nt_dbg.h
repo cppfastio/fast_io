@@ -7,6 +7,8 @@ template <::std::integral ch_type>
 struct basic_nt_dbg
 {
 	using char_type = ch_type;
+	using output_char_type = char_type;
+
 	::std::uint_least32_t component_id{UINT_LEAST32_MAX};
 	::std::uint_least32_t level{};
 	static inline constexpr ::std::size_t output_buffer_alignment_size{512u};
@@ -132,7 +134,7 @@ template <bool iswide, ::std::size_t n>
 #endif
 inline void nt_dbg_scatter_constant_write_impl(nt_dbg_carrier carr, io_scatter_t const *scatters) noexcept
 {
-	if constexpr (n == 0)
+	if constexpr (n == 0) 
 	{
 		return;
 	}
@@ -144,6 +146,37 @@ inline void nt_dbg_scatter_constant_write_impl(nt_dbg_carrier carr, io_scatter_t
 
 } // namespace details
 
+template <::std::integral ch_type>
+inline constexpr basic_nt_dbg<ch_type> io_stream_ref_define(basic_nt_dbg<ch_type> other) noexcept
+{
+    return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr basic_nt_dbg<ch_type> io_bytes_stream_ref_define(basic_nt_dbg<ch_type> other) noexcept
+{
+    return other;
+}
+
+template <::std::integral ch_type>
+inline constexpr void write_all_bytes_overflow_define(basic_nt_dbg<ch_type> d, ::std::byte const* first, ::std::byte const* last) noexcept
+{
+    constexpr bool is_wide{sizeof(ch_type) == 2};
+    ::fast_io::details::nt_dbg_write_impl<is_wide>(details::nt_dbg_carrier{d.component_id, d.level},
+                                                   reinterpret_cast<char const*>(first),
+                                                   reinterpret_cast<char const*>(last));
+}
+
+template <::std::integral ch_type>
+inline constexpr void pwrite_all_bytes_overflow_define(basic_nt_dbg<ch_type> d, ::std::byte const* first, ::std::byte const* last) noexcept
+{
+    constexpr bool is_wide{sizeof(ch_type) == 2};
+    ::fast_io::details::nt_dbg_write_impl<is_wide>(details::nt_dbg_carrier{d.component_id, d.level},
+                                                   reinterpret_cast<char const*>(first),
+                                                   reinterpret_cast<char const*>(last));
+}
+
+#if 0
 template <::std::integral ch_type, ::std::contiguous_iterator Iter>
 inline void write(basic_nt_dbg<ch_type> d, Iter first, Iter last) noexcept
 {
@@ -159,6 +192,7 @@ inline void scatter_constant_write(basic_nt_dbg<ch_type> d, io_scatter_t const *
 	constexpr bool is_wide{sizeof(ch_type) == 2};
 	::fast_io::details::nt_dbg_scatter_constant_write_impl<is_wide, n>({d.component_id, d.level}, pscatters);
 }
+#endif
 
 #if !defined(_WIN32_WINDOWS)
 inline auto dbg(::std::uint_least32_t component_id = UINT_LEAST32_MAX, ::std::uint_least32_t level = 0) noexcept

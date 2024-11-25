@@ -21,7 +21,13 @@ Special file type region. They are usually not used for I/O but for other purpos
 However, they are still capable of doing I/O.
 */
 
-using dir_file = directory_file_wrapper<basic_native_file<char>>;
+using dir_file = directory_file_wrapper<
+#if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS))
+	win9x_dir
+#else
+	basic_native_file<char>
+#endif
+	>;
 
 /*
 template region

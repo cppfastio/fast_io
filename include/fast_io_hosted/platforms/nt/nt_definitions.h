@@ -1,7 +1,24 @@
 ﻿#pragma once
 
+#include "nt_preliminary_definition.h"
+
 namespace fast_io::win32::nt
 {
+
+union large_integer
+{
+	struct DUMMYSTRUCTNAMETYPE
+	{
+		::std::uint_least32_t LowPart;
+		::std::int_least32_t HighPart;
+	} DUMMYSTRUCTNAME;
+	struct uTYPE
+	{
+		::std::uint_least32_t LowPart;
+		::std::int_least32_t HighPart;
+	} u;
+	::std::int_least64_t QuadPart;
+};
 
 struct ansi_string
 {
@@ -10,12 +27,7 @@ struct ansi_string
 	char *Buffer;
 };
 
-struct unicode_string
-{
-	::std::uint_least16_t Length;
-	::std::uint_least16_t MaximumLength;
-	char16_t *Buffer;
-};
+struct unicode_string; // defined in nt_preliminary_definition.h
 
 struct object_attributes
 {
@@ -33,7 +45,7 @@ struct io_status_block
 	{
 		::std::uint_least32_t Status;
 		void *Pointer;
-	} DUMMYUNIONNAME;
+	};
 	::std::size_t Information;
 };
 
@@ -165,6 +177,23 @@ struct file_full_dir_information
 	char16_t FileName[1];
 };
 
+struct file_id_full_dir_information
+{
+	::std::uint_least32_t NextEntryOffset;
+	::std::uint_least32_t FileIndex;
+	::std::int_least64_t CreationTime;
+	::std::int_least64_t LastAccessTime;
+	::std::int_least64_t LastWriteTime;
+	::std::int_least64_t ChangeTime;
+	::std::int_least64_t EndOfFile;
+	::std::int_least64_t AllocationSize;
+	::std::uint_least32_t FileAttributes;
+	::std::uint_least32_t FileNameLength;
+	::std::uint_least32_t EaSize;
+	::std::uint_least64_t FileId;
+	char16_t FileName[1];
+};
+
 struct file_both_dir_information
 {
 	::std::uint_least32_t NextEntryOffset;
@@ -183,11 +212,32 @@ struct file_both_dir_information
 	char16_t FileName[1];
 };
 
+struct file_id_both_dir_information
+{
+	::std::uint_least32_t NextEntryOffset;
+	::std::uint_least32_t FileIndex;
+	::std::int_least64_t CreationTime;
+	::std::int_least64_t LastAccessTime;
+	::std::int_least64_t LastWriteTime;
+	::std::int_least64_t ChangeTime;
+	::std::int_least64_t EndOfFile;
+	::std::int_least64_t AllocationSize;
+	::std::uint_least32_t FileAttributes;
+	::std::uint_least32_t FileNameLength;
+	::std::uint_least32_t EaSize;
+	char ShortNameLength;
+	char16_t ShortName[12];
+	::std::uint_least64_t FileId;
+	char16_t FileName[1];
+};
+
 union dir_information
 {
 	void *DirInfo;
 	file_full_dir_information *FullDirInfo;
+	file_id_full_dir_information *IdFullDirInfo;
 	file_both_dir_information *BothDirInfo;
+	file_id_both_dir_information *IdBothDirInfo;
 };
 
 struct file_standard_information
@@ -197,6 +247,20 @@ struct file_standard_information
 	::std::uint_least32_t number_of_links;
 	int delete_pending;
 	int directory;
+};
+
+struct file_basic_information
+{
+	::std::uint_least64_t CreationTime;
+	::std::uint_least64_t LastAccessTime;
+	::std::uint_least64_t LastWriteTime;
+	::std::uint_least64_t ChangeTime;
+	::std::uint_least32_t FileAttributes;
+};
+
+struct file_internal_information
+{
+	::std::uint_least64_t IndexNumber;
 };
 
 enum class process_information_class
@@ -332,11 +396,7 @@ struct rtl_drive_letter_curdir
 
 inline constexpr ::std::size_t rtl_max_drive_letters{32};
 
-struct client_id
-{
-	void *hprocess;
-	void *hthread;
-};
+struct client_id; // defined in nt_preliminary_definition.h
 
 enum class section_information_class
 {
@@ -356,6 +416,32 @@ struct rtl_critical_section
 	::std::size_t spin_count;
 };
 
+namespace details
+{
+struct Detailed_SubSystemVersion_t
+{
+	::std::uint_least16_t SubSystemMinorVersion;
+	::std::uint_least16_t SubSystemMajorVersion;
+};
+
+struct Detailed_OperatingSystemVersion_t
+{
+	::std::uint_least16_t MajorOperatingSystemVersion;
+	::std::uint_least16_t MinorOperatingSystemVersion;
+};
+
+struct Detailed_ImageFlags_t
+{
+	::std::uint_least8_t ComPlusNativeReady : 1;
+	::std::uint_least8_t ComPlusILOnly : 1;
+	::std::uint_least8_t ImageDynamicallyRelocated : 1;
+	::std::uint_least8_t ImageMappedFlat : 1;
+	::std::uint_least8_t BaseBelow4gb : 1;
+	::std::uint_least8_t ComPlusPrefer32bit : 1;
+	::std::uint_least8_t Reserved : 2;
+};
+} // namespace details
+
 struct section_image_information
 {
 	void *TransferAddress;
@@ -363,33 +449,26 @@ struct section_image_information
 	::std::size_t MaximumStackSize;
 	::std::size_t CommittedStackSize;
 	::std::uint_least32_t SubSystemType;
-	union U
+	union
 	{
-		struct S
-		{
-			::std::uint_least16_t SubSystemMinorVersion;
-			::std::uint_least16_t SubSystemMajorVersion;
-		} s;
+		details::Detailed_SubSystemVersion_t Detailed_SubSystemVersion;
 		::std::uint_least32_t SubSystemVersion;
-	} u;
-	::std::uint_least32_t GpValue;
+	};
+	union
+	{
+
+		details::Detailed_OperatingSystemVersion_t Detailed_OperatingSystemVersion;
+		::std::uint_least32_t OperatingSystemVersion;
+	};
 	::std::uint_least16_t ImageCharacteristics;
 	::std::uint_least16_t DllCharacteristics;
 	::std::uint_least16_t Machine;
-	int ImageContainsCode;
-	union U1
+	::std::uint_least8_t ImageContainsCode;
+	union
 	{
-		char unsigned ImageFlags;
-		struct S
-		{
-			char unsigned ComPlusNativeReady : 1;
-			char unsigned ComPlusILOnly : 1;
-			char unsigned ImageDynamicallyRelocated : 1;
-			char unsigned ImageMappedFlat : 1;
-			char unsigned BaseBelow4gb : 1;
-			char unsigned Reserved : 3;
-		} s;
-	} u1;
+		::std::uint_least8_t ImageFlags;
+		details::Detailed_ImageFlags_t Detailed_ImageFlags;
+	};
 	::std::uint_least32_t LoaderFlags;
 	::std::uint_least32_t ImageFileSize;
 	::std::uint_least32_t CheckSum;
@@ -543,8 +622,8 @@ struct
 #endif
 	ps_attribute_list
 {
-	::std::size_t TotalLength;  // sizeof(PS_ATTRIBUTE_LIST)
-	ps_attribute Attributes[2]; // Depends on how many attribute entries should be supplied to NtCreateUserProcess
+	::std::size_t TotalLength;   // sizeof(PS_ATTRIBUTE_LIST)
+	ps_attribute Attributes[32]; // Depends on how many attribute entries should be supplied to NtCreateUserProcess
 };
 
 template <::std::size_t n>
@@ -594,26 +673,14 @@ struct security_descriptor
 
 enum class object_information_class
 {
-	ObjectBasicInformation = 0,
-	ObjectNameInformation = 1,
-	ObjectTypeInformation = 2,
-	ObjectAllTypesInformation = 3,
-	ObjectHandleInformation = 4
-};
-
-union large_integer
-{
-	struct DUMMYSTRUCTNAMETYPE
-	{
-		::std::uint_least32_t LowPart;
-		::std::int_least32_t HighPart;
-	} DUMMYSTRUCTNAME;
-	struct uTYPE
-	{
-		::std::uint_least32_t LowPart;
-		::std::int_least32_t HighPart;
-	} u;
-	::std::int_least64_t QuadPart;
+	ObjectBasicInformation,         // q: OBJECT_BASIC_INFORMATION
+	ObjectNameInformation,          // q: OBJECT_NAME_INFORMATION
+	ObjectTypeInformation,          // q: OBJECT_TYPE_INFORMATION
+	ObjectTypesInformation,         // q: OBJECT_TYPES_INFORMATION
+	ObjectHandleFlagInformation,    // qs: OBJECT_HANDLE_FLAG_INFORMATION
+	ObjectSessionInformation,       // s: void // change object session // (requires SeTcbPrivilege)
+	ObjectSessionObjectInformation, // s: void // change object session // (requires SeTcbPrivilege)
+	MaxObjectInfoClass
 };
 
 enum class section_inherit
@@ -661,9 +728,237 @@ struct rtl_unicode_string_buffer
 	char16_t MinimumStaticBufferForTerminalNul;
 };
 
+enum class system_information_class
+{
+	SystemBasicInformation,
+	SystemProcessorInformation,
+	SystemPerformanceInformation,
+	SystemTimeOfDayInformation,
+	SystemPathInformation,
+	SystemProcessInformation,
+	SystemCallCountInformation,
+	SystemDeviceInformation,
+	SystemProcessorPerformanceInformation,
+	SystemFlagsInformation,
+	SystemCallTimeInformation,
+	SystemModuleInformation,
+	SystemLocksInformation,
+	SystemStackTraceInformation,
+	SystemPagedPoolInformation,
+	SystemNonPagedPoolInformation,
+	SystemHandleInformation,
+	SystemObjectInformation,
+	SystemPageFileInformation,
+	SystemVdmInstemulInformation,
+	SystemVdmBopInformation,
+	SystemFileCacheInformation,
+	SystemPoolTagInformation,
+	SystemInterruptInformation,
+	SystemDpcBehaviorInformation,
+	SystemFullMemoryInformation,
+	SystemLoadGdiDriverInformation,
+	SystemUnloadGdiDriverInformation,
+	SystemTimeAdjustmentInformation,
+	SystemSummaryMemoryInformation,
+	SystemNextEventIdInformation,
+	SystemEventIdsInformation,
+	SystemCrashDumpInformation,
+	SystemExceptionInformation,
+	SystemCrashDumpStateInformation,
+	SystemKernelDebuggerInformation,
+	SystemContextSwitchInformation,
+	SystemRegistryQuotaInformation,
+	SystemExtendServiceTableInformation,
+	SystemPrioritySeperation,
+	SystemPlugPlayBusInformation,
+	SystemDockInformation,
+	SystemPowerInformation,
+	SystemProcessorSpeedInformation,
+	SystemCurrentTimeZoneInformation,
+	SystemLookasideInformation
+};
+
+struct system_basic_information
+{
+	::std::uint_least32_t Reserved;
+	::std::uint_least32_t TimerResolution;
+	::std::uint_least32_t PageSize;
+	::std::uint_least32_t NumberOfPhysicalPages;
+	::std::uint_least32_t LowestPhysicalPageNumber;
+	::std::uint_least32_t HighestPhysicalPageNumber;
+	::std::uint_least32_t AllocationGranularity;
+	::std::size_t MinimumUserModeAddress;
+	::std::size_t MaximumUserModeAddress;
+	::std::size_t ActiveProcessorsAffinityMask;
+	char NumberOfProcessors;
+};
+
 struct rtl_srwlock
 {
 	void *Ptr;
 };
 
+namespace details
+{
+struct Detailed_flag_t
+{
+	::std::uint_least32_t StdHandleState : 2;   // PS_STD_HANDLE_STATE
+	::std::uint_least32_t PseudoHandleMask : 3; // PS_STD_*
+};
+} // namespace details
+
+struct ps_std_handle_info
+{
+	union
+	{
+		::std::uint_least32_t Flags; // 0x121 = 100100001
+		details::Detailed_flag_t detailed_flags;
+	};
+	::std::uint_least32_t StdHandleSubsystemType;
+};
+
+enum class fs_information_class
+{
+	FileFsVolumeInformation = 1,
+	FileFsLabelInformation,
+	FileFsSizeInformation,
+	FileFsDeviceInformation,
+	FileFsAttributeInformation,
+	FileFsControlInformation,
+	FileFsFullSizeInformation,
+	FileFsObjectIdInformation,
+	FileFsDriverPathInformation,
+	FileFsVolumeFlagsInformation,
+	FileFsSectorSizeInformation,
+	FileFsDataCopyInformation,
+	FileFsMetadataSizeInformation,
+	FileFsFullSizeInformationEx,
+	FileFsMaximumInformation
+};
+
+struct file_fs_device_type
+{
+	::std::uint_least32_t DeviceType;
+	::std::uint_least32_t Characteristics;
+};
+
+struct file_fs_volume_information
+{
+	::std::uint_least64_t VolumeCreationTime;
+	::std::uint_least32_t VolumeSerialNumber;
+	::std::uint_least32_t VolumeLabelLength;
+	::std::uint_least8_t SupportsObjects;
+	char16_t VolumeLabel[1];
+};
+
+struct file_link_information
+{
+	::std::uint_least8_t ReplaceIfExists;
+	void *RootDirectory;
+	::std::uint_least32_t FileNameLength;
+	char16_t FileName[1];
+};
+
+struct file_rename_information
+{
+	::std::uint_least8_t ReplaceIfExists;
+	void *RootDirectory;
+	::std::uint_least32_t FileNameLength;
+	char16_t FileName[1];
+};
+
+struct reparse_data_buffer
+{
+	::std::uint_least32_t ReparseTag;
+	::std::uint_least16_t ReparseDataLength;
+	::std::uint_least16_t Reserved;
+	union
+	{
+		struct
+		{
+			::std::uint_least16_t SubstituteNameOffset;
+			::std::uint_least16_t SubstituteNameLength;
+			::std::uint_least16_t PrintNameOffset;
+			::std::uint_least16_t PrintNameLength;
+			::std::uint_least32_t Flags;
+			char16_t PathBuffer[1];
+		} SymbolicLinkReparseBuffer;
+		struct
+		{
+			::std::uint_least16_t SubstituteNameOffset;
+			::std::uint_least16_t SubstituteNameLength;
+			::std::uint_least16_t PrintNameOffset;
+			::std::uint_least16_t PrintNameLength;
+			char16_t PathBuffer[1];
+		} MountPointReparseBuffer;
+		struct
+		{
+			::std::uint_least8_t DataBuffer[1];
+		} GenericReparseBuffer;
+	};
+};
+
+struct file_disposition_information
+{
+	::std::uint_least8_t DeleteFile;
+};
+
+struct kernel_user_times
+{
+	::std::int_least64_t CreateTime;
+	::std::int_least64_t ExitTime;
+	::std::int_least64_t KernelTime;
+	::std::int_least64_t UserTime;
+};
+
+enum class thread_information_class
+{
+	ThreadBasicInformation,
+	ThreadTimes,
+	ThreadPriority,
+	ThreadBasePriority,
+	ThreadAffinityMask,
+	ThreadImpersonationToken,
+	ThreadDescriptorTableEntry,
+	ThreadEnableAlignmentFaultFixup,
+	ThreadEventPair_Reusable,
+	ThreadQuerySetWin32StartAddress,
+	ThreadZeroTlsCell,
+	ThreadPerformanceCount,
+	ThreadAmILastThread,
+	ThreadIdealProcessor,
+	ThreadPriorityBoost,
+	ThreadSetTlsArrayAddress,
+	ThreadIsIoPending,
+	ThreadHideFromDebugger,
+	ThreadBreakOnTermination,
+	ThreadSwitchLegacyState,
+	ThreadIsTerminated,
+	ThreadLastSystemCall,
+	ThreadIoPriority,
+	ThreadCycleTime,
+	ThreadPagePriority,
+	ThreadActualBasePriority,
+	ThreadTebInformation,
+	ThreadCSwitchMon,
+	MaxThreadInfoClass
+};
+
+struct object_handle_attribute_information
+{
+	::std::uint_least8_t Inherit;
+	::std::uint_least8_t ProtectFromClose;
+};
+
+enum class rtl_path_type
+{
+	RtlPathTypeUnknown,
+	RtlPathTypeUncAbsolute,
+	RtlPathTypeDriveAbsolute,
+	RtlPathTypeDriveRelative,
+	RtlPathTypeRooted,
+	RtlPathTypeRelative,
+	RtlPathTypeLocalDevice,
+	RtlPathTypeRootLocalDevice,
+};
 } // namespace fast_io::win32::nt

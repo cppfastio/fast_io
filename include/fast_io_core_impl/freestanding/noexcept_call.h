@@ -66,7 +66,7 @@ inline
 	}
 #else
 #if __cpp_lib_is_constant_evaluated >= 201811
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 	{
 		return f(::std::forward<Args>(args)...); // EH unwinding does not matter here
 	}

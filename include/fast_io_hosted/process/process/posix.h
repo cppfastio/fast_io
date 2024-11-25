@@ -8,8 +8,14 @@ namespace fast_io
 
 namespace posix
 {
+#ifdef __DARWIN_C_LEVEL
+extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
+extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
+#else
+extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
-}
+#endif
+} // namespace posix
 
 struct posix_wait_status
 {
@@ -91,7 +97,7 @@ inline pid_t posix_fork()
 	system_call_throw_error(pid);
 #else
 	pid_t pid{noexcept_call(::fork)};
-	if (pid == -1)
+	if (pid == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}
@@ -126,6 +132,7 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 #endif
 }
 
+#if 0
 [[noreturn]] inline void posix_execveat(int dirfd, char const *path, char const *const *argv,
 										char const *const *envp) noexcept
 {
@@ -134,7 +141,7 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 	fast_terminate();
 #else
 	int fd{::openat(dirfd, path, O_RDONLY | O_EXCL, 0644)};
-	if (fd == -1)
+	if (fd == -1) [[unlikely]]
 	{
 		fast_terminate();
 	}
@@ -229,6 +236,8 @@ inline void parent_process_deal_with_process_io(posix_io_redirection const &red)
 inline pid_t posix_fork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args,
 											 char const *const *envp, posix_process_io const &pio)
 {
+	system_call_throw_error(::fast_io::posix::libc_faccessat(dirfd, cstr, X_OK, AT_SYMLINK_NOFOLLOW));
+
 	pid_t pid{posix_fork()};
 	if (pid)
 	{
@@ -259,53 +268,183 @@ inline pid_t posix_fork_execve_impl(path_type const &csv, char const *const *arg
 	return -1;
 #endif
 }
-
-} // namespace details
-
-struct posix_process_args
-{
-	using Alloc = ::fast_io::native_typed_thread_local_allocator<char const *>;
-
-	char const *const *args{};
-	bool is_dynamic_allocated{};
-	inline constexpr posix_process_args(char const *const *envir) noexcept
-		: args(envir)
-	{}
-	template <::std::random_access_iterator Iter>
-		requires(::std::convertible_to<::std::iter_value_t<Iter>, char const *> ||
-				 requires(::std::iter_value_t<Iter> v) {
-					 { v.c_str() } -> ::std::convertible_to<char const *>;
-				 })
-	inline constexpr posix_process_args(Iter begin, Iter end)
-		: args(details::dup_enviro_entry(begin, end)), is_dynamic_allocated(true)
-	{
-	}
-	template <::std::ranges::random_access_range range>
-		requires(::std::convertible_to<::std::ranges::range_value_t<range>, char const *> ||
-				 requires(::std::ranges::range_value_t<range> v) {
-					 { v.c_str() } -> ::std::convertible_to<char const *>;
-				 })
-	inline constexpr posix_process_args(range &&rg)
-		: posix_process_args(::std::ranges::cbegin(rg), ::std::ranges::cend(rg))
-	{
-	}
-	inline constexpr posix_process_args(::std::initializer_list<char const *> ilist)
-		: posix_process_args(ilist.begin(), ilist.end())
-	{
-	}
-	posix_process_args(posix_process_args const &) = delete;
-	posix_process_args &operator=(posix_process_args const &) = delete;
-#if __cpp_constexpr_dynamic_alloc >= 201907L
-	inline constexpr
 #endif
-		~posix_process_args()
+
+struct fd_remapper
+{
+	struct entry
 	{
-		if (is_dynamic_allocated)
+		int original{-1};
+		int backup{-1};
+		int newfd{-1};
+		int newfd_flag{};
+		bool setfd_needed{};
+
+		entry() = default;
+		entry(entry const &) = delete;
+		entry &operator=(entry const &) = delete;
+
+		~entry()
 		{
-			Alloc::deallocate(const_cast<char const **>(args));
+			if (original == -1)
+			{
+				return;
+			}
+			sys_dup2(backup, original);
+			sys_close(backup);
+			if (setfd_needed)
+			{
+				sys_fcntl(newfd, F_SETFD, newfd_flag);
+			}
+		}
+	};
+
+	entry fds[3]{};
+	int fd_devnull{-1};
+
+	fd_remapper() = default;
+	fd_remapper(fd_remapper const &) = delete;
+	fd_remapper &operator=(fd_remapper const &) = delete;
+
+	~fd_remapper()
+	{
+		if (fd_devnull != -1)
+		{
+			sys_close(fd_devnull);
 		}
 	}
+
+	// fd in {0, 1, 2}
+	void map(int fd, posix_io_redirection const &io)
+	{
+		if (!io)
+		{
+			return;
+		}
+		auto &m = fds[fd];
+		m.original = fd;
+		m.backup = sys_dup(m.original);
+		sys_fcntl(m.backup, F_SETFD, FD_CLOEXEC);
+		bool const is_stdin{fd == 0};
+		if (io.pipe_fds) // fastio pipes are always with CLOEXEC
+		{
+			sys_dup2(io.pipe_fds[is_stdin ? 0 : 1], m.original);
+		}
+		else if (io.dev_null)
+		{
+			sys_dup2(devnull(), m.original);
+		}
+		else
+		{
+			m.newfd = io.fd;
+			m.newfd_flag = sys_fcntl(m.newfd, F_GETFD);
+			sys_fcntl(m.newfd, F_SETFD, m.newfd_flag | FD_CLOEXEC);
+			m.setfd_needed = true;
+			sys_dup2(io.fd, m.original);
+		}
+	}
+
+private:
+	int devnull()
+	{
+		if (fd_devnull != -1)
+		{
+			return fd_devnull;
+		}
+#ifdef O_CLOEXEC
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const*>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
+#else
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const*>(u8"/dev/null"), O_RDWR, 0644);
+		sys_fcntl(tmp_fd, F_SETFD, FD_CLOEXEC);
+#endif
+		return fd_devnull;
+	}
 };
+
+// only used in vfork_execveat_common_impl()
+inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno) noexcept
+{
+#if defined(__linux__) && defined(__NR_execveat)
+	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW)};
+	if (::fast_io::linux_system_call_fails(ret))
+	{
+		t_errno = -ret;
+	}
+	else
+	{
+		t_errno = 0;
+	}
+	::fast_io::fast_exit(127);
+#else
+	int fd{noexcept_call(::openat, dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
+	if (fd != -1) [[likely]]
+	{
+		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(argv), const_cast<char *const *>(envp));
+	}
+	t_errno = errno;
+	noexcept_call(::_exit, 127);
+#endif
+	__builtin_unreachable();
+}
+
+inline pid_t posix_vfork()
+{
+#if defined(__linux__) && defined(__NR_vfork)
+	pid_t pid{system_call<__NR_vfork, pid_t>()};
+	system_call_throw_error(pid);
+#else
+	pid_t pid{noexcept_call(::vfork)};
+	if (pid == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+#endif
+	return pid;
+}
+
+inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
+{
+	pid_t pid{};
+	int volatile t_errno{}; // receive error from vfork subproc
+	{
+		fd_remapper fm;
+		fm.map(0, pio.in);
+		fm.map(1, pio.out);
+		fm.map(2, pio.err);
+
+		pid = ::fast_io::details::posix_vfork();
+		if (pid == 0)
+		{
+			execveat_inside_vfork(dirfd, cstr, args, envp, t_errno); // never return
+		}
+	}
+	// resume from vfork
+	if (t_errno)
+	{
+		posix_waitpid(pid);
+		throw_posix_error(t_errno);
+	}
+	return pid;
+}
+
+template <typename path_type>
+inline pid_t vfork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+{
+	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return vfork_execveat_common_impl(dirfd, cstr, args, envp, pio); });
+}
+
+template <typename path_type>
+inline pid_t vfork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+{
+#if defined(AT_FDCWD)
+	return vfork_execveat_impl(AT_FDCWD, csv, args, envp, pio);
+#else
+	throw_posix_error(EINVAL);
+	return -1;
+#endif
+}
+
+} // namespace details
 
 class posix_process_observer
 {
@@ -367,22 +506,22 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str path_type>
 	posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args,
-				  posix_process_args const &envp, posix_process_io const &pio)
-		: posix_process_observer{details::posix_fork_execveat_impl(pate.fd, filename, args.args, envp.args, pio)}
+				  posix_process_envs const &envp, posix_process_io const &pio)
+		: posix_process_observer{details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	posix_process(path_type const &filename, posix_process_args const &args, posix_process_args const &envp,
+	posix_process(path_type const &filename, posix_process_args const &args, posix_process_envs const &envp,
 				  posix_process_io const &pio)
-		: posix_process_observer{::fast_io::details::posix_fork_execve_impl(filename, args.args, envp.args, pio)}
+		: posix_process_observer{::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio)}
 	{
 	}
 
-	posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args, posix_process_args const &envp,
+	posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args, posix_process_envs const &envp,
 				  posix_process_io const &pio)
 		: posix_process_observer{
-			  ::fast_io::details::posix_fork_execveat_common_impl(ent.fd, ent.filename, args.args, envp.args, pio)}
+			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)}
 	{
 	}
 
@@ -395,7 +534,11 @@ public:
 	}
 	posix_process &operator=(posix_process &&__restrict other) noexcept
 	{
-		details::posix_waitpid_noexcept(this->pid);
+		if (__builtin_addressof(other) != this)
+		{
+			return *this;
+		}
+		::fast_io::details::posix_waitpid_noexcept(this->pid);
 		this->pid = other.pid;
 		other.pid = -1;
 		return *this;
@@ -403,6 +546,7 @@ public:
 	~posix_process()
 	{
 		details::posix_waitpid_noexcept(this->pid);
+		this->pid = -1;
 	}
 };
 

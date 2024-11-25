@@ -33,3 +33,7 @@ ignore = true
 
 ["0029.containers"] # TODO: vector no longer available
 ignore = true
+
+["0036.at"]
+interactive = true
+

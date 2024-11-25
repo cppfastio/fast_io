@@ -645,7 +645,7 @@ constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::b
 	return ::std::equal(buffer, buffer + nm1, a.ptr, a.ptr + a.n);
 }
 
-#ifdef __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison >= 201907L
 template <::std::integral char_type>
 constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
 {

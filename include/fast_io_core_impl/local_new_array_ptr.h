@@ -10,7 +10,7 @@ inline constexpr char_type *allocate_iobuf_space(::std::size_t buffer_size) noex
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #else
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 #endif
 	{
 		return new char_type[buffer_size];
@@ -47,7 +47,7 @@ inline constexpr void deallocate_iobuf_space(char_type *ptr, [[maybe_unused]] ::
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #else
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 #endif
 	{
 		delete[] ptr;

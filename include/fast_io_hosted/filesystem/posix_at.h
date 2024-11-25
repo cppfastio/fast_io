@@ -44,6 +44,87 @@ extern int libc_readlinkat(int dirfd, char const *pathname, char *buf, ::std::si
 #endif
 } // namespace posix
 
+enum class posix_at_flags
+{
+	eaccess =
+#ifdef AT_EACCESS
+		AT_EACCESS
+#else
+		0
+#endif
+		,
+	symlink_nofollow =
+#ifdef AT_SYMLINK_NOFOLLOW
+		AT_SYMLINK_NOFOLLOW
+#else
+		0
+#endif
+		,
+	no_automount =
+#ifdef AT_NO_AUTOMOUNT
+		AT_NO_AUTOMOUNT
+#else
+		0
+#endif
+		,
+	removedir =
+#ifdef AT_REMOVEDIR
+		AT_REMOVEDIR
+#else
+		0
+#endif
+		,
+	empty_path =
+#ifdef AT_EMPTY_PATH
+		AT_EMPTY_PATH
+#else
+		0x1000
+#endif
+		,
+	nt_path = 0
+};
+
+using native_at_flags = posix_at_flags;
+
+constexpr posix_at_flags operator&(posix_at_flags x, posix_at_flags y) noexcept
+{
+	using utype = typename ::std::underlying_type<posix_at_flags>::type;
+	return static_cast<posix_at_flags>(static_cast<utype>(x) & static_cast<utype>(y));
+}
+
+constexpr posix_at_flags operator|(posix_at_flags x, posix_at_flags y) noexcept
+{
+	using utype = typename ::std::underlying_type<posix_at_flags>::type;
+	return static_cast<posix_at_flags>(static_cast<utype>(x) | static_cast<utype>(y));
+}
+
+constexpr posix_at_flags operator^(posix_at_flags x, posix_at_flags y) noexcept
+{
+	using utype = typename ::std::underlying_type<posix_at_flags>::type;
+	return static_cast<posix_at_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
+}
+
+constexpr posix_at_flags operator~(posix_at_flags x) noexcept
+{
+	using utype = typename ::std::underlying_type<posix_at_flags>::type;
+	return static_cast<posix_at_flags>(~static_cast<utype>(x));
+}
+
+inline constexpr posix_at_flags &operator&=(posix_at_flags &x, posix_at_flags y) noexcept
+{
+	return x = x & y;
+}
+
+inline constexpr posix_at_flags &operator|=(posix_at_flags &x, posix_at_flags y) noexcept
+{
+	return x = x | y;
+}
+
+inline constexpr posix_at_flags &operator^=(posix_at_flags &x, posix_at_flags y) noexcept
+{
+	return x = x ^ y;
+}
+
 namespace details
 {
 
@@ -82,18 +163,24 @@ inline auto posix22_api_dispatcher(int olddirfd, char const *oldpath, int newdir
 		posix_linkat_impl(olddirfd, oldpath, newdirfd, newpath, args...);
 	}
 }
+
+inline void posix_symlinkat_impl(char const *oldpath, int newdirfd, char const *newpath)
+{
+	system_call_throw_error(
+#if defined(__linux__)
+		system_call<__NR_symlinkat, int>
+#else
+		::fast_io::posix::libc_symlinkat
+#endif
+		(oldpath, newdirfd, newpath));
+}
+
 template <posix_api_12 dsp>
 inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath)
 {
 	if constexpr (dsp == posix_api_12::symlinkat)
 	{
-		system_call_throw_error(
-#if defined(__linux__)
-			system_call<__NR_symlinkat, int>
-#else
-			::fast_io::posix::libc_symlinkat
-#endif
-			(oldpath, newdirfd, newpath));
+		posix_symlinkat_impl(oldpath, newdirfd, newpath);
 	}
 }
 
@@ -194,7 +281,7 @@ inline posix_file_status posix_fstatat_impl(int dirfd, char const *pathname, int
 	struct stat buf;
 	system_call_throw_error(::fast_io::posix::libc_fstatat(dirfd, pathname, __builtin_addressof(buf), flags));
 #endif
-	return struct_stat_to_posix_file_status(buf);
+	return ::fast_io::details::struct_stat_to_posix_file_status(buf);
 }
 
 inline void posix_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
@@ -326,7 +413,7 @@ inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
 	}
 	else if constexpr (dsp == posix_api_1x::fstatat)
 	{
-		posix_fstatat_impl(dirfd, path, args...);
+		return posix_fstatat_impl(dirfd, path, args...);
 	}
 	else if constexpr (dsp == posix_api_1x::mkdirat)
 	{
@@ -347,26 +434,26 @@ inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
 }
 
 template <posix_api_22 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
-		  ::fast_io::constructible_to_os_c_str new_path_type>
-inline auto posix_deal_with22(int olddirfd, old_path_type const &oldpath, int newdirfd, new_path_type const &newpath)
+		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
+inline auto posix_deal_with22(int olddirfd, old_path_type const &oldpath, int newdirfd, new_path_type const &newpath, Args... args)
 {
 	return fast_io::posix_api_common(
 		oldpath,
 		[&](char const *oldpath_c_str) {
 			return fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return posix22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str); });
+				newpath, [&](char const *newpath_c_str) { return posix22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str, args...); });
 		});
 }
 
 template <posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type>
-inline auto posix_deal_with12(old_path_type const &oldpath, int newdirfd, old_path_type const &newpath)
+inline auto posix_deal_with12(old_path_type const &oldpath, int newdirfd, new_path_type const &newpath)
 {
 	return fast_io::posix_api_common(
 		oldpath,
 		[&](char const *oldpath_c_str) {
 			return fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return posix1x_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str); });
+				newpath, [&](char const *newpath_c_str) { return posix12_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str); });
 		});
 }
 
@@ -379,126 +466,47 @@ inline auto posix_deal_with1x(int dirfd, path_type const &path, Args... args)
 } // namespace details
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void posix_renameat(native_at_entry oldent, old_path_type const &oldpath, native_at_entry newent,
-						   new_path_type const &newpath)
+inline void posix_renameat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
+						   new_path_type const &newpath, [[maybe_unused]] posix_at_flags flags = {})
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(oldent.fd, oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str new_path_type>
-inline void posix_renameat(posix_fs_dirent fs_dirent, native_at_entry newent, new_path_type const &newpath)
+inline void posix_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new_path_type const &newpath, [[maybe_unused]] posix_at_flags flags = {})
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(
 		fs_dirent.fd, ::fast_io::manipulators::os_c_str(fs_dirent.filename), newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void posix_symlinkat(old_path_type const &oldpath, native_at_entry newent, new_path_type const &newpath)
+inline void posix_symlinkat(old_path_type const &oldpath, posix_at_entry newent, new_path_type const &newpath, [[maybe_unused]] posix_at_flags flags = {})
 {
 	details::posix_deal_with12<details::posix_api_12::symlinkat>(oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_renameat(native_at_entry oldent, old_path_type const &oldpath, native_at_entry newent,
-							new_path_type const &newpath)
+inline void native_renameat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
+							new_path_type const &newpath, [[maybe_unused]] posix_at_flags flags = {})
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(oldent.fd, oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_renameat(posix_fs_dirent fs_dirent, native_at_entry newent, new_path_type const &newpath)
+inline void native_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new_path_type const &newpath, [[maybe_unused]] posix_at_flags flags = {})
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(
 		fs_dirent.fd, ::fast_io::manipulators::os_c_str(fs_dirent.filename), newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_symlinkat(old_path_type const &oldpath, native_at_entry newent, new_path_type const &newpath)
+inline void native_symlinkat(old_path_type const &oldpath, posix_at_entry newent, new_path_type const &newpath, [[maybe_unused]] posix_at_flags flags = {})
 {
 	details::posix_deal_with12<details::posix_api_12::symlinkat>(oldpath, newent.fd, newpath);
-}
-
-enum class posix_at_flags
-{
-	eaccess =
-#ifdef AT_EACCESS
-		AT_EACCESS
-#else
-		0
-#endif
-		,
-	symlink_nofollow =
-#ifdef AT_SYMLINK_NOFOLLOW
-		AT_SYMLINK_NOFOLLOW
-#else
-		0
-#endif
-		,
-	no_automount =
-#ifdef AT_NO_AUTOMOUNT
-		AT_NO_AUTOMOUNT
-#else
-		0
-#endif
-		,
-	removedir =
-#ifdef AT_REMOVEDIR
-		AT_REMOVEDIR
-#else
-		0
-#endif
-		,
-	empty_path =
-#ifdef AT_EMPTY_PATH
-		AT_EMPTY_PATH
-#else
-		0x1000
-#endif
-};
-
-using native_at_flags = posix_at_flags;
-
-constexpr posix_at_flags operator&(posix_at_flags x, posix_at_flags y) noexcept
-{
-	using utype = typename ::std::underlying_type<posix_at_flags>::type;
-	return static_cast<posix_at_flags>(static_cast<utype>(x) & static_cast<utype>(y));
-}
-
-constexpr posix_at_flags operator|(posix_at_flags x, posix_at_flags y) noexcept
-{
-	using utype = typename ::std::underlying_type<posix_at_flags>::type;
-	return static_cast<posix_at_flags>(static_cast<utype>(x) | static_cast<utype>(y));
-}
-
-constexpr posix_at_flags operator^(posix_at_flags x, posix_at_flags y) noexcept
-{
-	using utype = typename ::std::underlying_type<posix_at_flags>::type;
-	return static_cast<posix_at_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
-}
-
-constexpr posix_at_flags operator~(posix_at_flags x) noexcept
-{
-	using utype = typename ::std::underlying_type<posix_at_flags>::type;
-	return static_cast<posix_at_flags>(~static_cast<utype>(x));
-}
-
-inline constexpr posix_at_flags &operator&=(posix_at_flags &x, posix_at_flags y) noexcept
-{
-	return x = x & y;
-}
-
-inline constexpr posix_at_flags &operator|=(posix_at_flags &x, posix_at_flags y) noexcept
-{
-	return x = x | y;
-}
-
-inline constexpr posix_at_flags &operator^=(posix_at_flags &x, posix_at_flags y) noexcept
-{
-	return x = x ^ y;
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void posix_faccessat(native_at_entry ent, path_type const &path, access_how mode,
+inline void posix_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with1x<details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode),
@@ -506,7 +514,7 @@ inline void posix_faccessat(native_at_entry ent, path_type const &path, access_h
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_faccessat(native_at_entry ent, path_type const &path, access_how mode,
+inline void native_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
 							 posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with1x<details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode),
@@ -514,7 +522,7 @@ inline void native_faccessat(native_at_entry ent, path_type const &path, access_
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void posix_fchmodat(native_at_entry ent, path_type const &path, perms mode,
+inline void posix_fchmodat(posix_at_entry ent, path_type const &path, perms mode,
 						   posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchmodat>(ent.fd, path, static_cast<int>(mode),
@@ -522,7 +530,7 @@ inline void posix_fchmodat(native_at_entry ent, path_type const &path, perms mod
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_fchmodat(native_at_entry ent, path_type const &path, perms mode,
+inline void native_fchmodat(posix_at_entry ent, path_type const &path, perms mode,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchmodat>(ent.fd, path, static_cast<int>(mode),
@@ -530,71 +538,71 @@ inline void native_fchmodat(native_at_entry ent, path_type const &path, perms mo
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void posix_fchownat(native_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
+inline void posix_fchownat(posix_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
 						   posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchownat>(ent.fd, path, owner, group, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_fchownat(native_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
+inline void native_fchownat(posix_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchownat>(ent.fd, path, owner, group, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline posix_file_status posix_fstatat(native_at_entry ent, path_type const &path,
+inline posix_file_status posix_fstatat(posix_at_entry ent, path_type const &path,
 									   posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	return details::posix_deal_with1x<details::posix_api_1x::fstatat>(ent.fd, path, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline posix_file_status native_fstatat(native_at_entry ent, path_type const &path,
+inline posix_file_status native_fstatat(posix_at_entry ent, path_type const &path,
 										posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	return details::posix_deal_with1x<details::posix_api_1x::fstatat>(ent.fd, path, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void posix_mkdirat(native_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509))
+inline void posix_mkdirat(posix_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509), [[maybe_unused]] posix_at_flags flags = {})
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mkdirat>(ent.fd, path, static_cast<mode_t>(perm));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_mkdirat(native_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509))
+inline void native_mkdirat(posix_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509), [[maybe_unused]] posix_at_flags flags = {})
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mkdirat>(ent.fd, path, static_cast<mode_t>(perm));
 }
 #if 0
 template<::fast_io::constructible_to_os_c_str path_type>
-inline void posix_mknodat(native_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
+inline void posix_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev, [[maybe_unused]] posix_at_flags flags = {})
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
 }
 
 template<::fast_io::constructible_to_os_c_str path_type>
-inline void native_mknodat(native_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
+inline void native_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev, [[maybe_unused]] posix_at_flags flags = {})
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
 }
 #endif
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void posix_unlinkat(native_at_entry ent, path_type const &path, posix_at_flags flags = {})
+inline void posix_unlinkat(posix_at_entry ent, path_type const &path, posix_at_flags flags = {})
 {
 	details::posix_deal_with1x<details::posix_api_1x::unlinkat>(ent.fd, path, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_unlinkat(native_at_entry ent, path_type const &path, posix_at_flags flags = {})
+inline void native_unlinkat(posix_at_entry ent, path_type const &path, posix_at_flags flags = {})
 {
 	details::posix_deal_with1x<details::posix_api_1x::unlinkat>(ent.fd, path, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void posix_linkat(native_at_entry oldent, old_path_type const &oldpath, native_at_entry newent,
+inline void posix_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						 new_path_type const &newpath, posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with22<details::posix_api_22::linkat>(oldent.fd, oldpath, newent.fd, newpath,
@@ -602,7 +610,7 @@ inline void posix_linkat(native_at_entry oldent, old_path_type const &oldpath, n
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_linkat(native_at_entry oldent, old_path_type const &oldpath, native_at_entry newent,
+inline void native_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						  new_path_type const &newpath, posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
 	details::posix_deal_with22<details::posix_api_22::linkat>(oldent.fd, oldpath, newent.fd, newpath,
@@ -610,7 +618,7 @@ inline void native_linkat(native_at_entry oldent, old_path_type const &oldpath, 
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void posix_utimensat(native_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+inline void posix_utimensat(posix_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
 							unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
@@ -619,7 +627,7 @@ inline void posix_utimensat(native_at_entry ent, path_type const &path, unix_tim
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_utimensat(native_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+inline void native_utimensat(posix_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
 							 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
 							 posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {

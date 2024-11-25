@@ -7,3 +7,4 @@
 #include "decorators.h"
 #include "secure_clear.h"
 #include "mutex.h"
+#include "buf.h"

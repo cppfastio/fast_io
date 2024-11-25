@@ -25,7 +25,7 @@ inline constexpr char_type *pr_rsv_boost_uuid(char_type *iter, boost::uuids::uui
 #if __cpp_if_consteval >= 202106L
 	if consteval
 #else
-	if (::std::is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 #endif
 	{
 		::std::byte buffer[16];
