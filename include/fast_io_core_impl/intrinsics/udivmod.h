@@ -26,7 +26,7 @@ https://github.com/llvm/llvm-project/blob/main/compiler-rt/lib/builtins/udivmodt
 template <typename T>
 inline constexpr tuint<T> udivbigbysmalltosmalldefault(T u1, T u0, T v) noexcept
 {
-#if defined(__x86_64__) || defined(_M_AMD64)
+#if (defined(__x86_64__) || defined(_M_AMD64)) && !defined(__arm64ec__)
 	if constexpr (sizeof(T) == sizeof(::std::uint_least64_t))
 	{
 #if defined(__cpp_if_consteval)
