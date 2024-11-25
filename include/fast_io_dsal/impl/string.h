@@ -1468,21 +1468,21 @@ public:
 };
 
 template <::std::integral chtype, typename allocator1, typename U>
-inline constexpr void erase(::fast_io::containers::basic_string<chtype, allocator1> const &c, U const &value)
+inline constexpr ::fast_io::containers::basic_string<chtype, allocator1>::size_type erase(::fast_io::containers::basic_string<chtype, allocator1> &c, U const &value)
 {
 	auto it = ::std::remove(c.begin(), c.end(), value);
 	auto r = c.end() - it;
 	c.erase(it, c.end());
-	return r;
+	return static_cast<::fast_io::containers::basic_string<chtype, allocator1>::size_type>(r);
 }
 
 template <::std::integral chtype, typename allocator1, typename Pred>
-inline constexpr void erase_if(::fast_io::containers::basic_string<chtype, allocator1> const &c, Pred pred)
+inline constexpr ::fast_io::containers::basic_string<chtype, allocator1>::size_type erase_if(::fast_io::containers::basic_string<chtype, allocator1> &c, Pred pred)
 {
 	auto it = ::std::remove_if(c.begin(), c.end(), pred);
 	auto r = c.end() - it;
 	c.erase(it, c.end());
-	return r;
+	return static_cast<::fast_io::containers::basic_string<chtype, allocator1>::size_type>(r);
 }
 
 template <::std::integral chtype, typename allocator1, typename allocator2>
