@@ -234,7 +234,7 @@ struct win32_process_envs
 using nt_process_args = ::fast_io::win32_process_args<::fast_io::win32_family::wide_nt>;
 using nt_process_envs = ::fast_io::win32_process_envs<::fast_io::win32_family::wide_nt>;
 
-#else
+// #else
 
 // posix
 namespace details
@@ -327,12 +327,12 @@ namespace details
 {
 template <::std::size_t N, ::std::integral replace_char_type, typename T>
 inline constexpr void construct_posix_process_argenvs_decay_singal(
-	::fast_io::containers::vector<details::cstr_guard<replace_char_type>, ::fast_io::native_global_allocator> &str, T t)
+	::fast_io::containers::vector<cstr_guard<replace_char_type>, ::fast_io::native_global_allocator> &str, T t)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<replace_char_type>, T>};
 
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> cstr;
-	details::cstr_guard<replace_char_type> cstrg;
+	cstr_guard<replace_char_type> cstrg;
 
 	if constexpr (type_error)
 	{
@@ -356,7 +356,7 @@ inline constexpr void construct_posix_process_argenvs_decay_singal(
 
 template <::std::size_t N = 0, ::std::integral replace_char_type, typename T, typename... Args>
 inline constexpr void construct_posix_process_argenvs_decay(
-	::fast_io::containers::vector<details::cstr_guard<replace_char_type>, ::fast_io::native_global_allocator> &str, T t, Args... args)
+	::fast_io::containers::vector<cstr_guard<replace_char_type>, ::fast_io::native_global_allocator> &str, T t, Args... args)
 {
 	construct_posix_process_argenvs_decay_singal<N>(str, t);
 
