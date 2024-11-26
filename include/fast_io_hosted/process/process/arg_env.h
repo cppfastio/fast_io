@@ -416,7 +416,13 @@ struct posix_process_args
 
 	inline constexpr char const *const *get() const noexcept
 	{
-		return (char const *const *)(arg_envs.data());
+		using char_const_p_const_p_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+			= char const *const *;
+
+		return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(arg_envs.data());
 	}
 
 	inline constexpr void append(posix_process_args const &others) noexcept
