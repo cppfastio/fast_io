@@ -234,7 +234,7 @@ struct win32_process_envs
 using nt_process_args = ::fast_io::win32_process_args<::fast_io::win32_family::wide_nt>;
 using nt_process_envs = ::fast_io::win32_process_envs<::fast_io::win32_family::wide_nt>;
 
-// #else
+#else
 
 // posix
 namespace details
