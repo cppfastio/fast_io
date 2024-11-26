@@ -414,7 +414,7 @@ struct posix_process_args
 		arg_envs.emplace_back(); // nullptr
 	}
 
-	inline constexpr char const *const *get() const noexcept
+	inline char const *const *get() const noexcept
 	{
 		using char_const_p_const_p_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
