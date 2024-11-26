@@ -1365,10 +1365,12 @@ public:
 		int a2[2]{-1, -1};
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 		if (noexcept_call(::_pipe, a2, 131072u, _O_BINARY) == -1)
-#elif (defined(__MSDOS__) || defined(__DJGPP__)) || (defined(__APPLE__) || defined(__DARWIN_C_LEVEL))
+#elif defined(__linux__)
+		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
+#elif (defined(__MSDOS__) || defined(__DJGPP__))
 		if (noexcept_call(::pipe, a2) == -1)
 #else
-		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
+		if (noexcept_call(::pipe, a2) == -1 || sys_fcntl(a2[0], F_SETFD, FD_CLOEXEC) == -1 || sys_fcntl(a2[1], F_SETFD, FD_CLOEXEC) == -1)
 #endif
 			throw_posix_error();
 		pipes->fd = *a2;
