@@ -331,7 +331,6 @@ inline constexpr void construct_posix_process_argenvs_decay_singal(
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<replace_char_type>, T>};
 
-	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> cstr;
 	cstr_guard<replace_char_type> cstrg;
 
 	if constexpr (type_error)
