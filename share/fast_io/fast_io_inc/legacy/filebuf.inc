@@ -11,7 +11,7 @@ namespace manipulators
 {
 using ::fast_io::manipulators::operator_output;
 using ::fast_io::manipulators::woperator_output;
-}
+} // namespace manipulators
 
 using ::fast_io::streambuf_io_observer;
 using ::fast_io::wstreambuf_io_observer;
@@ -55,6 +55,6 @@ namespace freestanding
 using ::fast_io::freestanding::is_trivially_relocatable;
 using ::fast_io::freestanding::is_zero_default_constructible;
 
-}
+} // namespace freestanding
 
-}
+} // namespace fast_io

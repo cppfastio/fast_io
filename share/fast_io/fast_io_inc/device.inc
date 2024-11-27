@@ -62,4 +62,4 @@ using ::fast_io::u32iobuf_socket_file;
 
 #endif
 
-}
+} // namespace fast_io

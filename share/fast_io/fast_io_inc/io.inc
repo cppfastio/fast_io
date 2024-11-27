@@ -17,6 +17,6 @@ using ::fast_io::io::debug_println;
 using ::fast_io::io::debug_perr;
 using ::fast_io::io::debug_perrln;
 #endif
-}
+} // namespace io
 
-}
+} // namespace fast_io
