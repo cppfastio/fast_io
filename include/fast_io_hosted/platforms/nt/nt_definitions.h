@@ -961,4 +961,321 @@ enum class rtl_path_type
 	RtlPathTypeLocalDevice,
 	RtlPathTypeRootLocalDevice,
 };
+
+// ALPC nt 6x
+// Based on https://github.com/googleprojectzero/sandbox-attacksurface-analysis-tools/blob/main/NtApiDotNet/NtAlpcNative.cs#L82-L97
+enum class ALPC_MESSAGE_TYPE
+{
+	None = 0,
+	Request = 1,
+	Reply = 2,
+	Datagram = 3,
+	LostReply = 4,
+	PortClosed = 5,
+	ClientDied = 6,
+	Exception = 7,
+	DebugEvent = 8,
+	ErrorEvent = 9,
+	ConnectionRequest = 10,
+	ConnectionReply = 11,
+	UNKNOWN12 = 12,       // Seems to be something like an empty reply, PID and TID pointing to own thread
+	PortDisconnected = 13 // Used by the kernel when disconnecting an exception port.
+};
+// End Based  ON
+
+enum class security_impersonation_level
+{
+	SecurityAnonymous,
+	SecurityIdentification,
+	SecurityImpersonation,
+	SecurityDelegation
+};
+
+struct security_quality_of_service
+{
+	::std::uint_least32_t Length;
+	security_impersonation_level ImpersonationLevel;
+	::std::uint_least8_t ContextTrackingMode;
+	::std::uint_least8_t EffectiveOnly;
+};
+
+struct alpc_port_attributes
+{
+	::std::uint_least32_t Flags;
+	security_quality_of_service SecurityQos;
+	::std::uint_least64_t MaxMessageLength;
+	::std::uint_least64_t MemoryBandwidth;
+	::std::uint_least64_t MaxPoolUsage;
+	::std::uint_least64_t MaxSectionSize;
+	::std::uint_least64_t MaxViewSize;
+	::std::uint_least64_t MaxTotalSectionSize;
+	::std::uint_least32_t DupObjectTypes;
+#ifdef _WIN64
+	::std::uint_least32_t Reserved;
+#endif
+};
+
+struct alpc_message_attributes
+{
+	::std::uint_least32_t AllocatedAttributes;
+	::std::uint_least32_t ValidAttributes;
+};
+
+namespace details
+{
+struct Details_length
+{
+	::std::uint_least16_t DataLength;
+	::std::uint_least16_t TotalLength;
+};
+
+struct Details_ZeroInit
+{
+	::std::uint_least16_t Type;
+	::std::uint_least16_t DataInfoOffset;
+};
+} // namespace details
+
+struct port_message
+{
+	union
+	{
+		details::Details_length s1;
+		::std::uint_least32_t Length;
+	} u1;
+	union
+	{
+		details::Details_ZeroInit s2;
+		::std::uint_least32_t ZeroInit;
+	} u2;
+	union
+	{
+		client_id ClientId;
+		double DoNotUseThisField;
+	};
+	::std::uint_least32_t MessageId;
+	union
+	{
+		::std::size_t ClientViewSize;     // only valid for LPC_CONNECTION_REQUEST messages
+		::std::uint_least32_t CallbackId; // only valid for LPC_REQUEST messages
+	};
+};
+
+
+// FROM https://docs.rs/ntapi/0.3.6/ntapi/ntlpcapi/struct.ALPC_HANDLE_ATTR.html
+struct alpc_data_view_attr
+{
+	::std::uint_least32_t Flags;
+	void *SectionHandle;
+	void *ViewBase;
+	::std::size_t ViewSize;
+};
+
+struct alpc_token_attr
+{
+	::std::uint_least64_t TokenId;
+	::std::uint_least64_t AuthenticationId;
+	::std::uint_least64_t ModifiedId;
+};
+
+struct alpc_port_context
+{
+	void *Handle;
+};
+
+struct alpc_context_attr
+{
+	void *PortContext;
+	void *MessageContext;
+	::std::uint_least32_t Sequence;
+	::std::uint_least32_t MessageId;
+	::std::uint_least32_t CallbackId;
+};
+
+struct alpc_security_attr
+{
+	::std::uint_least32_t Flags;
+	security_quality_of_service *pQOS;
+	void *ContextHandle;
+};
+
+struct token_source
+{
+	char SourceName[8];
+	::std::int_least64_t SourceIdentifier;
+};
+
+struct token_control
+{
+	::std::int_least64_t TokenId;
+	::std::int_least64_t AuthenticationId;
+	::std::int_least64_t ModifiedId;
+	token_source TokenSource;
+};
+
+struct security_client_context
+{
+	security_quality_of_service SecurityQos; //_KALPC_SECURITY_DATA
+	void *ClientToken;
+	::std::uint_least8_t DirectlyAccessClientToken;
+	::std::uint_least8_t DirectAccessEffectiveOnly;
+	::std::uint_least8_t ServerIsRemote;
+	token_control ClientTokenControl;
+};
+
+// From https://github.com/hakril/PythonForWindows/blob/3149961634cda0029a288e6ffa7779e4492adb13/ctypes_generation/definitions/structures/alpc.txt
+struct alpc_direct_attr
+{
+	void *Event;
+};
+
+struct alpc_work_on_behalf_attr
+{
+	::std::uint_least64_t Ticket;
+};
+
+struct alpc_handle_attr
+{
+	::std::uint_least32_t Flags;
+	void *Handle;
+	::std::uint_least32_t ObjectType;
+	::std::uint_least32_t DesiredAccess;
+};
+
+struct alpc_handle_entry
+{
+	void *Object;
+};
+
+struct port_view
+{
+	::std::uint_least32_t Length;
+	void *SectionHandle;
+	::std::uint_least32_t SectionOffset;
+	::std::size_t ViewSize;
+	void *ViewBase;
+	void *ViewRemoteBase;
+};
+
+enum class alpc_port_information_class
+{
+	AlpcBasicInformation,                                // q: out ALPC_BASIC_INFORMATION
+	AlpcPortInformation,                                 // s: in ALPC_PORT_ATTRIBUTES
+	AlpcAssociateCompletionPortInformation,              // s: in ALPC_PORT_ASSOCIATE_COMPLETION_PORT
+	AlpcConnectedSIDInformation,                         // q: in SID
+	AlpcServerInformation,                               // q: inout ALPC_SERVER_INFORMATION
+	AlpcMessageZoneInformation,                          // s: in ALPC_PORT_MESSAGE_ZONE_INFORMATION
+	AlpcRegisterCompletionListInformation,               // s: in ALPC_PORT_COMPLETION_LIST_INFORMATION
+	AlpcUnregisterCompletionListInformation,             // s: VOID
+	AlpcAdjustCompletionListConcurrencyCountInformation, // s: in ULONG
+	AlpcRegisterCallbackInformation,                     // kernel-mode only
+	AlpcCompletionListRundownInformation,                // s: VOID
+	AlpcWaitForPortReferences
+};
+
+namespace details
+{
+struct Details_in
+{
+	void *ThreadHandle;
+};
+
+struct Details_out
+{
+	::std::uint_least8_t ThreadBlocked;
+	void *ConnectedProcessId;
+	unicode_string ConnectionPortName;
+};
+
+} // namespace details
+
+struct alpc_server_information
+{
+	union
+	{
+		details::Details_in In;
+		details::Details_out Out;
+	};
+};
+
+struct alpc_basic_information
+{
+	::std::uint_least32_t Flags;
+	::std::uint_least32_t SequenceNo;
+	void *PortContext;
+};
+
+enum class alpc_message_information_class
+{
+	AlpcMessageSidInformation,             // out PSID
+	AlpcMessageTokenModifiedIdInformation, // q: out LUID
+	AlpcMessageDirectStatusInformation,
+	AlpcMessageHandleInformation, // ALPC_MESSAGE_HANDLE_INFORMATION
+	MaxAlpcMessageInfoClass
+};
+
+struct alpc_message_handle_information
+{
+	::std::uint_least32_t Index;
+	::std::uint_least32_t Flags;
+	::std::uint_least32_t Handle;
+	::std::uint_least32_t ObjectType;
+	::std::uint_least32_t GrantedAccess;
+};
+
+struct cs_port_context
+{
+	::std::uint_least32_t PID;
+	::std::uint_least32_t TID;
+	::std::uint_least32_t ID;
+};
+
+
+struct alpc_message
+{
+	port_message PortHeader;
+	::std::uint_least8_t PortMessage[1000]; // Hard limit for this is 65488. An Error is thrown if AlpcMaxAllowedMessageLength() is exceeded
+};
+
+namespace details
+{
+struct Details_ex_push_lock
+{
+	::std::uint_least32_t Locked : 1;         // 0x0
+	::std::uint_least32_t Waiting : 1;        // 0x0
+	::std::uint_least32_t Waking : 1;         // 0x0
+	::std::uint_least32_t MultipleShared : 1; // 0x0
+	::std::uint_least32_t Shared : 28;        // 0x0
+};
+} // namespace details
+
+struct ex_push_lock
+{
+	union
+	{
+		details::Details_ex_push_lock detail_Value;
+		::std::uint_least32_t Value; // 0x0
+		void *Ptr;                   // 0x0
+	};
+};
+
+struct alpc_handle_table
+{
+	alpc_handle_entry Handles;
+	::std::uint_least32_t TotalHandles;
+	::std::uint_least32_t Flags;
+	ex_push_lock Lock;
+};
+
+
+// typedef struct _EPROCESS* PEPROCESS;
+struct kalpc_security_data
+{
+	alpc_handle_table *HandleTable; //_KALPC_SECURITY_DATA
+	void *ContextHandle;
+	void *OwningProcess;
+	void *OwnerPort;
+	security_client_context DynamicSecurity;
+};
+
 } // namespace fast_io::win32::nt
