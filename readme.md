@@ -6,19 +6,35 @@ fast_io represents a cutting-edge input/output (I/O) library for C++20, designed
 *Past commits were stored [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23).*
 
 ## Illustrations
-### Output to `stdout`
+### Output to `cstdout`
 ```cpp
 #include <fast_io.h>
 
-int main() {
+int main() 
+{
 	::fast_io::io::print("Hello, fast_io world!\n");
+	::fast_io::io::print(::fast_io::c_stdout(), "Equivalent to the function above\n");
+}
+```
+### Output to `native stdout` 
+* on non-windows systems (fd): (int)1
+* on win32 (handle): GetStdHandle(STD_OUTPUT_HANDLE)
+* on nt (handle): RtlGetCurrentPeb()->ProcessParameters->StandardOutput
+```cpp
+#include <fast_io.h>
+
+int main() 
+{
+	::fast_io::io::print(::fast_io::out(), "Hello, fast_io world!\n");z
 }
 ```
 ### Memory-Mapped File
+* Platforms that do not support memory mapping native_file_loader will use allocator and read instead
 ```cpp
 #include <fast_io.h>
 
-int main() {
+int main() 
+{
 	::fast_io::native_file_loader file_data{"text.txt"};
 	// file_data satisfies ::std::ranges::contiguous_range
 }
