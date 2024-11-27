@@ -29,7 +29,7 @@ int main()
 }
 ```
 ### Memory-Mapped File
-* Platforms that do not support memory mapping native_file_loader will use allocator and read instead
+* Platforms that do not support memory mapping native_file_loader will read files into allocated space instead
 ```cpp
 #include <fast_io.h>
 
