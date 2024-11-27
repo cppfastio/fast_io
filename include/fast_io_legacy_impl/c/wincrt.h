@@ -240,10 +240,8 @@ inline void wincrt_fp_overflow_impl(FILE *__restrict fpp, char_type ch)
 	}
 	else
 	{
-		// output existing content
-		::fast_io::details::posix_write_bytes_impl(fp->_file, reinterpret_cast<::std::byte const *>(fp->_base), reinterpret_cast<::std::byte const *>(fp->_ptr));
-		// ?? output all content ??
-		// ::fast_io::details::posix_write_bytes_impl(fp->_file, reinterpret_cast<::std::byte const *>(fp->_base), reinterpret_cast<::std::byte const *>(fp->_base + fp->_bufsiz));
+		// output all content
+		::fast_io::details::posix_write_bytes_impl(fp->_file, reinterpret_cast<::std::byte const *>(fp->_base), reinterpret_cast<::std::byte const *>(fp->_base + fp->_bufsiz));
 	}
 	fp->_ptr = fp->_base;
 	my_memcpy(fp->_ptr, __builtin_addressof(ch), sizeof(ch));
