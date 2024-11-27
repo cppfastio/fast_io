@@ -156,8 +156,7 @@ inline void wincrt_fp_write_cold_malloc_case_impl(FILE *__restrict fpp, char con
 	if (fp->_bufsiz >= 4)
 	{
 		allocated_buffer_size = static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz));
-		allocated_buffer_size >>= 2;
-		allocated_buffer_size <<= 2;
+		allocated_buffer_size &= ~static_cast<::std::size_t>(0b11);
 	}
 
 	if (diff >= allocated_buffer_size)
@@ -167,7 +166,7 @@ inline void wincrt_fp_write_cold_malloc_case_impl(FILE *__restrict fpp, char con
 	}
 
 	auto newbuffer{my_malloc_crt(allocated_buffer_size)};
-	my_memcpy(newbuffer, first, diff);
+	::fast_io::freestanding::my_memcpy(newbuffer, first, diff);
 	fp->_ptr = (fp->_base = reinterpret_cast<char *>(newbuffer)) + diff;
 	fp->_flag |= crt_mybuf_value;
 	fp->_bufsiz = static_cast<::std::int_least32_t>(allocated_buffer_size);
@@ -244,7 +243,7 @@ inline void wincrt_fp_overflow_impl(FILE *__restrict fpp, char_type ch)
 		::fast_io::details::posix_write_bytes_impl(fp->_file, reinterpret_cast<::std::byte const *>(fp->_base), reinterpret_cast<::std::byte const *>(fp->_base + fp->_bufsiz));
 	}
 	fp->_ptr = fp->_base;
-	my_memcpy(fp->_ptr, __builtin_addressof(ch), sizeof(ch));
+	::fast_io::freestanding::my_memcpy(fp->_ptr, __builtin_addressof(ch), sizeof(ch));
 	fp->_ptr += sizeof(ch);
 	fp->_cnt = static_cast<::std::int_least32_t>(static_cast<::std::uint_least32_t>(fp->_bufsiz - static_cast<::std::int_least32_t>(sizeof(ch))));
 	fp->_flag |= crt_dirty_value;
