@@ -180,6 +180,10 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE *__restrict fpp, char con
 {
 	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
 	::std::size_t remain{static_cast<::std::size_t>(static_cast<::std::uint_least32_t>(fp->_cnt))};
+	if (diff < remain)
+	{
+		remain = diff;
+	}
 	non_overlapped_copy_n(first, remain, fp->_ptr);
 	diff -= remain;
 	first += remain;
