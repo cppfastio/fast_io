@@ -18,7 +18,12 @@ int main(int argc, char **argv)
 #endif
 	{
 		::std::uint_least32_t perm;
-		::fast_io::scan(::fast_io::mnp::os_c_str(argv[2]), perm);
+		auto const [p1, e1] = ::fast_io::parse_by_scan(argv[2], argv[2] + ::fast_io::cstr_len(argv[2]), ::fast_io::mnp::base_get<8>(perm));
+		if (e1 != ::fast_io::parse_code::ok)
+		{
+			::fast_io::throw_parse_code(e1);
+		}
+
 		::fast_io::native_fchmodat(::fast_io::at_fdcwd(), fast_io::mnp::os_c_str(argv[1]), static_cast<::fast_io::perms>(perm));
 	}
 #if __cpp_exceptions
