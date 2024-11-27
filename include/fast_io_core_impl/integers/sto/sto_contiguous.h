@@ -536,7 +536,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 	if (!__builtin_is_constant_evaluated())
 #endif
 	{
-		if constexpr (!::fast_io::details::is_ebcdic<char_type> && ::std::endian::little == ::std::endian::native)
+		if constexpr (!::fast_io::details::is_ebcdic<char_type>)
 		{
 			// Decimal:
 			// https://github.com/fastfloat/fast_float
@@ -558,6 +558,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 								::std::uint_least64_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
 
+								val = ::fast_io::little_endian(val);
+								
 								constexpr ::std::uint_least64_t pow_base_sizeof_u64{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), sizeof(::std::uint_least64_t))};
 								constexpr ::std::uint_least64_t first_bound{0x4646464646464646 + 0x0101010101010101 * (10 - base_char_type)};
 
@@ -588,6 +590,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 							{
 								::std::uint_least32_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
+								
+								val = ::fast_io::little_endian(val);
 
 								constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
 								constexpr ::std::uint_least32_t first_bound{0x46464646 + 0x01010101 * (10 - base_char_type)};
@@ -616,6 +620,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 							{
 								::std::uint_least64_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
+								
+								val = ::fast_io::little_endian(val);
 
 								constexpr ::std::uint_least64_t pow_base_sizeof_u64{
 									::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), u64_size_of_c16)};
@@ -648,6 +654,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 							{
 								::std::uint_least64_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
+								
+								val = ::fast_io::little_endian(val);
 
 								constexpr ::std::uint_least64_t pow_base_sizeof_u64{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), sizeof(::std::uint_least64_t))};
 								constexpr ::std::uint_least64_t first_bound1{0x3939393939393939 + 0x0101010101010101 * (16 - base_char_type)};
@@ -690,6 +698,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 							{
 								::std::uint_least32_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
+																
+								val = ::fast_io::little_endian(val);
 
 								constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
 								constexpr ::std::uint_least32_t first_bound1{0x39393939 + 0x01010101 * (16 - base_char_type)};
@@ -732,6 +742,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 							{
 								::std::uint_least32_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
+								
+								val = ::fast_io::little_endian(val);
 
 								constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
 								constexpr ::std::uint_least32_t first_bound{0x46464646 + 0x01010101 * (10 - base_char_type)};
@@ -767,6 +779,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 							{
 								::std::uint_least32_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
+																
+								val = ::fast_io::little_endian(val);
 
 								constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
 								constexpr ::std::uint_least32_t first_bound1{0x39393939 + 0x01010101 * (16 - base_char_type)};
