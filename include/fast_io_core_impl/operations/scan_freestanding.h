@@ -303,10 +303,8 @@ template <typename input, typename T>
 		}
 		else
 		{
-#if 0
 			constexpr bool not_scannable{context_scannable<char_type,T>};
 			static_assert(not_scannable,"type not scannable. need context_scannable");
-#endif
 			return false;
 		}
 	}
