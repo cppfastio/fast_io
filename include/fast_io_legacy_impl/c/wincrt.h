@@ -182,6 +182,10 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE* __restrict fpp,char cons
 	FILE* fp{fpp};
 #endif
 	std::size_t remain{static_cast<std::size_t>(static_cast<unsigned int>(fp->_cnt))};
+	if (diff < remain)
+	{
+		remain = diff;
+	}
 	non_overlapped_copy_n(first,remain,fp->_ptr);
 	diff-=remain;
 	first+=remain;
