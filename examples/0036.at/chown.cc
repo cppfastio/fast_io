@@ -19,7 +19,9 @@ int main(int argc, char **argv)
 	{
 		::std::uint_least64_t o;
 		::std::uint_least64_t g;
-		::fast_io::scan(::fast_io::mnp::os_c_str(argv[2]), o, g);
+
+		::fast_io::ibuffer_view ibv{argv[2], argv[2] + ::fast_io::cstr_len(argv[2])};
+		::fast_io::scan(ibv, ::fast_io::mnp::hex_get<8>(o), ::fast_io::mnp::hex_get<8>(g));
 		::fast_io::native_fchownat(::fast_io::at_fdcwd(), fast_io::mnp::os_c_str(argv[1]), o, g);
 	}
 #if __cpp_exceptions
