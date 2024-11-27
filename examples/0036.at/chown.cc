@@ -20,12 +20,12 @@ int main(int argc, char **argv)
 		::std::uint_least64_t o;
 		::std::uint_least64_t g;
 
-		auto const [p1,e1]= ::fast_io::parse_by_scan(argv[2], argv[2] + ::fast_io::cstr_len(argv[2]), ::fast_io::mnp::hex_get<8>(o));
+		auto const [p1,e1]= ::fast_io::parse_by_scan(argv[2], argv[2] + ::fast_io::cstr_len(argv[2]), ::fast_io::mnp::base_get<8>(o));
 		if (e1 != ::fast_io::parse_code::ok)
 		{
 			::fast_io::throw_parse_code(e1);
 		}
-		auto const [p2, e2] = ::fast_io::parse_by_scan(argv[3], argv[3] + ::fast_io::cstr_len(argv[3]), ::fast_io::mnp::hex_get<8>(g));
+		auto const [p2, e2] = ::fast_io::parse_by_scan(argv[3], argv[3] + ::fast_io::cstr_len(argv[3]), ::fast_io::mnp::base_get<8>(g));
 		if (e2 != ::fast_io::parse_code::ok)
 		{
 			::fast_io::throw_parse_code(e2);
