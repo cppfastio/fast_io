@@ -166,4 +166,14 @@ inline constexpr void write_all_overflow_define(io_strlike_reference_wrapper<ch_
 	}
 }
 
+namespace manipulators
+{
+template <typename T>
+	requires ::fast_io::strlike<typename T::char_type, T>
+inline constexpr io_strlike_reference_wrapper<typename T::char_type, T> wrap(T &str) noexcept
+{
+	return io_strlike_reference_wrapper<typename T::char_type, T>(__builtin_addressof(str));
+}
+} // namespace manipulators
+
 } // namespace fast_io
