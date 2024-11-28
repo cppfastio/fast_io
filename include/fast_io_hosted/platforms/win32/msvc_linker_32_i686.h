@@ -277,6 +277,8 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwAlpcCreateSecurityContext@nt@win32@fast_io@@YGHPAXIPAUalpc_security_attr@123@@Z=__imp__ZwAlpcCreateSecurityContext@12")
 #pragma comment(linker,"/alternatename:__imp_?NtAlpcOpenSenderThread@nt@win32@fast_io@@YGHPAPAXPAXPAUport_message@123@IIPAUobject_attributes@123@@Z=__imp__NtAlpcOpenSenderThread@24")
 #pragma comment(linker,"/alternatename:__imp_?ZwAlpcOpenSenderThread@nt@win32@fast_io@@YGHPAPAXPAXPAUport_message@123@IIPAUobject_attributes@123@@Z=__imp__ZwAlpcOpenSenderThread@24")
+#pragma comment(linker,"/alternatename:__imp_?NtTerminateProcess@nt@win32@fast_io@@YGHPAXH@Z=__imp__NtTerminateProcess@8")
+#pragma comment(linker,"/alternatename:__imp_?ZwTerminateProcess@nt@win32@fast_io@@YGHPAXH@Z=__imp__ZwTerminateProcess@8")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp____RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=___RTtypeid")

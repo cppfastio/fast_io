@@ -3996,4 +3996,70 @@ inline ::std::uint_least32_t nt_alpc_open_sender_thread(Args... args) noexcept
 		return NtAlpcOpenSenderThread(args...);
 	}
 }
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtTerminateProcess(void *, ::std::int_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtTerminateProcess@8")
+#else
+	__asm__("_NtTerminateProcess@8")
+#endif
+#else
+	__asm__("NtTerminateProcess")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwTerminateProcess(void *, ::std::int_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwTerminateProcess@8")
+#else
+	__asm__("_ZwTerminateProcess@8")
+#endif
+#else
+	__asm__("ZwTerminateProcess")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 2)
+inline ::std::uint_least32_t nt_terminate_process(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwTerminateProcess(args...);
+	}
+	else
+	{
+		return NtTerminateProcess(args...);
+	}
+}
 } // namespace fast_io::win32::nt

@@ -8,12 +8,14 @@ namespace fast_io
 
 namespace posix
 {
-#ifdef __DARWIN_C_LEVEL
+#if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
+extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 #else
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
+extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 #endif
 } // namespace posix
 
@@ -471,6 +473,16 @@ public:
 	}
 };
 
+inline constexpr bool operator==(posix_process_observer a, posix_process_observer b) noexcept
+{
+	return a.pid == b.pid;
+}
+
+inline constexpr auto operator<=>(posix_process_observer a, posix_process_observer b) noexcept
+{
+	return a.pid <=> b.pid;
+}
+
 inline constexpr void detach(posix_process_observer &ppob) noexcept
 {
 	ppob.pid = -1;
@@ -483,14 +495,13 @@ inline posix_wait_status wait(posix_process_observer &ppob)
 	return status;
 }
 
-inline constexpr bool operator==(posix_process_observer a, posix_process_observer b) noexcept
+inline void kill(posix_process_observer &ppob, posix_wait_status exit_code)
 {
-	return a.pid == b.pid;
-}
-
-inline constexpr auto operator<=>(posix_process_observer a, posix_process_observer b) noexcept
-{
-	return a.pid <=> b.pid;
+#if defined(__linux__) && defined(__NR_kill)
+	system_call_throw_error(system_call<__NR_kill, int>(ppob.pid, exit_code.wait_loc));
+#else
+	system_call_throw_error(::fast_io::posix::libc_kill(ppob.pid, exit_code.wait_loc));
+#endif
 }
 
 class posix_process : public posix_process_observer
