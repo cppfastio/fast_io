@@ -60,7 +60,7 @@ struct cross_code_cvt_t
 template <::std::integral char_type, typename T>
 struct io_reserve_type_t
 {
-	explicit constexpr io_reserve_type_t() noexcept = default;
+	inline explicit constexpr io_reserve_type_t() noexcept = default;
 };
 template <::std::integral char_type, typename T>
 inline constexpr io_reserve_type_t<char_type, T> io_reserve_type{};
@@ -80,7 +80,7 @@ struct basic_reserve_scatters_define_result
 
 struct io_alias_t
 {
-	explicit constexpr io_alias_t() noexcept = default;
+	inline explicit constexpr io_alias_t() noexcept = default;
 };
 
 inline constexpr io_alias_t io_alias{};
@@ -88,7 +88,7 @@ inline constexpr io_alias_t io_alias{};
 template <::std::integral char_type>
 struct io_alias_type_t
 {
-	explicit constexpr io_alias_type_t() noexcept = default;
+	inline explicit constexpr io_alias_type_t() noexcept = default;
 };
 
 template <::std::integral char_type>
@@ -120,7 +120,7 @@ using intfpos_t = ::std::intmax_t;
 
 struct io_construct_t
 {
-	explicit constexpr io_construct_t() noexcept = default;
+	inline explicit constexpr io_construct_t() noexcept = default;
 };
 
 inline constexpr io_construct_t io_construct{};

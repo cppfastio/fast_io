@@ -25,13 +25,13 @@ using flock_request_l64 = basic_flock_request<::std::int_least64_t>;
 struct nop_file_lock
 {
 	template <typename RequestType>
-	constexpr void lock(RequestType const &) noexcept
+	inline constexpr void lock(RequestType const &) noexcept
 	{}
 	template <typename RequestType>
-	constexpr void unlock(RequestType const &) noexcept
+	inline constexpr void unlock(RequestType const &) noexcept
 	{}
 	template <typename RequestType>
-	constexpr bool try_lock(RequestType const &) noexcept
+	inline constexpr bool try_lock(RequestType const &) noexcept
 	{
 		return true;
 	}
@@ -48,14 +48,14 @@ struct file_lock_guard
 	using request_type = RequestT;
 	file_lock_type lock;
 	request_type request;
-	explicit constexpr file_lock_guard(file_lock_type const &lk, request_type const &flk)
+	inline explicit constexpr file_lock_guard(file_lock_type const &lk, request_type const &flk)
 		: lock(lk), request(flk)
 	{
 		lock.lock(request);
 	}
-	file_lock_guard(file_lock_guard const &) = delete;
-	file_lock_guard &operator=(file_lock_guard const &) = delete;
-	constexpr ~file_lock_guard()
+	inline file_lock_guard(file_lock_guard const &) = delete;
+	inline file_lock_guard &operator=(file_lock_guard const &) = delete;
+	inline constexpr ~file_lock_guard()
 	{
 		lock.unlock(request);
 	}

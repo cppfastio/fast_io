@@ -6,7 +6,7 @@ namespace fast_io
 template <typename T>
 struct transcode_reserve_t
 {
-	explicit constexpr transcode_reserve_t() noexcept = default;
+	inline explicit constexpr transcode_reserve_t() noexcept = default;
 };
 template <typename T>
 inline constexpr transcode_reserve_t<T> transcode_reserve{};

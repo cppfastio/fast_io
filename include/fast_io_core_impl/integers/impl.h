@@ -953,7 +953,7 @@ template <::std::integral char_type, ::std::size_t base>
 inline constexpr auto base_prefix_array{generate_base_prefix_array<char_type, base>()};
 
 template <::std::size_t base, bool uppercase_showbase, ::std::integral char_type>
-constexpr char_type *print_reserve_show_base_impl(char_type *iter)
+inline constexpr char_type *print_reserve_show_base_impl(char_type *iter)
 {
 	static_assert(2 <= base && base <= 36);
 	if constexpr (base == 2)
@@ -1118,7 +1118,7 @@ constexpr char_type *print_reserve_show_base_impl(char_type *iter)
 }
 
 template <::std::size_t base, bool uppercase, bool ryu_mode = false, ::std::integral char_type, typename T>
-constexpr void print_reserve_integral_main_impl(char_type *iter, T t, ::std::size_t len)
+inline constexpr void print_reserve_integral_main_impl(char_type *iter, T t, ::std::size_t len)
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1230,7 +1230,7 @@ constexpr void print_reserve_integral_main_impl(char_type *iter, T t, ::std::siz
 }
 
 template <bool full, ::std::size_t base, bool uppercase, ::std::integral char_type, my_unsigned_integral T>
-constexpr char_type *print_reserve_integral_withfull_main_impl(char_type *first, T u)
+inline constexpr char_type *print_reserve_integral_withfull_main_impl(char_type *first, T u)
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1297,7 +1297,7 @@ inline constexpr void print_reserve_integral_withfull_precise_main_impl(char_typ
 
 template <::std::size_t base, bool showbase = false, bool uppercase_showbase = false, bool showpos = false,
 		  bool uppercase = false, bool full = false, typename int_type, ::std::integral char_type>
-constexpr char_type *print_reserve_integral_define(char_type *first, int_type t)
+inline constexpr char_type *print_reserve_integral_define(char_type *first, int_type t)
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1371,7 +1371,7 @@ constexpr char_type *print_reserve_integral_define(char_type *first, int_type t)
 
 template <::std::size_t base, bool showbase = false, bool uppercase_showbase = false, bool showpos = false,
 		  bool uppercase = false, typename int_type, ::std::integral char_type>
-constexpr void print_reserve_integral_define_precise(char_type *start, ::std::size_t n, int_type t)
+inline constexpr void print_reserve_integral_define_precise(char_type *start, ::std::size_t n, int_type t)
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1986,7 +1986,7 @@ template <::std::integral char_type, manipulators::scalar_flags flags, typename 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]] // always inline to reduce inline depth in GCC and LLVM clang
 #endif
-constexpr char_type *
+inline constexpr char_type *
 print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_t<flags, T>>, char_type *iter,
 					 ::fast_io::manipulators::scalar_manip_t<flags, T> t) noexcept
 {

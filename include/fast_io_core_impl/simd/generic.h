@@ -23,11 +23,11 @@ struct
 	using value_type = T;
 	using vec_type = value_type[N];
 	vec_type value;
-	constexpr T const *data() const noexcept
+	inline constexpr T const *data() const noexcept
 	{
 		return __builtin_addressof(value[0]);
 	}
-	constexpr T *data() noexcept
+	inline constexpr T *data() noexcept
 	{
 		return __builtin_addressof(value[0]);
 	}
@@ -116,7 +116,7 @@ struct
 
 	template <typename T1, ::std::size_t N1>
 		requires(sizeof(T1) * N1 == sizeof(T) * N && !::std::same_as<T1, value_type>)
-	explicit constexpr operator simd_vector<T1, N1>() const noexcept
+	inline explicit constexpr operator simd_vector<T1, N1>() const noexcept
 	{
 		return __builtin_bit_cast(simd_vector<T1, N1>, *this);
 	}

@@ -10,12 +10,13 @@ struct basic_concat_buffer
 	static inline constexpr ::std::size_t buffer_size{2048u / sizeof(ch_type)};
 	char_type *buffer_begin, *buffer_curr, *buffer_end;
 	char_type stack_buffer[buffer_size];
-	constexpr basic_concat_buffer() noexcept
+	inline constexpr basic_concat_buffer() noexcept
 		: buffer_begin{stack_buffer}, buffer_curr{stack_buffer}, buffer_end{stack_buffer + buffer_size}
 	{
 	}
-	basic_concat_buffer(basic_concat_buffer const &) = delete;
-	basic_concat_buffer &operator=(basic_concat_buffer const &) = delete;
+	inline basic_concat_buffer(basic_concat_buffer const &) = delete;
+	inline basic_concat_buffer &operator=(basic_concat_buffer const &) = delete;
+	inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif

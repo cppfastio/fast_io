@@ -53,7 +53,7 @@ bytes_copy_punning_impl(FromItbg fromfirst, FromIted fromlast, ToIter tofirst, T
 }
 
 template <::std::size_t blocksize, typename outstmtype, typename T1, typename T>
-constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype outsm, T1 **controller_first,
+inline constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype outsm, T1 **controller_first,
 															   T const *firstblock_curr, T const *firstblock_end,
 															   T1 **controller_last, T const *lastblock_first,
 															   T const *lastblock_curr)

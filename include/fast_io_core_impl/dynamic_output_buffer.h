@@ -12,12 +12,12 @@ public:
 	static inline constexpr ::std::size_t buffer_size{buffersize};
 	char_type *begin_ptr{buffer}, *curr_ptr{buffer}, *end_ptr{buffer + buffer_size};
 	char_type buffer[buffersize];
-	constexpr basic_generic_dynamic_output_buffer() noexcept = default;
+	inline constexpr basic_generic_dynamic_output_buffer() noexcept = default;
 
-	basic_generic_dynamic_output_buffer(basic_generic_dynamic_output_buffer const &) = delete;
-	basic_generic_dynamic_output_buffer &operator=(basic_generic_dynamic_output_buffer const &) = delete;
+	inline basic_generic_dynamic_output_buffer(basic_generic_dynamic_output_buffer const &) = delete;
+	inline basic_generic_dynamic_output_buffer &operator=(basic_generic_dynamic_output_buffer const &) = delete;
 
-	constexpr ~basic_generic_dynamic_output_buffer()
+	inline constexpr ~basic_generic_dynamic_output_buffer()
 	{
 		if (begin_ptr && begin_ptr != buffer)
 		{

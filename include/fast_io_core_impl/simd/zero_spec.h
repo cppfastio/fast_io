@@ -7,11 +7,11 @@ template <typename T>
 struct simd_vector<T, 0>
 {
 	using value_type = T;
-	constexpr T const *data() const noexcept
+	inline constexpr T const *data() const noexcept
 	{
 		return nullptr;
 	}
-	constexpr T *data() noexcept
+	inline constexpr T *data() noexcept
 	{
 		return nullptr;
 	}

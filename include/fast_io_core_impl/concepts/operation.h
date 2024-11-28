@@ -301,7 +301,7 @@ struct parameter
 
 template <::std::integral char_type, typename output, typename value_type>
 	requires(printable<char_type, ::std::remove_cvref_t<value_type>> && ::std::is_trivially_copyable_v<output>)
-constexpr void print_define(io_reserve_type_t<char_type, parameter<value_type>>, output out,
+inline constexpr void print_define(io_reserve_type_t<char_type, parameter<value_type>>, output out,
 							parameter<value_type> wrapper)
 {
 	print_define(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>, out, wrapper.reference);
@@ -309,14 +309,14 @@ constexpr void print_define(io_reserve_type_t<char_type, parameter<value_type>>,
 
 template <::std::integral char_type, typename value_type>
 	requires reserve_printable<char_type, ::std::remove_cvref_t<value_type>>
-constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, parameter<value_type>>)
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, parameter<value_type>>)
 {
 	return print_reserve_size(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>);
 }
 
 template <::std::integral char_type, typename value_type>
 	requires dynamic_reserve_printable<char_type, ::std::remove_cvref_t<value_type>>
-constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, parameter<value_type>>,
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, parameter<value_type>>,
 										   parameter<value_type> para)
 {
 	return print_reserve_size(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>, para.reference);
@@ -325,7 +325,7 @@ constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, paramete
 template <::std::integral char_type, typename value_type>
 	requires(reserve_printable<char_type, ::std::remove_cvref_t<value_type>> ||
 			 dynamic_reserve_printable<char_type, ::std::remove_cvref_t<value_type>>)
-constexpr auto print_reserve_define(io_reserve_type_t<char_type, parameter<value_type>>, char_type *begin,
+inline constexpr auto print_reserve_define(io_reserve_type_t<char_type, parameter<value_type>>, char_type *begin,
 									parameter<value_type> para)
 {
 	return print_reserve_define(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>, begin, para.reference);
@@ -333,7 +333,7 @@ constexpr auto print_reserve_define(io_reserve_type_t<char_type, parameter<value
 
 template <::std::integral char_type, typename value_type, typename Iter>
 	requires(printable_internal_shift<char_type, ::std::remove_cvref_t<value_type>>)
-constexpr auto print_define_internal_shift(io_reserve_type_t<char_type, parameter<value_type>>, Iter begin,
+inline constexpr auto print_define_internal_shift(io_reserve_type_t<char_type, parameter<value_type>>, Iter begin,
 										   parameter<value_type> para)
 {
 	return print_define_internal_shift(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>, begin,
@@ -342,7 +342,7 @@ constexpr auto print_define_internal_shift(io_reserve_type_t<char_type, paramete
 
 template <::std::integral char_type, typename value_type>
 	requires precise_reserve_printable<char_type, ::std::remove_cvref_t<value_type>>
-constexpr ::std::size_t print_reserve_precise_size(io_reserve_type_t<char_type, parameter<value_type>>,
+inline constexpr ::std::size_t print_reserve_precise_size(io_reserve_type_t<char_type, parameter<value_type>>,
 												   parameter<value_type> para)
 {
 	return print_reserve_precise_size(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>, para.reference);
@@ -350,7 +350,7 @@ constexpr ::std::size_t print_reserve_precise_size(io_reserve_type_t<char_type, 
 
 template <::std::integral char_type, typename value_type, typename Iter>
 	requires precise_reserve_printable<char_type, ::std::remove_cvref_t<value_type>>
-constexpr void print_reserve_precise_define(io_reserve_type_t<char_type, parameter<value_type>>, Iter begin,
+inline constexpr void print_reserve_precise_define(io_reserve_type_t<char_type, parameter<value_type>>, Iter begin,
 											::std::size_t n, parameter<value_type> para)
 {
 	print_reserve_precise_define(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>, begin, n,
@@ -359,7 +359,7 @@ constexpr void print_reserve_precise_define(io_reserve_type_t<char_type, paramet
 
 template <::std::integral char_type, typename value_type>
 	requires scatter_printable<char_type, ::std::remove_cvref_t<value_type>>
-constexpr auto print_scatter_define(io_reserve_type_t<char_type, parameter<value_type>>, parameter<value_type> para)
+inline constexpr auto print_scatter_define(io_reserve_type_t<char_type, parameter<value_type>>, parameter<value_type> para)
 {
 	return print_scatter_define(io_reserve_type<char_type, ::std::remove_cvref_t<value_type>>, para.reference);
 }

@@ -6,7 +6,7 @@ namespace fast_io::freestanding
 template <typename T>
 struct allocator
 {
-	constexpr T *allocate([[maybe_unused]] ::std::size_t n) noexcept
+	inline constexpr T *allocate([[maybe_unused]] ::std::size_t n) noexcept
 	{
 		constexpr ::std::size_t mx{(~static_cast<::std::size_t>(0u)) / sizeof(T)};
 		if (n > mx)
@@ -20,7 +20,7 @@ struct allocator
 		return nullptr;
 #endif
 	}
-	constexpr void deallocate([[maybe_unused]] T *ptr, [[maybe_unused]] ::std::size_t n) noexcept
+	inline constexpr void deallocate([[maybe_unused]] T *ptr, [[maybe_unused]] ::std::size_t n) noexcept
 	{
 #if __has_builtin(__builtin_operator_delete)
 		__builtin_operator_delete(ptr, sizeof(T) * n);
