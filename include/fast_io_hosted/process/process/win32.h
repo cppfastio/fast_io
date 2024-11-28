@@ -513,6 +513,15 @@ inline win32_wait_status wait(win32_family_process_observer<family> ppob) noexce
 }
 
 template <win32_family family>
+inline void kill(win32_family_process_observer<family> ppob, win32_wait_status exit_code)
+{
+	if (!::fast_io::win32::TerminateProcess(ppob.hnt_user_process_info.hprocess, exit_code.wait_loc)) [[unlikely]]
+	{
+		throw_win32_error();
+	}
+}
+
+template <win32_family family>
 class win32_family_process : public win32_family_process_observer<family>
 {
 public:

@@ -636,6 +636,18 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 }
 
 template <nt_family family>
+inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_code) 
+{
+	auto const status{::fast_io::win32::nt::nt_terminate_process<family == nt_family::zw>(
+		ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
+
+	if (status)
+	{
+		throw_nt_error(status);
+	}
+}
+
+template <nt_family family>
 	requires(family == nt_family::nt || family == nt_family::zw)
 class nt_family_process : public nt_family_process_observer<family>
 {

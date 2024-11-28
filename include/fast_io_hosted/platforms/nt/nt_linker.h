@@ -3181,6 +3181,46 @@ extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	ZwAlpcCreatePort(void **, object_attributes *, alpc_port_attributes *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcCreatePort@12")
+#else
+	__asm__("_ZwAlpcCreatePort@12")
+#endif
+#else
+	__asm__("ZwAlpcCreatePort")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 3)
+inline ::std::uint_least32_t nt_alpc_create_port(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcCreatePort(args...);
+	}
+	else
+	{
+		return NtAlpcCreatePort(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	NtAlpcConnectPort(void **, unicode_string *, object_attributes *, alpc_port_attributes *,
 					  ::std::uint_least32_t, void *, port_message *, ::std::size_t *,
 					  alpc_message_attributes *, alpc_message_attributes *, ::std::int_least64_t *) noexcept
@@ -3196,6 +3236,48 @@ extern ::std::int_least32_t
 #endif
 #endif
 		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwAlpcConnectPort(void **, unicode_string *, object_attributes *, alpc_port_attributes *,
+					  ::std::uint_least32_t, void *, port_message *, ::std::size_t *,
+					  alpc_message_attributes *, alpc_message_attributes *, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcConnectPort@44")
+#else
+	__asm__("_ZwAlpcConnectPort@44")
+#endif
+#else
+	__asm__("ZwAlpcConnectPort")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 11)
+inline ::std::uint_least32_t nt_alpc_connect_port(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcConnectPort(args...);
+	}
+	else
+	{
+		return NtAlpcConnectPort(args...);
+	}
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -3236,6 +3318,47 @@ extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	ZwAlpcSendWaitReceivePort(void *, ::std::uint_least32_t, port_message *, alpc_message_attributes *,
+							  port_message *, ::std::size_t *, alpc_message_attributes *, ::std::int_least64_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcSendWaitReceivePort@32")
+#else
+	__asm__("_ZwAlpcSendWaitReceivePort@32")
+#endif
+#else
+	__asm__("ZwAlpcSendWaitReceivePort")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 8)
+inline ::std::uint_least32_t nt_alpc_send_wait_receive_port(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcSendWaitReceivePort(args...);
+	}
+	else
+	{
+		return NtAlpcSendWaitReceivePort(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	NtAlpcAcceptConnectPort(void **, void *, ::std::uint_least32_t,
 							object_attributes *, alpc_port_attributes *, void *, port_message *,
 							alpc_message_attributes *, ::std::uint_least8_t) noexcept
@@ -3251,6 +3374,48 @@ extern ::std::int_least32_t
 #endif
 #endif
 		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwAlpcAcceptConnectPort(void **, void *, ::std::uint_least32_t,
+							object_attributes *, alpc_port_attributes *, void *, port_message *,
+							alpc_message_attributes *, ::std::uint_least8_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcAcceptConnectPort@36")
+#else
+	__asm__("_ZwAlpcAcceptConnectPort@36")
+#endif
+#else
+	__asm__("ZwAlpcAcceptConnectPort")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 9)
+inline ::std::uint_least32_t nt_alpc_accept_connect_port(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcAcceptConnectPort(args...);
+	}
+	else
+	{
+		return NtAlpcAcceptConnectPort(args...);
+	}
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -3316,6 +3481,46 @@ extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	ZwAlpcImpersonateClientOfPort(void *, port_message *, void *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcImpersonateClientOfPort@12")
+#else
+	__asm__("_ZwAlpcImpersonateClientOfPort@12")
+#endif
+#else
+	__asm__("ZwAlpcImpersonateClientOfPort")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 3)
+inline ::std::uint_least32_t nt_alpc_impersonate_client_of_port(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcImpersonateClientOfPort(args...);
+	}
+	else
+	{
+		return NtAlpcImpersonateClientOfPort(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	NtAlpcImpersonateClientContainerOfPort(void *, port_message *, ::std::uint_least32_t) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -3329,6 +3534,46 @@ extern ::std::int_least32_t
 #endif
 #endif
 		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwAlpcImpersonateClientContainerOfPort(void *, port_message *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcImpersonateClientContainerOfPort@12")
+#else
+	__asm__("_ZwAlpcImpersonateClientContainerOfPort@12")
+#endif
+#else
+	__asm__("ZwAlpcImpersonateClientContainerOfPort")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 3)
+inline ::std::uint_least32_t nt_alpc_impersonate_client_container_of_port(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcImpersonateClientContainerOfPort(args...);
+	}
+	else
+	{
+		return NtAlpcImpersonateClientContainerOfPort(args...);
+	}
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -3368,6 +3613,46 @@ extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	ZwAlpcDisconnectPort(void *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcDisconnectPort@8")
+#else
+	__asm__("_ZwAlpcDisconnectPort@8")
+#endif
+#else
+	__asm__("ZwAlpcDisconnectPort")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 2)
+inline ::std::uint_least32_t nt_alpc_disconnect_port(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcDisconnectPort(args...);
+	}
+	else
+	{
+		return NtAlpcDisconnectPort(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	NtAlpcCreatePortSection(void *, ::std::uint_least32_t, void *, ::std::size_t, void **, ::std::size_t *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -3394,6 +3679,46 @@ extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	ZwAlpcCreatePortSection(void *, ::std::uint_least32_t, void *, ::std::size_t, void **, ::std::size_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcCreatePortSection@24")
+#else
+	__asm__("_ZwAlpcCreatePortSection@24")
+#endif
+#else
+	__asm__("ZwAlpcCreatePortSection")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 6)
+inline ::std::uint_least32_t nt_alpc_create_port_section(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcCreatePortSection(args...);
+	}
+	else
+	{
+		return NtAlpcCreatePortSection(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	NtAlpcCreateSectionView(void *, ::std::uint_least32_t, alpc_data_view_attr *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -3407,6 +3732,46 @@ extern ::std::int_least32_t
 #endif
 #endif
 		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwAlpcCreateSectionView(void *, ::std::uint_least32_t, alpc_data_view_attr *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcCreateSectionView@12")
+#else
+	__asm__("_ZwAlpcCreateSectionView@12")
+#endif
+#else
+	__asm__("ZwAlpcCreateSectionView")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 3)
+inline ::std::uint_least32_t nt_alpc_create_section_view(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcCreateSectionView(args...);
+	}
+	else
+	{
+		return NtAlpcCreateSectionView(args...);
+	}
+}
 
 #if defined(_MSC_VER) && !defined(__clang__)
 __declspec(dllimport)
@@ -3472,6 +3837,46 @@ extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	ZwAlpcQueryInformationMessage(void *, port_message *, alpc_message_information_class, void *, ::std::size_t, ::std::size_t *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcQueryInformationMessage@24")
+#else
+	__asm__("_ZwAlpcQueryInformationMessage@24")
+#endif
+#else
+	__asm__("ZwAlpcQueryInformationMessage")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 6)
+inline ::std::uint_least32_t nt_alpc_query_information_message(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcQueryInformationMessage(args...);
+	}
+	else
+	{
+		return NtAlpcQueryInformationMessage(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	NtAlpcCreateSecurityContext(void *, ::std::uint_least32_t, alpc_security_attr *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -3498,6 +3903,46 @@ extern ::std::int_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
+	ZwAlpcCreateSecurityContext(void *, ::std::uint_least32_t, alpc_security_attr *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcCreateSecurityContext@12")
+#else
+	__asm__("_ZwAlpcCreateSecurityContext@12")
+#endif
+#else
+	__asm__("ZwAlpcCreateSecurityContext")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 3)
+inline ::std::uint_least32_t nt_alpc_create_security_context(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcCreateSecurityContext(args...);
+	}
+	else
+	{
+		return NtAlpcCreateSecurityContext(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
 	NtAlpcOpenSenderThread(void **, void *, port_message *, ::std::uint_least32_t, ::std::uint_least32_t, object_attributes *) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
@@ -3511,4 +3956,110 @@ extern ::std::int_least32_t
 #endif
 #endif
 		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwAlpcOpenSenderThread(void **, void *, port_message *, ::std::uint_least32_t, ::std::uint_least32_t, object_attributes *) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwAlpcOpenSenderThread@24")
+#else
+	__asm__("_ZwAlpcOpenSenderThread@24")
+#endif
+#else
+	__asm__("ZwAlpcOpenSenderThread")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 6)
+inline ::std::uint_least32_t nt_alpc_open_sender_thread(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwAlpcOpenSenderThread(args...);
+	}
+	else
+	{
+		return NtAlpcOpenSenderThread(args...);
+	}
+}
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtTerminateProcess(void *, ::std::int_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtTerminateProcess@8")
+#else
+	__asm__("_NtTerminateProcess@8")
+#endif
+#else
+	__asm__("NtTerminateProcess")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwTerminateProcess(void *, ::std::int_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("ZwTerminateProcess@8")
+#else
+	__asm__("_ZwTerminateProcess@8")
+#endif
+#else
+	__asm__("ZwTerminateProcess")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 2)
+inline ::std::uint_least32_t nt_terminate_process(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwTerminateProcess(args...);
+	}
+	else
+	{
+		return NtTerminateProcess(args...);
+	}
+}
 } // namespace fast_io::win32::nt
