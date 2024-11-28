@@ -10,7 +10,7 @@ struct basic_timestamp
 	::std::int_least64_t seconds{};
 	::std::uint_least64_t subseconds{};
 	template <::std::int_least64_t new_off_to_epoch>
-	explicit constexpr operator basic_timestamp<new_off_to_epoch>() noexcept
+	inline explicit constexpr operator basic_timestamp<new_off_to_epoch>() noexcept
 		requires(off_to_epoch != new_off_to_epoch)
 	{
 		constexpr ::std::int_least64_t diff{off_to_epoch - new_off_to_epoch};
@@ -18,7 +18,7 @@ struct basic_timestamp
 	}
 
 	template <::std::floating_point flt_type>
-	explicit constexpr operator flt_type() const noexcept
+	inline explicit constexpr operator flt_type() const noexcept
 	{
 		// I know this is not accurate. but it is better than nothing
 		constexpr flt_type precision{static_cast<flt_type>(::fast_io::uint_least64_subseconds_per_second)};

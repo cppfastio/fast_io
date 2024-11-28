@@ -33,7 +33,7 @@ template <::std::random_access_iterator Iter>
 		{ iter._M_last } -> ::std::same_as<typename Iter::_Elt_pointer &>;
 		{ iter._M_node } -> ::std::same_as<typename Iter::_Map_pointer &>;
 	}
-constexpr auto multiblock_iterator_view_ref_define(Iter iter) noexcept
+inline constexpr auto multiblock_iterator_view_ref_define(Iter iter) noexcept
 	-> ::fast_io::multiblock_iterator_view<::fast_io::details::glibcxxdequebufsize<typename Iter::value_type>,
 										   ::std::iter_value_t<Iter>>
 {

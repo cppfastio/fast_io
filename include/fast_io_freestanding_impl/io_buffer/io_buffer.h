@@ -67,9 +67,9 @@ public:
 		: handle(::std::forward<Args>(args)...)
 	{
 	}
-	basic_io_buffer &operator=(basic_io_buffer const &) = delete;
-	basic_io_buffer(basic_io_buffer const &) = delete;
-	constexpr basic_io_buffer(basic_io_buffer &&__restrict other) noexcept
+	inline basic_io_buffer &operator=(basic_io_buffer const &) = delete;
+	inline basic_io_buffer(basic_io_buffer const &) = delete;
+	inline constexpr basic_io_buffer(basic_io_buffer &&__restrict other) noexcept
 		: input_buffer(::std::move(other.input_buffer)), output_buffer(::std::move(other.output_buffer)),
 		  handle(::std::move(other.handle))
 	{
@@ -105,7 +105,7 @@ public:
 			handle = handle_type();
 		}
 	}
-	constexpr basic_io_buffer &operator=(basic_io_buffer &&__restrict other) noexcept
+	inline constexpr basic_io_buffer &operator=(basic_io_buffer &&__restrict other) noexcept
 	{
 		::fast_io::details::destroy_basic_io_buffer(*this);
 		input_buffer = ::std::move(other.input_buffer);
@@ -116,7 +116,7 @@ public:
 		return *this;
 	}
 
-	constexpr ~basic_io_buffer()
+	inline constexpr ~basic_io_buffer()
 	{
 		::fast_io::details::destroy_basic_io_buffer(*this);
 	}

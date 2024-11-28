@@ -32,7 +32,7 @@ namespace fast_io
 
 struct for_overwrite_t
 {
-	explicit constexpr for_overwrite_t() noexcept = default;
+	inline explicit constexpr for_overwrite_t() noexcept = default;
 };
 
 inline constexpr for_overwrite_t for_overwrite{};

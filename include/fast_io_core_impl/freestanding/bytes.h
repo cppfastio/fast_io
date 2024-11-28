@@ -7,12 +7,12 @@ template <typename T>
 struct overlapped_copy_buffer_ptr
 {
 	T *ptr;
-	explicit constexpr overlapped_copy_buffer_ptr(::std::size_t n) noexcept
+	inline explicit constexpr overlapped_copy_buffer_ptr(::std::size_t n) noexcept
 		: ptr(new T[n])
 	{}
-	overlapped_copy_buffer_ptr(overlapped_copy_buffer_ptr const &) = delete;
-	overlapped_copy_buffer_ptr &operator=(overlapped_copy_buffer_ptr const &) = delete;
-	constexpr ~overlapped_copy_buffer_ptr()
+	inline overlapped_copy_buffer_ptr(overlapped_copy_buffer_ptr const &) = delete;
+	inline overlapped_copy_buffer_ptr &operator=(overlapped_copy_buffer_ptr const &) = delete;
+	inline constexpr ~overlapped_copy_buffer_ptr()
 	{
 		delete[] ptr;
 	}

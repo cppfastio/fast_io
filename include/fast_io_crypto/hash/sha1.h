@@ -737,6 +737,8 @@ public:
 	static inline constexpr ::std::endian hash_endian{::std::endian::big};
 	static inline constexpr ::std::size_t state_size{5};
 	state_value_type state[state_size];
+
+	inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif

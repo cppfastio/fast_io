@@ -45,12 +45,13 @@ struct io_lock_guard
 {
 	using mutex_type = mutx_type;
 	mutex_type &device;
-	explicit constexpr io_lock_guard(mutex_type &m) noexcept
+	inline explicit constexpr io_lock_guard(mutex_type &m) noexcept
 		: device(m)
 	{
 		device.lock();
 	}
 
+	inline
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
@@ -59,8 +60,8 @@ struct io_lock_guard
 		device.unlock();
 	}
 
-	io_lock_guard(io_lock_guard const &) = delete;
-	io_lock_guard &operator=(io_lock_guard const &) = delete;
+	inline io_lock_guard(io_lock_guard const &) = delete;
+	inline io_lock_guard &operator=(io_lock_guard const &) = delete;
 };
 
 template <typename stream_type>
@@ -68,10 +69,11 @@ struct io_flush_guard
 {
 	using handle_type = stream_type;
 	handle_type &device;
-	explicit constexpr io_flush_guard(handle_type &m) noexcept
+	inline explicit constexpr io_flush_guard(handle_type &m) noexcept
 		: device(m)
 	{}
 
+	inline
 #if __cpp_constexpr >= 201907L
 	constexpr
 #endif
@@ -93,8 +95,8 @@ struct io_flush_guard
 #endif
 #endif
 	}
-	io_flush_guard(io_flush_guard const &) = delete;
-	io_flush_guard &operator=(io_flush_guard const &) = delete;
+	inline io_flush_guard(io_flush_guard const &) = delete;
+	inline io_flush_guard &operator=(io_flush_guard const &) = delete;
 };
 
 namespace details
@@ -490,7 +492,7 @@ inline constexpr bool need_seperate_print{(sizeof(T) > sizeof(optimal_print_unsi
 
 template <::std::uint_least32_t base, bool ryu_mode = false,
 		  ::std::size_t mx_size = ::std::numeric_limits<::std::size_t>::max(), my_unsigned_integral U>
-constexpr ::std::size_t chars_len(U value) noexcept
+inline constexpr ::std::size_t chars_len(U value) noexcept
 {
 	if constexpr (base == 10 && sizeof(U) <= 16)
 	{

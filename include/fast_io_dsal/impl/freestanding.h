@@ -24,7 +24,7 @@ namespace fast_io::freestanding
 
 template <::std::random_access_iterator Iter1, ::std::random_access_iterator Iter2>
 	requires ::std::is_trivially_constructible_v<Iter2>
-constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noexcept
+inline constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noexcept
 {
 	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
 	{
@@ -94,7 +94,7 @@ constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noexcept
 }
 
 template <::std::random_access_iterator Iter1, ::std::random_access_iterator Iter2>
-constexpr Iter2 overlapped_copy_n(Iter1 first, ::std::size_t n, Iter2 dest) noexcept
+inline constexpr Iter2 overlapped_copy_n(Iter1 first, ::std::size_t n, Iter2 dest) noexcept
 {
 	return overlapped_copy(first, first + n, dest);
 }
@@ -103,7 +103,7 @@ constexpr Iter2 overlapped_copy_n(Iter1 first, ::std::size_t n, Iter2 dest) noex
 uninitialized_relocate requires two range are not overlapped.
 */
 template <::std::input_or_output_iterator Iter1, ::std::input_or_output_iterator Iter2>
-constexpr Iter2 uninitialized_relocate(Iter1 first, Iter1 last, Iter2 dest) noexcept
+inline constexpr Iter2 uninitialized_relocate(Iter1 first, Iter1 last, Iter2 dest) noexcept
 {
 	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
 	{
@@ -169,7 +169,7 @@ constexpr Iter2 uninitialized_relocate(Iter1 first, Iter1 last, Iter2 dest) noex
 }
 
 template <::std::input_or_output_iterator Iter1, ::std::input_or_output_iterator Iter2>
-constexpr Iter2 uninitialized_move(Iter1 first, Iter1 last, Iter2 dest) noexcept
+inline constexpr Iter2 uninitialized_move(Iter1 first, Iter1 last, Iter2 dest) noexcept
 {
 	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)
 	{
@@ -224,7 +224,7 @@ constexpr Iter2 uninitialized_move(Iter1 first, Iter1 last, Iter2 dest) noexcept
 }
 
 template <::std::bidirectional_iterator Iter1, ::std::bidirectional_iterator Iter2>
-constexpr Iter2 uninitialized_move_backward(Iter1 first, Iter1 last, Iter2 d_last) noexcept
+inline constexpr Iter2 uninitialized_move_backward(Iter1 first, Iter1 last, Iter2 d_last) noexcept
 {
 	// we do not allow move constructor to throw EH.
 	if constexpr (::std::contiguous_iterator<Iter1> && !::std::is_pointer_v<Iter1> && ::std::contiguous_iterator<Iter2> && !::std::is_pointer_v<Iter2>)

@@ -6,7 +6,7 @@ namespace fast_io
 template <::std::integral char_type, typename T>
 struct io_strlike_type_t
 {
-	explicit constexpr io_strlike_type_t() noexcept = default;
+	inline explicit constexpr io_strlike_type_t() noexcept = default;
 };
 
 template <::std::integral char_type, typename T>

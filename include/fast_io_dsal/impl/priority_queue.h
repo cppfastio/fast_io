@@ -17,26 +17,26 @@ public:
 	using reference = typename container_type::reference;
 	using const_reference = typename container_type::const_reference;
 	container_type container;
-	constexpr priority_queue() noexcept(::std::is_nothrow_default_constructible_v<container_type>) = default;
-	constexpr container_type &get_container() noexcept
+	inline constexpr priority_queue() noexcept(::std::is_nothrow_default_constructible_v<container_type>) = default;
+	inline constexpr container_type &get_container() noexcept
 	{
 		return container;
 	}
-	constexpr container_type const &get_container() const noexcept
+	inline constexpr container_type const &get_container() const noexcept
 	{
 		return container;
 	}
 	template <::std::ranges::range R>
-	explicit constexpr priority_queue(::fast_io::freestanding::from_range_t, R &&rg)
+	inline explicit constexpr priority_queue(::fast_io::freestanding::from_range_t, R &&rg)
 		: container(::fast_io::freestanding::from_range, ::std::forward<R>(rg))
 	{
 		::std::ranges::make_heap(this->container, value_compare{});
 	}
-	constexpr void swap(priority_queue &other) noexcept
+	inline constexpr void swap(priority_queue &other) noexcept
 	{
 		container.swap(other.container);
 	}
-	constexpr bool empty() const noexcept
+	inline constexpr bool empty() const noexcept
 	{
 		if constexpr (requires() {
 						  { container.is_empty() } -> ::std::convertible_to<bool>;
@@ -50,50 +50,50 @@ public:
 		}
 	}
 
-	constexpr bool is_empty() const noexcept
+	inline constexpr bool is_empty() const noexcept
 	{
 		return container.is_empty();
 	}
 
-	constexpr size_type size() const noexcept
+	inline constexpr size_type size() const noexcept
 	{
 		return container.size();
 	}
 
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
 		container.clear();
 	}
 
-	constexpr void clear_destroy() noexcept
+	inline constexpr void clear_destroy() noexcept
 	{
 		container.clear_destroy();
 	}
 
-	constexpr void reserve(size_type newcap) noexcept
+	inline constexpr void reserve(size_type newcap) noexcept
 	{
 		container.reserve(newcap);
 	}
 
-	constexpr void push(value_type const &value)
+	inline constexpr void push(value_type const &value)
 	{
 		container.push_back(value);
 		::std::ranges::push_heap(container, value_compare{});
 	}
 
-	constexpr void push(value_type &&value)
+	inline constexpr void push(value_type &&value)
 	{
 		container.push_back(::std::move(value));
 		::std::ranges::push_heap(container, value_compare{});
 	}
 
-	constexpr void push_unchecked(value_type const &value)
+	inline constexpr void push_unchecked(value_type const &value)
 	{
 		container.push_back(value);
 		::std::ranges::push_heap(container, value_compare{});
 	}
 
-	constexpr void push_unchecked(value_type &&value)
+	inline constexpr void push_unchecked(value_type &&value)
 	{
 		container.push_back(::std::move(value));
 		::std::ranges::push_heap(container, value_compare{});
@@ -101,7 +101,7 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr void emplace(Args &&...args) noexcept
+	inline constexpr void emplace(Args &&...args) noexcept
 	{
 		container.emplace_back(::std::forward<Args>(args)...);
 		::std::ranges::push_heap(container, value_compare{});
@@ -109,42 +109,42 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr void emplace_unchecked(Args &&...args) noexcept
+	inline constexpr void emplace_unchecked(Args &&...args) noexcept
 	{
 		container.emplace_back_unchecked(::std::forward<Args>(args)...);
 		::std::ranges::push_heap(container, value_compare{});
 	}
 
 	template <::std::ranges::range R>
-	constexpr void push_range(R &&rg)
+	inline constexpr void push_range(R &&rg)
 	{
 		container.append_range(::std::forward<R>(rg));
 		::std::ranges::push_heap(container, value_compare{});
 	}
 
-	constexpr const_reference top() const noexcept
+	inline constexpr const_reference top() const noexcept
 	{
 		return container.front();
 	}
 
-	constexpr const_reference top_unchecked() const noexcept
+	inline constexpr const_reference top_unchecked() const noexcept
 	{
 		return container.front_unchecked();
 	}
 
-	constexpr void pop() noexcept
+	inline constexpr void pop() noexcept
 	{
 		::std::ranges::pop_heap(container, value_compare{});
 		container.pop_back();
 	}
 
-	constexpr void pop_unchecked() noexcept
+	inline constexpr void pop_unchecked() noexcept
 	{
 		::std::ranges::pop_heap(container, value_compare{});
 		container.pop_back_unchecked();
 	}
 
-	constexpr value_type pop_element() noexcept
+	inline constexpr value_type pop_element() noexcept
 		requires(::std::move_constructible<value_type>)
 	{
 		::std::ranges::pop_heap(container, value_compare{});
@@ -153,7 +153,7 @@ public:
 		return back;
 	}
 
-	constexpr value_type pop_element_unchecked() noexcept
+	inline constexpr value_type pop_element_unchecked() noexcept
 		requires(::std::move_constructible<value_type>)
 	{
 		::std::ranges::pop_heap(container, value_compare{});
@@ -164,7 +164,7 @@ public:
 };
 
 template <typename Cmp, typename Container>
-constexpr void swap(::fast_io::containers::priority_queue<Cmp, Container> &a, ::fast_io::containers::priority_queue<Cmp, Container> &b) noexcept
+inline constexpr void swap(::fast_io::containers::priority_queue<Cmp, Container> &a, ::fast_io::containers::priority_queue<Cmp, Container> &b) noexcept
 {
 	a.swap(b);
 }

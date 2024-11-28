@@ -110,7 +110,7 @@ namespace details
 {
 
 template <typename char_type>
-constexpr ::std::size_t compute_default_buffer_size() noexcept
+inline constexpr ::std::size_t compute_default_buffer_size() noexcept
 {
 	if constexpr (::std::same_as<char_type, void>)
 	{

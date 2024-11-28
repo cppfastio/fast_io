@@ -77,8 +77,8 @@ struct buffer_alloc_arr_ptr
 	using allocator_type = Allocator;
 	T *ptr{};
 	::std::size_t size{};
-	constexpr buffer_alloc_arr_ptr() noexcept = default;
-	explicit
+	inline constexpr buffer_alloc_arr_ptr() noexcept = default;
+	inline explicit
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && \
 	(__cpp_lib_is_constant_evaluated >= 201811L || __cpp_if_consteval >= 202106L)
 		constexpr
@@ -88,28 +88,29 @@ struct buffer_alloc_arr_ptr
 	{
 	}
 
-	buffer_alloc_arr_ptr(buffer_alloc_arr_ptr const &) = delete;
-	buffer_alloc_arr_ptr &operator=(buffer_alloc_arr_ptr const &) = delete;
-	constexpr T *allocate_new(::std::size_t n) noexcept
+	inline buffer_alloc_arr_ptr(buffer_alloc_arr_ptr const &) = delete;
+	inline buffer_alloc_arr_ptr &operator=(buffer_alloc_arr_ptr const &) = delete;
+	inline constexpr T *allocate_new(::std::size_t n) noexcept
 	{
 		return (ptr = allocate_iobuf_space<T, allocator_type>(size = n));
 	}
-	constexpr T *get() noexcept
+	inline constexpr T *get() noexcept
 	{
 		return ptr;
 	}
-	constexpr T const *get() const noexcept
+	inline constexpr T const *get() const noexcept
 	{
 		return ptr;
 	}
-	constexpr T &operator[](::std::size_t pos) noexcept
+	inline constexpr T &operator[](::std::size_t pos) noexcept
 	{
 		return ptr[pos];
 	}
-	constexpr T const &operator[](::std::size_t pos) const noexcept
+	inline constexpr T const &operator[](::std::size_t pos) const noexcept
 	{
 		return ptr[pos];
 	}
+	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && \
 	(__cpp_lib_is_constant_evaluated >= 201811L || __cpp_if_consteval >= 202106L)
 	constexpr

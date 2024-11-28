@@ -29,25 +29,25 @@ enum class perms : ::std::uint_least32_t
 	symlink_nofollow = 0x40000
 };
 
-constexpr perms operator&(perms x, perms y) noexcept
+inline constexpr perms operator&(perms x, perms y) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr perms operator|(perms x, perms y) noexcept
+inline constexpr perms operator|(perms x, perms y) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr perms operator^(perms x, perms y) noexcept
+inline constexpr perms operator^(perms x, perms y) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr perms operator~(perms x) noexcept
+inline constexpr perms operator~(perms x) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(~static_cast<utype>(x));

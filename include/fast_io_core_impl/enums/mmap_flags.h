@@ -15,25 +15,25 @@ enum class mmap_prot : ::std::uint_least32_t
 	prot_growsup = 0x02000000,   /* mprotect flag: extend change to end of growsup vma */
 };
 
-constexpr mmap_prot operator&(mmap_prot x, mmap_prot y) noexcept
+inline constexpr mmap_prot operator&(mmap_prot x, mmap_prot y) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_prot>::type;
 	return static_cast<mmap_prot>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr mmap_prot operator|(mmap_prot x, mmap_prot y) noexcept
+inline constexpr mmap_prot operator|(mmap_prot x, mmap_prot y) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_prot>::type;
 	return static_cast<mmap_prot>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr mmap_prot operator^(mmap_prot x, mmap_prot y) noexcept
+inline constexpr mmap_prot operator^(mmap_prot x, mmap_prot y) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_prot>::type;
 	return static_cast<mmap_prot>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr mmap_prot operator~(mmap_prot x) noexcept
+inline constexpr mmap_prot operator~(mmap_prot x) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_prot>::type;
 	return static_cast<mmap_prot>(~static_cast<utype>(x));
@@ -86,25 +86,25 @@ enum class mmap_flags : ::std::uint_least32_t
 	map_huge_1gb = 30u << 26,
 };
 
-constexpr mmap_flags operator&(mmap_flags x, mmap_flags y) noexcept
+inline constexpr mmap_flags operator&(mmap_flags x, mmap_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_flags>::type;
 	return static_cast<mmap_flags>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr mmap_flags operator|(mmap_flags x, mmap_flags y) noexcept
+inline constexpr mmap_flags operator|(mmap_flags x, mmap_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_flags>::type;
 	return static_cast<mmap_flags>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr mmap_flags operator^(mmap_flags x, mmap_flags y) noexcept
+inline constexpr mmap_flags operator^(mmap_flags x, mmap_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_flags>::type;
 	return static_cast<mmap_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr mmap_flags operator~(mmap_flags x) noexcept
+inline constexpr mmap_flags operator~(mmap_flags x) noexcept
 {
 	using utype = typename ::std::underlying_type<mmap_flags>::type;
 	return static_cast<mmap_flags>(~static_cast<utype>(x));

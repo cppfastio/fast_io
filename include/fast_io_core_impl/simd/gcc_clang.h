@@ -37,11 +37,11 @@ struct simd_vector
 	using value_type = T;
 	using vec_type [[__gnu__::__vector_size__(N * sizeof(T))]] = T;
 	vec_type value;
-	constexpr T const *data() const noexcept
+	inline constexpr T const *data() const noexcept
 	{
 		return __builtin_addressof(value[0]);
 	}
-	constexpr T *data() noexcept
+	inline constexpr T *data() noexcept
 	{
 		return __builtin_addressof(value[0]);
 	}
@@ -219,7 +219,7 @@ struct simd_vector
 	}
 	template <typename T1, ::std::size_t N1>
 		requires(sizeof(T1) * N1 == sizeof(T) * N && !::std::same_as<T1, value_type>)
-	explicit
+	inline explicit
 #if __has_builtin(__builtin_bit_cast)
 		constexpr
 #endif
@@ -233,7 +233,7 @@ struct simd_vector
 		return v;
 #endif
 	}
-	constexpr operator vec_type const &() const noexcept
+	inline constexpr operator vec_type const &() const noexcept
 	{
 		return value;
 	}

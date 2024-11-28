@@ -11,17 +11,17 @@ struct basic_line_scanner_buffer
 		char_type *begin_ptr{};
 		char_type *curr_ptr{};
 		char_type *end_ptr{};
-		constexpr buffer_type() noexcept
+		inline constexpr buffer_type() noexcept
 			: begin_ptr(nullptr), curr_ptr(nullptr), end_ptr(nullptr)
 		{}
-		buffer_type(buffer_type const &) = delete;
-		buffer_type &operator=(buffer_type const &) = delete;
-		constexpr buffer_type(buffer_type &&__restrict other) noexcept
+		inline buffer_type(buffer_type const &) = delete;
+		inline buffer_type &operator=(buffer_type const &) = delete;
+		inline constexpr buffer_type(buffer_type &&__restrict other) noexcept
 			: begin_ptr(other.begin_ptr), curr_ptr(other.curr_ptr), end_ptr(other.end_ptr)
 		{
 			other.end_ptr = other.curr_ptr = other.begin_ptr = nullptr;
 		}
-		constexpr buffer_type &operator=(buffer_type &&__restrict other) noexcept
+		inline constexpr buffer_type &operator=(buffer_type &&__restrict other) noexcept
 		{
 			::fast_io::details::deallocate_iobuf_space<false, char_type>(
 				this->begin_ptr, static_cast<::std::size_t>(this->end_ptr - this->begin_ptr));
@@ -30,7 +30,7 @@ struct basic_line_scanner_buffer
 			this->end_ptr = other.end_ptr;
 			other.end_ptr = other.curr_ptr = other.begin_ptr = nullptr;
 		}
-		constexpr ~buffer_type()
+		inline constexpr ~buffer_type()
 		{
 			::fast_io::details::deallocate_iobuf_space<false, char_type>(
 				this->begin_ptr, static_cast<::std::size_t>(this->end_ptr - this->begin_ptr));
@@ -40,11 +40,11 @@ struct basic_line_scanner_buffer
 	char_type const *view_begin_ptr{};
 	char_type const *view_end_ptr{};
 	bool inbuffer{};
-	constexpr char_type const *begin() const noexcept
+	inline constexpr char_type const *begin() const noexcept
 	{
 		return view_begin_ptr;
 	}
-	constexpr char_type const *end() const noexcept
+	inline constexpr char_type const *end() const noexcept
 	{
 		return view_end_ptr;
 	}
@@ -55,11 +55,11 @@ struct basic_line_scanner_contiguous_view
 {
 	char_type const *view_begin_ptr{};
 	char_type const *view_end_ptr{};
-	constexpr char_type const *begin() const noexcept
+	inline constexpr char_type const *begin() const noexcept
 	{
 		return view_begin_ptr;
 	}
-	constexpr char_type const *end() const noexcept
+	inline constexpr char_type const *end() const noexcept
 	{
 		return view_end_ptr;
 	}

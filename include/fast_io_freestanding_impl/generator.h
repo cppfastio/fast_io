@@ -22,25 +22,25 @@ public:
 #ifdef __cpp_exceptions
 	::std::exception_ptr ex_ptr;
 #endif
-	generator<T> get_return_object() noexcept;
+	inline generator<T> get_return_object() noexcept;
 
-	constexpr ::std::suspend_always initial_suspend() const noexcept
+	inline constexpr ::std::suspend_always initial_suspend() const noexcept
 	{
 		return {};
 	}
-	constexpr ::std::suspend_always final_suspend() const noexcept
+	inline constexpr ::std::suspend_always final_suspend() const noexcept
 	{
 		return {};
 	}
 	//	template<typename U>
 	//	requires ::std::same_as<::std::remove_reference_t<U>,::std::remove_reference_t<T>>
-	constexpr ::std::suspend_always yield_value(T value) noexcept
+	inline constexpr ::std::suspend_always yield_value(T value) noexcept
 	{
 		ptr = value;
 		//		ptr = __builtin_addressof(value);
 		return {};
 	}
-	constexpr void unhandled_exception() noexcept
+	inline constexpr void unhandled_exception() noexcept
 	{
 #ifdef __cpp_exceptions
 		ex_ptr = ::std::current_exception();
@@ -48,12 +48,12 @@ public:
 		::std::terminate();
 #endif
 	}
-	constexpr void return_void() noexcept
+	inline constexpr void return_void() noexcept
 	{}
 	template <typename U>
-	::std::suspend_never await_transform(U &&value) = delete;
+	inline ::std::suspend_never await_transform(U &&value) = delete;
 
-	void rethrow_if_exception()
+	inline void rethrow_if_exception()
 	{
 #ifdef __cpp_exceptions
 		if (ex_ptr)
@@ -143,12 +143,12 @@ class [[nodiscard]] generator
 public:
 	using promise_type = details::generator_promise<T>;
 	::std::coroutine_handle<promise_type> handle;
-	constexpr generator(::std::coroutine_handle<promise_type> v)
+	inline constexpr generator(::std::coroutine_handle<promise_type> v)
 		: handle(v)
 	{}
-	constexpr generator(generator const &) noexcept = delete;
-	constexpr generator &operator=(generator const &) noexcept = delete;
-	constexpr ~generator()
+	inline constexpr generator(generator const &) noexcept = delete;
+	inline constexpr generator &operator=(generator const &) noexcept = delete;
+	inline constexpr ~generator()
 	{
 		handle.destroy();
 	}

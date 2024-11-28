@@ -177,6 +177,7 @@ public:
 	static inline constexpr ::std::size_t state_size{8};
 	state_value_type state[state_size]{0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
 									   0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
+	inline
 #if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif

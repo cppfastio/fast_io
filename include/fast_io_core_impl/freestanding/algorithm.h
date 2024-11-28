@@ -104,7 +104,7 @@ inline constexpr void fill_n(fwd_iter first, ::std::size_t n, T value)
 }
 
 template <::std::bidirectional_iterator BidirIt1, ::std::bidirectional_iterator BidirIt2>
-constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
+inline constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 {
 	for (; first != last; *(--d_last) = *(--last))
 		;
@@ -112,7 +112,7 @@ constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 }
 
 template <::std::bidirectional_iterator BidirIt1, ::std::bidirectional_iterator BidirIt2>
-constexpr BidirIt2 move_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
+inline constexpr BidirIt2 move_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 {
 	for (; first != last; *(--d_last) = ::std::move(*(--last)))
 		;
@@ -563,7 +563,7 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 	{
 		NoThrowForwardIt d_first;
 		NoThrowForwardIt current;
-		constexpr ~destroyer()
+		inline constexpr ~destroyer()
 		{
 			for (; d_first != current; ++d_first)
 			{
@@ -619,7 +619,7 @@ uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 	{
 		NoThrowForwardIt d_first;
 		NoThrowForwardIt current;
-		constexpr ~destroyer() noexcept
+		inline constexpr ~destroyer() noexcept
 		{
 			for (; d_first != current; ++d_first)
 			{

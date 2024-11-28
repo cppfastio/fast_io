@@ -589,7 +589,7 @@ struct code_cvt_t
 template <encoding_scheme src_scheme = encoding_scheme::execution_charset,
 		  encoding_scheme dst_scheme = encoding_scheme::execution_charset, typename T>
 	requires(::fast_io::details::codecvt::print_alias_test_codecvt_impl<T>())
-constexpr auto code_cvt(T const &t) noexcept
+inline constexpr auto code_cvt(T const &t) noexcept
 {
 	using value_type = typename decltype(print_alias_define(io_alias, t))::value_type;
 	return code_cvt_t<src_scheme, dst_scheme, value_type>{print_alias_define(io_alias, t)};
@@ -597,28 +597,28 @@ constexpr auto code_cvt(T const &t) noexcept
 
 template <encoding_scheme src_scheme = encoding_scheme::execution_charset,
 		  encoding_scheme dst_scheme = encoding_scheme::execution_charset, ::std::integral char_type>
-constexpr auto code_cvt(basic_io_scatter_t<char_type> t) noexcept
+inline constexpr auto code_cvt(basic_io_scatter_t<char_type> t) noexcept
 {
 	return code_cvt_t<src_scheme, dst_scheme, char_type>{t};
 }
 
 template <encoding_scheme src_scheme = encoding_scheme::execution_charset,
 		  encoding_scheme dst_scheme = encoding_scheme::execution_charset, ::std::integral char_type, ::std::size_t N>
-constexpr auto code_cvt(small_scatter_t<char_type, N> t) noexcept
+inline constexpr auto code_cvt(small_scatter_t<char_type, N> t) noexcept
 {
 	return code_cvt_t<src_scheme, dst_scheme, char_type>{{t.base, t.len}};
 }
 
 template <encoding_scheme src_scheme = encoding_scheme::execution_charset,
 		  encoding_scheme dst_scheme = encoding_scheme::execution_charset, ::std::integral char_type>
-constexpr auto code_cvt_os_c_str(char_type const *cstr) noexcept
+inline constexpr auto code_cvt_os_c_str(char_type const *cstr) noexcept
 {
 	return ::fast_io::manipulators::code_cvt<src_scheme, dst_scheme>(::fast_io::manipulators::os_c_str(cstr));
 }
 
 template <encoding_scheme src_scheme = encoding_scheme::execution_charset,
 		  encoding_scheme dst_scheme = encoding_scheme::execution_charset, ::std::integral char_type>
-constexpr auto code_cvt_os_c_str(char_type const *cstr, ::std::size_t n) noexcept
+inline constexpr auto code_cvt_os_c_str(char_type const *cstr, ::std::size_t n) noexcept
 {
 	return ::fast_io::manipulators::code_cvt<src_scheme, dst_scheme>(::fast_io::mnp::os_c_str(cstr, n));
 }

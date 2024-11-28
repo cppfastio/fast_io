@@ -60,7 +60,7 @@ struct aes
 	inline static constexpr ::std::size_t key_size = keysize;
 	inline static constexpr ::std::size_t key_schedule_size = keysize == 16 ? 10 : (keysize == 24 ? 12 : 15);
 	__m128i key_schedule[key_schedule_size];
-	explicit aes(::std::span<::std::byte const, key_size> key_span) noexcept
+	inline explicit aes(::std::span<::std::byte const, key_size> key_span) noexcept
 	{
 		using namespace details::aes;
 		::std::byte const *key{key_span.data()};
@@ -136,7 +136,7 @@ struct aes
 			key_schedule[14] = aes_256_key_exp(key_schedule[12], key_schedule[13], 0x40);
 		}
 	}
-	void operator()(::std::byte const *from, ::std::size_t blocks, ::std::byte *to) noexcept
+	inline void operator()(::std::byte const *from, ::std::size_t blocks, ::std::byte *to) noexcept
 	{}
 };
 
