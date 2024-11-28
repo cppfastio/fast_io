@@ -21,6 +21,7 @@ struct chacha
 	static inline constexpr ::std::endian cipher_endian{::std::endian::little};
 	static inline constexpr ::std::size_t state_size{16};
 	state_value_type state[state_size];
+	inline
 #if __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif

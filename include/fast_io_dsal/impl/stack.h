@@ -17,23 +17,23 @@ public:
 	using const_reference = typename container_type::const_reference;
 	container_type container;
 
-	constexpr stack() noexcept = default;
+	inline constexpr stack() noexcept = default;
 
 	template <::std::ranges::range R>
-	explicit constexpr stack(::fast_io::freestanding::from_range_t, R &&rg)
+	inline explicit constexpr stack(::fast_io::freestanding::from_range_t, R &&rg)
 		: container(::fast_io::freestanding::from_range, ::std::forward<R>(rg))
 	{}
-	constexpr container_type const &get_container() const noexcept
+	inline constexpr container_type const &get_container() const noexcept
 	{
 		return container;
 	}
 
-	constexpr container_type &get_container() noexcept
+	inline constexpr container_type &get_container() noexcept
 	{
 		return container;
 	}
 
-	constexpr reference top() noexcept
+	inline constexpr reference top() noexcept
 	{
 		if constexpr (requires() {
 						  { container.back() } -> ::std::same_as<reference>;
@@ -46,7 +46,7 @@ public:
 			return container.front();
 		}
 	}
-	constexpr const_reference top() const noexcept
+	inline constexpr const_reference top() const noexcept
 	{
 		if constexpr (requires() {
 						  { container.back() } -> ::std::same_as<const_reference>;
@@ -60,7 +60,7 @@ public:
 		}
 	}
 
-	constexpr reference top_unchecked() noexcept
+	inline constexpr reference top_unchecked() noexcept
 	{
 		if constexpr (requires() {
 						  { container.back_unchecked() } -> ::std::same_as<reference>;
@@ -73,7 +73,7 @@ public:
 			return container.front_unchecked();
 		}
 	}
-	constexpr const_reference top_unchecked() const noexcept
+	inline constexpr const_reference top_unchecked() const noexcept
 	{
 		if constexpr (requires() {
 						  { container.back_unchecked() } -> ::std::same_as<const_reference>;
@@ -87,7 +87,7 @@ public:
 		}
 	}
 
-	constexpr bool empty() const noexcept
+	inline constexpr bool empty() const noexcept
 	{
 		if constexpr (requires() {
 						  { container.is_empty() } -> ::std::convertible_to<bool>;
@@ -101,19 +101,19 @@ public:
 		}
 	}
 
-	constexpr bool is_empty() const noexcept
+	inline constexpr bool is_empty() const noexcept
 	{
 		return container.is_empty();
 	}
 
-	constexpr size_type size() const noexcept
+	inline constexpr size_type size() const noexcept
 		requires(requires() {
 			container.size();
 		})
 	{
 		return container.size();
 	}
-	constexpr void push(value_type const &value)
+	inline constexpr void push(value_type const &value)
 	{
 		if constexpr (requires() {
 						  { container.push_back(value) };
@@ -128,7 +128,7 @@ public:
 		}
 	}
 
-	constexpr void push(value_type &&value)
+	inline constexpr void push(value_type &&value)
 	{
 		if constexpr (requires() {
 						  { container.push_back(::std::move(value)) };
@@ -143,12 +143,12 @@ public:
 		}
 	}
 
-	constexpr void reserve(size_type newcap) noexcept
+	inline constexpr void reserve(size_type newcap) noexcept
 	{
 		container.reserve(newcap);
 	}
 
-	constexpr void push_unchecked(value_type const &value)
+	inline constexpr void push_unchecked(value_type const &value)
 	{
 		if constexpr (requires() {
 						  { container.push_back(value) };
@@ -163,7 +163,7 @@ public:
 		}
 	}
 
-	constexpr void push_unchecked(value_type &&value)
+	inline constexpr void push_unchecked(value_type &&value)
 	{
 		if constexpr (requires() {
 						  { container.push_back_unchecked(::std::move(value)) };
@@ -180,7 +180,7 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference emplace(Args &&...args) noexcept
+	inline constexpr reference emplace(Args &&...args) noexcept
 	{
 		if constexpr (requires() {
 						  { container.emplace_back(::std::forward<Args>(args)...) };
@@ -197,7 +197,7 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference emplace_unchecked(Args &&...args) noexcept
+	inline constexpr reference emplace_unchecked(Args &&...args) noexcept
 	{
 		if constexpr (requires() {
 						  { container.emplace_back_unchecked(::std::forward<Args>(args)...) };
@@ -213,7 +213,7 @@ public:
 	}
 
 	template <::std::ranges::range R>
-	constexpr void push_range(R &&rg)
+	inline constexpr void push_range(R &&rg)
 	{
 		if constexpr (requires() {
 						  { container.append_range(::std::forward<R>(rg)) };
@@ -227,7 +227,7 @@ public:
 		}
 	}
 
-	constexpr void pop() noexcept
+	inline constexpr void pop() noexcept
 	{
 		if constexpr (requires() {
 						  { container.pop_back() };
@@ -241,7 +241,7 @@ public:
 		}
 	}
 
-	constexpr void pop_unchecked() noexcept
+	inline constexpr void pop_unchecked() noexcept
 	{
 		if constexpr (requires() {
 						  { container.pop_back_unchecked() };
@@ -255,7 +255,7 @@ public:
 		}
 	}
 
-	constexpr value_type pop_element() noexcept
+	inline constexpr value_type pop_element() noexcept
 		requires(::std::move_constructible<value_type>)
 	{
 		value_type top(::std::move(container.back()));
@@ -290,7 +290,7 @@ public:
 		return top;
 	}
 
-	constexpr value_type pop_element_unchecked() noexcept
+	inline constexpr value_type pop_element_unchecked() noexcept
 		requires(::std::move_constructible<value_type>)
 	{
 		value_type top(::std::move(container.back_unchecked()));
@@ -325,35 +325,35 @@ public:
 		return top;
 	}
 
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
 		container.clear();
 	}
-	constexpr void clear_destroy() noexcept
+	inline constexpr void clear_destroy() noexcept
 	{
 		container.clear_destroy();
 	}
 
-	constexpr void swap(::fast_io::containers::stack<Container> &b) noexcept
+	inline constexpr void swap(::fast_io::containers::stack<Container> &b) noexcept
 	{
 		container.swap(b.container);
 	}
 };
 
 template <typename Container>
-constexpr bool operator==(::fast_io::containers::stack<Container> const &a, ::fast_io::containers::stack<Container> const &b) noexcept
+inline constexpr bool operator==(::fast_io::containers::stack<Container> const &a, ::fast_io::containers::stack<Container> const &b) noexcept
 {
 	return a.container == b.container;
 }
 
 template <typename Container>
-constexpr auto operator<=>(::fast_io::containers::stack<Container> const &a, ::fast_io::containers::stack<Container> const &b) noexcept
+inline constexpr auto operator<=>(::fast_io::containers::stack<Container> const &a, ::fast_io::containers::stack<Container> const &b) noexcept
 {
 	return a.container <=> b.container;
 }
 
 template <typename Container>
-constexpr void swap(::fast_io::containers::stack<Container> &a, ::fast_io::containers::stack<Container> &b) noexcept
+inline constexpr void swap(::fast_io::containers::stack<Container> &a, ::fast_io::containers::stack<Container> &b) noexcept
 {
 	a.swap(b);
 }
