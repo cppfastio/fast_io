@@ -495,7 +495,7 @@ inline posix_wait_status wait(posix_process_observer &ppob)
 	return status;
 }
 
-inline void kill(posix_process_observer &ppob, posix_wait_status exit_code)
+inline void kill(posix_process_observer ppob, posix_wait_status exit_code)
 {
 #if defined(__linux__) && defined(__NR_kill)
 	system_call_throw_error(system_call<__NR_kill, int>(ppob.pid, exit_code.wait_loc));

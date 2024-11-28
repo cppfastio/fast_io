@@ -636,7 +636,7 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 }
 
 template <nt_family family>
-inline void kill(nt_family_process_observer<family> &ppob, nt_wait_status exit_code) 
+inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_code) 
 {
 	auto const status{::fast_io::win32::nt::nt_terminate_process<family == nt_family::zw>(
 		ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
