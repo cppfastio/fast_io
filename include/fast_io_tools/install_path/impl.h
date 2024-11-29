@@ -12,7 +12,7 @@
 #include "linux.h"
 #elif defined(_WIN32)
 #if defined(_WIN32_WINDOWS)
-#include "win9x.h"
+#include "win32_9xa.h"
 #else
 #include "nt.h"
 #endif
