@@ -71,7 +71,7 @@ public:
 	{
 		return hmodule;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return hmodule != nullptr;
 	}
@@ -148,30 +148,30 @@ class
 {
 public:
 	using native_handle_type = void *;
-	constexpr win32_family_dll_file() = default;
+	inline constexpr win32_family_dll_file() = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr win32_family_dll_file(native_hd handle) noexcept
+	inline explicit constexpr win32_family_dll_file(native_hd handle) noexcept
 		: win32_family_dll_io_observer<family>{handle}
 	{
 	}
-	explicit constexpr win32_family_dll_file(decltype(nullptr)) noexcept = delete;
+	inline explicit constexpr win32_family_dll_file(decltype(nullptr)) noexcept = delete;
 
-	constexpr win32_family_dll_file(win32_family_dll_io_observer<family>) noexcept = delete;
-	constexpr win32_family_dll_file &operator=(win32_family_dll_io_observer<family>) noexcept = delete;
+	inline constexpr win32_family_dll_file(win32_family_dll_io_observer<family>) noexcept = delete;
+	inline constexpr win32_family_dll_file &operator=(win32_family_dll_io_observer<family>) noexcept = delete;
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit win32_family_dll_file(T const &t, dll_mode mode)
+	inline explicit win32_family_dll_file(T const &t, dll_mode mode)
 		: win32_family_dll_io_observer<family>{::fast_io::details::create_win32_family_dll_impl<family>(t, mode)}
 	{
 	}
-	win32_family_dll_file(win32_family_dll_file const &) = delete;
-	win32_family_dll_file &operator=(win32_family_dll_file const &) = delete;
-	constexpr win32_family_dll_file(win32_family_dll_file &&__restrict other) noexcept
+	inline win32_family_dll_file(win32_family_dll_file const &) = delete;
+	inline win32_family_dll_file &operator=(win32_family_dll_file const &) = delete;
+	inline constexpr win32_family_dll_file(win32_family_dll_file &&__restrict other) noexcept
 		: win32_family_dll_io_observer<family>{other.hmodule}
 	{
 		other.hmodule = nullptr;
 	}
-	win32_family_dll_file &operator=(win32_family_dll_file &&__restrict other) noexcept
+	inline win32_family_dll_file &operator=(win32_family_dll_file &&__restrict other) noexcept
 	{
 		if (this->hmodule) [[likely]]
 		{
@@ -181,7 +181,7 @@ public:
 		other.hmodule = nullptr;
 		return *this;
 	}
-	void close()
+	inline void close()
 	{
 		if (this->hmodule) [[likely]]
 		{
@@ -193,7 +193,7 @@ public:
 			}
 		}
 	}
-	~win32_family_dll_file()
+	inline ~win32_family_dll_file()
 	{
 		if (this->hmodule) [[likely]]
 		{

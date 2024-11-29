@@ -25,15 +25,15 @@ class com_error : public ::std::exception
 {
 public:
 	HRESULT hresult{};
-	explicit com_error(HRESULT hr)
+	inline explicit com_error(HRESULT hr)
 		: hresult(hr)
 	{}
-	constexpr auto code() const noexcept
+	inline constexpr auto code() const noexcept
 	{
 		return hresult;
 	}
 #if 0
-	void report(error_reporter& report) const override
+	inline void report(error_reporter& report) const override
 	{
 		details::report_com_error(report,hresult);
 	}

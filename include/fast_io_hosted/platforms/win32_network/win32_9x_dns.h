@@ -83,7 +83,7 @@ public:
 	{
 		return res;
 	}
-	explicit constexpr operator bool() noexcept
+	inline explicit constexpr operator bool() noexcept
 	{
 		return res;
 	}
@@ -197,25 +197,25 @@ class win32_9x_dns_file : public win32_9x_dns_io_observer
 {
 public:
 	using native_handle_type = typename win32_9x_dns_io_observer::native_handle_type;
-	constexpr win32_9x_dns_file() noexcept = default;
+	inline constexpr win32_9x_dns_file() noexcept = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr win32_9x_dns_file(native_hd res1) noexcept
+	inline explicit constexpr win32_9x_dns_file(native_hd res1) noexcept
 		: win32_9x_dns_io_observer{res1}
 	{
 	}
-	explicit constexpr win32_9x_dns_file(decltype(nullptr)) noexcept = delete;
+	inline explicit constexpr win32_9x_dns_file(decltype(nullptr)) noexcept = delete;
 
-	constexpr win32_9x_dns_file(win32_9x_dns_io_observer) noexcept = delete;
-	constexpr win32_9x_dns_file &operator=(win32_9x_dns_io_observer) noexcept = delete;
+	inline constexpr win32_9x_dns_file(win32_9x_dns_io_observer) noexcept = delete;
+	inline constexpr win32_9x_dns_file &operator=(win32_9x_dns_io_observer) noexcept = delete;
 
 	template <typename T>
 		requires ::fast_io::constructible_to_os_c_str<T>
-	explicit win32_9x_dns_file(T const &t)
+	inline explicit win32_9x_dns_file(T const &t)
 		: win32_9x_dns_io_observer{::fast_io::details::win32_9x_dns_open_impl(t)}
 	{
 	}
-	void close() noexcept
+	inline void close() noexcept
 	{
 		this->res = nullptr;
 	}

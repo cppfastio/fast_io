@@ -7,16 +7,16 @@ struct posix_timezone_name
 {
 	char8_t *ptr{};
 	::std::size_t n{};
-	constexpr posix_timezone_name() noexcept = default;
-	constexpr posix_timezone_name(posix_timezone_name const &) = delete;
-	posix_timezone_name &operator=(posix_timezone_name const &) = delete;
-	constexpr posix_timezone_name(posix_timezone_name &&other) noexcept
+	inline constexpr posix_timezone_name() noexcept = default;
+	inline constexpr posix_timezone_name(posix_timezone_name const &) = delete;
+	inline posix_timezone_name &operator=(posix_timezone_name const &) = delete;
+	inline constexpr posix_timezone_name(posix_timezone_name &&other) noexcept
 		: ptr(other.ptr), n(other.n)
 	{
 		other.ptr = nullptr;
 		other.n = 0;
 	}
-	posix_timezone_name &operator=(posix_timezone_name &&other) noexcept
+	inline posix_timezone_name &operator=(posix_timezone_name &&other) noexcept
 	{
 		::fast_io::typed_generic_allocator_adapter<::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator>,
 												   char8_t>::deallocate(this->ptr);
@@ -26,7 +26,7 @@ struct posix_timezone_name
 		other.n = 0;
 		return *this;
 	}
-	constexpr ~posix_timezone_name()
+	inline constexpr ~posix_timezone_name()
 	{
 		::fast_io::typed_generic_allocator_adapter<::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator>,
 												   char8_t>::deallocate(ptr);

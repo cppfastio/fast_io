@@ -31,23 +31,23 @@ public:
 	using native_handle_type = dos_DIR;
 	native_handle_type dirp{};
 
-	constexpr native_handle_type native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return dirp;
 	}
 
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return dirp.dirp;
 	}
 
 	template <::std::integral char_type>
-	operator basic_posix_io_observer<char_type>() const noexcept
+	inline operator basic_posix_io_observer<char_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
 
-	constexpr native_handle_type release() noexcept
+	inline constexpr native_handle_type release() noexcept
 	{
 		native_handle_type temp{dirp};
 		dirp = {};
@@ -96,19 +96,19 @@ class dos_directory_file : public dos_directory_io_observer
 {
 public:
 	using native_handle_type = dos_DIR;
-	constexpr dos_directory_file() noexcept = default;
+	inline constexpr dos_directory_file() noexcept = default;
 
-	explicit constexpr dos_directory_file(dos_directory_io_observer) noexcept = delete;
-	constexpr dos_directory_file &operator=(dos_directory_io_observer) noexcept = delete;
+	inline explicit constexpr dos_directory_file(dos_directory_io_observer) noexcept = delete;
+	inline constexpr dos_directory_file &operator=(dos_directory_io_observer) noexcept = delete;
 
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	constexpr dos_directory_file(native_hd dirp1)
+	inline constexpr dos_directory_file(native_hd dirp1)
 		: dos_directory_io_observer{dirp1}
 	{
 	}
 
-	dos_directory_file(posix_file &&pioh)
+	inline dos_directory_file(posix_file &&pioh)
 		: dos_directory_io_observer{posix::my_dos_fdopendir(pioh.fd), pioh.fd}
 	{
 		if (this->dirp.dirp == nullptr)
@@ -118,7 +118,7 @@ public:
 		pioh.release();
 	}
 
-	dos_directory_file &operator=(dos_directory_file const &other)
+	inline dos_directory_file &operator=(dos_directory_file const &other)
 	{
 		auto newdir{details::sys_dup_dir(other.dirp)};
 		if (this->dirp.dirp) [[likely]]
@@ -129,11 +129,11 @@ public:
 		return *this;
 	}
 
-	constexpr dos_directory_file(dos_directory_file &&__restrict other) noexcept
+	inline constexpr dos_directory_file(dos_directory_file &&__restrict other) noexcept
 		: dos_directory_io_observer{other.release()}
 	{}
 
-	dos_directory_file &operator=(dos_directory_file &&__restrict other) noexcept
+	inline dos_directory_file &operator=(dos_directory_file &&__restrict other) noexcept
 	{
 		if (this->dirp.dirp) [[likely]]
 		{
@@ -152,7 +152,7 @@ public:
 		this->dirp = dirp1;
 	}
 
-	void close()
+	inline void close()
 	{
 		if (*this) [[likely]]
 		{
@@ -166,7 +166,7 @@ public:
 		}
 	}
 
-	~dos_directory_file()
+	inline ~dos_directory_file()
 	{
 		if (this->dirp.dirp) [[likely]]
 		{
@@ -201,7 +201,7 @@ struct dos_directory_entry
 	::std::size_t d_namlen{};
 
 	template <::std::integral ch_type>
-	explicit operator basic_posix_io_observer<ch_type>() const noexcept
+	inline explicit operator basic_posix_io_observer<ch_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
@@ -362,16 +362,16 @@ struct basic_dos_recursive_directory_iterator
 	struct dirent *entry{};
 	::std::size_t d_namlen{};
 	stack_type stack;
-	constexpr basic_dos_recursive_directory_iterator() = default;
+	inline constexpr basic_dos_recursive_directory_iterator() = default;
 
-	explicit constexpr basic_dos_recursive_directory_iterator(dos_DIR dp)
+	inline explicit constexpr basic_dos_recursive_directory_iterator(dos_DIR dp)
 		: dirp(dp)
 	{}
 
-	basic_dos_recursive_directory_iterator(basic_dos_recursive_directory_iterator const &) = delete;
-	basic_dos_recursive_directory_iterator &operator=(basic_dos_recursive_directory_iterator const &) = delete;
-	basic_dos_recursive_directory_iterator(basic_dos_recursive_directory_iterator &&) noexcept = default;
-	basic_dos_recursive_directory_iterator &operator=(basic_dos_recursive_directory_iterator &&) noexcept = default;
+	inline basic_dos_recursive_directory_iterator(basic_dos_recursive_directory_iterator const &) = delete;
+	inline basic_dos_recursive_directory_iterator &operator=(basic_dos_recursive_directory_iterator const &) = delete;
+	inline basic_dos_recursive_directory_iterator(basic_dos_recursive_directory_iterator &&) noexcept = default;
+	inline basic_dos_recursive_directory_iterator &operator=(basic_dos_recursive_directory_iterator &&) noexcept = default;
 };
 
 template <typename StackType>

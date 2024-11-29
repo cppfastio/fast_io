@@ -3,7 +3,7 @@ namespace fast_io
 {
 struct default_args_t
 {
-	explicit constexpr default_args_t() noexcept = default;
+	inline explicit constexpr default_args_t() noexcept = default;
 };
 inline constexpr default_args_t default_args{};
 

@@ -12,7 +12,7 @@ class basic_linux_getrandom
 public:
 	using input_char_type = char_type;
 	unsigned flags{};
-	constexpr void close() noexcept
+	inline constexpr void close() noexcept
 	{}
 };
 

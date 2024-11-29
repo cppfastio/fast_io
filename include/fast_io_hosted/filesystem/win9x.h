@@ -12,7 +12,7 @@ struct win9x_dirent
 	[[maybe_unused]] ::std::uint_least64_t d_ino{};
 	::fast_io::u8string filename{};
 
-	~win9x_dirent()
+	inline ~win9x_dirent()
 	{
 		if (file_struct) [[likely]]
 		{
@@ -82,7 +82,7 @@ struct win9x_directory_entry
 	using native_char_type = char8_t;
 	using char_type = char8_t;
 	win9x_dirent *entry{};
-	explicit constexpr operator win9x_dir_io_observer() const noexcept
+	inline explicit constexpr operator win9x_dir_io_observer() const noexcept
 	{
 		return {entry->d_handle};
 	}
@@ -181,25 +181,25 @@ inline constexpr bool operator!=(win9x_family_directory_iterator b, ::std::defau
 struct basic_win9x_directory_generator
 {
 	win9x_dirent entry{};
-	constexpr basic_win9x_directory_generator() noexcept = default;
-	explicit constexpr basic_win9x_directory_generator(::fast_io::win9x_dir_handle directory_handle) noexcept
+	inline constexpr basic_win9x_directory_generator() noexcept = default;
+	inline explicit constexpr basic_win9x_directory_generator(::fast_io::win9x_dir_handle directory_handle) noexcept
 	{
 		entry.d_handle = ::std::move(directory_handle);
 	}
 
-	basic_win9x_directory_generator(basic_win9x_directory_generator const &) = default;
-	basic_win9x_directory_generator &operator=(basic_win9x_directory_generator const &) = default;
-	basic_win9x_directory_generator(basic_win9x_directory_generator &&__restrict other) noexcept
+	inline basic_win9x_directory_generator(basic_win9x_directory_generator const &) = default;
+	inline basic_win9x_directory_generator &operator=(basic_win9x_directory_generator const &) = default;
+	inline basic_win9x_directory_generator(basic_win9x_directory_generator &&__restrict other) noexcept
 		: entry(::std::move(other.entry))
 	{
 	}
-	basic_win9x_directory_generator &
+	inline basic_win9x_directory_generator &
 	operator=(basic_win9x_directory_generator &&__restrict other) noexcept
 	{
 		entry = ::std::move(other.entry);
 		return *this;
 	}
-	~basic_win9x_directory_generator()
+	inline ~basic_win9x_directory_generator()
 	{
 	}
 };
@@ -229,16 +229,16 @@ struct basic_win9x_recursive_directory_iterator
 	win9x_dirent *entry{};
 	stack_type stack;
 	bool finish{};
-	constexpr basic_win9x_recursive_directory_iterator() = default;
+	inline constexpr basic_win9x_recursive_directory_iterator() = default;
 
-	explicit constexpr basic_win9x_recursive_directory_iterator(::fast_io::win9x_dir_handle rh, win9x_dirent *dp)
+	inline explicit constexpr basic_win9x_recursive_directory_iterator(::fast_io::win9x_dir_handle rh, win9x_dirent *dp)
 		: root_handle(::std::move(rh)), entry(dp)
 	{}
 
-	basic_win9x_recursive_directory_iterator(basic_win9x_recursive_directory_iterator const &) = delete;
-	basic_win9x_recursive_directory_iterator &operator=(basic_win9x_recursive_directory_iterator const &) = delete;
-	basic_win9x_recursive_directory_iterator(basic_win9x_recursive_directory_iterator &&) noexcept = default;
-	basic_win9x_recursive_directory_iterator &operator=(basic_win9x_recursive_directory_iterator &&) noexcept = default;
+	inline basic_win9x_recursive_directory_iterator(basic_win9x_recursive_directory_iterator const &) = delete;
+	inline basic_win9x_recursive_directory_iterator &operator=(basic_win9x_recursive_directory_iterator const &) = delete;
+	inline basic_win9x_recursive_directory_iterator(basic_win9x_recursive_directory_iterator &&) noexcept = default;
+	inline basic_win9x_recursive_directory_iterator &operator=(basic_win9x_recursive_directory_iterator &&) noexcept = default;
 };
 
 template <typename StackType>
@@ -248,27 +248,27 @@ struct basic_win9x_recursive_directory_generator
 	::fast_io::win9x_dir_handle root_handle{};
 	win9x_dirent entry{};
 
-	constexpr basic_win9x_recursive_directory_generator() = default;
-	explicit constexpr basic_win9x_recursive_directory_generator(::fast_io::win9x_dir_handle rhd)
+	inline constexpr basic_win9x_recursive_directory_generator() = default;
+	inline explicit constexpr basic_win9x_recursive_directory_generator(::fast_io::win9x_dir_handle rhd)
 		: root_handle(::std::move(rhd))
 	{
 	}
-	basic_win9x_recursive_directory_generator(basic_win9x_recursive_directory_generator const &) = delete;
-	basic_win9x_recursive_directory_generator &
+	inline basic_win9x_recursive_directory_generator(basic_win9x_recursive_directory_generator const &) = delete;
+	inline basic_win9x_recursive_directory_generator &
 	operator=(basic_win9x_recursive_directory_generator const &) = delete;
-	constexpr basic_win9x_recursive_directory_generator(
+	inline constexpr basic_win9x_recursive_directory_generator(
 		basic_win9x_recursive_directory_generator &&__restrict other) noexcept
 		: root_handle(::std::move(other.root_handle)), entry(::std::move(other.entry))
 	{
 	}
-	constexpr basic_win9x_recursive_directory_generator &
+	inline constexpr basic_win9x_recursive_directory_generator &
 	operator=(basic_win9x_recursive_directory_generator &&__restrict other) noexcept
 	{
 		root_handle = ::std::move(other.root_handle);
 		entry = ::std::move(other.entry);
 		return *this;
 	}
-	constexpr ~basic_win9x_recursive_directory_generator()
+	inline constexpr ~basic_win9x_recursive_directory_generator()
 	{
 	}
 };
@@ -278,7 +278,7 @@ struct win9x_dir_file_stack_type
 	win9x_dir fd{};
 	void *file_struct{};
 
-	~win9x_dir_file_stack_type()
+	inline ~win9x_dir_file_stack_type()
 	{
 		if (file_struct) [[likely]]
 		{

@@ -13,18 +13,18 @@ public:
 	handle_type handle;
 	template <typename... Args>
 		requires((sizeof...(Args) != 0) && ::std::constructible_from<handle_type, Args...>)
-	explicit constexpr basic_generic_posix_dev_urandom(Args &&...args)
+	inline explicit constexpr basic_generic_posix_dev_urandom(Args &&...args)
 		: handle(::std::forward<Args>(args)...)
 	{
 	}
 
-	constexpr basic_generic_posix_dev_urandom()
+	inline constexpr basic_generic_posix_dev_urandom()
 		: handle(u8"/dev/urandom", ::fast_io::open_mode::in)
 	{}
-	explicit constexpr basic_generic_posix_dev_urandom(::std::nullptr_t)
+	inline explicit constexpr basic_generic_posix_dev_urandom(::std::nullptr_t)
 	{}
 
-	constexpr void close()
+	inline constexpr void close()
 	{
 		handle.close();
 	}
@@ -38,8 +38,8 @@ public:
 	using native_handle_type = typename observer_type::native_handle_type;
 	using input_char_type = typename observer_type::input_char_type;
 	using output_char_type = typename observer_type::output_char_type;
-	constexpr basic_generic_posix_dev_urandom_ref() noexcept = default;
-	explicit constexpr basic_generic_posix_dev_urandom_ref(native_handle_type hd) noexcept
+	inline constexpr basic_generic_posix_dev_urandom_ref() noexcept = default;
+	inline explicit constexpr basic_generic_posix_dev_urandom_ref(native_handle_type hd) noexcept
 		: observer_type{hd}
 	{}
 };

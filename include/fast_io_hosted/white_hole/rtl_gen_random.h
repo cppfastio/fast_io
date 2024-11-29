@@ -12,7 +12,7 @@ class basic_rtl_gen_random
 {
 public:
 	using input_char_type = ch_type;
-	constexpr void close() noexcept
+	inline constexpr void close() noexcept
 	{}
 };
 
