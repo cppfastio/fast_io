@@ -30,30 +30,30 @@ public:
 		fb = nullptr;
 		return temp;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return fb;
 	}
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 	template <c_family family>
-	explicit operator basic_c_family_io_observer<family, char_type>() const noexcept
+	inline explicit operator basic_c_family_io_observer<family, char_type>() const noexcept
 	{
 		return basic_c_io_observer<char_type>{details::streambuf_hack::fp_hack(fb)};
 	}
 #if !defined(__AVR__)
 	template <posix_family fam>
-	explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 	{
 		return static_cast<basic_posix_family_io_observer<fam, char_type>>(static_cast<basic_c_io_observer<char_type>>(*this));
 	}
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	template <win32_family fam>
-	explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
 	{
 		return static_cast<basic_win32_family_io_observer<fam, char_type>>(static_cast<basic_posix_io_observer<char_type>>(*this));
 	}
 	template <nt_family fam>
-	explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
 	{
 		return static_cast<basic_nt_family_io_observer<fam, char_type>>(
 			static_cast<basic_posix_io_observer<char_type>>(*this));

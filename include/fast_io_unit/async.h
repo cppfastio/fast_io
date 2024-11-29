@@ -8,23 +8,23 @@ struct task
 {
 	struct promise_type
 	{
-		constexpr auto get_return_object() noexcept
+		inline constexpr auto get_return_object() noexcept
 		{
 			return task{};
 		}
-		constexpr auto initial_suspend() noexcept
+		inline constexpr auto initial_suspend() noexcept
 		{
 			return ::std::suspend_never{};
 		}
-		constexpr auto final_suspend() noexcept
+		inline constexpr auto final_suspend() noexcept
 		{
 			return ::std::suspend_never{};
 		}
-		void unhandled_exception() noexcept
+		inline void unhandled_exception() noexcept
 		{
 			__builtin_trap();
 		}
-		constexpr void return_void() noexcept
+		inline constexpr void return_void() noexcept
 		{}
 	};
 };
@@ -41,11 +41,11 @@ inline constexpr auto async_write(basic_win32_family_io_observer<fam, char> wiob
 		::std::size_t buffer_size;
 		::std::ptrdiff_t diff;
 		::std::size_t wrtn{};
-		constexpr bool await_ready() const noexcept
+		inline constexpr bool await_ready() const noexcept
 		{
 			return false;
 		}
-		constexpr void await_suspend(::std::coroutine_handle<> co_handle) noexcept
+		inline constexpr void await_suspend(::std::coroutine_handle<> co_handle) noexcept
 		{
 			try
 			{
@@ -60,7 +60,7 @@ inline constexpr auto async_write(basic_win32_family_io_observer<fam, char> wiob
 				perrln(handle, " ", e);
 			}
 		}
-		constexpr ::std::size_t await_resume() const noexcept
+		inline constexpr ::std::size_t await_resume() const noexcept
 		{
 			return wrtn;
 		}

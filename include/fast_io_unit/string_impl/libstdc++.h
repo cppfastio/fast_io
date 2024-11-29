@@ -26,15 +26,15 @@ struct
 	struct _Alloc_hider : allocator_type // TODO check __is_final
 	{
 #if __cplusplus < 201103L
-		_Alloc_hider(pointer __dat, allocator_type const &__a = allocator_type())
+		inline _Alloc_hider(pointer __dat, allocator_type const &__a = allocator_type())
 			: allocator_type(__a), _M_p(__dat)
 		{}
 #else
-		_Alloc_hider(pointer __dat, allocator_type const &__a)
+		inline _Alloc_hider(pointer __dat, allocator_type const &__a)
 			: allocator_type(__a), _M_p(__dat)
 		{}
 
-		_Alloc_hider(pointer __dat, allocator_type &&__a = allocator_type())
+		inline _Alloc_hider(pointer __dat, allocator_type &&__a = allocator_type())
 			: allocator_type(::std::move(__a)), _M_p(__dat)
 		{
 		}

@@ -87,7 +87,7 @@ struct fp_model
 
 template <::std::size_t position>
 	requires(position < 6)
-constexpr ::std::size_t get_offset() noexcept
+inline constexpr ::std::size_t get_offset() noexcept
 {
 	if constexpr (position == 0)
 	{
