@@ -106,14 +106,14 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 		if (!
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x601
-			::fast_io::win32::K32GetMappedFileNameW(
+			::fast_io::win32::K32GetMappedFileNameW
 #else
-			::fast_io::win32::GetMappedFileNameW(
+			::fast_io::win32::GetMappedFileNameW
 #endif
-				reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)),
-				pMem,
-				pszFilename,
-				260)) [[unlikely]]
+			(reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)),
+			 pMem,
+			 pszFilename,
+			 260)) [[unlikely]]
 		{
 			throw_win32_error();
 		}
@@ -232,7 +232,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 		::fast_io::win32::process_information pi{};
 		if (!::fast_io::win32::CreateProcessW(address_begin, const_cast<char16_t *>(args), nullptr, nullptr, 1,
-			0x00000400 /*CREATE_UNICODE_ENVIRONMENT*/, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
+											  0x00000400 /*CREATE_UNICODE_ENVIRONMENT*/, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 		{
 			throw_win32_error();
 		}
@@ -536,7 +536,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, win32_process_args<family> const &args,
-								  win32_process_envs<family> const &envs, win32_process_io const &processio)
+										 win32_process_envs<family> const &envs, win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(nate, filename, args, envs, processio)}
 	{
@@ -544,14 +544,14 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(path_type const &filename, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
-								  win32_process_io const &processio)
+										 win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(filename, args, envs, processio)}
 	{
 	}
 
 	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
-								  win32_process_io const &processio)
+										 win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(ent, args, envs, processio)}
 	{
