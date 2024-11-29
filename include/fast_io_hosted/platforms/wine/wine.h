@@ -43,6 +43,7 @@ struct
 {
 	using native_handle_type = ::fast_io::wine_host_fd_t;
 	native_handle_type host_fd{};
+  
 	inline explicit constexpr wine_family_file_factory(native_handle_type v) noexcept
 		: host_fd(v) {};
 	inline wine_family_file_factory(wine_family_file_factory const &) = delete;
@@ -76,6 +77,7 @@ public:
 	inline constexpr basic_wine_family_file(basic_wine_family_file<family, ch_type>) noexcept = delete;
 	inline constexpr basic_wine_family_file &operator=(basic_wine_family_file<family, ch_type>) noexcept = delete;
 	inline ~basic_wine_family_file()
+
 	{
 		if (host_fd) [[likely]]
 		{
