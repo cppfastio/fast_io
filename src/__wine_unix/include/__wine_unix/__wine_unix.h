@@ -54,8 +54,9 @@ typedef ptrdiff_t __wine_off_t;
 	} __wine_unix_result_ret_readwritev;
 
 	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_writev(__wine_host_fd_t, __wine_unix_iovec_t const *, size_t) __WINE_UNIX_NOEXCEPT;
-
 	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_readv(__wine_host_fd_t, __wine_unix_iovec_t const *, size_t) __WINE_UNIX_NOEXCEPT;
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_pwritev(__wine_host_fd_t, __wine_unix_iovec_t const *, size_t, __wine_off_t) __WINE_UNIX_NOEXCEPT;
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_preadv(__wine_host_fd_t, __wine_unix_iovec_t const *, size_t, __wine_off_t) __WINE_UNIX_NOEXCEPT;
 
 	typedef struct
 	{
