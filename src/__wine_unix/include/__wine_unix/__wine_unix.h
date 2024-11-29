@@ -24,25 +24,26 @@ extern "C"
 #define __WINE_UNIX_NOEXCEPT
 #endif
 #if INTPTR_MAX < INT_LEAST32_MAX
-	typedef int_least32_t __wine_host_fd_t;
+	typedef uint_least32_t __wine_host_fd_t;
 	typedef uint_least32_t __wine_errno_t;
 #else
-typedef ptrdiff_t __wine_host_fd_t;
+typedef size_t __wine_host_fd_t;
 typedef size_t __wine_errno_t;
 #endif
+#if INTPTR_MAX < INT_LEAST64_MAX
+	typedef int_least64_t __wine_off_t;
+#else
+typedef ptrdiff_t __wine_off_t;
+#endif
 
-	typedef __wine_host_fd_t __wine_host_errno_t;
 	typedef __wine_host_fd_t __wine_host_flags_t;
 	typedef __wine_host_fd_t __wine_host_mode_t;
 
 	typedef struct
 	{
-		void *iov_base;
+		void const *iov_base;
 		size_t iov_len;
 	} __wine_unix_iovec_t;
-
-	__WINE_UNIX_DLLEXPORT __wine_errno_t __WINE_UNIX_DEFAULTCALL __wine_unix_host_errno_to_wine_errno(__wine_host_errno_t) __WINE_UNIX_NOEXCEPT;
-	__WINE_UNIX_DLLEXPORT __wine_host_errno_t __WINE_UNIX_DEFAULTCALL __wine_unix_wine_errno_to_host_errno(__wine_errno_t) __WINE_UNIX_NOEXCEPT;
 
 	typedef struct
 	{
@@ -54,15 +55,25 @@ typedef size_t __wine_errno_t;
 
 	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_writev(__wine_host_fd_t, __wine_unix_iovec_t const *, size_t) __WINE_UNIX_NOEXCEPT;
 
-	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_readv(__wine_host_fd_t, __wine_unix_iovec_t *, size_t) __WINE_UNIX_NOEXCEPT;
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_readv(__wine_host_fd_t, __wine_unix_iovec_t const *, size_t) __WINE_UNIX_NOEXCEPT;
 
 	typedef struct
 	{
 		__wine_errno_t errcode;
 		__wine_host_fd_t host_fd;
-	} __wine_unix_result_ret_openat;
+	} __wine_unix_result_ret_host_fd;
 
-	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_openat __WINE_UNIX_DEFAULTCALL __wine_unix_ret_openat(__wine_host_fd_t, void const *, size_t, __wine_host_flags_t, __wine_host_mode_t) __WINE_UNIX_NOEXCEPT;
+	typedef struct
+	{
+		__wine_errno_t errcode;
+		ptrdiff_t handle;
+	} __wine_unix_result_ret_nt_handle;
+
+	__WINE_UNIX_DLLEXPORT __wine_errno_t __WINE_UNIX_DEFAULTCALL __wine_unix_ret_host_fd_to_unix_fd(__wine_host_fd_t host_fd, void *punixfd, size_t unixfdsizeof) __WINE_UNIX_NOEXCEPT;
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_host_fd __WINE_UNIX_DEFAULTCALL __wine_unix_ret_unix_fd_to_host_fd(void const *punixfd, size_t unixfdsizeof) __WINE_UNIX_NOEXCEPT;
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_nt_handle __WINE_UNIX_DEFAULTCALL __wine_unix_ret_host_fd_to_nt_handle(__wine_host_fd_t host_fd) noexcept;
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_host_fd __WINE_UNIX_DEFAULTCALL __wine_unix_ret_nt_handle_to_host_fd(ptrdiff_t handle) noexcept;
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_host_fd __WINE_UNIX_DEFAULTCALL __wine_unix_ret_openat(__wine_host_fd_t, void const *, size_t, __wine_host_flags_t, __wine_host_mode_t) __WINE_UNIX_NOEXCEPT;
 	__WINE_UNIX_DLLEXPORT __wine_errno_t __WINE_UNIX_DEFAULTCALL __wine_unix_ret_close(__wine_host_fd_t) __WINE_UNIX_NOEXCEPT;
 
 #ifdef __cplusplus
