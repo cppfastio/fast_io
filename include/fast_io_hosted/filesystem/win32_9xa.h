@@ -341,8 +341,8 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 			}
 			prdit.stack.emplace_back(
 				win32_9xa_dir_file{win32_9xa_at_entry{prdit.stack.empty() ? prdit.root_handle : prdit.stack.back().fd.handle},
-							  ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
-							  open_mode::directory},
+								   ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
+								   open_mode::directory},
 				nullptr);
 		}
 		return prdit;
@@ -388,8 +388,8 @@ begin(basic_win32_9xa_recursive_directory_generator<StackType> &prg) noexcept
 		{
 			prdit.stack.emplace_back(
 				win32_9xa_dir_file{win32_9xa_at_entry{prdit.root_handle},
-							  ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
-							  open_mode::directory},
+								   ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
+								   open_mode::directory},
 				nullptr);
 		}
 	}
@@ -467,9 +467,8 @@ inline auto u8stem(win32_9xa_directory_entry ent) noexcept
 	return ::fast_io::details::find_dot_and_sep<true, char8_t, char8_t>(et.filename.c_str(), et.filename.size());
 }
 
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && defined(_WIN32_WINDOWS)
 using native_directory_entry = win32_9xa_directory_entry;
 #endif
-
 
 } // namespace fast_io
