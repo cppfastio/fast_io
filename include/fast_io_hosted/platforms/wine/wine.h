@@ -77,7 +77,6 @@ public:
 	inline constexpr basic_wine_family_file(basic_wine_family_file<family, ch_type>) noexcept = delete;
 	inline constexpr basic_wine_family_file &operator=(basic_wine_family_file<family, ch_type>) noexcept = delete;
 	inline ~basic_wine_family_file()
-
 	{
 		if (host_fd) [[likely]]
 		{
