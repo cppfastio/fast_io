@@ -27,12 +27,12 @@ namespace win32::details
 struct win32_registry_guard
 {
 	::std::size_t k;
-	explicit constexpr win32_registry_guard(::std::size_t k1) noexcept
+	inline explicit constexpr win32_registry_guard(::std::size_t k1) noexcept
 		: k(k1)
 	{}
-	win32_registry_guard(win32_registry_guard const &) = delete;
-	win32_registry_guard &operator=(win32_registry_guard const &) = delete;
-	~win32_registry_guard()
+	inline win32_registry_guard(win32_registry_guard const &) = delete;
+	inline win32_registry_guard &operator=(win32_registry_guard const &) = delete;
+	inline ~win32_registry_guard()
 	{
 		::fast_io::win32::RegCloseKey(k);
 	}

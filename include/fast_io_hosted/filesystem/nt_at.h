@@ -13,25 +13,25 @@ enum class nt_at_flags : ::std::uint_least32_t
 	nt_path = static_cast<::std::uint_least32_t>(1) << 5
 };
 
-constexpr nt_at_flags operator&(nt_at_flags x, nt_at_flags y) noexcept
+inline constexpr nt_at_flags operator&(nt_at_flags x, nt_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_at_flags>::type;
 	return static_cast<nt_at_flags>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr nt_at_flags operator|(nt_at_flags x, nt_at_flags y) noexcept
+inline constexpr nt_at_flags operator|(nt_at_flags x, nt_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_at_flags>::type;
 	return static_cast<nt_at_flags>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr nt_at_flags operator^(nt_at_flags x, nt_at_flags y) noexcept
+inline constexpr nt_at_flags operator^(nt_at_flags x, nt_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_at_flags>::type;
 	return static_cast<nt_at_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr nt_at_flags operator~(nt_at_flags x) noexcept
+inline constexpr nt_at_flags operator~(nt_at_flags x) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_at_flags>::type;
 	return static_cast<nt_at_flags>(~static_cast<utype>(x));
@@ -428,7 +428,7 @@ struct nt_create_nothrow_callback
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	auto operator()(void *directory_handle, ::fast_io::win32::nt::unicode_string *relative_path) const
+	inline auto operator()(void *directory_handle, ::fast_io::win32::nt::unicode_string *relative_path) const
 	{
 		return nt_create_file_nothrow_common<zw>(directory_handle, relative_path, mode); // get rid of this pointer
 	}

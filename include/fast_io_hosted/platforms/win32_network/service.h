@@ -7,19 +7,19 @@ struct win32_wsa_service
 {
 	using native_handle_type = ::fast_io::win32::wsadata;
 	native_handle_type wsa_data;
-	explicit win32_wsa_service(::std::uint_least16_t version)
+	inline explicit win32_wsa_service(::std::uint_least16_t version)
 	{
 		if (::fast_io::win32::WSAStartup(version, __builtin_addressof(wsa_data)))
 		{
 			throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 		}
 	}
-	win32_wsa_service()
+	inline win32_wsa_service()
 		: win32_wsa_service(514)
 	{}
-	win32_wsa_service(win32_wsa_service const &) = delete;
-	win32_wsa_service &operator=(win32_wsa_service const &) = delete;
-	~win32_wsa_service()
+	inline win32_wsa_service(win32_wsa_service const &) = delete;
+	inline win32_wsa_service &operator=(win32_wsa_service const &) = delete;
+	inline ~win32_wsa_service()
 	{
 		::fast_io::win32::WSACleanup();
 	}

@@ -3,7 +3,7 @@
 namespace fast_io::details
 {
 
-constexpr ::std::size_t compute_libcxx_symbol_name_chars_len(::std::size_t value) noexcept
+inline constexpr ::std::size_t compute_libcxx_symbol_name_chars_len(::std::size_t value) noexcept
 {
 	::std::size_t sz{1};
 	for (; 10u <= value; value /= 10u)

@@ -352,7 +352,7 @@ struct nt_create_callback
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	void *operator()(void *directory_handle, ::fast_io::win32::nt::unicode_string *relative_path) const
+	inline void *operator()(void *directory_handle, ::fast_io::win32::nt::unicode_string *relative_path) const
 	{
 		return nt_create_file_common<zw>(directory_handle, relative_path, mode); // get rid of this pointer
 	}
@@ -581,12 +581,12 @@ struct nt_at_entry
 {
 	using native_handle_type = void *;
 	void *handle{};
-	explicit constexpr nt_at_entry() noexcept = default;
-	explicit constexpr nt_at_entry(void *mhandle) noexcept
+	inline explicit constexpr nt_at_entry() noexcept = default;
+	inline explicit constexpr nt_at_entry(void *mhandle) noexcept
 		: handle(mhandle)
 	{}
 #if !defined(__WINE__)
-	nt_at_entry(posix_at_entry pate) noexcept
+	inline nt_at_entry(posix_at_entry pate) noexcept
 		: handle(details::my_get_osfile_handle(pate.fd))
 	{}
 #endif
@@ -619,8 +619,8 @@ template <nt_family family>
 struct nt_family_at_entry : nt_at_entry
 {
 	using nt_at_entry::native_handle_type;
-	explicit constexpr nt_family_at_entry() noexcept = default;
-	explicit constexpr nt_family_at_entry(void *mhandle) noexcept
+	inline explicit constexpr nt_family_at_entry() noexcept = default;
+	inline explicit constexpr nt_family_at_entry(void *mhandle) noexcept
 		: nt_at_entry{mhandle}
 	{}
 };
@@ -646,25 +646,25 @@ public:
 	using input_char_type = ch_type;
 	using output_char_type = ch_type;
 	native_handle_type handle{};
-	constexpr native_handle_type native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return handle;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return handle != nullptr;
 	}
 	template <win32_family family2>
-	explicit operator basic_win32_family_io_observer<family2, char_type>() const noexcept
+	inline explicit operator basic_win32_family_io_observer<family2, char_type>() const noexcept
 	{
 		return basic_win32_family_io_observer<family2, char_type>{reinterpret_cast<void *>(handle)};
 	}
 	template <nt_family family2>
-	constexpr operator basic_nt_family_io_observer<family2, char_type>() const noexcept
+	inline constexpr operator basic_nt_family_io_observer<family2, char_type>() const noexcept
 	{
 		return basic_nt_family_io_observer<family2, char_type>{handle};
 	}
-	constexpr native_handle_type release() noexcept
+	inline constexpr native_handle_type release() noexcept
 	{
 		auto temp{handle};
 		handle = nullptr;
@@ -1288,11 +1288,11 @@ struct
 {
 	using native_handle_type = void *;
 	void *handle{};
-	explicit constexpr nt_family_file_factory(void *hd) noexcept
+	inline explicit constexpr nt_family_file_factory(void *hd) noexcept
 		: handle(hd) {};
-	nt_family_file_factory(nt_family_file_factory const &) = delete;
-	nt_family_file_factory &operator=(nt_family_file_factory const &) = delete;
-	~nt_family_file_factory()
+	inline nt_family_file_factory(nt_family_file_factory const &) = delete;
+	inline nt_family_file_factory &operator=(nt_family_file_factory const &) = delete;
+	inline ~nt_family_file_factory()
 	{
 		if (handle) [[likely]]
 		{
@@ -1313,53 +1313,53 @@ public:
 	using typename basic_nt_family_io_observer<family, ch_type>::output_char_type;
 	using typename basic_nt_family_io_observer<family, ch_type>::native_handle_type;
 	using file_factory_type = nt_family_file_factory<family>;
-	constexpr basic_nt_family_file() noexcept = default;
-	constexpr basic_nt_family_file(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
-	constexpr basic_nt_family_file &operator=(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_nt_family_file() noexcept = default;
+	inline constexpr basic_nt_family_file(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_nt_family_file &operator=(basic_nt_family_io_observer<family, ch_type>) noexcept = delete;
 
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr basic_nt_family_file(native_hd hd) noexcept
+	inline explicit constexpr basic_nt_family_file(native_hd hd) noexcept
 		: basic_nt_family_io_observer<family, ch_type>{hd}
 	{
 	}
-	constexpr basic_nt_family_file(decltype(nullptr)) noexcept = delete;
-	explicit constexpr basic_nt_family_file(nt_family_file_factory<family> &&hd) noexcept
+	inline constexpr basic_nt_family_file(decltype(nullptr)) noexcept = delete;
+	inline explicit constexpr basic_nt_family_file(nt_family_file_factory<family> &&hd) noexcept
 		: basic_nt_family_io_observer<family, ch_type>{hd}
 	{
 		hd.handle = nullptr;
 	}
-	explicit basic_nt_family_file(io_dup_t, basic_nt_family_io_observer<family, ch_type> wiob)
+	inline explicit basic_nt_family_file(io_dup_t, basic_nt_family_io_observer<family, ch_type> wiob)
 		: basic_nt_family_io_observer<family, ch_type>{
 			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(wiob.handle)}
 	{
 	}
-	explicit basic_nt_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+	inline explicit basic_nt_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, char_type>{
 			  ::fast_io::win32::nt::details::nt_family_create_file_fs_dirent_impl<family == nt_family::zw>(fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size(), {om, pm})}
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(T const &t, open_mode om, perms pm = static_cast<perms>(436))
+	inline explicit basic_nt_family_file(T const &t, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, ch_type>{
 			  ::fast_io::win32::nt::details::nt_create_file_impl<family == nt_family::zw>(t, {om, pm})}
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(nt_at_entry ent, T const &t, open_mode om, perms pm = static_cast<perms>(436))
+	inline explicit basic_nt_family_file(nt_at_entry ent, T const &t, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, ch_type>{
 			  ::fast_io::win32::nt::details::nt_create_file_at_impl<family == nt_family::zw>(ent.handle, t, {om, pm})}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(io_kernel_t, T const &t, open_mode om, perms pm = static_cast<perms>(436))
+	inline explicit basic_nt_family_file(io_kernel_t, T const &t, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, ch_type>{
 			  ::fast_io::win32::nt::details::nt_create_file_kernel_impl<family == nt_family::zw>(t, {om, pm})}
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_nt_family_file(io_kernel_t, nt_at_entry ent, T const &t, open_mode om,
+	inline explicit basic_nt_family_file(io_kernel_t, nt_at_entry ent, T const &t, open_mode om,
 								  perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, ch_type>{
 			  ::fast_io::win32::nt::details::nt_create_file_at_impl<family == nt_family::zw, true>(ent.handle, t,
@@ -1367,7 +1367,7 @@ public:
 	{
 	}
 
-	void close()
+	inline void close()
 	{
 		if (this->handle) [[likely]]
 		{
@@ -1379,7 +1379,7 @@ public:
 			}
 		}
 	}
-	void reset(native_handle_type newhandle = nullptr) noexcept
+	inline void reset(native_handle_type newhandle = nullptr) noexcept
 	{
 		if (this->handle) [[likely]]
 		{
@@ -1387,22 +1387,22 @@ public:
 		}
 		this->handle = newhandle;
 	}
-	basic_nt_family_file(basic_nt_family_file const &other)
+	inline basic_nt_family_file(basic_nt_family_file const &other)
 		: basic_nt_family_io_observer<family, ch_type>(
 			  ::fast_io::win32::nt::details::nt_dup_impl<family == nt_family::zw>(other.handle))
 	{
 	}
-	basic_nt_family_file &operator=(basic_nt_family_file const &other)
+	inline basic_nt_family_file &operator=(basic_nt_family_file const &other)
 	{
 		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
 		return *this;
 	}
-	constexpr basic_nt_family_file(basic_nt_family_file &&__restrict other) noexcept
+	inline constexpr basic_nt_family_file(basic_nt_family_file &&__restrict other) noexcept
 		: basic_nt_family_io_observer<family, ch_type>{other.handle}
 	{
 		other.handle = nullptr;
 	}
-	basic_nt_family_file &operator=(basic_nt_family_file &&__restrict other) noexcept
+	inline basic_nt_family_file &operator=(basic_nt_family_file &&__restrict other) noexcept
 	{
 		if (this->handle) [[likely]]
 		{
@@ -1412,7 +1412,7 @@ public:
 		other.handle = nullptr;
 		return *this;
 	}
-	~basic_nt_family_file()
+	inline ~basic_nt_family_file()
 	{
 		if (this->handle) [[likely]]
 		{
@@ -1507,15 +1507,15 @@ class basic_nt_family_pipe
 public:
 	using char_type = ch_type;
 	basic_nt_family_file<family, ch_type> pipes[2];
-	basic_nt_family_pipe()
+	inline basic_nt_family_pipe()
 	{
 		win32::nt::details::nt_create_pipe<family == nt_family::zw>(__builtin_addressof(pipes[0].handle), __builtin_addressof(pipes[1].handle));
 	}
-	constexpr auto &in() noexcept
+	inline constexpr auto &in() noexcept
 	{
 		return *pipes;
 	}
-	constexpr auto &out() noexcept
+	inline constexpr auto &out() noexcept
 	{
 		return pipes[1];
 	}

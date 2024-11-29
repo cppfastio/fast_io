@@ -66,7 +66,7 @@ public:
 	{
 		return rtld_handle;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return rtld_handle;
 	}
@@ -134,27 +134,27 @@ public:
 	constexpr posix_dll_file() = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr posix_dll_file(native_hd handle) noexcept
+	inline explicit constexpr posix_dll_file(native_hd handle) noexcept
 		: posix_dll_io_observer{handle}
 	{
 	}
-	explicit constexpr posix_dll_file(decltype(nullptr)) noexcept = delete;
+	inline explicit constexpr posix_dll_file(decltype(nullptr)) noexcept = delete;
 
-	constexpr posix_dll_file(posix_dll_io_observer) noexcept = delete;
-	constexpr posix_dll_file &operator=(posix_dll_io_observer) noexcept = delete;
+	inline constexpr posix_dll_file(posix_dll_io_observer) noexcept = delete;
+	inline constexpr posix_dll_file &operator=(posix_dll_io_observer) noexcept = delete;
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit posix_dll_file(T const &t, dll_mode mode)
+	inline explicit posix_dll_file(T const &t, dll_mode mode)
 		: posix_dll_io_observer{::fast_io::details::create_posix_rtld_impl(t, mode)}
 	{
 	}
-	posix_dll_file(posix_dll_file const &) = delete;
-	posix_dll_file &operator=(posix_dll_file const &) = delete;
-	constexpr posix_dll_file(posix_dll_file &&__restrict other) noexcept
+	inline posix_dll_file(posix_dll_file const &) = delete;
+	inline posix_dll_file &operator=(posix_dll_file const &) = delete;
+	inline constexpr posix_dll_file(posix_dll_file &&__restrict other) noexcept
 		: posix_dll_io_observer{other.rtld_handle}
 	{
 		other.rtld_handle = nullptr;
 	}
-	posix_dll_file &operator=(posix_dll_file &&__restrict other) noexcept
+	inline posix_dll_file &operator=(posix_dll_file &&__restrict other) noexcept
 	{
 		if (this->rtld_handle) [[likely]]
 		{
@@ -164,7 +164,7 @@ public:
 		other.rtld_handle = nullptr;
 		return *this;
 	}
-	void close()
+	inline void close()
 	{
 		if (this->rtld_handle) [[likely]]
 		{
@@ -177,7 +177,7 @@ public:
 			}
 		}
 	}
-	~posix_dll_file()
+	inline ~posix_dll_file()
 	{
 		if (this->rtld_handle) [[likely]]
 		{

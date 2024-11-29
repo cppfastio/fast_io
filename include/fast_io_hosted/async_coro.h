@@ -7,23 +7,23 @@ struct task
 {
 	struct promise_type
 	{
-		constexpr auto get_return_object()
+		inline constexpr auto get_return_object()
 		{
 			return task{};
 		}
-		constexpr auto initial_suspend()
+		inline constexpr auto initial_suspend()
 		{
 			return ::std::suspend_never{};
 		}
-		constexpr auto final_suspend()
+		inline constexpr auto final_suspend()
 		{
 			return ::std::suspend_never{};
 		}
-		void unhandled_exception()
+		inline void unhandled_exception()
 		{
 			::std::terminate();
 		}
-		constexpr void return_void()
+		inline constexpr void return_void()
 		{}
 	};
 };
@@ -43,11 +43,11 @@ public:
 	::std::size_t transferred_bytes{};
 	int err{};
 	typename io_async_overlapped_t<stm>::type overlapped;
-	constexpr bool await_ready() const
+	inline constexpr bool await_ready() const
 	{
 		return false;
 	}
-	constexpr Iter await_resume() const
+	inline constexpr Iter await_resume() const
 	{
 		if (err)
 		{
@@ -55,7 +55,7 @@ public:
 		}
 		return first + transferred_bytes / sizeof(*first);
 	}
-	void await_suspend(::std::coroutine_handle<> handle)
+	inline void await_suspend(::std::coroutine_handle<> handle)
 	{
 		overlapped = typename io_async_overlapped_t<stm>::type(::std::in_place,
 															   [handle, this](::std::size_t calb, int errn) {
@@ -86,11 +86,11 @@ public:
 	typename io_async_overlapped_t<stm>::type overlapped;
 	::std::size_t transferred_bytes{};
 	int err{};
-	constexpr bool await_ready() const
+	inline constexpr bool await_ready() const
 	{
 		return false;
 	}
-	constexpr ::std::size_t await_resume() const
+	inline constexpr ::std::size_t await_resume() const
 	{
 		if (err)
 		{
@@ -98,7 +98,7 @@ public:
 		}
 		return transferred_bytes;
 	}
-	void await_suspend(::std::coroutine_handle<> handle)
+	inline void await_suspend(::std::coroutine_handle<> handle)
 	{
 		overlapped = typename io_async_overlapped_t<stm>::type(::std::in_place,
 															   [handle, this](::std::size_t calb, int errn) {
@@ -129,7 +129,7 @@ public:
 	int err{};
 	dynamic_io_buffer<typename stm::char_type> buffer;
 	template <typename... Args>
-	async_print_coroutine(typename io_async_scheduler_t<stm>::type &sh, ::std::ptrdiff_t off, stm &s, Args &&...args)
+	inline async_print_coroutine(typename io_async_scheduler_t<stm>::type &sh, ::std::ptrdiff_t off, stm &s, Args &&...args)
 		: scheduler(sh), stream(s)
 	{
 		if constexpr (line)
@@ -141,11 +141,11 @@ public:
 			print_freestanding(buffer, ::std::forward<Args>(args)...);
 		}
 	}
-	constexpr bool await_ready() const
+	inline constexpr bool await_ready() const
 	{
 		return false;
 	}
-	constexpr ::std::size_t await_resume() const
+	inline constexpr ::std::size_t await_resume() const
 	{
 		if (err)
 		{
@@ -153,7 +153,7 @@ public:
 		}
 		return transferred_bytes;
 	}
-	void await_suspend(::std::coroutine_handle<> handle)
+	inline void await_suspend(::std::coroutine_handle<> handle)
 	{
 		overlapped = typename io_async_overlapped_t<stm>::type(::std::in_place,
 															   [handle, this](::std::size_t calb, int errn) {

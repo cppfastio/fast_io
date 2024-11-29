@@ -13,6 +13,7 @@ struct basic_posix_api_encoding_converter
 	char_type *buffer_data_end;
 	template <::std::integral from_char_type>
 		requires(sizeof(from_char_type) != 1)
+	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif
@@ -26,6 +27,7 @@ struct basic_posix_api_encoding_converter
 	}
 	template <::std::integral from_char_type>
 		requires(sizeof(from_char_type) == 1)
+	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif
@@ -52,8 +54,9 @@ struct basic_posix_api_encoding_converter
 	{
 		return static_cast<::std::size_t>(buffer_data_end - buffer_data);
 	}
-	basic_posix_api_encoding_converter(basic_posix_api_encoding_converter const &) = delete;
-	basic_posix_api_encoding_converter &operator=(basic_posix_api_encoding_converter const &) = delete;
+	inline basic_posix_api_encoding_converter(basic_posix_api_encoding_converter const &) = delete;
+	inline basic_posix_api_encoding_converter &operator=(basic_posix_api_encoding_converter const &) = delete;
+	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
 	constexpr
 #endif

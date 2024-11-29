@@ -12,25 +12,25 @@ enum class win9x_at_flags : ::std::uint_least32_t
 	nt_path = 0
 };
 
-constexpr win9x_at_flags operator&(win9x_at_flags x, win9x_at_flags y) noexcept
+inline constexpr win9x_at_flags operator&(win9x_at_flags x, win9x_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<win9x_at_flags>::type;
 	return static_cast<win9x_at_flags>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr win9x_at_flags operator|(win9x_at_flags x, win9x_at_flags y) noexcept
+inline constexpr win9x_at_flags operator|(win9x_at_flags x, win9x_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<win9x_at_flags>::type;
 	return static_cast<win9x_at_flags>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr win9x_at_flags operator^(win9x_at_flags x, win9x_at_flags y) noexcept
+inline constexpr win9x_at_flags operator^(win9x_at_flags x, win9x_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<win9x_at_flags>::type;
 	return static_cast<win9x_at_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr win9x_at_flags operator~(win9x_at_flags x) noexcept
+inline constexpr win9x_at_flags operator~(win9x_at_flags x) noexcept
 {
 	using utype = typename ::std::underlying_type<win9x_at_flags>::type;
 	return static_cast<win9x_at_flags>(~static_cast<utype>(x));
@@ -54,7 +54,7 @@ inline constexpr win9x_at_flags &operator^=(win9x_at_flags &x, win9x_at_flags y)
 namespace win32::details
 {
 
-::fast_io::tlc::u8string concat_tlc_win9x_path_uncheck_whether_exist(::fast_io::win9x_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
+inline ::fast_io::tlc::u8string concat_tlc_win9x_path_uncheck_whether_exist(::fast_io::win9x_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
 {
 	auto const beg{path_c_str};
 	auto curr{beg};

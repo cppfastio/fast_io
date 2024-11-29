@@ -282,11 +282,11 @@ struct fd_remapper
 		int newfd_flag{};
 		bool setfd_needed{};
 
-		entry() = default;
-		entry(entry const &) = delete;
-		entry &operator=(entry const &) = delete;
+		inline entry() = default;
+		inline entry(entry const &) = delete;
+		inline entry &operator=(entry const &) = delete;
 
-		~entry()
+		inline ~entry()
 		{
 			if (original == -1)
 			{
@@ -304,11 +304,11 @@ struct fd_remapper
 	entry fds[3]{};
 	int fd_devnull{-1};
 
-	fd_remapper() = default;
-	fd_remapper(fd_remapper const &) = delete;
-	fd_remapper &operator=(fd_remapper const &) = delete;
+	inline fd_remapper() = default;
+	inline fd_remapper(fd_remapper const &) = delete;
+	inline fd_remapper &operator=(fd_remapper const &) = delete;
 
-	~fd_remapper()
+	inline ~fd_remapper()
 	{
 		if (fd_devnull != -1)
 		{
@@ -317,7 +317,7 @@ struct fd_remapper
 	}
 
 	// fd in {0, 1, 2}
-	void map(int fd, posix_io_redirection const &io)
+	inline void map(int fd, posix_io_redirection const &io)
 	{
 		if (!io)
 		{
@@ -347,7 +347,7 @@ struct fd_remapper
 	}
 
 private:
-	int devnull()
+	inline int devnull()
 	{
 		if (fd_devnull != -1)
 		{
@@ -453,11 +453,11 @@ class posix_process_observer
 public:
 	using native_handle_type = pid_t;
 	pid_t pid{-1};
-	constexpr auto &native_handle() noexcept
+	inline constexpr auto &native_handle() noexcept
 	{
 		return pid;
 	}
-	constexpr auto &native_handle() const noexcept
+	inline constexpr auto &native_handle() const noexcept
 	{
 		return pid;
 	}
@@ -508,42 +508,42 @@ class posix_process : public posix_process_observer
 {
 public:
 	using native_handle_type = pid_t;
-	explicit constexpr posix_process() noexcept = default;
+	inline explicit constexpr posix_process() noexcept = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr posix_process(native_hd pid1) noexcept
+	inline explicit constexpr posix_process(native_hd pid1) noexcept
 		: posix_process_observer{pid1}
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str path_type>
-	posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args,
+	inline posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args,
 				  posix_process_envs const &envp, posix_process_io const &pio)
 		: posix_process_observer{details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	posix_process(path_type const &filename, posix_process_args const &args, posix_process_envs const &envp,
+	inline posix_process(path_type const &filename, posix_process_args const &args, posix_process_envs const &envp,
 				  posix_process_io const &pio)
 		: posix_process_observer{::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio)}
 	{
 	}
 
-	posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args, posix_process_envs const &envp,
+	inline posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args, posix_process_envs const &envp,
 				  posix_process_io const &pio)
 		: posix_process_observer{
 			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)}
 	{
 	}
 
-	posix_process(posix_process const &) = delete;
-	posix_process &operator=(posix_process const &) = delete;
-	constexpr posix_process(posix_process &&__restrict other) noexcept
+	inline posix_process(posix_process const &) = delete;
+	inline posix_process &operator=(posix_process const &) = delete;
+	inline constexpr posix_process(posix_process &&__restrict other) noexcept
 		: posix_process_observer{other.pid}
 	{
 		other.pid = -1;
 	}
-	posix_process &operator=(posix_process &&__restrict other) noexcept
+	inline posix_process &operator=(posix_process &&__restrict other) noexcept
 	{
 		if (__builtin_addressof(other) != this)
 		{
@@ -554,7 +554,7 @@ public:
 		other.pid = -1;
 		return *this;
 	}
-	~posix_process()
+	inline ~posix_process()
 	{
 		details::posix_waitpid_noexcept(this->pid);
 		this->pid = -1;

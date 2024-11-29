@@ -71,25 +71,25 @@ enum class dos_at_flags
 
 using native_at_flags = dos_at_flags;
 
-constexpr dos_at_flags operator&(dos_at_flags x, dos_at_flags y) noexcept
+inline constexpr dos_at_flags operator&(dos_at_flags x, dos_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<dos_at_flags>::type;
 	return static_cast<dos_at_flags>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr dos_at_flags operator|(dos_at_flags x, dos_at_flags y) noexcept
+inline constexpr dos_at_flags operator|(dos_at_flags x, dos_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<dos_at_flags>::type;
 	return static_cast<dos_at_flags>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr dos_at_flags operator^(dos_at_flags x, dos_at_flags y) noexcept
+inline constexpr dos_at_flags operator^(dos_at_flags x, dos_at_flags y) noexcept
 {
 	using utype = typename ::std::underlying_type<dos_at_flags>::type;
 	return static_cast<dos_at_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr dos_at_flags operator~(dos_at_flags x) noexcept
+inline constexpr dos_at_flags operator~(dos_at_flags x) noexcept
 {
 	using utype = typename ::std::underlying_type<dos_at_flags>::type;
 	return static_cast<dos_at_flags>(~static_cast<utype>(x));

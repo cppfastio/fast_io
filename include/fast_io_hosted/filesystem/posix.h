@@ -26,20 +26,20 @@ class posix_directory_io_observer
 public:
 	using native_handle_type = DIR *;
 	native_handle_type dirp{};
-	constexpr native_handle_type native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return dirp;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return dirp;
 	}
 	template <::std::integral char_type>
-	operator basic_posix_io_observer<char_type>() const noexcept
+	inline operator basic_posix_io_observer<char_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
-	constexpr native_handle_type release() noexcept
+	inline constexpr native_handle_type release() noexcept
 	{
 		native_handle_type temp{dirp};
 		dirp = nullptr;
@@ -83,17 +83,17 @@ class posix_directory_file : public posix_directory_io_observer
 {
 public:
 	using native_handle_type = DIR *;
-	constexpr posix_directory_file() noexcept = default;
+	inline constexpr posix_directory_file() noexcept = default;
 
-	explicit constexpr posix_directory_file(posix_directory_io_observer) noexcept = delete;
-	constexpr posix_directory_file &operator=(posix_directory_io_observer) noexcept = delete;
+	inline explicit constexpr posix_directory_file(posix_directory_io_observer) noexcept = delete;
+	inline constexpr posix_directory_file &operator=(posix_directory_io_observer) noexcept = delete;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	constexpr posix_directory_file(native_hd dirp1)
+	inline constexpr posix_directory_file(native_hd dirp1)
 		: posix_directory_io_observer{dirp1}
 	{
 	}
-	posix_directory_file(posix_file &&pioh)
+	inline posix_directory_file(posix_file &&pioh)
 		: posix_directory_io_observer{noexcept_call(::fdopendir, pioh.fd)}
 	{
 		if (this->dirp == nullptr)
@@ -102,7 +102,7 @@ public:
 		}
 		pioh.release();
 	}
-	posix_directory_file &operator=(posix_directory_file const &other)
+	inline posix_directory_file &operator=(posix_directory_file const &other)
 	{
 		auto newdir{details::sys_dup_dir(other.dirp)};
 		if (this->dirp) [[likely]]
@@ -112,12 +112,12 @@ public:
 		this->dirp = newdir;
 		return *this;
 	}
-	constexpr posix_directory_file(posix_directory_file &&__restrict other) noexcept
+	inline constexpr posix_directory_file(posix_directory_file &&__restrict other) noexcept
 		: posix_directory_io_observer{other.release()}
 	{
 	}
 
-	posix_directory_file &operator=(posix_directory_file &&__restrict other) noexcept
+	inline posix_directory_file &operator=(posix_directory_file &&__restrict other) noexcept
 	{
 		if (this->dirp) [[likely]]
 		{
@@ -134,7 +134,7 @@ public:
 		}
 		this->dirp = dirp1;
 	}
-	void close()
+	inline void close()
 	{
 		if (*this) [[likely]]
 		{
@@ -146,7 +146,7 @@ public:
 			}
 		}
 	}
-	~posix_directory_file()
+	inline ~posix_directory_file()
 	{
 		if (this->dirp) [[likely]]
 		{
@@ -180,7 +180,7 @@ struct posix_directory_entry
 	struct dirent *entry{};
 	::std::size_t d_namlen{};
 	template <::std::integral ch_type>
-	explicit operator basic_posix_io_observer<ch_type>() const noexcept
+	inline explicit operator basic_posix_io_observer<ch_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
@@ -363,14 +363,14 @@ struct basic_posix_recursive_directory_iterator
 	struct dirent *entry{};
 	::std::size_t d_namlen{};
 	stack_type stack;
-	constexpr basic_posix_recursive_directory_iterator() = default;
-	explicit constexpr basic_posix_recursive_directory_iterator(DIR *dp)
+	inline constexpr basic_posix_recursive_directory_iterator() = default;
+	inline explicit constexpr basic_posix_recursive_directory_iterator(DIR *dp)
 		: dirp(dp)
 	{}
-	basic_posix_recursive_directory_iterator(basic_posix_recursive_directory_iterator const &) = delete;
-	basic_posix_recursive_directory_iterator &operator=(basic_posix_recursive_directory_iterator const &) = delete;
-	basic_posix_recursive_directory_iterator(basic_posix_recursive_directory_iterator &&) noexcept = default;
-	basic_posix_recursive_directory_iterator &operator=(basic_posix_recursive_directory_iterator &&) noexcept = default;
+	inline basic_posix_recursive_directory_iterator(basic_posix_recursive_directory_iterator const &) = delete;
+	inline basic_posix_recursive_directory_iterator &operator=(basic_posix_recursive_directory_iterator const &) = delete;
+	inline basic_posix_recursive_directory_iterator(basic_posix_recursive_directory_iterator &&) noexcept = default;
+	inline basic_posix_recursive_directory_iterator &operator=(basic_posix_recursive_directory_iterator &&) noexcept = default;
 };
 
 template <typename StackType>

@@ -439,15 +439,15 @@ class win32_family_process_observer
 public:
 	using native_handle_type = win32_user_process_information;
 	native_handle_type hnt_user_process_info{};
-	constexpr auto &native_handle() noexcept
+	inline constexpr auto &native_handle() noexcept
 	{
 		return hnt_user_process_info;
 	}
-	constexpr auto &native_handle() const noexcept
+	inline constexpr auto &native_handle() const noexcept
 	{
 		return hnt_user_process_info;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return reinterpret_cast<::std::size_t>(hnt_user_process_info.hprocess) |
 			   reinterpret_cast<::std::size_t>(hnt_user_process_info.hthread);
@@ -526,16 +526,16 @@ class win32_family_process : public win32_family_process_observer<family>
 {
 public:
 	using native_handle_type = win32_user_process_information;
-	constexpr win32_family_process() noexcept = default;
+	inline constexpr win32_family_process() noexcept = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr win32_family_process(native_hd hd) noexcept
+	inline explicit constexpr win32_family_process(native_hd hd) noexcept
 		: win32_family_process_observer<family>{hd}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	explicit win32_family_process(nt_at_entry nate, path_type const &filename, win32_process_args<family> const &args,
+	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, win32_process_args<family> const &args,
 								  win32_process_envs<family> const &envs, win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(nate, filename, args, envs, processio)}
@@ -543,33 +543,33 @@ public:
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	explicit win32_family_process(path_type const &filename, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
+	inline explicit win32_family_process(path_type const &filename, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
 								  win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(filename, args, envs, processio)}
 	{
 	}
 
-	explicit win32_family_process(::fast_io::nt_fs_dirent ent, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
+	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
 								  win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(ent, args, envs, processio)}
 	{
 	}
 
-	win32_family_process(win32_family_process const &b) = delete;
-	win32_family_process &operator=(win32_family_process const &b) = delete;
-	constexpr win32_family_process(win32_family_process &&__restrict b) noexcept
+	inline win32_family_process(win32_family_process const &b) = delete;
+	inline win32_family_process &operator=(win32_family_process const &b) = delete;
+	inline constexpr win32_family_process(win32_family_process &&__restrict b) noexcept
 		: win32_family_process_observer<family>{b.release()}
 	{
 	}
-	win32_family_process &operator=(win32_family_process &&__restrict b) noexcept
+	inline win32_family_process &operator=(win32_family_process &&__restrict b) noexcept
 	{
 		win32::details::close_win32_user_process_information_and_wait(this->hnt_user_process_info);
 		this->hnt_user_process_info = b.release();
 		return *this;
 	}
-	~win32_family_process()
+	inline ~win32_family_process()
 	{
 		win32::details::close_win32_user_process_information_and_wait(this->hnt_user_process_info);
 		this->hnt_user_process_info = {};

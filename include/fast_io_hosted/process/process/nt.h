@@ -76,10 +76,10 @@ inline void check_nt_status(::std::uint_least32_t status)
 struct rtl_guard
 {
 	rtl_user_process_parameters *rtl_up{};
-	constexpr rtl_guard() noexcept = default;
-	constexpr rtl_guard(rtl_user_process_parameters *r) noexcept
+	inline constexpr rtl_guard() noexcept = default;
+	inline constexpr rtl_guard(rtl_user_process_parameters *r) noexcept
 		: rtl_up{r} {};
-	constexpr ~rtl_guard()
+	inline constexpr ~rtl_guard()
 	{
 		if (rtl_up) [[likely]]
 		{
@@ -87,7 +87,7 @@ struct rtl_guard
 			rtl_up = nullptr;
 		}
 	};
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
 		if (rtl_up) [[likely]]
 		{
@@ -100,10 +100,10 @@ struct rtl_guard
 struct unicode_string_guard
 {
 	unicode_string *us{};
-	constexpr unicode_string_guard() noexcept = default;
-	constexpr unicode_string_guard(unicode_string *u) noexcept
+	inline constexpr unicode_string_guard() noexcept = default;
+	inline constexpr unicode_string_guard(unicode_string *u) noexcept
 		: us{u} {};
-	constexpr ~unicode_string_guard()
+	inline constexpr ~unicode_string_guard()
 	{
 		if (us) [[likely]]
 		{
@@ -111,7 +111,7 @@ struct unicode_string_guard
 			us = nullptr;
 		}
 	};
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
 		if (us) [[likely]]
 		{
@@ -549,15 +549,15 @@ class nt_family_process_observer
 public:
 	using native_handle_type = nt_user_process_information;
 	native_handle_type hnt_user_process_info{};
-	constexpr auto &native_handle() noexcept
+	inline constexpr auto &native_handle() noexcept
 	{
 		return hnt_user_process_info;
 	}
-	constexpr auto &native_handle() const noexcept
+	inline constexpr auto &native_handle() const noexcept
 	{
 		return hnt_user_process_info;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return reinterpret_cast<::std::size_t>(hnt_user_process_info.hprocess) |
 			   reinterpret_cast<::std::size_t>(hnt_user_process_info.hthread);
@@ -641,7 +641,7 @@ inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_co
 	auto const status{::fast_io::win32::nt::nt_terminate_process<family == nt_family::zw>(
 		ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
 
-	if (status)
+	if (status) [[unlikely]]
 	{
 		throw_nt_error(status);
 	}
@@ -653,16 +653,16 @@ class nt_family_process : public nt_family_process_observer<family>
 {
 public:
 	using native_handle_type = nt_user_process_information;
-	constexpr nt_family_process() noexcept = default;
+	inline constexpr nt_family_process() noexcept = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr nt_family_process(native_hd hd) noexcept
+	inline explicit constexpr nt_family_process(native_hd hd) noexcept
 		: nt_family_process_observer<family>{hd}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	explicit nt_family_process(nt_at_entry nate, path_type const &filename, nt_process_args const &args,
+	inline explicit nt_family_process(nt_at_entry nate, path_type const &filename, nt_process_args const &args,
 							   nt_process_envs const &envs, win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio)}
@@ -670,33 +670,33 @@ public:
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	explicit nt_family_process(path_type const &filename, nt_process_args const &args, nt_process_envs const &envs,
+	inline explicit nt_family_process(path_type const &filename, nt_process_args const &args, nt_process_envs const &envs,
 							   win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio)}
 	{
 	}
 
-	explicit nt_family_process(::fast_io::nt_fs_dirent ent, nt_process_args const &args, nt_process_envs const &envs,
+	inline explicit nt_family_process(::fast_io::nt_fs_dirent ent, nt_process_args const &args, nt_process_envs const &envs,
 							   win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio)}
 	{
 	}
 
-	nt_family_process(nt_family_process const &b) = delete;
-	nt_family_process &operator=(nt_family_process const &b) = delete;
-	constexpr nt_family_process(nt_family_process &&__restrict b) noexcept
+	inline nt_family_process(nt_family_process const &b) = delete;
+	inline nt_family_process &operator=(nt_family_process const &b) = delete;
+	inline constexpr nt_family_process(nt_family_process &&__restrict b) noexcept
 		: nt_family_process_observer<family>{b.release()}
 	{
 	}
-	nt_family_process &operator=(nt_family_process &&__restrict b) noexcept
+	inline nt_family_process &operator=(nt_family_process &&__restrict b) noexcept
 	{
 		win32::nt::details::close_nt_user_process_information_and_wait<family>(this->hnt_user_process_info);
 		this->hnt_user_process_info = b.release();
 		return *this;
 	}
-	~nt_family_process()
+	inline ~nt_family_process()
 	{
 		win32::nt::details::close_nt_user_process_information_and_wait<family>(this->hnt_user_process_info);
 		this->hnt_user_process_info = {};

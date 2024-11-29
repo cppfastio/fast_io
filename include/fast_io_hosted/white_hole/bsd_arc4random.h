@@ -8,7 +8,7 @@ struct basic_bsd_arc4random
 {
 public:
 	using input_char_type = char_type;
-	constexpr void close() noexcept
+	inline constexpr void close() noexcept
 	{}
 };
 

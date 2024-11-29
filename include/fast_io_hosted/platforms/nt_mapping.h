@@ -12,25 +12,25 @@ enum class nt_file_map_attribute
 	required = 0x000f0000
 };
 
-constexpr nt_file_map_attribute operator&(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
+inline constexpr nt_file_map_attribute operator&(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_file_map_attribute>::type;
 	return static_cast<nt_file_map_attribute>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr nt_file_map_attribute operator|(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
+inline constexpr nt_file_map_attribute operator|(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_file_map_attribute>::type;
 	return static_cast<nt_file_map_attribute>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr nt_file_map_attribute operator^(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
+inline constexpr nt_file_map_attribute operator^(nt_file_map_attribute x, nt_file_map_attribute y) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_file_map_attribute>::type;
 	return static_cast<nt_file_map_attribute>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr nt_file_map_attribute operator~(nt_file_map_attribute x) noexcept
+inline constexpr nt_file_map_attribute operator~(nt_file_map_attribute x) noexcept
 {
 	using utype = typename ::std::underlying_type<nt_file_map_attribute>::type;
 	return static_cast<nt_file_map_attribute>(~static_cast<utype>(x));
@@ -112,12 +112,12 @@ public:
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	pointer address_begin{}, address_end{};
-	constexpr nt_family_memory_map_file() = default;
-	constexpr nt_family_memory_map_file(::std::byte *addressbegin, ::std::byte *addressend)
+	inline constexpr nt_family_memory_map_file() = default;
+	inline constexpr nt_family_memory_map_file(::std::byte *addressbegin, ::std::byte *addressend)
 		: address_begin{addressbegin}, address_end{addressend}
 	{
 	}
-	nt_family_memory_map_file(nt_at_entry bf, file_map_attribute attr, ::std::size_t bytes,
+	inline nt_family_memory_map_file(nt_at_entry bf, file_map_attribute attr, ::std::size_t bytes,
 							  ::std::uintmax_t start_address = 0)
 	{
 		basic_nt_family_file<family, char> mapping_file{
@@ -135,83 +135,83 @@ public:
 		this->address_begin = reinterpret_cast<::std::byte *>(base_ptr);
 		this->address_end = this->address_begin + bytes;
 	}
-	constexpr pointer data() const noexcept
+	inline constexpr pointer data() const noexcept
 	{
 		return address_begin;
 	}
-	constexpr bool empty() const noexcept
+	inline constexpr bool empty() const noexcept
 	{
 		return address_begin == address_end;
 	}
-	constexpr ::std::size_t size() const noexcept
+	inline constexpr ::std::size_t size() const noexcept
 	{
 		return static_cast<::std::size_t>(address_end - address_begin);
 	}
-	constexpr const_iterator cbegin() const noexcept
+	inline constexpr const_iterator cbegin() const noexcept
 	{
 		return address_begin;
 	}
-	constexpr const_iterator begin() const noexcept
+	inline constexpr const_iterator begin() const noexcept
 	{
 		return address_begin;
 	}
-	constexpr iterator begin() noexcept
+	inline constexpr iterator begin() noexcept
 	{
 		return address_begin;
 	}
-	constexpr const_iterator cend() const noexcept
+	inline constexpr const_iterator cend() const noexcept
 	{
 		return address_end;
 	}
-	constexpr const_iterator end() const noexcept
+	inline constexpr const_iterator end() const noexcept
 	{
 		return address_end;
 	}
-	constexpr iterator end() noexcept
+	inline constexpr iterator end() noexcept
 	{
 		return address_end;
 	}
-	constexpr ::std::size_t max_size() const noexcept
+	inline constexpr ::std::size_t max_size() const noexcept
 	{
 		return SIZE_MAX;
 	}
-	constexpr const_reverse_iterator crbegin() const noexcept
+	inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
 		return const_reverse_iterator{address_end};
 	}
-	constexpr reverse_iterator rbegin() noexcept
+	inline constexpr reverse_iterator rbegin() noexcept
 	{
 		return reverse_iterator{address_end};
 	}
-	constexpr const_reverse_iterator rbegin() const noexcept
+	inline constexpr const_reverse_iterator rbegin() const noexcept
 	{
 		return const_reverse_iterator{address_end};
 	}
-	constexpr const_reverse_iterator crend() const noexcept
+	inline constexpr const_reverse_iterator crend() const noexcept
 	{
 		return const_reverse_iterator{address_begin};
 	}
-	constexpr reverse_iterator rend() noexcept
+	inline constexpr reverse_iterator rend() noexcept
 	{
 		return reverse_iterator{address_begin};
 	}
-	constexpr const_reverse_iterator rend() const noexcept
+	inline constexpr const_reverse_iterator rend() const noexcept
 	{
 		return const_reverse_iterator{address_begin};
 	}
-	constexpr const_reference front() const noexcept
+	inline constexpr const_reference front() const noexcept
 	{
 		return *address_begin;
 	}
-	constexpr reference front() noexcept
+	inline constexpr reference front() noexcept
 	{
 		return *address_begin;
 	}
-	constexpr const_reference back() const noexcept
+	inline constexpr const_reference back() const noexcept
 	{
 		return address_end[-1];
 	}
-	constexpr reference back() noexcept
+	inline constexpr reference back() noexcept
 	{
 		return address_end[-1];
 	}
@@ -223,14 +223,14 @@ public:
 	{
 		return address_begin[size];
 	}
-	nt_family_memory_map_file(nt_family_memory_map_file const &) = delete;
-	nt_family_memory_map_file &operator=(nt_family_memory_map_file const &) = delete;
-	constexpr nt_family_memory_map_file(nt_family_memory_map_file &&__restrict other) noexcept
+	inline nt_family_memory_map_file(nt_family_memory_map_file const &) = delete;
+	inline nt_family_memory_map_file &operator=(nt_family_memory_map_file const &) = delete;
+	inline constexpr nt_family_memory_map_file(nt_family_memory_map_file &&__restrict other) noexcept
 		: address_begin{other.address_begin}, address_end{other.address_end}
 	{
 		other.address_end = other.address_begin = nullptr;
 	}
-	nt_family_memory_map_file &operator=(nt_family_memory_map_file &&__restrict other) noexcept
+	inline nt_family_memory_map_file &operator=(nt_family_memory_map_file &&__restrict other) noexcept
 	{
 		if (this->address_begin) [[likely]]
 		{
@@ -243,7 +243,7 @@ public:
 		other.address_end = other.address_begin = nullptr;
 		return *this;
 	}
-	void close()
+	inline void close()
 	{
 		if (this->address_begin) [[likely]]
 		{
@@ -257,7 +257,7 @@ public:
 			}
 		}
 	}
-	~nt_family_memory_map_file()
+	inline ~nt_family_memory_map_file()
 	{
 		if (this->address_begin) [[likely]]
 		{

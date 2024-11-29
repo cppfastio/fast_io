@@ -11,12 +11,13 @@ struct temp_array_scoped_ptr
 	using Alloc = ::fast_io::native_typed_thread_local_allocator<T>;
 
 	T *ptr{};
-	constexpr temp_array_scoped_ptr() noexcept = default;
-	explicit constexpr temp_array_scoped_ptr(::std::size_t n)
+	inline constexpr temp_array_scoped_ptr() noexcept = default;
+	inline explicit constexpr temp_array_scoped_ptr(::std::size_t n)
 		: ptr(Alloc::allocate(n))
 	{}
-	temp_array_scoped_ptr(temp_array_scoped_ptr const &) = delete;
-	temp_array_scoped_ptr &operator=(temp_array_scoped_ptr const &) = delete;
+	inline temp_array_scoped_ptr(temp_array_scoped_ptr const &) = delete;
+	inline temp_array_scoped_ptr &operator=(temp_array_scoped_ptr const &) = delete;
+	inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 	constexpr
 #endif
@@ -38,11 +39,11 @@ struct temp_array_scoped_ptr
 	{
 		return ptr;
 	}
-	constexpr T &operator[](::std::size_t pos) noexcept
+	inline constexpr T &operator[](::std::size_t pos) noexcept
 	{
 		return ptr[pos];
 	}
-	constexpr T const &operator[](::std::size_t pos) const noexcept
+	inline constexpr T const &operator[](::std::size_t pos) const noexcept
 	{
 		return ptr[pos];
 	}

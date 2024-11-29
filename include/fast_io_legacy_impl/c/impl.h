@@ -307,7 +307,7 @@ enum class c_io_device_environment : ::std::uint_fast8_t
 
 struct c_io_device_open_t
 {
-	explicit constexpr c_io_device_open_t() noexcept = default;
+	inline explicit constexpr c_io_device_open_t() noexcept = default;
 };
 inline constexpr c_io_device_open_t c_io_device_open{};
 
@@ -682,15 +682,15 @@ public:
 	using output_char_type = char_type;
 	using native_handle_type = FILE *;
 	native_handle_type fp{};
-	constexpr native_handle_type native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return fp;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return fp;
 	}
-	constexpr native_handle_type release() noexcept
+	inline constexpr native_handle_type release() noexcept
 	{
 		auto temp{fp};
 		fp = nullptr;
@@ -698,18 +698,18 @@ public:
 	}
 #if !defined(__AVR__)
 	template <posix_family fam>
-	explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 	{
 		return basic_posix_family_io_observer<fam, char_type>{details::my_fileno_impl<family>(fp)};
 	}
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) || defined(__CYGWIN__)
 	template <win32_family fam>
-	explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
 	{
 		return {details::my_fp_to_win32_handle_impl<family>(fp)};
 	}
 	template <nt_family fam>
-	explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
 	{
 		return {details::my_fp_to_win32_handle_impl<family>(fp)};
 	}
@@ -901,11 +901,11 @@ struct
 {
 	using native_handle_type = FILE *;
 	FILE *fp{};
-	explicit constexpr c_family_file_factory(FILE *fpp) noexcept
+	inline explicit constexpr c_family_file_factory(FILE *fpp) noexcept
 		: fp(fpp) {};
-	c_family_file_factory(c_family_file_factory const &) = delete;
-	c_family_file_factory &operator=(c_family_file_factory const &) = delete;
-	~c_family_file_factory()
+	inline c_family_file_factory(c_family_file_factory const &) = delete;
+	inline c_family_file_factory &operator=(c_family_file_factory const &) = delete;
+	inline ~c_family_file_factory()
 	{
 		if (fp) [[likely]]
 		{
@@ -927,31 +927,31 @@ public:
 	using input_char_type = char_type;
 	using output_char_type = char_type;
 	using native_handle_type = FILE *;
-	constexpr basic_c_family_file() noexcept = default;
+	inline constexpr basic_c_family_file() noexcept = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr basic_c_family_file(native_hd ffp) noexcept
+	inline explicit constexpr basic_c_family_file(native_hd ffp) noexcept
 		: basic_c_family_io_observer<family, ch_type>{ffp}
 	{
 	}
 	template <c_family family2>
-	explicit constexpr basic_c_family_file(c_family_file_factory<family2> &&other) noexcept
+	inline explicit constexpr basic_c_family_file(c_family_file_factory<family2> &&other) noexcept
 		: basic_c_family_io_observer<family, ch_type>{other.fp}
 	{
 		other.fp = nullptr;
 	}
-	constexpr basic_c_family_file(basic_c_family_io_observer<family, ch_type>) noexcept = delete;
-	constexpr basic_c_family_file &operator=(basic_c_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_c_family_file(basic_c_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_c_family_file &operator=(basic_c_family_io_observer<family, ch_type>) noexcept = delete;
 
-	basic_c_family_file(basic_c_family_file const &) = delete;
-	basic_c_family_file &operator=(basic_c_family_file const &) = delete;
-	constexpr basic_c_family_file(decltype(nullptr)) noexcept = delete;
-	constexpr basic_c_family_file(basic_c_family_file &&other) noexcept
+	inline basic_c_family_file(basic_c_family_file const &) = delete;
+	inline basic_c_family_file &operator=(basic_c_family_file const &) = delete;
+	inline constexpr basic_c_family_file(decltype(nullptr)) noexcept = delete;
+	inline constexpr basic_c_family_file(basic_c_family_file &&other) noexcept
 		: basic_c_family_io_observer<family, ch_type>{other.fp}
 	{
 		other.fp = nullptr;
 	}
-	basic_c_family_file &operator=(basic_c_family_file &&other) noexcept
+	inline basic_c_family_file &operator=(basic_c_family_file &&other) noexcept
 	{
 		if (__builtin_addressof(other) != this)
 		{
@@ -970,7 +970,7 @@ public:
 		other.fp = nullptr;
 		return *this;
 	}
-	void close()
+	inline void close()
 	{
 		if (this->fp == nullptr) [[unlikely]]
 		{
@@ -993,7 +993,7 @@ public:
 		}
 #endif
 	}
-	~basic_c_family_file()
+	inline ~basic_c_family_file()
 	{
 		if (this->fp) [[likely]]
 		{
@@ -1007,7 +1007,7 @@ public:
 	}
 #if !defined(__AVR__)
 	template <posix_family pfamily>
-	basic_c_family_file(basic_posix_family_file<pfamily, char_type> &&phd, open_mode om)
+	inline basic_c_family_file(basic_posix_family_file<pfamily, char_type> &&phd, open_mode om)
 		: basic_c_family_io_observer<family, ch_type>{::fast_io::details::my_c_file_open_impl(phd.fd, om)}
 	{
 		phd.fd = -1;
@@ -1015,37 +1015,37 @@ public:
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) || defined(__CYGWIN__)
 	// windows specific. open posix file from win32 io handle
 	template <win32_family wfamily>
-	basic_c_family_file(basic_win32_family_file<wfamily, char_type> &&win32_handle, open_mode om)
+	inline basic_c_family_file(basic_win32_family_file<wfamily, char_type> &&win32_handle, open_mode om)
 		: basic_c_family_file(basic_posix_file<char_type>(::std::move(win32_handle), om), om)
 	{
 	}
 	template <nt_family nfamily>
-	basic_c_family_file(basic_nt_family_file<nfamily, char_type> &&nt_handle, open_mode om)
+	inline basic_c_family_file(basic_nt_family_file<nfamily, char_type> &&nt_handle, open_mode om)
 		: basic_c_family_file(basic_posix_file<char_type>(::std::move(nt_handle), om), om)
 	{
 	}
 #endif
-	basic_c_family_file(native_fs_dirent ent, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_c_family_file(native_fs_dirent ent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_c_family_file(basic_posix_file<char_type>(ent, om, pm), om)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	basic_c_family_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_c_family_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_c_family_file(basic_posix_file<char_type>(file, om, pm), om)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	basic_c_family_file(native_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_c_family_file(native_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_c_family_file(basic_posix_file<char_type>(nate, file, om, pm), om)
 	{
 	}
 	template <posix_family pfamily>
-	explicit constexpr basic_c_family_file(io_construct_t, basic_posix_family_io_observer<pfamily, ch_type> piob, open_mode om) noexcept
+	inline explicit constexpr basic_c_family_file(io_construct_t, basic_posix_family_io_observer<pfamily, ch_type> piob, open_mode om) noexcept
 		: basic_c_family_io_observer<family, char_type>{::fast_io::details::my_c_file_open_impl(piob.fd, om)}
 	{
 	}
 #endif
-	basic_c_family_file(io_temp_t)
+	inline basic_c_family_file(io_temp_t)
 		: basic_c_family_io_observer<family, ch_type>{::fast_io::details::my_c_open_tmp_file()}
 	{
 	}

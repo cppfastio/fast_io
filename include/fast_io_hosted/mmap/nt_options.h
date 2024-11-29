@@ -11,8 +11,8 @@ struct nt_mmap_options
 	::std::uint_least32_t attributes{};
 	::std::uint_least32_t viewShare{};
 
-	explicit constexpr nt_mmap_options() noexcept = default;
-	constexpr nt_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
+	inline explicit constexpr nt_mmap_options() noexcept = default;
+	inline constexpr nt_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
 	{
 		::std::uint_least32_t flprotecttemp{};
 		::std::uint_least32_t dwDesiredAccesstemp{0x000F0000 | 0x0001 | 0x0004};
