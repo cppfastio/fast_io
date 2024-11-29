@@ -607,7 +607,7 @@ inline constexpr auto status_io_print_forward(io_alias_type_t<char_type>, nt_dir
 	}
 }
 
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !defined(_WIN32_WINDOWS)
 using native_directory_entry = nt_directory_entry;
 #endif
 
