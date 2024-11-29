@@ -275,9 +275,30 @@ struct basic_win32_9xa_recursive_directory_generator
 
 struct win32_9xa_dir_file_stack_type
 {
-	win32_9xa_dir_file fd{};
+	win32_9xa_dir_file dirf{};
 	void *file_struct{};
-
+	constexpr win32_9xa_dir_file_stack_type() noexcept = default;
+	win32_9xa_dir_file_stack_type(win32_9xa_dir_file_stack_type const &) = delete;
+	win32_9xa_dir_file_stack_type &operator=(win32_9xa_dir_file_stack_type const &) = delete;
+	constexpr win32_9xa_dir_file_stack_type(win32_9xa_dir_file_stack_type &&other) noexcept
+		: dirf(::std::move(other.dirf)), file_struct(other.file_struct)
+	{
+		other.file_struct = nullptr;
+	}
+	win32_9xa_dir_file_stack_type &operator=(win32_9xa_dir_file_stack_type &&other) noexcept
+	{
+		if (__builtin_addressof(other) != this)
+		{
+			if (this->file_struct) [[likely]]
+			{
+				::fast_io::win32::FindClose(this->file_struct);
+			}
+			dirf = ::std::move(other.dirf);
+			this->file_struct = other.file_struct;
+			other.file_struct = nullptr;
+		}
+		return *this;
+	}
 	inline ~win32_9xa_dir_file_stack_type()
 	{
 		if (file_struct) [[likely]]
@@ -315,7 +336,7 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 		else
 		{
 			auto &back{prdit.stack.back()};
-			prdit.entry->d_handle = back.fd.handle;
+			prdit.entry->d_handle = back.dirf.handle;
 			prdit.entry->file_struct = back.file_struct;
 			if (back.file_struct == nullptr)
 			{
@@ -340,7 +361,7 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 				continue;
 			}
 			prdit.stack.emplace_back(
-				win32_9xa_dir_file{win32_9xa_at_entry{prdit.stack.empty() ? prdit.root_handle : prdit.stack.back().fd.handle},
+				win32_9xa_dir_file{win32_9xa_at_entry{prdit.stack.empty() ? prdit.root_handle : prdit.stack.back().dirf.handle},
 								   ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
 								   open_mode::directory},
 				nullptr);
