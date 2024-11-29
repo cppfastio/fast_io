@@ -280,7 +280,7 @@ struct win32_9xa_dir_file_stack_type
 	constexpr win32_9xa_dir_file_stack_type() noexcept = default;
 	win32_9xa_dir_file_stack_type(win32_9xa_dir_file_stack_type const &) = delete;
 	win32_9xa_dir_file_stack_type &operator=(win32_9xa_dir_file_stack_type const &) = delete;
-	constexpr win32_9xa_dir_file_stack_type(win32_9xa_dir_file_stack_type &&other) noexcept
+	win32_9xa_dir_file_stack_type(win32_9xa_dir_file_stack_type &&other) noexcept
 		: dirf(::std::move(other.dirf)), file_struct(other.file_struct)
 	{
 		other.file_struct = nullptr;
