@@ -341,8 +341,8 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 			}
 			prdit.stack.emplace_back(
 				win32_9xa_dir{win32_9xa_at_entry{prdit.stack.empty() ? prdit.root_handle : prdit.stack.back().fd.handle},
-						  ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
-						  open_mode::directory},
+							  ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
+							  open_mode::directory},
 				nullptr);
 		}
 		return prdit;
@@ -388,8 +388,8 @@ begin(basic_win32_9xa_recursive_directory_generator<StackType> &prg) noexcept
 		{
 			prdit.stack.emplace_back(
 				win32_9xa_dir{win32_9xa_at_entry{prdit.root_handle},
-						  ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
-						  open_mode::directory},
+							  ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
+							  open_mode::directory},
 				nullptr);
 		}
 	}
