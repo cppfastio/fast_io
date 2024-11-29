@@ -21,13 +21,18 @@ Special file type region. They are usually not used for I/O but for other purpos
 However, they are still capable of doing I/O.
 */
 
-using dir_file = directory_file_wrapper<
-#if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS))
-	win9x_dir
-#else
-	basic_native_file<char>
+using dir_file
+#if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS)) && \
+	!defined(FAST_IO_NO_WARNING_DEPRECATED_WIN9X_FILESYSTEMS)
+	[[deprecated("win9x_dir may be attacked by toctou. Please use nt api on Windows NT, or define macro FAST_IO_NO_WARNING_DEPRECATED_WIN9X_FILESYSTEMS to eliminate alerts.")]]
 #endif
-	>;
+	= directory_file_wrapper<
+#if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS))
+		win9x_dir
+#else
+		basic_native_file<char>
+#endif
+		>;
 
 /*
 template region
