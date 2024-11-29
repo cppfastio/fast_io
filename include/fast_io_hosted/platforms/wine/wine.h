@@ -51,7 +51,7 @@ struct
 	{
 		if (host_fd) [[likely]]
 		{
-			::fast_io::details::wine::wine_close<family>(host_fd);
+			::__wine_unix_ret_close(host_fd);
 		}
 	}
 };
@@ -75,6 +75,13 @@ public:
 	constexpr basic_wine_family_file(decltype(nullptr)) noexcept = delete;
 	constexpr basic_wine_family_file(basic_wine_family_file<family, ch_type>) noexcept = delete;
 	constexpr basic_wine_family_file &operator=(basic_wine_family_file<family, ch_type>) noexcept = delete;
+	~basic_wine_family_file()
+	{
+		if (host_fd) [[likely]]
+		{
+			::__wine_unix_ret_close(host_fd);
+		}
+	}
 };
 
 } // namespace fast_io
