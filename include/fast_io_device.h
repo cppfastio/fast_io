@@ -23,8 +23,8 @@ However, they are still capable of doing I/O.
 
 using dir_file
 #if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS)) && \
-	!defined(FAST_IO_NO_WARNING_DEPRECATED_WIN9X_FILESYSTEMS)
-	[[deprecated("win9x_dir may be attacked by toctou. Please use nt api on Windows NT, or define macro FAST_IO_NO_WARNING_DEPRECATED_WIN9X_FILESYSTEMS to eliminate alerts.")]]
+	!defined(FAST_IO_NO_WARNING_DEPRECATED_WIN9X_DIR)
+	[[deprecated("win9x_dir may be attacked by toctou. Please use nt api on Windows NT, or define macro FAST_IO_NO_WARNING_DEPRECATED_WIN9X_DIR to eliminate alerts.")]]
 #endif
 	= directory_file_wrapper<
 #if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS))
