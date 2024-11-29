@@ -179,12 +179,12 @@ extern "C"
 		return ::__wine_unix::wine_unix_ret_unix_fd_to_host_fd_impl(*reinterpret_cast<int *>(punixfd));
 	}
 
-	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_nt_handle __WINE_UNIX_DEFAULTCALL __wine_unix_ret_host_fd_to_nt_handle(__wine_host_fd_t) noexcept
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_nt_handle __WINE_UNIX_DEFAULTCALL __wine_unix_ret_host_fd_to_nt_handle(__wine_host_fd_t) __WINE_UNIX_NOEXCEPT
 	{
 		return {__WINE_UNIX_ERRNO_EOPNOTSUPP, 0};
 	}
 
-	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_nt_handle __WINE_UNIX_DEFAULTCALL __wine_unix_ret_nt_handle_to_host_fd(ptrdiff_t) noexcept
+	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_nt_handle __WINE_UNIX_DEFAULTCALL __wine_unix_ret_nt_handle_to_host_fd(ptrdiff_t) __WINE_UNIX_NOEXCEPT
 	{
 		return {__WINE_UNIX_ERRNO_EOPNOTSUPP, 0};
 	}
@@ -220,14 +220,14 @@ extern "C"
 
 	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_writev(__wine_host_fd_t host_fd, __wine_unix_iovec_t const *iovs, size_t iovsize) __WINE_UNIX_NOEXCEPT
 	{
-		return __wine_unix::wine_unix_readwritev_result_common(ret, iovs, iovsize, [](int fd, struct iovec const *iov, int iovcnt) {
+		return __wine_unix::wine_unix_readwritev_result_common(ret, iovs, iovsize, [](int fd, struct iovec const *iov, int iovcnt) noexcept {
 			return ::writev(fd, iov, iovcnt);
 		});
 	}
 
 	__WINE_UNIX_DLLEXPORT __wine_unix_result_ret_readwritev __WINE_UNIX_DEFAULTCALL __wine_unix_ret_readv(__wine_host_fd_t host_fd, __wine_unix_iovec_t const *iovs, size_t iovsize) __WINE_UNIX_NOEXCEPT
 	{
-		return __wine_unix::wine_unix_readwritev_result_common(ret, iovs, iovsize, [](int fd, struct iovec const *iov, int iovcnt) {
+		return __wine_unix::wine_unix_readwritev_result_common(ret, iovs, iovsize, [](int fd, struct iovec const *iov, int iovcnt) noexcept {
 			return ::readv(fd, iov, iovcnt);
 		});
 	}
@@ -244,7 +244,7 @@ extern "C"
 				return __WINE_UNIX_ERRNO_EOVERFLOW;
 			}
 		}
-		return __wine_unix::wine_unix_readwritev_result_common(host_fd, iovs, iovsize, [offset](int fd, struct iovec const *iov, int iovcnt) {
+		return __wine_unix::wine_unix_readwritev_result_common(host_fd, iovs, iovsize, [offset](int fd, struct iovec const *iov, int iovcnt) noexcept {
 			return ::pwritev(fd, iov, iovcnt, offset);
 		});
 	}
@@ -260,7 +260,7 @@ extern "C"
 				return __WINE_UNIX_ERRNO_EOVERFLOW;
 			}
 		}
-		return __wine_unix::wine_unix_readwritev_result_common(host_fd, iovs, iovsize, [offset](int fd, struct iovec const *iov, int iovcnt) {
+		return __wine_unix::wine_unix_readwritev_result_common(host_fd, iovs, iovsize, [offset](int fd, struct iovec const *iov, int iovcnt) noexcept {
 			return ::preadv(fd, iov, iovcnt, offset);
 		});
 	}
