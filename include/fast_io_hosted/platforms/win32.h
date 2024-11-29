@@ -949,12 +949,12 @@ struct find_struct_guard
 	}
 };
 
-inline void check_win9x_dir_is_valid(win9x_dir_handle const& h)
+inline void check_win9x_dir_is_valid(win9x_dir_handle const &h)
 {
 	::fast_io::win32::win32_find_dataa wfda{};
 	auto temp_find_path{::fast_io::tlc::u8concat_fast_io_tlc(h.path, u8"\\*")};
 	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
-	if (find_struct == reinterpret_cast<void*>(static_cast<::std::ptrdiff_t>(-1)))
+	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)))
 	{
 		throw_win32_error(0x5);
 	}
@@ -1258,7 +1258,7 @@ inline constexpr auto operator<=>(win9x_dir_io_observer const &a,
 
 #endif
 
-class win9x_dir : public win9x_dir_io_observer
+class win9x_dir_file : public win9x_dir_io_observer
 {
 public:
 	using typename win9x_dir_io_observer::char_type;
@@ -1267,25 +1267,25 @@ public:
 	using typename win9x_dir_io_observer::native_handle_type;
 	using win9x_dir_io_observer::native_handle;
 	using file_factory_type = win9x_dir_file_factory;
-	inline explicit constexpr win9x_dir() noexcept = default;
+	inline explicit constexpr win9x_dir_file() noexcept = default;
 
-	inline constexpr win9x_dir(win9x_dir_io_observer) noexcept = delete;
-	inline constexpr win9x_dir &operator=(win9x_dir_io_observer) noexcept = delete;
+	inline constexpr win9x_dir_file(win9x_dir_io_observer) noexcept = delete;
+	inline constexpr win9x_dir_file &operator=(win9x_dir_io_observer) noexcept = delete;
 
-	inline win9x_dir(win9x_dir const &other)
+	inline win9x_dir_file(win9x_dir_file const &other)
 		: win9x_dir_io_observer{win32::details::win9x_dir_dup_impl(other.handle)}
 	{
 	}
-	inline win9x_dir &operator=(win9x_dir const &other)
+	inline win9x_dir_file &operator=(win9x_dir_file const &other)
 	{
 		this->handle = win32::details::win9x_dir_dup_impl(other.handle);
 		return *this;
 	}
-	inline win9x_dir(win9x_dir &&__restrict b) noexcept
+	inline win9x_dir_file(win9x_dir_file &&__restrict b) noexcept
 		: win9x_dir_io_observer{b.release()}
 	{
 	}
-	inline win9x_dir &operator=(win9x_dir &&__restrict b) noexcept
+	inline win9x_dir_file &operator=(win9x_dir_file &&__restrict b) noexcept
 	{
 		if (*this) [[likely]]
 		{
@@ -1302,7 +1302,7 @@ public:
 		}
 		this->handle = ::std::move(newhandle);
 	}
-	inline void close()
+	inline void close() noexcept
 	{
 		if (*this) [[likely]]
 		{
@@ -1312,24 +1312,24 @@ public:
 
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	inline explicit constexpr win9x_dir(native_hd handle1) noexcept
+	inline explicit constexpr win9x_dir_file(native_hd handle1) noexcept
 		: win9x_dir_io_observer{::std::move(handle1)}
 	{
 	}
 
-	inline win9x_dir(io_dup_t, win9x_dir_io_observer wiob)
+	inline win9x_dir_file(io_dup_t, win9x_dir_io_observer wiob)
 		: win9x_dir_io_observer{::fast_io::win32::details::win9x_dir_dup_impl(wiob.handle)}
 	{
 	}
 
-	inline explicit constexpr win9x_dir(win9x_dir_file_factory &&fact) noexcept
+	inline explicit constexpr win9x_dir_file(win9x_dir_file_factory &&fact) noexcept
 		: win9x_dir_io_observer{::std::move(fact.handle)}
 	{
 	}
 
-	inline explicit constexpr win9x_dir(decltype(nullptr)) noexcept = delete;
+	inline explicit constexpr win9x_dir_file(decltype(nullptr)) noexcept = delete;
 
-	inline explicit win9x_dir(win9x_fs_dirent fsdirent, [[maybe_unused]] open_mode om, [[maybe_unused]] perms pm = static_cast<perms>(436))
+	inline explicit win9x_dir_file(win9x_fs_dirent fsdirent, [[maybe_unused]] open_mode om, [[maybe_unused]] perms pm = static_cast<perms>(436))
 		: win9x_dir_io_observer{
 			  ::fast_io::win32::details::win9x_create_dir_file_at_fs_dirent_impl(
 				  fsdirent.handle, fsdirent.filename.c_str(), fsdirent.filename.size())}
@@ -1337,20 +1337,20 @@ public:
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit win9x_dir(T const &filename, [[maybe_unused]] open_mode om, [[maybe_unused]] perms pm = static_cast<perms>(436))
+	inline explicit win9x_dir_file(T const &filename, [[maybe_unused]] open_mode om, [[maybe_unused]] perms pm = static_cast<perms>(436))
 		: win9x_dir_io_observer{
 			  ::fast_io::win32::details::win9x_create_dir_file_impl(filename)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit win9x_dir(win9x_at_entry nate, T const &filename, [[maybe_unused]] open_mode om, [[maybe_unused]] perms pm = static_cast<perms>(436))
+	inline explicit win9x_dir_file(win9x_at_entry nate, T const &filename, [[maybe_unused]] open_mode om, [[maybe_unused]] perms pm = static_cast<perms>(436))
 		: win9x_dir_io_observer{
 			  ::fast_io::win32::details::win9x_create_dir_file_at_impl(nate.handle, filename)}
 	{
 	}
 
-	inline ~win9x_dir()
+	inline ~win9x_dir_file()
 	{
 		if (*this) [[likely]]
 		{
@@ -1359,7 +1359,7 @@ public:
 	}
 };
 
-inline win9x_at_entry at(win9x_dir const &wiob) noexcept
+inline win9x_at_entry at(win9x_dir_file const &wiob) noexcept
 {
 	return win9x_at_entry{wiob.handle};
 }
@@ -1471,7 +1471,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit basic_win32_family_file(nt_at_entry nate, T const &filename, open_mode om,
-									 perms pm = static_cast<perms>(436))
+											perms pm = static_cast<perms>(436))
 		: basic_win32_family_io_observer<family, char_type>{
 			  ::fast_io::details::win32_create_file_at_impl<family>(nate.handle, filename, {om, pm})}
 	{
@@ -1479,7 +1479,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit basic_win32_family_file(win9x_at_entry nate, T const &filename, open_mode om,
-									 perms pm = static_cast<perms>(436))
+											perms pm = static_cast<perms>(436))
 		: basic_win32_family_io_observer<family, char_type>{
 			  ::fast_io::win32::details::win9x_create_file_at_impl(nate.handle, filename, {om, pm})}
 	{
