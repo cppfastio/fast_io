@@ -263,8 +263,7 @@ template <typename input, typename T>
 		}
 		else if constexpr (context_scannable<char_type, T>)
 		{
-			for (typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type, T>))>::type state;
-				 ;)
+			for (typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type, T>))>::type state;;)
 			{
 				auto curr{ibuffer_curr(in)};
 				auto end{ibuffer_end(in)};
