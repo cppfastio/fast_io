@@ -333,8 +333,7 @@ template <typename input, typename... Args>
 	else if constexpr (::fast_io::operations::defines::available_add_ibuf<input>)
 	{
 		static_assert(::fast_io::operations::decay::defines::has_status_scan_define<input>, 
-			"If you want to scan this type of file, please add ::fast_io::basic_ibuf. "
-			"At the same time, please ensure that this type of file is not blocked, or scanning will block the endless loop.");
+			"If you want to scan this type of file, please add ::fast_io::basic_ibuf.");
 		return false;
 	}
 	else
