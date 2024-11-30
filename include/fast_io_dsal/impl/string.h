@@ -1,6 +1,8 @@
 ﻿#pragma once
 
-namespace fast_io::containers
+namespace fast_io
+{
+namespace containers
 {
 
 namespace details
@@ -1617,4 +1619,203 @@ inline constexpr void swap(::fast_io::containers::basic_string<chtype, alloctype
 	a.swap(b);
 }
 
-} // namespace fast_io::containers
+// context scan
+
+struct scan_fast_io_string_context
+{
+	bool copying{};
+};
+
+namespace details
+{
+
+template <bool noskipws, bool line, ::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::parse_result<char_type const *>
+scan_context_define_fast_io_string_impl(bool &skip_space_done, char_type const *first, char_type const *last, basic_string<char_type, allocator_type> &ref)
+{
+	auto it{first};
+	if constexpr (!noskipws && !line)
+	{
+		if (!skip_space_done)
+		{
+			it = ::fast_io::find_none_c_space(it, last);
+			if (it == last)
+			{
+				return {it, ::fast_io::parse_code::partial};
+			}
+			skip_space_done = true;
+			ref.clear();
+		}
+	}
+	auto it_space{it};
+	if constexpr (line)
+	{
+		it_space = ::fast_io::find_lf(it_space, last);
+	}
+	else
+	{
+		it_space = ::fast_io::find_c_space(it_space, last);
+	}
+	if constexpr (noskipws || line)
+	{
+		if (!skip_space_done)
+		{
+			ref.assign(::fast_io::containers::basic_string_view<char_type>{it, static_cast<::std::size_t>(it_space - it)});
+			skip_space_done = true;
+		}
+		else
+		{
+			ref.append(::fast_io::containers::basic_string_view<char_type>{it, static_cast<::std::size_t>(it_space - it)});
+		}
+	}
+	else
+	{
+		ref.append(::fast_io::containers::basic_string_view<char_type>{it, static_cast<::std::size_t>(it_space - it)});
+	}
+	if (it_space == last)
+	{
+		return {it_space, ::fast_io::parse_code::partial};
+	}
+	if constexpr (line)
+	{
+		++it_space;
+	}
+	return {it_space, ::fast_io::parse_code::ok};
+}
+
+inline constexpr ::fast_io::parse_code scan_context_eof_fast_io_string_define_impl(bool skip_space_done) noexcept
+{
+	if (skip_space_done)
+	{
+		return ::fast_io::parse_code::ok;
+	}
+	else
+	{
+		return ::fast_io::parse_code::end_of_file;
+	}
+}
+
+template <bool noskipws, bool line>
+inline constexpr ::fast_io::manipulators::scalar_flags fast_io_string_default_scalar_flags{.noskipws = noskipws, .line = line};
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::parse_result<char_type const *>
+scan_context_define_whole_fast_io_string_impl(bool &notfirstround, char_type const *first, char_type const *last, basic_string<char_type, allocator_type> &ref)
+{
+	if (!notfirstround) [[unlikely]]
+	{
+		ref.assign(::fast_io::containers::basic_string_view<char_type>{first, static_cast<::std::size_t>(last - first)});
+		notfirstround = true;
+	}
+	else
+	{
+		ref.append(::fast_io::containers::basic_string_view<char_type>{first, static_cast<::std::size_t>(last - first)});
+	}
+	return {last, ::fast_io::parse_code::partial};
+}
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::parse_code
+scan_context_define_whole_fast_io_string_eof_impl(bool notfirstround, basic_string<char_type, allocator_type> &ref)
+{
+	if (!notfirstround)
+	{
+		ref.clear();
+	}
+	return ::fast_io::parse_code::ok;
+}
+
+} // namespace details
+
+template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags, typename allocator_type>
+inline constexpr io_type_t<scan_fast_io_string_context> scan_context_type(
+	io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_t<flags, basic_string<char_type, allocator_type> &>>) noexcept
+{
+	return {};
+}
+
+template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags, typename allocator_type>
+inline constexpr parse_result<char_type const *> scan_context_define(
+	io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_t<flags, basic_string<char_type, allocator_type> &>>,
+	scan_fast_io_string_context &skip_space_done, char_type const *first, char_type const *last,
+	::fast_io::manipulators::scalar_manip_t<flags, basic_string<char_type, allocator_type> &> str)
+{
+	return details::scan_context_define_fast_io_string_impl<flags.noskipws, flags.line>(skip_space_done.copying, first, last, str.reference);
+}
+
+template <::fast_io::manipulators::scalar_flags flags, ::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::parse_code scan_context_eof_define(
+	io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_t<flags, basic_string<char_type, allocator_type> &>>,
+	scan_fast_io_string_context skip_space_done,
+	::fast_io::manipulators::scalar_manip_t<flags, basic_string<char_type, allocator_type> &> str) noexcept
+{
+	if constexpr (flags.line || flags.noskipws)
+	{
+		if (str.reference.empty())
+		{
+			return ::fast_io::parse_code::end_of_file;
+		}
+		else
+		{
+			return ::fast_io::parse_code::ok;
+		}
+	}
+	else
+	{
+		return details::scan_context_eof_fast_io_string_define_impl(skip_space_done.copying);
+	}
+}
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::manipulators::scalar_manip_t<details::fast_io_string_default_scalar_flags<false, false>,
+														 basic_string<char_type, allocator_type> &>
+scan_alias_define(io_alias_t, basic_string<char_type, allocator_type> &t) noexcept
+{
+	return {t};
+}
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr io_type_t<scan_fast_io_string_context>
+scan_context_type(io_reserve_type_t<char_type, ::fast_io::manipulators::whole_get_t<basic_string<char_type, allocator_type> &>>) noexcept
+{
+	return {};
+}
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr parse_result<char_type const *> scan_context_define(
+	io_reserve_type_t<char_type, ::fast_io::manipulators::whole_get_t<basic_string<char_type, allocator_type> &>>,
+	scan_fast_io_string_context &ctx, char_type const *first, char_type const *last,
+	::fast_io::manipulators::whole_get_t<basic_string<char_type, allocator_type> &> str)
+{
+	return details::scan_context_define_whole_fast_io_string_impl(ctx.copying, first, last, str.reference);
+}
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::parse_code scan_context_eof_define(
+	io_reserve_type_t<char_type, ::fast_io::manipulators::whole_get_t<basic_string<char_type, allocator_type> &>>,
+	scan_fast_io_string_context ctx,
+	::fast_io::manipulators::whole_get_t<basic_string<char_type, allocator_type> &> str) noexcept
+{
+	return details::scan_context_define_whole_fast_io_string_eof_impl(ctx.copying, str.reference);
+}
+
+} // namespace containers
+
+namespace manipulators
+{
+template <::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::manipulators::scalar_manip_t<::fast_io::containers::details::fast_io_string_default_scalar_flags<false, true>,
+														 ::fast_io::containers::basic_string<char_type, allocator_type> &>
+line_get(::fast_io::containers::basic_string<char_type, allocator_type> &line_str) noexcept
+{
+	return {line_str};
+}
+
+template <::std::integral char_type, typename allocator_type>
+inline constexpr ::fast_io::manipulators::whole_get_t<::fast_io::containers::basic_string<char_type, allocator_type> &>
+whole_get(::fast_io::containers::basic_string<char_type, allocator_type> &whole_str) noexcept
+{
+	return {whole_str};
+}
+} // namespace manipulators
+} // namespace fast_io
