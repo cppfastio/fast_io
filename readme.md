@@ -47,10 +47,15 @@ int main()
 {
 	int i;
 	::fast_io::io::scan(i);
+	// Equivalent to the function above
+	::fast_io::io::scan(::fast_io::c_stdin(), i);
 }
 ```
 ### Scan from `native stdin` 
 * Note: scanning will read the data in native stdin into the buffer and clear some data in native stdin
+* on non-windows systems (fd): (int)0
+* on win32 (handle): GetStdHandle(STD_INPUT_HANDLE)
+* on nt (handle): RtlGetCurrentPeb()->ProcessParameters->StandardInput
 ```cpp
 #include <fast_io.h>
 
