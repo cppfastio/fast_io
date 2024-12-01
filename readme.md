@@ -39,6 +39,28 @@ int main()
 	// file_data satisfies ::std::ranges::contiguous_range
 }
 ```
+### Scan from `cstdin`
+```cpp
+#include <fast_io.h>
+
+int main() 
+{
+	int i;
+	::fast_io::io::scan(i);
+}
+```
+### Scan from `native stdin` 
+* Note: scanning will read the data in native stdin into the buffer and clear some data in native stdin
+```cpp
+#include <fast_io.h>
+
+int main() 
+{
+	::fast_io::basic_ibuf<::fast_io::native_io_observer> ibf_in{::fast_io::in()};
+	int i;
+	::fast_io::io::scan(ibf_in, i);
+}
+```
 ### Additional Samples
 
 For up-to-date examples, refer to the [`examples/`](examples/) directories.
