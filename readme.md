@@ -16,7 +16,7 @@ int main()
 	::fast_io::io::print(::fast_io::c_stdout(), "Equivalent to the function above\n");
 }
 ```
-### Output to `native stdout` 
+### Output to `native stdout` (Unbuffered)
 * on non-windows systems (fd): (int)1
 * on win32 (handle): GetStdHandle(STD_OUTPUT_HANDLE)
 * on nt (handle): RtlGetCurrentPeb()->ProcessParameters->StandardOutput
@@ -49,21 +49,6 @@ int main()
 	::fast_io::io::scan(i);
 	// Equivalent to the function above
 	::fast_io::io::scan(::fast_io::c_stdin(), i);
-}
-```
-### Scan from `native stdin` 
-* Note: scanning will read the data in native stdin into the buffer and clear some data in native stdin
-* on non-windows systems (fd): (int)0
-* on win32 (handle): GetStdHandle(STD_INPUT_HANDLE)
-* on nt (handle): RtlGetCurrentPeb()->ProcessParameters->StandardInput
-```cpp
-#include <fast_io.h>
-
-int main() 
-{
-	::fast_io::basic_ibuf<::fast_io::native_io_observer> ibf_in{::fast_io::in()};
-	int i;
-	::fast_io::io::scan(ibf_in, i);
 }
 ```
 ### Additional Samples
