@@ -16,7 +16,7 @@ int main()
 	::fast_io::io::print(::fast_io::c_stdout(), "Equivalent to the function above\n");
 }
 ```
-### Output to `native stdout` 
+### Output to `native stdout` (Unbuffered)
 * on non-windows systems (fd): (int)1
 * on win32 (handle): GetStdHandle(STD_OUTPUT_HANDLE)
 * on nt (handle): RtlGetCurrentPeb()->ProcessParameters->StandardOutput
@@ -37,6 +37,18 @@ int main()
 {
 	::fast_io::native_file_loader file_data{"text.txt"};
 	// file_data satisfies ::std::ranges::contiguous_range
+}
+```
+### Scan from `cstdin`
+```cpp
+#include <fast_io.h>
+
+int main() 
+{
+	int i;
+	::fast_io::io::scan(i);
+	// Equivalent to the function above
+	::fast_io::io::scan(::fast_io::c_stdin(), i);
 }
 ```
 ### Additional Samples
