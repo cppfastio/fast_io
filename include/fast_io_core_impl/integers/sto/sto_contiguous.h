@@ -521,7 +521,6 @@ scan_int_contiguous_none_simd_space_part_check_overflow_impl(char_type const *fi
 	constexpr unsigned_type risky_value{risky_uint_max / base};
 	constexpr unsigned_char_type risky_digit(risky_uint_max % base);
 	constexpr bool isspecialbase{base == 2 || base == 4 || base == 16};
-	constexpr ::std::size_t max_size{details::cal_max_int_size<unsigned_type, base>() - (!isspecialbase)};
 
 	bool overflow{};
 	if (first != last) [[likely]]
