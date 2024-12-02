@@ -590,7 +590,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 	constexpr char8_t base_char_type{base};
 	constexpr bool isspecialbase{base == 2 || base == 4 || base == 16};
 	constexpr ::std::size_t max_size{::fast_io::details::max_int_size_result<unsigned_type, base> - (!isspecialbase)};
-	constexpr auto shifter{2+::std::bit_width(char_type)};
+	constexpr auto shifter{2+::std::bit_width(sizeof(char_type))};
 	::std::size_t const diff{static_cast<::std::size_t>(last - first)};
 	::std::size_t mn_val{max_size};
 
