@@ -505,6 +505,60 @@ inline constexpr char_type const *skip_digits(char_type const *first, char_type 
 	return first;
 }
 
+template <char8_t base, ::std::integral char_type, my_unsigned_integral T>
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline constexpr parse_result<char_type const *>
+scan_int_contiguous_none_simd_space_part_check_overflow_impl(char_type const *first, char_type const *last, T &res) noexcept
+{
+	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
+	using unsigned_type = my_make_unsigned_t<::std::remove_cvref_t<T>>;
+	constexpr unsigned_char_type base_char_type{base};
+	constexpr unsigned_type risky_uint_max{static_cast<unsigned_type>(-1)};
+	constexpr unsigned_type risky_value{risky_uint_max / base};
+	constexpr unsigned_char_type risky_digit(risky_uint_max % base);
+	constexpr bool isspecialbase{base == 2 || base == 4 || base == 16};
+	constexpr ::std::size_t max_size{details::cal_max_int_size<unsigned_type, base>() - (!isspecialbase)};
+
+	bool overflow{};
+	if (first != last) [[likely]]
+	{
+		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
+		if constexpr (isspecialbase)
+		{
+			if (char_is_digit<base, char_type>(ch))
+			{
+				++first;
+				first = skip_digits<base>(first, last);
+				overflow = true;
+			}
+		}
+		else
+		{
+			if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
+			{
+				overflow = res > risky_value || (risky_value == res && ch > risky_digit);
+				if (!overflow)
+				{
+					res *= base_char_type;
+					res += ch;
+				}
+				++first;
+				if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
+				{
+					++first;
+					first = skip_digits<base>(first, last);
+					overflow = true;
+				}
+			}
+		}
+	}
+	return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+}
+
 template <char8_t base, my_unsigned_integral T, ::std::size_t Arr_size>
 inline constexpr ::fast_io::freestanding::array<T, Arr_size> generate_pow_table() noexcept
 {
@@ -580,40 +634,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									if (!valid_bits) [[unlikely]]
 									{
-										bool overflow{};
-										if (first != last) [[likely]]
-										{
-											unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-											if constexpr (isspecialbase)
-											{
-												if (char_is_digit<base, char_type>(ch))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-											else
-											{
-												if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-												{
-													overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-													if (!overflow)
-													{
-														res *= base_char_type;
-														res += ch;
-													}
-													++first;
-													if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-													{
-														++first;
-														first = skip_digits<base>(first, last);
-														overflow = true;
-													}
-												}
-											}
-										}
-										return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 									}
 
 									val <<= 64 - valid_bits;
@@ -639,40 +660,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									first += ctrz_cval / (8 * sizeof(char_type));
 
-									bool overflow{};
-									if (first != last) [[likely]]
-									{
-										unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-										if constexpr (isspecialbase)
-										{
-											if (char_is_digit<base, char_type>(ch))
-											{
-												++first;
-												first = skip_digits<base>(first, last);
-												overflow = true;
-											}
-										}
-										else
-										{
-											if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-											{
-												overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-												if (!overflow)
-												{
-													res *= base_char_type;
-													res += ch;
-												}
-												++first;
-												if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-										}
-									}
-									return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
 
 								constexpr ::std::uint_least64_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), 2)};
@@ -710,40 +698,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									if (!valid_bits) [[unlikely]]
 									{
-										bool overflow{};
-										if (first != last) [[likely]]
-										{
-											unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-											if constexpr (isspecialbase)
-											{
-												if (char_is_digit<base, char_type>(ch))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-											else
-											{
-												if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-												{
-													overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-													if (!overflow)
-													{
-														res *= base_char_type;
-														res += ch;
-													}
-													++first;
-													if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-													{
-														++first;
-														first = skip_digits<base>(first, last);
-														overflow = true;
-													}
-												}
-											}
-										}
-										return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 									}
 
 									val <<= 32 - valid_bits;
@@ -768,40 +723,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 									first += ctrz_cval / (8 * sizeof(char_type));
 
 
-									bool overflow{};
-									if (first != last) [[likely]]
-									{
-										unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-										if constexpr (isspecialbase)
-										{
-											if (char_is_digit<base, char_type>(ch))
-											{
-												++first;
-												first = skip_digits<base>(first, last);
-												overflow = true;
-											}
-										}
-										else
-										{
-											if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-											{
-												overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-												if (!overflow)
-												{
-													res *= base_char_type;
-													res += ch;
-												}
-												++first;
-												if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-										}
-									}
-									return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
 								else
 								{
@@ -841,40 +763,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									if (!valid_bits) [[unlikely]]
 									{
-										bool overflow{};
-										if (first != last) [[likely]]
-										{
-											unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-											if constexpr (isspecialbase)
-											{
-												if (char_is_digit<base, char_type>(ch))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-											else
-											{
-												if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-												{
-													overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-													if (!overflow)
-													{
-														res *= base_char_type;
-														res += ch;
-													}
-													++first;
-													if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-													{
-														++first;
-														first = skip_digits<base>(first, last);
-														overflow = true;
-													}
-												}
-											}
-										}
-										return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 									}
 
 									val <<= 64 - valid_bits;
@@ -898,40 +787,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									first += ctrz_cval / (8 * sizeof(char_type));
 
-									bool overflow{};
-									if (first != last) [[likely]]
-									{
-										unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-										if constexpr (isspecialbase)
-										{
-											if (char_is_digit<base, char_type>(ch))
-											{
-												++first;
-												first = skip_digits<base>(first, last);
-												overflow = true;
-											}
-										}
-										else
-										{
-											if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-											{
-												overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-												if (!overflow)
-												{
-													res *= base_char_type;
-													res += ch;
-												}
-												++first;
-												if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-										}
-									}
-									return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
 								constexpr ::std::uint_least64_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), 2)};
 
@@ -976,40 +832,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									if (!valid_bits) [[unlikely]]
 									{
-										bool overflow{};
-										if (first != last) [[likely]]
-										{
-											unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-											if constexpr (isspecialbase)
-											{
-												if (char_is_digit<base, char_type>(ch))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-											else
-											{
-												if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-												{
-													overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-													if (!overflow)
-													{
-														res *= base_char_type;
-														res += ch;
-													}
-													++first;
-													if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-													{
-														++first;
-														first = skip_digits<base>(first, last);
-														overflow = true;
-													}
-												}
-											}
-										}
-										return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 									}
 
 									val <<= 64 - valid_bits;
@@ -1038,40 +861,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									first += ctrz_cval / (8 * sizeof(char_type));
 
-									bool overflow{};
-									if (first != last) [[likely]]
-									{
-										unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-										if constexpr (isspecialbase)
-										{
-											if (char_is_digit<base, char_type>(ch))
-											{
-												++first;
-												first = skip_digits<base>(first, last);
-												overflow = true;
-											}
-										}
-										else
-										{
-											if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-											{
-												overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-												if (!overflow)
-												{
-													res *= base_char_type;
-													res += ch;
-												}
-												++first;
-												if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-										}
-									}
-									return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
 
 								constexpr ::std::uint_least64_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), 2)};
@@ -1120,40 +910,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									if (!valid_bits) [[unlikely]]
 									{
-										bool overflow{};
-										if (first != last) [[likely]]
-										{
-											unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-											if constexpr (isspecialbase)
-											{
-												if (char_is_digit<base, char_type>(ch))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-											else
-											{
-												if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-												{
-													overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-													if (!overflow)
-													{
-														res *= base_char_type;
-														res += ch;
-													}
-													++first;
-													if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-													{
-														++first;
-														first = skip_digits<base>(first, last);
-														overflow = true;
-													}
-												}
-											}
-										}
-										return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 									}
 
 									val <<= 32 - valid_bits;
@@ -1179,40 +936,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									first += ctrz_cval / (8 * sizeof(char_type));
 
-									bool overflow{};
-									if (first != last) [[likely]]
-									{
-										unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-										if constexpr (isspecialbase)
-										{
-											if (char_is_digit<base, char_type>(ch))
-											{
-												++first;
-												first = skip_digits<base>(first, last);
-												overflow = true;
-											}
-										}
-										else
-										{
-											if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-											{
-												overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-												if (!overflow)
-												{
-													res *= base_char_type;
-													res += ch;
-												}
-												++first;
-												if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-										}
-									}
-									return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
 								else
 								{
@@ -1258,40 +982,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									if (!valid_bits) [[unlikely]]
 									{
-										bool overflow{};
-										if (first != last) [[likely]]
-										{
-											unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-											if constexpr (isspecialbase)
-											{
-												if (char_is_digit<base, char_type>(ch))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-											else
-											{
-												if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-												{
-													overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-													if (!overflow)
-													{
-														res *= base_char_type;
-														res += ch;
-													}
-													++first;
-													if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-													{
-														++first;
-														first = skip_digits<base>(first, last);
-														overflow = true;
-													}
-												}
-											}
-										}
-										return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 									}
 
 									val <<= 32 - valid_bits;
@@ -1316,40 +1007,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									first += ctrz_cval / (8 * sizeof(char_type));
 
-									bool overflow{};
-									if (first != last) [[likely]]
-									{
-										unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-										if constexpr (isspecialbase)
-										{
-											if (char_is_digit<base, char_type>(ch))
-											{
-												++first;
-												first = skip_digits<base>(first, last);
-												overflow = true;
-											}
-										}
-										else
-										{
-											if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-											{
-												overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-												if (!overflow)
-												{
-													res *= base_char_type;
-													res += ch;
-												}
-												++first;
-												if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-										}
-									}
-									return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
 
 								constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
@@ -1398,7 +1056,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									if (!valid_bits) [[unlikely]]
 									{
-										goto after_tail;
+										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 									}
 
 									val <<= 32 - valid_bits;
@@ -1423,41 +1081,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									first += ctrz_cval / (8 * sizeof(char_type));
 
-
-									bool overflow{};
-									if (first != last) [[likely]]
-									{
-										unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-										if constexpr (isspecialbase)
-										{
-											if (char_is_digit<base, char_type>(ch))
-											{
-												++first;
-												first = skip_digits<base>(first, last);
-												overflow = true;
-											}
-										}
-										else
-										{
-											if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-											{
-												overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-												if (!overflow)
-												{
-													res *= base_char_type;
-													res += ch;
-												}
-												++first;
-												if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-												{
-													++first;
-													first = skip_digits<base>(first, last);
-													overflow = true;
-												}
-											}
-										}
-									}
-									return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
 
 								constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
@@ -1491,40 +1115,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 		res += ch;
 	}
 
-	bool overflow{};
-	if (first != last) [[likely]]
-	{
-		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
-		if constexpr (isspecialbase)
-		{
-			if (char_is_digit<base, char_type>(ch))
-			{
-				++first;
-				first = skip_digits<base>(first, last);
-				overflow = true;
-			}
-		}
-		else
-		{
-			if (!char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
-			{
-				overflow = res > risky_value || (risky_value == res && ch > risky_digit);
-				if (!overflow)
-				{
-					res *= base_char_type;
-					res += ch;
-				}
-				++first;
-				if (first != last && char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
-				{
-					++first;
-					first = skip_digits<base>(first, last);
-					overflow = true;
-				}
-			}
-		}
-	}
-	return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+	return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 }
 
 inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(::std::numeric_limits<char unsigned>::max())};
