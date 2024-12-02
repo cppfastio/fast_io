@@ -130,7 +130,9 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 			char16_t NtPath[64];
 			char16_t *RetStr{};
 			::std::size_t NtPathLen{};
-			for (char16_t i{65}; i < static_cast<char16_t>(26 + 65); i++)
+			constexpr char16_t bg{65};
+			constexpr char16_t ed{bg+26};
+			for (char16_t i{bg}; i != ed; ++i)
 			{
 				DosDevice[0] = i;
 				if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
@@ -289,14 +291,17 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 			{
 				if (pszFilename[0] == u8'\\')
 				{
-					char DosDevice[4]{0, u8':', 0, 0};
-					char NtPath[64];
+					char8_t DosDevice[4]{0, u8':', 0, 0};
+					constexpr ::std::size_t ntpathsize{64};
+					char NtPath[ntpathsize];
 					char *RetStr{};
 					::std::size_t NtPathLen{};
-					for (char i{65}; i < static_cast<char>(26 + 65); i++)
+					constexpr char8_t bg{static_cast<char8_t>(ntpathsize)};
+					constexpr char8_t ed{bg+26};
+					for (char8_t i{bg}; i != ed; ++i)
 					{
-						DosDevice[0] = i;
-						if (QueryDosDeviceA_p(DosDevice, NtPath, 64))
+						*DosDevice = i;
+						if (QueryDosDeviceA_p(reinterpret_cast<char const*>(DosDevice), NtPath, ntpathsize))
 						{
 							NtPathLen = ::fast_io::cstr_len(NtPath);
 
