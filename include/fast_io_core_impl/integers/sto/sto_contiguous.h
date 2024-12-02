@@ -652,7 +652,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 								if (::std::uint_least64_t const cval{((val + first_bound) | (val - zero_lower_bound)) & fullmask}; cval)
 								{
-									auto const ctrz_cval{::std::countr_zero(cval)};
+									auto ctrz_cval{::std::countr_zero(cval)};
 									auto const valid_bits{ctrz_cval & -8};
 
 									if (!valid_bits) [[unlikely]]
