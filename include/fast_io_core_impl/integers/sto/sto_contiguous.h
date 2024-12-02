@@ -612,11 +612,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 		{
 			// Inspired by:
 			// https://github.com/fastfloat/fast_float
-			// Copyright(c) 2021 The fast_float authors
-			//
 			// Implementation of higher performance (Binary to Hexadecimal):
 			// Optimize both fixed range and infinite range (suitable for scan)
-			// Copyright(c) 2024 MacroModel
 
 			if constexpr (sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
 			{
@@ -1013,7 +1010,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 									constexpr auto pow_table{generate_pow_table<base_char_type, ::std::uint_least32_t, 4>()};
 
 
-									res = static_cast<T>(res * max_int_size_result.index_unchecked(ctrz_cval / (8u * sizeof(char_type))) + val);
+									res = static_cast<T>(res * max_int_size_result<>.index_unchecked(ctrz_cval / (8u * sizeof(char_type))) + val);
 
 									first += ctrz_cval / (8 * sizeof(char_type));
 
