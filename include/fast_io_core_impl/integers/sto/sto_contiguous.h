@@ -1008,7 +1008,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
 									ctrz_cval >>= shifter;
 
-									res = static_cast<T>(res * max_int_size_result<base_char_type, ::std::uint_least32_t, 4>.index_unchecked(ctrz_cval)) + val);
+									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least32_t, 4>.index_unchecked(ctrz_cval) + val);
 
 									first += ctrz_cval;
 
