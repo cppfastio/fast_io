@@ -65,17 +65,47 @@ struct array
 	}
 	inline constexpr T const &back() const noexcept
 	{
-		return element[N - 1];
+		constexpr size_type nm1{N - 1};
+		return element[nm1];
 	}
 	inline constexpr T &back() noexcept
 	{
-		return element[N - 1];
+		constexpr size_type nm1{N - 1};
+		return element[nm1];
 	}
+
+	inline constexpr T const &front_unchecked() const noexcept
+	{
+		return *element;
+	}
+	inline constexpr T &front_unchecked() noexcept
+	{
+		return *element;
+	}
+	inline constexpr T const &back_unchecked() const noexcept
+	{
+		constexpr size_type nm1{N - 1};
+		return element[nm1];
+	}
+	inline constexpr T &back_unchecked() noexcept
+	{
+		constexpr size_type nm1{N - 1};
+		return element[nm1];
+	}
+
 	inline constexpr T const &operator[](::std::size_t i) const noexcept
 	{
 		return element[i];
 	}
 	inline constexpr T &operator[](::std::size_t i) noexcept
+	{
+		return element[i];
+	}
+	inline constexpr T const &index_unchecked(::std::size_t i) const noexcept
+	{
+		return element[i];
+	}
+	inline constexpr T &index_unchecked(::std::size_t i) noexcept
 	{
 		return element[i];
 	}
