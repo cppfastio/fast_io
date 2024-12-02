@@ -562,15 +562,15 @@ template <char8_t base, my_unsigned_integral T, ::std::size_t n>
 inline constexpr ::fast_io::freestanding::array<T, n> generate_pow_table() noexcept
 {
 	::fast_io::freestanding::array<T, n> tmp;
-	if (n!=0)
+	if (n != 0)
 	{
-		tmp.front_unchecked()=1;
+		tmp.front_unchecked() = 1;
 	}
 	T b{1};
 	for (::std::size_t i{1}; i < n; ++i)
 	{
 		tmp.index_unchecked(i) = b;
-		b*=base;
+		b *= base;
 	}
 	return tmp;
 }
@@ -590,7 +590,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 	constexpr char8_t base_char_type{base};
 	constexpr bool isspecialbase{base == 2 || base == 4 || base == 16};
 	constexpr ::std::size_t max_size{::fast_io::details::max_int_size_result<unsigned_type, base> - (!isspecialbase)};
-	constexpr auto shifter{2+::std::bit_width(sizeof(char_type))};
+	constexpr auto shifter{2 + ::std::bit_width(sizeof(char_type))};
 	::std::size_t const diff{static_cast<::std::size_t>(last - first)};
 	::std::size_t mn_val{max_size};
 
@@ -608,7 +608,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 #endif
 	{
 		constexpr bool isebcdic{::fast_io::details::is_ebcdic<char_type>};
-		if constexpr (!isebcdic&&(::std::numeric_limits<::std::uint_least64_t>::digits==64u)&&false)
+		if constexpr (!isebcdic && (::std::numeric_limits<::std::uint_least64_t>::digits == 64u) && false)
 		{
 			// Inspired by:
 			// https://github.com/fastfloat/fast_float
@@ -630,19 +630,19 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 
 							constexpr ::std::uint_least64_t baseval{0x0101010101010101};
-							constexpr ::std::uint_least64_t zero_lower_bound{isebcdic?baseval*0xF0:baseval*0x30};
+							constexpr ::std::uint_least64_t zero_lower_bound{isebcdic ? baseval * 0xF0 : baseval * 0x30};
 							constexpr ::std::uint_least64_t first_bound{0x4646464646464646 + baseval * (10 - base_char_type)};
 							constexpr ::std::uint_least64_t mul1{pow_base_sizeof_base_2 + (pow_base_sizeof_base_6 << 32)};
 							constexpr ::std::uint_least64_t mul2{1 + (pow_base_sizeof_base_4 << 32)};
 							constexpr ::std::uint_least64_t mask{0x000000FF000000FF};
-							constexpr ::std::uint_least64_t fullmask{baseval*0x80};
+							constexpr ::std::uint_least64_t fullmask{baseval * 0x80};
 
 							while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least64_t))
 							{
 								::std::uint_least64_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
 
-								if constexpr(::std::endian::little!=::std::endian::native)
+								if constexpr (::std::endian::little != ::std::endian::native)
 								{
 									val = ::fast_io::little_endian(val);
 								}
@@ -983,7 +983,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 								if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval) [[unlikely]]
 								{
-									auto const ctrz_cval{::std::countr_zero(cval)};
+									auto ctrz_cval{::std::countr_zero(cval)};
 									auto const valid_bits{ctrz_cval & -8};
 
 									if (!valid_bits) [[unlikely]]
@@ -1006,13 +1006,11 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 									val -= 0x30303030;
 									val = (val * base_char_type) + (val >> 8);
 									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
+									ctrz_cval >>= shifter;
 
-									constexpr auto pow_table{generate_pow_table<base_char_type, ::std::uint_least32_t, 4>()};
+									res = static_cast<T>(res * max_int_size_result<base_char_type, ::std::uint_least32_t, 4>.index_unchecked(ctrz_cval)) + val);
 
-
-									res = static_cast<T>(res * max_int_size_result<>.index_unchecked(ctrz_cval / (8u * sizeof(char_type))) + val);
-
-									first += ctrz_cval / (8 * sizeof(char_type));
+									first += ctrz_cval;
 
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
