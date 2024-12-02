@@ -620,22 +620,48 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 							{
 								::std::uint_least64_t val;
 								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
-								
+
 								val = ::fast_io::little_endian(val);
 
 								constexpr ::std::uint_least64_t pow_base_sizeof_u64{
 									::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), u64_size_of_c16)};
 								constexpr ::std::uint_least64_t first_bound{0x7fc67fc67fc67fc6 + 0x0001000100010001 * (10 - base_char_type)};
 
-								if (((val + first_bound) | (val - 0x0030003000300030)) & 0x8000800080008000) [[unlikely]]
+								if (::std::uint_least64_t const cval{((val + first_bound) | (val - 0x0030003000300030)) & 0x8000800080008000}; cval)
 								{
-									break;
+									auto const ctrz_cval{::std::countr_zero(cval)};
+									auto const valid_bits{ctrz_cval & -16};
+
+									if (!valid_bits) [[unlikely]]
+									{
+										goto after_tail;
+									}
+
+									val <<= 64 - valid_bits;
+
+									::std::uint_least64_t all_zero{0x0030003000300030};
+
+									all_zero >>= valid_bits;
+
+									val |= all_zero;
+
+									constexpr ::std::uint_least64_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), 2)};
+
+									constexpr ::std::uint_least64_t mask{0x000000000000FFFF};
+
+									val -= 0x0030003000300030;
+									val = (val * base_char_type) + (val >> 16);
+									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 32) & mask));
+									res = static_cast<T>(res * ::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), ctrz_cval / 16) + val);
+
+									first += ctrz_cval / 16;
+									goto after_tail;
 								}
 								constexpr ::std::uint_least64_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(base_char_type), 2)};
 
 								constexpr ::std::uint_least64_t mask{0x000000000000FFFF};
-								val -= 0x0030003000300030;
 
+								val -= 0x0030003000300030;
 								val = (val * base_char_type) + (val >> 16);
 								val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 32) & mask));
 								res = static_cast<T>(res * pow_base_sizeof_u64 + val);
@@ -825,6 +851,9 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 		res *= base_char_type;
 		res += ch;
 	}
+
+after_tail:
+
 	bool overflow{};
 	if (first != last) [[likely]]
 	{
