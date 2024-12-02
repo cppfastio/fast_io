@@ -579,9 +579,6 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	using unsigned_type = my_make_unsigned_t<::std::remove_cvref_t<T>>;
 	constexpr unsigned_char_type base_char_type{base};
-	constexpr unsigned_type risky_uint_max{static_cast<unsigned_type>(-1)};
-	constexpr unsigned_type risky_value{risky_uint_max / base};
-	constexpr unsigned_char_type risky_digit(risky_uint_max % base);
 	constexpr bool isspecialbase{base == 2 || base == 4 || base == 16};
 	constexpr ::std::size_t max_size{details::cal_max_int_size<unsigned_type, base>() - (!isspecialbase)};
 	::std::size_t const diff{static_cast<::std::size_t>(last - first)};
@@ -605,7 +602,8 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 			// https://github.com/fastfloat/fast_float
 			// Copyright(c) 2021 The fast_float authors
 			//
-			// Binary to Hexadecimal:
+			// Implementation of higher performance (Binary to Hexadecimal):
+			// Optimize both fixed range and infinite range (suitable for scan)
 			// Copyright(c) 2024 MacroModel
 
 			if constexpr (sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
