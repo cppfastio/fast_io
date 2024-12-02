@@ -280,7 +280,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		auto address_begin{pszFilename};
 
 		// change nt path to dos path
-		auto k32_module{::fast_io::win32::GetModuleHandleA(reinterpret_cast<char const *>(u8"Kernel32.dll"))};
+		auto k32_module{::fast_io::win32::GetModuleHandleA(reinterpret_cast<char const *>(u8"kernel32.dll"))};
 		if (k32_module)
 		{
 			using QueryDosDeviceA_t = ::std::uint_least32_t (*)(char const *, char *, ::std::uint_least32_t) noexcept;
