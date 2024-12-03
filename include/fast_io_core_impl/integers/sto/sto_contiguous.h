@@ -528,7 +528,7 @@ inline constexpr ::fast_io::freestanding::array<T, n> pow_table_n{::fast_io::det
 
 template <char8_t base, ::std::integral char_type, my_unsigned_integral T>
 inline parse_result<char_type const *>
-scan_int_contiguous_none_simd_space_part_define_none_constexpr_impl(char_type const *first, char_type const *last, T &res) noexcept
+scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, char_type const *last, T &res) noexcept
 {
 	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	using unsigned_type = my_make_unsigned_t<::std::remove_cvref_t<T>>;
