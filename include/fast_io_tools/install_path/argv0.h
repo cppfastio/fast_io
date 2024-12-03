@@ -47,7 +47,7 @@ inline ::fast_io::install_path get_module_install_path_from_argv0(char const *ar
 			{
 				if (auto const c{*curr}; c == u8'/')
 				{
-					curr++;
+					++curr;
 					break;
 				}
 			}
@@ -76,7 +76,7 @@ inline ::fast_io::install_path get_module_install_path_from_argv0(char const *ar
 			{
 				if (auto const c{*curr}; c == u8'/')
 				{
-					curr++;
+					++curr;
 					break;
 				}
 			}
@@ -111,7 +111,7 @@ inline ::fast_io::install_path get_module_install_path_from_argv0(char const *ar
 				{
 					if (auto const c{*curr}; c == u8'/')
 					{
-						curr++;
+						++curr;
 						break;
 					}
 				}
