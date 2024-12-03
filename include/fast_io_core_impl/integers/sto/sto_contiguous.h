@@ -519,7 +519,7 @@ inline constexpr ::fast_io::freestanding::array<T, n> generate_pow_table() noexc
 		tmp.front_unchecked() = 1;
 	}
 	T b{1};
-	for (::std::size_t i{1}; i < n; ++i)
+	for (::std::size_t i{0}; i < n; ++i)
 	{
 		tmp.index_unchecked(i) = b;
 		b *= base;
