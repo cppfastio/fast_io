@@ -211,29 +211,7 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 	}
 	else
 	{
-		if constexpr (sto_use_table)
-		{
-			constexpr char8_t mx{::std::numeric_limits<char8_t>::max()};
-			constexpr bool use_partial{mx < (::std::numeric_limits<unsigned_char_type>::max()) ||
-									   ::std::numeric_limits<char8_t>::digits != 8};
-			if constexpr (use_partial)
-			{
-				constexpr ::std::size_t n{sto_base_tb<ebcdic, use_partial, base>.size()};
-				static_assert(n <= mx);
-				constexpr char8_t v{static_cast<char8_t>(n)};
-				if (v < ch)
-				{
-					return false;
-				}
-			}
-			auto ret{sto_base_tb<ebcdic, use_partial, base>[static_cast<unsigned_char_type>(ch)]};
-			if (ret == mx)
-			{
-				return false;
-			}
-			return true;
-		}
-		else if constexpr (ebcdic)
+		if constexpr (ebcdic)
 		{
 			if constexpr (base <= 19)
 			{
