@@ -909,6 +909,8 @@ compile_time_scan_int_contiguous_none_simd_space_part_define_impl(char_type cons
 		mn_val = diff;
 	}
 
+	auto first_phase_last{first + mn_val};
+
 	for (; first != first_phase_last; ++first)
 	{
 		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
