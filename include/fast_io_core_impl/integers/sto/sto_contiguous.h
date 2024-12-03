@@ -514,14 +514,10 @@ template <char8_t base, my_unsigned_integral T, ::std::size_t n>
 inline constexpr ::fast_io::freestanding::array<T, n> generate_pow_table() noexcept
 {
 	::fast_io::freestanding::array<T, n> tmp;
-	if (n != 0)
-	{
-		tmp.front_unchecked() = 1;
-	}
 	T b{1};
-	for (::std::size_t i{1}; i < n; ++i)
+	for (auto &e : tmp)
 	{
-		tmp.index_unchecked(i) = b;
+		e = b;
 		b *= base;
 	}
 	return tmp;
