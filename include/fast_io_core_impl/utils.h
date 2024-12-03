@@ -466,14 +466,19 @@ inline constexpr T compile_time_pow(T base, ::std::size_t pow) noexcept
 	return t;
 }
 
-template <my_integral T, ::std::size_t pow>
-inline constexpr T compile_pow10{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(10, pow)};
+template <my_integral T, ::std::size_t base, ::std::size_t pow>
+inline constexpr T compile_pow_n{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(static_cast<T>(base), pow)};
 
 template <my_integral T, ::std::size_t pow>
-inline constexpr T compile_pow5{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(5, pow)};
+inline constexpr T compile_pow10{::fast_io::details::compile_pow_n<T, 10, pow>};
 
 template <my_integral T, ::std::size_t pow>
-inline constexpr T compile_pow2{::fast_io::details::compile_time_pow<::std::remove_cvref_t<T>>(2, pow)};
+inline constexpr T compile_pow5{::fast_io::details::compile_pow_n<T, 5, pow>};
+
+template <my_integral T, ::std::size_t pow>
+inline constexpr T compile_pow2{::fast_io::details::compile_pow_n<T, 2, pow>};
+
+
 
 inline constexpr bool is_wasi_environment{
 #if __wasi__
