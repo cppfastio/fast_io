@@ -32,32 +32,8 @@ inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type> &ch) n
 	}
 	else
 	{
-		if constexpr (false)
+		if constexpr (ebcdic)
 		{
-			constexpr char8_t mx{::std::numeric_limits<char8_t>::max()};
-			constexpr bool use_partial{mx < (::std::numeric_limits<unsigned_char_type>::max()) ||
-									   ::std::numeric_limits<char8_t>::digits != 8};
-			if constexpr (use_partial)
-			{
-				constexpr ::std::size_t n{sto_base_tb<ebcdic, use_partial, base>.size()};
-				static_assert(n <= mx);
-				constexpr char8_t v{static_cast<char8_t>(n)};
-				if (v < ch)
-				{
-					return true;
-				}
-			}
-			char8_t ret{sto_base_tb<ebcdic, use_partial, base>[static_cast<unsigned_char_type>(ch)]};
-			if (ret == mx)
-			{
-				return true;
-			}
-			ch = static_cast<unsigned_char_type>(ret);
-			return false;
-		}
-		else if constexpr (ebcdic)
-		{
-
 			if constexpr (base <= 19)
 			{
 				constexpr unsigned_char_type mns{base - 10};
