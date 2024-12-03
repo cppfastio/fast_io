@@ -526,9 +526,8 @@ inline constexpr ::fast_io::freestanding::array<T, n> generate_pow_table() noexc
 template <char8_t base, my_unsigned_integral T, ::std::size_t n>
 inline constexpr ::fast_io::freestanding::array<T, n> pow_table_n{::fast_io::details::generate_pow_table<base, T, n>()};
 
-
 template <char8_t base, ::std::integral char_type, my_unsigned_integral T>
-inline constexpr parse_result<char_type const *>
+inline parse_result<char_type const *>
 scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, char_type const *last, T &res) noexcept
 {
 	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
@@ -547,7 +546,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 	}
 
 	auto first_phase_last{first + mn_val};
-#if __cpp_if_consteval >= 202106L
+#ifdef __cpp_if_consteval
 	if !consteval
 #else
 	if (!__builtin_is_constant_evaluated())
@@ -611,9 +610,12 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 										first += ctrz_cval;
 									}
+#if defined(_MSC_VER) && !defined(__clang__)
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
+#else
+									goto nextlabel;
+#endif
 								}
-
 
 								val -= zero_lower_bound;
 								val = (val * base_char_type) + (val >> 8);
@@ -664,11 +666,14 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 										first += ctrz_cval;
 									}
+#if defined(_MSC_VER) && !defined(__clang__)
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
+#else
+									goto nextlabel;
+#endif
 								}
 								else
 								{
-
 									val -= 0x30303030;
 									val = (val * base_char_type) + (val >> 8);
 									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
@@ -721,7 +726,11 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 										first += ctrz_cval;
 									}
+#if defined(_MSC_VER) && !defined(__clang__)
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
+#else
+									goto nextlabel;
+#endif
 								}
 								val -= 0x0030003000300030;
 								val = (val * base_char_type) + (val >> 16);
@@ -790,7 +799,11 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 										first += ctrz_cval;
 									}
 
+#if defined(_MSC_VER) && !defined(__clang__)
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
+#else
+									goto nextlabel;
+#endif
 								}
 
 								val -= 0x3030303030303030;
@@ -848,7 +861,11 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 										first += ctrz_cval;
 									}
+#if defined(_MSC_VER) && !defined(__clang__)
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
+#else
+									goto nextlabel;
+#endif
 								}
 
 
@@ -864,7 +881,6 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 			}
 		}
 	}
-
 	for (; first != first_phase_last; ++first)
 	{
 		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
@@ -875,7 +891,9 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 		res *= base_char_type;
 		res += ch;
 	}
-
+#if !defined(_MSC_VER) || defined(__clang__)
+[[maybe_unused]] nextlabel:;
+#endif
 	return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 }
 
