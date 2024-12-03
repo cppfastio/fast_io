@@ -858,8 +858,6 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 									val |= all_zero;
 
-									constexpr ::std::uint_least32_t mask{0x000000FF};
-
 									val -= 0x30303030;
 									val = (val * base_char_type) + (val >> 8);
 									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
