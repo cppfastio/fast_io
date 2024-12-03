@@ -21,6 +21,7 @@ struct nt_dirent
 {
 	void *d_handle{};
 	file_type d_type{};
+	::std::uint_least64_t d_ino{};
 	char16_t native_d_name[0x2001];
 	::std::size_t native_d_namlen{};
 	char8_t u8d_name[0x8004];
@@ -35,16 +36,16 @@ struct nt_dirent_space_guard
 {
 	using pointer = T *;
 	pointer ptr{};
-	constexpr nt_dirent_space_guard() noexcept = default;
-	nt_dirent_space_guard(nt_dirent_space_guard const &) = delete;
-	nt_dirent_space_guard &operator=(nt_dirent_space_guard const &) = delete;
-	constexpr T *release() noexcept
+	inline constexpr nt_dirent_space_guard() noexcept = default;
+	inline nt_dirent_space_guard(nt_dirent_space_guard const &) = delete;
+	inline nt_dirent_space_guard &operator=(nt_dirent_space_guard const &) = delete;
+	inline constexpr T *release() noexcept
 	{
 		pointer temp{ptr};
 		this->ptr = nullptr;
 		return temp;
 	}
-	~nt_dirent_space_guard()
+	inline ~nt_dirent_space_guard()
 	{
 		if (ptr)
 		{
@@ -116,9 +117,8 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 	constexpr ::std::uint_least32_t ul32_buffer_size{0x4000};
 	::std::byte buffer[ul32_buffer_size];
 	::fast_io::win32::nt::dir_information d_info{buffer};
-	auto status{nt_query_directory_file<family == nt_family::zw>(
-		entry->d_handle, nullptr, nullptr, nullptr, __builtin_addressof(block), d_info.DirInfo, ul32_buffer_size,
-		file_information_class::FileFullDirectoryInformation, true, nullptr, start)};
+	auto status{nt_query_directory_file<(family == nt_family::zw)>(entry->d_handle, nullptr, nullptr, nullptr, __builtin_addressof(block), d_info.DirInfo, ul32_buffer_size,
+																   file_information_class::FileIdFullDirectoryInformation, true, nullptr, start)};
 	if (status)
 	{
 		if (status == 2147483654) [[likely]]
@@ -127,11 +127,14 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 		}
 		throw_nt_error(status);
 	}
-	auto ful_dir_info{d_info.FullDirInfo};
-	entry->native_d_namlen = ful_dir_info->FileNameLength / sizeof(char16_t);
+	auto id_ful_dir_info{d_info.IdFullDirInfo};
 
-	::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte const *>(ful_dir_info->FileName),
-														ful_dir_info->FileNameLength,
+	entry->d_ino = static_cast<::std::uint_least64_t>(id_ful_dir_info->FileId);
+
+	entry->native_d_namlen = id_ful_dir_info->FileNameLength / sizeof(char16_t);
+
+	::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte const *>(id_ful_dir_info->FileName),
+														id_ful_dir_info->FileNameLength,
 														reinterpret_cast<::std::byte *>(entry->native_d_name));
 	entry->native_d_name[entry->native_d_namlen] = 0;
 
@@ -150,7 +153,7 @@ inline nt_dirent *set_nt_dirent(nt_dirent *entry, bool start)
 	= DT_DIR; else data->entries[data->index].d_type = DT_REG;
 	*/
 
-	::std::uint_least32_t attribute{ful_dir_info->FileAttributes};
+	::std::uint_least32_t attribute{id_ful_dir_info->FileAttributes};
 	if (attribute & 0x400)
 	{
 		entry->d_type = file_type::symlink;
@@ -194,12 +197,12 @@ struct nt_directory_entry
 	using char_type = char8_t;
 	nt_dirent *entry{};
 	template <nt_family family, ::std::integral ch_type>
-	explicit constexpr operator basic_nt_family_io_observer<family, ch_type>() const noexcept
+	inline explicit constexpr operator basic_nt_family_io_observer<family, ch_type>() const noexcept
 	{
 		return {entry->d_handle};
 	}
 	template <win32_family family, ::std::integral ch_type>
-	explicit constexpr operator basic_win32_family_io_observer<family, ch_type>() const noexcept
+	inline explicit constexpr operator basic_win32_family_io_observer<family, ch_type>() const noexcept
 	{
 		return {entry->d_handle};
 	}
@@ -296,21 +299,21 @@ struct basic_nt_family_directory_generator
 {
 	using allocator_type = Allocator;
 	nt_dirent *entry{};
-	constexpr basic_nt_family_directory_generator() noexcept = default;
-	explicit constexpr basic_nt_family_directory_generator(void *directory_handle) noexcept
+	inline constexpr basic_nt_family_directory_generator() noexcept = default;
+	inline explicit constexpr basic_nt_family_directory_generator(void *directory_handle) noexcept
 		: entry(::fast_io::win32::nt::details::new_nt_dirent<Allocator>())
 	{
 		entry->d_handle = directory_handle;
 	}
 
-	basic_nt_family_directory_generator(basic_nt_family_directory_generator const &) = delete;
-	basic_nt_family_directory_generator &operator=(basic_nt_family_directory_generator const &) = delete;
-	constexpr basic_nt_family_directory_generator(basic_nt_family_directory_generator &&__restrict other) noexcept
+	inline basic_nt_family_directory_generator(basic_nt_family_directory_generator const &) = delete;
+	inline basic_nt_family_directory_generator &operator=(basic_nt_family_directory_generator const &) = delete;
+	inline constexpr basic_nt_family_directory_generator(basic_nt_family_directory_generator &&__restrict other) noexcept
 		: entry(other.entry)
 	{
 		other.entry = nullptr;
 	}
-	constexpr basic_nt_family_directory_generator &
+	inline constexpr basic_nt_family_directory_generator &
 	operator=(basic_nt_family_directory_generator &&__restrict other) noexcept
 	{
 		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(entry);
@@ -318,7 +321,7 @@ struct basic_nt_family_directory_generator
 		other.entry = nullptr;
 		return *this;
 	}
-	constexpr ~basic_nt_family_directory_generator()
+	inline constexpr ~basic_nt_family_directory_generator()
 	{
 		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(entry);
 	}
@@ -360,16 +363,16 @@ struct basic_nt_family_recursive_directory_iterator
 	void *root_handle{};
 	nt_dirent *entry{};
 	stack_type stack;
-	constexpr basic_nt_family_recursive_directory_iterator() = default;
-	basic_nt_family_recursive_directory_iterator(void *root_han, nt_dirent *ent)
+	inline constexpr basic_nt_family_recursive_directory_iterator() = default;
+	inline basic_nt_family_recursive_directory_iterator(void *root_han, nt_dirent *ent)
 		: root_handle(root_han), entry(ent)
 	{}
-	basic_nt_family_recursive_directory_iterator(basic_nt_family_recursive_directory_iterator const &) = delete;
-	basic_nt_family_recursive_directory_iterator &
+	inline basic_nt_family_recursive_directory_iterator(basic_nt_family_recursive_directory_iterator const &) = delete;
+	inline basic_nt_family_recursive_directory_iterator &
 	operator=(basic_nt_family_recursive_directory_iterator const &) = delete;
-	basic_nt_family_recursive_directory_iterator(basic_nt_family_recursive_directory_iterator &&__restrict) noexcept =
+	inline basic_nt_family_recursive_directory_iterator(basic_nt_family_recursive_directory_iterator &&__restrict) noexcept =
 		default;
-	basic_nt_family_recursive_directory_iterator &
+	inline basic_nt_family_recursive_directory_iterator &
 	operator=(basic_nt_family_recursive_directory_iterator &&__restrict) noexcept = default;
 };
 
@@ -380,22 +383,22 @@ struct basic_nt_family_recursive_directory_generator
 	using stack_type = StackType;
 	void *root_handle{};
 	nt_dirent *entry{};
-	constexpr basic_nt_family_recursive_directory_generator() = default;
-	explicit constexpr basic_nt_family_recursive_directory_generator(void *rhd)
+	inline constexpr basic_nt_family_recursive_directory_generator() = default;
+	inline explicit constexpr basic_nt_family_recursive_directory_generator(void *rhd)
 		: root_handle(rhd), entry(::fast_io::win32::nt::details::new_nt_dirent<Allocator>())
 	{
 	}
-	basic_nt_family_recursive_directory_generator(basic_nt_family_recursive_directory_generator const &) = delete;
-	basic_nt_family_recursive_directory_generator &
+	inline basic_nt_family_recursive_directory_generator(basic_nt_family_recursive_directory_generator const &) = delete;
+	inline basic_nt_family_recursive_directory_generator &
 	operator=(basic_nt_family_recursive_directory_generator const &) = delete;
-	constexpr basic_nt_family_recursive_directory_generator(
+	inline constexpr basic_nt_family_recursive_directory_generator(
 		basic_nt_family_recursive_directory_generator &&__restrict other) noexcept
 		: root_handle(other.root_handle), entry(other.entry)
 	{
 		other.root_handle = nullptr;
 		entry = nullptr;
 	}
-	constexpr basic_nt_family_recursive_directory_generator &
+	inline constexpr basic_nt_family_recursive_directory_generator &
 	operator=(basic_nt_family_recursive_directory_generator &&__restrict other) noexcept
 	{
 		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(this->entry);
@@ -403,7 +406,7 @@ struct basic_nt_family_recursive_directory_generator
 		entry = other.entry;
 		return *this;
 	}
-	constexpr ~basic_nt_family_recursive_directory_generator()
+	inline constexpr ~basic_nt_family_recursive_directory_generator()
 	{
 		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(this->entry);
 	}
@@ -604,7 +607,7 @@ inline constexpr auto status_io_print_forward(io_alias_type_t<char_type>, nt_dir
 	}
 }
 
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !defined(_WIN32_WINDOWS)
 using native_directory_entry = nt_directory_entry;
 #endif
 

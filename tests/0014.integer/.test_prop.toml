@@ -1,0 +1,2 @@
+["block_function_pointer.cc"]
+will_fail = "compiletime"

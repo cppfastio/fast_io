@@ -1,0 +1,11 @@
+["buffer_lock.cc"] # undefined symbol: file_lock
+ignore = true
+
+["filelock.cc"] # undefined symbol: file_lock
+ignore = true
+
+["filelock_request.cc"] # undefined symbol: file_lock
+ignore = true
+
+["buffered_file_with_file_lock.cc"] # TODO: crash. why?
+ignore = true

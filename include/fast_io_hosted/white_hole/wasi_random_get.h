@@ -84,7 +84,7 @@ class basic_wasi_random_get
 {
 public:
 	using input_char_type = ch_type;
-	constexpr void close() noexcept
+	inline constexpr void close() noexcept
 	{}
 };
 

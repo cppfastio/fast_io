@@ -9,5 +9,5 @@
 #include "win32_dns.h"
 
 #if !defined(_MSC_VER) && !defined(__WINE__) && !defined(__CYGWIN__)
-#include "win32_9x_dns.h"
+#include "win32_9xa_dns.h"
 #endif

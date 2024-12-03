@@ -1,23 +1,11 @@
 ﻿#pragma once
-#undef min
-#undef max
 
 #if !defined(__cplusplus)
 #error "You must be using a C++ compiler"
 #endif
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4464)
-#pragma warning(disable : 4514)
-#pragma warning(disable : 4623)
-#pragma warning(disable : 4626)
-#pragma warning(disable : 4668)
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4820)
-#pragma warning(disable : 5027)
-#pragma warning(disable : 5045)
-#include <cstring>
-#endif
+
+#include "impl/misc/push_macros.h"
+#include "impl/misc/push_warnings.h"
 
 #include <version>
 #include <type_traits>
@@ -35,6 +23,10 @@
 #include "../fast_io_core_impl/intrinsics/msvc/impl.h"
 #include "../fast_io_core_impl/allocation/impl.h"
 #include "../fast_io_core_impl/asan_support.h"
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#include <cstring>
+#endif
 
 #include "impl/freestanding.h"
 #include "impl/common.h"
@@ -59,18 +51,23 @@ vector(InputIt, InputIt) -> vector<typename ::std::iterator_traits<InputIt>::val
 template <::std::ranges::input_range R>
 vector(::std::from_range_t, R &&) -> vector<::std::ranges::range_value_t<R>, ::fast_io::native_global_allocator>;
 #endif
+
+
+template <typename T, typename... U>
+	requires(::std::constructible_from<T, U> && ...)
+vector(T, U...) -> vector<T, ::fast_io::native_global_allocator>;
+
 } // namespace containers
 
 namespace tlc
 {
 template <typename T, typename Alloc = ::fast_io::native_thread_local_allocator>
 using vector = ::fast_io::containers::vector<T, Alloc>;
-}
+} // namespace tlc
 
 } // namespace fast_io
 
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
+#include "impl/misc/pop_macros.h"
+#include "impl/misc/pop_warnings.h"

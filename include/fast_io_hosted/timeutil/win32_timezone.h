@@ -27,12 +27,12 @@ namespace win32::details
 struct win32_registry_guard
 {
 	::std::size_t k;
-	explicit constexpr win32_registry_guard(::std::size_t k1) noexcept
+	inline explicit constexpr win32_registry_guard(::std::size_t k1) noexcept
 		: k(k1)
 	{}
-	win32_registry_guard(win32_registry_guard const &) = delete;
-	win32_registry_guard &operator=(win32_registry_guard const &) = delete;
-	~win32_registry_guard()
+	inline win32_registry_guard(win32_registry_guard const &) = delete;
+	inline win32_registry_guard &operator=(win32_registry_guard const &) = delete;
+	inline ~win32_registry_guard()
 	{
 		::fast_io::win32::RegCloseKey(k);
 	}
@@ -57,11 +57,11 @@ inline constexpr win32_timezone_name find_win32_regtz_position_impl(T const *str
 	}
 	auto it{::fast_io::freestanding::lower_bound(
 		first, last, scatter, [](::fast_io::basic_io_scatter_t<T> const &a, ::fast_io::basic_io_scatter_t<T> const &b) { return ::fast_io::freestanding::lexicographical_compare(a.base, a.base + a.len, b.base, b.base + b.len); })};
-	if (it == last)
+	if (it == last) [[unlikely]]
 	{
 		return {};
 	}
-	if (!::fast_io::freestanding::equal(it->base, it->base + it->len, str, str + len))
+	if (!::fast_io::freestanding::equal(it->base, it->base + it->len, str, str + len)) [[unlikely]]
 	{
 		return {};
 	}
@@ -77,7 +77,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 		static_assert(tzfamily != win32_timezone_family::gettimezoneinformation || family != win32_family::ansi_9x);
 		::fast_io::win32::time_zone_information tzi{};
 		::std::uint_least32_t retval{::fast_io::win32::GetTimeZoneInformation(__builtin_addressof(tzi))};
-		if (retval == UINT_LEAST32_MAX)
+		if (retval == UINT_LEAST32_MAX) [[unlikely]]
 		{
 			throw_win32_error();
 		}
@@ -100,7 +100,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 														 u"SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation",
 														 __builtin_addressof(k));
 		}
-		if (win32retcode)
+		if (win32retcode) [[unlikely]]
 		{
 			return {};
 		}
@@ -133,7 +133,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 					win32retcode = ::fast_io::win32::RegQueryValueExW(k, u"StandardName", nullptr, nullptr, buffer,
 																	  __builtin_addressof(cbdata));
 				}
-				if (win32retcode)
+				if (win32retcode) [[unlikely]]
 				{
 					return {};
 				}
@@ -143,7 +143,7 @@ inline win32_timezone_name win32_localtimezone_impl() noexcept
 		{
 			cbdata /= sizeof(api_char_type);
 		}
-		if (!cbdata)
+		if (!cbdata) [[unlikely]]
 		{
 			return {};
 		}

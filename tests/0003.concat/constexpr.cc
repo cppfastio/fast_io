@@ -4,7 +4,7 @@
 
 constexpr bool foo()
 {
-	std::string str{fast_io::concat("abcwe")};
+	std::string str{fast_io::concat_std("abcwe")};
 	std::string str2{"abcwe"};
 	return str == str2;
 }

@@ -7,20 +7,20 @@ template <::std::integral inchar_type, ::std::integral outchar_type>
 class basic_io_io_base
 {
 public:
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_read_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *, ::std::size_t) = 0;
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pread_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *, ::std::size_t,
 									 ::fast_io::intfpos_t) = 0;
-	virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir) = 0;
+	inline virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir) = 0;
 
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_write_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *, ::std::size_t) = 0;
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pwrite_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *, ::std::size_t,
 									 ::fast_io::intfpos_t) = 0;
-	virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir) = 0;
-	virtual constexpr ~basic_io_io_base() = default;
+	inline virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir) = 0;
+	inline virtual constexpr ~basic_io_io_base() = default;
 };
 
 template <::std::integral inchar_type, ::std::integral outchar_type, typename allocatortype, typename T>
@@ -33,11 +33,11 @@ public:
 		allocatortype::deallocate_n(ptr, n);
 	}
 	template <typename... Args>
-	constexpr basic_io_io_derived(io_cookie_t, Args &&...args)
+	inline constexpr basic_io_io_derived(io_cookie_t, Args &&...args)
 		: value(::fast_io::freestanding::forward<Args>(args)...)
 	{
 	}
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_read_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *base, ::std::size_t n) override
 	{
 		if constexpr (::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
@@ -59,7 +59,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pread_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *base, ::std::size_t n,
 									 ::fast_io::intfpos_t off) override
 	{
@@ -82,7 +82,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t off,
+	inline virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t off,
 																 ::fast_io::seekdir sdir) override
 	{
 		if constexpr (::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
@@ -105,7 +105,7 @@ public:
 		}
 	}
 
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_write_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *base, ::std::size_t n) override
 	{
 		if constexpr (::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
@@ -127,7 +127,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::io_scatter_status_t
+	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pwrite_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *base, ::std::size_t n,
 									 ::fast_io::intfpos_t off) override
 	{
@@ -150,7 +150,7 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t off,
+	inline virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t off,
 																  ::fast_io::seekdir sdir) override
 	{
 		if constexpr (::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
@@ -258,14 +258,14 @@ template <typename allocatortype, typename T>
 struct biobd_allocate_guard
 {
 	T *ptr{};
-	constexpr biobd_allocate_guard() noexcept = default;
+	inline constexpr biobd_allocate_guard() noexcept = default;
 
-	explicit constexpr biobd_allocate_guard(T *p) noexcept
+	inline explicit constexpr biobd_allocate_guard(T *p) noexcept
 		: ptr(p)
 	{}
-	biobd_allocate_guard(biobd_allocate_guard const &) = delete;
-	biobd_allocate_guard &operator=(biobd_allocate_guard const &) = delete;
-	constexpr ~biobd_allocate_guard()
+	inline biobd_allocate_guard(biobd_allocate_guard const &) = delete;
+	inline biobd_allocate_guard &operator=(biobd_allocate_guard const &) = delete;
+	inline constexpr ~biobd_allocate_guard()
 	{
 		using typedallocator = typed_generic_allocator_adapter<allocatortype, T>;
 		typedallocator::deallocate_n(ptr, 1);
@@ -293,37 +293,37 @@ public:
 	using input_char_type = inchar_type;
 	using output_char_type = outchar_type;
 	using native_handle_type = basic_io_io_base<inchar_type, outchar_type> *;
-	explicit constexpr basic_general_io_file() noexcept = default;
+	inline explicit constexpr basic_general_io_file() noexcept = default;
 	template <typename T, typename... Args>
-	explicit constexpr basic_general_io_file(io_cookie_type_t<T>, Args &&...args)
+	inline explicit constexpr basic_general_io_file(io_cookie_type_t<T>, Args &&...args)
 		: basic_general_io_io_observer<inchar_type, outchar_type>{
 			  ::fast_io::details::create_io_file_handle_impl<inchar_type, outchar_type, allocatortype, T>(
 				  ::fast_io::freestanding::forward<Args>(args)...)}
 	{
 	}
 	template <typename P>
-	constexpr basic_general_io_file(io_cookie_t, P &&p)
+	inline constexpr basic_general_io_file(io_cookie_t, P &&p)
 		: basic_general_io_io_observer<inchar_type, outchar_type>{
 			  ::fast_io::details::create_io_file_handle_impl<inchar_type, outchar_type, allocatortype,
 															 ::std::remove_reference_t<P>>(
 				  ::fast_io::freestanding::forward<P>(p))}
 	{
 	}
-	basic_general_io_file(basic_general_io_file const &) = delete;
-	basic_general_io_file &operator=(basic_general_io_file const &) = delete;
-	constexpr basic_general_io_file(basic_general_io_file &&other) noexcept
+	inline basic_general_io_file(basic_general_io_file const &) = delete;
+	inline basic_general_io_file &operator=(basic_general_io_file const &) = delete;
+	inline constexpr basic_general_io_file(basic_general_io_file &&other) noexcept
 		: basic_general_io_io_observer<inchar_type, outchar_type>{other.handle}
 	{
 		other.handle = nullptr;
 	}
-	constexpr basic_general_io_file &operator=(basic_general_io_file &&other) noexcept
+	inline constexpr basic_general_io_file &operator=(basic_general_io_file &&other) noexcept
 	{
 		delete this->handle;
 		this->handle = other.handle;
 		other.handle = nullptr;
 		return *this;
 	}
-	constexpr ~basic_general_io_file()
+	inline constexpr ~basic_general_io_file()
 	{
 		delete this->handle;
 	}
@@ -340,14 +340,14 @@ public:
 };
 
 template <::std::integral inchar_type, ::std::integral outchar_type, typename allocatortype>
-constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type, outchar_type, allocatortype>>
+inline constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type, outchar_type, allocatortype>>
 io_stream_deco_filter_ref_define(basic_general_io_file<inchar_type, outchar_type, allocatortype> &t) noexcept
 {
 	return {__builtin_addressof(t)};
 }
 
 template <::std::integral inchar_type, ::std::integral outchar_type, typename allocatortype>
-constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type, outchar_type, allocatortype>>
+inline constexpr basic_general_io_file_ref<basic_general_io_file<inchar_type, outchar_type, allocatortype>>
 io_stream_transcode_deco_filter_ref_define(basic_general_io_file<inchar_type, outchar_type, allocatortype> &&t) noexcept
 {
 	return {__builtin_addressof(t)};

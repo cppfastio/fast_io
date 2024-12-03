@@ -1,0 +1,2 @@
+["udivmod.cc"] # __uint128_t platform-dependent
+platform = "linux"

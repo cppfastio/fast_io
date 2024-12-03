@@ -31,14 +31,14 @@ struct basic_general_io_lockable_nonmovable
 
 	template <typename... Args>
 		requires ::std::constructible_from<T, Args...>
-	explicit constexpr basic_general_io_lockable_nonmovable(Args &&...args)
+	inline explicit constexpr basic_general_io_lockable_nonmovable(Args &&...args)
 		: handle(::std::forward<Args>(args)...)
 	{
 	}
 
 	template <typename... Args>
 		requires(::std::constructible_from<T, Args...>)
-	constexpr void reopen(Args &&...args)
+	inline constexpr void reopen(Args &&...args)
 	{
 		::fast_io::io_lock_guard guard(mutex);
 		if constexpr (requires() {
@@ -52,7 +52,7 @@ struct basic_general_io_lockable_nonmovable
 			this->handle = T(::std::forward<Args>(args)...);
 		}
 	}
-	constexpr void close() noexcept(noexcept(handle.close()))
+	inline constexpr void close() noexcept(noexcept(handle.close()))
 	{
 		::fast_io::io_lock_guard guard(mutex);
 		handle.close();
@@ -70,19 +70,19 @@ struct heap_allocate_guard
 	using allocator_type = Allocator;
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type, value_type>;
 	native_handle_type ptr;
-	explicit constexpr heap_allocate_guard() noexcept
+	inline explicit constexpr heap_allocate_guard() noexcept
 		: ptr{typed_allocator_type::allocate(1)}
 	{
 	}
-	heap_allocate_guard(heap_allocate_guard const &) = delete;
-	heap_allocate_guard &operator=(heap_allocate_guard const &) = delete;
-	constexpr native_handle_type release() noexcept
+	inline heap_allocate_guard(heap_allocate_guard const &) = delete;
+	inline heap_allocate_guard &operator=(heap_allocate_guard const &) = delete;
+	inline constexpr native_handle_type release() noexcept
 	{
 		auto temp{this->ptr};
 		this->ptr = nullptr;
 		return temp;
 	}
-	constexpr ~heap_allocate_guard()
+	inline constexpr ~heap_allocate_guard()
 	{
 		typed_allocator_type::deallocate_n(ptr, 1);
 	}
@@ -132,7 +132,7 @@ struct basic_general_mutex_movable
 	mutex_type *pmutex{};
 
 private:
-	constexpr void construct_default() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
+	inline constexpr void construct_default() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
 	{
 		::fast_io::details::heap_allocate_guard<mutex_type, allocator_type> g;
 		::std::construct_at(g.ptr);
@@ -140,17 +140,17 @@ private:
 	}
 
 public:
-	explicit constexpr basic_general_mutex_movable() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
+	inline explicit constexpr basic_general_mutex_movable() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
 	{
 		this->construct_default();
 	}
 
-	explicit constexpr basic_general_mutex_movable(::fast_io::for_overwrite_t) noexcept
+	inline explicit constexpr basic_general_mutex_movable(::fast_io::for_overwrite_t) noexcept
 	{
 	}
 
 private:
-	constexpr void destroy() noexcept
+	inline constexpr void destroy() noexcept
 	{
 		if (pmutex)
 		{
@@ -160,32 +160,32 @@ private:
 	}
 
 public:
-	constexpr void close() noexcept
+	inline constexpr void close() noexcept
 	{
 		this->destroy();
 		this->pmutex = nullptr;
 	}
-	constexpr void reopen() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
+	inline constexpr void reopen() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
 	{
 		this->close();
 		this->construct_default();
 	}
 
-	constexpr native_handle_type release() noexcept
+	inline constexpr native_handle_type release() noexcept
 	{
 		auto temp{this->pmutex};
 		this->pmutex = nullptr;
 		return temp;
 	}
 
-	basic_general_mutex_movable(basic_general_mutex_movable const &) = delete;
-	basic_general_mutex_movable &operator=(basic_general_mutex_movable const &) = delete;
-	constexpr basic_general_mutex_movable(basic_general_mutex_movable &&other) noexcept
+	inline basic_general_mutex_movable(basic_general_mutex_movable const &) = delete;
+	inline basic_general_mutex_movable &operator=(basic_general_mutex_movable const &) = delete;
+	inline constexpr basic_general_mutex_movable(basic_general_mutex_movable &&other) noexcept
 		: pmutex{other.pmutex}
 	{
 		other.pmutex = nullptr;
 	}
-	constexpr basic_general_mutex_movable &operator=(basic_general_mutex_movable &&other) noexcept
+	inline constexpr basic_general_mutex_movable &operator=(basic_general_mutex_movable &&other) noexcept
 	{
 		if (__builtin_addressof(other) == this)
 		{
@@ -197,7 +197,7 @@ public:
 		return *this;
 	}
 
-	constexpr ~basic_general_mutex_movable()
+	inline constexpr ~basic_general_mutex_movable()
 	{
 		this->destroy();
 	}
@@ -249,7 +249,7 @@ inline constexpr ::fast_io::basic_mutex_ref<Mutex> mutex_ref_define(::fast_io::b
 	return {mtx.pmutex};
 }
 
-namespace operations::define
+namespace operations::defines
 {
 
 template <typename T>
@@ -257,12 +257,12 @@ concept has_mutex_ref_define = requires(T t) {
 	mutex_ref_define(t);
 };
 
-} // namespace operations::define
+} // namespace operations::defines
 
 template <typename T, typename Mutex>
 inline constexpr decltype(auto) io_stream_mutex_ref_define(::fast_io::basic_general_io_lockable_ref<T, Mutex> mtx)
 {
-	if constexpr (::fast_io::operations::define::has_mutex_ref_define<Mutex>)
+	if constexpr (::fast_io::operations::defines::has_mutex_ref_define<Mutex>)
 	{
 		return mutex_ref_define(mtx.ptr->mutex);
 	}

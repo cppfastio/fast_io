@@ -3,7 +3,7 @@
 namespace fast_io::win32
 {
 
-constexpr unix_timestamp to_unix_timestamp(filetime ft) noexcept
+inline constexpr unix_timestamp to_unix_timestamp(filetime ft) noexcept
 {
 	::std::uint_least64_t date_time{(static_cast<::std::uint_least64_t>(ft.dwHighDateTime) << 32) | ft.dwLowDateTime};
 
@@ -43,4 +43,10 @@ inline constexpr win32_timestamp to_win32_timestamp(filetime ft) noexcept
 	return to_win32_timestamp_ftu64((static_cast<::std::uint_least64_t>(ft.dwHighDateTime) << 32) | ft.dwLowDateTime);
 }
 
+inline constexpr filetime win32_timestamp_to_filetime(win32_timestamp wt) noexcept
+{
+	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
+	::std::uint_least64_t ftu64{wt.seconds * 10000000ULL + wt.subseconds / mul_factor};
+	return {.dwLowDateTime = static_cast<::std::uint_least32_t>(ftu64), .dwHighDateTime = static_cast<::std::uint_least32_t>(ftu64 >> 32)};
+}
 } // namespace fast_io::win32

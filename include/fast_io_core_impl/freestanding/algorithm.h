@@ -3,10 +3,6 @@
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC system_header
 #endif
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4365)
-#endif
 
 #if 0
 //__STDC_HOSTED__==1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED==1)
@@ -108,7 +104,7 @@ inline constexpr void fill_n(fwd_iter first, ::std::size_t n, T value)
 }
 
 template <::std::bidirectional_iterator BidirIt1, ::std::bidirectional_iterator BidirIt2>
-constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
+inline constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 {
 	for (; first != last; *(--d_last) = *(--last))
 		;
@@ -116,7 +112,7 @@ constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 }
 
 template <::std::bidirectional_iterator BidirIt1, ::std::bidirectional_iterator BidirIt2>
-constexpr BidirIt2 move_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
+inline constexpr BidirIt2 move_backward(BidirIt1 first, BidirIt1 last, BidirIt2 d_last)
 {
 	for (; first != last; *(--d_last) = ::std::move(*(--last)))
 		;
@@ -144,6 +140,7 @@ inline constexpr Iter find(Iter first, Iter last, T t)
 	}
 	return last;
 }
+
 #if 0
 template <::std::input_iterator Iter, ::std::integral T>
 // requires (::std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(::std::uintmax_t))
@@ -160,6 +157,7 @@ inline constexpr Iter find_not(Iter first, Iter last, T t)
 	return last;
 }
 #endif
+
 template <::std::input_iterator Iter, ::std::input_iterator Iter2>
 struct mismatch_result
 {
@@ -565,7 +563,7 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 	{
 		NoThrowForwardIt d_first;
 		NoThrowForwardIt current;
-		constexpr ~destroyer()
+		inline constexpr ~destroyer()
 		{
 			for (; d_first != current; ++d_first)
 			{
@@ -621,7 +619,7 @@ uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 	{
 		NoThrowForwardIt d_first;
 		NoThrowForwardIt current;
-		constexpr ~destroyer() noexcept
+		inline constexpr ~destroyer() noexcept
 		{
 			for (; d_first != current; ++d_first)
 			{
@@ -841,7 +839,3 @@ using ::fast_io::freestanding::non_overlapped_copy;
 using ::fast_io::freestanding::non_overlapped_copy_n;
 
 } // namespace fast_io::details
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif

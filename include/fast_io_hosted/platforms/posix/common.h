@@ -51,6 +51,7 @@ inline ::std::byte const *posix_write_bytes_impl(int fd, ::std::byte const *firs
 }
 
 #ifdef __MSDOS__
+
 extern unsigned my_dos_read(int, void *, unsigned, unsigned *) noexcept __asm__("__dos_read");
 extern unsigned my_dos_write(int, void const *, unsigned, unsigned *) noexcept __asm__("__dos_write");
 

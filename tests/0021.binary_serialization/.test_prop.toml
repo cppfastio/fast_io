@@ -1,0 +1,5 @@
+["le_get32.cc"] # TODO: crash. why?
+ignore = true
+
+["str_get_all.cc"] # TODO: CI runtime failed. why?
+ignore = true

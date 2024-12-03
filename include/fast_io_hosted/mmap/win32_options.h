@@ -10,8 +10,8 @@ struct win32_mmap_options
 	void *lpFileMappingAttributes{};
 	void *lpName{};
 
-	explicit constexpr win32_mmap_options() noexcept = default;
-	constexpr win32_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
+	inline explicit constexpr win32_mmap_options() noexcept = default;
+	inline constexpr win32_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
 	{
 		::std::uint_least32_t flprotecttemp{};
 		::std::uint_least32_t dwDesiredAccesstemp{};

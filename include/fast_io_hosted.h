@@ -15,6 +15,7 @@ freestanding ones.
 #if !defined(__cpp_concepts)
 #error "fast_io requires at least C++20 standard compiler."
 #else
+
 #include "fast_io_freestanding.h"
 
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
@@ -38,18 +39,7 @@ freestanding ones.
 #include "fast_io_hosted/platforms/errc_impl.h"
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4061)
-#pragma warning(disable : 4514)
-#pragma warning(disable : 4623)
-#pragma warning(disable : 4626)
-#pragma warning(disable : 4668)
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4820)
-#pragma warning(disable : 5027)
-#pragma warning(disable : 5045)
-#endif
+#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include "fast_io_hosted/posix_error_scatter/impl.h"
 #include "fast_io_hosted/posix_error.h"
@@ -70,9 +60,9 @@ freestanding ones.
 #endif
 
 #if !defined(__AVR__)
-#if defined(__MSDOS__)
+#include "fast_io_dsal/string_view.h"
 #include "fast_io_dsal/string.h"
-#endif
+
 #include "fast_io_hosted/platforms/native.h"
 #include "fast_io_hosted/file_loaders/impl.h"
 #include "fast_io_hosted/wrapper.h"
@@ -83,14 +73,14 @@ freestanding ones.
 #include "fast_io_hosted/timeutil/impl.h"
 #endif
 
-#include "fast_io_hosted/threads/mutex/impl.h"
+#include "fast_io_hosted/threads/threads.h"
 
 #include "fast_io_dsal/impl/common.h"
 #include "fast_io_dsal/impl/vector.h"
 
 #include "fast_io_hosted/filesystem/native.h"
 #include "fast_io_hosted/dll/dll.h"
-#include "fast_io_hosted/process/native.h"
+#include "fast_io_hosted/process/process.h"
 
 #include "fast_io_hosted/io_file.h"
 
@@ -100,14 +90,12 @@ freestanding ones.
 #endif
 #endif
 
-#if (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(_WIN32) || defined(__CYGWIN__)
 #include "fast_io_hosted/platforms/win32_box.h"
 #endif
 
 #if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_STRING_)
-#if 1
 #include "fast_io_unit/string.h"
-#endif
 #endif
 
 #if defined(_GLIBCXX_CHRONO) || defined(_LIBCPP_CHRONO) || defined(_CHRONO_)
@@ -136,8 +124,6 @@ freestanding ones.
 
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
+#include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif

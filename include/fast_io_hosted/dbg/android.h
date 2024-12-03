@@ -61,8 +61,8 @@ namespace details
 struct cstr_ptr
 {
 	void *p{};
-	constexpr cstr_ptr() noexcept = default;
-	explicit cstr_ptr(::std::size_t n) noexcept
+	inline constexpr cstr_ptr() noexcept = default;
+	inline explicit cstr_ptr(::std::size_t n) noexcept
 	{
 		if (n == SIZE_MAX)
 		{
@@ -75,9 +75,9 @@ struct cstr_ptr
 		}
 		reinterpret_cast<char *>(p)[n] = 0;
 	}
-	cstr_ptr(cstr_ptr const &) = delete;
-	cstr_ptr &operator=(cstr_ptr const &) = delete;
-	~cstr_ptr()
+	inline cstr_ptr(cstr_ptr const &) = delete;
+	inline cstr_ptr &operator=(cstr_ptr const &) = delete;
+	inline ~cstr_ptr()
 	{
 		__builtin_free(p);
 	}
@@ -167,7 +167,7 @@ inline void my_android_log_write_message_impl(android_logmessage_meta_v30 const 
 struct my_android_log_write_common
 {
 	android_logmessage_meta_base b{};
-	void operator()(char const *text)
+	inline void operator()(char const *text)
 	{
 		my_android_log_write_impl(b.priority, b.tag, text);
 	}
@@ -186,7 +186,7 @@ inline void android_logger_writev_impl(android_logmessage_meta_base b, io_scatte
 struct my_android_log_write_v30_common
 {
 	android_logmessage_meta_v30 const *pmeta{};
-	void operator()(char const *text)
+	inline void operator()(char const *text)
 	{
 		my_android_log_write_message_impl(pmeta, text);
 	}

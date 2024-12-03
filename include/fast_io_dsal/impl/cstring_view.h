@@ -29,21 +29,22 @@ public:
 	using string_view_type::ptr;
 	using string_view_type::n;
 
-	constexpr basic_cstring_view() noexcept
+	inline constexpr basic_cstring_view() noexcept
 		: string_view_type(__builtin_addressof(::fast_io::char_literal_v<0, char_type>), 0)
 	{}
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
 		this->ptr = __builtin_addressof(::fast_io::char_literal_v<0, char_type>);
 		this->n = 0;
 	}
-	constexpr basic_cstring_view(::std::nullptr_t) = delete;
+	inline constexpr basic_cstring_view(::std::nullptr_t) = delete;
 
-	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, const_pointer p, size_type s) noexcept
+	inline explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, const_pointer p, size_type s) noexcept
 		: string_view_type(p, s)
 	{}
+
 	template <size_type N>
-	constexpr basic_cstring_view(char_type const (&buffer)[N]) noexcept
+	inline constexpr basic_cstring_view(char_type const (&buffer)[N]) noexcept
 		: string_view_type(buffer)
 	{
 		constexpr size_type nm1{N - 1};
@@ -53,34 +54,34 @@ public:
 		}
 	}
 
-	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, string_view_type stvw) noexcept
+	inline explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, string_view_type stvw) noexcept
 		: string_view_type(stvw)
 	{
 	}
 
 	template <::std::ranges::contiguous_range rg>
 		requires(::std::constructible_from<string_view_type, rg const &&>)
-	explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, ::fast_io::freestanding::from_range_t, rg const &&r) noexcept
+	inline explicit constexpr basic_cstring_view(::fast_io::containers::null_terminated_t, ::fast_io::freestanding::from_range_t, rg const &&r) noexcept
 		: string_view_type(::std::forward<rg>(r))
 	{
 	}
 
-	constexpr basic_cstring_view(::fast_io::manipulators::basic_os_c_str<char_type> osstr) noexcept
+	inline constexpr basic_cstring_view(::fast_io::manipulators::basic_os_c_str<char_type> osstr) noexcept
 		: string_view_type(osstr)
 	{}
-	constexpr basic_cstring_view(::fast_io::manipulators::basic_os_c_str_with_known_size<char_type> osstr) noexcept
+	inline constexpr basic_cstring_view(::fast_io::manipulators::basic_os_c_str_with_known_size<char_type> osstr) noexcept
 		: string_view_type(osstr)
 	{}
 
-	constexpr basic_cstring_view(basic_cstring_view const &) noexcept = default;
-	constexpr basic_cstring_view &operator=(basic_cstring_view const &) noexcept = default;
-	constexpr void swap(basic_cstring_view &other) noexcept
+	inline constexpr basic_cstring_view(basic_cstring_view const &) noexcept = default;
+	inline constexpr basic_cstring_view &operator=(basic_cstring_view const &) noexcept = default;
+	inline constexpr void swap(basic_cstring_view &other) noexcept
 	{
 		basic_cstring_view const tmp{other};
 		other = *this;
 		*this = tmp;
 	}
-	constexpr const_pointer c_str() const noexcept
+	inline constexpr const_pointer c_str() const noexcept
 	{
 		return this->ptr;
 	}
@@ -114,15 +115,15 @@ public:
 	using string_view_type::remove_prefix_unchecked;
 	using string_view_type::contains;
 	using string_view_type::contains_character;
-	using string_view_type::substrvw_front;
-	using string_view_type::substrvw_front_unchecked;
+	using string_view_type::subview_front;
+	using string_view_type::subview_front_unchecked;
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_cstring_view substrvw_back(size_type count) const noexcept
+	inline constexpr basic_cstring_view subview_back(size_type count) const noexcept
 	{
 		if (this->n < count) [[unlikely]]
 		{
@@ -136,13 +137,13 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_cstring_view substrvw_back_unchecked(size_type count) const noexcept
+	inline constexpr basic_cstring_view subview_back_unchecked(size_type count) const noexcept
 	{
 		return basic_cstring_view(this->ptr + (this->n - count), count);
 	}
 
-	using string_view_type::substrvw;
-	using string_view_type::substrvw_unchecked;
+	using string_view_type::subview;
+	using string_view_type::subview_unchecked;
 	using string_view_type::copy;
 	using string_view_type::copy_unchecked;
 	using string_view_type::find_character;
@@ -160,7 +161,7 @@ public:
 };
 
 template <::std::integral char_type>
-constexpr void swap(::fast_io::containers::basic_cstring_view<char_type> &a, basic_cstring_view<char_type> &b) noexcept
+inline constexpr void swap(::fast_io::containers::basic_cstring_view<char_type> &a, basic_cstring_view<char_type> &b) noexcept
 {
 	a.swap(b);
 }
@@ -171,66 +172,66 @@ inline constexpr ::fast_io::basic_io_scatter_t<char_type> print_alias_define(::f
 }
 
 template <::std::integral char_type>
-constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
 {
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }
 
 template <::std::integral char_type, ::std::size_t n>
-constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, char_type const (&buffer)[n]) noexcept
+inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, char_type const (&buffer)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::equal(a.ptr, a.ptr + a.n, buffer, buffer + nm1);
 }
 
 template <::std::integral char_type, ::std::size_t n>
-constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type> a) noexcept
+inline constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type> a) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::equal(buffer, buffer + nm1, a.ptr, a.ptr + a.n);
 }
 
 template <::std::integral char_type>
-constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
+inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
 {
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }
 
 template <::std::integral char_type>
-constexpr bool operator==(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+inline constexpr bool operator==(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
 {
 	return b == a;
 }
 
-#ifdef __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison >= 201907L
 template <::std::integral char_type>
-constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
 {
 	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 
 template <::std::integral char_type, ::std::size_t n>
-constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, char_type const (&buffer)[n]) noexcept
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, char_type const (&buffer)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, buffer, buffer + nm1, ::std::compare_three_way{});
 }
 
 template <::std::integral char_type, ::std::size_t n>
-constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type> a) noexcept
+inline constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type> a) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::lexicographical_compare_three_way(buffer, buffer + nm1, a.ptr, a.ptr + a.n, ::std::compare_three_way{});
 }
 
 template <::std::integral char_type>
-constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
 {
 	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 
 template <::std::integral char_type>
-constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
 {
 	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }

@@ -15,7 +15,7 @@ public:
 	{
 		return res;
 	}
-	explicit constexpr operator bool() noexcept
+	inline explicit constexpr operator bool() noexcept
 	{
 		return res;
 	}
@@ -191,36 +191,36 @@ class win32_family_dns_file : public win32_family_dns_io_observer<fam>
 public:
 	using typename win32_family_dns_io_observer<fam>::char_type;
 	using typename win32_family_dns_io_observer<fam>::native_handle_type;
-	constexpr win32_family_dns_file() noexcept = default;
-	constexpr win32_family_dns_file(win32_family_dns_io_observer<fam>) noexcept = delete;
-	constexpr win32_family_dns_file &operator=(win32_family_dns_io_observer<fam>) noexcept = delete;
+	inline constexpr win32_family_dns_file() noexcept = default;
+	inline constexpr win32_family_dns_file(win32_family_dns_io_observer<fam>) noexcept = delete;
+	inline constexpr win32_family_dns_file &operator=(win32_family_dns_io_observer<fam>) noexcept = delete;
 
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr win32_family_dns_file(native_hd res1) noexcept
+	inline explicit constexpr win32_family_dns_file(native_hd res1) noexcept
 		: win32_family_dns_io_observer<fam>{res1}
 	{
 	}
-	explicit constexpr win32_family_dns_file(decltype(nullptr)) noexcept = delete;
-	win32_family_dns_file(char_type const *node, char_type const *service,
+	inline explicit constexpr win32_family_dns_file(decltype(nullptr)) noexcept = delete;
+	inline win32_family_dns_file(char_type const *node, char_type const *service,
 						  ::fast_io::win32::win32_family_addrinfo<fam> const *hints)
 		: win32_family_dns_io_observer<fam>{::fast_io::details::win32_getaddrinfo_impl<fam>(node, service, hints)}
 	{
 	}
 	template <typename T>
 		requires ::fast_io::constructible_to_os_c_str<T>
-	explicit win32_family_dns_file(T const &t)
+	inline explicit win32_family_dns_file(T const &t)
 		: win32_family_dns_io_observer<fam>{::fast_io::details::win32_family_dns_open_impl<fam>(t)}
 	{
 	}
-	win32_family_dns_file(win32_family_dns_file const &) = delete;
-	win32_family_dns_file &operator=(win32_family_dns_file const &) = delete;
-	constexpr win32_family_dns_file(win32_family_dns_file &&__restrict other) noexcept
+	inline win32_family_dns_file(win32_family_dns_file const &) = delete;
+	inline win32_family_dns_file &operator=(win32_family_dns_file const &) = delete;
+	inline constexpr win32_family_dns_file(win32_family_dns_file &&__restrict other) noexcept
 		: win32_family_dns_io_observer<fam>{other.res}
 	{
 		other.res = nullptr;
 	}
-	win32_family_dns_file &operator=(win32_family_dns_file &&__restrict other) noexcept
+	inline win32_family_dns_file &operator=(win32_family_dns_file &&__restrict other) noexcept
 	{
 		if (this->res) [[likely]]
 		{
@@ -230,7 +230,7 @@ public:
 		other.res = nullptr;
 		return *this;
 	}
-	void close() noexcept
+	inline void close() noexcept
 	{
 		if (this->res) [[likely]]
 		{
@@ -238,7 +238,7 @@ public:
 			this->res = nullptr;
 		}
 	}
-	~win32_family_dns_file()
+	inline ~win32_family_dns_file()
 	{
 		if (this->res) [[likely]]
 		{

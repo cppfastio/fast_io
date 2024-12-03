@@ -26,7 +26,7 @@ inline constexpr T addc(T a, T b, bool carryin, bool &carryout) noexcept
 	if (!__builtin_is_constant_evaluated())
 #endif
 	{
-#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64))
+#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64)) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
 #if !__has_cpp_attribute(assume)
 		__assume(carryin == 0 || carryin == 1);
 #endif
@@ -104,7 +104,7 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 	if (!__builtin_is_constant_evaluated())
 #endif
 	{
-#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64))
+#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64)) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
 #if !__has_cpp_attribute(assume)
 		__assume(carryin == 0 || carryin == 1);
 #endif
@@ -148,7 +148,7 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 				bool carrytemp{static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u32(
 					static_cast<char unsigned>(carryin), alow, blow, __builtin_addressof(reslow)))};
 				carryout = static_cast<bool>(::fast_io::intrinsics::msvc::x86::_subborrow_u32(
-					carrytemp, alow, bhigh, __builtin_addressof(reshigh)));
+					carrytemp, ahigh, bhigh, __builtin_addressof(reshigh)));
 				return (static_cast<long long unsigned>(reshigh) << 32u) | reslow;
 			}
 		}

@@ -2,66 +2,59 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "master", "next" ]
+    branches: ["master", "next"]
   pull_request:
-    branches: [ "master", "next" ]
+    branches: ["master", "next"]
 
 jobs:
   ubuntu:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Install ninja-build tool
-      uses: seanmiddleditch/gha-setup-ninja@v4
-    - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
-    - name: ninja
-      run: ninja
-    - name: ninja test
-      run: ninja test
+      - uses: actions/checkout@v4
+      - name: Install ninja-build tool
+        uses: seanmiddleditch/gha-setup-ninja@v5
+      - name: Generate tests
+        run: |
+          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+          cmake --build fast_io_prebuild
+          ./fast_io_prebuild/tests_prebuild linux
+      - name: CMake configure
+        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On
+      - name: CMake build
+        run: cmake --build fast_io_build
+      - name: CMake test
+        run: cmake --build fast_io_build --target test
 
   windows:
-
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: ilammy/msvc-dev-cmd@v1.4.1
-    - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
-    - name: ninja
-      run: ninja
-    - name: ninja test
-      run: ninja test
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1.13.0
+      - name: Generate tests
+        run: |
+          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+          cmake --build fast_io_prebuild
+          ./fast_io_prebuild/tests_prebuild windows msvc
+      - name: CMake configure
+        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl" -DENABLE_TESTS=On
+      - name: CMake build
+        run: cmake --build fast_io_build
+      - name: CMake test
+        run: cmake --build fast_io_build --target test
 
-  windows-debug:
+  # macos:
 
-    runs-on: windows-latest
+  #   runs-on: macos-latest
 
-    steps:
-    - uses: actions/checkout@v2
-    - uses: ilammy/msvc-dev-cmd@v1.4.1
-    - name: cmake
-      run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address" -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
-    - name: ninja
-      run: ninja
-    - name: ninja test
-      run: ninja test
-
-  #macos:
-
-  #  runs-on: macos-latest
-
-  #  steps:
-  #  - uses: actions/checkout@v3
-  #  - name: Install ninja-build tool
-  #    uses: seanmiddleditch/gha-setup-ninja@v4
-  #  - name: cmake
-  #    run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
-  #  - name: ninja
-  #    run: ninja
-  #  - name: ninja test
-  #    run: ninja test
-
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Install ninja-build tool
+  #     uses: seanmiddleditch/gha-setup-ninja@v4
+  #   - name: cmake
+  #     run: cmake -GNinja . -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused -Wuninitialized -Wshadow -Wconversion -Werror"
+  #   - name: ninja
+  #     run: ninja
+  #   - name: ninja test
+  #     run: ninja test

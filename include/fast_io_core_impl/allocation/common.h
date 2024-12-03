@@ -12,6 +12,6 @@ struct basic_allocation_least_result
 	size_type count;
 };
 
-using allocation_least_result = basic_allocation_least_result<void*>;
+using allocation_least_result = basic_allocation_least_result<void *>;
 
 } // namespace fast_io

@@ -10,7 +10,7 @@ class ossl_evp_guard
 {
 public:
 	EVP_MD_CTX *pmdctx{};
-	ossl_evp_guard()
+	inline ossl_evp_guard()
 		: pmdctx{noexcept_call(EVP_MD_CTX_new)}
 	{
 		if (this->pmdctx == nullptr)
@@ -18,15 +18,15 @@ public:
 			throw_posix_error(EINVAL);
 		}
 	}
-	ossl_evp_guard(ossl_evp_guard const &) = delete;
-	ossl_evp_guard &operator=(ossl_evp_guard const &) = delete;
-	EVP_MD_CTX *release() noexcept
+	inline ossl_evp_guard(ossl_evp_guard const &) = delete;
+	inline ossl_evp_guard &operator=(ossl_evp_guard const &) = delete;
+	inline EVP_MD_CTX *release() noexcept
 	{
 		auto temp{pmdctx};
 		this->pmdctx = nullptr;
 		return temp;
 	}
-	~ossl_evp_guard()
+	inline ~ossl_evp_guard()
 	{
 		if (this->pmdctx)
 		{
@@ -74,29 +74,29 @@ public:
 	native_handle_type pmdctx{};
 	::std::size_t evp_size{};
 	::std::byte digest_buffer[evp_max_md_size];
-	constexpr ossl_evp_hash_file() noexcept = default;
+	inline constexpr ossl_evp_hash_file() noexcept = default;
 	template <constructible_to_os_c_str T>
-	explicit ossl_evp_hash_file(T const &s)
+	inline explicit ossl_evp_hash_file(T const &s)
 		: pmdctx{::fast_io::details::create_ossl_evp_hash_impl(s)}
 	{
 	}
-	ossl_evp_hash_file(ossl_evp_hash_file const &) = delete;
-	ossl_evp_hash_file &operator=(ossl_evp_hash_file const &) = delete;
-	~ossl_evp_hash_file()
+	inline ossl_evp_hash_file(ossl_evp_hash_file const &) = delete;
+	inline ossl_evp_hash_file &operator=(ossl_evp_hash_file const &) = delete;
+	inline ~ossl_evp_hash_file()
 	{
 		if (this->pmdctx)
 		{
 			noexcept_call(EVP_MD_CTX_free, this->pmdctx);
 		}
 	}
-	void update(::std::byte const *first, ::std::byte const *last)
+	inline void update(::std::byte const *first, ::std::byte const *last)
 	{
 		if (!noexcept_call(EVP_DigestUpdate, this->pmdctx, first, static_cast<::std::size_t>(last - first)))
 		{
 			throw_posix_error(EINVAL);
 		}
 	}
-	void reset()
+	inline void reset()
 	{
 		noexcept_call(EVP_MD_CTX_reset, this->pmdctx);
 	}
@@ -104,7 +104,7 @@ public:
 	{
 		return this->pmdctx;
 	}
-	void do_final()
+	inline void do_final()
 	{
 		int unsigned u{};
 		if (!noexcept_call(EVP_DigestFinal_ex, this->pmdctx, reinterpret_cast<char unsigned *>(digest_buffer),
@@ -114,11 +114,11 @@ public:
 		}
 		evp_size = static_cast<::std::size_t>(u);
 	}
-	constexpr ::std::size_t runtime_digest_size() const noexcept
+	inline constexpr ::std::size_t runtime_digest_size() const noexcept
 	{
 		return evp_size;
 	}
-	constexpr ::std::byte const *digest_byte_ptr() const noexcept
+	inline constexpr ::std::byte const *digest_byte_ptr() const noexcept
 	{
 		return digest_buffer;
 	}

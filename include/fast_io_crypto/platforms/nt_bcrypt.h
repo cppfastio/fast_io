@@ -25,15 +25,15 @@ public:
 	native_handle_type hashHandle{};
 	::std::uint_least32_t bcrypt_size{};
 	::std::byte *digest_buffer{};
-	constexpr nt_bcrypt_hash_file() noexcept = default;
+	inline constexpr nt_bcrypt_hash_file() noexcept = default;
 	template <constructible_to_os_c_str T>
-	explicit nt_bcrypt_hash_file(T const &s)
+	inline explicit nt_bcrypt_hash_file(T const &s)
 	{
 		::fast_io::details::create_nt_bcrypt_impl(*this, s);
 	}
-	nt_bcrypt_hash_file(nt_bcrypt_hash_file const &) = delete;
-	nt_bcrypt_hash_file &operator=(nt_bcrypt_hash_file const &) = delete;
-	~nt_bcrypt_hash_file()
+	inline nt_bcrypt_hash_file(nt_bcrypt_hash_file const &) = delete;
+	inline nt_bcrypt_hash_file &operator=(nt_bcrypt_hash_file const &) = delete;
+	inline ~nt_bcrypt_hash_file()
 	{
 		if (digest_buffer)
 		{
@@ -48,23 +48,23 @@ public:
 			::fast_io::win32::BCryptCloseAlgorithmProvider(this->phAlgorithm, 0u);
 		}
 	}
-	void update(::std::byte const *first, ::std::byte const *last)
+	inline void update(::std::byte const *first, ::std::byte const *last)
 	{
 		::fast_io::details::ntbcrypt_update_impl(this->hashHandle, first, last);
 	}
-	void do_final()
+	inline void do_final()
 	{
 		::fast_io::details::ntbcrypt_do_final_impl(this->hashHandle, digest_buffer, bcrypt_size);
 	}
-	void reset()
+	inline void reset()
 	{
 		this->do_final();
 	}
-	constexpr ::std::size_t runtime_digest_size() const noexcept
+	inline constexpr ::std::size_t runtime_digest_size() const noexcept
 	{
 		return bcrypt_size;
 	}
-	constexpr ::std::byte const *digest_byte_ptr() const noexcept
+	inline constexpr ::std::byte const *digest_byte_ptr() const noexcept
 	{
 		return digest_buffer;
 	}
@@ -76,17 +76,17 @@ namespace details
 struct bcrypt_algo_guard
 {
 	void *phalgo{};
-	explicit constexpr bcrypt_algo_guard() noexcept = default;
-	bcrypt_algo_guard(bcrypt_algo_guard const &) = delete;
-	bcrypt_algo_guard &operator=(bcrypt_algo_guard const &) = delete;
-	~bcrypt_algo_guard()
+	inline explicit constexpr bcrypt_algo_guard() noexcept = default;
+	inline bcrypt_algo_guard(bcrypt_algo_guard const &) = delete;
+	inline bcrypt_algo_guard &operator=(bcrypt_algo_guard const &) = delete;
+	inline ~bcrypt_algo_guard()
 	{
 		if (this->phalgo)
 		{
 			::fast_io::win32::BCryptCloseAlgorithmProvider(this->phalgo, 0u);
 		}
 	}
-	void *release() noexcept
+	inline void *release() noexcept
 	{
 		auto temp{this->phalgo};
 		this->phalgo = nullptr;

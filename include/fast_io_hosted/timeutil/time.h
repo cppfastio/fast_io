@@ -277,7 +277,7 @@ namespace win32::details
 inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 {
 	::fast_io::win32::filetime ftm;
-#if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
 	::fast_io::win32::GetSystemTimePreciseAsFileTime(__builtin_addressof(ftm));
 #else
 	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
@@ -285,9 +285,9 @@ inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 	return static_cast<unix_timestamp>(to_win32_timestamp(ftm));
 }
 
-inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
+inline unix_timestamp win32_posix_clock_gettime_uptime_impl()
 {
-	::std::uint_least64_t ftm{};
+	::std::uint_least64_t ftm;
 	if (!::fast_io::win32::QueryUnbiasedInterruptTime(__builtin_addressof(ftm)))
 	{
 		throw_win32_error();
@@ -304,7 +304,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	::fast_io::win32::filetime creation_time, exit_time, kernel_time, user_time;
 	if constexpr (is_thread)
 	{
-		auto hthread{bit_cast<void *>(::std::ptrdiff_t(-2))};
+		auto hthread{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-2))};
 		if (!::fast_io::win32::GetThreadTimes(hthread, __builtin_addressof(creation_time),
 											  __builtin_addressof(exit_time), __builtin_addressof(kernel_time),
 											  __builtin_addressof(user_time)))
@@ -314,7 +314,7 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	}
 	else
 	{
-		auto hprocess{bit_cast<void *>(::std::ptrdiff_t(-1))};
+		auto hprocess{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 		if (!::fast_io::win32::GetProcessTimes(hprocess, __builtin_addressof(creation_time),
 											   __builtin_addressof(exit_time), __builtin_addressof(kernel_time),
 											   __builtin_addressof(user_time)))
@@ -330,11 +330,11 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
 }
 
-inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
+inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 {
 	::std::uint_least64_t freq{
 		static_cast<::std::uint_least64_t>(::fast_io::details::win32_query_performance_frequency())};
-	::std::int_least64_t counter{};
+	::std::int_least64_t counter;
 	if (!::fast_io::win32::QueryPerformanceCounter(__builtin_addressof(counter)))
 	{
 		throw_win32_error();
@@ -352,6 +352,110 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_xp_impl()
 }
 
 } // namespace win32::details
+
+namespace win32::nt::details
+{
+inline unix_timestamp nt602_posix_clock_gettime_tai_impl() noexcept
+{
+	return static_cast<unix_timestamp>(::fast_io::win32::to_win32_timestamp_ftu64(
+		static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise())));
+}
+
+template <bool zw>
+inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
+{
+	::std::int_least64_t counter;
+	::std::int_least64_t freq;
+
+	auto status{::fast_io::win32::nt::nt_query_performance_counter<zw>(__builtin_addressof(counter), __builtin_addressof(freq))};
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	if (counter < 0 || freq < 0) [[unlikely]]
+	{
+		throw_nt_error(0xC0000003);
+	}
+
+	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
+	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq};
+	::std::uint_least64_t dv{ucounter / freq};
+	::std::uint_least64_t md{ucounter % freq};
+	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
+						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
+}
+
+template <bool zw, bool is_thread>
+inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
+{
+	::std::int_least64_t kernel_time;
+	::std::int_least64_t user_time;
+
+	if constexpr (is_thread)
+	{
+		auto hthread{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-2))};
+		::fast_io::win32::nt::kernel_user_times kut;
+
+		auto status{
+			::fast_io::win32::nt::nt_query_information_thread<zw>(
+				hthread,
+				::fast_io::win32::nt::thread_information_class::ThreadTimes,
+				__builtin_addressof(kut),
+				static_cast<::std::uint_least32_t>(sizeof(kut)),
+				nullptr)};
+
+		if (status) [[unlikely]]
+		{
+			throw_nt_error(status);
+		}
+
+		kernel_time = kut.KernelTime;
+		user_time = kut.UserTime;
+	}
+	else
+	{
+		auto hprocess{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
+		::fast_io::win32::nt::kernel_user_times kut;
+
+		auto status{
+			::fast_io::win32::nt::nt_query_information_process<zw>(
+				hprocess,
+				::fast_io::win32::nt::process_information_class::ProcessTimes,
+				__builtin_addressof(kut),
+				static_cast<::std::uint_least32_t>(sizeof(kut)),
+				nullptr)};
+
+		if (status) [[unlikely]]
+		{
+			throw_nt_error(status);
+		}
+
+		kernel_time = kut.KernelTime;
+		user_time = kut.UserTime;
+	}
+	::std::uint_least64_t ftm{static_cast<::std::uint_least64_t>(kernel_time) +
+							  static_cast<::std::uint_least64_t>(user_time)};
+	::std::uint_least64_t seconds{ftm / 10000000ULL};
+	::std::uint_least64_t subseconds{ftm % 10000000ULL};
+	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
+	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
+}
+
+template <bool zw>
+inline ::std::uint_least64_t nt10x_get_auxiliary_counter_frequency()
+{
+	::std::uint_least64_t feq;
+	auto status{::fast_io::win32::nt::nt_query_auxiliary_counter_frequency<zw>(__builtin_addressof(feq))};
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+	return feq;
+}
+
+} // namespace win32::nt::details
 #endif
 
 #ifdef __MSDOS__
@@ -468,17 +572,32 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	case posix_clock_id::realtime_alarm:
 	case posix_clock_id::realtime_coarse:
 	case posix_clock_id::tai:
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT > 0x602) && !defined(_WIN32_WINDOWS)
+		return win32::nt::details::nt602_posix_clock_gettime_tai_impl();
+#else
 		return win32::details::win32_posix_clock_gettime_tai_impl();
+#endif
 	case posix_clock_id::monotonic:
 	case posix_clock_id::monotonic_coarse:
 	case posix_clock_id::monotonic_raw:
 	case posix_clock_id::boottime:
-		//		return win32::details::win32_posix_clock_gettime_boottime_impl();
-		return win32::details::win32_posix_clock_gettime_boottime_xp_impl();
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT > 0x500) && !defined(_WIN32_WINDOWS)
+		return win32::nt::details::nt_posix_clock_gettime_boottime_impl<false>();
+#else
+		return win32::details::win32_posix_clock_gettime_boottime_impl();
+#endif
 	case posix_clock_id::process_cputime_id:
+#if defined(_WIN32_WINDOWS)
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<false>();
+#else
+		return win32::nt::details::nt_posix_clock_gettime_process_or_thread_time_impl<false, false>();
+#endif
 	case posix_clock_id::thread_cputime_id:
+#if defined(_WIN32_WINDOWS)
 		return win32::details::win32_posix_clock_gettime_process_or_thread_time_impl<true>();
+#else
+		return win32::nt::details::nt_posix_clock_gettime_process_or_thread_time_impl<false, true>();
+#endif
 	default:
 		throw_win32_error(0x00000057);
 	}
@@ -551,8 +670,7 @@ inline basic_timestamp<off_to_epoch> nt_family_clock_settime(posix_clock_id pclk
 			::std::uint_least64_t tms(static_cast<::std::uint_least64_t>(timestamp.seconds) * 10000000ULL +
 									  timestamp.subseconds / mul_factor);
 			::std::uint_least64_t old_tms{};
-			auto ntstatus{win32::nt::nt_set_system_time<family == nt_family::zw>(__builtin_addressof(tms),
-																				 __builtin_addressof(old_tms))};
+			auto ntstatus{win32::nt::nt_set_system_time<(family == nt_family::zw)>(__builtin_addressof(tms), __builtin_addressof(old_tms))};
 			if (ntstatus)
 			{
 				throw_nt_error(ntstatus);
@@ -871,9 +989,7 @@ inline bool posix_daylight()
 	return m_daylight;
 #else
 	::std::time_t t{};
-	struct tm stm
-	{
-	};
+	struct tm stm{};
 	if (noexcept_call(localtime_r, __builtin_addressof(t), __builtin_addressof(stm)) == 0)
 	{
 		throw_posix_error();
@@ -979,10 +1095,8 @@ inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe
 #elif (!defined(__NEWLIB__) || defined(_POSIX_TIMERS)) && \
 	(!defined(__wasi__) || defined(__wasilibc_unmodified_upstream))
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
-	struct timespec res
-	{
-		static_cast<::std::time_t>(timestamp.seconds), static_cast<long>(timestamp.subseconds / mul_factor)
-	};
+	struct timespec res{
+		static_cast<::std::time_t>(timestamp.seconds), static_cast<long>(timestamp.subseconds / mul_factor)};
 	auto clk{details::posix_clock_id_to_native_value(pclk_id)};
 #ifdef __linux__
 	system_call_throw_error(system_call<__NR_clock_settime, int>(clk, __builtin_addressof(res)));

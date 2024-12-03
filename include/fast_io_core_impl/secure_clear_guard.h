@@ -178,12 +178,12 @@ class secure_clear_guard
 public:
 	T *region;
 	::std::size_t count;
-	secure_clear_guard(T *rg, ::std::size_t bts)
+	inline secure_clear_guard(T *rg, ::std::size_t bts)
 		: region(rg), count(bts)
 	{}
-	secure_clear_guard(secure_clear_guard const &) = delete;
-	secure_clear_guard &operator=(secure_clear_guard const &) = delete;
-	~secure_clear_guard()
+	inline secure_clear_guard(secure_clear_guard const &) = delete;
+	inline secure_clear_guard &operator=(secure_clear_guard const &) = delete;
+	inline ~secure_clear_guard()
 	{
 		secure_clear(region, count * sizeof(T));
 	}
@@ -193,7 +193,7 @@ template <typename T>
 class secure_clear_no_op
 {
 public:
-	constexpr secure_clear_no_op(T *, ::std::size_t){};
+	inline constexpr secure_clear_no_op(T *, ::std::size_t) {};
 };
 
 template <typename T, bool condition>

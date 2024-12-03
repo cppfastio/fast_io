@@ -1,6 +1,4 @@
 ﻿#pragma once
-#undef min
-#undef max
 
 #if !defined(__cplusplus)
 #error "You must be using a C++ compiler"
@@ -9,19 +7,9 @@
 #if !defined(__cplusplus)
 #error "You must be using a C++ compiler"
 #endif
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4464)
-#pragma warning(disable : 4514)
-#pragma warning(disable : 4623)
-#pragma warning(disable : 4626)
-#pragma warning(disable : 4668)
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4820)
-#pragma warning(disable : 5027)
-#pragma warning(disable : 5045)
-#include <cstring>
-#endif
+
+#include "impl/misc/push_macros.h"
+#include "impl/misc/push_warnings.h"
 
 #include "../fast_io_core.h"
 #include "impl/array.h"
@@ -44,6 +32,5 @@ using ::fast_io::containers::to_array;
 
 } // namespace fast_io
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif
+#include "impl/misc/pop_macros.h"
+#include "impl/misc/pop_warnings.h"

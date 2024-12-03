@@ -8,8 +8,15 @@ extern int dup(int) noexcept __asm__("_dup");
 extern int dup2(int, int) noexcept __asm__("_dup2");
 extern int _close(int) noexcept __asm__("_close");
 #elif defined(__wasi__)
-extern int dup(int) noexcept __asm__("dup");
-extern int dup2(int, int) noexcept __asm__("dup2");
+inline int dup(int) noexcept
+{
+	return -1;
+}
+
+inline int dup2(int old_fd, int new_fd) noexcept
+{
+	return ::fast_io::noexcept_call(__wasi_fd_renumber, old_fd, new_fd);
+}
 #endif
 
 inline int sys_dup(int old_fd)
@@ -19,13 +26,14 @@ inline int sys_dup(int old_fd)
 	system_call_throw_error(fd);
 	return fd;
 #else
-	auto fd{
+	auto fd{noexcept_call(
 #if defined(_WIN32) && !defined(__BIONIC__)
 		_dup
 #else
 		dup
 #endif
-		(old_fd)};
+		,
+		old_fd)};
 	if (fd == -1)
 	{
 		throw_posix_error();
@@ -42,13 +50,14 @@ inline int sys_dup2(int old_fd, int new_fd)
 	system_call_throw_error<always_terminate>(fd);
 	return fd;
 #else
-	auto fd{
+	auto fd{noexcept_call(
 #if defined(_WIN32) && !defined(__BIONIC__)
 		_dup2
 #else
 		dup2
 #endif
-		(old_fd, new_fd)};
+		,
+		old_fd, new_fd)};
 	if (fd == -1)
 	{
 		if constexpr (always_terminate)
@@ -68,13 +77,12 @@ inline int sys_close(int fd) noexcept
 {
 	return
 #if defined(__linux__) && defined(__NR_close)
-		system_call<__NR_close, int>
+		system_call<__NR_close, int>(fd);
 #elif (defined(_WIN32) && !defined(__BIONIC__)) || defined(__MSDOS__)
-		_close
+		noexcept_call(_close, fd);
 #else
-		close
+		noexcept_call(close, fd);
 #endif
-		(fd);
 }
 
 inline void sys_close_throw_error(int &fd)
@@ -83,5 +91,36 @@ inline void sys_close_throw_error(int &fd)
 	fd = -1; // POSIX standard says we should never call close(2) again even close syscall fails
 	system_call_throw_error(ret);
 }
+#if (!defined(__NEWLIB__) || defined(__CYGWIN__)) && !defined(_WIN32) && __has_include(<dirent.h>) && !defined(_PICOLIBC__)
+
+namespace posix
+{
+extern int fcntl(int fd, int cmd, ... /* arg */) noexcept
+#if !defined(__MSDOS__) && !defined(__DARWIN_C_LEVEL)
+	__asm__("fcntl")
+#else
+	__asm__("_fcntl")
+#endif
+		;
+} // namespace posix
+
+template <typename... Args>
+	requires(::std::is_scalar_v<Args> && ...)
+inline int sys_fcntl(int fd, int op, Args... args)
+{
+#if defined(__linux__) && defined(__NR_fcntl)
+	auto result{system_call<__NR_fcntl, int>(fd, op, args...)};
+	system_call_throw_error(result);
+	return result;
+#else
+	auto result{posix::fcntl(fd, op, args...)};
+#endif
+	if (result == -1)
+	{
+		throw_posix_error();
+	}
+}
+
+#endif
 
 } // namespace fast_io::details

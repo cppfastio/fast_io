@@ -96,8 +96,9 @@ write_some_cold_impl(outstmtype outsm, typename outstmtype::output_char_type con
 						::fast_io::operations::decay::defines::has_pwrite_some_overflow_define<outstmtype> ||
 						::fast_io::operations::decay::defines::has_scatter_pwrite_some_overflow_define<outstmtype>))
 	{
-		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm, first, last)};
-		::fast_io::operations::decay::output_stream_seek_decay(outsm, ret - first, ::fast_io::seekdir::cur);
+		auto current_position{::fast_io::operations::decay::output_stream_seek_decay(outsm, 0, ::fast_io::seekdir::cur)};
+		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm, first, last, current_position)};
+		::fast_io::operations::decay::output_stream_seek_decay(outsm, ret - first + current_position, ::fast_io::seekdir::beg);
 		return ret;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_output_or_io_stream_seek_bytes_define<outstmtype> &&
@@ -108,8 +109,9 @@ write_some_cold_impl(outstmtype outsm, typename outstmtype::output_char_type con
 						::fast_io::operations::decay::defines::has_scatter_pwrite_some_bytes_overflow_define<
 							outstmtype>))
 	{
-		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm, first, last)};
-		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, (ret - first) * sizeof(char_type),
+		auto current_position{::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, 0, ::fast_io::seekdir::cur)};
+		auto ret{::fast_io::details::pwrite_some_cold_impl(outsm, first, last, current_position / sizeof(char_type))};
+		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, (ret - first + current_position) * sizeof(char_type),
 																	 ::fast_io::seekdir::cur);
 		return ret;
 	}

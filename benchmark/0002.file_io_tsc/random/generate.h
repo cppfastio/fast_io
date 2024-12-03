@@ -19,7 +19,7 @@ inline constexpr auto generate_vals() noexcept
 
 inline constexpr std::size_t N{UINT32_C(10000000)};
 
-inline constexpr ::fast_io::vector<::std::uint_least64_t> generate_random_data()
+inline ::fast_io::vector<::std::uint_least64_t> generate_random_data()
 {
 	constexpr auto tb{generate_vals()};
 	::fast_io::vector<::std::uint_least64_t> vec(N);
@@ -29,8 +29,8 @@ inline constexpr ::fast_io::vector<::std::uint_least64_t> generate_random_data()
 	for (::std::size_t i{}; i != N; ++i)
 	{
 		::std::size_t pos{dis(eng)};
-		::std::uniform_int_distribution<::std::uint_least64_t> dis(tb[pos - 1], tb[pos] - UINT64_C(1));
-		vec[i] = dis(eng);
+		::std::uniform_int_distribution<::std::uint_least64_t> dis2(tb[pos - 1], tb[pos] - UINT64_C(1));
+		vec[i] = dis2(eng);
 	}
 	return vec;
 }

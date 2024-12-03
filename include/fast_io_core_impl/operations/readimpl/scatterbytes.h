@@ -16,13 +16,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 	{
 		return scatter_read_some_bytes_underflow_define(insm, pscatters, n);
 	}
-	else if constexpr (::fast_io::operations::decay::defines::has_scatter_read_until_eof_underflow_define<instmtype>)
-	{
-		return scatter_read_until_eof_bytes_underflow_define(insm, pscatters, n);
-	}
-	else if constexpr (::fast_io::operations::decay::defines::has_read_some_bytes_underflow_define<instmtype> ||
-					   ::fast_io::operations::decay::defines::has_scatter_read_until_eof_bytes_underflow_define<
-						   instmtype>)
+	else if constexpr (::fast_io::operations::decay::defines::has_read_some_bytes_underflow_define<instmtype>)
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -156,16 +150,6 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 			auto [basep, len] = *i;
 			::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basep))};
 			::fast_io::details::read_all_bytes_impl(insm, base, base + len);
-		}
-	}
-	else if constexpr (::fast_io::operations::decay::defines::has_scatter_read_until_eof_bytes_underflow_define<
-						   instmtype> ||
-					   ::fast_io::operations::decay::defines::has_read_until_eof_bytes_underflow_define<instmtype>)
-	{
-		auto [pos, scpos]{scatter_read_until_eof_bytes_cold_impl(insm, pscatters, n)};
-		if (!pos)
-		{
-			throw_parse_code(::fast_io::parse_code::end_of_file);
 		}
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_read_all_bytes_underflow_define<instmtype>)

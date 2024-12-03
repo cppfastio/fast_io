@@ -39,20 +39,20 @@ public:
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 #endif
 	pointer ptr{};
-	constexpr index_span() noexcept = default;
+	inline constexpr index_span() noexcept = default;
 	template <::std::contiguous_iterator Iter>
 		requires ::std::same_as<value_type, ::std::iter_value_t<Iter>>
-	explicit constexpr index_span(::fast_io::containers::index_unchecked_t, Iter first) noexcept(noexcept(::std::to_address(first)))
+	inline explicit constexpr index_span(::fast_io::containers::index_unchecked_t, Iter first) noexcept(noexcept(::std::to_address(first)))
 		: ptr{::std::to_address(first)}
 	{}
 	template <::std::ranges::contiguous_range R>
 		requires(::std::same_as<value_type, ::std::ranges::range_value_t<R>>)
-	explicit constexpr index_span(::fast_io::containers::index_unchecked_t, R &&range) noexcept(noexcept(::std::ranges::data(range)))
+	inline explicit constexpr index_span(::fast_io::containers::index_unchecked_t, R &&range) noexcept(noexcept(::std::ranges::data(range)))
 		: ptr{::std::ranges::data(range)}
 	{}
 	template <::std::ranges::contiguous_range R>
 		requires(::std::same_as<value_type, ::std::ranges::range_value_t<R>> && !::std::same_as<::std::remove_cvref_t<R>, ::fast_io::containers::index_span<element_type, N>>)
-	constexpr index_span(R &&range) noexcept(noexcept(::std::ranges::data(range)) && noexcept(::std::ranges::size(range)))
+	inline constexpr index_span(R &&range) noexcept(noexcept(::std::ranges::data(range)) && noexcept(::std::ranges::size(range)))
 		: ptr{::std::ranges::data(range)}
 	{
 		if (::std::ranges::size(range) < N) [[unlikely]]
@@ -83,40 +83,40 @@ public:
 		return mxsz;
 	}
 
-	constexpr pointer data() const noexcept
+	inline constexpr pointer data() const noexcept
 	{
 		return ptr;
 	}
-	constexpr iterator begin() const noexcept
+	inline constexpr iterator begin() const noexcept
 	{
 		return iterator(ptr);
 	}
-	constexpr const_iterator cbegin() const noexcept
+	inline constexpr const_iterator cbegin() const noexcept
 	{
 		return const_iterator(ptr);
 	}
-	constexpr iterator end() const noexcept
+	inline constexpr iterator end() const noexcept
 	{
 		return iterator(ptr + N);
 	}
-	constexpr const_iterator cend() const noexcept
+	inline constexpr const_iterator cend() const noexcept
 	{
 		return const_iterator(ptr + N);
 	}
 
-	constexpr reverse_iterator rbegin() const noexcept
+	inline constexpr reverse_iterator rbegin() const noexcept
 	{
 		return reverse_iterator(ptr + N);
 	}
-	constexpr const_reverse_iterator crbegin() const noexcept
+	inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
 		return const_reverse_iterator(ptr + N);
 	}
-	constexpr reverse_iterator rend() const noexcept
+	inline constexpr reverse_iterator rend() const noexcept
 	{
 		return reverse_iterator(ptr);
 	}
-	constexpr const_reverse_iterator crend() const noexcept
+	inline constexpr const_reverse_iterator crend() const noexcept
 	{
 		return const_reverse_iterator(ptr);
 	}
@@ -332,7 +332,7 @@ public:
 		::std::copy(start, start + count, dest);
 		return count;
 	}
-	constexpr void fill(const_reference u) noexcept(!::std::is_const_v<element_type> && ::std::is_nothrow_copy_constructible_v<element_type>)
+	inline constexpr void fill(const_reference u) noexcept(!::std::is_const_v<element_type> && ::std::is_nothrow_copy_constructible_v<element_type>)
 	{
 		if constexpr (N)
 		{
@@ -371,7 +371,7 @@ inline constexpr ::fast_io::containers::span<::std::byte> as_writable_bytes(::fa
 
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::equality_comparable<T>
-constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)
+inline constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)
 {
 	if constexpr (N1 != N2)
 	{
@@ -383,10 +383,10 @@ constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io:
 	}
 }
 
-#ifdef __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison >= 201907L
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::three_way_comparable<T>
-constexpr auto operator<=>(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)
+inline constexpr auto operator<=>(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)
 {
 	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + N1, b.ptr, b.ptr + N2, ::std::compare_three_way{});
 }

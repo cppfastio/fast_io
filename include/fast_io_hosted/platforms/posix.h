@@ -332,8 +332,8 @@ struct posix_fs_dirent
 {
 	int fd{-1};
 	char const *filename{};
-	explicit constexpr posix_fs_dirent() = default;
-	explicit constexpr posix_fs_dirent(int fdd, char const *fnm)
+	inline explicit constexpr posix_fs_dirent() = default;
+	inline explicit constexpr posix_fs_dirent(int fdd, char const *fnm)
 		: fd(fdd), filename(fnm)
 	{}
 };
@@ -343,16 +343,22 @@ struct posix_io_redirection
 	int *pipe_fds{};
 	int fd{-1};
 	bool dev_null{};
+
+	// return true when a redirection is needed
+	inline operator bool() const
+	{
+		return pipe_fds || fd != -1 || dev_null;
+	}
 };
 
 struct posix_io_redirection_std : posix_io_redirection
 {
-	constexpr posix_io_redirection_std() noexcept = default;
+	inline constexpr posix_io_redirection_std() noexcept = default;
 	template <typename T>
 		requires requires(T &&t) {
 			{ redirect(::std::forward<T>(t)) } -> ::std::same_as<posix_io_redirection>;
 		}
-	constexpr posix_io_redirection_std(T &&t) noexcept
+	inline constexpr posix_io_redirection_std(T &&t) noexcept
 		: posix_io_redirection(redirect(::std::forward<T>(t)))
 	{
 	}
@@ -373,13 +379,24 @@ inline constexpr posix_dev_null_t posix_dev_null() noexcept
 {
 	return {};
 }
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+
+inline constexpr win32_io_redirection redirect(posix_dev_null_t) noexcept
+{
+	return {.is_dev_null = true};
+}
+
+#else
 
 inline constexpr posix_io_redirection redirect(posix_dev_null_t) noexcept
 {
 	return {.dev_null = true};
 }
 
+#endif
+
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+
 namespace details
 {
 
@@ -441,22 +458,22 @@ public:
 	using output_char_type = char_type;
 	using native_handle_type = int;
 	native_handle_type fd = -1;
-	constexpr native_handle_type native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return fd;
 	}
-	explicit constexpr operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return fd != -1;
 	}
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) || defined(__CYGWIN__)
 	template <win32_family fam>
-	explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
 	{
 		return {details::my_get_osfile_handle(fd)};
 	}
 	template <nt_family fam>
-	explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
 	{
 		return {details::my_get_osfile_handle(fd)};
 	}
@@ -464,12 +481,12 @@ public:
 
 	template <posix_family fam>
 		requires(fam != family)
-	explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
+	inline explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 	{
 		return {fd};
 	}
 
-	constexpr native_handle_type release() noexcept
+	inline constexpr native_handle_type release() noexcept
 	{
 		auto temp{fd};
 		fd = -1;
@@ -477,13 +494,13 @@ public:
 	}
 };
 
-#ifdef __cpp_lib_three_way_comparison
-
 template <::fast_io::posix_family family, ::std::integral ch_type>
 inline constexpr bool operator==(basic_posix_family_io_observer<family, ch_type> a, basic_posix_family_io_observer<family, ch_type> b) noexcept
 {
 	return a.fd == b.fd;
 }
+
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <::fast_io::posix_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_posix_family_io_observer<family, ch_type> a, basic_posix_family_io_observer<family, ch_type> b) noexcept
@@ -523,10 +540,19 @@ inline constexpr posix_at_entry at_fdcwd() noexcept
 {
 	return posix_at_entry(AT_FDCWD);
 }
+#elif defined(__MSDOS__) || defined(__DJGPP__)
 
+inline constexpr posix_at_entry posix_at_fdcwd() noexcept
+{
+	return posix_at_entry(-100);
+}
+
+inline constexpr posix_at_entry at_fdcwd() noexcept
+{
+	return posix_at_entry(-100);
+}
 #endif
 
-#if (!defined(__NEWLIB__) || defined(__CYGWIN__)) && (!defined(_WIN32) || defined(__WINE__))
 namespace details
 {
 
@@ -712,19 +738,20 @@ inline posix_file_status fstat_impl(int fd)
 #else
 	struct stat st;
 #endif
-	if (
+	if (::fast_io::noexcept_call(
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 #if (!defined(__MINGW32__) || __has_include(<_mingw_stat64.h>))
-		_fstat64
+			_fstat64
 #else
-		_fstati64
+			_fstati64
 #endif
 #elif defined(__linux__) && defined(__USE_LARGEFILE64)
-		fstat64
+			fstat64
 #else
-		fstat
+			fstat
 #endif
-		(fd, __builtin_addressof(st)) < 0)
+			,
+			fd, __builtin_addressof(st)) < 0)
 		throw_posix_error();
 	return struct_stat_to_posix_file_status(st);
 }
@@ -740,8 +767,6 @@ inline posix_file_status status(basic_posix_family_io_observer<family, ch_type> 
 	return details::fstat_impl(piob.fd);
 #endif
 }
-
-#endif
 
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 template <::fast_io::posix_family family, ::std::integral ch_type>
@@ -815,11 +840,51 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
-	auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
-	::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), "\\", ::fast_io::mnp::os_c_str(pathname))};
-	int fd{::open(pn.c_str(), flags, mode)};
-	system_call_throw_error<always_terminate>(fd);
-	return fd;
+	if (dirfd == -100)
+	{
+		int fd(::open(pathname, flags, mode));
+		system_call_throw_error<always_terminate>(fd);
+		return fd;
+	}
+	else
+	{
+		auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
+		if (pathname_cstr == nullptr) [[unlikely]]
+		{
+			system_call_throw_error<always_terminate>(-1);
+			return -1;
+		}
+
+		// check vaildity
+		::fast_io::cstring_view para_pathname{::fast_io::mnp::os_c_str(pathname)};
+		if (auto const sz{para_pathname.size()}; sz == 0 || sz > 255) [[unlikely]]
+		{
+			system_call_throw_error<always_terminate>(-1);
+			return -1;
+		}
+
+		if (auto const fc{para_pathname.front_unchecked()}; fc == '+' || fc == '-' || fc == '.') [[unlikely]]
+		{
+			system_call_throw_error<always_terminate>(-1);
+			return -1;
+		}
+
+		for (auto const fc : para_pathname)
+		{
+			if (fc == '/' || fc == '\\' || fc == '\t' || fc == '\b' || fc == '@' || fc == '#' || fc == '$' || fc == '%' || fc == '^' || fc == '&' ||
+				fc == '*' || fc == '(' || fc == ')' || fc == '[' || fc == ']') [[unlikely]]
+			{
+				system_call_throw_error<always_terminate>(-1);
+				return -1;
+			}
+		}
+
+		// concat
+		::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), "\\", para_pathname)};
+		int fd{::open(pn.c_str(), flags, mode)};
+		system_call_throw_error<always_terminate>(fd);
+		return fd;
+	}
 }
 
 #elif defined(__NEWLIB__) || defined(_PICOLIBC__)
@@ -837,14 +902,17 @@ inline int my_posix_openat(int, char const *, int, mode_t)
 	}
 }
 #else
+
+extern int my_posix_openat_noexcept(int fd, char const *path, int aflag, ... /*mode_t mode*/) noexcept __asm__("openat");
+
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
 	int fd{
-#if defined(__linux__)
+#if defined(__linux__) && defined(__NR_openat)
 		system_call<__NR_openat, int>
 #else
-		::openat
+		my_posix_openat_noexcept
 #endif
 		(dirfd, pathname, flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
@@ -910,59 +978,6 @@ inline int my_posix_open(char const *pathname, int flags,
 #endif
 						 mode_t mode)
 {
-#if 0
-	/*
-	Referenced from
-	https://dl.acm.org/doi/pdf/10.1145/70931.70935?casa_token=rWDy5JyhhkMAAAAA:BdkF0zbbWgurns3mU3yEJI2HnHXWhe6wyYGtKxjRewlEgLg6lk-cGGNLZTTdr3vUjtFg6Cnia2b4
-	An Example of Multiple Inheritance in C++: A Model of the Iostream Library
-	*/
-	int fd{-1};
-	unsigned int ret{};
-	if (((flags & O_CREAT) == O_CREAT))
-	{
-		if ((flags & O_EXCL) != O_EXCL)
-		{
-			ret = my_dos_creat(pathname, 0, __builtin_addressof(fd));
-		}
-		else
-		{
-			ret = my_dos_creatnew(pathname, 0, __builtin_addressof(fd));
-		}
-	}
-	else
-	{
-		ret = my_dos_open(pathname, static_cast<short unsigned>(static_cast<unsigned>(flags) & ~(static_cast<unsigned>(O_BINARY))), __builtin_addressof(fd));
-	}
-	if (ret)
-	{
-		if constexpr (always_terminate)
-		{
-			fast_terminate();
-		}
-		else
-		{
-			throw_posix_error();
-		}
-	}
-	int md{O_TEXT};
-	if ((static_cast<unsigned>(flags) & static_cast<unsigned>(O_BINARY)) == static_cast<unsigned>(O_BINARY))
-	{
-		md = O_BINARY;
-	}
-	if (::fast_io::details::my_dos_setmode(fd, md) == -1)
-	{
-		::fast_io::details::my_dos_close(fd);
-		if constexpr (always_terminate)
-		{
-			fast_terminate();
-		}
-		else
-		{
-			throw_posix_error();
-		}
-	}
-	return fd;
-#endif
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
 	int fd{::open(pathname, flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
@@ -1076,11 +1091,11 @@ struct
 {
 	using native_handle_type = int;
 	int fd{-1};
-	explicit constexpr posix_file_factory(int v) noexcept
+	inline explicit constexpr posix_file_factory(int v) noexcept
 		: fd(v) {};
-	posix_file_factory(posix_file_factory const &) = delete;
-	posix_file_factory &operator=(posix_file_factory const &) = delete;
-	~posix_file_factory()
+	inline posix_file_factory(posix_file_factory const &) = delete;
+	inline posix_file_factory &operator=(posix_file_factory const &) = delete;
+	inline ~posix_file_factory()
 	{
 		if (fd != -1) [[likely]]
 		{
@@ -1099,60 +1114,69 @@ public:
 	using typename basic_posix_family_io_observer<family, ch_type>::native_handle_type;
 	using file_factory_type = posix_file_factory;
 	using basic_posix_family_io_observer<family, ch_type>::native_handle;
-	constexpr basic_posix_family_file() noexcept = default;
+	inline constexpr basic_posix_family_file() noexcept = default;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr basic_posix_family_file(native_hd fd1) noexcept
+	inline explicit constexpr basic_posix_family_file(native_hd fd1) noexcept
 		: basic_posix_family_io_observer<family, ch_type>{fd1}
 	{
 	}
 
-	basic_posix_family_file(io_dup_t, basic_posix_family_io_observer<family, ch_type> piob)
+	inline basic_posix_family_file(io_dup_t, basic_posix_family_io_observer<family, ch_type> piob)
 		: basic_posix_family_io_observer<family, ch_type>{details::sys_dup(piob.fd)}
 	{
 	}
-	explicit constexpr basic_posix_family_file(posix_file_factory &&factory) noexcept
+	inline explicit constexpr basic_posix_family_file(posix_file_factory &&factory) noexcept
 		: basic_posix_family_io_observer<family, ch_type>{factory.fd}
 	{
 		factory.fd = -1;
 	}
-	constexpr basic_posix_family_file(decltype(nullptr)) noexcept = delete;
+	inline constexpr basic_posix_family_file(decltype(nullptr)) noexcept = delete;
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 	// windows specific. open posix file from win32/nt/zw file
 	template <win32_family fam>
-	basic_posix_family_file(basic_win32_family_file<fam, char_type> &&hd, open_mode m)
+	inline basic_posix_family_file(basic_win32_family_file<fam, char_type> &&hd, open_mode m)
 		: basic_posix_family_io_observer<family, char_type>{details::open_fd_from_handle<ch_type>(hd.handle, m)}
 	{
 		hd.release();
 	}
 	template <nt_family fam>
-	basic_posix_family_file(basic_nt_family_file<fam, char_type> &&hd, open_mode m)
+	inline basic_posix_family_file(basic_nt_family_file<fam, char_type> &&hd, open_mode m)
 		: basic_posix_family_io_observer<family, char_type>{details::open_fd_from_handle<ch_type>(hd.handle, m)}
 	{
 		hd.release();
 	}
-	basic_posix_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_posix_family_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_posix_family_file(basic_win32_file<char_type>(fsdirent, om, pm), om)
+	{
+	}
+	inline basic_posix_family_file(win32_9xa_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(basic_win32_file<char_type>(fsdirent, om, pm), om)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	basic_posix_family_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_posix_family_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(basic_win32_file<char_type>(file, om, pm), om)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	basic_posix_family_file(nt_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_posix_family_file(nt_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_posix_family_file(basic_win32_file<char_type>(nate, file, om, pm), om)
+	{
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline basic_posix_family_file(win32_9xa_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(basic_win32_file<char_type>(nate, file, om, pm), om)
 	{
 	}
 	template <nt_family fam>
-	explicit constexpr basic_posix_family_file(io_construct_t, basic_nt_family_io_observer<fam, char_type> hd,
+	inline explicit constexpr basic_posix_family_file(io_construct_t, basic_nt_family_io_observer<fam, char_type> hd,
 											   open_mode m) noexcept
 		: basic_posix_family_io_observer<family, char_type>{details::open_fd_from_handle<ch_type>(hd.handle, m)}
 	{
 	}
 	template <win32_family fam>
-	explicit constexpr basic_posix_family_file(io_construct_t, basic_win32_family_io_observer<fam, char_type> hd,
+	inline explicit constexpr basic_posix_family_file(io_construct_t, basic_win32_family_io_observer<fam, char_type> hd,
 											   open_mode m) noexcept
 		: basic_posix_family_io_observer<family, char_type>{details::open_fd_from_handle<ch_type>(hd.handle, m)}
 	{
@@ -1161,64 +1185,64 @@ public:
 
 #if defined(__CYGWIN__)
 	template <win32_family fam>
-	basic_posix_family_file(basic_win32_family_file<fam, char_type> &&hd, open_mode m)
+	inline basic_posix_family_file(basic_win32_family_file<fam, char_type> &&hd, open_mode m)
 		: basic_posix_family_io_observer<family, char_type>{details::cygwin_create_fd_with_win32_handle(hd.handle, m)}
 	{
 		hd.release();
 	}
 	template <nt_family fam>
-	basic_posix_family_file(basic_nt_family_file<fam, char_type> &&hd, open_mode m)
+	inline basic_posix_family_file(basic_nt_family_file<fam, char_type> &&hd, open_mode m)
 		: basic_posix_family_io_observer<family, char_type>{details::cygwin_create_fd_with_win32_handle(hd.handle, m)}
 	{
 		hd.release();
 	}
 #endif
-	basic_posix_family_file(posix_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_posix_family_file(posix_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_file(details::my_posix_openat_file_internal_impl(fsdirent.fd, fsdirent.filename, om, pm))
 	{
 	}
 #if !defined(__wasi__) && __has_include(<sys/socket.h>) && __has_include(<netinet/in.h>)
-	basic_posix_family_file(sock_family d, sock_type t, open_mode m, sock_protocol p)
+	inline basic_posix_family_file(sock_family d, sock_type t, open_mode m, sock_protocol p)
 		: basic_posix_family_io_observer<family, char_type>{::fast_io::details::open_socket_impl(d, t, m, p)}
 	{
 	}
 #endif
 
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_posix_family_file(T const &filename, open_mode om, perms pm = static_cast<perms>(436))
+	inline explicit basic_posix_family_file(T const &filename, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_io_observer<family, char_type>{::fast_io::details::posix_open_file_impl(filename, om, pm)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
-	explicit basic_posix_family_file(posix_at_entry pate, T const &filename, open_mode om, perms pm = static_cast<perms>(436))
+	inline explicit basic_posix_family_file(posix_at_entry pate, T const &filename, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_posix_family_io_observer<family, char_type>{::fast_io::details::posix_openat_file_impl(pate.fd, filename, om, pm)}
 	{
 	}
 
 #endif
-	basic_posix_family_file(io_temp_t)
+	inline basic_posix_family_file(io_temp_t)
 		: basic_posix_family_io_observer<family, char_type>{::fast_io::details::my_open_posix_fd_temp_file()}
 	{
 	}
 
-	constexpr basic_posix_family_file(basic_posix_family_io_observer<family, ch_type>) noexcept = delete;
-	constexpr basic_posix_family_file &operator=(basic_posix_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_posix_family_file(basic_posix_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_posix_family_file &operator=(basic_posix_family_io_observer<family, ch_type>) noexcept = delete;
 
-	basic_posix_family_file(basic_posix_family_file const &dp)
+	inline basic_posix_family_file(basic_posix_family_file const &dp)
 		: basic_posix_family_io_observer<family, ch_type>{details::sys_dup(dp.fd)}
 	{}
-	basic_posix_family_file &operator=(basic_posix_family_file const &dp)
+	inline basic_posix_family_file &operator=(basic_posix_family_file const &dp)
 	{
 		this->fd = details::sys_dup2(dp.fd, this->fd);
 		return *this;
 	}
-	constexpr basic_posix_family_file(basic_posix_family_file &&__restrict b) noexcept
+	inline constexpr basic_posix_family_file(basic_posix_family_file &&__restrict b) noexcept
 		: basic_posix_family_io_observer<family, ch_type>{b.fd}
 	{
 		b.fd = -1;
 	}
-	basic_posix_family_file &operator=(basic_posix_family_file &&__restrict b) noexcept
+	inline basic_posix_family_file &operator=(basic_posix_family_file &&__restrict b) noexcept
 	{
 		if (this->fd != -1) [[likely]]
 		{
@@ -1236,14 +1260,14 @@ public:
 		}
 		this->fd = newfd;
 	}
-	void close()
+	inline void close()
 	{
 		if (this->fd != -1) [[likely]]
 		{
 			details::sys_close_throw_error(this->fd);
 		}
 	}
-	~basic_posix_family_file()
+	inline ~basic_posix_family_file()
 	{
 		if (this->fd != -1) [[likely]]
 		{
@@ -1333,29 +1357,31 @@ class basic_posix_family_pipe
 public:
 	using char_type = ch_type;
 	basic_posix_family_file<family, ch_type> pipes[2];
-	basic_posix_family_pipe()
+	inline basic_posix_family_pipe()
 	{
 #if defined(__wasi__)
 		throw_posix_error(ENOTSUP);
 #else
 		int a2[2]{-1, -1};
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
-		if (noexcept_call(_pipe, a2, 131072u, _O_BINARY) == -1)
-#elif (defined(__MSDOS__) || defined(__DJGPP__)) || (defined(__APPLE__) || defined(__DARWIN_C_LEVEL))
+		if (noexcept_call(::_pipe, a2, 131072u, _O_BINARY) == -1)
+#elif defined(__linux__)
+		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
+#elif (defined(__MSDOS__) || defined(__DJGPP__))
 		if (noexcept_call(::pipe, a2) == -1)
 #else
-		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
+		if (noexcept_call(::pipe, a2) == -1 || sys_fcntl(a2[0], F_SETFD, FD_CLOEXEC) == -1 || sys_fcntl(a2[1], F_SETFD, FD_CLOEXEC) == -1)
 #endif
 			throw_posix_error();
 		pipes->fd = *a2;
 		pipes[1].fd = a2[1];
 #endif
 	}
-	constexpr auto &in() noexcept
+	inline constexpr auto &in() noexcept
 	{
 		return *pipes;
 	}
-	constexpr auto &out() noexcept
+	inline constexpr auto &out() noexcept
 	{
 		return pipes[1];
 	}
@@ -1386,14 +1412,12 @@ inline constexpr basic_posix_family_io_observer<family, char> output_bytes_strea
 }
 
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
-#if 0
-template<::fast_io::posix_family family, ::std::integral ch_type>
-inline ::fast_io::freestanding::array<int*,2> redirect_handle(basic_posix_family_pipe<family,ch_type>& h)
+template <::fast_io::posix_family family, ::std::integral ch_type>
+inline constexpr win32_io_redirection redirect_handle(basic_posix_family_pipe<family, ch_type> &h)
 {
 	return {__builtin_addressof(h.in().fd),
-		__builtin_addressof(h.out().fd)};
+			__builtin_addressof(h.out().fd)};
 }
-#endif
 #else
 template <::fast_io::posix_family family, ::std::integral ch_type>
 inline constexpr posix_io_redirection redirect(basic_posix_family_pipe<family, ch_type> &h) noexcept

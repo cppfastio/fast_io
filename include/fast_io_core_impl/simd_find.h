@@ -365,7 +365,7 @@ inline constexpr char unsigned const *find_characters_musl(char unsigned const *
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
-	if (!::std::is_constant_evaluated())
+	if (!__builtin_is_constant_evaluated())
 #endif
 	{
 		constexpr ::std::size_t diff{sizeof(::std::size_t)};
@@ -426,7 +426,7 @@ inline constexpr char_type const *find_simd_constant_common_cold_impl(char_type 
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
-	if (!::std::is_constant_evaluated())
+	if (!__builtin_is_constant_evaluated())
 #endif
 	{
 		constexpr bool use_builtin_memchr{
@@ -576,7 +576,7 @@ inline constexpr char_type const *find_space_common_cold_impl(char_type const *f
 #if __cpp_if_consteval >= 202106L
 	if !consteval
 #else
-	if (!::std::is_constant_evaluated())
+	if (!__builtin_is_constant_evaluated())
 #endif
 	{
 		if constexpr (::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size)

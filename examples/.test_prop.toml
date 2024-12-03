@@ -1,0 +1,39 @@
+["0008.openssl"] # no need to install those env in CI
+ignore = true
+
+["0011.qt"] # no need to install those env in CI
+ignore = true
+
+["0019.llvm"] # no need to install those env in CI
+ignore = true
+
+["0020.operating_system"] # no need to install those env in CI
+ignore = true
+
+["0021.kernel_driver"] # no need to install those env in CI
+ignore = true
+
+["0024.mfc"] # no need to install those env in CI
+ignore = true
+
+["0025.winrt"] # no need to install those env in CI
+ignore = true
+
+["0026.lua"] # no need to install those env in CI
+ignore = true
+
+["0028.python"] # no need to install those env in CI
+ignore = true
+
+["0034.pulseaudio"] # no need to install those env in CI
+ignore = true
+
+["0018.i18n"] # TODO: locale unfinished
+ignore = true
+
+["0029.containers"] # TODO: vector no longer available
+ignore = true
+
+["0036.at"]
+interactive = true
+

@@ -37,43 +37,43 @@ public:
 	using difference_type = ::std::ptrdiff_t;
 	void *iter{};
 
-	constexpr list_iterator &operator++() noexcept
+	inline constexpr list_iterator &operator++() noexcept
 	{
 		iter = static_cast<list_node_common *>(iter)->next;
 		return *this;
 	}
 
-	constexpr list_iterator &operator--() noexcept
+	inline constexpr list_iterator &operator--() noexcept
 	{
 		iter = static_cast<list_node_common *>(iter)->prev;
 		return *this;
 	}
 
-	constexpr list_iterator operator++(int) noexcept
+	inline constexpr list_iterator operator++(int) noexcept
 	{
 		auto temp(*this);
 		++*this;
 		return temp;
 	}
 
-	constexpr list_iterator operator--(int) noexcept
+	inline constexpr list_iterator operator--(int) noexcept
 	{
 		auto temp(*this);
 		--*this;
 		return temp;
 	}
 
-	constexpr reference operator*() const noexcept
+	inline constexpr reference operator*() const noexcept
 	{
 		return static_cast<list_node<T> *>(iter)->element;
 	}
 
-	constexpr pointer operator->() const noexcept
+	inline constexpr pointer operator->() const noexcept
 	{
 		return __builtin_addressof(static_cast<list_node<T> *>(iter)->element);
 	}
 
-	constexpr operator list_iterator<T, true>() const noexcept
+	inline constexpr operator list_iterator<T, true>() const noexcept
 		requires(!isconst)
 	{
 		return {this->iter};
@@ -411,7 +411,7 @@ private:
 #endif
 	handle_holder_type allochdl;
 
-	constexpr auto allocate_new_raw_node() noexcept
+	inline constexpr auto allocate_new_raw_node() noexcept
 	{
 		if constexpr (alloc_with_status)
 		{
@@ -434,7 +434,7 @@ private:
 #endif
 #endif
 		::std::conditional_t<alloc_with_status, list<T, allocator> *, allocator> v;
-		explicit constexpr new_handle_guard(::fast_io::containers::details::list_node<value_type> *p,
+		inline explicit constexpr new_handle_guard(::fast_io::containers::details::list_node<value_type> *p,
 											list<T, allocator> *va)
 		{
 			ptr = p;
@@ -443,9 +443,9 @@ private:
 				v = va;
 			}
 		}
-		new_handle_guard(new_handle_guard const &) = delete;
-		new_handle_guard &operator=(new_handle_guard const &) = delete;
-		constexpr ~new_handle_guard()
+		inline new_handle_guard(new_handle_guard const &) = delete;
+		inline new_handle_guard &operator=(new_handle_guard const &) = delete;
+		inline constexpr ~new_handle_guard()
 		{
 			if (ptr == nullptr)
 			{
@@ -465,16 +465,16 @@ private:
 	struct list_destroyer
 	{
 		list<T, allocator> *plst;
-		explicit constexpr list_destroyer(list<T, allocator> *pl) noexcept
+		inline explicit constexpr list_destroyer(list<T, allocator> *pl) noexcept
 			: plst(pl)
 		{}
-		constexpr void release()
+		inline constexpr void release()
 		{
 			plst = nullptr;
 		}
-		list_destroyer(list_destroyer const &) = delete;
-		list_destroyer &operator=(list_destroyer const &) = delete;
-		constexpr ~list_destroyer()
+		inline list_destroyer(list_destroyer const &) = delete;
+		inline list_destroyer &operator=(list_destroyer const &) = delete;
+		inline constexpr ~list_destroyer()
 		{
 			if (plst == nullptr)
 			{
@@ -502,14 +502,14 @@ public:
 
 	::fast_io::containers::details::list_node_common imp;
 
-	constexpr list() noexcept
+	inline constexpr list() noexcept
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 	}
 
 private:
 	template <::std::forward_iterator Iter, typename Sentinel>
-	constexpr void construct_list_common_impl(Iter first, Sentinel last)
+	inline constexpr void construct_list_common_impl(Iter first, Sentinel last)
 	{
 		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
 		{
@@ -528,19 +528,19 @@ private:
 
 public:
 	template <::std::ranges::range R>
-	explicit constexpr list(::fast_io::freestanding::from_range_t, R &&rg)
+	inline explicit constexpr list(::fast_io::freestanding::from_range_t, R &&rg)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		this->construct_list_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 
-	explicit constexpr list(::std::initializer_list<value_type> ilist)
+	inline explicit constexpr list(::std::initializer_list<value_type> ilist)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		this->construct_list_common_impl(ilist.begin(), ilist.end());
 	}
 
-	explicit constexpr list(::std::size_t n)
+	inline explicit constexpr list(::std::size_t n)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		list_destroyer destroyer(this);
@@ -630,7 +630,7 @@ public:
 private:
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr auto allocate_construct_new_node(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr auto allocate_construct_new_node(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
 		auto newnode = allocate_new_raw_node();
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
@@ -653,7 +653,7 @@ private:
 public:
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference emplace_back(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr reference emplace_back(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
@@ -673,7 +673,7 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference emplace_front(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr reference emplace_front(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
@@ -693,7 +693,7 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference emplace(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr reference emplace(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
@@ -712,7 +712,7 @@ public:
 	}
 
 private:
-	constexpr void destroy_node(void *it) noexcept
+	inline constexpr void destroy_node(void *it) noexcept
 	{
 		auto node = static_cast<node_type *>(it);
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
@@ -730,37 +730,37 @@ private:
 	}
 
 public:
-	constexpr void push_back(const_reference value) noexcept(noexcept(this->emplace_back(value)))
+	inline constexpr void push_back(const_reference value) noexcept(noexcept(this->emplace_back(value)))
 	{
 		this->emplace_back(value);
 	}
 
-	constexpr void push_front(const_reference value) noexcept(noexcept(this->emplace_back(value)))
+	inline constexpr void push_front(const_reference value) noexcept(noexcept(this->emplace_back(value)))
 	{
 		this->emplace_front(value);
 	}
 
-	constexpr void push_back(T &&value) noexcept(noexcept(this->emplace_back(::std::move(value))))
+	inline constexpr void push_back(T &&value) noexcept(noexcept(this->emplace_back(::std::move(value))))
 	{
 		this->emplace_back(std::move(value));
 	}
 
-	constexpr void push_front(T &&value) noexcept(noexcept(this->emplace_front(::std::move(value))))
+	inline constexpr void push_front(T &&value) noexcept(noexcept(this->emplace_front(::std::move(value))))
 	{
 		this->emplace_front(std::move(value));
 	}
 
-	constexpr void insert(const_iterator iter, T &&value) noexcept(noexcept(this->emplace_front(::std::move(value))))
+	inline constexpr void insert(const_iterator iter, T &&value) noexcept(noexcept(this->emplace_front(::std::move(value))))
 	{
 		this->emplace(iter, std::move(value));
 	}
 
-	constexpr void insert(const_iterator iter, const_reference value) noexcept(noexcept(this->emplace(iter, value)))
+	inline constexpr void insert(const_iterator iter, const_reference value) noexcept(noexcept(this->emplace(iter, value)))
 	{
 		this->emplace(iter, value);
 	}
 
-	constexpr void pop_back() noexcept
+	inline constexpr void pop_back() noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 		if (node == __builtin_addressof(imp))
@@ -777,7 +777,7 @@ public:
 #endif
 	}
 
-	constexpr void pop_front() noexcept
+	inline constexpr void pop_front() noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 		if (node == __builtin_addressof(imp))
@@ -794,7 +794,7 @@ public:
 #endif
 	}
 
-	constexpr void pop_back_unchecked() noexcept
+	inline constexpr void pop_back_unchecked() noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(node->prev);
@@ -803,7 +803,7 @@ public:
 		this->destroy_node(node);
 	}
 
-	constexpr void pop_front_unchecked() noexcept
+	inline constexpr void pop_front_unchecked() noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 		auto next = static_cast<::fast_io::containers::details::list_node_common *>(node->next);
@@ -812,7 +812,7 @@ public:
 		this->destroy_node(node);
 	}
 
-	[[nodiscard]] constexpr const_reference front() const noexcept
+	[[nodiscard]] inline constexpr const_reference front() const noexcept
 	{
 		auto nodeptr{imp.next};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
@@ -822,7 +822,7 @@ public:
 		}
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
-	[[nodiscard]] constexpr reference front() noexcept
+	[[nodiscard]] inline constexpr reference front() noexcept
 	{
 		auto nodeptr{imp.next};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
@@ -833,7 +833,7 @@ public:
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
 
-	[[nodiscard]] constexpr const_reference back() const noexcept
+	[[nodiscard]] inline constexpr const_reference back() const noexcept
 	{
 		auto nodeptr{imp.prev};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
@@ -843,7 +843,7 @@ public:
 		}
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
-	[[nodiscard]] constexpr reference back() noexcept
+	[[nodiscard]] inline constexpr reference back() noexcept
 	{
 		auto nodeptr{imp.prev};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
@@ -854,36 +854,36 @@ public:
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
 
-	[[nodiscard]] constexpr const_reference front_unchecked() const noexcept
+	[[nodiscard]] inline constexpr const_reference front_unchecked() const noexcept
 	{
 		auto nodeptr{imp.next};
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
-	[[nodiscard]] constexpr reference front_unchecked() noexcept
+	[[nodiscard]] inline constexpr reference front_unchecked() noexcept
 	{
 		auto nodeptr{imp.next};
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
 
-	[[nodiscard]] constexpr const_reference back_unchecked() const noexcept
+	[[nodiscard]] inline constexpr const_reference back_unchecked() const noexcept
 	{
 		auto nodeptr{imp.prev};
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
-	[[nodiscard]] constexpr reference back_unchecked() noexcept
+	[[nodiscard]] inline constexpr reference back_unchecked() noexcept
 	{
 		auto nodeptr{imp.prev};
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
 
-	constexpr void erase(const_iterator iter) noexcept
+	inline constexpr void erase(const_iterator iter) noexcept
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(iter.iter);
 		::fast_io::containers::details::list_main_erase_ptr_common(node);
 		destroy_node(node);
 	}
 
-	constexpr list(list const &other)
+	inline constexpr list(list const &other)
 		requires(::std::copyable<value_type>)
 	{
 		list_destroyer destroyer(this);
@@ -894,7 +894,7 @@ public:
 		destroyer.release();
 	}
 
-	constexpr list &operator=(list const &other)
+	inline constexpr list &operator=(list const &other)
 		requires(::std::copyable<value_type>)
 	{
 		list temp(other);
@@ -902,7 +902,7 @@ public:
 		return *this;
 	}
 
-	constexpr list(list &&other) noexcept
+	inline constexpr list(list &&other) noexcept
 		: imp(other.imp)
 	{
 		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
@@ -911,7 +911,7 @@ public:
 		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
 	}
 
-	constexpr list &operator=(list &&other) noexcept
+	inline constexpr list &operator=(list &&other) noexcept
 	{
 		if (__builtin_addressof(other) != this) [[likely]]
 		{
@@ -926,7 +926,7 @@ public:
 	}
 
 private:
-	constexpr void destroy() noexcept
+	inline constexpr void destroy() noexcept
 	{
 #if __cpp_if_consteval >= 202106L
 		if !consteval
@@ -950,40 +950,40 @@ private:
 	}
 
 public:
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
 		this->destroy();
 		imp = {__builtin_addressof(imp), __builtin_addressof(imp)};
 	}
 
-	constexpr void clear_destroy() noexcept
+	inline constexpr void clear_destroy() noexcept
 	{
 		this->clear();
 	}
 
-	constexpr void splice(const_iterator pos, const_iterator first, const_iterator last) noexcept
+	inline constexpr void splice(const_iterator pos, const_iterator first, const_iterator last) noexcept
 	{
 		::fast_io::containers::details::list_splice_range_common(pos.iter, first.iter, last.iter);
 	}
 
-	constexpr void splice(const_iterator pos, const_iterator it) noexcept
+	inline constexpr void splice(const_iterator pos, const_iterator it) noexcept
 	{
 		::fast_io::containers::details::list_splice_single_common(pos.iter, it.iter);
 	}
 
-	constexpr void splice(const_iterator pos, list &&other) noexcept
+	inline constexpr void splice(const_iterator pos, list &&other) noexcept
 	{
 		::fast_io::containers::details::list_splice_range_common(pos.iter, other.imp.next, __builtin_addressof(other.imp));
 	}
 
-	constexpr void reverse() noexcept
+	inline constexpr void reverse() noexcept
 	{
 		::fast_io::containers::details::list_reverse_common(imp.next, __builtin_addressof(imp));
 		::std::ranges::swap(imp.prev, imp.next);
 	}
 
 	template <typename Cmp>
-	constexpr void merge(list &&other, Cmp cmp) noexcept
+	inline constexpr void merge(list &&other, Cmp cmp) noexcept
 	{
 		if (__builtin_addressof(other) == this)
 		{
@@ -993,34 +993,34 @@ public:
 																		   other.imp.next, __builtin_addressof(other.imp), cmp);
 	}
 
-	constexpr void merge(list &&other) noexcept
+	inline constexpr void merge(list &&other) noexcept
 	{
 		this->merge(::std::move(other), ::std::ranges::less{});
 	}
 
 	template <typename Cmp>
-	constexpr void sort(Cmp cmp) noexcept
+	inline constexpr void sort(Cmp cmp) noexcept
 	{
 		::fast_io::containers::details::list_sort_common<value_type, Cmp>(imp.next, __builtin_addressof(imp), cmp);
 	}
 
-	constexpr void sort() noexcept
+	inline constexpr void sort() noexcept
 	{
 		this->sort(::std::ranges::less{});
 	}
 
 	template <typename Cmp>
-	constexpr void sort(const_iterator first, const_iterator last, Cmp cmp) noexcept
+	inline constexpr void sort(const_iterator first, const_iterator last, Cmp cmp) noexcept
 	{
 		::fast_io::containers::details::list_sort_common<value_type, Cmp>(first.iter, last.iter, cmp);
 	}
 
-	constexpr void sort(const_iterator first, const_iterator last) noexcept
+	inline constexpr void sort(const_iterator first, const_iterator last) noexcept
 	{
 		this->sort(first, last, ::std::ranges::less{});
 	}
 
-	constexpr ~list()
+	inline constexpr ~list()
 	{
 		this->destroy();
 	}
@@ -1028,16 +1028,16 @@ public:
 
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::equality_comparable<T>
-constexpr bool operator==(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs) noexcept
+inline constexpr bool operator==(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs) noexcept
 {
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
-#if defined(__cpp_lib_three_way_comparison)
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::three_way_comparable<T>
-constexpr auto operator<=>(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs) noexcept
+inline constexpr auto operator<=>(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
 }

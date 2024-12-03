@@ -29,25 +29,25 @@ enum class perms : ::std::uint_least32_t
 	symlink_nofollow = 0x40000
 };
 
-constexpr perms operator&(perms x, perms y) noexcept
+inline constexpr perms operator&(perms x, perms y) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr perms operator|(perms x, perms y) noexcept
+inline constexpr perms operator|(perms x, perms y) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr perms operator^(perms x, perms y) noexcept
+inline constexpr perms operator^(perms x, perms y) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr perms operator~(perms x) noexcept
+inline constexpr perms operator~(perms x) noexcept
 {
 	using utype = typename ::std::underlying_type<perms>::type;
 	return static_cast<perms>(~static_cast<utype>(x));
@@ -93,7 +93,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, p
 namespace details
 {
 template <::std::integral char_type>
-inline constexpr char_type *print_status_impl(char_type *iter, perms p) noexcept
+inline constexpr char_type *status_print_impl(char_type *iter, perms p) noexcept
 {
 	details::perm::print_perm_per_check<char_type, u8'r'>(iter, p, perms::owner_read);
 	details::perm::print_perm_per_check<char_type, u8'w'>(++iter, p, perms::owner_write);
@@ -112,7 +112,7 @@ inline constexpr char_type *print_status_impl(char_type *iter, perms p) noexcept
 template <::std::integral char_type>
 inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, perms>, char_type *iter, perms p) noexcept
 {
-	return details::print_status_impl<char_type>(iter, p);
+	return details::status_print_impl<char_type>(iter, p);
 }
 
 enum class data_sync_flags : ::std::uint_least8_t

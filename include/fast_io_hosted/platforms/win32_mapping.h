@@ -12,25 +12,25 @@ enum class win32_file_map_attribute
 	execute = 0x00000020
 };
 
-constexpr win32_file_map_attribute operator&(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
+inline constexpr win32_file_map_attribute operator&(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
 {
 	using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 	return static_cast<win32_file_map_attribute>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr win32_file_map_attribute operator|(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
+inline constexpr win32_file_map_attribute operator|(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
 {
 	using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 	return static_cast<win32_file_map_attribute>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr win32_file_map_attribute operator^(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
+inline constexpr win32_file_map_attribute operator^(win32_file_map_attribute x, win32_file_map_attribute y) noexcept
 {
 	using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 	return static_cast<win32_file_map_attribute>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr win32_file_map_attribute operator~(win32_file_map_attribute x) noexcept
+inline constexpr win32_file_map_attribute operator~(win32_file_map_attribute x) noexcept
 {
 	using utype = typename ::std::underlying_type<win32_file_map_attribute>::type;
 	return static_cast<win32_file_map_attribute>(~static_cast<utype>(x));
@@ -116,12 +116,12 @@ public:
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	pointer address_begin{}, address_end{};
-	constexpr win32_family_memory_map_file() = default;
-	constexpr win32_family_memory_map_file(::std::byte *addressbegin, ::std::byte *addressend)
+	inline constexpr win32_family_memory_map_file() = default;
+	inline constexpr win32_family_memory_map_file(::std::byte *addressbegin, ::std::byte *addressend)
 		: address_begin{addressbegin}, address_end{addressend}
 	{
 	}
-	win32_family_memory_map_file(nt_at_entry bf, file_map_attribute attr, ::std::size_t bytes,
+	inline win32_family_memory_map_file(nt_at_entry bf, file_map_attribute attr, ::std::size_t bytes,
 								 ::std::uintmax_t start_address = 0)
 	{
 		basic_win32_family_file<family, char> mapping_file{
@@ -136,83 +136,83 @@ public:
 		this->address_begin = reinterpret_cast<::std::byte *>(base_ptr);
 		this->address_end = this->address_begin + bytes;
 	}
-	constexpr pointer data() const noexcept
+	inline constexpr pointer data() const noexcept
 	{
 		return address_begin;
 	}
-	constexpr bool empty() const noexcept
+	inline constexpr bool empty() const noexcept
 	{
 		return address_begin == address_end;
 	}
-	constexpr ::std::size_t size() const noexcept
+	inline constexpr ::std::size_t size() const noexcept
 	{
 		return static_cast<::std::size_t>(address_end - address_begin);
 	}
-	constexpr const_iterator cbegin() const noexcept
+	inline constexpr const_iterator cbegin() const noexcept
 	{
 		return address_begin;
 	}
-	constexpr const_iterator begin() const noexcept
+	inline constexpr const_iterator begin() const noexcept
 	{
 		return address_begin;
 	}
-	constexpr iterator begin() noexcept
+	inline constexpr iterator begin() noexcept
 	{
 		return address_begin;
 	}
-	constexpr const_iterator cend() const noexcept
+	inline constexpr const_iterator cend() const noexcept
 	{
 		return address_end;
 	}
-	constexpr const_iterator end() const noexcept
+	inline constexpr const_iterator end() const noexcept
 	{
 		return address_end;
 	}
-	constexpr iterator end() noexcept
+	inline constexpr iterator end() noexcept
 	{
 		return address_end;
 	}
-	constexpr ::std::size_t max_size() const noexcept
+	inline constexpr ::std::size_t max_size() const noexcept
 	{
 		return SIZE_MAX;
 	}
-	constexpr const_reverse_iterator crbegin() const noexcept
+	inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
 		return const_reverse_iterator{address_end};
 	}
-	constexpr reverse_iterator rbegin() noexcept
+	inline constexpr reverse_iterator rbegin() noexcept
 	{
 		return reverse_iterator{address_end};
 	}
-	constexpr const_reverse_iterator rbegin() const noexcept
+	inline constexpr const_reverse_iterator rbegin() const noexcept
 	{
 		return const_reverse_iterator{address_end};
 	}
-	constexpr const_reverse_iterator crend() const noexcept
+	inline constexpr const_reverse_iterator crend() const noexcept
 	{
 		return const_reverse_iterator{address_begin};
 	}
-	constexpr reverse_iterator rend() noexcept
+	inline constexpr reverse_iterator rend() noexcept
 	{
 		return reverse_iterator{address_begin};
 	}
-	constexpr const_reverse_iterator rend() const noexcept
+	inline constexpr const_reverse_iterator rend() const noexcept
 	{
 		return const_reverse_iterator{address_begin};
 	}
-	constexpr const_reference front() const noexcept
+	inline constexpr const_reference front() const noexcept
 	{
 		return *address_begin;
 	}
-	constexpr reference front() noexcept
+	inline constexpr reference front() noexcept
 	{
 		return *address_begin;
 	}
-	constexpr const_reference back() const noexcept
+	inline constexpr const_reference back() const noexcept
 	{
 		return address_end[-1];
 	}
-	constexpr reference back() noexcept
+	inline constexpr reference back() noexcept
 	{
 		return address_end[-1];
 	}
@@ -224,14 +224,14 @@ public:
 	{
 		return address_begin[size];
 	}
-	win32_family_memory_map_file(win32_family_memory_map_file const &) = delete;
-	win32_family_memory_map_file &operator=(win32_family_memory_map_file const &) = delete;
-	constexpr win32_family_memory_map_file(win32_family_memory_map_file &&__restrict other) noexcept
+	inline win32_family_memory_map_file(win32_family_memory_map_file const &) = delete;
+	inline win32_family_memory_map_file &operator=(win32_family_memory_map_file const &) = delete;
+	inline constexpr win32_family_memory_map_file(win32_family_memory_map_file &&__restrict other) noexcept
 		: address_begin{other.address_begin}, address_end{other.address_end}
 	{
 		other.address_end = other.address_begin = nullptr;
 	}
-	win32_family_memory_map_file &operator=(win32_family_memory_map_file &&__restrict other) noexcept
+	inline win32_family_memory_map_file &operator=(win32_family_memory_map_file &&__restrict other) noexcept
 	{
 		if (this->address_begin) [[likely]]
 		{
@@ -242,7 +242,7 @@ public:
 		other.address_end = other.address_begin = nullptr;
 		return *this;
 	}
-	void close()
+	inline void close()
 	{
 		if (this->address_begin) [[likely]]
 		{
@@ -254,7 +254,7 @@ public:
 			}
 		}
 	}
-	~win32_family_memory_map_file()
+	inline ~win32_family_memory_map_file()
 	{
 		if (this->address_begin) [[likely]]
 		{
@@ -267,7 +267,7 @@ using win32_memory_map_file_9xa = win32_family_memory_map_file<win32_family::ans
 using win32_memory_map_file_ntw = win32_family_memory_map_file<win32_family::wide_nt>;
 using win32_memory_map_file = win32_family_memory_map_file<win32_family::native>;
 
-#if !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__) && !defined(__BIONIC__) && defined(_WIN32_WINDOWS)
 using native_memory_map_file = win32_memory_map_file;
 #endif
 

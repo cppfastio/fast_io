@@ -774,7 +774,7 @@ inline ::std::ptrdiff_t posix_recvfrom_posix_socket_impl(int fd, void *buf, ::st
 #endif
 }
 
-inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, ::std::size_t len, int flags, const void *src_addr, posix_socklen_t addrlen)
+inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, ::std::size_t len, int flags, void const *src_addr, posix_socklen_t addrlen)
 {
 #if defined(__linux__) && defined(__NR_sendto)
 	::std::ptrdiff_t ret{system_call<__NR_sendto, ::std::ptrdiff_t>(fd, buf, len, flags, src_addr, addrlen)};
@@ -785,7 +785,7 @@ inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, 
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
 #endif
-		= struct sockaddr const*;
+		= struct sockaddr const *;
 	::std::ptrdiff_t ret{::sendto(fd, buf, len, flags, reinterpret_cast<sockaddr_const_alias_ptr>(src_addr), addrlen)};
 	if (ret == -1)
 	{

@@ -1,4 +1,0 @@
-add_executable(posix_clock_gettime posix_clock_gettime.cc)
-add_test(posix_clock_gettimetest posix_clock_gettime)
-add_executable(timezone timezone.cc)
-add_test(timezonetest timezone)

@@ -29,25 +29,25 @@ enum class dll_mode : ::std::uint_least32_t
 	win32_load_library_safe_current_dirs = static_cast<::std::uint_least32_t>(1) << 22
 };
 
-constexpr dll_mode operator&(dll_mode x, dll_mode y) noexcept
+inline constexpr dll_mode operator&(dll_mode x, dll_mode y) noexcept
 {
 	using utype = typename ::std::underlying_type<dll_mode>::type;
 	return static_cast<dll_mode>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr dll_mode operator|(dll_mode x, dll_mode y) noexcept
+inline constexpr dll_mode operator|(dll_mode x, dll_mode y) noexcept
 {
 	using utype = typename ::std::underlying_type<dll_mode>::type;
 	return static_cast<dll_mode>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr dll_mode operator^(dll_mode x, dll_mode y) noexcept
+inline constexpr dll_mode operator^(dll_mode x, dll_mode y) noexcept
 {
 	using utype = typename ::std::underlying_type<dll_mode>::type;
 	return static_cast<dll_mode>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr dll_mode operator~(dll_mode x) noexcept
+inline constexpr dll_mode operator~(dll_mode x) noexcept
 {
 	using utype = typename ::std::underlying_type<dll_mode>::type;
 	return static_cast<dll_mode>(~static_cast<utype>(x));

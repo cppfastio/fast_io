@@ -92,7 +92,7 @@ struct deque_iterator
 
 	deque_control_block<T> itercontent;
 
-	constexpr deque_iterator &operator++() noexcept
+	inline constexpr deque_iterator &operator++() noexcept
 	{
 		if (++itercontent.curr_ptr == itercontent.end_ptr) [[unlikely]]
 		{
@@ -102,7 +102,7 @@ struct deque_iterator
 		return *this;
 	}
 
-	constexpr deque_iterator &operator--() noexcept
+	inline constexpr deque_iterator &operator--() noexcept
 	{
 		if (itercontent.curr_ptr == itercontent.begin_ptr) [[unlikely]]
 		{
@@ -113,31 +113,31 @@ struct deque_iterator
 		return *this;
 	}
 
-	constexpr deque_iterator operator++(int) noexcept
+	inline constexpr deque_iterator operator++(int) noexcept
 	{
 		auto temp(*this);
 		++*this;
 		return temp;
 	}
 
-	constexpr deque_iterator operator--(int) noexcept
+	inline constexpr deque_iterator operator--(int) noexcept
 	{
 		auto temp(*this);
 		--*this;
 		return temp;
 	}
 
-	constexpr reference operator*() const noexcept
+	inline constexpr reference operator*() const noexcept
 	{
 		return *this->itercontent.curr_ptr;
 	}
 
-	constexpr pointer operator->() const noexcept
+	inline constexpr pointer operator->() const noexcept
 	{
 		return this->itercontent.curr_ptr;
 	}
 
-	constexpr deque_iterator &operator+=(difference_type pos) noexcept
+	inline constexpr deque_iterator &operator+=(difference_type pos) noexcept
 	{
 		constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 		constexpr size_type blocksizem1{blocksize - 1u};
@@ -165,7 +165,7 @@ struct deque_iterator
 		return *this;
 	}
 
-	constexpr deque_iterator &operator-=(difference_type pos) noexcept
+	inline constexpr deque_iterator &operator-=(difference_type pos) noexcept
 	{
 		constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 		constexpr size_type blocksizem1{blocksize - 1u};
@@ -193,7 +193,7 @@ struct deque_iterator
 		return *this;
 	}
 
-	constexpr reference operator[](difference_type pos) const noexcept
+	inline constexpr reference operator[](difference_type pos) const noexcept
 	{
 		constexpr size_type blocksize{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
 		constexpr size_type blocksizem1{blocksize - 1u};
@@ -216,7 +216,7 @@ struct deque_iterator
 		}
 	}
 
-	constexpr operator deque_iterator<T, true>() const noexcept
+	inline constexpr operator deque_iterator<T, true>() const noexcept
 		requires(!isconst)
 	{
 		return {this->itercontent};
@@ -382,7 +382,7 @@ inline constexpr void deque_init_grow_common(dequecontroltype &controller) noexc
 }
 
 template <typename allocator, typename dequecontroltype>
-constexpr void deque_reallocate_controller_block_common_impl(dequecontroltype &controller) noexcept
+inline constexpr void deque_reallocate_controller_block_common_impl(dequecontroltype &controller) noexcept
 {
 	constexpr ::std::size_t max_size{SIZE_MAX / sizeof(void *) / 2u - 1u};
 
@@ -410,8 +410,8 @@ constexpr void deque_reallocate_controller_block_common_impl(dequecontroltype &c
 	controller.back_block.controller_ptr = controller.controller_block.controller_start_ptr + back_block_index;
 }
 
-template<typename T>
-constexpr T **make_blocks_balance(T **begin, T **end, T **b, T **e) noexcept
+template <typename T>
+inline constexpr T **make_blocks_balance(T **begin, T **end, T **b, T **e) noexcept
 {
 	::std::size_t external_diff{static_cast<::std::size_t>(end - begin)};
 	::std::size_t internal_diff{static_cast<::std::size_t>(e - b)};
@@ -457,7 +457,7 @@ constexpr T **make_blocks_balance(T **begin, T **end, T **b, T **e) noexcept
 }
 
 template <typename dequecontroltype>
-constexpr void deque_make_reserved_blocks_balance_common_impl(dequecontroltype &controller) noexcept
+inline constexpr void deque_make_reserved_blocks_balance_common_impl(dequecontroltype &controller) noexcept
 {
 	::std::size_t diff{static_cast<::std::size_t>(controller.back_block.controller_ptr - controller.front_block.controller_ptr)};
 
@@ -472,7 +472,7 @@ constexpr void deque_make_reserved_blocks_balance_common_impl(dequecontroltype &
 }
 
 template <typename dequecontroltype>
-constexpr void deque_make_unreserved_blocks_balance_common_impl(dequecontroltype &controller) noexcept
+inline constexpr void deque_make_unreserved_blocks_balance_common_impl(dequecontroltype &controller) noexcept
 {
 	::std::size_t reserved_size{static_cast<::std::size_t>(controller.controller_block.controller_after_reserved_ptr - controller.controller_block.controller_start_reserved_ptr)};
 	::std::size_t front_block_index{static_cast<::std::size_t>(controller.front_block.controller_ptr - controller.controller_block.controller_start_reserved_ptr)};
@@ -491,7 +491,7 @@ constexpr void deque_make_unreserved_blocks_balance_common_impl(dequecontroltype
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz, ::std::size_t block_size, typename dequecontroltype>
-constexpr void deque_grow_front_common_impl(dequecontroltype &controller) noexcept
+inline constexpr void deque_grow_front_common_impl(dequecontroltype &controller) noexcept
 {
 	if (controller.controller_block.controller_start_ptr == nullptr) [[unlikely]]
 	{
@@ -544,11 +544,11 @@ constexpr void deque_grow_front_common_impl(dequecontroltype &controller) noexce
 		}
 	}
 
-	controller.front_block.curr_ptr = controller.front_block.end_ptr = static_cast<dequecontroltype::replacetype*>(controller.front_block.begin_ptr = *--controller.front_block.controller_ptr) + block_size;
+	controller.front_block.curr_ptr = controller.front_block.end_ptr = static_cast<dequecontroltype::replacetype *>(controller.front_block.begin_ptr = *--controller.front_block.controller_ptr) + block_size;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz, ::std::size_t block_size, typename dequecontroltype>
-constexpr void deque_grow_back_common_impl(dequecontroltype &controller) noexcept
+inline constexpr void deque_grow_back_common_impl(dequecontroltype &controller) noexcept
 {
 	if (controller.controller_block.controller_start_ptr == nullptr) [[unlikely]]
 	{
@@ -598,7 +598,7 @@ constexpr void deque_grow_back_common_impl(dequecontroltype &controller) noexcep
 		}
 	}
 
-	controller.back_block.end_ptr = static_cast<dequecontroltype::replacetype*>(controller.back_block.curr_ptr = controller.back_block.begin_ptr = *++controller.back_block.controller_ptr) + block_size;
+	controller.back_block.end_ptr = static_cast<dequecontroltype::replacetype *>(controller.back_block.curr_ptr = controller.back_block.begin_ptr = *++controller.back_block.controller_ptr) + block_size;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz, ::std::size_t block_size, typename dequecontroltype>
@@ -632,14 +632,15 @@ public:
 
 	::fast_io::containers::details::deque_controller<T> controller;
 	static inline constexpr size_type block_size{::fast_io::containers::details::deque_block_size<sizeof(value_type)>};
-	constexpr deque() noexcept
-		: controller{{}, {}, {}} {}
+	inline constexpr deque() noexcept
+		: controller{{}, {}, {}}
+	{}
 
-	constexpr deque(deque const &) = delete;
-	constexpr deque &operator=(deque const &) = delete;
+	inline constexpr deque(deque const &) = delete;
+	inline constexpr deque &operator=(deque const &) = delete;
 
-	constexpr deque(deque &&) noexcept = default;
-	constexpr deque &operator=(deque &&) noexcept = default;
+	inline constexpr deque(deque &&) noexcept = default;
+	inline constexpr deque &operator=(deque &&) noexcept = default;
 
 private:
 	static inline constexpr void destroy_block_element(pointer first, pointer last) noexcept
@@ -650,7 +651,7 @@ private:
 		}
 	}
 
-	constexpr void destroy_all_elements() noexcept
+	inline constexpr void destroy_all_elements() noexcept
 	{
 		destroy_block_element(controller.front_block.curr_ptr, controller.front_block.end_ptr);
 		auto front_controller_ptr{controller.front_block.controller_ptr};
@@ -666,7 +667,7 @@ private:
 		destroy_block_element(controller.back_block.begin_ptr, controller.back_block.curr_ptr);
 	}
 
-	constexpr void destroy() noexcept
+	inline constexpr void destroy() noexcept
 	{
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
@@ -675,7 +676,7 @@ private:
 		::fast_io::containers::details::deque_destroy_trivial_common<allocator, alignof(value_type), sizeof(value_type)>(controller.controller_block);
 	}
 
-	[[deprecated]] constexpr void init_grow() noexcept
+	[[deprecated]] inline constexpr void init_grow() noexcept
 	{
 		constexpr size_type mid{block_size >> 1u};
 #if __cpp_if_consteval >= 202106L
@@ -695,7 +696,7 @@ private:
 #if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 #endif
-	constexpr void grow_front() noexcept
+	inline constexpr void grow_front() noexcept
 	{
 #if __cpp_if_consteval >= 202106L
 		if consteval
@@ -714,7 +715,7 @@ private:
 #if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 #endif
-	constexpr void grow_back() noexcept
+	inline constexpr void grow_back() noexcept
 	{
 #if __cpp_if_consteval >= 202106L
 		if consteval
@@ -730,34 +731,34 @@ private:
 		}
 	}
 
-	constexpr void front_backspace() noexcept
+	inline constexpr void front_backspace() noexcept
 	{
 		controller.front_block.end_ptr = (controller.front_block.curr_ptr = controller.front_block.begin_ptr = *++controller.front_block.controller_ptr) + block_size;
 	}
 
-	constexpr void back_backspace() noexcept
+	inline constexpr void back_backspace() noexcept
 	{
 		controller.back_block.curr_ptr = controller.back_block.end_ptr = (controller.back_block.begin_ptr = *--controller.back_block.controller_ptr) + block_size;
 	}
 
 public:
 #if 0
-			constexpr void clear() noexcept
-			{
-				if (controller.controller_block.start_ptr == controller.controller_block.start_ptr)
-				{
-					return;
-				}
-				this->destroy();
-				size_type n{ (controller.back_block.controller_ptr - controller.front_block.controller_ptr) };
-				n >>= 1u;
-				auto mid{ controller.front_block.controller_ptr + n };
-				*mid;
-			}
+	inline constexpr void clear() noexcept
+	{
+		if (controller.controller_block.start_ptr == controller.controller_block.start_ptr)
+		{
+			return;
+		}
+		this->destroy();
+		size_type n{(controller.back_block.controller_ptr - controller.front_block.controller_ptr)};
+		n >>= 1u;
+		auto mid{controller.front_block.controller_ptr + n};
+		*mid;
+	}
 #endif
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference emplace_back(Args &&...args)
+	inline constexpr reference emplace_back(Args &&...args)
 	{
 		if (controller.back_block.curr_ptr == controller.back_block.end_ptr) [[unlikely]]
 		{
@@ -772,17 +773,17 @@ public:
 		return *currptr;
 	}
 
-	constexpr void push_back(value_type const &value)
+	inline constexpr void push_back(value_type const &value)
 	{
 		this->emplace_back(value);
 	}
 
-	constexpr void push_back(value_type &&value)
+	inline constexpr void push_back(value_type &&value)
 	{
 		this->emplace_back(::std::move(value));
 	}
 
-	constexpr void pop_back() noexcept
+	inline constexpr void pop_back() noexcept
 	{
 		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
@@ -792,7 +793,7 @@ public:
 		pop_back_unchecked();
 	}
 
-	constexpr void pop_back_unchecked() noexcept
+	inline constexpr void pop_back_unchecked() noexcept
 	{
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
@@ -804,17 +805,17 @@ public:
 		}
 	}
 
-	constexpr reference back_unchecked() noexcept
+	inline constexpr reference back_unchecked() noexcept
 	{
 		return controller.back_block.curr_ptr[-1];
 	}
 
-	constexpr const_reference back_unchecked() const noexcept
+	inline constexpr const_reference back_unchecked() const noexcept
 	{
 		return controller.back_block.curr_ptr[-1];
 	}
 
-	constexpr reference back() noexcept
+	inline constexpr reference back() noexcept
 	{
 		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
@@ -824,7 +825,7 @@ public:
 		return controller.back_block.curr_ptr[-1];
 	}
 
-	constexpr const_reference back() const noexcept
+	inline constexpr const_reference back() const noexcept
 	{
 		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
@@ -836,7 +837,7 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	constexpr reference emplace_front(Args &&...args)
+	inline constexpr reference emplace_front(Args &&...args)
 	{
 		if (controller.front_block.curr_ptr == controller.front_block.begin_ptr) [[unlikely]]
 		{
@@ -849,17 +850,17 @@ public:
 		return *controller.front_block.curr_ptr;
 	}
 
-	constexpr void push_front(value_type const &value)
+	inline constexpr void push_front(value_type const &value)
 	{
 		this->emplace_front(value);
 	}
 
-	constexpr void push_front(value_type &&value)
+	inline constexpr void push_front(value_type &&value)
 	{
 		this->emplace_front(::std::move(value));
 	}
 
-	constexpr void pop_front() noexcept
+	inline constexpr void pop_front() noexcept
 	{
 		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
@@ -869,7 +870,7 @@ public:
 		pop_front_unchecked();
 	}
 
-	constexpr void pop_front_unchecked() noexcept
+	inline constexpr void pop_front_unchecked() noexcept
 	{
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)
 		{
@@ -882,27 +883,17 @@ public:
 		}
 	}
 
-	constexpr reference front_unchecked() noexcept
+	inline constexpr reference front_unchecked() noexcept
 	{
 		return *controller.front_block.curr_ptr;
 	}
 
-	constexpr const_reference front_unchecked() const noexcept
+	inline constexpr const_reference front_unchecked() const noexcept
 	{
 		return *controller.front_block.curr_ptr;
 	}
 
-	constexpr reference front() noexcept
-	{
-		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
-		{
-			::fast_io::fast_terminate();
-		}
-
-		return *controller.front_block.curr_ptr;
-	}
-
-	constexpr const_reference front() const noexcept
+	inline constexpr reference front() noexcept
 	{
 		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
 		{
@@ -912,7 +903,17 @@ public:
 		return *controller.front_block.curr_ptr;
 	}
 
-	constexpr reference operator[](size_type index) noexcept
+	inline constexpr const_reference front() const noexcept
+	{
+		if (controller.front_block.curr_ptr == controller.back_block.curr_ptr) [[unlikely]]
+		{
+			::fast_io::fast_terminate();
+		}
+
+		return *controller.front_block.curr_ptr;
+	}
+
+	inline constexpr reference operator[](size_type index) noexcept
 	{
 		if (size() <= index) [[unlikely]]
 		{
@@ -924,7 +925,7 @@ public:
 		return controller.front_block.controller_ptr[real_index / block_size][real_index % block_size];
 	}
 
-	constexpr const_reference operator[](size_type index) const noexcept
+	inline constexpr const_reference operator[](size_type index) const noexcept
 	{
 		if (size() <= index) [[unlikely]]
 		{
@@ -936,14 +937,14 @@ public:
 		return controller.front_block.controller_ptr[real_index / block_size][real_index % block_size];
 	}
 
-	constexpr reference index_unchecked(size_type index) noexcept
+	inline constexpr reference index_unchecked(size_type index) noexcept
 	{
 		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
 
 		return controller.front_block.controller_ptr[real_index / block_size][real_index % block_size];
 	}
 
-	constexpr const_reference index_unchecked(size_type index) const noexcept
+	inline constexpr const_reference index_unchecked(size_type index) const noexcept
 	{
 		size_type real_index{static_cast<size_type>(controller.front_block.curr_ptr - controller.front_block.begin_ptr) + index};
 
@@ -962,48 +963,48 @@ public:
 		return mxval;
 	}
 
-	constexpr size_type size() const noexcept
+	inline constexpr size_type size() const noexcept
 	{
 		return block_size * static_cast<size_type>(controller.back_block.controller_ptr - controller.front_block.controller_ptr) + static_cast<size_type>((controller.back_block.curr_ptr - controller.back_block.begin_ptr) + (controller.front_block.begin_ptr - controller.front_block.curr_ptr));
 	}
 
-	constexpr size_type size_bytes() const noexcept
+	inline constexpr size_type size_bytes() const noexcept
 	{
 		return size() * sizeof(value_type);
 	}
 
-	constexpr iterator begin() noexcept
+	inline constexpr iterator begin() noexcept
 	{
 		return {this->controller.front_block};
 	}
 
-	constexpr const_iterator begin() const noexcept
+	inline constexpr const_iterator begin() const noexcept
 	{
 		return {this->controller.front_block};
 	}
 
-	constexpr const_iterator cbegin() const noexcept
+	inline constexpr const_iterator cbegin() const noexcept
 	{
 		return {this->controller.front_block};
 	}
 
-	constexpr reverse_iterator rend() noexcept
+	inline constexpr reverse_iterator rend() noexcept
 	{
 		return reverse_iterator({this->controller.front_block});
 	}
 
-	constexpr const_reverse_iterator rend() const noexcept
+	inline constexpr const_reverse_iterator rend() const noexcept
 	{
 		return const_reverse_iterator({this->controller.front_block});
 	}
 
-	constexpr const_reverse_iterator crend() const noexcept
+	inline constexpr const_reverse_iterator crend() const noexcept
 	{
 		return const_reverse_iterator({this->controller.front_block});
 	}
 
 private:
-	constexpr ::fast_io::containers::details::deque_control_block<value_type> end_common() noexcept
+	inline constexpr ::fast_io::containers::details::deque_control_block<value_type> end_common() noexcept
 	{
 		::fast_io::containers::details::deque_control_block<value_type> backblock{this->controller.back_block};
 		if (backblock.curr_ptr == backblock.end_ptr) [[unlikely]]
@@ -1016,7 +1017,7 @@ private:
 		return {backblock};
 	}
 
-	constexpr ::fast_io::containers::details::deque_control_block<value_type> end_common() const noexcept
+	inline constexpr ::fast_io::containers::details::deque_control_block<value_type> end_common() const noexcept
 	{
 		::fast_io::containers::details::deque_control_block<value_type> backblock{this->controller.back_block};
 		if (backblock.curr_ptr == backblock.end_ptr) [[unlikely]]
@@ -1030,53 +1031,53 @@ private:
 	}
 
 public:
-	constexpr iterator end() noexcept
+	inline constexpr iterator end() noexcept
 	{
 		return {this->end_common()};
 	}
 
-	constexpr const_iterator end() const noexcept
+	inline constexpr const_iterator end() const noexcept
 	{
 		return {this->end_common()};
 	}
 
-	constexpr const_iterator cend() const noexcept
+	inline constexpr const_iterator cend() const noexcept
 	{
 		return {this->end_common()};
 	}
 
-	constexpr reverse_iterator rbegin() noexcept
+	inline constexpr reverse_iterator rbegin() noexcept
 	{
 		return reverse_iterator({this->end_common()});
 	}
 
-	constexpr const_reverse_iterator rbegin() const noexcept
+	inline constexpr const_reverse_iterator rbegin() const noexcept
 	{
 		return const_reverse_iterator({this->end_common()});
 	}
 
-	constexpr const_reverse_iterator crbegin() const noexcept
+	inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
 		return const_reverse_iterator({this->end_common()});
 	}
 
-	constexpr bool empty() const noexcept
+	inline constexpr bool empty() const noexcept
 	{
 		return controller.front_block.curr_ptr == controller.back_block.curr_ptr;
 	}
 
-	constexpr bool is_empty() const noexcept
+	inline constexpr bool is_empty() const noexcept
 	{
 		return controller.front_block.curr_ptr == controller.back_block.curr_ptr;
 	}
 
-	constexpr void clear_destroy() noexcept
+	inline constexpr void clear_destroy() noexcept
 	{
 		this->destroy();
 		this->controller = {{}, {}, {}};
 	}
 
-	constexpr ~deque()
+	inline constexpr ~deque()
 	{
 		this->destroy();
 	}
@@ -1084,7 +1085,7 @@ public:
 
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::equality_comparable<T>
-constexpr bool operator==(deque<T, allocator1> const &lhs, deque<T, allocator2> const &rhs) noexcept
+inline constexpr bool operator==(deque<T, allocator1> const &lhs, deque<T, allocator2> const &rhs) noexcept
 {
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
@@ -1093,7 +1094,7 @@ constexpr bool operator==(deque<T, allocator1> const &lhs, deque<T, allocator2> 
 
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::three_way_comparable<T>
-constexpr auto operator<=>(deque<T, allocator1> const &lhs, deque<T, allocator2> const &rhs) noexcept
+inline constexpr auto operator<=>(deque<T, allocator1> const &lhs, deque<T, allocator2> const &rhs) noexcept
 {
 	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
 }

@@ -8,12 +8,12 @@ struct posix_mmap_options
 	void *addr{};
 	int prot{};
 	int flags{};
-	explicit constexpr posix_mmap_options() noexcept = default;
-	constexpr posix_mmap_options(int protv, int flagsv) noexcept
+	inline explicit constexpr posix_mmap_options() noexcept = default;
+	inline constexpr posix_mmap_options(int protv, int flagsv) noexcept
 		: prot(protv), flags(flagsv)
 	{}
 #ifdef __linux__
-	constexpr posix_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
+	inline constexpr posix_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
 		: prot(static_cast<int>(protv)), flags(static_cast<int>(flagsv))
 	{
 #ifdef MAP_UNINITIALIZED
@@ -27,7 +27,7 @@ struct posix_mmap_options
 #endif
 	}
 #else
-	constexpr posix_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
+	inline constexpr posix_mmap_options(::fast_io::mmap_prot protv, ::fast_io::mmap_flags flagsv) noexcept
 	{
 		int prottemp{};
 #ifdef PROT_READ

@@ -1,0 +1,5 @@
+["kreckelfileno"] # no need to install those env in CI
+ignore = true
+
+["getfd.cc"] # deprecated
+ignore = true

@@ -27,10 +27,17 @@ struct
 
 namespace details
 {
+#ifdef __DARWIN_C_LEVEL
+extern int libc_getaddrinfo(char const *node, char const *service, posix_addrinfo const *hints,
+							posix_addrinfo **res) noexcept __asm__("_getaddrinfo");
+
+extern void libc_freeaddrinfo(posix_addrinfo *res) noexcept __asm__("_freeaddrinfo");
+#else
 extern int libc_getaddrinfo(char const *node, char const *service, posix_addrinfo const *hints,
 							posix_addrinfo **res) noexcept __asm__("getaddrinfo");
 
 extern void libc_freeaddrinfo(posix_addrinfo *res) noexcept __asm__("freeaddrinfo");
+#endif
 } // namespace details
 
 class posix_dns_io_observer
@@ -43,7 +50,7 @@ public:
 	{
 		return res;
 	}
-	explicit constexpr operator bool() noexcept
+	inline explicit constexpr operator bool() noexcept
 	{
 		return res;
 	}
@@ -178,34 +185,34 @@ class
 public:
 	using typename posix_dns_io_observer::char_type;
 	using typename posix_dns_io_observer::native_handle_type;
-	constexpr posix_dns_file() noexcept = default;
-	constexpr posix_dns_file(posix_dns_io_observer) noexcept = delete;
-	constexpr posix_dns_file &operator=(posix_dns_io_observer) noexcept = delete;
+	inline constexpr posix_dns_file() noexcept = default;
+	inline constexpr posix_dns_file(posix_dns_io_observer) noexcept = delete;
+	inline constexpr posix_dns_file &operator=(posix_dns_io_observer) noexcept = delete;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr posix_dns_file(native_hd res1) noexcept
+	inline explicit constexpr posix_dns_file(native_hd res1) noexcept
 		: posix_dns_io_observer(res1)
 	{
 	}
 	explicit constexpr posix_dns_file(decltype(nullptr)) noexcept = delete;
-	posix_dns_file(char_type const *node, char_type const *service, posix_addrinfo const *hints)
+	inline posix_dns_file(char_type const *node, char_type const *service, posix_addrinfo const *hints)
 		: posix_dns_io_observer{details::my_getaddrinfo_impl(node, service, hints)}
 	{
 	}
 	template <typename T>
 		requires ::fast_io::constructible_to_os_c_str<T>
-	explicit posix_dns_file(T const &t)
+	inline explicit posix_dns_file(T const &t)
 		: posix_dns_io_observer{::fast_io::details::posix_dns_open_impl(t)}
 	{
 	}
-	posix_dns_file(posix_dns_file const &) = delete;
-	posix_dns_file &operator=(posix_dns_file const &) = delete;
-	constexpr posix_dns_file(posix_dns_file &&__restrict other) noexcept
+	inline posix_dns_file(posix_dns_file const &) = delete;
+	inline posix_dns_file &operator=(posix_dns_file const &) = delete;
+	inline constexpr posix_dns_file(posix_dns_file &&__restrict other) noexcept
 		: posix_dns_io_observer{other.res}
 	{
 		other.res = nullptr;
 	}
-	posix_dns_file &operator=(posix_dns_file &&__restrict other) noexcept
+	inline posix_dns_file &operator=(posix_dns_file &&__restrict other) noexcept
 	{
 		if (this->res) [[likely]]
 		{
@@ -215,7 +222,7 @@ public:
 		other.res = nullptr;
 		return *this;
 	}
-	void close() noexcept
+	inline void close() noexcept
 	{
 		if (this->res) [[likely]]
 		{
@@ -223,7 +230,7 @@ public:
 			this->res = nullptr;
 		}
 	}
-	~posix_dns_file()
+	inline ~posix_dns_file()
 	{
 		if (this->res) [[likely]]
 		{

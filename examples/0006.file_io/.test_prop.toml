@@ -1,0 +1,17 @@
+["utf8_to_utf16.cc"] # TODO: no longer support codecvt file. use mnp::codecvt instead
+ignore = true
+
+["ibuf_file.cc"] # TODO: transmit api changes
+ignore = true
+
+["file_loader.cc"]
+interactive = true
+
+["file_loader_options.cc"]
+interactive = true
+
+["count_all_spaces_in_file.cc"]
+interactive = true
+
+["dir_file.cc"]
+interactive = true

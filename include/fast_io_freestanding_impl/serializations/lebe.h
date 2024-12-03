@@ -133,7 +133,7 @@ inline constexpr auto lebe_put(int_type t) noexcept(
 	if constexpr (sz < (::std::numeric_limits<uint_type>::digits))
 	{
 		constexpr uint_type mx_value_halfm1{
-			static_cast<uint_type>((static_cast<int_type>(1) << static_cast<int_type>(sz - 1)))};
+			static_cast<uint_type>(((static_cast<int_type>(1)) << (static_cast<int_type>(sz - 1))))};
 		constexpr uint_type mx_value{static_cast<uint_type>(
 			static_cast<uint_type>(mx_value_halfm1 - static_cast<uint_type>(1)) + mx_value_halfm1)};
 		if (u > mx_value)

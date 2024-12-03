@@ -31,7 +31,7 @@ namespace details
 
 inline ::std::size_t print_reserve_define_win32_error_9xa_impl(char *ptr, ::std::uint_least32_t ec) noexcept
 {
-	constexpr ::std::size_t char8_buffer_size{65536};
+	constexpr ::std::size_t char8_buffer_size{65535};
 	return ::fast_io::win32::FormatMessageA(0x00000200 | 0x00001000, nullptr, ec, (1 << 10), ptr, char8_buffer_size,
 											nullptr);
 }
@@ -86,7 +86,7 @@ inline constexpr char_type *print_reserve_define_win32_error_ptr_impl(char_type 
 		}
 		else
 		{
-			::fast_io::freestanding::array<char8_t, 65536> buffer;
+			::fast_io::freestanding::array<char8_t, 65535> buffer;
 			::std::size_t sz{print_reserve_define_win32_error_9xa_impl(reinterpret_cast<char *>(buffer.data()), ec)};
 			return ::fast_io::details::codecvt::general_code_cvt_full(buffer.data(), buffer.data() + sz, ptr);
 		}
@@ -120,11 +120,11 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, w
 	{
 		if constexpr (sizeof(char_type) == 1)
 		{
-			return 65536;
+			return 65535;
 		}
 		else
 		{
-			constexpr ::std::size_t sz{::fast_io::details::cal_decorated_reserve_size<1, sizeof(char_type)>(65536)};
+			constexpr ::std::size_t sz{::fast_io::details::cal_decorated_reserve_size<1, sizeof(char_type)>(65535)};
 			return sz;
 		}
 	}

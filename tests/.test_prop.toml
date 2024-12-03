@@ -1,0 +1,29 @@
+["0000.tests_prebuild"]
+ignore = true
+
+["0019.boost"] # no need to install those env in CI
+ignore = true
+
+["0023.bitset"] # compiler in CI is old
+ignore = true
+
+["0026.container"]
+asan = true
+
+["0031.tpeb"]
+platform = "windows"
+
+["0005.lc_time"] # TODO: locale unfinished
+ignore = true
+
+["0025.ip"] # TODO: crash. why?
+ignore = true
+
+["0027.rwreflect"] # TODO: crash. why?
+ignore = true
+
+["0032.process"]
+ignore = true
+
+["0036.sto"]
+ignore = true

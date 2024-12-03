@@ -5,9 +5,6 @@
 // https://github.com/microsoft/STL/issues/4002 gcc and clang provide constexpr new, but still won't compile.
 // ::std::allocator<T> is NOT freestanding.
 
-#pragma push_macro("new")
-#undef new
-
 namespace fast_io
 {
 
@@ -1296,7 +1293,7 @@ public:
 		if (__builtin_is_constant_evaluated())
 #endif
 		{
-			return ::fast_io::freestanding::allocator<T>{}.allocate(n);
+			return {::fast_io::freestanding::allocator<T>{}.allocate(n), n};
 		}
 #endif
 		constexpr ::std::size_t mxn{::std::numeric_limits<::std::size_t>::max() / sizeof(T)};
@@ -1360,12 +1357,12 @@ public:
 		}
 		if constexpr (alignof(T) <= alloc::default_alignment)
 		{
-			auto newres{alloc::reallocate_zero_at_least(ptr, n * sizeof(T))};
+			auto newres{alloc::reallocate_at_least(ptr, n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 		else
 		{
-			auto newres{alloc::reallocate_aligned_zero_at_least(ptr, n * sizeof(T), alignof(T))};
+			auto newres{alloc::reallocate_aligned_at_least(ptr, n * sizeof(T), alignof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
@@ -1987,5 +1984,3 @@ inline constexpr ::fast_io::allocation_least_result status_allocator_pointer_ali
 } // namespace details
 
 } // namespace fast_io
-
-#pragma pop_macro("new")

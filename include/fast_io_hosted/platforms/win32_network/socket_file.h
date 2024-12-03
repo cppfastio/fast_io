@@ -14,13 +14,13 @@ public:
 	using output_char_type = char_type;
 	using native_handle_type = ::std::size_t;
 	native_handle_type hsocket{};
-	constexpr native_handle_type release() noexcept
+	inline constexpr native_handle_type release() noexcept
 	{
 		native_handle_type temp{hsocket};
 		hsocket = {};
 		return temp;
 	}
-	constexpr native_handle_type native_handle() const noexcept
+	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return hsocket;
 	}
@@ -159,15 +159,15 @@ inline void posix_listen(basic_win32_family_socket_io_observer<family, ch_type> 
 }
 
 template <win32_family family, ::std::integral ch_type>
-inline ::std::ptrdiff_t posix_recvfrom(basic_win32_family_socket_io_observer<family, ch_type> h, void *buf, ::std::size_t len, 
-	int flags, void *src_addr, win32_socklen_t *addrlen)
+inline ::std::ptrdiff_t posix_recvfrom(basic_win32_family_socket_io_observer<family, ch_type> h, void *buf, ::std::size_t len,
+									   int flags, void *src_addr, win32_socklen_t *addrlen)
 {
 	return win32::details::posix_recvfrom_win32_socket_impl(h.hsocket, buf, len, flags, src_addr, addrlen);
 }
 
 template <win32_family family, ::std::integral ch_type>
 inline ::std::ptrdiff_t posix_sendto(basic_win32_family_socket_io_observer<family, ch_type> h, void const *msg, ::std::size_t len,
-	int flags, void const *to, win32_socklen_t tolen)
+									 int flags, void const *to, win32_socklen_t tolen)
 {
 	return win32::details::posix_sendto_win32_socket_impl(h.hsocket, msg, len, flags, to, tolen);
 }
@@ -453,12 +453,12 @@ struct
 {
 	using native_handle_type = ::std::size_t;
 	::std::size_t hsocket{};
-	explicit constexpr win32_socket_factory(::std::size_t v) noexcept
+	inline explicit constexpr win32_socket_factory(::std::size_t v) noexcept
 		: hsocket(v)
 	{}
-	win32_socket_factory(win32_socket_factory const &) = delete;
-	win32_socket_factory &operator=(win32_socket_factory const &) = delete;
-	~win32_socket_factory()
+	inline win32_socket_factory(win32_socket_factory const &) = delete;
+	inline win32_socket_factory &operator=(win32_socket_factory const &) = delete;
+	inline ~win32_socket_factory()
 	{
 		if (hsocket) [[likely]]
 		{
@@ -492,46 +492,51 @@ public:
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::input_char_type;
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::output_char_type;
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::native_handle_type;
-	explicit constexpr basic_win32_family_socket_file() noexcept = default;
+	inline explicit constexpr basic_win32_family_socket_file() noexcept = default;
 
-	constexpr basic_win32_family_socket_file(basic_win32_family_socket_io_observer<family, ch_type>) noexcept = delete;
-	constexpr basic_win32_family_socket_file &
+	inline constexpr basic_win32_family_socket_file(basic_win32_family_socket_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_win32_family_socket_file &
 	operator=(basic_win32_family_socket_io_observer<family, ch_type>) noexcept = delete;
 
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	explicit constexpr basic_win32_family_socket_file(native_hd hsocket1) noexcept
+	inline explicit constexpr basic_win32_family_socket_file(native_hd hsocket1) noexcept
 		: basic_win32_family_socket_io_observer<family, ch_type>{hsocket1}
 	{
 	}
-	explicit constexpr basic_win32_family_socket_file(decltype(nullptr)) noexcept = delete;
-	basic_win32_family_socket_file(io_dup_t, basic_win32_family_socket_io_observer<family, ch_type> wsiob)
+
+	inline explicit constexpr basic_win32_family_socket_file(decltype(nullptr)) noexcept = delete;
+	inline basic_win32_family_socket_file(io_dup_t, basic_win32_family_socket_io_observer<family, ch_type> wsiob)
 		: basic_win32_family_socket_io_observer<family, ch_type>{
 			  ::fast_io::win32::details::win32_duphsocket(wsiob.hsocket)}
 	{
 	}
-	basic_win32_family_socket_file(sock_family d, sock_type t, open_mode m, sock_protocol p)
+
+	inline basic_win32_family_socket_file(sock_family d, sock_type t, open_mode m, sock_protocol p)
 		: basic_win32_family_socket_file<family, ch_type>{
 			  ::fast_io::win32::details::open_win32_socket_impl<family>(d, t, m, p)}
 	{
 	}
 
-	basic_win32_family_socket_file(basic_win32_family_socket_file const &dp)
+	inline basic_win32_family_socket_file(basic_win32_family_socket_file const &dp)
 		: basic_win32_family_socket_io_observer<family, char_type>{
 			  ::fast_io::win32::details::win32_duphsocket(dp.hsocket)}
 	{
 	}
-	basic_win32_family_socket_file &operator=(basic_win32_family_socket_file const &dp)
+
+	inline basic_win32_family_socket_file &operator=(basic_win32_family_socket_file const &dp)
 	{
 		this->hsocket = ::fast_io::win32::details::win32_dup2hsocket(dp.hsocket, this->hsocket);
 		return *this;
 	}
-	constexpr basic_win32_family_socket_file(basic_win32_family_socket_file &&__restrict b) noexcept
+
+	inline constexpr basic_win32_family_socket_file(basic_win32_family_socket_file &&__restrict b) noexcept
 		: basic_win32_family_socket_io_observer<family, char_type>{b.hsocket}
 	{
 		b.hsocket = 0;
 	}
-	basic_win32_family_socket_file &operator=(basic_win32_family_socket_file &&__restrict b) noexcept
+
+	inline basic_win32_family_socket_file &operator=(basic_win32_family_socket_file &&__restrict b) noexcept
 	{
 		if (this->hsocket) [[likely]]
 		{
@@ -541,7 +546,8 @@ public:
 		b.hsocket = 0;
 		return *this;
 	}
-	constexpr void reset(native_handle_type newhsocket = 0) noexcept
+
+	inline constexpr void reset(native_handle_type newhsocket = 0) noexcept
 	{
 		if (this->hsocket) [[likely]]
 		{
@@ -549,7 +555,8 @@ public:
 		}
 		this->hsocket = newhsocket;
 	}
-	void close()
+
+	inline void close()
 	{
 		if (this->hsocket) [[likely]]
 		{
@@ -562,12 +569,13 @@ public:
 		}
 	}
 
-	explicit constexpr basic_win32_family_socket_file(win32_socket_factory &&other) noexcept
+	inline explicit constexpr basic_win32_family_socket_file(win32_socket_factory &&other) noexcept
 		: basic_win32_family_socket_io_observer<family, char_type>{other.hsocket}
 	{
 		other.hsocket = 0;
 	}
-	~basic_win32_family_socket_file()
+
+	inline ~basic_win32_family_socket_file()
 	{
 		if (this->hsocket) [[likely]]
 		{

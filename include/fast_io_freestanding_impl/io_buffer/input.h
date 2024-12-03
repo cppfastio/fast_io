@@ -16,7 +16,7 @@ inline constexpr bool ibuffer_underflow_rl_size_impl(instmtype insm, basic_io_bu
 		ibuffer.buffer_end = ibuffer.buffer_curr = ibuffer.buffer_begin = typed_allocator_type::allocate(bfsz);
 	}
 	ibuffer.buffer_end =
-		::fast_io::operations::decay::read_until_eof_decay(insm, ibuffer.buffer_begin, ibuffer.buffer_begin + bfsz);
+		::fast_io::operations::decay::read_some_decay(insm, ibuffer.buffer_begin, ibuffer.buffer_begin + bfsz);
 	ibuffer.buffer_curr = ibuffer.buffer_begin;
 	return ibuffer.buffer_begin != ibuffer.buffer_end;
 }
@@ -56,9 +56,9 @@ inline constexpr void ibuffer_minimum_size_underflow_all_prepare_impl(instmtype 
 }
 
 template <typename allocator_type, ::std::integral char_type, typename instmtype>
-inline constexpr char_type *read_until_eof_underflow_size_impl(instmtype instm,
-															   basic_io_buffer_pointers<char_type> &__restrict pointers,
-															   char_type *first, char_type *last, ::std::size_t bfsz)
+inline constexpr char_type *read_some_underflow_size_impl(instmtype instm,
+														  basic_io_buffer_pointers<char_type> &__restrict pointers,
+														  char_type *first, char_type *last, ::std::size_t bfsz)
 {
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type, char_type>;
 	first = ::fast_io::details::non_overlapped_copy(pointers.buffer_curr, pointers.buffer_end, first);
@@ -72,7 +72,7 @@ inline constexpr char_type *read_until_eof_underflow_size_impl(instmtype instm,
 			{first, static_cast<::std::size_t>(reinterpret_cast<::std::byte const *>(last) -
 											   reinterpret_cast<::std::byte const *>(first))},
 			{pointers.buffer_begin, bfsz * sizeof(char_type)}};
-		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_until_eof_bytes_decay(instm, scatters, 2)};
+		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_some_bytes_decay(instm, scatters, 2)};
 		if (pos == 2)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + bfsz;
@@ -93,7 +93,7 @@ inline constexpr char_type *read_until_eof_underflow_size_impl(instmtype instm,
 	{
 		basic_io_scatter_t<char_type> scatters[2]{{first, static_cast<::std::size_t>(last - first)},
 												  {pointers.buffer_begin, bfsz}};
-		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_until_eof_decay(instm, scatters, 2)};
+		auto [pos, scpos]{::fast_io::operations::decay::scatter_read_some_decay(instm, scatters, 2)};
 		if (pos == 2)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + bfsz;
@@ -113,28 +113,88 @@ inline constexpr char_type *read_until_eof_underflow_size_impl(instmtype instm,
 }
 
 template <::std::size_t bfsz, typename allocatortype, ::std::integral char_type, typename instmtype>
-inline constexpr char_type *read_until_eof_underflow_impl(instmtype instm,
-														  basic_io_buffer_pointers<char_type> &__restrict pointers,
-														  char_type *first, char_type *last)
+inline constexpr char_type *read_some_underflow_impl(instmtype instm,
+													 basic_io_buffer_pointers<char_type> &__restrict pointers,
+													 char_type *first, char_type *last)
 {
-	return ::fast_io::details::io_buffer::read_until_eof_underflow_size_impl<allocatortype>(instm, pointers, first,
-																							last, bfsz);
+	return ::fast_io::details::io_buffer::read_some_underflow_size_impl<allocatortype>(instm, pointers, first,
+																					   last, bfsz);
 }
 
 } // namespace details::io_buffer
 
 template <typename io_buffer_type, ::std::integral char_type>
-inline constexpr char_type *read_until_eof_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
-															char_type *first, char_type *last)
+inline constexpr char_type *read_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+													   char_type *first, char_type *last)
 {
 	constexpr auto mode{io_buffer_type::traits_type::mode};
 	if constexpr ((mode & buffer_mode::out) == buffer_mode::out && (mode & buffer_mode::tie) == buffer_mode::tie)
 	{
 		output_stream_buffer_flush_define(iobref);
 	}
-	return ::fast_io::details::io_buffer::read_until_eof_underflow_impl<
+	return ::fast_io::details::io_buffer::read_some_underflow_impl<
 		io_buffer_type::traits_type::input_buffer_size, typename io_buffer_type::traits_type::allocator_type>(
 		::fast_io::operations::input_stream_ref(iobref.iobptr->handle), iobref.iobptr->input_buffer, first, last);
+}
+
+template <typename io_buffer_type, ::std::integral char_type>
+inline constexpr char_type *pread_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+														char_type *first, char_type *last, ::fast_io::intfpos_t off)
+{
+	constexpr auto mode{io_buffer_type::traits_type::mode};
+	if constexpr ((mode & buffer_mode::out) == buffer_mode::out && (mode & buffer_mode::tie) == buffer_mode::tie)
+	{
+		output_stream_buffer_flush_define(iobref);
+	}
+	return ::fast_io::operations::decay::pread_some_decay(::fast_io::operations::input_stream_ref(iobref.iobptr->handle), first, last, off);
+}
+
+template <typename io_buffer_type, ::std::integral char_type>
+inline constexpr void pread_all_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+												 char_type *first, char_type *last, ::fast_io::intfpos_t off)
+{
+	constexpr auto mode{io_buffer_type::traits_type::mode};
+	if constexpr ((mode & buffer_mode::out) == buffer_mode::out && (mode & buffer_mode::tie) == buffer_mode::tie)
+	{
+		output_stream_buffer_flush_define(iobref);
+	}
+	return ::fast_io::operations::decay::pread_all_decay(::fast_io::operations::input_stream_ref(iobref.iobptr->handle), first, last, off);
+}
+
+template <typename io_buffer_type, ::std::integral char_type>
+inline constexpr ::fast_io::io_scatter_status_t scatter_pread_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+																					basic_io_scatter_t<char_type> const *pscatters, ::std::size_t n, ::fast_io::intfpos_t off)
+{
+	constexpr auto mode{io_buffer_type::traits_type::mode};
+	if constexpr ((mode & buffer_mode::out) == buffer_mode::out && (mode & buffer_mode::tie) == buffer_mode::tie)
+	{
+		output_stream_buffer_flush_define(iobref);
+	}
+	return ::fast_io::operations::decay::scatter_pread_some_decay(::fast_io::operations::input_stream_ref(iobref.iobptr->handle), pscatters, n, off);
+}
+
+template <typename io_buffer_type, ::std::integral char_type>
+inline constexpr void scatter_pread_all_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+														 basic_io_scatter_t<char_type> const *pscatters, ::std::size_t n, ::fast_io::intfpos_t off)
+{
+	constexpr auto mode{io_buffer_type::traits_type::mode};
+	if constexpr ((mode & buffer_mode::out) == buffer_mode::out && (mode & buffer_mode::tie) == buffer_mode::tie)
+	{
+		output_stream_buffer_flush_define(iobref);
+	}
+	::fast_io::operations::decay::scatter_pread_all_decay(::fast_io::operations::input_stream_ref(iobref.iobptr->handle), pscatters, n, off);
+}
+
+template <typename io_buffer_type, ::std::integral char_type>
+inline constexpr char_type *pread_all_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+													   char_type *first, char_type *last, ::fast_io::intfpos_t off)
+{
+	constexpr auto mode{io_buffer_type::traits_type::mode};
+	if constexpr ((mode & buffer_mode::out) == buffer_mode::out && (mode & buffer_mode::tie) == buffer_mode::tie)
+	{
+		output_stream_buffer_flush_define(iobref);
+	}
+	return ::fast_io::operations::decay::pread_all_decay(::fast_io::operations::input_stream_ref(iobref.iobptr->handle), first, last, off);
 }
 
 template <typename io_buffer_type>

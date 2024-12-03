@@ -123,12 +123,12 @@ public:
 		return element;
 	}
 
-	constexpr void fill(const_reference u) noexcept
+	inline constexpr void fill(const_reference u) noexcept
 	{
 		::std::fill_n(element, N, u);
 	}
 
-	constexpr void swap(array &other) noexcept(::std::is_nothrow_swappable_v<value_type>)
+	inline constexpr void swap(array &other) noexcept(::std::is_nothrow_swappable_v<value_type>)
 	{
 		::std::swap_ranges(element, element + N, other.element);
 	}
@@ -359,11 +359,11 @@ public:
 		return nullptr;
 	}
 
-	constexpr void fill(const_reference) noexcept
+	inline constexpr void fill(const_reference) noexcept
 	{
 	}
 
-	constexpr void swap(array &) noexcept
+	inline constexpr void swap(array &) noexcept
 	{
 	}
 
@@ -480,14 +480,14 @@ public:
 };
 
 template <typename T, ::std::size_t N>
-constexpr void swap(::fast_io::containers::array<T, N> &a, ::fast_io::containers::array<T, N> &b) noexcept(noexcept(a.swap(b)))
+inline constexpr void swap(::fast_io::containers::array<T, N> &a, ::fast_io::containers::array<T, N> &b) noexcept(noexcept(a.swap(b)))
 {
 	a.swap(b);
 }
 
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::equality_comparable<T>
-constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, ::fast_io::containers::array<T, N2> const &b)
+inline constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, ::fast_io::containers::array<T, N2> const &b)
 {
 	if constexpr (N1 == N2)
 	{
@@ -506,11 +506,11 @@ constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, ::fast_i
 	}
 }
 
-#if defined(__cpp_lib_three_way_comparison)
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::three_way_comparable<T>
-constexpr auto operator<=>(::fast_io::containers::array<T, N1> const &a, ::fast_io::containers::array<T, N2> const &b)
+inline constexpr auto operator<=>(::fast_io::containers::array<T, N1> const &a, ::fast_io::containers::array<T, N2> const &b)
 {
 	return ::std::lexicographical_compare_three_way(a.data(), a.data() + N1, b.data(), b.data() + N2, ::std::compare_three_way{});
 }
@@ -521,30 +521,34 @@ namespace details
 {
 
 template <typename T, std::size_t N, std::size_t... I>
-constexpr ::fast_io::containers::array<std::remove_cv_t<T>, N>
+inline constexpr ::fast_io::containers::array<std::remove_cv_t<T>, N>
 to_array_lvalueref_impl(T (&a)[N], ::std::index_sequence<I...>)
 {
 	return {{a[I]...}};
 }
 
 template <typename T, std::size_t N, std::size_t... I>
-constexpr ::fast_io::containers::array<std::remove_cv_t<T>, N>
+inline constexpr ::fast_io::containers::array<std::remove_cv_t<T>, N>
 to_array_rvalueref_impl(T (&&a)[N], ::std::index_sequence<I...>)
 {
 	return {{::std::move(a[I])...}};
 }
 } // namespace details
 
+template <typename T, typename... U>
+	requires(::std::constructible_from<T, U> && ...)
+array(T, U...) -> array<T, 1 + sizeof...(U)>;
+
 template <typename T, ::std::size_t N>
 	requires(!::std::is_array_v<T>)
-constexpr ::fast_io::containers::array<::std::remove_cv_t<T>, N> to_array(T (&a)[N]) noexcept(::std::is_nothrow_copy_constructible_v<T>)
+inline constexpr ::fast_io::containers::array<::std::remove_cv_t<T>, N> to_array(T (&a)[N]) noexcept(::std::is_nothrow_copy_constructible_v<T>)
 {
 	return ::fast_io::containers::details::to_array_lvalueref_impl(a, ::std::make_index_sequence<N>{});
 }
 
 template <typename T, ::std::size_t N>
 	requires(!::std::is_array_v<T>)
-constexpr ::fast_io::containers::array<::std::remove_cv_t<T>, N> to_array(T (&&a)[N]) noexcept(::std::is_nothrow_move_constructible_v<T>)
+inline constexpr ::fast_io::containers::array<::std::remove_cv_t<T>, N> to_array(T (&&a)[N]) noexcept(::std::is_nothrow_move_constructible_v<T>)
 {
 	return ::fast_io::containers::details::to_array_rvalueref_impl(::std::move(a), ::std::make_index_sequence<N>{});
 }

@@ -45,7 +45,7 @@ inline constexpr auto random_access_transmit_impl(output &outp, input &inp, ::st
 	else
 	{
 #ifdef __cpp_lib_is_constant_evaluated
-		if (::std::is_constant_evaluated())
+		if (__builtin_is_constant_evaluated())
 		{
 			seek(inp, offset);
 			return bufferred_transmit_impl(outp, inp, ::std::forward<Args>(args)...);

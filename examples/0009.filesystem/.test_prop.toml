@@ -1,0 +1,29 @@
+["binary_to_text.cc"] # TODO: transmit api changes
+ignore = true
+
+["text_to_binary.cc"] # TODO: transmit api changes
+ignore = true
+
+["gcc_symlink_install.cc"] # TODO: undefined symbol
+ignore = true
+
+["rename_all_files_uppercase_to_lowercase.cc"] # TODO: undefined symbol
+ignore = true
+
+["count_lines_in_cpp_files.cc"]
+interactive = true
+
+["gccx86canadianfix.cc"]
+interactive = true
+
+["libtoolcanadianfix.cc"]
+interactive = true
+
+["update_wow_toc.cc"]
+interactive = true
+
+["count_rust_files.cc"]
+interactive = true
+
+["add_utf8_bom_to_all_cplusplus_files.cc"]
+interactive = true

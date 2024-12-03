@@ -9,7 +9,7 @@ using ::std::from_range;
 #else
 struct from_range_t
 {
-	explicit constexpr from_range_t() noexcept = default;
+	inline explicit constexpr from_range_t() noexcept = default;
 };
 inline constexpr ::fast_io::freestanding::from_range_t from_range{};
 #endif

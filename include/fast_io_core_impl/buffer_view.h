@@ -11,24 +11,32 @@ struct basic_ibuffer_view
 	char_type const *begin_ptr{};
 	char_type const *curr_ptr{};
 	char_type const *end_ptr{};
-	constexpr basic_ibuffer_view() noexcept = default;
+	inline constexpr basic_ibuffer_view() noexcept = default;
 	template <::std::contiguous_iterator Iter>
 		requires ::std::same_as<::std::remove_cvref_t<::std::iter_value_t<Iter>>, char_type>
-	constexpr basic_ibuffer_view(Iter first, Iter last) noexcept
+	inline constexpr basic_ibuffer_view(Iter first, Iter last) noexcept
 		: begin_ptr{::std::to_address(first)}, curr_ptr{begin_ptr}, end_ptr{curr_ptr + (last - first)}
 	{
 	}
 	template <::std::ranges::contiguous_range rg>
 		requires(::std::same_as<::std::ranges::range_value_t<rg>, char_type> &&
 				 !::std::is_array_v<::std::remove_cvref_t<rg>>)
-	explicit constexpr basic_ibuffer_view(rg &r) noexcept
+	inline explicit constexpr basic_ibuffer_view(rg &r) noexcept
 		: basic_ibuffer_view(::std::ranges::cbegin(r), ::std::ranges::cend(r))
 	{
 	}
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
-		curr_ptr = begin_ptr;
+		curr_ptr = end_ptr;
 	}
+};
+
+template <::std::integral char_type>
+struct basic_ibuffer_view_ref
+{
+	using input_char_type = typename basic_ibuffer_view<char_type>::input_char_type;
+	using native_handle_type = basic_ibuffer_view<char_type> *;
+	native_handle_type ptr{};
 };
 
 #if 0
@@ -47,49 +55,61 @@ requires ::std::same_as<::std::iter_value_t<Iter>,ch_type>
 #endif
 
 template <::std::integral ch_type>
-inline constexpr basic_ibuffer_view<ch_type> input_stream_ref_define(basic_ibuffer_view<ch_type> other) noexcept
+inline constexpr basic_ibuffer_view_ref<ch_type> input_stream_ref_define(basic_ibuffer_view<ch_type> &other) noexcept
 {
-	return other;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-inline constexpr basic_ibuffer_view<ch_type> input_bytes_stream_ref_define(basic_ibuffer_view<ch_type> other) noexcept
+inline constexpr basic_ibuffer_view_ref<ch_type> input_stream_ref_define(basic_ibuffer_view<ch_type> &&other) noexcept
 {
-	return other;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] constexpr ch_type const *ibuffer_begin(basic_ibuffer_view<ch_type> &view) noexcept
+inline constexpr basic_ibuffer_view_ref<ch_type> input_bytes_stream_ref_define(basic_ibuffer_view<ch_type> &other) noexcept
 {
-	return view.begin_ptr;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] constexpr ch_type const *ibuffer_curr(basic_ibuffer_view<ch_type> &view) noexcept
+inline constexpr basic_ibuffer_view_ref<ch_type> input_bytes_stream_ref_define(basic_ibuffer_view<ch_type> &&other) noexcept
 {
-	return view.curr_ptr;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] constexpr ch_type const *ibuffer_end(basic_ibuffer_view<ch_type> &view) noexcept
+[[nodiscard]] inline constexpr ch_type const *ibuffer_begin(basic_ibuffer_view_ref<ch_type> view) noexcept
 {
-	return view.end_ptr;
+	return view.ptr->begin_ptr;
 }
 
 template <::std::integral ch_type>
-constexpr void ibuffer_set_curr(basic_ibuffer_view<ch_type> &view, ch_type const *ptr) noexcept
+[[nodiscard]] inline constexpr ch_type const *ibuffer_curr(basic_ibuffer_view_ref<ch_type> view) noexcept
 {
-	view.curr_ptr = ptr;
+	return view.ptr->curr_ptr;
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] constexpr bool ibuffer_underflow(basic_ibuffer_view<ch_type> &) noexcept
+[[nodiscard]] inline constexpr ch_type const *ibuffer_end(basic_ibuffer_view_ref<ch_type> view) noexcept
+{
+	return view.ptr->end_ptr;
+}
+
+template <::std::integral ch_type>
+inline constexpr void ibuffer_set_curr(basic_ibuffer_view_ref<ch_type> view, ch_type const *ptr) noexcept
+{
+	view.ptr->curr_ptr = ptr;
+}
+
+template <::std::integral ch_type>
+[[nodiscard]] inline constexpr bool ibuffer_underflow(basic_ibuffer_view_ref<ch_type>) noexcept
 {
 	return false;
 }
 
 template <::std::integral ch_type>
-inline constexpr bool ibuffer_underflow_never(basic_ibuffer_view<ch_type> &) noexcept
+inline constexpr bool ibuffer_underflow_never(basic_ibuffer_view_ref<ch_type>) noexcept
 {
 	return true;
 }
@@ -100,67 +120,75 @@ struct basic_obuffer_view
 	using char_type = ch_type;
 	using output_char_type = char_type;
 	char_type *begin_ptr{}, *curr_ptr{}, *end_ptr{};
-	constexpr basic_obuffer_view() noexcept = default;
+	inline constexpr basic_obuffer_view() noexcept = default;
 	template <::std::contiguous_iterator Iter>
 		requires ::std::same_as<::std::iter_value_t<Iter>, char_type>
-	constexpr basic_obuffer_view(Iter first, Iter last) noexcept
+	inline constexpr basic_obuffer_view(Iter first, Iter last) noexcept
 		: begin_ptr{::std::to_address(first)}, curr_ptr{begin_ptr}, end_ptr{::std::to_address(last)}
 	{
 	}
 	template <::std::ranges::contiguous_range rg>
 		requires(::std::same_as<::std::ranges::range_value_t<rg>, char_type> &&
 				 !::std::is_array_v<::std::remove_cvref_t<rg>>)
-	explicit constexpr basic_obuffer_view(rg &r) noexcept
+	inline explicit constexpr basic_obuffer_view(rg &r) noexcept
 		: basic_obuffer_view(::std::ranges::begin(r), ::std::ranges::end(r))
 	{
 	}
-	constexpr void clear() noexcept
+	inline constexpr void clear() noexcept
 	{
 		curr_ptr = begin_ptr;
 	}
-	constexpr char_type const *cbegin() const noexcept
+	inline constexpr char_type const *cbegin() const noexcept
 	{
 		return begin_ptr;
 	}
-	constexpr char_type const *cend() const noexcept
+	inline constexpr char_type const *cend() const noexcept
 	{
 		return curr_ptr;
 	}
-	constexpr char_type const *begin() const noexcept
+	inline constexpr char_type const *begin() const noexcept
 	{
 		return begin_ptr;
 	}
-	constexpr char_type const *end() const noexcept
+	inline constexpr char_type const *end() const noexcept
 	{
 		return curr_ptr;
 	}
-	constexpr char_type *begin() noexcept
+	inline constexpr char_type *begin() noexcept
 	{
 		return begin_ptr;
 	}
-	constexpr char_type *end() noexcept
+	inline constexpr char_type *end() noexcept
 	{
 		return curr_ptr;
 	}
 
-	constexpr char_type const *data() const noexcept
+	inline constexpr char_type const *data() const noexcept
 	{
 		return begin_ptr;
 	}
-	constexpr char_type *data() noexcept
+	inline constexpr char_type *data() noexcept
 	{
 		return begin_ptr;
 	}
 
-	constexpr ::std::size_t size() const noexcept
+	inline constexpr ::std::size_t size() const noexcept
 	{
 		return static_cast<::std::size_t>(curr_ptr - begin_ptr);
 	}
 
-	constexpr ::std::size_t capacity() const noexcept
+	inline constexpr ::std::size_t capacity() const noexcept
 	{
 		return static_cast<::std::size_t>(end_ptr - begin_ptr);
 	}
+};
+
+template <::std::integral char_type>
+struct basic_obuffer_view_ref
+{
+	using output_char_type = typename basic_obuffer_view<char_type>::output_char_type;
+	using native_handle_type = basic_obuffer_view<char_type> *;
+	native_handle_type ptr{};
 };
 
 #if 0
@@ -177,49 +205,61 @@ inline constexpr void write(basic_obuffer_view<ch_type>& view,Iter first,Iter la
 #endif
 
 template <::std::integral ch_type>
-inline constexpr basic_obuffer_view<ch_type> output_stream_ref_define(basic_obuffer_view<ch_type> other) noexcept
+inline constexpr basic_obuffer_view_ref<ch_type> output_stream_ref_define(basic_obuffer_view<ch_type> &other) noexcept
 {
-	return other;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-inline constexpr basic_obuffer_view<ch_type> output_bytes_stream_ref_define(basic_obuffer_view<ch_type> other) noexcept
+inline constexpr basic_obuffer_view_ref<ch_type> output_stream_ref_define(basic_obuffer_view<ch_type> &&other) noexcept
 {
-	return other;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] constexpr ch_type *obuffer_begin(basic_obuffer_view<ch_type> &view) noexcept
+inline constexpr basic_obuffer_view_ref<ch_type> output_bytes_stream_ref_define(basic_obuffer_view<ch_type> &other) noexcept
 {
-	return view.begin_ptr;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] constexpr ch_type *obuffer_curr(basic_obuffer_view<ch_type> &view) noexcept
+inline constexpr basic_obuffer_view_ref<ch_type> output_bytes_stream_ref_define(basic_obuffer_view<ch_type> &&other) noexcept
 {
-	return view.curr_ptr;
+	return {__builtin_addressof(other)};
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] constexpr ch_type *obuffer_end(basic_obuffer_view<ch_type> &view) noexcept
+[[nodiscard]] inline constexpr ch_type *obuffer_begin(basic_obuffer_view_ref<ch_type> view) noexcept
 {
-	return view.end_ptr;
+	return view.ptr->begin_ptr;
 }
 
 template <::std::integral ch_type>
-constexpr void obuffer_set_curr(basic_obuffer_view<ch_type> &view, ch_type *ptr) noexcept
+[[nodiscard]] inline constexpr ch_type *obuffer_curr(basic_obuffer_view_ref<ch_type> view) noexcept
 {
-	view.curr_ptr = ptr;
+	return view.ptr->curr_ptr;
 }
 
 template <::std::integral ch_type>
-constexpr void obuffer_overflow(basic_obuffer_view<ch_type> &, ch_type) noexcept
+[[nodiscard]] inline constexpr ch_type *obuffer_end(basic_obuffer_view_ref<ch_type> view) noexcept
+{
+	return view.ptr->end_ptr;
+}
+
+template <::std::integral ch_type>
+inline constexpr void obuffer_set_curr(basic_obuffer_view_ref<ch_type> view, ch_type *ptr) noexcept
+{
+	view.ptr->curr_ptr = ptr;
+}
+
+template <::std::integral ch_type>
+inline constexpr void obuffer_overflow(basic_obuffer_view_ref<ch_type>, ch_type) noexcept
 {
 	fast_terminate();
 }
 
 template <::std::integral ch_type>
-inline constexpr bool obuffer_overflow_never(basic_obuffer_view<ch_type> &) noexcept
+inline constexpr bool obuffer_overflow_never(basic_obuffer_view<ch_type>) noexcept
 {
 	return true;
 }

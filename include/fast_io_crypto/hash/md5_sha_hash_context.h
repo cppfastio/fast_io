@@ -34,7 +34,7 @@ struct md5_sha_common_impl
 	counter_type counter;
 	::std::size_t buffer_offset;
 	::std::byte buffer[block_size];
-	constexpr void update_impl(::std::byte const *first, ::std::size_t blocks_bytes) noexcept
+	inline constexpr void update_impl(::std::byte const *first, ::std::size_t blocks_bytes) noexcept
 	{
 		this->hasher.update_blocks(first, first + blocks_bytes);
 		if constexpr (::std::same_as<counter_type, ::fast_io::details::pesudo_uint_least128_t>)
@@ -50,7 +50,7 @@ struct md5_sha_common_impl
 			counter += static_cast<counter_type>(blocks_bytes);
 		}
 	}
-	constexpr void update_cold_impl(::std::byte const *first, ::std::size_t diff) noexcept
+	inline constexpr void update_cold_impl(::std::byte const *first, ::std::size_t diff) noexcept
 	{
 		::std::size_t const buffer_space{static_cast<::std::size_t>(buffer_offset)};
 		::std::size_t const buffer_remain_space{static_cast<::std::size_t>(block_size - buffer_offset)};
@@ -68,6 +68,7 @@ struct md5_sha_common_impl
 		::fast_io::details::non_overlapped_copy_n(first, diff, buffer);
 		buffer_offset = diff;
 	}
+	inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
 	constexpr
 #endif
@@ -130,6 +131,7 @@ struct md5_sha_common_impl
 		}
 	}
 
+	inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
 	constexpr
 #endif
@@ -179,26 +181,26 @@ class basic_md5_sha_context_impl
 	md5_sha_common_impl<T, counterbits> hasher;
 
 public:
-	explicit constexpr basic_md5_sha_context_impl() noexcept
+	inline explicit constexpr basic_md5_sha_context_impl() noexcept
 	{
 		this->reset();
 	}
 	static inline constexpr ::std::size_t digest_size{initializer::digest_size};
-	constexpr void update(::std::byte const *block_first, ::std::byte const *block_last) noexcept
+	inline constexpr void update(::std::byte const *block_first, ::std::byte const *block_last) noexcept
 	{
 		hasher.update(block_first, block_last);
 	}
-	constexpr void reset() noexcept
+	inline constexpr void reset() noexcept
 	{
 		hasher.hasher = initializer::initialize_value;
 		hasher.counter = {};
 		hasher.buffer_offset = 0;
 	}
-	constexpr void do_final() noexcept
+	inline constexpr void do_final() noexcept
 	{
 		hasher.do_final();
 	}
-	constexpr void digest_to_byte_ptr(::std::byte *digest) const noexcept
+	inline constexpr void digest_to_byte_ptr(::std::byte *digest) const noexcept
 	{
 		initializer::digest_to_byte_ptr(hasher.hasher.state, digest);
 	}

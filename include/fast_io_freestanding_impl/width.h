@@ -15,7 +15,7 @@ inline constexpr auto width(scalar_placement placement, T &&t, ::std::size_t n) 
 		return width_runtime_t<decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			placement, print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -40,7 +40,7 @@ inline constexpr auto width(scalar_placement placement, T &&t, ::std::size_t n, 
 		return width_runtime_ch_t<decltype(print_alias_define(io_alias, ::std::forward<T>(t))), char_type>{
 			placement, print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -64,7 +64,7 @@ inline constexpr auto left(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::left, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -89,7 +89,7 @@ inline constexpr auto middle(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::middle, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -114,7 +114,7 @@ inline constexpr auto right(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::right, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -139,7 +139,7 @@ inline constexpr auto internal(T &&t, ::std::size_t n) noexcept
 		return width_t<scalar_placement::internal, decltype(print_alias_define(io_alias, ::std::forward<T>(t)))>{
 			print_alias_define(io_alias, ::std::forward<T>(t)), n};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -164,7 +164,7 @@ inline constexpr auto left(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::left, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -189,7 +189,7 @@ inline constexpr auto middle(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::middle, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -214,7 +214,7 @@ inline constexpr auto right(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::right, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -239,7 +239,7 @@ inline constexpr auto internal(T &&t, ::std::size_t n, char_type ch) noexcept
 		return width_ch_t<scalar_placement::internal, decltype(print_alias_define(io_alias, ::std::forward<T>(t))),
 						  char_type>{print_alias_define(io_alias, ::std::forward<T>(t)), n, ch};
 	}
-	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>)&&
+	else if constexpr ((manipulator<noref> || ::std::is_trivially_copyable_v<noref>) &&
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
@@ -486,7 +486,7 @@ template <::std::integral char_type, ::fast_io::manipulators::scalar_placement p
 			  scatter_printable<char_type, ::std::remove_cvref_t<T>>) &&
 			 (static_cast<::std::size_t>(static_cast<::std::size_t>(placement) - static_cast<::std::size_t>(1u)) <
 			  static_cast<::std::size_t>(4u)))
-constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_t<placement, T>>,
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_t<placement, T>>,
 										   ::fast_io::manipulators::width_t<placement, T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
@@ -505,7 +505,7 @@ template <::std::integral char_type, ::fast_io::manipulators::scalar_placement p
 			  scatter_printable<char_type, ::std::remove_cvref_t<T>>) &&
 			 (static_cast<::std::size_t>(static_cast<::std::size_t>(placement) - static_cast<::std::size_t>(1u)) <
 			  static_cast<::std::size_t>(4u)))
-constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_t<placement, T>>,
+inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_t<placement, T>>,
 										  char_type *iter, ::fast_io::manipulators::width_t<placement, T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
@@ -524,7 +524,7 @@ template <::std::integral char_type, ::fast_io::manipulators::scalar_placement p
 			  scatter_printable<char_type, ::std::remove_cvref_t<T>>) &&
 			 (static_cast<::std::size_t>(static_cast<::std::size_t>(placement) - static_cast<::std::size_t>(1u)) <
 			  static_cast<::std::size_t>(4u)))
-constexpr ::std::size_t
+inline constexpr ::std::size_t
 print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_ch_t<placement, T, char_type>>,
 				   ::fast_io::manipulators::width_ch_t<placement, T, char_type> t) noexcept
 {
@@ -544,7 +544,7 @@ template <::std::integral char_type, ::fast_io::manipulators::scalar_placement p
 			  scatter_printable<char_type, ::std::remove_cvref_t<T>>) &&
 			 (static_cast<::std::size_t>(static_cast<::std::size_t>(placement) - static_cast<::std::size_t>(1u)) <
 			  static_cast<::std::size_t>(4u)))
-constexpr char_type *
+inline constexpr char_type *
 print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_ch_t<placement, T, char_type>>,
 					 char_type *iter, ::fast_io::manipulators::width_ch_t<placement, T, char_type> t) noexcept
 {
@@ -563,7 +563,7 @@ template <::std::integral char_type, typename T>
 	requires(reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 dynamic_reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 scatter_printable<char_type, ::std::remove_cvref_t<T>>)
-constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_t<T>>,
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_t<T>>,
 										   ::fast_io::manipulators::width_runtime_t<T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
@@ -580,7 +580,7 @@ template <::std::integral char_type, typename T>
 	requires(reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 dynamic_reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 scatter_printable<char_type, ::std::remove_cvref_t<T>>)
-constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_t<T>>,
+inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_t<T>>,
 										  char_type *iter, ::fast_io::manipulators::width_runtime_t<T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
@@ -598,7 +598,7 @@ template <::std::integral char_type, typename T>
 	requires(reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 dynamic_reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 scatter_printable<char_type, ::std::remove_cvref_t<T>>)
-constexpr ::std::size_t
+inline constexpr ::std::size_t
 print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_ch_t<T, char_type>>,
 				   ::fast_io::manipulators::width_runtime_ch_t<T, char_type> t) noexcept
 {
@@ -616,7 +616,7 @@ template <::std::integral char_type, typename T>
 	requires(reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 dynamic_reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 scatter_printable<char_type, ::std::remove_cvref_t<T>>)
-constexpr char_type *
+inline constexpr char_type *
 print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_ch_t<T, char_type>>,
 					 char_type *iter, ::fast_io::manipulators::width_runtime_ch_t<T, char_type> t) noexcept
 {

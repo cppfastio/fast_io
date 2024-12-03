@@ -20,22 +20,13 @@ template <typename T, typename... Args>
 #endif
 inline constexpr void print(T &&t, Args &&...args)
 {
-	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
-	if constexpr (device_error)
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char_type, decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
-		{
-			::fast_io::operations::decay::print_freestanding_decay<false>(
-				::fast_io::operations::output_stream_ref(t),
-				::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
-		}
-		else
-		{
-			static_assert(type_error, "some types are not printable for print");
-		}
+		::fast_io::operations::decay::print_freestanding_decay<false>(
+			::fast_io::operations::output_stream_ref(t),
+			::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
 	}
 	else
 	{
@@ -43,10 +34,8 @@ inline constexpr void print(T &&t, Args &&...args)
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES)) &&                                     \
 	__has_include(<stdio.h>)
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char, decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
-			decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
+		constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char, Args...>};
+		if constexpr (type_ok)
 		{
 			::fast_io::details::print_after_io_print_forward<false>(
 				::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t)),
@@ -54,10 +43,16 @@ inline constexpr void print(T &&t, Args &&...args)
 		}
 		else
 		{
-			static_assert(type_error, "some types are not printable for print on default C's stdout");
+			// clang-format off
+static_assert(type_ok, "some types are not printable for print on default C's stdout");
+			// clang-format on
 		}
 #else
-		static_assert(device_error, "freestanding environment must provide IO device for print");
+		constexpr bool device_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
+		// clang-format off
+static_assert(device_ok, "freestanding environment must provide IO device for print");
+static_assert(device_and_type_ok, "some types are not printable for print");
+		// clang-format on
 #endif
 	}
 }
@@ -70,22 +65,13 @@ template <typename T, typename... Args>
 #endif
 inline constexpr void println(T &&t, Args &&...args)
 {
-	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
-	if constexpr (device_error)
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char_type, decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
-		{
-			::fast_io::operations::decay::print_freestanding_decay<true>(
-				::fast_io::operations::output_stream_ref(t),
-				::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
-		}
-		else
-		{
-			static_assert(type_error, "some types are not printable for println");
-		}
+		::fast_io::operations::decay::print_freestanding_decay<true>(
+			::fast_io::operations::output_stream_ref(t),
+			::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
 	}
 	else
 	{
@@ -93,10 +79,8 @@ inline constexpr void println(T &&t, Args &&...args)
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES)) &&                                     \
 	__has_include(<stdio.h>)
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char, decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
-			decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
+		constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char, Args...>};
+		if constexpr (type_ok)
 		{
 			::fast_io::details::print_after_io_print_forward<true>(
 				::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t)),
@@ -104,10 +88,14 @@ inline constexpr void println(T &&t, Args &&...args)
 		}
 		else
 		{
-			static_assert(type_error, "some types are not printable for print on default C's stdout");
+			static_assert(type_ok, "some types are not printable for print on default C's stdout");
 		}
 #else
-		static_assert(device_error, "freestanding environment must provide IO device for print");
+		constexpr bool device_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
+		// clang-format off
+static_assert(device_ok, "freestanding environment must provide IO device for println");
+static_assert(device_and_type_ok, "some types are not printable for println");
+		// clang-format on
 #endif
 	}
 }
@@ -115,32 +103,21 @@ inline constexpr void println(T &&t, Args &&...args)
 template <typename T, typename... Args>
 inline constexpr void perr(T &&t, Args &&...args)
 {
-	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
-	if constexpr (device_error)
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char_type, decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
-		{
-			::fast_io::operations::decay::print_freestanding_decay_cold<false>(
-				::fast_io::operations::output_stream_ref(t),
-				::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
-		}
-		else
-		{
-			static_assert(type_error, "some types are not printable for perr");
-		}
+		::fast_io::operations::decay::print_freestanding_decay_cold<false>(
+			::fast_io::operations::output_stream_ref(t),
+			::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
 	}
 	else
 	{
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && !defined(_LIBCPP_FREESTANDING) && \
 	  !defined(__AVR__)) ||                                                                                            \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char, decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
-			decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
+		constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char, Args...>};
+		if constexpr (type_ok)
 		{
 			::fast_io::details::perr_after_io_print_forward<false>(
 				fast_io::io_print_forward<char>(fast_io::io_print_alias(t)),
@@ -148,10 +125,16 @@ inline constexpr void perr(T &&t, Args &&...args)
 		}
 		else
 		{
-			static_assert(type_error, "some types are not printable for perr on native err");
+			// clang-format off
+static_assert(type_ok, "some types are not printable for perr on native err");
+			// clang-format on
 		}
 #else
-		static_assert(device_error, "freestanding environment must provide IO device");
+		constexpr bool device_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
+		// clang-format off
+static_assert(device_ok, "freestanding environment must provide IO device for perr");
+static_assert(device_and_type_ok, "some types are not printable for perr");
+		// clang-format on
 #endif
 	}
 }
@@ -159,32 +142,21 @@ inline constexpr void perr(T &&t, Args &&...args)
 template <typename T, typename... Args>
 inline constexpr void perrln(T &&t, Args &&...args)
 {
-	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
-	if constexpr (device_error)
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char_type, decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
-		{
-			::fast_io::operations::decay::print_freestanding_decay_cold<true>(
-				::fast_io::operations::output_stream_ref(t),
-				::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
-		}
-		else
-		{
-			static_assert(type_error, "some types are not printable for perr");
-		}
+		::fast_io::operations::decay::print_freestanding_decay_cold<true>(
+			::fast_io::operations::output_stream_ref(t),
+			::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
 	}
 	else
 	{
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && !defined(_LIBCPP_FREESTANDING) && \
 	  !defined(__AVR__)) ||                                                                                            \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char, decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
-			decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
+		constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char, Args...>};
+		if constexpr (type_ok)
 		{
 			::fast_io::details::perr_after_io_print_forward<true>(
 				fast_io::io_print_forward<char>(fast_io::io_print_alias(t)),
@@ -192,10 +164,16 @@ inline constexpr void perrln(T &&t, Args &&...args)
 		}
 		else
 		{
-			static_assert(type_error, "some types are not printable for perrln on native err");
+			// clang-format off
+static_assert(type_ok, "some types are not printable for perrln on native err");
+			// clang-format on
 		}
 #else
-		static_assert(device_error, "freestanding environment must provide IO device");
+		constexpr bool device_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
+		// clang-format off
+static_assert(device_ok, "freestanding environment must provide IO device for perrln");
+static_assert(device_and_type_ok, "some types are not printable for perrln");
+		// clang-format on
 #endif
 	}
 }
@@ -244,32 +222,21 @@ template <typename... Args>
 template <typename T, typename... Args>
 inline constexpr void debug_print(T &&t, Args &&...args)
 {
-	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
-	if constexpr (device_error)
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char_type, decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
-		{
-			::fast_io::operations::decay::print_freestanding_decay<false>(
-				::fast_io::operations::output_stream_ref(t),
-				fast_io::io_print_forward<char_type>(fast_io::io_print_alias(args))...);
-		}
-		else
-		{
-			static_assert(type_error, "some types are not printable for debug_print");
-		}
+		::fast_io::operations::decay::print_freestanding_decay<false>(
+			::fast_io::operations::output_stream_ref(t),
+			fast_io::io_print_forward<char_type>(fast_io::io_print_alias(args))...);
 	}
 	else
 	{
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char, decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
-			decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
+		constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char, Args...>};
+		if constexpr (type_ok)
 		{
 			fast_io::details::debug_print_after_io_print_forward<false>(
 				fast_io::io_print_forward<char>(fast_io::io_print_alias(t)),
@@ -277,10 +244,16 @@ inline constexpr void debug_print(T &&t, Args &&...args)
 		}
 		else
 		{
-			static_assert(type_error, "some types are not printable for debug_print on native out");
+			// clang-format off
+static_assert(type_ok, "some types are not printable for debug_print on native out");
+			// clang-format on
 		}
 #else
-		static_assert(device_error, "freestanding environment must provide IO device");
+		constexpr bool device_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
+		// clang-format off
+static_assert(device_ok, "freestanding environment must provide IO device for debug_print");
+static_assert(device_and_type_ok, "some types are not printable for debug_print on native out");
+		// clang-format on
 #endif
 	}
 }
@@ -288,32 +261,21 @@ inline constexpr void debug_print(T &&t, Args &&...args)
 template <typename T, typename... Args>
 inline constexpr void debug_println(T &&t, Args &&...args)
 {
-	constexpr bool device_error{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
-	if constexpr (device_error)
+	constexpr bool device_and_type_ok{::fast_io::operations::defines::print_freestanding_okay<T, Args...>};
+	if constexpr (device_and_type_ok)
 	{
 		using char_type = typename decltype(::fast_io::operations::output_stream_ref(t))::output_char_type;
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char_type, decltype(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
-		{
-			::fast_io::operations::decay::print_freestanding_decay<true>(
-				::fast_io::operations::output_stream_ref(t),
-				fast_io::io_print_forward<char_type>(fast_io::io_print_alias(args))...);
-		}
-		else
-		{
-			static_assert(type_error, "some types are not printable for debug_print");
-		}
+		::fast_io::operations::decay::print_freestanding_decay<true>(
+			::fast_io::operations::output_stream_ref(t),
+			fast_io::io_print_forward<char_type>(fast_io::io_print_alias(args))...);
 	}
 	else
 	{
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
-		constexpr bool type_error{::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<
-			char, decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(t))),
-			decltype(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args)))...>};
-		if constexpr (type_error)
+		constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char, Args...>};
+		if constexpr (type_ok)
 		{
 			fast_io::details::debug_print_after_io_print_forward<true>(
 				fast_io::io_print_forward<char>(fast_io::io_print_alias(t)),
@@ -321,10 +283,16 @@ inline constexpr void debug_println(T &&t, Args &&...args)
 		}
 		else
 		{
-			static_assert(type_error, "some types are not printable for debug_println on native out");
+			// clang-format off
+static_assert(type_ok, "some types are not printable for debug_println on native out");
+			// clang-format on
 		}
 #else
-		static_assert(device_error, "freestanding environment must provide IO device");
+		constexpr bool device_ok{::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>};
+		// clang-format off
+static_assert(device_ok, "freestanding environment must provide IO device for debug_println");
+static_assert(device_and_type_ok, "some types are not printable for debug_println on native out");
+		// clang-format on
 #endif
 	}
 }
@@ -377,7 +345,9 @@ inline constexpr ::std::conditional_t<report, bool, void> scan(input &&in, Args 
 			::fast_io::io_scan_forward<char>(::fast_io::io_scan_alias(in)),
 			::fast_io::io_scan_forward<char>(::fast_io::io_scan_alias(args))...);
 #else
-		static_assert(device_error, "freestanding environment must provide IO device");
+		// clang-format off
+static_assert(device_error, "freestanding environment must provide IO device");
+		// clang-format on
 #endif
 	}
 }

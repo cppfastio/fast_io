@@ -10,7 +10,7 @@ template <::std::integral char_type, typename Rep, typename Period>
 			  ::std::same_as<Period, ::std::ratio<60>> || ::std::same_as<Period, ::std::ratio<3600>> ||
 			  ::std::same_as<Period, ::std::ratio<86400>> || ::std::same_as<Period, ::std::ratio<604800>> ||
 			  ::std::same_as<Period, ::std::ratio<2629746>> || ::std::same_as<Period, ::std::ratio<31556952>>))
-constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::std::chrono::duration<Rep, Period>>) noexcept
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::std::chrono::duration<Rep, Period>>) noexcept
 {
 	constexpr ::std::size_t sz{print_reserve_size(io_reserve_type<char_type, Rep>)};
 	if constexpr (::std::same_as<Period, ::std::nano> || ::std::same_as<Period, ::std::micro> ||
@@ -36,7 +36,7 @@ template <::std::integral char_type, ::std::random_access_iterator Iter, typenam
 			  ::std::same_as<Period, ::std::ratio<60>> || ::std::same_as<Period, ::std::ratio<3600>> ||
 			  ::std::same_as<Period, ::std::ratio<86400>> || ::std::same_as<Period, ::std::ratio<604800>> ||
 			  ::std::same_as<Period, ::std::ratio<2629746>> || ::std::same_as<Period, ::std::ratio<31556952>>))
-constexpr Iter print_reserve_define(io_reserve_type_t<char_type, ::std::chrono::duration<Rep, Period>>, Iter it,
+inline constexpr Iter print_reserve_define(io_reserve_type_t<char_type, ::std::chrono::duration<Rep, Period>>, Iter it,
 									::std::chrono::duration<Rep, Period> duration) noexcept
 {
 	it = print_reserve_define(io_reserve_type<char_type, Rep>, it, duration.count());

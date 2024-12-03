@@ -14,7 +14,6 @@ inline void test()
 int main()
 {
 	fast_io::u8obuf_file timer_obf(u"stdio_hack.txt");
-	auto t0{posix_clock_gettime(fast_io::posix_clock_id::monotonic)};
+	fast_io::timer t(u8"stdio_hack");
 	test();
-	print(timer_obf, posix_clock_gettime(fast_io::posix_clock_id::monotonic) - t0, u8"s\n");
 }

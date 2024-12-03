@@ -287,27 +287,29 @@ enum class open_mode : ::std::uint_least64_t
 	//	*POSIX O_TRUNC
 	tty_init = static_cast<::std::uint_least64_t>(1) << 32,
 	//	POSIX O_TTY_INIT
+	nt_path = static_cast<::std::uint_least64_t>(1) << 33,
+	//  [Windows NT] use nt path on nt file
 };
 
-constexpr open_mode operator&(open_mode x, open_mode y) noexcept
+inline constexpr open_mode operator&(open_mode x, open_mode y) noexcept
 {
 	using utype = typename ::std::underlying_type<open_mode>::type;
 	return static_cast<open_mode>(static_cast<utype>(x) & static_cast<utype>(y));
 }
 
-constexpr open_mode operator|(open_mode x, open_mode y) noexcept
+inline constexpr open_mode operator|(open_mode x, open_mode y) noexcept
 {
 	using utype = typename ::std::underlying_type<open_mode>::type;
 	return static_cast<open_mode>(static_cast<utype>(x) | static_cast<utype>(y));
 }
 
-constexpr open_mode operator^(open_mode x, open_mode y) noexcept
+inline constexpr open_mode operator^(open_mode x, open_mode y) noexcept
 {
 	using utype = typename ::std::underlying_type<open_mode>::type;
 	return static_cast<open_mode>(static_cast<utype>(x) ^ static_cast<utype>(y));
 }
 
-constexpr open_mode operator~(open_mode x) noexcept
+inline constexpr open_mode operator~(open_mode x) noexcept
 {
 	using utype = typename ::std::underlying_type<open_mode>::type;
 	return static_cast<open_mode>(~static_cast<utype>(x));
@@ -577,39 +579,39 @@ inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, po
 
 struct native_interface_t
 {
-	explicit constexpr native_interface_t() noexcept = default;
+	inline explicit constexpr native_interface_t() noexcept = default;
 };
 inline constexpr native_interface_t native_interface{};
 
 struct io_async_t
 {
-	explicit constexpr io_async_t() noexcept = default;
+	inline explicit constexpr io_async_t() noexcept = default;
 };
 inline constexpr io_async_t io_async{};
 
 struct io_temp_t
 {
-	explicit constexpr io_temp_t() noexcept = default;
+	inline explicit constexpr io_temp_t() noexcept = default;
 };
 inline constexpr io_temp_t io_temp{};
 
 struct io_dup_t
 {
-	explicit constexpr io_dup_t() noexcept = default;
+	inline explicit constexpr io_dup_t() noexcept = default;
 };
 inline constexpr io_dup_t io_dup{};
 
 struct io_kernel_t
 {
-	explicit constexpr io_kernel_t() noexcept = default;
+	inline explicit constexpr io_kernel_t() noexcept = default;
 };
 inline constexpr io_kernel_t io_kernel{};
 
 struct posix_at_entry
 {
 	int fd{-1};
-	explicit constexpr posix_at_entry() noexcept = default;
-	explicit constexpr posix_at_entry(int mfd) noexcept
+	inline explicit constexpr posix_at_entry() noexcept = default;
+	inline explicit constexpr posix_at_entry(int mfd) noexcept
 		: fd(mfd)
 	{}
 };
@@ -617,7 +619,7 @@ struct posix_at_entry
 struct file_loader_extra_bytes
 {
 	::std::size_t n{};
-	explicit constexpr file_loader_extra_bytes(::std::size_t nn) noexcept
+	inline explicit constexpr file_loader_extra_bytes(::std::size_t nn) noexcept
 		: n(nn)
 	{}
 };

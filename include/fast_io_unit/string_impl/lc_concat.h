@@ -11,9 +11,9 @@ inline constexpr ::std::size_t
 lc_calculate_scatter_dynamic_reserve_size_with_scatter(basic_lc_all<char_type> const *all, [[maybe_unused]] T t,
 													   Args... args)
 {
-	if constexpr ((!(lc_dynamic_reserve_printable<char_type, T> || lc_scatter_printable<char_type, T>)&&(
-					  (!(lc_dynamic_reserve_printable<char_type, Args> || lc_scatter_printable<char_type, Args>)) &&
-					  ...)))
+	if constexpr ((!(lc_dynamic_reserve_printable<char_type, T> || lc_scatter_printable<char_type, T>) &&
+				   ((!(lc_dynamic_reserve_printable<char_type, Args> || lc_scatter_printable<char_type, Args>)) &&
+					...)))
 	{
 		return calculate_scatter_dynamic_reserve_size_with_scatter(t, args...);
 	}
@@ -86,9 +86,8 @@ template <bool line, typename ptr_type, ::std::integral char_type, typename T, t
 inline constexpr ptr_type lc_print_reserve_define_chain_scatter_impl(basic_lc_all<char_type> const *all, ptr_type p,
 																	 T t, Args... args)
 {
-	if constexpr ((!(lc_dynamic_reserve_printable<char_type, T> || lc_scatter_printable<char_type, T>)&&(
-					  (!(lc_dynamic_reserve_printable<char_type, Args> || lc_scatter_printable<char_type, Args>)) &&
-					  ...)))
+	if constexpr ((!(lc_dynamic_reserve_printable<char_type, T> || lc_scatter_printable<char_type, T>) && ((!(lc_dynamic_reserve_printable<char_type, Args> || lc_scatter_printable<char_type, Args>)) &&
+																										   ...)))
 	{
 		return print_reserve_define_chain_scatter_impl<line>(p, t, args...);
 	}
@@ -156,7 +155,8 @@ inline constexpr T lc_concat_decay_impl(basic_lc_all<typename T::value_type> con
 	}
 	else if constexpr (((reserve_printable<ch_type, Args> || scatter_printable<ch_type, Args> ||
 						 dynamic_reserve_printable<ch_type, Args> || lc_scatter_printable<ch_type, Args> ||
-						 lc_dynamic_reserve_printable<ch_type, Args>)&&...))
+						 lc_dynamic_reserve_printable<ch_type, Args>) &&
+						...))
 	{
 		constexpr ::std::size_t sz_with_line{static_cast<::std::size_t>(line)};
 		if constexpr ((!line) && sizeof...(args) == 1 && (lc_scatter_printable<ch_type, Args> && ...))
@@ -178,7 +178,7 @@ inline constexpr T lc_concat_decay_impl(basic_lc_all<typename T::value_type> con
 	{
 		T str;
 		basic_ostring_ref<ch_type, typename T::traits_type, typename T::allocator_type> ref{__builtin_addressof(str)};
-		lc_print_status_define_further_decay<line>(all, ref, args...);
+		lc_status_print_define_further_decay<line>(all, ref, args...);
 		return str;
 	}
 }

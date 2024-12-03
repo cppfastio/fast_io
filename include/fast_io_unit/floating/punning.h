@@ -1,10 +1,5 @@
 ﻿#pragma once
 
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(push)
-#pragma warning(disable : 4820)
-#endif
-
 namespace fast_io::details
 {
 
@@ -804,7 +799,3 @@ inline constexpr char_type *prt_rsv_exponent_impl(char_type *iter, U u) noexcept
 }
 
 } // namespace fast_io::details
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#pragma warning(pop)
-#endif

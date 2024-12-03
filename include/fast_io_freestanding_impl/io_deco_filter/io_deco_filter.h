@@ -51,9 +51,9 @@ public:
 		: handle(::std::forward<Args>(args)...), decorators(::fast_io::freestanding::forward<decotype>(d))
 	{
 	}
-	basic_io_deco_filter &operator=(basic_io_deco_filter const &) = delete;
-	basic_io_deco_filter(basic_io_deco_filter const &) = delete;
-	constexpr basic_io_deco_filter(basic_io_deco_filter &&__restrict other) noexcept
+	inline basic_io_deco_filter &operator=(basic_io_deco_filter const &) = delete;
+	inline basic_io_deco_filter(basic_io_deco_filter const &) = delete;
+	inline constexpr basic_io_deco_filter(basic_io_deco_filter &&__restrict other) noexcept
 		: input_buffer(::std::move(other.input_buffer)), handle(::std::move(other.handle)),
 		  decorators(::std::move(other.decorators))
 	{
@@ -86,7 +86,7 @@ public:
 			handle = handle_type();
 		}
 	}
-	constexpr basic_io_deco_filter &operator=(basic_io_deco_filter &&__restrict other) noexcept
+	inline constexpr basic_io_deco_filter &operator=(basic_io_deco_filter &&__restrict other) noexcept
 	{
 		::fast_io::details::destroy_basic_io_filter(*this);
 		input_buffer = ::std::move(other.input_buffer);
@@ -96,7 +96,7 @@ public:
 		return *this;
 	}
 
-	constexpr ~basic_io_deco_filter()
+	inline constexpr ~basic_io_deco_filter()
 	{
 		::fast_io::details::destroy_basic_io_filter(*this);
 	}

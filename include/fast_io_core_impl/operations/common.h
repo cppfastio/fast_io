@@ -43,10 +43,11 @@ find_scatter_total_size_overflow_impl(basic_io_scatter_t<T> const *base, U len) 
 	auto i{base}, e{base + len};
 	for (; i != e; ++i)
 	{
-		if (static_cast<U>(static_cast<::std::size_t>(mx - i->len)) < total)
+		if (static_cast<U>(static_cast<::std::size_t>(mx - i->len)) < total) [[unlikely]]
 		{
 			break;
 		}
+		total += i->len;
 	}
 	return {total, static_cast<::std::size_t>(i - base)};
 }

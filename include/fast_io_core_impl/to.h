@@ -17,6 +17,9 @@ inplace_to_decay_context_impl(basic_dynamic_output_buffer_ref<basic_dynamic_outp
 							  T t, Arg1 arg, Args... args)
 {
 	::fast_io::details::decay::print_control_single<false>(buffer, arg);
+#if 0
+	::fast_io::details::decay::print_control_fallback_single(buffer, arg);
+#endif
 	char_type *buffer_beg{buffer.ptr->buffer_begin};
 	char_type const *buffer_begin{buffer_beg};
 	char_type const *buffer_curr{buffer.ptr->buffer_curr};
@@ -279,7 +282,7 @@ template <typename char_type, typename T, typename... Args>
 concept inplace_to_decay_detect =
 	::std::integral<char_type> &&
 	(sizeof...(Args) != 0 &&
-	 ::fast_io::operations::decay::defines::print_freestanding_params_decay_okay<char_type, Args...> &&
+	 ::fast_io::operations::decay::defines::print_freestanding_params_okay<char_type, Args...> &&
 	 (contiguous_scannable<char_type, T> || context_scannable<char_type, T>));
 
 } // namespace details
@@ -291,11 +294,12 @@ inline constexpr void basic_inplace_to_decay(T t, Args... args)
 	if constexpr (failed)
 	{
 		if constexpr (((reserve_printable<char_type, Args> || dynamic_reserve_printable<char_type, Args> ||
-						scatter_printable<char_type, Args>)&&...))
+						scatter_printable<char_type, Args>) &&
+					   ...))
 		{
-			constexpr bool all_scatters{((scatter_printable<char_type, Args>)&&...)};
+			constexpr bool all_scatters{((scatter_printable<char_type, Args>) && ...)};
 			constexpr bool no_need_dynamic_reserve{
-				((reserve_printable<char_type, Args> || scatter_printable<char_type, Args>)&&...)};
+				((reserve_printable<char_type, Args> || scatter_printable<char_type, Args>) && ...)};
 			if constexpr (context_scannable<char_type, T> &&
 						  (!(contiguous_scannable<char_type, T> && sizeof...(args) == 1)))
 			{
@@ -326,7 +330,7 @@ inline constexpr void basic_inplace_to_decay(T t, Args... args)
 				{
 					::fast_io::details::to_deal_with_contiguous_single_scatter<char_type>(t, args...);
 				}
-				else if constexpr (((reserve_printable<char_type, Args>)&&...))
+				else if constexpr (((reserve_printable<char_type, Args>) && ...))
 				{
 					constexpr ::std::size_t total_size{
 						::fast_io::details::decay::calculate_scatter_reserve_size<char_type, Args...>()};

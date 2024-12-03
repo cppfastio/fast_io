@@ -263,8 +263,7 @@ template <typename input, typename T>
 		}
 		else if constexpr (context_scannable<char_type, T>)
 		{
-			for (typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type, T>))>::type state;
-				 ;)
+			for (typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type, T>))>::type state;;)
 			{
 				auto curr{ibuffer_curr(in)};
 				auto end{ibuffer_end(in)};
@@ -303,10 +302,8 @@ template <typename input, typename T>
 		}
 		else
 		{
-#if 0
 			constexpr bool not_scannable{context_scannable<char_type,T>};
 			static_assert(not_scannable,"type not scannable. need context_scannable");
-#endif
 			return false;
 		}
 	}
@@ -333,15 +330,15 @@ template <typename input, typename... Args>
 	{
 		return (::fast_io::details::scan_single_impl(instm, args) && ...);
 	}
-#if 0
-	else
+	else if constexpr (::fast_io::operations::defines::available_add_ibuf<input>)
 	{
-		unget_temp_buffer in_buffer(io_ref(in));
-		return scan_freestanding_decay(io_ref(in_buffer),args...);
+		static_assert(::fast_io::operations::decay::defines::has_status_scan_define<input>, 
+			"If you want to scan this type of file, please add ::fast_io::basic_ibuf.");
+		return false;
 	}
-#endif
 	else
 	{
+		static_assert(::fast_io::operations::decay::defines::has_status_scan_define<input>, "type not scannable.");
 		return false;
 	}
 }
