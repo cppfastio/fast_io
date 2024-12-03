@@ -558,7 +558,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 #endif
 	{
 		constexpr bool isebcdic{::fast_io::details::is_ebcdic<char_type>};
-		if constexpr (!isebcdic && (::std::numeric_limits<::std::uint_least64_t>::digits == 64u) && false)
+		if constexpr (!isebcdic && (::std::numeric_limits<::std::uint_least64_t>::digits == 64u))
 		{
 			if constexpr (sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
 			{
@@ -568,10 +568,10 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 					{
 						if constexpr (max_size >= sizeof(::std::uint_least64_t))
 						{
-							constexpr ::std::uint_least64_t pow_base_sizeof_base_2{::fast_io::details::max_int_size_result<static_cast<::std::uint_least64_t>(base_char_type), 2>};
-							constexpr ::std::uint_least64_t pow_base_sizeof_base_4{::fast_io::details::max_int_size_result<static_cast<::std::uint_least64_t>(base_char_type), 4>};
-							constexpr ::std::uint_least64_t pow_base_sizeof_base_6{::fast_io::details::max_int_size_result<static_cast<::std::uint_least64_t>(base_char_type), 6>};
-							constexpr ::std::uint_least64_t pow_base_sizeof_u64{::fast_io::details::max_int_size_result<static_cast<::std::uint_least64_t>(base_char_type), sizeof(::std::uint_least64_t)>};
+							constexpr ::std::uint_least64_t pow_base_sizeof_base_2{::fast_io::details::compile_pow_n<::std::uint_least64_t, base, 2>};
+							constexpr ::std::uint_least64_t pow_base_sizeof_base_4{::fast_io::details::compile_pow_n<::std::uint_least64_t, base, 4>};
+							constexpr ::std::uint_least64_t pow_base_sizeof_base_6{::fast_io::details::compile_pow_n<::std::uint_least64_t, base, 6>};
+							constexpr ::std::uint_least64_t pow_base_sizeof_u64{::fast_io::details::compile_pow_n<::std::uint_least64_t, base, sizeof(::std::uint_least64_t)>};
 
 
 							constexpr ::std::uint_least64_t baseval{0x0101010101010101};
@@ -632,7 +632,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 						if constexpr (max_size >= sizeof(::std::uint_least32_t))
 						{
-							constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::max_int_size_result<static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t)>};
+							constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_pow_n<::std::uint_least64_t, base, sizeof(::std::uint_least32_t)>};
 							constexpr ::std::uint_least32_t first_bound{0x46464646 + 0x01010101 * (10 - base_char_type)};
 							constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_pow_n<::std::uint_least32_t, base, 2>};
 							constexpr ::std::uint_least32_t mask{0x000000FF};
