@@ -530,10 +530,21 @@ inline constexpr ::fast_io::freestanding::array<T, n> pow_table_n{::fast_io::det
 template <char8_t base, ::std::integral char_type, my_unsigned_integral T>
 [[__gnu__::__cold__]]
 inline constexpr parse_result<char_type const *>
-scan_int_contiguous_none_simd_space_part_define_naive_impl(char_type const *first, char_type const *last, T &res, char_type const *first_phase_last) noexcept
+scan_int_contiguous_none_simd_space_part_define_naive_impl(char_type const *first, char_type const *last, T &res) noexcept
 {
 	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
+	using unsigned_type = my_make_unsigned_t<::std::remove_cvref_t<T>>;
+	constexpr ::std::size_t max_size{::fast_io::details::max_int_size_result<unsigned_type, base>};
 	constexpr char8_t base_char_type{base};
+	::std::size_t const diff{static_cast<::std::size_t>(last - first)};
+	::std::size_t mn_val{max_size};
+
+	if (diff < mn_val)
+	{
+		mn_val = diff;
+	}
+
+	auto first_phase_last{first + mn_val};
 	for (; first != first_phase_last; ++first)
 	{
 		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
