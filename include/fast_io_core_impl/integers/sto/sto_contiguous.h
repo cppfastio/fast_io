@@ -528,7 +528,6 @@ inline constexpr ::fast_io::freestanding::array<T, n> pow_table_n{::fast_io::det
 
 
 template <char8_t base, ::std::integral char_type, my_unsigned_integral T>
-[[__gnu__::__cold__]]
 inline constexpr parse_result<char_type const *>
 scan_int_contiguous_none_simd_space_part_define_naive_impl(char_type const *first, char_type const *last, T &res) noexcept
 {
