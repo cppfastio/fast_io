@@ -897,7 +897,10 @@ scan_int_contiguous_none_simd_space_part_define_none_constexpr_impl(char_type co
 		res *= base_char_type;
 		res += ch;
 	}
-[[maybe_unused]] nextlabel:;
+#if !defined(_MSC_VER_) || defined(__clang__)
+[[maybe_unused]]
+#endif
+nextlabel:;
 	return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 }
 
