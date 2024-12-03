@@ -48,7 +48,7 @@ inline ::fast_io::install_path get_module_install_path()
 	{
 		if (auto const c{*curr}; c == u8'/')
 		{
-			curr++;
+			++curr;
 			break;
 		}
 	}
