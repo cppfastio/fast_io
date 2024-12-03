@@ -578,10 +578,8 @@ inline constexpr ::fast_io::freestanding::array<T, n> generate_pow_table() noexc
 template <char8_t base, my_unsigned_integral T, ::std::size_t n>
 inline constexpr ::fast_io::freestanding::array<T, n> pow_table_n{::fast_io::details::generate_pow_table<base, T, n>()};
 
+
 template <char8_t base, ::std::integral char_type, my_unsigned_integral T>
-#if defined(__SSE4_1__) && __has_cpp_attribute(__gnu__::__cold__) && (defined(__x86_64__) || defined(_M_AMD64))
-[[__gnu__::__cold__]]
-#endif
 inline constexpr parse_result<char_type const *>
 scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, char_type const *last, T &res) noexcept
 {
@@ -610,11 +608,6 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 		constexpr bool isebcdic{::fast_io::details::is_ebcdic<char_type>};
 		if constexpr (!isebcdic && (::std::numeric_limits<::std::uint_least64_t>::digits == 64u) && false)
 		{
-			// Inspired by:
-			// https://github.com/fastfloat/fast_float
-			// Implementation of higher performance (Binary to Hexadecimal):
-			// Optimize both fixed range and infinite range (suitable for scan)
-
 			if constexpr (sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
 			{
 				if constexpr (base_char_type <= 10)
@@ -699,7 +692,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 								if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval)
 								{
-									auto const ctrz_cval{::std::countr_zero(cval)};
+									auto ctrz_cval{::std::countr_zero(cval)};
 									auto const valid_bits{ctrz_cval & -8};
 
 									if (!valid_bits) [[unlikely]]
@@ -723,10 +716,10 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 									val = (val * base_char_type) + (val >> 8);
 									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
 
-									constexpr auto pow_table{generate_pow_table<base_char_type, ::std::uint_least32_t, 4>()};
-									res = static_cast<T>(res * pow_table[ctrz_cval / (8 * sizeof(char_type))] + val);
+									ctrz_cval >= shifter;
+									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least32_t, 4>.index_unchecked(ctrz_cval) + val);
 
-									first += ctrz_cval / (8 * sizeof(char_type));
+									first += ctrz_cval;
 
 
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
@@ -764,7 +757,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 
 								if (::std::uint_least64_t const cval{((val + first_bound) | (val - 0x0030003000300030)) & 0x8000800080008000}; cval)
 								{
-									auto const ctrz_cval{::std::countr_zero(cval)};
+									auto ctrz_cval{::std::countr_zero(cval)};
 									auto const valid_bits{ctrz_cval & -16};
 
 									if (!valid_bits) [[unlikely]]
@@ -787,11 +780,11 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 									val -= 0x0030003000300030;
 									val = (val * base_char_type) + (val >> 16);
 									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 32) & mask));
-									constexpr auto pow_table{generate_pow_table<base_char_type, ::std::uint_least64_t, 4>()};
 
-									res = static_cast<T>(res * pow_table[ctrz_cval / (8 * sizeof(char_type))] + val);
+									ctrz_cval >>= shifter;
+									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least64_t, 4>.index_unchecked(ctrz_cval) + val);
 
-									first += ctrz_cval / (8 * sizeof(char_type));
+									first += ctrz_cval;
 
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
@@ -833,7 +826,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 																	 0x8080808080808080};
 									cval)
 								{
-									auto const ctrz_cval{::std::countr_zero(cval)};
+									auto ctrz_cval{::std::countr_zero(cval)};
 									auto const valid_bits{ctrz_cval & -8};
 
 									if (!valid_bits) [[unlikely]]
@@ -861,11 +854,10 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 									val = (val * base_char_type) + (val >> 8);
 									val = (((val & mask) * mul1) + (((val >> 16) & mask) * mul2)) >> 32;
 
-									constexpr auto pow_table{generate_pow_table<base_char_type, ::std::uint_least64_t, 8>()};
+									ctrz_cval >>= shifter;
 
-									res = static_cast<T>(res * pow_table[ctrz_cval / (8 * sizeof(char_type))] + val);
-
-									first += ctrz_cval / (8 * sizeof(char_type));
+									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least64_t, 8>.index_unchecked(ctrz_cval) + val);
+									first += ctrz_cval;
 
 									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
 								}
@@ -886,80 +878,6 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 								first += sizeof(::std::uint_least64_t);
 							}
 						}
-
-// It seems that it is unnecessary to read 4-bit data in base11-hexadecimal system,
-// and the time for 4-bit data reading of this algorithm even exceeds 4 times of cyclic reading
-#if 0
-						if constexpr (max_size >= sizeof(::std::uint_least32_t))
-						{
-							if (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least32_t))
-							{
-								::std::uint_least32_t val;
-								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
-
-								val = ::fast_io::little_endian(val);
-
-								constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
-								constexpr ::std::uint_least32_t first_bound1{0x39393939 + 0x01010101 * (16 - base_char_type)};
-								constexpr ::std::uint_least32_t first_bound2{0x19191919 + 0x01010101 * (16 - base_char_type)};
-
-								if (::std::uint_least32_t const cval{((((val + 0x46464646) | (val - 0x30303030)) &
-																	   ((val + first_bound1) | (val - 0x40404040)) &
-																	   ((val + first_bound2) | (val - 0x60606060))) |
-																	  ~(((val + 0x3f3f3f3f) | (val - 0x40404040)) &
-																		((val + 0x1f1f1f1f) | (val - 0x60606060)))) &
-																	 0x80808080};
-									cval)
-								{
-									auto const ctrz_cval{::std::countr_zero(cval)};
-									auto const valid_bits{ctrz_cval & -8};
-
-									if (!valid_bits) [[unlikely]]
-									{
-										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
-									}
-
-									val <<= 32 - valid_bits;
-
-									::std::uint_least32_t all_zero{0x30303030};
-
-									all_zero >>= valid_bits;
-
-									val |= all_zero;
-
-									constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
-
-									constexpr ::std::uint_least32_t mask{0x000000FF};
-
-									val -= 0x30303030;
-									val = (val & 0x0f0f0f0f) + ((val & 0x10101010) >> 4) * 9;
-									val = (val * base_char_type) + (val >> 8);
-									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
-
-									constexpr auto pow_table{generate_pow_table<base_char_type, ::std::uint_least32_t, 4>()};
-
-									res = static_cast<T>(res * pow_table[ctrz_cval / (8 * sizeof(char_type))] + val);
-
-									first += ctrz_cval / (8 * sizeof(char_type));
-
-									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
-								}
-								else
-								{
-									constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
-
-									constexpr ::std::uint_least32_t mask{0x000000FF};
-
-									val -= 0x30303030;
-									val = (val & 0x0f0f0f0f) + ((val & 0x10101010) >> 4) * 9;
-									val = (val * base_char_type) + (val >> 8);
-									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
-									res = static_cast<T>(res * pow_base_sizeof_u32 + val);
-									first += sizeof(::std::uint_least32_t);
-								}
-							}
-						}
-#endif
 					}
 				}
 			}
@@ -1026,83 +944,6 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 								first += sizeof(::std::uint_least32_t);
 							}
 						}
-					}
-				}
-				else if constexpr (base_char_type <= 16)
-				{
-					if constexpr (sizeof(char_type) == sizeof(char8_t))
-					{
-						// It seems that it is unnecessary to read 4-bit data in base11-hexadecimal system,
-						// and the time for 4-bit data reading of this algorithm even exceeds 4 times of cyclic reading
-#if 0
-						if constexpr (max_size >= sizeof(::std::uint_least32_t))
-						{
-							while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least32_t))
-							{
-								::std::uint_least32_t val;
-								::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
-
-								val = ::fast_io::little_endian(val);
-
-								constexpr ::std::uint_least32_t pow_base_sizeof_u32{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), sizeof(::std::uint_least32_t))};
-								constexpr ::std::uint_least32_t first_bound1{0x39393939 + 0x01010101 * (16 - base_char_type)};
-								constexpr ::std::uint_least32_t first_bound2{0x19191919 + 0x01010101 * (16 - base_char_type)};
-
-								if (::std::uint_least32_t const cval{((((val + 0x46464646) | (val - 0x30303030)) &
-																	   ((val + first_bound1) | (val - 0x40404040)) &
-																	   ((val + first_bound2) | (val - 0x60606060))) |
-																	  ~(((val + 0x3f3f3f3f) | (val - 0x40404040)) &
-																		((val + 0x1f1f1f1f) | (val - 0x60606060)))) &
-																	 0x80808080};
-									cval)
-								{
-									auto const ctrz_cval{::std::countr_zero(cval)};
-									auto const valid_bits{ctrz_cval & -8};
-
-									if (!valid_bits) [[unlikely]]
-									{
-										return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
-									}
-
-									val <<= 32 - valid_bits;
-
-									::std::uint_least32_t all_zero{0x30303030};
-
-									all_zero >>= valid_bits;
-
-									val |= all_zero;
-
-									constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
-
-									constexpr ::std::uint_least32_t mask{0x000000FF};
-
-									val -= 0x30303030;
-									val = (val & 0x0f0f0f0f) + ((val & 0x10101010) >> 4) * 9;
-									val = (val * base_char_type) + (val >> 8);
-									val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
-
-									constexpr auto pow_table{generate_pow_table<base_char_type, ::std::uint_least32_t, 4>()};
-									res = static_cast<T>(res * pow_table[ctrz_cval / (8 * sizeof(char_type))] + val);
-
-									first += ctrz_cval / (8 * sizeof(char_type));
-
-									return scan_int_contiguous_none_simd_space_part_check_overflow_impl<base, char_type, T>(first, last, res);
-								}
-
-								constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_time_pow<::std::uint_least32_t>(static_cast<::std::uint_least32_t>(base_char_type), 2)};
-
-								constexpr ::std::uint_least32_t mask{0x000000FF};
-								val -= 0x30303030;
-
-								val = (val & 0x0f0f0f0f) + ((val & 0x10101010) >> 4) * 9;
-
-								val = (val * base_char_type) + (val >> 8);
-								val = (((val & mask) * pow_base_sizeof_base_2) + ((val >> 16) & mask));
-								res = static_cast<T>(res * pow_base_sizeof_u32 + val);
-								first += sizeof(::std::uint_least32_t);
-							}
-						}
-#endif
 					}
 				}
 			}
