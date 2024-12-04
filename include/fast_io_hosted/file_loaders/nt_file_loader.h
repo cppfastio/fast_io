@@ -50,7 +50,7 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_
 	}
 	::fast_io::basic_nt_family_file<family, char> map_hd{h_section};
 	void *p_map_address{};
-	::std::size_t fsz{::fast_io::win32::nt::details::nt_file_size_impl<(family == ::fast_io::nt_family::zw)>(handle)};
+	::std::size_t fsz{::fast_io::win32::nt::details::nt_load_file_get_file_size<(family == ::fast_io::nt_family::zw)>(handle)};
 	::std::size_t view_size{fsz};
 	void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 	status = ::fast_io::win32::nt::nt_map_view_of_section<(family == ::fast_io::nt_family::zw)>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0u, 0u, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0u, options.flProtect);
