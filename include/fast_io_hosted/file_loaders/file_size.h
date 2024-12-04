@@ -48,7 +48,7 @@ inline ::std::size_t win32_load_file_get_file_size(void *handle)
 namespace nt::details
 {
 template <bool zw>
-inline ::std::size_t nt_file_size_impl(void *handle)
+inline ::std::size_t nt_load_file_get_file_size(void *handle)
 {
 	::fast_io::win32::nt::file_standard_information fsi;
 	::fast_io::win32::nt::io_status_block block;
@@ -174,7 +174,7 @@ inline ::std::size_t file_size(::fast_io::basic_win32_family_io_observer<family,
 template <nt_family family, ::std::integral char_type>
 inline ::std::size_t file_size(::fast_io::basic_nt_family_io_observer<family, char_type> observer)
 {
-	return win32::nt::details::nt_file_size_impl(observer.handle);
+	return win32::nt::details::nt_load_file_get_file_size(observer.handle);
 }
 #endif
 
