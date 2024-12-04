@@ -23,29 +23,6 @@ inline void nt_unload_address(void *address) noexcept
 	}
 }
 
-template <bool zw>
-inline ::std::size_t nt_file_size_impl(void *handle)
-{
-	::fast_io::win32::nt::file_standard_information fsi;
-	::fast_io::win32::nt::io_status_block block;
-	auto status{::fast_io::win32::nt::nt_query_information_file<zw>(
-		handle, __builtin_addressof(block), __builtin_addressof(fsi),
-		static_cast<::std::uint_least32_t>(sizeof(::fast_io::win32::nt::file_standard_information)),
-		::fast_io::win32::nt::file_information_class::FileStandardInformation)};
-	if (status)
-	{
-		throw_nt_error(status);
-	}
-	if constexpr (sizeof(::std::size_t) < sizeof(::std::uint_least64_t))
-	{
-		if (SIZE_MAX < fsi.end_of_file)
-		{
-			throw_nt_error(0xC0000040 /*STATUS_SECTION_TOO_BIG*/);
-		}
-	}
-	return static_cast<::std::size_t>(fsi.end_of_file);
-}
-
 template <::fast_io::nt_family family>
 inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_mmap_options const &options,
 																  void *handle)
