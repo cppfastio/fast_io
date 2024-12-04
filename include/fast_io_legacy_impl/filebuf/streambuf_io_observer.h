@@ -125,6 +125,12 @@ inline constexpr auto status(basic_filebuf_io_observer<ch_type, traits_type> cio
 	return status(static_cast<basic_c_io_observer<ch_type>>(ciob));
 }
 
+template <::std::integral ch_type, typename traits_type>
+inline ::std::size_t file_size(basic_filebuf_io_observer<ch_type, traits_type> ciob)
+{
+	return details::posix_loader_get_file_size(details::fp_to_fd(details::streambuf_hack::fp_hack(ciob.fb)));
+}
+
 template <::std::integral char_type, typename traits_type>
 inline constexpr posix_at_entry at(basic_filebuf_io_observer<char_type, traits_type> other) noexcept
 {
