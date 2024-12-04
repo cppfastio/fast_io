@@ -7,14 +7,18 @@
 #elif !defined(_MSC_VER)
 #include <cstdlib>
 #endif
+namespace fast_io
+{
 
 #if (defined(_WIN32) && !defined(__BIONIC__)) || defined(__CYGWIN__)
-namespace fast_io::win32::details
+namespace win32
+{
+namespace details
 {
 inline ::std::size_t win32_load_file_get_file_size(void *handle)
 {
 	::fast_io::win32::by_handle_file_information bhdi;
-	if (!GetFileInformationByHandle(handle, __builtin_addressof(bhdi)))
+	if (!::fast_io::win32::GetFileInformationByHandle(handle, __builtin_addressof(bhdi)))
 	{
 		throw_win32_error();
 	}
@@ -39,10 +43,37 @@ inline ::std::size_t win32_load_file_get_file_size(void *handle)
 										  bhdi.nFileSizeLow);
 	}
 }
-} // namespace fast_io::win32::details
+} // namespace details
+
+namespace nt::details
+{
+template <bool zw>
+inline ::std::size_t nt_load_file_get_file_size(void *handle)
+{
+	::fast_io::win32::nt::file_standard_information fsi;
+	::fast_io::win32::nt::io_status_block block;
+	auto status{::fast_io::win32::nt::nt_query_information_file<zw>(
+		handle, __builtin_addressof(block), __builtin_addressof(fsi),
+		static_cast<::std::uint_least32_t>(sizeof(::fast_io::win32::nt::file_standard_information)),
+		::fast_io::win32::nt::file_information_class::FileStandardInformation)};
+	if (status)
+	{
+		throw_nt_error(status);
+	}
+	if constexpr (sizeof(::std::size_t) < sizeof(::std::uint_least64_t))
+	{
+		if (SIZE_MAX < fsi.end_of_file)
+		{
+			throw_nt_error(0xC0000040 /*STATUS_SECTION_TOO_BIG*/);
+		}
+	}
+	return static_cast<::std::size_t>(fsi.end_of_file);
+}
+} // namespace nt::details
+} // namespace win32
 #endif
 
-namespace fast_io::details
+namespace details
 {
 struct linux_statx_timestamp
 {
@@ -131,4 +162,25 @@ inline ::std::size_t posix_loader_get_file_size(int fd)
 #endif
 }
 
-} // namespace fast_io::details
+} // namespace details
+
+#if (defined(_WIN32) && !defined(__BIONIC__)) || defined(__CYGWIN__)
+template <win32_family family, ::std::integral char_type>
+inline ::std::size_t file_size(::fast_io::basic_win32_family_io_observer<family, char_type> observer)
+{
+	return win32::details::win32_load_file_get_file_size(observer.handle);
+}
+
+template <nt_family family, ::std::integral char_type>
+inline ::std::size_t file_size(::fast_io::basic_nt_family_io_observer<family, char_type> observer)
+{
+	return win32::nt::details::nt_load_file_get_file_size(observer.handle);
+}
+#endif
+
+template <posix_family family, ::std::integral char_type>
+inline ::std::size_t file_size(::fast_io::basic_posix_family_io_observer<family, char_type> observer)
+{
+	return details::posix_loader_get_file_size(observer.fd);
+}
+} // namespace fast_io

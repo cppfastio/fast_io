@@ -834,6 +834,12 @@ inline constexpr posix_file_status status(basic_c_family_io_observer<family, ch_
 {
 	return status(static_cast<basic_posix_io_observer<ch_type>>(ciob));
 }
+
+template <c_family family, ::std::integral ch_type>
+inline ::std::size_t file_size(::fast_io::basic_c_family_io_observer<family, ch_type> ciob)
+{
+	return ::fast_io::details::posix_loader_get_file_size(details::my_fileno_impl<family>(ciob.fp));
+}
 #endif
 
 template <c_family family, ::std::integral ch_type>

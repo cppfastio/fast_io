@@ -23,29 +23,6 @@ inline void nt_unload_address(void *address) noexcept
 	}
 }
 
-template <bool zw>
-inline ::std::size_t nt_file_size_impl(void *handle)
-{
-	::fast_io::win32::nt::file_standard_information fsi;
-	::fast_io::win32::nt::io_status_block block;
-	auto status{::fast_io::win32::nt::nt_query_information_file<zw>(
-		handle, __builtin_addressof(block), __builtin_addressof(fsi),
-		static_cast<::std::uint_least32_t>(sizeof(::fast_io::win32::nt::file_standard_information)),
-		::fast_io::win32::nt::file_information_class::FileStandardInformation)};
-	if (status)
-	{
-		throw_nt_error(status);
-	}
-	if constexpr (sizeof(::std::size_t) < sizeof(::std::uint_least64_t))
-	{
-		if (SIZE_MAX < fsi.end_of_file)
-		{
-			throw_nt_error(0xC0000040 /*STATUS_SECTION_TOO_BIG*/);
-		}
-	}
-	return static_cast<::std::size_t>(fsi.end_of_file);
-}
-
 template <::fast_io::nt_family family>
 inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_mmap_options const &options,
 																  void *handle)
@@ -55,6 +32,13 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_
 		[[__gnu__::__may_alias__]]
 #endif
 		= ::fast_io::win32::nt::object_attributes *;
+
+	::std::size_t const fsz{::fast_io::win32::nt::details::nt_load_file_get_file_size<(family == ::fast_io::nt_family::zw)>(handle)};
+
+	if (fsz == 0)
+	{
+		return {nullptr, nullptr};
+	}
 
 	void *h_section{};
 	::fast_io::win32::nt::object_attributes objAttr;
@@ -73,7 +57,6 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_
 	}
 	::fast_io::basic_nt_family_file<family, char> map_hd{h_section};
 	void *p_map_address{};
-	::std::size_t fsz{::fast_io::win32::nt::details::nt_file_size_impl<(family == ::fast_io::nt_family::zw)>(handle)};
 	::std::size_t view_size{fsz};
 	void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 	status = ::fast_io::win32::nt::nt_map_view_of_section<(family == ::fast_io::nt_family::zw)>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0u, 0u, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0u, options.flProtect);
