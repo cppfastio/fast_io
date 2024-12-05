@@ -423,7 +423,7 @@ inline void wincrt_set_buffer_curr_ptr_impl(FILE *__restrict fpp,
 #endif
 											void *ptr) noexcept
 {
-	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
+	ucrt_iobuf *fp{reinterpret_cast<ucrt_iobuf *>(fpp)};
 	fp->_cnt -= static_cast<::std::int_least32_t>(
 		static_cast<::std::uint_least32_t>(static_cast<::std::size_t>(reinterpret_cast<char *>(ptr) - fp->_ptr)));
 	fp->_ptr = reinterpret_cast<char *>(ptr);
