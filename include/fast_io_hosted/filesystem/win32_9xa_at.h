@@ -54,7 +54,7 @@ inline constexpr win32_9xa_at_flags &operator^=(win32_9xa_at_flags &x, win32_9xa
 namespace win32::details
 {
 
-inline ::fast_io::tlc::u8string concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
+inline ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator> concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
 {
 	auto const beg{path_c_str};
 	auto curr{beg};
@@ -89,7 +89,7 @@ inline ::fast_io::tlc::u8string concat_tlc_win32_9xa_path_uncheck_whether_exist(
 		}
 	}
 
-	return ::fast_io::tlc::u8concat_fast_io_tlc(::fast_io::mnp::code_cvt(dirhd.path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, path_size));
+	return ::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(dirhd.path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, path_size));
 }
 
 inline void win32_9xa_unlinkat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, win32_9xa_at_flags flags)
@@ -348,7 +348,7 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 inline void win32_9xa_symlinkat_impl(char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 									 ::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
 {
-	::fast_io::u8cstring_view path{::fast_io::containers::null_terminated, oldpath_c_str, oldpath_size};
+	::fast_io::containers::basic_cstring_view<char8_t> path{::fast_io::containers::null_terminated, oldpath_c_str, oldpath_size};
 
 	::fast_io::u8win32_file_9xa f{::fast_io::win32::details::basic_win32_9xa_create_file_at_fs_dirent_impl(
 		__builtin_addressof(newdirhd), reinterpret_cast<char const *>(newpath_c_str), newpath_size,

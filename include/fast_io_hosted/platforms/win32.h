@@ -918,11 +918,44 @@ struct
 
 struct win32_9xa_dir_handle
 {
-	::fast_io::u8string path;
+	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> path;
 };
 
 namespace win32::details
 {
+
+template <typename... Args>
+constexpr inline ::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> concat_win32_9xa_dir_handle_path_str(Args &&...args)
+{
+	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
+	if constexpr (type_error)
+	{
+		return ::fast_io::basic_general_concat<false, char8_t, ::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator>>(
+			::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...);
+	}
+	else
+	{
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::FFFstring");
+		return {};
+	}
+}
+
+template <typename... Args>
+constexpr inline ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator> concat_tlc_win32_9xa_dir_handle_path_str(Args &&...args)
+{
+	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
+	if constexpr (type_error)
+	{
+		return ::fast_io::basic_general_concat<false, char8_t, ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator>>(
+			::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...);
+	}
+	else
+	{
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::FFFstring");
+		return {};
+	}
+}
+
 inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) noexcept
 {
 	h.path.clear();
@@ -952,7 +985,7 @@ struct find_struct_guard
 inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
 {
 	::fast_io::win32::win32_find_dataa wfda{};
-	auto temp_find_path{::fast_io::tlc::u8concat_fast_io_tlc(h.path, u8"\\*")};
+	auto temp_find_path{concat_tlc_win32_9xa_dir_handle_path_str(h.path, u8"\\*")};
 	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
 	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)))
 	{
@@ -972,7 +1005,7 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_impl(char const *fil
 #endif
 		= char8_t const *;
 
-	::fast_io::u8string path{::fast_io::u8concat_fast_io(::fast_io::mnp::os_c_str_with_known_size(
+	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> path{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::os_c_str_with_known_size(
 		reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str), filename_c_str_len))};
 
 	for (auto &c : path)
@@ -995,7 +1028,7 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_impl(char const *fil
 }
 
 inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(win32_9xa_dir_handle const *directory_handle, char const *filename_c_str,
-																	  ::std::size_t filename_c_str_len)
+																			  ::std::size_t filename_c_str_len)
 {
 	using char8_t_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -1037,7 +1070,7 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 		}
 	}
 
-	win32_9xa_dir_handle ret{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+	win32_9xa_dir_handle ret{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
 
 	check_win32_9xa_dir_is_valid(ret);
 
@@ -1045,7 +1078,7 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 }
 
 inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle const *directory_handle, char const *filename_c_str,
-													   ::std::size_t filename_c_str_len, open_mode_perms ompm)
+														   ::std::size_t filename_c_str_len, open_mode_perms ompm)
 {
 	using char8_t_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -1087,7 +1120,7 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 		}
 	}
 
-	::fast_io::u8string str{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> str{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return handle;
 }
@@ -1131,7 +1164,7 @@ inline win32_9xa_dir_handle win32_9xa_create_dir_file_impl(T const &t)
 
 template <::std::integral char_type>
 inline win32_9xa_dir_handle win32_9xa_create_dir_file_at_fs_dirent_impl(win32_9xa_dir_handle const &directory_handle, char_type const *filename_c_str,
-																::std::size_t filename_c_str_len)
+																		::std::size_t filename_c_str_len)
 {
 	return win32_api_common_9xa(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len),
 								win32_9xa_create_dir_file_at_fs_dirent{__builtin_addressof(directory_handle)});
@@ -1146,7 +1179,7 @@ inline win32_9xa_dir_handle win32_9xa_create_dir_file_at_impl(win32_9xa_dir_hand
 
 template <::std::integral char_type>
 inline void *win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle const &directory_handle, char_type const *filename_c_str,
-												 ::std::size_t filename_c_str_len, open_mode_perms ompm)
+													 ::std::size_t filename_c_str_len, open_mode_perms ompm)
 {
 	return win32_api_common_9xa(::fast_io::mnp::os_c_str_with_known_size(filename_c_str, filename_c_str_len),
 								win32_9xa_create_file_at_fs_dirent{__builtin_addressof(directory_handle), ompm});
@@ -1163,7 +1196,7 @@ inline void *win32_9xa_create_file_at_impl(win32_9xa_dir_handle const &directory
 
 struct win32_9xa_fs_dirent
 {
-	win32_9xa_dir_handle handle{};                                                   // path
+	win32_9xa_dir_handle handle{};                                               // path
 	::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> filename{}; // file
 };
 
@@ -1184,7 +1217,7 @@ struct win32_9xa_at_entry
 #endif
 inline win32_9xa_at_entry win32_9xa_at_fdcwd() noexcept
 {
-	return win32_9xa_at_entry{{::fast_io::u8concat_fast_io(u8".")}};
+	return win32_9xa_at_entry{{win32::details::concat_win32_9xa_dir_handle_path_str(u8".")}};
 }
 
 #if !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__) && defined(_WIN32_WINDOWS)

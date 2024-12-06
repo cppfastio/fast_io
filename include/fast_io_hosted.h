@@ -60,8 +60,11 @@ freestanding ones.
 #endif
 
 #if !defined(__AVR__)
-#include "fast_io_dsal/string_view.h"
-#include "fast_io_dsal/string.h"
+#include "fast_io_dsal/impl/common.h"
+#include "fast_io_dsal/impl/vector.h"
+#include "fast_io_dsal/impl/string_view.h"
+#include "fast_io_dsal/impl/cstring_view.h"
+#include "fast_io_dsal/impl/string.h"
 
 #include "fast_io_hosted/platforms/native.h"
 #include "fast_io_hosted/file_loaders/impl.h"
@@ -74,9 +77,6 @@ freestanding ones.
 #endif
 
 #include "fast_io_hosted/threads/threads.h"
-
-#include "fast_io_dsal/impl/common.h"
-#include "fast_io_dsal/impl/vector.h"
 
 #include "fast_io_hosted/filesystem/native.h"
 #include "fast_io_hosted/dll/dll.h"
