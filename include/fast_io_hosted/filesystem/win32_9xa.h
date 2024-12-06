@@ -5,12 +5,12 @@ namespace fast_io
 struct win32_9xa_dirent
 {
 	void *file_struct{};
-	::fast_io::u8string find_path{};
+	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> find_path{};
 
 	::fast_io::win32_9xa_dir_handle d_handle{};
 	file_type d_type{};
 	[[maybe_unused]] ::std::uint_least64_t d_ino{};
-	::fast_io::u8string filename{};
+	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> filename{};
 
 	inline ~win32_9xa_dirent()
 	{
@@ -28,7 +28,7 @@ inline bool set_win32_9xa_dirent(win32_9xa_dirent &entry, bool start)
 	::fast_io::win32::win32_find_dataa wfda{};
 	if (start)
 	{
-		entry.find_path = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(entry.d_handle.path), u8"\\*");
+		entry.find_path = ::fast_io::win32::details::concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(entry.d_handle.path), u8"\\*");
 		entry.file_struct = ::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(entry.find_path.c_str()), __builtin_addressof(wfda));
 	}
 	else
@@ -39,7 +39,7 @@ inline bool set_win32_9xa_dirent(win32_9xa_dirent &entry, bool start)
 		}
 	}
 
-	entry.filename = ::fast_io::u8string{::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt_os_c_str(wfda.cFileName))};
+	entry.filename = ::fast_io::win32::details::concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt_os_c_str(wfda.cFileName));
 
 	if (wfda.dwFileAttributes & 0x400)
 	{
