@@ -372,16 +372,15 @@ inline T *wincrt_get_buffer_ptr_impl(FILE *__restrict fpp) noexcept
 	}
 }
 
-template <typename T>
 inline void wincrt_set_buffer_curr_ptr_impl(FILE *__restrict fpp,
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 											[[__gnu__::__may_alias__]]
 #endif
-											T *ptr) noexcept
+											void *ptr) noexcept
 {
 	crt_iobuf *fp{reinterpret_cast<crt_iobuf *>(fpp)};
 	fp->_cnt -= static_cast<::std::int_least32_t>(
-		static_cast<::std::uint_least32_t>(static_cast<::std::size_t>(reinterpret_cast<char *>(ptr) - fp->_ptr) / sizeof(T)));
+		static_cast<::std::uint_least32_t>(static_cast<::std::size_t>(reinterpret_cast<char *>(ptr) - fp->_ptr)));
 	fp->_ptr = reinterpret_cast<char *>(ptr);
 }
 #if defined(_MSC_VER) || defined(_UCRT)
