@@ -12,10 +12,12 @@ namespace posix
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
+[[noreturn]] extern void libc_exit(int exit) noexcept __asm__("_exit");
 #else
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
+[[noreturn]] extern void libc_exit(int exit) noexcept __asm__("exit");
 #endif
 } // namespace posix
 
@@ -378,13 +380,13 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	}
 	::fast_io::fast_exit(127);
 #else
-	int fd{noexcept_call(::openat, dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
+	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
 	if (fd != -1) [[likely]]
 	{
-		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(argv), const_cast<char *const *>(envp));
+		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
 	}
 	t_errno = errno;
-	noexcept_call(::_exit, 127);
+	::fast_io::posix::libc_exit(127);	
 #endif
 	__builtin_unreachable();
 }
