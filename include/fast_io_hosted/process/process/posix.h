@@ -23,7 +23,7 @@ extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("waitpid");
-[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("_Exit");
+[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("_exit");
 #endif
 } // namespace posix
 
@@ -384,8 +384,12 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	{
 		t_errno = 0;
 	}
+#if defined(__linux__)
 #ifdef __NR_exit_group
 	::fast_io::system_call_no_return<__NR_exit_group>(127);
+#else
+	::fast_io::system_call_no_return<__NR_exit>(127);
+#endif
 #else
 	::fast_io::posix::libc_exit2(127);
 #endif
