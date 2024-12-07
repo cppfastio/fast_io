@@ -277,9 +277,13 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 #endif
 	}
 	// parent process
+	// currently parent process never close pipes
+	// uncomment those lines to enable automatically closing pipe ends
+#if 0
 	io_redirector::close_pipe_ends(0, pio.in);
 	io_redirector::close_pipe_ends(1, pio.out);
 	io_redirector::close_pipe_ends(2, pio.err);
+#endif
 
 	error_pipe.out().close();
 	int errno_from_subproc{};
