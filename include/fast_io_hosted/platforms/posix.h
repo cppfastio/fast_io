@@ -837,10 +837,10 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 #else
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
 extern unsigned int my_posix_open_noexcept(const char *pathname, int flags) noexcept __asm__("_open");
-extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, struct mode_t mode) noexcept __asm__("_open");
+extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("_open");
 #else
 extern unsigned int my_posix_open_noexcept(const char *pathname, int flags) noexcept __asm__("open");
-extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, struct mode_t mode) noexcept __asm__("open");
+extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("open");
 #endif
 
 #if defined(__MSDOS__)
