@@ -903,7 +903,11 @@ inline int my_posix_openat(int, char const *, int, mode_t)
 }
 #else
 
+#if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
+extern int my_posix_openat_noexcept(int fd, char const *path, int aflag, ... /*mode_t mode*/) noexcept __asm__("_openat");
+#else
 extern int my_posix_openat_noexcept(int fd, char const *path, int aflag, ... /*mode_t mode*/) noexcept __asm__("openat");
+#endif
 
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
@@ -1370,7 +1374,7 @@ public:
 #elif (defined(__MSDOS__) || defined(__DJGPP__))
 		if (noexcept_call(::pipe, a2) == -1)
 #else
-		if (noexcept_call(::pipe, a2) == -1 || sys_fcntl(a2[0], F_SETFD, FD_CLOEXEC) == -1 || sys_fcntl(a2[1], F_SETFD, FD_CLOEXEC) == -1)
+		if (noexcept_call(::pipe, a2) == -1 || ::fast_io::details::sys_fcntl(a2[0], F_SETFD, FD_CLOEXEC) == -1 || ::fast_io::details::sys_fcntl(a2[1], F_SETFD, FD_CLOEXEC) == -1)
 #endif
 			throw_posix_error();
 		pipes->fd = *a2;
