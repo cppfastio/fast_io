@@ -12,14 +12,18 @@ namespace posix
 // extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
+extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
-[[noreturn]] extern void libc_exit(int exit) noexcept __asm__("_exit");
+extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("_waitpid");
+[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__Exit");
 #else
 // extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
+extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
-[[noreturn]] extern void libc_exit(int exit) noexcept __asm__("exit");
+extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("waitpid");
+[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("_Exit");
 #endif
 } // namespace posix
 
@@ -102,7 +106,7 @@ inline pid_t posix_fork()
 	pid_t pid{system_call<__NR_fork, pid_t>()};
 	system_call_throw_error(pid);
 #else
-	pid_t pid{noexcept_call(::fork)};
+	pid_t pid{::fast_io::posix::libc_fork()};
 	if (pid == -1) [[unlikely]]
 	{
 		throw_posix_error();
@@ -117,7 +121,7 @@ inline posix_wait_status posix_waitpid(pid_t pid)
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call_throw_error(system_call<__NR_wait4, int>(pid, __builtin_addressof(status.wait_loc), 0, nullptr));
 #else
-	if (noexcept_call(::waitpid, pid, __builtin_addressof(status.wait_loc), 0) == -1)
+	if (::fast_io::posix::libc_waitpid(pid, __builtin_addressof(status.wait_loc), 0) == -1)
 	{
 		throw_posix_error();
 	}
@@ -134,7 +138,7 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call<__NR_wait4, int>(pid, nullptr, 0, nullptr);
 #else
-	noexcept_call(::waitpid, pid, nullptr, 0);
+	::fast_io::posix::libc_waitpid(pid, nullptr, 0);
 #endif
 }
 
@@ -358,9 +362,9 @@ private:
 			return fd_devnull;
 		}
 #ifdef O_CLOEXEC
-		fd_devnull = my_posix_open<true>(reinterpret_cast<char const*>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
 #else
-		fd_devnull = my_posix_open<true>(reinterpret_cast<char const*>(u8"/dev/null"), O_RDWR, 0644);
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
 		sys_fcntl(tmp_fd, F_SETFD, FD_CLOEXEC);
 #endif
 		return fd_devnull;
@@ -380,7 +384,11 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	{
 		t_errno = 0;
 	}
-	::fast_io::fast_exit(127);
+#ifdef __NR_exit_group
+	::fast_io::system_call_no_return<__NR_exit_group>(127);
+#else
+	::fast_io::posix::libc_exit2(127);
+#endif
 #else
 	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
 	if (fd != -1) [[likely]]
@@ -388,7 +396,7 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
 	}
 	t_errno = errno;
-	::fast_io::posix::libc_exit(127);	
+	::fast_io::posix::libc_exit2(127);
 #endif
 	__builtin_unreachable();
 }
@@ -521,20 +529,20 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args,
-				  posix_process_envs const &envp, posix_process_io const &pio)
+						 posix_process_envs const &envp, posix_process_io const &pio)
 		: posix_process_observer{details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(path_type const &filename, posix_process_args const &args, posix_process_envs const &envp,
-				  posix_process_io const &pio)
+						 posix_process_io const &pio)
 		: posix_process_observer{::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio)}
 	{
 	}
 
 	inline posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args, posix_process_envs const &envp,
-				  posix_process_io const &pio)
+						 posix_process_io const &pio)
 		: posix_process_observer{
 			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)}
 	{
