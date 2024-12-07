@@ -15,7 +15,8 @@ extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("_waitpid");
-[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__Exit");
+[[noreturn]] extern void libc_exit(int status) noexcept __asm__("__Exit");
+[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__Exit"); // TODO: fix linkage error on darwin
 #else
 // extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
@@ -23,6 +24,7 @@ extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("waitpid");
+[[noreturn]] extern void libc_exit(int status) noexcept __asm__("_Exit");
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("_exit");
 #endif
 } // namespace posix
@@ -280,6 +282,184 @@ inline pid_t posix_fork_execve_impl(path_type const &csv, char const *const *arg
 }
 #endif
 
+inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio) noexcept
+{
+	int t_errno{};
+#if defined(__linux__) && defined(__NR_execveat)
+	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW));
+#else
+	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
+	if (fd != -1) [[likely]]
+	{
+		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
+	}
+	return errno;
+#endif
+}
+
+struct io_redirector
+{
+	int fd_devnull{-1};
+
+	inline io_redirector() = default;
+	inline io_redirector(io_redirector const &) = delete;
+	inline io_redirector &operator=(io_redirector const &) = delete;
+	inline ~io_redirector()
+	{
+		if (fd_devnull != -1)
+		{
+			sys_close(fd_devnull);
+		}
+	}
+
+	// only used by sub process
+	inline void redirect(int target_fd, posix_io_redirection const &d)
+	{
+		if (!d)
+		{
+			return;
+		}
+		bool const is_stdin{target_fd == 0};
+		if (d.pipe_fds)
+		{
+			// the read/write ends of pipe are all open
+			// the user shouldn't close them if they pass entire pipe as argument
+			sys_dup2(d.pipe_fds[is_stdin ? 0 : 1], target_fd);
+			// it's actually OK to go without closing pipe ends since fast_io pipes are all CLOEXEC
+			sys_close(d.pipe_fds[is_stdin ? 1 : 0]);
+		}
+		else if (d.dev_null)
+		{
+			sys_dup2(devnull(), target_fd);
+		}
+		else
+		{
+			sys_dup2(d.fd, target_fd);
+		}
+	}
+
+	// only used by parent process
+	static inline void close_pipe_ends(int target_fd, posix_io_redirection const &d) noexcept
+	{
+		if (!d)
+		{
+			return;
+		}
+		if (!d.pipe_fds)
+		{
+			return;
+		}
+		bool const is_stdin{target_fd == 0};
+		sys_close(d.pipe_fds[is_stdin ? 0 : 1]);
+	}
+
+private:
+	inline int devnull()
+	{
+		if (fd_devnull != -1)
+		{
+			return fd_devnull;
+		}
+#ifdef O_CLOEXEC
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
+#else
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
+		sys_fcntl(tmp_fd, F_SETFD, FD_CLOEXEC);
+#endif
+		return fd_devnull;
+	}
+};
+
+inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
+{
+	posix_pipe error_pipe;
+	pid_t pid = posix_fork();
+	if (pid == 0)
+	{
+		// subprocess
+		error_pipe.in().close();
+
+		int t_errno{};
+		// io redirection
+		try
+		{
+			io_redirector r;
+			r.redirect(0, pio.in);
+			r.redirect(1, pio.out);
+			r.redirect(2, pio.err);
+		}
+		catch (::fast_io::error e)
+		{
+			t_errno = e.code;
+		}
+
+		if (t_errno == 0)
+		{
+			t_errno = posix_execveat(dirfd, cstr, args, envp, pio);
+		}
+		// execve only return on error, so t_errno always contains an error code
+		// send error code back to parent process
+		auto err_buffer = reinterpret_cast<char const *>(&t_errno);
+		::fast_io::operations::write_all(error_pipe.out(), err_buffer, err_buffer + sizeof(t_errno));
+		// _Exit() won't destruct c++ objects, we must close it manually
+		error_pipe.out().close();
+		// special exit code 127 indicates error of exec
+#if defined(__linux__)
+#ifdef __NR_exit_group
+		::fast_io::system_call_no_return<__NR_exit_group>(127);
+#else
+		::fast_io::system_call_no_return<__NR_exit>(127);
+#endif
+#else
+		::fast_io::posix::libc_exit(127);
+#endif
+	}
+	// parent process
+	io_redirector::close_pipe_ends(0, pio.in);
+	io_redirector::close_pipe_ends(1, pio.out);
+	io_redirector::close_pipe_ends(2, pio.err);
+
+	error_pipe.out().close();
+	int errno_from_subproc{};
+	auto err_buffer = reinterpret_cast<char *>(&errno_from_subproc);
+	auto err_buffer_end = err_buffer + sizeof(errno_from_subproc);
+	auto n = ::fast_io::operations::read_some(error_pipe.in(), err_buffer, err_buffer_end);
+	if (n == err_buffer)
+	{
+		return pid;
+	}
+	else
+	{
+		posix_waitpid_noexcept(pid);
+		if (n == err_buffer_end)
+		{
+			throw_posix_error(errno_from_subproc);
+		}
+		else [[unlikely]]
+		{
+			// sub process died before sending error code, assume it an io error
+			throw_posix_error(EIO);
+		}
+	}
+}
+
+template <typename path_type>
+inline pid_t pipefork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+{
+	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio); });
+}
+
+template <typename path_type>
+inline pid_t pipefork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+{
+#if defined(AT_FDCWD)
+	return pipefork_execveat_impl(AT_FDCWD, csv, args, envp, pio);
+#else
+	throw_posix_error(EINVAL);
+	return -1;
+#endif
+}
+
 struct fd_remapper
 {
 	struct entry
@@ -534,21 +714,38 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args,
 						 posix_process_envs const &envp, posix_process_io const &pio)
-		: posix_process_observer{details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)}
+		: posix_process_observer{
+#ifdef __DARWIN_C_LEVEL
+			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)
+#else
+			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)
+#endif
+		  }
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(path_type const &filename, posix_process_args const &args, posix_process_envs const &envp,
 						 posix_process_io const &pio)
-		: posix_process_observer{::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio)}
+		: posix_process_observer{
+#ifdef __DARWIN_C_LEVEL
+			  ::fast_io::details::pipefork_execve_impl(filename, args.get(), envp.get(), pio)
+#else
+			  ::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio)
+#endif
+		  }
 	{
 	}
 
 	inline posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args, posix_process_envs const &envp,
 						 posix_process_io const &pio)
 		: posix_process_observer{
-			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)}
+#ifdef __DARWIN_C_LEVEL
+			  ::fast_io::details::pipefork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)
+#else
+			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)
+#endif
+		  }
 	{
 	}
 
@@ -561,7 +758,7 @@ public:
 	}
 	inline posix_process &operator=(posix_process &&__restrict other) noexcept
 	{
-		if (__builtin_addressof(other) != this)
+		if (__builtin_addressof(other) == this)
 		{
 			return *this;
 		}
