@@ -916,42 +916,47 @@ struct
 	}
 };
 
+namespace win32::details
+{
+using win32_9xa_dir_handle_path_str = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator>;
+using tlc_win32_9xa_dir_handle_path_str = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator>;
+} // namespace win32::details
+
 struct win32_9xa_dir_handle
 {
-	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> path;
+	win32::details::win32_9xa_dir_handle_path_str path;
 };
 
 namespace win32::details
 {
-
 template <typename... Args>
-constexpr inline ::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> concat_win32_9xa_dir_handle_path_str(Args &&...args)
+constexpr inline win32_9xa_dir_handle_path_str concat_win32_9xa_dir_handle_path_str(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
 	if constexpr (type_error)
 	{
-		return ::fast_io::basic_general_concat<false, char8_t, ::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator>>(
+		return ::fast_io::basic_general_concat<false, char8_t, win32_9xa_dir_handle_path_str>(
 			::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...);
 	}
 	else
 	{
-		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::FFFstring");
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::win32::details::win32_9xa_dir_handle_path_str");
 		return {};
 	}
 }
 
 template <typename... Args>
-constexpr inline ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator> concat_tlc_win32_9xa_dir_handle_path_str(Args &&...args)
+constexpr inline tlc_win32_9xa_dir_handle_path_str concat_tlc_win32_9xa_dir_handle_path_str(Args &&...args)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
 	if constexpr (type_error)
 	{
-		return ::fast_io::basic_general_concat<false, char8_t, ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator>>(
+		return ::fast_io::basic_general_concat<false, char8_t, tlc_win32_9xa_dir_handle_path_str>(
 			::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...);
 	}
 	else
 	{
-		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::FFFstring");
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str");
 		return {};
 	}
 }
@@ -1005,7 +1010,7 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_impl(char const *fil
 #endif
 		= char8_t const *;
 
-	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> path{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::os_c_str_with_known_size(
+	win32_9xa_dir_handle_path_str path{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::os_c_str_with_known_size(
 		reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str), filename_c_str_len))};
 
 	for (auto &c : path)
@@ -1120,7 +1125,7 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 		}
 	}
 
-	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> str{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+	win32_9xa_dir_handle_path_str str{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return handle;
 }

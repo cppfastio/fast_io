@@ -54,7 +54,7 @@ inline constexpr win32_9xa_at_flags &operator^=(win32_9xa_at_flags &x, win32_9xa
 namespace win32::details
 {
 
-inline ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator> concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
+inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
 {
 	auto const beg{path_c_str};
 	auto curr{beg};

@@ -89,7 +89,7 @@ constexpr inline ::fast_io::u8string u8concat_fast_io(Args &&...args)
 	}
 	else
 	{
-		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::FFFstring");
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::u8string");
 		return {};
 	}
 }
