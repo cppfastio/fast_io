@@ -835,6 +835,13 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 }
 
 #else
+#if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
+extern unsigned int my_posix_open_noexcept(const char *pathname, int flags) noexcept __asm__("_open");
+extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, struct mode_t mode) noexcept __asm__("_open");
+#else
+extern unsigned int my_posix_open_noexcept(const char *pathname, int flags) noexcept __asm__("open");
+extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, struct mode_t mode) noexcept __asm__("open");
+#endif
 
 #if defined(__MSDOS__)
 template <bool always_terminate = false>
@@ -842,7 +849,7 @@ inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mo
 {
 	if (dirfd == -100)
 	{
-		int fd(::open(pathname, flags, mode));
+		int fd(my_posix_open_noexcept(pathname, flags, mode));
 		system_call_throw_error<always_terminate>(fd);
 		return fd;
 	}
@@ -881,7 +888,7 @@ inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mo
 
 		// concat
 		::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), "\\", para_pathname)};
-		int fd{::open(pn.c_str(), flags, mode)};
+		int fd{my_posix_open_noexcept(pn.c_str(), flags, mode)};
 		system_call_throw_error<always_terminate>(fd);
 		return fd;
 	}
@@ -971,6 +978,7 @@ extern unsigned int my_dos_open(char const *, short unsigned, int *) noexcept __
 extern unsigned int my_dos_setmode(int, int) noexcept __asm__("_setmode");
 extern unsigned int my_dos_close(int) noexcept __asm__("__dos_close");
 #endif
+
 template <bool always_terminate = false>
 inline int my_posix_open(char const *pathname, int flags,
 #if __has_cpp_attribute(maybe_unused)
@@ -979,7 +987,7 @@ inline int my_posix_open(char const *pathname, int flags,
 						 mode_t mode)
 {
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
-	int fd{::open(pathname, flags, mode)};
+	int fd{my_posix_open_noexcept(pathname, flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
 	return fd;
 #else
