@@ -5,12 +5,12 @@ namespace fast_io
 struct win32_9xa_dirent
 {
 	void *file_struct{};
-	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> find_path{};
+	::fast_io::win32::details::win32_9xa_dir_handle_path_str find_path{};
 
 	::fast_io::win32_9xa_dir_handle d_handle{};
 	file_type d_type{};
 	[[maybe_unused]] ::std::uint_least64_t d_ino{};
-	::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator> filename{};
+	::fast_io::win32::details::win32_9xa_dir_handle_path_str filename{};
 
 	inline ~win32_9xa_dirent()
 	{
