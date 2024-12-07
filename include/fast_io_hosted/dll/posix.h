@@ -123,11 +123,7 @@ inline void *create_posix_rtld_impl(T const &t, dll_mode mode)
 
 } // namespace details
 
-class
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	posix_dll_file : public posix_dll_io_observer
+class posix_dll_file : public posix_dll_io_observer
 {
 public:
 	using native_handle_type = void *;

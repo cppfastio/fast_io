@@ -471,20 +471,6 @@ public:
 private:
 	inline constexpr pointer grow_to_size_iter_impl(size_type newcap, pointer iter, size_type n) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				return reinterpret_cast<pointer>(::fast_io::containers::details::vector::grow_to_size_iter_impl<allocator_type, sizeof(value_type), alignof(value_type)>(*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-																																										 iter, n));
-			}
-		}
 		auto newres = typed_allocator_type::allocate_at_least(newcap);
 		auto new_begin_ptr = newres.ptr;
 		auto old_begin_ptr{imp.begin_ptr};
@@ -511,38 +497,11 @@ private:
 #endif
 	inline constexpr pointer grow_twice_iter_impl(pointer iter) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				return reinterpret_cast<pointer>(::fast_io::containers::details::vector::grow_twice_iter_impl<allocator_type, sizeof(value_type), alignof(value_type)>(*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-																																									   iter));
-			}
-		}
 		std::size_t const cap{static_cast<size_type>(imp.end_ptr - imp.begin_ptr)};
 		return this->grow_to_size_iter_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false>(cap), iter, 1);
 	}
 	inline constexpr pointer move_backward_common_impl(pointer iter) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#ifdef __cpp_if_consteval
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-			{
-				return reinterpret_cast<pointer>(::fast_io::containers::details::vector::move_backward_impl<allocator, sizeof(value_type), alignof(value_type)>(
-					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)),
-					iter));
-			}
-		}
 		if (imp.curr_ptr == imp.end_ptr) [[unlikely]]
 		{
 			return this->grow_twice_iter_impl(iter);
@@ -555,21 +514,6 @@ private:
 
 	inline constexpr void grow_to_size_impl(size_type newcap) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				::fast_io::containers::details::vector::grow_to_size_impl<allocator_type, sizeof(value_type), alignof(value_type)>(
-					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)), newcap);
-				return;
-			}
-		}
 		this->grow_to_size_iter_impl(newcap, imp.curr_ptr, 1);
 	}
 #if __has_cpp_attribute(__gnu__::__cold__)
@@ -577,21 +521,6 @@ private:
 #endif
 	inline constexpr void grow_twice_impl() noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
-		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
-			{
-				::fast_io::containers::details::vector::grow_twice_impl<allocator_type, sizeof(value_type), alignof(value_type)>(
-					*reinterpret_cast<::fast_io::containers::details::vector_model *>(__builtin_addressof(imp)));
-				return;
-			}
-		}
 		std::size_t const cap{static_cast<size_type>(imp.end_ptr - imp.begin_ptr)};
 		grow_to_size_impl(::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false>(cap));
 	}
@@ -1102,13 +1031,7 @@ inline constexpr ::fast_io::containers::vector<ValueType, Alloc>::size_type eras
 
 namespace freestanding
 {
-
-template <typename T, typename Alloc>
-struct is_trivially_relocatable<::fast_io::containers::vector<T, Alloc>>
-{
-	inline static constexpr bool value = true;
-};
-
+	
 template <typename T, typename Alloc>
 struct is_zero_default_constructible<::fast_io::containers::vector<T, Alloc>>
 {

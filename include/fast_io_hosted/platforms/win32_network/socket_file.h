@@ -445,11 +445,7 @@ inline ::std::size_t open_win32_socket_impl(sock_family d, sock_type t, open_mod
 
 } // namespace win32::details
 
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	win32_socket_factory
+struct win32_socket_factory
 {
 	using native_handle_type = ::std::size_t;
 	::std::size_t hsocket{};
@@ -481,11 +477,7 @@ inline win32_socket_factory tcp_accept(basic_win32_family_socket_io_observer<fam
 }
 
 template <win32_family family, ::std::integral ch_type>
-class
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	basic_win32_family_socket_file : public basic_win32_family_socket_io_observer<family, ch_type>
+class basic_win32_family_socket_file : public basic_win32_family_socket_io_observer<family, ch_type>
 {
 public:
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::char_type;
@@ -812,12 +804,6 @@ inline win32_socket_factory tcp_listen(::std::uint_least16_t port, open_mode m =
 
 namespace freestanding
 {
-
-template <win32_family fm, ::std::integral char_type>
-struct is_trivially_relocatable<basic_win32_family_socket_file<fm, char_type>>
-{
-	inline static constexpr bool value = true;
-};
 
 template <win32_family fm, ::std::integral char_type>
 struct is_zero_default_constructible<basic_win32_family_socket_file<fm, char_type>>

@@ -1107,12 +1107,6 @@ namespace freestanding
 {
 
 template <typename T, typename allocator>
-struct is_trivially_relocatable<::fast_io::containers::deque<T, allocator>>
-{
-	inline static constexpr bool value = true;
-};
-
-template <typename T, typename allocator>
 struct is_zero_default_constructible<::fast_io::containers::deque<T, allocator>>
 {
 	inline static constexpr bool value = true;

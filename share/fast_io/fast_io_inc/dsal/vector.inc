@@ -11,7 +11,6 @@ using ::fast_io::containers::erase_if;
 
 namespace freestanding
 {
-using ::fast_io::freestanding::is_trivially_relocatable;
 using ::fast_io::freestanding::is_zero_default_constructible;
 } // namespace freestanding
 

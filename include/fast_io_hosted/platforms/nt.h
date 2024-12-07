@@ -1280,11 +1280,7 @@ inline constexpr nt_family_file_lock<family> file_lock(basic_nt_family_io_observ
 }
 
 template <nt_family family>
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	nt_family_file_factory
+struct nt_family_file_factory
 {
 	using native_handle_type = void *;
 	void *handle{};
@@ -1698,11 +1694,6 @@ inline basic_nt_io_observer<char_type> native_stderr() noexcept
 
 namespace freestanding
 {
-template <nt_family fm, ::std::integral char_type>
-struct is_trivially_relocatable<basic_nt_family_file<fm, char_type>>
-{
-	inline static constexpr bool value = true;
-};
 
 template <nt_family fm, ::std::integral char_type>
 struct is_zero_default_constructible<basic_nt_family_file<fm, char_type>>

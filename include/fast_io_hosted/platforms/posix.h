@@ -1083,11 +1083,7 @@ inline int my_open_posix_fd_temp_file()
 
 } // namespace details
 
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	posix_file_factory
+struct posix_file_factory
 {
 	using native_handle_type = int;
 	int fd{-1};

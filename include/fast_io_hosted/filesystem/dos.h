@@ -179,12 +179,6 @@ namespace freestanding
 {
 
 template <>
-struct is_trivially_relocatable<dos_directory_file>
-{
-	inline static constexpr bool value = true;
-};
-
-template <>
 struct is_zero_default_constructible<dos_directory_file>
 {
 	inline static constexpr bool value = true;

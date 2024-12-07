@@ -309,11 +309,6 @@ struct cstr_guard
 
 namespace freestanding
 {
-template <::std::integral char_type>
-struct is_trivially_relocatable<details::cstr_guard<char_type>>
-{
-	inline static constexpr bool value = true;
-};
 
 template <::std::integral char_type>
 struct is_zero_default_constructible<details::cstr_guard<char_type>>

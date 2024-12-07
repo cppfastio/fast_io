@@ -213,8 +213,7 @@ namespace operations::decay
 template <typename outstmtype, ::std::ranges::input_range rg>
 	requires((::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<outstmtype> ||
 			  (::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_operations<outstmtype> &&
-			   (sizeof(::std::ranges::range_value_t<rg>) % sizeof(typename outstmtype::output_char_type) == 0))) &&
-			 ::fast_io::freestanding::is_trivially_relocatable_v<::std::ranges::range_value_t<rg>>)
+			   (sizeof(::std::ranges::range_value_t<rg>) % sizeof(typename outstmtype::output_char_type) == 0))))
 inline constexpr void write_all_range_decay(outstmtype outsm, rg &&r)
 {
 	using output_char_type = typename outstmtype::output_char_type;

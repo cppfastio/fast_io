@@ -136,12 +136,6 @@ namespace freestanding
 {
 
 template <::std::integral CharT, typename Traits>
-struct is_trivially_relocatable<basic_filebuf_file<CharT, Traits>>
-{
-	inline static constexpr bool value = true;
-};
-
-template <::std::integral CharT, typename Traits>
 struct is_zero_default_constructible<basic_filebuf_file<CharT, Traits>>
 {
 	inline static constexpr bool value = true;

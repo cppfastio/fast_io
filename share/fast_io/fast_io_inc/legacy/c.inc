@@ -71,7 +71,6 @@ using ::fast_io::u8c_stdout;
 namespace freestanding
 {
 
-using ::fast_io::freestanding::is_trivially_relocatable;
 using ::fast_io::freestanding::is_zero_default_constructible;
 
 } // namespace freestanding
