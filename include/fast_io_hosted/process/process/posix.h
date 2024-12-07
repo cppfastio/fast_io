@@ -12,11 +12,13 @@ namespace posix
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
+extern pid_t libc_vfork() noexcept __asm__("_vfork");
 [[noreturn]] extern void libc_exit(int exit) noexcept __asm__("_exit");
 #else
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
+extern pid_t libc_vfork() noexcept __asm__("vfork");
 [[noreturn]] extern void libc_exit(int exit) noexcept __asm__("exit");
 #endif
 } // namespace posix
@@ -115,7 +117,7 @@ inline posix_wait_status posix_waitpid(pid_t pid)
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call_throw_error(system_call<__NR_wait4, int>(pid, __builtin_addressof(status.wait_loc), 0, nullptr));
 #else
-	if (noexcept_call(waitpid, pid, __builtin_addressof(status.wait_loc), 0) == -1)
+	if (noexcept_call(::waitpid, pid, __builtin_addressof(status.wait_loc), 0) == -1)
 	{
 		throw_posix_error();
 	}
@@ -132,7 +134,7 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call<__NR_wait4, int>(pid, nullptr, 0, nullptr);
 #else
-	noexcept_call(waitpid, pid, nullptr, 0);
+	noexcept_call(::waitpid, pid, nullptr, 0);
 #endif
 }
 
@@ -397,7 +399,7 @@ inline pid_t posix_vfork()
 	pid_t pid{system_call<__NR_vfork, pid_t>()};
 	system_call_throw_error(pid);
 #else
-	pid_t pid{noexcept_call(::vfork)};
+	pid_t pid{::fast_io::posix::libc_vfork()};
 	if (pid == -1) [[unlikely]]
 	{
 		throw_posix_error();
