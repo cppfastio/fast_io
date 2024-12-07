@@ -114,11 +114,12 @@ inline int sys_fcntl(int fd, int op, Args... args)
 	return result;
 #else
 	auto result{posix::fcntl(fd, op, args...)};
-#endif
 	if (result == -1)
 	{
 		throw_posix_error();
 	}
+	return result;
+#endif
 }
 
 #endif
