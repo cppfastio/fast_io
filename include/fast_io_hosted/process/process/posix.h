@@ -144,9 +144,8 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 #endif
 }
 
-inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio) noexcept
+inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp) noexcept
 {
-	int t_errno{};
 #if defined(__linux__) && defined(__NR_execveat)
 	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW));
 #else
@@ -252,12 +251,12 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 		}
 		catch (::fast_io::error e)
 		{
-			t_errno = e.code;
+			t_errno = static_cast<int>(e.code);
 		}
 
 		if (t_errno == 0)
 		{
-			t_errno = posix_execveat(dirfd, cstr, args, envp, pio);
+			t_errno = posix_execveat(dirfd, cstr, args, envp);
 		}
 		// execve only return on error, so t_errno always contains an error code
 		// send error code back to parent process
