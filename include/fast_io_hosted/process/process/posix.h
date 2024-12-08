@@ -15,7 +15,8 @@ extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("_waitpid");
-[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__Exit");
+[[noreturn]] extern void libc_exit(int status) noexcept __asm__("__Exit");
+[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__Exit"); // TODO: fix linkage error on darwin
 #else
 // extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
@@ -23,7 +24,8 @@ extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("waitpid");
-[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("_Exit");
+[[noreturn]] extern void libc_exit(int status) noexcept __asm__("_Exit");
+[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("_exit");
 #endif
 } // namespace posix
 
@@ -142,143 +144,186 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 #endif
 }
 
-#if 0
-[[noreturn]] inline void posix_execveat(int dirfd, char const *path, char const *const *argv,
-										char const *const *envp) noexcept
+inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp) noexcept
 {
 #if defined(__linux__) && defined(__NR_execveat)
-	system_call<__NR_execveat, int>(dirfd, path, argv, envp, AT_SYMLINK_NOFOLLOW);
-	fast_terminate();
+	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW));
 #else
-	int fd{::openat(dirfd, path, O_RDONLY | O_EXCL, 0644)};
-	if (fd == -1) [[unlikely]]
+	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
+	if (fd != -1) [[likely]]
 	{
-		fast_terminate();
+		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
 	}
-	::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(argv), const_cast<char *const *>(envp));
-	fast_terminate();
+	return errno;
 #endif
 }
 
-inline int child_process_deal_with_process_io(posix_io_redirection const &red, int fd) noexcept
+struct io_redirector
 {
-	bool is_stdin{fd == 0};
-	if (red.pipe_fds)
-	{
-		auto v{red.pipe_fds[!is_stdin]};
-		if (v != -1)
-		{
-			fd = v;
-		}
-		int &closefd{red.pipe_fds[is_stdin]};
-		if (closefd != -1)
-		{
-			sys_close(closefd);
-			closefd = -1;
-		}
-	}
-	else if (red.fd != -1)
-	{
-		fd = red.fd;
-	}
-	else if (red.dev_null)
-	{
-		fd = -1;
-	}
-	return fd;
-}
+	int fd_devnull{-1};
 
-inline void child_process_execveat(int dirfd, char const *cstr, char const *const *args_ptr,
-								   char const *const *envp_ptr, posix_process_io const &pio) noexcept
-{
-	int in_fd{child_process_deal_with_process_io(pio.in, 0)};
-	int out_fd{child_process_deal_with_process_io(pio.out, 1)};
-	int err_fd{child_process_deal_with_process_io(pio.err, 2)};
-	if ((in_fd == -1) | (out_fd == -1) | (err_fd == -1))
+	inline io_redirector() = default;
+	inline io_redirector(io_redirector const &) = delete;
+	inline io_redirector &operator=(io_redirector const &) = delete;
+	inline ~io_redirector()
 	{
-		posix_file pf{my_posix_open<true>("/dev/null", O_RDWR, 0644)};
-		if (in_fd == -1)
+		if (fd_devnull != -1)
 		{
-			sys_dup2<true>(pf.fd, 0);
+			sys_close(fd_devnull);
 		}
-		if (out_fd == -1)
+	}
+
+	// only used by sub process
+	inline void redirect(int target_fd, posix_io_redirection const &d)
+	{
+		if (!d)
 		{
-			sys_dup2<true>(pf.fd, 1);
+			return;
 		}
-		if (err_fd == -1)
+		bool const is_stdin{target_fd == 0};
+		if (d.pipe_fds)
 		{
-			sys_dup2<true>(pf.fd, 2);
+			// the read/write ends of pipe are all open
+			// the user shouldn't close them if they pass entire pipe as argument
+			sys_dup2(d.pipe_fds[is_stdin ? 0 : 1], target_fd);
+			// it's actually OK to go without closing pipe ends since fast_io pipes are all CLOEXEC
+			sys_close(d.pipe_fds[is_stdin ? 1 : 0]);
 		}
-		sys_close(pf.fd);
+		else if (d.dev_null)
+		{
+			sys_dup2(devnull(), target_fd);
+		}
+		else
+		{
+			sys_dup2(d.fd, target_fd);
+		}
 	}
-	if ((in_fd != -1) & (in_fd != 0))
+
+	// only used by parent process
+	static inline void close_pipe_ends(int target_fd, posix_io_redirection const &d) noexcept
 	{
-		sys_dup2<true>(in_fd, 0);
-		sys_close(in_fd);
+		if (!d)
+		{
+			return;
+		}
+		if (!d.pipe_fds)
+		{
+			return;
+		}
+		bool const is_stdin{target_fd == 0};
+		sys_close(d.pipe_fds[is_stdin ? 0 : 1]);
 	}
-	if ((out_fd != -1) & (out_fd != 1))
+
+private:
+	inline int devnull()
 	{
-		sys_dup2<true>(out_fd, 1);
-		sys_close(out_fd);
+		if (fd_devnull != -1)
+		{
+			return fd_devnull;
+		}
+#ifdef O_CLOEXEC
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
+#else
+		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
+		sys_fcntl(tmp_fd, F_SETFD, FD_CLOEXEC);
+#endif
+		return fd_devnull;
 	}
-	if ((err_fd != -1) & (err_fd != 2))
-	{
-		sys_dup2<true>(err_fd, 2);
-		sys_close(err_fd);
-	}
-	posix_execveat(dirfd, cstr, args_ptr, envp_ptr);
 };
 
-template <bool is_stdin>
-inline void parent_process_deal_with_process_io(posix_io_redirection const &red) noexcept
+inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
 {
-	if (red.pipe_fds)
+	posix_pipe error_pipe;
+	pid_t pid = posix_fork();
+	if (pid == 0)
 	{
-		int &fd{red.pipe_fds[!is_stdin]};
-		if (fd != -1)
+		// subprocess
+		error_pipe.in().close();
+
+		int t_errno{};
+		// io redirection
+		try
 		{
-			sys_close(fd);
-			fd = -1;
+			io_redirector r;
+			r.redirect(0, pio.in);
+			r.redirect(1, pio.out);
+			r.redirect(2, pio.err);
+		}
+		catch (::fast_io::error e)
+		{
+			t_errno = static_cast<int>(e.code);
+		}
+
+		if (t_errno == 0)
+		{
+			t_errno = posix_execveat(dirfd, cstr, args, envp);
+		}
+		// execve only return on error, so t_errno always contains an error code
+		// send error code back to parent process
+		auto err_buffer = reinterpret_cast<char const *>(&t_errno);
+		::fast_io::operations::write_all(error_pipe.out(), err_buffer, err_buffer + sizeof(t_errno));
+		// _Exit() won't destruct c++ objects, we must close it manually
+		error_pipe.out().close();
+		// special exit code 127 indicates error of exec
+#if defined(__linux__)
+#ifdef __NR_exit_group
+		::fast_io::system_call_no_return<__NR_exit_group>(127);
+#else
+		::fast_io::system_call_no_return<__NR_exit>(127);
+#endif
+#else
+		::fast_io::posix::libc_exit(127);
+#endif
+	}
+	// parent process
+	// currently parent process never close pipes
+	// uncomment those lines to enable automatically closing pipe ends
+#if 0
+	io_redirector::close_pipe_ends(0, pio.in);
+	io_redirector::close_pipe_ends(1, pio.out);
+	io_redirector::close_pipe_ends(2, pio.err);
+#endif
+
+	error_pipe.out().close();
+	int errno_from_subproc{};
+	auto err_buffer = reinterpret_cast<char *>(&errno_from_subproc);
+	auto err_buffer_end = err_buffer + sizeof(errno_from_subproc);
+	auto n = ::fast_io::operations::read_some(error_pipe.in(), err_buffer, err_buffer_end);
+	if (n == err_buffer)
+	{
+		return pid;
+	}
+	else
+	{
+		posix_waitpid_noexcept(pid);
+		if (n == err_buffer_end)
+		{
+			throw_posix_error(errno_from_subproc);
+		}
+		else [[unlikely]]
+		{
+			// sub process died before sending error code, assume it an io error
+			throw_posix_error(EIO);
 		}
 	}
 }
 
-inline pid_t posix_fork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args,
-											 char const *const *envp, posix_process_io const &pio)
+template <typename path_type>
+inline pid_t pipefork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
 {
-	system_call_throw_error(::fast_io::posix::libc_faccessat(dirfd, cstr, X_OK, AT_SYMLINK_NOFOLLOW));
-
-	pid_t pid{posix_fork()};
-	if (pid)
-	{
-		parent_process_deal_with_process_io<true>(pio.in);
-		parent_process_deal_with_process_io<false>(pio.out);
-		parent_process_deal_with_process_io<false>(pio.err);
-		return pid;
-	}
-	child_process_execveat(dirfd, cstr, args, envp, pio);
-	fast_terminate();
+	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio); });
 }
 
 template <typename path_type>
-inline pid_t posix_fork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp,
-									  posix_process_io const &pio)
-{
-	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return posix_fork_execveat_common_impl(dirfd, cstr, args, envp, pio); });
-}
-
-template <typename path_type>
-inline pid_t posix_fork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp,
-									posix_process_io const &pio)
+inline pid_t pipefork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
 {
 #if defined(AT_FDCWD)
-	return posix_fork_execveat_impl(AT_FDCWD, csv, args, envp, pio);
+	return pipefork_execveat_impl(AT_FDCWD, csv, args, envp, pio);
 #else
 	throw_posix_error(EINVAL);
 	return -1;
 #endif
 }
-#endif
 
 struct fd_remapper
 {
@@ -384,8 +429,12 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	{
 		t_errno = 0;
 	}
+#if defined(__linux__)
 #ifdef __NR_exit_group
 	::fast_io::system_call_no_return<__NR_exit_group>(127);
+#else
+	::fast_io::system_call_no_return<__NR_exit>(127);
+#endif
 #else
 	::fast_io::posix::libc_exit2(127);
 #endif
@@ -530,21 +579,38 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args,
 						 posix_process_envs const &envp, posix_process_io const &pio)
-		: posix_process_observer{details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)}
+		: posix_process_observer{
+#ifdef __DARWIN_C_LEVEL
+			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)
+#else
+			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio)
+#endif
+		  }
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(path_type const &filename, posix_process_args const &args, posix_process_envs const &envp,
 						 posix_process_io const &pio)
-		: posix_process_observer{::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio)}
+		: posix_process_observer{
+#ifdef __DARWIN_C_LEVEL
+			  ::fast_io::details::pipefork_execve_impl(filename, args.get(), envp.get(), pio)
+#else
+			  ::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio)
+#endif
+		  }
 	{
 	}
 
 	inline posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args, posix_process_envs const &envp,
 						 posix_process_io const &pio)
 		: posix_process_observer{
-			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)}
+#ifdef __DARWIN_C_LEVEL
+			  ::fast_io::details::pipefork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)
+#else
+			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio)
+#endif
+		  }
 	{
 	}
 
@@ -557,7 +623,7 @@ public:
 	}
 	inline posix_process &operator=(posix_process &&__restrict other) noexcept
 	{
-		if (__builtin_addressof(other) != this)
+		if (__builtin_addressof(other) == this)
 		{
 			return *this;
 		}
