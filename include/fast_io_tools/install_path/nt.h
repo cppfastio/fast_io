@@ -25,7 +25,7 @@ inline ::fast_io::install_path get_module_install_path()
 	ret.module_name = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(NtImagePath.Buffer, NtImagePath.Length / sizeof(char16_t))));
 	auto const begin{strlike_begin(::fast_io::io_strlike_type<char8_t, ::fast_io::u8string>, ret.module_name)};
 	auto curr{strlike_curr(::fast_io::io_strlike_type<char8_t, ::fast_io::u8string>, ret.module_name)};
-	for (; curr != begin; curr--) // calculate nt, dos or (nt) device path
+	for (; curr != begin; --curr) // calculate nt, dos or (nt) device path
 	{
 		if (auto const c{*curr}; c == u8'\\' || c == u8':'  || c == u8'/')
 		{

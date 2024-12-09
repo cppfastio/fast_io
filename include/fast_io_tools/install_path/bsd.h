@@ -53,7 +53,7 @@ inline ::fast_io::install_path get_module_install_path()
 	ret.module_name = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt_os_c_str(resolved));
 	auto const begin{strlike_begin(::fast_io::io_strlike_type<char8_t, ::fast_io::u8string>, ret.module_name)};
 	auto curr{strlike_curr(::fast_io::io_strlike_type<char8_t, ::fast_io::u8string>, ret.module_name)};
-	for (; curr != begin; curr--) // calculate nt or dos path
+	for (; curr != begin; --curr) // calculate nt or dos path
 	{
 		if (auto const c{*curr}; c == u8'/')
 		{
