@@ -16,7 +16,7 @@ extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("_waitpid");
 [[noreturn]] extern void libc_exit(int status) noexcept __asm__("__Exit");
-[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__Exit"); // TODO: fix linkage error on darwin
+[[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__exit");
 #else
 // extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
