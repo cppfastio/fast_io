@@ -961,13 +961,30 @@ struct win32_9xa_dir_handle
 
 namespace win32::details
 {
+inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
+{
+	::fast_io::win32::win32_find_dataa wfda{};
+	tlc_win32_9xa_dir_handle_path_str temp_find_path{concat_tlc_win32_9xa_dir_handle_path_str(h.path, u8"\\*")};
+	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
+	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)))
+	{
+		throw_win32_error(0x5);
+	}
+	else
+	{
+		::fast_io::win32::FindClose(find_struct);
+	}
+}
+
 inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) noexcept
 {
+	check_win32_9xa_dir_is_valid(h);
 	h.path.clear();
 }
 
 inline win32_9xa_dir_handle win32_9xa_dir_dup_impl(win32_9xa_dir_handle const &h) noexcept
 {
+	check_win32_9xa_dir_is_valid(h);
 	return {h.path};
 }
 
@@ -986,21 +1003,6 @@ struct find_struct_guard
 		}
 	}
 };
-
-inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
-{
-	::fast_io::win32::win32_find_dataa wfda{};
-	auto temp_find_path{concat_tlc_win32_9xa_dir_handle_path_str(h.path, u8"\\*")};
-	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
-	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)))
-	{
-		throw_win32_error(0x5);
-	}
-	else
-	{
-		::fast_io::win32::FindClose(find_struct);
-	}
-}
 
 inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_impl(char const *filename_c_str, ::std::size_t filename_c_str_len)
 {
