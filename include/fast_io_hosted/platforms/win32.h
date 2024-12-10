@@ -979,7 +979,7 @@ inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
 template <bool throw_eh = false>
 inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) noexcept(!throw_eh)
 {
-	if (throw_eh)
+	if constexpr (throw_eh)
 	{
 		check_win32_9xa_dir_is_valid(h);
 	}
