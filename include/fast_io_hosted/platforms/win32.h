@@ -976,9 +976,13 @@ inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
 	}
 }
 
-inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) 
+template <bool throw_eh = false>
+inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) noexcept(!throw_eh)
 {
-	check_win32_9xa_dir_is_valid(h);
+	if (throw_eh)
+	{
+		check_win32_9xa_dir_is_valid(h);
+	}
 	h.path.clear();
 }
 
