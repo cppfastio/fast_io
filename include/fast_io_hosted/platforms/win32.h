@@ -920,15 +920,7 @@ namespace win32::details
 {
 using win32_9xa_dir_handle_path_str = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator>;
 using tlc_win32_9xa_dir_handle_path_str = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator>;
-} // namespace win32::details
 
-struct win32_9xa_dir_handle
-{
-	win32::details::win32_9xa_dir_handle_path_str path;
-};
-
-namespace win32::details
-{
 template <typename... Args>
 constexpr inline win32_9xa_dir_handle_path_str concat_win32_9xa_dir_handle_path_str(Args &&...args)
 {
@@ -960,7 +952,15 @@ constexpr inline tlc_win32_9xa_dir_handle_path_str concat_tlc_win32_9xa_dir_hand
 		return {};
 	}
 }
+} // namespace win32::details
 
+struct win32_9xa_dir_handle
+{
+	win32::details::win32_9xa_dir_handle_path_str path;
+};
+
+namespace win32::details
+{
 inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) noexcept
 {
 	h.path.clear();
