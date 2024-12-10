@@ -976,13 +976,13 @@ inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
 	}
 }
 
-inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) noexcept
+inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) 
 {
 	check_win32_9xa_dir_is_valid(h);
 	h.path.clear();
 }
 
-inline win32_9xa_dir_handle win32_9xa_dir_dup_impl(win32_9xa_dir_handle const &h) noexcept
+inline win32_9xa_dir_handle win32_9xa_dir_dup_impl(win32_9xa_dir_handle const &h) 
 {
 	check_win32_9xa_dir_is_valid(h);
 	return {h.path};
