@@ -45,6 +45,11 @@ public:
 	}
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 #if !defined(__AVR__) && !defined(_GLIBCXX_USE_STDIO_PURE)
+	template <::fast_io::constructible_to_os_c_str T>
+	inline basic_filebuf_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_filebuf_file(basic_posix_file<char_type>(file, om, pm), om)
+	{
+	}
 	template <posix_family family>
 	inline basic_filebuf_file(basic_posix_family_file<family, char_type> &&piohd, open_mode mode)
 		: basic_filebuf_file(basic_c_file_unlocked<char_type>(::std::move(piohd), mode), mode)
@@ -62,22 +67,36 @@ public:
 		: basic_filebuf_file(basic_posix_file<char_type>(::std::move(nt_handle), mode), mode)
 	{
 	}
-#endif
-
-	inline basic_filebuf_file(native_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_filebuf_file(nt_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_filebuf_file(basic_posix_file<char_type>(fsdirent, om, pm), om)
+	{
+	}
+	inline basic_filebuf_file(win32_9xa_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_filebuf_file(basic_posix_file<char_type>(fsdirent, om, pm), om)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	inline basic_filebuf_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
-		: basic_filebuf_file(basic_posix_file<char_type>(file, om, pm), om)
-	{
-	}
-	template <::fast_io::constructible_to_os_c_str T>
-	inline basic_filebuf_file(native_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+	inline basic_filebuf_file(nt_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
 		: basic_filebuf_file(basic_posix_file<char_type>(nate, file, om, pm), om)
 	{
 	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline basic_filebuf_file(win32_9xa_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_filebuf_file(basic_posix_file<char_type>(nate, file, om, pm), om)
+	{
+	}
+#else
+	inline basic_filebuf_file(posix_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_filebuf_file(basic_posix_file<char_type>(fsdirent, om, pm), om)
+	{
+	}
+
+	template <::fast_io::constructible_to_os_c_str T>
+	inline basic_filebuf_file(posix_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		: basic_filebuf_file(basic_posix_file<char_type>(nate, file, om, pm), om)
+	{
+	}
+#endif
 #endif
 #endif
 	inline basic_filebuf_file &operator=(basic_filebuf_file const &) = delete;
