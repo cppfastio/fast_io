@@ -138,7 +138,7 @@ inline void set_size(::std::basic_string<elem, traits, alloc> &str,
 	decltype(auto) __r_{hack_rep(str)};
 	if (bool(__r_.__s.__is_long_))
 	{
-#if !defined(_LIBCPP_HAS_NO_ASAN) && defined(_LIBCPP_INSTRUMENTED_WITH_ASAN)
+#if (_LIBCPP_VERSION < 20 && !defined(_LIBCPP_HAS_NO_ASAN) || _LIBCPP_HAS_ASAN) && defined(_LIBCPP_INSTRUMENTED_WITH_ASAN)
 		if (!::std::__libcpp_is_constant_evaluated())
 		{
 			auto dataptr{str.data()};
