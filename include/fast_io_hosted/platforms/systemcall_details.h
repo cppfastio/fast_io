@@ -73,6 +73,37 @@ inline int sys_dup2(int old_fd, int new_fd)
 #endif
 }
 
+struct return_code
+{
+	int code{};
+	bool error{};
+};
+
+inline return_code sys_dup2_nothrow(int old_fd, int new_fd) noexcept
+{
+#if defined(__linux__) && defined(__NR_dup2)
+	int fd{system_call<__NR_dup2, int>(old_fd, new_fd)};
+	if (linux_system_call_fails(fd))
+	{
+		return {-fd, true};
+	}
+#else
+	auto fd{noexcept_call(
+#if defined(_WIN32) && !defined(__BIONIC__)
+		_dup2
+#else
+		dup2
+#endif
+		,
+		old_fd, new_fd)};
+	if (fd == -1)
+	{
+		return {errno, true};
+	}
+#endif
+	return {fd};
+}
+
 inline int sys_close(int fd) noexcept
 {
 	return
