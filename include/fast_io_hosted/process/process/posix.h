@@ -285,7 +285,8 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 		::fast_io::posix::libc_exit(127);
 #endif
 	}
-	return pid;
+	posix_waitpid(pid);
+	return 0;
 }
 
 template <typename path_type>
