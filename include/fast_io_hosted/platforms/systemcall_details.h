@@ -75,9 +75,8 @@ inline int sys_dup2(int old_fd, int new_fd)
 
 struct return_code
 {
-	using errno_number_type = ::std::remove_cvref_t<decltype(errno)>;
-	int fd{-1};
-	errno_number_type error_number{};
+	int code{};
+	bool error{};
 };
 
 inline return_code sys_dup2_nothrow(int old_fd, int new_fd) noexcept
@@ -86,7 +85,7 @@ inline return_code sys_dup2_nothrow(int old_fd, int new_fd) noexcept
 	int fd{system_call<__NR_dup2, int>(old_fd, new_fd)};
 	if (linux_system_call_fails(fd))
 	{
-		return {-1, static_cast<typename return_code::errno_number_type>(-fd)};
+		return {-fd, true};
 	}
 #else
 	auto fd{noexcept_call(
@@ -99,10 +98,10 @@ inline return_code sys_dup2_nothrow(int old_fd, int new_fd) noexcept
 		old_fd, new_fd)};
 	if (fd == -1)
 	{
-		return {-1, errno};
+		return {errno, true};
 	}
 #endif
-	return {fd, 0};
+	return {fd};
 }
 
 inline int sys_close(int fd) noexcept
