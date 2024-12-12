@@ -144,17 +144,22 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 #endif
 }
 
-inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp) noexcept
+inline return_code posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp) noexcept
 {
 #if defined(__linux__) && defined(__NR_execveat)
-	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW));
+	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW)};
+	if (linux_system_call_fails(ret))
+	{
+		return {-1, -ret};
+	}
+	return {0, ret};
 #else
 	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
 	if (fd != -1) [[likely]]
 	{
 		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
 	}
-	return errno;
+	return {fd, errno};
 #endif
 }
 
@@ -178,12 +183,12 @@ struct io_redirector
 	{
 		return_code rc;
 		rc = redirect(0, pio.in);
-		if (rc.error)
+		if (rc.fd == -1)
 		{
 			return rc;
 		}
 		rc = redirect(1, pio.out);
-		if (rc.error)
+		if (rc.fd == -1)
 		{
 			return rc;
 		}
@@ -204,7 +209,7 @@ struct io_redirector
 			// the read/write ends of pipe are all open
 			// the user shouldn't close them if they pass entire pipe as argument
 			rc = sys_dup2_nothrow(d.pipe_fds[is_stdin ? 0 : 1], target_fd);
-			if (rc.error)
+			if (rc.fd == -1)
 			{
 				return rc;
 			}
@@ -219,11 +224,7 @@ struct io_redirector
 		{
 			rc = sys_dup2_nothrow(d.fd, target_fd);
 		}
-		if (rc.error)
-		{
-			return rc;
-		}
-		return {};
+		return rc;
 	}
 
 	// only used by parent process
@@ -260,34 +261,19 @@ private:
 
 inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
 {
-	posix_pipe error_pipe;
 	pid_t pid = posix_fork();
 	if (pid == 0)
 	{
 		// subprocess
-		error_pipe.in().close();
-
-		int t_errno{};
+		return_code rc;
 		// io redirection
-		{
-			io_redirector r;
-			auto rc = r.redirect_all(pio);
-			if (rc.error)
-			{
-				t_errno = rc.code;
-			}
-		}
+		io_redirector r;
+		rc = r.redirect_all(pio);
 
-		if (t_errno == 0)
+		if (rc.fd != -1)
 		{
-			t_errno = posix_execveat(dirfd, cstr, args, envp);
+			posix_execveat(dirfd, cstr, args, envp);
 		}
-		// execve only return on error, so t_errno always contains an error code
-		// send error code back to parent process
-		auto err_buffer = reinterpret_cast<char const *>(&t_errno);
-		::fast_io::operations::write_all(error_pipe.out(), err_buffer, err_buffer + sizeof(t_errno));
-		// _Exit() won't destruct c++ objects, we must close it manually
-		error_pipe.out().close();
 		// special exit code 127 indicates error of exec
 #if defined(__linux__)
 #ifdef __NR_exit_group
@@ -299,37 +285,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 		::fast_io::posix::libc_exit(127);
 #endif
 	}
-	// parent process
-	// currently parent process never close pipes
-	// uncomment those lines to enable automatically closing pipe ends
-#if 0
-	io_redirector::close_pipe_ends(0, pio.in);
-	io_redirector::close_pipe_ends(1, pio.out);
-	io_redirector::close_pipe_ends(2, pio.err);
-#endif
-
-	error_pipe.out().close();
-	int errno_from_subproc{};
-	auto err_buffer = reinterpret_cast<char *>(&errno_from_subproc);
-	auto err_buffer_end = err_buffer + sizeof(errno_from_subproc);
-	auto n = ::fast_io::operations::read_some(error_pipe.in(), err_buffer, err_buffer_end);
-	if (n == err_buffer)
-	{
-		return pid;
-	}
-	else
-	{
-		posix_waitpid_noexcept(pid);
-		if (n == err_buffer_end)
-		{
-			throw_posix_error(errno_from_subproc);
-		}
-		else [[unlikely]]
-		{
-			// sub process died before sending error code, assume it an io error
-			throw_posix_error(EIO);
-		}
-	}
+	posix_waitpid(pid);
 }
 
 template <typename path_type>
