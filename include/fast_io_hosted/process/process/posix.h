@@ -453,14 +453,10 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	{
 		t_errno = 0;
 	}
-#if defined(__linux__)
 #ifdef __NR_exit_group
 	::fast_io::system_call_no_return<__NR_exit_group>(127);
 #else
 	::fast_io::system_call_no_return<__NR_exit>(127);
-#endif
-#else
-	::fast_io::posix::libc_exit2(127);
 #endif
 #else
 	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
