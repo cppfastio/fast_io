@@ -178,12 +178,12 @@ struct io_redirector
 	{
 		return_code rc;
 		rc = redirect(0, pio.in);
-		if (rc.error)
+		if (rc.error) [[unlikely]]
 		{
 			return rc;
 		}
 		rc = redirect(1, pio.out);
-		if (rc.error)
+		if (rc.error) [[unlikely]]
 		{
 			return rc;
 		}
@@ -193,7 +193,7 @@ struct io_redirector
 
 	inline return_code redirect(int target_fd, posix_io_redirection const &d) noexcept
 	{
-		if (!d)
+		if (!d) [[unlikely]]
 		{
 			return {};
 		}
@@ -204,7 +204,7 @@ struct io_redirector
 			// the read/write ends of pipe are all open
 			// the user shouldn't close them if they pass entire pipe as argument
 			rc = sys_dup2_nothrow(d.pipe_fds[is_stdin ? 0 : 1], target_fd);
-			if (rc.error)
+			if (rc.error) [[unlikely]]
 			{
 				return rc;
 			}
@@ -219,7 +219,7 @@ struct io_redirector
 		{
 			rc = sys_dup2_nothrow(d.fd, target_fd);
 		}
-		if (rc.error)
+		if (rc.error) [[unlikely]]
 		{
 			return rc;
 		}
