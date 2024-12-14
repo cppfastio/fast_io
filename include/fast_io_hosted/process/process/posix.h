@@ -123,7 +123,7 @@ inline posix_wait_status posix_waitpid(pid_t pid)
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call_throw_error(system_call<__NR_wait4, int>(pid, __builtin_addressof(status.wait_loc), 0, nullptr));
 #else
-	if (::fast_io::posix::libc_waitpid(pid, __builtin_addressof(status.wait_loc), 0) == -1)
+	if (::fast_io::posix::libc_waitpid(pid, __builtin_addressof(status.wait_loc), 0) == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}
@@ -178,12 +178,12 @@ struct io_redirector
 	{
 		return_code rc;
 		rc = redirect(0, pio.in);
-		if (rc.error)
+		if (rc.error) [[unlikely]]
 		{
 			return rc;
 		}
 		rc = redirect(1, pio.out);
-		if (rc.error)
+		if (rc.error) [[unlikely]]
 		{
 			return rc;
 		}
@@ -193,7 +193,7 @@ struct io_redirector
 
 	inline return_code redirect(int target_fd, posix_io_redirection const &d) noexcept
 	{
-		if (!d)
+		if (!d) [[unlikely]]
 		{
 			return {};
 		}
@@ -219,7 +219,7 @@ struct io_redirector
 		{
 			rc = sys_dup2_nothrow(d.fd, target_fd);
 		}
-		if (rc.error)
+		if (rc.error) [[unlikely]]
 		{
 			return rc;
 		}
@@ -319,7 +319,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 	}
 	else
 	{
-		posix_waitpid_noexcept(pid);
+		::fast_io::details::posix_waitpid_noexcept(pid);
 		if (n == err_buffer_end)
 		{
 			throw_posix_error(errno_from_subproc);
@@ -396,7 +396,7 @@ struct fd_remapper
 	// fd in {0, 1, 2}
 	inline void map(int fd, posix_io_redirection const &io)
 	{
-		if (!io)
+		if (!io) [[unlikely]]
 		{
 			return;
 		}
@@ -661,7 +661,7 @@ public:
 	}
 	inline ~posix_process()
 	{
-		details::posix_waitpid_noexcept(this->pid);
+		::fast_io::details::posix_waitpid_noexcept(this->pid);
 		this->pid = -1;
 	}
 };
