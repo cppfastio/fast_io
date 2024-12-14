@@ -9,7 +9,6 @@ namespace fast_io
 namespace posix
 {
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
-// extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 extern pid_t libc_fork() noexcept __asm__("_fork");
@@ -18,7 +17,6 @@ extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__(
 [[noreturn]] extern void libc_exit(int status) noexcept __asm__("__Exit");
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__exit");
 #else
-// extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
@@ -33,6 +31,7 @@ struct posix_wait_status
 {
 	int wait_loc{};
 };
+
 #if 0
 inline constexpr posix_wait_reason reason(posix_wait_status pws) noexcept
 {
@@ -63,6 +62,7 @@ inline constexpr int native_code(posix_wait_status pws) noexcept
 inline constexpr ::std::uintmax_t code(posix_wait_status pws) noexcept
 {
 	return static_cast<::std::uintmax_t>(pws.wait_loc);
+}
 
 template<::std::integral char_type>
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type,posix_wait_status>) noexcept
@@ -226,6 +226,7 @@ struct io_redirector
 		return {};
 	}
 
+#if 0
 	// only used by parent process
 	static inline void close_pipe_ends(int target_fd, posix_io_redirection const &d) noexcept
 	{
@@ -240,8 +241,8 @@ struct io_redirector
 		bool const is_stdin{target_fd == 0};
 		sys_close(d.pipe_fds[is_stdin ? 0 : 1]);
 	}
+#endif
 
-private:
 	inline int devnull()
 	{
 		if (fd_devnull != -1)
@@ -423,7 +424,6 @@ struct fd_remapper
 		}
 	}
 
-private:
 	inline int devnull()
 	{
 		if (fd_devnull != -1)
@@ -453,14 +453,10 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	{
 		t_errno = 0;
 	}
-#if defined(__linux__)
-#ifdef __NR_exit_group
+#if defined(__NR_exit_group)
 	::fast_io::system_call_no_return<__NR_exit_group>(127);
 #else
 	::fast_io::system_call_no_return<__NR_exit>(127);
-#endif
-#else
-	::fast_io::posix::libc_exit2(127);
 #endif
 #else
 	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
@@ -469,7 +465,15 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
 	}
 	t_errno = errno;
+#if defined(__linux__)
+#if defined(__NR_exit_group)
+	::fast_io::system_call_no_return<__NR_exit_group>(127);
+#else
+	::fast_io::system_call_no_return<__NR_exit>(127);
+#endif
+#else
 	::fast_io::posix::libc_exit2(127);
+#endif
 #endif
 	__builtin_unreachable();
 }
