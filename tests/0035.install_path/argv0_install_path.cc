@@ -1,6 +1,6 @@
 ﻿#include <fast_io.h>
 #include <fast_io_device.h>
-#include <fast_io_tools/install_path.h>
+#include <fast_io_driver/install_path.h>
 
 int main(int argc, char**argv)
 {
