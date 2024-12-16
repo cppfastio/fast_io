@@ -1112,7 +1112,6 @@ using c_file_factory_unlocked = c_family_file_factory<c_family::native_unlocked>
 
 namespace freestanding
 {
-
 template <c_family fm, ::std::integral char_type>
 struct is_trivially_relocatable<basic_c_family_file<fm, char_type>>
 {

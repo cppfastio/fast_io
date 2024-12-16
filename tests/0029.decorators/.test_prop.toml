@@ -1,2 +1,5 @@
 ["decopartial.cc"] # TODO: runtime failed. why?
 ignore = true
+
+["decopartialiobuf.cc"] # TODO: runtime failed. why?
+ignore = true

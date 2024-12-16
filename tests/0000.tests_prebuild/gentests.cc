@@ -281,9 +281,9 @@ inline void parse_prop_files(fast_io::native_file_loader &&file, file_property_t
 	}
 }
 
-inline bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix, file_entry_t prop);
+inline bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix, file_entry_t prop, bool test);
 
-inline void cmake_gen_rec_dir_def(fast_io::u8obuf_file &cmake_file, fast_io::native_io_observer nio, std::u8string_view filename, std::u8string_view prefix, file_entry_t const &prop)
+inline void cmake_gen_rec_dir_def(fast_io::u8obuf_file &cmake_file, fast_io::native_io_observer nio, std::u8string_view filename, std::u8string_view prefix, file_entry_t const &prop, bool test)
 {
 	if (prop.ignore)
 	{
@@ -291,14 +291,14 @@ inline void cmake_gen_rec_dir_def(fast_io::u8obuf_file &cmake_file, fast_io::nat
 	}
 	std::u8string new_prefix{fast_io::u8concat_std(prefix, filename, u8".")};
 	fast_io::dir_file dir{at(nio), filename};
-	if (!gen_cmake_file(dir, new_prefix, prop))
+	if (!gen_cmake_file(dir, new_prefix, prop, test))
 	{
 		return;
 	}
 	print(cmake_file, u8"include(${CMAKE_CURRENT_LIST_DIR}/", filename, u8"/CMakeLists.txt)\n");
 }
 
-inline void cmake_gen_file_def(fast_io::u8obuf_file &cmake_file, std::u8string_view targetname, auto &&filename, file_entry_t const &prop)
+inline void cmake_gen_file_def(fast_io::u8obuf_file &cmake_file, std::u8string_view targetname, auto &&filename, file_entry_t const &prop, bool test)
 {
 	if (prop.ignore || prop.will_fail == will_fail_t::compiletime)
 	{
@@ -328,13 +328,16 @@ inline void cmake_gen_file_def(fast_io::u8obuf_file &cmake_file, std::u8string_v
 			print(cmake_file, u8"set_target_properties(", targetname, u8" PROPERTIES CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -fsanitize=address\")\n");
 		}
 	}
-	print(cmake_file, u8"add_test(", targetname, u8" ", targetname, u8")\n");
+	if (test)
+	{
+		print(cmake_file, u8"add_test(", targetname, u8" ", targetname, u8")\n");
+	}
 	// // set_tests_properties does not work. why?
 	// if (prop.will_fail == will_fail_t::runtime)
 	// 	print(cmake_file, u8"set_tests_properties(", targetname, u8" PROPERTIES WILL_FAIL TRUE)\n");
 }
 
-inline bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix, file_entry_t prop)
+inline bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix, file_entry_t prop, bool test)
 {
 	bool generated{};
 	fast_io::u8obuf_file cmake_file;
@@ -375,14 +378,14 @@ inline bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view p
 		{
 			using enum fast_io::file_type;
 		case directory:
-			cmake_gen_rec_dir_def(cmake_file, nio, filename, prefix, curr_prop);
+			cmake_gen_rec_dir_def(cmake_file, nio, filename, prefix, curr_prop, test);
 			generated = true;
 			break;
 		default:
 			std::u8string_view ext{u8extension(entry)};
 			if (ext == u8".cpp" || ext == u8".cc")
 			{
-				cmake_gen_file_def(cmake_file, fast_io::u8concat_std(prefix, u8stem(entry)), filename, curr_prop);
+				cmake_gen_file_def(cmake_file, fast_io::u8concat_std(prefix, u8stem(entry)), filename, curr_prop, test);
 				generated = true;
 			}
 			break;
@@ -439,7 +442,7 @@ int main(int argc, char *argv[])
 	fast_io::dir_file tests_dir{R"(./tests)"};
 	fast_io::dir_file examples_dir{R"(./examples)"};
 	fast_io::dir_file benchmark_dir{R"(./benchmark)"};
-	gen_cmake_file(tests_dir, u8"tests.", {});
-	gen_cmake_file(examples_dir, u8"examples.", {});
-	gen_cmake_file(benchmark_dir, u8"benchmark.", {});
+	gen_cmake_file(tests_dir, u8"tests.", {}, true);
+	gen_cmake_file(examples_dir, u8"examples.", {}, true);
+	gen_cmake_file(benchmark_dir, u8"benchmark.", {}, false);
 }
