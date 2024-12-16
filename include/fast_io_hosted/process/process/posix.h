@@ -320,7 +320,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 	}
 	else
 	{
-		posix_waitpid_noexcept(pid);
+		::fast_io::details::posix_waitpid_noexcept(pid);
 		if (n == err_buffer_end)
 		{
 			throw_posix_error(errno_from_subproc);
@@ -665,7 +665,7 @@ public:
 	}
 	inline ~posix_process()
 	{
-		details::posix_waitpid_noexcept(this->pid);
+		::fast_io::details::posix_waitpid_noexcept(this->pid);
 		this->pid = -1;
 	}
 };
