@@ -123,7 +123,7 @@ inline posix_wait_status posix_waitpid(pid_t pid)
 #if defined(__linux__) && defined(__NR_wait4)
 	system_call_throw_error(system_call<__NR_wait4, int>(pid, __builtin_addressof(status.wait_loc), 0, nullptr));
 #else
-	if (::fast_io::posix::libc_waitpid(pid, __builtin_addressof(status.wait_loc), 0) == -1)
+	if (::fast_io::posix::libc_waitpid(pid, __builtin_addressof(status.wait_loc), 0) == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}
