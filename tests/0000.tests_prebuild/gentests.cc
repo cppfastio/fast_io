@@ -283,7 +283,7 @@ inline void parse_prop_files(fast_io::native_file_loader &&file, file_property_t
 
 inline bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view prefix, file_entry_t prop, bool test);
 
-inline void cmake_gen_rec_dir_def(fast_io::u8obuf_file &cmake_file, fast_io::native_io_observer nio, std::u8string_view filename, std::u8string_view prefix, file_entry_t const &prop)
+inline void cmake_gen_rec_dir_def(fast_io::u8obuf_file &cmake_file, fast_io::native_io_observer nio, std::u8string_view filename, std::u8string_view prefix, file_entry_t const &prop, bool test)
 {
 	if (prop.ignore)
 	{
@@ -291,7 +291,7 @@ inline void cmake_gen_rec_dir_def(fast_io::u8obuf_file &cmake_file, fast_io::nat
 	}
 	std::u8string new_prefix{fast_io::u8concat_std(prefix, filename, u8".")};
 	fast_io::dir_file dir{at(nio), filename};
-	if (!gen_cmake_file(dir, new_prefix, prop))
+	if (!gen_cmake_file(dir, new_prefix, prop, test))
 	{
 		return;
 	}
@@ -378,7 +378,7 @@ inline bool gen_cmake_file(fast_io::native_io_observer nio, std::u8string_view p
 		{
 			using enum fast_io::file_type;
 		case directory:
-			cmake_gen_rec_dir_def(cmake_file, nio, filename, prefix, curr_prop);
+			cmake_gen_rec_dir_def(cmake_file, nio, filename, prefix, curr_prop, test);
 			generated = true;
 			break;
 		default:
