@@ -571,7 +571,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 						constexpr ::std::uint_least64_t mask{0x000000FF000000FF};
 						constexpr ::std::uint_least64_t fullmask{baseval * 0x80};
 
-						while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least64_t))
+						while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least64_t)) [[likely]]
 						{
 							::std::uint_least64_t val;
 							::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
@@ -581,7 +581,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 								val = ::fast_io::little_endian(val);
 							}
 
-							if (::std::uint_least64_t const cval{((val + first_bound) | (val - zero_lower_bound)) & fullmask}; cval)
+							if (::std::uint_least64_t const cval{((val + first_bound) | (val - zero_lower_bound)) & fullmask}; cval) [[likely]]
 							{
 								auto ctrz_cval{::std::countr_zero(cval)};
 								auto const valid_bits{ctrz_cval & -8};
@@ -636,7 +636,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 								val = ::fast_io::little_endian(val);
 							}
 
-							if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval)
+							if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval) [[likely]]
 							{
 								auto ctrz_cval{::std::countr_zero(cval)};
 								auto const valid_bits{ctrz_cval & -8};
@@ -686,7 +686,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 					constexpr ::std::uint_least64_t first_bound{0x7fc67fc67fc67fc6 + 0x0001000100010001 * (10 - base)};
 					if constexpr (max_size >= u64_size_of_c16)
 					{
-						while (static_cast<::std::size_t>(first_phase_last - first) >= u64_size_of_c16)
+						while (static_cast<::std::size_t>(first_phase_last - first) >= u64_size_of_c16) [[likely]]
 						{
 							::std::uint_least64_t val;
 							::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
@@ -696,7 +696,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 								val = ::fast_io::little_endian(val);
 							}
 
-							if (::std::uint_least64_t const cval{((val + first_bound) | (val - 0x0030003000300030)) & 0x8000800080008000}; cval)
+							if (::std::uint_least64_t const cval{((val + first_bound) | (val - 0x0030003000300030)) & 0x8000800080008000}; cval) [[likely]]
 							{
 								auto ctrz_cval{::std::countr_zero(cval)};
 								auto const valid_bits{ctrz_cval & -16};
@@ -751,7 +751,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 						constexpr ::std::uint_least64_t mask{0x000000FF000000FF};
 						constexpr ::std::uint_least64_t mul1{pow_base_sizeof_base_2 + (pow_base_sizeof_base_6 << 32)};
 						constexpr ::std::uint_least64_t mul2{1 + (pow_base_sizeof_base_4 << 32)};
-						while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least64_t))
+						while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least64_t)) [[likely]]
 						{
 							::std::uint_least64_t val;
 							::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least64_t));
@@ -767,7 +767,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 																  ~(((val + 0x3f3f3f3f3f3f3f3f) | (val - 0x4040404040404040)) &
 																	((val + 0x1f1f1f1f1f1f1f1f) | (val - 0x6060606060606060)))) &
 																 0x8080808080808080};
-								cval)
+								cval) [[likely]]
 							{
 								auto ctrz_cval{::std::countr_zero(cval)};
 								auto const valid_bits{ctrz_cval & -8};
@@ -824,14 +824,14 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 
 						constexpr ::std::uint_least32_t pow_base_sizeof_base_2{::fast_io::details::compile_pow_n<::std::uint_least32_t, base_char_type, 2>};
 						constexpr ::std::uint_least32_t mask{0x000000FF};
-						while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least32_t))
+						while (static_cast<::std::size_t>(first_phase_last - first) >= sizeof(::std::uint_least32_t)) [[likely]]
 						{
 							::std::uint_least32_t val;
 							::fast_io::freestanding::my_memcpy(__builtin_addressof(val), first, sizeof(::std::uint_least32_t));
 
 							val = ::fast_io::little_endian(val);
 
-							if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval) [[unlikely]]
+							if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval) [[likely]]
 							{
 								auto ctrz_cval{::std::countr_zero(cval)};
 								auto const valid_bits{ctrz_cval & -8};
@@ -874,7 +874,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 		}
 	}
 
-	for (; first != first_phase_last; ++first)
+	for (; first != first_phase_last; ++first) [[likely]]
 	{
 		unsigned_char_type ch{static_cast<unsigned_char_type>(*first)};
 		if (char_digit_to_literal<base, char_type>(ch)) [[unlikely]]
@@ -949,11 +949,11 @@ template <char8_t base, ::std::integral char_type>
 inline constexpr parse_result<char_type const *> scan_shbase_impl(char_type const *first,
 																  char_type const *last) noexcept
 {
-	if (first == last || *first != char_literal_v<u8'0', char_type>)
+	if (first == last || *first != char_literal_v<u8'0', char_type>) [[unlikely]]
 	{
 		return {first, parse_code::invalid};
 	}
-	if ((++first) == last)
+	if ((++first) == last) [[unlikely]]
 	{
 		return {first, parse_code::invalid};
 	}
@@ -961,7 +961,7 @@ inline constexpr parse_result<char_type const *> scan_shbase_impl(char_type cons
 	{
 		auto ch{*first};
 		if ((ch != char_literal_v<(base == 2 ? u8'B' : (base == 3 ? u8't' : u8'X')), char_type>)&(
-				ch != char_literal_v<(base == 2 ? u8'b' : (base == 3 ? u8't' : u8'x')), char_type>))
+				ch != char_literal_v<(base == 2 ? u8'b' : (base == 3 ? u8't' : u8'x')), char_type>)) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
@@ -969,37 +969,37 @@ inline constexpr parse_result<char_type const *> scan_shbase_impl(char_type cons
 	}
 	else
 	{
-		if (*first != char_literal_v<u8'[', char_type>)
+		if (*first != char_literal_v<u8'[', char_type>) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
 		++first;
-		if ((++first) == last)
+		if ((++first) == last) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
 		constexpr auto digit0{char_literal_v<u8'0' + (base < 10 ? base : base / 10), char_type>};
-		if (*first != digit0)
+		if (*first != digit0) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
-		if ((++first) == last)
+		if ((++first) == last) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
 		if constexpr (10 < base)
 		{
 			constexpr auto digit1{char_literal_v<u8'0' + (base % 10), char_type>};
-			if (*first != digit1)
+			if (*first != digit1) [[unlikely]]
 			{
 				return {first, parse_code::invalid};
 			}
-			if ((++first) == last)
+			if ((++first) == last) [[unlikely]]
 			{
 				return {first, parse_code::invalid};
 			}
 		}
-		if (*first != char_literal_v<u8']', char_type>)
+		if (*first != char_literal_v<u8']', char_type>) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
@@ -1018,7 +1018,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 	[[maybe_unused]] bool sign{};
 	if constexpr (my_signed_integral<T>)
 	{
-		if (first == last)
+		if (first == last) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
@@ -1031,7 +1031,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 		{
 			if constexpr (base == 8)
 			{
-				if (first == last || *first != char_literal_v<u8'0', char_type>)
+				if (first == last || *first != char_literal_v<u8'0', char_type>) [[unlikely]]
 				{
 					return {first, parse_code::invalid};
 				}
@@ -1040,7 +1040,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 			else
 			{
 				auto phase_ret = scan_shbase_impl<base>(first, last);
-				if (phase_ret.code != ongoing_parse_code)
+				if (phase_ret.code != ongoing_parse_code) [[unlikely]]
 				{
 					return phase_ret;
 				}
@@ -1062,7 +1062,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 			{
 				++first;
 				first = ::fast_io::details::find_none_zero_simd_impl(first, last);
-				if (first == last)
+				if (first == last) [[likely]]
 				{
 					t = 0;
 					return {first, parse_code::ok};
@@ -1071,7 +1071,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 			else
 			{
 				++first;
-				if ((first == last) || (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first))))
+				if ((first == last) || (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))) [[likely]]
 				{
 					t = {};
 					return {first, parse_code::ok};
@@ -1104,7 +1104,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 			if constexpr (smaller_than_uint64)
 			{
 				constexpr unsigned_type umax{static_cast<unsigned_type>(-1)};
-				if (temp > umax)
+				if (temp > umax) [[unlikely]]
 				{
 					return {it, parse_code::overflow};
 				}
@@ -1118,7 +1118,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 		else [[unlikely]]
 		{
 			auto [it2, ec] = scan_int_contiguous_none_simd_space_part_define_impl<base>(first, last, res);
-			if (ec != parse_code::ok)
+			if (ec != parse_code::ok) [[unlikely]]
 			{
 				return {it2, ec};
 			}
@@ -1129,7 +1129,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 #endif
 	{
 		auto [it2, ec] = scan_int_contiguous_none_simd_space_part_define_impl<base>(first, last, res);
-		if (ec != parse_code::ok)
+		if (ec != parse_code::ok) [[unlikely]]
 		{
 			return {it2, ec};
 		}
@@ -1139,7 +1139,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 	{
 		constexpr unsigned_type umax{static_cast<unsigned_type>(-1)};
 		constexpr unsigned_type imax{umax >> 1};
-		if (res > (static_cast<my_make_unsigned_t<T>>(imax) + sign))
+		if (res > (static_cast<my_make_unsigned_t<T>>(imax) + sign)) [[unlikely]]
 		{
 			return {it, parse_code::overflow};
 		}
@@ -1177,7 +1177,7 @@ inline constexpr parse_result<char_type const *> scan_int_contiguous_define_impl
 		{
 			if constexpr (base == 8)
 			{
-				if (first == last || *first != char_literal_v<u8'0', char_type>)
+				if (first == last || *first != char_literal_v<u8'0', char_type>) [[unlikely]]
 				{
 					return {first, parse_code::invalid};
 				}
@@ -1186,7 +1186,7 @@ inline constexpr parse_result<char_type const *> scan_int_contiguous_define_impl
 			else
 			{
 				auto phase_ret = scan_shbase_impl<base>(first, last);
-				if (phase_ret.code != ongoing_parse_code)
+				if (phase_ret.code != ongoing_parse_code) [[unlikely]]
 				{
 					return phase_ret;
 				}
@@ -1310,7 +1310,7 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 	}
 	if constexpr (base == 8)
 	{
-		if (*first != char_literal_v<u8'0', char_type>)
+		if (*first != char_literal_v<u8'0', char_type>) [[unlikely]]
 		{
 			return {first, parse_code::invalid};
 		}
@@ -1320,7 +1320,7 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 		::std::uint_least8_t size_cache{sz};
 		if (size_cache == 0)
 		{
-			if (*first != char_literal_v<u8'0', char_type>)
+			if (*first != char_literal_v<u8'0', char_type>) [[unlikely]]
 			{
 				return {first, parse_code::invalid};
 			}
@@ -1338,13 +1338,13 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 		{
 			auto ch{*first};
 			if ((ch == char_literal_v<(base == 2 ? u8'B' : (base == 3 ? u8't' : u8'X')), char_type>) |
-				(ch == char_literal_v<(base == 2 ? u8'b' : (base == 3 ? u8't' : u8'x')), char_type>))
+				(ch == char_literal_v<(base == 2 ? u8'b' : (base == 3 ? u8't' : u8'x')), char_type>)) [[likely]]
 			{
 				sz = 0;
 				++first;
 				return {first, ongoing_parse_code};
 			}
-			else
+			else [[unlikely]]
 			{
 				return {first, parse_code::invalid};
 			}
@@ -1353,7 +1353,7 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 		{
 			if (size_cache == 1)
 			{
-				if (*first != char_literal_v<u8'[', char_type>)
+				if (*first != char_literal_v<u8'[', char_type>) [[unlikely]]
 				{
 					return {first, parse_code::invalid};
 				}
@@ -1366,7 +1366,7 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 			constexpr auto digit0{char_literal_v<u8'0' + (base < 10 ? base : base / 10), char_type>};
 			if (size_cache == 2)
 			{
-				if (*first != digit0)
+				if (*first != digit0) [[unlikely]]
 				{
 					return {first, parse_code::invalid};
 				}
@@ -1381,7 +1381,7 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 				constexpr auto digit1{char_literal_v<u8'0' + (base % 10), char_type>};
 				if (size_cache == 3)
 				{
-					if (*first != digit1)
+					if (*first != digit1) [[unlikely]]
 					{
 						return {first, parse_code::invalid};
 					}
@@ -1395,7 +1395,7 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 			constexpr ::std::uint_least8_t last_index{base < 10 ? 3 : 4};
 			if (size_cache == last_index)
 			{
-				if (*first != char_literal_v<u8']', char_type>)
+				if (*first != char_literal_v<u8']', char_type>) [[unlikely]]
 				{
 					return {first, parse_code::invalid};
 				}
@@ -1443,7 +1443,7 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_zero_phase(scan_inte
 			}
 			return {first, parse_code::partial};
 		}
-		if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
+		if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first))) [[likely]]
 		{
 			return {first, parse_code::ok};
 		}
@@ -1472,7 +1472,7 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_digit_phase(State &s
 			st.integer_phase = scan_integral_context_phase::digit;
 			return {it, parse_code::partial};
 		}
-		if (st.size == 0)
+		if (st.size == 0) [[likely]]
 		{
 			t = {};
 			return {it, parse_code::ok};
@@ -1487,7 +1487,7 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_digit_phase(State &s
 			st.integer_phase = scan_integral_context_phase::overflow;
 			return {it, parse_code::partial};
 		}
-		else
+		else [[unlikely]]
 		{
 			return {it, parse_code::overflow};
 		}
@@ -1504,7 +1504,7 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_zero_invalid_phase(c
 		return {first, parse_code::partial};
 	}
 	++first;
-	if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))
+	if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first))) [[likely]]
 	{
 		return {first, parse_code::ok};
 	}
@@ -1554,7 +1554,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		if constexpr (!noskipws)
 		{
 			auto phase_ret = sc_int_ctx_space_phase(first, last);
-			if (phase_ret.code != ongoing_parse_code)
+			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
 			{
 				return phase_ret;
 			}
@@ -1567,7 +1567,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		if constexpr (my_signed_integral<T>)
 		{
 			auto phase_ret = sc_int_ctx_sign_phase<true, false>(st, first, last);
-			if (phase_ret.code != ongoing_parse_code)
+			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
 			{
 				return phase_ret;
 			}
@@ -1581,7 +1581,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		{
 			st.integer_phase = scan_integral_context_phase::prefix;
 			auto phase_ret = sc_int_ctx_prefix_phase<base>(st.size, first, last);
-			if (phase_ret.code != ongoing_parse_code)
+			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
 			{
 				return phase_ret;
 			}
@@ -1673,9 +1673,7 @@ inline constexpr parse_code scan_context_eof_define_parse_impl(State &st, T &t) 
 		}
 	}
 	case scan_integral_context_phase::digit:
-		return scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(), st.buffer.data() + st.size,
-																	 t)
-			.code;
+		return scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(), st.buffer.data() + st.size, t).code;
 	case scan_integral_context_phase::overflow:
 		return parse_code::overflow;
 	case scan_integral_context_phase::zero_skip:
