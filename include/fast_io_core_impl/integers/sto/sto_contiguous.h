@@ -1567,7 +1567,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		if constexpr (my_signed_integral<T>)
 		{
 			auto phase_ret = sc_int_ctx_sign_phase<true, false>(st, first, last);
-			if (phase_ret.code != ongoing_parse_code)
+			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
 			{
 				return phase_ret;
 			}
@@ -1581,7 +1581,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		{
 			st.integer_phase = scan_integral_context_phase::prefix;
 			auto phase_ret = sc_int_ctx_prefix_phase<base>(st.size, first, last);
-			if (phase_ret.code != ongoing_parse_code)
+			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
 			{
 				return phase_ret;
 			}
