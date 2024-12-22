@@ -63,6 +63,8 @@ using ::fast_io::manipulators::comma_hexfloat;
 using ::fast_io::manipulators::bitfieldvw;
 } // namespace manipulators
 
+namespace mnp = manipulators;
+
 namespace operations
 {
 using ::fast_io::operations::write_all;
