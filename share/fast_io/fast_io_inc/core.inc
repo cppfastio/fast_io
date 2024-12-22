@@ -8,6 +8,11 @@ using ::fast_io::print_reserve_size;
 using ::fast_io::print_reserve_define;
 using ::fast_io::print_define_internal_shift;
 
+using ::fast_io::scan_contiguous_define;
+using ::fast_io::scan_context_type;
+using ::fast_io::scan_context_define;
+using ::fast_io::scan_context_eof_define;
+
 namespace manipulators
 {
 using ::fast_io::manipulators::scalar_placement;
@@ -61,6 +66,11 @@ using ::fast_io::manipulators::comma_scientific;
 using ::fast_io::manipulators::comma_hexfloat;
 
 using ::fast_io::manipulators::bitfieldvw;
+
+using ::fast_io::manipulators::ip_generic;
+#if 0
+using ::fast_io::manipulators::ip_scan_generic;
+#endif
 } // namespace manipulators
 
 namespace mnp = manipulators;
@@ -111,4 +121,77 @@ using ::fast_io::operations::print_freestanding;
 
 } // namespace operations
 
+// filesystem
+using ::fast_io::access_how;
+using ::fast_io::file_lock_mode;
+using ::fast_io::mmap_prot;
+using ::fast_io::mmap_flags;
+using ::fast_io::utime_flags;
+using ::fast_io::unix_timestamp_option;
+using ::fast_io::well_known_directory;
+// flags enum
+using ::fast_io::operator&;
+using ::fast_io::operator|;
+using ::fast_io::operator^;
+using ::fast_io::operator~;
+using ::fast_io::operator&=;
+using ::fast_io::operator|=;
+using ::fast_io::operator^=;
+
+namespace intrinsics
+{
+// simd
+using ::fast_io::intrinsics::simd_vector;
+using ::fast_io::intrinsics::optimal_simd_vector_run_with_cpu_instruction_size;
+using ::fast_io::intrinsics::is_all_zeros;
+using ::fast_io::intrinsics::can_intrinsics_accelerate_mask_countr;
+using ::fast_io::intrinsics::vector_mask_countr_one;
+using ::fast_io::intrinsics::vector_mask_countr_zero;
+
+using ::fast_io::intrinsics::operator+;
+using ::fast_io::intrinsics::operator-;
+using ::fast_io::intrinsics::operator*;
+using ::fast_io::intrinsics::operator/;
+using ::fast_io::intrinsics::operator&;
+using ::fast_io::intrinsics::operator|;
+using ::fast_io::intrinsics::operator^;
+using ::fast_io::intrinsics::operator<<;
+using ::fast_io::intrinsics::operator>>;
+using ::fast_io::intrinsics::operator<;
+using ::fast_io::intrinsics::operator>;
+using ::fast_io::intrinsics::operator<=;
+using ::fast_io::intrinsics::operator>=;
+using ::fast_io::intrinsics::operator==;
+using ::fast_io::intrinsics::operator!=;
+using ::fast_io::intrinsics::wrap_add;
+using ::fast_io::intrinsics::wrap_sub;
+
+} // namespace intrinsics
+
+namespace bitops
+{
+// remove trailing zeros
+using ::fast_io::bitops::rtz_iec559;
+using ::fast_io::bitops::rtz;
+} // namespace bitops
+
+// network
+using ::fast_io::posix_empty_network_service;
+using ::fast_io::sock_family;
+using ::fast_io::sock_protocol;
+using ::fast_io::sock_type;
+using ::fast_io::posix_sockaddr;
+using ::fast_io::posix_in_addr;
+using ::fast_io::posix_sockaddr_in;
+using ::fast_io::posix_in6_addr;
+using ::fast_io::posix_sockaddr_in6;
+using ::fast_io::posix_sockaddr_storage;
+#if 0
+using ::fast_io::scan_ipv4_context_phase;
+using ::fast_io::scan_ipv6_context_phase;
+using ::fast_io::ip_scan_state_t;
+using ::fast_io::ipv4_scan_state_t;
+using ::fast_io::ipv6_scan_state_t;
+using ::fast_io::ip_port_scan_state_t;
+#endif
 } // namespace fast_io
