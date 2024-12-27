@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include "nt_preliminary_definition.h"
-
 namespace fast_io::win32::nt
 {
 
