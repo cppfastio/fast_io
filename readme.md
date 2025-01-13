@@ -25,7 +25,7 @@ int main()
 
 int main() 
 {
-	::fast_io::io::print(::fast_io::out(), "Hello, fast_io world!\n");z
+	::fast_io::io::print(::fast_io::out(), "Hello, fast_io world!\n");
 }
 ```
 ### Memory-Mapped File
