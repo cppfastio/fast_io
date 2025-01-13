@@ -14,3 +14,4 @@ build
 CMakeLists.txt
 !/CMakeLists.txt
 compile_commands.json
+.DS_Store
