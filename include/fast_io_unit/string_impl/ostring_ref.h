@@ -18,7 +18,7 @@ inline constexpr auto strlike_construct_single_character_define(
 	return ::std::basic_string<char_type, traits_type, allocator_type>(1, ch);
 }
 
-#if (!defined(__GLIBCXX__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI))
+#if !(defined(__GLIBCXX__) && defined(_GLIBCXX_USE_CXX11_ABI)) || !((_LIBCPP_VERSION < 20 && !defined(_LIBCPP_HAS_NO_ASAN) || _LIBCPP_HAS_ASAN) && defined(_LIBCPP_INSTRUMENTED_WITH_ASAN))
 
 template <::std::integral char_type, typename traits_type, typename allocator_type>
 inline constexpr char_type *
