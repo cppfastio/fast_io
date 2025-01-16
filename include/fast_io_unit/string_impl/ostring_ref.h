@@ -140,7 +140,7 @@ strlike_push_back(io_strlike_type_t<char_type, ::std::basic_string<char_type, tr
 {
 	str.push_back(ch);
 }
-#if (!defined(__GLIBCXX__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI))
+#if !(defined(__GLIBCXX__) && defined(_GLIBCXX_USE_CXX11_ABI)) || !(defined(_LIBCPP_VERSION) && ((_LIBCPP_VERSION < 20 && !defined(_LIBCPP_HAS_NO_ASAN) || _LIBCPP_HAS_ASAN) && defined(_LIBCPP_INSTRUMENTED_WITH_ASAN)))
 template <::std::integral char_type, typename traits_type, typename allocator_type>
 inline constexpr ::std::size_t
 strlike_sso_size(io_strlike_type_t<char_type, ::std::basic_string<char_type, traits_type, allocator_type>>) noexcept
