@@ -38,7 +38,7 @@ using u8string = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_
 using u16string = ::fast_io::containers::basic_string<char16_t, ::fast_io::native_global_allocator>;
 using u32string = ::fast_io::containers::basic_string<char32_t, ::fast_io::native_global_allocator>;
 
-using ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<chtype, ::fast_io::native_global_allocator>;
+using ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<char, ::fast_io::native_global_allocator>;
 using wostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<wchar_t, ::fast_io::native_global_allocator>;
 using u8ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<char8_t, ::fast_io::native_global_allocator>;
 using u16ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<char16_t, ::fast_io::native_global_allocator>;
@@ -53,7 +53,7 @@ using u8string = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_
 using u16string = ::fast_io::containers::basic_string<char16_t, ::fast_io::native_thread_local_allocator>;
 using u32string = ::fast_io::containers::basic_string<char32_t, ::fast_io::native_thread_local_allocator>;
 
-using ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<chtype, ::fast_io::native_thread_local_allocator>;
+using ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<char, ::fast_io::native_thread_local_allocator>;
 using wostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<wchar_t, ::fast_io::native_thread_local_allocator>;
 using u8ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<char8_t, ::fast_io::native_thread_local_allocator>;
 using u16ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<char16_t, ::fast_io::native_thread_local_allocator>;
