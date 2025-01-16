@@ -517,9 +517,7 @@ inline constexpr void write_all_impl(outstmtype outsm, typename outstmtype::outp
 			[[likely]]
 #endif
 		{
-			auto newcurr{curr + itdiff};
-			obuffer_set_curr(outsm, newcurr);
-			non_overlapped_copy(first, last, curr);
+			obuffer_set_curr(outsm, non_overlapped_copy_n(first, static_cast<::std::size_t>(itdiff), curr));
 			return;
 		}
 	}
