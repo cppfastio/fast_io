@@ -600,7 +600,10 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 									val = (val * base_char_type) + (val >> 8);
 									val = (((val & mask) * mul1) + (((val >> 16) & mask) * mul2)) >> 32;
 									ctrz_cval >>= shifter;
-									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least64_t, 8>.index_unchecked(ctrz_cval) + val);
+#if __has_cpp_attribute(assume)
+									[[assume(static_cast<::std::size_t>(ctrz_cval) < 8u)]];
+#endif
+									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least64_t, 8>.element[ctrz_cval] + val);
 
 									first += ctrz_cval;
 								}
