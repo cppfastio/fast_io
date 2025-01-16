@@ -583,8 +583,8 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 
 							if (::std::uint_least64_t const cval{((val + first_bound) | (val - zero_lower_bound)) & fullmask}; cval) [[likely]]
 							{
-								auto ctrz_cval{::std::countr_zero(cval)};
-								auto const valid_bits{ctrz_cval & -8};
+								unsigned ctrz_cval{static_cast<unsigned>(::std::countr_zero(cval))};
+								auto const valid_bits{ctrz_cval & static_cast<unsigned>(-8)};
 
 								if (valid_bits) [[likely]]
 								{
@@ -600,10 +600,7 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 									val = (val * base_char_type) + (val >> 8);
 									val = (((val & mask) * mul1) + (((val >> 16) & mask) * mul2)) >> 32;
 									ctrz_cval >>= shifter;
-#if __has_cpp_attribute(assume)
-									[[assume(static_cast<::std::size_t>(ctrz_cval) < 8u)]];
-#endif
-									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least64_t, 8>.element[ctrz_cval] + val);
+									res = static_cast<T>(res * ::fast_io::details::pow_table_n<base_char_type, ::std::uint_least64_t, 8>.index_unchecked(ctrz_cval) + val);
 
 									first += ctrz_cval;
 								}
@@ -641,8 +638,8 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 
 							if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval) [[likely]]
 							{
-								auto ctrz_cval{::std::countr_zero(cval)};
-								auto const valid_bits{ctrz_cval & -8};
+								unsigned ctrz_cval{static_cast<unsigned>(::std::countr_zero(cval))};
+								auto const valid_bits{ctrz_cval & static_cast<unsigned>(-8)};
 
 								if (valid_bits) [[likely]]
 								{
@@ -701,8 +698,8 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 
 							if (::std::uint_least64_t const cval{((val + first_bound) | (val - 0x0030003000300030)) & 0x8000800080008000}; cval) [[likely]]
 							{
-								auto ctrz_cval{::std::countr_zero(cval)};
-								auto const valid_bits{ctrz_cval & -16};
+								unsigned ctrz_cval{static_cast<unsigned>(::std::countr_zero(cval))};
+								auto const valid_bits{ctrz_cval & static_cast<unsigned>(-16)};
 
 								if (valid_bits) [[likely]]
 								{
@@ -772,8 +769,8 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 																 0x8080808080808080};
 								cval) [[likely]]
 							{
-								auto ctrz_cval{::std::countr_zero(cval)};
-								auto const valid_bits{ctrz_cval & -8};
+								unsigned ctrz_cval{static_cast<unsigned>(::std::countr_zero(cval))};
+								auto const valid_bits{ctrz_cval & static_cast<unsigned>(-8)};
 
 								if (valid_bits) [[likely]]
 								{
@@ -836,8 +833,8 @@ runtime_scan_int_contiguous_none_simd_space_part_define_impl(char_type const *fi
 
 							if (::std::uint_least32_t const cval{((val + first_bound) | (val - 0x30303030)) & 0x80808080}; cval) [[likely]]
 							{
-								auto ctrz_cval{::std::countr_zero(cval)};
-								auto const valid_bits{ctrz_cval & -8};
+								unsigned ctrz_cval{static_cast<unsigned>(::std::countr_zero(cval))};
+								auto const valid_bits{ctrz_cval & static_cast<unsigned>(-8)};
 
 								if (valid_bits) [[likely]]
 								{
