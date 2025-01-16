@@ -17,6 +17,7 @@ using ::fast_io::containers::strlike_end;
 using ::fast_io::containers::strlike_set_curr;
 using ::fast_io::containers::strlike_reserve;
 using ::fast_io::containers::io_strlike_ref;
+using ::fast_io::containers::basic_ostring_ref_fast_io;
 } // namespace containers
 
 #ifndef FAST_IO_FREESTANDING
@@ -33,6 +34,12 @@ using ::fast_io::tlc::wconcat_fast_io_tlc;
 using ::fast_io::tlc::u8concat_fast_io_tlc;
 using ::fast_io::tlc::u16concat_fast_io_tlc;
 using ::fast_io::tlc::u32concat_fast_io_tlc;
+
+using ::fast_io::tlc::ostring_ref_fast_io_tlc;
+using ::fast_io::tlc::wostring_ref_fast_io_tlc;
+using ::fast_io::tlc::u8ostring_ref_fast_io_tlc;
+using ::fast_io::tlc::u16ostring_ref_fast_io_tlc;
+using ::fast_io::tlc::u32ostring_ref_fast_io_tlc;
 } // namespace tlc
 
 using ::fast_io::string;
@@ -46,5 +53,11 @@ using ::fast_io::wconcat_fast_io;
 using ::fast_io::u8concat_fast_io;
 using ::fast_io::u16concat_fast_io;
 using ::fast_io::u32concat_fast_io;
+
+using ::fast_io::ostring_ref_fast_io;
+using ::fast_io::wostring_ref_fast_io;
+using ::fast_io::u8ostring_ref_fast_io;
+using ::fast_io::u16ostring_ref_fast_io;
+using ::fast_io::u32ostring_ref_fast_io;
 #endif
 } // namespace fast_io

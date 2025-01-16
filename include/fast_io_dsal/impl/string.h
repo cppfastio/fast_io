@@ -1619,6 +1619,8 @@ inline constexpr void swap(::fast_io::containers::basic_string<chtype, alloctype
 	a.swap(b);
 }
 
+template <::std::integral chtype, typename alloctype>
+using basic_ostring_ref_fast_io = ::fast_io::io_strlike_reference_wrapper<chtype, ::fast_io::containers::basic_string<chtype, alloctype>>;
 // context scan
 
 struct scan_fast_io_string_context
