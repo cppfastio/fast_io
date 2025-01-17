@@ -1081,7 +1081,7 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 		}
 	}
 
-	win32_9xa_dir_handle ret{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+	win32_9xa_dir_handle ret{concat_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
 
 	check_win32_9xa_dir_is_valid(ret);
 
@@ -1131,7 +1131,7 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 		}
 	}
 
-	win32_9xa_dir_handle_path_str str{concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(directory_handle->path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+	win32_9xa_dir_handle_path_str str{concat_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return handle;
 }
