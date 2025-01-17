@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #if !defined(__MSDOS__) && !defined(__NEWLIB__) && !defined(__wasi__) && !defined(_PICOLIBC__)
-// #include "base.h"
+#include "option.h"
 #include "arg_env.h"
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 #include "win32.h"
