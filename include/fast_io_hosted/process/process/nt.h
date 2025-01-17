@@ -531,7 +531,7 @@ inline nt_user_process_information nt_create_process_overloads(path_type const &
 	return nt_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio);
 }
 
-template <nt_family family, typename path_type>
+template <nt_family family>
 inline nt_user_process_information nt_create_process_overloads(::fast_io::nt_fs_dirent ent, nt_process_args const &args,
 															   nt_process_envs const &envs,
 															   win32_process_io const &processio)
