@@ -555,7 +555,7 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 
 			// check path handle
 			::fast_io::win32::details::check_win32_9xa_dir_is_valid(*directory_handle);
-			auto str{::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(filename, filename_c_str_len))};
+			auto str{::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(reinterpret_cast<char8_t_const_may_alias_ptr>(filename), filename_c_str_len))};
 
 			return win32_9xa_win9x_process_create_from_filepath_impl(reinterpret_cast<char const *>(str.c_str()), args_p->get(), envs_p->get(), *processio_p);
 		}
@@ -564,8 +564,8 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 
 template <win32_family family, typename path_type>
 inline win32_user_process_information win32_winnt_create_process_overloads(nt_at_entry entry, path_type const &filename,
-																	 basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
-																	 win32_process_io const &processio)
+																		   basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
+																		   win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(entry, filename, open_mode::in | open_mode::excl);
 	return win32_winnt_process_create_from_handle_impl<family>(nf.handle, args.get(), envs.get(), processio);
@@ -587,16 +587,16 @@ inline win32_user_process_information win32_9xa_win9x_create_process_overloads(w
 
 template <win32_family family, typename path_type>
 inline win32_user_process_information win32_winnt_create_process_overloads(path_type const &filename, basic_win32_process_args<family> const &args,
-																	 basic_win32_process_envs<family> const &envs,
-																	 win32_process_io const &processio)
+																		   basic_win32_process_envs<family> const &envs,
+																		   win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(filename, open_mode::in | open_mode::excl);
 	return win32_winnt_process_create_from_handle_impl<family>(nf.handle, args.get(), envs.get(), processio);
 }
 
-template <win32_family family, typename path_type>
-inline win32_user_process_information win32_9xa_win9x_create_process_overloads(path_type const &filename, basic_win32_process_args<family> const &args,
-																			   basic_win32_process_envs<family> const &envs,
+template <typename path_type>
+inline win32_user_process_information win32_9xa_win9x_create_process_overloads(path_type const &filename, win32_process_args_9xa const &args,
+																			   win32_process_envs_9xa const &envs,
 																			   win32_process_io const &processio)
 {
 	return win32_api_common_9xa(filename,
@@ -607,22 +607,21 @@ inline win32_user_process_information win32_9xa_win9x_create_process_overloads(p
 									__builtin_addressof(processio)});
 }
 
-template <win32_family family, typename path_type>
-inline win32_user_process_information win32_winnt_create_process_overloads(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family> const &args,
-																	 basic_win32_process_envs<family> const &envs,
-																	 win32_process_io const &processio)
+template <win32_family family>
+inline win32_user_process_information win32_winnt_create_process_overloads(::fast_io::nt_fs_dirent const &ent, basic_win32_process_args<family> const &args,
+																		   basic_win32_process_envs<family> const &envs,
+																		   win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(ent, open_mode::in | open_mode::excl);
 	return win32_winnt_process_create_from_handle_impl<family>(nf.handle, args.get(), envs.get(), processio);
 }
 
-template <typename path_type>
-inline win32_user_process_information win32_9xa_win9x_create_process_overloads(::fast_io::win32_9xa_fs_dirent ent, win32_process_args_9xa const &args,
+inline win32_user_process_information win32_9xa_win9x_create_process_overloads(::fast_io::win32_9xa_fs_dirent const &ent, win32_process_args_9xa const &args,
 																			   win32_process_envs_9xa const &envs, win32_process_io const &processio)
 {
 	return win32_api_common_9xa(ent.filename,
 								win32_9xa_win9x_create_process_at_fs_dirent{
-									__builtin_addressof(entry.handle),
+									__builtin_addressof(ent.handle),
 									__builtin_addressof(args),
 									__builtin_addressof(envs),
 									__builtin_addressof(processio)});
