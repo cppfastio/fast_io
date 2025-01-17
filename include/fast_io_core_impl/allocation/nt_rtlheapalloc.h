@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "../../fast_io_hosted/platforms/nt/nt_preliminary_definition.h"
+#include "nt_preliminary_definition.h"
 
 namespace fast_io
 {

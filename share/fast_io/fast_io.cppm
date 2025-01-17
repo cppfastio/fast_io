@@ -17,7 +17,11 @@ module;
 
 export module fast_io;
 
+#include "fast_io_inc/core.inc"
+#include "fast_io_inc/core/allocation.inc"
+
 #ifndef FAST_IO_FREESTANDING
+#include "fast_io_inc/hosted.inc"
 #include "fast_io_inc/legacy/c.inc"
 #include "fast_io_inc/legacy/filebuf.inc"
 #include "fast_io_inc/device.inc"
