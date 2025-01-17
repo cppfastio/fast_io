@@ -64,7 +64,7 @@ inline constexpr void construct_win32_process_args_decay_singal(
 	}
 	else
 	{
-		static_assert(type_error, "some types are not printable or codecvt printable, so we cannot construct win32_process_args");
+		static_assert(type_error, "some types are not printable or codecvt printable, so we cannot construct basic_win32_process_args");
 	}
 }
 
@@ -98,7 +98,7 @@ inline constexpr void construct_win32_process_envs_decay_singal(
 	}
 	else
 	{
-		static_assert(type_error, "some types are not printable or codecvt printable, so we cannot construct win32_process_envs");
+		static_assert(type_error, "some types are not printable or codecvt printable, so we cannot construct basic_win32_process_envs");
 	}
 }
 
@@ -119,7 +119,7 @@ inline constexpr void construct_win32_process_envs_decay(
 } // namespace details
 
 template <::fast_io::win32_family family>
-struct win32_process_args
+struct basic_win32_process_args
 {
 	inline static constexpr bool is_nt{family == ::fast_io::win32_family::wide_nt};
 	using char_type = ::std::conditional_t<is_nt, char16_t, char>;
@@ -138,16 +138,16 @@ struct win32_process_args
 
 	storage_type args{};
 
-	inline constexpr win32_process_args() noexcept = default;
+	inline constexpr basic_win32_process_args() noexcept = default;
 
-	inline constexpr win32_process_args(default_args_t, char_type const *oscstr) noexcept
+	inline constexpr basic_win32_process_args(default_args_t, char_type const *oscstr) noexcept
 	{
 		args = storage_type{::fast_io::mnp::os_c_str(oscstr)};
 	}
 
 	template <typename T, typename... Args>
 		requires(!::std::same_as<::std::remove_cvref_t<T>, default_args_t>)
-	inline constexpr win32_process_args(T &&t, Args &&...as)
+	inline constexpr basic_win32_process_args(T &&t, Args &&...as)
 	{
 		details::construct_win32_process_args_decay(args,
 													::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
@@ -166,14 +166,14 @@ struct win32_process_args
 		}
 	}
 
-	inline constexpr void append(win32_process_args const &others) noexcept
+	inline constexpr void append(basic_win32_process_args const &others) noexcept
 	{
 		args.append(others.args);
 	}
 };
 
 template <::fast_io::win32_family family>
-struct win32_process_envs
+struct basic_win32_process_envs
 {
 	inline static constexpr bool is_nt{family == ::fast_io::win32_family::wide_nt};
 	using char_type = ::std::conditional_t<is_nt, char16_t, char>;
@@ -192,9 +192,9 @@ struct win32_process_envs
 
 	storage_type envs{};
 
-	inline constexpr win32_process_envs() noexcept = default;
+	inline constexpr basic_win32_process_envs() noexcept = default;
 
-	inline constexpr win32_process_envs(default_args_t, char_type const *oscstr) noexcept
+	inline constexpr basic_win32_process_envs(default_args_t, char_type const *oscstr) noexcept
 	{
 		auto estr{oscstr};
 		for (; *estr || estr[1]; ++estr)
@@ -206,7 +206,7 @@ struct win32_process_envs
 
 	template <typename T, typename... Args>
 		requires(!::std::same_as<::std::remove_cvref_t<T>, default_args_t>)
-	inline constexpr win32_process_envs(T &&t, Args &&...as)
+	inline constexpr basic_win32_process_envs(T &&t, Args &&...as)
 	{
 		details::construct_win32_process_envs_decay(envs,
 													::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
@@ -225,14 +225,23 @@ struct win32_process_envs
 		}
 	}
 
-	inline constexpr void append(win32_process_envs const &others) noexcept
+	inline constexpr void append(basic_win32_process_envs const &others) noexcept
 	{
 		envs.append(others.envs);
 	}
 };
 
-using nt_process_args = ::fast_io::win32_process_args<::fast_io::win32_family::wide_nt>;
-using nt_process_envs = ::fast_io::win32_process_envs<::fast_io::win32_family::wide_nt>;
+using win32_process_args_ntw = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt>;
+using win32_process_envs_ntw = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::wide_nt>;
+
+using win32_process_args_9xa = ::fast_io::basic_win32_process_args<::fast_io::win32_family::ansi_9x>;
+using win32_process_envs_9xa = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::ansi_9x>;
+
+using win32_process_args = ::fast_io::basic_win32_process_args<::fast_io::win32_family::native>;
+using win32_process_envs = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::native>;
+
+using nt_process_args = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt>;
+using nt_process_envs = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::wide_nt>;
 
 #else
 

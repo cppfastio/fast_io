@@ -411,7 +411,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 
 template <win32_family family, typename path_type>
 inline win32_user_process_information win32_create_process_overloads(nt_at_entry entry, path_type const &filename,
-																	 win32_process_args<family> const &args, win32_process_envs<family> const &envs,
+																	 basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
 																	 win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(entry, filename, open_mode::in | open_mode::excl);
@@ -419,8 +419,8 @@ inline win32_user_process_information win32_create_process_overloads(nt_at_entry
 }
 
 template <win32_family family, typename path_type>
-inline win32_user_process_information win32_create_process_overloads(path_type const &filename, win32_process_args<family> const &args,
-																	 win32_process_envs<family> const &envs,
+inline win32_user_process_information win32_create_process_overloads(path_type const &filename, basic_win32_process_args<family> const &args,
+																	 basic_win32_process_envs<family> const &envs,
 																	 win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(filename, open_mode::in | open_mode::excl);
@@ -428,8 +428,8 @@ inline win32_user_process_information win32_create_process_overloads(path_type c
 }
 
 template <win32_family family, typename path_type>
-inline win32_user_process_information win32_create_process_overloads(::fast_io::nt_fs_dirent ent, win32_process_args<family> const &args,
-																	 win32_process_envs<family> const &envs,
+inline win32_user_process_information win32_create_process_overloads(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family> const &args,
+																	 basic_win32_process_envs<family> const &envs,
 																	 win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(ent, open_mode::in | open_mode::excl);
@@ -540,22 +540,22 @@ public:
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, win32_process_args<family> const &args,
-										 win32_process_envs<family> const &envs, win32_process_io const &processio)
+	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, basic_win32_process_args<family> const &args,
+										 basic_win32_process_envs<family> const &envs, win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(nate, filename, args, envs, processio)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	inline explicit win32_family_process(path_type const &filename, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
+	inline explicit win32_family_process(path_type const &filename, basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
 										 win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(filename, args, envs, processio)}
 	{
 	}
 
-	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, win32_process_args<family> const &args, win32_process_envs<family> const &envs,
+	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
 										 win32_process_io const &processio)
 		: win32_family_process_observer<family>{
 			  win32::details::win32_create_process_overloads<family>(ent, args, envs, processio)}

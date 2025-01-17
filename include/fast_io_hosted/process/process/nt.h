@@ -636,7 +636,7 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 }
 
 template <nt_family family>
-inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_code) 
+inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_code)
 {
 	auto const status{::fast_io::win32::nt::nt_terminate_process<family == nt_family::zw>(
 		ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
@@ -663,7 +663,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit nt_family_process(nt_at_entry nate, path_type const &filename, nt_process_args const &args,
-							   nt_process_envs const &envs, win32_process_io const &processio)
+									  nt_process_envs const &envs, win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio)}
 	{
@@ -671,14 +671,14 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit nt_family_process(path_type const &filename, nt_process_args const &args, nt_process_envs const &envs,
-							   win32_process_io const &processio)
+									  win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio)}
 	{
 	}
 
 	inline explicit nt_family_process(::fast_io::nt_fs_dirent ent, nt_process_args const &args, nt_process_envs const &envs,
-							   win32_process_io const &processio)
+									  win32_process_io const &processio)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio)}
 	{
