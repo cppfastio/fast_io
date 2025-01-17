@@ -148,7 +148,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 			}
 		}
 
-		if (::fast_io::freestanding::my_memcmp(pszFilename, u"\\Device\\Mup", 22) == 0)
+		if (::fast_io::freestanding::my_memcmp(pszFilename, u"\\Device\\Mup\\", 24) == 0)
 		{
 			address_begin += 10;
 			*address_begin = u'\\';
@@ -310,7 +310,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 			}
 		}
 
-		if (::fast_io::freestanding::my_memcmp(pszFilename, u8"\\Device\\Mup", 11) == 0)
+		if (::fast_io::freestanding::my_memcmp(pszFilename, u8"\\Device\\Mup\\", 12) == 0)
 		{
 			address_begin += 10;
 			*address_begin = ::fast_io::char_literal_v<u8'\\', char>;
