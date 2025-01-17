@@ -18,7 +18,9 @@ inline constexpr auto strlike_construct_single_character_define(
 	return ::std::basic_string<char_type, traits_type, allocator_type>(1, ch);
 }
 
-#if (!defined(__GLIBCXX__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI))
+#if (defined(__GLIBCXX__) && !defined(_LIBCPP_VERSION) && !defined(_GLIBCXX_USE_CXX11_ABI)) || \
+	(defined(_LIBCPP_VERSION) &&                                                               \
+	 !((_LIBCPP_VERSION < 20 && !defined(_LIBCPP_HAS_NO_ASAN) || _LIBCPP_HAS_ASAN) && defined(_LIBCPP_INSTRUMENTED_WITH_ASAN)))
 
 template <::std::integral char_type, typename traits_type, typename allocator_type>
 inline constexpr char_type *
@@ -58,6 +60,14 @@ struct empty_string_set_ptr
 };
 
 } // namespace details
+
+template <::std::integral char_type, typename traits_type, typename allocator_type>
+inline constexpr ::std::size_t
+strlike_sso_size(io_strlike_type_t<char_type, ::std::basic_string<char_type, traits_type, allocator_type>>) noexcept
+{
+	return ::fast_io::details::string_hack::local_capacity<
+		::std::basic_string<char_type, traits_type, allocator_type>>();
+}
 #endif
 
 template <::std::integral char_type, typename traits_type, typename allocator_type>
@@ -140,15 +150,6 @@ strlike_push_back(io_strlike_type_t<char_type, ::std::basic_string<char_type, tr
 {
 	str.push_back(ch);
 }
-#if (!defined(__GLIBCXX__) || defined(_LIBCPP_VERSION) || defined(_GLIBCXX_USE_CXX11_ABI))
-template <::std::integral char_type, typename traits_type, typename allocator_type>
-inline constexpr ::std::size_t
-strlike_sso_size(io_strlike_type_t<char_type, ::std::basic_string<char_type, traits_type, allocator_type>>) noexcept
-{
-	return ::fast_io::details::string_hack::local_capacity<
-		::std::basic_string<char_type, traits_type, allocator_type>>();
-}
-#endif
 template <::std::integral char_type, typename traits_type, typename allocator_type>
 inline constexpr io_strlike_reference_wrapper<char_type, ::std::basic_string<char_type, traits_type, allocator_type>>
 io_strlike_ref(io_alias_t, ::std::basic_string<char_type, traits_type, allocator_type> &str) noexcept
@@ -158,11 +159,20 @@ io_strlike_ref(io_alias_t, ::std::basic_string<char_type, traits_type, allocator
 
 template <::std::integral CharT, typename Traits = ::std::char_traits<CharT>,
 		  typename Allocator = ::std::allocator<CharT>>
-using basic_ostring_ref = io_strlike_reference_wrapper<CharT, ::std::basic_string<CharT, Traits, Allocator>>;
-using ostring_ref = basic_ostring_ref<char>;
-using wostring_ref = basic_ostring_ref<wchar_t>;
-using u8ostring_ref = basic_ostring_ref<char8_t>;
-using u16ostring_ref = basic_ostring_ref<char16_t>;
-using u32ostring_ref = basic_ostring_ref<char32_t>;
+using basic_ostring_ref_std = io_strlike_reference_wrapper<CharT, ::std::basic_string<CharT, Traits, Allocator>>;
+using ostring_ref_std = basic_ostring_ref_std<char>;
+using wostring_ref_std = basic_ostring_ref_std<wchar_t>;
+using u8ostring_ref_std = basic_ostring_ref_std<char8_t>;
+using u16ostring_ref_std = basic_ostring_ref_std<char16_t>;
+using u32ostring_ref_std = basic_ostring_ref_std<char32_t>;
+
+template <::std::integral CharT, typename Traits = ::std::char_traits<CharT>,
+		  typename Allocator = ::std::allocator<CharT>>
+using basic_ostring_ref [[deprecated("Please use basic_ostring_ref_std or basic_ostring_ref_fast_io instead.")]] = ::fast_io::basic_ostring_ref_std<CharT, Traits, Allocator>;
+using ostring_ref [[deprecated("Please use ostring_ref_std or ostring_ref_fast_io instead.")]] = ::fast_io::ostring_ref_std;
+using wostring_ref [[deprecated("Please use wostring_ref_std or wostring_ref_fast_io instead.")]] = ::fast_io::wostring_ref_std;
+using u8ostring_ref [[deprecated("Please use u8ostring_ref_std or u8ostring_ref_fast_io instead.")]] = ::fast_io::u8ostring_ref_std;
+using u16ostring_ref [[deprecated("Please use u16ostring_ref_std or u16ostring_ref_fast_io instead.")]] = ::fast_io::u16ostring_ref_std;
+using u32ostring_ref [[deprecated("Please use u32ostring_ref_std or u32ostring_ref_fast_io instead.")]] = ::fast_io::u32ostring_ref_std;
 
 } // namespace fast_io

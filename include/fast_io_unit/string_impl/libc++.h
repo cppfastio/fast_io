@@ -143,7 +143,17 @@ inline void set_size(::std::basic_string<elem, traits, alloc> &str,
 		{
 			auto dataptr{str.data()};
 			auto edptr{dataptr + __r_.__l.__size_};
-			::std::__annotate_contiguous_container<alloc>(dataptr, dataptr + str.capacity(), dataptr + s + 1, edptr + 1);
+			auto longcap{__r_.__l.__cap_};
+			constexpr bool libcxx_is_alternate_string_layout{
+#ifdef _LIBCPP_ABI_ALTERNATE_STRING_LAYOUT
+				true
+#endif
+			};
+			if constexpr ((std::endian::big == std::endian::native) == libcxx_is_alternate_string_layout)
+			{
+				longcap <<= 1u;
+			}
+			::std::__annotate_contiguous_container<alloc>(dataptr, dataptr + longcap, edptr + 1, dataptr + s + 1);
 		}
 #endif
 		__r_.__l.__size_ = s;
