@@ -80,15 +80,16 @@ inline void win32_duplicate_object_std(void *parent_process, void *&standard_io_
 template <win32_family family>
 using win32_process_char_type = ::std::conditional_t<family == win32_family::wide_nt, char16_t, char>;
 
+// Applicable to unicode and ansi versions on winnt
 template <win32_family family>
-inline win32_user_process_information win32_process_create_impl(void *__restrict fhandle, win32_process_char_type<family> const *args,
-																win32_process_char_type<family> const *envs,
-																win32_process_io const &__restrict processio)
+inline win32_user_process_information win32_winnt_process_create_from_handle_impl(void *__restrict fhandle, win32_process_char_type<family> const *args,
+																				  win32_process_char_type<family> const *envs,
+																				  win32_process_io const &__restrict processio)
 {
 	constexpr bool is_nt{family == win32_family::wide_nt};
 	if constexpr (is_nt)
 	{
-		char16_t pszFilename[261];
+		char16_t pszFilename[1024];
 		void *hFileMap{::fast_io::win32::CreateFileMappingW(fhandle, nullptr, 0x02, 0, 1, nullptr)};
 		if (!hFileMap) [[unlikely]]
 		{
@@ -113,7 +114,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 			(reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)),
 			 pMem,
 			 pszFilename,
-			 260)) [[unlikely]]
+			 1023)) [[unlikely]]
 		{
 			throw_win32_error();
 		}
@@ -124,33 +125,38 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		auto address_begin{pszFilename};
 
 		// change nt path to dos path
-		if (pszFilename[0] == u'\\')
+		char16_t DosDevice[4]{0, u':', 0, 0};
+		char16_t NtPath[64];
+		char16_t *RetStr{};
+		::std::size_t NtPathLen{};
+		constexpr char16_t bg{65};
+		constexpr char16_t ed{bg + 26};
+		for (char16_t i{bg}; i != ed; ++i)
 		{
-			char16_t DosDevice[4]{0, u':', 0, 0};
-			char16_t NtPath[64];
-			char16_t *RetStr{};
-			::std::size_t NtPathLen{};
-			constexpr char16_t bg{65};
-			constexpr char16_t ed{bg+26};
-			for (char16_t i{bg}; i != ed; ++i)
+			DosDevice[0] = i;
+			if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
 			{
-				DosDevice[0] = i;
-				if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
-				{
-					NtPathLen = ::fast_io::cstr_len(NtPath);
+				NtPathLen = ::fast_io::cstr_len(NtPath);
 
-					if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char16_t)) == 0) [[unlikely]]
-					{
-						goto next;
-					}
+				if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char16_t)) == 0) [[unlikely]]
+				{
+					address_begin += NtPathLen - 2;
+					address_begin[0] = DosDevice[0];
+					address_begin[1] = u':';
+					goto next;
 				}
 			}
-			throw_win32_error(0x3);
-		next:
-			address_begin += NtPathLen - 2;
-			address_begin[0] = DosDevice[0];
-			address_begin[1] = u':';
 		}
+
+		if (::fast_io::freestanding::my_memcmp(pszFilename, u"\\Device\\Mup\\", 24) == 0)
+		{
+			address_begin += 10;
+			*address_begin = u'\\';
+			goto next;
+		}
+
+		throw_win32_error(0x3);
+	next:
 
 		// create process
 		::fast_io::win32::startupinfow si{sizeof(si)};
@@ -243,7 +249,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 	}
 	else
 	{
-		char pszFilename[261];
+		char pszFilename[2048];
 		void *hFileMap{::fast_io::win32::CreateFileMappingA(fhandle, nullptr, 0x02, 0, 1, nullptr)};
 		if (!hFileMap) [[unlikely]]
 		{
@@ -267,7 +273,7 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 				reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)),
 				pMem,
 				pszFilename,
-				260)) [[unlikely]]
+				2047)) [[unlikely]]
 		{
 			throw_win32_error();
 		}
@@ -280,45 +286,40 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 		auto address_begin{pszFilename};
 
 		// change nt path to dos path
-		auto k32_module{::fast_io::win32::GetModuleHandleA(reinterpret_cast<char const *>(u8"kernel32.dll"))};
-		if (k32_module)
+		char8_t DosDevice[4]{0, u8':', 0, 0};
+		constexpr ::std::size_t ntpathsize{64};
+		char NtPath[ntpathsize];
+		char *RetStr{};
+		::std::size_t NtPathLen{};
+		constexpr char8_t bg{static_cast<char8_t>(ntpathsize)};
+		constexpr char8_t ed{bg + 26};
+		for (char8_t i{bg}; i != ed; ++i)
 		{
-			using QueryDosDeviceA_t = ::std::uint_least32_t (*)(char const *, char *, ::std::uint_least32_t) noexcept;
-
-			// win95 may not have this function, need check (?)
-			auto QueryDosDeviceA_p{reinterpret_cast<QueryDosDeviceA_t>(::fast_io::win32::GetProcAddress(k32_module, reinterpret_cast<char const *>(u8"QueryDosDeviceA")))};
-			if (QueryDosDeviceA_p)
+			*DosDevice = i;
+			if (::fast_io::win32::QueryDosDeviceA(reinterpret_cast<char const *>(DosDevice), NtPath, ntpathsize))
 			{
-				if (pszFilename[0] == u8'\\')
-				{
-					char8_t DosDevice[4]{0, u8':', 0, 0};
-					constexpr ::std::size_t ntpathsize{64};
-					char NtPath[ntpathsize];
-					char *RetStr{};
-					::std::size_t NtPathLen{};
-					constexpr char8_t bg{static_cast<char8_t>(ntpathsize)};
-					constexpr char8_t ed{bg+26};
-					for (char8_t i{bg}; i != ed; ++i)
-					{
-						*DosDevice = i;
-						if (QueryDosDeviceA_p(reinterpret_cast<char const*>(DosDevice), NtPath, ntpathsize))
-						{
-							NtPathLen = ::fast_io::cstr_len(NtPath);
+				NtPathLen = ::fast_io::cstr_len(NtPath);
 
-							if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char)) == 0) [[unlikely]]
-							{
-								goto next2;
-							}
-						}
-					}
-					throw_win32_error(0x3);
-				next2:
+				if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char)) == 0) [[unlikely]]
+				{
 					address_begin += NtPathLen - 2;
 					address_begin[0] = DosDevice[0];
-					address_begin[1] = u8':';
+					address_begin[1] = ::fast_io::char_literal_v<u8':', char>;
+					goto next2;
 				}
 			}
 		}
+
+		if (::fast_io::freestanding::my_memcmp(pszFilename, u8"\\Device\\Mup\\", 12) == 0)
+		{
+			address_begin += 10;
+			*address_begin = ::fast_io::char_literal_v<u8'\\', char>;
+			goto next2;
+		}
+
+		throw_win32_error(0x3);
+	next2:
+
 		// create process
 		::fast_io::win32::startupinfoa si{sizeof(si)};
 
@@ -409,33 +410,231 @@ inline win32_user_process_information win32_process_create_impl(void *__restrict
 	}
 }
 
+// Applicable to ansi version on win9x
+inline win32_user_process_information win32_9xa_win9x_process_create_from_filepath_impl(char const *filepath,
+																						char const *args,
+																						char const *envs,
+																						win32_process_io const &__restrict processio)
+{
+	// there are no psapi.dll on windows 9x
+	::fast_io::win32::startupinfoa si{sizeof(si)};
+
+	if (!processio.in.is_dev_null)
+	{
+		if (processio.in.win32_pipe_in_handle)
+		{
+			si.hStdInput = processio.in.win32_pipe_in_handle;
+
+			if (!::fast_io::win32::SetHandleInformation(processio.in.win32_pipe_out_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+			{
+				throw_win32_error();
+			}
+		}
+		else if (processio.in.win32_handle)
+		{
+			si.hStdInput = processio.in.win32_handle;
+		}
+		else
+		{
+			si.hStdInput = ::fast_io::win32_stdin().handle;
+		}
+	}
+	else
+	{
+		si.hStdInput = nullptr;
+	}
+
+	if (!processio.out.is_dev_null)
+	{
+		if (processio.out.win32_pipe_out_handle)
+		{
+			si.hStdOutput = processio.out.win32_pipe_out_handle;
+
+			if (!::fast_io::win32::SetHandleInformation(processio.out.win32_pipe_in_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+			{
+				throw_win32_error();
+			}
+		}
+		else if (processio.out.win32_handle)
+		{
+			si.hStdOutput = processio.out.win32_handle;
+		}
+		else
+		{
+			si.hStdOutput = ::fast_io::win32_stdout().handle;
+		}
+	}
+	else
+	{
+		si.hStdOutput = nullptr;
+	}
+
+	if (!processio.err.is_dev_null)
+	{
+		if (processio.err.win32_pipe_out_handle)
+		{
+			si.hStdError = processio.err.win32_pipe_out_handle;
+
+			if (!::fast_io::win32::SetHandleInformation(processio.err.win32_pipe_in_handle, 0x00000001 /*HANDLE_FLAG_INHERIT*/, 0)) [[unlikely]]
+			{
+				throw_win32_error();
+			}
+		}
+		else if (processio.err.win32_handle)
+		{
+			si.hStdError = processio.err.win32_handle;
+		}
+		else
+		{
+			si.hStdError = ::fast_io::win32_stderr().handle;
+		}
+	}
+	else
+	{
+		si.hStdError = nullptr;
+	}
+
+	si.dwFlags = 0x00000100;
+
+	::fast_io::win32::process_information pi{};
+	if (!::fast_io::win32::CreateProcessA(filepath, const_cast<char *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
+	{
+		throw_win32_error();
+	}
+
+	return {pi.hProcess, pi.hThread};
+}
+
+struct win32_9xa_win9x_create_process_at_fs_dirent
+{
+	using family_char_type = char;
+	win32_9xa_dir_handle const *directory_handle{};
+	win32_process_args_9xa const *args_p{};
+	win32_process_envs_9xa const *envs_p{};
+	win32_process_io const *processio_p{};
+
+	inline win32_user_process_information operator()(family_char_type const *filename, ::std::size_t filename_c_str_len)
+	{
+		if (directory_handle == nullptr)
+		{
+			return win32_9xa_win9x_process_create_from_filepath_impl(filename, args_p->get(), envs_p->get(), *processio_p);
+		}
+		else
+		{ // check filename
+			using char8_t_const_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+				[[__gnu__::__may_alias__]]
+#endif
+				= char8_t const *;
+
+			auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename)};
+			auto curr{beg};
+
+			if (auto const fc{*beg}; fc == u8'+' ||
+									 fc == u8'-' ||
+									 fc == u8'.') [[unlikely]]
+			{
+				throw_win32_error(3221225530);
+			}
+
+			++curr;
+
+			for (; curr != beg + filename_c_str_len; ++curr)
+			{
+				auto fc{*curr};
+				if (fc == u8'/' ||
+					fc == u8'\\' ||
+					fc == u8'\t' ||
+					fc == u8'\b' ||
+					fc == u8'@' ||
+					fc == u8'#' ||
+					fc == u8'$' ||
+					fc == u8'%' ||
+					fc == u8'^' ||
+					fc == u8'&' ||
+					fc == u8'*' ||
+					fc == u8'(' ||
+					fc == u8')' ||
+					fc == u8'[' ||
+					fc == u8']') [[unlikely]]
+				{
+					throw_win32_error(3221225530);
+				}
+			}
+
+			// check path handle
+			::fast_io::win32::details::check_win32_9xa_dir_is_valid(*directory_handle);
+			auto str{::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(reinterpret_cast<char8_t_const_may_alias_ptr>(filename), filename_c_str_len))};
+
+			return win32_9xa_win9x_process_create_from_filepath_impl(reinterpret_cast<char const *>(str.c_str()), args_p->get(), envs_p->get(), *processio_p);
+		}
+	}
+};
+
 template <win32_family family, typename path_type>
-inline win32_user_process_information win32_create_process_overloads(nt_at_entry entry, path_type const &filename,
-																	 basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
-																	 win32_process_io const &processio)
+inline win32_user_process_information win32_winnt_create_process_overloads(nt_at_entry entry, path_type const &filename,
+																		   basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
+																		   win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(entry, filename, open_mode::in | open_mode::excl);
-	return win32_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio);
+	return win32_winnt_process_create_from_handle_impl<family>(nf.handle, args.get(), envs.get(), processio);
+}
+
+
+template <typename path_type>
+inline win32_user_process_information win32_9xa_win9x_create_process_overloads(win32_9xa_at_entry entry, path_type const &filename,
+																			   win32_process_args_9xa const &args, win32_process_envs_9xa const &envs,
+																			   win32_process_io const &processio)
+{
+	return win32_api_common_9xa(filename,
+								win32_9xa_win9x_create_process_at_fs_dirent{
+									__builtin_addressof(entry.handle),
+									__builtin_addressof(args),
+									__builtin_addressof(envs),
+									__builtin_addressof(processio)});
 }
 
 template <win32_family family, typename path_type>
-inline win32_user_process_information win32_create_process_overloads(path_type const &filename, basic_win32_process_args<family> const &args,
-																	 basic_win32_process_envs<family> const &envs,
-																	 win32_process_io const &processio)
+inline win32_user_process_information win32_winnt_create_process_overloads(path_type const &filename, basic_win32_process_args<family> const &args,
+																		   basic_win32_process_envs<family> const &envs,
+																		   win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(filename, open_mode::in | open_mode::excl);
-	return win32_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio);
+	return win32_winnt_process_create_from_handle_impl<family>(nf.handle, args.get(), envs.get(), processio);
 }
 
-template <win32_family family, typename path_type>
-inline win32_user_process_information win32_create_process_overloads(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family> const &args,
-																	 basic_win32_process_envs<family> const &envs,
-																	 win32_process_io const &processio)
+template <typename path_type>
+inline win32_user_process_information win32_9xa_win9x_create_process_overloads(path_type const &filename, win32_process_args_9xa const &args,
+																			   win32_process_envs_9xa const &envs,
+																			   win32_process_io const &processio)
+{
+	return win32_api_common_9xa(filename,
+								win32_9xa_win9x_create_process_at_fs_dirent{
+									nullptr,
+									__builtin_addressof(args),
+									__builtin_addressof(envs),
+									__builtin_addressof(processio)});
+}
+
+template <win32_family family>
+inline win32_user_process_information win32_winnt_create_process_overloads(::fast_io::nt_fs_dirent const &ent, basic_win32_process_args<family> const &args,
+																		   basic_win32_process_envs<family> const &envs,
+																		   win32_process_io const &processio)
 {
 	basic_win32_family_file<family, char> nf(ent, open_mode::in | open_mode::excl);
-	return win32_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio);
+	return win32_winnt_process_create_from_handle_impl<family>(nf.handle, args.get(), envs.get(), processio);
 }
 
+inline win32_user_process_information win32_9xa_win9x_create_process_overloads(::fast_io::win32_9xa_fs_dirent const &ent, win32_process_args_9xa const &args,
+																			   win32_process_envs_9xa const &envs, win32_process_io const &processio)
+{
+	return win32_api_common_9xa(ent.filename,
+								win32_9xa_win9x_create_process_at_fs_dirent{
+									__builtin_addressof(ent.handle),
+									__builtin_addressof(args),
+									__builtin_addressof(envs),
+									__builtin_addressof(processio)});
+}
 } // namespace win32::details
 
 template <win32_family family>
@@ -543,7 +742,15 @@ public:
 	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, basic_win32_process_args<family> const &args,
 										 basic_win32_process_envs<family> const &envs, win32_process_io const &processio)
 		: win32_family_process_observer<family>{
-			  win32::details::win32_create_process_overloads<family>(nate, filename, args, envs, processio)}
+			  win32::details::win32_winnt_create_process_overloads<family>(nate, filename, args, envs, processio)}
+	{
+	}
+
+	template <::fast_io::constructible_to_os_c_str path_type>
+	inline explicit win32_family_process(win32_9xa_at_entry nate, path_type const &filename, basic_win32_process_args<family> const &args,
+										 basic_win32_process_envs<family> const &envs, win32_process_io const &processio)
+		: win32_family_process_observer<family>{
+			  win32::details::win32_9xa_win9x_create_process_overloads(nate, filename, args, envs, processio)}
 	{
 	}
 
@@ -551,14 +758,26 @@ public:
 	inline explicit win32_family_process(path_type const &filename, basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
 										 win32_process_io const &processio)
 		: win32_family_process_observer<family>{
-			  win32::details::win32_create_process_overloads<family>(filename, args, envs, processio)}
+#if defined(_WIN32_WINDOWS)
+			  win32::details::win32_9xa_win9x_create_process_overloads(filename, args, envs, processio)
+#else
+			  win32::details::win32_winnt_create_process_overloads<family>(filename, args, envs, processio)
+#endif
+		  }
 	{
 	}
 
 	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
 										 win32_process_io const &processio)
 		: win32_family_process_observer<family>{
-			  win32::details::win32_create_process_overloads<family>(ent, args, envs, processio)}
+			  win32::details::win32_winnt_create_process_overloads<family>(ent, args, envs, processio)}
+	{
+	}
+
+	inline explicit win32_family_process(::fast_io::win32_9xa_fs_dirent ent, basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
+										 win32_process_io const &processio)
+		: win32_family_process_observer<family>{
+			  win32::details::win32_9xa_win9x_create_process_overloads(ent, args, envs, processio)}
 	{
 	}
 
