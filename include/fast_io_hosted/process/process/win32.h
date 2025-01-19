@@ -125,6 +125,13 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		auto address_begin{pszFilename};
 
 		// change nt path to dos path
+		if (::fast_io::freestanding::my_memcmp(pszFilename, u"\\Device\\Mup\\", 12 * sizeof(char16_t)) == 0)
+		{
+			address_begin += 10;
+			*address_begin = u'\\';
+			goto next;
+		}
+
 		char16_t DosDevice[4]{0, u':', 0, 0};
 		char16_t NtPath[64];
 		char16_t *RetStr{};
@@ -146,13 +153,6 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 					goto next;
 				}
 			}
-		}
-
-		if (::fast_io::freestanding::my_memcmp(pszFilename, u"\\Device\\Mup\\", 24) == 0)
-		{
-			address_begin += 10;
-			*address_begin = u'\\';
-			goto next;
 		}
 
 		throw_win32_error(0x3);
@@ -286,6 +286,13 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		auto address_begin{pszFilename};
 
 		// change nt path to dos path
+		if (::fast_io::freestanding::my_memcmp(pszFilename, u8"\\Device\\Mup\\", 12 * sizeof(char8_t)) == 0)
+		{
+			address_begin += 10;
+			*address_begin = ::fast_io::char_literal_v<u8'\\', char>;
+			goto next2;
+		}
+
 		char8_t DosDevice[4]{0, u8':', 0, 0};
 		constexpr ::std::size_t ntpathsize{64};
 		char NtPath[ntpathsize];
@@ -308,13 +315,6 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 					goto next2;
 				}
 			}
-		}
-
-		if (::fast_io::freestanding::my_memcmp(pszFilename, u8"\\Device\\Mup\\", 12) == 0)
-		{
-			address_begin += 10;
-			*address_begin = ::fast_io::char_literal_v<u8'\\', char>;
-			goto next2;
 		}
 
 		throw_win32_error(0x3);
