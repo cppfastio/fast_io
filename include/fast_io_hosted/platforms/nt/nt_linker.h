@@ -1096,8 +1096,7 @@ extern ::std::uint_least32_t
 #if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
 	__stdcall
 #endif
-	RtlNtPathNameToDosPathName(::std::uint_least32_t, rtl_unicode_string_buffer *, ::std::uint_least32_t *,
-							   ::std::uint_least32_t *) noexcept
+	RtlNtPathNameToDosPathName(::std::uint_least32_t, rtl_unicode_string_buffer *, ::std::uint_least32_t *, char16_t **) noexcept
 #if defined(__clang__) || defined(__GNUC__)
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
 #if !defined(__clang__)

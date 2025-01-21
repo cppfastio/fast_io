@@ -279,6 +279,7 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwAlpcOpenSenderThread@nt@win32@fast_io@@YAHPAPAXPAXPAUport_message@123@IIPAUobject_attributes@123@@Z=__imp_ZwAlpcOpenSenderThread")
 #pragma comment(linker,"/alternatename:__imp_?NtTerminateProcess@nt@win32@fast_io@@YAHPAXH@Z=__imp_NtTerminateProcess")
 #pragma comment(linker,"/alternatename:__imp_?ZwTerminateProcess@nt@win32@fast_io@@YAHPAXH@Z=__imp_ZwTerminateProcess")
+#pragma comment(linker,"/alternatename:__imp_?RtlNtPathNameToDosPathName@nt@win32@fast_io@@YAIIPAUrtl_unicode_string_buffer@123@PAIPAPA_S@Z=__imp_RtlNtPathNameToDosPathName")
 //msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp___RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__RTtypeid")
