@@ -789,6 +789,10 @@ public:
 	}
 	inline win32_family_process &operator=(win32_family_process &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this)
+		{
+			return *this;
+		}
 		win32::details::close_win32_user_process_information_and_wait(this->hnt_user_process_info);
 		this->hnt_user_process_info = b.release();
 		return *this;
