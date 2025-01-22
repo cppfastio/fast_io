@@ -311,7 +311,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 					{
 						address_begin += NtPathLen - 2;
 						address_begin[0] = DosDevice[0];
-						address_begin[1] = ::fast_io::char_literal_v<u8':', char>;
+						address_begin[1] = ::fast_io::char_literal_v<u8':', char8_t>;
 						goto next2;
 					}
 				}
