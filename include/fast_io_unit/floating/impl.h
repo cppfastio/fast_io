@@ -182,6 +182,7 @@ print_reserve_size(io_reserve_type_t<char_type, manipulators::scalar_manip_preci
 	}
 }
 
+#if 0
 template <::std::integral char_type, manipulators::scalar_flags flags, details::my_floating_point flt>
 	requires(flags.base == 10)
 inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, manipulators::scalar_manip_precision_t<flags, flt>>,
@@ -246,4 +247,5 @@ inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ma
 		}
 	}
 }
+#endif
 } // namespace fast_io
