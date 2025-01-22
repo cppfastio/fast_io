@@ -131,33 +131,33 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 			*address_begin = u'\\';
 			goto next;
 		}
-
-		char16_t DosDevice[4]{0, u':', 0, 0};
-		char16_t NtPath[64];
-		char16_t *RetStr{};
-		::std::size_t NtPathLen{};
-		constexpr char16_t bg{65};
-		constexpr char16_t ed{bg + 26};
-		for (char16_t i{bg}; i != ed; ++i)
 		{
-			DosDevice[0] = i;
-			if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
+			char16_t DosDevice[4]{0, u':', 0, 0};
+			char16_t NtPath[64];
+			char16_t *RetStr{};
+			::std::size_t NtPathLen{};
+			constexpr char16_t bg{65};
+			constexpr char16_t ed{bg + 26};
+			for (char16_t i{bg}; i != ed; ++i)
 			{
-				NtPathLen = ::fast_io::cstr_len(NtPath);
-
-				if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char16_t)) == 0) [[unlikely]]
+				DosDevice[0] = i;
+				if (::fast_io::win32::QueryDosDeviceW(DosDevice, NtPath, 64))
 				{
-					address_begin += NtPathLen - 2;
-					address_begin[0] = DosDevice[0];
-					address_begin[1] = u':';
-					goto next;
+					NtPathLen = ::fast_io::cstr_len(NtPath);
+
+					if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char16_t)) == 0) [[unlikely]]
+					{
+						address_begin += NtPathLen - 2;
+						address_begin[0] = DosDevice[0];
+						address_begin[1] = u':';
+						goto next;
+					}
 				}
 			}
+
+			throw_win32_error(0x3);
 		}
-
-		throw_win32_error(0x3);
 	next:
-
 		// create process
 		::fast_io::win32::startupinfow si{sizeof(si)};
 
@@ -266,14 +266,14 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 
 		if (!
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x601
-			::fast_io::win32::K32GetMappedFileNameA(
+			::fast_io::win32::K32GetMappedFileNameA
 #else
-			::fast_io::win32::GetMappedFileNameA(
+			::fast_io::win32::GetMappedFileNameA
 #endif
-				reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)),
-				pMem,
-				pszFilename,
-				2047)) [[unlikely]]
+			(reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)),
+			 pMem,
+			 pszFilename,
+			 2047)) [[unlikely]]
 		{
 			throw_win32_error();
 		}
@@ -289,37 +289,37 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		if (::fast_io::freestanding::my_memcmp(pszFilename, u8"\\Device\\Mup\\", 12 * sizeof(char8_t)) == 0)
 		{
 			address_begin += 10;
-			*address_begin = ::fast_io::char_literal_v<u8'\\', char>;
+			*address_begin = ::fast_io::char_literal_v<u8'\\', char8_t>;
 			goto next2;
 		}
-
-		char8_t DosDevice[4]{0, u8':', 0, 0};
-		constexpr ::std::size_t ntpathsize{64};
-		char NtPath[ntpathsize];
-		char *RetStr{};
-		::std::size_t NtPathLen{};
-		constexpr char8_t bg{static_cast<char8_t>(ntpathsize)};
-		constexpr char8_t ed{bg + 26};
-		for (char8_t i{bg}; i != ed; ++i)
 		{
-			*DosDevice = i;
-			if (::fast_io::win32::QueryDosDeviceA(reinterpret_cast<char const *>(DosDevice), NtPath, ntpathsize))
+			char8_t DosDevice[4]{0, u8':', 0, 0};
+			constexpr ::std::size_t ntpathsize{64};
+			char NtPath[ntpathsize];
+			char *RetStr{};
+			::std::size_t NtPathLen{};
+			constexpr char8_t bg{static_cast<char8_t>(ntpathsize)};
+			constexpr char8_t ed{bg + 26};
+			for (char8_t i{bg}; i != ed; ++i)
 			{
-				NtPathLen = ::fast_io::cstr_len(NtPath);
-
-				if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char)) == 0) [[unlikely]]
+				*DosDevice = i;
+				if (::fast_io::win32::QueryDosDeviceA(reinterpret_cast<char const *>(DosDevice), NtPath, ntpathsize))
 				{
-					address_begin += NtPathLen - 2;
-					address_begin[0] = DosDevice[0];
-					address_begin[1] = ::fast_io::char_literal_v<u8':', char>;
-					goto next2;
+					NtPathLen = ::fast_io::cstr_len(NtPath);
+
+					if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char)) == 0) [[unlikely]]
+					{
+						address_begin += NtPathLen - 2;
+						address_begin[0] = DosDevice[0];
+						address_begin[1] = ::fast_io::char_literal_v<u8':', char8_t>;
+						goto next2;
+					}
 				}
 			}
+
+			throw_win32_error(0x3);
 		}
-
-		throw_win32_error(0x3);
 	next2:
-
 		// create process
 		::fast_io::win32::startupinfoa si{sizeof(si)};
 
