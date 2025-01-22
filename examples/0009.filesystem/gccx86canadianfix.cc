@@ -43,7 +43,7 @@ int main(int argc, char **argv)
     # If user builds GCC with mulitlibs enabled,
     # it should just install on $(libdir)
     # not on $(libdir)/../bin or 32 bits dlls would override 64 bit ones.
-    if test ${multilib} = yes; then
+    if test x${multilib} = xyes; then
     postinstall_cmds='base_file=`basename \${file}`~
       dlpath=`$SHELL 2>&1 -c '\''. $dir/'\''\${base_file}'\''i; echo \$dlname'\''`~
       dldir=$destdir/`dirname \$dlpath`~
