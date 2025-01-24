@@ -74,7 +74,7 @@ inline void win32_duplicate_object_std(void *parent_process, void *&standard_io_
 			0x00000002 | 0x00000004)) [[unlikely]]
 	{
 		throw_win32_error();
-	};
+	}
 }
 
 template <win32_family family>
@@ -789,7 +789,7 @@ public:
 	}
 	inline win32_family_process &operator=(win32_family_process &&__restrict b) noexcept
 	{
-		if (__builtin_addressof(b) == this)
+		if (__builtin_addressof(b) == this) [[unlikely]]
 		{
 			return *this;
 		}
