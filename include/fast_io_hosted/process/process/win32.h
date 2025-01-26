@@ -249,7 +249,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 	}
 	else
 	{
-		char pszFilename[2048];
+		char8_t pszFilename[2048];
 		void *hFileMap{::fast_io::win32::CreateFileMappingA(fhandle, nullptr, 0x02, 0, 1, nullptr)};
 		if (!hFileMap) [[unlikely]]
 		{
@@ -272,7 +272,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 #endif
 			(reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)),
 			 pMem,
-			 pszFilename,
+			 reinterpret_cast<char *>(pszFilename),
 			 2047)) [[unlikely]]
 		{
 			throw_win32_error();
@@ -289,29 +289,29 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		if (::fast_io::freestanding::my_memcmp(pszFilename, u8"\\Device\\Mup\\", 12 * sizeof(char8_t)) == 0)
 		{
 			address_begin += 10;
-			*address_begin = ::fast_io::char_literal_v<u8'\\', char8_t>;
+			*address_begin = u8'\\';
 			goto next2;
 		}
 		{
 			char8_t DosDevice[4]{0, u8':', 0, 0};
 			constexpr ::std::size_t ntpathsize{64};
-			char NtPath[ntpathsize];
-			char *RetStr{};
+			char8_t NtPath[ntpathsize];
+			char8_t *RetStr{};
 			::std::size_t NtPathLen{};
 			constexpr char8_t bg{static_cast<char8_t>(ntpathsize)};
 			constexpr char8_t ed{bg + 26};
 			for (char8_t i{bg}; i != ed; ++i)
 			{
 				*DosDevice = i;
-				if (::fast_io::win32::QueryDosDeviceA(reinterpret_cast<char const *>(DosDevice), NtPath, ntpathsize))
+				if (::fast_io::win32::QueryDosDeviceA(reinterpret_cast<char const *>(DosDevice), reinterpret_cast<char *>(NtPath), ntpathsize))
 				{
 					NtPathLen = ::fast_io::cstr_len(NtPath);
 
-					if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char)) == 0) [[unlikely]]
+					if (::fast_io::freestanding::my_memcmp(pszFilename, NtPath, NtPathLen * sizeof(char8_t)) == 0) [[unlikely]]
 					{
 						address_begin += NtPathLen - 2;
 						address_begin[0] = DosDevice[0];
-						address_begin[1] = ::fast_io::char_literal_v<u8':', char8_t>;
+						address_begin[1] = u8':';
 						goto next2;
 					}
 				}
@@ -401,7 +401,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		si.dwFlags = 0x00000100;
 
 		::fast_io::win32::process_information pi{};
-		if (!::fast_io::win32::CreateProcessA(address_begin, const_cast<char *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
+		if (!::fast_io::win32::CreateProcessA(reinterpret_cast<char *>(address_begin), const_cast<char *>(args), nullptr, nullptr, 1, 0, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 		{
 			throw_win32_error();
 		}
