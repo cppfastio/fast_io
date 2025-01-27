@@ -134,7 +134,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		{
 			char16_t DosDevice[4]{0, u':', 0, 0};
 			char16_t NtPath[1025];
-			char16_t *RetStr{};
+
 			::std::size_t NtPathLen{};
 			constexpr char16_t bg{u'A'};
 			constexpr char16_t ed{u'Z' + 1};
@@ -159,7 +159,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		}
 	next:
 		// create process
-		::fast_io::win32::startupinfow si{sizeof(si)};
+		::fast_io::win32::startupinfow si{.cb = sizeof(si)};
 
 		if (!processio.in.is_dev_null)
 		{
@@ -303,7 +303,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		{
 			char8_t DosDevice[4]{0, u8':', 0, 0};
 			char8_t NtPath[1025];
-			char8_t *RetStr{};
+
 			::std::size_t NtPathLen{};
 			constexpr char8_t bg{u8'A'};
 			constexpr char8_t ed{u8'Z' + 1};
@@ -328,7 +328,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		}
 	next2:
 		// create process
-		::fast_io::win32::startupinfoa si{sizeof(si)};
+		::fast_io::win32::startupinfoa si{.cb = sizeof(si)};
 
 		if (!processio.in.is_dev_null)
 		{
@@ -434,7 +434,7 @@ inline win32_user_process_information win32_9xa_win9x_process_create_from_filepa
 																						process_mode mode)
 {
 	// there are no psapi.dll on windows 9x
-	::fast_io::win32::startupinfoa si{sizeof(si)};
+	::fast_io::win32::startupinfoa si{.cb = sizeof(si)};
 
 	if (!processio.in.is_dev_null)
 	{
@@ -522,8 +522,8 @@ inline win32_user_process_information win32_9xa_win9x_process_create_from_filepa
 	}
 
 	::fast_io::win32::process_information pi{};
-	if (!::fast_io::win32::CreateProcessA(filepath, const_cast<char *>(args), nullptr, nullptr, 1, 
-		dwCreationFlags, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
+	if (!::fast_io::win32::CreateProcessA(filepath, const_cast<char *>(args), nullptr, nullptr, 1,
+										  dwCreationFlags, (void *)envs, nullptr, __builtin_addressof(si), __builtin_addressof(pi)))
 	{
 		throw_win32_error();
 	}

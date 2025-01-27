@@ -163,17 +163,17 @@ inline constexpr bool operator==(::std::default_sentinel_t, win32_9xa_family_dir
 	return b.finish;
 }
 
-inline constexpr bool operator==(win32_9xa_family_directory_iterator b, ::std::default_sentinel_t other) noexcept
+inline constexpr bool operator==(win32_9xa_family_directory_iterator b, [[maybe_unused]] ::std::default_sentinel_t other) noexcept
 {
 	return b.finish;
 }
 
-inline constexpr bool operator!=(::std::default_sentinel_t other, win32_9xa_family_directory_iterator b) noexcept
+inline constexpr bool operator!=([[maybe_unused]] ::std::default_sentinel_t other, win32_9xa_family_directory_iterator b) noexcept
 {
 	return !b.finish;
 }
 
-inline constexpr bool operator!=(win32_9xa_family_directory_iterator b, ::std::default_sentinel_t other) noexcept
+inline constexpr bool operator!=(win32_9xa_family_directory_iterator b, [[maybe_unused]] ::std::default_sentinel_t other) noexcept
 {
 	return !b.finish;
 }
@@ -440,13 +440,13 @@ inline bool operator==(::std::default_sentinel_t,
 
 template <typename StackType>
 inline bool operator==(basic_win32_9xa_recursive_directory_iterator<StackType> const &b,
-					   ::std::default_sentinel_t sntnl) noexcept
+					   [[maybe_unused]] ::std::default_sentinel_t sntnl) noexcept
 {
 	return b.stack.empty() && b.finish;
 }
 
 template <typename StackType>
-inline bool operator!=(::std::default_sentinel_t sntnl,
+inline bool operator!=([[maybe_unused]] ::std::default_sentinel_t sntnl,
 					   basic_win32_9xa_recursive_directory_iterator<StackType> const &b) noexcept
 {
 	return !(b.stack.empty() && b.finish);
@@ -454,7 +454,7 @@ inline bool operator!=(::std::default_sentinel_t sntnl,
 
 template <typename StackType>
 inline bool operator!=(basic_win32_9xa_recursive_directory_iterator<StackType> const &b,
-					   ::std::default_sentinel_t sntnl) noexcept
+					   [[maybe_unused]] ::std::default_sentinel_t sntnl) noexcept
 {
 	return !(b.stack.empty() && b.finish);
 }
