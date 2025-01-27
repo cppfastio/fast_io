@@ -606,13 +606,13 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args = {},
-						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, process_mode mode = {})
+						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
 #if 0
 			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio/*, mode*/)
 #else
-			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio/*, mode*/)
+			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio /*, mode*/)
 #endif
 		  }
 	{
@@ -620,26 +620,26 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(path_type const &filename, posix_process_args const &args = {}, posix_process_envs const &envp = {},
-						 posix_process_io const &pio = {}, process_mode mode = {})
+						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
 #if 0
 			  ::fast_io::details::pipefork_execve_impl(filename, args.get(), envp.get(), pio/*, mode*/)
 #else
-			  ::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio/*, mode*/)
+			  ::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio /*, mode*/)
 #endif
 		  }
 	{
 	}
 
 	inline posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args = {}, posix_process_envs const &envp = {},
-						 posix_process_io const &pio = {}, process_mode mode = {})
+						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
 #if 0
 			  ::fast_io::details::pipefork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio, mode)
 #else
-			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio/*, mode*/)
+			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio /*, mode*/)
 #endif
 		  }
 	{
