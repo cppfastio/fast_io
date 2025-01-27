@@ -151,6 +151,7 @@
 #pragma comment(linker,"/alternatename:__imp_?MoveFileW@win32@fast_io@@YGHPB_S0@Z=__imp__MoveFileW@8")
 #pragma comment(linker,"/alternatename:__imp_?MoveFileA@win32@fast_io@@YGHPBD0@Z=__imp__MoveFileA@8")
 #pragma comment(linker,"/alternatename:__imp_?TerminateProcess@win32@fast_io@@YGHPAXI@Z=__imp__TerminateProcess@8")
+#pragma comment(linker,"/alternatename:__imp_?GetFinalPathNameByHandleW@win32@fast_io@@YGIPAXPA_SII@Z=__imp__GetFinalPathNameByHandleW@16")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YGII@Z=__imp__RtlNtStatusToDosError@4")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YGIPAX@Z=__imp__NtClose@4")
