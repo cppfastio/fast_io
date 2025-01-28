@@ -8,8 +8,8 @@ enum process_mode : ::std::uint_least64_t
 	// *indicates that the process mode has not been evaluated yet
 	new_session = static_cast<::std::uint_least64_t>(1) << 0,
 	// [POSIX] setsid(), [WINDOWS, WINNT] CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS
-	nt_path = static_cast<::std::uint_least64_t>(1) << 1
-	// [WINNT] Set the process path in the PEB to nt path
+	nt_absolute_path = static_cast<::std::uint_least64_t>(1) << 1
+	// [WINNT] Set the process path in the PEB to nt absolute path
 };
 
 inline constexpr process_mode operator&(process_mode x, process_mode y) noexcept

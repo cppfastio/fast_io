@@ -366,7 +366,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 
 	rtl_user_process_parameters *rtl_temp{};
 
-	if ((mode & process_mode::nt_path) != process_mode::nt_path) // dos or unc path
+	if ((mode & process_mode::nt_absolute_path) != process_mode::nt_absolute_path) // dos or unc path
 	{
 		struct str_tls_guard
 		{
@@ -382,7 +382,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 
 		str_tls_guard str_guard{};
 
-		auto ret{::fast_io::win32::GetFinalPathNameByHandleW(fhandle, nullptr, 0, 0)};
+		auto ret{::fast_io::win32::GetFinalPathNameByHandleW(fhandle, nullptr, 0, 0)}; // get str len
 		if (ret == 0) [[unlikely]]
 		{
 			throw_nt_error(0xC0000008);

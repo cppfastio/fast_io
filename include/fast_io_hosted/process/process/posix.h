@@ -13,6 +13,7 @@ extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept _
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
+extern pid_t libc_setsid() noexcept __asm__("_setsid");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("_waitpid");
 [[noreturn]] extern void libc_exit(int status) noexcept __asm__("__Exit");
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__exit");
@@ -21,6 +22,7 @@ extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept _
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
+extern pid_t libc_setsid() noexcept __asm__("setsid");
 extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__("waitpid");
 [[noreturn]] extern void libc_exit(int status) noexcept __asm__("_Exit");
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("_exit");
@@ -109,6 +111,21 @@ inline pid_t posix_fork()
 	system_call_throw_error(pid);
 #else
 	pid_t pid{::fast_io::posix::libc_fork()};
+	if (pid == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+#endif
+	return pid;
+}
+
+inline pid_t posix_setsid()
+{
+#if defined(__linux__) && defined(__NR_setsid)
+	pid_t pid{system_call<__NR_setsid, pid_t>()};
+	system_call_throw_error(pid);
+#else
+	pid_t pid{::fast_io::posix::libc_setsid()};
 	if (pid == -1) [[unlikely]]
 	{
 		throw_posix_error();
@@ -259,13 +276,19 @@ struct io_redirector
 	}
 };
 
-inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
+inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 	posix_pipe error_pipe;
 	pid_t pid = posix_fork();
+
 	if (pid == 0)
 	{
 		// subprocess
+		if ((mode & process_mode::new_session) == process_mode::new_session)
+		{
+			posix_setsid();
+		}
+
 		error_pipe.in().close();
 
 		int t_errno{};
@@ -334,16 +357,16 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 }
 
 template <typename path_type>
-inline pid_t pipefork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+inline pid_t pipefork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
-	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio); });
+	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
 }
 
 template <typename path_type>
-inline pid_t pipefork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+inline pid_t pipefork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 #if defined(AT_FDCWD)
-	return pipefork_execveat_impl(AT_FDCWD, csv, args, envp, pio);
+	return pipefork_execveat_impl(AT_FDCWD, csv, args, envp, pio, mode);
 #else
 	throw_posix_error(EINVAL);
 	return -1;
@@ -493,7 +516,7 @@ inline pid_t posix_vfork()
 	return pid;
 }
 
-inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio)
+inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 	pid_t pid{};
 	int volatile t_errno{}; // receive error from vfork subproc
@@ -506,6 +529,10 @@ inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const 
 		pid = ::fast_io::details::posix_vfork();
 		if (pid == 0)
 		{
+			if ((mode & process_mode::new_session) == process_mode::new_session)
+			{
+				posix_setsid();
+			}
 			execveat_inside_vfork(dirfd, cstr, args, envp, t_errno); // never return
 		}
 	}
@@ -519,16 +546,16 @@ inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const 
 }
 
 template <typename path_type>
-inline pid_t vfork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+inline pid_t vfork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
-	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return vfork_execveat_common_impl(dirfd, cstr, args, envp, pio); });
+	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return vfork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
 }
 
 template <typename path_type>
-inline pid_t vfork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio)
+inline pid_t vfork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 #if defined(AT_FDCWD)
-	return vfork_execveat_impl(AT_FDCWD, csv, args, envp, pio);
+	return vfork_execveat_impl(AT_FDCWD, csv, args, envp, pio, mode);
 #else
 	throw_posix_error(EINVAL);
 	return -1;
@@ -610,9 +637,9 @@ public:
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
 #if 0
-			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio/*, mode*/)
+			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio, mode)
 #else
-			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio /*, mode*/)
+			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio, mode)
 #endif
 		  }
 	{
@@ -624,9 +651,9 @@ public:
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
 #if 0
-			  ::fast_io::details::pipefork_execve_impl(filename, args.get(), envp.get(), pio/*, mode*/)
+			  ::fast_io::details::pipefork_execve_impl(filename, args.get(), envp.get(), pio, mode)
 #else
-			  ::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio /*, mode*/)
+			  ::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio, mode)
 #endif
 		  }
 	{
@@ -639,7 +666,7 @@ public:
 #if 0
 			  ::fast_io::details::pipefork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio, mode)
 #else
-			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio /*, mode*/)
+			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio, mode)
 #endif
 		  }
 	{
