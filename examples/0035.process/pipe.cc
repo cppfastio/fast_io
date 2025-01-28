@@ -22,7 +22,8 @@ int main(int argc, char **argv)
 			::fast_io::mnp::os_c_str(argv[1]),
 			{},
 			{},
-			{::fast_io::posix_dev_null(), pipe_out.handle, pipe_err.handle}};
+			{::fast_io::posix_dev_null(), pipe_out.handle, pipe_err.handle},
+			::fast_io::process_mode::none};
 
 		pipe_out.handle.out().close();
 		pipe_err.handle.out().close();

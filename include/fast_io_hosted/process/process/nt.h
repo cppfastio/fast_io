@@ -339,9 +339,8 @@ inline nt_user_process_information nt_3x_process_create_impl(void *__restrict fh
 #endif
 
 template <nt_family family>
-inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args,
-															 char16_t const *envs,
-															 win32_process_io const &__restrict processio)
+inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fhandle, char16_t const *args, char16_t const *envs,
+															 win32_process_io const &__restrict processio, process_mode mode)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -364,11 +363,69 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		ps_para.Length = static_cast<decltype(ps_para.Length)>(::fast_io::cstr_len(args) * sizeof(char16_t));
 		ps_para.MaximumLength = static_cast<decltype(ps_para.MaximumLength)>(ps_para.Length + sizeof(char16_t));
 	}
+
 	rtl_user_process_parameters *rtl_temp{};
-	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
-		__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
-		(void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
-	rtl_guard rtlm{rtl_temp};
+
+	if ((mode & process_mode::nt_absolute_path) != process_mode::nt_absolute_path) // dos or unc path
+	{
+		struct str_tls_guard
+		{
+			char16_t *str_ptr{};
+			~str_tls_guard()
+			{
+				if (str_ptr)
+				{
+					::fast_io::native_typed_thread_local_allocator<char16_t>::deallocate(str_ptr);
+				}
+			}
+		};
+
+		str_tls_guard str_guard{};
+
+		auto ret{::fast_io::win32::GetFinalPathNameByHandleW(fhandle, nullptr, 0, 0)}; // get str len
+		if (ret == 0) [[unlikely]]
+		{
+			throw_nt_error(0xC0000008);
+		}
+		else
+		{
+			str_guard.str_ptr = ::fast_io::native_typed_thread_local_allocator<char16_t>::allocate(ret);
+			::fast_io::win32::GetFinalPathNameByHandleW(fhandle, str_guard.str_ptr, ret, 0); // never return 0
+		}
+
+		auto const str_length{ret - 1};
+
+		unicode_string str_uni{};
+		if (str_length > 8 && ::fast_io::freestanding::my_memcmp(str_guard.str_ptr, u"\\\\?\\UNC\\", 8 * sizeof(char16_t)) == 0)
+		{
+			str_uni.Buffer = str_guard.str_ptr + 6;
+			str_uni.Buffer[0] = u'\\';
+			str_uni.Length = static_cast<::std::uint_least16_t>((str_length - 6) * sizeof(char16_t));
+			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(ret * sizeof(char16_t));
+		}
+		else if (str_length > 4 && ::fast_io::freestanding::my_memcmp(str_guard.str_ptr, u"\\\\?\\", 4 * sizeof(char16_t)) == 0)
+		{
+			str_uni.Buffer = str_guard.str_ptr;
+			str_uni.Length = static_cast<::std::uint_least16_t>(ret * sizeof(char16_t) - sizeof(char16_t));
+			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(ret * sizeof(char16_t));
+		}
+		else
+		{
+			throw_nt_error(0xC0000008);
+		}
+
+		check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
+			__builtin_addressof(rtl_temp), __builtin_addressof(str_uni), nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
+			(void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
+	}
+	else
+	{
+		check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
+			__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
+			(void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
+	}
+
+	rtl_guard rtlm{rtl_temp}; // guard
 
 	// Duplicate Process Std Handles
 	auto const current_peb{::fast_io::win32::nt::nt_get_current_peb()};
@@ -506,38 +563,38 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 template <nt_family family>
 inline nt_user_process_information nt_process_create_impl(void *__restrict fhandle, char16_t const *args,
 														  char16_t const *envs,
-														  win32_process_io const &__restrict processio)
+														  win32_process_io const &__restrict processio, process_mode mode)
 {
 	// !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x600
 	// only support nt6x
-	return nt_6x_process_create_impl<family>(fhandle, args, envs, processio);
+	return nt_6x_process_create_impl<family>(fhandle, args, envs, processio, mode);
 }
 
 template <nt_family family, typename path_type>
 inline nt_user_process_information nt_create_process_overloads(nt_at_entry entry, path_type const &filename,
 															   nt_process_args const &args, nt_process_envs const &envs,
-															   win32_process_io const &processio)
+															   win32_process_io const &processio, process_mode mode)
 {
 	basic_nt_family_file<family, char> nf(entry, filename, open_mode::in | open_mode::excl);
-	return nt_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio);
+	return nt_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio, mode);
 }
 
 template <nt_family family, typename path_type>
 inline nt_user_process_information nt_create_process_overloads(path_type const &filename, nt_process_args const &args,
 															   nt_process_envs const &envs,
-															   win32_process_io const &processio)
+															   win32_process_io const &processio, process_mode mode)
 {
 	basic_nt_family_file<family, char> nf(filename, open_mode::in | open_mode::excl);
-	return nt_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio);
+	return nt_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio, mode);
 }
 
 template <nt_family family>
 inline nt_user_process_information nt_create_process_overloads(::fast_io::nt_fs_dirent ent, nt_process_args const &args,
 															   nt_process_envs const &envs,
-															   win32_process_io const &processio)
+															   win32_process_io const &processio, process_mode mode)
 {
 	basic_nt_family_file<family, char> nf(ent, open_mode::in | open_mode::excl);
-	return nt_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio);
+	return nt_process_create_impl<family>(nf.handle, args.get(), envs.get(), processio, mode);
 }
 
 } // namespace win32::nt::details
@@ -581,6 +638,11 @@ struct nt_wait_status
 {
 	::std::uint_least32_t wait_loc{}; // exit code
 };
+
+inline constexpr int wait_status_to_int(nt_wait_status waits) noexcept
+{
+	return static_cast<int>(waits.wait_loc);
+}
 
 template <nt_family family, bool throw_eh = true>
 	requires(family == nt_family::nt || family == nt_family::zw)
@@ -662,25 +724,25 @@ public:
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	inline explicit nt_family_process(nt_at_entry nate, path_type const &filename, nt_process_args const &args,
-									  nt_process_envs const &envs, win32_process_io const &processio)
+	inline explicit nt_family_process(nt_at_entry nate, path_type const &filename, nt_process_args const &args = {},
+									  nt_process_envs const &envs = {}, win32_process_io const &processio = {}, process_mode mode = {})
 		: nt_family_process_observer<family>{
-			  win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio)}
+			  win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio, mode)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str path_type>
-	inline explicit nt_family_process(path_type const &filename, nt_process_args const &args, nt_process_envs const &envs,
-									  win32_process_io const &processio)
+	inline explicit nt_family_process(path_type const &filename, nt_process_args const &args = {}, nt_process_envs const &envs = {},
+									  win32_process_io const &processio = {}, process_mode mode = {})
 		: nt_family_process_observer<family>{
-			  win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio)}
+			  win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio, mode)}
 	{
 	}
 
-	inline explicit nt_family_process(::fast_io::nt_fs_dirent ent, nt_process_args const &args, nt_process_envs const &envs,
-									  win32_process_io const &processio)
+	inline explicit nt_family_process(::fast_io::nt_fs_dirent ent, nt_process_args const &args = {}, nt_process_envs const &envs = {},
+									  win32_process_io const &processio = {}, process_mode mode = {})
 		: nt_family_process_observer<family>{
-			  win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio)}
+			  win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio, mode)}
 	{
 	}
 
