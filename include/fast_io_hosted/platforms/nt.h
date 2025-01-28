@@ -493,8 +493,8 @@ inline ::std::int_least64_t nt_calculate_offset_impl(::fast_io::intfpos_t off)
 {
 	if constexpr (sizeof(::fast_io::intfpos_t) > sizeof(::std::int_least64_t))
 	{
-		constexpr ::std::int_least64_t mn{::std::numeric_limits<::std::int_least64_t>::min()},
-			mx{::std::numeric_limits<::std::int_least64_t>::max()};
+		[[maybe_unused]] constexpr ::std::int_least64_t mn{::std::numeric_limits<::std::int_least64_t>::min()};
+		constexpr ::std::int_least64_t mx{::std::numeric_limits<::std::int_least64_t>::max()};
 		if (off < 0 || off > mx)
 		{
 			throw_nt_error(0xC0000106);
@@ -1360,7 +1360,7 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit basic_nt_family_file(io_kernel_t, nt_at_entry ent, T const &t, open_mode om,
-								  perms pm = static_cast<perms>(436))
+										 perms pm = static_cast<perms>(436))
 		: basic_nt_family_io_observer<family, ch_type>{
 			  ::fast_io::win32::nt::details::nt_create_file_at_impl<family == nt_family::zw, true>(ent.handle, t,
 																								   {om, pm})}

@@ -124,7 +124,7 @@ inline void win32_9xa_mkdirat_impl(::fast_io::win32_9xa_dir_handle const &dirhd,
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 
-	if (attr == -1) [[unlikely]]
+	if (attr == static_cast<::std::uint_least32_t>(-1)) [[unlikely]]
 	{
 		throw_win32_error(0x2);
 	}
@@ -165,7 +165,7 @@ inline void win32_9xa_faccessat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 
-	if (attr == -1) [[unlikely]]
+	if (attr == static_cast<::std::uint_least32_t>(-1)) [[unlikely]]
 	{
 		throw_win32_error(0x2);
 	}
@@ -198,7 +198,7 @@ inline void win32_9xa_fchmodat_impl(::fast_io::win32_9xa_dir_handle const &dirhd
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 
-	if (attr == -1) [[unlikely]]
+	if (attr == static_cast<::std::uint_least32_t>(-1)) [[unlikely]]
 	{
 		throw_win32_error(0x2);
 	}
@@ -226,7 +226,7 @@ inline void win32_9xa_fchmodat_impl(::fast_io::win32_9xa_dir_handle const &dirhd
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 
-	if (attr == -1) [[unlikely]]
+	if (attr == static_cast<::std::uint_least32_t>(-1)) [[unlikely]]
 	{
 		throw_win32_error(0x2);
 	}
@@ -274,9 +274,9 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 	::fast_io::win32::filetime ftm;
 	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
 
-	::std::uint_least64_t current_time{(static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32) | ftm.dwLowDateTime};
+	// ::std::uint_least64_t current_time{(static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32) | ftm.dwLowDateTime};
 
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000ULL};
+	// constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000ULL};
 
 	::fast_io::win32::filetime CreationTime;
 	::fast_io::win32::filetime *pCreationTime{__builtin_addressof(CreationTime)};

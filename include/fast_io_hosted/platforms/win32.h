@@ -742,7 +742,7 @@ inline ::fast_io::intfpos_t seek_impl(void *handle, ::fast_io::intfpos_t offset,
 #endif
 }
 
-inline void win32_calculate_offset_impl(void *__restrict handle, ::fast_io::win32::overlapped &overlap,
+inline void win32_calculate_offset_impl([[maybe_unused]] void *__restrict handle, ::fast_io::win32::overlapped &overlap,
 										::fast_io::intfpos_t off)
 {
 	::std::uint_least64_t u64off{static_cast<::std::uint_least64_t>(
