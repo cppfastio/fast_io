@@ -639,6 +639,11 @@ struct nt_wait_status
 	::std::uint_least32_t wait_loc{}; // exit code
 };
 
+inline constexpr int wait_status_to_int(nt_wait_status waits) noexcept
+{
+	return static_cast<int>(waits.wait_loc);
+}
+
 template <nt_family family, bool throw_eh = true>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!throw_eh)

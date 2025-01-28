@@ -707,6 +707,11 @@ struct win32_wait_status
 	::std::uint_least32_t wait_loc{}; // exit code
 };
 
+inline constexpr int wait_status_to_int(win32_wait_status waits) noexcept
+{
+	return static_cast<int>(waits.wait_loc);
+}
+
 template <win32_family family, bool throw_eh = true>
 inline win32_wait_status wait(win32_family_process_observer<family> ppob) noexcept(!throw_eh)
 {

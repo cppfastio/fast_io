@@ -34,6 +34,11 @@ struct posix_wait_status
 	int wait_loc{};
 };
 
+inline constexpr int wait_status_to_int(posix_wait_status waits) noexcept
+{
+	return waits.wait_loc;
+}
+
 #if 0
 inline constexpr posix_wait_reason reason(posix_wait_status pws) noexcept
 {
