@@ -1749,7 +1749,7 @@ inline void win32_clear_screen_main(void *out_hdl)
 
 inline void win32_clear_screen_impl(void *handle)
 {
-	if (!win32_is_character_device(handle))
+	if (!win32_is_character_device(handle)) [[unlikely]]
 	{
 		return;
 	}
@@ -1774,7 +1774,7 @@ public:
 	{
 		win32::security_attributes sec_attr{sizeof(win32::security_attributes), nullptr, 1};
 		if (!::fast_io::win32::CreatePipe(__builtin_addressof(pipes[0].handle),
-										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0))
+										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0)) [[unlikely]]
 		{
 			throw_win32_error();
 		}
