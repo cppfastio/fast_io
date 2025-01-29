@@ -559,7 +559,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	// 0 == create new window, 4 == current windows, 0xfffffffffffffffd == no windows (background)
 	if ((mode & process_mode::alloc_new_console) == process_mode::alloc_new_console)
 	{
-		rtl_temp->ConsoleHandle = reinterpret_cast<void *>(0);
+		rtl_temp->ConsoleHandle = nullptr;
 	}
 	else
 	{
