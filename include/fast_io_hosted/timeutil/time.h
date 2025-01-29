@@ -339,7 +339,7 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 	{
 		throw_win32_error();
 	}
-	if (counter < 0)
+	if (counter < 0 || freq == 0) [[unlikely]]
 	{
 		throw_win32_error(0x00000057);
 	}
@@ -368,20 +368,21 @@ inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
 	::std::int_least64_t freq;
 
 	auto status{::fast_io::win32::nt::nt_query_performance_counter<zw>(__builtin_addressof(counter), __builtin_addressof(freq))};
+	::std::uint_least64_t const freq_ui64{static_cast<::std::uint_least64_t>(freq)};
 
 	if (status) [[unlikely]]
 	{
 		throw_nt_error(status);
 	}
 
-	if (counter < 0 || freq < 0) [[unlikely]]
+	if (counter < 0 || freq_ui64 == 0) [[unlikely]]
 	{
 		throw_nt_error(0xC0000003);
 	}
 
 	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
-	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq};
-	::std::uint_least64_t dv{ucounter / freq};
+	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq_ui64};
+	::std::uint_least64_t dv{ucounter / freq_ui64};
 	::std::uint_least64_t md{ucounter % freq};
 	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
 						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
