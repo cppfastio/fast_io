@@ -487,7 +487,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		{
 			rtl_temp->StandardInput = processio.in.win32_pipe_in_handle;
 
-			constexpr ::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
+			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(processio.in.win32_pipe_out_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -512,7 +512,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		{
 			rtl_temp->StandardOutput = processio.out.win32_pipe_out_handle;
 
-			constexpr ::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
+			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(processio.out.win32_pipe_in_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -537,7 +537,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		{
 			rtl_temp->StandardError = processio.err.win32_pipe_out_handle;
 
-			constexpr ::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
+			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(processio.err.win32_pipe_in_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
