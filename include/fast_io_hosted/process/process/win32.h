@@ -243,8 +243,11 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 
 		if ((mode & process_mode::new_session) == process_mode::new_session)
 		{
-			dwCreationFlags &= 0x00000200; // CREATE_NEW_PROCESS_GROUP
-			dwCreationFlags &= 0x00000008; // DETACHED_PROCESS
+			dwCreationFlags |= 0x00000200; // CREATE_NEW_PROCESS_GROUP
+		}
+		if ((mode & process_mode::alloc_new_console) == process_mode::alloc_new_console)
+		{
+			dwCreationFlags |= 0x00000010; // CREATE_NEW_CONSOLE
 		}
 
 		::fast_io::win32::process_information pi{};
@@ -413,8 +416,11 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 
 		if ((mode & process_mode::new_session) == process_mode::new_session)
 		{
-			dwCreationFlags &= 0x00000200; // CREATE_NEW_PROCESS_GROUP
-			dwCreationFlags &= 0x00000008; // DETACHED_PROCESS
+			dwCreationFlags |= 0x00000200; // CREATE_NEW_PROCESS_GROUP
+		}
+		if ((mode & process_mode::alloc_new_console) == process_mode::alloc_new_console)
+		{
+			dwCreationFlags |= 0x00000010; // CREATE_NEW_CONSOLE
 		}
 
 		::fast_io::win32::process_information pi{};
@@ -520,8 +526,11 @@ inline win32_user_process_information win32_9xa_win9x_process_create_from_filepa
 
 	if ((mode & process_mode::new_session) == process_mode::new_session)
 	{
-		dwCreationFlags &= 0x00000200; // CREATE_NEW_PROCESS_GROUP
-		dwCreationFlags &= 0x00000008; // DETACHED_PROCESS
+		dwCreationFlags |= 0x00000200; // CREATE_NEW_PROCESS_GROUP
+	}
+	if ((mode & process_mode::alloc_new_console) == process_mode::alloc_new_console)
+	{
+		dwCreationFlags |= 0x00000010; // CREATE_NEW_CONSOLE
 	}
 
 	::fast_io::win32::process_information pi{};
