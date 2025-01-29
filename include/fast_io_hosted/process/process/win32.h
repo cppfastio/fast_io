@@ -159,7 +159,8 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		}
 	next:
 		// create process
-		::fast_io::win32::startupinfow si{.cb = sizeof(si)};
+		::fast_io::win32::startupinfow si{};
+		si.cb = sizeof(si);
 
 		if (!processio.in.is_dev_null)
 		{
@@ -328,7 +329,8 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		}
 	next2:
 		// create process
-		::fast_io::win32::startupinfoa si{.cb = sizeof(si)};
+		::fast_io::win32::startupinfoa si{};
+		si.cb = sizeof(si);
 
 		if (!processio.in.is_dev_null)
 		{
@@ -434,7 +436,8 @@ inline win32_user_process_information win32_9xa_win9x_process_create_from_filepa
 																						process_mode mode)
 {
 	// there are no psapi.dll on windows 9x
-	::fast_io::win32::startupinfoa si{.cb = sizeof(si)};
+	::fast_io::win32::startupinfoa si{};
+	si.cb = sizeof(si);
 
 	if (!processio.in.is_dev_null)
 	{

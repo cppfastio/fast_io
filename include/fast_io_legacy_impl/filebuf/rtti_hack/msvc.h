@@ -35,6 +35,10 @@ namespace rtti_hack
 {
 inline char const *abi_type_info_name_or_nullptr(void *mythis) noexcept
 {
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlanguage-extension-token"
+#endif
 	__try
 	{
 		return ::__std_type_info_name(reinterpret_cast<::__std_type_info_data *>(reinterpret_cast<char *>(::fast_io::msvc::msvc__RTtypeid(mythis)) + sizeof(void *)),
@@ -44,6 +48,9 @@ inline char const *abi_type_info_name_or_nullptr(void *mythis) noexcept
 	{
 		return nullptr;
 	}
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 } // namespace rtti_hack
 } // namespace fast_io
