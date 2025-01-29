@@ -374,15 +374,16 @@ inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
 		throw_nt_error(status);
 	}
 
-	if (counter < 0 || freq < 0) [[unlikely]]
+	if (counter < 0 || freq <= 0) [[unlikely]]
 	{
 		throw_nt_error(0xC0000003);
 	}
 
 	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
-	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / freq};
-	::std::uint_least64_t dv{ucounter / freq};
-	::std::uint_least64_t md{ucounter % freq};
+	::std::uint_least64_t ufreq{static_cast<::std::uint_least64_t>(freq)};
+	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / ufreq};
+	::std::uint_least64_t dv{ucounter / ufreq};
+	::std::uint_least64_t md{ucounter % ufreq};
 	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
 						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
 }

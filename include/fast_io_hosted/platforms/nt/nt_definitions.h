@@ -870,9 +870,9 @@ struct reparse_data_buffer
 	::std::uint_least32_t ReparseTag;
 	::std::uint_least16_t ReparseDataLength;
 	::std::uint_least16_t Reserved;
-	union
+	union BuffersU
 	{
-		struct
+		struct SymbolicLinkReparseBufferT
 		{
 			::std::uint_least16_t SubstituteNameOffset;
 			::std::uint_least16_t SubstituteNameLength;
@@ -881,7 +881,7 @@ struct reparse_data_buffer
 			::std::uint_least32_t Flags;
 			char16_t PathBuffer[1];
 		} SymbolicLinkReparseBuffer;
-		struct
+		struct MountPointReparseBufferT
 		{
 			::std::uint_least16_t SubstituteNameOffset;
 			::std::uint_least16_t SubstituteNameLength;
@@ -889,11 +889,11 @@ struct reparse_data_buffer
 			::std::uint_least16_t PrintNameLength;
 			char16_t PathBuffer[1];
 		} MountPointReparseBuffer;
-		struct
+		struct GenericReparseBufferT
 		{
 			::std::uint_least8_t DataBuffer[1];
 		} GenericReparseBuffer;
-	};
+	} u;
 };
 
 struct file_disposition_information
@@ -909,7 +909,7 @@ struct kernel_user_times
 	::std::int_least64_t UserTime;
 };
 
-enum class thread_information_class
+enum class thread_information_class : ::std::uint_least32_t
 {
 	ThreadBasicInformation,
 	ThreadTimes,

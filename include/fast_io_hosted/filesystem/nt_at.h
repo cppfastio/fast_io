@@ -584,7 +584,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	}
 
 	constexpr ::std::size_t pathbufferoffset{
-		__builtin_offsetof(reparse_data_buffer, SymbolicLinkReparseBuffer.PathBuffer)};
+		__builtin_offsetof(reparse_data_buffer, u.SymbolicLinkReparseBuffer.PathBuffer)};
 	::std::size_t const cbReparseData{pathbufferoffset + oldpath_real_size * sizeof(char16_t) * 2};
 
 	using reparse_data_buffer_may_alias_ptr
@@ -597,24 +597,24 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 
 	reparse_data_buffer_may_alias_ptr pReparseData{reinterpret_cast<reparse_data_buffer_may_alias_ptr>(buffer.get())};
 
-	auto pBufTail{reinterpret_cast<char16_t *>(pReparseData->SymbolicLinkReparseBuffer.PathBuffer)};
+	auto pBufTail{reinterpret_cast<char16_t *>(pReparseData->u.SymbolicLinkReparseBuffer.PathBuffer)};
 
 	pReparseData->ReparseTag = 0xA000000CL; // IO_REPARSE_TAG_SYMLINK
-	constexpr ::std::size_t reparsebufferoffset{__builtin_offsetof(reparse_data_buffer, GenericReparseBuffer)};
+	constexpr ::std::size_t reparsebufferoffset{__builtin_offsetof(reparse_data_buffer, u.GenericReparseBuffer)};
 	pReparseData->ReparseDataLength = static_cast<::std::uint_least16_t>(cbReparseData - reparsebufferoffset);
 	pReparseData->Reserved = 0;
 
-	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameOffset = 0;
-	pReparseData->SymbolicLinkReparseBuffer.SubstituteNameLength = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
+	pReparseData->u.SymbolicLinkReparseBuffer.SubstituteNameOffset = 0;
+	pReparseData->u.SymbolicLinkReparseBuffer.SubstituteNameLength = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
 	::fast_io::freestanding::non_overlapped_copy_n(oldpath_real_c_str, oldpath_real_size, pBufTail);
 
-	pReparseData->SymbolicLinkReparseBuffer.PrintNameOffset = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
-	pReparseData->SymbolicLinkReparseBuffer.PrintNameLength = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
+	pReparseData->u.SymbolicLinkReparseBuffer.PrintNameOffset = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
+	pReparseData->u.SymbolicLinkReparseBuffer.PrintNameLength = static_cast<::std::uint_least16_t>(oldpath_real_size * sizeof(char16_t));
 	pBufTail += oldpath_real_size;
 	::fast_io::freestanding::non_overlapped_copy_n(oldpath_real_c_str, oldpath_real_size, pBufTail);
 
 	// Check whether it is the root directory
-	pReparseData->SymbolicLinkReparseBuffer.Flags = static_cast<::std::uint_least32_t>(!is_root);
+	pReparseData->u.SymbolicLinkReparseBuffer.Flags = static_cast<::std::uint_least32_t>(!is_root);
 
 	// You need to check whether or not the authorization process has SeCreateSymbolicLinkPrivilege privilege
 

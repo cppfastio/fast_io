@@ -29,7 +29,7 @@ inline void close_nt_user_process_information(nt_user_process_information hnt_us
 template <nt_family family>
 inline ::std::uint_least32_t nt_wait_user_process_or_thread(void *hprocess_thread) noexcept
 {
-	return ::fast_io::win32::nt::nt_wait_for_single_object<family == nt_family::zw>(hprocess_thread, false, nullptr);
+	return ::fast_io::win32::nt::nt_wait_for_single_object < family == nt_family::zw > (hprocess_thread, false, nullptr);
 }
 
 template <nt_family family, bool throw_eh = false>
@@ -191,7 +191,8 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 			rtl_temp->StandardInput = *processio.in.win32_pipe_in_handle;
 			in_need_close = processio.in.win32_pipe_in_handle;
 
-			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1};
+			constexpr
+				::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(*processio.in.win32_pipe_out_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -217,7 +218,8 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 			rtl_temp->StandardOutput = *processio.out.win32_pipe_out_handle;
 			out_need_close = processio.out.win32_pipe_out_handle;
 
-			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1};
+			constexpr
+				::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(*processio.out.win32_pipe_in_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -243,7 +245,8 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 			rtl_temp->StandardError = *processio.err.win32_pipe_out_handle;
 			err_need_close = processio.err.win32_pipe_out_handle;
 
-			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1};
+			constexpr
+				::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(*processio.err.win32_pipe_in_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -438,10 +441,10 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				QueryOutBuffer,
 				1024)};
 
-			if (status) 
+			if (status)
 			{
 				// Unmounted, use nt absolute path directly
-				str_uni = *NtImagePath; 
+				str_uni = *NtImagePath;
 			}
 			else [[likely]]
 			{
@@ -450,16 +453,16 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				native_name_curr = ::fast_io::freestanding::non_overlapped_copy_n(QueryOutBuffer->MultiSz, MultiSz_strlen, native_name_curr);
 				native_name_curr = ::fast_io::freestanding::non_overlapped_copy(NtImagePath_c16_buffer + find_res_strlen, NtImagePath_c16_buffer_end, native_name_curr);
 				*native_name_curr = 0;
-				
+
 				str_uni.Buffer = native_name;
-				str_uni.Length = static_cast<::std::uint_least16_t>((native_name_curr - native_name) * sizeof(char16_t));
+				str_uni.Length = static_cast<::std::uint_least16_t>(static_cast<::std::size_t>(native_name_curr - native_name) * sizeof(char16_t));
 				str_uni.MaximumLength = static_cast<::std::uint_least16_t>(0x2000 * sizeof(char16_t));
 			}
 		}
 		else [[unlikely]]
 		{
 			// Unable to map to DOS or UNC path, use nt absolute path directly
-			str_uni = *NtImagePath; 
+			str_uni = *NtImagePath;
 		}
 
 		check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
@@ -484,7 +487,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		{
 			rtl_temp->StandardInput = processio.in.win32_pipe_in_handle;
 
-			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1};
+			constexpr ::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(processio.in.win32_pipe_out_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -509,7 +512,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		{
 			rtl_temp->StandardOutput = processio.out.win32_pipe_out_handle;
 
-			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1};
+			constexpr ::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(processio.out.win32_pipe_in_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -534,7 +537,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		{
 			rtl_temp->StandardError = processio.err.win32_pipe_out_handle;
 
-			::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1};
+			constexpr ::fast_io::win32::nt::object_handle_attribute_information ohaoi{.Inherit = 1, .ProtectFromClose = 0};
 			check_nt_status(::fast_io::win32::nt::nt_set_information_object<zw>(processio.err.win32_pipe_in_handle,
 																				::fast_io::win32::nt::object_information_class::ObjectHandleFlagInformation,
 																				__builtin_addressof(ohaoi), static_cast<::std::uint_least32_t>(sizeof(ohaoi))));
@@ -725,11 +728,11 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 	// get exit code
 	::fast_io::win32::nt::process_basic_information pbi{};
 	auto const status2{
-		::fast_io::win32::nt::nt_query_information_process<family == nt_family::zw>(ppob.hnt_user_process_info.hprocess,
-																					::fast_io::win32::nt::process_information_class::ProcessBasicInformation,
-																					__builtin_addressof(pbi),
-																					static_cast<::std::uint_least32_t>(sizeof(pbi)),
-																					nullptr)};
+		::fast_io::win32::nt::nt_query_information_process < family == nt_family::zw > (ppob.hnt_user_process_info.hprocess,
+																						::fast_io::win32::nt::process_information_class::ProcessBasicInformation,
+																						__builtin_addressof(pbi),
+																						static_cast<::std::uint_least32_t>(sizeof(pbi)),
+																						nullptr)};
 	if (status2) [[unlikely]]
 	{
 		if constexpr (throw_eh)
@@ -748,8 +751,7 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 template <nt_family family>
 inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_code)
 {
-	auto const status{::fast_io::win32::nt::nt_terminate_process<family == nt_family::zw>(
-		ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
+	auto const status{::fast_io::win32::nt::nt_terminate_process < family == nt_family::zw > (ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
 
 	if (status) [[unlikely]]
 	{
