@@ -1276,4 +1276,16 @@ struct kalpc_security_data
 	security_client_context DynamicSecurity;
 };
 
+struct mounter_target_name
+{
+	::std::uint_least16_t DeviceNameLength;
+	char16_t DeviceName[1];
+};
+
+struct mountmgr_volume_paths
+{
+	::std::uint_least32_t MultiSzLength;
+	char16_t MultiSz[1];
+};
+
 } // namespace fast_io::win32::nt

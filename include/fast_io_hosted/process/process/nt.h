@@ -368,50 +368,98 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 
 	if ((mode & process_mode::nt_absolute_path) != process_mode::nt_absolute_path) // dos or unc path
 	{
-		struct str_tls_guard
-		{
-			char16_t *str_ptr{};
-			~str_tls_guard()
-			{
-				if (str_ptr)
-				{
-					::fast_io::native_typed_thread_local_allocator<char16_t>::deallocate(str_ptr);
-				}
-			}
-		};
-
-		str_tls_guard str_guard{};
-
-		auto ret{::fast_io::win32::GetFinalPathNameByHandleW(fhandle, nullptr, 0, 0)}; // get str len
-		if (ret == 0) [[unlikely]]
-		{
-			throw_nt_error(0xC0000008);
-		}
-		else
-		{
-			str_guard.str_ptr = ::fast_io::native_typed_thread_local_allocator<char16_t>::allocate(ret);
-			::fast_io::win32::GetFinalPathNameByHandleW(fhandle, str_guard.str_ptr, ret, 0); // never return 0
-		}
-
-		auto const str_length{ret - 1};
-
+		auto const NtImagePath_c16_buffer{NtImagePath->Buffer};
+		auto const NtImagePath_u16_length{NtImagePath->Length / sizeof(char16_t)};
 		unicode_string str_uni{};
-		if (str_length > 8 && ::fast_io::freestanding::my_memcmp(str_guard.str_ptr, u"\\\\?\\UNC\\", 8 * sizeof(char16_t)) == 0)
+		char16_t native_name[0x2001];
+
+		if (NtImagePath_u16_length > 11 && ::fast_io::freestanding::my_memcmp(NtImagePath_c16_buffer, u"\\Device\\Mup", 11 * sizeof(char16_t)) == 0)
 		{
-			str_uni.Buffer = str_guard.str_ptr + 6;
-			str_uni.Buffer[0] = u'\\';
-			str_uni.Length = static_cast<::std::uint_least16_t>((str_length - 6) * sizeof(char16_t));
-			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(ret * sizeof(char16_t));
+			native_name[0] = u'\\';
+			::fast_io::freestanding::non_overlapped_copy_n(NtImagePath_c16_buffer + 11, NtImagePath_u16_length - 11, native_name + 1);
+			native_name[NtImagePath_u16_length - 10] = 0;
+			str_uni.Buffer = native_name;
+			str_uni.Length = static_cast<::std::uint_least16_t>((NtImagePath_u16_length - 10) * sizeof(char16_t));
+			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(0x2000 * sizeof(char16_t));
 		}
-		else if (str_length > 4 && ::fast_io::freestanding::my_memcmp(str_guard.str_ptr, u"\\\\?\\", 4 * sizeof(char16_t)) == 0)
+		else if (NtImagePath_u16_length > 7 && ::fast_io::freestanding::my_memcmp(NtImagePath_c16_buffer, u"\\Device", 7 * sizeof(char16_t)) == 0)
 		{
-			str_uni.Buffer = str_guard.str_ptr;
-			str_uni.Length = static_cast<::std::uint_least16_t>(ret * sizeof(char16_t) - sizeof(char16_t));
-			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(ret * sizeof(char16_t));
+			constexpr nt_open_mode symbol_mode{
+				.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
+				.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
+				.ShareAccess = 0x00000003,            // FILE_SHARE_READ | FILE_SHARE_WRITE
+				.CreateDisposition = 0x00000001,      // OPEN_EXISTING
+				.CreateOptions = 0x00000020           // FILE_SYNCHRONOUS_IO_NONALERT
+			};
+			::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> MountPointManager(
+				nt_call_callback(reinterpret_cast<void *>(::std::ptrdiff_t(-3)), u"\\Device\\MountPointManager", 25, true, nt_create_callback<zw>{symbol_mode}));
+
+			::std::byte query_in_buffer_byte[1024 * sizeof(char16_t)];
+			::std::byte query_out_buffer_byte[1024 * sizeof(char16_t)];
+
+			using mounter_target_name_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+				[[__gnu__::__may_alias__]]
+#endif
+				= ::fast_io::win32::nt::mounter_target_name *;
+			auto QueryInBuffer{reinterpret_cast<mounter_target_name_may_alias_ptr>(query_in_buffer_byte)};
+
+			auto const NtImagePath_c16_buffer_end{NtImagePath_c16_buffer + NtImagePath_u16_length};
+			auto find_next_rl_end{NtImagePath_c16_buffer_end};
+			auto const find_next_rl{::fast_io::freestanding::find(NtImagePath_c16_buffer + 8, find_next_rl_end, u'\\')};
+			if (find_next_rl != find_next_rl_end)
+			{
+				find_next_rl_end = find_next_rl;
+			}
+
+			auto const find_res_strlen{static_cast<::std::size_t>(find_next_rl_end - NtImagePath_c16_buffer)};
+			QueryInBuffer->DeviceNameLength = static_cast<::std::uint_least16_t>(find_res_strlen) * sizeof(char16_t);
+			::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte *>(NtImagePath_c16_buffer), QueryInBuffer->DeviceNameLength, reinterpret_cast<::std::byte *>(QueryInBuffer->DeviceName));
+			QueryInBuffer->DeviceName[find_res_strlen] = 0;
+
+			using mountmgr_volume_paths_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+				[[__gnu__::__may_alias__]]
+#endif
+				= ::fast_io::win32::nt::mountmgr_volume_paths *;
+			auto QueryOutBuffer{reinterpret_cast<mountmgr_volume_paths_may_alias_ptr>(query_out_buffer_byte)};
+
+			::fast_io::win32::nt::io_status_block isb;
+
+			auto status{::fast_io::win32::nt::nt_device_io_control_file<zw>(
+				MountPointManager.native_handle(),
+				nullptr,
+				nullptr,
+				nullptr,
+				__builtin_addressof(isb),
+				0x006D0030,
+				QueryInBuffer,
+				1024,
+				QueryOutBuffer,
+				1024)};
+
+			if (status) 
+			{
+				// Unmounted, use nt absolute path directly
+				str_uni = *NtImagePath; 
+			}
+			else [[likely]]
+			{
+				auto const MultiSz_strlen{::fast_io::cstr_len(QueryOutBuffer->MultiSz)};
+				auto native_name_curr{native_name};
+				native_name_curr = ::fast_io::freestanding::non_overlapped_copy_n(QueryOutBuffer->MultiSz, MultiSz_strlen, native_name_curr);
+				native_name_curr = ::fast_io::freestanding::non_overlapped_copy(NtImagePath_c16_buffer + find_res_strlen, NtImagePath_c16_buffer_end, native_name_curr);
+				*native_name_curr = 0;
+				
+				str_uni.Buffer = native_name;
+				str_uni.Length = static_cast<::std::uint_least16_t>((native_name_curr - native_name) * sizeof(char16_t));
+				str_uni.MaximumLength = static_cast<::std::uint_least16_t>(0x2000 * sizeof(char16_t));
+			}
 		}
-		else
+		else [[unlikely]]
 		{
-			throw_nt_error(0xC0000008);
+			// Unable to map to DOS or UNC path, use nt absolute path directly
+			str_uni = *NtImagePath; 
 		}
 
 		check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(

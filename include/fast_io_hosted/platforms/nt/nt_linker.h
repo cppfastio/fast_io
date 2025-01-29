@@ -4061,4 +4061,72 @@ inline ::std::uint_least32_t nt_terminate_process(Args... args) noexcept
 		return NtTerminateProcess(args...);
 	}
 }
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	NtDeviceIoControlFile(void *, void *, pio_apc_routine *, void *, io_status_block *, ::std::uint_least32_t,
+						  void *, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtDeviceIoControlFile@40")
+#else
+	__asm__("_NtDeviceIoControlFile@40")
+#endif
+#else
+	__asm__("NtDeviceIoControlFile")
+#endif
+#endif
+		;
+
+#if defined(_MSC_VER) && !defined(__clang__)
+__declspec(dllimport)
+#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+[[__gnu__::__dllimport__]]
+#endif
+#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+[[__gnu__::__stdcall__]]
+#endif
+extern ::std::int_least32_t
+#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
+	__stdcall
+#endif
+	ZwDeviceIoControlFile(void *, void *, pio_apc_routine *, void *, io_status_block *, ::std::uint_least32_t,
+						  void *, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept
+#if defined(__clang__) || defined(__GNUC__)
+#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
+#if !defined(__clang__)
+	__asm__("NtDeviceIoControlFile@40")
+#else
+	__asm__("_NtDeviceIoControlFile@40")
+#endif
+#else
+	__asm__("NtDeviceIoControlFile")
+#endif
+#endif
+		;
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 10)
+inline ::std::uint_least32_t nt_device_io_control_file(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwDeviceIoControlFile(args...);
+	}
+	else
+	{
+		return NtDeviceIoControlFile(args...);
+	}
+}
 } // namespace fast_io::win32::nt

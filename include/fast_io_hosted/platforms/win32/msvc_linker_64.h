@@ -152,6 +152,7 @@
 #pragma comment(linker,"/alternatename:__imp_?MoveFileA@win32@fast_io@@YAHPEBD0@Z=__imp_MoveFileA")
 #pragma comment(linker,"/alternatename:__imp_?TerminateProcess@win32@fast_io@@YAHPEAXI@Z=__imp_TerminateProcess")
 #pragma comment(linker,"/alternatename:__imp_?GetFinalPathNameByHandleW@win32@fast_io@@YAIPEAXPEA_SII@Z=__imp_GetFinalPathNameByHandleW")
+#pragma comment(linker,"/alternatename:__imp_?GetFinalPathNameByHandleA@win32@fast_io@@YAIPEAXPEADII@Z=__imp_GetFinalPathNameByHandleA")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YAII@Z=__imp_RtlNtStatusToDosError")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YAIPEAX@Z=__imp_NtClose")
@@ -280,6 +281,8 @@
 #pragma comment(linker,"/alternatename:__imp_?NtTerminateProcess@nt@win32@fast_io@@YAHPEAXH@Z=__imp_NtTerminateProcess")
 #pragma comment(linker,"/alternatename:__imp_?ZwTerminateProcess@nt@win32@fast_io@@YAHPEAXH@Z=__imp_ZwTerminateProcess")
 #pragma comment(linker,"/alternatename:__imp_?RtlNtPathNameToDosPathName@nt@win32@fast_io@@YAIIPEAUrtl_unicode_string_buffer@123@PEAIPEAPEA_S@Z=__imp_RtlNtPathNameToDosPathName")
+#pragma comment(linker,"/alternatename:__imp_?NtDeviceIoControlFile@nt@win32@fast_io@@YAHPEAX0PEAP6AX0PEAUio_status_block@123@I@_E01I0I0I@Z=__imp_NtDeviceIoControlFile")
+#pragma comment(linker,"/alternatename:__imp_?ZwDeviceIoControlFile@nt@win32@fast_io@@YAHPEAX0PEAP6AX0PEAUio_status_block@123@I@_E01I0I0I@Z=__imp_ZwDeviceIoControlFile")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__imp___RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__RTtypeid")
