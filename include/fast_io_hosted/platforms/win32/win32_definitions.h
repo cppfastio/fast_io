@@ -355,11 +355,11 @@ struct time_zone_information
 
 struct system_info
 {
-	union
+	union DUMMYUNIONNAMEU
 	{
 		::std::uint_least32_t dwOemId; // Obsolete field...do not use
 
-		struct
+		struct DUMMYSTRUCTNAMET
 		{
 			::std::uint_least16_t wProcessorArchitecture;
 			::std::uint_least16_t wReserved;
@@ -422,7 +422,7 @@ struct win32_find_dataw
 	::std::uint_least32_t dwCreatorType;
 	::std::uint_least16_t wFinderFlags;
 #endif
-} ;
+};
 
 
 } // namespace fast_io::win32
