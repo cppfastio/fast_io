@@ -542,7 +542,7 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 
 	inline win32_user_process_information operator()(family_char_type const *filename, ::std::size_t filename_c_str_len)
 	{
-		if (directory_handle == nullptr)
+		if (directory_handle == nullptr) // absoluated path
 		{
 			return win32_9xa_win9x_process_create_from_filepath_impl(filename, args_p->get(), envs_p->get(), *processio_p, mode);
 		}
