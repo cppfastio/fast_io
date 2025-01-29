@@ -66,7 +66,7 @@ struct rtl_relative_name_u
 https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_file_information_class
 */
 
-enum class file_information_class
+enum class file_information_class : ::std::uint_least32_t
 {
 	FileDirectoryInformation = 1,
 	FileFullDirectoryInformation,            // 2
@@ -261,7 +261,7 @@ struct file_internal_information
 	::std::uint_least64_t IndexNumber;
 };
 
-enum class process_information_class
+enum class process_information_class : ::std::uint_least32_t
 {
 	ProcessBasicInformation,           // q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
 	ProcessQuotaLimits,                // qs: QUOTA_LIMITS, QUOTA_LIMITS_EX
@@ -396,7 +396,7 @@ inline constexpr ::std::size_t rtl_max_drive_letters{32};
 
 struct client_id; // defined in nt_preliminary_definition.h
 
-enum class section_information_class
+enum class section_information_class : ::std::uint_least32_t
 {
 	SectionBasicInformation,
 	SectionImageInformation,
@@ -514,7 +514,7 @@ struct rtl_user_process_parameters
 	::std::uint_least32_t ProcessGroupId;
 	::std::uint_least32_t LoaderThreads;
 };
-enum class ps_create_state
+enum class ps_create_state : ::std::uint_least32_t
 {
 	PsCreateInitialState,
 	PsCreateFailOnFileOpen,
@@ -669,7 +669,7 @@ struct security_descriptor
 	acl *Dacl;
 };
 
-enum class object_information_class
+enum class object_information_class : ::std::uint_least32_t
 {
 	ObjectBasicInformation,         // q: OBJECT_BASIC_INFORMATION
 	ObjectNameInformation,          // q: OBJECT_NAME_INFORMATION
@@ -681,7 +681,7 @@ enum class object_information_class
 	MaxObjectInfoClass
 };
 
-enum class section_inherit
+enum class section_inherit : ::std::uint_least32_t
 {
 	ViewShare = 1,
 	ViewUnmap = 2
@@ -726,7 +726,7 @@ struct rtl_unicode_string_buffer
 	char16_t MinimumStaticBufferForTerminalNul;
 };
 
-enum class system_information_class
+enum class system_information_class : ::std::uint_least32_t
 {
 	SystemBasicInformation,
 	SystemProcessorInformation,
@@ -815,7 +815,7 @@ struct ps_std_handle_info
 	::std::uint_least32_t StdHandleSubsystemType;
 };
 
-enum class fs_information_class
+enum class fs_information_class : ::std::uint_least32_t
 {
 	FileFsVolumeInformation = 1,
 	FileFsLabelInformation,
@@ -909,7 +909,7 @@ struct kernel_user_times
 	::std::int_least64_t UserTime;
 };
 
-enum class thread_information_class
+enum class thread_information_class : ::std::uint_least32_t
 {
 	ThreadBasicInformation,
 	ThreadTimes,
@@ -948,7 +948,7 @@ struct object_handle_attribute_information
 	::std::uint_least8_t ProtectFromClose;
 };
 
-enum class rtl_path_type
+enum class rtl_path_type : ::std::uint_least32_t
 {
 	RtlPathTypeUnknown,
 	RtlPathTypeUncAbsolute,
@@ -962,7 +962,7 @@ enum class rtl_path_type
 
 // ALPC nt 6x
 // Based on https://github.com/googleprojectzero/sandbox-attacksurface-analysis-tools/blob/main/NtApiDotNet/NtAlpcNative.cs#L82-L97
-enum class ALPC_MESSAGE_TYPE
+enum class ALPC_MESSAGE_TYPE : ::std::uint_least32_t
 {
 	None = 0,
 	Request = 1,
@@ -981,7 +981,7 @@ enum class ALPC_MESSAGE_TYPE
 };
 // End Based  ON
 
-enum class security_impersonation_level
+enum class security_impersonation_level : ::std::uint_least32_t
 {
 	SecurityAnonymous,
 	SecurityIdentification,
@@ -1155,7 +1155,7 @@ struct port_view
 	void *ViewRemoteBase;
 };
 
-enum class alpc_port_information_class
+enum class alpc_port_information_class : ::std::uint_least32_t
 {
 	AlpcBasicInformation,                                // q: out ALPC_BASIC_INFORMATION
 	AlpcPortInformation,                                 // s: in ALPC_PORT_ATTRIBUTES
@@ -1203,7 +1203,7 @@ struct alpc_basic_information
 	void *PortContext;
 };
 
-enum class alpc_message_information_class
+enum class alpc_message_information_class : ::std::uint_least32_t
 {
 	AlpcMessageSidInformation,             // out PSID
 	AlpcMessageTokenModifiedIdInformation, // q: out LUID

@@ -97,7 +97,7 @@ struct file_attribute_tag_info
 	::std::uint_least32_t ReparseTag;
 };
 
-enum class file_info_by_handle_class
+enum class file_info_by_handle_class : ::std::uint_least32_t
 {
 	FileBasicInfo,
 	FileStandardInfo,
