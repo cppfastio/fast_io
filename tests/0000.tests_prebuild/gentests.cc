@@ -408,7 +408,11 @@ int main(int argc, char *argv[])
 														 "Command-line-style(optional) is one of gcc(default) or msvc\n");
 		return 1;
 	}
-	if (argv[1] == "windows"sv)
+	if (argv[1] == "all"sv)
+	{
+		global_platform = platform_t::all;
+	}
+	else if (argv[1] == "windows"sv)
 	{
 		global_platform = platform_t::windows;
 	}
@@ -422,7 +426,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		panic("Invalid target. Should be one of windows, linux or macos.\n");
+		panic("Invalid target. Should be one of all, windows, linux or macos.\n");
 	}
 	if (argc == 3)
 	{
