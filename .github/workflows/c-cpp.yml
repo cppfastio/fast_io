@@ -58,8 +58,8 @@ jobs:
         run: |
           wget --quiet https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
           tar -xf x86_64-linux-gnu.tar.xz
+          ln x86_64-linux-gnu/runtimes/lib/* x86_64-linux-gnu/llvm/lib/
           echo "PATH=${{ github.workspace }}/x86_64-linux-gnu/llvm/bin:${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/bin:$PATH" >> $GITHUB_ENV
-          # echo "LD_LIBRARY_PATH=${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
       - name: Download latest gcc for aarch64-linux-gnu
         run: |
           wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/aarch64-linux-gnu.tar.xz
