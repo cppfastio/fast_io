@@ -57,11 +57,11 @@ jobs:
       - name: Download latest clang
         run: |
           Invoke-WebRequest -Uri https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-windows-gnu.tar.xz -OutFile x86_64-windows-gnu.tar.xz
-          echo "Download done"
-          Expand-Archive x86_64-windows-gnu.tar.xz
-          echo "Extract done"
-          ls
           echo "${{ github.workspace }}/x86_64-windows-gnu/llvm/bin:${{ github.workspace }}/x86_64-windows-gnu/x86_64-windows-gnu/bin" >> $GITHUB_PATH
+      - name: Extract clang
+        uses: ihiroky/extract-action@v1
+        with:
+          file_path: x86_64-windows-gnu.tar.xz
       - name: Generate tests
         run: |
           cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
