@@ -56,7 +56,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Download latest clang
         run: |
-          Invoke-WebRequest -Uri https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-windows-gnu.tar.xz
+          Invoke-WebRequest -Uri https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-windows-gnu.tar.xz -OutFile x86_64-windows-gnu.tar.xz
           tar -xf x86_64-windows-gnu.tar.xz
           echo "${{ github.workspace }}/x86_64-windows-gnu/llvm/bin:${{ github.workspace }}/x86_64-windows-gnu/x86_64-windows-gnu/bin" >> $GITHUB_PATH
       - name: Generate tests
