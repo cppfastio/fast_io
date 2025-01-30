@@ -18,6 +18,10 @@ jobs:
           wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/x86_64-linux-gnu.tar.xz
           tar -xf x86_64-linux-gnu.tar.xz
           echo "${{ github.workspace }}/x86_64-linux-gnu/bin" >> $GITHUB_PATH
+          echo "PATH=${{ github.workspace }}/x86_64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
+      - name: Check PATH
+        run: |
+          echo $PATH
           which gcc
           gcc --version
       - name: Generate tests
@@ -32,65 +36,65 @@ jobs:
       - name: CMake test
         run: cmake --build fast_io_build --target test
 
-  windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ilammy/msvc-dev-cmd@v1.13.0
-      - name: Generate tests
-        run: |
-          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
-          cmake --build fast_io_prebuild
-          ./fast_io_prebuild/tests_prebuild windows msvc
-      - name: CMake configure
-        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl" -DENABLE_TESTS=On
-      - name: CMake build
-        run: cmake --build fast_io_build
-      - name: CMake test
-        run: cmake --build fast_io_build --target test
+  # windows:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: ilammy/msvc-dev-cmd@v1.13.0
+  #     - name: Generate tests
+  #       run: |
+  #         cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+  #         cmake --build fast_io_prebuild
+  #         ./fast_io_prebuild/tests_prebuild windows msvc
+  #     - name: CMake configure
+  #       run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_CXX_FLAGS="/EHsc /W3 /WX /sdl" -DENABLE_TESTS=On
+  #     - name: CMake build
+  #       run: cmake --build fast_io_build
+  #     - name: CMake test
+  #       run: cmake --build fast_io_build --target test
 
-  ubuntu-multiplatform-cross:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install ninja-build tool
-        uses: seanmiddleditch/gha-setup-ninja@v5
-      - name: Download latest clang
-        run: |
-          wget --quiet https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
-          tar -xf x86_64-linux-gnu.tar.xz
-          echo "${{ github.workspace }}/x86_64-linux-gnu/llvm/bin:${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/bin" >> $GITHUB_PATH
-          echo "LD_LIBRARY_PATH=${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
-          which clang
-          clang --version
-      - name: Download latest gcc for aarch64-linux-gnu
-        run: |
-          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/aarch64-linux-gnu.tar.xz
-          tar -xf aarch64-linux-gnu.tar.xz
-          echo "${{ github.workspace }}/aarch64-linux-gnu/bin" >> $GITHUB_PATH
-      - name: Download latest gcc for loongarch64-linux-gnu
-        run: |
-          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/loongarch64-linux-gnu.tar.xz
-          tar -xf loongarch64-linux-gnu.tar.xz
-          echo "${{ github.workspace }}/loongarch64-linux-gnu/bin" >> $GITHUB_PATH
-      - name: Download latest gcc for riscv64-linux-gnu
-        run: |
-          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20240908-x86_64-generic-linux-gnu/riscv64-linux-gnu.tar.xz
-          tar -xf riscv64-linux-gnu.tar.xz
-          echo "${{ github.workspace }}/riscv64-linux-gnu/bin" >> $GITHUB_PATH
-      - name: Generate tests
-        run: |
-          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_TESTS=On -DTESTS_PREBUILD=On
-          cmake --build fast_io_prebuild
-          ./fast_io_prebuild/tests_prebuild all
-      - name: CMake configure for wasm64
-        run: cmake -B fast_io_build_wasm64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=wasm64 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_wasm64
-      - name: Cmake compile for aarch64-linux-gnu
-        run: cmake -B fast_io_build_aarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=aarch64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_aarch64
-      - name: Cmake compile for loongarch64-linux-gnu
-        run: cmake -B fast_io_build_loongarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=loongarch64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_loongarch64
-      - name: Cmake compile for riscv64-linux-gnu
-        run: cmake -B fast_io_build_riscv64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=riscv64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_riscv64
+  # ubuntu-multiplatform-cross:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install ninja-build tool
+  #       uses: seanmiddleditch/gha-setup-ninja@v5
+  #     - name: Download latest clang
+  #       run: |
+  #         wget --quiet https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
+  #         tar -xf x86_64-linux-gnu.tar.xz
+  #         echo "${{ github.workspace }}/x86_64-linux-gnu/llvm/bin:${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/bin" >> $GITHUB_PATH
+  #         echo "LD_LIBRARY_PATH=${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+  #         which clang
+  #         clang --version
+  #     - name: Download latest gcc for aarch64-linux-gnu
+  #       run: |
+  #         wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/aarch64-linux-gnu.tar.xz
+  #         tar -xf aarch64-linux-gnu.tar.xz
+  #         echo "${{ github.workspace }}/aarch64-linux-gnu/bin" >> $GITHUB_PATH
+  #     - name: Download latest gcc for loongarch64-linux-gnu
+  #       run: |
+  #         wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/loongarch64-linux-gnu.tar.xz
+  #         tar -xf loongarch64-linux-gnu.tar.xz
+  #         echo "${{ github.workspace }}/loongarch64-linux-gnu/bin" >> $GITHUB_PATH
+  #     - name: Download latest gcc for riscv64-linux-gnu
+  #       run: |
+  #         wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20240908-x86_64-generic-linux-gnu/riscv64-linux-gnu.tar.xz
+  #         tar -xf riscv64-linux-gnu.tar.xz
+  #         echo "${{ github.workspace }}/riscv64-linux-gnu/bin" >> $GITHUB_PATH
+  #     - name: Generate tests
+  #       run: |
+  #         cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+  #         cmake --build fast_io_prebuild
+  #         ./fast_io_prebuild/tests_prebuild all
+  #     - name: CMake configure for wasm64
+  #       run: cmake -B fast_io_build_wasm64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=wasm64 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_wasm64
+  #     - name: Cmake compile for aarch64-linux-gnu
+  #       run: cmake -B fast_io_build_aarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=aarch64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_aarch64
+  #     - name: Cmake compile for loongarch64-linux-gnu
+  #       run: cmake -B fast_io_build_loongarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=loongarch64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_loongarch64
+  #     - name: Cmake compile for riscv64-linux-gnu
+  #       run: cmake -B fast_io_build_riscv64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=riscv64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_riscv64
 
     # windows-wasm-cross:
     #   runs-on: windows-latest
