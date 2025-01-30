@@ -62,6 +62,7 @@ jobs:
         uses: ihiroky/extract-action@v1
         with:
           file_path: x86_64-windows-gnu.tar.xz
+          extract_dir: .
       - name: Generate tests
         run: |
           ls
