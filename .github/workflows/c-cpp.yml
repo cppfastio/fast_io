@@ -59,7 +59,7 @@ jobs:
         run: |
           wget https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
           tar -xf x86_64-linux-gnu.tar.xz
-          export PATH=$PWD/x86_64-linux-gnu/llvm/bin:$PWD/x86_64-linux-gnu/x86_64-linux-gnu/bin:$PATH
+          export PATH=$PWD/x86_64-linux-gnu/llvm/bin:$PWD/x86_64-linux-gnu/x86_64-linux-gnu/usr/bin:$PATH
           which clang
           clang --version
       - name: Download latest gcc for aarch64-linux-gnu
