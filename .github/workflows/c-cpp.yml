@@ -66,6 +66,8 @@ jobs:
       - name: Generate tests
         run: |
           ls
+          ls x86_64-windows-gnu
+          echo $env:PATH
           Get-Command clang
           cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
           cmake --build fast_io_prebuild
