@@ -15,9 +15,9 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Download latest gcc
         run: |
-          wget https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/x86_64-linux-gnu.tar.xz
+          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/x86_64-linux-gnu.tar.xz
           tar -xf x86_64-linux-gnu.tar.xz
-          export PATH=$PWD/x86_64-linux-gnu/bin:$PATH
+          echo "PATH=$PWD/x86_64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
           which gcc
           gcc --version
       - name: Generate tests
@@ -57,27 +57,27 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v5
       - name: Download latest clang
         run: |
-          wget https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
+          wget --quiet https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
           tar -xf x86_64-linux-gnu.tar.xz
-          export PATH=$PWD/x86_64-linux-gnu/llvm/bin:$PWD/x86_64-linux-gnu/x86_64-linux-gnu/usr/bin:$PATH
-          export LD_LIBRARY_PATH=$PWD/x86_64-linux-gnu/x86_64-linux-gnu/usr/lib:$LD_LIBRARY_PATH
+          echo "PATH=$PWD/x86_64-linux-gnu/llvm/bin:$PWD/x86_64-linux-gnu/x86_64-linux-gnu/usr/bin:$PATH" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$PWD/x86_64-linux-gnu/x86_64-linux-gnu/usr/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
           which clang
           clang --version
       - name: Download latest gcc for aarch64-linux-gnu
         run: |
-          wget https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/aarch64-linux-gnu.tar.xz
+          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/aarch64-linux-gnu.tar.xz
           tar -xf aarch64-linux-gnu.tar.xz
-          export PATH=$PWD/aarch64-linux-gnu/bin:$PATH
+          echo "PATH=$PWD/aarch64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
       - name: Download latest gcc for loongarch64-linux-gnu
         run: |
-          wget https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/loongarch64-linux-gnu.tar.xz
+          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/loongarch64-linux-gnu.tar.xz
           tar -xf loongarch64-linux-gnu.tar.xz
-          export PATH=$PWD/loongarch64-linux-gnu/bin:$PATH
+          echo "PATH=$PWD/loongarch64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
       - name: Download latest gcc for riscv64-linux-gnu
         run: |
-          wget https://github.com/trcrsired/gcc-releases/releases/download/20240908-x86_64-generic-linux-gnu/riscv64-linux-gnu.tar.xz
+          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20240908-x86_64-generic-linux-gnu/riscv64-linux-gnu.tar.xz
           tar -xf riscv64-linux-gnu.tar.xz
-          export PATH=$PWD/riscv64-linux-gnu/bin:$PATH
+          echo "PATH=$PWD/riscv64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
       - name: Generate tests
         run: |
           cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_TESTS=On -DTESTS_PREBUILD=On
