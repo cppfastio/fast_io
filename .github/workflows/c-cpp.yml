@@ -66,9 +66,10 @@ jobs:
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild all
       - name: Download sysroot for wasm64
-        run: Invoke-WebRequest -Uri https://github.com/trcrsired/wasm64-wasi-sysroot/releases/download/20240115/wasm64-wasi.tar.xz -OutFile wasm64-wasi.tar.xz
-        7z x wasm64-wasi.tar.xz
-        7z x wasm64-wasi.tar
+        run: |
+          Invoke-WebRequest -Uri https://github.com/trcrsired/wasm64-wasi-sysroot/releases/download/20240115/wasm64-wasi.tar.xz -OutFile wasm64-wasi.tar.xz
+          7z x wasm64-wasi.tar.xz
+          7z x wasm64-wasi.tar
       - name: CMake configure for wasm64
         run: cmake -B fast_io_build_wasm64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="--target=wasm64 --sysroot=wasm64-wasi -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_wasm64
       - name: Cmake compile for aarch64-linux-gnu
