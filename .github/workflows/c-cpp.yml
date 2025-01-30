@@ -20,9 +20,9 @@ jobs:
           echo "PATH=${{ github.workspace }}/x86_64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
       - name: Generate tests
         run: |
-          echo $PATH
-          which gcc
           gcc --version
+          export CC=$(which gcc)
+          export CXX=$(which g++)
           cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild linux
