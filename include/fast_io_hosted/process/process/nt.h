@@ -612,8 +612,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	void *hProcess{};
 	void *hThread{};
 	check_nt_status(::fast_io::win32::nt::nt_create_user_process<zw>(
-		&hProcess, &hThread, 0x2000000, 0x2000000, nullptr, nullptr,
-		512, 0x00, rtl_temp, &CreateInfo, &AttributeList));
+		__builtin_addressof(hProcess), __builtin_addressof(hThread), 0x2000000, 0x2000000, nullptr, nullptr,
+		512, 0x00, rtl_temp, __builtin_addressof(CreateInfo), __builtin_addressof(AttributeList)));
 
 	return {hProcess, hThread};
 }
