@@ -57,20 +57,24 @@ jobs:
       - name: Download latest clang
         run: |
           Invoke-WebRequest -Uri https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-windows-gnu.tar.xz -OutFile x86_64-windows-gnu.tar.xz
-          "PATH=${{ github.workspace }}/x86_64-windows-gnu/llvm/bin;${{ github.workspace }}/x86_64-windows-gnu/x86_64-windows-gnu/bin;$env:PATH" >> $env:GITHUB_ENV
+          "PATH=${{ github.workspace }}\x86_64-windows-gnu\llvm\bin;${{ github.workspace }}\x86_64-windows-gnu\x86_64-windows-gnu\bin;$env:PATH" >> $env:GITHUB_ENV
       - name: Extract clang
         uses: ihiroky/extract-action@v1
         with:
           file_path: x86_64-windows-gnu.tar.xz
       - name: Generate tests
         run: |
-          echo $env:PATH
-          Get-Command clang
           cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild all
+      - name: Download sysroot for wasm64
+        run: Invoke-WebRequest -Uri https://github.com/trcrsired/wasm64-wasi-sysroot/releases/download/20240115/wasm64-wasi.tar.xz -OutFile wasm64-wasi.tar.xz
+      - name: Extract sysroot for wasm64
+        uses: ihiroky/extract-action@v1
+        with:
+          file_path: wasm64-wasi.tar.xz
       - name: CMake configure for wasm64
-        run: cmake -B fast_io_build_wasm64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="--target=wasm64 -lc++abi -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_wasm64
+        run: cmake -B fast_io_build_wasm64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="--target=wasm64 --sysroot=wasm64-wasi -lc++abi -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_wasm64
       - name: Cmake compile for aarch64-linux-gnu
         run: cmake -B fast_io_build_aarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="--target=aarch64-linux-gnu -lc++abi -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_aarch64
       - name: Cmake compile for loongarch64-linux-gnu
