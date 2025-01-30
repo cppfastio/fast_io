@@ -64,6 +64,8 @@ jobs:
           file_path: x86_64-windows-gnu.tar.xz
       - name: Generate tests
         run: |
+          ls
+          Get-Command clang
           cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild all
