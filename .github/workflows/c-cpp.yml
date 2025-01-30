@@ -60,7 +60,7 @@ jobs:
           wget https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
           mv x86_64-linux-gnu.tar.xz clang.tar.xz
           tar -xf clang.tar.xz
-          export PATH=$PWD/clang/bin:$PATH
+          export PATH=$PWD/clang/llvm/bin:$PATH
           which clang
           clang --version
       - name: Download latest gcc for aarch64-linux-gnu
@@ -80,17 +80,17 @@ jobs:
           export PATH=$PWD/riscv64-linux-gnu/bin:$PATH
       - name: Generate tests
         run: |
-          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_TESTS=On -DTESTS_PREBUILD=On
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild all
       - name: CMake configure for wasm64
-        run: cmake -B fast_io_build_wasm64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=wasm64 -fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_wasm64
+        run: cmake -B fast_io_build_wasm64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=wasm64 -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_wasm64
       - name: Cmake compile for aarch64-linux-gnu
-        run: cmake -B fast_io_build_aarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=aarch64-linux-gnu -fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_aarch64
+        run: cmake -B fast_io_build_aarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=aarch64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_aarch64
       - name: Cmake compile for loongarch64-linux-gnu
-        run: cmake -B fast_io_build_loongarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=loongarch64-linux-gnu -fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_loongarch64
+        run: cmake -B fast_io_build_loongarch64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=loongarch64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_loongarch64
       - name: Cmake compile for riscv64-linux-gnu
-        run: cmake -B fast_io_build_riscv64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=riscv64-linux-gnu -fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_riscv64
+        run: cmake -B fast_io_build_riscv64 -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_FLAGS="--target=riscv64-linux-gnu -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On && cmake --build fast_io_build_riscv64
 
     # windows-wasm-cross:
     #   runs-on: windows-latest
