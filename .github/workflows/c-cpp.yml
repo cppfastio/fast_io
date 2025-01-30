@@ -17,12 +17,10 @@ jobs:
         run: |
           wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/x86_64-linux-gnu.tar.xz
           tar -xf x86_64-linux-gnu.tar.xz
+          ln x86_64-linux-gnu/bin/gcc x86_64-linux-gnu/bin/cc
           echo "PATH=${{ github.workspace }}/x86_64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
       - name: Generate tests
         run: |
-          gcc --version
-          export CC=$(which gcc)
-          export CXX=$(which g++)
           cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
           cmake --build fast_io_prebuild
           ./fast_io_prebuild/tests_prebuild linux
