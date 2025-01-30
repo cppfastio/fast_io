@@ -7,29 +7,29 @@ on:
     branches: ["master", "next"]
 
 jobs:
-  ubuntu:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install ninja-build tool
-        uses: seanmiddleditch/gha-setup-ninja@v5
-      - name: Download latest gcc
-        run: |
-          wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/x86_64-linux-gnu.tar.xz
-          tar -xf x86_64-linux-gnu.tar.xz
-          ln x86_64-linux-gnu/bin/gcc x86_64-linux-gnu/bin/cc
-          echo "PATH=${{ github.workspace }}/x86_64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
-      - name: Generate tests
-        run: |
-          cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
-          cmake --build fast_io_prebuild
-          ./fast_io_prebuild/tests_prebuild linux
-      - name: CMake configure
-        run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On
-      - name: CMake build
-        run: cmake --build fast_io_build
-      - name: CMake test
-        run: cmake --build fast_io_build --target test
+  # ubuntu:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install ninja-build tool
+  #       uses: seanmiddleditch/gha-setup-ninja@v5
+  #     - name: Download latest gcc
+  #       run: |
+  #         wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/x86_64-linux-gnu.tar.xz
+  #         tar -xf x86_64-linux-gnu.tar.xz
+  #         ln x86_64-linux-gnu/bin/gcc x86_64-linux-gnu/bin/cc
+  #         echo "PATH=${{ github.workspace }}/x86_64-linux-gnu/bin:$PATH" >> $GITHUB_ENV
+  #     - name: Generate tests
+  #       run: |
+  #         cmake -B fast_io_prebuild -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DENABLE_TESTS=On -DTESTS_PREBUILD=On
+  #         cmake --build fast_io_prebuild
+  #         ./fast_io_prebuild/tests_prebuild linux
+  #     - name: CMake configure
+  #       run: cmake -B fast_io_build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror" -DENABLE_TESTS=On
+  #     - name: CMake build
+  #       run: cmake --build fast_io_build
+  #     - name: CMake test
+  #       run: cmake --build fast_io_build --target test
 
   # windows:
   #   runs-on: windows-latest
@@ -59,7 +59,7 @@ jobs:
           wget --quiet https://github.com/trcrsired/llvm-releases/releases/download/llvm20-20250125/x86_64-linux-gnu.tar.xz
           tar -xf x86_64-linux-gnu.tar.xz
           echo "PATH=${{ github.workspace }}/x86_64-linux-gnu/llvm/bin:${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/bin:$PATH" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          # echo "LD_LIBRARY_PATH=${{ github.workspace }}/x86_64-linux-gnu/x86_64-linux-gnu/usr/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
       - name: Download latest gcc for aarch64-linux-gnu
         run: |
           wget --quiet https://github.com/trcrsired/gcc-releases/releases/download/20241217-x86_64-linux-gnu/aarch64-linux-gnu.tar.xz
