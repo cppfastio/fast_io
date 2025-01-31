@@ -236,6 +236,39 @@ inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_
 	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 
+#elif __cpp_impl_three_way_comparison >= 201907L
+template <::std::integral char_type>
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+{
+	return ::fast_io::freestanding::pointer_lexicographical_compare_three_way<char_type>(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
+}
+
+template <::std::integral char_type, ::std::size_t n>
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, char_type const (&buffer)[n]) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::fast_io::freestanding::pointer_lexicographical_compare_three_way<char_type>(a.ptr, a.ptr + a.n, buffer, buffer + nm1);
+}
+
+template <::std::integral char_type, ::std::size_t n>
+inline constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type> a) noexcept
+{
+	constexpr ::std::size_t nm1{n - 1u};
+	return ::fast_io::freestanding::pointer_lexicographical_compare_three_way<char_type>(buffer, buffer + nm1, a.ptr, a.ptr + a.n);
+}
+
+template <::std::integral char_type>
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
+{
+	return ::fast_io::freestanding::pointer_lexicographical_compare_three_way<char_type>(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
+}
+
+template <::std::integral char_type>
+inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+{
+	return ::fast_io::freestanding::pointer_lexicographical_compare_three_way<char_type>(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
+}
+
 #endif
 
 } // namespace fast_io::containers

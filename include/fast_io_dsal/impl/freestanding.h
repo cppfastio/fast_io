@@ -322,4 +322,20 @@ inline constexpr Iter uninitialized_fill_n(Iter first, ::std::size_t n, T const 
 	return ::fast_io::freestanding::uninitialized_fill(first, first + n, ele);
 }
 
+template <typename Pointer>
+	requires(::std::is_pointer_v<Pointer>)
+inline constexpr ::std::strong_ordering pointer_lexicographical_compare_three_way(Pointer const *first1, Pointer const *last1, Pointer const *first2, Pointer const *last2) noexcept
+{
+	auto const a_n{static_cast<::std::size_t>(last1 - first1)};
+	auto const b_n{static_cast<::std::size_t>(last2 - first2)};
+
+	for (; (first1 != last1) && (first2 != last2); ++first1, ++first2)
+	{
+		if (auto i{*first1 <=> *first2}; i != ::std::strong_ordering::equal)
+		{
+			return i;
+		}
+	}
+	return a_n <=> b_n;
+}
 } // namespace fast_io::freestanding

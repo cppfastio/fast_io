@@ -1071,6 +1071,14 @@ inline constexpr auto operator<=>(vector<T, allocator1> const &lhs, vector<T, al
 {
 	return ::std::lexicographical_compare_three_way(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr, ::std::compare_three_way{});
 }
+
+#elif __cpp_impl_three_way_comparison >= 201907L
+template <typename T, typename allocator1, typename allocator2>
+	requires ::std::three_way_comparable<T>
+inline constexpr auto operator<=>(vector<T, allocator1> const &lhs, vector<T, allocator2> const &rhs) noexcept
+{
+	return ::fast_io::freestanding::pointer_lexicographical_compare_three_way<T>(lhs.imp.begin_ptr, lhs.imp.curr_ptr, rhs.imp.begin_ptr, rhs.imp.curr_ptr);
+}
 #endif
 
 template <typename T, typename allocator>
