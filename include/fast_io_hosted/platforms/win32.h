@@ -606,7 +606,7 @@ inline constexpr bool operator==(basic_win32_family_io_observer<family, ch_type>
 	return a.handle == b.handle;
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L || __cpp_impl_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L
 template <win32_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_win32_family_io_observer<family, ch_type> a,
 								  basic_win32_family_io_observer<family, ch_type> b) noexcept
@@ -1290,7 +1290,7 @@ inline constexpr bool operator==(win32_9xa_dir_io_observer const &a,
 	return a.handle.path == b.handle.path;
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L || __cpp_impl_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L
 inline constexpr auto operator<=>(win32_9xa_dir_io_observer const &a,
 								  win32_9xa_dir_io_observer const &b) noexcept
 {

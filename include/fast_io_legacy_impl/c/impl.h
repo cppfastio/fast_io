@@ -862,7 +862,7 @@ inline constexpr bool operator==(basic_c_family_io_observer<family, ch_type> a,
 	return a.fp == b.fp;
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L || __cpp_impl_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L
 template <c_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_c_family_io_observer<family, ch_type> a,
 								  basic_c_family_io_observer<family, ch_type> b) noexcept
