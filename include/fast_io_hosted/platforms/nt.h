@@ -708,15 +708,13 @@ inline constexpr bool operator==(basic_nt_family_io_observer<family, ch_type> a,
 	return a.handle == b.handle;
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
-
+#if __cpp_impl_three_way_comparison >= 201907L
 template <nt_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_nt_family_io_observer<family, ch_type> a,
 								  basic_nt_family_io_observer<family, ch_type> b) noexcept
 {
 	return a.handle <=> b.handle;
 }
-
 #endif
 
 template <nt_family family, ::std::integral ch_type>

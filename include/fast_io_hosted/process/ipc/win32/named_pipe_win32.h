@@ -34,7 +34,7 @@ inline constexpr bool operator==(basic_win32_family_named_pipe_ipc_observer<fami
 	return a.handle == b.handle;
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L
 template <win32_family family, ::std::integral ch_type>
 inline constexpr auto operator<=>(basic_win32_family_named_pipe_ipc_observer<family, ch_type> a,
 								  basic_win32_family_named_pipe_ipc_observer<family, ch_type> b) noexcept

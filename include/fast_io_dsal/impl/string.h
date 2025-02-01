@@ -1519,7 +1519,7 @@ inline constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::contai
 	return ::std::equal(buffer, buffer + nm1, a.cbegin(), a.cend());
 }
 
-#if defined(__cpp_lib_three_way_comparison)
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template <::std::integral chtype, typename allocator1, typename allocator2>
 inline constexpr auto operator<=>(::fast_io::containers::basic_string<chtype, allocator1> const &lhs, ::fast_io::containers::basic_string<chtype, allocator2> const &rhs) noexcept
