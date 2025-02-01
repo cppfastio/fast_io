@@ -435,7 +435,7 @@ private:
 #endif
 		::std::conditional_t<alloc_with_status, list<T, allocator> *, allocator> v;
 		inline explicit constexpr new_handle_guard(::fast_io::containers::details::list_node<value_type> *p,
-											list<T, allocator> *va)
+												   list<T, allocator> *va)
 		{
 			ptr = p;
 			if constexpr (alloc_with_status)
@@ -1033,13 +1033,13 @@ inline constexpr bool operator==(list<T, allocator1> const &lhs, list<T, allocat
 	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L
 
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::three_way_comparable<T>
 inline constexpr auto operator<=>(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs) noexcept
 {
-	return ::std::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
+	return ::fast_io::freestanding::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
 }
 
 #endif

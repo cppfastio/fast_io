@@ -1,6 +1,6 @@
 ## Compiler Support
 - GCC >= 15
-- Clang >= 20
+- Clang >= 21
 - MSVC
 
 ## C++ standard library support

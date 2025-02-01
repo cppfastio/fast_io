@@ -44,6 +44,8 @@ no ::std::array, ::std::copy and others
 #include "allocator.h"
 #endif
 
+#include <algorithm>
+
 #include "noexcept_call.h"
 #include "array.h"
 #include "cstr_len.h"
@@ -51,5 +53,3 @@ no ::std::array, ::std::copy and others
 #include "algorithm.h"
 #include "relocatable.h"
 #include "ranges.h"
-
-#include <algorithm>
