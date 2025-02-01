@@ -817,6 +817,53 @@ public:
 	{
 		this->sort_after(beforeit, ::std::ranges::less{});
 	}
+
+	template <typename Cmp>
+	inline constexpr void merge(forward_list &&other, Cmp cmp) noexcept
+	{
+		if (__builtin_addressof(other) == this)
+		{
+			return;
+		}
+		this->imp = static_cast<node_type *>(::fast_io::containers::details::forward_list_merge_common<value_type, Cmp>(
+			this->imp, other.imp, cmp));
+		other.imp = nullptr;
+	}
+
+	inline constexpr void merge(forward_list &&other) noexcept
+	{
+		this->merge(::std::move(other), ::std::ranges::less{});
+	}
+
+	template <typename Cmp>
+	inline constexpr void merge_after(const_iterator beforeit, forward_list &&other, Cmp cmp) noexcept
+	{
+		if (__builtin_addressof(other) == this)
+		{
+			return;
+		}
+		auto otherimp{other.imp};
+		other.imp = nullptr;
+		auto newimp{static_cast<node_type *>(::fast_io::containers::details::forward_list_merge_common<value_type, Cmp>(
+			beforeit->next, otherimp, cmp))};
+		beforeit->next = newimp;
+	}
+
+	inline constexpr void merge_after(const_iterator beforeit, forward_list &&other) noexcept
+	{
+		this->merge_after(beforeit, ::std::move(other), ::std::ranges::less{});
+	}
+
+	inline constexpr void clear_destroy() noexcept
+	{
+		this->destroy();
+		this->imp = nullptr;
+	}
+
+	inline constexpr void clear() noexcept
+	{
+		this->clear_destroy();
+	}
 };
 
 template <typename T, typename allocator1, typename allocator2>
