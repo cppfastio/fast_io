@@ -344,12 +344,12 @@ inline constexpr bool operator==(::fast_io::containers::span<T> a, ::fast_io::co
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L
 template <typename T>
 	requires ::std::three_way_comparable<T>
 inline constexpr auto operator<=>(::fast_io::containers::span<T> a, ::fast_io::containers::span<T> b)
 {
-	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
+	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 #endif
 

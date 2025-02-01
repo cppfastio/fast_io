@@ -645,25 +645,25 @@ inline constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::contai
 	return ::std::equal(buffer, buffer + nm1, a.ptr, a.ptr + a.n);
 }
 
-#if __cpp_lib_three_way_comparison >= 201907L
+#if __cpp_impl_three_way_comparison >= 201907L
 template <::std::integral char_type>
 inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
 {
-	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
+	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 
 template <::std::integral char_type, ::std::size_t n>
 inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, char_type const (&buffer)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
-	return ::std::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, buffer, buffer + nm1, ::std::compare_three_way{});
+	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, buffer, buffer + nm1, ::std::compare_three_way{});
 }
 
 template <::std::integral char_type, ::std::size_t n>
 inline constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_string_view<char_type> a) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
-	return ::std::lexicographical_compare_three_way(buffer, buffer + nm1, a.ptr, a.ptr + a.n, ::std::compare_three_way{});
+	return ::fast_io::freestanding::lexicographical_compare_three_way(buffer, buffer + nm1, a.ptr, a.ptr + a.n, ::std::compare_three_way{});
 }
 
 #endif
