@@ -773,6 +773,22 @@ inline void kill(win32_family_process_observer<family> ppob, win32_wait_status e
 	}
 }
 
+struct win32_process_id
+{
+	::std::uint_least32_t process_id{};
+};
+
+template <win32_family family>
+inline win32_process_id get_process_id(win32_family_process_observer<family> ppob) noexcept
+{
+	auto pid{::fast_io::win32::GetProcessId(ppob.native_handle)};
+	if (pid == 0) [[unlikely]]
+	{
+		throw_win32_error();
+	}
+	return {pid};
+}
+
 template <win32_family family>
 class win32_family_process : public win32_family_process_observer<family>
 {
