@@ -11,7 +11,7 @@ int main()
 	print("1: {", rgvw(words1, ", "), "}\n");
 
 	// words2 == words1
-	fast_io::vector<std::string> words2(words1.begin(), words1.end());
+	fast_io::vector<std::string> words2(::std::from_range, words1);
 	print("2: {", rgvw(words2, ", "), "}\n");
 
 	// words3 == words1
@@ -23,6 +23,6 @@ int main()
 	print("4: {", rgvw(words4, ", "), "}\n");
 
 	auto const rg = {"cat", "cow", "crow"};
-	fast_io::vector<std::string> words5(std::from_range, rg); // overload (11)
+	fast_io::vector<std::string> words5(::std::from_range, rg); // overload (11)
 	print("5: {", rgvw(words5, ", "), "}\n");
 }

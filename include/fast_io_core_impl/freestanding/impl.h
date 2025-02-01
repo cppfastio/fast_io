@@ -44,11 +44,7 @@ no ::std::array, ::std::copy and others
 #include "allocator.h"
 #endif
 
-#if defined(__GLIBCXX__) && __has_include(<bits/stl_algobase.h>)
-#include <bits/stl_algobase.h>
-#else
 #include <algorithm>
-#endif
 
 #include "noexcept_call.h"
 #include "array.h"
