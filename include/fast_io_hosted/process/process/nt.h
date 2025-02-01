@@ -411,10 +411,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			auto const NtImagePath_c16_buffer_end{NtImagePath_c16_buffer + NtImagePath_u16_length};
 			auto find_next_rl_end{NtImagePath_c16_buffer_end};
 			auto const find_next_rl{::fast_io::freestanding::find(NtImagePath_c16_buffer + 8, find_next_rl_end, u'\\')};
-			if (find_next_rl != find_next_rl_end)
-			{
-				find_next_rl_end = find_next_rl;
-			}
+			// not found: find_next_rl == find_next_rl_end
+			find_next_rl_end = find_next_rl;
 
 			auto const find_res_strlen{static_cast<::std::size_t>(find_next_rl_end - NtImagePath_c16_buffer)};
 			QueryInBuffer->DeviceNameLength = static_cast<::std::uint_least16_t>(find_res_strlen) * sizeof(char16_t);
