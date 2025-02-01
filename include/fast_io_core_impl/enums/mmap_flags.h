@@ -82,8 +82,8 @@ enum class mmap_flags : ::std::uint_least32_t
 	map_hugetlb = 0x100000,         /* create a huge page mapping */
 	map_fixed_noreplace = 0x200000, /* MAP_FIXED which doesn't unmap underlying mapping */
 	map_uninitialized = 0x4000000,  /* For anonymous mmap, memory could be uninitialized */
-	map_huge_2mb = 21u << 26,
-	map_huge_1gb = 30u << 26,
+	map_huge_2mb = static_cast<::std::uint_least32_t>(21u) << 26,
+	map_huge_1gb = static_cast<::std::uint_least32_t>(30u) << 26,
 };
 
 inline constexpr mmap_flags operator&(mmap_flags x, mmap_flags y) noexcept

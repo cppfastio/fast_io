@@ -30,6 +30,18 @@
 - xtensa-esp32
 - All other architectures should work, they just aren't tested due to time not being infinite.
 
+## Other Architectures Support (unverified)
+- pdp11
+- Blackfin
+- Convex
+- E2K
+- Itanium 64
+- M68K
+- HP/PA
+- System/370
+- System/390
+- RS/6000
+
 ## Platform Support
 - Windows 10/12
 - Windows Server 2019
