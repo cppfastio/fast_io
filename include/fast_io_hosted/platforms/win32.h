@@ -645,7 +645,7 @@ inline void *win32_dup_impl(void *handle)
 	{
 		throw_win32_error();
 	}
-	return handle;
+	return new_handle;
 }
 
 inline void *win32_dup2_impl(void *handle, void *newhandle)
