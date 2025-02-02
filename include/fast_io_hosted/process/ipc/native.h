@@ -1,8 +1,6 @@
 ﻿#pragma once
 
 #if !defined(__MSDOS__) && !defined(__NEWLIB__) && !defined(__wasi__) && !defined(_PICOLIBC__)
-#include "basic.h"
-
 #include "posix/named_pipe.h"
 #include "posix/eventfd.h"
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
@@ -20,8 +18,6 @@ namespace fast_io
 	// rpc
 #else
 	// named pipe
-template <::std::integral char_type>
-using basic_native_ipc_observer = ::fast_io::basic_named_pipe_ipc_observer<char_type>;
 #endif
 #else
 	// posix to do
