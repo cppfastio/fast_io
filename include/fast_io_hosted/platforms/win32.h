@@ -1055,7 +1055,6 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 		throw_win32_error(3221225530);
 	}
 
-	++curr;
 	for (; curr != beg + filename_c_str_len; ++curr)
 	{
 		auto fc{*curr};
@@ -1105,7 +1104,6 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 		throw_win32_error(3221225530);
 	}
 
-	++curr;
 	for (; curr != beg + filename_c_str_len; ++curr)
 	{
 		auto fc{*curr};

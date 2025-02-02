@@ -59,7 +59,7 @@ inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_w
 	auto const beg{path_c_str};
 	auto curr{beg};
 
-	if (auto const fc{*curr++}; fc == u8'+' ||
+	if (auto const fc{*curr}; fc == u8'+' ||
 								fc == u8'-' ||
 								fc == u8'.') [[unlikely]]
 	{

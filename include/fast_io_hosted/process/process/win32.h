@@ -577,8 +577,6 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 				throw_win32_error(3221225530);
 			}
 
-			++curr;
-
 			for (; curr != beg + filename_c_str_len; ++curr)
 			{
 				auto fc{*curr};
