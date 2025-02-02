@@ -156,6 +156,10 @@ public:
 	}
 	inline posix_dll_file &operator=(posix_dll_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->rtld_handle) [[likely]]
 		{
 			noexcept_call(dlclose, this->rtld_handle);

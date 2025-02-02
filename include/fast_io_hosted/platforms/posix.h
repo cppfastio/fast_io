@@ -1244,6 +1244,10 @@ public:
 	{}
 	inline basic_posix_family_file &operator=(basic_posix_family_file const &dp)
 	{
+		if (__builtin_addressof(dp) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->fd = details::sys_dup2(dp.fd, this->fd);
 		return *this;
 	}
@@ -1254,6 +1258,10 @@ public:
 	}
 	inline basic_posix_family_file &operator=(basic_posix_family_file &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->fd != -1) [[likely]]
 		{
 			details::sys_close(this->fd);

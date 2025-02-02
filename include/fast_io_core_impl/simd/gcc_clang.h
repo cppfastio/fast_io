@@ -239,6 +239,7 @@ struct simd_vector
 	}
 	inline constexpr simd_vector &operator=(vec_type const &b) noexcept
 	{
+		// There is no need to check the 'this' pointer as there are no side effects
 		value = b;
 		return *this;
 	}

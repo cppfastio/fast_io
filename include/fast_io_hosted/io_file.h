@@ -318,6 +318,10 @@ public:
 	}
 	inline constexpr basic_general_io_file &operator=(basic_general_io_file &&other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		delete this->handle;
 		this->handle = other.handle;
 		other.handle = nullptr;

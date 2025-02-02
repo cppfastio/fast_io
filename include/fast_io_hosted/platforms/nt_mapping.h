@@ -232,6 +232,10 @@ public:
 	}
 	inline nt_family_memory_map_file &operator=(nt_family_memory_map_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->address_begin) [[likely]]
 		{
 			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};

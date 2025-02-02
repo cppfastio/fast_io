@@ -1318,6 +1318,10 @@ public:
 	}
 	inline win32_9xa_dir_file &operator=(win32_9xa_dir_file const &other)
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->handle = win32::details::win32_9xa_dir_dup_impl(other.handle);
 		return *this;
 	}
@@ -1327,6 +1331,10 @@ public:
 	}
 	inline win32_9xa_dir_file &operator=(win32_9xa_dir_file &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (*this) [[likely]]
 		{
 			win32::details::close_win32_9xa_dir_handle(this->handle);
@@ -1425,6 +1433,10 @@ public:
 	}
 	inline basic_win32_family_file &operator=(basic_win32_family_file const &other)
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->handle = ::fast_io::win32::details::win32_dup2_impl(other.handle, this->handle);
 		return *this;
 	}
@@ -1434,6 +1446,10 @@ public:
 	}
 	inline basic_win32_family_file &operator=(basic_win32_family_file &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (*this) [[likely]]
 		{
 			::fast_io::win32::CloseHandle(this->handle);

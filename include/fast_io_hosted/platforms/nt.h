@@ -1392,6 +1392,10 @@ public:
 	}
 	inline basic_nt_family_file &operator=(basic_nt_family_file const &other)
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->handle = ::fast_io::win32::nt::details::nt_dup2_impl<family == nt_family::zw>(other.handle, this->handle);
 		return *this;
 	}
@@ -1402,6 +1406,10 @@ public:
 	}
 	inline basic_nt_family_file &operator=(basic_nt_family_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->handle) [[likely]]
 		{
 			::fast_io::win32::nt::nt_close<family == nt_family::zw>(this->handle);

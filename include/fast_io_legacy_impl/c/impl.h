@@ -958,7 +958,7 @@ public:
 	}
 	inline basic_c_family_file &operator=(basic_c_family_file &&other) noexcept
 	{
-		if (__builtin_addressof(other) != this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}

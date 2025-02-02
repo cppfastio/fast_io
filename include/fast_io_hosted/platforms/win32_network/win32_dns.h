@@ -222,6 +222,10 @@ public:
 	}
 	inline win32_family_dns_file &operator=(win32_family_dns_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->res) [[likely]]
 		{
 			::fast_io::details::win32_family_freeaddrinfo_impl<fam>(this->res);

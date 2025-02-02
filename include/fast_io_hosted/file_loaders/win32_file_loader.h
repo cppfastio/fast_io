@@ -216,6 +216,10 @@ public:
 	}
 	inline win32_family_file_loader &operator=(win32_family_file_loader &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		::fast_io::win32::details::win32_unload_address(address_begin);
 		address_begin = other.address_begin;
 		address_end = other.address_end;

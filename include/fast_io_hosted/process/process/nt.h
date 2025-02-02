@@ -837,6 +837,10 @@ public:
 	}
 	inline nt_family_process &operator=(nt_family_process &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		win32::nt::details::close_nt_user_process_information_and_wait<family>(this->hnt_user_process_info);
 		this->hnt_user_process_info = b.release();
 		return *this;

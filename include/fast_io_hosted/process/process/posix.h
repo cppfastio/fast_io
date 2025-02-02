@@ -696,7 +696,7 @@ public:
 	}
 	inline posix_process &operator=(posix_process &&__restrict other) noexcept
 	{
-		if (__builtin_addressof(other) == this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}

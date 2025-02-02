@@ -437,6 +437,10 @@ public:
 	inline constexpr vector &operator=(vector const &vec)
 		requires(::std::copyable<value_type>)
 	{
+		if (__builtin_addressof(vec) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		vector newvec(vec);
 		this->operator=(::std::move(newvec));
 		return *this;
@@ -449,6 +453,10 @@ public:
 	}
 	inline constexpr vector &operator=(vector &&vec) noexcept
 	{
+		if (__builtin_addressof(vec) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->destroy();
 		this->imp = vec.imp;
 		vec.imp = {};

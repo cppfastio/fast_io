@@ -108,6 +108,10 @@ public:
 
 	inline basic_filebuf_file &operator=(basic_filebuf_file &&__restrict bf) noexcept
 	{
+		if (__builtin_addressof(bf) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		delete this->fb;
 		this->fb = bf.release();
 		return *this;

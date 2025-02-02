@@ -316,6 +316,10 @@ struct basic_nt_family_directory_generator
 	inline constexpr basic_nt_family_directory_generator &
 	operator=(basic_nt_family_directory_generator &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(entry);
 		entry = other.entry;
 		other.entry = nullptr;
@@ -401,6 +405,10 @@ struct basic_nt_family_recursive_directory_generator
 	inline constexpr basic_nt_family_recursive_directory_generator &
 	operator=(basic_nt_family_recursive_directory_generator &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(this->entry);
 		root_handle = other.root_handle;
 		entry = other.entry;

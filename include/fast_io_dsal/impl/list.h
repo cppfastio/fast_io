@@ -897,6 +897,10 @@ public:
 	inline constexpr list &operator=(list const &other)
 		requires(::std::copyable<value_type>)
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		list temp(other);
 		this->operator=(::std::move(temp));
 		return *this;
