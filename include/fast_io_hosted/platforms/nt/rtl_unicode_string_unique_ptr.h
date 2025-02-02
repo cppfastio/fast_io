@@ -19,6 +19,10 @@ struct rtl_unicode_string_unique_ptr
 	}
 	inline rtl_unicode_string_unique_ptr &operator=(rtl_unicode_string_unique_ptr &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (heap_ptr) [[likely]]
 		{
 			rtl_free_unicode_string(heap_ptr);

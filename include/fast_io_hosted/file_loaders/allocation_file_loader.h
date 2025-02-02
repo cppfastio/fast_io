@@ -306,6 +306,7 @@ public:
 	}
 	inline allocation_file_loader &operator=(allocation_file_loader &&__restrict other) noexcept
 	{
+		// There is no need to check the 'this' pointer as there are no side effects
 		address_begin = other.address_begin;
 		address_end = other.address_end;
 		address_capacity = other.address_capacity;

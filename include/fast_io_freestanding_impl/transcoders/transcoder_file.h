@@ -225,7 +225,7 @@ public:
 	}
 	inline constexpr basic_transcoder_file &operator=(basic_transcoder_file &&other) noexcept
 	{
-		if (__builtin_addressof(other) == this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}

@@ -104,6 +104,10 @@ public:
 	}
 	inline posix_directory_file &operator=(posix_directory_file const &other)
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		auto newdir{details::sys_dup_dir(other.dirp)};
 		if (this->dirp) [[likely]]
 		{
@@ -119,6 +123,10 @@ public:
 
 	inline posix_directory_file &operator=(posix_directory_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->dirp) [[likely]]
 		{
 			noexcept_call(::closedir, this->dirp);

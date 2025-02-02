@@ -173,6 +173,10 @@ public:
 	}
 	inline win32_family_dll_file &operator=(win32_family_dll_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->hmodule) [[likely]]
 		{
 			::fast_io::win32::FreeLibrary(this->hmodule);

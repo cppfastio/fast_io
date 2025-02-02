@@ -175,6 +175,10 @@ public:
 	}
 	inline posix_file_loader &operator=(posix_file_loader &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		::fast_io::details::posix_unload_address(address_begin,
 												 static_cast<::std::size_t>(address_end - address_begin));
 		address_begin = other.address_begin;

@@ -153,6 +153,9 @@
 #pragma comment(linker,"/alternatename:__imp_?TerminateProcess@win32@fast_io@@YGHPAXI@Z=__imp__TerminateProcess@8")
 #pragma comment(linker,"/alternatename:__imp_?GetFinalPathNameByHandleW@win32@fast_io@@YGIPAXPA_SII@Z=__imp__GetFinalPathNameByHandleW@16")
 #pragma comment(linker,"/alternatename:__imp_?GetFinalPathNameByHandleA@win32@fast_io@@YGIPAXPADII@Z=__imp__GetFinalPathNameByHandleA@16")
+#pragma comment(linker,"/alternatename:__imp_?GetProcessId@win32@fast_io@@YGIPAX@Z=__imp__GetProcessId@4")
+#pragma comment(linker,"/alternatename:__imp_?CreateNamedPipeW@win32@fast_io@@YGPAXPB_SIIIIIIPAUsecurity_attributes@12@@Z=__imp__CreateNamedPipeW@32")
+#pragma comment(linker,"/alternatename:__imp_?CreateNamedPipeA@win32@fast_io@@YGPAXPBDIIIIIIPAUsecurity_attributes@12@@Z=__imp__CreateNamedPipeA@32")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YGII@Z=__imp__RtlNtStatusToDosError@4")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YGIPAX@Z=__imp__NtClose@4")

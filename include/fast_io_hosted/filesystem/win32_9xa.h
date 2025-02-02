@@ -196,6 +196,7 @@ struct basic_win32_9xa_directory_generator
 	inline basic_win32_9xa_directory_generator &
 	operator=(basic_win32_9xa_directory_generator &&__restrict other) noexcept
 	{
+		// There is no need to check the 'this' pointer as there are no side effects
 		entry = ::std::move(other.entry);
 		return *this;
 	}
@@ -264,6 +265,7 @@ struct basic_win32_9xa_recursive_directory_generator
 	inline constexpr basic_win32_9xa_recursive_directory_generator &
 	operator=(basic_win32_9xa_recursive_directory_generator &&__restrict other) noexcept
 	{
+		// There is no need to check the 'this' pointer as there are no side effects
 		root_handle = ::std::move(other.root_handle);
 		entry = ::std::move(other.entry);
 		return *this;
@@ -287,16 +289,19 @@ struct win32_9xa_dir_file_stack_type
 	}
 	inline win32_9xa_dir_file_stack_type &operator=(win32_9xa_dir_file_stack_type &&other) noexcept
 	{
-		if (__builtin_addressof(other) != this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
-			if (this->file_struct) [[likely]]
-			{
-				::fast_io::win32::FindClose(this->file_struct);
-			}
-			dirf = ::std::move(other.dirf);
-			this->file_struct = other.file_struct;
-			other.file_struct = nullptr;
+			return *this;
 		}
+
+		if (this->file_struct) [[likely]]
+		{
+			::fast_io::win32::FindClose(this->file_struct);
+		}
+		dirf = ::std::move(other.dirf);
+		this->file_struct = other.file_struct;
+		other.file_struct = nullptr;
+
 		return *this;
 	}
 	inline ~win32_9xa_dir_file_stack_type()

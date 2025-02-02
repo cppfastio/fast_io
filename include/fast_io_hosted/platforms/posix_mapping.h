@@ -189,6 +189,10 @@ public:
 	}
 	inline posix_memory_map_file &operator=(posix_memory_map_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->address_begin != reinterpret_cast<::std::byte *>(MAP_FAILED)) [[likely]]
 		{
 			details::sys_munmap(this->address_begin, static_cast<::std::size_t>(address_end - address_begin));

@@ -526,6 +526,10 @@ public:
 
 	inline basic_win32_family_socket_file &operator=(basic_win32_family_socket_file const &dp)
 	{
+		if (__builtin_addressof(dp) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->hsocket = ::fast_io::win32::details::win32_dup2hsocket(dp.hsocket, this->hsocket);
 		return *this;
 	}
@@ -538,6 +542,10 @@ public:
 
 	inline basic_win32_family_socket_file &operator=(basic_win32_family_socket_file &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->hsocket) [[likely]]
 		{
 			::fast_io::win32::closesocket(this->hsocket);

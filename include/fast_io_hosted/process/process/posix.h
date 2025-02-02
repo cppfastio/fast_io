@@ -625,6 +625,16 @@ inline void kill(posix_process_observer ppob, posix_wait_status exit_code)
 #endif
 }
 
+struct posix_process_id
+{
+	pid_t process_id{};
+};
+
+inline posix_process_id get_process_id(posix_process_observer ppob) noexcept
+{
+	return {ppob.native_handle()};
+}
+
 class posix_process : public posix_process_observer
 {
 public:
@@ -686,7 +696,7 @@ public:
 	}
 	inline posix_process &operator=(posix_process &&__restrict other) noexcept
 	{
-		if (__builtin_addressof(other) == this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}

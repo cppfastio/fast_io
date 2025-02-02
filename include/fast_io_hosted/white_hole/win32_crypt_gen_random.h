@@ -127,6 +127,10 @@ public:
 	inline basic_win32_family_crypt_gen_random_file &
 	operator=(basic_win32_family_crypt_gen_random_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->hprov) [[likely]]
 		{
 			::fast_io::win32::CryptReleaseContext(this->hprov, 0);

@@ -73,6 +73,7 @@ inline void check_nt_status(::std::uint_least32_t status)
 		throw_nt_error(status);
 	}
 }
+
 struct rtl_guard
 {
 	rtl_user_process_parameters *rtl_up{};
@@ -410,10 +411,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			auto const NtImagePath_c16_buffer_end{NtImagePath_c16_buffer + NtImagePath_u16_length};
 			auto find_next_rl_end{NtImagePath_c16_buffer_end};
 			auto const find_next_rl{::fast_io::freestanding::find(NtImagePath_c16_buffer + 8, find_next_rl_end, u'\\')};
-			if (find_next_rl != find_next_rl_end)
-			{
-				find_next_rl_end = find_next_rl;
-			}
+			// not found: find_next_rl == find_next_rl_end
+			find_next_rl_end = find_next_rl;
 
 			auto const find_res_strlen{static_cast<::std::size_t>(find_next_rl_end - NtImagePath_c16_buffer)};
 			QueryInBuffer->DeviceNameLength = static_cast<::std::uint_least16_t>(find_res_strlen) * sizeof(char16_t);
@@ -467,13 +466,13 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 
 		check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
 			__builtin_addressof(rtl_temp), __builtin_addressof(str_uni), nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
-			(void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
+			static_cast<void *>(const_cast<char16_t *>(envs)), nullptr, nullptr, nullptr, nullptr, 0x01));
 	}
 	else
 	{
 		check_nt_status(::fast_io::win32::nt::RtlCreateProcessParametersEx(
 			__builtin_addressof(rtl_temp), NtImagePath, nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
-			(void *)(envs), nullptr, nullptr, nullptr, nullptr, 0x01));
+			static_cast<void *>(const_cast<char16_t *>(envs)), nullptr, nullptr, nullptr, nullptr, 0x01));
 	}
 
 	rtl_guard rtlm{rtl_temp}; // guard
@@ -766,6 +765,33 @@ inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_co
 	}
 }
 
+struct nt_process_id
+{
+	void *process_id{};
+};
+
+template <nt_family family>
+inline nt_process_id get_process_id(nt_family_process_observer<family> ppob) noexcept
+{
+	constexpr bool zw{family == nt_family::zw};
+
+	::fast_io::win32::nt::process_basic_information pbi;
+
+	auto status{::fast_io::win32::nt::nt_query_information_process<zw>(
+		ppob.native_handle(),
+		::fast_io::win32::nt::process_information_class::ProcessBasicInformation,
+		__builtin_addressof(pbi),
+		sizeof(pbi),
+		nullptr)};
+
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+
+	return {pbi.UniqueProcessId};
+}
+
 template <nt_family family>
 	requires(family == nt_family::nt || family == nt_family::zw)
 class nt_family_process : public nt_family_process_observer<family>
@@ -811,6 +837,10 @@ public:
 	}
 	inline nt_family_process &operator=(nt_family_process &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		win32::nt::details::close_nt_user_process_information_and_wait<family>(this->hnt_user_process_info);
 		this->hnt_user_process_info = b.release();
 		return *this;

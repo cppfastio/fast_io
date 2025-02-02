@@ -568,38 +568,9 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 				= char8_t const *;
 
 			auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename)};
-			auto curr{beg};
-
-			if (auto const fc{*beg}; fc == u8'+' ||
-									 fc == u8'-' ||
-									 fc == u8'.') [[unlikely]]
+			if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
 			{
 				throw_win32_error(3221225530);
-			}
-
-			++curr;
-
-			for (; curr != beg + filename_c_str_len; ++curr)
-			{
-				auto fc{*curr};
-				if (fc == u8'/' ||
-					fc == u8'\\' ||
-					fc == u8'\t' ||
-					fc == u8'\b' ||
-					fc == u8'@' ||
-					fc == u8'#' ||
-					fc == u8'$' ||
-					fc == u8'%' ||
-					fc == u8'^' ||
-					fc == u8'&' ||
-					fc == u8'*' ||
-					fc == u8'(' ||
-					fc == u8')' ||
-					fc == u8'[' ||
-					fc == u8']') [[unlikely]]
-				{
-					throw_win32_error(3221225530);
-				}
 			}
 
 			// check path handle
@@ -771,6 +742,22 @@ inline void kill(win32_family_process_observer<family> ppob, win32_wait_status e
 	{
 		throw_win32_error();
 	}
+}
+
+struct win32_process_id
+{
+	::std::uint_least32_t process_id{};
+};
+
+template <win32_family family>
+inline win32_process_id get_process_id(win32_family_process_observer<family> ppob) noexcept
+{
+	auto pid{::fast_io::win32::GetProcessId(ppob.native_handle)};
+	if (pid == 0) [[unlikely]]
+	{
+		throw_win32_error();
+	}
+	return {pid};
 }
 
 template <win32_family family>

@@ -233,6 +233,10 @@ public:
 	}
 	inline win32_family_memory_map_file &operator=(win32_family_memory_map_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->address_begin) [[likely]]
 		{
 			win32::UnmapViewOfFile(this->address_begin);

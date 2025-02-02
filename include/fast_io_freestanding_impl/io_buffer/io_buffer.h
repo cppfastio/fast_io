@@ -107,6 +107,10 @@ public:
 	}
 	inline constexpr basic_io_buffer &operator=(basic_io_buffer &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		::fast_io::details::destroy_basic_io_buffer(*this);
 		input_buffer = ::std::move(other.input_buffer);
 		output_buffer = ::std::move(other.output_buffer);

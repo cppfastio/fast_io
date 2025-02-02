@@ -18,6 +18,10 @@ struct posix_timezone_name
 	}
 	inline posix_timezone_name &operator=(posix_timezone_name &&other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		::fast_io::typed_generic_allocator_adapter<::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator>,
 												   char8_t>::deallocate(this->ptr);
 		this->ptr = other.ptr;

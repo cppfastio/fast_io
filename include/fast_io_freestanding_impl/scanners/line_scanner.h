@@ -23,6 +23,10 @@ struct basic_line_scanner_buffer
 		}
 		inline constexpr buffer_type &operator=(buffer_type &&__restrict other) noexcept
 		{
+			if (__builtin_addressof(other) == this) [[unlikely]]
+			{
+				return *this;
+			}
 			::fast_io::details::deallocate_iobuf_space<false, char_type>(
 				this->begin_ptr, static_cast<::std::size_t>(this->end_ptr - this->begin_ptr));
 			this->begin_ptr = other.begin_ptr;

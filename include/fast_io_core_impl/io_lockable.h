@@ -187,7 +187,7 @@ public:
 	}
 	inline constexpr basic_general_mutex_movable &operator=(basic_general_mutex_movable &&other) noexcept
 	{
-		if (__builtin_addressof(other) == this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}

@@ -645,7 +645,7 @@ inline void *win32_dup_impl(void *handle)
 	{
 		throw_win32_error();
 	}
-	return handle;
+	return new_handle;
 }
 
 inline void *win32_dup2_impl(void *handle, void *newhandle)
@@ -1046,37 +1046,10 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 		= char8_t const *;
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
-	auto curr{beg};
 
-	if (auto const fc{*beg}; fc == u8'+' ||
-							 fc == u8'-' ||
-							 fc == u8'.') [[unlikely]]
+	if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
-	}
-
-	++curr;
-	for (; curr != beg + filename_c_str_len; ++curr)
-	{
-		auto fc{*curr};
-		if (fc == u8'/' ||
-			fc == u8'\\' ||
-			fc == u8'\t' ||
-			fc == u8'\b' ||
-			fc == u8'@' ||
-			fc == u8'#' ||
-			fc == u8'$' ||
-			fc == u8'%' ||
-			fc == u8'^' ||
-			fc == u8'&' ||
-			fc == u8'*' ||
-			fc == u8'(' ||
-			fc == u8')' ||
-			fc == u8'[' ||
-			fc == u8']') [[unlikely]]
-		{
-			throw_win32_error(3221225530);
-		}
 	}
 
 	check_win32_9xa_dir_is_valid(*directory_handle);
@@ -1096,42 +1069,28 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 		= char8_t const *;
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
-	auto curr{beg};
 
-	if (auto const fc{*beg}; fc == u8'+' ||
-							 fc == u8'-' ||
-							 fc == u8'.') [[unlikely]]
+	if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
 	}
 
-	++curr;
-	for (; curr != beg + filename_c_str_len; ++curr)
-	{
-		auto fc{*curr};
-		if (fc == u8'/' ||
-			fc == u8'\\' ||
-			fc == u8'\t' ||
-			fc == u8'\b' ||
-			fc == u8'@' ||
-			fc == u8'#' ||
-			fc == u8'$' ||
-			fc == u8'%' ||
-			fc == u8'^' ||
-			fc == u8'&' ||
-			fc == u8'*' ||
-			fc == u8'(' ||
-			fc == u8')' ||
-			fc == u8'[' ||
-			fc == u8']') [[unlikely]]
-		{
-			throw_win32_error(3221225530);
-		}
-	}
 	check_win32_9xa_dir_is_valid(*directory_handle);
-	win32_9xa_dir_handle_path_str str{concat_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
+	tlc_win32_9xa_dir_handle_path_str str{concat_tlc_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};
 	return handle;
+}
+
+inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
+{
+	auto const beg{path_c_str};
+
+	if (!::fast_io::details::is_valid_os_file_name(beg, path_size)) [[unlikely]]
+	{
+		throw_win32_error(3221225530);
+	}
+
+	return ::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(dirhd.path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, path_size));
 }
 
 struct win32_9xa_create_dir_file
@@ -1318,6 +1277,10 @@ public:
 	}
 	inline win32_9xa_dir_file &operator=(win32_9xa_dir_file const &other)
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->handle = win32::details::win32_9xa_dir_dup_impl(other.handle);
 		return *this;
 	}
@@ -1327,6 +1290,10 @@ public:
 	}
 	inline win32_9xa_dir_file &operator=(win32_9xa_dir_file &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (*this) [[likely]]
 		{
 			win32::details::close_win32_9xa_dir_handle(this->handle);
@@ -1425,6 +1392,10 @@ public:
 	}
 	inline basic_win32_family_file &operator=(basic_win32_family_file const &other)
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		this->handle = ::fast_io::win32::details::win32_dup2_impl(other.handle, this->handle);
 		return *this;
 	}
@@ -1434,6 +1405,10 @@ public:
 	}
 	inline basic_win32_family_file &operator=(basic_win32_family_file &&__restrict b) noexcept
 	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (*this) [[likely]]
 		{
 			::fast_io::win32::CloseHandle(this->handle);

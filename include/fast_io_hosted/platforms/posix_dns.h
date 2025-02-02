@@ -214,6 +214,10 @@ public:
 	}
 	inline posix_dns_file &operator=(posix_dns_file &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		if (this->res) [[likely]]
 		{
 			details::libc_freeaddrinfo(this->res);

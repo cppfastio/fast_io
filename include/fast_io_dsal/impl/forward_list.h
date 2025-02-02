@@ -745,7 +745,7 @@ public:
 	inline constexpr forward_list &operator=(forward_list const &other)
 		requires(::std::copyable<value_type>)
 	{
-		if (this != __builtin_addressof(other))
+		if (__builtin_addressof(other) != this) [[likely]]
 		{
 			forward_list temp(other);
 			this->imp = temp.imp;

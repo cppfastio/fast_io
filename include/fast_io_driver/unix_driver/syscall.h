@@ -3,6 +3,9 @@
 namespace fast_io
 {
 /*
+*  UNFINISHED, UNAUDITED !!!!!!!!
+*/
+/*
 	system calls
 
 	01;0000001 /exit
@@ -39,27 +42,82 @@ namespace fast_io
 */
 namespace unix
 {
-inline void exit(int status) noexcept
+template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+	requires(1 < sizeof(return_value_type))
+inline return_value_type system_call() noexcept
 {
+	return_value_type ret;
 	__asm__ __volatile__(
-		"mov %0, r2\n\t"
-		"sys 1\n\t"
-		:
-		: "r"(status)
-		: "memory", "cc");
+		"mov %1,r0\n\t"
+		"trap 0\n\t" 
+		"mov r0,%0\n\t"
+		: "=r"(ret)
+		: "r"(syscall_number)
+		: "memory", "cc"
+	);
+	return ret;
 }
 
-inline int write(int fd, char const *buf, int len) noexcept
+template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+	requires(1 < sizeof(return_value_type))
+inline return_value_type system_call(auto p1) noexcept
 {
-	int ret;
+	return_value_type ret;
 	__asm__ __volatile__(
-		"mov %1, r2\n\t"
-		"mov %2, r3\n\t"
-		"mov %3, r4\n\t"
-		"sys 4\n\t"
-		"mov r0, %0\n\t"
+		"mov %1,r0\n\t"
+		"mov %2,r1\n\t"
+		"trap 0\n\t"
+		"mov r0,%0\n\t"
 		: "=r"(ret)
-		: "r"(fd), "r"(buf), "r"(len)
+		: "r"(syscall_number), "r"(p1)
+		: "memory", "cc");
+	return ret;
+}
+
+template <::std::size_t syscall_number>
+inline void system_call_no_return(auto p1) noexcept
+{
+	__asm__ __volatile__(
+		"mov %0,r0\n\t"
+		"mov %1,r1\n\t"
+		"trap 0\n\t"
+		: 
+		: "r"(syscall_number), "r"(p1)
+		: "memory", "cc");
+	__builtin_unreachable();
+}
+
+template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+	requires(1 < sizeof(return_value_type))
+inline return_value_type system_call(auto p1, auto p2) noexcept
+{
+	return_value_type ret;
+	__asm__ __volatile__(
+		"mov %1,r0\n\t"
+		"mov %2,r1\n\t"
+		"mov %3,r2\n\t"
+		"trap 0\n\t"
+		"mov r0,%0\n\t"
+		: "=r"(ret)
+		: "r"(syscall_number), "r"(p1), "r"(p2)
+		: "memory", "cc");
+	return ret;
+}
+
+template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+	requires(1 < sizeof(return_value_type))
+inline return_value_type system_call(auto p1, auto p2, auto p3) noexcept
+{
+	return_value_type ret;
+	__asm__ __volatile__(
+		"mov %1,r0\n\t"
+		"mov %2,r1\n\t"
+		"mov %3,r2\n\t"
+		"mov %4,r3\n\t"
+		"trap 0\n\t"
+		"mov r0,%0\n\t"
+		: "=r"(ret)
+		: "r"(syscall_number), "r"(p1), "r"(p2), "r"(p3)
 		: "memory", "cc");
 	return ret;
 }

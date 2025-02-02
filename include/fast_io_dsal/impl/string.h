@@ -444,7 +444,7 @@ public:
 
 	inline constexpr basic_string &operator=(basic_string &&other) noexcept
 	{
-		if (__builtin_addressof(other) == this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}
@@ -520,7 +520,7 @@ public:
 	}
 	inline constexpr basic_string &operator=(basic_string const &other) noexcept
 	{
-		if (__builtin_addressof(other) == this)
+		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}

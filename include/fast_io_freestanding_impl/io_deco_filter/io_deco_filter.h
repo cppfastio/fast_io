@@ -88,6 +88,10 @@ public:
 	}
 	inline constexpr basic_io_deco_filter &operator=(basic_io_deco_filter &&__restrict other) noexcept
 	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
 		::fast_io::details::destroy_basic_io_filter(*this);
 		input_buffer = ::std::move(other.input_buffer);
 		handle = ::std::move(other.handle);
