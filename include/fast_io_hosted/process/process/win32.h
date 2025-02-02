@@ -568,36 +568,9 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 				= char8_t const *;
 
 			auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename)};
-			auto curr{beg};
-
-			if (auto const fc{*beg}; fc == u8'+' ||
-									 fc == u8'-' ||
-									 fc == u8'.') [[unlikely]]
+			if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
 			{
 				throw_win32_error(3221225530);
-			}
-
-			for (; curr != beg + filename_c_str_len; ++curr)
-			{
-				auto fc{*curr};
-				if (fc == u8'/' ||
-					fc == u8'\\' ||
-					fc == u8'\t' ||
-					fc == u8'\b' ||
-					fc == u8'@' ||
-					fc == u8'#' ||
-					fc == u8'$' ||
-					fc == u8'%' ||
-					fc == u8'^' ||
-					fc == u8'&' ||
-					fc == u8'*' ||
-					fc == u8'(' ||
-					fc == u8')' ||
-					fc == u8'[' ||
-					fc == u8']') [[unlikely]]
-				{
-					throw_win32_error(3221225530);
-				}
 			}
 
 			// check path handle

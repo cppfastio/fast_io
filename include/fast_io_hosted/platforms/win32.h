@@ -1046,36 +1046,10 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 		= char8_t const *;
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
-	auto curr{beg};
 
-	if (auto const fc{*beg}; fc == u8'+' ||
-							 fc == u8'-' ||
-							 fc == u8'.') [[unlikely]]
+	if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
-	}
-
-	for (; curr != beg + filename_c_str_len; ++curr)
-	{
-		auto fc{*curr};
-		if (fc == u8'/' ||
-			fc == u8'\\' ||
-			fc == u8'\t' ||
-			fc == u8'\b' ||
-			fc == u8'@' ||
-			fc == u8'#' ||
-			fc == u8'$' ||
-			fc == u8'%' ||
-			fc == u8'^' ||
-			fc == u8'&' ||
-			fc == u8'*' ||
-			fc == u8'(' ||
-			fc == u8')' ||
-			fc == u8'[' ||
-			fc == u8']') [[unlikely]]
-		{
-			throw_win32_error(3221225530);
-		}
 	}
 
 	check_win32_9xa_dir_is_valid(*directory_handle);
@@ -1095,37 +1069,12 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 		= char8_t const *;
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
-	auto curr{beg};
 
-	if (auto const fc{*beg}; fc == u8'+' ||
-							 fc == u8'-' ||
-							 fc == u8'.') [[unlikely]]
+	if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
 	}
 
-	for (; curr != beg + filename_c_str_len; ++curr)
-	{
-		auto fc{*curr};
-		if (fc == u8'/' ||
-			fc == u8'\\' ||
-			fc == u8'\t' ||
-			fc == u8'\b' ||
-			fc == u8'@' ||
-			fc == u8'#' ||
-			fc == u8'$' ||
-			fc == u8'%' ||
-			fc == u8'^' ||
-			fc == u8'&' ||
-			fc == u8'*' ||
-			fc == u8'(' ||
-			fc == u8')' ||
-			fc == u8'[' ||
-			fc == u8']') [[unlikely]]
-		{
-			throw_win32_error(3221225530);
-		}
-	}
 	check_win32_9xa_dir_is_valid(*directory_handle);
 	win32_9xa_dir_handle_path_str str{concat_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
 	auto handle{::fast_io::details::win32_create_file_impl<win32_family::ansi_9x>(str, ompm)};

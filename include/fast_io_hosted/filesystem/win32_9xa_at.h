@@ -57,36 +57,10 @@ namespace win32::details
 inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
 {
 	auto const beg{path_c_str};
-	auto curr{beg};
 
-	if (auto const fc{*curr}; fc == u8'+' ||
-								fc == u8'-' ||
-								fc == u8'.') [[unlikely]]
+	if (!::fast_io::details::is_valid_os_file_name(beg, path_size)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
-	}
-
-	for (; curr != beg + path_size; ++curr)
-	{
-		auto fc{*curr};
-		if (fc == u8'/' ||
-			fc == u8'\\' ||
-			fc == u8'\t' ||
-			fc == u8'\b' ||
-			fc == u8'@' ||
-			fc == u8'#' ||
-			fc == u8'$' ||
-			fc == u8'%' ||
-			fc == u8'^' ||
-			fc == u8'&' ||
-			fc == u8'*' ||
-			fc == u8'(' ||
-			fc == u8')' ||
-			fc == u8'[' ||
-			fc == u8']') [[unlikely]]
-		{
-			throw_win32_error(3221225530);
-		}
 	}
 
 	return ::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(dirhd.path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, path_size));
