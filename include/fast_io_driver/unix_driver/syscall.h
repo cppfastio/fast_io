@@ -3,6 +3,9 @@
 namespace fast_io
 {
 /*
+*  UNFINISHED, UNAUDITED !!!!!!!!
+*/
+/*
 	system calls
 
 	01;0000001 /exit
