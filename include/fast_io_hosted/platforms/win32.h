@@ -990,6 +990,13 @@ inline win32_9xa_dir_handle win32_9xa_dir_dup_impl(win32_9xa_dir_handle const &h
 	return {h.path};
 }
 
+inline win32_9xa_dir_handle win32_9xa_dir_dup2_impl(win32_9xa_dir_handle const &h1, win32_9xa_dir_handle &h2)
+{
+	auto temp{win32_9xa_dir_dup_impl(h1)};
+	close_win32_9xa_dir_handle(h2);
+	return temp;
+}
+
 struct find_struct_guard
 {
 	void *file_struct{};
@@ -1281,7 +1288,7 @@ public:
 		{
 			return *this;
 		}
-		this->handle = win32::details::win32_9xa_dir_dup_impl(other.handle);
+		this->handle = win32::details::win32_9xa_dir_dup2_impl(other.handle, this->handle);
 		return *this;
 	}
 	inline win32_9xa_dir_file(win32_9xa_dir_file &&__restrict b) noexcept
