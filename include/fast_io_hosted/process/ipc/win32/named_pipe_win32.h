@@ -70,7 +70,6 @@ inline win32_family_named_pipe_handle<family> win32_family_create_named_pipe_ipc
 	// check filename
 	using family_internal_char_type = win32_named_pipe_internal_char_type<family>;
 	using family_internal_str = win32_named_pipe_internal_str<family>;
-	using family_internal_tlc_str = win32_named_pipe_internal_tlc_str<family>;
 
 	using family_internal_char_type_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -236,7 +235,7 @@ inline win32_family_named_pipe_handle<family> win32_create_named_pipe_ipc_server
 	return ::fast_io::win32_family_api_common<family>(t, win32_family_create_named_pipe_ipc_server_paramenter<family>{om});
 }
 
-inline void win32_family_named_pipe_ipc_server_wait_for_connect_impl(void* pipe_handle)
+inline void win32_family_named_pipe_ipc_server_wait_for_connect_impl(void *pipe_handle)
 {
 	if (!::fast_io::win32::ConnectNamedPipe(pipe_handle, nullptr)) [[unlikely]]
 	{
@@ -252,7 +251,6 @@ inline win32_family_named_pipe_handle<family> win32_family_ipc_named_pipe_client
 	using family_char_type = win32_named_pipe_char_type<family>;
 	using family_internal_char_type = win32_named_pipe_internal_char_type<family>;
 	using family_internal_str = win32_named_pipe_internal_str<family>;
-	using family_internal_tlc_str = win32_named_pipe_internal_tlc_str<family>;
 
 	using family_internal_char_type_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -345,7 +343,7 @@ inline win32_family_named_pipe_handle<family> win32_family_ipc_named_pipe_client
 	}
 
 	auto handle{::fast_io::details::win32_family_create_file_impl<family>(
-		reinterpret_cast<family_char_type const*>(temp_pipe_file_name_tlc_str.c_str()),
+		reinterpret_cast<family_char_type const *>(temp_pipe_file_name_tlc_str.c_str()),
 		{mode, static_cast<perms>(436)})};
 
 	if (handle == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))) [[unlikely]]
