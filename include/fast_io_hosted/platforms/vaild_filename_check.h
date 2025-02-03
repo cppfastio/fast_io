@@ -14,7 +14,7 @@ inline constexpr bool is_valid_os_file_name(char_type const *filename, ::std::si
 	{
 		return false;
 	}
-	if (os_str_filename_len == 2 && filename[0] == pointer_char_type && filename[1] == pointer_char_type)
+	if (os_str_filename_len == 2 && filename[0] == pointer_char_type && filename[1] == pointer_char_type) [[unlikely]]
 	{
 		return false;
 	}
