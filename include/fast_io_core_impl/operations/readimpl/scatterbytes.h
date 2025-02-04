@@ -87,8 +87,8 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(instmtype insm
 	else if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 	{
 		using char_type = typename instmtype::input_char_type;
-		char_type *curr{ibuffer_curr(insm)};
-		char_type *ed{ibuffer_end(insm)};
+		char_type const *curr{ibuffer_curr(insm)};
+		char_type const *ed{ibuffer_end(insm)};
 
 		::std::size_t buffptrdiff{static_cast<::std::size_t>(ed - curr)};
 		auto i{pscatters}, e{pscatters + n};
@@ -241,8 +241,8 @@ inline constexpr void scatter_read_all_bytes_impl(instmtype insm, io_scatter_t c
 	else if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 	{
 		using char_type = typename instmtype::input_char_type;
-		char_type *curr{ibuffer_curr(insm)};
-		char_type *ed{ibuffer_end(insm)};
+		char_type const *curr{ibuffer_curr(insm)};
+		char_type const *ed{ibuffer_end(insm)};
 
 		::std::size_t buffptrdiff{static_cast<::std::size_t>(ed - curr)};
 
