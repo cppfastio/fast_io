@@ -1481,8 +1481,8 @@ inline void nt_create_pipe(void **hReadPipe, void **hWritePipe)
 																 0x00000000 /*FILE_PIPE_BYTE_STREAM_MODE*/,
 																 0x00000000 /*FILE_PIPE_QUEUE_OPERATION*/,
 																 1,
-																 0x1000 /*buffer size*/,
-																 0x1000 /*buffer size*/,
+																 0x4000 /*buffer size*/,
+																 0x4000 /*buffer size*/,
 																 __builtin_addressof(DefaultTimeout));
 
 	if (status)

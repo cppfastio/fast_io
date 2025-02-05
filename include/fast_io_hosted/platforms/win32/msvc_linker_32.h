@@ -157,6 +157,7 @@
 #pragma comment(linker,"/alternatename:__imp_?CreateNamedPipeW@win32@fast_io@@YAPAXPB_SIIIIIIPAUsecurity_attributes@12@@Z=__imp_CreateNamedPipeW")
 #pragma comment(linker,"/alternatename:__imp_?CreateNamedPipeA@win32@fast_io@@YAPAXPBDIIIIIIPAUsecurity_attributes@12@@Z=__imp_CreateNamedPipeA")
 #pragma comment(linker,"/alternatename:__imp_?ConnectNamedPipe@win32@fast_io@@YAHPAXPAUoverlapped@12@@Z=__imp_ConnectNamedPipe")
+#pragma comment(linker,"/alternatename:__imp_?DisconnectNamedPipe@win32@fast_io@@YAHPAX@Z=__imp_DisconnectNamedPipe")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YAII@Z=__imp_RtlNtStatusToDosError")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YAIPAX@Z=__imp_NtClose")

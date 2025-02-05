@@ -1752,7 +1752,7 @@ public:
 	{
 		win32::security_attributes sec_attr{sizeof(win32::security_attributes), nullptr, 1};
 		if (!::fast_io::win32::CreatePipe(__builtin_addressof(pipes[0].handle),
-										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0)) [[unlikely]]
+										  __builtin_addressof(pipes[1].handle), __builtin_addressof(sec_attr), 0x4000)) [[unlikely]]
 		{
 			throw_win32_error();
 		}

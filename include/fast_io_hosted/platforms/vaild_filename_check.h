@@ -23,7 +23,7 @@ inline constexpr bool is_valid_os_file_name(char_type const *filename, ::std::si
 	for (; curr != end; ++curr)
 	{
 		auto fc{*curr};
-		if (static_cast<::std::make_unsigned_t<char_type>>(fc) < 32u ||
+		if (static_cast<::std::make_unsigned_t<char_type>>(fc) < static_cast<::std::make_unsigned_t<char_type>>(32u) ||
 			fc == ::fast_io::char_literal_v<u8'/', char_type> ||
 			fc == ::fast_io::char_literal_v<u8'\\', char_type> ||
 			fc == ::fast_io::char_literal_v<u8':', char_type> ||
