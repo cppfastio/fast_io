@@ -191,8 +191,8 @@ inline win32_family_named_pipe_handle<family> win32_family_create_named_pipe_ipc
 			dwOpenMode,
 			dwPipeMode,
 			static_cast<::std::uint_least32_t>(255) /*PIPE_UNLIMITED_INSTANCES */,
-			static_cast<::std::uint_least32_t>(0x1000),
-			static_cast<::std::uint_least32_t>(0x1000),
+			static_cast<::std::uint_least32_t>(0x4000),
+			static_cast<::std::uint_least32_t>(0x4000),
 			0 /*default: 50ms*/,
 			nullptr);
 	}
@@ -203,8 +203,8 @@ inline win32_family_named_pipe_handle<family> win32_family_create_named_pipe_ipc
 			dwOpenMode,
 			dwPipeMode,
 			static_cast<::std::uint_least32_t>(255) /*PIPE_UNLIMITED_INSTANCES */,
-			static_cast<::std::uint_least32_t>(0x1000),
-			static_cast<::std::uint_least32_t>(0x1000),
+			static_cast<::std::uint_least32_t>(0x4000),
+			static_cast<::std::uint_least32_t>(0x4000),
 			0 /*default: 50ms*/,
 			nullptr);
 	}
