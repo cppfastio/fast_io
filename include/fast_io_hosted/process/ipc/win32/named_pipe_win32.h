@@ -243,6 +243,14 @@ inline void win32_family_named_pipe_ipc_server_wait_for_connect_impl(void *pipe_
 	}
 }
 
+inline void win32_family_named_pipe_ipc_server_disconnect_impl(void *pipe_handle)
+{
+	if (!::fast_io::win32::DisconnectNamedPipe(pipe_handle)) [[unlikely]]
+	{
+		throw_win32_error();
+	}
+}
+
 // CLIENT
 template <win32_family family>
 inline win32_family_named_pipe_handle<family> win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::open_mode mode)
@@ -428,12 +436,6 @@ inline constexpr basic_win32_family_io_observer<family, char>
 io_bytes_stream_ref_define(basic_win32_family_named_pipe_ipc_server_observer<family, ch_type> const &other) noexcept
 {
 	return {other.handle.handle};
-}
-
-template <win32_family family, ::std::integral ch_type>
-inline void wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<family, ch_type> const &other)
-{
-	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(other.handle.handle);
 }
 
 template <win32_family family, ::std::integral ch_type>
@@ -689,6 +691,35 @@ public:
 		this->handle.pipename.clear_destroy();
 	}
 };
+
+// server
+template <win32_family family, ::std::integral ch_type>
+inline basic_win32_family_named_pipe_ipc_client_observer<family, ch_type> wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<family, ch_type> const &server)
+{
+	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle.handle);
+	return {reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)), server.handle.pipename};
+}
+
+template <win32_family family, ::std::integral ch_type>
+inline void accept_for_connect([[maybe_unused]] basic_win32_family_named_pipe_ipc_server_observer<family, ch_type> const &server,
+							   [[maybe_unused]] basic_win32_family_named_pipe_ipc_client_observer<family, ch_type> const &client) noexcept
+{
+	// Named pipelines are not supported
+}
+
+template <win32_family family, ::std::integral ch_type>
+inline void disconnect(basic_win32_family_named_pipe_ipc_server_observer<family, ch_type> const &server,
+					   [[maybe_unused]] basic_win32_family_named_pipe_ipc_client_observer<family, ch_type> const &client) noexcept
+{
+	win32::details::win32_family_named_pipe_ipc_server_disconnect_impl(server.handle.handle);
+}
+
+// client
+template <win32_family family, ::std::integral ch_type>
+inline void wait_for_accept([[maybe_unused]] basic_win32_family_named_pipe_ipc_client_observer<family, ch_type> const &client) noexcept
+{
+	// Named pipelines are not supported
+}
 
 // USING
 template <::std::integral ch_type>
