@@ -373,7 +373,10 @@ inline void *win32_create_named_pipe_ipc_client_impl(T const &t, open_mode om)
 
 // SERVER
 template <win32_family family, ::std::integral ch_type>
-class basic_win32_family_named_pipe_ipc_server : public basic_win32_family_io_observer<family, ch_type>
+using basic_win32_family_named_pipe_ipc_server_observer = basic_win32_family_io_observer<family, ch_type>;
+
+template <win32_family family, ::std::integral ch_type>
+class basic_win32_family_named_pipe_ipc_server : public basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>
 {
 public:
 	using typename basic_win32_family_io_observer<family, ch_type>::char_type;
@@ -469,9 +472,11 @@ public:
 };
 
 // CLIENT
+template <win32_family family, ::std::integral ch_type>
+using basic_win32_family_named_pipe_ipc_client_observer = basic_win32_family_io_observer<family, ch_type>;
 
 template <win32_family family, ::std::integral ch_type>
-class basic_win32_family_named_pipe_ipc_client : public basic_win32_family_io_observer<family, ch_type>
+class basic_win32_family_named_pipe_ipc_client : public basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>
 {
 public:
 	using typename basic_win32_family_io_observer<family, ch_type>::char_type;
@@ -597,11 +602,11 @@ inline void wait_for_accept([[maybe_unused]] basic_win32_family_io_observer<fami
 
 // USING
 template <::std::integral ch_type>
-using basic_win32_named_pipe_ipc_server_observer = basic_win32_family_io_observer<win32_family::native, ch_type>;
+using basic_win32_named_pipe_ipc_server_observer = basic_win32_family_named_pipe_ipc_server_observer<win32_family::native, ch_type>;
 template <::std::integral ch_type>
-using basic_win32_named_pipe_ipc_server_observer_ntw = basic_win32_family_io_observer<win32_family::wide_nt, ch_type>;
+using basic_win32_named_pipe_ipc_server_observer_ntw = basic_win32_family_named_pipe_ipc_server_observer<win32_family::wide_nt, ch_type>;
 template <::std::integral ch_type>
-using basic_win32_named_pipe_ipc_server_observer_9xa = basic_win32_family_io_observer<win32_family::ansi_9x, ch_type>;
+using basic_win32_named_pipe_ipc_server_observer_9xa = basic_win32_family_named_pipe_ipc_server_observer<win32_family::ansi_9x, ch_type>;
 
 using win32_named_pipe_ipc_server_observer = basic_win32_named_pipe_ipc_server_observer<char>;
 using win32_named_pipe_ipc_server_observer_ntw = basic_win32_named_pipe_ipc_server_observer_ntw<char>;
@@ -651,11 +656,11 @@ using u32win32_named_pipe_ipc_server_ntw = basic_win32_named_pipe_ipc_server_ntw
 using u32win32_named_pipe_ipc_server_9xa = basic_win32_named_pipe_ipc_server_9xa<char32_t>;
 
 template <::std::integral ch_type>
-using basic_win32_named_pipe_ipc_client_observer = basic_win32_family_io_observer<win32_family::native, ch_type>;
+using basic_win32_named_pipe_ipc_client_observer = basic_win32_family_named_pipe_ipc_client_observer<win32_family::native, ch_type>;
 template <::std::integral ch_type>
-using basic_win32_named_pipe_ipc_client_observer_ntw = basic_win32_family_io_observer<win32_family::wide_nt, ch_type>;
+using basic_win32_named_pipe_ipc_client_observer_ntw = basic_win32_family_named_pipe_ipc_client_observer<win32_family::wide_nt, ch_type>;
 template <::std::integral ch_type>
-using basic_win32_named_pipe_ipc_client_observer_9xa = basic_win32_family_io_observer<win32_family::ansi_9x, ch_type>;
+using basic_win32_named_pipe_ipc_client_observer_9xa = basic_win32_family_named_pipe_ipc_client_observer<win32_family::ansi_9x, ch_type>;
 
 using win32_named_pipe_ipc_client_observer = basic_win32_named_pipe_ipc_client_observer<char>;
 using win32_named_pipe_ipc_client_observer_ntw = basic_win32_named_pipe_ipc_client_observer_ntw<char>;
