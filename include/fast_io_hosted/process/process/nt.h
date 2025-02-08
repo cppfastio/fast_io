@@ -61,19 +61,6 @@ close_nt_user_process_information_and_wait(nt_user_process_information hnt_user_
 	::fast_io::win32::nt::nt_close<family == nt_family::zw>(hnt_user_process_info.hthread);
 }
 
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
-inline void check_nt_status(::std::uint_least32_t status)
-{
-	if (status) [[unlikely]]
-	{
-		throw_nt_error(status);
-	}
-}
-
 struct rtl_guard
 {
 	rtl_user_process_parameters *rtl_up{};

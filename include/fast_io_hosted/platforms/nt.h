@@ -52,6 +52,18 @@ enum class nt_family
 
 namespace win32::nt::details
 {
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
+[[msvc::forceinline]]
+#endif
+inline void check_nt_status(::std::uint_least32_t status)
+{
+	if (status) [[unlikely]]
+	{
+		throw_nt_error(status);
+	}
+}
 
 struct nt_open_mode
 {

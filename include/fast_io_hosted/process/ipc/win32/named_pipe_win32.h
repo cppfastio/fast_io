@@ -54,7 +54,7 @@ constexpr inline win32_named_pipe_internal_tlc_str<family> concat_win32_named_pi
 
 // SERVER
 template <win32_family family>
-inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::open_mode mode)
+inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode)
 {
 	// check filename
 	using family_internal_char_type = win32_named_pipe_internal_char_type<family>;
@@ -152,24 +152,29 @@ inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_cha
 
 	::std::uint_least32_t dwOpenMode{};
 
-	if ((mode & ::fast_io::open_mode::in) == ::fast_io::open_mode::in)
+	if ((mode & ::fast_io::ipc_mode::in) == ::fast_io::ipc_mode::in)
 	{
 		dwOpenMode |= 0x00000001; // PIPE_ACCESS_INBOUND
 	}
-	if ((mode & ::fast_io::open_mode::out) == ::fast_io::open_mode::out)
+	if ((mode & ::fast_io::ipc_mode::out) == ::fast_io::ipc_mode::out)
 	{
 		dwOpenMode |= 0x00000002; // PIPE_ACCESS_OUTBOUND
 	}
-	if ((mode & ::fast_io::open_mode::sync) != ::fast_io::open_mode::none)
+	if ((mode & ::fast_io::ipc_mode::sync) != ::fast_io::ipc_mode::none)
 	{
 		dwOpenMode |= 0x80000000; // FILE_FLAG_WRITE_THROUGH
 	}
-	if ((mode & ::fast_io::open_mode::no_block) != ::fast_io::open_mode::none)
+	if ((mode & ::fast_io::ipc_mode::no_block) != ::fast_io::ipc_mode::none)
 	{
 		dwOpenMode |= 0x40000000; // FILE_FLAG_OVERLAPPED
 	}
 
-	constexpr ::std::uint_least32_t dwPipeMode{0x00000002 /*PIPE_READMODE_MESSAGE*/ | 0x00000004 /*PIPE_TYPE_MESSAGE*/};
+	::std::uint_least32_t dwPipeMode{};
+
+	if ((mode & ::fast_io::ipc_mode::message) != ::fast_io::ipc_mode::none)
+	{
+		dwPipeMode |= 0x00000002 /*PIPE_READMODE_MESSAGE*/ | 0x00000004 /*PIPE_TYPE_MESSAGE*/;
+	}
 
 	void *handle{};
 
@@ -210,18 +215,18 @@ template <win32_family family>
 struct win32_family_create_named_pipe_ipc_server_paramenter
 {
 	using family_char_type = ::std::conditional_t<family == win32_family::wide_nt, char16_t, char>;
-	open_mode om{};
+	ipc_mode im{};
 	inline void *operator()(family_char_type const *filename, ::std::size_t filename_size)
 	{
-		return win32_family_create_named_pipe_ipc_server_impl<family>(filename, filename_size, om);
+		return win32_family_create_named_pipe_ipc_server_impl<family>(filename, filename_size, im);
 	}
 };
 
 template <win32_family family, typename T>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline void *win32_create_named_pipe_ipc_server_impl(T const &t, open_mode om)
+inline void *win32_create_named_pipe_ipc_server_impl(T const &t, ipc_mode im)
 {
-	return ::fast_io::win32_family_api_common<family>(t, win32_family_create_named_pipe_ipc_server_paramenter<family>{om});
+	return ::fast_io::win32_family_api_common<family>(t, win32_family_create_named_pipe_ipc_server_paramenter<family>{im});
 }
 
 inline void win32_family_named_pipe_ipc_server_wait_for_connect_impl(void *pipe_handle)
@@ -242,7 +247,7 @@ inline void win32_family_named_pipe_ipc_server_disconnect_impl(void *pipe_handle
 
 // CLIENT
 template <win32_family family>
-inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::open_mode mode)
+inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode)
 {
 	// check filename
 	using family_char_type = win32_named_pipe_char_type<family>;
@@ -355,18 +360,18 @@ template <win32_family family>
 struct win32_family_create_named_pipe_ipc_client_paramenter
 {
 	using family_char_type = ::std::conditional_t<family == win32_family::wide_nt, char16_t, char>;
-	open_mode om{};
+	ipc_mode im{};
 	inline void *operator()(family_char_type const *filename, ::std::size_t filename_size)
 	{
-		return win32_family_ipc_named_pipe_client_connect_impl<family>(filename, filename_size, om);
+		return win32_family_ipc_named_pipe_client_connect_impl<family>(filename, filename_size, im);
 	}
 };
 
 template <win32_family family, typename T>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline void *win32_create_named_pipe_ipc_client_impl(T const &t, open_mode om)
+inline void *win32_create_named_pipe_ipc_client_impl(T const &t, ipc_mode im)
 {
-	return ::fast_io::win32_family_api_common<family>(t, win32_family_create_named_pipe_ipc_client_paramenter<family>{om});
+	return ::fast_io::win32_family_api_common<family>(t, win32_family_create_named_pipe_ipc_client_paramenter<family>{im});
 }
 
 } // namespace win32::details
@@ -455,9 +460,9 @@ public:
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit basic_win32_family_named_pipe_ipc_server(T const &server_name, open_mode om)
+	inline explicit basic_win32_family_named_pipe_ipc_server(T const &server_name, ipc_mode im)
 		: basic_win32_family_io_observer<family, char_type>{
-			  ::fast_io::win32::details::win32_create_named_pipe_ipc_server_impl<family>(server_name, om)}
+			  ::fast_io::win32::details::win32_create_named_pipe_ipc_server_impl<family>(server_name, im)}
 	{
 	}
 
@@ -555,9 +560,9 @@ public:
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit basic_win32_family_named_pipe_ipc_client(T const &client_name, open_mode om)
+	inline explicit basic_win32_family_named_pipe_ipc_client(T const &client_name, ipc_mode im)
 		: basic_win32_family_io_observer<family, char_type>{
-			  ::fast_io::win32::details::win32_create_named_pipe_ipc_client_impl<family>(client_name, om)}
+			  ::fast_io::win32::details::win32_create_named_pipe_ipc_client_impl<family>(client_name, im)}
 	{
 	}
 
@@ -572,30 +577,33 @@ public:
 };
 
 // server
-template <win32_family family, ::std::integral ch_type>
-inline basic_win32_family_io_observer<family, ch_type> wait_for_connect(basic_win32_family_io_observer<family, ch_type> server)
+template <win32_family server_family, ::std::integral server_ch_type, win32_family client_family = win32_family::native, ::std::integral client_ch_type = char>
+inline basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> wait_for_connect(
+	basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server,
+	[[maybe_unused]] server_ch_type *received_message_begin, [[maybe_unused]] server_ch_type *received_message_end)
 {
 	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
 	return {reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
 }
 
-template <win32_family family, ::std::integral ch_type>
-inline void accept_for_connect([[maybe_unused]] basic_win32_family_io_observer<family, ch_type> server,
-							   [[maybe_unused]] basic_win32_family_io_observer<family, ch_type> client) noexcept
+template <win32_family server_family, win32_family client_family, ::std::integral server_ch_type, ::std::integral client_ch_type>
+inline void accept_connect([[maybe_unused]] basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server,
+						   [[maybe_unused]] basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> client,
+						   [[maybe_unused]] server_ch_type const *send_message_begin, [[maybe_unused]] server_ch_type const *send_message_end) noexcept
 {
 	// Named pipelines are not supported
 }
 
-template <win32_family family, ::std::integral ch_type>
-inline void disconnect(basic_win32_family_io_observer<family, ch_type> server,
-					   [[maybe_unused]] basic_win32_family_io_observer<family, ch_type> client) noexcept
+template <win32_family client_family, ::std::integral client_ch_type>
+inline void disconnect(basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> client) noexcept
 {
-	win32::details::win32_family_named_pipe_ipc_server_disconnect_impl(server.handle);
+	win32::details::win32_family_named_pipe_ipc_server_disconnect_impl(client.handle);
 }
 
 // client
-template <win32_family family, ::std::integral ch_type>
-inline void wait_for_accept([[maybe_unused]] basic_win32_family_io_observer<family, ch_type> client) noexcept
+template <win32_family client_family, ::std::integral client_ch_type>
+inline void wait_for_accept([[maybe_unused]] basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> client,
+							[[maybe_unused]] client_ch_type *received_message_begin, [[maybe_unused]] client_ch_type *received_message_end) noexcept
 {
 	// Named pipelines are not supported
 }
