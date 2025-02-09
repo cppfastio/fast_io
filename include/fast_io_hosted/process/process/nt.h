@@ -384,7 +384,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				.CreateOptions = 0x00000020           // FILE_SYNCHRONOUS_IO_NONALERT
 			};
 			::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> MountPointManager(
-				nt_call_callback(reinterpret_cast<void *>(::std::ptrdiff_t(-3)), u"\\Device\\MountPointManager", 25, true, nt_create_callback<zw>{symbol_mode}));
+				nt_call_callback(reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-3)), u"\\Device\\MountPointManager", 25, true, nt_create_callback<zw>{symbol_mode}));
 
 			::std::byte query_in_buffer_byte[1024 * sizeof(char16_t)];
 			::std::byte query_out_buffer_byte[1024 * sizeof(char16_t)];

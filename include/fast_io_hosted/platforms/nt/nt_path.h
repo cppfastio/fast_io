@@ -146,7 +146,7 @@ inline auto nt_call_callback(void *directory, char_type const *filename, ::std::
 	{
 		throw_nt_error(0xC0000008); // STATUS_INVALID_HANDLE
 	}
-	else if (directory == reinterpret_cast<void *>(::std::ptrdiff_t(-3)))
+	else if (directory == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-3)))
 	{
 		return nt_call_invoke_without_directory_handle(filename, filename_len, nt_path, callback);
 	}
