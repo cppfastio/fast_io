@@ -193,11 +193,11 @@ inline auto nt_call_determine_kernel_callback(void *directory, char_type const *
 {
 	if (kernel)
 	{
-		nt_call_kernel_callback(directory, filename, filename_len, callback);
+		return nt_call_kernel_callback(directory, filename, filename_len, callback);
 	}
 	else
 	{
-		nt_call_callback(directory, filename, filename_len, callback);
+		return nt_call_callback(directory, filename, filename_len, callback);
 	}
 }
 
