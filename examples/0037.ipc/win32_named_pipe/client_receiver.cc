@@ -9,7 +9,7 @@ int main()
 		::fast_io::io::print(::fast_io::u8out(), u8"connect to win32 named pipe server sender!\nserver name: ");
 		::fast_io::u8string pipe_name{};
 		::fast_io::scan(::fast_io::u8c_stdin(), ::fast_io::mnp::line_get(pipe_name));
-		::fast_io::u8win32_named_pipe_ipc_client s{pipe_name, ::fast_io::open_mode::in};
+		::fast_io::u8win32_named_pipe_ipc_client s{pipe_name, ::fast_io::ipc_mode::in};
 		::fast_io::basic_ibuf<::fast_io::u8win32_named_pipe_ipc_client_observer> s_ibuf{s};
 		::fast_io::io::print(::fast_io::u8out(), u8"connected!\n");
 		for (;;)
