@@ -436,9 +436,9 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				__builtin_addressof(isb),
 				0x006D0030,
 				QueryInBuffer,
-				query_in_buffer_byte_alloc_size,
+				static_cast<::std::uint_least32_t>(query_in_buffer_byte_alloc_size),
 				QueryOutBuffer,
-				query_out_buffer_byte_stack_size)};
+				static_cast<::std::uint_least32_t>(query_out_buffer_byte_stack_size))};
 
 			if (status)
 			{
