@@ -367,16 +367,16 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 
 		if (NtImagePath_u16_length > 11 && ::fast_io::freestanding::my_memcmp(NtImagePath_c16_buffer, u"\\Device\\Mup", 11 * sizeof(char16_t)) == 0)
 		{
-			native_name_temp_guard.ptr = nt_process_threa_local_heap_allocate_guard::alloc::allocate(
-				static_cast<::std::size_t>(NtImagePath->Length) - 9 * sizeof(char16_t)); // use guard
+			auto const native_name_alloc_length{static_cast<::std::size_t>(NtImagePath->Length) - 9 * sizeof(char16_t)};
+			native_name_temp_guard.ptr = nt_process_threa_local_heap_allocate_guard::alloc::allocate(native_name_alloc_length); // use guard
 			char16_t *native_name{static_cast<char16_t *>(native_name_temp_guard.ptr)};
 
 			native_name[0] = u'\\';
 			::fast_io::freestanding::non_overlapped_copy_n(NtImagePath_c16_buffer + 11, NtImagePath_u16_length - 11, native_name + 1);
 			native_name[NtImagePath_u16_length - 10] = 0;
 			str_uni.Buffer = native_name;
-			str_uni.Length = static_cast<::std::uint_least16_t>((NtImagePath_u16_length - 10) * sizeof(char16_t));
-			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(0x2000 * sizeof(char16_t));
+			str_uni.Length = static_cast<::std::uint_least16_t>(native_name_alloc_length - sizeof(char16_t));
+			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(native_name_alloc_length);
 		}
 		else if (NtImagePath_u16_length > 7 && ::fast_io::freestanding::my_memcmp(NtImagePath_c16_buffer, u"\\Device", 7 * sizeof(char16_t)) == 0)
 		{
