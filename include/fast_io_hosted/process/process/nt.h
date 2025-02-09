@@ -87,6 +87,8 @@ struct rtl_guard
 
 struct unicode_string_guard
 {
+	using alloc = ::fast_io::native_thread_local_allocator;
+
 	unicode_string *us{};
 	inline constexpr unicode_string_guard() noexcept = default;
 	inline constexpr unicode_string_guard(unicode_string *u) noexcept
@@ -95,7 +97,7 @@ struct unicode_string_guard
 	{
 		if (us) [[likely]]
 		{
-			::fast_io::native_thread_local_allocator::deallocate(us);
+			alloc::deallocate(us);
 			us = nullptr;
 		}
 	};
@@ -103,7 +105,7 @@ struct unicode_string_guard
 	{
 		if (us) [[likely]]
 		{
-			::fast_io::native_thread_local_allocator::deallocate(us);
+			alloc::deallocate(us);
 			us = nullptr;
 		}
 	}
@@ -339,8 +341,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	::std::uint_least32_t NtImagePath_len{};
 	::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, nullptr, 0,
 											  __builtin_addressof(NtImagePath_len));
-	auto NtImagePath{
-		reinterpret_cast<unicode_string *>(::fast_io::native_thread_local_allocator::allocate(NtImagePath_len))};
+	auto NtImagePath{reinterpret_cast<unicode_string *>(unicode_string_guard::alloc::allocate(NtImagePath_len))};
 	unicode_string_guard us_man{NtImagePath};
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
 															  NtImagePath, NtImagePath_len,
