@@ -344,9 +344,27 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 		temp_pipe_file_name_tlc_str = concat_win32_named_pipe_internal_tlc_str<family>(u"\\\\.\\pipe\\fast_io_ipc\\", ::fast_io::mnp::os_c_str_with_known_size(beg, server_name_size));
 	}
 
+	::fast_io::open_mode om{};
+	if ((mode & ::fast_io::ipc_mode::in) == ::fast_io::ipc_mode::in)
+	{
+		om |= ::fast_io::open_mode::in; 
+	}
+	if ((mode & ::fast_io::ipc_mode::out) == ::fast_io::ipc_mode::out)
+	{
+		om |= ::fast_io::open_mode::out;
+	}
+	if ((mode & ::fast_io::ipc_mode::sync) != ::fast_io::ipc_mode::none)
+	{
+		om |= ::fast_io::open_mode::sync;
+	}
+	if ((mode & ::fast_io::ipc_mode::no_block) != ::fast_io::ipc_mode::none)
+	{
+		om |= ::fast_io::open_mode::no_block;
+	}
+
 	auto handle{::fast_io::details::win32_family_create_file_impl<family>(
 		reinterpret_cast<family_char_type const *>(temp_pipe_file_name_tlc_str.c_str()),
-		{mode, static_cast<perms>(436)})};
+		{om, static_cast<perms>(436)})};
 
 	if (handle == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))) [[unlikely]]
 	{
