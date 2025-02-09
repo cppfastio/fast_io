@@ -196,7 +196,7 @@ inline void win32_9xa_fchmodat_impl(::fast_io::win32_9xa_dir_handle const &dirhd
 	throw_win32_error(0x1);
 }
 
-inline constexpr auto calculate_win32_9xa_onlyread_open_mode(bool write_attribute, bool fsymlink_nofollow) noexcept
+inline constexpr auto calculate_win32_9xa_readonly_open_mode(bool write_attribute, bool fsymlink_nofollow) noexcept
 {
 	::fast_io::details::win32_open_mode md;
 	md.dwShareMode = 3;
@@ -218,7 +218,7 @@ inline constexpr auto calculate_win32_9xa_onlyread_open_mode(bool write_attribut
 inline posix_file_status win32_9xa_fstatat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, win32_9xa_at_flags flags)
 {
 	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
-	auto md{calculate_win32_9xa_onlyread_open_mode(false, (flags & win32_9xa_at_flags::symlink_nofollow) != win32_9xa_at_flags::symlink_nofollow)};
+	auto md{calculate_win32_9xa_readonly_open_mode(false, (flags & win32_9xa_at_flags::symlink_nofollow) != win32_9xa_at_flags::symlink_nofollow)};
 	::fast_io::win32_file_9xa f{::fast_io::details::win32_family_create_file_internal_impl<win32_family::ansi_9x>(reinterpret_cast<char const *>(path.c_str()), md)};
 
 	return ::fast_io::win32::details::win32_status_impl(f.native_handle());
@@ -228,7 +228,7 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 									 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, win32_9xa_at_flags flags)
 {
 	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
-	auto md{calculate_win32_9xa_onlyread_open_mode(true, (flags & win32_9xa_at_flags::symlink_nofollow) != win32_9xa_at_flags::symlink_nofollow)};
+	auto md{calculate_win32_9xa_readonly_open_mode(true, (flags & win32_9xa_at_flags::symlink_nofollow) != win32_9xa_at_flags::symlink_nofollow)};
 	::fast_io::win32_file_9xa f{::fast_io::details::win32_family_create_file_internal_impl<win32_family::ansi_9x>(reinterpret_cast<char const *>(path.c_str()), md)};
 
 	::fast_io::win32::filetime ftm;
@@ -370,7 +370,7 @@ inline auto win32_9xa_12_api_dispatcher(char8_t const *oldpath_c_str, ::std::siz
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_12::symlinkat)
 	{
-		win32_9xa_symlinkat_impl(oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size, args...);
+		win32_9xa_symlinkat_impl(oldpath_c_str, oldpath_size, newdirhd, newpath_c_str, newpath_size);
 	}
 }
 

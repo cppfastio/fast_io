@@ -279,14 +279,21 @@ struct win32_9xa_dir_file_stack_type
 {
 	win32_9xa_dir_file dirf{};
 	void *file_struct{};
-	inline constexpr win32_9xa_dir_file_stack_type() noexcept = default;
+
+	inline win32_9xa_dir_file_stack_type() noexcept = default;
+	inline win32_9xa_dir_file_stack_type(win32_9xa_dir_file o_dirf, void *o_file_struct) noexcept
+		: dirf(::std::move(o_dirf)), file_struct(o_file_struct)
+	{}
+
 	inline win32_9xa_dir_file_stack_type(win32_9xa_dir_file_stack_type const &) = delete;
 	inline win32_9xa_dir_file_stack_type &operator=(win32_9xa_dir_file_stack_type const &) = delete;
+
 	inline win32_9xa_dir_file_stack_type(win32_9xa_dir_file_stack_type &&other) noexcept
 		: dirf(::std::move(other.dirf)), file_struct(other.file_struct)
 	{
 		other.file_struct = nullptr;
 	}
+
 	inline win32_9xa_dir_file_stack_type &operator=(win32_9xa_dir_file_stack_type &&other) noexcept
 	{
 		if (__builtin_addressof(other) == this) [[unlikely]]
@@ -304,6 +311,7 @@ struct win32_9xa_dir_file_stack_type
 
 		return *this;
 	}
+
 	inline ~win32_9xa_dir_file_stack_type()
 	{
 		if (file_struct) [[likely]]

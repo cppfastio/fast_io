@@ -378,7 +378,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			char16_t *native_name{static_cast<char16_t *>(native_name_temp_guard.ptr)};
 
 			native_name[0] = u'\\';
-			::fast_io::freestanding::non_overlapped_copy_n(NtImagePath_c16_buffer + 11, NtImagePath_u16_length - 11, native_name + 1);
+
+			::fast_io::freestanding::non_overlapped_copy(NtImagePath_c16_buffer + 11, NtImagePath_c16_buffer + NtImagePath_u16_length, native_name + 1);
 			native_name[NtImagePath_u16_length - 10] = 0;
 			str_uni.Buffer = native_name;
 			str_uni.Length = static_cast<::std::uint_least16_t>(native_name_alloc_length - sizeof(char16_t));
@@ -417,8 +418,10 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				= ::fast_io::win32::nt::mounter_target_name *;
 			auto QueryInBuffer{reinterpret_cast<mounter_target_name_may_alias_ptr>(query_in_buffer_byte)};
 
-			QueryInBuffer->DeviceNameLength = static_cast<::std::uint_least16_t>(find_res_strlen_byte);
-			::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte *>(NtImagePath_c16_buffer), QueryInBuffer->DeviceNameLength, reinterpret_cast<::std::byte *>(QueryInBuffer->DeviceName));
+			QueryInBuffer->DeviceNameLength = ::fast_io::win32::nt::details::nt_filename_bytes_check(find_res_strlen_byte);
+			::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte *>(NtImagePath_c16_buffer),
+																find_res_strlen_byte,
+																reinterpret_cast<::std::byte *>(QueryInBuffer->DeviceName));
 			QueryInBuffer->DeviceName[find_res_strlen] = 0;
 
 			// The maximum "query_out_buffer_byte" is 588 * sizeof(char16_t), No initialization required

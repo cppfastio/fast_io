@@ -173,8 +173,8 @@ inline void posix_symlinkat_impl(char const *oldpath, int newdirfd, char const *
 		(oldpath, newdirfd, newpath));
 }
 
-template <posix_api_12 dsp>
-inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath)
+template <posix_api_12 dsp, typename... Args>
+inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath, Args... args)
 {
 	if constexpr (dsp == posix_api_12::symlinkat)
 	{
