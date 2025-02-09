@@ -29,7 +29,7 @@ inline void close_nt_user_process_information(nt_user_process_information hnt_us
 template <nt_family family>
 inline ::std::uint_least32_t nt_wait_user_process_or_thread(void *hprocess_thread) noexcept
 {
-	return ::fast_io::win32::nt::nt_wait_for_single_object < family == nt_family::zw > (hprocess_thread, false, nullptr);
+	return ::fast_io::win32::nt::nt_wait_for_single_object<family == nt_family::zw>(hprocess_thread, false, nullptr);
 }
 
 template <nt_family family, bool throw_eh = false>
@@ -61,20 +61,18 @@ close_nt_user_process_information_and_wait(nt_user_process_information hnt_user_
 	::fast_io::win32::nt::nt_close<family == nt_family::zw>(hnt_user_process_info.hthread);
 }
 
-struct rtl_guard
+struct nt_process_rtl_guard
 {
 	rtl_user_process_parameters *rtl_up{};
-	inline constexpr rtl_guard() noexcept = default;
-	inline constexpr rtl_guard(rtl_user_process_parameters *r) noexcept
+	inline constexpr nt_process_rtl_guard() noexcept = default;
+	inline constexpr nt_process_rtl_guard(rtl_user_process_parameters *r) noexcept
 		: rtl_up{r} {};
-	inline constexpr ~rtl_guard()
+	nt_process_rtl_guard(nt_process_rtl_guard const &) = delete;
+	nt_process_rtl_guard &operator=(nt_process_rtl_guard const &) = delete;
+	inline constexpr ~nt_process_rtl_guard()
 	{
-		if (rtl_up) [[likely]]
-		{
-			::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
-			rtl_up = nullptr;
-		}
-	};
+		clear();
+	}
 	inline constexpr void clear() noexcept
 	{
 		if (rtl_up) [[likely]]
@@ -85,28 +83,27 @@ struct rtl_guard
 	}
 };
 
-struct unicode_string_guard
+struct nt_process_threa_local_heap_allocate_guard
 {
 	using alloc = ::fast_io::native_thread_local_allocator;
 
-	unicode_string *us{};
-	inline constexpr unicode_string_guard() noexcept = default;
-	inline constexpr unicode_string_guard(unicode_string *u) noexcept
-		: us{u} {};
-	inline constexpr ~unicode_string_guard()
+	void *ptr{};
+	inline constexpr nt_process_threa_local_heap_allocate_guard() noexcept = default;
+	inline constexpr nt_process_threa_local_heap_allocate_guard(void *o_ptr) noexcept
+		: ptr{o_ptr} {};
+
+	nt_process_threa_local_heap_allocate_guard(nt_process_threa_local_heap_allocate_guard const &) = delete;
+	nt_process_threa_local_heap_allocate_guard &operator=(nt_process_threa_local_heap_allocate_guard const &) = delete;
+	inline constexpr ~nt_process_threa_local_heap_allocate_guard()
 	{
-		if (us) [[likely]]
-		{
-			alloc::deallocate(us);
-			us = nullptr;
-		}
+		clear();
 	};
 	inline constexpr void clear() noexcept
 	{
-		if (us) [[likely]]
+		if (ptr) [[likely]]
 		{
-			alloc::deallocate(us);
-			us = nullptr;
+			alloc::deallocate(ptr);
+			ptr = nullptr;
 		}
 	}
 };
@@ -152,7 +149,7 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 											  __builtin_addressof(NtImagePath_len));
 	auto NtImagePath{
 		reinterpret_cast<unicode_string *>(::fast_io::native_thread_local_allocator::allocate(NtImagePath_len))};
-	unicode_string_guard us_man{NtImagePath};
+	nt_process_threa_local_heap_allocate_guard NtImagePath_guard{NtImagePath};
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
 															  NtImagePath, NtImagePath_len,
 															  __builtin_addressof(NtImagePath_len)));
@@ -168,7 +165,7 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 	check_nt_status(::fast_io::win32::nt::RtlCreateProcessParameters(
 		__builtin_addressof(rtl_up), NtImagePath, nullptr, nullptr, args ? __builtin_addressof(ps_para) : nullptr,
 		(void *)(envs), nullptr, nullptr, nullptr, nullptr));
-	rtl_guard rtlm{rtl_up};
+	nt_process_rtl_guard rtl_guard{rtl_up};
 
 	/* Duplicate Process Std Handles */
 
@@ -341,8 +338,10 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	::std::uint_least32_t NtImagePath_len{};
 	::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, nullptr, 0,
 											  __builtin_addressof(NtImagePath_len));
-	auto NtImagePath{reinterpret_cast<unicode_string *>(unicode_string_guard::alloc::allocate(NtImagePath_len))};
-	unicode_string_guard us_man{NtImagePath};
+
+	auto NtImagePath = static_cast<unicode_string *>(nt_process_threa_local_heap_allocate_guard::alloc::allocate(NtImagePath_len));
+	nt_process_threa_local_heap_allocate_guard NtImagePath_guard{NtImagePath};
+
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
 															  NtImagePath, NtImagePath_len,
 															  __builtin_addressof(NtImagePath_len)));
@@ -361,12 +360,17 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	if ((mode & process_mode::nt_absolute_path) != process_mode::nt_absolute_path) // dos or unc path
 	{
 		auto const NtImagePath_c16_buffer{NtImagePath->Buffer};
-		auto const NtImagePath_u16_length{NtImagePath->Length / sizeof(char16_t)};
+		auto const NtImagePath_u16_length{static_cast<::std::size_t>(NtImagePath->Length) / sizeof(char16_t)};
 		unicode_string str_uni{};
-		char16_t native_name[0x2001];
+
+		nt_process_threa_local_heap_allocate_guard native_name_temp_guard{}; // Guard for later use
 
 		if (NtImagePath_u16_length > 11 && ::fast_io::freestanding::my_memcmp(NtImagePath_c16_buffer, u"\\Device\\Mup", 11 * sizeof(char16_t)) == 0)
 		{
+			native_name_temp_guard.ptr = nt_process_threa_local_heap_allocate_guard::alloc::allocate(
+				static_cast<::std::size_t>(NtImagePath->Length) - 9 * sizeof(char16_t)); // use guard
+			char16_t *native_name{static_cast<char16_t *>(native_name_temp_guard.ptr)};
+
 			native_name[0] = u'\\';
 			::fast_io::freestanding::non_overlapped_copy_n(NtImagePath_c16_buffer + 11, NtImagePath_u16_length - 11, native_name + 1);
 			native_name[NtImagePath_u16_length - 10] = 0;
@@ -386,8 +390,19 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> MountPointManager(
 				nt_call_callback(reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-3)), u"\\Device\\MountPointManager", 25, true, nt_create_callback<zw>{symbol_mode}));
 
-			::std::byte query_in_buffer_byte[1024 * sizeof(char16_t)];
-			::std::byte query_out_buffer_byte[1024 * sizeof(char16_t)];
+			// find device name "\Device\???????\......"
+			auto const NtImagePath_c16_buffer_end{NtImagePath_c16_buffer + NtImagePath_u16_length};
+			auto find_next_rl_end{NtImagePath_c16_buffer_end};
+			auto const find_next_rl{::fast_io::freestanding::find(NtImagePath_c16_buffer + 8, find_next_rl_end, u'\\')};
+			// not found: find_next_rl == find_next_rl_end
+			find_next_rl_end = find_next_rl;
+
+			auto const find_res_strlen{static_cast<::std::size_t>(find_next_rl_end - NtImagePath_c16_buffer)};
+			auto const find_res_strlen_byte{find_res_strlen * sizeof(char16_t)};
+
+			auto const query_in_buffer_byte_alloc_size{sizeof(::std::uint_least16_t) + find_res_strlen_byte + sizeof(char16_t)};
+			auto query_in_buffer_byte{nt_process_threa_local_heap_allocate_guard::alloc::allocate(query_in_buffer_byte_alloc_size)};
+			nt_process_threa_local_heap_allocate_guard query_in_buffer_byte_guard{query_in_buffer_byte}; // guard
 
 			using mounter_target_name_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -396,16 +411,13 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				= ::fast_io::win32::nt::mounter_target_name *;
 			auto QueryInBuffer{reinterpret_cast<mounter_target_name_may_alias_ptr>(query_in_buffer_byte)};
 
-			auto const NtImagePath_c16_buffer_end{NtImagePath_c16_buffer + NtImagePath_u16_length};
-			auto find_next_rl_end{NtImagePath_c16_buffer_end};
-			auto const find_next_rl{::fast_io::freestanding::find(NtImagePath_c16_buffer + 8, find_next_rl_end, u'\\')};
-			// not found: find_next_rl == find_next_rl_end
-			find_next_rl_end = find_next_rl;
-
-			auto const find_res_strlen{static_cast<::std::size_t>(find_next_rl_end - NtImagePath_c16_buffer)};
-			QueryInBuffer->DeviceNameLength = static_cast<::std::uint_least16_t>(find_res_strlen) * sizeof(char16_t);
+			QueryInBuffer->DeviceNameLength = static_cast<::std::uint_least16_t>(find_res_strlen_byte);
 			::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte *>(NtImagePath_c16_buffer), QueryInBuffer->DeviceNameLength, reinterpret_cast<::std::byte *>(QueryInBuffer->DeviceName));
 			QueryInBuffer->DeviceName[find_res_strlen] = 0;
+
+			// The maximum "query_out_buffer_byte" is 588 * sizeof(char16_t), No initialization required
+			constexpr ::std::size_t query_out_buffer_byte_stack_size{1024 * sizeof(char16_t)};
+			::std::byte query_out_buffer_byte[query_out_buffer_byte_stack_size];
 
 			using mountmgr_volume_paths_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -424,9 +436,9 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				__builtin_addressof(isb),
 				0x006D0030,
 				QueryInBuffer,
-				1024,
+				query_in_buffer_byte_alloc_size,
 				QueryOutBuffer,
-				1024)};
+				query_out_buffer_byte_stack_size)};
 
 			if (status)
 			{
@@ -436,14 +448,19 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			else [[likely]]
 			{
 				auto const MultiSz_strlen{::fast_io::cstr_len(QueryOutBuffer->MultiSz)};
+
+				::std::size_t const native_name_alloc_length{static_cast<::std::size_t>(NtImagePath->Length) - find_res_strlen_byte + MultiSz_strlen * sizeof(char16_t) + sizeof(char16_t)};
+				native_name_temp_guard.ptr = nt_process_threa_local_heap_allocate_guard::alloc::allocate(native_name_alloc_length); // use guard
+				char16_t *native_name{static_cast<char16_t *>(native_name_temp_guard.ptr)};
+
 				auto native_name_curr{native_name};
 				native_name_curr = ::fast_io::freestanding::non_overlapped_copy_n(QueryOutBuffer->MultiSz, MultiSz_strlen, native_name_curr);
 				native_name_curr = ::fast_io::freestanding::non_overlapped_copy(NtImagePath_c16_buffer + find_res_strlen, NtImagePath_c16_buffer_end, native_name_curr);
 				*native_name_curr = 0;
 
 				str_uni.Buffer = native_name;
-				str_uni.Length = static_cast<::std::uint_least16_t>(static_cast<::std::size_t>(native_name_curr - native_name) * sizeof(char16_t));
-				str_uni.MaximumLength = static_cast<::std::uint_least16_t>(0x2000 * sizeof(char16_t));
+				str_uni.Length = static_cast<::std::uint_least16_t>(native_name_alloc_length - sizeof(char16_t));
+				str_uni.MaximumLength = static_cast<::std::uint_least16_t>(native_name_alloc_length);
 			}
 		}
 		else [[unlikely]]
@@ -463,7 +480,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			static_cast<void *>(const_cast<char16_t *>(envs)), nullptr, nullptr, nullptr, nullptr, 0x01));
 	}
 
-	rtl_guard rtlm{rtl_temp}; // guard
+	nt_process_rtl_guard rtl_guard{rtl_temp}; // guard
 
 	// Duplicate Process Std Handles
 	auto const current_peb{::fast_io::win32::nt::nt_get_current_peb()};
@@ -565,7 +582,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	AttributeList.TotalLength = 5 * sizeof(ps_attribute) + sizeof(::std::size_t);
 
 	AttributeList.Attributes[0].Attribute = 131077;
-	AttributeList.Attributes[0].Size = NtImagePath->Length;
+	AttributeList.Attributes[0].Size = static_cast<::std::size_t>(NtImagePath->Length);
 	AttributeList.Attributes[0].ReturnLength = 0;
 	AttributeList.Attributes[0].Value = reinterpret_cast<::std::size_t>(NtImagePath->Buffer);
 
@@ -722,11 +739,11 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 	// get exit code
 	::fast_io::win32::nt::process_basic_information pbi{};
 	auto const status2{
-		::fast_io::win32::nt::nt_query_information_process < family == nt_family::zw > (ppob.hnt_user_process_info.hprocess,
-																						::fast_io::win32::nt::process_information_class::ProcessBasicInformation,
-																						__builtin_addressof(pbi),
-																						static_cast<::std::uint_least32_t>(sizeof(pbi)),
-																						nullptr)};
+		::fast_io::win32::nt::nt_query_information_process<family == nt_family::zw>(ppob.hnt_user_process_info.hprocess,
+																					::fast_io::win32::nt::process_information_class::ProcessBasicInformation,
+																					__builtin_addressof(pbi),
+																					static_cast<::std::uint_least32_t>(sizeof(pbi)),
+																					nullptr)};
 	if (status2) [[unlikely]]
 	{
 		if constexpr (throw_eh)
@@ -745,7 +762,7 @@ inline nt_wait_status wait(nt_family_process_observer<family> ppob) noexcept(!th
 template <nt_family family>
 inline void kill(nt_family_process_observer<family> ppob, nt_wait_status exit_code)
 {
-	auto const status{::fast_io::win32::nt::nt_terminate_process < family == nt_family::zw > (ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
+	auto const status{::fast_io::win32::nt::nt_terminate_process<family == nt_family::zw>(ppob.hnt_user_process_info.hprocess, static_cast<::std::int_least32_t>(exit_code.wait_loc))};
 
 	if (status) [[unlikely]]
 	{

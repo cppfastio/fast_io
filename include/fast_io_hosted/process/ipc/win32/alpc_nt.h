@@ -175,7 +175,7 @@ inline void *nt_family_create_alpc_ipc_server_port_impl(nt_alpc_char_type const 
 template <nt_family family>
 struct nt_family_create_alpc_ipc_server_paramenter
 {
-	using family_char_type = ::std::conditional_t<family == win32_family::wide_nt, char16_t, char>;
+	using family_char_type = char16_t;
 	ipc_mode im{};
 	inline void *operator()(family_char_type const *filename, ::std::size_t filename_size)
 	{
@@ -237,7 +237,7 @@ inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_
 	SecurityQos.Length = sizeof(SecurityQos);
 	securityAttr.pQOS = __builtin_addressof(SecurityQos);
 	securityAttr.Flags = 0; // 0x10000;
-	check_nt_status(::fast_io::win32::nt::nt_alpc_create_security_context<zw>(server_port_handle, 0, __builtin_addressof(securityAttr)));
+	check_nt_status(::fast_io::win32::nt::nt_alpc_create_security_context<zw>(server_port, 0, __builtin_addressof(securityAttr)));
 	::fast_io::freestanding::my_memmove(reinterpret_cast<::std::byte *>(p_msg_attr_aend) + iNextMsgAttrBufferOffset, __builtin_addressof(securityAttr), sizeof(securityAttr));
 	iNextMsgAttrBufferOffset += sizeof(securityAttr);
 
@@ -307,7 +307,7 @@ inline ::std::byte *nt_family_alpc_ipc_server_wait_for_connect_impl(
 #else
 		alloca
 #endif
-		(receive_size)};
+		(receive_size))};
 
 	using port_message_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -336,7 +336,7 @@ inline void nt_family_alpc_ipc_server_disconnect_impl(void *client_pipe_handle)
 {
 	constexpr bool zw{family == nt_family::zw};
 
-	check_nt_status(::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(client_pipe_handle, 0););
+	check_nt_status(::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(client_pipe_handle, 0));
 }
 
 
