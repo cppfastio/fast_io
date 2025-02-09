@@ -83,9 +83,10 @@ struct heap_typed_allocate_guard
 	}
 	inline constexpr void clear() noexcept
 	{
-		if (ptr) [[likely]]
+		if (this->ptr) [[likely]]
 		{
-			typed_allocator_type::deallocate_n(ptr, 1);
+			typed_allocator_type::deallocate_n(this->ptr, 1);
+			this->ptr = nullptr;
 		}
 	}
 	inline constexpr ~heap_typed_allocate_guard()
