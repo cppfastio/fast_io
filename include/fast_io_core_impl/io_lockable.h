@@ -61,30 +61,37 @@ struct basic_general_io_lockable_nonmovable
 
 namespace details
 {
-
 template <typename T, typename Allocator>
-struct heap_allocate_guard
+struct heap_typed_allocate_guard
 {
 	using value_type = T;
 	using native_handle_type = T *;
 	using allocator_type = Allocator;
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type, value_type>;
 	native_handle_type ptr;
-	inline explicit constexpr heap_allocate_guard() noexcept
+	inline explicit constexpr heap_typed_allocate_guard() noexcept
 		: ptr{typed_allocator_type::allocate(1)}
 	{
 	}
-	inline heap_allocate_guard(heap_allocate_guard const &) = delete;
-	inline heap_allocate_guard &operator=(heap_allocate_guard const &) = delete;
+	inline heap_typed_allocate_guard(heap_typed_allocate_guard const &) = delete;
+	inline heap_typed_allocate_guard &operator=(heap_typed_allocate_guard const &) = delete;
 	inline constexpr native_handle_type release() noexcept
 	{
 		auto temp{this->ptr};
 		this->ptr = nullptr;
 		return temp;
 	}
-	inline constexpr ~heap_allocate_guard()
+	inline constexpr void clear() noexcept
 	{
-		typed_allocator_type::deallocate_n(ptr, 1);
+		if (this->ptr) [[likely]]
+		{
+			typed_allocator_type::deallocate_n(this->ptr, 1);
+			this->ptr = nullptr;
+		}
+	}
+	inline constexpr ~heap_typed_allocate_guard()
+	{
+		clear();
 	}
 };
 
@@ -134,7 +141,7 @@ struct basic_general_mutex_movable
 private:
 	inline constexpr void construct_default() noexcept(::std::is_nothrow_default_constructible_v<mutex_type>)
 	{
-		::fast_io::details::heap_allocate_guard<mutex_type, allocator_type> g;
+		::fast_io::details::heap_typed_allocate_guard<mutex_type, allocator_type> g;
 		::std::construct_at(g.ptr);
 		this->pmutex = g.release();
 	}

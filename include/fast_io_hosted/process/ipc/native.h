@@ -1,12 +1,14 @@
 ﻿#pragma once
 
 #if !defined(__MSDOS__) && !defined(__NEWLIB__) && !defined(__wasi__) && !defined(_PICOLIBC__)
-#include "posix/named_pipe.h"
-#include "posix/eventfd.h"
+#include "mode.h"
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 #include "win32/named_pipe_win32.h"
-#include "win32/rpc_nt.h"
-#include "win32/alpc_nt.h"
+// #include "win32/rpc_nt.h"
+// #include "win32/alpc_nt.h"
+#else
+// #include "posix/named_pipe.h"
+// #include "posix/eventfd.h"
 #endif
 
 namespace fast_io

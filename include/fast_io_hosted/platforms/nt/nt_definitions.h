@@ -1232,7 +1232,7 @@ struct cs_port_context
 struct alpc_message
 {
 	port_message PortHeader;
-	::std::uint_least8_t PortMessage[1000]; // Hard limit for this is 65488. An Error is thrown if AlpcMaxAllowedMessageLength() is exceeded
+	::std::uint_least8_t PortMessage[1];
 };
 
 namespace details

@@ -89,6 +89,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 	constexpr bool is_nt{family == win32_family::wide_nt};
 	if constexpr (is_nt)
 	{
+		// The GetAppedFileName function cannot obtain the required space size and directly allocates a large stack area
 		char16_t pszFilename[0x2001];
 		void *hFileMap{::fast_io::win32::CreateFileMappingW(fhandle, nullptr, 0x02, 0, 1, nullptr)};
 		if (!hFileMap) [[unlikely]]
@@ -261,6 +262,7 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 	}
 	else
 	{
+		// The GetAppedFileName function cannot obtain the required space size and directly allocates a large stack area
 		char8_t pszFilename[0x8004];
 		void *hFileMap{::fast_io::win32::CreateFileMappingA(fhandle, nullptr, 0x02, 0, 1, nullptr)};
 		if (!hFileMap) [[unlikely]]

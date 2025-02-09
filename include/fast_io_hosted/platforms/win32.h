@@ -1001,6 +1001,9 @@ struct find_struct_guard
 {
 	void *file_struct{};
 
+	find_struct_guard(find_struct_guard const &) = delete;
+	find_struct_guard &operator=(find_struct_guard const &) = delete;
+
 	inline ~find_struct_guard()
 	{
 		if (file_struct) [[likely]]
@@ -1541,6 +1544,8 @@ struct handle_guard
 	inline constexpr handle_guard() noexcept = default;
 	inline constexpr handle_guard(void *r) noexcept
 		: h{r} {};
+	handle_guard(handle_guard const &) = delete;
+	handle_guard &operator=(handle_guard const &) = delete;
 	inline constexpr ~handle_guard()
 	{
 		if (h) [[likely]]
@@ -1565,6 +1570,8 @@ struct map_guard
 	inline constexpr map_guard() noexcept = default;
 	inline constexpr map_guard(void *r) noexcept
 		: map{r} {};
+	map_guard(map_guard const &) = delete;
+	map_guard &operator=(map_guard const &) = delete;
 	inline constexpr ~map_guard()
 	{
 		if (map) [[likely]]

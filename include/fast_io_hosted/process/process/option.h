@@ -8,9 +8,7 @@ enum process_mode : ::std::uint_least64_t
 	// *indicates that the process mode has not been evaluated yet
 	new_session = static_cast<::std::uint_least64_t>(1) << 0,
 	// [POSIX] setsid(), [WINDOWS, WINNT] CREATE_NEW_PROCESS_GROUP (Windows is currently not implemented)
-	nt_absolute_path = static_cast<::std::uint_least64_t>(1) << 1,
-	// [WINNT] Set the process path in the PEB to nt absolute path
-	alloc_new_console = static_cast<::std::uint_least64_t>(1) << 2
+	alloc_new_console = static_cast<::std::uint_least64_t>(1) << 1
 	// [WINDOWS, WINNT] CREATE_NEW_CONSOLE (Automatically assign a console to new threads)
 };
 

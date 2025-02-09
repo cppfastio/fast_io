@@ -9,8 +9,7 @@ enum class nt_at_flags : ::std::uint_least32_t
 	symlink_nofollow = static_cast<::std::uint_least32_t>(1) << 1,
 	no_automount = static_cast<::std::uint_least32_t>(1) << 2,
 	removedir = static_cast<::std::uint_least32_t>(1) << 3,
-	empty_path = static_cast<::std::uint_least32_t>(1) << 4,
-	nt_path = static_cast<::std::uint_least32_t>(1) << 5
+	empty_path = static_cast<::std::uint_least32_t>(1) << 4
 };
 
 inline constexpr nt_at_flags operator&(nt_at_flags x, nt_at_flags y) noexcept
@@ -81,10 +80,10 @@ inline constexpr nt_open_mode calculate_nt_delete_flag(nt_at_flags flags) noexce
 }
 
 template <bool zw>
-inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags)
+inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags, bool kernel)
 {
 	auto status{nt_close<zw>(
-		nt_call_callback(dirhd, path_c_str, path_size, (flags & nt_at_flags::nt_path) == nt_at_flags::nt_path, nt_create_callback<zw>{calculate_nt_delete_flag(flags)}))};
+		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{calculate_nt_delete_flag(flags)}))};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -92,7 +91,7 @@ inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 }
 
 template <bool zw>
-inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, nt_at_flags flags)
+inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, bool kernel)
 {
 	constexpr fast_io::win32::nt::details::nt_open_mode create_dir_mode{
 		fast_io::win32::nt::details::calculate_nt_open_mode(
@@ -102,7 +101,7 @@ inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size
 	{
 		m_dir_mode.FileAttributes |= 0x00000001; // FILE_ATTRIBUTE_READONLY
 	}
-	auto status{nt_close<zw>(nt_call_callback(dirhd, path_c_str, path_size, (flags & nt_at_flags::nt_path) == nt_at_flags::nt_path, nt_create_callback<zw>{m_dir_mode}))};
+	auto status{nt_close<zw>(nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{m_dir_mode}))};
 	if (status)
 	{
 		throw_nt_error(status);
@@ -110,7 +109,7 @@ inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size
 }
 
 template <bool zw>
-inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, access_how mode, nt_at_flags flags)
+inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, access_how mode, nt_at_flags flags, bool kernel)
 {
 	switch (mode)
 	{
@@ -139,7 +138,7 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
-		nt_call_callback(dirhd, path_c_str, path_size, (flags & nt_at_flags::nt_path) == nt_at_flags::nt_path, nt_create_callback<zw>{md})};
+		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{md})};
 
 	switch (mode)
 	{
@@ -177,7 +176,7 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 }
 
 template <bool zw>
-inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, nt_at_flags flags)
+inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, nt_at_flags flags, bool kernel)
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
@@ -192,7 +191,7 @@ inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
-		nt_call_callback(dirhd, path_c_str, path_size, (flags & nt_at_flags::nt_path) == nt_at_flags::nt_path, nt_create_callback<zw>{md})};
+		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{md})};
 
 	::fast_io::win32::nt::file_basic_information fbi;
 	::fast_io::win32::nt::io_status_block isb;
@@ -235,7 +234,7 @@ inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 
 template <bool zw>
 [[noreturn]] inline void nt_fchownat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size,
-										  [[maybe_unused]] ::std::uintmax_t owner, [[maybe_unused]] ::std::uintmax_t group, nt_at_flags flags)
+										  [[maybe_unused]] ::std::uintmax_t owner, [[maybe_unused]] ::std::uintmax_t group, nt_at_flags flags, bool kernel)
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
@@ -251,7 +250,7 @@ template <bool zw>
 
 	// check if file exist
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
-		nt_call_callback(dirhd, path_c_str, path_size, (flags & nt_at_flags::nt_path) == nt_at_flags::nt_path, nt_create_callback<zw>{md})};
+		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{md})};
 
 	// Windows does not use POSIX user group system. stub it and it is perfectly fine.
 	// But nt_fchownat, zw_fchownat will not be provided since they do not exist.
@@ -259,7 +258,7 @@ template <bool zw>
 }
 
 template <bool zw>
-inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags)
+inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags, bool kernel)
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
@@ -274,14 +273,14 @@ inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str
 	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
-		nt_call_callback(dirhd, path_c_str, path_size, (flags & nt_at_flags::nt_path) == nt_at_flags::nt_path, nt_create_callback<zw>{md})};
+		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{md})};
 
 	return ::fast_io::win32::nt::details::nt_status_impl<(zw ? nt_family::zw : nt_family::nt)>(file.native_handle());
 }
 
 template <bool zw>
 inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, unix_timestamp_option creation_time,
-							  unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, nt_at_flags flags)
+							  unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, nt_at_flags flags, bool kernel)
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
@@ -296,7 +295,7 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	}
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
-		nt_call_callback(dirhd, path_c_str, path_size, (flags & nt_at_flags::nt_path) == nt_at_flags::nt_path, nt_create_callback<zw>{md})};
+		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{md})};
 
 	::fast_io::win32::nt::file_basic_information fbi;
 	::fast_io::win32::nt::io_status_block isb;
@@ -436,10 +435,8 @@ struct nt_create_nothrow_callback
 
 template <bool zw>
 inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
-							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags)
+							  void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, bool kernel)
 {
-	bool const nt_path{(flags & nt_at_flags::nt_path) == nt_at_flags::nt_path};
-
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT > 0x0600
 
 	bool is_root{};
@@ -451,7 +448,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	::fast_io::win32::nt::unicode_string us{};
 	::fast_io::win32::nt::rtl_unicode_string_unique_ptr us_guard{};
 
-	if (nt_path)
+	if (kernel)
 	{
 		is_root = true;
 	}
@@ -515,12 +512,8 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
+		.CreateOptions = 0x00200000           // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	};
-
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
-	{
-		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
-	}
 
 	void *olddirhd{newdirhd};
 
@@ -530,7 +523,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	}
 
 	// Check if exists to get the target file type
-	auto [handle, status]{nt_call_callback(olddirhd, oldpath_real_c_str, oldpath_real_size, nt_path, nt_create_nothrow_callback<zw>{md})};
+	auto [handle, status]{nt_call_determine_kernel_callback(olddirhd, oldpath_real_c_str, oldpath_real_size, kernel, nt_create_nothrow_callback<zw>{md})};
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> check_file{};
 
@@ -619,7 +612,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	// You need to check whether or not the authorization process has SeCreateSymbolicLinkPrivilege privilege
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> new_file(
-		nt_call_callback(newdirhd, newpath_c_str, newpath_size, nt_path, nt_create_callback<zw>{symbol_mode}));
+		nt_call_determine_kernel_callback(newdirhd, newpath_c_str, newpath_size, kernel, nt_create_callback<zw>{symbol_mode}));
 
 	status = ::fast_io::win32::nt::nt_fs_control_file<zw>(
 		new_file.native_handle(),
@@ -644,7 +637,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 	constexpr nt_open_mode symbol_mode{::fast_io::win32::nt::details::calculate_nt_open_mode({::fast_io::open_mode::out, static_cast<perms>(436)})};
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char8_t> new_file(
-		nt_call_callback(newdirhd, newpath_c_str, newpath_size, nt_path, nt_create_callback<zw>{symbol_mode}));
+		nt_call_determine_kernel_callback(newdirhd, newpath_c_str, newpath_size, kernel, nt_create_callback<zw>{symbol_mode}));
 
 	char8_t buffer[510];
 	::fast_io::freestanding::my_memset(buffer, u8' ', 510);
@@ -659,7 +652,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 
 template <bool zw>
 inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
-							 void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags)
+							 void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, bool kernel)
 {
 	constexpr nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080 | 0x00010000, // SYNCHRONIZE | FILE_READ_ATTRIBUTES | DELETE
@@ -668,13 +661,11 @@ inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::st
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
 
-	bool const nt_path{(flags & nt_at_flags::nt_path) == nt_at_flags::nt_path};
-
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file(
-		nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_path, nt_create_callback<zw>{md}));
+		nt_call_determine_kernel_callback(olddirhd, oldpath_c_str, oldpath_size, kernel, nt_create_callback<zw>{md}));
 
-	nt_call_callback(
-		newdirhd, newpath_c_str, newpath_size, nt_path,
+	nt_call_determine_kernel_callback(
+		newdirhd, newpath_c_str, newpath_size, kernel,
 		[&](void *directory_hd, win32::nt::unicode_string const *ustr) {
 			char16_t const *pth_cstr{ustr->Buffer};
 			::std::uint_least32_t pth_size2{ustr->Length};
@@ -720,13 +711,11 @@ inline constexpr nt_open_mode calculate_nt_link_flag(nt_at_flags flags) noexcept
 
 template <bool zw>
 inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std::size_t oldpath_size, void *newdirhd,
-						   char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags)
+						   char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags, bool kernel)
 {
 	nt_open_mode const md{calculate_nt_link_flag(flags)};
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> basic_file{};
 	::fast_io::basic_nt_family_io_observer<(zw ? nt_family::zw : nt_family::nt), char> file{};
-
-	bool const nt_path{(flags & nt_at_flags::nt_path) == nt_at_flags::nt_path};
 
 	if ((flags & nt_at_flags::empty_path) == nt_at_flags::empty_path && oldpath_size == 0)
 	{
@@ -735,12 +724,12 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 	else
 	{
 		basic_file = ::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char>{
-			nt_call_callback(olddirhd, oldpath_c_str, oldpath_size, nt_path, nt_create_callback<zw>{md})};
+			nt_call_determine_kernel_callback(olddirhd, oldpath_c_str, oldpath_size, kernel, nt_create_callback<zw>{md})};
 		file = basic_file;
 	}
 
-	nt_call_callback(
-		newdirhd, newpath_c_str, newpath_size, nt_path,
+	nt_call_determine_kernel_callback(
+		newdirhd, newpath_c_str, newpath_size, kernel,
 		[&](void *directory_hd, win32::nt::unicode_string const *ustr) {
 			char16_t const *pth_cstr{ustr->Buffer};
 			::std::uint_least32_t pth_size2{ustr->Length};
@@ -835,7 +824,7 @@ inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args
 {
 	return nt_api_common(
 		path, [&](char16_t const *path_c_str, ::std::size_t path_size) {
-			return nt1x_api_dispatcher < family == nt_family::zw, dsp > (dir_handle, path_c_str, path_size, args...);
+			return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...);
 		});
 }
 
@@ -848,7 +837,7 @@ inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_pat
 		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 			return nt_api_common(
 				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-					return nt12_api_dispatcher < family == nt_family::zw, dsp > (oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size, args...);
+					return nt12_api_dispatcher<family == nt_family::zw, dsp>(oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size, args...);
 				});
 		});
 }
@@ -860,8 +849,8 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 							 return nt_api_common(newpath,
 												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-													  return nt22_api_dispatcher < family == nt_family::zw, dsp > (olddirhd, oldpath_c_str, oldpath_size, newdirhd,
-																												   newpath_c_str, newpath_size, args...);
+													  return nt22_api_dispatcher<family == nt_family::zw, dsp>(olddirhd, oldpath_c_str, oldpath_size, newdirhd,
+																											   newpath_c_str, newpath_size, args...);
 												  });
 						 });
 }
@@ -869,89 +858,137 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 } // namespace win32::nt::details
 
 // 1x
-template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_nt_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, false);
 }
 
-template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_faccessat(io_kernel_t, nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, true);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_faccessat(io_kernel_t, nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, true);
+}
+
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_nt_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, false);
 }
 
-template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_fchmodat(io_kernel_t, nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, true);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_fchmodat(io_kernel_t, nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, true);
+}
+
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_nt_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, false);
 }
 
-template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_fchownat(io_kernel_t, nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, true);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_fchownat(io_kernel_t, nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, true);
+}
+
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline posix_file_status nt_family_nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	return ::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fstatat>(ent.handle, path, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status zw_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags, false);
 }
 
-template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+template <::fast_io::constructible_to_os_c_str path_type>
+inline posix_file_status nt_fstatat(io_kernel_t, nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags, true);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline posix_file_status zw_fstatat(io_kernel_t, nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags, true);
+}
+
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_nt_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
 								   unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
 								   nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
@@ -959,7 +996,7 @@ inline void nt_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_
 						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
 						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
@@ -967,110 +1004,188 @@ inline void zw_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_
 						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
 						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, false);
 }
 
-template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_utimensat(io_kernel_t, nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, true);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_utimensat(io_kernel_t, nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
+						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, true);
+}
+
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline void nt_family_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436), nt_at_flags flags = {})
+inline void nt_family_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::mkdirat>(ent.handle, path, pm, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::mkdirat>(ent.handle, path, pm, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void nt_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436), nt_at_flags flags = {})
+inline void nt_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void zw_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436), nt_at_flags flags = {})
+inline void zw_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::mkdirat>(ent.handle, path, pm, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::mkdirat>(ent.handle, path, pm, false);
 }
 
-template <nt_family family, ::fast_io::constructible_to_os_c_str path_type>
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_mkdirat(io_kernel_t, nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, true);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_mkdirat(io_kernel_t, nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::mkdirat>(ent.handle, path, pm, true);
+}
+
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::unlinkat>(ent.handle, path, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::unlinkat>(ent.handle, path, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::unlinkat>(ent.handle, path,
-																								  flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::unlinkat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::unlinkat>(ent.handle, path,
-																								  flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::unlinkat>(ent.handle, path, flags, false);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void nt_unlinkat(io_kernel_t, nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::unlinkat>(ent.handle, path, flags, true);
+}
+
+template <::fast_io::constructible_to_os_c_str path_type>
+inline void zw_unlinkat(io_kernel_t, nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+{
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::unlinkat>(ent.handle, path, flags, true);
 }
 
 // 12
-template <nt_family family, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline void nt_family_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void nt_family_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
 {
-	::fast_io::win32::nt::details::nt_deal_with12<family, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, flags);
+	::fast_io::win32::nt::details::nt_deal_with12<family, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void nt_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void nt_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
 {
-	::fast_io::win32::nt::details::nt_deal_with12<nt_family::nt, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, flags);
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::nt, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, false);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void zw_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void zw_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
 {
-	::fast_io::win32::nt::details::nt_deal_with12<nt_family::zw, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, flags);
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::zw, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, false);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void nt_symlinkat(io_kernel_t, old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::nt, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, true);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void zw_symlinkat(io_kernel_t, old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::zw, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, true);
 }
 
 // 22
-template <nt_family family, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void nt_family_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = {})
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void nt_family_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<family, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
-																									  newent.handle, newpath, flags);
+																									  newent.handle, newpath, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void nt_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = {})
+inline void nt_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
-																											 newent.handle, newpath, flags);
+																											 newent.handle, newpath, false);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void zw_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = {})
+inline void zw_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::zw, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
-																											 newent.handle, newpath, flags);
+																											 newent.handle, newpath, false);
 }
 
-template <nt_family family, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void nt_renameat(io_kernel_t, nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
+																											 newent.handle, newpath, true);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void zw_renameat(io_kernel_t, nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
+{
+	::fast_io::win32::nt::details::nt_deal_with22<nt_family::zw, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
+																											 newent.handle, newpath, true);
+}
+
+template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void nt_family_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<family, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
-																									newent.handle, newpath, flags);
+																									newent.handle, newpath, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void nt_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
-																										   newent.handle, newpath, flags);
+																										   newent.handle, newpath, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void zw_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::zw, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
-																										   newent.handle, newpath, flags);
+																										   newent.handle, newpath, flags, false);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void nt_linkat(io_kernel_t, nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
+																										   newent.handle, newpath, flags, true);
+}
+
+template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
+inline void zw_linkat(io_kernel_t, nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+{
+	::fast_io::win32::nt::details::nt_deal_with22<nt_family::zw, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
+																										   newent.handle, newpath, flags, true);
 }
 
 #if !defined(_WIN32_WINDOWS) && !defined(__CYGWIN__) && !defined(__WINE__)
@@ -1079,25 +1194,25 @@ using native_at_flags = nt_at_flags;
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status native_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags);
+	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
@@ -1105,40 +1220,40 @@ inline void native_utimensat(nt_at_entry ent, path_type const &path, unix_timest
 							 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
 							 nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436), nt_at_flags flags = {})
+inline void native_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
-	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, flags);
+	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, ::fast_io::details::posix_api_1x::unlinkat>(
-		ent.handle, path, flags);
+		ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+inline void native_symlinkat(old_path_type &&oldpath, nt_at_entry newdirfd, new_path_type &&newpath)
 {
-	::fast_io::win32::nt::details::nt_deal_with12<nt_family::nt, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, flags);
+	::fast_io::win32::nt::details::nt_deal_with12<nt_family::nt, details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath, false);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = {})
+inline void native_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath,
-																											 newent.handle, newpath, flags);
+																											 newent.handle, newpath, false);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath, nt_at_flags flags = nt_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
-																										   newent.handle, newpath, flags);
+																										   newent.handle, newpath, flags, false);
 }
 #endif
 } // namespace fast_io
