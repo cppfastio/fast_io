@@ -374,8 +374,7 @@ template <bool zw>
 inline void *nt_family_create_file_impl(char16_t const *filename_cstr, open_mode_perms ompm)
 {
 	return ::fast_io::win32::nt::details::nt_call_invoke_without_directory_handle_impl(
-		filename_cstr, static_cast<bool>(ompm.om & ::fast_io::open_mode::nt_path),
-		nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(ompm)});
+		filename_cstr, nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(ompm)});
 }
 
 template <bool zw>
@@ -413,7 +412,7 @@ inline void *nt_family_create_file_at_impl(void *directory_handle, char16_t cons
 	else
 	{
 		return ::fast_io::win32::nt::details::nt_call_callback(
-			directory_handle, filename_c_str, filename_c_str_len, static_cast<bool>(md.om & ::fast_io::open_mode::nt_path),
+			directory_handle, filename_c_str, filename_c_str_len,
 			nt_create_callback<zw>{::fast_io::win32::nt::details::calculate_nt_open_mode(md)});
 	}
 }

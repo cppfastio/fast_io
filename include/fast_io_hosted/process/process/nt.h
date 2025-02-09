@@ -388,7 +388,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				.CreateOptions = 0x00000020           // FILE_SYNCHRONOUS_IO_NONALERT
 			};
 			::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> MountPointManager(
-				nt_call_callback(reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-3)), u"\\Device\\MountPointManager", 25, true, nt_create_callback<zw>{symbol_mode}));
+				nt_call_kernel_callback(nullptr, u"\\Device\\MountPointManager", 25, nt_create_callback<zw>{symbol_mode}));
 
 			// find device name "\Device\???????\......"
 			auto const NtImagePath_c16_buffer_end{NtImagePath_c16_buffer + NtImagePath_u16_length};

@@ -8,8 +8,7 @@ enum class win32_9xa_at_flags : ::std::uint_least32_t
 	symlink_nofollow = static_cast<::std::uint_least32_t>(1) << 1,
 	no_automount = static_cast<::std::uint_least32_t>(1) << 2,
 	removedir = static_cast<::std::uint_least32_t>(1) << 3,
-	empty_path = static_cast<::std::uint_least32_t>(1) << 4,
-	nt_path = 0
+	empty_path = static_cast<::std::uint_least32_t>(1) << 4
 };
 
 inline constexpr win32_9xa_at_flags operator&(win32_9xa_at_flags x, win32_9xa_at_flags y) noexcept
@@ -471,7 +470,7 @@ inline void win32_9xa_unlinkat(::fast_io::win32_9xa_at_entry const &ent, path_ty
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void win32_9xa_mkdirat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, perms pm = static_cast<perms>(436), [[maybe_unused]] win32_9xa_at_flags flags = {})
+inline void win32_9xa_mkdirat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::mkdirat>(ent.handle, path, pm);
 }
@@ -503,7 +502,7 @@ inline void win32_9xa_utimensat(::fast_io::win32_9xa_at_entry const &ent, path_t
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void win32_9xa_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry const &newdirfd, new_path_type &&newpath, [[maybe_unused]] win32_9xa_at_flags flags = {})
+inline void win32_9xa_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry const &newdirfd, new_path_type &&newpath)
 {
 	::fast_io::win32::details::win32_9xa_deal_with12<details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
 }
@@ -515,7 +514,7 @@ inline void win32_9xa_linkat(win32_9xa_at_entry const &oldent, old_path_type &&o
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void win32_9xa_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath, [[maybe_unused]] win32_9xa_at_flags flags = {})
+inline void win32_9xa_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath)
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath, newent.handle, newpath);
 }
@@ -537,7 +536,7 @@ inline void native_unlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type 
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_mkdirat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, perms pm = static_cast<perms>(436), [[maybe_unused]] win32_9xa_at_flags flags = {})
+inline void native_mkdirat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, perms pm = static_cast<perms>(436))
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::mkdirat>(ent.handle, path, pm);
 }
@@ -576,7 +575,7 @@ inline void native_utimensat(::fast_io::win32_9xa_at_entry const &ent, path_type
 // 12
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry const &newdirfd, new_path_type &&newpath, [[maybe_unused]] win32_9xa_at_flags flags = {})
+inline void native_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry const &newdirfd, new_path_type &&newpath)
 {
 	::fast_io::win32::details::win32_9xa_deal_with12<details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
 }
@@ -590,7 +589,7 @@ inline void native_linkat(win32_9xa_at_entry const &oldent, old_path_type &&oldp
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
-inline void native_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath, [[maybe_unused]] win32_9xa_at_flags flags = {})
+inline void native_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath)
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath, newent.handle, newpath);
 }
