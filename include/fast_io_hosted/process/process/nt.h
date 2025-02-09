@@ -351,8 +351,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	if (args)
 	{
 		ps_para.Buffer = const_cast<char16_t *>(args);
-		ps_para.Length = static_cast<decltype(ps_para.Length)>(::fast_io::cstr_len(args) * sizeof(char16_t));
-		ps_para.MaximumLength = static_cast<decltype(ps_para.MaximumLength)>(ps_para.Length + sizeof(char16_t));
+		ps_para.Length = static_cast<::std::uint_least16_t>(::fast_io::cstr_len(args) * sizeof(char16_t));
+		ps_para.MaximumLength = ::fast_io::win32::nt::details::nt_filename_bytes_check(ps_para.Length + sizeof(char16_t));
 	}
 
 	rtl_user_process_parameters *rtl_temp{};
@@ -382,7 +382,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			native_name[NtImagePath_u16_length - 10] = 0;
 			str_uni.Buffer = native_name;
 			str_uni.Length = static_cast<::std::uint_least16_t>(native_name_alloc_length - sizeof(char16_t));
-			str_uni.MaximumLength = static_cast<::std::uint_least16_t>(native_name_alloc_length);
+			str_uni.MaximumLength = ::fast_io::win32::nt::details::nt_filename_bytes_check(native_name_alloc_length);
 		}
 		else if (NtImagePath_u16_length > 7 && ::fast_io::freestanding::my_memcmp(NtImagePath_c16_buffer, u"\\Device", 7 * sizeof(char16_t)) == 0)
 		{
@@ -394,7 +394,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				.CreateOptions = 0x00000020           // FILE_SYNCHRONOUS_IO_NONALERT
 			};
 			::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> MountPointManager(
-				nt_call_kernel_callback(nullptr, u"\\Device\\MountPointManager", 25, nt_create_callback<zw>{symbol_mode}));
+				nt_call_kernel_callback(reinterpret_cast<void *>(::std::ptrdiff_t(-3)), u"\\Device\\MountPointManager", 25, nt_create_callback<zw>{symbol_mode}));
 
 			// find device name "\Device\???????\......"
 			auto const NtImagePath_c16_buffer_end{NtImagePath_c16_buffer + NtImagePath_u16_length};
@@ -466,7 +466,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 
 				str_uni.Buffer = native_name;
 				str_uni.Length = static_cast<::std::uint_least16_t>(native_name_alloc_length - sizeof(char16_t));
-				str_uni.MaximumLength = static_cast<::std::uint_least16_t>(native_name_alloc_length);
+				str_uni.MaximumLength = ::fast_io::win32::nt::details::nt_filename_bytes_check(native_name_alloc_length);
 			}
 		}
 		else [[unlikely]]
