@@ -364,9 +364,9 @@ inline auto win32_9xa_22_api_dispatcher(::fast_io::win32_9xa_dir_handle const &o
 	}
 }
 
-template <::fast_io::details::posix_api_12 dsp, typename... Args>
+template <::fast_io::details::posix_api_12 dsp>
 inline auto win32_9xa_12_api_dispatcher(char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
-										::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size, Args... args)
+										::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_12::symlinkat)
 	{

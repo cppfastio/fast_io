@@ -58,8 +58,9 @@ inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_cha
 {
 	// check filename
 	using family_internal_char_type = win32_named_pipe_internal_char_type<family>;
+#if 0
 	using family_internal_str = win32_named_pipe_internal_str<family>;
-
+#endif
 	using family_internal_char_type_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
@@ -252,8 +253,9 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 	// check filename
 	using family_char_type = win32_named_pipe_char_type<family>;
 	using family_internal_char_type = win32_named_pipe_internal_char_type<family>;
+#if 0
 	using family_internal_str = win32_named_pipe_internal_str<family>;
-
+#endif
 	using family_internal_char_type_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 		[[__gnu__::__may_alias__]]
@@ -347,7 +349,7 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 	::fast_io::open_mode om{};
 	if ((mode & ::fast_io::ipc_mode::in) == ::fast_io::ipc_mode::in)
 	{
-		om |= ::fast_io::open_mode::in; 
+		om |= ::fast_io::open_mode::in;
 	}
 	if ((mode & ::fast_io::ipc_mode::out) == ::fast_io::ipc_mode::out)
 	{

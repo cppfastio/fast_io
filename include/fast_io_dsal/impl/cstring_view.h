@@ -30,11 +30,11 @@ public:
 	using string_view_type::n;
 
 	inline constexpr basic_cstring_view() noexcept
-		: string_view_type(__builtin_addressof(::fast_io::char_literal_v<0, char_type>), 0)
+		: string_view_type(::fast_io::null_terminated_c_str_v<char_type>, 0)
 	{}
 	inline constexpr void clear() noexcept
 	{
-		this->ptr = __builtin_addressof(::fast_io::char_literal_v<0, char_type>);
+		this->ptr = ::fast_io::null_terminated_c_str_v<char_type>;
 		this->n = 0;
 	}
 	inline constexpr basic_cstring_view(::std::nullptr_t) = delete;
