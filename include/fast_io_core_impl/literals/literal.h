@@ -23,6 +23,38 @@ template <char8_t ch, ::std::integral ch_type>
 inline constexpr ch_type char_literal_v{char_literal<ch_type>(ch)};
 
 template <::std::integral ch_type>
+inline constexpr ch_type const *null_terminated_c_str() noexcept
+{
+	if constexpr (::std::same_as<ch_type, char>)
+	{
+		return "";
+	}
+	else if constexpr (::std::same_as<ch_type, wchar_t>)
+	{
+		return L"";
+	}
+	else if constexpr (::std::same_as<ch_type, char8_t>)
+	{
+		return u8"";
+	}
+	else if constexpr (::std::same_as<ch_type, char16_t>)
+	{
+		return u"";
+	}
+	else if constexpr (::std::same_as<ch_type, char32_t>)
+	{
+		return U"";
+	}
+	else
+	{
+		return __builtin_addressof(::fast_io::char_literal_v<ch_type, 0>);
+	}
+}
+
+template <::std::integral ch_type>
+inline constexpr ch_type const *null_terminated_c_str_v{::fast_io::null_terminated_c_str<ch_type>()};
+
+template <::std::integral ch_type>
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 [[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
