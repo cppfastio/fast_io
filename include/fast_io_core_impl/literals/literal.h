@@ -47,7 +47,7 @@ inline constexpr ch_type const *null_terminated_c_str() noexcept
 	}
 	else
 	{
-		return __builtin_addressof(::fast_io::char_literal_v<ch_type, 0>);
+		return __builtin_addressof(::fast_io::char_literal_v<0, ch_type>);
 	}
 }
 
