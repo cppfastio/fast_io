@@ -752,6 +752,74 @@ uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 	return d_first;
 }
 
+template <::std::input_iterator ForwardIt>
+inline constexpr void uninitialized_default_construct(ForwardIt first, ForwardIt last) noexcept(
+	::std::is_nothrow_default_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+{
+	using T = typename ::std::iterator_traits<ForwardIt>::value_type;
+	if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<T> &&
+				  ::std::contiguous_iterator<ForwardIt> && !::std::is_volatile_v<T>)
+	{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			::fast_io::freestanding::my_memset(::std::to_address(first), 0, sizeof(T) * static_cast<::std::size_t>(last - first));
+			return;
+		}
+#endif
+	}
+	for (; first != last; ++first)
+	{
+		::std::construct_at(::std::to_address(first));
+	}
+}
+
+template <::std::input_iterator ForwardIt>
+inline constexpr void uninitialized_default_construct_n(ForwardIt first, ::std::size_t n) noexcept(
+	::std::is_nothrow_default_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+{
+	::fast_io::freestanding::uninitialized_default_construct(first, first + n);
+}
+
+template <::std::input_iterator ForwardIt, typename T>
+inline constexpr void uninitialized_fill(ForwardIt first, ForwardIt last, T const &x) noexcept(
+	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+{
+	using valuetype = typename ::std::iterator_traits<ForwardIt>::value_type;
+
+	if constexpr (::std::integral<valuetype> && ::std::integral<T> &&
+				  sizeof(T) == 1 && sizeof(valuetype) == 1 && ::std::contiguous_iterator<ForwardIt>)
+	{
+#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			::fast_io::freestanding::my_memset(::std::to_address(first), static_cast<int>(static_cast<::std::uint_least8_t>(x)), sizeof(T) * static_cast<::std::size_t>(last - first));
+			return;
+		}
+#endif
+	}
+
+	for (; first != last; ++first)
+	{
+		::std::construct_at(::std::to_address(first), x);
+	}
+}
+
+template <::std::input_iterator ForwardIt, typename T>
+inline constexpr void uninitialized_fill_n(ForwardIt first, ::std::size_t n, T const &x) noexcept(
+	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+{
+	::fast_io::freestanding::uninitialized_fill(first, first + n, x);
+}
+
 template <::std::forward_iterator ForwardIt>
 inline constexpr ForwardIt
 rotate(ForwardIt first, ForwardIt middle,

@@ -503,13 +503,14 @@ public:
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 			auto [ptr, allocn]{typed_allocator_type::allocate_at_least(np1)};
-			this->imp.end_ptr = (this->imp.begin_ptr = beginptr = ptr) + static_cast<size_type>(allocn - 1u);
+			this->imp.end_ptr = endptr = ((this->imp.begin_ptr = beginptr = ptr) + static_cast<size_type>(allocn - 1u));
 		}
-		if (this->imp.begin_ptr == this->imp.end_ptr) [[unlikely]]
+		if (beginptr == endptr) [[unlikely]]
 		{
 			return;
 		}
-		*(this->imp.curr_ptr = ::fast_io::freestanding::uninitialized_fill_n(beginptr, n, ch)) = 0;
+		::fast_io::freestanding::uninitialized_fill_n(beginptr, n, ch);
+		*(this->imp.curr_ptr = beginptr + n) = 0;
 	}
 	inline constexpr void assign_characters(size_type n) noexcept
 	{
