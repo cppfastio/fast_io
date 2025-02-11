@@ -641,6 +641,10 @@ private:
 	}
 	inline constexpr void append_impl(char_type const *otherptr, size_type othern) noexcept
 	{
+		if (!othern)
+		{
+			return;
+		}
 		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
 		size_type thissize{static_cast<size_type>(currptr - beginptr)};
 		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
