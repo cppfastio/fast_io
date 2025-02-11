@@ -32,12 +32,16 @@
 namespace fast_io
 {
 
+template <::std::integral chartype, typename allocator = ::fast_io::native_global_allocator>
+using basic_string = ::fast_io::containers::basic_string<chartype, allocator>;
 using string = ::fast_io::containers::basic_string<char, ::fast_io::native_global_allocator>;
 using wstring = ::fast_io::containers::basic_string<wchar_t, ::fast_io::native_global_allocator>;
 using u8string = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_global_allocator>;
 using u16string = ::fast_io::containers::basic_string<char16_t, ::fast_io::native_global_allocator>;
 using u32string = ::fast_io::containers::basic_string<char32_t, ::fast_io::native_global_allocator>;
 
+template <::std::integral chartype, typename allocator = ::fast_io::native_global_allocator>
+using basic_ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<chartype, allocator>;
 using ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<char, ::fast_io::native_global_allocator>;
 using wostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<wchar_t, ::fast_io::native_global_allocator>;
 using u8ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<char8_t, ::fast_io::native_global_allocator>;
@@ -47,12 +51,16 @@ using u32ostring_ref_fast_io = ::fast_io::containers::basic_ostring_ref_fast_io<
 namespace tlc
 {
 
+template <::std::integral chartype, typename allocator = ::fast_io::native_thread_local_allocator>
+using basic_string = ::fast_io::containers::basic_string<chartype, allocator>;
 using string = ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator>;
 using wstring = ::fast_io::containers::basic_string<wchar_t, ::fast_io::native_thread_local_allocator>;
 using u8string = ::fast_io::containers::basic_string<char8_t, ::fast_io::native_thread_local_allocator>;
 using u16string = ::fast_io::containers::basic_string<char16_t, ::fast_io::native_thread_local_allocator>;
 using u32string = ::fast_io::containers::basic_string<char32_t, ::fast_io::native_thread_local_allocator>;
 
+template <::std::integral chartype, typename allocator = ::fast_io::native_thread_local_allocator>
+using basic_ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<chartype, allocator>;
 using ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<char, ::fast_io::native_thread_local_allocator>;
 using wostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<wchar_t, ::fast_io::native_thread_local_allocator>;
 using u8ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<char8_t, ::fast_io::native_thread_local_allocator>;
@@ -60,6 +68,22 @@ using u16ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast
 using u32ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast_io<char32_t, ::fast_io::native_thread_local_allocator>;
 
 } // namespace tlc
+
+
+template <::std::integral char_type, typename... Args>
+constexpr inline ::fast_io::basic_string<char_type> basic_concat_fast_io(Args &&...args)
+{
+	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char_type>, Args...>};
+	if constexpr (type_error)
+	{
+		return ::fast_io::basic_general_concat<false, char_type, ::fast_io::basic_string<char_type>>(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
+	}
+	else
+	{
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::basic_string");
+		return {};
+	}
+}
 
 template <typename... Args>
 constexpr inline ::fast_io::string concat_fast_io(Args &&...args)
@@ -213,6 +237,21 @@ constexpr inline ::fast_io::u32string u32concatln_fast_io(Args &&...args)
 
 namespace tlc
 {
+
+template <::std::integral char_type, typename... Args>
+constexpr inline ::fast_io::tlc::basic_string<char_type> basic_concat_fast_io_tlc(Args &&...args)
+{
+	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char_type>, Args...>};
+	if constexpr (type_error)
+	{
+		return ::fast_io::basic_general_concat<false, char_type, ::fast_io::tlc::basic_string<char_type>>(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...);
+	}
+	else
+	{
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::tlc::basic_string");
+		return {};
+	}
+}
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::string concat_fast_io_tlc(Args &&...args)
