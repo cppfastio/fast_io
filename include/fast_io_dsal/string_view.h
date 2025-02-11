@@ -35,12 +35,14 @@ namespace fast_io
 using ::fast_io::containers::null_terminated;
 using ::fast_io::containers::null_terminated_t;
 
+using ::fast_io::containers::basic_string_view;
 using string_view = ::fast_io::containers::basic_string_view<char>;
 using wstring_view = ::fast_io::containers::basic_string_view<wchar_t>;
 using u8string_view = ::fast_io::containers::basic_string_view<char8_t>;
 using u16string_view = ::fast_io::containers::basic_string_view<char16_t>;
 using u32string_view = ::fast_io::containers::basic_string_view<char32_t>;
 
+using ::fast_io::containers::basic_cstring_view;
 using cstring_view = ::fast_io::containers::basic_cstring_view<char>;
 using wcstring_view = ::fast_io::containers::basic_cstring_view<wchar_t>;
 using u8cstring_view = ::fast_io::containers::basic_cstring_view<char8_t>;
@@ -49,12 +51,14 @@ using u32cstring_view = ::fast_io::containers::basic_cstring_view<char32_t>;
 
 namespace tlc
 {
+using ::fast_io::containers::basic_string_view;
 using string_view = ::fast_io::containers::basic_string_view<char>;
 using wstring_view = ::fast_io::containers::basic_string_view<wchar_t>;
 using u8string_view = ::fast_io::containers::basic_string_view<char8_t>;
 using u16string_view = ::fast_io::containers::basic_string_view<char16_t>;
 using u32string_view = ::fast_io::containers::basic_string_view<char32_t>;
 
+using ::fast_io::containers::basic_cstring_view;
 using cstring_view = ::fast_io::containers::basic_cstring_view<char>;
 using wcstring_view = ::fast_io::containers::basic_cstring_view<wchar_t>;
 using u8cstring_view = ::fast_io::containers::basic_cstring_view<char8_t>;
