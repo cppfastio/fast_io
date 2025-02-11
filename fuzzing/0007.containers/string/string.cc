@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <cstdlib>
 #include <fast_io_dsal/string_view.h>
 #include <fast_io_dsal/string.h>
 
@@ -38,46 +39,32 @@ inline void FuzzString(uint8_t const *data, size_t size)
 	// Access elements using bounds-checked indexing
 	if (s.size() > 0)
 	{
-		CharT first_char = s[0]; // Test element access with bounds checking
-		s[0] = 'x';              // Test element modification with bounds checking
+		s[0] = 'x'; // Test element modification with bounds checking
 	}
 
 	// Perform unchecked element access if size is valid
 	if (s.size() > 0)
 	{
-		CharT unchecked_char = s.index_unchecked(0); // Test unchecked element access
+		s.index_unchecked(0) = 'y'; // Test unchecked element access
+	}
+
+	// Test push_back and pop_back methods
+	if (s.size() > 0)
+	{
+		CharT last_char = s[s.size() - 1]; // Store the last character
+		s.push_back(last_char);            // Push back the last character
+		s.pop_back();                      // Pop back the last character
+
+		CharT last_char_back = s.back(); // Store the last character using back()
+		s.push_back(last_char_back);     // Push back the last character using back()
+		s.pop_back();                    // Pop back the last character
 	}
 
 	// Test string comparison
-	if constexpr (std::is_same_v<CharT, char>)
+	fast_io::basic_string<CharT> other_string(s);
+	if ((s <=> other_string) != 0)
 	{
-		fast_io::basic_string_view<CharT> other_string_view("test");
-		fast_io::basic_string<CharT> other_string(other_string_view);
-		bool is_equal = (s == other_string);
-	}
-	else if constexpr (std::is_same_v<CharT, wchar_t>)
-	{
-		fast_io::basic_string_view<CharT> other_string_view(L"test");
-		fast_io::basic_string<CharT> other_string(other_string_view);
-		bool is_equal = (s == other_string);
-	}
-	else if constexpr (std::is_same_v<CharT, char8_t>)
-	{
-		fast_io::basic_string_view<CharT> other_string_view(u8"test");
-		fast_io::basic_string<CharT> other_string(other_string_view);
-		bool is_equal = (s == other_string);
-	}
-	else if constexpr (std::is_same_v<CharT, char16_t>)
-	{
-		fast_io::basic_string_view<CharT> other_string_view(u"test");
-		fast_io::basic_string<CharT> other_string(other_string_view);
-		bool is_equal = (s == other_string);
-	}
-	else if constexpr (std::is_same_v<CharT, char32_t>)
-	{
-		fast_io::basic_string_view<CharT> other_string_view(U"test");
-		fast_io::basic_string<CharT> other_string(other_string_view);
-		bool is_equal = (s == other_string);
+		std::abort();
 	}
 
 	// Test clear method
@@ -119,9 +106,6 @@ inline void FuzzString(uint8_t const *data, size_t size)
 	s.resize(0);
 	s.resize(100);
 
-	// Test is_empty method
-	bool is_s_empty = s.is_empty();
-
 	// Test empty string operations
 	fast_io::basic_string<CharT> empty_string;
 	empty_string.append(sv);
@@ -131,7 +115,6 @@ inline void FuzzString(uint8_t const *data, size_t size)
 	{
 		empty_string.replace_index(0, 5, sv);
 	}
-	bool is_empty_string_empty = empty_string.is_empty();
 	empty_string.clear();
 	empty_string.clear_destroy();
 
