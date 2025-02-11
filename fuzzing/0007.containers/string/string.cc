@@ -125,7 +125,7 @@ inline void FuzzString(uint8_t const *data, size_t size)
 	// Test empty string operations
 	fast_io::basic_string<CharT> empty_string;
 	empty_string.append(sv);
-	empty_string.insert(0, sv);
+	empty_string.insert(empty_string.cbegin(), sv);
 	empty_string.insert_index(0, sv);
 	if (empty_string.size() >= 5)
 	{
