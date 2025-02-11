@@ -1105,6 +1105,14 @@ public:
 		}
 	}
 
+	inline constexpr void assign(size_type n, const_reference val) noexcept(::std::is_nothrow_copy_constructible_v<value_type>)
+	{
+		this->clear();
+		this->reserve(n);
+		::fast_io::freestanding::uninitialized_fill(imp.begin_ptr, imp.begin_ptr + n, val);
+		imp.curr_ptr = imp.begin_ptr + n;
+	}
+
 	inline constexpr void swap(vector &other) noexcept
 	{
 		::std::swap(imp, other.imp);
