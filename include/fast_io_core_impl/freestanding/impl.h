@@ -50,6 +50,6 @@ no ::std::array, ::std::copy and others
 #include "array.h"
 #include "cstr_len.h"
 #include "bytes.h"
-#include "algorithm.h"
 #include "relocatable.h"
+#include "algorithm.h"
 #include "ranges.h"

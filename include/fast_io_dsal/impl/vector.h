@@ -1071,7 +1071,7 @@ public:
 		if (sz < n)
 		{
 			this->reserve(n);
-			::std::uninitialized_default_construct(imp.curr_ptr, imp.begin_ptr + n);
+			::fast_io::freestanding::uninitialized_default_construct(imp.curr_ptr, imp.begin_ptr + n);
 			imp.curr_ptr = imp.begin_ptr + n;
 		}
 		else if (n < sz)
@@ -1092,7 +1092,7 @@ public:
 		if (sz < n)
 		{
 			this->reserve(n);
-			::std::uninitialized_fill(imp.curr_ptr, imp.begin_ptr + n, val);
+			::fast_io::freestanding::uninitialized_fill(imp.curr_ptr, imp.begin_ptr + n, val);
 			imp.curr_ptr = imp.begin_ptr + n;
 		}
 		else if (n < sz)
