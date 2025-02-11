@@ -535,10 +535,6 @@ private:
 #endif
 	inline constexpr pointer insert_cold_impl(pointer insertpos, char_type const *otherptr, size_type othern) noexcept
 	{
-		if (!othern)
-		{
-			return insertpos;
-		}
 		using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 		using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 		constexpr size_type mx{::std::numeric_limits<size_type>::max()};
@@ -558,7 +554,14 @@ private:
 		}
 		else
 		{
-			bigcap = static_cast<size_type>(thiscap << 1u);
+			if (thiscap)
+			{
+				bigcap = static_cast<size_type>(thiscap << 1u);
+			}
+			else
+			{
+				bigcap = 1u;
+			}
 		}
 		size_type newcap{newsize};
 		if (newcap < bigcap)
@@ -570,9 +573,13 @@ private:
 			::fast_io::fast_terminate();
 		}
 		size_type const newcapp1{static_cast<size_type>(newcap + 1u)};
+
+		// Allocate memory with the new capacity
 		auto [ptr, allocn]{typed_allocator_type::allocate_at_least(newcapp1)};
 		this->imp.begin_ptr = ptr;
 		this->imp.end_ptr = ptr + static_cast<size_type>(allocn - 1u);
+
+		// Perform the insertion
 		auto it{ptr};
 		it = ::fast_io::freestanding::non_overlapped_copy(beginptr, insertpos, it);
 		auto retit{it};
@@ -580,6 +587,8 @@ private:
 		it = ::fast_io::freestanding::non_overlapped_copy(insertpos, currptr, it);
 		*it = 0;
 		this->imp.curr_ptr = it;
+
+		// Deallocate the old memory if it was not small string optimization (SSO)
 		if (!is_sso)
 		{
 			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(endptr - beginptr) + 1u));
@@ -591,53 +600,7 @@ private:
 #endif
 	inline constexpr void append_cold_impl(char_type const *otherptr, size_type othern) noexcept
 	{
-#if 0
-		using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
-		using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
-		constexpr size_type mx{::std::numeric_limits<size_type>::max()};
-		constexpr size_type mxdiv2{::std::numeric_limits<size_type>::max() / 2u};
-		constexpr size_type mxm1{static_cast<size_type>(mx - 1u)};
-
-		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
-		bool const is_sso{beginptr == endptr};
-		size_type thissize{static_cast<size_type>(currptr - beginptr)};
-		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
-		size_type newsize{thissize + othern};
-
-		size_type bigcap;
-		if (mxdiv2 <= thiscap)
-		{
-			bigcap = mxm1;
-		}
-		else
-		{
-			bigcap = static_cast<size_type>(thiscap << 1u);
-		}
-		size_type newcap{newsize};
-		if (newcap < bigcap)
-		{
-			newcap = bigcap;
-		}
-		if (newcap == mx)
-		{
-			::fast_io::fast_terminate();
-		}
-		size_type const newcapp1{static_cast<size_type>(newcap + 1u)};
-		auto [ptr, allocn]{typed_allocator_type::allocate_at_least(newcapp1)};
-		this->imp.begin_ptr = ptr;
-		this->imp.end_ptr = ptr + static_cast<size_type>(allocn - 1u);
-		auto it{ptr};
-		it = ::fast_io::freestanding::non_overlapped_copy(beginptr, currptr, it);
-		it = ::fast_io::freestanding::non_overlapped_copy_n(otherptr, othern, it);
-		*it = 0;
-		this->imp.curr_ptr = it;
-		if (!is_sso)
-		{
-			typed_allocator_type::deallocate_n(beginptr, static_cast<size_type>(static_cast<size_type>(endptr - beginptr) + 1u));
-		}
-#else
 		this->insert_cold_impl(this->imp.curr_ptr, otherptr, othern);
-#endif
 	}
 	inline constexpr void append_impl(char_type const *otherptr, size_type othern) noexcept
 	{
@@ -836,10 +799,6 @@ public:
 private:
 	inline constexpr pointer insert_impl(pointer ptr, char_type const *otherptr, size_type othern) noexcept
 	{
-		if (!othern)
-		{
-			return ptr;
-		}
 		auto beginptr{this->imp.begin_ptr}, currptr{this->imp.curr_ptr}, endptr{this->imp.end_ptr};
 		size_type thissize{static_cast<size_type>(currptr - beginptr)};
 		size_type thiscap{static_cast<size_type>(endptr - beginptr)};
@@ -848,6 +807,10 @@ private:
 		if (needreallocate) [[unlikely]]
 		{
 			return this->insert_cold_impl(ptr, otherptr, othern);
+		}
+		if (!thiscap) [[unlikely]]
+		{
+			return beginptr;
 		}
 		auto newcurrptr{currptr + othern};
 		*newcurrptr = 0;
