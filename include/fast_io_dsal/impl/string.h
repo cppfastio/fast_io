@@ -472,9 +472,9 @@ private:
 		{
 			this->destroy();
 			auto [ptr, allocn] = ::fast_io::containers::details::string_allocate_init<allocator_type>(otherptr, othern);
-			this->imp.end_ptr = (this->imp.begin_ptr = thisbegin = ptr) + allocn;
+			this->imp.end_ptr = thisend = ((this->imp.curr_ptr = this->imp.begin_ptr = thisbegin = ptr) + allocn);
 		}
-		if (this->imp.begin_ptr == this->imp.end_ptr) [[unlikely]]
+		if (thisbegin == thisend) [[unlikely]]
 		{
 			return;
 		}
@@ -503,7 +503,7 @@ public:
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
 			auto [ptr, allocn]{typed_allocator_type::allocate_at_least(np1)};
-			this->imp.end_ptr = endptr = ((this->imp.begin_ptr = beginptr = ptr) + static_cast<size_type>(allocn - 1u));
+			this->imp.end_ptr = endptr = ((this->imp.curr_ptr = this->imp.begin_ptr = beginptr = ptr) + static_cast<size_type>(allocn - 1u));
 		}
 		if (beginptr == endptr) [[unlikely]]
 		{
