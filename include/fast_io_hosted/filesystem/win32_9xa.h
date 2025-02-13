@@ -12,7 +12,7 @@ struct win32_9xa_dirent
 	[[maybe_unused]] ::std::uint_least64_t d_ino{};
 	::fast_io::win32::details::win32_9xa_dir_handle_path_str filename{};
 
-	inline ~win32_9xa_dirent()
+	inline constexpr ~win32_9xa_dirent()
 	{
 		if (file_struct) [[likely]]
 		{
