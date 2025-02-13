@@ -37,6 +37,7 @@ inline ::std::string operator_output(Args const &...args)
 	return {};
 }
 
+#if (!defined(_LIBCPP_VERSION)) || _LIBCPP_HAS_WIDE_CHARACTERS
 template <typename... Args>
 	requires(sizeof...(Args) != 0)
 inline ::std::basic_string<wchar_t> woperator_output(Args const &...args)
@@ -55,6 +56,7 @@ inline ::std::basic_string<wchar_t> woperator_output(Args const &...args)
 	}
 	return {};
 }
+#endif
 
 } // namespace manipulators
 
