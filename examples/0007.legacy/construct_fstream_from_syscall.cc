@@ -73,6 +73,9 @@ FILE* or fstream apis
 			fast_io::mnp::hex0x(__MSVCRT_VERSION__),
 			"\n"
 #endif
+#elif defined(__DARWIN_C_LEVEL)
+			"Darwin ",
+			__DARWIN_C_LEVEL, "\n"
 #endif
 #if defined(_LIBCPP_VERSION)
 																		 "LLVM libc++ ",
