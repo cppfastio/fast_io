@@ -26,6 +26,7 @@ template <typename... Args>
 	}
 }
 
+#if (!defined(_LIBCPP_VERSION)) || _LIBCPP_HAS_WIDE_CHARACTERS
 template <typename... Args>
 [[deprecated("use ::fast_io::wconcat_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
@@ -48,6 +49,7 @@ template <typename... Args>
 		return {};
 	}
 }
+#endif
 
 template <typename... Args>
 [[deprecated("use ::fast_io::u8concat_std instead"), nodiscard]] inline
@@ -139,6 +141,8 @@ template <typename... Args>
 	}
 }
 
+#if (!defined(_LIBCPP_VERSION)) || _LIBCPP_HAS_WIDE_CHARACTERS
+
 template <typename... Args>
 [[deprecated("use ::fast_io::wconcatln_std instead"), nodiscard]] inline
 #if __cpp_lib_constexpr_string >= 201907L
@@ -161,6 +165,7 @@ template <typename... Args>
 		return {};
 	}
 }
+#endif
 
 template <typename... Args>
 [[deprecated("use ::fast_io::u8concatln_std instead"), nodiscard]] inline

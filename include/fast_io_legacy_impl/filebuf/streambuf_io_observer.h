@@ -84,7 +84,9 @@ template <::std::integral CharT, typename Traits = ::std::char_traits<CharT>>
 using basic_streambuf_io_observer = basic_general_streambuf_io_observer<::std::basic_streambuf<CharT, Traits>>;
 
 using streambuf_io_observer = basic_streambuf_io_observer<char>;
+#if (!defined(_LIBCPP_VERSION)) || _LIBCPP_HAS_WIDE_CHARACTERS
 using wstreambuf_io_observer = basic_streambuf_io_observer<wchar_t>;
+#endif
 
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 
@@ -108,7 +110,9 @@ inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<c
 template <::std::integral CharT, typename Traits = ::std::char_traits<CharT>>
 using basic_filebuf_io_observer = basic_general_streambuf_io_observer<::std::basic_filebuf<CharT, Traits>>;
 using filebuf_io_observer = basic_filebuf_io_observer<char>;
+#if (!defined(_LIBCPP_VERSION)) || _LIBCPP_HAS_WIDE_CHARACTERS
 using wfilebuf_io_observer = basic_filebuf_io_observer<wchar_t>;
+#endif
 
 template <::std::integral ch_type, typename traits_type>
 	requires requires(basic_c_io_observer<ch_type> piob) { status(piob); }
