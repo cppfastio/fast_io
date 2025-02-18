@@ -174,7 +174,7 @@ inline void posix_symlinkat_impl(char const *oldpath, int newdirfd, char const *
 }
 
 template <posix_api_12 dsp, typename... Args>
-inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath, Args... args)
+inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath, Args...)
 {
 	if constexpr (dsp == posix_api_12::symlinkat)
 	{
