@@ -24,7 +24,7 @@ https://github.com/greenjava/win-ldd
 struct dll_ref_entry
 {
 	::fast_io::string dll_name;
-	::fast_io::string dll_path;
+	::fast_io::u16string dll_path;
 };
 
 inline constexpr bool operator==(dll_ref_entry const &a, dll_ref_entry const &b) noexcept
@@ -51,7 +51,7 @@ struct is_trivially_relocatable<::dll_ref_entry>
 };
 } // namespace fast_io::freestanding
 
-inline auto getDependencies(HMODULE hMod)
+inline auto getDependencies(void *hMod)
 {
 	::fast_io::vector<dll_ref_entry> deps;
 
@@ -62,16 +62,17 @@ inline auto getDependencies(HMODULE hMod)
 	for (; pImportDesc->FirstThunk; ++pImportDesc)
 	{
 		::fast_io::string dllName(::fast_io::mnp::os_c_str((char const *)((BYTE *)hMod + pImportDesc->Name)));
-		std::unique_ptr<typename std::remove_pointer<HMODULE>::type, decltype(FreeLibrary) *> hModDep(::LoadLibraryExA(dllName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES), FreeLibrary);
-		::fast_io::string dllpath;
-		if (hModDep)
+		void *hmoddep=::LoadLibraryExA(dllName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
+		::fast_io::u16string dllpath;
+		if (hmoddep) [[likely]]
 		{
-			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep = hModDep.get()](char *buffer, size_t len) {
-				if (!::GetModuleFileNameA(hmoddep, buffer, len))
+			::fast_io::win32_dll_file df(hmoddep);
+			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep](char16_t *buffer, size_t len) {
+				if (!::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t*>(buffer), len))
 				{
 					::fast_io::throw_win32_error();
 				}
-				return ::strnlen(buffer, len);
+				return ::fast_io::cstr_nlen(buffer, len);
 			});
 		}
 		deps.push_back(::dll_ref_entry{::std::move(dllName), ::std::move(dllpath)});
@@ -86,15 +87,11 @@ inline auto getDependencies(HMODULE hMod)
 inline void printDependencies(char const *libpath)
 {
 	using namespace ::fast_io::io;
-	std::unique_ptr<typename std::remove_pointer<HMODULE>::type, decltype(FreeLibrary) *> hMod(::LoadLibraryEx(libpath, NULL, DONT_RESOLVE_DLL_REFERENCES), FreeLibrary);
-	if (!hMod)
-	{
-		::fast_io::throw_win32_error();
-	}
+	::fast_io::win32_dll_file wdllf(::fast_io::mnp::os_c_str(libpath), ::fast_io::dll_mode::win32_dont_resolve_dll_references);
 	println(::fast_io::mnp::os_c_str(libpath));
-	for (auto &ele : getDependencies(hMod.get()))
+	for (auto &ele : getDependencies(wdllf.native_handle()))
 	{
-		println("\t", ele.dll_name, " => ", ele.dll_path);
+		println("\t", ele.dll_name, " => ", ::fast_io::mnp::code_cvt(ele.dll_path));
 	}
 }
 
