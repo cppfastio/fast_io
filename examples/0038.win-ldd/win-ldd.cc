@@ -1,0 +1,140 @@
+/*
+Referenced from:
+trcrsired/win-ldd
+https://github.com/trcrsired/win-ldd/tree/master
+greenjava/win-ldd
+https://github.com/greenjava/win-ldd
+*/
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include <fast_io_dsal/vector.h>
+#include <fast_io_dsal/string.h>
+#include <fast_io_dsal/span.h>
+#include <fast_io_dsal/array.h>
+#include <fast_io.h>
+#include <memory>
+#include <algorithm>
+#include <cstring>
+
+#define WIN32_LEAN_AND_MEAN 1
+#include <windows.h>
+#include <dbghelp.h>
+#undef min
+#undef max
+
+struct dll_ref_entry
+{
+	::fast_io::string dll_name;
+	::fast_io::string dll_path;
+};
+
+inline constexpr bool operator==(dll_ref_entry const &a, dll_ref_entry const &b) noexcept
+{
+	return a.dll_name == b.dll_name && a.dll_path == b.dll_path;
+}
+
+inline constexpr auto operator<=>(dll_ref_entry const &a, dll_ref_entry const &b) noexcept
+{
+	auto ret{a.dll_name <=> b.dll_name};
+	if (ret == 0)
+	{
+		return a.dll_path <=> b.dll_path;
+	}
+	return ret;
+}
+
+namespace fast_io::freestanding
+{
+template <>
+struct is_trivially_relocatable<::dll_ref_entry>
+{
+	static inline constexpr bool value = true;
+};
+} // namespace fast_io::freestanding
+
+inline auto getDependencies(HMODULE hMod)
+{
+	::fast_io::vector<dll_ref_entry> deps;
+
+	IMAGE_DOS_HEADER *pDosHeader = (IMAGE_DOS_HEADER *)hMod;
+	IMAGE_OPTIONAL_HEADER *pOptHeader = (IMAGE_OPTIONAL_HEADER *)((BYTE *)hMod + pDosHeader->e_lfanew + 24);
+	IMAGE_IMPORT_DESCRIPTOR *pImportDesc = (IMAGE_IMPORT_DESCRIPTOR *)((BYTE *)hMod + pOptHeader->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+
+	for (; pImportDesc->FirstThunk; ++pImportDesc)
+	{
+		::fast_io::string dllName(::fast_io::mnp::os_c_str((char const *)((BYTE *)hMod + pImportDesc->Name)));
+		std::unique_ptr<typename std::remove_pointer<HMODULE>::type, decltype(FreeLibrary) *> hModDep(::LoadLibraryExA(dllName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES), FreeLibrary);
+		::fast_io::string dllpath;
+		if (hModDep)
+		{
+			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep = hModDep.get()](char *buffer, size_t len) {
+				if (!::GetModuleFileNameA(hmoddep, buffer, len))
+				{
+					::fast_io::throw_win32_error();
+				}
+				return ::strnlen(buffer, len);
+			});
+		}
+		deps.push_back(::dll_ref_entry{::std::move(dllName), ::std::move(dllpath)});
+	}
+	::std::ranges::sort(deps);
+	deps.erase(::std::unique(deps.begin(), deps.end()), deps.end());
+	return deps;
+}
+
+//------------------------------------------------------------------------------
+
+inline void printDependencies(char const *libpath)
+{
+	using namespace ::fast_io::io;
+	std::unique_ptr<typename std::remove_pointer<HMODULE>::type, decltype(FreeLibrary) *> hMod(::LoadLibraryEx(libpath, NULL, DONT_RESOLVE_DLL_REFERENCES), FreeLibrary);
+	if (!hMod)
+	{
+		::fast_io::throw_win32_error();
+	}
+	println(::fast_io::mnp::os_c_str(libpath));
+	for (auto &ele : getDependencies(hMod.get()))
+	{
+		println("\t", ele.dll_name, " => ", ele.dll_path);
+	}
+}
+
+int main(int argc, char const **argv)
+#if (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
+try
+#endif
+{
+	if (argc < 2)
+	{
+		if (argc == 0)
+		{
+			return 1;
+		}
+		::fast_io::io::perr("Usage:\n", ::fast_io::mnp::os_c_str(*argv), " <PE binary path1> [<PE binary path2>...]\n");
+		return 1;
+	}
+	::fast_io::span<char const *> args(argv + 1, argc - 1);
+	for (auto e : args)
+	{
+		printDependencies(e);
+	}
+}
+#if (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
+catch (::fast_io::error e)
+{
+	::fast_io::io::perrln(e);
+	return 1;
+}
+catch (...)
+{
+	::fast_io::io::perr("Unknown EH\n");
+	return 1;
+}
+#endif
+
+
+#else
+
+int main()
+{}
+
+#endif
