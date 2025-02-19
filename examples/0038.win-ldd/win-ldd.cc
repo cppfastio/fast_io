@@ -77,8 +77,6 @@ inline auto get_dependencies(void *hMod)
 		}
 		deps.push_back(::dll_ref_entry{::std::move(dllName), ::std::move(dllpath)});
 	}
-	::std::ranges::sort(deps);
-	deps.erase(::std::unique(deps.begin(), deps.end()), deps.end());
 	return deps;
 }
 
