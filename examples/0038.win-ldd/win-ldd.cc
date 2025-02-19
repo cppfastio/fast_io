@@ -51,7 +51,7 @@ struct is_trivially_relocatable<::dll_ref_entry>
 };
 } // namespace fast_io::freestanding
 
-inline auto getDependencies(void *hMod)
+inline auto get_dependencies(void *hMod)
 {
 	::fast_io::vector<dll_ref_entry> deps;
 
@@ -62,13 +62,13 @@ inline auto getDependencies(void *hMod)
 	for (; pImportDesc->FirstThunk; ++pImportDesc)
 	{
 		::fast_io::string dllName(::fast_io::mnp::os_c_str((char const *)((BYTE *)hMod + pImportDesc->Name)));
-		void *hmoddep=::LoadLibraryExA(dllName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
+		void *hmoddep = ::LoadLibraryExA(dllName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
 		::fast_io::u16string dllpath;
 		if (hmoddep) [[likely]]
 		{
 			::fast_io::win32_dll_file df(hmoddep);
 			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep](char16_t *buffer, size_t len) {
-				if (!::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t*>(buffer), len))
+				if (!::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t *>(buffer), static_cast<::std::uint_least32_t>(len)))
 				{
 					::fast_io::throw_win32_error();
 				}
@@ -80,19 +80,6 @@ inline auto getDependencies(void *hMod)
 	::std::ranges::sort(deps);
 	deps.erase(::std::unique(deps.begin(), deps.end()), deps.end());
 	return deps;
-}
-
-//------------------------------------------------------------------------------
-
-inline void printDependencies(char const *libpath)
-{
-	using namespace ::fast_io::io;
-	::fast_io::win32_dll_file wdllf(::fast_io::mnp::os_c_str(libpath), ::fast_io::dll_mode::win32_dont_resolve_dll_references);
-	println(::fast_io::mnp::os_c_str(libpath));
-	for (auto &ele : getDependencies(wdllf.native_handle()))
-	{
-		println("\t", ele.dll_name, " => ", ::fast_io::mnp::code_cvt(ele.dll_path));
-	}
 }
 
 int main(int argc, char const **argv)
@@ -109,10 +96,16 @@ try
 		::fast_io::io::perr("Usage:\n", ::fast_io::mnp::os_c_str(*argv), " <PE binary path1> [<PE binary path2>...]\n");
 		return 1;
 	}
+	::fast_io::out_buf_type obf(::fast_io::out());
 	::fast_io::span<char const *> args(argv + 1, argc - 1);
-	for (auto e : args)
+	for (auto libpath : args)
 	{
-		printDependencies(e);
+		::fast_io::win32_dll_file wdllf(::fast_io::mnp::os_c_str(libpath), ::fast_io::dll_mode::win32_dont_resolve_dll_references);
+		::fast_io::io::println(obf, ::fast_io::mnp::os_c_str(libpath));
+		for (auto &ele : get_dependencies(wdllf.native_handle()))
+		{
+			::fast_io::io::println(obf, "\t", ele.dll_name, " => ", ::fast_io::mnp::code_cvt(ele.dll_path));
+		}
 	}
 }
 #if (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
