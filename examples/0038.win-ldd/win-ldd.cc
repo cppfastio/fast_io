@@ -68,7 +68,7 @@ inline auto get_dependencies(void *hMod)
 		{
 			::fast_io::win32_dll_file df(hmoddep);
 			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep](char16_t *buffer, size_t len) {
-				if (!::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t *>(buffer), len))
+				if (!::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t *>(buffer), static_cast<::std::uint_least32_t>(len)))
 				{
 					::fast_io::throw_win32_error();
 				}
