@@ -679,7 +679,7 @@ inline
 			return static_cast<::std::uint_least64_t>(res);
 		}
 	}
-#elif defined(_MSC_VER) && defined(_M_X64)
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
 #if __cpp_if_consteval >= 202106L
 	if consteval
 	{
@@ -742,7 +742,7 @@ inline
 #endif
 	};
 	return static_cast<::std::uint_least64_t>((static_cast<__uint128_t>(a) * b) >> ul64bits);
-#elif defined(_MSC_VER) && defined(_M_X64)
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
 #if __cpp_if_consteval >= 202106L
 	if consteval
 	{
