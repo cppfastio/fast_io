@@ -679,9 +679,9 @@ inline
 			return static_cast<::std::uint_least64_t>(res);
 		}
 	}
-#elif defined(_MSC_VER) && defined(_M_X64)
-#if __cpp_if_consteval >= 202106L
-	if consteval
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
+#if __cpp_if_consteval >= 202106L && 0
+	if !consteval
 	{
 		return umul_least_64_emulated(a, b, high);
 	}
@@ -742,8 +742,8 @@ inline
 #endif
 	};
 	return static_cast<::std::uint_least64_t>((static_cast<__uint128_t>(a) * b) >> ul64bits);
-#elif defined(_MSC_VER) && defined(_M_X64)
-#if __cpp_if_consteval >= 202106L
+#elif defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
+#if __cpp_if_consteval >= 202106L && 0
 	if consteval
 	{
 		return umul_least64_high_emulated(a, b);

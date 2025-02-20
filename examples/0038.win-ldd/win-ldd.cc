@@ -85,13 +85,8 @@ int main(int argc, char const **argv)
 try
 #endif
 {
-	if (argc < 2)
+	if (argc == 0)
 	{
-		if (argc == 0)
-		{
-			return 1;
-		}
-		::fast_io::io::perr("Usage:\n", ::fast_io::mnp::os_c_str(*argv), " <PE binary path1> [<PE binary path2>...]\n");
 		return 1;
 	}
 	::fast_io::out_buf_type obf(::fast_io::out());
@@ -125,4 +120,4 @@ catch (...)
 int main()
 {}
 
-#endif
+#endif // defined(_WIN32) || defined(__CYGWIN__)
