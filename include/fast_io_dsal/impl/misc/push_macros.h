@@ -58,6 +58,12 @@
 #define FAST_IO_DLLIMPORT
 #endif
 
+#if defined(_DLL) && !defined(__WINE__)
+#define FAST_IO_DLL_DLLIMPORT FAST_IO_DLLIMPORT
+#else
+#define FAST_IO_DLL_DLLIMPORT
+#endif
+
 #if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
 #define FAST_IO_STDCALL __stdcall
 #elif (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))

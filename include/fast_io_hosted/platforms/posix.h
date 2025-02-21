@@ -405,21 +405,7 @@ Warning! cygwin's _get_osfhandle has the same name as msvcrt or ucrt's name, but
 functions. Also, it returns long, not ::std::ptrdiff_t
 */
 #if defined(__CYGWIN__)
-#if (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
-[[__gnu__::__dllimport__]]
-#endif
-extern long cygwin_get_osfhandle(int fd) noexcept
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if defined(__GNUC__)
-	__asm__("_get_osfhandle")
-#else
-	__asm__("__get_osfhandle")
-#endif
-#else
-	__asm__("_get_osfhandle")
-#endif
-		;
-#endif
+FAST_IO_DLLIMPORT extern long FAST_IO_WINCDECL cygwin_get_osfhandle(int) noexcept FAST_IO_WINCDECL_RENAME(_get_osfhandle, 4);
 
 inline void *my_get_osfile_handle(int fd) noexcept
 {
@@ -1181,13 +1167,13 @@ public:
 	}
 	template <nt_family fam>
 	inline explicit constexpr basic_posix_family_file(io_construct_t, basic_nt_family_io_observer<fam, char_type> hd,
-											   open_mode m) noexcept
+													  open_mode m) noexcept
 		: basic_posix_family_io_observer<family, char_type>{details::open_fd_from_handle<ch_type>(hd.handle, m)}
 	{
 	}
 	template <win32_family fam>
 	inline explicit constexpr basic_posix_family_file(io_construct_t, basic_win32_family_io_observer<fam, char_type> hd,
-											   open_mode m) noexcept
+													  open_mode m) noexcept
 		: basic_posix_family_io_observer<family, char_type>{details::open_fd_from_handle<ch_type>(hd.handle, m)}
 	{
 	}
