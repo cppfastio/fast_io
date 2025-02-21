@@ -752,6 +752,8 @@ public:
 			::fast_io::details::sha1::sha1_do_constexpr_function(this->state, blocks_start, blocks_bytes);
 		}
 		else
+#else
+#error "fuck you"
 #endif
 		{
 			::fast_io::details::sha1::sha1_do_function(this->state, blocks_start, blocks_bytes);
