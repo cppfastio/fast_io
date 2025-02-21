@@ -8,13 +8,7 @@ namespace fast_io::win32::nt
 {
 struct peb_ldr_data;
 struct rtl_user_process_parameters;
-using pps_post_process_init_routine = void(
-#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-	__stdcall
-#elif (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-	__attribute__((__stdcall__))
-#endif
-		*)(void) noexcept;
+using pps_post_process_init_routine = void(FAST_IO_STDCALL *)(void) noexcept;
 
 struct peb
 {

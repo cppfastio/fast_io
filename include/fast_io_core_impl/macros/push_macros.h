@@ -1,5 +1,7 @@
 #pragma push_macro("FAST_IO_DLLIMPORT")
 #undef FAST_IO_DLLIMPORT
+#pragma push_macro("FAST_IO_STDCALL")
+#undef FAST_IO_STDCALL
 #pragma push_macro("FAST_IO_WINSTDCALL")
 #undef FAST_IO_WINSTDCALL
 #pragma push_macro("FAST_IO_WINSTDCALL_RENAME")
@@ -33,6 +35,14 @@
 #define FAST_IO_DLLIMPORT [[__gnu__::__dllimport__]]
 #else
 #define FAST_IO_DLLIMPORT
+#endif
+
+#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+#define FAST_IO_STDCALL __stdcall
+#elif (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+#define FAST_IO_STDCALL __attribute__((__stdcall__))
+#else
+#define FAST_IO_STDCALL
 #endif
 
 #if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))

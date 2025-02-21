@@ -9,4 +9,5 @@
 #pragma pop_macro("FAST_IO_WINCDECL")
 #pragma pop_macro("FAST_IO_WINSTDCALL_RENAME")
 #pragma pop_macro("FAST_IO_WINSTDCALL")
+#pragma pop_macro("FAST_IO_STDCALL")
 #pragma pop_macro("FAST_IO_DLLIMPORT")
