@@ -20,6 +20,7 @@
 #include "fast_io_concept.h"
 
 #include "fast_io_dsal/impl/misc/push_warnings.h"
+#include "fast_io_core_impl/macros/push_macros.h"
 
 #include "fast_io_core_impl/empty.h"
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -97,6 +98,7 @@
 #include "fast_io_core_impl/http_header.h"
 #include "fast_io_core_impl/io_lockable.h"
 
+#include "fast_io_core_impl/macros/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif
