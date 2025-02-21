@@ -12,7 +12,6 @@ namespace fast_io
 namespace msvc
 {
 FAST_IO_DLL_DLLIMPORT extern void *FAST_IO_WINCDECL msvc__RTtypeid(void *) noexcept FAST_IO_WINCDECL_RENAME(__RTtypeid, 4);
-
 } // namespace msvc
 
 namespace rtti_hack
