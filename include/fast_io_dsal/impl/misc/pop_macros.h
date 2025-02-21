@@ -1,4 +1,6 @@
 ﻿// Please keep it in reverse order with the macros in push_macros.h
+
+#pragma pop_macro("FAST_IO_IF_CONSTEVAL")
 #pragma pop_macro("FAST_IO_GNU_RETURNS_NONNULL")
 #pragma pop_macro("FAST_IO_GNU_MALLOC")
 #pragma pop_macro("FAST_IO_GNU_ALWAYS_INLINE_ARTIFICIAL_CONST")
@@ -6,11 +8,14 @@
 #pragma pop_macro("FAST_IO_GNU_ARTIFICIAL")
 #pragma pop_macro("FAST_IO_GNU_ALWAYS_INLINE")
 #pragma pop_macro("FAST_IO_GNU_CONST")
+#pragma pop_macro("FAST_IO_WINFASTCALL_RENAME")
+#pragma pop_macro("FAST_IO_WINFASTCALL")
 #pragma pop_macro("FAST_IO_WINCDECL_RENAME")
 #pragma pop_macro("FAST_IO_WINCDECL")
 #pragma pop_macro("FAST_IO_WINSTDCALL_RENAME")
 #pragma pop_macro("FAST_IO_WINSTDCALL")
 #pragma pop_macro("FAST_IO_STDCALL")
+#pragma pop_macro("FAST_IO_DLL_DLLIMPORT")
 #pragma pop_macro("FAST_IO_DLLIMPORT")
 #pragma pop_macro("refresh")
 #pragma pop_macro("new")

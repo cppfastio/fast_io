@@ -333,12 +333,8 @@ inline constexpr char_type *copy_to_hash_df_commom_impl(char_type *iter, ::std::
 {
 	if constexpr (d == ::fast_io::manipulators::digest_format::raw_bytes)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL) && __cpp_lib_bit_cast >= 201806L
+		FAST_IO_IF_CONSTEVAL
 		{
 			for (::std::size_t i{}; i != digest_size; ++i)
 			{
@@ -417,12 +413,8 @@ inline constexpr Iter prv_srv_hash_df_impl(Iter iter, T const &t) noexcept
 		using char_type = ::std::iter_value_t<Iter>;
 		if constexpr (d == ::fast_io::manipulators::digest_format::raw_bytes)
 		{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+			FAST_IO_IF_CONSTEVAL
 			{
 				return ::fast_io::details::prv_srv_hash_df_common_impl<d>(iter, t);
 			}
@@ -483,12 +475,8 @@ inline constexpr char_type *prv_srv_hash_compress_df_impl(char_type *iter, ::std
 	{
 		if constexpr (d == ::fast_io::manipulators::digest_format::raw_bytes)
 		{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+			FAST_IO_IF_CONSTEVAL
 			{
 				::std::byte buffer[digest_size];
 				auto ret{cal_hash_internal_impl<T>(base, len, buffer)};
@@ -523,12 +511,8 @@ inline constexpr char_type *prv_srv_hash_compress_df_impl(char_type *iter, ::std
 	{
 		if constexpr (d == ::fast_io::manipulators::digest_format::raw_bytes)
 		{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+			FAST_IO_IF_CONSTEVAL
 			{
 				::std::byte buffer[digest_size];
 				cal_hash_internal<T>(base, len, buffer);

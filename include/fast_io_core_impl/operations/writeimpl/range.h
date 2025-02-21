@@ -29,12 +29,8 @@ bytes_copy_punning_impl(FromItbg fromfirst, FromIted fromlast, ToIter tofirst, T
 		else
 		{
 			constexpr ::std::size_t quoti{sizeof(fromvaluetype) / sizeof(tovaluetype)};
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-			if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-			if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+			FAST_IO_IF_CONSTEVAL
 			{
 				auto arr{::std::bit_cast<::fast_io::freestanding::array<fromvaluetype, quoti>>(*fromfirst)};
 				::fast_io::details::non_overlapped_copy(arr.data(), arr.data() + arr.size(), tofirst);

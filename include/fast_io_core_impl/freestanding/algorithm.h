@@ -326,12 +326,9 @@ inline
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size_t count, output_iter result)
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		return ::fast_io::freestanding::copy_n(first, count, result);
 	}
@@ -363,12 +360,8 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter last, output_iter result)
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		return ::fast_io::freestanding::copy(first, last, result);
 	}
@@ -401,12 +394,8 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy_n(input_iter first, ::std::size_t count, output_iter result)
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		return ::fast_io::freestanding::copy_n(first, count, result);
 	}
@@ -461,12 +450,8 @@ inline constexpr output_iter my_copy(input_iter first, input_iter second, output
 template <::std::bidirectional_iterator input_iter, ::std::bidirectional_iterator output_iter>
 inline constexpr output_iter my_copy_backward(input_iter first, input_iter last, output_iter d_last)
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		return ::fast_io::freestanding::copy_backward(first, last, d_last);
 	}
@@ -500,12 +485,8 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 template <::std::random_access_iterator input_iter, ::std::random_access_iterator output_iter>
 inline constexpr bool my_compare_iter_n(input_iter first, ::std::size_t n, output_iter outier) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (auto last{first + n}; first != last; ++first)
 		{

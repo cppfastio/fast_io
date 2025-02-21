@@ -98,12 +98,8 @@ inline
 	::std::uint_least32_t tmp;
 	for (; block != ed; block += block_size)
 	{
-#if __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			for (::std::size_t j{}; j != 16; ++j)
 			{
@@ -375,12 +371,8 @@ public:
 		void
 		update_blocks(::std::byte const *block_start, ::std::byte const *block_last) noexcept
 	{
-#if __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			::fast_io::details::md5::md5_main(this->state, block_start, block_last);
 		}

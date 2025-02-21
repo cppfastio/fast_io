@@ -43,12 +43,8 @@ inline
 	void
 	none_secure_clear(::std::byte *data, ::std::size_t size) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{
@@ -109,12 +105,8 @@ namespace freestanding
 
 inline constexpr ::std::byte *bytes_secure_clear_n(::std::byte *data, ::std::size_t size) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L && (!defined(_MSC_VER) || defined(__clang__))
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{

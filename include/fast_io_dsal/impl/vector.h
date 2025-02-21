@@ -915,16 +915,14 @@ public:
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
 			pointer ret;
-#ifdef __cpp_if_consteval
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+			FAST_IO_IF_CONSTEVAL
 			{
 				auto beginptr{imp.begin_ptr};
 				ret = ::std::construct_at(this->move_backward_common_impl(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
 			}
 			else
+#endif
 			{
 				ret = ::std::construct_at(this->move_backward_common_impl(const_cast<pointer>(iter)), ::std::forward<Args>(args)...);
 			}
@@ -933,16 +931,14 @@ public:
 		}
 		else
 		{
-#ifdef __cpp_if_consteval
-			if consteval
-#else
-			if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+			FAST_IO_IF_CONSTEVAL
 			{
 				auto beginptr{imp.begin_ptr};
 				return this->insert_impl(iter - beginptr + beginptr, value_type(::std::forward<Args>(args)...));
 			}
 			else
+#endif
 			{
 				return this->insert_impl(const_cast<pointer>(iter), value_type(::std::forward<Args>(args)...));
 			}
@@ -1009,15 +1005,13 @@ private:
 public:
 	inline constexpr iterator erase(const_iterator it) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			return this->erase_common(it - imp.begin_ptr + imp.begin_ptr);
 		}
 		else
+#endif
 		{
 			return this->erase_common(const_cast<pointer>(it));
 		}
@@ -1037,15 +1031,13 @@ public:
 
 	inline constexpr iterator erase(const_iterator first, const_iterator last) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			return this->erase_iters_common(first - imp.begin_ptr + imp.begin_ptr, last - imp.begin_ptr + imp.begin_ptr);
 		}
 		else
+#endif
 		{
 			return this->erase_iters_common(const_cast<pointer>(first), const_cast<pointer>(last));
 		}

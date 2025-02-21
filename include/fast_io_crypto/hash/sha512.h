@@ -208,12 +208,8 @@ public:
 		void
 		update_blocks(::std::byte const *blocks_start, ::std::byte const *blocks_last) noexcept
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			::fast_io::details::sha512::sha512_do_constexpr_function(state, blocks_start, blocks_last);
 		}

@@ -64,12 +64,8 @@ inline constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noex
 			}
 		}
 
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
-		if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			::fast_io::details::overlapped_copy_buffer_ptr<iter2valuetype> tempbuffer(static_cast<::std::size_t>(::std::distance(first, last)));
 			auto buffered{::std::copy(first, last, tempbuffer.ptr)};

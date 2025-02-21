@@ -62,12 +62,8 @@ inline
 	nt_dirent *
 	new_nt_dirent() noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		return new nt_dirent;
 	}
@@ -89,12 +85,8 @@ inline
 	void
 	delete_nt_dirent(nt_dirent *ptr) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		delete ptr;
 	}

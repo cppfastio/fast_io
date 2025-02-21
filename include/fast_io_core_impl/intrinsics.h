@@ -19,12 +19,8 @@ inline
 #endif
 	void typed_memcpy(T1 *dest, T2 const *src, ::std::size_t bytes) noexcept
 {
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+#if defined(FAST_IO_IF_CONSTEVAL) && __cpp_lib_bit_cast >= 201806L
+	FAST_IO_IF_CONSTEVAL
 	{
 		if (dest == nullptr || src == nullptr || sizeof(T1) != sizeof(T2) || bytes % sizeof(T1) != 0)
 		{
@@ -202,14 +198,8 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 	}
 	else
 	{
-#if __cpp_if_consteval >= 202106L
-		if consteval
-		{
-			return add_carry_naive(carry, a, b, out);
-		}
-		else
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-		if (__builtin_is_constant_evaluated())
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			return add_carry_naive(carry, a, b, out);
 		}
@@ -396,13 +386,8 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 	}
 	else
 	{
-#if __cpp_if_consteval >= 202106L
-		if consteval
-		{
-			return sub_borrow_naive(borrow, a, b, out);
-		}
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-		if (__builtin_is_constant_evaluated())
+#if defined(FAST_IO_IF_CONSTEVAL)
+		FAST_IO_IF_CONSTEVAL
 		{
 			return sub_borrow_naive(borrow, a, b, out);
 		}
@@ -622,23 +607,14 @@ inline
 	umul(::std::uint_least64_t a, ::std::uint_least64_t b, ::std::uint_least64_t &high) noexcept
 {
 #ifdef __SIZEOF_INT128__
-#if __cpp_if_consteval >= 202106L
-	if consteval
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		__uint128_t res{static_cast<__uint128_t>(a) * b};
 		high = static_cast<::std::uint_least64_t>(res >> 64u);
 		return static_cast<::std::uint_least64_t>(res);
 	}
 	else
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (__builtin_is_constant_evaluated())
-	{
-		__uint128_t res{static_cast<__uint128_t>(a) * b};
-		high = static_cast<::std::uint_least64_t>(res >> 64u);
-		return static_cast<::std::uint_least64_t>(res);
-	}
-	else
-
 #endif
 	{
 #if defined(__has_builtin)
@@ -743,14 +719,8 @@ inline
 	};
 	return static_cast<::std::uint_least64_t>((static_cast<__uint128_t>(a) * b) >> ul64bits);
 #elif defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
-#if __cpp_if_consteval >= 202106L && 0
-	if consteval
-	{
-		return umul_least64_high_emulated(a, b);
-	}
-	else
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (__builtin_is_constant_evaluated())
+#if defined(FAST_IO_IF_CONSTEVAL)
+	FAST_IO_IF_CONSTEVAL
 	{
 		return umul_least64_high_emulated(a, b);
 	}
