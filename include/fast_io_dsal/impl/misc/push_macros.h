@@ -52,7 +52,7 @@
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #define FAST_IO_DLLIMPORT __declspec(dllimport)
-#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
+#elif __has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__) && !defined(__arm64ec__)
 #define FAST_IO_DLLIMPORT [[__gnu__::__dllimport__]]
 #else
 #define FAST_IO_DLLIMPORT
