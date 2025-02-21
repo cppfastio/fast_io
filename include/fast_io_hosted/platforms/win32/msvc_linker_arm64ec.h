@@ -290,5 +290,5 @@
 #pragma comment(linker,"/alternatename:?ZwDeviceIoControlFile@nt@win32@fast_io@@$$hYAIPEAX0PEAP6AX0PEAUio_status_block@123@I@_E01I0I0I@Z=#ZwDeviceIoControlFile")
 // msvc
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@$$hYAPEAXPEAX@Z=#__RTtypeid")
-#pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@$$hYAPEAXPEAX@Z=#__RTtypeid")
+
 // clang-format on
