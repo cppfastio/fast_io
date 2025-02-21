@@ -283,6 +283,20 @@ inline ::std::uint_least32_t nt_flush_buffers_file(Args... args) noexcept
 }
 
 template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 5)
+inline ::std::uint_least32_t nt_flush_buffers_file_ex(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ZwFlushBuffersFileEx(args...);
+	}
+	else
+	{
+		return NtFlushBuffersFileEx(args...);
+	}
+}
+
+template <bool zw, typename... Args>
 	requires(sizeof...(Args) == 10)
 inline ::std::uint_least32_t nt_map_view_of_section(Args... args) noexcept
 {
