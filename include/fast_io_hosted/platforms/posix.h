@@ -406,6 +406,7 @@ functions. Also, it returns long, not ::std::ptrdiff_t
 */
 #if defined(__CYGWIN__)
 FAST_IO_DLLIMPORT extern long FAST_IO_WINCDECL cygwin_get_osfhandle(int) noexcept FAST_IO_WINCDECL_RENAME(_get_osfhandle, 4);
+#endif
 
 inline void *my_get_osfile_handle(int fd) noexcept
 {
