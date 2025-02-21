@@ -11,25 +11,21 @@
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 
-#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include <streambuf>
 #include <fstream>
 #include <sstream>
 
-#if 1
 #include "fast_io.h"
-#else
-#include "fast_io_hosted.h"
-#include "fast_io_legacy_impl/c/impl.h"
-#endif
-
+#include "fast_io_dsal/impl/misc/push_warnings.h"
+#include "fast_io_dsal/impl/misc/push_macros.h"
 #include "fast_io_legacy_impl/filebuf/streambuf_io_observer.h"
 #if !defined(_LIBCPP_HAS_NO_FILESYSTEM) || defined(_LIBCPP_HAS_FSTREAM)
 #include "fast_io_legacy_impl/filebuf/filebuf_file.h"
 #endif
 #include "fast_io_legacy_impl/filebuf/op_out.h"
 
+#include "fast_io_dsal/impl/misc/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif

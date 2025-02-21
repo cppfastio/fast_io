@@ -10,9 +10,11 @@
 #include "fast_io_hosted.h"
 
 #include "fast_io_dsal/impl/misc/push_warnings.h"
+#include "fast_io_dsal/impl/misc/push_macros.h"
 
 #include "fast_io_legacy_impl/io.h"
 
+#include "fast_io_dsal/impl/misc/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif

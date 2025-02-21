@@ -194,56 +194,10 @@ namespace details
 extern int fileno(FILE *) noexcept __asm__("_fileno");
 extern FILE *fdopen(int, char const *) noexcept __asm__("_fdopen");
 #elif defined(__CYGWIN__)
-[[__gnu__::__dllimport__]] extern int fileno(FILE *) noexcept
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if defined(__GNUC__)
-	__asm__("fileno")
-#else
-	__asm__("_fileno")
-#endif
-#else
-	__asm__("fileno")
-#endif
-		;
-[[__gnu__::__dllimport__]] extern FILE *fdopen(int, char const *) noexcept
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if defined(__GNUC__)
-	__asm__("fdopen")
-#else
-	__asm__("_fdopen")
-#endif
-#else
-	__asm__("fdopen")
-#endif
-		;
-
-#endif
-
-#if defined(__CYGWIN__)
-
-[[__gnu__::__dllimport__]] extern void my_cygwin_pthread_mutex_lock(void *) noexcept
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if defined(__GNUC__)
-	__asm__("pthread_mutex_lock")
-#else
-	__asm__("_pthread_mutex_lock")
-#endif
-#else
-	__asm__("pthread_mutex_lock")
-#endif
-		;
-
-[[__gnu__::__dllimport__]] extern void my_cygwin_pthread_mutex_unlock(void *) noexcept
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if defined(__GNUC__)
-	__asm__("pthread_mutex_unlock")
-#else
-	__asm__("_pthread_mutex_unlock")
-#endif
-#else
-	__asm__("pthread_mutex_unlock")
-#endif
-		;
+FAST_IO_DLLIMPORT extern int FAST_IO_WINCDECL fileno(FILE *) noexcept FAST_IO_WINCDECL_RENAME(fileno, 4);
+FAST_IO_DLLIMPORT extern FILE *FAST_IO_WINCDECL fdopen(int, char const *) noexcept FAST_IO_WINCDECL_RENAME(fdopen, 8);
+FAST_IO_DLLIMPORT extern void FAST_IO_WINCDECL my_cygwin_pthread_mutex_lock(void *) noexcept FAST_IO_WINCDECL_RENAME(pthread_mutex_lock, 4);
+FAST_IO_DLLIMPORT extern void FAST_IO_WINCDECL my_cygwin_pthread_mutex_unlock(void *) noexcept FAST_IO_WINCDECL_RENAME(pthread_mutex_unlock, 4);
 
 inline void my_cygwin_flockfile(FILE *fp) noexcept
 {
@@ -252,7 +206,6 @@ inline void my_cygwin_flockfile(FILE *fp) noexcept
 		my_cygwin_pthread_mutex_lock(fp->_lock);
 	}
 }
-
 inline void my_cygwin_funlockfile(FILE *fp) noexcept
 {
 	if (!((fp->_flags) & __SSTR))
@@ -260,7 +213,6 @@ inline void my_cygwin_funlockfile(FILE *fp) noexcept
 		my_cygwin_pthread_mutex_unlock(fp->_lock);
 	}
 }
-
 #endif
 
 #if (defined(_MSC_VER) || defined(_UCRT)) && !defined(__WINE__) && !defined(__CYGWIN__)

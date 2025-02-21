@@ -424,5 +424,6 @@ struct win32_find_dataw
 #endif
 };
 
+using farproc = ::std::ptrdiff_t(FAST_IO_STDCALL *)() noexcept;
 
 } // namespace fast_io::win32

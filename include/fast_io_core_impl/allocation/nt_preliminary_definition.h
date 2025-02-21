@@ -8,13 +8,7 @@ namespace fast_io::win32::nt
 {
 struct peb_ldr_data;
 struct rtl_user_process_parameters;
-using pps_post_process_init_routine = void(
-#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-	__stdcall
-#elif (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-	__attribute__((__stdcall__))
-#endif
-		*)(void) noexcept;
+using pps_post_process_init_routine = void(FAST_IO_STDCALL *)(void) noexcept;
 
 struct peb
 {
@@ -282,150 +276,18 @@ struct teb
 	::std::uint_least64_t ExtendedFeatureDisableMask;
 };
 
-// func
-
-#if defined(_MSC_VER) && !defined(__clang__)
-__declspec(dllimport)
-#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
-[[__gnu__::__dllimport__]]
-#endif
-#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-[[__gnu__::__stdcall__]]
-#endif
-extern void *
-#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
-	__stdcall
-#endif
-	RtlAllocateHeap(void *, ::std::uint_least32_t, ::std::size_t) noexcept
-#if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if !defined(__clang__)
-	__asm__("RtlAllocateHeap@12")
-#else
-	__asm__("_RtlAllocateHeap@12")
-#endif
-#else
-	__asm__("RtlAllocateHeap")
-#endif
-#endif
-		;
-
-#if defined(_MSC_VER) && !defined(__clang__)
-__declspec(dllimport)
-#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
-[[__gnu__::__dllimport__]]
-#endif
-#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-[[__gnu__::__stdcall__]]
-#endif
-extern char unsigned
-#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
-	__stdcall
-#endif
-	RtlFreeHeap(void *, ::std::uint_least32_t, void *) noexcept
-#if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if !defined(__clang__)
-	__asm__("RtlFreeHeap@12")
-#else
-	__asm__("_RtlFreeHeap@12")
-#endif
-#else
-	__asm__("RtlFreeHeap")
-#endif
-#endif
-		;
-
-#if defined(_MSC_VER) && !defined(__clang__)
-__declspec(dllimport)
-#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
-[[__gnu__::__dllimport__]]
-#endif
-#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-[[__gnu__::__stdcall__]]
-#endif
-#if __has_cpp_attribute(__gnu__::__const__)
-[[__gnu__::__const__]]
-#endif
-extern peb *
-#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
-	__stdcall
-#endif
-	RtlGetCurrentPeb() noexcept
-#if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if !defined(__clang__)
-	__asm__("RtlGetCurrentPeb@0")
-#else
-	__asm__("_RtlGetCurrentPeb@0")
-#endif
-#else
-	__asm__("RtlGetCurrentPeb")
-#endif
-#endif
-		;
-
-#if defined(_MSC_VER) && !defined(__clang__)
-__declspec(dllimport)
-#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
-[[__gnu__::__dllimport__]]
-#endif
-#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-[[__gnu__::__stdcall__]]
-#endif
-extern void *
-#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
-	__stdcall
-#endif
-	RtlReAllocateHeap(void *, ::std::uint_least32_t, void *, ::std::size_t) noexcept
-#if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if !defined(__clang__)
-	__asm__("RtlReAllocateHeap@16")
-#else
-	__asm__("_RtlReAllocateHeap@16")
-#endif
-#else
-	__asm__("RtlReAllocateHeap")
-#endif
-#endif
-		;
-
-#if defined(_MSC_VER) && !defined(__clang__)
-__declspec(dllimport)
-#elif (__has_cpp_attribute(__gnu__::__dllimport__) && !defined(__WINE__))
-[[__gnu__::__dllimport__]]
-#endif
-#if (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
-[[__gnu__::__stdcall__]]
-#endif
-extern ::std::size_t
-#if (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__)) && defined(_MSC_VER)
-	__stdcall
-#endif
-	RtlSizeHeap(void *, ::std::uint_least32_t, void *) noexcept
-#if defined(__clang__) || defined(__GNUC__)
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if !defined(__clang__)
-	__asm__("RtlSizeHeap@12")
-#else
-	__asm__("_RtlSizeHeap@12")
-#endif
-#else
-	__asm__("RtlSizeHeap")
-#endif
-#endif
-		;
+FAST_IO_DLLIMPORT FAST_IO_GNU_MALLOC extern void *FAST_IO_WINSTDCALL RtlAllocateHeap(void *, ::std::uint_least32_t, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAllocateHeap, 12);
+FAST_IO_DLLIMPORT extern char unsigned FAST_IO_WINSTDCALL RtlFreeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlFreeHeap, 12);
+FAST_IO_DLLIMPORT extern peb *FAST_IO_WINSTDCALL RtlGetCurrentPeb() noexcept FAST_IO_WINSTDCALL_RENAME(RtlGetCurrentPeb, 0);
+FAST_IO_DLLIMPORT extern void *FAST_IO_WINSTDCALL RtlReAllocateHeap(void *, ::std::uint_least32_t, void *, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlReAllocateHeap, 16);
+FAST_IO_DLLIMPORT extern ::std::size_t FAST_IO_WINSTDCALL RtlSizeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlSizeHeap, 12);
 
 #if (defined(__GNUC__) || defined(__clang__)) && \
 	(defined(__aarch64__) || defined(__arm64ec__))
 register ::fast_io::win32::nt::teb *fast_io_nt_current_teb __asm__("x18");
 #endif
 
-#if __has_cpp_attribute(__gnu__::__const__)
-[[__gnu__::__const__]]
-#endif
-inline peb *nt_get_current_peb() noexcept
+FAST_IO_GNU_ALWAYS_INLINE_ARTIFICIAL_CONST inline peb *nt_get_current_peb() noexcept
 {
 #if (defined(__GNUC__) || defined(__clang__))
 #if defined(__aarch64__) || defined(__arm64ec__)
@@ -474,10 +336,7 @@ inline peb *nt_get_current_peb() noexcept
 #endif
 }
 
-#if __has_cpp_attribute(__gnu__::__const__)
-[[__gnu__::__const__]]
-#endif
-inline teb *nt_current_teb() noexcept
+FAST_IO_GNU_ALWAYS_INLINE_ARTIFICIAL_CONST inline teb *nt_current_teb() noexcept
 {
 #if (defined(__GNUC__) || defined(__clang__))
 #if defined(__aarch64__) || defined(__arm64ec__)
@@ -526,19 +385,7 @@ inline teb *nt_current_teb() noexcept
 #endif
 }
 
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#elif __has_cpp_attribute(msvc::forceinline)
-[[msvc::forceinline]]
-#endif
-[[nodiscard]]
-#if __has_cpp_attribute(__gnu__::__artificial__)
-[[__gnu__::__artificial__]]
-#endif
-#if __has_cpp_attribute(__gnu__::__const__)
-[[__gnu__::__const__]]
-#endif
-inline void *rtl_get_process_heap() noexcept
+FAST_IO_GNU_ALWAYS_INLINE_ARTIFICIAL_CONST inline void *rtl_get_process_heap() noexcept
 {
 	return ::fast_io::win32::nt::nt_get_current_peb()->ProcessHeap;
 }

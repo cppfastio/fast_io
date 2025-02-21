@@ -18,6 +18,8 @@ freestanding ones.
 
 #include "fast_io_freestanding.h"
 
+#include "fast_io_dsal/impl/misc/push_warnings.h"
+#include "fast_io_dsal/impl/misc/push_macros.h"
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
@@ -38,8 +40,6 @@ freestanding ones.
 #else
 #include "fast_io_hosted/platforms/errc_impl.h"
 #endif
-
-#include "fast_io_dsal/impl/misc/push_warnings.h"
 
 #include "fast_io_hosted/posix_error_scatter/impl.h"
 #include "fast_io_hosted/posix_error.h"
@@ -124,6 +124,8 @@ freestanding ones.
 
 #endif
 
+#include "fast_io_dsal/impl/misc/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"
+
 
 #endif
