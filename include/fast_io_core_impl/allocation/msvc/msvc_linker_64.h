@@ -14,7 +14,7 @@
 #pragma comment(linker, "/alternatename:__imp_?VirtualAlloc@win32@fast_io@@YAPEAXPEAX_KII@Z=__imp_VirtualAlloc")
 #pragma comment(linker, "/alternatename:__imp_?VirtualProtect@win32@fast_io@@YAHPEAX_KIPEAI@Z=__imp_VirtualProtect")
 #pragma comment(linker, "/alternatename:__imp_?VirtualFree@win32@fast_io@@YAHPEAX_KI@Z=__imp_VirtualFree")
-#pragma comment(linker, "/alternatename:__imp_?__imp_?VirtualQuery@win32@fast_io@@YAHPEBXPEAUmemory_basic_information@12@_K@Z=__imp_VirtualQuery")
+#pragma comment(linker, "/alternatename:__imp_?VirtualQuery@win32@fast_io@@YAHPEBXPEAUmemory_basic_information@12@_K@Z=__imp_VirtualQuery")
 
 #pragma comment(linker, "/alternatename:__imp_?mi_malloc@mimalloc@fast_io@@YAPEAX_K@Z=mi_malloc")
 #pragma comment(linker, "/alternatename:__imp_?mi_free@mimalloc@fast_io@@YAXPEAX@Z=mi_free")
