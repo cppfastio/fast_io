@@ -12,6 +12,7 @@
 #include "fast_io_core.h"
 
 #include "fast_io_dsal/impl/misc/push_warnings.h"
+#include "fast_io_dsal/impl/misc/push_macros.h"
 
 #include "fast_io_freestanding_impl/exception.h"
 // #include"fast_io_freestanding_impl/posix_error.h"
@@ -35,6 +36,7 @@
 #include "fast_io_unit/bitset.h"
 #endif
 
+#include "fast_io_dsal/impl/misc/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"
 
 #endif
