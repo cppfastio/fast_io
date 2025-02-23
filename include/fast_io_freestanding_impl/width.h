@@ -19,7 +19,7 @@ inline constexpr auto width(scalar_placement placement, T &&t, ::std::size_t n) 
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
-					   sizeof(noref) <= (sizeof(::std::size_t) * 2)
+					   sizeof(noref) <= (sizeof(::std::ptrdiff_t) * 2)
 #endif
 	)
 	{
@@ -44,7 +44,7 @@ inline constexpr auto width(scalar_placement placement, T &&t, ::std::size_t n, 
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 					   sizeof(noref) <= 8u
 #else
-					   sizeof(noref) <= (sizeof(::std::size_t) * 2)
+					   sizeof(noref) <= (sizeof(::std::ptrdiff_t) * 2)
 #endif
 	)
 

@@ -404,19 +404,19 @@ template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_named_pipe_ipc_server : public basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>
 {
 public:
-	using typename basic_win32_family_io_observer<family, ch_type>::char_type;
-	using typename basic_win32_family_io_observer<family, ch_type>::input_char_type;
-	using typename basic_win32_family_io_observer<family, ch_type>::output_char_type;
-	using typename basic_win32_family_io_observer<family, ch_type>::native_handle_type;
-	using basic_win32_family_io_observer<family, ch_type>::native_handle;
+	using typename basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>::char_type;
+	using typename basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>::input_char_type;
+	using typename basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>::output_char_type;
+	using typename basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>::native_handle_type;
+	using basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>::native_handle;
 
 	inline explicit constexpr basic_win32_family_named_pipe_ipc_server() noexcept = default;
 
-	inline constexpr basic_win32_family_named_pipe_ipc_server(basic_win32_family_io_observer<family, ch_type>) noexcept = delete;
-	inline constexpr basic_win32_family_named_pipe_ipc_server &operator=(basic_win32_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_win32_family_named_pipe_ipc_server(basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_win32_family_named_pipe_ipc_server &operator=(basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>) noexcept = delete;
 
 	inline basic_win32_family_named_pipe_ipc_server(basic_win32_family_named_pipe_ipc_server const &other)
-		: basic_win32_family_io_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(other.handle)}
+		: basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(other.handle)}
 	{
 	}
 	inline basic_win32_family_named_pipe_ipc_server &operator=(basic_win32_family_named_pipe_ipc_server const &other)
@@ -429,7 +429,7 @@ public:
 		return *this;
 	}
 	inline basic_win32_family_named_pipe_ipc_server(basic_win32_family_named_pipe_ipc_server &&__restrict b) noexcept
-		: basic_win32_family_io_observer<family, ch_type>{b.release()}
+		: basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>{b.release()}
 	{
 	}
 	inline basic_win32_family_named_pipe_ipc_server &operator=(basic_win32_family_named_pipe_ipc_server &&__restrict b) noexcept
@@ -470,18 +470,18 @@ public:
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
 	inline explicit constexpr basic_win32_family_named_pipe_ipc_server(native_hd handle1) noexcept
-		: basic_win32_family_io_observer<family, ch_type>{handle1}
+		: basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>{handle1}
 	{
 	}
 
-	inline basic_win32_family_named_pipe_ipc_server(io_dup_t, basic_win32_family_io_observer<family, ch_type> wiob)
-		: basic_win32_family_io_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(wiob.handle)}
+	inline basic_win32_family_named_pipe_ipc_server(io_dup_t, basic_win32_family_named_pipe_ipc_server_observer<family, ch_type> wiob)
+		: basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(wiob.handle)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit basic_win32_family_named_pipe_ipc_server(T const &server_name, ipc_mode im)
-		: basic_win32_family_io_observer<family, char_type>{
+		: basic_win32_family_named_pipe_ipc_server_observer<family, char_type>{
 			  ::fast_io::win32::details::win32_create_named_pipe_ipc_server_impl<family>(server_name, im)}
 	{
 	}
@@ -504,19 +504,19 @@ template <win32_family family, ::std::integral ch_type>
 class basic_win32_family_named_pipe_ipc_client : public basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>
 {
 public:
-	using typename basic_win32_family_io_observer<family, ch_type>::char_type;
-	using typename basic_win32_family_io_observer<family, ch_type>::input_char_type;
-	using typename basic_win32_family_io_observer<family, ch_type>::output_char_type;
-	using typename basic_win32_family_io_observer<family, ch_type>::native_handle_type;
-	using basic_win32_family_io_observer<family, ch_type>::native_handle;
+	using typename basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>::char_type;
+	using typename basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>::input_char_type;
+	using typename basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>::output_char_type;
+	using typename basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>::native_handle_type;
+	using basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>::native_handle;
 
 	inline explicit constexpr basic_win32_family_named_pipe_ipc_client() noexcept = default;
 
-	inline constexpr basic_win32_family_named_pipe_ipc_client(basic_win32_family_io_observer<family, ch_type>) noexcept = delete;
-	inline constexpr basic_win32_family_named_pipe_ipc_client &operator=(basic_win32_family_io_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_win32_family_named_pipe_ipc_client(basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_win32_family_named_pipe_ipc_client &operator=(basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>) noexcept = delete;
 
 	inline basic_win32_family_named_pipe_ipc_client(basic_win32_family_named_pipe_ipc_client const &other)
-		: basic_win32_family_io_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(other.handle)}
+		: basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(other.handle)}
 	{
 	}
 	inline basic_win32_family_named_pipe_ipc_client &operator=(basic_win32_family_named_pipe_ipc_client const &other)
@@ -529,7 +529,7 @@ public:
 		return *this;
 	}
 	inline basic_win32_family_named_pipe_ipc_client(basic_win32_family_named_pipe_ipc_client &&__restrict b) noexcept
-		: basic_win32_family_io_observer<family, ch_type>{b.release()}
+		: basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>{b.release()}
 	{
 	}
 	inline basic_win32_family_named_pipe_ipc_client &operator=(basic_win32_family_named_pipe_ipc_client &&__restrict b) noexcept
@@ -570,18 +570,18 @@ public:
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
 	inline explicit constexpr basic_win32_family_named_pipe_ipc_client(native_hd handle1) noexcept
-		: basic_win32_family_io_observer<family, ch_type>{handle1}
+		: basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>{handle1}
 	{
 	}
 
-	inline basic_win32_family_named_pipe_ipc_client(io_dup_t, basic_win32_family_io_observer<family, ch_type> wiob)
-		: basic_win32_family_io_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(wiob.handle)}
+	inline basic_win32_family_named_pipe_ipc_client(io_dup_t, basic_win32_family_named_pipe_ipc_client_observer<family, ch_type> wiob)
+		: basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(wiob.handle)}
 	{
 	}
 
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit basic_win32_family_named_pipe_ipc_client(T const &client_name, ipc_mode im)
-		: basic_win32_family_io_observer<family, char_type>{
+		: basic_win32_family_named_pipe_ipc_client_observer<family, char_type>{
 			  ::fast_io::win32::details::win32_create_named_pipe_ipc_client_impl<family>(client_name, im)}
 	{
 	}
