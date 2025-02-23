@@ -43,8 +43,7 @@ inline
 	void
 	none_secure_clear(::std::byte *data, ::std::size_t size) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{
@@ -52,7 +51,6 @@ inline
 		}
 	}
 	else
-#endif
 	{
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memset)
@@ -105,8 +103,7 @@ namespace freestanding
 
 inline constexpr ::std::byte *bytes_secure_clear_n(::std::byte *data, ::std::size_t size) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{
@@ -114,7 +111,6 @@ inline constexpr ::std::byte *bytes_secure_clear_n(::std::byte *data, ::std::siz
 		}
 	}
 	else
-#endif
 	{
 #if defined(_MSC_VER) && !defined(__clang__)
 		/*

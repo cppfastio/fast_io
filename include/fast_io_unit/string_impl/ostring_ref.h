@@ -75,9 +75,8 @@ inline constexpr void
 strlike_set_curr(io_strlike_type_t<char_type, ::std::basic_string<char_type, traits_type, allocator_type>>,
 				 ::std::basic_string<char_type, traits_type, allocator_type> &str, char_type *p)
 {
-#if defined(FAST_IO_IF_CONSTEVAL)\
-	(__cpp_lib_string_resize_and_overwrite >= 202110L || __cpp_constexpr_dynamic_alloc >= 201907L)
-	FAST_IO_IF_CONSTEVAL
+#if (__cpp_lib_string_resize_and_overwrite >= 202110L || __cpp_constexpr_dynamic_alloc >= 201907L)
+	if (__builtin_is_constant_evaluated())
 	{
 		auto old_ptr{str.data()};
 		::std::size_t const sz{static_cast<::std::size_t>(p - str.data())};

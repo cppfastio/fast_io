@@ -19,8 +19,8 @@ inline constexpr void crc32_to_byte_ptr_commom_impl(::std::uint_least32_t crc, :
 	{
 		crc = ::fast_io::byte_swap(crc);
 	}
-#if defined(FAST_IO_IF_CONSTEVAL) && __cpp_lib_bit_cast >= 201806L
-	FAST_IO_IF_CONSTEVAL
+#if __cpp_lib_bit_cast >= 201806L
+	if (__builtin_is_constant_evaluated())
 	{
 		auto a{::std::bit_cast<::fast_io::freestanding::array<::std::byte, sizeof(::std::uint_least32_t)>>(crc)};
 		::fast_io::freestanding::nonoverlapped_bytes_copy_n(a.data(), a.size(), ptr);

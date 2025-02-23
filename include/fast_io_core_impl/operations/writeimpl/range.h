@@ -29,14 +29,12 @@ bytes_copy_punning_impl(FromItbg fromfirst, FromIted fromlast, ToIter tofirst, T
 		else
 		{
 			constexpr ::std::size_t quoti{sizeof(fromvaluetype) / sizeof(tovaluetype)};
-#if defined(FAST_IO_IF_CONSTEVAL)
-			FAST_IO_IF_CONSTEVAL
+			if (__builtin_is_constant_evaluated())
 			{
 				auto arr{::std::bit_cast<::fast_io::freestanding::array<fromvaluetype, quoti>>(*fromfirst)};
 				::fast_io::details::non_overlapped_copy(arr.data(), arr.data() + arr.size(), tofirst);
 			}
 			else
-#endif
 			{
 				::fast_io::freestanding::bytes_copy_n(reinterpret_cast<::std::byte const *>(fromfirst),
 													  sizeof(fromvaluetype), reinterpret_cast<::std::byte *>(tofirst));

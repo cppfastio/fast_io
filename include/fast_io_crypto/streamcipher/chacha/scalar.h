@@ -39,8 +39,7 @@ inline
 {
 	constexpr ::std::size_t n{16};
 	::std::uint_least32_t x[n];
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -48,7 +47,6 @@ inline
 		}
 	}
 	else
-#endif
 	{
 		__builtin_memcpy(x, indata, sizeof(x));
 	}
@@ -75,8 +73,7 @@ inline
 		{
 			res = ::fast_io::byte_swap(res);
 		}
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			auto v{::std::bit_cast<::fast_io::freestanding::array<::std::byte, sizeof(::std::uint_least32_t)>>(res)};
 			for (::std::size_t j{}; j != sizeof(::std::uint_least32_t); ++j)
@@ -85,7 +82,6 @@ inline
 			}
 		}
 		else
-#endif
 		{
 			__builtin_memcpy(outdata + i * sizeof(::std::uint_least32_t), __builtin_addressof(res),
 							 sizeof(::std::uint_least32_t));

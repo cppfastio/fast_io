@@ -62,13 +62,11 @@ inline
 	nt_dirent *
 	new_nt_dirent() noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return new nt_dirent;
 	}
 	else
-#endif
 	{
 		nt_dirent_space_guard<Allocator, nt_dirent> guard;
 		guard.ptr = typed_generic_allocator_adapter<Allocator, nt_dirent>::allocate(1);
@@ -85,13 +83,11 @@ inline
 	void
 	delete_nt_dirent(nt_dirent *ptr) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		delete ptr;
 	}
 	else
-#endif
 	{
 		if (ptr == nullptr)
 		{

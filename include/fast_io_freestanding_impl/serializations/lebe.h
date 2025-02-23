@@ -365,8 +365,8 @@ inline
 	static_assert(n != 0);
 	int_type t;
 
-#if __cpp_lib_bit_cast >= 201806L && defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+#if __cpp_lib_bit_cast >= 201806L
+	if (__builtin_is_constant_evaluated())
 	{
 		char_type buffer[n];
 		non_overlapped_copy_n(iter, n, buffer);
@@ -549,8 +549,8 @@ inline
 			u.high = ::fast_io::byte_swap(low);
 		}
 	}
-#if __cpp_lib_bit_cast >= 201806L && defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+#if __cpp_lib_bit_cast >= 201806L
+	if (__builtin_is_constant_evaluated())
 	{
 		::fast_io::freestanding::array<char unsigned, n> buffer{
 			::std::bit_cast<::fast_io::freestanding::array<char unsigned, n>>(u)};

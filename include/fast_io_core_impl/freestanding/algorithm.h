@@ -327,13 +327,11 @@ template <::std::input_iterator input_iter, ::std::input_or_output_iterator outp
 inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size_t count, output_iter result)
 {
 
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return ::fast_io::freestanding::copy_n(first, count, result);
 	}
 	else
-#endif
 	{
 		using input_value_type = ::std::iter_value_t<input_iter>;
 		using output_value_type = ::std::iter_value_t<output_iter>;
@@ -360,13 +358,11 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter last, output_iter result)
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return ::fast_io::freestanding::copy(first, last, result);
 	}
 	else
-#endif
 	{
 		using input_value_type = ::std::iter_value_t<input_iter>;
 		using output_value_type = ::std::iter_value_t<output_iter>;
@@ -394,13 +390,11 @@ inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter la
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy_n(input_iter first, ::std::size_t count, output_iter result)
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return ::fast_io::freestanding::copy_n(first, count, result);
 	}
 	else
-#endif
 	{
 		using input_value_type = ::std::iter_value_t<input_iter>;
 		using output_value_type = ::std::iter_value_t<output_iter>;
@@ -450,13 +444,11 @@ inline constexpr output_iter my_copy(input_iter first, input_iter second, output
 template <::std::bidirectional_iterator input_iter, ::std::bidirectional_iterator output_iter>
 inline constexpr output_iter my_copy_backward(input_iter first, input_iter last, output_iter d_last)
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return ::fast_io::freestanding::copy_backward(first, last, d_last);
 	}
 	else
-#endif
 	{
 		using input_value_type = typename ::std::iter_value_t<input_iter>;
 		using output_value_type = typename ::std::iter_value_t<output_iter>;
@@ -485,8 +477,7 @@ inline constexpr output_iter my_copy_backward(input_iter first, input_iter last,
 template <::std::random_access_iterator input_iter, ::std::random_access_iterator output_iter>
 inline constexpr bool my_compare_iter_n(input_iter first, ::std::size_t n, output_iter outier) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		for (auto last{first + n}; first != last; ++first)
 		{
@@ -499,7 +490,6 @@ inline constexpr bool my_compare_iter_n(input_iter first, ::std::size_t n, outpu
 		return true;
 	}
 	else
-#endif
 	{
 		using input_value_type = typename ::std::iter_value_t<input_iter>;
 		using output_value_type = typename ::std::iter_value_t<output_iter>;

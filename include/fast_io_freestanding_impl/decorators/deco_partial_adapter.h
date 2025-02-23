@@ -27,8 +27,7 @@ struct deco_partial_adapter
 	{
 		if constexpr (!::std::same_as<char_type, input_char_type>)
 		{
-#if defined(FAST_IO_IF_CONSTEVAL)
-			FAST_IO_IF_CONSTEVAL
+			if (__builtin_is_constant_evaluated())
 			{
 				::std::size_t fromdiff{static_cast<::std::size_t>(fromlast - fromfirst)};
 				::fast_io::details::local_operator_new_array_ptr<input_char_type> fromptr(fromdiff);
@@ -47,7 +46,6 @@ struct deco_partial_adapter
 			return {(fromit - reinterpret_cast<may_alias_input_char_ptr>(fromfirst)) + fromfirst, toit};
 		}
 		else
-#endif
 		{
 			::std::size_t fromdiff{static_cast<::std::size_t>(fromlast - fromfirst)};
 			::std::size_t diff{remained_max - remained};

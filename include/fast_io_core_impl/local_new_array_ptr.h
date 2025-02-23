@@ -5,8 +5,8 @@ namespace fast_io::details
 template <typename char_type, typename allocator = ::fast_io::native_thread_local_allocator>
 inline constexpr char_type *allocate_iobuf_space(::std::size_t buffer_size) noexcept
 {
-#if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+#if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L
+	if (__builtin_is_constant_evaluated())
 	{
 		return new char_type[buffer_size];
 	}
@@ -37,8 +37,8 @@ inline void deallocate_with_secure_clear(void *ptr, [[maybe_unused]] ::std::size
 template <bool nsecure_clear, typename char_type, typename allocator = ::fast_io::native_thread_local_allocator>
 inline constexpr void deallocate_iobuf_space(char_type *ptr, [[maybe_unused]] ::std::size_t buffer_size) noexcept
 {
-#if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+#if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L
+	if (__builtin_is_constant_evaluated())
 	{
 		delete[] ptr;
 	}

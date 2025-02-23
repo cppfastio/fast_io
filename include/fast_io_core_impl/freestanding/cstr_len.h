@@ -31,13 +31,11 @@ inline constexpr ::std::size_t dummy_cstr_nlen(char_type const *cstr, ::std::siz
 template <::std::integral char_type>
 inline constexpr ::std::size_t cstr_len(char_type const *cstr) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return details::dummy_cstr_len(cstr);
 	}
 	else
-#endif
 	{
 		if constexpr (::std::same_as<char_type, char>)
 		{
@@ -61,13 +59,11 @@ inline constexpr ::std::size_t cstr_len(char_type const *cstr) noexcept
 template <::std::integral char_type>
 inline constexpr ::std::size_t cstr_nlen(char_type const *cstr, ::std::size_t n) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return details::dummy_cstr_nlen(cstr, n);
 	}
 	else
-#endif
 	{
 		if constexpr (::std::same_as<char_type, char>)
 		{

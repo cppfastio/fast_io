@@ -97,12 +97,10 @@ inline
 	unsigned
 	vector_mask_countr_common_intrinsics_impl(::fast_io::intrinsics::simd_vector<T, n> const &vec) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return vector_mask_countr_common_no_intrinsics_impl<ctzero>(vec);
 	}
-#endif
 	unsigned d{};
 	if constexpr (sizeof(::fast_io::intrinsics::simd_vector<T, n>) == 16)
 	{

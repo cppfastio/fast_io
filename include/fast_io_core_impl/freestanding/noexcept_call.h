@@ -55,13 +55,11 @@ inline
 #endif
 	decltype(auto) noexcept_call(F *f, Args &&...args) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return f(::std::forward<Args>(args)...); // EH unwinding does not matter here
 	}
 	else
-#endif
 	{
 		return noexcept_cast(f)(::std::forward<Args>(args)...);
 	}

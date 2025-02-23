@@ -112,8 +112,8 @@ public:
 private:
 	constexpr void reset_imp() noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL) && __cpp_constexpr_dynamic_alloc >= 201907L
-		FAST_IO_IF_CONSTEVAL
+#if __cpp_constexpr_dynamic_alloc >= 201907L
+		if (__builtin_is_constant_evaluated())
 		{
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
@@ -833,13 +833,11 @@ public:
 	}
 	inline constexpr iterator insert(const_iterator ptr, string_view_type vw) noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			return this->insert_impl(this->imp.begin_ptr + (ptr - this->imp.begin_ptr), vw.data(), vw.size());
 		}
 		else
-#endif
 		{
 			return this->insert_impl(const_cast<pointer>(ptr), vw.data(), vw.size());
 		}
@@ -867,14 +865,12 @@ private:
 public:
 	inline constexpr iterator erase(const_iterator first, const_iterator last) noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->erase_impl(beginptr + (first - beginptr), beginptr + (last - beginptr));
 		}
 		else
-#endif
 		{
 			return this->erase_impl(const_cast<pointer>(first), const_cast<pointer>(last));
 		}
@@ -892,14 +888,12 @@ public:
 	}
 	inline constexpr iterator erase(const_iterator it) noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->erase_impl(beginptr + (it - beginptr));
 		}
 		else
-#endif
 		{
 			return this->erase_impl(const_cast<pointer>(it));
 		}
@@ -921,13 +915,11 @@ public:
 	}
 	inline constexpr iterator insert(const_iterator ptr, basic_string const &other) noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			return this->insert_impl(this->imp.begin_ptr + (ptr - this->imp.begin_ptr), other.data(), other.size());
 		}
 		else
-#endif
 		{
 			return this->insert_impl(const_cast<pointer>(ptr), other.data(), other.size());
 		}
@@ -1023,14 +1015,12 @@ public:
 #endif
 	inline constexpr iterator replace(const_iterator first, const_iterator last, string_view_type view) noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->replace_impl(beginptr + (first - beginptr), beginptr + (last - beginptr), view.data(), view.size());
 		}
 		else
-#endif
 		{
 			return this->replace_impl(const_cast<pointer>(first), const_cast<pointer>(last), view.data(), view.size());
 		}
@@ -1042,14 +1032,12 @@ public:
 #endif
 	inline constexpr iterator replace(const_iterator first, const_iterator last, basic_string const &view) noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->replace_impl(beginptr + (first - beginptr), beginptr + (last - beginptr), view.data(), view.size());
 		}
 		else
-#endif
 		{
 			return this->replace_impl(const_cast<pointer>(first), const_cast<pointer>(last), view.data(), view.size());
 		}

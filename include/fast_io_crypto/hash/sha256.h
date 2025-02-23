@@ -184,13 +184,11 @@ public:
 		void
 		update_blocks(::std::byte const *blocks_start, ::std::byte const *blocks_last) noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			::fast_io::details::sha256::sha256_do_constexpr_function(this->state, blocks_start, blocks_last);
 		}
 		else
-#endif
 		{
 			::fast_io::details::sha256::sha256_runtime_routine(this->state, blocks_start, blocks_last);
 		}

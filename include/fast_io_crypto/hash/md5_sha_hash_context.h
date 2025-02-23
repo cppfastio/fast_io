@@ -215,8 +215,7 @@ inline
 	hash_digest_to_byte_ptr_common_impl(U const *digest, ::std::size_t n, ::std::byte *ptr) noexcept
 {
 	constexpr ::std::size_t usz{sizeof(U)};
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -231,7 +230,6 @@ inline
 		}
 	}
 	else
-#endif
 	{
 		if constexpr (::std::endian::native == end)
 		{
@@ -255,13 +253,11 @@ template <::std::endian end, ::std::unsigned_integral U>
 inline constexpr void hash_digest_to_byte_ptr_simd16_impl(U const *digest, ::std::size_t n, ::std::byte *ptr) noexcept
 {
 	constexpr ::std::size_t usz{sizeof(U)};
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		hash_digest_to_byte_ptr_common_impl(digest, n, ptr);
 	}
 	else
-#endif
 	{
 		if constexpr (::std::endian::native == end)
 		{

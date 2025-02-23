@@ -326,13 +326,11 @@ inline constexpr void deque_destroy_trivial_common_impl(controllerblocktype *con
 template <typename allocator, ::std::size_t align, ::std::size_t sz, typename controllerblocktype>
 inline constexpr void deque_destroy_trivial_common(controllerblocktype &controller) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		::fast_io::containers::details::deque_destroy_trivial_common_impl<allocator, align, sz, controllerblocktype>(__builtin_addressof(controller));
 	}
 	else
-#endif
 	{
 		::fast_io::containers::details::deque_destroy_trivial_common_impl<allocator, align, sz, ::fast_io::containers::details::deque_controller_block_common>(
 			reinterpret_cast<::fast_io::containers::details::deque_controller_block_common *>(__builtin_addressof(controller)));
@@ -677,13 +675,11 @@ private:
 	[[deprecated]] inline constexpr void init_grow() noexcept
 	{
 		constexpr size_type mid{block_size >> 1u};
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			::fast_io::containers::details::deque_init_grow_common<allocator, alignof(value_type), block_size, mid>(controller);
 		}
 		else
-#endif
 		{
 			::fast_io::containers::details::deque_init_grow_common<allocator, alignof(value_type), sizeof(value_type) * block_size, sizeof(value_type) * mid>(*reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(__builtin_addressof(controller)));
 		}
@@ -694,13 +690,11 @@ private:
 #endif
 	inline constexpr void grow_front() noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			::fast_io::containers::details::deque_grow_front_common<allocator, alignof(value_type), sizeof(value_type), block_size>(controller);
 		}
 		else
-#endif
 		{
 			::fast_io::containers::details::deque_grow_front_common<allocator, alignof(value_type), sizeof(value_type), sizeof(value_type) * block_size>(*reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(__builtin_addressof(controller)));
 		}
@@ -711,13 +705,11 @@ private:
 #endif
 	inline constexpr void grow_back() noexcept
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			::fast_io::containers::details::deque_grow_back_common<allocator, alignof(value_type), sizeof(value_type), block_size>(controller);
 		}
 		else
-#endif
 		{
 			::fast_io::containers::details::deque_grow_back_common<allocator, alignof(value_type), sizeof(value_type), sizeof(value_type) * block_size>(*reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(__builtin_addressof(controller)));
 		}

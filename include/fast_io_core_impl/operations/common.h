@@ -58,13 +58,11 @@ template <typename T>
 inline constexpr scatter_total_size_overflow_result find_scatter_total_size_overflow(basic_io_scatter_t<T> const *base,
 																					 ::std::size_t len) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return ::fast_io::details::find_scatter_total_size_overflow_impl<::std::size_t>(base, len);
 	}
 	else
-#endif
 	{
 		using io_scatter_alias_ptr
 
@@ -193,13 +191,11 @@ template <typename T>
 inline constexpr ::fast_io::intfpos_t fposoffadd_scatters(::fast_io::intfpos_t off, basic_io_scatter_t<T> const *base,
 														  io_scatter_status_t status) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return ::fast_io::details::fposoffadd_scatters_impl(off, base, status.position, status.position_in_scatter);
 	}
 	else
-#endif
 	{
 		using io_scatter_alias_ptr
 

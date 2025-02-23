@@ -189,15 +189,3 @@
 #else
 #define FAST_IO_GNU_RETURNS_NONNULL
 #endif
-
-#pragma push_macro("FAST_IO_IF_CONSTEVAL")
-#undef FAST_IO_IF_CONSTEVAL
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L && (!defined(_MSC_VER) || defined(__clang__))
-#define FAST_IO_IF_CONSTEVAL if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-#define FAST_IO_IF_CONSTEVAL if (__builtin_is_constant_evaluated())
-#endif
-#else
-// #define FAST_IO_IF_CONSTEVAL 
-#endif

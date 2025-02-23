@@ -19,8 +19,8 @@ inline
 #endif
 	void typed_memcpy(T1 *dest, T2 const *src, ::std::size_t bytes) noexcept
 {
-#if defined(FAST_IO_IF_CONSTEVAL) && __cpp_lib_bit_cast >= 201806L
-	FAST_IO_IF_CONSTEVAL
+#if __cpp_lib_bit_cast >= 201806L
+	if (__builtin_is_constant_evaluated())
 	{
 		if (dest == nullptr || src == nullptr || sizeof(T1) != sizeof(T2) || bytes % sizeof(T1) != 0)
 		{
@@ -198,13 +198,11 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 	}
 	else
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			return add_carry_naive(carry, a, b, out);
 		}
 		else
-#endif
 		{
 #if defined(_MSC_VER) && !defined(__clang__)
 #if (defined(_M_IX86) || defined(_M_AMD64))
@@ -386,13 +384,11 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 	}
 	else
 	{
-#if defined(FAST_IO_IF_CONSTEVAL)
-		FAST_IO_IF_CONSTEVAL
+		if (__builtin_is_constant_evaluated())
 		{
 			return sub_borrow_naive(borrow, a, b, out);
 		}
 		else
-#endif
 		{
 #if defined(_MSC_VER) && !defined(__clang__)
 #if (defined(_M_IX86) || defined(_M_AMD64))
@@ -607,15 +603,13 @@ inline
 	umul(::std::uint_least64_t a, ::std::uint_least64_t b, ::std::uint_least64_t &high) noexcept
 {
 #ifdef __SIZEOF_INT128__
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		__uint128_t res{static_cast<__uint128_t>(a) * b};
 		high = static_cast<::std::uint_least64_t>(res >> 64u);
 		return static_cast<::std::uint_least64_t>(res);
 	}
 	else
-#endif
 	{
 #if defined(__has_builtin)
 		if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
@@ -719,13 +713,11 @@ inline
 	};
 	return static_cast<::std::uint_least64_t>((static_cast<__uint128_t>(a) * b) >> ul64bits);
 #elif defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
-#if defined(FAST_IO_IF_CONSTEVAL)
-	FAST_IO_IF_CONSTEVAL
+	if (__builtin_is_constant_evaluated())
 	{
 		return umul_least64_high_emulated(a, b);
 	}
 	else
-#endif
 	{
 		return __umulh(a, b);
 	}
