@@ -112,13 +112,8 @@ public:
 private:
 	constexpr void reset_imp() noexcept
 	{
-
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
 			using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, chtype>;
@@ -838,11 +833,7 @@ public:
 	}
 	inline constexpr iterator insert(const_iterator ptr, string_view_type vw) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return this->insert_impl(this->imp.begin_ptr + (ptr - this->imp.begin_ptr), vw.data(), vw.size());
 		}
@@ -874,11 +865,7 @@ private:
 public:
 	inline constexpr iterator erase(const_iterator first, const_iterator last) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->erase_impl(beginptr + (first - beginptr), beginptr + (last - beginptr));
@@ -901,11 +888,7 @@ public:
 	}
 	inline constexpr iterator erase(const_iterator it) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->erase_impl(beginptr + (it - beginptr));
@@ -932,11 +915,7 @@ public:
 	}
 	inline constexpr iterator insert(const_iterator ptr, basic_string const &other) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return this->insert_impl(this->imp.begin_ptr + (ptr - this->imp.begin_ptr), other.data(), other.size());
 		}
@@ -1036,11 +1015,7 @@ public:
 #endif
 	inline constexpr iterator replace(const_iterator first, const_iterator last, string_view_type view) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->replace_impl(beginptr + (first - beginptr), beginptr + (last - beginptr), view.data(), view.size());
@@ -1057,11 +1032,7 @@ public:
 #endif
 	inline constexpr iterator replace(const_iterator first, const_iterator last, basic_string const &view) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			auto beginptr{this->imp.begin_ptr};
 			return this->replace_impl(beginptr + (first - beginptr), beginptr + (last - beginptr), view.data(), view.size());

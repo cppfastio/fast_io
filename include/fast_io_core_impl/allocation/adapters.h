@@ -104,18 +104,13 @@ public:
 						::fast_io::details::has_allocate_zero_impl<alloc> ||
 						::fast_io::details::has_allocate_aligned_zero_impl<alloc>)};
 	static inline
-
+		constexpr
 		void *
 		allocate(::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return ::operator new(n);
 		}
@@ -379,16 +374,11 @@ public:
 
 	static inline constexpr bool has_deallocate = (::fast_io::details::has_deallocate_impl<alloc> ||
 												   ::fast_io::details::has_deallocate_aligned_impl<alloc>);
-	static inline void deallocate(void *p) noexcept
+	static inline constexpr void deallocate(void *p) noexcept
 		requires(!has_status && has_deallocate)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			::operator delete(p);
 		}
@@ -405,16 +395,11 @@ public:
 			}
 		}
 	}
-	static inline void deallocate_n(void *p, ::std::size_t n) noexcept
+	static inline constexpr void deallocate_n(void *p, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			::operator delete(p);
 		}
@@ -445,18 +430,13 @@ public:
 	}
 
 	static inline
-
+		constexpr
 		void *
 		allocate_aligned(::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return ::operator new(n);
 		}
@@ -466,19 +446,13 @@ public:
 			return ::fast_io::details::allocator_pointer_aligned_impl<alloc, false>(alignment, n);
 		}
 	}
-	static inline
-
+	static inline constexpr
 		void *
 		allocate_aligned_zero(::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return ::operator new(n); // this is problematic. No way to clean it up at compile time.
 		}
@@ -497,13 +471,8 @@ public:
 	allocate_at_least(::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return {::operator new(n), n};
 		}
@@ -536,13 +505,8 @@ public:
 	allocate_zero_at_least(::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return {::operator new(n), n};
 		}
@@ -577,13 +541,8 @@ public:
 	allocate_aligned_at_least(::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return {::operator new(n), n};
 		}
@@ -614,13 +573,8 @@ public:
 	allocate_aligned_zero_at_least(::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return {::operator new(n), n};
 		}
@@ -1177,22 +1131,15 @@ public:
 	static inline constexpr bool has_status{allocator_adaptor::has_status};
 	using handle_type = typename allocator_adaptor::handle_type;
 	static inline
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		T *
 		allocate(::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return ::fast_io::freestanding::allocator<T>{}.allocate(n);
 		}
@@ -1222,13 +1169,8 @@ public:
 		allocate_at_least(::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return {::fast_io::freestanding::allocator<T>{}.allocate(n), n};
 		}
@@ -1276,8 +1218,7 @@ public:
 	}
 
 	static inline
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
 
@@ -1285,13 +1226,8 @@ public:
 		allocate_zero_at_least(::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return {::fast_io::freestanding::allocator<T>{}.allocate(n), n};
 		}
@@ -1526,21 +1462,15 @@ public:
 
 	static inline constexpr bool has_deallocate = allocator_adaptor::has_deallocate;
 	static inline
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
 		void
 		deallocate(T *ptr) noexcept
 		requires(!has_status && has_deallocate)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			if (ptr)
 			{
@@ -1562,21 +1492,15 @@ public:
 		}
 	}
 	static inline
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
 		void
 		deallocate_n(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			if (ptr)
 			{
@@ -1599,8 +1523,7 @@ public:
 	}
 #if 0
 	static inline
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
  
@@ -1609,13 +1532,8 @@ public:
 		handle_allocate(handle_type handle, ::std::size_t n) noexcept
 		requires(has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			if (n)
 			{
@@ -1772,21 +1690,15 @@ public:
 
 	static inline constexpr bool has_handle_deallocate = allocator_adaptor::has_handle_deallocate;
 	static inline
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
 		void
 		handle_deallocate(handle_type handle, T *ptr) noexcept
 		requires(has_status && has_handle_deallocate)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			if (ptr)
 			{
@@ -1808,21 +1720,15 @@ public:
 		}
 	}
 	static inline
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
 		void
 		handle_deallocate_n(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status)
 	{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
-	__cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
+#if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			if (ptr)
 			{

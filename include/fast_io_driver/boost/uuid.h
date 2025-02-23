@@ -22,11 +22,7 @@ inline constexpr char_type *pr_rsv_boost_uuid(char_type *iter, boost::uuids::uui
 {
 	static_assert(::std::contiguous_iterator<boost::uuids::uuid::const_iterator>);
 	auto first{::std::to_address(u.begin())};
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		::std::byte buffer[16];
 		for (::std::size_t i{}; i != 16; ++i)
