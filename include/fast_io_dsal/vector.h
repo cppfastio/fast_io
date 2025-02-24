@@ -4,9 +4,6 @@
 #error "You must be using a C++ compiler"
 #endif
 
-#include "impl/misc/push_macros.h"
-#include "impl/misc/push_warnings.h"
-
 #include <version>
 #include <type_traits>
 #include <concepts>
@@ -18,6 +15,8 @@
 #include <bit>
 #include <compare>
 #include <algorithm>
+#include "impl/misc/push_macros.h"
+#include "impl/misc/push_warnings.h"
 #include "../fast_io_core_impl/freestanding/impl.h"
 #include "../fast_io_core_impl/terminate.h"
 #include "../fast_io_core_impl/intrinsics/msvc/impl.h"

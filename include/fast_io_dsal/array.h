@@ -8,10 +8,9 @@
 #error "You must be using a C++ compiler"
 #endif
 
+#include "../fast_io_core.h"
 #include "impl/misc/push_macros.h"
 #include "impl/misc/push_warnings.h"
-
-#include "../fast_io_core.h"
 #include "impl/array.h"
 
 namespace fast_io

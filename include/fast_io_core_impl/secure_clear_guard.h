@@ -43,12 +43,7 @@ inline
 	void
 	none_secure_clear(::std::byte *data, ::std::size_t size) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{
@@ -56,7 +51,6 @@ inline
 		}
 	}
 	else
-#endif
 	{
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memset)
@@ -109,12 +103,7 @@ namespace freestanding
 
 inline constexpr ::std::byte *bytes_secure_clear_n(::std::byte *data, ::std::size_t size) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{
@@ -122,7 +111,6 @@ inline constexpr ::std::byte *bytes_secure_clear_n(::std::byte *data, ::std::siz
 		}
 	}
 	else
-#endif
 	{
 #if defined(_MSC_VER) && !defined(__clang__)
 		/*
@@ -130,7 +118,7 @@ inline constexpr ::std::byte *bytes_secure_clear_n(::std::byte *data, ::std::siz
 		forceinline for this is nonsense
 		*/
 
-#if defined(_M_AMD64)
+#if defined(_M_AMD64) && !defined(_M_ARM64EC)
 		__stosb(__builtin_bit_cast(unsigned char *, data), 0, size);
 #else
 		char volatile *vptr = (char volatile *)data;

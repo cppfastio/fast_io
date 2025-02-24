@@ -62,17 +62,11 @@ inline
 	nt_dirent *
 	new_nt_dirent() noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		return new nt_dirent;
 	}
 	else
-#endif
 	{
 		nt_dirent_space_guard<Allocator, nt_dirent> guard;
 		guard.ptr = typed_generic_allocator_adapter<Allocator, nt_dirent>::allocate(1);
@@ -89,17 +83,11 @@ inline
 	void
 	delete_nt_dirent(nt_dirent *ptr) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		delete ptr;
 	}
 	else
-#endif
 	{
 		if (ptr == nullptr)
 		{
