@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <cstdint>
+
 namespace fast_io::win32::nt
 {
 
@@ -69,60 +71,60 @@ https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ne-wdm-_file_i
 enum class file_information_class
 {
 	FileDirectoryInformation = 1,
-	FileFullDirectoryInformation,            // 2
-	FileBothDirectoryInformation,            // 3
-	FileBasicInformation,                    // 4
-	FileStandardInformation,                 // 5
-	FileInternalInformation,                 // 6
-	FileEaInformation,                       // 7
-	FileAccessInformation,                   // 8
-	FileNameInformation,                     // 9
-	FileRenameInformation,                   // 10
-	FileLinkInformation,                     // 11
-	FileNamesInformation,                    // 12
-	FileDispositionInformation,              // 13
-	FilePositionInformation,                 // 14
-	FileFullEaInformation,                   // 15
-	FileModeInformation,                     // 16
-	FileAlignmentInformation,                // 17
-	FileAllInformation,                      // 18
-	FileAllocationInformation,               // 19
-	FileEndOfFileInformation,                // 20
-	FileAlternateNameInformation,            // 21
-	FileStreamInformation,                   // 22
-	FilePipeInformation,                     // 23
-	FilePipeLocalInformation,                // 24
-	FilePipeRemoteInformation,               // 25
-	FileMailslotQueryInformation,            // 26
-	FileMailslotSetInformation,              // 27
-	FileCompressionInformation,              // 28
-	FileObjectIdInformation,                 // 29
-	FileCompletionInformation,               // 30
-	FileMoveClusterInformation,              // 31
-	FileQuotaInformation,                    // 32
-	FileReparsePointInformation,             // 33
-	FileNetworkOpenInformation,              // 34
-	FileAttributeTagInformation,             // 35
-	FileTrackingInformation,                 // 36
-	FileIdBothDirectoryInformation,          // 37
-	FileIdFullDirectoryInformation,          // 38
-	FileValidDataLengthInformation,          // 39
-	FileShortNameInformation,                // 40
-	FileIoCompletionNotificationInformation, // 41
-	FileIoStatusBlockRangeInformation,       // 42
-	FileIoPriorityHintInformation,           // 43
-	FileSfioReserveInformation,              // 44
-	FileSfioVolumeInformation,               // 45
-	FileHardLinkInformation,                 // 46
-	FileProcessIdsUsingFileInformation,      // 47
-	FileNormalizedNameInformation,           // 48
-	FileNetworkPhysicalNameInformation,      // 49
-	FileIdGlobalTxDirectoryInformation,      // 50
-	FileIsRemoteDeviceInformation,           // 51
-	FileUnusedInformation,                   // 52
-	FileNumaNodeInformation,                 // 53
-	FileStandardLinkInformation,             // 54
-	FileRemoteProtocolInformation,           // 55
+	FileFullDirectoryInformation = 2,
+	FileBothDirectoryInformation = 3,
+	FileBasicInformation = 4,
+	FileStandardInformation = 5,
+	FileInternalInformation = 6,
+	FileEaInformation = 7,
+	FileAccessInformation = 8,
+	FileNameInformation = 9,
+	FileRenameInformation = 10,
+	FileLinkInformation = 11,
+	FileNamesInformation = 12,
+	FileDispositionInformation = 13,
+	FilePositionInformation = 14,
+	FileFullEaInformation = 15,
+	FileModeInformation = 16,
+	FileAlignmentInformation = 17,
+	FileAllInformation = 18,
+	FileAllocationInformation = 19,
+	FileEndOfFileInformation = 20,
+	FileAlternateNameInformation = 21,
+	FileStreamInformation = 22,
+	FilePipeInformation = 23,
+	FilePipeLocalInformation = 24,
+	FilePipeRemoteInformation = 25,
+	FileMailslotQueryInformation = 26,
+	FileMailslotSetInformation = 27,
+	FileCompressionInformation = 28,
+	FileObjectIdInformation = 29,
+	FileCompletionInformation = 30,
+	FileMoveClusterInformation = 31,
+	FileQuotaInformation = 32,
+	FileReparsePointInformation = 33,
+	FileNetworkOpenInformation = 34,
+	FileAttributeTagInformation = 35,
+	FileTrackingInformation = 36,
+	FileIdBothDirectoryInformation = 37,
+	FileIdFullDirectoryInformation = 38,
+	FileValidDataLengthInformation = 39,
+	FileShortNameInformation = 40,
+	FileIoCompletionNotificationInformation = 41,
+	FileIoStatusBlockRangeInformation = 42,
+	FileIoPriorityHintInformation = 43,
+	FileSfioReserveInformation = 44,
+	FileSfioVolumeInformation = 45,
+	FileHardLinkInformation = 46,
+	FileProcessIdsUsingFileInformation = 47,
+	FileNormalizedNameInformation = 48,
+	FileNetworkPhysicalNameInformation = 49,
+	FileIdGlobalTxDirectoryInformation = 50,
+	FileIsRemoteDeviceInformation = 51,
+	FileUnusedInformation = 52,
+	FileNumaNodeInformation = 53,
+	FileStandardLinkInformation = 54,
+	FileRemoteProtocolInformation = 55,
 
 	//
 	//  These are special versions of these operations (defined earlier)
@@ -132,31 +134,31 @@ enum class file_information_class
 	//  receive these.
 	//
 
-	FileRenameInformationBypassAccessCheck, // 56
-	FileLinkInformationBypassAccessCheck,   // 57
+	FileRenameInformationBypassAccessCheck = 56,
+	FileLinkInformationBypassAccessCheck = 57,
 
 	//
 	// End of special information classes reserved for IOManager.
 	//
 
-	FileVolumeNameInformation,                    // 58
-	FileIdInformation,                            // 59
-	FileIdExtdDirectoryInformation,               // 60
-	FileReplaceCompletionInformation,             // 61
-	FileHardLinkFullIdInformation,                // 62
-	FileIdExtdBothDirectoryInformation,           // 63
-	FileDispositionInformationEx,                 // 64
-	FileRenameInformationEx,                      // 65
-	FileRenameInformationExBypassAccessCheck,     // 66
-	FileDesiredStorageClassInformation,           // 67
-	FileStatInformation,                          // 68
-	FileMemoryPartitionInformation,               // 69
-	FileStatLxInformation,                        // 70
-	FileCaseSensitiveInformation,                 // 71
-	FileLinkInformationEx,                        // 72
-	FileLinkInformationExBypassAccessCheck,       // 73
-	FileStorageReserveIdInformation,              // 74
-	FileCaseSensitiveInformationForceAccessCheck, // 75
+	FileVolumeNameInformation = 58,
+	FileIdInformation = 59,
+	FileIdExtdDirectoryInformation = 60,
+	FileReplaceCompletionInformation = 61,
+	FileHardLinkFullIdInformation = 62,
+	FileIdExtdBothDirectoryInformation = 63,
+	FileDispositionInformationEx = 64,
+	FileRenameInformationEx = 65,
+	FileRenameInformationExBypassAccessCheck = 66,
+	FileDesiredStorageClassInformation = 67,
+	FileStatInformation = 68,
+	FileMemoryPartitionInformation = 69,
+	FileStatLxInformation = 70,
+	FileCaseSensitiveInformation = 71,
+	FileLinkInformationEx = 72,
+	FileLinkInformationExBypassAccessCheck = 73,
+	FileStorageReserveIdInformation = 74,
+	FileCaseSensitiveInformationForceAccessCheck = 75,
 };
 
 struct file_full_dir_information
@@ -1286,6 +1288,59 @@ struct mountmgr_volume_paths
 {
 	::std::uint_least32_t MultiSzLength;
 	char16_t MultiSz[1];
+};
+
+/**
+ * @brief minimum and maximum privilege number in `enum class privileges`.
+ *  	  this is one of the macro api in WDK wdm.h
+ */
+inline constexpr ::std::uint_least32_t SE_MIN_WELL_KNOWN_PRIVILEGE{2};
+inline constexpr ::std::uint_least32_t SE_MAX_WELL_KNOWN_PRIVILEGE{36};
+
+/**
+ * @brief WDK macro apis for privilege (supplied by wdm.h).
+ *        equals to luid low part values that LookupPrivilegeValue returned
+ */
+enum class privileges : ::std::uint_least32_t
+{
+	//
+	// These must be converted to LUIDs before use.
+	//
+	SE_CREATE_TOKEN_PRIVILEGE = 2,
+	SE_ASSIGNPRIMARYTOKEN_PRIVILEGE = 3,
+	SE_LOCK_MEMORY_PRIVILEGE = 4,
+	SE_INCREASE_QUOTA_PRIVILEGE = 5,
+	SE_MACHINE_ACCOUNT_PRIVILEGE = 6,
+	SE_TCB_PRIVILEGE = 7,
+	SE_SECURITY_PRIVILEGE = 8,
+	SE_TAKE_OWNERSHIP_PRIVILEGE = 9,
+	SE_LOAD_DRIVER_PRIVILEGE = 10,
+	SE_SYSTEM_PROFILE_PRIVILEGE = 11,
+	SE_SYSTEMTIME_PRIVILEGE = 12,
+	SE_PROF_SINGLE_PROCESS_PRIVILEGE = 13,
+	SE_INC_BASE_PRIORITY_PRIVILEGE = 14,
+	SE_CREATE_PAGEFILE_PRIVILEGE = 15,
+	SE_CREATE_PERMANENT_PRIVILEGE = 16,
+	SE_BACKUP_PRIVILEGE = 17,
+	SE_RESTORE_PRIVILEGE = 18,
+	SE_SHUTDOWN_PRIVILEGE = 19,
+	SE_DEBUG_PRIVILEGE = 20,
+	SE_AUDIT_PRIVILEGE = 21,
+	SE_SYSTEM_ENVIRONMENT_PRIVILEGE = 22,
+	SE_CHANGE_NOTIFY_PRIVILEGE = 23,
+	SE_REMOTE_SHUTDOWN_PRIVILEGE = 24,
+	SE_UNDOCK_PRIVILEGE = 25,
+	SE_SYNC_AGENT_PRIVILEGE = 26,
+	SE_ENABLE_DELEGATION_PRIVILEGE = 27,
+	SE_MANAGE_VOLUME_PRIVILEGE = 28,
+	SE_IMPERSONATE_PRIVILEGE = 29,
+	SE_CREATE_GLOBAL_PRIVILEGE = 30,
+	SE_TRUSTED_CREDMAN_ACCESS_PRIVILEGE = 31,
+	SE_RELABEL_PRIVILEGE = 32,
+	SE_INC_WORKING_SET_PRIVILEGE = 33,
+	SE_TIME_ZONE_PRIVILEGE = 34,
+	SE_CREATE_SYMBOLIC_LINK_PRIVILEGE = 35,
+	SE_DELEGATE_SESSION_USER_IMPERSONATE_PRIVILEGE = 36,
 };
 
 } // namespace fast_io::win32::nt
