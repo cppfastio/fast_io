@@ -73,6 +73,10 @@ struct nt_alpc_server_handle
 		other.server_section_handle = nullptr;
 		server_message_attribute = other.server_message_attribute;
 		other.server_message_attribute = nullptr;
+		view_begin = other.view_begin;
+		other.view_begin = nullptr;
+		view_end = other.view_end;
+		other.view_end = nullptr;
 	}
 
 	inline constexpr nt_alpc_server_handle &operator=(nt_alpc_server_handle &&other) noexcept
@@ -99,6 +103,12 @@ struct nt_alpc_server_handle
 		}
 		server_message_attribute = other.server_message_attribute;
 		other.server_message_attribute = nullptr;
+
+		view_begin = other.view_begin;
+		other.view_begin = nullptr;
+
+		view_end = other.view_end;
+		other.view_end = nullptr;
 	}
 
 	inline ~nt_alpc_server_handle()
@@ -127,6 +137,10 @@ struct nt_alpc_server_handle
 			alpc_message_alloc::deallocate(server_message_attribute);
 			server_message_attribute = nullptr;
 		}
+
+		view_begin = nullptr;
+
+		view_end = nullptr;
 	}
 
 	inline void close()
@@ -160,6 +174,10 @@ struct nt_alpc_server_handle
 			alpc_message_alloc::deallocate(server_message_attribute);
 			server_message_attribute = nullptr;
 		}
+
+		view_begin = nullptr;
+
+		view_end = nullptr;
 	}
 };
 
@@ -481,5 +499,31 @@ public:
 	}
 };
 
+namespace freestanding
+{
+template <nt_family fm>
+struct is_trivially_relocatable<win32::nt::details::nt_alpc_server_handle<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm>
+struct is_zero_default_constructible<win32::nt::details::nt_alpc_server_handle<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral ch_type>
+struct is_trivially_relocatable<basic_nt_family_alpc_ipc_server<fm, ch_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral ch_type>
+struct is_zero_default_constructible<basic_nt_family_alpc_ipc_server<fm, ch_type>>
+{
+	inline static constexpr bool value = true;
+};
+} // namespace freestanding
 
 } // namespace fast_io
