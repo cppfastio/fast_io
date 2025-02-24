@@ -455,4 +455,29 @@ struct posix_process_args
 using posix_process_envs = posix_process_args;
 
 #endif
+
+namespace freestanding
+{
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+
+template <::fast_io::win32_family family>
+struct is_trivially_relocatable<basic_win32_process_args<family>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <::fast_io::win32_family family>
+struct is_trivially_relocatable<basic_win32_process_envs<family>>
+{
+	inline static constexpr bool value = true;
+};
+#else
+
+template <>
+struct is_trivially_relocatable<posix_process_args>
+{
+	inline static constexpr bool value = true;
+};
+#endif
+} // namespace freestanding
 } // namespace fast_io
