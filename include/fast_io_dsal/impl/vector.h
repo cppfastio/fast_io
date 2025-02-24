@@ -915,11 +915,7 @@ public:
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
 			pointer ret;
-#ifdef __cpp_if_consteval
-			if consteval
-#else
 			if (__builtin_is_constant_evaluated())
-#endif
 			{
 				auto beginptr{imp.begin_ptr};
 				ret = ::std::construct_at(this->move_backward_common_impl(iter - beginptr + beginptr), ::std::forward<Args>(args)...);
@@ -933,11 +929,7 @@ public:
 		}
 		else
 		{
-#ifdef __cpp_if_consteval
-			if consteval
-#else
 			if (__builtin_is_constant_evaluated())
-#endif
 			{
 				auto beginptr{imp.begin_ptr};
 				return this->insert_impl(iter - beginptr + beginptr, value_type(::std::forward<Args>(args)...));
@@ -1009,11 +1001,7 @@ private:
 public:
 	inline constexpr iterator erase(const_iterator it) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return this->erase_common(it - imp.begin_ptr + imp.begin_ptr);
 		}
@@ -1037,11 +1025,7 @@ public:
 
 	inline constexpr iterator erase(const_iterator first, const_iterator last) noexcept
 	{
-#ifdef __cpp_if_consteval
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return this->erase_iters_common(first - imp.begin_ptr + imp.begin_ptr, last - imp.begin_ptr + imp.begin_ptr);
 		}

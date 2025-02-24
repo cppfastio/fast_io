@@ -11,24 +11,7 @@ namespace fast_io
 {
 namespace msvc
 {
-extern
-#if defined(_DLL) && !defined(__WINE__)
-	__declspec(dllimport)
-#endif
-	void *__cdecl msvc__RTtypeid(void *) noexcept
-#if (defined(__GNUC__) || defined(__clang__))
-#if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__))
-#if defined(__GNUC__)
-	__asm__("__RTtypeid")
-#else
-	__asm__("___RTtypeid")
-#endif
-#else
-	__asm__("__RTtypeid")
-#endif
-#endif
-		;
-
+FAST_IO_DLL_DLLIMPORT extern void *FAST_IO_WINCDECL msvc__RTtypeid(void *) noexcept FAST_IO_WINCDECL_RENAME(__RTtypeid, 4);
 } // namespace msvc
 
 namespace rtti_hack

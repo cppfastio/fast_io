@@ -26,12 +26,7 @@ struct overlapped_copy_buffer_ptr
 inline constexpr ::std::byte *bytes_copy_naive_n_impl(::std::byte const *first, ::std::size_t n,
 													  ::std::byte *dest) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		::fast_io::details::overlapped_copy_buffer_ptr<::std::byte> tempbuffer(n);
 		auto tempbufferptr{tempbuffer.ptr};
@@ -46,7 +41,6 @@ inline constexpr ::std::byte *bytes_copy_naive_n_impl(::std::byte const *first, 
 		return dest + n;
 	}
 	else
-#endif
 	{
 		auto ed{first + n};
 		auto dested{dest + n};
@@ -83,17 +77,11 @@ namespace fast_io::freestanding
 #endif
 inline constexpr ::std::byte *bytes_copy_n(::std::byte const *first, ::std::size_t n, ::std::byte *dest) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		return ::fast_io::details::bytes_copy_naive_n_impl(first, n, dest);
 	}
 	else
-#endif
 	{
 		if (n)
 #if __has_cpp_attribute(likely)
@@ -123,17 +111,11 @@ inline constexpr ::std::byte *bytes_copy(::std::byte const *first, ::std::byte c
 inline constexpr ::std::byte *nonoverlapped_bytes_copy_n(::std::byte const *first, ::std::size_t n,
 														 ::std::byte *dest) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		return ::fast_io::details::bytes_copy_naive_n_impl(first, n, dest);
 	}
 	else
-#endif
 	{
 		if (n)
 #if __has_cpp_attribute(likely)
@@ -165,12 +147,8 @@ inline constexpr ::std::byte const *type_punning_from_bytes(::std::byte const *_
 	constexpr ::std::size_t n{sizeof(T)};
 	if constexpr (n != 0)
 	{
-#if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L)
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_lib_bit_cast >= 201806L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			::std::byte buffer[n];
 			nonoverlapped_bytes_copy_n(first, n, buffer);
@@ -197,12 +175,8 @@ inline constexpr ::std::byte *type_punning_to_bytes_n(T const &__restrict first,
 {
 	if constexpr (n != 0)
 	{
-#if __cpp_lib_bit_cast >= 201806L && (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L)
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
+#if __cpp_lib_bit_cast >= 201806L
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			auto buffer{::std::bit_cast<::fast_io::freestanding::array<::std::byte, sizeof(T)>>(first)};
 			nonoverlapped_bytes_copy_n(buffer.data(), n, dest);
@@ -231,12 +205,7 @@ inline constexpr ::std::byte *type_punning_to_bytes(T const &__restrict first, :
 
 inline constexpr ::std::byte *bytes_clear_n(::std::byte *data, ::std::size_t size) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{
@@ -244,7 +213,6 @@ inline constexpr ::std::byte *bytes_clear_n(::std::byte *data, ::std::size_t siz
 		}
 	}
 	else
-#endif
 	{
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memset)
@@ -266,12 +234,7 @@ inline constexpr ::std::byte *bytes_clear(::std::byte *first, ::std::byte *last)
 
 inline constexpr ::std::byte *bytes_fill_n(::std::byte *data, ::std::size_t size, ::std::byte val) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		for (::std::size_t i{}; i != size; ++i)
 		{
@@ -279,7 +242,6 @@ inline constexpr ::std::byte *bytes_fill_n(::std::byte *data, ::std::size_t size
 		}
 	}
 	else
-#endif
 	{
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_memset)

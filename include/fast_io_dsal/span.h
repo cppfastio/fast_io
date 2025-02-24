@@ -8,9 +8,6 @@
 #error "You must be using a C++ compiler"
 #endif
 
-#include "impl/misc/push_macros.h"
-#include "impl/misc/push_warnings.h"
-
 #include <version>
 #include <type_traits>
 #include <concepts>
@@ -24,6 +21,8 @@
 #include <compare>
 #endif
 #include "../fast_io_core.h"
+#include "impl/misc/push_macros.h"
+#include "impl/misc/push_warnings.h"
 #include "impl/common.h"
 #include "impl/span.h"
 

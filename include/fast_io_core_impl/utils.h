@@ -346,12 +346,8 @@ inline
 	void
 	compile_time_type_punning_copy_n(range_type const *first, ::std::size_t bytes, ::std::byte *out)
 {
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
+#if __cpp_lib_bit_cast >= 201806L
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		if constexpr (::std::same_as<range_type, ::std::byte>)
 		{
@@ -387,17 +383,11 @@ template <::std::input_or_output_iterator output_iter, typename T>
 	requires(::std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(::std::uintmax_t))
 inline constexpr output_iter my_fill_n(output_iter first, ::std::size_t count, T value)
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
 	if (__builtin_is_constant_evaluated())
-#endif
 	{
 		::fast_io::freestanding::fill_n(first, count, value);
 	}
 	else
-#endif
 	{
 		using output_value_type = ::std::iter_value_t<output_iter>;
 		if constexpr (::std::contiguous_iterator<output_iter> && ::std::is_trivially_copyable_v<output_value_type> &&
