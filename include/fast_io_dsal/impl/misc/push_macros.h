@@ -183,19 +183,19 @@
 #endif
 
 #pragma push_macro("FAST_IO_GNU_RETURNS_NONNULL")
-#undef FAST_IO_GNU_RETURNS_NONNULL
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
+#undef FAST_IO_GNU_RETURNS_NONNULL
 #define FAST_IO_GNU_RETURNS_NONNULL [[__gnu__::__returns_nonnull__]]
 #else
 #define FAST_IO_GNU_RETURNS_NONNULL
 #endif
 
-#pragma push_macro("FAST_IO_ASSERTIONS")
-#undef FAST_IO_ASSERTIONS
+#pragma push_macro("FAST_IO_ASSERT")
+#undef FAST_IO_ASSERT
 /*
 Internal assert macros for fuzzing fast_io.
 */
-#if defined(FAST_IO_ASSERTIONS)
+#if defined(FAST_IO_DEBUG)
 #if defined(_MSC_VER) && !defined(__clang__)
 #define FAST_IO_ASSERT(x)                           \
 	if (!__builtin_is_constant_evaluated() && !(x)) \
