@@ -189,3 +189,22 @@
 #else
 #define FAST_IO_GNU_RETURNS_NONNULL
 #endif
+
+#pragma push_macro("FAST_IO_ASSERTIONS")
+#undef FAST_IO_ASSERTIONS
+/*
+Internal assert macros for fuzzing fast_io.
+*/
+#if defined(FAST_IO_ASSERTIONS)
+#if defined(_MSC_VER) && !defined(__clang__)
+#define FAST_IO_ASSERT(x)                           \
+	if (!__builtin_is_constant_evaluated() && !(x)) \
+	::std::abort()
+#else
+#define FAST_IO_ASSERT(x)                           \
+	if (!__builtin_is_constant_evaluated() && !(x)) \
+	__builtin_trap()
+#endif
+#else
+#define FAST_IO_ASSERT(x) ((void)0)
+#endif
