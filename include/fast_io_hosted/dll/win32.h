@@ -229,6 +229,22 @@ struct win32_dll_load_impl_context
 
 } // namespace details
 
+namespace freestanding
+{
+
+template <win32_family family>
+struct is_trivially_relocatable<win32_family_dll_file<family>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <win32_family family>
+struct is_zero_default_constructible<win32_family_dll_file<family>>
+{
+	inline static constexpr bool value = true;
+};
+} // namespace freestanding
+
 template <win32_family family, ::fast_io::constructible_to_os_c_str T>
 inline void *dll_load_symbol(win32_family_dll_io_observer<family> pdliob, T const &symbol)
 {

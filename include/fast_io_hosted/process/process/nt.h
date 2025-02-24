@@ -912,4 +912,19 @@ using nt_process = nt_family_process<nt_family::nt>;
 using zw_process_observer = nt_family_process_observer<nt_family::zw>;
 using zw_process = nt_family_process<nt_family::zw>;
 
+namespace freestanding
+{
+template <nt_family fm>
+struct is_trivially_relocatable<nt_family_process<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm>
+struct is_zero_default_constructible<nt_family_process<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+} // namespace freestanding
 } // namespace fast_io
