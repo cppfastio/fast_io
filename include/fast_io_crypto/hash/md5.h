@@ -98,12 +98,7 @@ inline
 	::std::uint_least32_t tmp;
 	for (; block != ed; block += block_size)
 	{
-#if __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			for (::std::size_t j{}; j != 16; ++j)
 			{
@@ -131,7 +126,6 @@ inline
 			uu<operation::F>(b, c, d, a, x[15], 22, 0x49b40821u);
 		}
 		else
-#endif
 		{
 			ul32_may_alias const *w{reinterpret_cast<ul32_may_alias const *>(block)};
 			uu<operation::F>(a, b, c, d, x[0] = little_endian(w[0]), 7, 0xd76aa478u);
@@ -375,17 +369,11 @@ public:
 		void
 		update_blocks(::std::byte const *block_start, ::std::byte const *block_last) noexcept
 	{
-#if __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			::fast_io::details::md5::md5_main(this->state, block_start, block_last);
 		}
 		else
-#endif
 		{
 			if constexpr (::std::endian::native == ::std::endian::little)
 			{

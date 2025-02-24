@@ -746,17 +746,11 @@ public:
 		update_blocks(::std::byte const *__restrict blocks_start, ::std::byte const *__restrict blocks_last) noexcept
 	{
 		::std::size_t const blocks_bytes{static_cast<::std::size_t>(blocks_last - blocks_start)};
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			::fast_io::details::sha1::sha1_do_constexpr_function(this->state, blocks_start, blocks_bytes);
 		}
 		else
-#endif
 		{
 			::fast_io::details::sha1::sha1_do_function(this->state, blocks_start, blocks_bytes);
 		}

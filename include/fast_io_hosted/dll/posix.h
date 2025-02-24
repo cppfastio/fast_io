@@ -239,6 +239,22 @@ struct posix_dll_load_versioned_symbol_impl_context
 
 } // namespace details
 
+namespace freestanding
+{
+
+template <>
+struct is_trivially_relocatable<posix_dll_file>
+{
+	inline static constexpr bool value = true;
+};
+
+template <>
+struct is_zero_default_constructible<posix_dll_file>
+{
+	inline static constexpr bool value = true;
+};
+} // namespace freestanding
+
 template <::fast_io::constructible_to_os_c_str T>
 inline void *dll_load_symbol(posix_dll_io_observer pdliob, T const &symbol)
 {

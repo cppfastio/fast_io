@@ -389,19 +389,13 @@ inline constexpr T umul(U a, T b, U &high) noexcept
 	else if constexpr (sizeof(T) == sizeof(::std::uint_least64_t))
 	{
 #ifdef __SIZEOF_INT128__
-#if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
-#if defined(__cpp_if_consteval)
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			__uint128_t res{a * static_cast<__uint128_t>(b)};
 			high = static_cast<U>(res >> 64u);
 			return static_cast<T>(res);
 		}
 		else
-#endif
 		{
 #if defined(__cpp_lib_bit_cast)
 			if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
@@ -419,17 +413,11 @@ inline constexpr T umul(U a, T b, U &high) noexcept
 			}
 		}
 #elif defined(_MSC_VER) && defined(_M_X64) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
-#if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
-#if defined(__cpp_if_consteval)
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return ::fast_io::intrinsics::details::umul_least64_generic_emulated(a, b, high);
 		}
 		else
-#endif
 		{
 			if constexpr (sizeof(U) == sizeof(::std::uint_least64_t))
 			{
@@ -500,18 +488,12 @@ inline constexpr U umulh(U a, T b) noexcept
 	else if constexpr (sizeof(T) == sizeof(::std::uint_least64_t))
 	{
 #ifdef __SIZEOF_INT128__
-#if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
-#if defined(__cpp_if_consteval)
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			__uint128_t res{a * static_cast<__uint128_t>(b)};
 			return static_cast<U>(res >> 64u);
 		}
 		else
-#endif
 		{
 #if defined(__cpp_lib_bit_cast)
 			if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
@@ -527,17 +509,11 @@ inline constexpr U umulh(U a, T b) noexcept
 			}
 		}
 #elif defined(_MSC_VER) && defined(_M_X64) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
-#if defined(__cpp_lib_is_constant_evaluated) || defined(__cpp_if_consteval)
-#if defined(__cpp_if_consteval)
-		if consteval
-#else
 		if (__builtin_is_constant_evaluated())
-#endif
 		{
 			return ::fast_io::intrinsics::details::umulh_least64_generic_emulated(a, b);
 		}
 		else
-#endif
 		{
 			return static_cast<U>(::fast_io::intrinsics::msvc::x86::__umulh(a, b));
 		}

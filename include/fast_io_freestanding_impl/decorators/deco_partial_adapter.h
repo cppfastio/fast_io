@@ -27,12 +27,7 @@ struct deco_partial_adapter
 	{
 		if constexpr (!::std::same_as<char_type, input_char_type>)
 		{
-#if defined(__cpp_if_consteval)
-			if consteval
-
-#else
 			if (__builtin_is_constant_evaluated())
-#endif
 			{
 				::std::size_t fromdiff{static_cast<::std::size_t>(fromlast - fromfirst)};
 				::fast_io::details::local_operator_new_array_ptr<input_char_type> fromptr(fromdiff);

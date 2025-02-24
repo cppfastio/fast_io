@@ -73,6 +73,10 @@ struct nt_alpc_server_handle
 		other.server_section_handle = nullptr;
 		server_message_attribute = other.server_message_attribute;
 		other.server_message_attribute = nullptr;
+		view_begin = other.view_begin;
+		other.view_begin = nullptr;
+		view_end = other.view_end;
+		other.view_end = nullptr;
 	}
 
 	inline constexpr nt_alpc_server_handle &operator=(nt_alpc_server_handle &&other) noexcept
@@ -81,14 +85,14 @@ struct nt_alpc_server_handle
 
 		if (server_section_handle)
 		{
-			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_section_handle);
+			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_section_handle, 0);
 		}
 		server_section_handle = other.server_section_handle;
 		other.server_section_handle = nullptr;
 
 		if (server_handle)
 		{
-			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_handle);
+			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_handle, 0);
 		}
 		server_handle = other.server_handle;
 		other.server_handle = nullptr;
@@ -99,26 +103,32 @@ struct nt_alpc_server_handle
 		}
 		server_message_attribute = other.server_message_attribute;
 		other.server_message_attribute = nullptr;
+
+		view_begin = other.view_begin;
+		other.view_begin = nullptr;
+
+		view_end = other.view_end;
+		other.view_end = nullptr;
 	}
 
 	inline ~nt_alpc_server_handle()
 	{
-		close();
+		close_noexcept();
 	}
 
-	inline void close() noexcept
+	inline void close_noexcept() noexcept
 	{
 		constexpr bool zw{family == nt_family::zw};
 
 		if (server_section_handle)
 		{
-			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_section_handle);
+			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_section_handle, 0);
 			server_section_handle = nullptr;
 		}
 
 		if (server_handle)
 		{
-			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_handle);
+			::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_handle, 0);
 			server_handle = nullptr;
 		}
 
@@ -127,6 +137,47 @@ struct nt_alpc_server_handle
 			alpc_message_alloc::deallocate(server_message_attribute);
 			server_message_attribute = nullptr;
 		}
+
+		view_begin = nullptr;
+
+		view_end = nullptr;
+	}
+
+	inline void close()
+	{
+		constexpr bool zw{family == nt_family::zw};
+
+		::std::uint_least32_t status; // No initialization required
+
+		if (server_section_handle)
+		{
+			status = ::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_section_handle, 0);
+			if (status) [[unlikely]]
+			{
+				throw_nt_error(status);
+			}
+			server_section_handle = nullptr;
+		}
+
+		if (server_handle)
+		{
+			status = ::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(server_handle, 0);
+			if (status) [[unlikely]]
+			{
+				throw_nt_error(status);
+			}
+			server_handle = nullptr;
+		}
+
+		if (server_message_attribute)
+		{
+			alpc_message_alloc::deallocate(server_message_attribute);
+			server_message_attribute = nullptr;
+		}
+
+		view_begin = nullptr;
+
+		view_end = nullptr;
 	}
 };
 
@@ -366,5 +417,113 @@ public:
 		return temp;
 	}
 };
+
+template <nt_family family, ::std::integral ch_type>
+class basic_nt_family_alpc_ipc_server : public basic_nt_family_alpc_ipc_server_observer<family, ch_type>
+{
+public:
+	using typename basic_nt_family_alpc_ipc_server_observer<family, ch_type>::char_type;
+	using typename basic_nt_family_alpc_ipc_server_observer<family, ch_type>::input_char_type;
+	using typename basic_nt_family_alpc_ipc_server_observer<family, ch_type>::output_char_type;
+	using typename basic_nt_family_alpc_ipc_server_observer<family, ch_type>::native_handle_type;
+	using basic_nt_family_alpc_ipc_server_observer<family, ch_type>::native_handle;
+
+	using native_handle_rmptr_type = ::std::remove_pointer_t<native_handle_type>;
+	using tls_native_handle_rmptr_type_alloc = ::fast_io::native_typed_thread_local_allocator<native_handle_rmptr_type>;
+
+	inline explicit constexpr basic_nt_family_alpc_ipc_server() noexcept = default;
+
+	inline constexpr basic_nt_family_alpc_ipc_server(basic_nt_family_alpc_ipc_server_observer<family, ch_type>) noexcept = delete;
+	inline constexpr basic_nt_family_alpc_ipc_server &operator=(basic_nt_family_alpc_ipc_server_observer<family, ch_type>) noexcept = delete;
+
+	inline basic_nt_family_alpc_ipc_server(basic_nt_family_alpc_ipc_server const &) = delete;
+	inline basic_nt_family_alpc_ipc_server &operator=(basic_nt_family_alpc_ipc_server const &) = delete;
+
+	inline basic_nt_family_alpc_ipc_server(basic_nt_family_alpc_ipc_server &&__restrict b) noexcept
+		: basic_nt_family_alpc_ipc_server_observer<family, ch_type>{b.release()}
+	{
+	}
+	inline basic_nt_family_alpc_ipc_server &operator=(basic_nt_family_alpc_ipc_server &&__restrict b) noexcept
+	{
+		if (__builtin_addressof(b) == this) [[unlikely]]
+		{
+			return *this;
+		}
+		if (*this) [[likely]]
+		{
+			this->handle->close_noexcept();
+		}
+		this->handle = b.handle;
+		b.handle = nullptr;
+		return *this;
+	}
+	inline void reset(native_handle_type newhandle = {}) noexcept
+	{
+		if (*this) [[likely]]
+		{
+			this->handle->close_noexcept();
+		}
+		this->handle = newhandle;
+	}
+	inline void close()
+	{
+		if (*this) [[likely]]
+		{
+			this->handle->close();
+			tls_native_handle_rmptr_type_alloc::deallocate_n(this->handle, 1);
+			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
+		}
+	}
+
+	template <typename native_hd>
+		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
+	inline explicit constexpr basic_nt_family_alpc_ipc_server(native_hd handle1) noexcept
+		: basic_nt_family_alpc_ipc_server_observer<family, ch_type>{handle1}
+	{}
+
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_nt_family_alpc_ipc_server(T const &server_name, ipc_mode im)
+	{
+		this->handle = tls_native_handle_rmptr_type_alloc::allocate_zero(1);
+		this->handle->server_handle = ::fast_io::win32::nt::details::nt_create_alpc_ipc_server_impl<family>(server_name, im);
+	}
+
+	inline ~basic_nt_family_alpc_ipc_server()
+	{
+		if (*this) [[likely]]
+		{
+			this->handle->close_noexcept();
+			tls_native_handle_rmptr_type_alloc::deallocate_n(this->handle, 1);
+			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
+		}
+	}
+};
+
+namespace freestanding
+{
+template <nt_family fm>
+struct is_trivially_relocatable<win32::nt::details::nt_alpc_server_handle<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm>
+struct is_zero_default_constructible<win32::nt::details::nt_alpc_server_handle<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral ch_type>
+struct is_trivially_relocatable<basic_nt_family_alpc_ipc_server<fm, ch_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral ch_type>
+struct is_zero_default_constructible<basic_nt_family_alpc_ipc_server<fm, ch_type>>
+{
+	inline static constexpr bool value = true;
+};
+} // namespace freestanding
 
 } // namespace fast_io
