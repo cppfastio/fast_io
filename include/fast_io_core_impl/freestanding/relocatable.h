@@ -9,7 +9,7 @@ struct is_trivially_relocatable
 #if defined(__cpp_lib_trivially_relocatable)
 	inline static constexpr bool value = ::std::is_trivially_relocatable_v<T>;
 #else
-	inline static constexpr bool value = ::std::is_scalar_v<::std::remove_all_extents_t<T>> || ::std::is_empty_v<T>;
+	inline static constexpr bool value = ::std::is_trivially_copyable_v<T>;
 #endif
 };
 
