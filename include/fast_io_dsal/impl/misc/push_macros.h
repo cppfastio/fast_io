@@ -208,3 +208,11 @@ Internal assert macros for fuzzing fast_io.
 #else
 #define FAST_IO_ASSERT(x) ((void)0)
 #endif
+
+#pragma push_macro("FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE")
+#if defined(__cpp_trivial_relocatability)
+#undef FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
+#define FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE trivially_relocatable_if_eligible
+#else
+#define FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
+#endif
