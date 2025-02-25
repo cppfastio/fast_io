@@ -158,8 +158,8 @@
 #pragma comment(linker,"/alternatename:__imp_?CreateNamedPipeA@win32@fast_io@@YGPAXPBDIIIIIIPAUsecurity_attributes@12@@Z=__imp__CreateNamedPipeA@32")
 #pragma comment(linker,"/alternatename:__imp_?ConnectNamedPipe@win32@fast_io@@YGHPAXPAUoverlapped@12@@Z=__imp__ConnectNamedPipe@8")
 #pragma comment(linker,"/alternatename:__imp_?DisconnectNamedPipe@win32@fast_io@@YGHPAX@Z=__imp__DisconnectNamedPipe@4")
-#pragma comment(linker,"/alternatename:__imp_?LookupPrivilegeValueA@win32@fast_io@@YGHPBD0PAUluid@12@@Z=__imp__LookupPrivilegeValueA@12")
-#pragma comment(linker,"/alternatename:__imp_?LookupPrivilegeValueW@win32@fast_io@@YGHPB_S0PAUluid@12@@Z=__imp__LookupPrivilegeValueW@12")
+#pragma comment(linker,"/alternatename:__imp_?LookupPrivilegeValueA@win32@fast_io@@YGHPBD0PA_J@Z=__imp__LookupPrivilegeValueA@12")
+#pragma comment(linker,"/alternatename:__imp_?LookupPrivilegeValueW@win32@fast_io@@YGHPB_S0PA_J@Z=__imp__LookupPrivilegeValueW@12")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YGII@Z=__imp__RtlNtStatusToDosError@4")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YGIPAX@Z=__imp__NtClose@4")
