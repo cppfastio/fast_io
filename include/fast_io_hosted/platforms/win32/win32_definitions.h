@@ -426,4 +426,10 @@ struct win32_find_dataw
 
 using farproc = ::std::ptrdiff_t(FAST_IO_STDCALL *)() noexcept;
 
+struct luid
+{
+    unsigned long LowPart;
+    long HighPart;
+};
+
 } // namespace fast_io::win32
