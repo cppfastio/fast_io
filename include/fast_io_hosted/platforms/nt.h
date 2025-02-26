@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
@@ -772,7 +772,7 @@ inline void nt_flush_impl(void *handle)
 template <bool zw>
 inline void nt_data_sync_impl(void *handle, data_sync_flags flags [[maybe_unused]])
 {
-#if _WIN32_WINNT >= 0x0602 || WINVER >= 0x0602
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) || WINVER >= 0x0602
 	/*
 	NtFlushBuffersFileEx and ZwFlushBuffersFileEx are only provided since windows 8
 	*/
