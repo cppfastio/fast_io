@@ -3,6 +3,12 @@
 namespace fast_io::win32
 {
 
+/**
+ * @brief fast_io will never define these types which defined in WDK
+ */
+// using NTSTATUS = ::std::int_least32_t;
+// using LUID = ::std::int_least64_t;
+
 struct overlapped
 {
 	::std::conditional_t<(sizeof(::std::size_t) > 4), ::std::uint_least64_t, ::std::uint_least32_t> Internal,
@@ -425,11 +431,5 @@ struct win32_find_dataw
 };
 
 using farproc = ::std::ptrdiff_t(FAST_IO_STDCALL *)() noexcept;
-
-struct luid
-{
-    unsigned long LowPart;
-    long HighPart;
-};
 
 } // namespace fast_io::win32
