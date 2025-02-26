@@ -120,8 +120,8 @@ inline constexpr Iter2 uninitialized_relocate(Iter1 first, Iter1 last, Iter2 des
 		using iter1valuetype = ::std::iter_value_t<Iter1>;
 		using iter2valuetype = ::std::iter_value_t<Iter2>;
 		if constexpr (::std::is_pointer_v<Iter1> && ::std::is_pointer_v<Iter2> &&
-					  (::fast_io::freestanding::is_trivially_relocatable_v<iter1valuetype> &&
-					   ::fast_io::freestanding::is_trivially_relocatable_v<iter2valuetype> &&
+					  (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<iter1valuetype> &&
+					   ::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<iter2valuetype> &&
 					   (::std::same_as<iter1valuetype, iter2valuetype> ||
 						((::std::integral<iter1valuetype> || ::std::same_as<iter1valuetype, ::std::byte>) &&
 						 (::std::integral<iter2valuetype> || ::std::same_as<iter2valuetype, ::std::byte>) &&
@@ -186,8 +186,8 @@ inline constexpr Iter2 uninitialized_move(Iter1 first, Iter1 last, Iter2 dest) n
 		using iter1valuetype = ::std::iter_value_t<Iter1>;
 		using iter2valuetype = ::std::iter_value_t<Iter2>;
 		if constexpr (::std::is_pointer_v<Iter1> && ::std::is_pointer_v<Iter2> &&
-					  (::fast_io::freestanding::is_trivially_relocatable_v<iter1valuetype> &&
-					   ::fast_io::freestanding::is_trivially_relocatable_v<iter2valuetype> &&
+					  (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<iter1valuetype> &&
+					   ::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<iter2valuetype> &&
 					   (::std::same_as<iter1valuetype, iter2valuetype> ||
 						((::std::integral<iter1valuetype> || ::std::same_as<iter1valuetype, ::std::byte>) &&
 						 (::std::integral<iter2valuetype> || ::std::same_as<iter2valuetype, ::std::byte>) &&
@@ -242,8 +242,8 @@ inline constexpr Iter2 uninitialized_move_backward(Iter1 first, Iter1 last, Iter
 		using iter1valuetype = ::std::iter_value_t<Iter1>;
 		using iter2valuetype = ::std::iter_value_t<Iter2>;
 		if constexpr (::std::is_pointer_v<Iter1> && ::std::is_pointer_v<Iter2> &&
-					  (::fast_io::freestanding::is_trivially_relocatable_v<iter1valuetype> &&
-					   ::fast_io::freestanding::is_trivially_relocatable_v<iter2valuetype> &&
+					  (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<iter1valuetype> &&
+					   ::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<iter2valuetype> &&
 					   (::std::same_as<iter1valuetype, iter2valuetype> ||
 						((::std::integral<iter1valuetype> || ::std::same_as<iter1valuetype, ::std::byte>) &&
 						 (::std::integral<iter2valuetype> || ::std::same_as<iter2valuetype, ::std::byte>) &&

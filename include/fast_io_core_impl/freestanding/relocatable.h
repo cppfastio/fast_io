@@ -4,17 +4,17 @@ namespace fast_io::freestanding
 {
 
 template <typename T>
-struct is_trivially_relocatable
+struct is_trivially_copyable_or_relocatable
 {
+	inline static constexpr bool value = ::std::is_trivially_copyable_v<T>
 #if defined(__cpp_lib_trivially_relocatable)
-	inline static constexpr bool value = ::std::is_trivially_relocatable_v<T>;
-#else
-	inline static constexpr bool value = ::std::is_scalar_v<::std::remove_all_extents_t<T>> || ::std::is_empty_v<T>;
+										 || ::std::is_trivially_copyable_or_relocatable_v<T>
 #endif
+		;
 };
 
 template <typename T>
-inline constexpr bool is_trivially_relocatable_v = is_trivially_relocatable<T>::value;
+inline constexpr bool is_trivially_copyable_or_relocatable_v = is_trivially_copyable_or_relocatable<T>::value;
 
 template <typename T>
 struct is_zero_default_constructible

@@ -612,7 +612,7 @@ inline constexpr void deque_grow_back_common(dequecontroltype &controller) noexc
 } // namespace details
 
 template <typename T, typename allocator>
-class deque
+class deque FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 public:
 	using value_type = T;
@@ -1091,7 +1091,7 @@ namespace freestanding
 {
 
 template <typename T, typename allocator>
-struct is_trivially_relocatable<::fast_io::containers::deque<T, allocator>>
+struct is_trivially_copyable_or_relocatable<::fast_io::containers::deque<T, allocator>>
 {
 	inline static constexpr bool value = true;
 };

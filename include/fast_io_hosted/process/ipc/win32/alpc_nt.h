@@ -50,7 +50,7 @@ constexpr inline nt_alpc_internal_tlc_str concat_nt_alpc_internal_tlc_str(Args &
 }
 
 template <nt_family family>
-struct nt_alpc_server_handle
+struct nt_alpc_server_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using alpc_message_alloc = ::fast_io::native_thread_local_allocator;
 
@@ -419,7 +419,7 @@ public:
 };
 
 template <nt_family family, ::std::integral ch_type>
-class basic_nt_family_alpc_ipc_server : public basic_nt_family_alpc_ipc_server_observer<family, ch_type>
+class basic_nt_family_alpc_ipc_server FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_nt_family_alpc_ipc_server_observer<family, ch_type>
 {
 public:
 	using typename basic_nt_family_alpc_ipc_server_observer<family, ch_type>::char_type;
@@ -502,7 +502,7 @@ public:
 namespace freestanding
 {
 template <nt_family fm>
-struct is_trivially_relocatable<win32::nt::details::nt_alpc_server_handle<fm>>
+struct is_trivially_copyable_or_relocatable<win32::nt::details::nt_alpc_server_handle<fm>>
 {
 	inline static constexpr bool value = true;
 };
@@ -514,7 +514,13 @@ struct is_zero_default_constructible<win32::nt::details::nt_alpc_server_handle<f
 };
 
 template <nt_family fm, ::std::integral ch_type>
-struct is_trivially_relocatable<basic_nt_family_alpc_ipc_server<fm, ch_type>>
+struct is_zero_default_constructible<basic_nt_family_alpc_ipc_server_observer<fm, ch_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral ch_type>
+struct is_trivially_copyable_or_relocatable<basic_nt_family_alpc_ipc_server<fm, ch_type>>
 {
 	inline static constexpr bool value = true;
 };

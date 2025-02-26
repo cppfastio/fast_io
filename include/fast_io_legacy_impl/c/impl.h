@@ -877,7 +877,7 @@ struct
 };
 
 template <c_family family, ::std::integral ch_type>
-class basic_c_family_file : public basic_c_family_io_observer<family, ch_type>
+class basic_c_family_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_c_family_io_observer<family, ch_type>
 {
 public:
 	using char_type = ch_type;
@@ -1064,7 +1064,13 @@ using c_file_factory_unlocked = c_family_file_factory<c_family::native_unlocked>
 namespace freestanding
 {
 template <c_family fm, ::std::integral char_type>
-struct is_trivially_relocatable<basic_c_family_file<fm, char_type>>
+struct is_zero_default_constructible<basic_c_family_io_observer<fm, char_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <c_family fm, ::std::integral char_type>
+struct is_trivially_copyable_or_relocatable<basic_c_family_file<fm, char_type>>
 {
 	inline static constexpr bool value = true;
 };
