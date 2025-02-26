@@ -157,9 +157,14 @@ using wfilebuf_file = basic_filebuf_file<wchar_t>;
 
 namespace freestanding
 {
+template <::std::integral CharT, typename Traits>
+struct is_zero_default_constructible<basic_filebuf_io_observer<CharT, Traits>>
+{
+	inline static constexpr bool value = true;
+};
 
 template <::std::integral CharT, typename Traits>
-struct is_trivially_relocatable<basic_filebuf_file<CharT, Traits>>
+struct is_trivially_copyable_or_relocatable<basic_filebuf_file<CharT, Traits>>
 {
 	inline static constexpr bool value = true;
 };

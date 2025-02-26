@@ -479,7 +479,7 @@ public:
 private:
 	inline constexpr pointer grow_to_size_iter_impl(size_type newcap, pointer iter, size_type n) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -519,7 +519,7 @@ private:
 #endif
 	inline constexpr pointer grow_twice_iter_impl(pointer iter) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -538,7 +538,7 @@ private:
 	}
 	inline constexpr pointer move_backward_common_impl(pointer iter) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
 #ifdef __cpp_if_consteval
 			if !consteval
@@ -563,7 +563,7 @@ private:
 
 	inline constexpr void grow_to_size_impl(size_type newcap) noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -585,7 +585,7 @@ private:
 #endif
 	inline constexpr void grow_twice_impl() noexcept
 	{
-		if constexpr (::fast_io::freestanding::is_trivially_relocatable_v<value_type>)
+		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
 #if __cpp_if_consteval >= 202106L
@@ -1150,7 +1150,7 @@ namespace freestanding
 {
 
 template <typename T, typename Alloc>
-struct is_trivially_relocatable<::fast_io::containers::vector<T, Alloc>>
+struct is_trivially_copyable_or_relocatable<::fast_io::containers::vector<T, Alloc>>
 {
 	inline static constexpr bool value = true;
 };

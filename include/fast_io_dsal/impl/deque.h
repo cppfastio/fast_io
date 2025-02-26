@@ -1091,7 +1091,7 @@ namespace freestanding
 {
 
 template <typename T, typename allocator>
-struct is_trivially_relocatable<::fast_io::containers::deque<T, allocator>>
+struct is_trivially_copyable_or_relocatable<::fast_io::containers::deque<T, allocator>>
 {
 	inline static constexpr bool value = true;
 };

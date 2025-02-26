@@ -502,7 +502,7 @@ public:
 namespace freestanding
 {
 template <nt_family fm>
-struct is_trivially_relocatable<win32::nt::details::nt_alpc_server_handle<fm>>
+struct is_trivially_copyable_or_relocatable<win32::nt::details::nt_alpc_server_handle<fm>>
 {
 	inline static constexpr bool value = true;
 };
@@ -514,7 +514,13 @@ struct is_zero_default_constructible<win32::nt::details::nt_alpc_server_handle<f
 };
 
 template <nt_family fm, ::std::integral ch_type>
-struct is_trivially_relocatable<basic_nt_family_alpc_ipc_server<fm, ch_type>>
+struct is_zero_default_constructible<basic_nt_family_alpc_ipc_server_observer<fm, ch_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral ch_type>
+struct is_trivially_copyable_or_relocatable<basic_nt_family_alpc_ipc_server<fm, ch_type>>
 {
 	inline static constexpr bool value = true;
 };

@@ -241,9 +241,14 @@ struct posix_dll_load_versioned_symbol_impl_context
 
 namespace freestanding
 {
+template <>
+struct is_zero_default_constructible<posix_dll_io_observer>
+{
+	inline static constexpr bool value = true;
+};
 
 template <>
-struct is_trivially_relocatable<posix_dll_file>
+struct is_trivially_copyable_or_relocatable<posix_dll_file>
 {
 	inline static constexpr bool value = true;
 };

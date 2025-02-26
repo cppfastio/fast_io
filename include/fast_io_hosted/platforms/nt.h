@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace fast_io
 {
@@ -1716,7 +1716,13 @@ inline basic_nt_io_observer<char_type> native_stderr() noexcept
 namespace freestanding
 {
 template <nt_family fm, ::std::integral char_type>
-struct is_trivially_relocatable<basic_nt_family_file<fm, char_type>>
+struct is_zero_default_constructible<basic_nt_family_io_observer<fm, char_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral char_type>
+struct is_trivially_copyable_or_relocatable<basic_nt_family_file<fm, char_type>>
 {
 	inline static constexpr bool value = true;
 };

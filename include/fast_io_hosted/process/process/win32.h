@@ -853,7 +853,13 @@ using win32_process = win32_family_process<win32_family::native>;
 namespace freestanding
 {
 template <win32_family fm>
-struct is_trivially_relocatable<win32_family_process<fm>>
+struct is_zero_default_constructible<win32_family_process_observer<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <win32_family fm>
+struct is_trivially_copyable_or_relocatable<win32_family_process<fm>>
 {
 	inline static constexpr bool value = true;
 };

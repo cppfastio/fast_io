@@ -1774,7 +1774,7 @@ namespace freestanding
 {
 
 template <::std::integral chtype, typename alloctype>
-struct is_trivially_relocatable<::fast_io::containers::basic_string<chtype, alloctype>>
+struct is_trivially_copyable_or_relocatable<::fast_io::containers::basic_string<chtype, alloctype>>
 {
 	inline static constexpr bool value = true;
 };

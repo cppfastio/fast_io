@@ -740,7 +740,19 @@ using u32win32_named_pipe_ipc_client_9xa = basic_win32_named_pipe_ipc_client_9xa
 namespace freestanding
 {
 template <win32_family fm, ::std::integral char_type>
-struct is_trivially_relocatable<basic_win32_family_named_pipe_ipc_client<fm, char_type>>
+struct is_trivially_copyable_or_relocatable<basic_win32_family_named_pipe_ipc_server<fm, char_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <win32_family fm, ::std::integral char_type>
+struct is_zero_default_constructible<basic_win32_family_named_pipe_ipc_server<fm, char_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <win32_family fm, ::std::integral char_type>
+struct is_trivially_copyable_or_relocatable<basic_win32_family_named_pipe_ipc_client<fm, char_type>>
 {
 	inline static constexpr bool value = true;
 };

@@ -165,9 +165,14 @@ public:
 
 namespace freestanding
 {
+template <>
+struct is_zero_default_constructible<posix_directory_io_observer>
+{
+	inline static constexpr bool value = true;
+};
 
 template <>
-struct is_trivially_relocatable<posix_directory_file>
+struct is_trivially_copyable_or_relocatable<posix_directory_file>
 {
 	inline static constexpr bool value = true;
 };

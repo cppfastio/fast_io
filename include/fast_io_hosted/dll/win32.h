@@ -231,9 +231,14 @@ struct win32_dll_load_impl_context
 
 namespace freestanding
 {
+template <win32_family family>
+struct is_zero_default_constructible<win32_family_dll_io_observer<family>>
+{
+	inline static constexpr bool value = true;
+};
 
 template <win32_family family>
-struct is_trivially_relocatable<win32_family_dll_file<family>>
+struct is_trivially_copyable_or_relocatable<win32_family_dll_file<family>>
 {
 	inline static constexpr bool value = true;
 };
