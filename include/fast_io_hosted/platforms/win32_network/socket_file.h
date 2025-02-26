@@ -485,7 +485,7 @@ class
 #if __has_cpp_attribute(clang::trivially_relocatable)
 	[[clang::trivially_relocatable]]
 #endif
-	basic_win32_family_socket_file : public basic_win32_family_socket_io_observer<family, ch_type>
+	basic_win32_family_socket_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_win32_family_socket_io_observer<family, ch_type>
 {
 public:
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::char_type;

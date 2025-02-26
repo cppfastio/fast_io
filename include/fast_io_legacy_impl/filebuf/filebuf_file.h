@@ -4,7 +4,7 @@ namespace fast_io
 {
 
 template <::std::integral CharT, typename Traits = ::std::char_traits<CharT>>
-class basic_filebuf_file : public basic_filebuf_io_observer<CharT, Traits>
+class basic_filebuf_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_filebuf_io_observer<CharT, Traits>
 {
 public:
 	using char_type = CharT;

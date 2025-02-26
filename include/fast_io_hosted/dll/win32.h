@@ -144,7 +144,7 @@ class
 #if __has_cpp_attribute(clang::trivially_relocatable)
 	[[clang::trivially_relocatable]]
 #endif
-	win32_family_dll_file : public win32_family_dll_io_observer<family>
+	win32_family_dll_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public win32_family_dll_io_observer<family>
 {
 public:
 	using native_handle_type = void *;

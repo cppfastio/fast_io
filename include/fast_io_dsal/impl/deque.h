@@ -612,7 +612,7 @@ inline constexpr void deque_grow_back_common(dequecontroltype &controller) noexc
 } // namespace details
 
 template <typename T, typename allocator>
-class deque
+class deque FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 public:
 	using value_type = T;

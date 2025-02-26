@@ -88,7 +88,7 @@ inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::de
 } // namespace details
 
 template <::std::integral chtype, typename alloctype>
-class basic_string
+class basic_string FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 public:
 	using allocator_type = alloctype;

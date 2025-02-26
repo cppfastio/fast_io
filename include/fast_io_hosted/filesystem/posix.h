@@ -79,7 +79,7 @@ inline DIR *sys_dup_dir(DIR *dirp)
 
 } // namespace details
 
-class posix_directory_file : public posix_directory_io_observer
+class posix_directory_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public posix_directory_io_observer
 {
 public:
 	using native_handle_type = DIR *;

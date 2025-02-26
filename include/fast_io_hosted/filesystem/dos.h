@@ -92,7 +92,7 @@ inline dos_DIR sys_dup_dir(dos_DIR dirp)
 
 } // namespace details
 
-class dos_directory_file : public dos_directory_io_observer
+class dos_directory_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public dos_directory_io_observer
 {
 public:
 	using native_handle_type = dos_DIR;

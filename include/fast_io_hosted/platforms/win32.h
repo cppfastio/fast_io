@@ -1382,7 +1382,7 @@ inline win32_9xa_at_entry at(win32_9xa_dir_file const &wiob) noexcept
 }
 
 template <win32_family family, ::std::integral ch_type>
-class basic_win32_family_file : public basic_win32_family_io_observer<family, ch_type>
+class basic_win32_family_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_win32_family_io_observer<family, ch_type>
 {
 public:
 	using typename basic_win32_family_io_observer<family, ch_type>::char_type;

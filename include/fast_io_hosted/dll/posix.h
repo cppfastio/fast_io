@@ -127,7 +127,7 @@ class
 #if __has_cpp_attribute(clang::trivially_relocatable)
 	[[clang::trivially_relocatable]]
 #endif
-	posix_dll_file : public posix_dll_io_observer
+	posix_dll_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public posix_dll_io_observer
 {
 public:
 	using native_handle_type = void *;
