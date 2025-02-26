@@ -1,4 +1,4 @@
-/*
+﻿/*
 Referenced from:
 trcrsired/win-ldd
 https://github.com/trcrsired/win-ldd/tree/master
