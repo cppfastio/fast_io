@@ -64,7 +64,7 @@ inline DIR *my_dos_fdopendir(int fd) noexcept
 {
 	return my_dos_opendir(::fast_io::noexcept_call(::__get_fd_name, fd));
 }
-} // namespace details
+} // namespace posix
 
 namespace details
 {
@@ -245,7 +245,7 @@ inline ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> u8filena
 	return {reinterpret_cast<char8_may_alias_const_ptr>(pioe.entry->d_name), pioe.d_namlen};
 }
 
-inline constexpr ::std::uint_least64_t inode_ul64(dos_directory_entry pioe) noexcept
+inline constexpr ::std::uint_least64_t inode_ul64(dos_directory_entry) noexcept
 {
 	return 0;
 }
