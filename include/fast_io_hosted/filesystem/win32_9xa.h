@@ -474,7 +474,7 @@ inline bool operator!=(basic_win32_9xa_recursive_directory_iterator<StackType> c
 
 inline win32_9xa_recursive_directory_generator recursive(win32_9xa_at_entry nate)
 {
-	return win32_9xa_recursive_directory_generator{nate.handle};
+	return win32_9xa_recursive_directory_generator{::std::move(nate.handle)};
 }
 
 inline auto native_extension(win32_9xa_directory_entry ent) noexcept
