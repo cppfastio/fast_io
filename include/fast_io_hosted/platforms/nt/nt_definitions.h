@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include "../../../fast_io_core_impl/allocation/common.h"
 
 namespace fast_io::win32::nt
 {
@@ -1299,13 +1300,10 @@ inline constexpr ::std::uint_least32_t SE_MAX_WELL_KNOWN_PRIVILEGE{36};
 
 /**
  * @brief WDK macro apis for privilege (supplied by wdm.h).
- *        equals to luid low part values that LookupPrivilegeValue returned
+ *        equals to luid part values that LookupPrivilegeValue returned
  */
-enum class privileges : ::std::uint_least32_t
+enum class privileges : ::std::uint_least64_t
 {
-	//
-	// These must be converted to LUIDs before use.
-	//
 	SE_CREATE_TOKEN_PRIVILEGE = 2,
 	SE_ASSIGNPRIMARYTOKEN_PRIVILEGE = 3,
 	SE_LOCK_MEMORY_PRIVILEGE = 4,

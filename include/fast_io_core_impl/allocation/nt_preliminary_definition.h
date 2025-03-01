@@ -4,6 +4,9 @@
 #pragma comment(lib, "ntdll.lib")
 #endif
 
+#include <cstdint>
+#include "common.h"
+
 namespace fast_io::win32::nt
 {
 struct peb_ldr_data;
@@ -64,13 +67,6 @@ struct guid
 	::std::uint_least8_t Data4[8];
 };
 
-struct unicode_string
-{
-	::std::uint_least16_t Length;
-	::std::uint_least16_t MaximumLength;
-	char16_t *Buffer;
-};
-
 struct list_entry
 {
 	list_entry *Flink;
@@ -98,12 +94,6 @@ struct gdi_teb_batch
 	::std::uint_least32_t Offset;
 	::std::size_t HDC;
 	::std::uint_least32_t Buffer[310];
-};
-
-struct client_id
-{
-	void *UniqueProcess;
-	void *UniqueThread;
 };
 
 struct teb
@@ -276,11 +266,11 @@ struct teb
 	::std::uint_least64_t ExtendedFeatureDisableMask;
 };
 
-FAST_IO_DLLIMPORT FAST_IO_GNU_MALLOC extern void *FAST_IO_WINSTDCALL RtlAllocateHeap(void *, ::std::uint_least32_t, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAllocateHeap, 12);
-FAST_IO_DLLIMPORT extern char unsigned FAST_IO_WINSTDCALL RtlFreeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlFreeHeap, 12);
-FAST_IO_DLLIMPORT extern peb *FAST_IO_WINSTDCALL RtlGetCurrentPeb() noexcept FAST_IO_WINSTDCALL_RENAME(RtlGetCurrentPeb, 0);
-FAST_IO_DLLIMPORT extern void *FAST_IO_WINSTDCALL RtlReAllocateHeap(void *, ::std::uint_least32_t, void *, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlReAllocateHeap, 16);
-FAST_IO_DLLIMPORT extern ::std::size_t FAST_IO_WINSTDCALL RtlSizeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlSizeHeap, 12);
+FAST_IO_DLLIMPORT FAST_IO_GNU_MALLOC void *FAST_IO_WINSTDCALL RtlAllocateHeap(void *, ::std::uint_least32_t, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAllocateHeap, 12);
+FAST_IO_DLLIMPORT char unsigned FAST_IO_WINSTDCALL RtlFreeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlFreeHeap, 12);
+FAST_IO_DLLIMPORT peb *FAST_IO_WINSTDCALL RtlGetCurrentPeb() noexcept FAST_IO_WINSTDCALL_RENAME(RtlGetCurrentPeb, 0);
+FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL RtlReAllocateHeap(void *, ::std::uint_least32_t, void *, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlReAllocateHeap, 16);
+FAST_IO_DLLIMPORT ::std::size_t FAST_IO_WINSTDCALL RtlSizeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlSizeHeap, 12);
 
 #if (defined(__GNUC__) || defined(__clang__)) && \
 	(defined(__aarch64__) || defined(__arm64ec__))
