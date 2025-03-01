@@ -821,11 +821,11 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 
 #else
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
-extern unsigned int my_posix_open_noexcept(const char *pathname, int flags) noexcept __asm__("_open");
-extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("_open");
+extern int my_posix_open_noexcept(char const *pathname, int flags) noexcept __asm__("_open");
+extern int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("_open");
 #else
-extern unsigned int my_posix_open_noexcept(const char *pathname, int flags) noexcept __asm__("open");
-extern unsigned int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("open");
+extern int my_posix_open_noexcept(char const* pathname, int flags) noexcept __asm__("open");
+extern int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("open");
 #endif
 
 #if defined(__MSDOS__)
@@ -872,8 +872,8 @@ inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mo
 		}
 
 		// concat
-		::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), "\\", para_pathname)};
-		int fd{my_posix_open_noexcept(pn.c_str(), flags, mode)};
+		::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), ::fast_io::mnp::chvw(u8'\\'), para_pathname)};
+		int fd{::fast_io::details::my_posix_open_noexcept(pn.c_str(), flags, mode)};
 		system_call_throw_error<always_terminate>(fd);
 		return fd;
 	}
@@ -976,17 +976,17 @@ inline int my_posix_open(char const *pathname, int flags,
 						 mode_t mode)
 {
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
-	int fd{my_posix_open_noexcept(pathname, flags, mode)};
-	system_call_throw_error<always_terminate>(fd);
+	int fd{::fast_io::details::my_posix_open_noexcept(pathname, flags, mode)};
+	::fast_io::system_call_throw_error<always_terminate>(fd);
 	return fd;
 #else
-	return my_posix_openat<always_terminate>(AT_FDCWD, pathname, flags, mode);
+	return ::fast_io::details::my_posix_openat<always_terminate>(AT_FDCWD, pathname, flags, mode);
 #endif
 }
 
 inline int my_posix_openat_file_internal_impl(int dirfd, char const *filepath, open_mode om, perms pm)
 {
-	return my_posix_openat(dirfd, filepath, details::calculate_posix_open_mode(om), static_cast<mode_t>(pm));
+	return ::fast_io::details::my_posix_openat(dirfd, filepath, ::fast_io::details::calculate_posix_open_mode(om), static_cast<mode_t>(pm));
 }
 
 struct my_posix_at_open_paramter
