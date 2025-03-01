@@ -2034,7 +2034,7 @@ inline constexpr bool is_dos_path_invalid_character_impl(char32_t ch) noexcept
 {
 	if (ch < static_cast<char32_t>(32u))
 	{
-		return false;
+		return true;
 	}
 
 	switch (ch)
