@@ -114,7 +114,7 @@ namespace details
 struct my_dos_concat_path_common_result
 {
 	bool failed{};
-	::fast_io::tlc::string path;
+	::fast_io::tlc::string path = ::fast_io::tlc::string();
 };
 
 inline my_dos_concat_path_common_result my_dos_concat_path_common(int dirfd, char const *pathname) noexcept
