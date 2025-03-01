@@ -134,7 +134,7 @@ inline my_dos_concat_path_common_result my_dos_concat_path_common(int dirfd, cha
 		// check vaildity
 		auto const sz{::fast_io::cstr_len(pathname)};
 
-		if (sz == 0 || sz > 255) [[unlikely]]
+		if (sz > 255) [[unlikely]]
 		{
 			return {true};
 		}

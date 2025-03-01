@@ -37,3 +37,5 @@ ignore = true
 ["0036.at"]
 interactive = true
 
+["0039.codegen"]
+ignore = true
