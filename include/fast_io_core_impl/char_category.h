@@ -2030,6 +2030,44 @@ inline constexpr bool is_html_whitespace_wide_impl(wchar_t ch) noexcept
 	};
 }
 
+inline constexpr bool is_dos_path_invalid_character_impl(char32_t ch) noexcept
+{
+	switch (ch)
+	{
+	case U'/':
+	case U'\\':
+	case U'\t':
+	case U'\b':
+	case U'@':
+	case U'#':
+	case U'$':
+	case U'%':
+	case U'^':
+	case U'&':
+	case U'*':
+	case U'(':
+	case U')':
+	case U'[':
+	case U']':
+		return true;
+	default:
+		return false;
+	}
+}
+
+inline constexpr bool is_dos_path_invalid_prefix_character_impl(char32_t ch) noexcept
+{
+	switch (ch)
+	{
+	case U'+':
+	case U'-':
+	case U'.':
+		return true;
+	default:
+		return false;
+	}
+}
+
 } // namespace details
 
 template <::std::integral char_type>
@@ -2162,6 +2200,32 @@ inline constexpr char_type to_c_halfwidth(char_type ch) noexcept
 			return static_cast<unsigned_char_type>(umav + halfwidth_exclaimation_mark_val);
 		}
 		return ch;
+	}
+}
+
+template <::std::integral T>
+inline constexpr bool is_dos_path_invalid_character(T ch) noexcept
+{
+	if constexpr (::std::signed_integral<T>)
+	{
+		return ::fast_io::char_category::details::is_dos_path_invalid_character_impl(static_cast<char32_t>(static_cast<::std::make_unsigned_t<T>>(ch)));
+	}
+	else
+	{
+		return ::fast_io::char_category::details::is_dos_path_invalid_character_impl(static_cast<char32_t>(ch));
+	}
+}
+
+template <::std::integral T>
+inline constexpr bool is_dos_path_invalid_prefix_character(T ch) noexcept
+{
+	if constexpr (::std::signed_integral<T>)
+	{
+		return ::fast_io::char_category::details::is_dos_path_invalid_prefix_character_impl(static_cast<char32_t>(static_cast<::std::make_unsigned_t<T>>(ch)));
+	}
+	else
+	{
+		return ::fast_io::char_category::details::is_dos_path_invalid_prefix_character_impl(static_cast<char32_t>(ch));
 	}
 }
 

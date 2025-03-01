@@ -18,7 +18,7 @@ namespace fast_io::containers::details
 {
 template <typename handle>
 concept is_trivally_stored_allocator_handle = ::fast_io::freestanding::is_zero_default_constructible_v<handle> &&
-											  ::fast_io::freestanding::is_trivially_relocatable_v<handle> &&
+											  ::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<handle> &&
 											  ::std::is_trivially_copy_constructible_v<handle> &&
 											  sizeof(handle) <= sizeof(handle *) && alignof(handle) <= alignof(handle *);
 

@@ -144,7 +144,7 @@ class
 #if __has_cpp_attribute(clang::trivially_relocatable)
 	[[clang::trivially_relocatable]]
 #endif
-	win32_family_dll_file : public win32_family_dll_io_observer<family>
+	win32_family_dll_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public win32_family_dll_io_observer<family>
 {
 public:
 	using native_handle_type = void *;
@@ -231,9 +231,14 @@ struct win32_dll_load_impl_context
 
 namespace freestanding
 {
+template <win32_family family>
+struct is_zero_default_constructible<win32_family_dll_io_observer<family>>
+{
+	inline static constexpr bool value = true;
+};
 
 template <win32_family family>
-struct is_trivially_relocatable<win32_family_dll_file<family>>
+struct is_trivially_copyable_or_relocatable<win32_family_dll_file<family>>
 {
 	inline static constexpr bool value = true;
 };

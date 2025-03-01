@@ -64,7 +64,7 @@ inline DIR *my_dos_fdopendir(int fd) noexcept
 {
 	return my_dos_opendir(::fast_io::noexcept_call(::__get_fd_name, fd));
 }
-} // namespace details
+} // namespace posix
 
 namespace details
 {
@@ -81,7 +81,7 @@ inline dos_DIR sys_dup_dir(dos_DIR dirp)
 		throw_posix_error();
 	}
 	auto newfd{details::sys_dup(fd)};
-	auto newdir{posix::my_dos_fdopendir(newfd)};
+	auto newdir{::fast_io::posix::my_dos_fdopendir(newfd)};
 	if (newdir == nullptr) [[unlikely]]
 	{
 		details::sys_close(newfd);
@@ -92,7 +92,7 @@ inline dos_DIR sys_dup_dir(dos_DIR dirp)
 
 } // namespace details
 
-class dos_directory_file : public dos_directory_io_observer
+class dos_directory_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public dos_directory_io_observer
 {
 public:
 	using native_handle_type = dos_DIR;
@@ -185,9 +185,14 @@ public:
 
 namespace freestanding
 {
+template <>
+struct is_zero_default_constructible<dos_directory_io_observer>
+{
+	inline static constexpr bool value = true;
+};
 
 template <>
-struct is_trivially_relocatable<dos_directory_file>
+struct is_trivially_copyable_or_relocatable<dos_directory_file>
 {
 	inline static constexpr bool value = true;
 };
@@ -240,7 +245,7 @@ inline ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t> u8filena
 	return {reinterpret_cast<char8_may_alias_const_ptr>(pioe.entry->d_name), pioe.d_namlen};
 }
 
-inline constexpr ::std::uint_least64_t inode_ul64(dos_directory_entry pioe) noexcept
+inline constexpr ::std::uint_least64_t inode_ul64(dos_directory_entry) noexcept
 {
 	return 0;
 }

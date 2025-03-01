@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 namespace fast_io
 {
 enum class ipc_mode : ::std::uint_least64_t

@@ -1,4 +1,4 @@
-/*
+﻿/*
 Referenced from:
 trcrsired/win-ldd
 https://github.com/trcrsired/win-ldd/tree/master
@@ -45,7 +45,7 @@ inline constexpr auto operator<=>(dll_ref_entry const &a, dll_ref_entry const &b
 namespace fast_io::freestanding
 {
 template <>
-struct is_trivially_relocatable<::dll_ref_entry>
+struct is_trivially_copyable_or_relocatable<::dll_ref_entry>
 {
 	static inline constexpr bool value = true;
 };
