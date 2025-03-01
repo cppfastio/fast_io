@@ -824,59 +824,21 @@ inline int open_fd_from_handle(void *handle, open_mode md)
 extern int my_posix_open_noexcept(char const *pathname, int flags) noexcept __asm__("_open");
 extern int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("_open");
 #else
-extern int my_posix_open_noexcept(char const* pathname, int flags) noexcept __asm__("open");
+extern int my_posix_open_noexcept(char const *pathname, int flags) noexcept __asm__("open");
 extern int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) noexcept __asm__("open");
 #endif
 
 #if defined(__MSDOS__)
+
+template <bool always_terminate>
+inline ::fast_io::tlc::string my_dos_concat_path(int, char const *) noexcept(always_terminate);
+
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
-	if (dirfd == -100)
-	{
-		int fd(my_posix_open_noexcept(pathname, flags, mode));
-		system_call_throw_error<always_terminate>(fd);
-		return fd;
-	}
-	else
-	{
-		auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
-		if (pathname_cstr == nullptr) [[unlikely]]
-		{
-			system_call_throw_error<always_terminate>(-1);
-			return -1;
-		}
-
-		// check vaildity
-		::fast_io::cstring_view para_pathname{::fast_io::mnp::os_c_str(pathname)};
-		if (auto const sz{para_pathname.size()}; sz == 0 || sz > 255) [[unlikely]]
-		{
-			system_call_throw_error<always_terminate>(-1);
-			return -1;
-		}
-
-		if (auto const fc{para_pathname.front_unchecked()}; fc == '+' || fc == '-' || fc == '.') [[unlikely]]
-		{
-			system_call_throw_error<always_terminate>(-1);
-			return -1;
-		}
-
-		for (auto const fc : para_pathname)
-		{
-			if (fc == '/' || fc == '\\' || fc == '\t' || fc == '\b' || fc == '@' || fc == '#' || fc == '$' || fc == '%' || fc == '^' || fc == '&' ||
-				fc == '*' || fc == '(' || fc == ')' || fc == '[' || fc == ']') [[unlikely]]
-			{
-				system_call_throw_error<always_terminate>(-1);
-				return -1;
-			}
-		}
-
-		// concat
-		::fast_io::tlc::string pn{::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), ::fast_io::mnp::chvw(u8'\\'), para_pathname)};
-		int fd{::fast_io::details::my_posix_open_noexcept(pn.c_str(), flags, mode)};
-		system_call_throw_error<always_terminate>(fd);
-		return fd;
-	}
+	int fd{::fast_io::details::my_posix_open_noexcept(::fast_io::details::my_dos_concat_path<always_terminate>(dirfd, pathname).c_str(), flags, mode)};
+	system_call_throw_error<always_terminate>(fd);
+	return fd;
 }
 
 #elif defined(__NEWLIB__) || defined(_PICOLIBC__)
@@ -996,7 +958,7 @@ struct my_posix_at_open_paramter
 	mode_t pm{};
 	inline int operator()(char const *filename) const
 	{
-		return my_posix_openat(dirfd, filename, om, pm);
+		return ::fast_io::details::my_posix_openat(dirfd, filename, om, pm);
 	}
 };
 
@@ -1096,7 +1058,7 @@ struct
 	{
 		if (fd != -1) [[likely]]
 		{
-			details::sys_close(fd);
+			::fast_io::details::sys_close(fd);
 		}
 	}
 };
@@ -1120,7 +1082,7 @@ public:
 	}
 
 	inline basic_posix_family_file(io_dup_t, basic_posix_family_io_observer<family, ch_type> piob)
-		: basic_posix_family_io_observer<family, ch_type>{details::sys_dup(piob.fd)}
+		: basic_posix_family_io_observer<family, ch_type>{::fast_io::details::sys_dup(piob.fd)}
 	{
 	}
 	inline explicit constexpr basic_posix_family_file(posix_file_factory &&factory) noexcept
@@ -1227,7 +1189,7 @@ public:
 	inline constexpr basic_posix_family_file &operator=(basic_posix_family_io_observer<family, ch_type>) noexcept = delete;
 
 	inline basic_posix_family_file(basic_posix_family_file const &dp)
-		: basic_posix_family_io_observer<family, ch_type>{details::sys_dup(dp.fd)}
+		: basic_posix_family_io_observer<family, ch_type>{::fast_io::details::sys_dup(dp.fd)}
 	{}
 	inline basic_posix_family_file &operator=(basic_posix_family_file const &dp)
 	{
@@ -1235,7 +1197,7 @@ public:
 		{
 			return *this;
 		}
-		this->fd = details::sys_dup2(dp.fd, this->fd);
+		this->fd = ::fast_io::details::sys_dup2(dp.fd, this->fd);
 		return *this;
 	}
 	inline constexpr basic_posix_family_file(basic_posix_family_file &&__restrict b) noexcept
@@ -1251,7 +1213,7 @@ public:
 		}
 		if (this->fd != -1) [[likely]]
 		{
-			details::sys_close(this->fd);
+			::fast_io::details::sys_close(this->fd);
 		}
 		this->fd = b.fd;
 		b.fd = -1;
@@ -1261,7 +1223,7 @@ public:
 	{
 		if (this->fd != -1) [[likely]]
 		{
-			details::sys_close(this->fd);
+			::fast_io::details::sys_close(this->fd);
 		}
 		this->fd = newfd;
 	}
@@ -1269,14 +1231,14 @@ public:
 	{
 		if (this->fd != -1) [[likely]]
 		{
-			details::sys_close_throw_error(this->fd);
+			::fast_io::details::sys_close_throw_error(this->fd);
 		}
 	}
 	inline ~basic_posix_family_file()
 	{
 		if (this->fd != -1) [[likely]]
 		{
-			details::sys_close(this->fd);
+			::fast_io::details::sys_close(this->fd);
 		}
 	}
 };

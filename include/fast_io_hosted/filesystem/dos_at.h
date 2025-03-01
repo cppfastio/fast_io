@@ -110,61 +110,73 @@ inline constexpr dos_at_flags &operator^=(dos_at_flags &x, dos_at_flags y) noexc
 
 namespace details
 {
-template <bool always_terminate = true>
-inline ::fast_io::tlc::string my_dos_concat_path(int dirfd, char const *pathname)
+
+struct my_dos_concat_path_common_result
+{
+	bool failed{};
+	::fast_io::tlc::string path;
+};
+
+inline my_dos_concat_path_common_result my_dos_concat_path_common(int dirfd, char const *pathname) noexcept
 {
 	if (dirfd == -100)
 	{
-		return ::fast_io::tlc::string{::fast_io::mnp::os_c_str(pathname)};
+		return {false, ::fast_io::tlc::string(::fast_io::mnp::os_c_str(pathname))};
 	}
 	else
 	{
 		auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
 		if (pathname_cstr == nullptr) [[unlikely]]
 		{
-			::fast_io::system_call_throw_error<always_terminate>(-1);
-			return {};
+			return {true};
 		}
 
 		// check vaildity
 		::fast_io::cstring_view para_pathname{::fast_io::mnp::os_c_str(pathname)};
 		if (auto const sz{para_pathname.size()}; sz == 0 || sz > 255) [[unlikely]]
 		{
-			::fast_io::system_call_throw_error<always_terminate>(-1);
-			return {};
+			return {true};
 		}
 
-		if (auto const fc{para_pathname.front_unchecked()}; fc == u8'+' || fc == u8'-' || fc == u8'.') [[unlikely]]
+		if (auto const fc{para_pathname.front_unchecked()}; ::fast_io::char_category::is_dos_path_invalid_prefix_character(fc)) [[unlikely]]
 		{
-			::fast_io::system_call_throw_error<always_terminate>(-1);
-			return {};
+			return {true};
 		}
 
 		for (auto const fc : para_pathname)
 		{
-			if (fc == u8'/' || fc == u8'\\' || fc == u8'\t' || fc == u8'\b' || fc == u8'@' || fc == u8'#' || fc == u8'$' || fc == u8'%' || fc == u8'^' || fc == u8'&' ||
-				fc == u8'*' || fc == u8'(' || fc == u8')' || fc == u8'[' || fc == u8']') [[unlikely]]
+			if (::fast_io::char_category::is_dos_path_invalid_character(fc)) [[unlikely]]
 			{
-				::fast_io::system_call_throw_error<always_terminate>(-1);
-				return {};
+				return {true};
 			}
 		}
 
 		// concat
-		return ::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), ::fast_io::mnp::chvw(u8'\\'), para_pathname);
+		return {false, ::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), ::fast_io::mnp::chvw(u8'\\'), para_pathname)};
 	}
+}
+
+template <bool always_terminate = true>
+inline ::fast_io::tlc::string my_dos_concat_path(int dirfd, char const *pathname) noexcept(always_terminate)
+{
+	auto [failed, path] = ::fast_io::details::my_dos_concat_path_common(dirfd, pathname);
+	if (failed) [[unlikely]]
+	{
+		::fast_io::system_call_throw_error<always_terminate>(-1);
+	}
+	return ::std::move(path);
 }
 
 inline void dos_renameat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
 {
 	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_rename(::fast_io::details::my_dos_concat_path(olddirfd, oldpath).c_str(),
-												 ::fast_io::details::my_dos_concat_path(newdirfd, newpath).c_str()));
+																	   ::fast_io::details::my_dos_concat_path(newdirfd, newpath).c_str()));
 }
 
 inline void dos_linkat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
 {
 	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_link(::fast_io::details::my_dos_concat_path(olddirfd, oldpath).c_str(),
-											   ::fast_io::details::my_dos_concat_path(newdirfd, newpath).c_str()));
+																	 ::fast_io::details::my_dos_concat_path(newdirfd, newpath).c_str()));
 }
 
 template <posix_api_22 dsp, typename... Args>
@@ -203,7 +215,7 @@ inline void dos_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner, 
 {
 	// chown does nothing under MS-DOS, so just check is_valid filename
 	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_chown(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str(),
-												static_cast<int>(owner), static_cast<int>(group)));
+																	  static_cast<int>(owner), static_cast<int>(group)));
 }
 
 inline void dos_fchmodat_impl(int dirfd, char const *pathname, mode_t mode)
@@ -475,7 +487,7 @@ inline void dos_utimensat(posix_at_entry ent, path_type const &path, unix_timest
 						  [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::utimensat>(ent.fd, path, creation_time, last_access_time,
-															   last_modification_time);
+																					 last_modification_time);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
@@ -484,7 +496,7 @@ inline void native_utimensat(posix_at_entry ent, path_type const &path, unix_tim
 							 [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::utimensat>(ent.fd, path, creation_time, last_access_time,
-															   last_modification_time);
+																					 last_modification_time);
 }
 
 } // namespace fast_io
