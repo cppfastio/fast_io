@@ -763,7 +763,7 @@ inline win32_process_id get_process_id(win32_family_process_observer<family> ppo
 }
 
 template <win32_family family>
-class win32_family_process : public win32_family_process_observer<family>
+class win32_family_process FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public win32_family_process_observer<family>
 {
 public:
 	using native_handle_type = win32_user_process_information;
@@ -853,7 +853,13 @@ using win32_process = win32_family_process<win32_family::native>;
 namespace freestanding
 {
 template <win32_family fm>
-struct is_trivially_relocatable<win32_family_process<fm>>
+struct is_zero_default_constructible<win32_family_process_observer<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <win32_family fm>
+struct is_trivially_copyable_or_relocatable<win32_family_process<fm>>
 {
 	inline static constexpr bool value = true;
 };

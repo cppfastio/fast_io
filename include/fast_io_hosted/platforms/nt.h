@@ -772,7 +772,7 @@ inline void nt_flush_impl(void *handle)
 template <bool zw>
 inline void nt_data_sync_impl(void *handle, data_sync_flags flags [[maybe_unused]])
 {
-#if _WIN32_WINNT >= 0x0602 || WINVER >= 0x0602
+#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) || WINVER >= 0x0602
 	/*
 	NtFlushBuffersFileEx and ZwFlushBuffersFileEx are only provided since windows 8
 	*/
@@ -1314,7 +1314,7 @@ using nt_file_factory = nt_family_file_factory<nt_family::nt>;
 using zw_file_factory = nt_family_file_factory<nt_family::zw>;
 
 template <nt_family family, ::std::integral ch_type>
-class basic_nt_family_file : public basic_nt_family_io_observer<family, ch_type>
+class basic_nt_family_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_nt_family_io_observer<family, ch_type>
 {
 public:
 	using typename basic_nt_family_io_observer<family, ch_type>::char_type;
@@ -1716,7 +1716,13 @@ inline basic_nt_io_observer<char_type> native_stderr() noexcept
 namespace freestanding
 {
 template <nt_family fm, ::std::integral char_type>
-struct is_trivially_relocatable<basic_nt_family_file<fm, char_type>>
+struct is_zero_default_constructible<basic_nt_family_io_observer<fm, char_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm, ::std::integral char_type>
+struct is_trivially_copyable_or_relocatable<basic_nt_family_file<fm, char_type>>
 {
 	inline static constexpr bool value = true;
 };

@@ -6,7 +6,7 @@ namespace fast_io::freestanding
 {
 
 template <typename T>
-struct is_trivially_relocatable<::std::shared_ptr<T>>
+struct is_trivially_copyable_or_relocatable<::std::shared_ptr<T>>
 {
 	static inline constexpr bool value = true;
 };

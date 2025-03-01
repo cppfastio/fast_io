@@ -1382,7 +1382,7 @@ inline win32_9xa_at_entry at(win32_9xa_dir_file const &wiob) noexcept
 }
 
 template <win32_family family, ::std::integral ch_type>
-class basic_win32_family_file : public basic_win32_family_io_observer<family, ch_type>
+class basic_win32_family_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_win32_family_io_observer<family, ch_type>
 {
 public:
 	using typename basic_win32_family_io_observer<family, ch_type>::char_type;
@@ -1987,7 +1987,13 @@ inline basic_win32_io_observer<char_type> native_stderr() noexcept
 namespace freestanding
 {
 template <win32_family fm, ::std::integral char_type>
-struct is_trivially_relocatable<basic_win32_family_file<fm, char_type>>
+struct is_zero_default_constructible<basic_win32_family_io_observer<fm, char_type>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <win32_family fm, ::std::integral char_type>
+struct is_trivially_copyable_or_relocatable<basic_win32_family_file<fm, char_type>>
 {
 	inline static constexpr bool value = true;
 };

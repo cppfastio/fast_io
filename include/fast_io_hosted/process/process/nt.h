@@ -826,7 +826,7 @@ inline nt_process_id get_process_id(nt_family_process_observer<family> ppob) noe
 
 template <nt_family family>
 	requires(family == nt_family::nt || family == nt_family::zw)
-class nt_family_process : public nt_family_process_observer<family>
+class nt_family_process FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public nt_family_process_observer<family>
 {
 public:
 	using native_handle_type = nt_user_process_information;
@@ -915,7 +915,13 @@ using zw_process = nt_family_process<nt_family::zw>;
 namespace freestanding
 {
 template <nt_family fm>
-struct is_trivially_relocatable<nt_family_process<fm>>
+struct is_zero_default_constructible<nt_family_process_observer<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <nt_family fm>
+struct is_trivially_copyable_or_relocatable<nt_family_process<fm>>
 {
 	inline static constexpr bool value = true;
 };

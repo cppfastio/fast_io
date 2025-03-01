@@ -158,6 +158,8 @@
 #pragma comment(linker,"/alternatename:__imp_?CreateNamedPipeA@win32@fast_io@@YGPAXPBDIIIIIIPAUsecurity_attributes@12@@Z=__imp__CreateNamedPipeA@32")
 #pragma comment(linker,"/alternatename:__imp_?ConnectNamedPipe@win32@fast_io@@YGHPAXPAUoverlapped@12@@Z=__imp__ConnectNamedPipe@8")
 #pragma comment(linker,"/alternatename:__imp_?DisconnectNamedPipe@win32@fast_io@@YGHPAX@Z=__imp__DisconnectNamedPipe@4")
+#pragma comment(linker,"/alternatename:__imp_?LookupPrivilegeValueA@win32@fast_io@@YGHPBD0PA_J@Z=__imp__LookupPrivilegeValueA@12")
+#pragma comment(linker,"/alternatename:__imp_?LookupPrivilegeValueW@win32@fast_io@@YGHPB_S0PA_J@Z=__imp__LookupPrivilegeValueW@12")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YGII@Z=__imp__RtlNtStatusToDosError@4")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YGIPAX@Z=__imp__NtClose@4")
@@ -288,7 +290,10 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwTerminateProcess@nt@win32@fast_io@@YGIPAXH@Z=__imp__ZwTerminateProcess@8")
 #pragma comment(linker,"/alternatename:__imp_?RtlNtPathNameToDosPathName@nt@win32@fast_io@@YGIIPAUrtl_unicode_string_buffer@123@PAIPAPA_S@Z=__imp__RtlNtPathNameToDosPathName@16")
 #pragma comment(linker,"/alternatename:__imp_?NtDeviceIoControlFile@nt@win32@fast_io@@YGIPAX0PAP6AX0PAUio_status_block@123@I@_E01I0I0I@Z=__imp__NtDeviceIoControlFile@40")
-#pragma comment(linker,"/alternatename:__imp_?ZwDeviceIoControlFile@nt@win32@fast_io@@YGIPAX0PAP6AX0PAUio_status_block@123@I@_E01I0I0I@Z=__imp__ZwDeviceIoControlFile@40")// msvc
+#pragma comment(linker,"/alternatename:__imp_?ZwDeviceIoControlFile@nt@win32@fast_io@@YGIPAX0PAP6AX0PAUio_status_block@123@I@_E01I0I0I@Z=__imp__ZwDeviceIoControlFile@40")
+#pragma comment(linker,"/alternatename:__imp_?RtlAcquirePrivilege@nt@win32@fast_io@@YGIPAW4privileges@123@IIPAPAX@Z=__imp__RtlAcquirePrivilege@16")
+#pragma comment(linker,"/alternatename:__imp_?RtlReleasePrivilege@nt@win32@fast_io@@YGXPAX@Z=__imp__RtlReleasePrivilege@4")
+// msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=__imp____RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPAXPAX@Z=___RTtypeid")
 // clang-format on

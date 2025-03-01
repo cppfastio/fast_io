@@ -119,7 +119,7 @@ inline constexpr void construct_win32_process_envs_decay(
 } // namespace details
 
 template <::fast_io::win32_family family>
-struct basic_win32_process_args
+struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	inline static constexpr bool is_nt{family == ::fast_io::win32_family::wide_nt};
 	using char_type = ::std::conditional_t<is_nt, char16_t, char>;
@@ -173,7 +173,7 @@ struct basic_win32_process_args
 };
 
 template <::fast_io::win32_family family>
-struct basic_win32_process_envs
+struct basic_win32_process_envs FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	inline static constexpr bool is_nt{family == ::fast_io::win32_family::wide_nt};
 	using char_type = ::std::conditional_t<is_nt, char16_t, char>;
@@ -250,7 +250,7 @@ namespace details
 {
 
 template <::std::integral char_type>
-struct cstr_guard
+struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using Alloc = ::fast_io::native_typed_global_allocator<char_type>;
 
@@ -319,7 +319,7 @@ struct cstr_guard
 namespace freestanding
 {
 template <::std::integral char_type>
-struct is_trivially_relocatable<details::cstr_guard<char_type>>
+struct is_trivially_copyable_or_relocatable<details::cstr_guard<char_type>>
 {
 	inline static constexpr bool value = true;
 };
@@ -375,7 +375,7 @@ inline constexpr void construct_posix_process_argenvs_decay(
 }
 } // namespace details
 
-struct posix_process_args
+struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using char_type = char;
 	using replace_char_type = char;
@@ -461,20 +461,20 @@ namespace freestanding
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 
 template <::fast_io::win32_family family>
-struct is_trivially_relocatable<basic_win32_process_args<family>>
+struct is_trivially_copyable_or_relocatable<basic_win32_process_args<family>>
 {
 	inline static constexpr bool value = true;
 };
 
 template <::fast_io::win32_family family>
-struct is_trivially_relocatable<basic_win32_process_envs<family>>
+struct is_trivially_copyable_or_relocatable<basic_win32_process_envs<family>>
 {
 	inline static constexpr bool value = true;
 };
 #else
 
 template <>
-struct is_trivially_relocatable<posix_process_args>
+struct is_trivially_copyable_or_relocatable<posix_process_args>
 {
 	inline static constexpr bool value = true;
 };

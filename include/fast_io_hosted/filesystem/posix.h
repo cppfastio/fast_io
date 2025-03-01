@@ -79,7 +79,7 @@ inline DIR *sys_dup_dir(DIR *dirp)
 
 } // namespace details
 
-class posix_directory_file : public posix_directory_io_observer
+class posix_directory_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public posix_directory_io_observer
 {
 public:
 	using native_handle_type = DIR *;
@@ -165,9 +165,14 @@ public:
 
 namespace freestanding
 {
+template <>
+struct is_zero_default_constructible<posix_directory_io_observer>
+{
+	inline static constexpr bool value = true;
+};
 
 template <>
-struct is_trivially_relocatable<posix_directory_file>
+struct is_trivially_copyable_or_relocatable<posix_directory_file>
 {
 	inline static constexpr bool value = true;
 };

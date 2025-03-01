@@ -160,5 +160,7 @@ FAST_IO_DLLIMPORT extern void *FAST_IO_WINSTDCALL CreateNamedPipeA(char const *,
 FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL ioctlsocket(::std::size_t, long, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ioctlsocket, 12);
 FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL ConnectNamedPipe(void *, ::fast_io::win32::overlapped *) noexcept FAST_IO_WINSTDCALL_RENAME(ConnectNamedPipe, 8);
 FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL DisconnectNamedPipe(void *) noexcept FAST_IO_WINSTDCALL_RENAME(DisconnectNamedPipe, 4);
+FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL LookupPrivilegeValueA(char const *, char const *, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueA, 12);
+FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL LookupPrivilegeValueW(char16_t const *, char16_t const *, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueW, 12);
 
 } // namespace fast_io::win32

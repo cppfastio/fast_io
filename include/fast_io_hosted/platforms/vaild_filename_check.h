@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 namespace fast_io::details
 {
 template <::std::integral char_type>

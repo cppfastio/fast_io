@@ -88,7 +88,7 @@ inline constexpr void string_push_back_heap_grow_twice(::fast_io::containers::de
 } // namespace details
 
 template <::std::integral chtype, typename alloctype>
-class basic_string
+class basic_string FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 public:
 	using allocator_type = alloctype;
@@ -1774,7 +1774,7 @@ namespace freestanding
 {
 
 template <::std::integral chtype, typename alloctype>
-struct is_trivially_relocatable<::fast_io::containers::basic_string<chtype, alloctype>>
+struct is_trivially_copyable_or_relocatable<::fast_io::containers::basic_string<chtype, alloctype>>
 {
 	inline static constexpr bool value = true;
 };

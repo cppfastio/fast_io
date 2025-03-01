@@ -158,6 +158,8 @@
 #pragma comment(linker,"/alternatename:?CreateNamedPipeA@win32@fast_io@@$$hYAPEAXPEBDIIIIIIPEAUsecurity_attributes@12@@Z=#CreateNamedPipeA")
 #pragma comment(linker,"/alternatename:?ConnectNamedPipe@win32@fast_io@@$$hYAHPEAXPEAUoverlapped@12@@Z=#ConnectNamedPipe")
 #pragma comment(linker,"/alternatename:?DisconnectNamedPipe@win32@fast_io@@$$hYAHPEAX@Z=#DisconnectNamedPipe")
+#pragma comment(linker,"/alternatename:?LookupPrivilegeValueA@win32@fast_io@@$$hYAHPEBD0PEA_J@Z=#LookupPrivilegeValueA")
+#pragma comment(linker,"/alternatename:?LookupPrivilegeValueW@win32@fast_io@@$$hYAHPEB_S0PEA_J@Z=#LookupPrivilegeValueW")
 // NT
 #pragma comment(linker,"/alternatename:?rtl_nt_status_to_dos_error@nt@win32@fast_io@@$$hYAII@Z=#RtlNtStatusToDosError")
 #pragma comment(linker,"/alternatename:?NtClose@nt@win32@fast_io@@$$hYAIPEAX@Z=#NtClose")
@@ -288,6 +290,8 @@
 #pragma comment(linker,"/alternatename:?RtlNtPathNameToDosPathName@nt@win32@fast_io@@$$hYAIIPEAUrtl_unicode_string_buffer@123@PEAIPEAPEA_S@Z=#RtlNtPathNameToDosPathName")
 #pragma comment(linker,"/alternatename:?NtDeviceIoControlFile@nt@win32@fast_io@@$$hYAIPEAX0PEAP6AX0PEAUio_status_block@123@I@_E01I0I0I@Z=#NtDeviceIoControlFile")
 #pragma comment(linker,"/alternatename:?ZwDeviceIoControlFile@nt@win32@fast_io@@$$hYAIPEAX0PEAP6AX0PEAUio_status_block@123@I@_E01I0I0I@Z=#ZwDeviceIoControlFile")
+#pragma comment(linker,"/alternatename:?RtlAcquirePrivilege@nt@win32@fast_io@@$$hYAIPEAW4privileges@123@IIPEAPEAX@Z=#RtlAcquirePrivilege")
+#pragma comment(linker,"/alternatename:?RtlReleasePrivilege@nt@win32@fast_io@@$$hYAXPEAX@Z=#RtlReleasePrivilege")
 // msvc
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@$$hYAPEAXPEAX@Z=#__RTtypeid")
 

@@ -93,7 +93,7 @@ FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwQueryPerformanceCou
 FAST_IO_DLLIMPORT ::std::int_least64_t FAST_IO_WINSTDCALL RtlGetSystemTimePrecise() noexcept FAST_IO_WINSTDCALL_RENAME(RtlGetSystemTimePrecise, 0);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtQueryInformationThread(void *__restrict, ::fast_io::win32::nt::thread_information_class, void *, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtQueryInformationThread, 20);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwQueryInformationThread(void *__restrict, ::fast_io::win32::nt::thread_information_class, void *, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwQueryInformationThread, 20);
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlAdjustPrivilege(::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t, ::std::uint_least8_t *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAdjustPrivilege, 16);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlAdjustPrivilege(::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t, ::std::uint_least8_t *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAdjustPrivilege, 16); // TODO can the first param be `::fast_io::win32::nt::privileges`?
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetInformationObject(void *__restrict, ::fast_io::win32::nt::object_information_class, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetInformationObject, 16);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetInformationObject(void *__restrict, ::fast_io::win32::nt::object_information_class, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetInformationObject, 16);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtQueryAuxiliaryCounterFrequency(::std::uint_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtQueryAuxiliaryCounterFrequency, 4);
@@ -132,5 +132,7 @@ FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtTerminateProcess(vo
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwTerminateProcess(void *, ::std::int_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwTerminateProcess, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtDeviceIoControlFile(void *, void *, ::fast_io::win32::nt::pio_apc_routine *, void *, ::fast_io::win32::nt::io_status_block *, ::std::uint_least32_t, void *, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(NtDeviceIoControlFile, 40);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwDeviceIoControlFile(void *, void *, ::fast_io::win32::nt::pio_apc_routine *, void *, ::fast_io::win32::nt::io_status_block *, ::std::uint_least32_t, void *, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwDeviceIoControlFile, 40);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlAcquirePrivilege(::fast_io::win32::nt::privileges *, ::std::uint_least32_t, ::std::uint_least32_t, void **) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAcquirePrivilege, 16);
+FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RtlReleasePrivilege(void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlReleasePrivilege, 4);
 
 } // namespace fast_io::win32::nt
