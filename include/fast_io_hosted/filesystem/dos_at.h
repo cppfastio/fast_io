@@ -132,30 +132,16 @@ inline my_dos_concat_path_common_result my_dos_concat_path_common(int dirfd, cha
 		}
 
 		// check vaildity
-		::fast_io::cstring_view para_pathname{::fast_io::mnp::os_c_str(pathname)};
+		auto const sz{::fast_io::cstr_len(pathname)};
 
-		auto const sz{para_pathname.size()}; 
 		if (sz == 0 || sz > 255) [[unlikely]]
 		{
 			return {true};
 		}
 
-		if (sz == 1 && static_cast<char32_t>(para_pathname.index_unchecked(0)) == U'.') [[unlikely]]
+		if (::fast_io::details::is_invalid_dos_filename_with_size(pathname, sz)) [[unlikely]]
 		{
 			return {true};
-		}
-
-		if (sz == 2 && static_cast<char32_t>(para_pathname.index_unchecked(0)) == U'.' && static_cast<char32_t>(para_pathname.index_unchecked(1)) == U'.') [[unlikely]]
-		{
-			return {true};
-		}
-
-		for (auto const fc : para_pathname)
-		{
-			if (::fast_io::char_category::is_dos_path_invalid_character(fc)) [[unlikely]]
-			{
-				return {true};
-			}
 		}
 
 		// concat

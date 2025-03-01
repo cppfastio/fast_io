@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "util.h"
-#include "vaild_filename_check.h"
+#include "dos_filename.h"
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include "win32/impl.h"
 namespace fast_io

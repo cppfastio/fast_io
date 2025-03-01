@@ -126,7 +126,7 @@ inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_cha
 #else
 	auto const beg{reinterpret_cast<family_internal_char_type_const_may_alias_ptr>(server_name)};
 
-	if (!::fast_io::details::is_valid_os_file_name(beg, server_name_size)) [[unlikely]]
+	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, server_name_size)) [[unlikely]]
 	{
 		if constexpr (family == win32_family::wide_nt)
 		{
@@ -321,7 +321,7 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 #else
 	auto const beg{reinterpret_cast<family_internal_char_type_const_may_alias_ptr>(server_name)};
 
-	if (!::fast_io::details::is_valid_os_file_name(beg, server_name_size)) [[unlikely]]
+	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, server_name_size)) [[unlikely]]
 	{
 		if constexpr (family == win32_family::wide_nt)
 		{

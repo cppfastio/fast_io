@@ -570,7 +570,7 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 				= char8_t const *;
 
 			auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename)};
-			if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
+			if (::fast_io::details::is_invalid_dos_filename_with_size(beg, filename_c_str_len)) [[unlikely]]
 			{
 				throw_win32_error(3221225530);
 			}

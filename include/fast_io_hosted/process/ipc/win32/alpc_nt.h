@@ -186,7 +186,7 @@ inline void *nt_family_create_alpc_ipc_server_port_impl(nt_alpc_char_type const 
 {
 	constexpr bool zw{family == nt_family::zw};
 
-	if (!::fast_io::details::is_valid_os_file_name(server_name, server_name_size)) [[unlikely]]
+	if (::fast_io::details::is_invalid_dos_filename_with_size(server_name, server_name_size)) [[unlikely]]
 	{
 		throw_nt_error(3221225524);
 	}

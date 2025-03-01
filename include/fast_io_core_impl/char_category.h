@@ -2054,6 +2054,17 @@ inline constexpr bool is_dos_path_invalid_character_impl(char32_t ch) noexcept
 	}
 }
 
+inline constexpr bool is_dos_path_invalid_prefix_character_impl(char32_t ch) noexcept
+{
+	switch (ch)
+	{
+	case U'.':
+		return true;
+	default:
+		return false;
+	}
+}
+
 } // namespace details
 
 template <::std::integral char_type>
@@ -2202,6 +2213,18 @@ inline constexpr bool is_dos_path_invalid_character(T ch) noexcept
 	}
 }
 
+template <::std::integral T>
+inline constexpr bool is_dos_path_invalid_prefix_character(T ch) noexcept
+{
+	if constexpr (::std::signed_integral<T>)
+	{
+		return ::fast_io::char_category::details::is_dos_path_invalid_prefix_character_impl(static_cast<char32_t>(static_cast<::std::make_unsigned_t<T>>(ch)));
+	}
+	else
+	{
+		return ::fast_io::char_category::details::is_dos_path_invalid_prefix_character_impl(static_cast<char32_t>(ch));
+	}
+}
 } // namespace fast_io::char_category
 
 namespace fast_io
