@@ -1,9 +1,11 @@
 ﻿#pragma once
 
+// Don't forget to rerun codegen/win32mangling
+
 namespace fast_io::win32::nt
 {
 
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL rtl_nt_status_to_dos_error(::std::uint_least32_t status) noexcept FAST_IO_WINSTDCALL_RENAME(RtlNtStatusToDosError, 4);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL rtl_nt_status_to_dos_error(::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlNtStatusToDosError, 4);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtClose(void *) noexcept FAST_IO_WINSTDCALL_RENAME(NtClose, 4);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwClose(void *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwClose, 4);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtCreateFile(void **, ::std::uint_least32_t, ::fast_io::win32::nt::object_attributes *, ::fast_io::win32::nt::io_status_block *, ::std::int_least64_t *, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(NtCreateFile, 44);
