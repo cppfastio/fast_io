@@ -81,7 +81,7 @@ inline dos_DIR sys_dup_dir(dos_DIR dirp)
 		throw_posix_error();
 	}
 	auto newfd{details::sys_dup(fd)};
-	auto newdir{posix::my_dos_fdopendir(newfd)};
+	auto newdir{::fast_io::posix::my_dos_fdopendir(newfd)};
 	if (newdir == nullptr) [[unlikely]]
 	{
 		details::sys_close(newfd);
