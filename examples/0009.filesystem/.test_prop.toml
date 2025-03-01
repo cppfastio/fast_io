@@ -27,6 +27,3 @@ interactive = true
 
 ["add_utf8_bom_to_all_cplusplus_files.cc"]
 interactive = true
-
-["codegen"]
-ignore = true
