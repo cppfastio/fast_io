@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "../win32_family.h"
 #include "std_filesystem_pseudo.h"
 #include "nt.h"
 #include "posix.h"
@@ -7,16 +8,6 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 namespace fast_io
 {
-enum class win32_family
-{
-	ansi_9x,
-	wide_nt,
-#ifdef _WIN32_WINDOWS
-	native = ansi_9x
-#else
-	native = wide_nt
-#endif
-};
 
 template <win32_family family, typename allocator_type>
 using basic_win32_family_api_encoding_converter =

@@ -1706,6 +1706,7 @@ inline constexpr ch_get_t<T &> ch_get(T &reference) noexcept
 }
 
 template <::std::size_t bs, bool noskipws = false, bool skipzero = false, bool prefix = false, ::fast_io::details::my_integral scalar_type>
+	requires(2 <= bs && bs <= 36)
 inline constexpr scalar_manip_t<::fast_io::details::base_scan_mani_flags_cache<bs, noskipws, (bs == 10 ? false : prefix), skipzero>,
 								scalar_type &>
 base_get(scalar_type &t) noexcept

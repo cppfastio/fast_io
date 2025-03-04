@@ -1057,7 +1057,7 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
 
-	if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
+	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
 	}
@@ -1080,7 +1080,7 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
 
-	if (!::fast_io::details::is_valid_os_file_name(beg, filename_c_str_len)) [[unlikely]]
+	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
 	}
@@ -1095,7 +1095,7 @@ inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_w
 {
 	auto const beg{path_c_str};
 
-	if (!::fast_io::details::is_valid_os_file_name(beg, path_size)) [[unlikely]]
+	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, path_size)) [[unlikely]]
 	{
 		throw_win32_error(3221225530);
 	}
