@@ -163,5 +163,6 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL ConnectNamedPipe(void *, ::fast_io::win
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL DisconnectNamedPipe(void *) noexcept FAST_IO_WINSTDCALL_RENAME(DisconnectNamedPipe, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL LookupPrivilegeValueA(char const *__restrict, char const *__restrict, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueA, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL LookupPrivilegeValueW(char16_t const *__restrict, char16_t const *__restrict, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueW, 12);
+FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateThread(security_attributes *, ::std::size_t, ::std::uint_least32_t (FAST_IO_WINSTDCALL*)(void*), void*, ::std::uint_least32_t, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(CreateThread, 24);
 
 } // namespace fast_io::win32
