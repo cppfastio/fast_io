@@ -37,5 +37,5 @@ ignore = true
 ["0036.at"]
 interactive = true
 
-["0039.codegen"]
+["0039.gen_win32_mangling"]
 ignore = true

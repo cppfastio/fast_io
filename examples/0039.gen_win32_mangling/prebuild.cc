@@ -59,20 +59,22 @@ inline auto gen_apis(
 			function_declaration.push_back(context[i]);
 			main_body.push_back(context[++i]);
 		} while (context[i] != u8'(');
+		++i;
+		function_declaration.append(u8"(");
 
 		// funciton signature
-		if (context[i + 1] == u8')')
+		if (context[i] == u8')')
 		{
 			// function()
 			main_body.append(u8");\n");
-			function_declaration.append(u8"(");
-			++i;
+			function_declaration.push_back(u8')');
 		}
 		else
 		{
 			// function(args...)
+			::std::size_t brace_counter{1};
 			argtype arg_type = argtype::normal;
-			while (context[i] != u8')')
+			while (brace_counter != 0)
 			{
 				function_declaration.push_back(context[i]);
 				if (context[i] == u8'*')
@@ -83,7 +85,15 @@ inline auto gen_apis(
 				{
 					arg_type = argtype::va_args;
 				}
-				else if (context[i] == u8',')
+				else if (context[i] == u8'(')
+				{
+					++brace_counter;
+				}
+				else if (context[i] == u8')')
+				{
+					--brace_counter;
+				}
+				else if (context[i] == u8',' && brace_counter == 1)
 				{
 					switch (arg_type)
 					{
@@ -102,20 +112,21 @@ inline auto gen_apis(
 				}
 				++i;
 			}
-			if (arg_type == argtype::normal)
-			{
+			switch (arg_type) {
+			case argtype::normal:
 				main_body.append(u8"{});\n");
-			}
-			else if (arg_type == argtype::pointer)
-			{
+				break;
+			case argtype::pointer:
 				main_body.append(u8"nullptr);\n");
-			}
-			else
-			{
+				break;
+			case argtype::va_args:
 				main_body.append(u8");\n");
+				break;
+			default:
+				::fast_io::unreachable();
 			}
 		}
-		function_declaration.append(u8") noexcept;\n");
+		function_declaration.append(u8" noexcept;\n");
 		// FAST_IO_WINSTDCALL_RENAME
 		while (context[i++] != u8'(')
 		{
@@ -205,7 +216,7 @@ int main(int argc, char *const *const argv)
 int main() noexcept {
 )",
 																					main_body,
-																					::fast_io::mnp::chvw('}'), )));
+																					::fast_io::mnp::chvw('}'))));
 
 	::fast_io::native_file build_ninja{"build/build.ninja", ::fast_io::open_mode::out};
 	if (argc == 2)
