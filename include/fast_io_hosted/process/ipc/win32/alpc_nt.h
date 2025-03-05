@@ -18,7 +18,7 @@ using nt_alpc_internal_tlc_str = ::fast_io::containers::basic_string<nt_alpc_int
 using nt_alpc_internal_strvw = ::fast_io::containers::basic_string_view<nt_alpc_internal_char_type>;
 
 template <::std::integral ch_type>
-using nt_alpc_communication_tlc_str = ::fast_io::containers::basic_string<ch_type, ::fast_io::native_thread_local_allocator>;
+using nt_alpc_communication_tlc_strvw = ::fast_io::containers::basic_string_view<ch_type>;
 
 template <typename... Args>
 constexpr inline nt_alpc_internal_str concat_nt_alpc_internal_str(Args &&...args)
@@ -44,22 +44,6 @@ constexpr inline nt_alpc_internal_tlc_str concat_nt_alpc_internal_tlc_str(Args &
 	{
 		return ::fast_io::basic_general_concat<false, nt_alpc_internal_char_type, nt_alpc_internal_tlc_str>(
 			::fast_io::io_print_forward<nt_alpc_internal_char_type>(::fast_io::io_print_alias(args))...);
-	}
-	else
-	{
-		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::win32::nt::details::nt_alpc_internal_tlc_str");
-		return {};
-	}
-}
-
-template <::std::integral ch_type, typename... Args>
-constexpr inline nt_alpc_communication_tlc_str<ch_type> concatln_nt_alpc_communication_tlc_str(Args &&...args)
-{
-	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<ch_type>, Args...>};
-	if constexpr (type_error)
-	{
-		return ::fast_io::basic_general_concat<true, ch_type, nt_alpc_communication_tlc_str<ch_type>>(
-			::fast_io::io_print_forward<ch_type>(::fast_io::io_print_alias(args))...);
 	}
 	else
 	{
@@ -251,12 +235,6 @@ inline void *nt_family_create_alpc_ipc_server_port_impl(nt_alpc_char_type const 
 	::fast_io::win32::nt::alpc_port_attributes apa{};
 	apa.Flags = 0x80000 /*ALPC_PORTFLG_ALLOW_DUP_OBJECT*/;
 	apa.MaxMessageLength = ::fast_io::win32::nt::AlpcMaxAllowedMessageLength();
-	apa.MemoryBandwidth = 0;     // default
-	apa.MaxPoolUsage = 0;        // default
-	apa.MaxSectionSize = 0;      // default
-	apa.MaxViewSize = 0;         // default
-	apa.MaxTotalSectionSize = 0; // default
-	apa.DupObjectTypes = 0;      // default
 
 	void *server_port_handle;
 
@@ -405,7 +383,7 @@ inline ::std::byte *nt_family_alpc_ipc_server_wait_for_connect_impl(
 #endif
 		= ::fast_io::win32::nt::port_message *;
 
-	auto port_message_p{reinterpret_cast<port_message_may_alias_ptr>(__builtin_addressof(tmp))};
+	auto port_message_p{reinterpret_cast<port_message_may_alias_ptr>(tmp)};
 
 	check_nt_status(::fast_io::win32::nt::nt_alpc_send_wait_receive_port<zw>(
 		server_pipe_handle,
@@ -418,7 +396,7 @@ inline ::std::byte *nt_family_alpc_ipc_server_wait_for_connect_impl(
 		nullptr                            // no timeout
 		));
 
-	auto const actual_receive_size{static_cast<::std::size_t>(port_message_p->u1.Length)};
+	auto const actual_receive_size{static_cast<::std::size_t>(port_message_p->u1.s1.DataLength)};
 
 	return static_cast<::std::byte *>(::fast_io::freestanding::my_memcpy(handshake_msg_beg, tmp->PortMessage, actual_receive_size));
 }
@@ -489,10 +467,6 @@ inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *ser
 	us.Length = static_cast<::std::uint_least16_t>(temp_ipc_name_tlc_str_size_bytes);
 	us.MaximumLength = static_cast<::std::uint_least16_t>(temp_ipc_name_tlc_str_size_bytes + sizeof(char16_t));
 
-	::fast_io::win32::nt::object_attributes oa{};
-	oa.Length = sizeof(::fast_io::win32::nt::object_attributes);
-	oa.ObjectName = __builtin_addressof(us);
-
 	::fast_io::win32::nt::security_quality_of_service SecurityQos{};
 	SecurityQos.ImpersonationLevel = ::fast_io::win32::nt::security_impersonation_level::SecurityImpersonation;
 	SecurityQos.ContextTrackingMode = 0 /*SECURITY_STATIC_TRACKING*/;
@@ -502,15 +476,7 @@ inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *ser
 	::fast_io::win32::nt::alpc_port_attributes apa{};
 	apa.Flags = 0x80000 /*ALPC_PORTFLG_ALLOW_DUP_OBJECT*/;
 	apa.MaxMessageLength = ::fast_io::win32::nt::AlpcMaxAllowedMessageLength();
-	apa.MemoryBandwidth = 0;     // default
-	apa.MaxPoolUsage = 0;        // default
-	apa.MaxSectionSize = 0;      // default
-	apa.MaxViewSize = 0;         // default
-	apa.MaxTotalSectionSize = 0; // default
-	apa.DupObjectTypes = 0;      // default
 	apa.SecurityQos = SecurityQos;
-
-	void *server_port_handle;
 
 	::std::size_t const message_size{static_cast<::std::size_t>(message_end - message_begin)};
 	::std::size_t receive_size{sizeof(::fast_io::win32::nt::port_message) + message_size};
@@ -534,14 +500,14 @@ inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *ser
 #endif
 		= ::fast_io::win32::nt::port_message *;
 
-	auto port_message_p{reinterpret_cast<port_message_may_alias_ptr>(__builtin_addressof(tmp))};
+	auto port_message_p{reinterpret_cast<port_message_may_alias_ptr>(tmp)};
 
 	void *srv_common_port;
 
 	check_nt_status(::fast_io::win32::nt::nt_alpc_connect_port<zw>(
 		__builtin_addressof(srv_common_port), // REQUIRED: empty Communication port handle, fill be set by kernel
 		__builtin_addressof(us),              // REQUIRED: Server Connect port name to connect to
-		__builtin_addressof(oa),              // OPTIONAL: Object Attributes, none in this case
+		nullptr,                              // OPTIONAL: Object Attributes, none in this case
 		__builtin_addressof(apa),             // OPTIONAL: PortAtrributes, used to set various port connection attributes, most imporatnly port flags
 		0x20000 /*ALPC_SYNC_CONNECTION*/,     // OPTOONAL: Message Flags, no Flags
 		nullptr,                              // OPTIONAL: Server SID
@@ -549,10 +515,10 @@ inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *ser
 		__builtin_addressof(receive_size),    // connection message size
 		nullptr,                              // pMsgAttrSend,		// out messages attribtus
 		message_attribute,                    // in message attributes
-		0                                     //&timeout				// OPTIONAL: Timeout, none in this case
+		nullptr                               //&timeout				// OPTIONAL: Timeout, none in this case
 		));
 
-	return server_port_handle;
+	return srv_common_port;
 }
 
 template <nt_family family>
@@ -675,6 +641,7 @@ public:
 	{
 		this->handle = tls_native_handle_rmptr_type_alloc::allocate_zero(1);
 		this->handle->port_handle = ::fast_io::win32::nt::details::nt_create_alpc_ipc_server_impl<family>(server_name, im);
+		this->handle->message_attribute = ::fast_io::win32::nt::details::nt_family_create_alpc_ipc_server_message_attribute_view_impl<family>(this->handle->port_handle);
 	}
 
 	inline ~basic_nt_family_alpc_ipc_server()
@@ -762,12 +729,11 @@ public:
 		this->handle->port_handle = ::fast_io::win32::nt::details::nt_connect_alpc_ipc_server_impl<family>(client_name, im, nullptr, nullptr, this->handle->message_attribute);
 	}
 
-	template <::fast_io::constructible_to_os_c_str T, typename Mes>
-	inline explicit basic_nt_family_alpc_ipc_client(T const &client_name, ipc_mode im, Mes &&message)
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_nt_family_alpc_ipc_client(T const &client_name, ipc_mode im, ::fast_io::win32::nt::details::nt_alpc_communication_tlc_strvw<ch_type> message)
 	{
-		auto const tmp_str{::fast_io::win32::nt::details::concatln_nt_alpc_communication_tlc_str(message)};
-		auto const str_begin{reinterpret_cast<::std::byte *>(tmp_str.c_str())};
-		auto const str_size{tmp_str.size_byte()};
+		auto const str_begin{reinterpret_cast<::std::byte const *>(message.data())};
+		auto const str_size{message.size_bytes()};
 
 		this->handle = tls_native_handle_rmptr_type_alloc::allocate_zero(1);
 		this->handle->message_attribute = ::fast_io::win32::nt::details::nt_family_create_alpc_ipc_client_message_attribute_view_impl<family>();
