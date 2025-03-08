@@ -850,11 +850,7 @@ inline decltype(auto) zero_copy_out_handle(basic_c_family_io_observer<family,ch_
 #endif
 
 template <c_family family>
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	c_family_file_factory
+struct c_family_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using native_handle_type = FILE *;
 	FILE *fp{};
@@ -1063,6 +1059,12 @@ using c_file_factory_unlocked = c_family_file_factory<c_family::native_unlocked>
 
 namespace freestanding
 {
+template <c_family fm>
+struct is_trivially_copyable_or_relocatable<c_family_file_factory<fm>>
+{
+	inline static constexpr bool value = true;
+};
+
 template <c_family fm, ::std::integral char_type>
 struct is_zero_default_constructible<basic_c_family_io_observer<fm, char_type>>
 {

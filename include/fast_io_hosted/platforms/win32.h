@@ -892,11 +892,7 @@ inline void io_control(basic_win32_family_io_observer<family, ch_type> h, Args &
 	}
 }
 
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	win32_file_factory
+struct win32_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using native_handle_type = void *;
 	void *handle{};
@@ -1210,11 +1206,7 @@ inline win32_9xa_at_entry at_fdcwd() noexcept
 }
 #endif
 
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	win32_9xa_dir_file_factory
+struct win32_9xa_dir_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using native_handle_type = win32_9xa_dir_handle;
 	win32_9xa_dir_handle handle{};
@@ -1986,6 +1978,18 @@ inline basic_win32_io_observer<char_type> native_stderr() noexcept
 
 namespace freestanding
 {
+template <>
+struct is_trivially_copyable_or_relocatable<win32_file_factory>
+{
+	inline static constexpr bool value = true;
+};
+
+template <>
+struct is_trivially_copyable_or_relocatable<win32_9xa_dir_file_factory>
+{
+	inline static constexpr bool value = true;
+};
+
 template <win32_family fm, ::std::integral char_type>
 struct is_zero_default_constructible<basic_win32_family_io_observer<fm, char_type>>
 {
