@@ -437,23 +437,24 @@ private:
 			return ::fast_io::containers::npos;
 		}
 		auto bg{this->ptr};
+		auto start{bg + pos};
 		auto ed{bg + thisn};
 		const_pointer it;
 		if constexpr (situation == 0)
 		{
-			it = ::std::find(bg, ed, ch);
+			it = ::std::find(start, ed, ch);
 		}
 		else if constexpr (situation == 1)
 		{
-			it = ::fast_io::freestanding::find_not(bg, ed, ch);
+			it = ::fast_io::freestanding::find_not(start, ed, ch);
 		}
 		else if constexpr (situation == 2)
 		{
-			it = ::fast_io::freestanding::find_last(bg, ed, ch);
+			it = ::fast_io::freestanding::find_last(start, ed, ch);
 		}
 		else if constexpr (situation == 3)
 		{
-			it = ::fast_io::freestanding::find_last_not(bg, ed, ch);
+			it = ::fast_io::freestanding::find_last_not(start, ed, ch);
 		}
 		if (it == ed)
 		{
