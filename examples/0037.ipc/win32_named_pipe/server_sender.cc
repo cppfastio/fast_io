@@ -12,7 +12,7 @@ int main()
 		::fast_io::u8win32_named_pipe_ipc_server s{pipe_name, ::fast_io::ipc_mode::out};
 		::fast_io::basic_obuf<::fast_io::u8win32_named_pipe_ipc_server> s_obuf{s};
 		::fast_io::io::print(::fast_io::u8out(), u8"wait for connect\n");
-		wait_for_connect(s, {}, {});
+		wait_for_connect(s);
 		::fast_io::io::print(::fast_io::u8out(), u8"connected!\n");
 		for (;;)
 		{

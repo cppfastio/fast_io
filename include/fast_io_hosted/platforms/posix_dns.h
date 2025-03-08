@@ -176,11 +176,7 @@ inline constexpr ::fast_io::ip_address to_ip_address(posix_dns_io_observer d) no
 	return fast_io::details::posix_to_ip_address_with_ai_addr_impl(d.res->ai_family, d.res->ai_addr);
 }
 
-class
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	posix_dns_file : public posix_dns_io_observer
+class posix_dns_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public posix_dns_io_observer
 {
 public:
 	using typename posix_dns_io_observer::char_type;
@@ -268,4 +264,13 @@ using native_dns_io_observer = posix_dns_io_observer;
 using native_dns_file = posix_dns_file;
 using native_dns_iterator = posix_dns_iterator;
 
+namespace freestanding
+{
+template <>
+struct is_trivially_copyable_or_relocatable<posix_dns_file>
+{
+	inline static constexpr bool value = true;
+};
+
+} // namespace freestanding
 } // namespace fast_io

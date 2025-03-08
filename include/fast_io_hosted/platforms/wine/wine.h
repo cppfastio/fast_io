@@ -35,11 +35,7 @@ public:
 };
 
 template <wine_family family>
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	wine_family_file_factory
+struct wine_family_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using native_handle_type = ::fast_io::wine_host_fd_t;
 	native_handle_type host_fd{};
@@ -85,4 +81,13 @@ public:
 	}
 };
 
+namespace freestanding
+{
+template <wine_family family>
+struct is_trivially_copyable_or_relocatable<wine_family_file_factory<family>>
+{
+	inline static constexpr bool value = true;
+};
+
+} // namespace freestanding
 } // namespace fast_io

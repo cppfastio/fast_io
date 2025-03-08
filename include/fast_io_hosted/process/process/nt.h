@@ -83,18 +83,18 @@ struct nt_process_rtl_guard
 	}
 };
 
-struct nt_process_threa_local_heap_allocate_guard
+struct nt_process_thread_local_heap_allocate_guard
 {
 	using alloc = ::fast_io::native_thread_local_allocator;
 
 	void *ptr{};
-	inline constexpr nt_process_threa_local_heap_allocate_guard() noexcept = default;
-	inline constexpr nt_process_threa_local_heap_allocate_guard(void *o_ptr) noexcept
+	inline constexpr nt_process_thread_local_heap_allocate_guard() noexcept = default;
+	inline constexpr nt_process_thread_local_heap_allocate_guard(void *o_ptr) noexcept
 		: ptr{o_ptr} {};
 
-	nt_process_threa_local_heap_allocate_guard(nt_process_threa_local_heap_allocate_guard const &) = delete;
-	nt_process_threa_local_heap_allocate_guard &operator=(nt_process_threa_local_heap_allocate_guard const &) = delete;
-	inline constexpr ~nt_process_threa_local_heap_allocate_guard()
+	nt_process_thread_local_heap_allocate_guard(nt_process_thread_local_heap_allocate_guard const &) = delete;
+	nt_process_thread_local_heap_allocate_guard &operator=(nt_process_thread_local_heap_allocate_guard const &) = delete;
+	inline constexpr ~nt_process_thread_local_heap_allocate_guard()
 	{
 		clear();
 	};
@@ -149,7 +149,7 @@ inline void nt_3x_push_process_parameters_and_duplicate_process_std_handles(void
 											  __builtin_addressof(NtImagePath_len));
 	auto NtImagePath{
 		reinterpret_cast<unicode_string *>(::fast_io::native_thread_local_allocator::allocate(NtImagePath_len))};
-	nt_process_threa_local_heap_allocate_guard NtImagePath_guard{NtImagePath};
+	nt_process_thread_local_heap_allocate_guard NtImagePath_guard{NtImagePath};
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
 															  NtImagePath, NtImagePath_len,
 															  __builtin_addressof(NtImagePath_len)));
@@ -339,8 +339,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 	::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation, nullptr, 0,
 											  __builtin_addressof(NtImagePath_len));
 
-	auto NtImagePath = static_cast<unicode_string *>(nt_process_threa_local_heap_allocate_guard::alloc::allocate(NtImagePath_len));
-	nt_process_threa_local_heap_allocate_guard NtImagePath_guard{NtImagePath}; // guard
+	auto NtImagePath = static_cast<unicode_string *>(nt_process_thread_local_heap_allocate_guard::alloc::allocate(NtImagePath_len));
+	nt_process_thread_local_heap_allocate_guard NtImagePath_guard{NtImagePath}; // guard
 
 	check_nt_status(::fast_io::win32::nt::nt_query_object<zw>(fhandle, object_information_class::ObjectNameInformation,
 															  NtImagePath, NtImagePath_len,
@@ -369,12 +369,12 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		auto const NtImagePath_u16_length{static_cast<::std::size_t>(NtImagePath->Length) / sizeof(char16_t)};
 		unicode_string str_uni{};
 
-		nt_process_threa_local_heap_allocate_guard native_name_temp_guard{}; // Guard for later use
+		nt_process_thread_local_heap_allocate_guard native_name_temp_guard{}; // Guard for later use
 
 		if (NtImagePath_u16_length > 11 && ::fast_io::freestanding::my_memcmp(NtImagePath_c16_buffer, u"\\Device\\Mup", 11 * sizeof(char16_t)) == 0)
 		{
 			auto const native_name_alloc_length{static_cast<::std::size_t>(NtImagePath->Length) - 9 * sizeof(char16_t)};
-			native_name_temp_guard.ptr = nt_process_threa_local_heap_allocate_guard::alloc::allocate(native_name_alloc_length); // use guard
+			native_name_temp_guard.ptr = nt_process_thread_local_heap_allocate_guard::alloc::allocate(native_name_alloc_length); // use guard
 			char16_t *native_name{static_cast<char16_t *>(native_name_temp_guard.ptr)};
 
 			native_name[0] = u'\\';
@@ -408,8 +408,8 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 			auto const find_res_strlen_byte{find_res_strlen * sizeof(char16_t)};
 
 			auto const query_in_buffer_byte_alloc_size{sizeof(::std::uint_least16_t) + find_res_strlen_byte + sizeof(char16_t)};
-			auto query_in_buffer_byte{nt_process_threa_local_heap_allocate_guard::alloc::allocate(query_in_buffer_byte_alloc_size)};
-			nt_process_threa_local_heap_allocate_guard query_in_buffer_byte_guard{query_in_buffer_byte}; // guard
+			auto query_in_buffer_byte{nt_process_thread_local_heap_allocate_guard::alloc::allocate(query_in_buffer_byte_alloc_size)};
+			nt_process_thread_local_heap_allocate_guard query_in_buffer_byte_guard{query_in_buffer_byte}; // guard
 
 			using mounter_target_name_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -459,7 +459,7 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 				auto const MultiSz_strlen{::fast_io::cstr_nlen(QueryOutBuffer->MultiSz, static_cast<::std::size_t>(QueryOutBuffer->MultiSzLength) / sizeof(char16_t))};
 
 				::std::size_t const native_name_alloc_length{static_cast<::std::size_t>(NtImagePath->Length) - find_res_strlen_byte + MultiSz_strlen * sizeof(char16_t) + sizeof(char16_t)};
-				native_name_temp_guard.ptr = nt_process_threa_local_heap_allocate_guard::alloc::allocate(native_name_alloc_length); // use guard
+				native_name_temp_guard.ptr = nt_process_thread_local_heap_allocate_guard::alloc::allocate(native_name_alloc_length); // use guard
 				char16_t *native_name{static_cast<char16_t *>(native_name_temp_guard.ptr)};
 
 				auto native_name_curr{native_name};
