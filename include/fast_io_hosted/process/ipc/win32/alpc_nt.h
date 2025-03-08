@@ -60,8 +60,12 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	void *port_handle{};
 	void *section_handle{};
 	::fast_io::win32::nt::alpc_message_attributes *message_attribute{};
+	// view section
 	::std::byte *view_begin{};
 	::std::byte *view_end{};
+	// id
+	void *pid{};
+	void *tid{};
 
 	nt_alpc_handle() noexcept = default;
 
@@ -80,6 +84,10 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		other.view_begin = nullptr;
 		view_end = other.view_end;
 		other.view_end = nullptr;
+		pid = other.pid;
+		other.pid = nullptr;
+		tid = other.tid;
+		other.tid = nullptr;
 	}
 
 	inline constexpr nt_alpc_handle &operator=(nt_alpc_handle &&other) noexcept
@@ -112,6 +120,12 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 		view_end = other.view_end;
 		other.view_end = nullptr;
+
+		pid = other.pid;
+		other.pid = nullptr;
+
+		tid = other.tid;
+		other.tid = nullptr;
 	}
 
 	inline ~nt_alpc_handle()
@@ -144,6 +158,10 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		view_begin = nullptr;
 
 		view_end = nullptr;
+
+		pid = nullptr;
+
+		tid = nullptr;
 	}
 
 	inline void close()
@@ -181,6 +199,10 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		view_begin = nullptr;
 
 		view_end = nullptr;
+
+		pid = nullptr;
+
+		tid = nullptr;
 	}
 };
 
@@ -750,6 +772,17 @@ public:
 		}
 	}
 };
+
+// todo struct
+
+template <nt_family server_family, ::std::integral server_ch_type, nt_family client_family = nt_family::nt, ::std::integral client_ch_type = char>
+inline basic_nt_family_alpc_ipc_client_observer<client_family, client_ch_type> wait_for_connect_and_recv(
+	basic_nt_family_alpc_ipc_server_observer<server_family, server_ch_type> server,
+	server_ch_type *received_message_begin, server_ch_type *received_message_end)
+{
+	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
+	return {reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
+}
 
 namespace freestanding
 {
