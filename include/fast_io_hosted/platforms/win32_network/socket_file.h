@@ -813,7 +813,7 @@ inline win32_socket_factory tcp_listen(::std::uint_least16_t port, open_mode m =
 namespace freestanding
 {
 template <>
-struct is_zero_default_constructible<win32_socket_factory>
+struct is_trivially_copyable_or_relocatable<win32_socket_factory>
 {
 	inline static constexpr bool value = true;
 };
