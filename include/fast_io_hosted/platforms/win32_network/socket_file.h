@@ -353,7 +353,7 @@ inline constexpr ::std::uint_least32_t to_win32_sock_open_mode(open_mode m) noex
 	{
 		flags |= 0x01;
 	}
-#if defined(_WIN32_WINDOWS) || _WIN32_WINNT >= 0x0602
+#if !defined(_WIN32_WINDOWS) || _WIN32_WINNT >= 0x0602
 	// this flag only supports after windows 7 sp1. So we start supporting this flag from windows 8
 	if ((m & open_mode::inherit) != open_mode::inherit)
 	{
