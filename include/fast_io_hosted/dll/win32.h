@@ -140,11 +140,7 @@ inline void *create_win32_family_dll_impl(T const &t, dll_mode mode)
 } // namespace details
 
 template <win32_family family>
-class
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	win32_family_dll_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public win32_family_dll_io_observer<family>
+class win32_family_dll_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public win32_family_dll_io_observer<family>
 {
 public:
 	using native_handle_type = void *;

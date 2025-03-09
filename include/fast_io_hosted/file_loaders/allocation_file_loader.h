@@ -314,7 +314,11 @@ public:
 		other.fd = -1;
 		return *this;
 	}
-	inline constexpr pointer data() const noexcept
+	inline constexpr pointer data() noexcept
+	{
+		return address_begin;
+	}
+	inline constexpr const_pointer data() const noexcept
 	{
 		return address_begin;
 	}

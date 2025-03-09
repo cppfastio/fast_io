@@ -6,8 +6,8 @@ Generate [manglings table](../../include/fast_io_hosted/platforms/win32) automat
 
 2.
 ```
-clang++ ./prebuild.cc -o prebuild.exe -std=c++2c -I ../../include -O2 -lntdll -fuse-ld=lld -flto=thin
-./prebuild.exe $WINDOWS_MSVC_SYSROOT
+clang++ ./prebuild.cc -o prebuild -std=c++2c -I ../../include -O2 -lntdll -fuse-ld=lld -flto=thin
+./prebuild $WINDOWS_MSVC_SYSROOT
 ninja -C build
 ```
 

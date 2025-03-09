@@ -1042,11 +1042,7 @@ inline int my_open_posix_fd_temp_file()
 
 } // namespace details
 
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	posix_file_factory
+struct posix_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using native_handle_type = int;
 	int fd{-1};
@@ -1504,6 +1500,16 @@ inline constexpr basic_posix_io_observer<char_type> native_stderr() noexcept
 	return basic_posix_io_observer<char_type>{posix_stderr_number};
 }
 #endif
+
+namespace freestanding
+{
+template <>
+struct is_trivially_copyable_or_relocatable<posix_file_factory>
+{
+	inline static constexpr bool value = true;
+};
+
+} // namespace freestanding
 } // namespace fast_io
 
 #if defined(__linux__) && (defined(__NR_sendfile) || defined(__NR_sendfile64)) && 0

@@ -301,7 +301,7 @@ struct basic_http_line
 
 template <::std::integral char_type, ::std::size_t buffer_size>
 inline constexpr basic_http_line_generator<char_type>
-line_generator(basic_http_header_buffer<char_type, buffer_size> &b) noexcept
+line_generator(basic_http_header_buffer<char_type, buffer_size> const&b) noexcept
 {
 	::std::size_t end_loc{b.http_status_reason_end_location};
 	char_type const *start{b.buffer + end_loc};

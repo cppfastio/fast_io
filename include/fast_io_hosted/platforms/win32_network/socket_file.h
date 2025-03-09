@@ -353,7 +353,7 @@ inline constexpr ::std::uint_least32_t to_win32_sock_open_mode(open_mode m) noex
 	{
 		flags |= 0x01;
 	}
-#if defined(_WIN32_WINDOWS) || _WIN32_WINNT >= 0x0602
+#if !defined(_WIN32_WINDOWS) || _WIN32_WINNT >= 0x0602
 	// this flag only supports after windows 7 sp1. So we start supporting this flag from windows 8
 	if ((m & open_mode::inherit) != open_mode::inherit)
 	{
@@ -445,11 +445,7 @@ inline ::std::size_t open_win32_socket_impl(sock_family d, sock_type t, open_mod
 
 } // namespace win32::details
 
-struct
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	win32_socket_factory
+struct win32_socket_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using native_handle_type = ::std::size_t;
 	::std::size_t hsocket{};
@@ -481,11 +477,7 @@ inline win32_socket_factory tcp_accept(basic_win32_family_socket_io_observer<fam
 }
 
 template <win32_family family, ::std::integral ch_type>
-class
-#if __has_cpp_attribute(clang::trivially_relocatable)
-	[[clang::trivially_relocatable]]
-#endif
-	basic_win32_family_socket_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_win32_family_socket_io_observer<family, ch_type>
+class basic_win32_family_socket_file FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE : public basic_win32_family_socket_io_observer<family, ch_type>
 {
 public:
 	using typename basic_win32_family_socket_io_observer<family, ch_type>::char_type;
@@ -820,6 +812,12 @@ inline win32_socket_factory tcp_listen(::std::uint_least16_t port, open_mode m =
 
 namespace freestanding
 {
+template <>
+struct is_trivially_copyable_or_relocatable<win32_socket_factory>
+{
+	inline static constexpr bool value = true;
+};
+
 template <win32_family fm, ::std::integral char_type>
 struct is_zero_default_constructible<basic_win32_family_socket_io_observer<fm, char_type>>
 {
