@@ -596,13 +596,14 @@ public:
 	}
 };
 
+
+
 // server
 template <win32_family server_family, ::std::integral server_ch_type, win32_family client_family = win32_family::native, ::std::integral client_ch_type = char>
-inline basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> wait_for_connect(
-	basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server)
+inline void wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server)
 {
 	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
-	return {reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
+	return ;
 }
 
 #if 0

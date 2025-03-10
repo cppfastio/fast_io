@@ -64,8 +64,7 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	::std::byte *view_begin{};
 	::std::byte *view_end{};
 	// id
-	void *pid{};
-	void *tid{};
+	::fast_io::win32::nt::client_id cid{};
 
 	nt_alpc_handle() noexcept = default;
 
@@ -84,10 +83,8 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		other.view_begin = nullptr;
 		view_end = other.view_end;
 		other.view_end = nullptr;
-		pid = other.pid;
-		other.pid = nullptr;
-		tid = other.tid;
-		other.tid = nullptr;
+		cid = other.cid;
+		other.cid = nullptr;
 	}
 
 	inline constexpr nt_alpc_handle &operator=(nt_alpc_handle &&other) noexcept
@@ -121,11 +118,8 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		view_end = other.view_end;
 		other.view_end = nullptr;
 
-		pid = other.pid;
-		other.pid = nullptr;
-
-		tid = other.tid;
-		other.tid = nullptr;
+		cid = other.cid;
+		other.cid = nullptr;
 	}
 
 	inline ~nt_alpc_handle()
@@ -159,9 +153,7 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 		view_end = nullptr;
 
-		pid = nullptr;
-
-		tid = nullptr;
+		cid = {};
 	}
 
 	inline void close()
@@ -200,9 +192,7 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 		view_end = nullptr;
 
-		pid = nullptr;
-
-		tid = nullptr;
+		cid = {};
 	}
 };
 
@@ -287,7 +277,7 @@ inline void *nt_create_alpc_ipc_server_impl(T const &t, ipc_mode im)
 }
 
 template <nt_family family>
-inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_server_message_attribute_view_impl(void *server_port)
+inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_server_message_attribute_view_impl(void *__restrict server_port)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -353,7 +343,7 @@ inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_
 
 template <nt_family family>
 inline void *nt_family_add_section_view_to_alpc_ipc_server_message_attribute_view_impl(
-	void *__restrict server_port_handle, ::fast_io::win32::nt::alpc_message_attributes *ama, ::std::size_t view_size)
+	void *__restrict server_port_handle, ::fast_io::win32::nt::alpc_message_attributes *__restrict ama, ::std::size_t view_size)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -387,9 +377,15 @@ inline void *nt_family_add_section_view_to_alpc_ipc_server_message_attribute_vie
 	return section_handle;
 }
 
+struct nt_family_alpc_ipc_server_wait_for_connect_rets
+{
+	::fast_io::win32::nt::client_id cid;
+	::std::byte *rc;
+};
+
 template <nt_family family>
-inline ::std::byte *nt_family_alpc_ipc_server_wait_for_connect_impl(
-	void *server_pipe_handle, ::fast_io::win32::nt::alpc_message_attributes *ama,
+inline nt_family_alpc_ipc_server_wait_for_connect_rets nt_family_alpc_ipc_server_wait_for_connect_impl(
+	void *__restrict server_pipe_handle, ::fast_io::win32::nt::alpc_message_attributes *__restrict ama,
 	::std::byte *handshake_msg_beg, ::std::byte *handshake_msg_end)
 {
 	constexpr bool zw{family == nt_family::zw};
@@ -420,11 +416,13 @@ inline ::std::byte *nt_family_alpc_ipc_server_wait_for_connect_impl(
 
 	auto const actual_receive_size{static_cast<::std::size_t>(port_message_p->u1.s1.DataLength)};
 
-	return static_cast<::std::byte *>(::fast_io::freestanding::my_memcpy(handshake_msg_beg, tmp->PortMessage, actual_receive_size));
+	::fast_io::freestanding::my_memcpy(handshake_msg_beg, tmp->PortMessage, actual_receive_size);
+
+	return {port_message_p->ClientId, static_cast<::std::byte *>(handshake_msg_beg + actual_receive_size)};
 }
 
 template <nt_family family>
-inline void nt_family_alpc_ipc_server_disconnect_impl(void *client_pipe_handle)
+inline void nt_family_alpc_ipc_server_disconnect_impl(void *__restrict client_pipe_handle)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -472,7 +470,7 @@ inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_
 }
 
 template <nt_family family>
-inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode, ::std::byte const *message_begin, ::std::byte const *message_end, ::fast_io::win32::nt::alpc_message_attributes *message_attribute)
+inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode, ::std::byte const *message_begin, ::std::byte const *message_end, ::fast_io::win32::nt::alpc_message_attributes *__restrict message_attribute)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -773,15 +771,36 @@ public:
 	}
 };
 
-// todo struct
+template <::std::integral server_ch_type>
+struct wait_for_connect_and_recv_ret_s
+{
+	::fast_io::win32::nt::client_id cid;
+	server_ch_type *received_message_curr;
+};
 
-template <nt_family server_family, ::std::integral server_ch_type, nt_family client_family = nt_family::nt, ::std::integral client_ch_type = char>
-inline basic_nt_family_alpc_ipc_client_observer<client_family, client_ch_type> wait_for_connect_and_recv(
+template <nt_family server_family, ::std::integral server_ch_type>
+inline wait_for_connect_and_recv_ret_s<server_ch_type> wait_for_connect_and_recv(
 	basic_nt_family_alpc_ipc_server_observer<server_family, server_ch_type> server,
 	server_ch_type *received_message_begin, server_ch_type *received_message_end)
 {
-	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
-	return {reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
+	if (server)
+	{
+		auto [cid, curr]{win32::nt::details::nt_family_alpc_ipc_server_wait_for_connect_impl<server_family>(
+			server.handle->port_handle, server.handle->message_attribute,
+			reinterpret_cast<::std::byte *>(received_message_begin), reinterpret_cast<::std::byte *>(received_message_end))};
+
+		using server_ch_type_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= server_ch_type *;
+
+		return {cid, reinterpret_cast<server_ch_type_may_alias_ptr>(curr)};
+	}
+	else
+	{
+		return {{}, received_message_begin};
+	}
 }
 
 namespace freestanding
