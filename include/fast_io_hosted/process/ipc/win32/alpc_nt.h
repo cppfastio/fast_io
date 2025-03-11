@@ -52,6 +52,12 @@ constexpr inline nt_alpc_internal_tlc_str concat_nt_alpc_internal_tlc_str(Args &
 	}
 }
 
+struct nt_alpc_connect_handle
+{
+	::fast_io::win32::nt::client_id cid;
+	::std::uint_least32_t mid;
+};
+
 template <nt_family family>
 struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
@@ -64,7 +70,7 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	::std::byte *view_begin{};
 	::std::byte *view_end{};
 	// id
-	::fast_io::win32::nt::client_id cid{};
+	nt_alpc_connect_handle cid{};
 
 	nt_alpc_handle() noexcept = default;
 
@@ -248,6 +254,14 @@ inline void *nt_family_create_alpc_ipc_server_port_impl(nt_alpc_char_type const 
 	apa.Flags = 0x80000 /*ALPC_PORTFLG_ALLOW_DUP_OBJECT*/;
 	apa.MaxMessageLength = ::fast_io::win32::nt::AlpcMaxAllowedMessageLength();
 
+#if 0
+	::fast_io::win32::nt::security_quality_of_service SecurityQos{};
+	SecurityQos.ImpersonationLevel = ::fast_io::win32::nt::security_impersonation_level::SecurityIdentification; // SecurityImpersonation; // ; // ; // ;// ;
+	SecurityQos.ContextTrackingMode = 0 /*SECURITY_STATIC_TRACKING*/;
+	SecurityQos.Length = sizeof(SecurityQos);
+	apa.SecurityQos = SecurityQos;
+#endif
+
 	void *server_port_handle;
 
 	check_nt_status(::fast_io::win32::nt::nt_alpc_create_port<zw>(
@@ -379,7 +393,7 @@ inline void *nt_family_add_section_view_to_alpc_ipc_server_message_attribute_vie
 
 struct nt_family_alpc_ipc_server_wait_for_connect_rets
 {
-	::fast_io::win32::nt::client_id cid;
+	nt_alpc_connect_handle ch;
 	::std::byte *rc;
 };
 
@@ -418,7 +432,75 @@ inline nt_family_alpc_ipc_server_wait_for_connect_rets nt_family_alpc_ipc_server
 
 	::fast_io::freestanding::my_memcpy(handshake_msg_beg, tmp->PortMessage, actual_receive_size);
 
-	return {port_message_p->ClientId, static_cast<::std::byte *>(handshake_msg_beg + actual_receive_size)};
+	return {{port_message_p->ClientId, port_message_p->MessageId}, static_cast<::std::byte *>(handshake_msg_beg + actual_receive_size)};
+}
+
+template <nt_family family>
+inline void *nt_family_alpc_ipc_server_accpet_connect_and_send_impl(
+	void *__restrict server_pipe_handle, nt_alpc_connect_handle connect_handle, bool accept,
+	::fast_io::win32::nt::alpc_message_attributes *__restrict ama,
+	::std::byte const *handshake_msg_beg, ::std::byte const *handshake_msg_end)
+{
+	constexpr bool zw{family == nt_family::zw};
+
+	void *client_port_handle;
+
+	::fast_io::win32::nt::alpc_port_attributes apa{};
+	apa.Flags = 0x80000 /*ALPC_PORTFLG_ALLOW_DUP_OBJECT*/;
+	apa.MaxMessageLength = ::fast_io::win32::nt::AlpcMaxAllowedMessageLength();
+
+	::fast_io::win32::nt::cs_port_context cpc{};
+	cpc.PID = static_cast<::std::uint_least32_t>(reinterpret_cast<::std::size_t>(connect_handle.cid.UniqueProcess));
+	cpc.TID = static_cast<::std::uint_least32_t>(reinterpret_cast<::std::size_t>(connect_handle.cid.UniqueProcess));
+	::std::int_least64_t performance_counter;
+	::std::int_least64_t performance_freq;
+	auto status{::fast_io::win32::nt::nt_query_performance_counter<zw>(__builtin_addressof(performance_counter), __builtin_addressof(performance_freq))};
+	if (status) [[unlikely]]
+	{
+		cpc.ID = static_cast<::std::uint_least32_t>(-1);
+	}
+	else
+	{
+		cpc.ID = static_cast<::std::uint_least32_t>(performance_counter);
+	}
+
+	::std::size_t const message_size{static_cast<::std::size_t>(handshake_msg_end - handshake_msg_beg)};
+	::std::size_t send_size{sizeof(::fast_io::win32::nt::port_message) + message_size};
+
+	auto tmp{static_cast<::fast_io::win32::nt::alpc_message *>(nt_ipc_alpc_thread_local_heap_allocate_guard::alloc::allocate(send_size))};
+	nt_ipc_alpc_thread_local_heap_allocate_guard tmp_guard{tmp};
+
+	::fast_io::freestanding::my_memset(tmp, 0, sizeof(::fast_io::win32::nt::port_message));
+
+	tmp->PortHeader.u1.s1.DataLength = static_cast<::std::uint_least16_t>(message_size);
+	tmp->PortHeader.u1.s1.TotalLength = static_cast<::std::uint_least16_t>(send_size);
+	tmp->PortHeader.MessageId = connect_handle.mid;
+
+	if (handshake_msg_beg)
+	{
+		::fast_io::freestanding::my_memcpy(tmp->PortMessage, handshake_msg_beg, message_size);
+	}
+
+	using port_message_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= ::fast_io::win32::nt::port_message *;
+
+	auto port_message_p{reinterpret_cast<port_message_may_alias_ptr>(tmp)};
+
+	check_nt_status(::fast_io::win32::nt::nt_alpc_accept_connect_port<zw>(
+		__builtin_addressof(client_port_handle),
+		server_pipe_handle,
+		0x20000 /*ALPC_SYNC_CONNECTION*/,
+		nullptr,
+		__builtin_addressof(apa),
+		__builtin_addressof(cpc),
+		port_message_p,
+		ama,
+		static_cast<int>(accept)));
+
+	return client_port_handle;
 }
 
 template <nt_family family>
@@ -580,7 +662,7 @@ public:
 	}
 	inline explicit operator bool() const noexcept
 	{
-		return handle != nullptr;
+		return handle != nullptr && handle->port_handle != nullptr;
 	}
 	inline constexpr native_handle_type release() noexcept
 	{
@@ -647,6 +729,13 @@ public:
 			this->handle->close();
 			tls_native_handle_rmptr_type_alloc::deallocate_n(this->handle, 1);
 			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
+		}
+	}
+	inline void malloc_handle()
+	{
+		if (!*this) [[likely]]
+		{
+			this->handle = tls_native_handle_rmptr_type_alloc::allocate_zero(1);
 		}
 	}
 
@@ -734,6 +823,13 @@ public:
 			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
 		}
 	}
+	inline void malloc_handle()
+	{
+		if (!*this) [[likely]]
+		{
+			this->handle = tls_native_handle_rmptr_type_alloc::allocate_zero(1);
+		}
+	}
 
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
@@ -774,10 +870,11 @@ public:
 template <::std::integral server_ch_type>
 struct wait_for_connect_and_recv_ret_s
 {
-	::fast_io::win32::nt::client_id cid;
+	win32::nt::details::nt_alpc_connect_handle connect_handle;
 	server_ch_type *received_message_curr;
 };
 
+// Wait for the peer client connection, and accept the request message at the same time
 template <nt_family server_family, ::std::integral server_ch_type>
 inline wait_for_connect_and_recv_ret_s<server_ch_type> wait_for_connect_and_recv(
 	basic_nt_family_alpc_ipc_server_observer<server_family, server_ch_type> server,
@@ -785,7 +882,7 @@ inline wait_for_connect_and_recv_ret_s<server_ch_type> wait_for_connect_and_recv
 {
 	if (server)
 	{
-		auto [cid, curr]{win32::nt::details::nt_family_alpc_ipc_server_wait_for_connect_impl<server_family>(
+		auto [ch, curr]{win32::nt::details::nt_family_alpc_ipc_server_wait_for_connect_impl<server_family>(
 			server.handle->port_handle, server.handle->message_attribute,
 			reinterpret_cast<::std::byte *>(received_message_begin), reinterpret_cast<::std::byte *>(received_message_end))};
 
@@ -795,11 +892,33 @@ inline wait_for_connect_and_recv_ret_s<server_ch_type> wait_for_connect_and_recv
 #endif
 			= server_ch_type *;
 
-		return {cid, reinterpret_cast<server_ch_type_may_alias_ptr>(curr)};
+		return {ch, reinterpret_cast<server_ch_type_may_alias_ptr>(curr)};
 	}
 	else
 	{
 		return {{}, received_message_begin};
+	}
+}
+
+// Accept the peer client connection and send the approval message at the same time
+template <nt_family server_family, ::std::integral server_ch_type, nt_family client_family = nt_family::nt, ::std::integral client_ch_type = char>
+inline basic_nt_family_alpc_ipc_client<client_family, client_ch_type> accept_connect_and_send(
+	basic_nt_family_alpc_ipc_server_observer<server_family, server_ch_type> server, win32::nt::details::nt_alpc_connect_handle cid,
+	bool accept, server_ch_type const *sended_message_begin, server_ch_type const *sended_message_end)
+{
+	if (server)
+	{
+		auto client_port_handle{win32::nt::details::nt_family_alpc_ipc_server_accpet_connect_and_send_impl<server_family>(
+			server.handle->port_handle, cid, accept, server.handle->message_attribute,
+			reinterpret_cast<::std::byte const *>(sended_message_begin), reinterpret_cast<::std::byte const *>(sended_message_end))};
+		basic_nt_family_alpc_ipc_client<client_family, client_ch_type> ret;
+		ret.malloc_handle();
+		ret.handle->port_handle = client_port_handle;
+		return ret;
+	}
+	else
+	{
+		return basic_nt_family_alpc_ipc_client<client_family, client_ch_type>{};
 	}
 }
 

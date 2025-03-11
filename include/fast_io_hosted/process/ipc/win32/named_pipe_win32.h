@@ -52,6 +52,8 @@ constexpr inline win32_named_pipe_internal_tlc_str<family> concat_win32_named_pi
 	}
 }
 
+using win32_client_connection_handle = void;
+
 // SERVER
 template <win32_family family>
 inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode)
@@ -596,47 +598,19 @@ public:
 	}
 };
 
-
-
-// server
+// Waiting for peer client connection
 template <win32_family server_family, ::std::integral server_ch_type, win32_family client_family = win32_family::native, ::std::integral client_ch_type = char>
-inline void wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server)
+inline win32::details::win32_client_connection_handle wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server)
 {
 	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
-	return ;
+	return;
 }
 
-#if 0
-template <win32_family client_family, ::std::integral server_ch_type, ::std::integral client_ch_type>
-struct win32_wait_result
+// The server closes the peer client connection
+template <win32_family server_family, ::std::integral server_ch_type>
+inline void disconnect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server) noexcept
 {
-	basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> client;
-	server_ch_type *received_message_curr;
-};
-
-template <win32_family server_family, ::std::integral server_ch_type, win32_family client_family = win32_family::native, ::std::integral client_ch_type = char>
-inline basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> wait_for_connect_and_recv(
-	basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server,
-	[[maybe_unused]] server_ch_type *received_message_begin, [[maybe_unused]] server_ch_type *received_message_end)
-{
-	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
-	return win32_wait_result<client_family, server_ch_type, client_ch_type>{
-		{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))}, received_message_begin};
-}
-
-template <win32_family server_family, win32_family client_family, ::std::integral server_ch_type, ::std::integral client_ch_type>
-inline void accept_connect([[maybe_unused]] basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server,
-						   [[maybe_unused]] basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> client,
-						   [[maybe_unused]] server_ch_type const *send_message_begin, [[maybe_unused]] server_ch_type const *send_message_end) noexcept
-{
-	// Named pipelines are not supported
-}
-#endif
-
-template <win32_family client_family, ::std::integral client_ch_type>
-inline void disconnect(basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type> client) noexcept
-{
-	win32::details::win32_family_named_pipe_ipc_server_disconnect_impl(client.handle);
+	win32::details::win32_family_named_pipe_ipc_server_disconnect_impl(server.handle);
 }
 
 // USING
