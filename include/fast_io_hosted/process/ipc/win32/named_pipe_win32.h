@@ -598,15 +598,22 @@ public:
 	}
 };
 
-// Waiting for peer client connection
 template <win32_family server_family, ::std::integral server_ch_type, win32_family client_family = win32_family::native, ::std::integral client_ch_type = char>
-inline win32::details::win32_client_connection_handle wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server)
+inline basic_win32_family_named_pipe_ipc_client<client_family, client_ch_type> wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server)
 {
 	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
-	return;
+	return basic_win32_family_named_pipe_ipc_client<client_family, client_ch_type>{};
 }
 
-// The server closes the peer client connection
+template <win32_family server_family, ::std::integral server_ch_type, win32_family client_family = win32_family::native, ::std::integral client_ch_type = char>
+inline void accept_connect(
+	basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type>,
+	basic_win32_family_named_pipe_ipc_client_observer<client_family, client_ch_type>,
+	bool)
+{
+	// do nothing
+}
+
 template <win32_family server_family, ::std::integral server_ch_type>
 inline void disconnect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server) noexcept
 {
