@@ -883,6 +883,8 @@ inline ::std::byte const *nt_alpc_write_or_pwrite_some_bytes_common_impl(void *_
 	auto tmp{static_cast<::fast_io::win32::nt::alpc_message *>(nt_ipc_alpc_thread_local_heap_allocate_guard::alloc::allocate(send_size))};
 	nt_ipc_alpc_thread_local_heap_allocate_guard tmp_guard{tmp};
 
+	::fast_io::freestanding::my_memset(tmp, 0, sizeof(::fast_io::win32::nt::port_message));
+
 	// Allow sending empty messages
 	if (first) [[likely]]
 	{
@@ -900,20 +902,14 @@ inline ::std::byte const *nt_alpc_write_or_pwrite_some_bytes_common_impl(void *_
 	port_message_p->u1.s1.DataLength = static_cast<::std::uint_least16_t>(message_data_size);
 	port_message_p->u1.s1.TotalLength = static_cast<::std::uint_least16_t>(send_size);
 
-	::fast_io::win32::nt::port_message rpm{};
-
-	// bug
-	auto amas{nt_family_create_alpc_ipc_server_message_attribute_view_impl<family>(port_handle)};
-	nt_alpc_message_attribute_guard amas_guard{amas};
-
 	check_nt_status(::fast_io::win32::nt::nt_alpc_send_wait_receive_port<zw>(
 		port_handle,
-		0x20000,
+		0,
 		port_message_p,                 // SendMessage
-		amas,                           // SendMessageAttributes
-		__builtin_addressof(rpm),       // ReceiveBuffer
-		__builtin_addressof(send_size), // BufferLength
-		ama,                            // ReceiveMessageAttributes
+		ama,                            // SendMessageAttributes
+		nullptr,                         // ReceiveBuffer
+		nullptr,        // BufferLength
+		nullptr,                            // ReceiveMessageAttributes
 		nullptr                         // no timeout
 		));
 
