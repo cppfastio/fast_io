@@ -98,6 +98,8 @@ struct nt_alpc_message_attribute_guard
 
 		message_attribute = other.message_attribute;
 		other.message_attribute = nullptr;
+
+		return *this;
 	}
 
 	inline ~nt_alpc_message_attribute_guard()
