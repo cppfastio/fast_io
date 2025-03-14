@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 		accept_connect(s, c, true);
 
 		::fast_io::io::perrln("server -> send -> client: ", "hello");
-		::fast_io::io::print(c, "hello\n");
+		::fast_io::io::print(s, "hello\n");
 	}
 	catch (::fast_io::error e)
 	{

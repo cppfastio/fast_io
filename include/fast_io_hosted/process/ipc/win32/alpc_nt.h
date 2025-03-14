@@ -904,15 +904,19 @@ inline ::std::byte const *nt_alpc_write_or_pwrite_some_bytes_common_impl(void *_
 	port_message_p->u1.s1.DataLength = static_cast<::std::uint_least16_t>(message_data_size);
 	port_message_p->u1.s1.TotalLength = static_cast<::std::uint_least16_t>(send_size);
 
+	// There is a bug and it cannot be sent. 
+	// At present, the known usage of alpc is only synchronous mode, and the message flow mode has not been found yet
+	// https://github.com/csandker/InterProcessCommunication-Samples/issues/7
+
 	check_nt_status(::fast_io::win32::nt::nt_alpc_send_wait_receive_port<zw>(
 		port_handle,
 		0,
-		port_message_p,                 // SendMessage
-		ama,                            // SendMessageAttributes
-		nullptr,                         // ReceiveBuffer
+		port_message_p, // SendMessage
+		ama,            // SendMessageAttributes
+		nullptr,        // ReceiveBuffer
 		nullptr,        // BufferLength
-		nullptr,                            // ReceiveMessageAttributes
-		nullptr                         // no timeout
+		nullptr,        // ReceiveMessageAttributes
+		nullptr         // no timeout
 		));
 
 	auto const actual_send_size{send_size - sizeof(::fast_io::win32::nt::port_message)};
@@ -1300,6 +1304,20 @@ inline void accept_connect(
 		server.handle->status = win32::nt::details::nt_alpc_status::none;
 
 		client.handle->port_handle = client_port_handle;
+	}
+	else
+	{
+		throw_nt_error(0xc0000008);
+	}
+}
+
+template <nt_family client_family, ::std::integral client_ch_type>
+inline void disconnect(basic_nt_family_alpc_ipc_universal_observer<client_family, client_ch_type> client)
+{
+	if (client) [[likely]]
+	{
+		win32::nt::details::nt_family_alpc_ipc_server_disconnect_impl<client_family>(client.handle->port_handle);
+		client.handle->port_handle = nullptr;
 	}
 	else
 	{
