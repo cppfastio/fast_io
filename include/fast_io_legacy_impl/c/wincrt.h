@@ -213,11 +213,22 @@ inline void wincrt_fp_write_cold_normal_case_impl(FILE *__restrict fpp, char con
 #endif
 inline void wincrt_fp_write_cold_impl(FILE *__restrict fp, char const *first, char const *last)
 {
-	::std::size_t diff{static_cast<::std::size_t>(last - first)};
 	crt_iobuf *fpp{reinterpret_cast<crt_iobuf *>(fp)};
+
+	::std::size_t diff{static_cast<::std::size_t>(last - first)};
+
 	if (fpp->_base == nullptr)
 	{
-		wincrt_fp_write_cold_malloc_case_impl(fp, first, diff);
+		// The behavior of stdout and stderr on wincrt is consistent, and there is no line buffer
+		// stdout and stderr will not default to malloc buffer, but will use the existing buffer
+		if (auto const fd{fpp->_file}; fd == 1 || fd == 2)
+		{
+			::fast_io::details::posix_write_bytes_impl(fd, reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last));
+		}
+		else
+		{
+			wincrt_fp_write_cold_malloc_case_impl(fp, first, diff);
+		}
 	}
 	else
 	{
