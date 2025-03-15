@@ -217,7 +217,19 @@ inline void wincrt_fp_write_cold_impl(FILE *__restrict fp, char const *first, ch
 	crt_iobuf *fpp{reinterpret_cast<crt_iobuf *>(fp)};
 	if (fpp->_base == nullptr)
 	{
-		wincrt_fp_write_cold_malloc_case_impl(fp, first, diff);
+		if (auto const fd{fpp->_file}; (fd == 1 && ::fast_io::noexcept_call(_isatty, fd)) || fd == 2)
+		{
+			/*
+			* There is no file like buffer after stderr redirects the file. 
+			* There will be a file like buffer after stdout redirects the file.
+			* https://github.com/huangqinjin/ucrt/blob/d6e817a4cc90f6f1fe54f8a0aa4af4fff0bb647d/stdio/_sftbuf.cpp#L34
+			*/
+			::fast_io::details::posix_write_bytes_impl(fd, reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last));
+		}
+		else
+		{
+			wincrt_fp_write_cold_malloc_case_impl(fp, first, diff);
+		}
 	}
 	else
 	{
