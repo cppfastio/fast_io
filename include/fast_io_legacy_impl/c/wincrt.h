@@ -217,7 +217,7 @@ inline void wincrt_fp_write_cold_impl(FILE *__restrict fp, char const *first, ch
 	crt_iobuf *fpp{reinterpret_cast<crt_iobuf *>(fp)};
 	if (fpp->_base == nullptr)
 	{
-		if (auto const fd{fpp->_file}; (fd == 1 && ::fast_io::noexcept_call(_isatty, fd)) || fd == 2)
+		if (auto const fd{fpp->_file}; (fd == ::fast_io::posix_stdout_number && ::fast_io::noexcept_call(_isatty, fd)) || fd == ::fast_io::posix_stderr_number)
 		{
 			/*
 			* There is no file like buffer after stderr redirects the file. 
