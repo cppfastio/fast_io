@@ -11,7 +11,7 @@ fast_io is a C++20 input/output library that provides [exceptional speed](readme
 #include <fast_io.h>
 
 int main() {
-	print("Hello, fast_io world!\n");
+	fast_io::io::print("Hello, fast_io world!\n");
 }
 ```
 ### Memory map file
