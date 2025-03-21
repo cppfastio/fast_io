@@ -111,7 +111,7 @@ struct
 	}
 	inline constexpr simd_vector<T, N> operator-() const noexcept
 	{
-		return ::fast_io::details::wrap_minus_common(::fast_io::details::all_zero_simd_vector_mask<T, N>, *this);
+		return ::fast_io::details::wrap_sub_common(::fast_io::details::all_zero_simd_vector_mask<T, N>, *this);
 	}
 
 	template <typename T1, ::std::size_t N1>
