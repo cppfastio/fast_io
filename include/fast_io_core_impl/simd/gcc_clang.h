@@ -151,7 +151,7 @@ struct simd_vector
 		constexpr
 #endif
 		void
-		wrap_sub_assign(T2 const &b) noexcept
+		wrap_minus_assign(T2 const &b) noexcept
 		requires(::std::integral<value_type>)
 	{
 		if constexpr (::std::same_as<simd_vector<T, N>, T2> && ::std::unsigned_integral<value_type>)
@@ -668,7 +668,7 @@ inline
 	constexpr
 #endif
 	simd_vector<T, N>
-	wrap_sub(simd_vector<T, N> a, simd_vector<T, N> b) noexcept
+	wrap_minus(simd_vector<T, N> a, simd_vector<T, N> b) noexcept
 {
 	if constexpr (::std::signed_integral<T>)
 	{
