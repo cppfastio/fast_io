@@ -1807,7 +1807,7 @@ struct small_rect
 	::std::int_least16_t Bottom;
 };
 
-typedef struct console_invalidatedibits
+struct console_invalidatedibits
 {
 	void *ConsoleHandle;
 	void *OutputHandle;
@@ -2326,7 +2326,7 @@ struct console_api_message
 
 	csr_capture_buffer *CsrCaptureData;
 	::std::uint_least32_t ApiNumber;
-	::std::int_least32_t Status;
+	::std::uint_least32_t Status;
 	::std::uint_least32_t Reserved;
 	union
 	{
