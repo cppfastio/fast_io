@@ -985,7 +985,7 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 				}
 				else
 				{
-					return pscatters;
+					return pit.scatters_pos_ptr;
 				}
 			}
 			else
@@ -996,6 +996,10 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 				{
 					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf, n - 1, char_type>(
 						pit.scatters_pos_ptr, pit.reserve_pos_ptr, args...);
+				}
+				else
+				{
+					return pit;
 				}
 			}
 		}
