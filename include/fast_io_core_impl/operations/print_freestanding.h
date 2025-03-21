@@ -983,10 +983,12 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf, n - 1, char_type>(
 						pit.scatters_pos_ptr, pit.reserve_pos_ptr, args...);
 				}
-				else
+				else if constexpr (n == 1 && needprintlf)
 				{
-					return pit.scatters_pos_ptr;
+					*pit.scatters_pos_ptr = ::fast_io::details::decay::line_scatter_common<char_type, scattertype>;
+					++pit.scatters_pos_ptr;
 				}
+				return pit.scatters_pos_ptr;
 			}
 			else
 			{
@@ -997,10 +999,12 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 					return ::fast_io::details::decay::print_n_scatters_reserve<needprintlf, n - 1, char_type>(
 						pit.scatters_pos_ptr, pit.reserve_pos_ptr, args...);
 				}
-				else
+				else if constexpr (n == 1 && needprintlf)
 				{
-					return pit;
+					*pit = ::fast_io::details::decay::line_scatter_common<char_type, scattertype>;
+					++pit;
 				}
+				return pit;
 			}
 		}
 	}
