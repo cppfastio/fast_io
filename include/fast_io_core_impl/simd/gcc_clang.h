@@ -668,7 +668,7 @@ inline
 	constexpr
 #endif
 	simd_vector<T, N>
-	wrap_minus(simd_vector<T, N> a, simd_vector<T, N> b) noexcept
+	wrap_sub(simd_vector<T, N> a, simd_vector<T, N> b) noexcept
 {
 	if constexpr (::std::signed_integral<T>)
 	{
