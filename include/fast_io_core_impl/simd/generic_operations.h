@@ -383,7 +383,7 @@ wrap_add_common(::fast_io::intrinsics::simd_vector<T, N> const &a,
 
 template <typename T, ::std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T, N>
-wrap_minus_common(::fast_io::intrinsics::simd_vector<T, N> const &a,
+wrap_sub_common(::fast_io::intrinsics::simd_vector<T, N> const &a,
 				  ::fast_io::intrinsics::simd_vector<T, N> const &b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
@@ -700,13 +700,13 @@ inline constexpr simd_vector<T, N> wrap_add(simd_vector<T, N> const &a, simd_vec
 template <typename T, ::std::size_t N>
 inline constexpr simd_vector<T, N> operator-(simd_vector<T, N> const &a, simd_vector<T, N> const &b) noexcept
 {
-	return ::fast_io::details::wrap_minus_common(a, b);
+	return ::fast_io::details::wrap_sub_common(a, b);
 }
 
 template <typename T, ::std::size_t N>
-inline constexpr simd_vector<T, N> wrap_minus(simd_vector<T, N> const &a, simd_vector<T, N> const &b) noexcept
+inline constexpr simd_vector<T, N> wrap_sub(simd_vector<T, N> const &a, simd_vector<T, N> const &b) noexcept
 {
-	return ::fast_io::details::wrap_minus_common(a, b);
+	return ::fast_io::details::wrap_sub_common(a, b);
 }
 
 template <typename T, ::std::size_t N>

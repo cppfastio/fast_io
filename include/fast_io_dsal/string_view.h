@@ -4,10 +4,6 @@
 #error "You must be using a C++ compiler"
 #endif
 
-#if !defined(__cplusplus)
-#error "You must be using a C++ compiler"
-#endif
-
 #include <version>
 #include <type_traits>
 #include <concepts>

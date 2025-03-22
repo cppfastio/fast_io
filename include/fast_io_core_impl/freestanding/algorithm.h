@@ -757,7 +757,7 @@ inline constexpr void uninitialized_default_construct_n(ForwardIt first, ::std::
 }
 
 template <::std::input_iterator ForwardIt, typename T>
-inline constexpr void uninitialized_fill(ForwardIt first, ForwardIt last, T const &x) noexcept(
+inline constexpr ForwardIt uninitialized_fill(ForwardIt first, ForwardIt last, T const &x) noexcept(
 	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
 {
 	using valuetype = typename ::std::iterator_traits<ForwardIt>::value_type;
@@ -773,7 +773,7 @@ inline constexpr void uninitialized_fill(ForwardIt first, ForwardIt last, T cons
 #endif
 		{
 			::fast_io::freestanding::my_memset(::std::to_address(first), static_cast<int>(static_cast<::std::uint_least8_t>(x)), sizeof(T) * static_cast<::std::size_t>(last - first));
-			return;
+			return last;
 		}
 #endif
 	}
@@ -782,6 +782,7 @@ inline constexpr void uninitialized_fill(ForwardIt first, ForwardIt last, T cons
 	{
 		::std::construct_at(::std::to_address(first), x);
 	}
+	return last;
 }
 
 template <::std::input_iterator ForwardIt, typename T>
