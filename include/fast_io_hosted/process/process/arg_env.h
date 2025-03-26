@@ -11,7 +11,7 @@ inline constexpr default_args_t default_args{};
 
 namespace details
 {
-template <::std::integral replace_char_type, typename T>
+template <bool is_first, ::std::integral replace_char_type, typename T>
 inline constexpr void construct_win32_process_args_decay_singal(
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t)
 {
@@ -28,8 +28,16 @@ inline constexpr void construct_win32_process_args_decay_singal(
 		{
 			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
 			{
-				str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
-				str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+				if constexpr (is_first)
+				{
+					// The first argument of windows does not support double quotes
+					throw_win32_error(13);
+				}
+				else
+				{
+					str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+					str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+				}
 			}
 			else
 			{
@@ -51,8 +59,16 @@ inline constexpr void construct_win32_process_args_decay_singal(
 		{
 			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
 			{
-				str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
-				str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+				if constexpr (is_first)
+				{
+					// The first argument of windows does not support double quotes
+					throw_win32_error(13);
+				}
+				else
+				{
+					str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+					str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+				}
 			}
 			else
 			{
@@ -68,15 +84,15 @@ inline constexpr void construct_win32_process_args_decay_singal(
 	}
 }
 
-template <::std::integral replace_char_type, typename T, typename... Args>
+template <bool is_first, ::std::integral replace_char_type, typename T, typename... Args>
 inline constexpr void construct_win32_process_args_decay(
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t, Args... args)
 {
-	construct_win32_process_args_decay_singal(str, t);
+	construct_win32_process_args_decay_singal<is_first>(str, t);
 
 	if constexpr (sizeof...(Args) != 0)
 	{
-		construct_win32_process_args_decay(str, args...);
+		construct_win32_process_args_decay<false>(str, args...);
 	}
 }
 
@@ -149,9 +165,9 @@ struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		requires(!::std::same_as<::std::remove_cvref_t<T>, default_args_t>)
 	inline constexpr basic_win32_process_args(T &&t, Args &&...as)
 	{
-		details::construct_win32_process_args_decay(args,
-													::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
-													::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(as))...);
+		details::construct_win32_process_args_decay<true>(args,
+														  ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
+														  ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(as))...);
 	}
 
 	inline constexpr char_type_may_alias_const_ptr get() const noexcept
@@ -314,6 +330,7 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		}
 	}
 };
+
 } // namespace details
 
 namespace freestanding
@@ -426,7 +443,7 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	{
 		using char_const_p_const_p_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
-		[[__gnu__::__may_alias__]]
+			[[__gnu__::__may_alias__]]
 #endif
 			= char const *const *;
 
