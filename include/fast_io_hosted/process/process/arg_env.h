@@ -11,9 +11,8 @@ inline constexpr default_args_t default_args{};
 
 namespace details
 {
-template <bool is_first, ::std::integral replace_char_type, typename T>
-inline constexpr void construct_win32_process_args_decay_singal(
-	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t)
+template <::std::integral replace_char_type, typename T>
+inline constexpr void construct_win32_process_args_decay_singal(bool is_first, ::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t)
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<replace_char_type>, T>};
 
@@ -28,7 +27,7 @@ inline constexpr void construct_win32_process_args_decay_singal(
 		{
 			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
 			{
-				if constexpr (is_first)
+				if (is_first) [[unlikely]]
 				{
 					// The first argument of windows does not support double quotes
 					throw_win32_error(13);
@@ -59,7 +58,7 @@ inline constexpr void construct_win32_process_args_decay_singal(
 		{
 			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
 			{
-				if constexpr (is_first)
+				if (is_first) [[unlikely]]
 				{
 					// The first argument of windows does not support double quotes
 					throw_win32_error(13);
@@ -88,7 +87,7 @@ template <bool is_first, ::std::integral replace_char_type, typename T, typename
 inline constexpr void construct_win32_process_args_decay(
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t, Args... args)
 {
-	construct_win32_process_args_decay_singal<is_first>(str, t);
+	construct_win32_process_args_decay_singal(is_first, str, t);
 
 	if constexpr (sizeof...(Args) != 0)
 	{
