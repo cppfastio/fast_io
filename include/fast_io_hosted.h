@@ -60,8 +60,9 @@ freestanding ones.
 #endif
 
 #if !defined(__AVR__)
-#include "fast_io_dsal/string.h"
-#include "fast_io_dsal/string_view.h"
+#include "fast_io_dsal/impl/string_view.h"
+#include "fast_io_dsal/impl/cstring_view.h"
+#include "fast_io_dsal/impl/string.h"
 #include "fast_io_dsal/impl/vector.h"
 
 #include "fast_io_hosted/platforms/native.h"
