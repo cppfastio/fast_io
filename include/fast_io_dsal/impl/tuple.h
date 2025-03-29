@@ -175,13 +175,13 @@ constexpr auto forward_as_tuple(Args&&... args)
 } // namespace fast_io::containers
 
 template <::std::size_t I, typename... Args>
-struct ::std::tuple_element<I, ::fast_io::containers::tuple<Args...>>
+struct std::tuple_element<I, ::fast_io::containers::tuple<Args...>>
 {
 	using type = ::fast_io::containers::details::pack_indexing_t_<I, Args...>;
 };
 
 template <typename... Args>
-struct ::std::tuple_size<::fast_io::containers::tuple<Args...>>
+struct std::tuple_size<::fast_io::containers::tuple<Args...>>
 {
 	static constexpr ::std::size_t value = sizeof...(Args);
 };
