@@ -39,7 +39,7 @@ inline ::fast_io::install_path get_module_install_path()
 								 buffer)};
 	if (!resolved) [[unlikely]]
 	{
-		return;
+		throw_posix_error();
 	}
 	ret.module_name = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt_os_c_str(resolved));
 #endif
