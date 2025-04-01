@@ -15,8 +15,9 @@ namespace fast_io::details
 #endif
 inline ::fast_io::install_path get_module_install_path()
 {
-	char *pgmptr{};
-	if (::fast_io::noexcept_call(::_get_pgmptr, __builtin_addressof(pgmptr)))
+	char *pgmptr{_pgmptr};
+
+	if (pgmptr == nullptr)[[unlikely]]
 	{
 		throw_win32_error(24);
 	}

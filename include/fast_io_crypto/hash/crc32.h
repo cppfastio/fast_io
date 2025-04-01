@@ -43,6 +43,7 @@ inline constexpr ::std::uint_least32_t calculate_crc32_common(::std::uint_least3
 	}
 	return crc;
 }
+
 // clang-format off
 inline constexpr ::std::uint_least32_t crc32_tb[256]{
     0x0,        0x77073096, 0xee0e612c, 0x990951ba, 0x76dc419,  0x706af48f, 0xe963a535, 0x9e6495a3, 0xedb8832,
@@ -106,16 +107,86 @@ inline constexpr ::std::uint_least32_t crc32c_tb[256]{
     0xe03e9c81, 0x34f4f86a, 0xc69f7b69, 0xd5cf889d, 0x27a40b9e, 0x79b737ba, 0x8bdcb4b9, 0x988c474d, 0x6ae7c44e,
     0xbe2da0a5, 0x4c4623a6, 0x5f16d052, 0xad7d5351};
 // clang-format on
+
+inline constexpr bool support_hardware_crc32{
+#if defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32b)
+	true
+#endif
+};
+
+inline constexpr ::std::uint_least32_t calculate_crc32_hardware(::std::uint_least32_t crc, ::std::byte const *i,
+																::std::byte const *ed) noexcept
+{
+	for (; i != ed; ++i)
+	{
+#if defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32b)
+		crc = __builtin_arm_crc32b(crc, static_cast<::std::uint_least8_t>(*i));
+#else
+		crc = crc32_tb[(static_cast<::std::uint_least32_t>(*i) ^ crc) & 0xff] ^ (crc >> 8);
+#endif
+	}
+	return crc;
+}
+
+inline constexpr bool support_hardware_crc32c{
+#if defined(__CRC32__) && __has_builtin(__builtin_ia32_crc32qi) ||          \
+	defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32cb) || \
+	((defined(_MSC_VER) && !defined(__clang__)) && !(!defined(_M_IX86) && !defined(_M_X64) && !(defined(_M_ARM64) && defined(USE_SOFT_INTRINSICS))))
+	true
+#endif
+};
+
+inline constexpr ::std::uint_least32_t calculate_crc32c_hardware(::std::uint_least32_t crc, ::std::byte const *i,
+																 ::std::byte const *ed) noexcept
+{
+	for (; i != ed; ++i)
+	{
+#if defined(__CRC32__) && __has_builtin(__builtin_ia32_crc32qi)
+		crc = __builtin_ia32_crc32qi(crc, static_cast<::std::uint_least8_t>(*i));
+#elif defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32cb)
+		crc = __builtin_arm_crc32cb(crc, static_cast<::std::uint_least8_t>(*i));
+#elif (defined(_MSC_VER) && !defined(__clang__)) && !(!defined(_M_IX86) && !defined(_M_X64) && !(defined(_M_ARM64) && defined(USE_SOFT_INTRINSICS)))
+		crc = ::_mm_crc32_u8(crc, static_cast<::std::uint_least8_t>(*i));
+#else
+		crc = crc32c_tb[(static_cast<::std::uint_least32_t>(*i) ^ crc) & 0xff] ^ (crc >> 8);
+#endif
+	}
+	return crc;
+}
+
+
 template <crc32_option opt>
 inline constexpr ::std::uint_least32_t calculate_crc32(::std::uint_least32_t crc, ::std::byte const *i,
 													   ::std::byte const *ed) noexcept
 {
 	if constexpr (opt == crc32_option::crc32)
 	{
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			if constexpr (support_hardware_crc32)
+			{
+				return calculate_crc32_hardware(crc, i, ed);
+			}
+		}
 		return calculate_crc32_common(crc, i, ed, crc32_tb);
 	}
 	else
 	{
+#if __cpp_if_consteval >= 202106L
+		if !consteval
+#else
+		if (!__builtin_is_constant_evaluated())
+#endif
+		{
+			if constexpr (support_hardware_crc32c)
+			{
+				return calculate_crc32c_hardware(crc, i, ed);
+			}
+		}
 		return calculate_crc32_common(crc, i, ed, crc32c_tb);
 	}
 }
