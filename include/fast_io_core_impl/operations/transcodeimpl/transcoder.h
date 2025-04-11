@@ -13,10 +13,12 @@ struct basic_transcoder_t
 	using transcoder_value_type = T;
 	using manip_tag = ::fast_io::manip_tag_t;
 	::fast_io::basic_io_scatter_t<char_type> reference;
+#ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
 #else
 	[[no_unique_address]]
+#endif
 #endif
 	transcoder_value_type transcoder;
 };

@@ -51,10 +51,12 @@ using pack_indexing_t_ = typename pack_indexing_<I, Args...>::type;
 template <::std::size_t I, typename T>
 struct tuple_element_impl_
 {
+#ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
 #elif __has_cpp_attribute(no_unique_address)
 	[[no_unique_address]]
+#endif
 #endif
 	T val_;
 };
