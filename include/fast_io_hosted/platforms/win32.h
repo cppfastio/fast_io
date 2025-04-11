@@ -1096,7 +1096,7 @@ inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_w
 		throw_win32_error(3221225530);
 	}
 
-	return ::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(dirhd.path), u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, path_size));
+	return ::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(dirhd.path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, path_size));
 }
 
 struct win32_9xa_create_dir_file

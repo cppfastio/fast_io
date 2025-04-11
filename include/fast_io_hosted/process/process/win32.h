@@ -796,7 +796,7 @@ public:
 										 win32_process_io const &processio = {}, process_mode mode = {})
 		: win32_family_process_observer<family>{
 #if defined(_WIN32_WINDOWS)
-			  win32::details::win32_9xa_win9x_create_process_overloads(filename, args, envs, processio)
+			  win32::details::win32_9xa_win9x_create_process_overloads(filename, args, envs, processio, mode)
 #else
 			  win32::details::win32_winnt_create_process_overloads<family>(filename, args, envs, processio, mode)
 #endif

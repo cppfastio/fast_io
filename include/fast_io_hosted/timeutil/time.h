@@ -11,9 +11,15 @@ extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __a
 extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("_clock_settime");
 extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("_clock_gettime");
 #else
+#if _REDIR_TIME64
+extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("__clock_getres64");
+extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("__clock_settime64");
+extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("__clock_gettime64");
+#else
 extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_getres");
 extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("clock_settime");
 extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("clock_gettime");
+#endif
 #endif
 #elif defined(__MSDOS__)
 struct tm *libc_localtime_r(::std::time_t const *timep, struct tm *result) noexcept
@@ -644,6 +650,7 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	{
 		throw_posix_error();
 	}
+
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
 	return {static_cast<::std::int_least64_t>(res.tv_sec),
 			static_cast<::std::uint_least64_t>(res.tv_nsec) * mul_factor};
