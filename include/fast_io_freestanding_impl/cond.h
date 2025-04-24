@@ -71,6 +71,27 @@ inline constexpr auto cond(bool pred, T1 &&t1, T2 &&t2) noexcept
 	}
 }
 
+template <typename T1>
+inline constexpr auto cond(bool pred, T1 &&t1) noexcept
+{
+	using t1aliastype =
+		::std::conditional_t<::fast_io::details::alias_return_lvalue_ref<T1>,
+							 ::std::conditional_t<::fast_io::details::cond_value_transferable<T1>,
+												  ::std::remove_cvref_t<T1>, ::std::remove_cvref_t<T1> const &>,
+							 ::std::remove_cvref_t<decltype(fast_io::io_print_alias(::std::forward<T1>(t1)))>>;
+
+	constexpr bool type_match{::std::same_as<t1aliastype, ::fast_io::io_null_t>};
+	if constexpr (type_match)
+	{
+		return ::fast_io::io_null;
+	}
+	else
+	{
+		return condition<t1aliastype, ::fast_io::io_null_t>{::fast_io::io_print_alias(::std::forward<T1>(t1)),
+															::fast_io::io_null, pred};
+	}
+}
+
 } // namespace manipulators
 
 namespace details

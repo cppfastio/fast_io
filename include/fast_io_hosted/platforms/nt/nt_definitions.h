@@ -1341,4 +1341,17 @@ enum class privileges : ::std::uint_least64_t
 	SE_DELEGATE_SESSION_USER_IMPERSONATE_PRIVILEGE = 36,
 };
 
+struct memory_range_entry
+{
+	void* VirtualAddress;
+	::std::size_t NumberOfBytes;
+};
+
+enum class virtual_memory_information_class
+{
+	VmPrefetchInformation,
+	VmPagePriorityInformation,
+	VmCfgCallTargetInformation
+};
+
 } // namespace fast_io::win32::nt

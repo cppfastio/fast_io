@@ -163,6 +163,8 @@
 #pragma comment(linker,"/alternatename:?CreateThread$exit_thunk@win32@fast_io@@$$hYAPEAXPEAUsecurity_attributes@12@_KP6AIPEAX@Z2IPEAI@Z=#CreateThread")
 #pragma comment(linker,"/alternatename:?CommandLineToArgvW@win32@fast_io@@YAPEAPEA_SPEB_SPEAH@Z=#CommandLineToArgvW")
 #pragma comment(linker,"/alternatename:?LocalFree@win32@fast_io@@YAPEAXPEAX@Z=#LocalFree")
+#pragma comment(linker,"/alternatename:?PrefetchVirtualMemory@win32@fast_io@@$$hYAHPEAX_KPEAUwin32_memory_range_entry@12@I@Z=#PrefetchVirtualMemory")
+#pragma comment(linker,"/alternatename:?SetConsoleTextAttribute@win32@fast_io@@$$hYAHPEAXH@Z=#SetConsoleTextAttribute")
 // NT
 #pragma comment(linker,"/alternatename:?rtl_nt_status_to_dos_error$exit_thunk@nt@win32@fast_io@@$$hYAII@Z=#RtlNtStatusToDosError")
 #pragma comment(linker,"/alternatename:?NtClose$exit_thunk@nt@win32@fast_io@@$$hYAIPEAX@Z=#NtClose")
@@ -295,6 +297,9 @@
 #pragma comment(linker,"/alternatename:?ZwDeviceIoControlFile$exit_thunk@nt@win32@fast_io@@$$hYAIPEAX0PEAP6AX0PEAUio_status_block@123@I@_E01I0I0I@Z=#ZwDeviceIoControlFile")
 #pragma comment(linker,"/alternatename:?RtlAcquirePrivilege$exit_thunk@nt@win32@fast_io@@$$hYAIPEAW4privileges@123@IIPEAPEAX@Z=#RtlAcquirePrivilege")
 #pragma comment(linker,"/alternatename:?RtlReleasePrivilege$exit_thunk@nt@win32@fast_io@@$$hYAXPEAX@Z=#RtlReleasePrivilege")
+#pragma comment(linker,"/alternatename:?RtlQueryEnvironmentVariable_U@nt@win32@fast_io@@$$hYAIPEAXPEAUunicode_string@123@1@Z=#RtlQueryEnvironmentVariable_U")
+#pragma comment(linker,"/alternatename:?NtSetInformationVirtualMemory@nt@win32@fast_io@@$$hYAIPEAXW4virtual_memory_information_class@123@_KPEAUmemory_range_entry@123@0I@Z=#NtSetInformationVirtualMemory")
+#pragma comment(linker,"/alternatename:?ZwSetInformationVirtualMemory@nt@win32@fast_io@@$$hYAIPEAXW4virtual_memory_information_class@123@_KPEAUmemory_range_entry@123@0I@Z=#ZwSetInformationVirtualMemory")
 // msvc
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@$$hYAPEAXPEAX@Z=#__RTtypeid")
 // clang-format on

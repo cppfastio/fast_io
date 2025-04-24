@@ -469,8 +469,29 @@ struct fd_remapper
 };
 
 // only used in vfork_execveat_common_impl()
-inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno) noexcept
+inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, process_mode mode) noexcept
 {
+#if defined(__linux__) && defined(__NR_vfork)
+    pid = system_call<__NR_vfork, pid_t>();
+	system_call_throw_error(pid);
+#else
+	pid = ::fast_io::posix::libc_vfork();
+	if (pid == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+#endif
+	if (pid != 0)
+	{
+		return;
+	}
+	// parent process ends here
+	// subprocess begin
+	if ((mode & process_mode::new_session) == process_mode::new_session)
+	{
+		posix_setsid();
+	}
+
 #if defined(__linux__) && defined(__NR_execveat)
 	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW)};
 	if (::fast_io::linux_system_call_fails(ret))
@@ -506,21 +527,6 @@ inline void execveat_inside_vfork(int dirfd, char const *cstr, char const *const
 	__builtin_unreachable();
 }
 
-inline pid_t posix_vfork()
-{
-#if defined(__linux__) && defined(__NR_vfork)
-	pid_t pid{system_call<__NR_vfork, pid_t>()};
-	system_call_throw_error(pid);
-#else
-	pid_t pid{::fast_io::posix::libc_vfork()};
-	if (pid == -1) [[unlikely]]
-	{
-		throw_posix_error();
-	}
-#endif
-	return pid;
-}
-
 inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 	pid_t pid{};
@@ -530,18 +536,9 @@ inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const 
 		fm.map(0, pio.in);
 		fm.map(1, pio.out);
 		fm.map(2, pio.err);
-
-		pid = ::fast_io::details::posix_vfork();
-		if (pid == 0)
-		{
-			if ((mode & process_mode::new_session) == process_mode::new_session)
-			{
-				posix_setsid();
-			}
-			execveat_inside_vfork(dirfd, cstr, args, envp, t_errno); // never return
-		}
+		vfork_and_execveat(pid, dirfd, cstr, args, envp, t_errno, mode); // never return
 	}
-	// resume from vfork
+
 	if (t_errno)
 	{
 		posix_waitpid(pid);

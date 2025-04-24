@@ -19,6 +19,7 @@ struct contiguous_scatter_result
 	bool hasscatters{};
 	bool hasreserve{};
 	bool hasdynamicreserve{};
+	bool hasprintable{};
 };
 
 template <::std::integral char_type, typename Arg, typename... Args>
@@ -84,6 +85,10 @@ inline constexpr contiguous_scatter_result find_continuous_scatters_n()
 			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededspace, scatszres.reserve_size);
 		ret.neededscatters =
 			::fast_io::details::intrinsics::add_or_overflow_die_chain(ret.neededscatters, scatszres.scatters_size);
+	}
+	else if constexpr (::fast_io::printable<char_type, Arg>)
+	{
+		ret.hasprintable = true;
 	}
 	return ret;
 }
@@ -612,6 +617,9 @@ inline constexpr void print_control_single(output outstm, T t)
 			::fast_io::operations::decay::char_put_decay(outstm, lfch);
 		}
 	}
+	else if constexpr (::std::same_as<::std::remove_cvref_t<value_type>, ::fast_io::io_null_t>)
+	{
+	}
 	else
 	{
 		constexpr bool no{printable<char_type, value_type>};
@@ -1042,7 +1050,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm, T t, Args... arg
 		static_assert(SIZE_MAX != sizeof...(Args));
 		constexpr ::std::size_t n{sizeof...(Args) + static_cast<::std::size_t>(1)};
 		constexpr bool needprintlf{n == res.position && line};
-		if constexpr (res.hasscatters && !res.hasreserve && !res.hasdynamicreserve)
+		if constexpr (res.hasscatters && !res.hasreserve && !res.hasdynamicreserve && !res.hasprintable)
 		{
 			constexpr ::std::size_t scatterscount{res.neededscatters + static_cast<::std::size_t>(needprintlf)};
 			{
@@ -1353,7 +1361,7 @@ concept print_freestanding_params_okay =
 	((::fast_io::printable<char_type, Args> || ::fast_io::reserve_printable<char_type, Args> ||
 	  ::fast_io::dynamic_reserve_printable<char_type, Args> || ::fast_io::scatter_printable<char_type, Args> ||
 	  ::fast_io::reserve_scatters_printable<char_type, Args> || ::fast_io::context_printable<char_type, Args> ||
-	  ::fast_io::transcode_imaginary_printable<char_type, Args>) &&
+	  ::fast_io::transcode_imaginary_printable<char_type, Args> || ::std::same_as<::std::remove_cvref_t<Args>, ::fast_io::io_null_t>) &&
 	 ...);
 
 template <typename output, typename... Args>

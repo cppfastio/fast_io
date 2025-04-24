@@ -688,4 +688,17 @@ inline ::std::uint_least32_t nt_device_io_control_file(Args... args) noexcept
 	}
 }
 
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 6)
+inline ::std::uint_least32_t nt_set_information_virtual_memory(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ::fast_io::win32::nt::ZwSetInformationVirtualMemory(args...);
+	}
+	else
+	{
+		return ::fast_io::win32::nt::NtSetInformationVirtualMemory(args...);
+	}
+}
 } // namespace fast_io::win32::nt

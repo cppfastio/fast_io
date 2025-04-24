@@ -1640,7 +1640,7 @@ inline constexpr auto nullptr_print_optimization_call_impl() noexcept
 	constexpr ::std::size_t sz{nullptr_print_optimization_call_size_cache<char_type, base, showbase, uppercase_showbase,
 																		  showpos, uppercase, full>};
 	::fast_io::freestanding::array<char_type, sz> arr{};
-	auto res{print_reserve_integral_define<base, showbase, uppercase_showbase, showpos, uppercase, full>(
+	[[maybe_unused]] auto res{print_reserve_integral_define<base, showbase, uppercase_showbase, showpos, uppercase, full>(
 		arr.data(), ::std::size_t{})};
 	return arr;
 }

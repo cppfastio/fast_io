@@ -95,9 +95,26 @@ tuple(Args &&...) -> tuple<Args...>;
 template <::std::size_t I, typename... Args>
 FAST_IO_GNU_ALWAYS_INLINE
 [[nodiscard]]
+constexpr auto&& get(::fast_io::containers::tuple<Args...> &self) noexcept
+{
+	return static_cast<::fast_io::containers::details::tuple_element_impl_<I, ::fast_io::containers::details::pack_indexing_t_<I, Args...>> &>(self).val_;
+}
+
+template <::std::size_t I, typename... Args>
+FAST_IO_GNU_ALWAYS_INLINE
+[[nodiscard]]
 constexpr auto&& get(::fast_io::containers::tuple<Args...> const &self) noexcept
 {
 	return static_cast<::fast_io::containers::details::tuple_element_impl_<I, ::fast_io::containers::details::pack_indexing_t_<I, Args...>> const &>(self).val_;
+}
+
+template <::std::size_t I, typename... Args>
+FAST_IO_GNU_ALWAYS_INLINE
+[[nodiscard]]
+constexpr auto&& get(::fast_io::containers::tuple<Args...> &&self) noexcept
+{
+	return ::std::move(
+		static_cast<::fast_io::containers::details::tuple_element_impl_<I, ::fast_io::containers::details::pack_indexing_t_<I, Args...>> &&>(self).val_);
 }
 
 template <::std::size_t I, typename... Args>

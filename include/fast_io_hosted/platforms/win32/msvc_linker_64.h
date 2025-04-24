@@ -163,6 +163,8 @@
 #pragma comment(linker,"/alternatename:__imp_?CreateThread@win32@fast_io@@YAPEAXPEAUsecurity_attributes@12@_KP6AIPEAX@Z2IPEAI@Z=__imp_CreateThread")
 #pragma comment(linker,"/alternatename:__imp_?CommandLineToArgvW@win32@fast_io@@YAPEAPEA_SPEB_SPEAH@Z=__imp_CommandLineToArgvW")
 #pragma comment(linker,"/alternatename:__imp_?LocalFree@win32@fast_io@@YAPEAXPEAX@Z=__imp_LocalFree")
+#pragma comment(linker,"/alternatename:__imp_?PrefetchVirtualMemory@win32@fast_io@@YAHPEAX_KPEAUwin32_memory_range_entry@12@I@Z=__imp_PrefetchVirtualMemory")
+#pragma comment(linker,"/alternatename:__imp_?SetConsoleTextAttribute@win32@fast_io@@YAHPEAXH@Z=__imp_SetConsoleTextAttribute")
 // NT
 #pragma comment(linker,"/alternatename:__imp_?rtl_nt_status_to_dos_error@nt@win32@fast_io@@YAII@Z=__imp_RtlNtStatusToDosError")
 #pragma comment(linker,"/alternatename:__imp_?NtClose@nt@win32@fast_io@@YAIPEAX@Z=__imp_NtClose")
@@ -295,6 +297,9 @@
 #pragma comment(linker,"/alternatename:__imp_?ZwDeviceIoControlFile@nt@win32@fast_io@@YAIPEAX0PEAP6AX0PEAUio_status_block@123@I@_E01I0I0I@Z=__imp_ZwDeviceIoControlFile")
 #pragma comment(linker,"/alternatename:__imp_?RtlAcquirePrivilege@nt@win32@fast_io@@YAIPEAW4privileges@123@IIPEAPEAX@Z=__imp_RtlAcquirePrivilege")
 #pragma comment(linker,"/alternatename:__imp_?RtlReleasePrivilege@nt@win32@fast_io@@YAXPEAX@Z=__imp_RtlReleasePrivilege")
+#pragma comment(linker,"/alternatename:__imp_?RtlQueryEnvironmentVariable_U@nt@win32@fast_io@@YAIPEAXPEAUunicode_string@123@1@Z=__imp_RtlQueryEnvironmentVariable_U")
+#pragma comment(linker,"/alternatename:__imp_?NtSetInformationVirtualMemory@nt@win32@fast_io@@YAIPEAXW4virtual_memory_information_class@123@_KPEAUmemory_range_entry@123@0I@Z=__imp_NtSetInformationVirtualMemory")
+#pragma comment(linker,"/alternatename:__imp_?ZwSetInformationVirtualMemory@nt@win32@fast_io@@YAIPEAXW4virtual_memory_information_class@123@_KPEAUmemory_range_entry@123@0I@Z=__imp_ZwSetInformationVirtualMemory")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__imp___RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__RTtypeid")
