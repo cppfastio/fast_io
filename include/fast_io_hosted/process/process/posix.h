@@ -471,21 +471,12 @@ struct fd_remapper
 // only used in vfork_execveat_common_impl()
 inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, process_mode mode) noexcept
 {
-#if defined(__linux__) && defined(__NR_vfork)
-	// NOTE: vfork and exec must be in the same function!!!
-	// system_call can't be used here
-	__asm__ __volatile__("syscall"
-						 : "=a"(pid)
-						 : "0"(__NR_vfork)
-						 : "memory", "cc", "r11", "cx");
-	system_call_throw_error(pid);
-#else
+    // vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
 	if (pid == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}
-#endif
 	if (pid != 0)
 	{
 		return;
