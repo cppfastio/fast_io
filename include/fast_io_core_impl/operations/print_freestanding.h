@@ -19,7 +19,6 @@ struct contiguous_scatter_result
 	bool hasscatters{};
 	bool hasreserve{};
 	bool hasdynamicreserve{};
-	bool hasprintable{};
 };
 
 template <::std::integral char_type, typename Arg, typename... Args>
@@ -88,7 +87,6 @@ inline constexpr contiguous_scatter_result find_continuous_scatters_n()
 	}
 	else if constexpr (::fast_io::printable<char_type, Arg>)
 	{
-		ret.hasprintable = true;
 	}
 	return ret;
 }
