@@ -10,11 +10,6 @@ namespace fast_io
 
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline return_value_type system_call() noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -25,11 +20,6 @@ inline return_value_type system_call() noexcept
 
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline return_value_type system_call(auto p1) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -39,11 +29,6 @@ inline return_value_type system_call(auto p1) noexcept
 }
 
 template <::std::uint_least64_t syscall_number>
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline void system_call_no_return(auto p1) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -54,11 +39,6 @@ inline void system_call_no_return(auto p1) noexcept
 
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline return_value_type system_call(auto p1, auto p2) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -70,11 +50,6 @@ inline return_value_type system_call(auto p1, auto p2) noexcept
 
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline return_value_type system_call(auto p1, auto p2, auto p3) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -87,11 +62,6 @@ inline return_value_type system_call(auto p1, auto p2, auto p3) noexcept
 
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -105,11 +75,6 @@ inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4) noexcep
 
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -124,11 +89,6 @@ inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5
 
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
-#if __has_cpp_attribute(__gnu__::__always_inline__)
-[[__gnu__::__always_inline__]]
-#else
-#error "system_call must be inlined"
-#endif
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5, auto p6) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
