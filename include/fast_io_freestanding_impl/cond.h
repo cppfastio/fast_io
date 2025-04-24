@@ -158,6 +158,88 @@ print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condi
 	}
 }
 
+template <::std::integral char_type, typename T1>
+	requires(reserve_printable<char_type, T1>)
+inline constexpr ::std::size_t
+print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>) noexcept
+{
+	constexpr ::std::size_t s1{print_reserve_size(io_reserve_type<char_type, T1>)};
+	return s1;
+}
+
+template <::std::integral char_type, typename T1>
+	requires(scatter_printable<char_type, T1> && details::cond_value_transferable<T1>)
+inline constexpr basic_io_scatter_t<char_type>
+print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>,
+					 ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> c)
+{
+	if (c.pred)
+	{
+		return {print_scatter_define(io_reserve_type<char_type, T1>, c.t1)};
+	}
+	else
+	{
+		return basic_io_scatter_t<char_type>{};
+	}
+}
+
+template <::std::integral char_type, typename T1>
+	requires(scatter_printable<char_type, T1> && !details::cond_value_transferable<T1>)
+inline constexpr basic_io_scatter_t<char_type>
+print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>,
+					 ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> const &c)
+{
+	if (c.pred)
+	{
+		return {print_scatter_define(io_reserve_type<char_type, T1>, c.t1)};
+	}
+	else
+	{
+		return basic_io_scatter_t<char_type>{};
+	}
+}
+
+template <::std::integral char_type, typename T2>
+	requires(reserve_printable<char_type, T2>)
+inline constexpr ::std::size_t
+print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>) noexcept
+{
+	constexpr ::std::size_t s2{print_reserve_size(io_reserve_type<char_type, T2>)};
+	return s2;
+}
+
+template <::std::integral char_type, typename T2>
+	requires(scatter_printable<char_type, T2> && details::cond_value_transferable<T2>)
+inline constexpr basic_io_scatter_t<char_type>
+print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>,
+					 ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> c)
+{
+	if (!c.pred)
+	{
+		return {print_scatter_define(io_reserve_type<char_type, T2>, c.t2)};
+	}
+	else
+	{
+		return basic_io_scatter_t<char_type>{};
+	}
+}
+
+template <::std::integral char_type, typename T2>
+	requires(scatter_printable<char_type, T2> && !details::cond_value_transferable<T2>)
+inline constexpr basic_io_scatter_t<char_type>
+print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>,
+					 ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> const &c)
+{
+	if (!c.pred)
+	{
+		return {print_scatter_define(io_reserve_type<char_type, T2>, c.t2)};
+	}
+	else
+	{
+		return basic_io_scatter_t<char_type>{};
+	}
+}
+
 namespace details
 {
 
@@ -238,7 +320,7 @@ inline constexpr char_type *cond_print_reserve_define_impl(char_type *iter, T1 c
 
 template <::std::integral char_type, typename T1, typename T2>
 	requires((details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> &&
-			  details::cond_ok_dynamic_rsv_printable_impl<char_type, T1>) &&
+			  details::cond_ok_dynamic_rsv_printable_impl<char_type, T2>) &&
 			 (!(scatter_printable<char_type, T1> && scatter_printable<char_type, T2>)) &&
 			 details::cond_transferable_value<T1, T2>)
 inline constexpr ::std::size_t
@@ -257,7 +339,7 @@ print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::conditi
 
 template <::std::integral char_type, typename T1, typename T2>
 	requires((details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> &&
-			  details::cond_ok_dynamic_rsv_printable_impl<char_type, T1>) &&
+			  details::cond_ok_dynamic_rsv_printable_impl<char_type, T2>) &&
 			 (!(scatter_printable<char_type, T1> && scatter_printable<char_type, T2>)) &&
 			 !details::cond_transferable_value<T1, T2>)
 inline constexpr ::std::size_t
@@ -312,6 +394,142 @@ print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condi
 	}
 }
 
+template <::std::integral char_type, typename T1>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> && !scatter_printable<char_type, T1> &&
+			 details::cond_value_transferable<T1>)
+inline constexpr ::std::size_t
+print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>,
+				   ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> c)
+{
+	if (c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_size_impl<char_type, T1>(c.t1);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+template <::std::integral char_type, typename T1>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> && !scatter_printable<char_type, T1> &&
+			 !details::cond_value_transferable<T1>)
+inline constexpr ::std::size_t
+print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>,
+				   ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> const &c)
+{
+	if (c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_size_impl<char_type, T1>(c.t1);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+template <::std::integral char_type, typename T1>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> && !scatter_printable<char_type, T1> &&
+			 details::cond_value_transferable<T1>)
+inline constexpr char_type *
+print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>, char_type *iter,
+					 ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> c)
+{
+	if (c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_define_impl<char_type, T1>(iter, c.t1);
+	}
+	else
+	{
+		return iter;
+	}
+}
+
+template <::std::integral char_type, typename T1>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> && !scatter_printable<char_type, T1> &&
+			 !details::cond_value_transferable<T1>)
+inline constexpr char_type *
+print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>, char_type *iter,
+					 ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> const &c)
+{
+	if (c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_define_impl<char_type, T1>(iter, c.t1);
+	}
+	else
+	{
+		return iter;
+	}
+}
+
+template <::std::integral char_type, typename T2>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T2> && !scatter_printable<char_type, T2> &&
+			 details::cond_value_transferable<T2>)
+inline constexpr ::std::size_t
+print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>,
+				   ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> c)
+{
+	if (!c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_size_impl<char_type, T2>(c.t2);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+template <::std::integral char_type, typename T2>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T2> && !scatter_printable<char_type, T2> &&
+			 !details::cond_value_transferable<T2>)
+inline constexpr ::std::size_t
+print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>,
+				   ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> const &c)
+{
+	if (!c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_size_impl<char_type, T2>(c.t2);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+template <::std::integral char_type, typename T2>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T2> && !scatter_printable<char_type, T2> &&
+			 details::cond_value_transferable<T2>)
+inline constexpr char_type *
+print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>, char_type *iter,
+					 ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> c)
+{
+	if (!c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_define_impl<char_type, T2>(iter, c.t2);
+	}
+	else
+	{
+		return iter;
+	}
+}
+
+template <::std::integral char_type, typename T2>
+	requires(details::cond_ok_dynamic_rsv_printable_impl<char_type, T2> && !scatter_printable<char_type, T2> &&
+			 !details::cond_value_transferable<T2>)
+inline constexpr char_type *
+print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>, char_type *iter,
+					 ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> const &c)
+{
+	if (!c.pred)
+	{
+		return ::fast_io::details::cond_print_reserve_define_impl<char_type, T2>(iter, c.t2);
+	}
+	else
+	{
+		return iter;
+	}
+}
+
 template <::std::integral char_type, typename T1, typename T2, typename bop>
 	requires((details::cond_ok_printable_impl<char_type, T1> && details::cond_ok_printable_impl<char_type, T2>) &&
 			 (!(details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> &&
@@ -348,4 +566,51 @@ inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manip
 	}
 }
 
+template <::std::integral char_type, typename T1, typename bop>
+	requires(details::cond_ok_printable_impl<char_type, T1> && !details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> &&
+			 details::cond_value_transferable<T1>)
+inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>, bop b,
+								   ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> c)
+{
+	if (c.pred)
+	{
+		::fast_io::operations::print_freestanding<false>(b, c.t1);
+	}
+}
+
+template <::std::integral char_type, typename T1, typename bop>
+	requires(details::cond_ok_printable_impl<char_type, T1> && !details::cond_ok_dynamic_rsv_printable_impl<char_type, T1> &&
+			 !details::cond_value_transferable<T1>)
+inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>, bop b,
+								   ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> const &c)
+{
+	if (c.pred)
+	{
+		::fast_io::operations::print_freestanding<false>(b, c.t1);
+	}
+}
+
+template <::std::integral char_type, typename T2, typename bop>
+	requires(details::cond_ok_printable_impl<char_type, T2> && !details::cond_ok_dynamic_rsv_printable_impl<char_type, T2> &&
+			 details::cond_value_transferable<T2>)
+inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>, bop b,
+								   ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> c)
+{
+	if (!c.pred)
+	{
+		::fast_io::operations::print_freestanding<false>(b, c.t2);
+	}
+}
+
+template <::std::integral char_type, typename T2, typename bop>
+	requires(details::cond_ok_printable_impl<char_type, T2> && !details::cond_ok_dynamic_rsv_printable_impl<char_type, T2> &&
+			 !details::cond_value_transferable<T2>)
+inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>, bop b,
+								   ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> const &c)
+{
+	if (!c.pred)
+	{
+		::fast_io::operations::print_freestanding<false>(b, c.t2);
+	}
+}
 } // namespace fast_io

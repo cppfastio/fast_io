@@ -258,26 +258,28 @@ inline constexpr void print_control_single(output outstm, T t)
 			write(outstm,scatter.base,scatter.base+scatter.len);
 		}
 #endif
+		basic_io_scatter_t<char_type> scatter_res{print_scatter_define(::fast_io::io_reserve_type<char_type, value_type>, t)};
+
 		if constexpr (line)
 		{
 			if constexpr (::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<
 							  output>)
 			{
 				::fast_io::io_scatter_t scatters[2]{
-					{t.base, t.len * sizeof(char_type)},
+					{scatter_res.base, scatter_res.len * sizeof(char_type)},
 					{__builtin_addressof(char_literal_v<u8'\n', char_type>), sizeof(char_type)}};
 				::fast_io::operations::decay::scatter_write_all_bytes_decay(outstm, scatters, 2);
 			}
 			else
 			{
 				::fast_io::basic_io_scatter_t<char_type> scatters[2]{
-					t, {__builtin_addressof(char_literal_v<u8'\n', char_type>), 1}};
+					scatter_res, {__builtin_addressof(char_literal_v<u8'\n', char_type>), 1}};
 				::fast_io::operations::decay::scatter_write_all_decay(outstm, scatters, 2);
 			}
 		}
 		else
 		{
-			::fast_io::operations::decay::write_all_decay(outstm, t.base, t.base + t.len);
+			::fast_io::operations::decay::write_all_decay(outstm, scatter_res.base, scatter_res.base + scatter_res.len);
 		}
 	}
 	else if constexpr (reserve_printable<char_type, value_type>)
@@ -1050,7 +1052,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm, T t, Args... arg
 		static_assert(SIZE_MAX != sizeof...(Args));
 		constexpr ::std::size_t n{sizeof...(Args) + static_cast<::std::size_t>(1)};
 		constexpr bool needprintlf{n == res.position && line};
-		if constexpr (res.hasscatters && !res.hasreserve && !res.hasdynamicreserve && !res.hasprintable)
+		if constexpr (res.hasscatters && !res.hasreserve && !res.hasdynamicreserve)
 		{
 			constexpr ::std::size_t scatterscount{res.neededscatters + static_cast<::std::size_t>(needprintlf)};
 			{
@@ -1070,6 +1072,10 @@ inline constexpr void print_controls_impl(outputstmtype optstm, T t, Args... arg
 				{
 					::fast_io::operations::decay::scatter_write_all_decay(optstm, scatters, scatterscount);
 				}
+			}
+			if constexpr (res.position != n)
+			{
+				print_controls_impl<line, outputstmtype, res.position - 1>(optstm, args...);
 			}
 		}
 		else
