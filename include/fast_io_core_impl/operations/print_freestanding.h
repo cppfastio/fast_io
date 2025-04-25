@@ -141,7 +141,7 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 	{
 		if constexpr (sizeof...(Args) == 0)
 		{
-			return {1, 0, ::fast_io::details::intrinsics::add_or_overflow_die_chain(static_cast<::std::size_t>(0), static_cast<::std::size_t>(1)};
+			return {1, 0, ::fast_io::details::intrinsics::add_or_overflow_die_chain(static_cast<::std::size_t>(0), static_cast<::std::size_t>(1))};
 		}
 		else
 		{
@@ -1116,7 +1116,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm, T t, Args... arg
 				::fast_io::details::decay::print_n_scatters<res.position, char_type>(scatters, t, args...);
 				if constexpr (needprintlf)
 				{
-					scatters[n - res.null] = ::fast_io::details::decay::line_scatter_common<
+					scatters[scatterscount - 1] = ::fast_io::details::decay::line_scatter_common<
 						char_type, ::std::conditional_t<::std::same_as<scatter_type, io_scatter_t>, void, char_type>>;
 				}
 				if constexpr (::fast_io::operations::decay::defines::has_any_of_write_or_seek_pwrite_bytes_operations<
