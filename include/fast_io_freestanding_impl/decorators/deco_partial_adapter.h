@@ -11,10 +11,12 @@ struct deco_partial_adapter
 	static inline constexpr ::std::size_t remained_max{T::remained_max};
 	static inline constexpr ::std::size_t output_final_max{T::output_final_max};
 	using decorator_type = T;
+#ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
 #elif __has_cpp_attribute(no_unique_address)
 	[[no_unique_address]]
+#endif
 #endif
 	T deco;
 	::std::size_t remained{};

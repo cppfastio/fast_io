@@ -228,7 +228,7 @@ public:
 	using difference_type = ::std::ptrdiff_t;
 	::fast_io::containers::details::vector_internal<T> imp;
 
-	inline explicit constexpr vector() noexcept = default;
+	inline constexpr vector() noexcept = default;
 
 private:
 	inline constexpr void destroy() noexcept

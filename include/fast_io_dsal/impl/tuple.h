@@ -51,10 +51,12 @@ using pack_indexing_t_ = typename pack_indexing_<I, Args...>::type;
 template <::std::size_t I, typename T>
 struct tuple_element_impl_
 {
+#ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
 #elif __has_cpp_attribute(no_unique_address)
 	[[no_unique_address]]
+#endif
 #endif
 	T val_;
 };
@@ -93,9 +95,26 @@ tuple(Args &&...) -> tuple<Args...>;
 template <::std::size_t I, typename... Args>
 FAST_IO_GNU_ALWAYS_INLINE
 [[nodiscard]]
+constexpr auto&& get(::fast_io::containers::tuple<Args...> &self) noexcept
+{
+	return static_cast<::fast_io::containers::details::tuple_element_impl_<I, ::fast_io::containers::details::pack_indexing_t_<I, Args...>> &>(self).val_;
+}
+
+template <::std::size_t I, typename... Args>
+FAST_IO_GNU_ALWAYS_INLINE
+[[nodiscard]]
 constexpr auto&& get(::fast_io::containers::tuple<Args...> const &self) noexcept
 {
 	return static_cast<::fast_io::containers::details::tuple_element_impl_<I, ::fast_io::containers::details::pack_indexing_t_<I, Args...>> const &>(self).val_;
+}
+
+template <::std::size_t I, typename... Args>
+FAST_IO_GNU_ALWAYS_INLINE
+[[nodiscard]]
+constexpr auto&& get(::fast_io::containers::tuple<Args...> &&self) noexcept
+{
+	return ::std::move(
+		static_cast<::fast_io::containers::details::tuple_element_impl_<I, ::fast_io::containers::details::pack_indexing_t_<I, Args...>> &&>(self).val_);
 }
 
 template <::std::size_t I, typename... Args>

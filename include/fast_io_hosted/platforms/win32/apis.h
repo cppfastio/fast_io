@@ -166,5 +166,7 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL LookupPrivilegeValueW(char16_t const *_
 FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateThread(security_attributes *, ::std::size_t, ::std::uint_least32_t (FAST_IO_WINSTDCALL*)(void*), void*, ::std::uint_least32_t, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(CreateThread, 24);
 FAST_IO_DLLIMPORT char16_t **FAST_IO_WINSTDCALL CommandLineToArgvW(char16_t const *, int *) noexcept FAST_IO_WINSTDCALL_RENAME(CommandLineToArgvW, 8);
 FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL LocalFree(void *) noexcept FAST_IO_WINSTDCALL_RENAME(LocalFree, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL PrefetchVirtualMemory(void *, ::std::size_t, ::fast_io::win32::win32_memory_range_entry *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(PrefetchVirtualMemory, 16);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetConsoleTextAttribute(void *, ::std::int_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(SetConsoleTextAttribute, 8);
 
 } // namespace fast_io::win32

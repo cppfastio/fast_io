@@ -438,4 +438,9 @@ struct win32_find_dataw
 
 using farproc = ::std::ptrdiff_t(FAST_IO_STDCALL *)() noexcept;
 
+struct win32_memory_range_entry
+{
+	void* VirtualAddress;
+	::std::size_t NumberOfBytes;
+};
 } // namespace fast_io::win32
