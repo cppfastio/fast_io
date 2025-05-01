@@ -337,7 +337,7 @@ inline void sha512_simd32_compute_message_4rounds(
 	}
 }
 
-#if __has_cpp_attribute(__gnu__::__target__) && __has_builtin(__builtin_shufflevector) && defined(__SSE2__) && \
+#if __has_cpp_attribute(__gnu__::__target__) && FAST_IO_HAS_BUILTIN(__builtin_shufflevector) && defined(__SSE2__) && \
 	!defined(__AVX2__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
 [[__gnu__::__target__("avx2")]]
 #elif __has_cpp_attribute(__gnu__::__flatten__)

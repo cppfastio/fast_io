@@ -52,12 +52,8 @@ inline
 	}
 	else
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memset)
+#if FAST_IO_HAS_BUILTIN(__builtin_memset)
 		__builtin_memset(data, 0, size);
-#else
-		::std::memset(data, 0, size);
-#endif
 #else
 		::std::memset(data, 0, size);
 #endif
@@ -138,12 +134,8 @@ inline constexpr ::std::byte *bytes_secure_clear_n(::std::byte *data, ::std::siz
 https://github.com/bminor/glibc/blob/master/string/explicit_bzero.c
 Referenced from glibc
 */
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memset)
+#if FAST_IO_HAS_BUILTIN(__builtin_memset)
 		__builtin_memset(data, 0, size);
-#else
-		::std::memset(data, 0, size);
-#endif
 #else
 		::std::memset(data, 0, size);
 #endif

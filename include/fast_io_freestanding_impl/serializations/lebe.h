@@ -328,9 +328,7 @@ inline
 	}
 #if __cpp_lib_bit_cast >= 201806L
 	t = ::std::bit_cast<int_type>(buffer);
-#elif !defined(__has_builtin)
-	::std::memcpy(__builtin_addressof(t), buffer, n);
-#elif __has_builtin(__builtin_memcpy)
+#elif FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 	__builtin_memcpy(__builtin_addressof(t), buffer, n);
 #else
 	::std::memcpy(__builtin_addressof(t), buffer, n);
@@ -375,9 +373,7 @@ inline
 	else
 #endif
 	{
-#if !defined(__has_builtin)
-		::std::memcpy(__builtin_addressof(t), iter, sizeof(int_type));
-#elif __has_builtin(__builtin_memcpy)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 		__builtin_memcpy(__builtin_addressof(t), iter, sizeof(int_type));
 #else
 		::std::memcpy(__builtin_addressof(t), iter, sizeof(int_type));
@@ -566,9 +562,7 @@ inline
 		}
 		else
 		{
-#if !defined(__has_builtin)
-			::std::memcpy(iter, __builtin_addressof(u), n);
-#elif __has_builtin(__builtin_memcpy)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 			__builtin_memcpy(iter, __builtin_addressof(u), n);
 #else
 			::std::memcpy(iter, __builtin_addressof(u), n);

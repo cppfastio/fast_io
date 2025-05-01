@@ -7,7 +7,7 @@ inline ::std::uint_least64_t current_tsc() noexcept
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 	return __rdtsc();
-#elif __has_builtin(__builtin_ia32_rdtsc)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_rdtsc)
 	return __builtin_ia32_rdtsc();
 #else
 	return 0;

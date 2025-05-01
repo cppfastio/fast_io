@@ -10,6 +10,9 @@ using ::fast_io::nt_family;
 using ::fast_io::basic_nt_family_io_observer;
 using ::fast_io::basic_nt_family_file;
 
+using ::fast_io::basic_nt_io_observer;
+using ::fast_io::basic_nt_file;
+
 using ::fast_io::nt_io_observer;
 using ::fast_io::nt_file;
 using ::fast_io::wnt_io_observer;
@@ -27,6 +30,9 @@ using ::fast_io::nt_stderr;
 
 using ::fast_io::basic_win32_family_io_observer;
 using ::fast_io::basic_win32_family_file;
+
+using ::fast_io::basic_win32_io_observer;
+using ::fast_io::basic_win32_file;
 
 using ::fast_io::win32_io_observer;
 using ::fast_io::win32_file;

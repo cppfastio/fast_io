@@ -14,7 +14,7 @@ inline constexpr bool simd_shuffle_size_is_supported(::std::size_t n) noexcept
 {
 	if (n == 16)
 	{
-#if __has_builtin(__builtin_ia32_pshufb128)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb128)
 		return true;
 #else
 		return false;
@@ -22,7 +22,7 @@ inline constexpr bool simd_shuffle_size_is_supported(::std::size_t n) noexcept
 	}
 	else if (n == 32)
 	{
-#if __has_builtin(__builtin_ia32_pshufb256)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb256)
 		return true;
 #else
 		return false;
@@ -115,7 +115,7 @@ struct simd_vector
 	template <typename T2>
 		requires((sizeof(T2) == sizeof(T) * N) && ::std::is_trivially_copyable_v<T2>)
 	inline
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		constexpr
 #endif
 		void
@@ -130,7 +130,7 @@ struct simd_vector
 		{
 			using unsigned_type = ::std::make_unsigned_t<T>;
 			using unsigned_vec_type = typename simd_vector<unsigned_type, N>::vec_type;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			this->value = __builtin_bit_cast(vec_type, __builtin_bit_cast(unsigned_vec_type, this->value) +
 														   __builtin_bit_cast(unsigned_vec_type, b));
 #else
@@ -147,7 +147,7 @@ struct simd_vector
 	template <typename T2>
 		requires((sizeof(T2) == sizeof(T) * N) && ::std::is_trivially_copyable_v<T2>)
 	inline
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		constexpr
 #endif
 		void
@@ -162,7 +162,7 @@ struct simd_vector
 		{
 			using unsigned_type = ::std::make_unsigned_t<T>;
 			using unsigned_vec_type = typename simd_vector<unsigned_type, N>::vec_type;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			this->value = __builtin_bit_cast(vec_type, __builtin_bit_cast(unsigned_vec_type, this->value) -
 														   __builtin_bit_cast(unsigned_vec_type, b));
 #else
@@ -220,12 +220,12 @@ struct simd_vector
 	template <typename T1, ::std::size_t N1>
 		requires(sizeof(T1) * N1 == sizeof(T) * N && !::std::same_as<T1, value_type>)
 	inline explicit
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		constexpr
 #endif
 		operator simd_vector<T1, N1>() const noexcept
 	{
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		return __builtin_bit_cast(simd_vector<T1, N1>, *this);
 #else
 		simd_vector<T1, N1> v;
@@ -244,7 +244,7 @@ struct simd_vector
 		return *this;
 	}
 	inline
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		constexpr
 #endif
 		void
@@ -259,14 +259,14 @@ struct simd_vector
 		else if constexpr (N * sizeof(T) == 64)
 		{
 			using temp_vec_type [[__gnu__::__vector_size__(64)]] = char;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			auto temp_vec{__builtin_bit_cast(temp_vec_type, this->value)};
 #else
 			temp_vec_type temp_vec;
 			__builtin_memcpy(__builtin_addressof(temp_vec), __builtin_addressof(this->value), sizeof(vec_type));
 #endif
 
-#if __has_builtin(__builtin_shufflevector)
+#if FAST_IO_HAS_BUILTIN(__builtin_shufflevector)
 			if constexpr (sizeof(T) == 8)
 			{
 				// clang-format off
@@ -294,7 +294,7 @@ struct simd_vector
                                                    48, 51, 50, 53, 52, 55, 54, 57, 56, 59, 58, 61, 60, 63, 62);
 				// clang-format on
 			}
-#elif __has_builtin(__builtin_ia32_pshufb512)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb512)
 			if constexpr (sizeof(T) == 8)
 			{
 				// clang-format off
@@ -326,7 +326,7 @@ struct simd_vector
 				// clang-format on
 			}
 #endif
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			this->value = __builtin_bit_cast(vec_type, temp_vec);
 #else
 			__builtin_memcpy(__builtin_addressof(this->value), __builtin_addressof(temp_vec), sizeof(vec_type));
@@ -335,13 +335,13 @@ struct simd_vector
 		else if constexpr (N * sizeof(T) == 32)
 		{
 			using temp_vec_type [[__gnu__::__vector_size__(32)]] = char;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			auto temp_vec{__builtin_bit_cast(temp_vec_type, this->value)};
 #else
 			temp_vec_type temp_vec;
 			__builtin_memcpy(__builtin_addressof(temp_vec), __builtin_addressof(this->value), sizeof(vec_type));
 #endif
-#if __has_builtin(__builtin_shufflevector)
+#if FAST_IO_HAS_BUILTIN(__builtin_shufflevector)
 			if constexpr (sizeof(T) == 8)
 			{
 				// clang-format off
@@ -364,7 +364,7 @@ struct simd_vector
                                                    14, 17, 16, 19, 18, 21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30);
 				// clang-format on
 			}
-#elif __has_builtin(__builtin_ia32_pshufb256)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb256)
 			if constexpr (sizeof(T) == 8)
 			{
 				// clang-format off
@@ -390,7 +390,7 @@ struct simd_vector
 				// clang-format on
 			}
 #endif
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			this->value = __builtin_bit_cast(vec_type, temp_vec);
 #else
 			__builtin_memcpy(__builtin_addressof(this->value), __builtin_addressof(temp_vec), sizeof(vec_type));
@@ -399,13 +399,13 @@ struct simd_vector
 		else
 		{
 			using temp_vec_type [[__gnu__::__vector_size__(16)]] = char;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			auto temp_vec{__builtin_bit_cast(temp_vec_type, this->value)};
 #else
 			temp_vec_type temp_vec;
 			__builtin_memcpy(__builtin_addressof(temp_vec), __builtin_addressof(this->value), sizeof(vec_type));
 #endif
-#if __has_builtin(__builtin_shufflevector) && ((!defined(__x86_64__) && !defined(__i386__)) || \
+#if FAST_IO_HAS_BUILTIN(__builtin_shufflevector) && ((!defined(__x86_64__) && !defined(__i386__)) || \
 											   (!defined(__GNUC__) || defined(__clang__)) || defined(__SSE4_2__))
 			if constexpr (sizeof(T) == 8)
 			{
@@ -428,7 +428,7 @@ struct simd_vector
                     __builtin_shufflevector(temp_vec, temp_vec, 1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
 				// clang-format on
 			}
-#elif __has_builtin(__builtin_ia32_pshufb128) && defined(__SSE3__)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb128) && defined(__SSE3__)
 			if constexpr (sizeof(T) == 8)
 			{
 				// clang-format off
@@ -450,7 +450,7 @@ struct simd_vector
                 temp_vec = __builtin_ia32_pshufb128(temp_vec, mask);
 				// clang-format on
 			}
-#elif defined(__SSE2__) && __has_builtin(__builtin_ia32_punpcklbw128) && __has_builtin(__builtin_ia32_punpckhbw128)
+#elif defined(__SSE2__) && FAST_IO_HAS_BUILTIN(__builtin_ia32_punpcklbw128) && FAST_IO_HAS_BUILTIN(__builtin_ia32_punpckhbw128)
 			using x86_64_v4si [[__gnu__::__vector_size__(16)]] = int;
 			using x86_64_v16qi [[__gnu__::__vector_size__(16)]] = char;
 			using x86_64_v8hi [[__gnu__::__vector_size__(16)]] = short;
@@ -484,7 +484,7 @@ struct simd_vector
 				temp_vec = (x86_64_v16qi)((res0 >> 8) | (res0 << 8));
 			}
 #endif
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			this->value = __builtin_bit_cast(vec_type, temp_vec);
 #else
 			__builtin_memcpy(__builtin_addressof(this->value), __builtin_addressof(temp_vec), sizeof(vec_type));
@@ -498,9 +498,9 @@ struct simd_vector
 	{
 		if constexpr (sizeof(mask) == 16)
 		{
-#if __has_builtin(__builtin_ia32_pshufb128)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb128)
 			using value_type2 [[__gnu__::__vector_size__(16)]] = char;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			value = __builtin_bit_cast(vec_type,
 									   __builtin_ia32_pshufb128(__builtin_bit_cast(value_type2, value), mask.value));
 #else
@@ -513,9 +513,9 @@ struct simd_vector
 		}
 		else if constexpr (sizeof(mask) == 32)
 		{
-#if __has_builtin(__builtin_ia32_pshufb256)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb256)
 			using value_type2 [[__gnu__::__vector_size__(32)]] = char;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			value = __builtin_bit_cast(vec_type,
 									   __builtin_ia32_pshufb256(__builtin_bit_cast(value_type2, value), mask.value));
 #else
@@ -633,7 +633,7 @@ inline constexpr simd_vector<T, N> operator!=(simd_vector<T, N> const &a, simd_v
 
 template <::std::integral T, ::std::size_t N>
 inline
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 	constexpr
 #endif
 	simd_vector<T, N>
@@ -643,7 +643,7 @@ inline
 	{
 		using unsigned_type = ::std::make_unsigned_t<T>;
 		using vec_type = typename simd_vector<unsigned_type, N>::vec_type;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		return __builtin_bit_cast(simd_vector<T, N>, __builtin_bit_cast(vec_type, a) + __builtin_bit_cast(vec_type, b));
 #else
 		vec_type asv;
@@ -664,7 +664,7 @@ inline
 
 template <::std::integral T, ::std::size_t N>
 inline
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 	constexpr
 #endif
 	simd_vector<T, N>
@@ -674,7 +674,7 @@ inline
 	{
 		using unsigned_type = ::std::make_unsigned_t<T>;
 		using vec_type = typename simd_vector<unsigned_type, N>::vec_type;
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		return __builtin_bit_cast(simd_vector<T, N>, __builtin_bit_cast(vec_type, a) - __builtin_bit_cast(vec_type, b));
 #else
 		vec_type asv;
