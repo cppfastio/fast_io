@@ -677,7 +677,7 @@ inline constexpr posix_file_status struct_stat_to_posix_file_status(stat_model &
 			{st.st_mtime, {}},
 			{st.st_ctime, {}},
 			{0, 0},
-#elif !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__) && \
+#elif !defined(__NEWLIB__) && !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__) && \
 	!defined(__linux__)
 			static_cast<::fast_io::uintfpos_t>(st.st_blksize),
 			static_cast<::fast_io::uintfpos_t>(st.st_blocks),
@@ -693,9 +693,15 @@ inline constexpr posix_file_status struct_stat_to_posix_file_status(stat_model &
 #else
 		static_cast<::fast_io::uintfpos_t>(st.st_blksize),
 		static_cast<::fast_io::uintfpos_t>(st.st_blocks),
+#if defined(__svr4__) && !defined(__PPC__) && !defined(__sun__)
+		{st.st_atime, 0},
+		{st.st_mtime, 0},
+		{st.st_ctime, 0},
+#else
 		timespec_to_unix_timestamp(st.st_atim),
 		timespec_to_unix_timestamp(st.st_mtim),
 		timespec_to_unix_timestamp(st.st_ctim),
+#endif
 #if defined(__CYGWIN__)
 		timespec_to_unix_timestamp(st.st_birthtim)
 #else
@@ -703,7 +709,7 @@ inline constexpr posix_file_status struct_stat_to_posix_file_status(stat_model &
 #endif
 			,
 #endif
-#if !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__) && \
+#if !defined(__NEWLIB__) && !defined(__CYGWIN__) && (defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)) && !defined(_PICOLIBC__) && \
 	!defined(__linux__)
 			st.st_flags,
 			st.st_gen
@@ -1330,7 +1336,7 @@ public:
 		if (noexcept_call(::_pipe, a2, 131072u, _O_BINARY) == -1)
 #elif defined(__linux__)
 		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
-#elif (defined(__MSDOS__) || defined(__DJGPP__))
+#elif (defined(__MSDOS__) || defined(__DJGPP__)) || defined(__NEWLIB__)
 		if (noexcept_call(::pipe, a2) == -1)
 #else
 		if (noexcept_call(::pipe, a2) == -1 || ::fast_io::details::sys_fcntl(a2[0], F_SETFD, FD_CLOEXEC) == -1 || ::fast_io::details::sys_fcntl(a2[1], F_SETFD, FD_CLOEXEC) == -1)

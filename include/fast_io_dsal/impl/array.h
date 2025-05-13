@@ -20,10 +20,12 @@ public:
 	using const_iterator = const_pointer;
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
+#ifndef __INTELLISENSE__
 #if __has_cpp_attribute(no_unique_address)
 	[[no_unique_address]]
 #elif __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
+#endif
 #endif
 	value_type element[N];
 

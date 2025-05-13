@@ -141,4 +141,11 @@ struct io_cookie_t
 
 inline constexpr io_cookie_t io_cookie{};
 
+struct io_null_t
+{
+	explicit inline constexpr io_null_t() noexcept = default;
+};
+
+inline constexpr io_null_t io_null{};
+
 } // namespace fast_io

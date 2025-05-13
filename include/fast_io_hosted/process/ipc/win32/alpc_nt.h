@@ -307,7 +307,7 @@ struct nt_ipc_alpc_thread_local_heap_allocate_guard
 
 // SERVER
 template <nt_family family>
-inline void *nt_family_create_alpc_ipc_server_port_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode)
+inline void *nt_family_create_alpc_ipc_server_port_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, [[maybe_unused]] ::fast_io::ipc_mode mode)
 {
 	constexpr bool zw{family == nt_family::zw};
 
@@ -661,7 +661,7 @@ inline void nt_family_alpc_ipc_server_disconnect_impl(void *__restrict client_pi
 template <nt_family family>
 inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_client_message_attribute_view_impl()
 {
-	constexpr bool zw{family == nt_family::zw};
+	// constexpr bool zw{family == nt_family::zw};
 
 	constexpr ::std::uint_least32_t message_attribute{
 		0x80000000 /*ALPC_MESSAGE_SECURITY_ATTRIBUTE*/ |
@@ -698,7 +698,7 @@ inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_
 }
 
 template <nt_family family>
-inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode,
+inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, [[maybe_unused]]  ::fast_io::ipc_mode mode,
 													::std::byte const *message_begin, ::std::byte const *message_end, ::fast_io::win32::nt::alpc_message_attributes *__restrict message_attribute,
 													nt_alpc_byte_vector &connect_recv_message)
 {

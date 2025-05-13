@@ -1,5 +1,68 @@
 export namespace fast_io
 {
+
+namespace details
+{
+using ::fast_io::details::has_allocate_impl;
+using ::fast_io::details::has_allocate_aligned_impl;
+using ::fast_io::details::has_allocate_zero_impl;
+using ::fast_io::details::has_allocate_aligned_zero_impl;
+using ::fast_io::details::has_reallocate_impl;
+using ::fast_io::details::has_reallocate_aligned_impl;
+using ::fast_io::details::has_reallocate_zero_impl;
+using ::fast_io::details::has_reallocate_aligned_zero_impl;
+using ::fast_io::details::has_reallocate_n_impl;
+using ::fast_io::details::has_reallocate_aligned_n_impl;
+using ::fast_io::details::has_reallocate_zero_n_impl;
+using ::fast_io::details::has_reallocate_aligned_zero_n_impl;
+using ::fast_io::details::has_deallocate_impl;
+using ::fast_io::details::has_deallocate_aligned_impl;
+using ::fast_io::details::has_deallocate_n_impl;
+using ::fast_io::details::has_deallocate_aligned_n_impl;
+using ::fast_io::details::has_allocate_at_least_impl;
+using ::fast_io::details::has_allocate_aligned_at_least_impl;
+using ::fast_io::details::has_allocate_zero_at_least_impl;
+using ::fast_io::details::has_allocate_aligned_zero_at_least_impl;
+using ::fast_io::details::has_reallocate_at_least_impl;
+using ::fast_io::details::has_reallocate_aligned_at_least_impl;
+using ::fast_io::details::has_reallocate_zero_at_least_impl;
+using ::fast_io::details::has_reallocate_aligned_zero_at_least_impl;
+using ::fast_io::details::has_reallocate_n_at_least_impl;
+using ::fast_io::details::has_reallocate_aligned_n_at_least_impl;
+using ::fast_io::details::has_reallocate_zero_n_at_least_impl;
+using ::fast_io::details::has_reallocate_aligned_zero_n_at_least_impl;
+using ::fast_io::details::has_non_empty_handle_type;
+using ::fast_io::details::has_handle_allocate_impl;
+using ::fast_io::details::has_handle_allocate_aligned_impl;
+using ::fast_io::details::has_handle_allocate_zero_impl;
+using ::fast_io::details::has_handle_allocate_aligned_zero_impl;
+using ::fast_io::details::has_handle_reallocate_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_impl;
+using ::fast_io::details::has_handle_reallocate_zero_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_zero_impl;
+using ::fast_io::details::has_handle_reallocate_n_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_n_impl;
+using ::fast_io::details::has_handle_reallocate_zero_n_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_zero_n_impl;
+using ::fast_io::details::has_handle_allocate_at_least_impl;
+using ::fast_io::details::has_handle_allocate_aligned_at_least_impl;
+using ::fast_io::details::has_handle_allocate_zero_at_least_impl;
+using ::fast_io::details::has_handle_allocate_aligned_zero_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_zero_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_zero_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_n_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_n_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_zero_n_at_least_impl;
+using ::fast_io::details::has_handle_reallocate_aligned_zero_n_at_least_impl;
+using ::fast_io::details::has_handle_deallocate_impl;
+using ::fast_io::details::has_handle_deallocate_aligned_impl;
+using ::fast_io::details::has_handle_deallocate_n_impl;
+using ::fast_io::details::has_handle_deallocate_aligned_n_impl;
+
+}
+
 using ::fast_io::generic_allocator_adapter;
 using ::fast_io::typed_generic_allocator_adapter;
 using ::fast_io::native_global_allocator;

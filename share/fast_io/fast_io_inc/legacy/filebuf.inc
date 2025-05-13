@@ -49,12 +49,4 @@ using ::fast_io::scatter_pwrite_some_bytes_overflow_define;
 using ::fast_io::read_some_bytes_underflow_define;
 using ::fast_io::write_some_bytes_overflow_define;
 
-namespace freestanding
-{
-
-using ::fast_io::freestanding::is_trivially_relocatable;
-using ::fast_io::freestanding::is_zero_default_constructible;
-
-} // namespace freestanding
-
 } // namespace fast_io

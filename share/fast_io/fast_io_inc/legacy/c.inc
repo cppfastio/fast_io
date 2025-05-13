@@ -62,17 +62,9 @@ using ::fast_io::obuffer_is_line_buffering_define;
 
 using ::fast_io::c_stdin;
 using ::fast_io::c_stdout;
-using ::fast_io::wc_stdin;
-using ::fast_io::wc_stdout;
+using ::fast_io::c_stderr;
 using ::fast_io::u8c_stdin;
 using ::fast_io::u8c_stdout;
+using ::fast_io::u8c_stderr;
 
-
-namespace freestanding
-{
-
-using ::fast_io::freestanding::is_trivially_copyable_or_relocatable;
-using ::fast_io::freestanding::is_zero_default_constructible;
-
-} // namespace freestanding
 } // namespace fast_io

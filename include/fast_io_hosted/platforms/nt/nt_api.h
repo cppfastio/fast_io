@@ -136,5 +136,8 @@ FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtDeviceIoControlFile
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwDeviceIoControlFile(void *, void *, ::fast_io::win32::nt::pio_apc_routine *, void *, ::fast_io::win32::nt::io_status_block *, ::std::uint_least32_t, void *, ::std::uint_least32_t, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwDeviceIoControlFile, 40);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlAcquirePrivilege(::fast_io::win32::nt::privileges *, ::std::uint_least32_t, ::std::uint_least32_t, void **) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAcquirePrivilege, 16);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RtlReleasePrivilege(void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlReleasePrivilege, 4);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlQueryEnvironmentVariable_U(void *, ::fast_io::win32::nt::unicode_string *, ::fast_io::win32::nt::unicode_string *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlQueryEnvironmentVariable_U, 12);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetInformationVirtualMemory(void *, ::fast_io::win32::nt::virtual_memory_information_class, ::std::size_t, ::fast_io::win32::nt::memory_range_entry *, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetInformationVirtualMemory, 24);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetInformationVirtualMemory(void *, ::fast_io::win32::nt::virtual_memory_information_class, ::std::size_t, ::fast_io::win32::nt::memory_range_entry *, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetInformationVirtualMemory, 24);
 
 } // namespace fast_io::win32::nt

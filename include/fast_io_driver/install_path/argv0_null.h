@@ -6,7 +6,7 @@ namespace fast_io::details
 [[__gnu__::__cold__]]
 #endif
 [[noreturn]]
-inline ::fast_io::install_path get_module_install_path_from_argv0(char const *argv0) 
+inline ::fast_io::install_path get_module_install_path_from_argv0([[maybe_unused]] char const *argv0) 
 {
 	throw_win32_error(0);
 }
