@@ -193,7 +193,7 @@ general_code_cvt(src_char_type const *src_first, src_char_type const *src_last, 
 	else
 	{
 #if (defined(_MSC_VER) && defined(_M_AMD64) && !defined(__clang__)) || \
-	(defined(__SSE__) && defined(__x86_64__) && __cpp_lib_is_constant_evaluated >= 201811L)
+	(defined(__SSE__) && defined(__SSE2__) && defined(__x86_64__) && __cpp_lib_is_constant_evaluated >= 201811L)
 		if constexpr (src_encoding != encoding_scheme::utf_ebcdic && encoding != encoding_scheme::utf_ebcdic &&
 					  1 == sizeof(src_char_type) && (1 == sizeof(dest_char_type) || encoding_is_utf(encoding)))
 		{

@@ -8,7 +8,7 @@ inline constexpr char_type *allocate_iobuf_space(::std::size_t buffer_size) noex
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L
 	if (__builtin_is_constant_evaluated())
 	{
-		return new char_type[buffer_size];
+		return ::new char_type[buffer_size];
 	}
 	else
 #endif
@@ -40,7 +40,7 @@ inline constexpr void deallocate_iobuf_space(char_type *ptr, [[maybe_unused]] ::
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L
 	if (__builtin_is_constant_evaluated())
 	{
-		delete[] ptr;
+		::delete[] ptr;
 	}
 	else
 #endif

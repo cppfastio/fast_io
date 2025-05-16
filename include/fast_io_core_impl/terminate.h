@@ -15,14 +15,10 @@ namespace fast_io
 fast_terminate() noexcept
 {
 // https://llvm.org/doxygen/Compiler_8h_source.html
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_trap)
+#if FAST_IO_HAS_BUILTIN(__builtin_trap)
 	__builtin_trap();
-#elif __has_builtin(__builtin_abort)
+#elif FAST_IO_HAS_BUILTIN(__builtin_abort)
 	__builtin_abort();
-#else
-	::std::abort();
-#endif
 #else
 	::std::abort();
 #endif

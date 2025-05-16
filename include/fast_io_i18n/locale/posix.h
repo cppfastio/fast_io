@@ -52,12 +52,8 @@ inline void *posix_load_l10n_common_impl(char8_t const *cstr, ::std::size_t n, l
 		}
 		cstr = reinterpret_cast<native_char_type_may_alias_const_ptr>(lc_all_env);
 		n =
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_strlen)
+#if FAST_IO_HAS_BUILTIN(__builtin_strlen)
 			__builtin_strlen(lc_all_env);
-#else
-			::std::strlen(lc_all_env);
-#endif
 #else
 			::std::strlen(lc_all_env);
 #endif

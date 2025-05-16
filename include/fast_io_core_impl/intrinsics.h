@@ -24,14 +24,10 @@ inline
 	{
 		if (dest == nullptr || src == nullptr || sizeof(T1) != sizeof(T2) || bytes % sizeof(T1) != 0)
 		{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_trap)
+#if FAST_IO_HAS_BUILTIN(__builtin_trap)
 			__builtin_trap();
-#elif __has_builtin(__builtin_abort)
+#elif FAST_IO_HAS_BUILTIN(__builtin_abort)
 			__builtin_abort();
-#else
-			::std::abort();
-#endif
 #else
 			::std::abort();
 #endif
@@ -45,12 +41,8 @@ inline
 	else
 #endif
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 		__builtin_memcpy(dest, src, bytes);
-#else
-		memcpy(dest, src, bytes);
-#endif
 #else
 		memcpy(dest, src, bytes);
 #endif
@@ -90,8 +82,7 @@ using ul32x2 = ul_generic_x2<::std::uint_least32_t>;
 inline constexpr ::std::uint_least32_t umul_least_32(::std::uint_least32_t a, ::std::uint_least32_t b,
 													 ::std::uint_least32_t &high) noexcept
 {
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
+#if defined(__GNUC__) && !defined(__clang__) && FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 	if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
 	{
 		auto ret{__builtin_bit_cast(ul32x2, static_cast<::std::uint_least64_t>(a) * b)};
@@ -99,7 +90,6 @@ inline constexpr ::std::uint_least32_t umul_least_32(::std::uint_least32_t a, ::
 		return ret.low;
 	}
 	else
-#endif
 #endif
 	{
 		::std::uint_least64_t v{static_cast<::std::uint_least64_t>(a) * b};
@@ -110,15 +100,13 @@ inline constexpr ::std::uint_least32_t umul_least_32(::std::uint_least32_t a, ::
 
 inline constexpr ::std::uint_least32_t umulh_least_32(::std::uint_least32_t a, ::std::uint_least32_t b) noexcept
 {
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
+#if defined(__GNUC__) && !defined(__clang__) && FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 	if constexpr (::std::endian::native == ::std::endian::little || ::std::endian::native == ::std::endian::big)
 	{
 		auto ret{__builtin_bit_cast(ul32x2, static_cast<::std::uint_least64_t>(a) * b)};
 		return ret.high;
 	}
 	else
-#endif
 #endif
 	{
 		::std::uint_least64_t v{static_cast<::std::uint_least64_t>(a) * b};
@@ -128,8 +116,7 @@ inline constexpr ::std::uint_least32_t umulh_least_32(::std::uint_least32_t a, :
 
 inline constexpr ::std::uint_least32_t unpack_ul64(::std::uint_least64_t a, ::std::uint_least32_t &high) noexcept
 {
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
+#if defined(__GNUC__) && !defined(__clang__) && FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 	if constexpr (::std::endian::native == ::std::endian::little)
 	{
 		auto [a0, a1] = __builtin_bit_cast(ul32x2_little_endian, a); // get around gcc bug
@@ -144,7 +131,6 @@ inline constexpr ::std::uint_least32_t unpack_ul64(::std::uint_least64_t a, ::st
 	}
 	else
 #endif
-#endif
 	{
 		high = static_cast<::std::uint_least32_t>(a >> ::std::numeric_limits<::std::uint_least32_t>::digits);
 		return static_cast<::std::uint_least32_t>(a);
@@ -155,8 +141,7 @@ template <typename T, typename U>
 	requires(sizeof(T) == sizeof(U) * 2)
 inline constexpr U unpack_generic(T a, U &high) noexcept
 {
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
+#if defined(__GNUC__) && !defined(__clang__) && FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 	if constexpr (::std::endian::native == ::std::endian::little)
 	{
 		auto [a0, a1] = __builtin_bit_cast(ul_generic_x2_little_endian<U>, a); // get around gcc bug
@@ -170,7 +155,6 @@ inline constexpr U unpack_generic(T a, U &high) noexcept
 		return a0;
 	}
 	else
-#endif
 #endif
 	{
 		high = static_cast<U>(a >> ::std::numeric_limits<U>::digits);
@@ -239,9 +223,8 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 #else
 			return add_carry_naive(carry, a, b, out);
 #endif
-#elif defined(__has_builtin) &&                                                                           \
-	(__has_builtin(__builtin_addcb) && __has_builtin(__builtin_addcs) && __has_builtin(__builtin_addc) && \
-	 __has_builtin(__builtin_addcl) && __has_builtin(__builtin_addcll))
+#elif (FAST_IO_HAS_BUILTIN(__builtin_addcb) && FAST_IO_HAS_BUILTIN(__builtin_addcs) && FAST_IO_HAS_BUILTIN(__builtin_addc) && \
+	 FAST_IO_HAS_BUILTIN(__builtin_addcl) && FAST_IO_HAS_BUILTIN(__builtin_addcll))
 			if constexpr (sizeof(T) == sizeof(long long unsigned))
 			{
 				long long unsigned carryout;
@@ -276,12 +259,11 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 			{
 				return add_carry_naive(carry, a, b, out);
 			}
-#elif defined(__has_builtin) &&                                                                   \
-	(__has_builtin(__builtin_ia32_addcarryx_u32) || __has_builtin(__builtin_ia32_addcarry_u32) || \
-	 __has_builtin(__builtin_ia32_addcarryx_u64))
+#elif (FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u32) || FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarry_u32) || \
+	 FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u64))
 			if constexpr (sizeof(T) == 8)
 			{
-#if __has_builtin(__builtin_ia32_addcarryx_u64)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
 				using may_alias_ptr_type
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 					[[__gnu__::__may_alias__]]
@@ -289,7 +271,7 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 					= unsigned long long *;
 				return __builtin_ia32_addcarryx_u64(carry, a, b,
 													reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
-#elif __has_builtin(__builtin_ia32_addcarry_u64)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarry_u64)
 				using may_alias_ptr_type
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 					[[__gnu__::__may_alias__]]
@@ -313,12 +295,12 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 					[[__gnu__::__may_alias__]]
 #endif
 					= unsigned *;
-#if __has_builtin(__builtin_ia32_addcarryx_u32)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u32)
 				return __builtin_ia32_addcarryx_u32(
 					__builtin_ia32_addcarryx_u32(carry, a_low, b_low,
 												 reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))),
 					a_high, b_high, reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)) + 1);
-#elif __has_builtin(__builtin_ia32_addcarry_u32)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarry_u32)
 				return __builtin_ia32_addcarry_u32(
 					__builtin_ia32_addcarry_u32(carry, a_low, b_low,
 												reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))),
@@ -335,10 +317,10 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 					[[__gnu__::__may_alias__]]
 #endif
 					= unsigned *;
-#if __has_builtin(__builtin_ia32_addcarryx_u32)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u32)
 				return __builtin_ia32_addcarryx_u32(carry, a, b,
 													reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
-#elif __has_builtin(__builtin_ia32_addcarry_u32)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarry_u32)
 				return __builtin_ia32_addcarry_u32(carry, a, b,
 												   reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
 #else
@@ -427,9 +409,8 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 #else
 			return sub_borrow_naive(borrow, a, b, out);
 #endif
-#elif defined(__has_builtin) &&                                                                           \
-	(__has_builtin(__builtin_subcb) && __has_builtin(__builtin_subcs) && __has_builtin(__builtin_subc) && \
-	 __has_builtin(__builtin_subcl) && __has_builtin(__builtin_subcll))
+#elif (FAST_IO_HAS_BUILTIN(__builtin_subcb) && FAST_IO_HAS_BUILTIN(__builtin_subcs) && FAST_IO_HAS_BUILTIN(__builtin_subc) && \
+	 FAST_IO_HAS_BUILTIN(__builtin_subcl) && FAST_IO_HAS_BUILTIN(__builtin_subcll))
 			if constexpr (sizeof(T) == sizeof(long long unsigned))
 			{
 				long long unsigned borrowout;
@@ -464,12 +445,11 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 			{
 				return sub_borrow_naive(borrow, a, b, out);
 			}
-#elif defined(__has_builtin) &&                                                        \
-	(__has_builtin(__builtin_ia32_sbb_u32) || __has_builtin(__builtin_ia32_sbb_u64) || \
-	 __has_builtin(__builtin_ia32_subborrow_u64) || __has_builtin(__builtin_ia32_subborrow_u32))
+#elif (FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u32) || FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u64) || \
+	 FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u64) || FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u32))
 			if constexpr (sizeof(T) == 8)
 			{
-#if __has_builtin(__builtin_ia32_sbb_u64)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u64)
 				using may_alias_ptr_type
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 					[[__gnu__::__may_alias__]]
@@ -477,7 +457,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 					= unsigned long long *;
 				return __builtin_ia32_sbb_u64(borrow, a, b,
 											  reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
-#elif __has_builtin(__builtin_ia32_subborrow_u64)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u64)
 				using may_alias_ptr_type
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 					[[__gnu__::__may_alias__]]
@@ -485,7 +465,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 					= unsigned long long *;
 				return __builtin_ia32_subborrow_u64(borrow, a, b,
 													reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
-#elif __has_builtin(__builtin_ia32_sbb_u32) || __has_builtin(__builtin_ia32_subborrow_u32)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u32) || FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u32)
 				::std::uint_least32_t a_low;
 				::std::uint_least32_t a_high;
 				__builtin_memcpy(__builtin_addressof(a_low), __builtin_addressof(a), 4);
@@ -501,7 +481,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 					[[__gnu__::__may_alias__]]
 #endif
 					= unsigned *;
-#if __has_builtin(__builtin_ia32_sbb_u32)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u32)
 				return __builtin_ia32_sbb_u32(
 					__builtin_ia32_sbb_u32(borrow, a_low, b_low,
 										   reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out))),
@@ -518,7 +498,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 			}
 			else if constexpr (sizeof(T) == 4)
 			{
-#if __has_builtin(__builtin_ia32_sbb_u32)
+#if FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u32)
 				using may_alias_ptr_type
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 					[[__gnu__::__may_alias__]]
@@ -526,7 +506,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 					= unsigned *;
 				return __builtin_ia32_sbb_u32(borrow, a, b,
 											  reinterpret_cast<may_alias_ptr_type>(__builtin_addressof(out)));
-#elif __has_builtin(__builtin_ia32_subborrow_u32)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u32)
 				using may_alias_ptr_type
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 					[[__gnu__::__may_alias__]]
@@ -551,8 +531,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 
 inline constexpr ::std::uint_least64_t pack_ul64(::std::uint_least32_t low, ::std::uint_least32_t high) noexcept
 {
-#if defined(__has_builtin) && defined(__GNUC__) && !defined(__clang__)
-#if __has_builtin(__builtin_bit_cast)
+#if defined(__GNUC__) && !defined(__clang__) && FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 	if constexpr (::std::endian::native == ::std::endian::little)
 	{
 		return __builtin_bit_cast(::std::uint_least64_t, ul32x2_little_endian{low, high}); // get around gcc bug
@@ -562,7 +541,6 @@ inline constexpr ::std::uint_least64_t pack_ul64(::std::uint_least32_t low, ::st
 		return __builtin_bit_cast(::std::uint_least64_t, ul32x2_big_endian{high, low}); // get around gcc bug
 	}
 	else
-#endif
 #endif
 	{
 		return (static_cast<::std::uint_least64_t>(high) << 32u) | low;
@@ -625,14 +603,14 @@ inline
 			using u64x2_t = ::std::conditional_t<::std::endian::native == ::std::endian::little, u64x2_little_endian_t,
 												 u64x2_big_endian_t>;
 			static_assert(sizeof(__uint128_t) == sizeof(u64x2_t));
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 			auto u{__builtin_bit_cast(u64x2_t, static_cast<__uint128_t>(a) * b)};
 			high = u.high;
 			return u.low;
 #else
 			__uint128_t res{static_cast<__uint128_t>(a) * b};
 			u64x2_t u;
-#if __has_builtin(__builtin_memcpy)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 			__builtin_memcpy(__builtin_addressof(u), __builtin_addressof(res), sizeof(u64x2_t));
 #else
 			::std::memcpy(__builtin_addressof(u), __builtin_addressof(res), sizeof(u64x2_t));
@@ -765,7 +743,7 @@ inline constexpr ::std::size_t add_or_overflow_die(::std::size_t a, ::std::size_
 		}
 		return size;
 	}
-#elif __has_builtin(__builtin_add_overflow) && __has_builtin(__builtin_trap)
+#elif FAST_IO_HAS_BUILTIN(__builtin_add_overflow) && FAST_IO_HAS_BUILTIN(__builtin_trap)
 	::std::size_t size;
 	if (__builtin_add_overflow(a, b, __builtin_addressof(size))) [[unlikely]]
 	{
@@ -805,7 +783,7 @@ inline constexpr ::std::size_t mul_or_overflow_die(::std::size_t a, ::std::size_
 		__debugbreak();
 	}
 	return a * b;
-#elif __has_builtin(__builtin_mul_overflow) && __has_builtin(__builtin_trap)
+#elif FAST_IO_HAS_BUILTIN(__builtin_mul_overflow) && FAST_IO_HAS_BUILTIN(__builtin_trap)
 	::std::size_t size;
 	if (__builtin_mul_overflow(a, b, __builtin_addressof(size))) [[unlikely]]
 	{
@@ -853,7 +831,7 @@ inline constexpr bool sub_underflow(int_type a, int_type b, int_type &c) noexcep
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 	return sub_underflow_naive(a, b, c);
-#elif __has_builtin(__builtin_sub_underflow)
+#elif FAST_IO_HAS_BUILTIN(__builtin_sub_underflow)
 	return __builtin_sub_underflow(a, b, __builtin_addressof(c));
 #else
 	return sub_underflow_naive(a, b, c);
@@ -884,7 +862,7 @@ inline constexpr ::std::size_t cal_allocation_size_or_die(::std::size_t size) no
 		__debugbreak();
 	}
 	return size * sizeof(T);
-#elif __has_builtin(__builtin_mul_overflow) && __has_builtin(__builtin_trap)
+#elif FAST_IO_HAS_BUILTIN(__builtin_mul_overflow) && FAST_IO_HAS_BUILTIN(__builtin_trap)
 	if (__builtin_mul_overflow(size, sizeof(T), __builtin_addressof(size))) [[unlikely]]
 	{
 		__builtin_trap();

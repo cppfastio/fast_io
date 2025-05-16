@@ -96,6 +96,7 @@ struct gdi_teb_batch
 	::std::uint_least32_t Buffer[310];
 };
 
+// NOLINTBEGIN(*-optin.performance.Padding)
 struct teb
 {
 	nt_tib NtTib;
@@ -265,6 +266,7 @@ struct teb
 	::std::uint_least32_t SpinCallCount;
 	::std::uint_least64_t ExtendedFeatureDisableMask;
 };
+// NOLINTEND(*-optin.performance.Padding)
 
 FAST_IO_DLLIMPORT FAST_IO_GNU_MALLOC void *FAST_IO_WINSTDCALL RtlAllocateHeap(void *, ::std::uint_least32_t, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAllocateHeap, 12);
 FAST_IO_DLLIMPORT char unsigned FAST_IO_WINSTDCALL RtlFreeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlFreeHeap, 12);

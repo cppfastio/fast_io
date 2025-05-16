@@ -52,6 +52,13 @@ struct basic_general_io_lockable_nonmovable
 			this->handle = T(::std::forward<Args>(args)...);
 		}
 	}
+
+	inline constexpr auto native_handle() noexcept(noexcept(handle.native_handle()))
+		requires(requires() { handle.native_handle(); })
+	{
+		return handle.native_handle();
+	}
+
 	inline constexpr void close() noexcept(noexcept(handle.close()))
 	{
 		::fast_io::io_lock_guard guard(mutex);

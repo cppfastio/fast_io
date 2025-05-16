@@ -268,11 +268,7 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 		return {begin, parse_code::ok};
 	}
 	}
-#ifdef __has_builtin
-#if __has_builtin(__builtin_unreachable)
-	__builtin_unreachable();
-#endif
-#endif
+	::fast_io::unreachable();
 }
 
 template <::std::integral char_type>
@@ -317,11 +313,7 @@ inline constexpr parse_result<char_type const *> scn_ctx_define_port_impl(ip_por
 		}
 		return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t);
 	default:;
-#ifdef __has_builtin
-#if __has_builtin(__builtin_unreachable)
-		__builtin_unreachable();
-#endif
-#endif
+		::fast_io::unreachable();
 	}
 }
 
@@ -844,11 +836,7 @@ scan_context_define(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulat
 			return {details::scn_ctx_define_port_type_general_impl(state, begin, end, t.reference->port)};
 		}
 #endif
-#ifdef __has_builtin
-#if __has_builtin(__builtin_unreachable)
-		__builtin_unreachable();
-#endif
-#endif
+		::fast_io::unreachable();
 	}
 }
 

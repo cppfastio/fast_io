@@ -243,21 +243,15 @@ namespace fast_io::freestanding
 {
 
 inline
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 	constexpr
-#endif
 #endif
 	void *
 	my_memcpy(void *dest, void const *src, ::std::size_t count) noexcept
 {
 	return
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 		__builtin_memcpy
-#else
-		::std::memcpy
-#endif
 #else
 		::std::memcpy
 #endif
@@ -265,21 +259,15 @@ inline
 }
 
 inline
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memmove)
+#if FAST_IO_HAS_BUILTIN(__builtin_memmove)
 	constexpr
-#endif
 #endif
 	void *
 	my_memmove(void *dest, void const *src, ::std::size_t count) noexcept
 {
 	return
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memmove)
+#if FAST_IO_HAS_BUILTIN(__builtin_memmove)
 		__builtin_memmove
-#else
-		::std::memmove
-#endif
 #else
 		::std::memmove
 #endif
@@ -289,12 +277,8 @@ inline
 inline void *my_memset(void *dest, int ch, ::std::size_t count) noexcept
 {
 	return
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memset)
+#if FAST_IO_HAS_BUILTIN(__builtin_memset)
 		__builtin_memset
-#else
-		::std::memset
-#endif
 #else
 		::std::memset
 #endif
@@ -302,21 +286,15 @@ inline void *my_memset(void *dest, int ch, ::std::size_t count) noexcept
 }
 
 inline
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcmp)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcmp)
 	constexpr
-#endif
 #endif
 	int
 	my_memcmp(void const *dest, void const *src, ::std::size_t count) noexcept
 {
 	return
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcmp)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcmp)
 		__builtin_memcmp
-#else
-		::std::memcmp
-#endif
 #else
 		::std::memcmp
 #endif
