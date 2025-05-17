@@ -1364,13 +1364,13 @@ public:
 		return this->subview_unchecked(pos1, count1) <=> other.subview_unchecked(pos2, count2);
 	}
   
-	inline constexpr basic_string& trim_left() noexcept
+	inline constexpr basic_string& trim_right() noexcept
 	{
 		const char_type whitespace[] = { ' ', '\t', '\n', '\r', '\f', '\v' };
-		size_type pos = find_first_not_of(whitespace, 0, sizeof(whitespace));
+		size_type pos = find_last_not_of(whitespace, npos, sizeof(whitespace));
 		if (pos != npos)
 		{
-			erase(this->begin(), this->begin() + pos);
+			erase(this->begin() + pos + 1, this->end());
 		}
 		else
 		{
