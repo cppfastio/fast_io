@@ -1363,6 +1363,21 @@ public:
 	{
 		return this->subview_unchecked(pos1, count1) <=> other.subview_unchecked(pos2, count2);
 	}
+  
+	inline constexpr basic_string& trim_left() noexcept
+	{
+		const char_type whitespace[] = { ' ', '\t', '\n', '\r', '\f', '\v' };
+		size_type pos = find_first_not_of(whitespace, 0, sizeof(whitespace));
+		if (pos != npos)
+		{
+			erase(this->begin(), this->begin() + pos);
+		}
+		else
+		{
+			clear();
+		}
+		return *this;
+	}
 
 	template <typename Operation>
 	inline constexpr void resize_and_overwrite(size_type count, Operation op) noexcept
