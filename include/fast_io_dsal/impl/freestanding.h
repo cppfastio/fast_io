@@ -287,12 +287,8 @@ inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const &ele)
 			if (!__builtin_is_constant_evaluated())
 #endif
 			{
-#ifdef __has_builtin
-#if __has_builtin(__builtin_memset)
+#if FAST_IO_HAS_BUILTIN(__builtin_memset)
 				__builtin_memset
-#else
-				::std::memset
-#endif
 #else
 				::std::memset
 #endif

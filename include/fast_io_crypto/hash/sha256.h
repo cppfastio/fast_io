@@ -152,9 +152,9 @@ inline
 	!defined(__clang__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
 #include "sha256_x86_sha_extensions.h"
 #include "sha256_simd16.h"
-#elif __has_builtin(__builtin_ia32_sha256rnds2) && __has_builtin(__builtin_ia32_pshufd) &&  \
-	__has_builtin(__builtin_ia32_palignr128) && __has_builtin(__builtin_ia32_sha256msg1) && \
-	__has_builtin(__builtin_ia32_sha256msg2) && __has_builtin(__builtin_ia32_pshufb128) &&  \
+#elif FAST_IO_HAS_BUILTIN(__builtin_ia32_sha256rnds2) && FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufd) &&  \
+	FAST_IO_HAS_BUILTIN(__builtin_ia32_palignr128) && FAST_IO_HAS_BUILTIN(__builtin_ia32_sha256msg1) && \
+	FAST_IO_HAS_BUILTIN(__builtin_ia32_sha256msg2) && FAST_IO_HAS_BUILTIN(__builtin_ia32_pshufb128) &&  \
 	(!defined(__clang__) || (defined(__SSE4_2__) && defined(__SHA__)))
 #include "sha256_x86_sha_extensions.h"
 #elif defined(__SSE2__) || defined(__wasm_simd128__)

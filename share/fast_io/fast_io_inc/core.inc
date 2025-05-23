@@ -5,6 +5,8 @@ using ::fast_io::char_literal_v;
 using ::fast_io::pr_rsv_size;
 using ::fast_io::pr_rsv_to_iterator_unchecked;
 
+using ::fast_io::io_alias_type_t;
+
 using ::fast_io::io_reserve_type_t;
 using ::fast_io::io_reserve_type;
 using ::fast_io::print_alias_define;
@@ -22,12 +24,27 @@ using ::fast_io::scan_context_eof_define;
 using ::fast_io::unreachable;
 using ::fast_io::noexcept_call;
 
+using ::fast_io::little_endian;
+using ::fast_io::big_endian;
+using ::fast_io::byte_swap;
+
 using ::fast_io::error;
+using ::fast_io::error_type_t;
+using ::fast_io::error_type;
+using ::fast_io::error_domain;
+using ::fast_io::is_domain;
+using ::fast_io::to_code;
+using ::fast_io::throw_parse_code;
+using ::fast_io::parse_domain_value;
+
 using ::fast_io::cstr_len;
 using ::fast_io::cstr_nlen;
 
 using ::fast_io::parse_by_scan;
 using ::fast_io::parse_code;
+
+using ::fast_io::io_dup;
+using ::fast_io::open_mode;
 
 #if !defined(__clang__) // The gcc and msvc module does not support non-exported functions adl matching
 using ::fast_io::input_stream_ref_define;
@@ -131,6 +148,9 @@ using ::fast_io::manipulators::scalar_manip_t;
 using ::fast_io::manipulators::member_function_pointer_holder_t;
 using ::fast_io::manipulators::whole_get_t;
 
+using ::fast_io::manipulators::leb128_get;
+using ::fast_io::manipulators::leb128_put;
+
 using ::fast_io::manipulators::boolalpha;
 
 using ::fast_io::manipulators::pointervw;
@@ -143,6 +163,8 @@ using ::fast_io::manipulators::os_c_str;
 using ::fast_io::manipulators::os_c_str_carr;
 
 using ::fast_io::manipulators::rgvw;
+
+using ::fast_io::manipulators::cond;
 
 using ::fast_io::manipulators::code_cvt;
 using ::fast_io::manipulators::code_cvt_os_c_str;

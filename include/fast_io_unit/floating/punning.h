@@ -589,12 +589,8 @@ inline constexpr punning_result<flt> get_punned_result(flt f) noexcept
 	constexpr mantissa_type exponent_mask{(static_cast<mantissa_type>(1) << ebits) - 1};
 
 	auto unwrap =
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_bit_cast)
+#if FAST_IO_HAS_BUILTIN(__builtin_bit_cast)
 		__builtin_bit_cast(mantissa_type, f)
-#else
-		bit_cast<mantissa_type>(f)
-#endif
 #elif defined(_MSC_VER) && __cpp_lib_bit_cast >= 201806L
 		__builtin_bit_cast(mantissa_type, f)
 #else

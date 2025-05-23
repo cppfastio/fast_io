@@ -324,12 +324,8 @@ inline int my_fclose_impl(FILE *fp) noexcept
 {
 	if constexpr (family == c_family::standard || family == c_family::emulated)
 	{
-#ifdef __has_builtin
-#if __has_builtin(__builtin_fclose)
+#if FAST_IO_HAS_BUILTIN(__builtin_fclose)
 		return __builtin_fclose(fp);
-#else
-		return fclose(fp);
-#endif
 #else
 		return fclose(fp);
 #endif
@@ -339,12 +335,8 @@ inline int my_fclose_impl(FILE *fp) noexcept
 #if defined(_MSC_VER) || defined(_UCRT)
 		return noexcept_call(_fclose_nolock, fp);
 #else
-#ifdef __has_builtin
-#if __has_builtin(__builtin_fclose)
+#if FAST_IO_HAS_BUILTIN(__builtin_fclose)
 		return __builtin_fclose(fp);
-#else
-		return fclose(fp);
-#endif
 #else
 		return fclose(fp);
 #endif
@@ -439,12 +431,8 @@ inline void my_c_io_flush_impl(FILE *fp)
 #else
 	if constexpr (family == c_family::standard)
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_fflush)
+#if FAST_IO_HAS_BUILTIN(__builtin_fflush)
 		if (__builtin_fflush(fp))
-#else
-		if (fflush(fp))
-#endif
 #else
 		if (fflush(fp))
 #endif
@@ -574,12 +562,8 @@ inline ::fast_io::intfpos_t my_c_io_seek_impl(FILE *fp, ::fast_io::intfpos_t off
 			_fseeki64(fp, offset, static_cast<int>(s))
 #elif defined(__USE_LARGEFILE64)
 			noexcept_call(fseeko64, fp, offset, static_cast<int>(s))
-#elif defined(__has_builtin)
-#if __has_builtin(__builtin_fseeko)
+#elif FAST_IO_HAS_BUILTIN(__builtin_fseeko)
 			__builtin_fseeko(fp, offset, static_cast<int>(s))
-#else
-			fseeko(fp, offset, static_cast<int>(s))
-#endif
 #else
 			fseeko(fp, offset, static_cast<int>(s))
 #endif
@@ -590,12 +574,8 @@ inline ::fast_io::intfpos_t my_c_io_seek_impl(FILE *fp, ::fast_io::intfpos_t off
 			noexcept_call(_ftelli64, fp)
 #elif defined(__USE_LARGEFILE64)
 			noexcept_call(ftello64, fp)
-#elif defined(__has_builtin)
-#if __has_builtin(__builtin_ftello)
+#elif FAST_IO_HAS_BUILTIN(__builtin_ftello)
 			__builtin_ftello(fp)
-#else
-			ftello(fp)
-#endif
 #else
 			ftello(fp)
 #endif

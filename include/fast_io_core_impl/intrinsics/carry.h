@@ -74,14 +74,12 @@ inline constexpr T addc(T a, T b, bool carryin, bool &carryout) noexcept
 				return (static_cast<long long unsigned>(reshigh) << 32u) | reslow;
 			}
 		}
-#elif defined(__has_builtin)
-#if __has_builtin(__builtin_add_overflow)
+#elif  FAST_IO_HAS_BUILTIN(__builtin_add_overflow)
 		T s;
 		auto c1 = __builtin_add_overflow(a, b, __builtin_addressof(s));
 		auto c2 = __builtin_add_overflow(s, carryin, __builtin_addressof(s));
 		carryout = c1 | c2;
 		return s;
-#endif
 #endif
 	}
 	a += b;
@@ -152,14 +150,12 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 				return (static_cast<long long unsigned>(reshigh) << 32u) | reslow;
 			}
 		}
-#elif defined(__has_builtin)
-#if __has_builtin(__builtin_sub_overflow)
+#elif FAST_IO_HAS_BUILTIN(__builtin_sub_overflow)
 		T s;
 		auto c1 = __builtin_sub_overflow(a, b, __builtin_addressof(s));
 		auto c2 = __builtin_sub_overflow(s, carryin, __builtin_addressof(s));
 		carryout = c1 | c2;
 		return s;
-#endif
 #endif
 	}
 	b = a - b;

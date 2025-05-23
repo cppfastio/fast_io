@@ -443,8 +443,7 @@ inline constexpr ::std::uint_least32_t days_per_4_year{365LL * 4LL + 1LL};
 template <::std::signed_integral T>
 inline constexpr T sub_overflow(T a, T b) noexcept
 {
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_sub_overflow)
+#if FAST_IO_HAS_BUILTIN(__builtin_sub_overflow)
 	T c;
 	if (__builtin_sub_overflow(a, b, __builtin_addressof(c))) [[unlikely]]
 	{
@@ -453,23 +452,6 @@ inline constexpr T sub_overflow(T a, T b) noexcept
 	return c;
 #else
 
-	if (b <= 0) [[unlikely]]
-	{
-		if (a > ::std::numeric_limits<T>::max() + b) [[unlikely]]
-		{
-			fast_terminate();
-		}
-	}
-	else
-	{
-		if (a < ::std::numeric_limits<T>::min() + b) [[unlikely]]
-		{
-			fast_terminate();
-		}
-	}
-	return a - b;
-#endif
-#else
 	if (b <= 0) [[unlikely]]
 	{
 		if (a > ::std::numeric_limits<T>::max() + b) [[unlikely]]
@@ -637,14 +619,10 @@ inline constexpr ::std::uint_least8_t c_weekday_tb[]{0, 3, 2, 5, 0, 3, 5, 1, 4, 
 inline constexpr ::std::uint_least8_t c_weekday_impl(::std::int_least64_t year, ::std::uint_least8_t month_minus1,
 													 ::std::uint_least8_t day) noexcept
 {
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_unreachable)
 	if (12u <= month_minus1)
 	{
-		__builtin_unreachable();
+		::fast_io::unreachable();
 	}
-#endif
-#endif
 	return static_cast<::std::uint_least8_t>(
 		static_cast<::std::uint_least64_t>(
 			static_cast<::std::uint_least64_t>(year) + static_cast<::std::uint_least64_t>(year / 4) -
@@ -656,14 +634,10 @@ inline constexpr ::std::uint_least8_t c_weekday_impl(::std::int_least64_t year, 
 inline constexpr ::std::uint_least8_t weekday_impl(::std::int_least64_t year, ::std::uint_least8_t month_minus1,
 												   ::std::uint_least8_t day) noexcept
 {
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_unreachable)
 	if (12u <= month_minus1)
 	{
-		__builtin_unreachable();
+		::fast_io::unreachable();
 	}
-#endif
-#endif
 	return static_cast<::std::uint_least8_t>(
 		static_cast<::std::uint_least64_t>(
 			static_cast<::std::uint_least64_t>(year) + static_cast<::std::uint_least64_t>(year / 4) -
@@ -1576,11 +1550,7 @@ scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type> &state, ch
 		break;
 	}
 	default:;
-#ifdef __has_builtin
-#if __has_builtin(__builtin_unreachable)
-		__builtin_unreachable();
-#endif
-#endif
+		::fast_io::unreachable();
 	}
 	return {begin, parse_code::ok};
 }
@@ -1842,11 +1812,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 	case scan_timestamp_context_phase::ok:
 		return {begin, parse_code::ok};
 	}
-#ifdef __has_builtin
-#if __has_builtin(__builtin_unreachable)
-	__builtin_unreachable();
-#endif
-#endif
+	::fast_io::unreachable();
 #undef FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE
 }
 

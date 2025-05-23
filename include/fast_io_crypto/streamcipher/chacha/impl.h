@@ -2,7 +2,7 @@
 
 #include "scalar.h"
 #if (defined(__GNUC__) || defined(__clang__)) && (defined(__SSE__) || defined(__wasm_simd128__))
-#if __has_builtin(__builtin_shufflevector)
+#if FAST_IO_HAS_BUILTIN(__builtin_shufflevector)
 #include "simd16.h"
 #else
 #include "runtime.h"

@@ -59,21 +59,13 @@ inline ::std::size_t c_fwrite_unlocked_impl(void const *__restrict begin, ::std:
 #if defined(__CYGWIN__)
 		my_cygwin_fwrite_unlocked(begin, type_size, count, fp)
 #elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD)))
-#if !defined(fwrite_unlocked) && defined(__has_builtin)
-#if __has_builtin(__builtin_fwrite_unlocked)
+#if !defined(fwrite_unlocked) && FAST_IO_HAS_BUILTIN(__builtin_fwrite_unlocked)
 		__builtin_fwrite_unlocked(begin, type_size, count, fp)
 #else
 		fwrite_unlocked(begin, type_size, count, fp)
 #endif
-#else
-		fwrite_unlocked(begin, type_size, count, fp)
-#endif
-#elif !defined(fwrite) && defined(__has_builtin)
-#if __has_builtin(__builtin_fwrite)
+#elif !defined(fwrite) && FAST_IO_HAS_BUILTIN(__builtin_fwrite)
 		__builtin_fwrite(begin, type_size, count, fp)
-#else
-		fwrite(begin, type_size, count, fp)
-#endif
 #else
 		fwrite(begin, type_size, count, fp)
 #endif
@@ -114,21 +106,14 @@ inline ::std::size_t c_fread_unlocked_impl(void *__restrict begin, ::std::size_t
 #if defined(__CYGWIN__)
 		my_cygwin_fread_unlocked(begin, type_size, count, fp)
 #elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD)))
-#if !defined(fread_unlocked) && defined(__has_builtin)
-#if __has_builtin(__builtin_fread_unlocked)
+#if !defined(fread_unlocked) && FAST_IO_HAS_BUILTIN(__builtin_fread_unlocked)
 		__builtin_fread_unlocked(begin, type_size, count, fp)
 #else
 		fread_unlocked(begin, type_size, count, fp)
 #endif
-#else
-		fread_unlocked(begin, type_size, count, fp)
-#endif
-#elif !defined(fread) && defined(__has_builtin)
-#if __has_builtin(__builtin_fread)
+
+#elif !defined(fread) && FAST_IO_HAS_BUILTIN(__builtin_fread)
 		__builtin_fread(begin, type_size, count, fp)
-#else
-		fread(begin, type_size, count, fp)
-#endif
 #else
 		fread(begin, type_size, count, fp)
 #endif
@@ -139,21 +124,13 @@ inline ::std::size_t c_fread_unlocked_impl(void *__restrict begin, ::std::size_t
 #if defined(__CYGWIN__)
 			__sferror(fp)
 #elif defined(__USE_MISC) || defined(__BSD_VISIBLE) || defined(__DARWIN_C_LEVEL)
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_ferror_unlocked)
+#if FAST_IO_HAS_BUILTIN(__builtin_ferror_unlocked)
 			__builtin_ferror_unlocked(fp)
 #else
 			ferror_unlocked(fp)
 #endif
-#else
-			ferror_unlocked(fp)
-#endif
-#elif !defined(ferror) && defined(__has_builtin)
-#if __has_builtin(__builtin_ferror)
+#elif !defined(ferror) && FAST_IO_HAS_BUILTIN(__builtin_ferror)
 			__builtin_ferror(fp)
-#else
-			ferror(fp)
-#endif
 #else
 			ferror(fp)
 #endif
@@ -181,12 +158,8 @@ inline ::std::size_t c_fwrite_impl(void const *__restrict begin, ::std::size_t t
 #else
 
 	::std::size_t written_count{
-#if !defined(fwrite) && defined(__has_builtin)
-#if __has_builtin(__builtin_fwrite)
+#if !defined(fwrite) && FAST_IO_HAS_BUILTIN(__builtin_fwrite)
 		__builtin_fwrite(begin, type_size, count, fp)
-#else
-		fwrite(begin, type_size, count, fp)
-#endif
 #else
 		fwrite(begin, type_size, count, fp)
 #endif
@@ -218,12 +191,8 @@ inline ::std::size_t c_fread_impl(void *__restrict begin, ::std::size_t type_siz
 	}
 #else
 	::std::size_t read_count{
-#if !defined(fread) && defined(__has_builtin)
-#if __has_builtin(__builtin_fread)
+#if !defined(fread) && FAST_IO_HAS_BUILTIN(__builtin_fread)
 		__builtin_fread(begin, type_size, count, fp)
-#else
-		fread(begin, type_size, count, fp)
-#endif
 #else
 		fread(begin, type_size, count, fp)
 #endif
@@ -231,12 +200,8 @@ inline ::std::size_t c_fread_impl(void *__restrict begin, ::std::size_t type_siz
 	if (read_count == 0) [[unlikely]]
 	{
 		if (
-#if !defined(ferror) && defined(__has_builtin)
-#if __has_builtin(__builtin_ferror)
+#if !defined(ferror) && FAST_IO_HAS_BUILTIN(__builtin_ferror)
 			__builtin_ferror(fp)
-#else
-			ferror(fp)
-#endif
 #else
 			ferror(fp)
 #endif

@@ -114,14 +114,10 @@ struct md5_sha_common_impl
 		::std::size_t const buffer_remain_space{static_cast<::std::size_t>(block_size - buffer_offset)};
 		if (diff < buffer_remain_space) [[likely]]
 		{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_unreachable)
 			if (diff >= block_size)
 			{
-				__builtin_unreachable();
+				::fast_io::unreachable();
 			}
-#endif
-#endif
 			::fast_io::details::non_overlapped_copy_n(block_first, diff, buffer + buffer_offset);
 			buffer_offset += diff;
 		}
@@ -147,27 +143,19 @@ struct md5_sha_common_impl
 		if (buffer_off <= sz)
 		{
 			::std::size_t const to_fill{static_cast<::std::size_t>(sz - buffer_off)};
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_unreachable)
 			if (to_fill > sz)
 			{
-				__builtin_unreachable();
+				::fast_io::unreachable();
 			}
-#endif
-#endif
 			::fast_io::none_secure_clear(this->buffer + buffer_off, to_fill);
 			this->append_sentinal(buffer_offs);
 			return;
 		}
 		::std::size_t const to_fill{static_cast<::std::size_t>(block_size - buffer_off)};
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_unreachable)
 		if (to_fill > counter_type_size)
 		{
-			__builtin_unreachable();
+			::fast_io::unreachable();
 		}
-#endif
-#endif
 		::fast_io::none_secure_clear(this->buffer + buffer_off, to_fill);
 		this->hasher.update_blocks(this->buffer, this->buffer + block_size);
 		::fast_io::none_secure_clear(this->buffer, sz);

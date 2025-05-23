@@ -39,12 +39,8 @@ inline constexpr ::std::size_t cstr_len(char_type const *cstr) noexcept
 	{
 		if constexpr (::std::same_as<char_type, char>)
 		{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_strlen)
+#if FAST_IO_HAS_BUILTIN(__builtin_strlen)
 			return __builtin_strlen(cstr);
-#else
-			return ::std::strlen(cstr);
-#endif
 #else
 			return ::std::strlen(cstr);
 #endif
@@ -67,12 +63,8 @@ inline constexpr ::std::size_t cstr_nlen(char_type const *cstr, ::std::size_t n)
 	{
 		if constexpr (::std::same_as<char_type, char>)
 		{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_strnlen)
+#if FAST_IO_HAS_BUILTIN(__builtin_strnlen)
 			return __builtin_strnlen(cstr, n);
-#else
-			return details::dummy_cstr_nlen(cstr, n);
-#endif
 #else
 			return details::dummy_cstr_nlen(cstr, n);
 #endif

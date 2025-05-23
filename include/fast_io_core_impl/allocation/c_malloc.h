@@ -39,12 +39,8 @@ public:
 			n = 1;
 		}
 		void *p =
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_malloc)
+#if FAST_IO_HAS_BUILTIN(__builtin_malloc)
 			__builtin_malloc(n)
-#else
-			::std::malloc(n)
-#endif
 #else
 			::std::malloc(n)
 #endif
@@ -66,12 +62,8 @@ public:
 		}
 		::std::size_t const to_allocate{n};
 		p =
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_realloc)
+#if FAST_IO_HAS_BUILTIN(__builtin_realloc)
 			__builtin_realloc
-#else
-			::std::realloc
-#endif
 #else
 			::std::realloc
 #endif
@@ -93,12 +85,8 @@ public:
 			n = 1;
 		}
 		void *p =
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_calloc)
+#if FAST_IO_HAS_BUILTIN(__builtin_calloc)
 			__builtin_calloc
-#else
-			::std::calloc
-#endif
 #else
 			::std::calloc
 #endif
@@ -142,12 +130,8 @@ public:
 		if (alignment <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 		{
 			p =
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_malloc)
+#if FAST_IO_HAS_BUILTIN(__builtin_malloc)
 				__builtin_malloc
-#else
-				::std::malloc
-#endif
 #else
 				::std::malloc
 #endif
@@ -175,12 +159,8 @@ public:
 		if (alignment <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 		{
 			p =
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_realloc)
+#if FAST_IO_HAS_BUILTIN(__builtin_realloc)
 				__builtin_realloc
-#else
-				::std::realloc
-#endif
 #else
 				::std::realloc
 #endif
@@ -205,12 +185,8 @@ public:
 		}
 		if (alignment <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 		{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_free)
+#if FAST_IO_HAS_BUILTIN(__builtin_free)
 			__builtin_free
-#else
-			::std::free
-#endif
 #else
 			::std::free
 #endif
@@ -228,12 +204,8 @@ public:
 		{
 			return;
 		}
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_free)
-		__builtin_free
-#else
-		::std::free
-#endif
+#if FAST_IO_HAS_BUILTIN(__builtin_free)
+                __builtin_free
 #else
 		::std::free
 #endif
