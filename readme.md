@@ -1,6 +1,6 @@
 # fast_io
 
-fast_io represents a cutting-edge input/output (I/O) library for C++20, designed to achieve [exceptional speed](readme.md#Benchmarks). Its primary purpose is to supersede the widely used `<iostream>` and `<cstdio>` libraries. This header-only library is distributed under the permissive [MIT license](license.txt), simplifying integration into any project. However, its utilization mandates a C++20 compiler with support for concepts.
+fast_io represents a cutting-edge input/output (I/O) library for C++20, designed to achieve [exceptional speed](readme.md#Benchmarks). Its primary purpose is to supersede the widely used `<iostream>` and `<cstdio>` libraries. This header-only library is distributed under the permissive [Anti-Tivo License](license.txt), simplifying integration into any project. However, its utilization mandates a C++20 compiler with support for concepts.
 
 *Although the original fast_io repository has been archived due to accumulated git data, historical commits remain accessible.*
 *Past commits were stored [here](https://bitbucket.org/ejsvifq_mabmip/fast_io_archive-2022-01-23).*
