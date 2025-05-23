@@ -109,7 +109,7 @@ inline constexpr ::std::uint_least32_t crc32c_tb[256]{
 // clang-format on
 
 inline constexpr bool support_hardware_crc32{
-#if defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32b)
+#if defined(__ARM_FEATURE_CRC32) && FAST_IO_HAS_BUILTIN(__builtin_arm_crc32b)
 	true
 #endif
 };
@@ -119,7 +119,7 @@ inline constexpr ::std::uint_least32_t calculate_crc32_hardware(::std::uint_leas
 {
 	for (; i != ed; ++i)
 	{
-#if defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32b)
+#if defined(__ARM_FEATURE_CRC32) && FAST_IO_HAS_BUILTIN(__builtin_arm_crc32b)
 		crc = __builtin_arm_crc32b(crc, static_cast<::std::uint_least8_t>(*i));
 #else
 		crc = crc32_tb[(static_cast<::std::uint_least32_t>(*i) ^ crc) & 0xff] ^ (crc >> 8);
@@ -129,8 +129,8 @@ inline constexpr ::std::uint_least32_t calculate_crc32_hardware(::std::uint_leas
 }
 
 inline constexpr bool support_hardware_crc32c{
-#if defined(__CRC32__) && __has_builtin(__builtin_ia32_crc32qi) ||          \
-	defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32cb) || \
+#if defined(__CRC32__) && FAST_IO_HAS_BUILTIN(__builtin_ia32_crc32qi) ||          \
+	defined(__ARM_FEATURE_CRC32) && FAST_IO_HAS_BUILTIN(__builtin_arm_crc32cb) || \
 	((defined(_MSC_VER) && !defined(__clang__)) && !(!defined(_M_IX86) && !defined(_M_X64) && !(defined(_M_ARM64) && defined(USE_SOFT_INTRINSICS))))
 	true
 #endif
@@ -141,9 +141,9 @@ inline constexpr ::std::uint_least32_t calculate_crc32c_hardware(::std::uint_lea
 {
 	for (; i != ed; ++i)
 	{
-#if defined(__CRC32__) && __has_builtin(__builtin_ia32_crc32qi)
+#if defined(__CRC32__) && FAST_IO_HAS_BUILTIN(__builtin_ia32_crc32qi)
 		crc = __builtin_ia32_crc32qi(crc, static_cast<::std::uint_least8_t>(*i));
-#elif defined(__ARM_FEATURE_CRC32) && __has_builtin(__builtin_arm_crc32cb)
+#elif defined(__ARM_FEATURE_CRC32) && FAST_IO_HAS_BUILTIN(__builtin_arm_crc32cb)
 		crc = __builtin_arm_crc32cb(crc, static_cast<::std::uint_least8_t>(*i));
 #elif (defined(_MSC_VER) && !defined(__clang__)) && !(!defined(_M_IX86) && !defined(_M_X64) && !(defined(_M_ARM64) && defined(USE_SOFT_INTRINSICS)))
 		crc = ::_mm_crc32_u8(crc, static_cast<::std::uint_least8_t>(*i));

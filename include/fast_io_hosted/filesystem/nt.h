@@ -64,7 +64,7 @@ inline
 {
 	if (__builtin_is_constant_evaluated())
 	{
-		return new nt_dirent;
+		return ::new nt_dirent;
 	}
 	else
 	{
@@ -85,7 +85,7 @@ inline
 {
 	if (__builtin_is_constant_evaluated())
 	{
-		delete ptr;
+		::delete ptr;
 	}
 	else
 	{

@@ -20,12 +20,8 @@ namespace details
 inline environ_timezone_name environ_localtimezone_impl() noexcept
 {
 	auto ptr{reinterpret_cast<::fast_io::environ_timezone_name::char8_const_may_alias_ptr>(
-#if !defined(__has_builtin)
-#if __has_builtin(__builtin_getenv)
+#if FAST_IO_HAS_BUILTIN(__builtin_getenv)
 		__builtin_getenv
-#else
-		::std::getenv
-#endif
 #else
 		::std::getenv
 #endif

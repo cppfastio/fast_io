@@ -117,6 +117,5 @@ template <::std::integral I>
 inline void fast_exit(I ret) noexcept
 {
 	system_call_no_return<__NR_exit>(ret);
-	__builtin_unreachable();
 }
 } // namespace fast_io

@@ -62,13 +62,11 @@ sha512_simd16_compute_message_2rounds(::fast_io::intrinsics::simd_vector<::std::
 	s0.store(wt);
 }
 
-#if defined(__has_builtin)
-#if __has_cpp_attribute(__gnu__::__target__) && __has_builtin(__builtin_shufflevector) && defined(__SSE2__) && \
+#if __has_cpp_attribute(__gnu__::__target__) && FAST_IO_HAS_BUILTIN(__builtin_shufflevector) && defined(__SSE2__) && \
 	!defined(__AVX2__) && defined(__ELF__) && defined(FAST_IO_RUNTIME_DISPATCH)
 [[__gnu__::__target__("default")]]
 #elif __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
-#endif
 #elif __has_cpp_attribute(msvc::flatten)
 [[msvc::flatten]]
 #endif

@@ -216,3 +216,11 @@ Internal assert macros for fuzzing fast_io.
 #else
 #define FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 #endif
+
+#pragma push_macro("FAST_IO_HAS_BUILTIN")
+#undef FAST_IO_HAS_BUILTIN
+#ifdef __has_builtin
+# define FAST_IO_HAS_BUILTIN(...) __has_builtin(__VA_ARGS__)
+#else
+# define FAST_IO_HAS_BUILTIN(...) 0
+#endif

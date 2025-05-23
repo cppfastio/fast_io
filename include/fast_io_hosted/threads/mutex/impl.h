@@ -24,11 +24,7 @@ using native_mutex =
 	mcf_gthread_mutex
 #elif (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 #if !defined(__CYGWIN__) && !defined(__BIONIC__) && defined(_WIN32_WINDOWS)
-#if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
-	win32_srwlock
-#else
 	win32_critical_section
-#endif
 #else
 #if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0600)
 	rtl_srwlock

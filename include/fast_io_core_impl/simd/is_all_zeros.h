@@ -87,7 +87,7 @@ inline
 		if constexpr (sizeof(::fast_io::intrinsics::simd_vector<T, n>) == 16)
 		{
 #if defined(__has_builtin) && __has_cpp_attribute(__gnu__::__vector_size__)
-#if defined(__x86_64__) && defined(__SSE4_1__) && __has_builtin(__builtin_ia32_pmovmskb128)
+#if defined(__x86_64__) && defined(__SSE4_1__) && __has_builtin(__builtin_ia32_ptestz128)
 			using x86_64_v2di [[__gnu__::__vector_size__(16)]] = long long;
 #if __has_builtin(__builtin_bit_cast)
 			return __builtin_ia32_ptestz128(__builtin_bit_cast(x86_64_v2di, vec), __builtin_bit_cast(x86_64_v2di, vec));

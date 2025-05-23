@@ -21,12 +21,8 @@ inline
 	return ::std::bit_cast<To>(src);
 #else
 	To dst;
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memcpy)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
 	__builtin_memcpy
-#else
-	::std::memcpy
-#endif
 #else
 	::std::memcpy
 #endif
@@ -247,7 +243,7 @@ inline constexpr U byte_swap(U a) noexcept
 #if (defined(__GNUC__) || defined(__clang__))
 #ifdef __SIZEOF_INT128__
 		if constexpr (sizeof(U) == 16)
-#if __has_builtin(__builtin_bswap128)
+#if FAST_IO_HAS_BUILTIN(__builtin_bswap128)
 			return __builtin_bswap128(a);
 #else
 		{

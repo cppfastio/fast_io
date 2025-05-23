@@ -8,13 +8,13 @@ struct overlapped_copy_buffer_ptr
 {
 	T *ptr;
 	inline explicit constexpr overlapped_copy_buffer_ptr(::std::size_t n) noexcept
-		: ptr(new T[n])
+		: ptr(::new T[n])
 	{}
 	inline overlapped_copy_buffer_ptr(overlapped_copy_buffer_ptr const &) = delete;
 	inline overlapped_copy_buffer_ptr &operator=(overlapped_copy_buffer_ptr const &) = delete;
 	inline constexpr ~overlapped_copy_buffer_ptr()
 	{
-		delete[] ptr;
+		::delete[] ptr;
 	}
 };
 
@@ -88,10 +88,8 @@ inline constexpr ::std::byte *bytes_copy_n(::std::byte const *first, ::std::size
 			[[likely]]
 #endif
 		{
-#if !defined(__has_builtin)
-			::std::memmove(dest, first, n);
-#elif __has_builtin(__builtin_memmove)
-			__builtin_memmove(dest, first, n);
+#if FAST_IO_HAS_BUILTIN(__builtin_memmove)
+            __builtin_memmove(dest, first, n);
 #else
 			::std::memmove(dest, first, n);
 #endif
@@ -122,10 +120,8 @@ inline constexpr ::std::byte *nonoverlapped_bytes_copy_n(::std::byte const *firs
 			[[likely]]
 #endif
 		{
-#if !defined(__has_builtin)
-			::std::memcpy(dest, first, n);
-#elif __has_builtin(__builtin_memcpy)
-			__builtin_memcpy(dest, first, n);
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
+            __builtin_memcpy(dest, first, n);
 #else
 			::std::memcpy(dest, first, n);
 #endif
@@ -157,10 +153,8 @@ inline constexpr ::std::byte const *type_punning_from_bytes(::std::byte const *_
 		else
 #endif
 		{
-#if !defined(__has_builtin)
-			::std::memcpy(__builtin_addressof(t), first, n);
-#elif __has_builtin(__builtin_memcpy)
-			__builtin_memcpy(__builtin_addressof(t), first, n);
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
+            __builtin_memcpy(__builtin_addressof(t), first, n);
 #else
 			::std::memcpy(__builtin_addressof(t), first, n);
 #endif
@@ -184,10 +178,8 @@ inline constexpr ::std::byte *type_punning_to_bytes_n(T const &__restrict first,
 		else
 #endif
 		{
-#if !defined(__has_builtin)
-			::std::memcpy(dest, __builtin_addressof(first), n);
-#elif __has_builtin(__builtin_memcpy)
-			__builtin_memcpy(dest, __builtin_addressof(first), n);
+#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
+            __builtin_memcpy(dest, __builtin_addressof(first), n);
 #else
 			::std::memcpy(dest, __builtin_addressof(first), n);
 #endif
@@ -214,12 +206,8 @@ inline constexpr ::std::byte *bytes_clear_n(::std::byte *data, ::std::size_t siz
 	}
 	else
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memset)
-		__builtin_memset(data, 0, size);
-#else
-		::std::memset(data, 0, size);
-#endif
+#if FAST_IO_HAS_BUILTIN(__builtin_memset)
+        __builtin_memset(data, 0, size);
 #else
 		::std::memset(data, 0, size);
 #endif
@@ -243,12 +231,8 @@ inline constexpr ::std::byte *bytes_fill_n(::std::byte *data, ::std::size_t size
 	}
 	else
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_memset)
-		__builtin_memset(data, static_cast<char unsigned>(val), size);
-#else
-		::std::memset(data, static_cast<char unsigned>(val), size);
-#endif
+#if FAST_IO_HAS_BUILTIN(__builtin_memset)
+         __builtin_memset(data, static_cast<char unsigned>(val), size);
 #else
 		::std::memset(data, static_cast<char unsigned>(val), size);
 #endif

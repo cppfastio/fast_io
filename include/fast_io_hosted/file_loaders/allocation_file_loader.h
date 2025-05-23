@@ -26,12 +26,8 @@ struct allocation_file_loader_closer_impl
 			::fast_io::noexcept_call(::close, fd);
 #endif
 		}
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_free)
+#if FAST_IO_HAS_BUILTIN(__builtin_free)
 		__builtin_free(address_begin);
-#else
-		::std::free(address_begin);
-#endif
 #else
 		::std::free(address_begin);
 #endif
@@ -105,12 +101,8 @@ struct load_file_allocation_guard
 	inline explicit constexpr load_file_allocation_guard() noexcept = default;
 	inline explicit load_file_allocation_guard(::std::size_t file_size)
 		: address(
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_malloc)
+#if FAST_IO_HAS_BUILTIN(__builtin_malloc)
 			  __builtin_malloc
-#else
-			  ::std::malloc
-#endif
 #else
 			  ::std::malloc
 #endif
@@ -125,12 +117,8 @@ struct load_file_allocation_guard
 	inline load_file_allocation_guard &operator=(load_file_allocation_guard const &) = delete;
 	inline ~load_file_allocation_guard()
 	{
-#if defined(__has_builtin)
-#if __has_builtin(__builtin_free)
+#if FAST_IO_HAS_BUILTIN(__builtin_free)
 		__builtin_free(address);
-#else
-		::std::free(address);
-#endif
 #else
 		::std::free(address);
 #endif

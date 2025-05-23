@@ -86,12 +86,8 @@ inline constexpr bool symbol_cmp_equal_commom(char8_t const *sym, char const *st
 		}
 		else
 		{
-#ifdef __has_builtin
-#if __has_builtin(__builtin_memcmp)
+#if FAST_IO_HAS_BUILTIN(__builtin_memcmp)
 			return __builtin_memcmp(sym, strp, N) == 0;
-#else
-			return ::std::memcmp(sym, strp, N) == 0;
-#endif
 #else
 			return ::std::memcmp(sym, strp, N) == 0;
 #endif

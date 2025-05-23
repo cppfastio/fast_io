@@ -498,7 +498,7 @@ inline constexpr char32_t utf16_surrogate_to_utf32(char16_t high, char16_t low) 
 	return static_cast<char32_t>((static_cast<::std::uint_least32_t>(high) << 10u) + low - 0x35fdc00u);
 }
 
-#if (defined(_MSC_VER) && defined(_M_AMD64) && !defined(__clang__)) || (defined(__SSE__) && defined(__x86_64__))
+#if (defined(_MSC_VER) && defined(_M_AMD64) && !defined(__clang__)) || (defined(__SSE__) && defined(__SSE2__) && defined(__x86_64__))
 template <::std::integral T, ::std::integral U>
 	requires((sizeof(T) == 1) && (sizeof(U) == 1 || sizeof(U) == 2 || sizeof(U) == 4))
 inline code_cvt_result<T, U> convert_ascii_with_sse(T const *__restrict pSrc, U *__restrict pDst) noexcept
@@ -520,7 +520,7 @@ inline code_cvt_result<T, U> convert_ascii_with_sse(T const *__restrict pSrc, U 
 		x86_64_v16qi chunk;
 		__builtin_memcpy(__builtin_addressof(chunk), pSrc, m128i_size);
 		mask = static_cast<::std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
-#if __has_builtin(__builtin_shufflevector)
+#if FAST_IO_HAS_BUILTIN(__builtin_shufflevector)
 		x86_64_v16qi half{__builtin_shufflevector(chunk, zero, 0, 16 + 0, 1, 16 + 1, 2, 16 + 2, 3, 16 + 3, 4, 16 + 4, 5,
 												  16 + 5, 6, 16 + 6, 7, 16 + 7)};
 		__builtin_memcpy(pDst, __builtin_addressof(half), m128i_size);
@@ -539,7 +539,7 @@ inline code_cvt_result<T, U> convert_ascii_with_sse(T const *__restrict pSrc, U 
 		x86_64_v16qi chunk;
 		__builtin_memcpy(__builtin_addressof(chunk), pSrc, m128i_size);
 		mask = static_cast<::std::uint_least32_t>(__builtin_ia32_pmovmskb128(chunk));
-#if __has_builtin(__builtin_shufflevector)
+#if FAST_IO_HAS_BUILTIN(__builtin_shufflevector)
 		x86_64_v16qi half_result{__builtin_shufflevector(chunk, zero, 0, 16 + 0, 1, 16 + 1, 2, 16 + 2, 3, 16 + 3, 4,
 														 16 + 4, 5, 16 + 5, 6, 16 + 6, 7, 16 + 7)};
 		x86_64_v8hi half;
