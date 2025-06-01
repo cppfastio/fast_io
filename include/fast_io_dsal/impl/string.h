@@ -1538,13 +1538,13 @@ public:
 	{
 		auto beginptr{this->imp.begin_ptr};
 		auto currptr{this->imp.curr_ptr};
-		return cstring_view_type(beginptr, static_cast<size_type>(currptr - beginptr)).trim_prefix_subview(traits);
+		return cstring_view_type(::fast_io::containers::null_terminated, beginptr, static_cast<size_type>(currptr - beginptr)).trim_prefix_subview(traits);
 	}
 	inline constexpr cstring_view_type trim_prefix_subview_c_space() const noexcept
 	{
 		auto beginptr{this->imp.begin_ptr};
 		auto currptr{this->imp.curr_ptr};
-		return cstring_view_type(beginptr, static_cast<size_type>(currptr - beginptr)).trim_prefix_subview_c_space();
+		return cstring_view_type(::fast_io::containers::null_terminated, beginptr, static_cast<size_type>(currptr - beginptr)).trim_prefix_subview_c_space();
 	}
 
 	template <typename charcate>
