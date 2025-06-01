@@ -218,7 +218,11 @@ struct to_c_common_fn_impl
 #ifdef __cpp_static_call_operator
 	static
 #endif
-		inline constexpr char_type operator()(char_type ch) noexcept
+		inline constexpr char_type operator()(char_type ch)
+#ifndef __cpp_static_call_operator
+			const
+#endif
+		noexcept
 	{
 		using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 		if constexpr (fam == ::fast_io::char_category::char_category_family::c_lower)
