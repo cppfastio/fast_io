@@ -486,11 +486,11 @@ struct to_c_common_fn_impl
 			}
 			else if constexpr (!::std::same_as<char_type, char32_t> && sizeof(char_type) == sizeof(char32_t))
 			{
-				return static_cast<char_type>(to_c_halfwidth(static_cast<char32_t>(ch)));
+				return static_cast<char_type>(operator()(static_cast<char32_t>(ch)));
 			}
 			else if constexpr (::std::signed_integral<char_type>)
 			{
-				return static_cast<char_type>(to_c_halfwidth(static_cast<unsigned_char_type>(ch)));
+				return static_cast<char_type>(operator()(static_cast<unsigned_char_type>(ch)));
 			}
 			else if constexpr (::std::same_as<char_type, wchar_t> && ::fast_io::details::wide_is_none_utf_endian)
 			{
