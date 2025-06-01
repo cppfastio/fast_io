@@ -479,7 +479,6 @@ struct to_c_common_fn_impl
 		}
 		else if constexpr (fam == ::fast_io::char_category::char_category_family::c_halfwidth)
 		{
-			using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 			if constexpr (sizeof(char_type) < sizeof(char32_t))
 			{
 				return ch;
