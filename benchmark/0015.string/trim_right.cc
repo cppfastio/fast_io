@@ -1,4 +1,5 @@
-﻿#include <fast_io_dsal/string.h>
+﻿#define fast_io_enable_trim_right
+#include <fast_io_dsal/string.h>
 #include <fast_io.h>
 #include <fast_io_device.h>
 #include <fast_io_driver/timer.h>

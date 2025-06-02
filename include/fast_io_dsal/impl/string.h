@@ -1512,7 +1512,7 @@ public:
 		return this->trim_suffix(::fast_io::char_category::c_space{});
 	}
 
-#if 0
+#if defined(fast_io_enable_trim_right)
 	inline constexpr basic_string &trim_right() noexcept
 	{
 		if (empty())
