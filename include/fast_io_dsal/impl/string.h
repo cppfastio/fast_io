@@ -1512,6 +1512,43 @@ public:
 		return this->trim_suffix(::fast_io::char_category::c_space{});
 	}
 
+#if 0
+inline constexpr basic_string& trim_right() noexcept    
+{    
+    if (empty()) return *this;    
+        
+    auto first = data();    
+    auto last = data() + size();    
+        
+    // 使用 find_space_common_impl 查找最后一个非空白字符后的位置  
+    char_type const* trim_pos = last;  
+    char_type const* current = first;  
+      
+    while (current < last) {  
+        auto next_space = ::fast_io::details::find_space_common_impl<false,false>(current, last);  
+        if (next_space == last) {  
+            // 没有更多空白字符  
+            trim_pos = last;  
+            break;  
+        }  
+          
+        auto next_non_space = ::fast_io::details::find_space_common_impl<false,true>(next_space, last);  
+        if (next_non_space == last) {  
+            // 从 next_space 到末尾都是空白字符  
+            trim_pos = next_space;  
+            break;  
+        }  
+          
+        current = next_non_space;  
+    }  
+        
+    // Convert const pointer back to iterator for erase  
+    auto trim_iterator = begin() + (trim_pos - first);  
+    erase(trim_iterator, end());    
+    return *this;    
+}
+#endif
+
 	template <typename charcate>
 		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
 			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
