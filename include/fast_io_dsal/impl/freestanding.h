@@ -64,7 +64,7 @@ inline constexpr Iter2 overlapped_copy(Iter1 first, Iter1 last, Iter2 dest) noex
 			}
 		}
 
-	if (__builtin_is_constant_evaluated())
+		if (__builtin_is_constant_evaluated())
 		{
 			::fast_io::details::overlapped_copy_buffer_ptr<iter2valuetype> tempbuffer(static_cast<::std::size_t>(::std::distance(first, last)));
 			auto buffered{::std::copy(first, last, tempbuffer.ptr)};
