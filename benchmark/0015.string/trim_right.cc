@@ -1,10 +1,66 @@
-﻿#define fast_io_enable_trim_right
+﻿
 #include <fast_io_dsal/string.h>
 #include <fast_io.h>
 #include <fast_io_device.h>
 #include <fast_io_driver/timer.h>
 #include <cassert>
 using namespace fast_io::io;
+
+namespace fast_io
+{
+
+/// Trims whitespace characters from the end of a fast_io::basic_string
+/// @tparam CharT Character type (must be std::integral)
+/// @tparam Allocator Allocator type (defaults to native_global_allocator)
+/// @param str The string to trim (modified in-place)
+/// @return Reference to the modified string
+template <::std::integral CharT, typename Allocator = native_global_allocator>
+inline constexpr basic_string<CharT, Allocator> &
+trim_right(basic_string<CharT, Allocator> &str) noexcept
+{
+	if (str.empty())
+	{
+		return str;
+	}
+
+	auto first = str.data();
+	auto last = str.data() + str.size();
+
+	// Find the position after the last non-whitespace character
+	CharT const *trim_pos = last;
+	CharT const *current = first;
+
+	while (current < last)
+	{
+		// Find next whitespace character
+		auto next_space = details::find_space_common_impl<false, false>(current, last);
+		if (next_space == last)
+		{
+			// No more whitespace characters found
+			trim_pos = last;
+			break;
+		}
+
+		// Find next non-whitespace character after the whitespace
+		auto next_non_space = details::find_space_common_impl<false, true>(next_space, last);
+		if (next_non_space == last)
+		{
+			// From next_space to end are all whitespace characters
+			trim_pos = next_space;
+			break;
+		}
+
+		current = next_non_space;
+	}
+
+	// Convert const pointer back to iterator for erase
+	auto trim_iterator = str.begin() + (trim_pos - first);
+	str.erase(trim_iterator, str.end());
+	return str;
+}
+
+} // namespace fast_io
+
 
 int main()
 {
@@ -22,7 +78,7 @@ int main()
 				str.push_back('\v');
 				str.push_back('\n');
 			}
-			assert(str.trim_right() == fast_io::string("    ok    someone like trim    ok"));
+			assert(fast_io::trim_right(str) == fast_io::string("    ok    someone like trim    ok"));
 		}
 	}
 	{
@@ -39,7 +95,7 @@ int main()
 				str.push_back(u'\v');
 				str.push_back(u'\n');
 			}
-			assert(str.trim_right() == fast_io::u16string(u"    ok    someone like trim    ok"));
+			assert(fast_io::trim_right(str) == fast_io::u16string(u"    ok    someone like trim    ok"));
 		}
 	}
 }
