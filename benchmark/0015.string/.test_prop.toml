@@ -12,3 +12,6 @@ ignore = true
 
 ["scan_strlike.cc"] # TODO: CI runtime failed. why?
 ignore = true
+
+["trim_right_boost.cc"] # no need to install those env in CI
+ignore = true
