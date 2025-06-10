@@ -11,7 +11,7 @@ int main()
   {
     constexpr std::size_t N(40000000);
     {
-      fast_io::timer t(u8"trim_right_string");
+      fast_io::timer t(u8"trim_right string");
       fast_io::string str("    ok    someone like trim    ok    ");
       for (std::size_t i{}; i != N; ++i)
       {
@@ -29,7 +29,7 @@ int main()
   {
     constexpr std::size_t N(40000000);
     {
-      fast_io::timer t(u8"trim_right_wstring");
+      fast_io::timer t(u8"trim_right wstring");
       fast_io::wstring str(L"    ok    someone like trim    ok    ");
       for (std::size_t i{}; i != N; ++i)
       {
