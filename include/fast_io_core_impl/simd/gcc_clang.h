@@ -59,7 +59,7 @@ struct simd_vector
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #endif
-	inline void store(void *address) noexcept
+	inline void store(void *address) const noexcept
 	{
 		__builtin_memcpy(address, __builtin_addressof(value), sizeof(value));
 	}

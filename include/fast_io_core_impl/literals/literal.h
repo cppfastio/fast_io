@@ -73,6 +73,12 @@ inline constexpr ch_type arithmetic_char_literal(char8_t ch) noexcept
 	}
 }
 
+template <::std::integral ch_type>
+inline constexpr auto integral_lifting(ch_type c) noexcept
+{
+	return static_cast<decltype(c + c)>(c);
+}
+
 template <char8_t ch, ::std::integral ch_type>
 inline constexpr ch_type arithmetic_char_literal_v{arithmetic_char_literal<ch_type>(ch)};
 
@@ -85,22 +91,26 @@ inline constexpr char_type char_literal_add(T offs) noexcept
 		[[assume(0 <= offs && offs < 10)]];
 	}
 #endif
-	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
-	using unsigned_result_type =
-		::std::make_unsigned_t<::std::remove_cvref_t<decltype(arithmetic_char_literal_v<ch, char_type> + offs)>>;
-	if constexpr (::std::same_as<char_type, wchar_t> && ::fast_io::details::wide_is_none_utf_endian)
+    // The future cpp standard prohibits arithmetic between different char_types, but allows the same char_type to be arithmetic, so doing an integral_lifting
+    // and then calculating gives the same result as direct arithmetic
+
+    using unsigned_char_type = ::std::make_unsigned_t<char_type>;
+    using unsigned_result_type = ::std::make_unsigned_t<
+        ::std::remove_cvref_t<decltype(integral_lifting(arithmetic_char_literal_v<ch, char_type>) + integral_lifting(offs))>>;
+
+    if constexpr (::std::same_as<char_type, wchar_t> && ::fast_io::details::wide_is_none_utf_endian)
 	{
 		static_assert(::std::numeric_limits<::std::uint_least8_t>::digits <= ::std::numeric_limits<wchar_t>::digits);
 		constexpr unsigned leftshift_offset{static_cast<unsigned>(::std::numeric_limits<wchar_t>::digits -
 																  ::std::numeric_limits<::std::uint_least8_t>::digits)};
 		return static_cast<char_type>(static_cast<unsigned_char_type>(static_cast<unsigned_result_type>(
-										  arithmetic_char_literal_v<ch, char_type> + offs))
+									      integral_lifting(arithmetic_char_literal_v<ch, char_type>) + integral_lifting(offs)))
 									  << leftshift_offset);
 	}
 	else
 	{
 		return static_cast<char_type>(static_cast<unsigned_char_type>(
-			static_cast<unsigned_result_type>(arithmetic_char_literal_v<ch, char_type> + offs)));
+			static_cast<unsigned_result_type>(integral_lifting(arithmetic_char_literal_v<ch, char_type>) + integral_lifting(offs))));
 	}
 }
 

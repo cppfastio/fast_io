@@ -37,7 +37,7 @@ inline void nt_file_rtl_path(char16_t const *filename, win32::nt::unicode_string
 {
 /*
 https://github.com/mirror/reactos/blob/master/reactos/dll/ntdll/def/ntdll.spec
-ReactOS shows that RtlDosPathNameToNtPathName_U_WithStatus was added since Windows XP SP2.
+ReactOS shows that RtlDosPathNameToNtPathName_U_WithStatus was added since Windows XP 64bit.
 */
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0502
 	auto status{rtl_dos_path_name_to_nt_path_name_u_with_status(
