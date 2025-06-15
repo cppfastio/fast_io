@@ -112,7 +112,7 @@ inline Iter read(basic_general_qdevice_io_observer<ch_type, T> qiob, Iter begin,
 
 template <::std::integral ch_type, typename T>
 	requires(sizeof(ch_type) == 1)
-inline ::std::pair<ch_type, bool> try_get(basic_general_qdevice_io_observer<ch_type, T> qiob)
+inline ::fast_io::try_get_result<ch_type> try_get(basic_general_qdevice_io_observer<ch_type, T> qiob)
 {
 	char ch;
 	bool ef{qiob.qdevice->getChar(&ch)};

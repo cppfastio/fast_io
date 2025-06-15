@@ -42,7 +42,7 @@
 
 #include "fast_io_core_impl/ebcdic.h"
 #include "fast_io_core_impl/literals/literal.h"
-#include "fast_io_core_impl/char_category.h"
+#include "fast_io_core_impl/char_category/impl.h"
 
 #if __cpp_lib_three_way_comparison >= 201907L
 #include "fast_io_core_impl/compare.h"

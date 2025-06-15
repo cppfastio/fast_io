@@ -158,6 +158,24 @@ public:
 	using string_view_type::find_last_not_of;
 	using string_view_type::compare_three_way;
 	using string_view_type::compare_three_way_unchecked;
+	using string_view_type::trim_subview;
+	using string_view_type::trim_subview_c_space;
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr basic_cstring_view trim_prefix_subview(charcate traits) const noexcept
+	{
+		using string_view_type::trim_prefix_subview;
+		auto csvw{string_view_type::trim_prefix_subview(traits)};
+		return basic_cstring_view(csvw.ptr, csvw.n);
+	}
+	inline constexpr basic_cstring_view trim_prefix_subview_c_space() const noexcept
+	{
+		return trim_prefix_subview(::fast_io::char_category::c_space{});
+	}
+	using string_view_type::trim_suffix_subview;
+	using string_view_type::trim_suffix_subview_c_space;
 };
 
 template <::std::integral char_type>

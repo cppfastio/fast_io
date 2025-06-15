@@ -55,25 +55,78 @@ inline ::std::size_t c_fwrite_unlocked_impl(void const *__restrict begin, ::std:
 		throw_posix_error(rent._errno);
 	}
 #else
-	::std::size_t written_count{
+
+#pragma push_macro("FAST_IO_FWRITE_UNLOCKED")
+#pragma push_macro("FAST_IO_FWRITE")
+#pragma push_macro("FAST_IO_PLATFORM_SUPPORTS_FWRITE_UNLOCKED")
+#pragma push_macro("FAST_IO_FWRITE_UNLOCKED_IMPL")
+
+#undef FAST_IO_FWRITE_UNLOCKED
+#undef FAST_IO_FWRITE
+#undef FAST_IO_PLATFORM_SUPPORTS_FWRITE_UNLOCKED
+#undef FAST_IO_FWRITE_UNLOCKED_IMPL
+
+#ifdef __has_builtin
+#if __has_builtin(__builtin_fwrite_unlocked)
+#define FAST_IO_FWRITE_UNLOCKED(...) __builtin_fwrite_unlocked(__VA_ARGS__)
+#endif
+#endif
+#ifndef FAST_IO_FWRITE_UNLOCKED
+#if defined(__GLIBC__) || defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_FWRITE_UNLOCKED(...) ::fwrite_unlocked(__VA_ARGS__)
+#elif defined(fwrite_unlocked)
+#define FAST_IO_FWRITE_UNLOCKED(...) fwrite_unlocked(__VA_ARGS__)
+#else
+#define FAST_IO_FWRITE_UNLOCKED(...) ::fast_io::noexcept_call(::fwrite_unlocked, __VA_ARGS__)
+#endif
+#endif
+
+#ifdef __has_builtin
+#if __has_builtin(__builtin_fwrite)
+#define FAST_IO_FWRITE(...) __builtin_fwrite(__VA_ARGS__)
+#endif
+#endif
+#ifndef FAST_IO_FWRITE
+#if defined(__GLIBC__) || defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_FWRITE(...) ::fwrite(__VA_ARGS__)
+#elif defined(fwrite)
+#define FAST_IO_FWRITE(...) fwrite(__VA_ARGS__)
+#else
+#define FAST_IO_FWRITE(...) ::fast_io::noexcept_call(::fwrite, __VA_ARGS__)
+#endif
+#endif
+
+#if defined(__BIONIC__)
+#if defined(__BIONIC_AVAILABILITY_GUARD)
+#if __BIONIC_AVAILABILITY_GUARD(28)
+#define FAST_IO_PLATFORM_SUPPORTS_FWRITE_UNLOCKED 1
+#endif
+#endif
+#elif defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_PLATFORM_SUPPORTS_FWRITE_UNLOCKED 1
+#elif defined(__USE_MISC) || defined(__BSD_VISIBLE)
+#define FAST_IO_PLATFORM_SUPPORTS_FWRITE_UNLOCKED 1
+#endif
+
 #if defined(__CYGWIN__)
-		my_cygwin_fwrite_unlocked(begin, type_size, count, fp)
-#elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD)))
-#if !defined(fwrite_unlocked) && FAST_IO_HAS_BUILTIN(__builtin_fwrite_unlocked)
-		__builtin_fwrite_unlocked(begin, type_size, count, fp)
+#define FAST_IO_FWRITE_UNLOCKED_IMPL(...) my_cygwin_fwrite_unlocked(__VA_ARGS__)
+#elif defined(FAST_IO_PLATFORM_SUPPORTS_FWRITE_UNLOCKED)
+#define FAST_IO_FWRITE_UNLOCKED_IMPL(...) FAST_IO_FWRITE_UNLOCKED(__VA_ARGS__)
 #else
-		fwrite_unlocked(begin, type_size, count, fp)
+#define FAST_IO_FWRITE_UNLOCKED_IMPL(...) FAST_IO_FWRITE(__VA_ARGS__)
 #endif
-#elif !defined(fwrite) && FAST_IO_HAS_BUILTIN(__builtin_fwrite)
-		__builtin_fwrite(begin, type_size, count, fp)
-#else
-		fwrite(begin, type_size, count, fp)
-#endif
-	};
+
+	::std::size_t const written_count{FAST_IO_FWRITE_UNLOCKED_IMPL(begin, type_size, count, fp)};
+
+#pragma pop_macro("FAST_IO_FWRITE_UNLOCKED_IMPL")
+#pragma pop_macro("FAST_IO_PLATFORM_SUPPORTS_FWRITE_UNLOCKED")
+#pragma pop_macro("FAST_IO_FWRITE")
+#pragma pop_macro("FAST_IO_FWRITE_UNLOCKED")
 	if (!written_count) [[unlikely]]
 	{
 		throw_posix_error();
 	}
+
 #endif
 	return written_count;
 }
@@ -102,22 +155,77 @@ inline ::std::size_t c_fread_unlocked_impl(void *__restrict begin, ::std::size_t
 		}
 	}
 #else
-	::std::size_t read_count{
-#if defined(__CYGWIN__)
-		my_cygwin_fread_unlocked(begin, type_size, count, fp)
-#elif (defined(__USE_MISC) || defined(__BSD_VISIBLE)) && (!defined(__BIONIC__) || (defined(__USE_BSD)))
-#if !defined(fread_unlocked) && FAST_IO_HAS_BUILTIN(__builtin_fread_unlocked)
-		__builtin_fread_unlocked(begin, type_size, count, fp)
+
+#pragma push_macro("FAST_IO_FREAD_UNLOCKED")
+#pragma push_macro("FAST_IO_FREAD")
+#pragma push_macro("FAST_IO_PLATFORM_SUPPORTS_FREAD_UNLOCKED")
+#pragma push_macro("FAST_IO_FREAD_UNLOCKED_IMPL")
+
+#undef FAST_IO_FREAD_UNLOCKED
+#undef FAST_IO_FREAD
+#undef FAST_IO_PLATFORM_SUPPORTS_FREAD_UNLOCKED
+#undef FAST_IO_FREAD_UNLOCKED_IMPL
+
+// Define FAST_IO_FREAD_UNLOCKED
+#ifdef __has_builtin
+#if __has_builtin(__builtin_fread_unlocked)
+#define FAST_IO_FREAD_UNLOCKED(...) __builtin_fread_unlocked(__VA_ARGS__)
+#endif
+#endif
+#ifndef FAST_IO_FREAD_UNLOCKED
+#if defined(__GLIBC__) || defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_FREAD_UNLOCKED(...) ::fread_unlocked(__VA_ARGS__)
+#elif defined(fread_unlocked)
+#define FAST_IO_FREAD_UNLOCKED(...) fread_unlocked(__VA_ARGS__)
 #else
-		fread_unlocked(begin, type_size, count, fp)
+#define FAST_IO_FREAD_UNLOCKED(...) ::fast_io::noexcept_call(::fread_unlocked, __VA_ARGS__)
+#endif
 #endif
 
-#elif !defined(fread) && FAST_IO_HAS_BUILTIN(__builtin_fread)
-		__builtin_fread(begin, type_size, count, fp)
-#else
-		fread(begin, type_size, count, fp)
+// Define FAST_IO_FREAD
+#ifdef __has_builtin
+#if __has_builtin(__builtin_fread)
+#define FAST_IO_FREAD(...) __builtin_fread(__VA_ARGS__)
 #endif
-	};
+#endif
+#ifndef FAST_IO_FREAD
+#if defined(__GLIBC__) || defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_FREAD(...) ::fread(__VA_ARGS__)
+#elif defined(fread)
+#define FAST_IO_FREAD(...) fread(__VA_ARGS__)
+#else
+#define FAST_IO_FREAD(...) ::fast_io::noexcept_call(::fread, __VA_ARGS__)
+#endif
+#endif
+
+// Detect whether platform supports fread_unlocked
+#if defined(__BIONIC__)
+#if defined(__BIONIC_AVAILABILITY_GUARD)
+#if __BIONIC_AVAILABILITY_GUARD(28)
+#define FAST_IO_PLATFORM_SUPPORTS_FREAD_UNLOCKED 1
+#endif
+#endif
+#elif defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_PLATFORM_SUPPORTS_FREAD_UNLOCKED 1
+#elif defined(__USE_MISC) || defined(__BSD_VISIBLE)
+#define FAST_IO_PLATFORM_SUPPORTS_FREAD_UNLOCKED 1
+#endif
+
+// Define the unified dispatch macro
+#if defined(__CYGWIN__)
+#define FAST_IO_FREAD_UNLOCKED_IMPL(...) my_cygwin_fread_unlocked(__VA_ARGS__)
+#elif defined(FAST_IO_PLATFORM_SUPPORTS_FREAD_UNLOCKED)
+#define FAST_IO_FREAD_UNLOCKED_IMPL(...) FAST_IO_FREAD_UNLOCKED(__VA_ARGS__)
+#else
+#define FAST_IO_FREAD_UNLOCKED_IMPL(...) FAST_IO_FREAD(__VA_ARGS__)
+#endif
+
+	::std::size_t const read_count{FAST_IO_FREAD_UNLOCKED_IMPL(begin, type_size, count, fp)};
+
+#pragma pop_macro("FAST_IO_FREAD_UNLOCKED_IMPL")
+#pragma pop_macro("FAST_IO_PLATFORM_SUPPORTS_FREAD_UNLOCKED")
+#pragma pop_macro("FAST_IO_FREAD")
+#pragma pop_macro("FAST_IO_FREAD_UNLOCKED")
 	if (read_count == 0) [[unlikely]]
 	{
 		if (
@@ -156,14 +264,27 @@ inline ::std::size_t c_fwrite_impl(void const *__restrict begin, ::std::size_t t
 		throw_posix_error(rent._errno);
 	}
 #else
+#pragma push_macro("FAST_IO_FWRITE")
+#undef FAST_IO_FWRITE
 
-	::std::size_t written_count{
-#if !defined(fwrite) && FAST_IO_HAS_BUILTIN(__builtin_fwrite)
-		__builtin_fwrite(begin, type_size, count, fp)
-#else
-		fwrite(begin, type_size, count, fp)
+#ifdef __has_builtin
+#if __has_builtin(__builtin_fwrite)
+#define FAST_IO_FWRITE(...) __builtin_fwrite(__VA_ARGS__)
 #endif
-	};
+#endif
+#ifndef FAST_IO_FWRITE
+#if defined(__GLIBC__) || defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_FWRITE(...) ::fwrite(__VA_ARGS__)
+#elif defined(fwrite)
+#define FAST_IO_FWRITE(...) fwrite(__VA_ARGS__)
+#else
+#define FAST_IO_FWRITE(...) ::fast_io::noexcept_call(::fwrite, __VA_ARGS__)
+#endif
+#endif
+
+	::std::size_t const written_count{FAST_IO_FWRITE(begin, type_size, count, fp)};
+
+#pragma pop_macro("FAST_IO_FWRITE")
 	if (!written_count) [[unlikely]]
 	{
 		throw_posix_error();
@@ -190,13 +311,27 @@ inline ::std::size_t c_fread_impl(void *__restrict begin, ::std::size_t type_siz
 		}
 	}
 #else
-	::std::size_t read_count{
-#if !defined(fread) && FAST_IO_HAS_BUILTIN(__builtin_fread)
-		__builtin_fread(begin, type_size, count, fp)
-#else
-		fread(begin, type_size, count, fp)
+#pragma push_macro("FAST_IO_FREAD")
+#undef FAST_IO_FREAD
+
+#ifdef __has_builtin
+#if __has_builtin(__builtin_fread)
+#define FAST_IO_FREAD(...) __builtin_fread(__VA_ARGS__)
 #endif
-	};
+#endif
+#ifndef FAST_IO_FREAD
+#if defined(__GLIBC__) || defined(__LLVM_LIBC_TYPES_FILE_H__)
+#define FAST_IO_FREAD(...) ::fread(__VA_ARGS__)
+#elif defined(fread)
+#define FAST_IO_FREAD(...) fread(__VA_ARGS__)
+#else
+#define FAST_IO_FREAD(...) ::fast_io::noexcept_call(::fread, __VA_ARGS__)
+#endif
+#endif
+
+	::std::size_t const read_count{FAST_IO_FREAD(begin, type_size, count, fp)};
+
+#pragma pop_macro("FAST_IO_FREAD")
 	if (read_count == 0) [[unlikely]]
 	{
 		if (

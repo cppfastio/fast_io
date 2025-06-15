@@ -1412,6 +1412,157 @@ public:
 	{
 		this->resize(count, 0);
 	}
+	/*
+		String trimming functions are a common feature in languages like Java and C#.
+		We are implementing similar functionality to remove unwanted characters from the beginning and end of strings.
+	*/
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+			{ traits.find_last_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr basic_string &trim(charcate traits) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+
+		if (beginptr == currptr) [[unlikely]]
+		{
+			return *this;
+		}
+
+		auto frontit{traits.find_not(beginptr, currptr)};
+		auto backit{traits.find_last_not(frontit, currptr)};
+
+		if (frontit != beginptr)
+		{
+			backit = ::fast_io::freestanding::overlapped_copy(frontit, backit, beginptr);
+		}
+
+		if (backit != beginptr) // Safety check before modifying memory
+		{
+			*backit = 0;
+			this->imp.curr_ptr = backit;
+		}
+		return *this;
+	}
+
+	inline constexpr basic_string &trim_c_space() noexcept
+	{
+		return this->trim(::fast_io::char_category::c_space{});
+	}
+
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr basic_string &trim_prefix(charcate traits) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+
+		auto frontit{traits.find_not(beginptr, currptr)};
+		if (frontit != beginptr)
+		{
+			if (frontit != currptr) // Prevent unnecessary copying
+			{
+				currptr = ::fast_io::freestanding::overlapped_copy(frontit, currptr, beginptr);
+			}
+
+			// Ensure safe null termination
+			*currptr = 0;
+			this->imp.curr_ptr = currptr;
+		}
+
+		return *this;
+	}
+
+	inline constexpr basic_string &trim_prefix_c_space() noexcept
+	{
+		return this->trim_prefix(::fast_io::char_category::c_space{});
+	}
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_last_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr basic_string &trim_suffix(charcate traits) noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+
+		if (beginptr == currptr) [[unlikely]]
+		{
+			return *this;
+		}
+
+		// Ensure we correctly initialize backit using valid iterators
+		auto backit{traits.find_last_not(beginptr, currptr)};
+
+		// Boundary check to prevent dereferencing invalid memory
+		if (backit != currptr)
+		{
+			*backit = 0;
+			this->imp.curr_ptr = backit;
+		}
+
+		return *this;
+	}
+	inline constexpr basic_string &trim_suffix_c_space() noexcept
+	{
+		return this->trim_suffix(::fast_io::char_category::c_space{});
+	}
+
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+			{ traits.find_last_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr string_view_type trim_subview(charcate traits) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		return string_view_type(beginptr, static_cast<size_type>(currptr - beginptr)).trim_subview(traits);
+	}
+	inline constexpr string_view_type trim_subview_c_space() const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		return string_view_type(beginptr, static_cast<size_type>(currptr - beginptr)).trim_subview_c_space();
+	}
+
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr cstring_view_type trim_prefix_subview(charcate traits) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		return cstring_view_type(::fast_io::containers::null_terminated, beginptr, static_cast<size_type>(currptr - beginptr)).trim_prefix_subview(traits);
+	}
+	inline constexpr cstring_view_type trim_prefix_subview_c_space() const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		return cstring_view_type(::fast_io::containers::null_terminated, beginptr, static_cast<size_type>(currptr - beginptr)).trim_prefix_subview_c_space();
+	}
+
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_last_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr string_view_type trim_suffix_subview(charcate traits) const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		return string_view_type(beginptr, static_cast<size_type>(currptr - beginptr)).trim_suffix_subview(traits);
+	}
+	inline constexpr string_view_type trim_suffix_subview_c_space() const noexcept
+	{
+		auto beginptr{this->imp.begin_ptr};
+		auto currptr{this->imp.curr_ptr};
+		return string_view_type(beginptr, static_cast<size_type>(currptr - beginptr)).trim_suffix_subview_c_space();
+	}
 };
 
 template <::std::integral chtype, typename allocator1, typename U>

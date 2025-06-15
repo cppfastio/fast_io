@@ -240,24 +240,24 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	{
 		constexpr bool zw{family == nt_family::zw};
 
-		::std::uint_least32_t status; // No initialization required
+		::std::uint_least32_t ntstatus; // No initialization required
 
 		if (section_handle)
 		{
-			status = ::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(section_handle, 0);
-			if (status) [[unlikely]]
+			ntstatus = ::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(section_handle, 0);
+			if (ntstatus) [[unlikely]]
 			{
-				throw_nt_error(status);
+				throw_nt_error(ntstatus);
 			}
 			section_handle = nullptr;
 		}
 
 		if (port_handle)
 		{
-			status = ::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(port_handle, 0);
-			if (status) [[unlikely]]
+			ntstatus = ::fast_io::win32::nt::nt_alpc_disconnect_port<zw>(port_handle, 0);
+			if (ntstatus) [[unlikely]]
 			{
-				throw_nt_error(status);
+				throw_nt_error(ntstatus);
 			}
 			port_handle = nullptr;
 		}
@@ -698,7 +698,7 @@ inline ::fast_io::win32::nt::alpc_message_attributes *nt_family_create_alpc_ipc_
 }
 
 template <nt_family family>
-inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, [[maybe_unused]]  ::fast_io::ipc_mode mode,
+inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *server_name, ::std::size_t server_name_size, [[maybe_unused]] ::fast_io::ipc_mode mode,
 													::std::byte const *message_begin, ::std::byte const *message_end, ::fast_io::win32::nt::alpc_message_attributes *__restrict message_attribute,
 													nt_alpc_byte_vector &connect_recv_message)
 {
@@ -904,7 +904,7 @@ inline ::std::byte const *nt_alpc_write_or_pwrite_some_bytes_common_impl(void *_
 	port_message_p->u1.s1.DataLength = static_cast<::std::uint_least16_t>(message_data_size);
 	port_message_p->u1.s1.TotalLength = static_cast<::std::uint_least16_t>(send_size);
 
-	// There is a bug and it cannot be sent. 
+	// There is a bug and it cannot be sent.
 	// At present, the known usage of alpc is only synchronous mode, and the message flow mode has not been found yet
 	// https://github.com/csandker/InterProcessCommunication-Samples/issues/7
 

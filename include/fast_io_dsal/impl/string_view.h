@@ -612,6 +612,54 @@ public:
 		this->ptr = 0;
 		this->n = 0;
 	}
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+			{ traits.find_last_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr basic_string_view trim_subview(charcate traits) const noexcept
+	{
+		auto beginptr{this->ptr};
+		auto currptr{this->ptr + this->n};
+		auto frontit{traits.find_not(beginptr, currptr)};
+		auto backit{traits.find_last_not(frontit, currptr)};
+		return basic_string_view(frontit, static_cast<size_type>(backit - frontit));
+	}
+	inline constexpr basic_string_view trim_subview_c_space() noexcept
+	{
+		return trim_subview(::fast_io::char_category::c_space{});
+	}
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr basic_string_view trim_prefix_subview(charcate traits) const noexcept
+	{
+		auto beginptr{this->ptr};
+		auto currptr{this->ptr + this->n};
+		auto frontit{traits.find_not(beginptr, currptr)};
+		return basic_string_view(frontit, static_cast<size_type>(currptr - frontit));
+	}
+	inline constexpr basic_string_view trim_prefix_subview_c_space() const noexcept
+	{
+		return trim_prefix_subview(::fast_io::char_category::c_space{});
+	}
+
+	template <typename charcate>
+		requires requires(charcate traits, const_pointer beginptr, const_pointer currptr) {
+			{ traits.find_last_not(beginptr, currptr) } -> ::std::convertible_to<const_pointer>;
+		}
+	inline constexpr basic_string_view trim_suffix_subview(charcate traits) const noexcept
+	{
+		auto beginptr{this->ptr};
+		auto currptr{this->ptr + this->n};
+		auto backit{traits.find_last_not(beginptr, currptr)};
+		return basic_string_view(beginptr, static_cast<size_type>(backit - beginptr));
+	}
+	inline constexpr basic_string_view trim_suffix_subview_c_space() const noexcept
+	{
+		return trim_suffix_subview(::fast_io::char_category::c_space{});
+	}
 };
 
 template <::std::integral char_type>

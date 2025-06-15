@@ -141,6 +141,10 @@ public:
 	}
 	pyobject_file &operator=(pyobject_file &&pob) noexcept
 	{
+		if (__builtin_addressof(pob) == this)
+		{
+			return *this;
+		}
 		::fast_io::details::py_inc_dec_ref_impl<true>(this->p);
 		this->p = pob.p;
 		pob.p = nullptr;
