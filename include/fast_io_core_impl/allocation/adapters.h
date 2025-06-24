@@ -286,13 +286,13 @@ public:
 		{
 			return allocator_type::reallocate_at_least(p, n).ptr;
 		}
-		else if constexpr (::fast_io::details::has_reallocate_aligned_impl<alloc>)
+		else if constexpr (::fast_io::details::has_reallocate_aligned_n_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned(p, default_alignment, n);
+			return allocator_type::reallocate_aligned_n(p, oldn, default_alignment, n);
 		}
-		else if constexpr (::fast_io::details::has_reallocate_aligned_at_least_impl<alloc>)
+		else if constexpr (::fast_io::details::has_reallocate_aligned_n_at_least_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_at_least(p, oldn, default_alignment, n).ptr;
+			return allocator_type::reallocate_aligned_n_at_least(p, oldn, default_alignment, n).ptr;
 		}
 		else if constexpr (::fast_io::details::has_reallocate_zero_impl<alloc>)
 		{
