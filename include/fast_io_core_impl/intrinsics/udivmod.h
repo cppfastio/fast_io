@@ -131,6 +131,7 @@ inline constexpr T shiftleft(T low, T high, unsigned shift) noexcept
 		return high;
 	}
 	unsigned lowshifter{n_udword_bits - shift};
+	// users should avoid shift ub on their own
 	return (high << shift) | (low >> lowshifter);
 }
 
@@ -156,6 +157,7 @@ inline constexpr T shiftright(T low, T high, unsigned shift) noexcept
 		return low;
 	}
 	unsigned lowshifter{n_udword_bits - shift};
+	// users should avoid shift ub on their own
 	return (high << lowshifter) | (low >> shift);
 }
 

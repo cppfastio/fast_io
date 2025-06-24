@@ -58,7 +58,7 @@ public:
 	}
 	static inline void deallocate(void *p) noexcept
 	{
-		if (p == nullptr)
+		if (p == nullptr) [[unlikely]]
 		{
 			return;
 		}

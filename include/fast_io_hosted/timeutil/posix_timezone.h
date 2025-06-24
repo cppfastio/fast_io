@@ -34,6 +34,7 @@ struct posix_timezone_name
 	{
 		::fast_io::typed_generic_allocator_adapter<::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator>,
 												   char8_t>::deallocate(ptr);
+		ptr = nullptr;
 	}
 };
 

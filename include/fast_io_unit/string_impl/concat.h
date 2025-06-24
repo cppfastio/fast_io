@@ -136,7 +136,7 @@ template <typename... Args>
 	}
 	else
 	{
-		static_assert(type_error, "some types are not printable, so we cannot concatln ::std::wstring");
+		static_assert(type_error, "some types are not printable, so we cannot concatln ::std::string");
 		return {};
 	}
 }

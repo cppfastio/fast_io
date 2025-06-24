@@ -38,11 +38,12 @@ inline constexpr ::std::uint_least64_t cal_uint_least64_d10_max() noexcept
 template <bool reverse, ::std::unsigned_integral T>
 inline constexpr auto cal_uint_least64_d10_all_table() noexcept
 {
+	static_assert(::std::numeric_limits<T>::digits10 > 1);
 	::fast_io::freestanding::array<T, ::std::numeric_limits<T>::digits10> array;
 	if constexpr (reverse)
 	{
 		array.back() = 1;
-		for (::std::size_t i{array.size() - 1}; i--;)
+		for (::std::size_t i{array.size() - 1u}; i--;)
 		{
 			array[i] = array[i + 1] * 10u;
 		}
@@ -50,7 +51,7 @@ inline constexpr auto cal_uint_least64_d10_all_table() noexcept
 	else
 	{
 		array.front() = 1;
-		for (::std::size_t i{1}, sz{array.size()}; i != sz; ++i)
+		for (::std::size_t i{}, sz{array.size() - 1u}; i != sz; ++i)
 		{
 			array[i + 1] = array[i] * 10u;
 		}

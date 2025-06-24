@@ -42,7 +42,7 @@ concept error_domain =
 template <error_domain D>
 inline constexpr bool is_domain(error e) noexcept
 {
-	constexpr ::std::size_t v{error_domain_define(error_type<D>)};
+	constexpr ::std::size_t v{domain_define(error_type<D>)};
 	return v == e.domain;
 }
 

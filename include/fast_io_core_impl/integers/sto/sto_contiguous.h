@@ -64,9 +64,9 @@ inline constexpr bool char_digit_to_literal(my_make_unsigned_t<char_type> &ch) n
 				unsigned_char_type ch3(ch);
 				ch3 -= 0x81;
 				unsigned_char_type ch4(ch);
-				ch2 -= 0xD1;
+				ch4 -= 0xD1;
 				unsigned_char_type ch5(ch);
-				ch3 -= 0x91;
+				ch5 -= 0x91;
 				ch -= 0xF0;
 				if (ch4 < mns)
 				{
@@ -207,9 +207,9 @@ inline constexpr bool char_is_digit(my_make_unsigned_t<char_type> ch) noexcept
 				unsigned_char_type ch3(ch);
 				ch3 -= 0x81;
 				unsigned_char_type ch4(ch);
-				ch2 -= 0xD1;
+				ch4 -= 0xD1;
 				unsigned_char_type ch5(ch);
-				ch3 -= 0x91;
+				ch5 -= 0x91;
 				ch -= 0xF0;
 				return (ch4 < mns) | (ch5 < mns) | (ch2 < mns) | (ch3 < 9) | (ch < 10u);
 			}

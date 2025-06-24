@@ -139,7 +139,7 @@ inline constexpr T basic_general_concat_decay_impl_precise(T &str, Arg arg)
 	constexpr ::std::size_t local_cap{strlike_sso_size(io_strlike_type<ch_type, T>)};
 	if (local_cap < precise_size_with_line)
 	{
-		strlike_reserve(io_strlike_type<ch_type, T>, str, local_cap);
+		strlike_reserve(io_strlike_type<ch_type, T>, str, precise_size_with_line);
 	}
 	auto first{strlike_begin(io_strlike_type<ch_type, T>, str)};
 	print_reserve_precise_define(io_reserve_type<ch_type, Arg>, first, precise_size, arg);

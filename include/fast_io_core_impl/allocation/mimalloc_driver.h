@@ -343,7 +343,7 @@ public:
 
 	inline static void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
 	{
-		if (p == nullptr)
+		if (p == nullptr) [[unlikely]]
 		{
 			return;
 		}

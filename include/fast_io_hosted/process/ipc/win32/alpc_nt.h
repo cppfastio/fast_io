@@ -109,11 +109,8 @@ struct nt_alpc_message_attribute_guard
 
 	inline void close()
 	{
-		if (message_attribute)
-		{
-			alpc_message_alloc::deallocate(message_attribute);
-			message_attribute = nullptr;
-		}
+		alpc_message_alloc::deallocate(message_attribute);
+		message_attribute = nullptr;
 	}
 };
 
@@ -176,10 +173,8 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		port_handle = other.port_handle;
 		other.port_handle = nullptr;
 
-		if (message_attribute)
-		{
-			alpc_message_alloc::deallocate(message_attribute);
-		}
+		alpc_message_alloc::deallocate(message_attribute);
+
 		message_attribute = other.message_attribute;
 		other.message_attribute = nullptr;
 
@@ -219,11 +214,8 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 			port_handle = nullptr;
 		}
 
-		if (message_attribute)
-		{
-			alpc_message_alloc::deallocate(message_attribute);
-			message_attribute = nullptr;
-		}
+		alpc_message_alloc::deallocate(message_attribute);
+		message_attribute = nullptr;
 
 		view_begin = nullptr;
 
@@ -262,11 +254,8 @@ struct nt_alpc_handle FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 			port_handle = nullptr;
 		}
 
-		if (message_attribute)
-		{
-			alpc_message_alloc::deallocate(message_attribute);
-			message_attribute = nullptr;
-		}
+		alpc_message_alloc::deallocate(message_attribute);
+		message_attribute = nullptr;
 
 		view_begin = nullptr;
 
@@ -297,11 +286,8 @@ struct nt_ipc_alpc_thread_local_heap_allocate_guard
 	};
 	inline constexpr void clear() noexcept
 	{
-		if (ptr) [[likely]]
-		{
-			alloc::deallocate(ptr);
-			ptr = nullptr;
-		}
+		alloc::deallocate(ptr);
+		ptr = nullptr;
 	}
 };
 

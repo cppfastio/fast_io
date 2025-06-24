@@ -632,7 +632,7 @@ wrap_sub_common(::fast_io::intrinsics::simd_vector<T, N> const &a,
 					{
 						float64x2_t amm = __builtin_bit_cast(float64x2_t, a);
 						float64x2_t bmm = __builtin_bit_cast(float64x2_t, b);
-						return __builtin_bit_cast(vec_type, vsubq_f32(amm, bmm));
+						return __builtin_bit_cast(vec_type, vsubq_f64(amm, bmm));
 					}
 #endif
 				}
@@ -913,8 +913,8 @@ inline constexpr simd_vector<T, N> operator*(simd_vector<T, N> const &a, simd_ve
 				{
 					if constexpr (sizeof(T) == 1)
 					{
-						int8x8_t amm = __builtin_bit_cast(int8x16_t, a);
-						int8x8_t bmm = __builtin_bit_cast(int8x16_t, b);
+						int8x8_t amm = __builtin_bit_cast(int8x8_t, a);
+						int8x8_t bmm = __builtin_bit_cast(int8x8_t, b);
 						return __builtin_bit_cast(vec_type, vmul_s8(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 2)
@@ -1266,25 +1266,25 @@ inline constexpr simd_vector<T, N> operator&(simd_vector<T, N> const &a, simd_ve
 					{
 						uint8x8_t amm = __builtin_bit_cast(uint8x8_t, a);
 						uint8x8_t bmm = __builtin_bit_cast(uint8x8_t, b);
-						return __builtin_bit_cast(vec_type, vand_s8(amm, bmm));
+						return __builtin_bit_cast(vec_type, vand_u8(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 2)
 					{
 						uint16x4_t amm = __builtin_bit_cast(uint16x4_t, a);
 						uint16x4_t bmm = __builtin_bit_cast(uint16x4_t, b);
-						return __builtin_bit_cast(vec_type, vand_s16(amm, bmm));
+						return __builtin_bit_cast(vec_type, vand_u16(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 4)
 					{
 						uint32x2_t amm = __builtin_bit_cast(uint32x2_t, a);
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t, b);
-						return __builtin_bit_cast(vec_type, vand_s32(amm, bmm));
+						return __builtin_bit_cast(vec_type, vand_u32(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t, a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t, b);
-						return __builtin_bit_cast(vec_type, vand_s64(amm, bmm));
+						return __builtin_bit_cast(vec_type, vand_u64(amm, bmm));
 					}
 				}
 				else if constexpr (sizeof(vec_type) == 16)
@@ -1293,25 +1293,25 @@ inline constexpr simd_vector<T, N> operator&(simd_vector<T, N> const &a, simd_ve
 					{
 						uint8x16_t amm = __builtin_bit_cast(uint8x16_t, a);
 						uint8x16_t bmm = __builtin_bit_cast(uint8x16_t, b);
-						return __builtin_bit_cast(vec_type, vandq_s8(amm, bmm));
+						return __builtin_bit_cast(vec_type, vandq_u8(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 2)
 					{
 						uint16x8_t amm = __builtin_bit_cast(uint16x8_t, a);
 						uint16x8_t bmm = __builtin_bit_cast(uint16x8_t, b);
-						return __builtin_bit_cast(vec_type, vandq_s16(amm, bmm));
+						return __builtin_bit_cast(vec_type, vandq_u16(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 4)
 					{
 						uint32x4_t amm = __builtin_bit_cast(uint32x4_t, a);
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t, b);
-						return __builtin_bit_cast(vec_type, vandq_s32(amm, bmm));
+						return __builtin_bit_cast(vec_type, vandq_u32(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t, a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t, b);
-						return __builtin_bit_cast(vec_type, vandq_s64(amm, bmm));
+						return __builtin_bit_cast(vec_type, vandq_u64(amm, bmm));
 					}
 				}
 			}

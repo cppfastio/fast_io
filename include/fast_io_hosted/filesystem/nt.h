@@ -47,10 +47,8 @@ struct nt_dirent_space_guard
 	}
 	inline ~nt_dirent_space_guard()
 	{
-		if (ptr)
-		{
-			typed_generic_allocator_adapter<Allocator, T>::deallocate_n(ptr, 1);
-		}
+		typed_generic_allocator_adapter<Allocator, T>::deallocate_n(ptr, 1);
+		ptr = nullptr;
 	}
 };
 

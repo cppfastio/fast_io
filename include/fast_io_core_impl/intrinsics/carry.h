@@ -160,7 +160,9 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 	}
 	b = a - b;
 	carryout = a < b;
-	a = b - carryin;
+	// b is a-b but does not handle the result of the abdication, 
+	// at which point a can be reused for subsequent abdication underflow judgments
+	a = b - static_cast<T>(carryin);
 	carryout |= b < a;
 	return a;
 }

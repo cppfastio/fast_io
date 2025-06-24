@@ -30,6 +30,7 @@ public:
 			{
 				typed_allocator::deallocate_n(begin_ptr, buffer_size);
 			}
+			begin_ptr = nullptr;
 		}
 	}
 };
@@ -86,12 +87,14 @@ write_all_overflow_define_impl(basic_generic_dynamic_output_buffer<char_type, bu
 	char_type *pbuffer;
 	if (bob.begin_ptr != bob.buffer)
 	{
-		pbuffer = typed_allocator::reallocate_n(bob.buffer, to_allocate);
+		// heap
+		pbuffer = typed_allocator::reallocate_n(bob.begin_ptr, to_allocate);
 	}
 	else
 	{
+		// Stack buffer to heap
 		pbuffer = typed_allocator::allocate(to_allocate);
-		::fast_io::details::non_overlapped_copy_n(bob.begin_ptr, to_allocate, pbuffer);
+		::fast_io::details::non_overlapped_copy_n(bob.buffer, buffersize, pbuffer);
 	}
 	bob.begin_ptr = pbuffer;
 	bob.end_ptr = pbuffer + to_allocate;
@@ -119,7 +122,20 @@ grow_twice_define_impl(basic_generic_dynamic_output_buffer<char_type, buffersize
 	{
 		twicebfsz = bfsz << 1u;
 	}
-	char_type *pbuffer{typed_allocator::reallocate_n(bob.buffer, twicebfsz)};
+
+	char_type *pbuffer;
+	if (bob.begin_ptr != bob.buffer)
+	{
+		// heap
+		pbuffer = typed_allocator::reallocate_n(bob.begin_ptr, twicebfsz);
+	}
+	else
+	{
+		// Stack buffer to heap
+		pbuffer = typed_allocator::allocate(twicebfsz);
+		::fast_io::details::non_overlapped_copy_n(bob.buffer, buffersize, pbuffer);
+	}
+
 	bob.begin_ptr = pbuffer;
 	bob.curr_ptr = pbuffer + bfsz;
 	bob.end_ptr = pbuffer + twicebfsz;

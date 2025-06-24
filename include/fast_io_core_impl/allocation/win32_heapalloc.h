@@ -164,7 +164,7 @@ public:
 	}
 	static inline void deallocate(void *addr) noexcept
 	{
-		if (addr == nullptr)
+		if (addr == nullptr) [[unlikely]]
 		{
 			return;
 		}

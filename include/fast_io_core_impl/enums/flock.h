@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-enum class file_lock_mode : char unsigned
+enum class file_lock_mode : unsigned char
 {
 	shared_lock,
 	exclusive_lock,

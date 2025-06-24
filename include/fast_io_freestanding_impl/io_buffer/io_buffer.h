@@ -123,6 +123,8 @@ public:
 	inline constexpr ~basic_io_buffer()
 	{
 		::fast_io::details::destroy_basic_io_buffer(*this);
+		input_buffer = {};
+		output_buffer = {};
 	}
 };
 

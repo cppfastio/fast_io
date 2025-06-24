@@ -252,13 +252,13 @@ struct
 					}
 					else if constexpr (sizeof(T) == 4)
 					{
-						uint32x4_t temp_vec = __builtin_bit_cast(uint32x4_t, *this);
+						poly8x16_t temp_vec = __builtin_bit_cast(poly8x16_t, *this);
 						temp_vec = vrev32q_p8(temp_vec);
 						*this = __builtin_bit_cast(simd_vector<T, N>, temp_vec);
 					}
 					else if constexpr (sizeof(T) == 2)
 					{
-						uint16x8_t temp_vec = __builtin_bit_cast(uint16x8_t, *this);
+						poly8x16_t temp_vec = __builtin_bit_cast(poly8x16_t, *this);
 						temp_vec = vrev16q_p8(temp_vec);
 						*this = __builtin_bit_cast(simd_vector<T, N>, temp_vec);
 					}

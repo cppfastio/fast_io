@@ -24,6 +24,7 @@ struct temp_array_scoped_ptr
 		~temp_array_scoped_ptr()
 	{
 		Alloc::deallocate(ptr);
+		ptr = nullptr;
 	}
 	inline constexpr T *release() noexcept
 	{

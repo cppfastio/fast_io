@@ -10,4 +10,4 @@ inline ::fast_io::install_path get_module_install_path_from_argv0([[maybe_unused
 {
 	throw_win32_error(0);
 }
-} // namespace uwvm::path
+} // namespace fast_io::details

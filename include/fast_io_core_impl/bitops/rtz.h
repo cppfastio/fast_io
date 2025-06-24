@@ -118,6 +118,7 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 			s += b;
 			n = b ? r : n;
 
+			/// @todo error?
 			constexpr ::std::uint_least32_t d1{42949673u};
 			r = ::std::rotr(static_cast<std::uint32_t>(n * d1), 2);
 			b = r < d1;
