@@ -285,6 +285,8 @@ inline constexpr void deque_destroy_controller(controllerblocktype *controllerpt
 		::std::size_t n{static_cast<::std::size_t>(controller.controller_after_ptr - controller.controller_start_ptr) * sizeof(void *)};
 		allocator::deallocate_n(controller.controller_start_ptr, n);
 	}
+	
+	controller.controller_start_ptr = nullptr;
 }
 
 template <typename allocator, typename controllerblocktype>

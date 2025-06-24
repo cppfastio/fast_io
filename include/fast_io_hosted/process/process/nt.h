@@ -75,11 +75,8 @@ struct nt_process_rtl_guard
 	}
 	inline constexpr void clear() noexcept
 	{
-		if (rtl_up) [[likely]]
-		{
-			::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
-			rtl_up = nullptr;
-		}
+		::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
+		rtl_up = nullptr;
 	}
 };
 
@@ -100,11 +97,8 @@ struct nt_process_thread_local_heap_allocate_guard
 	};
 	inline constexpr void clear() noexcept
 	{
-		if (ptr) [[likely]]
-		{
-			alloc::deallocate(ptr);
-			ptr = nullptr;
-		}
+		alloc::deallocate(ptr);
+		ptr = nullptr;
 	}
 };
 

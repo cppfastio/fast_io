@@ -77,7 +77,7 @@ From microsoft's document. _fdopen only supports
 		static_cast<utype>(open_mode::app) | static_cast<utype>(open_mode::text):
 	case static_cast<utype>(open_mode::in) | static_cast<utype>(open_mode::app) |
 		static_cast<utype>(open_mode::text):
-		return "\x77\x2b";
+		return "\x61\x2b";
 
 		// binary support
 
@@ -144,7 +144,7 @@ From microsoft's document. _fdopen only supports
 		static_cast<utype>(open_mode::app) | static_cast<utype>(open_mode::text):
 	case static_cast<utype>(open_mode::in) | static_cast<utype>(open_mode::app) |
 		static_cast<utype>(open_mode::text):
-		return L"\x77\x2b";
+		return L"\x61\x2b";
 
 		// binary support
 

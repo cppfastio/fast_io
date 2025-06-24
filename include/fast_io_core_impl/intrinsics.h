@@ -22,15 +22,9 @@ inline
 #if __cpp_lib_bit_cast >= 201806L
 	if (__builtin_is_constant_evaluated())
 	{
-		if (dest == nullptr || src == nullptr || sizeof(T1) != sizeof(T2) || bytes % sizeof(T1) != 0)
+		if (dest == nullptr || src == nullptr || sizeof(T1) != sizeof(T2) || bytes % sizeof(T1) != 0) [[unlikely]]
 		{
-#if FAST_IO_HAS_BUILTIN(__builtin_trap)
-			__builtin_trap();
-#elif FAST_IO_HAS_BUILTIN(__builtin_abort)
-			__builtin_abort();
-#else
-			::std::abort();
-#endif
+			fast_terminate();
 		}
 		::std::size_t n{bytes / sizeof(T1)};
 		for (::std::size_t i{}; i != n; ++i)
@@ -41,11 +35,7 @@ inline
 	else
 #endif
 	{
-#if FAST_IO_HAS_BUILTIN(__builtin_memcpy)
-		__builtin_memcpy(dest, src, bytes);
-#else
-		memcpy(dest, src, bytes);
-#endif
+		::fast_io::freestanding::my_memcpy(dest, src, bytes);
 	}
 }
 
@@ -743,11 +733,11 @@ inline constexpr ::std::size_t add_or_overflow_die(::std::size_t a, ::std::size_
 		}
 		return size;
 	}
-#elif FAST_IO_HAS_BUILTIN(__builtin_add_overflow) && FAST_IO_HAS_BUILTIN(__builtin_trap)
+#elif FAST_IO_HAS_BUILTIN(__builtin_add_overflow)
 	::std::size_t size;
 	if (__builtin_add_overflow(a, b, __builtin_addressof(size))) [[unlikely]]
 	{
-		__builtin_trap();
+		fast_terminate();
 	}
 	return size;
 #else
@@ -783,20 +773,20 @@ inline constexpr ::std::size_t mul_or_overflow_die(::std::size_t a, ::std::size_
 		__debugbreak();
 	}
 	return a * b;
-#elif FAST_IO_HAS_BUILTIN(__builtin_mul_overflow) && FAST_IO_HAS_BUILTIN(__builtin_trap)
+#elif FAST_IO_HAS_BUILTIN(__builtin_mul_overflow)
 	::std::size_t size;
 	if (__builtin_mul_overflow(a, b, __builtin_addressof(size))) [[unlikely]]
-	{
-		__builtin_trap();
-	}
-	return size;
-#else
-	::std::size_t size{a + b};
-	if (size < a) [[unlikely]]
 	{
 		fast_terminate();
 	}
 	return size;
+#else
+	::std::size_t const max{SIZE_MAX / b};
+	if (max < a) [[unlikely]]
+	{
+		fast_terminate();
+	}
+	return a * b;
 #endif
 }
 
@@ -862,10 +852,10 @@ inline constexpr ::std::size_t cal_allocation_size_or_die(::std::size_t size) no
 		__debugbreak();
 	}
 	return size * sizeof(T);
-#elif FAST_IO_HAS_BUILTIN(__builtin_mul_overflow) && FAST_IO_HAS_BUILTIN(__builtin_trap)
+#elif FAST_IO_HAS_BUILTIN(__builtin_mul_overflow)
 	if (__builtin_mul_overflow(size, sizeof(T), __builtin_addressof(size))) [[unlikely]]
 	{
-		__builtin_trap();
+		fast_terminate();
 	}
 	return size;
 #else

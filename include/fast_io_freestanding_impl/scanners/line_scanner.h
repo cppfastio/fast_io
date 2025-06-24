@@ -33,11 +33,16 @@ struct basic_line_scanner_buffer
 			this->curr_ptr = other.curr_ptr;
 			this->end_ptr = other.end_ptr;
 			other.end_ptr = other.curr_ptr = other.begin_ptr = nullptr;
+			return *this;
 		}
 		inline constexpr ~buffer_type()
 		{
 			::fast_io::details::deallocate_iobuf_space<false, char_type>(
 				this->begin_ptr, static_cast<::std::size_t>(this->end_ptr - this->begin_ptr));
+
+			this->begin_ptr = nullptr;
+			this->curr_ptr = nullptr;
+			this->end_ptr = nullptr;
 		}
 	};
 	buffer_type buffer;
@@ -81,6 +86,10 @@ inline constexpr void copy_to_next_line_buffer_internal_impl(basic_line_scanner_
 {
 	auto bg_ptr{buf.buffer.begin_ptr};
 	::std::size_t const elements{static_cast<::std::size_t>(buf.buffer.curr_ptr - bg_ptr)};
+	if (elements > SIZE_MAX - sz) [[unlikely]]
+	{
+		::fast_io::fast_terminate();
+	}
 	::std::size_t const elementswithnewbuff{elements + sz};
 	::std::size_t const old_capacity{static_cast<::std::size_t>(buf.buffer.end_ptr - bg_ptr)};
 	constexpr ::std::size_t szmx{::std::numeric_limits<::std::size_t>::max() / sizeof(char_type)};

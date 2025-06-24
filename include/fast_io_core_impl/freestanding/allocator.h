@@ -14,7 +14,7 @@ struct allocator
 			__builtin_trap();
 		}
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
-                return static_cast<T *>(__builtin_operator_new(n * sizeof(T)));
+        return static_cast<T *>(__builtin_operator_new(n * sizeof(T)));
 #else
 		__builtin_trap();
 		return nullptr;
@@ -23,8 +23,9 @@ struct allocator
 	inline constexpr void deallocate([[maybe_unused]] T *ptr, [[maybe_unused]] ::std::size_t n) noexcept
 	{
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_delete)
-            __builtin_operator_delete(ptr, sizeof(T) * n);
+        __builtin_operator_delete(ptr, sizeof(T) * n);
 #endif
+		ptr = nullptr;
 	}
 };
 

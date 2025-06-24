@@ -67,6 +67,9 @@ struct basic_nt_api_encoding_converter
 		~basic_nt_api_encoding_converter()
 	{
 		details::deallocate_iobuf_space<false, char_type, allocator_type>(buffer_data, buffer_capacity + 1);
+		
+		buffer_data = nullptr;
+		buffer_data_end = nullptr;
 	}
 };
 #if (defined(_WIN32) || defined(__CYGWIN__)) && !defined(__WINE__)

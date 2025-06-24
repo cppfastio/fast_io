@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-namespace uwvm::path
+namespace fast_io::details
 {
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
@@ -13,4 +13,4 @@ inline void get_module_install_path()
 {
 	throw_posix_error();
 }
-} // namespace uwvm::path
+} // namespace fast_io::details

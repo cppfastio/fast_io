@@ -19,6 +19,9 @@ inline void *nt_rtlallocate_heap_handle_common_impl(void *heaphandle, ::std::siz
 	}
 	auto p{::fast_io::win32::nt::RtlAllocateHeap(heaphandle, flag, n)};
 	if (p == nullptr)
+#if __has_cpp_attribute(unlikely)
+		[[unlikely]]
+#endif
 	{
 		::fast_io::fast_terminate();
 	}
@@ -108,7 +111,7 @@ public:
 	}
 	static inline void deallocate(void *addr) noexcept
 	{
-		if (addr == nullptr)
+		if (addr == nullptr) [[unlikely]]
 		{
 			return;
 		}

@@ -288,10 +288,7 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 			return *this;
 		}
 
-		if (cstr)
-		{
-			Alloc::deallocate(cstr);
-		}
+		Alloc::deallocate(cstr);
 
 		::std::size_t str_size{::fast_io::cstr_len(others.cstr)};
 		cstr = Alloc::allocate(str_size + 1);
@@ -312,21 +309,16 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 			return *this;
 		}
 
-		if (cstr)
-		{
-			Alloc::deallocate(cstr);
-		}
+		Alloc::deallocate(cstr);
+
 		cstr = others.cstr;
 		others.cstr = nullptr;
 	}
 
 	inline constexpr ~cstr_guard()
 	{
-		if (cstr)
-		{
-			Alloc::deallocate(cstr);
-			cstr = nullptr;
-		}
+		Alloc::deallocate(cstr);
+		cstr = nullptr;
 	}
 };
 

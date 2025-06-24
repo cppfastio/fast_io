@@ -39,4 +39,4 @@ inline ::fast_io::install_path get_module_install_path()
 	ret.module_name.erase(begin, curr);
 	return ret;
 }
-} // namespace uwvm::path
+} // namespace fast_io::details

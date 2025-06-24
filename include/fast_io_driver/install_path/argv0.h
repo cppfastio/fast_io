@@ -124,4 +124,4 @@ inline ::fast_io::install_path get_module_install_path_from_argv0(char const *ar
 
 	} // end else
 }
-} // namespace uwvm::path
+} // namespace fast_io::details

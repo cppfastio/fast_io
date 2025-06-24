@@ -80,7 +80,7 @@ inline PyObject *pyunicode_asencodedstring_model_impl(PyObject *self, char const
 
 inline PyObject *pyunicode_asencodedstring_impl(PyObject *self, char const *name, char const *value) noexcept
 {
-	if (self == nullptr)
+	if (self == nullptr) [[unlikely]]
 	{
 		return nullptr;
 	}
@@ -141,7 +141,7 @@ public:
 	}
 	pyobject_file &operator=(pyobject_file &&pob) noexcept
 	{
-		if (__builtin_addressof(pob) == this)
+		if (__builtin_addressof(pob) == this) [[unlikely]]
 		{
 			return *this;
 		}

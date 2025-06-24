@@ -24,6 +24,7 @@ inline void deallocate_with_secure_clear(void *ptr, [[maybe_unused]] ::std::size
 	{
 		secure_clear(ptr, buffer_bytes);
 	}
+
 	if constexpr (allocator::has_deallocate)
 	{
 		allocator::deallocate(ptr);
@@ -50,6 +51,7 @@ inline constexpr void deallocate_iobuf_space(char_type *ptr, [[maybe_unused]] ::
 		{
 			secure_clear(ptr, buffer_size * sizeof(char_type));
 		}
+
 		if constexpr (typed_allocator::has_deallocate)
 		{
 			typed_allocator::deallocate(ptr);
@@ -107,7 +109,12 @@ struct buffer_alloc_arr_ptr
 #endif
 		~buffer_alloc_arr_ptr()
 	{
-		deallocate_iobuf_space<nsecure_clear, T, allocator_type>(ptr, size);
+		if (ptr) [[likely]]
+		{
+			deallocate_iobuf_space<nsecure_clear, T, allocator_type>(ptr, size);
+			ptr = nullptr;
+		}
+		size = 0;
 	}
 };
 

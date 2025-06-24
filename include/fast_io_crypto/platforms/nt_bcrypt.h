@@ -35,10 +35,11 @@ public:
 	inline nt_bcrypt_hash_file &operator=(nt_bcrypt_hash_file const &) = delete;
 	inline ~nt_bcrypt_hash_file()
 	{
-		if (digest_buffer)
+		if (digest_buffer) [[likely]]
 		{
 			::fast_io::details::deallocate_with_secure_clear<false>(digest_buffer, bcrypt_size);
 		}
+		digest_buffer = nullptr;
 		if (this->hashHandle)
 		{
 			::fast_io::win32::BCryptDestroyHash(this->hashHandle);

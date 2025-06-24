@@ -106,7 +106,7 @@ inline
 				x[j] = (::std::to_integer<::std::uint_least32_t>(*dj)) |
 					   (::std::to_integer<::std::uint_least32_t>(dj[1]) << 8) |
 					   (::std::to_integer<::std::uint_least32_t>(dj[2]) << 16) |
-					   ::std::to_integer<::std::uint_least32_t>(dj[3] << 24);
+					   (::std::to_integer<::std::uint_least32_t>(dj[3]) << 24);
 			}
 			uu<operation::F>(a, b, c, d, x[0], 7, 0xd76aa478u);
 			uu<operation::F>(d, a, b, c, x[1], 12, 0xe8c7b756u);

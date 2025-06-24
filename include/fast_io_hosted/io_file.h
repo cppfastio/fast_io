@@ -269,6 +269,7 @@ struct biobd_allocate_guard
 	{
 		using typedallocator = typed_generic_allocator_adapter<allocatortype, T>;
 		typedallocator::deallocate_n(ptr, 1);
+		ptr = nullptr;
 	}
 };
 
@@ -330,6 +331,7 @@ public:
 	inline constexpr ~basic_general_io_file()
 	{
 		delete this->handle;
+		this->handle = nullptr;
 	}
 };
 

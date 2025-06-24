@@ -65,6 +65,7 @@ inline constexpr T pack_generic(U low, U high) noexcept
 
 inline constexpr ::fast_io::intrinsics::ul64x2 pack_ul64(::std::uint_least64_t low, ::std::uint_least64_t high) noexcept
 {
+	// This is a full 128-bit number that requires a size end-order conversion
 	if constexpr (::std::endian::native == ::std::endian::big)
 	{
 		return {high, low};
@@ -422,7 +423,7 @@ inline constexpr T umul(U a, T b, U &high) noexcept
 			else
 			{
 				T h;
-				T low{::fast_io::intrinsics::msvc::x86::_umul128(a, b, __builtin_addressof(high))};
+				T low{::fast_io::intrinsics::msvc::x86::_umul128(a, b, __builtin_addressof(h))};
 				high = static_cast<U>(h);
 				return low;
 			}

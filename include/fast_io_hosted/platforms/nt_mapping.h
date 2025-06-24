@@ -239,6 +239,7 @@ public:
 		if (this->address_begin) [[likely]]
 		{
 			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
+			// When destructuring, you shouldn't have to deal with return values like close.
 			::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle,
 																							   this->address_begin);
 		}
@@ -252,10 +253,10 @@ public:
 		if (this->address_begin) [[likely]]
 		{
 			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
-			auto ret{::fast_io::win32::nt::nt_unmap_view_of_section < family == ::fast_io::nt_family::zw > (current_process_handle, this->address_begin)};
+			auto ret{::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle, this->address_begin)};
 
 			this->address_end = this->address_begin = nullptr;
-			if (ret)
+			if (ret) [[unlikely]]
 			{
 				throw_nt_error(ret);
 			}
@@ -266,6 +267,7 @@ public:
 		if (this->address_begin) [[likely]]
 		{
 			void *current_process_handle{reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))};
+			// When destructuring, you shouldn't have to deal with return values like close.
 			::fast_io::win32::nt::nt_unmap_view_of_section<family == ::fast_io::nt_family::zw>(current_process_handle,
 																							   this->address_begin);
 		}

@@ -38,12 +38,13 @@ template <::std::unsigned_integral U, typename T>
 inline constexpr ::fast_io::details::basic_scatter_total_size_overflow_result<U>
 find_scatter_total_size_overflow_impl(basic_io_scatter_t<T> const *base, U len) noexcept
 {
-	constexpr U mx{static_cast<::std::size_t>(::std::numeric_limits<::std::make_signed_t<U>>::max())};
+	constexpr U mx{static_cast<::std::size_t>(::std::numeric_limits<U>::max())};
 	U total{};
 	auto i{base}, e{base + len};
 	for (; i != e; ++i)
 	{
-		if (static_cast<U>(static_cast<::std::size_t>(mx - i->len)) < total) [[unlikely]]
+		/// @todo mx ~= max / 2, mx - i.len may underflow. I'm guessing the author meant to check for overflow.
+		if (static_cast<U>(static_cast<::std::size_t>(mx) - static_cast<::std::size_t>(i->len)) < total) [[unlikely]]
 		{
 			break;
 		}

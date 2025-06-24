@@ -213,7 +213,7 @@ inline
 				v = ::fast_io::byte_swap(v);
 			}
 			::fast_io::freestanding::array<::std::byte, usz> va{
-				::fast_io::bit_cast<::fast_io::freestanding::array<::std::byte, usz>>(digest[i])};
+				::fast_io::bit_cast<::fast_io::freestanding::array<::std::byte, usz>>(v)};
 			ptr = ::fast_io::freestanding::nonoverlapped_bytes_copy_n(va.data(), usz, ptr);
 		}
 	}

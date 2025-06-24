@@ -23,6 +23,7 @@ enum class scan_integral_context_phase : ::std::uint_least8_t;
 template <typename phase_t, ::std::integral char_type>
 struct ip_scan_state_t
 {
+	/// @todo forgot?
 	// TODO: to find out why +1 is needed here
 	static inline constexpr auto max_size{
 		::fast_io::details::print_integer_reserved_size_cache<10, false, false, ::std::uint_least16_t> + 1};
@@ -30,8 +31,8 @@ struct ip_scan_state_t
 	scan_integral_context_phase integer_phase{};
 	::std::uint_least8_t size{};
 	phase_t ip_phase{};
-	static inline constexpr ::std::uint_least8_t port_mark = -1;
-	static inline constexpr ::std::uint_least8_t port = -2;
+	static inline constexpr ::std::uint_least8_t port_mark = static_cast<::std::uint_least8_t>(-1);
+	static inline constexpr ::std::uint_least8_t port = static_cast<::std::uint_least8_t>(-2);
 };
 template <::std::integral char_type>
 using ipv4_scan_state_t = ip_scan_state_t<scan_ipv4_context_phase, char_type>;
@@ -532,6 +533,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 				return {begin, parse_code::invalid};
 			}
 			// TODO
+			/// @todo forgot?
 		}
 		else [[unlikely]]
 		{
@@ -734,6 +736,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 	}
 	else if constexpr (::std::same_as<iptype, ::fast_io::ipv6>)
 	{
+		/// @todo forgot?
 		// return ::fast_io::details::prtrsv_ipv6_define_impl<flags.v6shorten, flags.v6uppercase,
 		//	flags.showport ? true : flags.v6bracket, flags.v6full,
 		//	flags.showport>(iter, val.reference);
@@ -741,6 +744,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 	}
 	else if constexpr (::std::same_as<iptype, ::fast_io::ip_address>)
 	{
+		/// @todo forgot?
 		// return ::fast_io::details::prtrsv_ip_address_define_impl<flags.v6shorten, flags.v6uppercase,
 		//	flags.showport ? true : flags.v6bracket, flags.v6full,
 		//	flags.showport>(iter, val.reference);
@@ -748,6 +752,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 	}
 	else
 	{
+		/// @todo forgot?
 		// return ::fast_io::details::prtrsv_ip_define_impl<flags.v6shorten, flags.v6uppercase,
 		//	flags.showport ? true : flags.v6bracket, flags.v6full,
 		//	flags.showport>(iter, val.reference);

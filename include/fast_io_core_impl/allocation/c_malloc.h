@@ -204,8 +204,9 @@ public:
 		{
 			return;
 		}
+		
 #if FAST_IO_HAS_BUILTIN(__builtin_free)
-                __builtin_free
+        __builtin_free
 #else
 		::std::free
 #endif

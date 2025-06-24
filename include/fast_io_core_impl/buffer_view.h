@@ -15,7 +15,7 @@ struct basic_ibuffer_view
 	template <::std::contiguous_iterator Iter>
 		requires ::std::same_as<::std::remove_cvref_t<::std::iter_value_t<Iter>>, char_type>
 	inline constexpr basic_ibuffer_view(Iter first, Iter last) noexcept
-		: begin_ptr{::std::to_address(first)}, curr_ptr{begin_ptr}, end_ptr{curr_ptr + (last - first)}
+		: begin_ptr{::std::to_address(first)}, curr_ptr{begin_ptr}, end_ptr{::std::to_address(last)}
 	{
 	}
 	template <::std::ranges::contiguous_range rg>
