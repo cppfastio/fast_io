@@ -69,11 +69,11 @@ struct nt_process_rtl_guard
 		: rtl_up{r} {};
 	nt_process_rtl_guard(nt_process_rtl_guard const &) = delete;
 	nt_process_rtl_guard &operator=(nt_process_rtl_guard const &) = delete;
-	inline constexpr ~nt_process_rtl_guard()
+	inline ~nt_process_rtl_guard()
 	{
 		clear();
 	}
-	inline constexpr void clear() noexcept
+	inline void clear() noexcept
 	{
 		::fast_io::win32::nt::RtlDestroyProcessParameters(rtl_up);
 		rtl_up = nullptr;
