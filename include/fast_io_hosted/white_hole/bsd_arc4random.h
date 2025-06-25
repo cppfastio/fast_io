@@ -47,6 +47,20 @@ inline void read_all_bytes_underflow_define(basic_bsd_arc4random<char_type>, ::s
 
 namespace details
 {
+
+inline ::std::byte *posix_getrandom_read_some_bytes_define_impl(unsigned flags, ::std::byte *first, ::std::byte *last)
+{
+	::std::size_t sz{static_cast<::std::size_t>(last - first)};
+
+	auto ret{noexcept_call(::getrandom, first, sz, flags)};
+	if (ret < 0)
+	{
+		throw_posix_error();
+	}
+
+	return first + ret;
+}
+
 [[__gnu__::__weak__]]
 extern void glibc_arc4random_buf(void *, size_t) noexcept __asm__("arc4random_buf");
 
@@ -55,7 +69,7 @@ inline ::std::byte *bsd_arc4random_read_some_bytes_define_impl(::std::byte *firs
 	constexpr auto *glibc_arc4random_bufptr{::fast_io::details::glibc_arc4random_buf};
 	if (glibc_arc4random_bufptr == nullptr)
 	{
-		return ::fast_io::details::linux_getrandom_read_some_bytes_define_impl(0, first, last);
+		return posix_getrandom_read_some_bytes_define_impl(0, first, last);
 	}
 	else
 	{

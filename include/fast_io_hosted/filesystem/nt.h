@@ -22,7 +22,7 @@ struct nt_dirent
 	void *d_handle{};
 	file_type d_type{};
 	::std::uint_least64_t d_ino{};
-	char16_t native_d_name[0x2001];
+	char16_t native_d_name[0x2001]; // max ntfs filename length
 	::std::size_t native_d_namlen{};
 	char8_t u8d_name[0x8004];
 	::std::size_t u8d_namlen{};
@@ -48,7 +48,6 @@ struct nt_dirent_space_guard
 	inline ~nt_dirent_space_guard()
 	{
 		typed_generic_allocator_adapter<Allocator, T>::deallocate_n(ptr, 1);
-		ptr = nullptr;
 	}
 };
 

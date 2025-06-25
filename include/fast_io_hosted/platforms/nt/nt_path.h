@@ -4,11 +4,6 @@ namespace fast_io::win32::nt::details
 {
 inline ::std::uint_least16_t nt_filename_bytes_check(::std::size_t bytes)
 {
-	if constexpr (sizeof(bytes) < sizeof(::std::uint_least16_t)) // sizeof(::std::size_t) can never be smaller than
-																 // sizeof(::std::uint_least16_t)
-	{
-		return static_cast<::std::uint_least16_t>(bytes);
-	}
 	constexpr ::std::size_t max_value{static_cast<::std::size_t>(::std::numeric_limits<::std::uint_least16_t>::max())};
 	if (max_value < bytes)
 	{
@@ -19,11 +14,6 @@ inline ::std::uint_least16_t nt_filename_bytes_check(::std::size_t bytes)
 
 inline ::std::uint_least16_t strlen_to_nt_filename_bytes(::std::size_t str_sz)
 {
-	if constexpr (sizeof(str_sz) < sizeof(::std::uint_least16_t)) // sizeof(::std::size_t) can never be smaller than
-																  // sizeof(::std::uint_least16_t)
-	{
-		return static_cast<::std::uint_least16_t>(static_cast<::std::uint_least16_t>(str_sz) << 1u);
-	}
 	constexpr ::std::size_t max_value{static_cast<::std::size_t>(::std::numeric_limits<::std::uint_least16_t>::max() >> 1u)};
 	if (max_value < str_sz)
 	{

@@ -54,10 +54,7 @@ struct filebuf_guard
 
 	inline ~filebuf_guard()
 	{
-		if (new_filebuf)
-		{
-			delete new_filebuf;
-		}
+		delete new_filebuf;
 	}
 	inline constexpr filebuf_type *release() noexcept
 	{

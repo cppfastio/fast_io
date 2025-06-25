@@ -646,7 +646,7 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 	struct timespec res;
 	auto clk{details::posix_clock_id_to_native_value(pclk_id)};
 	// vdso
-	if (::fast_io::posix::libc_clock_gettime(clk, __builtin_addressof(res)) < 0)
+	if (::fast_io::posix::libc_clock_gettime(clk, __builtin_addressof(res)) != 0)
 	{
 		throw_posix_error();
 	}
@@ -1109,7 +1109,7 @@ inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe
 #ifdef __linux__
 	system_call_throw_error(system_call<__NR_clock_settime, int>(clk, __builtin_addressof(res)));
 #else
-	if (::fast_io::posix::libc_clock_settime(clk, __builtin_addressof(res)) < 0)
+	if (::fast_io::posix::libc_clock_settime(clk, __builtin_addressof(res)) != 0)
 	{
 		throw_posix_error();
 	}
@@ -1178,7 +1178,7 @@ inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,unix_
 inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,unix_timestamp timestamp)
 {
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/1000000000u};
-	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.seconds),static_cast<long>(timestamp.subseconds/mul_factor)}
+	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.seconds),static_cast<long>(timestamp.subseconds/mul_factor)};
 	for(;;)
 	{
 		auto ret{::fast_io::noexcept_call(::clock_nanosleep,pclk_id,TIMER_ABSTIME,__builtin_addressof(timestamp_spec),nullptr)};

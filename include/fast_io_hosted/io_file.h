@@ -115,7 +115,7 @@ public:
 						  ::fast_io::operations::decay::defines::writable<decaytype>)
 			{
 				return ::fast_io::operations::decay::scatter_write_some_decay(
-					::fast_io::operations::input_stream_ref(value), base, n);
+					::fast_io::operations::output_stream_ref(value), base, n);
 			}
 			else
 			{
@@ -138,7 +138,7 @@ public:
 						  ::fast_io::operations::decay::defines::pwritable<decaytype>)
 			{
 				return ::fast_io::operations::decay::scatter_pwrite_some_decay(
-					::fast_io::operations::input_stream_ref(value), base, n, off);
+					::fast_io::operations::output_stream_ref(value), base, n, off);
 			}
 			else
 			{
@@ -269,7 +269,6 @@ struct biobd_allocate_guard
 	{
 		using typedallocator = typed_generic_allocator_adapter<allocatortype, T>;
 		typedallocator::deallocate_n(ptr, 1);
-		ptr = nullptr;
 	}
 };
 
@@ -331,7 +330,6 @@ public:
 	inline constexpr ~basic_general_io_file()
 	{
 		delete this->handle;
-		this->handle = nullptr;
 	}
 };
 

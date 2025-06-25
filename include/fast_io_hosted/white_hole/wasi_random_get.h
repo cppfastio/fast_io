@@ -37,7 +37,7 @@ inline ::std::byte *wasi_random_get_some_impl(::std::byte *first, ::std::byte *l
 											  static_cast<__wasi_size_t>(toreadthisround))};
 			if (ret)
 			{
-				return first;
+				throw_posix_error(ret);
 			}
 			first += toreadthisround;
 		}

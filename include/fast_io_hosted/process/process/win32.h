@@ -16,12 +16,10 @@ inline void close_win32_user_process_information_not_null(win32_user_process_inf
 	if (hnt_user_process_info.hthread) [[likely]]
 	{
 		::fast_io::win32::CloseHandle(hnt_user_process_info.hthread);
-		hnt_user_process_info.hthread = nullptr;
 	}
 	if (hnt_user_process_info.hprocess) [[likely]]
 	{
 		::fast_io::win32::CloseHandle(hnt_user_process_info.hprocess);
-		hnt_user_process_info.hprocess = nullptr;
 	}
 }
 
@@ -730,7 +728,7 @@ inline win32_wait_status wait(win32_family_process_observer<family> ppob) noexce
 	::std::uint_least32_t exit_code{};
 	if (!::fast_io::win32::GetExitCodeProcess(ppob.hnt_user_process_info.hprocess, __builtin_addressof(exit_code)))
 	{
-		throw_win32_error(status);
+		throw_win32_error();
 	}
 
 
@@ -837,7 +835,6 @@ public:
 	inline ~win32_family_process()
 	{
 		win32::details::close_win32_user_process_information_and_wait(this->hnt_user_process_info);
-		this->hnt_user_process_info = {};
 	}
 };
 

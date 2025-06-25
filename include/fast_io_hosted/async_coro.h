@@ -65,11 +65,11 @@ public:
 															   });
 		if constexpr (write)
 		{
-			async_read_callback(scheduler, stream, first, last, overlapped, offset);
+			async_write_callback(scheduler, stream, first, last, overlapped, offset);
 		}
 		else
 		{
-			async_write_callback(scheduler, stream, first, last, overlapped, offset);
+			async_read_callback(scheduler, stream, first, last, overlapped, offset);
 		}
 	}
 };
@@ -108,11 +108,11 @@ public:
 															   });
 		if constexpr (write)
 		{
-			async_scatter_read_callback(scheduler, stream, scatters, overlapped, offset);
+			async_scatter_write_callback(scheduler, stream, scatters, overlapped, offset);
 		}
 		else
 		{
-			async_scatter_write_callback(scheduler, stream, scatters, overlapped, offset);
+			async_scatter_read_callback(scheduler, stream, scatters, overlapped, offset);
 		}
 	}
 };

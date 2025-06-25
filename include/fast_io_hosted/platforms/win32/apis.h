@@ -18,7 +18,7 @@ FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL MapViewOfFile(void *, ::std::uint_lea
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetEndOfFile(void *) noexcept FAST_IO_WINSTDCALL_RENAME(SetEndOfFile, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL UnmapViewOfFile(void const *) noexcept FAST_IO_WINSTDCALL_RENAME(UnmapViewOfFile, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WriteFile(void *, void const *, ::std::uint_least32_t, ::std::uint_least32_t *, ::fast_io::win32::overlapped *) noexcept FAST_IO_WINSTDCALL_RENAME(WriteFile, 20);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL ReadFile(void *, void const *, ::std::uint_least32_t, ::std::uint_least32_t *, ::fast_io::win32::overlapped *) noexcept FAST_IO_WINSTDCALL_RENAME(ReadFile, 20);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL ReadFile(void *, void *, ::std::uint_least32_t, ::std::uint_least32_t *, ::fast_io::win32::overlapped *) noexcept FAST_IO_WINSTDCALL_RENAME(ReadFile, 20);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL SetFilePointer(void *, ::std::int_least32_t, ::std::int_least32_t *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(SetFilePointer, 16);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetFilePointerEx(void *, ::std::int_least64_t, ::std::int_least64_t *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(SetFilePointerEx, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL DuplicateHandle(void *, void *, void *, void **, ::std::uint_least32_t, int, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(DuplicateHandle, 28);
@@ -74,7 +74,7 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL TryEnterCriticalSection(void *) noexcep
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL LeaveCriticalSection(void *) noexcept FAST_IO_WINSTDCALL_RENAME(LeaveCriticalSection, 4);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL DeleteCriticalSection(void *) noexcept FAST_IO_WINSTDCALL_RENAME(DeleteCriticalSection, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSADuplicateSocketA(void *, ::std::uint_least32_t, ::fast_io::win32::wsaprotocol_infoa *) noexcept FAST_IO_WINSTDCALL_RENAME(WSADuplicateSocketA, 12);
-FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL WSADuplicateSocketW(void *, ::std::uint_least32_t, ::fast_io::win32::wsaprotocol_infow *) noexcept FAST_IO_WINSTDCALL_RENAME(WSADuplicateSocketW, 12);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSADuplicateSocketW(void *, ::std::uint_least32_t, ::fast_io::win32::wsaprotocol_infow *) noexcept FAST_IO_WINSTDCALL_RENAME(WSADuplicateSocketW, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSACleanup() noexcept FAST_IO_WINSTDCALL_RENAME(WSACleanup, 0);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAStartup(::std::uint_least32_t, ::fast_io::win32::wsadata *) noexcept FAST_IO_WINSTDCALL_RENAME(WSAStartup, 8);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAGetLastError() noexcept FAST_IO_WINSTDCALL_RENAME(WSAGetLastError, 0);
@@ -95,7 +95,7 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSARecv(::std::size_t, ::fast_io::win32
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSARecvFrom(::std::size_t, ::fast_io::win32::wsabuf *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t *, void *, int *, ::fast_io::win32::overlapped *, ::fast_io::win32::lpwsaoverlapped_completion_routine) noexcept FAST_IO_WINSTDCALL_RENAME(WSARecvFrom, 36);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL connect(::std::size_t, void const *, int) noexcept FAST_IO_WINSTDCALL_RENAME(connect, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAConnect(::std::size_t, void const *, int, ::fast_io::win32::wsabuf *, ::fast_io::win32::wsabuf *, ::fast_io::win32::qualityofservice *, ::fast_io::win32::qualityofservice *) noexcept FAST_IO_WINSTDCALL_RENAME(WSAConnect, 28);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL shutdown(::std::size_t, void const *, int) noexcept FAST_IO_WINSTDCALL_RENAME(shutdown, 12);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL shutdown(::std::size_t, int) noexcept FAST_IO_WINSTDCALL_RENAME(shutdown, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetCurrentProcessId() noexcept FAST_IO_WINSTDCALL_RENAME(GetCurrentProcessId, 0);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FlushFileBuffers(void *) noexcept FAST_IO_WINSTDCALL_RENAME(FlushFileBuffers, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetQueuedCompletionStatus(void *, ::std::uint_least32_t *, ::std::size_t *, ::fast_io::win32::overlapped *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetQueuedCompletionStatus, 20);

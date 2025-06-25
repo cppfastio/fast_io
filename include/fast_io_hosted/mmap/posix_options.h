@@ -21,7 +21,9 @@ struct posix_mmap_options
 		{
 			if ((flagsv & ::fast_io::mmap_flags::map_uninitialized) == ::fast_io::mmap_flags::map_uninitialized)
 			{
-				flags -= 0x4000000;
+				// 0x4000000u on pdp11 is ul, on pdp11 mask is all poped
+				constexpr unsigned mask{~static_cast<unsigned>(0x4000000u)};
+				flags = staic_cast<int>(staic_cast<unsigned>(flags) & mask);
 			}
 		}
 #endif

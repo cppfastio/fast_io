@@ -27,9 +27,9 @@ inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset,
 	{
 		::std::uint_least64_t result{};
 		::std::uint_least64_t offset64_val{
-			static_cast<::std::uint_least64_t>(static_cast<::fast_io::intfpos_t>(offset))};
-		auto ret{system_call<__NR_llseek, int>(fd, static_cast<::std::uint_least32_t>(offset >> 32u),
-											   static_cast<::std::uint_least32_t>(offset), __builtin_addressof(result),
+			static_cast<::std::uint_least64_t>(offset)};
+		auto ret{system_call<__NR_llseek, int>(fd, static_cast<::std::uint_least32_t>(offset64_val >> 32u),
+											   static_cast<::std::uint_least32_t>(offset64_val), __builtin_addressof(result),
 											   static_cast<int>(s))};
 		system_call_throw_error(ret);
 		return static_cast<::fast_io::intfpos_t>(static_cast<::std::uint_least64_t>(result));

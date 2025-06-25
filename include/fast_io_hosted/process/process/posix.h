@@ -701,7 +701,6 @@ public:
 	inline ~posix_process()
 	{
 		::fast_io::details::posix_waitpid_noexcept(this->pid);
-		this->pid = -1;
 	}
 };
 

@@ -318,7 +318,6 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	inline constexpr ~cstr_guard()
 	{
 		Alloc::deallocate(cstr);
-		cstr = nullptr;
 	}
 };
 

@@ -142,11 +142,12 @@ public:
 
 	inline ~basic_win32_family_crypt_gen_random_file()
 	{
-		if (!this->hprov) [[likely]]
+		if (this->hprov) [[likely]]
 		{
 			::fast_io::win32::CryptReleaseContext(this->hprov, 0);
 		}
 	}
+	
 	inline void close()
 	{
 		if (this->hprov) [[likely]]

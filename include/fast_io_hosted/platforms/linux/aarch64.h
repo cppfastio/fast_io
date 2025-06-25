@@ -3,7 +3,7 @@
 namespace fast_io
 {
 
-template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call() noexcept
 {
@@ -13,7 +13,7 @@ inline return_value_type system_call() noexcept
 	return static_cast<return_value_type>(x0);
 }
 
-template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1) noexcept
 {
@@ -23,7 +23,7 @@ inline return_value_type system_call(auto p1) noexcept
 	return static_cast<return_value_type>(x0);
 }
 
-template <::std::size_t syscall_number>
+template <::std::uint_least64_t syscall_number>
 inline void system_call_no_return(auto p1) noexcept
 {
 	register ::std::uint_least64_t x8 __asm__("x8") = syscall_number;
@@ -32,7 +32,7 @@ inline void system_call_no_return(auto p1) noexcept
 	__builtin_unreachable();
 }
 
-template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2) noexcept
 {
@@ -43,7 +43,7 @@ inline return_value_type system_call(auto p1, auto p2) noexcept
 	return static_cast<return_value_type>(x0);
 }
 
-template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2, auto p3) noexcept
 {
@@ -55,7 +55,7 @@ inline return_value_type system_call(auto p1, auto p2, auto p3) noexcept
 	return static_cast<return_value_type>(x0);
 }
 
-template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4) noexcept
 {
@@ -68,7 +68,7 @@ inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4) noexcep
 	return static_cast<return_value_type>(x0);
 }
 
-template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5) noexcept
 {
@@ -82,7 +82,7 @@ inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5
 	return static_cast<return_value_type>(x0);
 }
 
-template <::std::size_t syscall_number, ::std::signed_integral return_value_type>
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5, auto p6) noexcept
 {

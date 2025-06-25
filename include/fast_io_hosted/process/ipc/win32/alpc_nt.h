@@ -1137,7 +1137,6 @@ public:
 		{
 			this->handle->close_noexcept();
 			tls_native_handle_rmptr_type_alloc::deallocate_n(this->handle, 1);
-			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
 		}
 	}
 };
@@ -1242,7 +1241,6 @@ public:
 		{
 			this->handle->close_noexcept();
 			tls_native_handle_rmptr_type_alloc::deallocate_n(this->handle, 1);
-			this->handle = nullptr; // POSIX standard says we should never call close(2) again even close syscall fails
 		}
 	}
 };

@@ -46,7 +46,7 @@ inline ::std::byte *rtl_gen_random_some_impl(::std::byte *first, ::std::byte *la
 			}
 			if (!::fast_io::win32::SystemFunction036(first, static_cast<::std::uint_least32_t>(toreadthisround)))
 			{
-				return first;
+				throw_win32_error();
 			}
 			first += toreadthisround;
 		}

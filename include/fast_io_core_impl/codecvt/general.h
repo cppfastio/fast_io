@@ -518,6 +518,7 @@ template <encoding_scheme src_encoding = encoding_scheme::execution_charset,
 inline constexpr dest_char_type *general_code_cvt_full(src_char_type const *src_first, src_char_type const *src_last,
 													   dest_char_type *__restrict dst) noexcept
 {
+	// No need to consider dst_last
 	if constexpr (src_encoding == encoding_scheme::execution_charset)
 	{
 		constexpr auto src_scheme = get_execution_charset_encoding_scheme<src_char_type>(src_encoding);

@@ -249,6 +249,7 @@ struct is_zero_default_constructible<win32_family_dll_file<family>>
 template <win32_family family, ::fast_io::constructible_to_os_c_str T>
 inline void *dll_load_symbol(win32_family_dll_io_observer<family> pdliob, T const &symbol)
 {
+	/// @todo Exported symbol names need to be matched and not transcoded
 	return ::fast_io::posix_api_common(symbol, ::fast_io::details::win32_dll_load_impl_context{pdliob.hmodule});
 }
 
@@ -256,6 +257,7 @@ template <win32_family family, ::fast_io::constructible_to_os_c_str T, ::fast_io
 inline void *dll_load_versioned_symbol(win32_family_dll_io_observer<family> pdliob, T const &symbol,
 									   [[maybe_unused]] T1 const &)
 {
+	/// @todo Exported symbol names need to be matched and not transcoded
 	return ::fast_io::posix_api_common(symbol, ::fast_io::details::win32_dll_load_impl_context{pdliob.hmodule});
 }
 

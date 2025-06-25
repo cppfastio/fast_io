@@ -82,7 +82,7 @@ struct win32_mmap_options
 		if ((protv & ::fast_io::mmap_prot::prot_read) == ::fast_io::mmap_prot::prot_read &&
 			(protv & ::fast_io::mmap_prot::prot_write) == ::fast_io::mmap_prot::prot_write)
 		{
-			dwDesiredAccesstemp |= 0x00000004 /*FILE_MAP_ALL_ACCESS*/;
+			dwDesiredAccesstemp |= 0x000F001F /*FILE_MAP_ALL_ACCESS*/;
 		}
 		else
 		{
@@ -95,6 +95,7 @@ struct win32_mmap_options
 				dwDesiredAccesstemp |= 0x00000004 /*FILE_MAP_READ*/;
 			}
 		}
+
 		if ((flagsv & ::fast_io::mmap_flags::map_hugetlb) == ::fast_io::mmap_flags::map_hugetlb)
 		{
 			flprotecttemp |= 0x80000000;

@@ -152,7 +152,7 @@ inline constexpr ::std::default_sentinel_t cend(win32_9xa_dns_io_observer) noexc
 
 inline constexpr bool operator==(win32_9xa_dns_iterator a, ::std::default_sentinel_t) noexcept
 {
-	return a.res == nullptr || (a.res->h_addr_list[a.pos] == nullptr);
+	return a.res == nullptr || a.res->h_addr_list == nullptr || a.res->h_addr_list[a.pos] == nullptr;
 }
 inline constexpr bool operator!=(win32_9xa_dns_iterator a, ::std::default_sentinel_t b) noexcept
 {

@@ -89,6 +89,8 @@ struct cxa_demangle
 	~cxa_demangle()
 	{
 		free(buffer);
+		buffer = nullptr;
+		length = static_cast<::std::size_t>(0u);
 	}
 };
 

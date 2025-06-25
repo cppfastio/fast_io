@@ -34,7 +34,6 @@ struct posix_timezone_name
 	{
 		::fast_io::typed_generic_allocator_adapter<::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator>,
 												   char8_t>::deallocate(ptr);
-		ptr = nullptr;
 	}
 };
 
@@ -55,7 +54,7 @@ inline posix_timezone_name posix_localtimezone_impl() noexcept
 {
 	struct stat st;
 	int ret{::fast_io::posix::libc_lstat(u8"/etc/localtime", __builtin_addressof(st))};
-	if (ret == -1)
+	if (ret == -1) [[unlikely]]
 	{
 		return {};
 	}
@@ -76,11 +75,11 @@ inline posix_timezone_name posix_localtimezone_impl() noexcept
 	nm.ptr = bufptr;
 	nm.n = static_cast<::std::size_t>(static_cast<unsignedtype>(st.st_size));
 	::std::ptrdiff_t symret{::fast_io::posix::libc_readlink(u8"/etc/localtime", bufptr, real_size)};
-	if (ret == -1 || static_cast<::std::size_t>(symret) != real_size || real_size <= localtimezoneinfo_string_len)
+	if (symret == -1 || static_cast<::std::size_t>(symret) != real_size || real_size <= localtimezoneinfo_string_len) [[unlikely]]
 	{
 		return {};
 	}
-	if (__builtin_memcmp(localtimezoneinfo, bufptr, localtimezoneinfo_string_len) != 0)
+	if (__builtin_memcmp(localtimezoneinfo, bufptr, localtimezoneinfo_string_len) != 0) [[unlikely]]
 	{
 		return {};
 	}

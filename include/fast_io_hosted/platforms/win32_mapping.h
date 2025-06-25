@@ -58,7 +58,7 @@ inline constexpr win32_file_map_attribute to_win32_file_map_attribute(file_map_a
 	case file_map_attribute::execute_read:
 		return win32_file_map_attribute::execute | win32_file_map_attribute::read;
 	case file_map_attribute::execute_read_write:
-		return win32_file_map_attribute::execute | win32_file_map_attribute::read;
+		return win32_file_map_attribute::execute | win32_file_map_attribute::read | win32_file_map_attribute::write;
 	case file_map_attribute::execute_write_copy:
 		return win32_file_map_attribute::execute | win32_file_map_attribute::write | win32_file_map_attribute::copy;
 	case file_map_attribute::read_only:

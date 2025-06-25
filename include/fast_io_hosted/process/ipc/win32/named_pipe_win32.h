@@ -493,7 +493,6 @@ public:
 		if (*this) [[likely]]
 		{
 			::fast_io::win32::CloseHandle(this->handle);
-			this->handle = nullptr;
 		}
 	}
 };
@@ -593,7 +592,6 @@ public:
 		if (*this) [[likely]]
 		{
 			::fast_io::win32::CloseHandle(this->handle);
-			this->handle = nullptr;
 		}
 	}
 };

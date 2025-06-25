@@ -104,6 +104,11 @@ inline ::std::size_t posix_accept_win32_socket_impl(::std::size_t hsocket, void 
 
 inline ::std::ptrdiff_t posix_recvfrom_win32_socket_impl(::std::size_t hsocket, void *buf, ::std::size_t len, int flags, void *src_addr, int *addrlen)
 {
+	if (len > INT_MAX)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(87u));
+	}
+
 	auto soc{::fast_io::win32::recvfrom(hsocket, reinterpret_cast<char *>(buf), static_cast<int>(len), flags, src_addr, addrlen)};
 	if (soc == -1)
 	{
@@ -114,6 +119,11 @@ inline ::std::ptrdiff_t posix_recvfrom_win32_socket_impl(::std::size_t hsocket, 
 
 inline ::std::ptrdiff_t posix_sendto_win32_socket_impl(::std::size_t hsocket, void const *msg, ::std::size_t len, int flags, void const *to, int tolen)
 {
+	if (len > INT_MAX)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(87u));
+	}
+
 	auto soc{::fast_io::win32::sendto(hsocket, reinterpret_cast<char const *>(msg), static_cast<int>(len), flags, to, tolen)};
 
 	if (soc == -1)

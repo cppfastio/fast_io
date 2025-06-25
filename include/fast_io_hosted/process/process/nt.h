@@ -13,12 +13,10 @@ inline void close_nt_user_process_information_not_null(nt_user_process_informati
 	if (hnt_user_process_info.hthread) [[likely]]
 	{
 		::fast_io::win32::nt::nt_close<family == nt_family::zw>(hnt_user_process_info.hthread);
-		hnt_user_process_info.hthread = nullptr;
 	}
 	if (hnt_user_process_info.hprocess) [[likely]]
 	{
 		::fast_io::win32::nt::nt_close<family == nt_family::zw>(hnt_user_process_info.hprocess);
-		hnt_user_process_info.hprocess = nullptr;
 	}
 }
 template <nt_family family>
@@ -896,7 +894,6 @@ public:
 	inline ~nt_family_process()
 	{
 		win32::nt::details::close_nt_user_process_information_and_wait<family>(this->hnt_user_process_info);
-		this->hnt_user_process_info = {};
 	}
 };
 

@@ -204,11 +204,11 @@ inline ::std::uint_least32_t nt_create_process(Args... args) noexcept
 {
 	if constexpr (zw)
 	{
-		return ::fast_io::win32::nt::NtCreateProcess(args...);
+		return ::fast_io::win32::nt::ZwCreateProcess(args...);
 	}
 	else
 	{
-		return ::fast_io::win32::nt::ZwCreateProcess(args...);
+		return ::fast_io::win32::nt::NtCreateProcess(args...);
 	}
 }
 
@@ -232,11 +232,11 @@ inline ::std::uint_least32_t nt_resume_thread(Args... args) noexcept
 {
 	if constexpr (zw)
 	{
-		return ZwResumeThread(args...);
+		return ::fast_io::win32::nt::ZwResumeThread(args...);
 	}
 	else
 	{
-		return NtResumeThread(args...);
+		return ::fast_io::win32::nt::NtResumeThread(args...);
 	}
 }
 
@@ -246,11 +246,11 @@ inline ::std::uint_least32_t nt_lock_file(Args... args) noexcept
 {
 	if constexpr (zw)
 	{
-		return ZwLockFile(args...);
+		return ::fast_io::win32::nt::ZwLockFile(args...);
 	}
 	else
 	{
-		return NtLockFile(args...);
+		return ::fast_io::win32::nt::NtLockFile(args...);
 	}
 }
 
@@ -260,11 +260,11 @@ inline ::std::uint_least32_t nt_unlock_file(Args... args) noexcept
 {
 	if constexpr (zw)
 	{
-		return ZwUnlockFile(args...);
+		return ::fast_io::win32::nt::ZwUnlockFile(args...);
 	}
 	else
 	{
-		return NtUnlockFile(args...);
+		return ::fast_io::win32::nt::NtUnlockFile(args...);
 	}
 }
 
@@ -274,11 +274,11 @@ inline ::std::uint_least32_t nt_flush_buffers_file(Args... args) noexcept
 {
 	if constexpr (zw)
 	{
-		return ZwFlushBuffersFile(args...);
+		return ::fast_io::win32::nt::ZwFlushBuffersFile(args...);
 	}
 	else
 	{
-		return NtFlushBuffersFile(args...);
+		return ::fast_io::win32::nt::NtFlushBuffersFile(args...);
 	}
 }
 
@@ -288,11 +288,11 @@ inline ::std::uint_least32_t nt_flush_buffers_file_ex(Args... args) noexcept
 {
 	if constexpr (zw)
 	{
-		return ZwFlushBuffersFileEx(args...);
+		return ::fast_io::win32::nt::ZwFlushBuffersFileEx(args...);
 	}
 	else
 	{
-		return NtFlushBuffersFileEx(args...);
+		return ::fast_io::win32::nt::NtFlushBuffersFileEx(args...);
 	}
 }
 

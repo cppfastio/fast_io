@@ -1,5 +1,5 @@
 ﻿#pragma once
-#if !(defined(__linux__) && defined(__NR_getrandom)) && __has_include(<sys/random.h>)
+#if !(defined(__linux__) && defined(__NR_getrandom)) && !__has_include(<sys/random.h>)
 #include <sys/random.h>
 #endif
 
@@ -31,7 +31,7 @@ inline ::std::byte *linux_getrandom_read_some_bytes_define_impl(unsigned flags, 
 	auto ret{system_call<__NR_getrandom, ::std::ptrdiff_t>(first, sz, flags)};
 	system_call_throw_error(ret);
 #else
-	auto ret{noexcept_call(getrandom, first, sz, flags)};
+	auto ret{noexcept_call(::getrandom, first, sz, flags)};
 	if (ret < 0)
 	{
 		throw_posix_error();

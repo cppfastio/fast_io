@@ -58,7 +58,7 @@ extern unsigned my_dos_write(int, void const *, unsigned, unsigned *) noexcept _
 inline ::std::byte *posix_dos_read_bytes_impl(int fd, ::std::byte *first, ::std::byte *last)
 {
 	unsigned ret;
-	if (::fast_io::details::my_dos_read(fd, first, ::fast_io::details::read_write_bytes_compute<unsigned>(first, last), __builtin_addressof(ret)))
+	if (my_dos_read(fd, first, ::fast_io::details::read_write_bytes_compute<unsigned>(first, last), __builtin_addressof(ret)))
 	{
 		throw_posix_error();
 	}
@@ -68,7 +68,7 @@ inline ::std::byte *posix_dos_read_bytes_impl(int fd, ::std::byte *first, ::std:
 inline ::std::byte const *posix_dos_write_bytes_impl(int fd, ::std::byte const *first, ::std::byte const *last)
 {
 	unsigned ret;
-	if (::fast_io::details::my_dos_write(fd, first, ::fast_io::details::read_write_bytes_compute<unsigned>(first, last), __builtin_addressof(ret)))
+	if (my_dos_write(fd, first, ::fast_io::details::read_write_bytes_compute<unsigned>(first, last), __builtin_addressof(ret)))
 	{
 		throw_posix_error();
 	}

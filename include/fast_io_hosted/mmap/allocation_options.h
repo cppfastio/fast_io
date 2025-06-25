@@ -9,12 +9,12 @@ struct allocation_mmap_options
 	inline explicit constexpr allocation_mmap_options() noexcept = default;
 	inline constexpr allocation_mmap_options(::fast_io::mmap_prot, ::fast_io::mmap_flags flagsv) noexcept
 	{
-		int exclusiveflags{static_cast<int>(flagsv & ::fast_io::mmap_flags::map_type)};
-		if (exclusiveflags == 3)
+		::std::uint_least32_t exclusiveflags{static_cast<::std::uint_least32_t>(flagsv & ::fast_io::mmap_flags::map_type)};
+		if (exclusiveflags == 3u)
 		{
-			exclusiveflags = 1;
+			exclusiveflags = 1u;
 		}
-		if (exclusiveflags == 1)
+		if (exclusiveflags == 1u)
 		{
 			this->write_back = true;
 		}

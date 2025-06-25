@@ -39,10 +39,6 @@ struct basic_line_scanner_buffer
 		{
 			::fast_io::details::deallocate_iobuf_space<false, char_type>(
 				this->begin_ptr, static_cast<::std::size_t>(this->end_ptr - this->begin_ptr));
-
-			this->begin_ptr = nullptr;
-			this->curr_ptr = nullptr;
-			this->end_ptr = nullptr;
 		}
 	};
 	buffer_type buffer;

@@ -139,7 +139,7 @@ inline constexpr posix_file_map_attribute to_posix_file_map_attribute(file_map_a
 	case file_map_attribute::execute_read:
 		return posix_file_map_attribute::execute | posix_file_map_attribute::read;
 	case file_map_attribute::execute_read_write:
-		return posix_file_map_attribute::execute | posix_file_map_attribute::read;
+		return posix_file_map_attribute::execute | posix_file_map_attribute::read | posix_file_map_attribute::write;
 	case file_map_attribute::execute_write_copy:
 		return posix_file_map_attribute::execute | posix_file_map_attribute::write;
 	case file_map_attribute::read_only:

@@ -309,7 +309,7 @@ inline posix_directory_iterator &operator++(posix_directory_iterator &pdit)
 	/*
 	To fix: avoid setting errno
 	*/
-	errno = 0;
+	errno = 0; // [tls]
 	auto entry{readdir(pdit.dirp)};
 	auto en{errno};
 	if (entry == nullptr && en)

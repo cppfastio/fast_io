@@ -19,7 +19,7 @@ public:
 
 	inline constexpr ~basic_generic_dynamic_output_buffer()
 	{
-		if (begin_ptr && begin_ptr != buffer)
+		if (begin_ptr != buffer)
 		{
 			using typed_allocator = typed_generic_allocator_adapter<allocator_type, char_type>;
 			if constexpr (typed_allocator::has_deallocate)
@@ -30,7 +30,6 @@ public:
 			{
 				typed_allocator::deallocate_n(begin_ptr, buffer_size);
 			}
-			begin_ptr = nullptr;
 		}
 	}
 };
