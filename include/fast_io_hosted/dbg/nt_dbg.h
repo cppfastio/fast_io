@@ -97,10 +97,7 @@ inline void nt_fmt_dbg_forward([[maybe_unused]] nt_dbg_carrier carr, char8_t con
 		/// @todo In the Windows NT debugging implementation, string lengths are silently truncated and UINT_LEAST16_MAX does not issue any error indications or warnings to the caller, which may result in incomplete debugging output.
 		if (UINT_LEAST16_MAX < arg_n_len)
 		{
-			::fast_io::fast_terminate();
-#if 0
 			arg_n_len = UINT_LEAST16_MAX;
-#endif
 		}
 		::std::uint_least16_t const u16argnlen{static_cast<::std::uint_least16_t>(arg_n_len)};
 		::fast_io::win32::nt::ansi_string astr{u16argnlen, u16argnlen,
@@ -119,10 +116,7 @@ inline void nt_dbg_write_impl([[maybe_unused]] nt_dbg_carrier carr, char const *
 	/// @todo In the Windows NT debugging implementation, string lengths are silently truncated and UINT_LEAST16_MAX does not issue any error indications or warnings to the caller, which may result in incomplete debugging output.
 	if (UINT_LEAST16_MAX < arg_n_len)
 	{
-		::fast_io::fast_terminate();
-#if 0
 		arg_n_len = UINT_LEAST16_MAX;
-#endif
 	}
 	::std::uint_least16_t const u16argnlen{static_cast<::std::uint_least16_t>(arg_n_len)};
 	::fast_io::win32::nt::ansi_string astr{u16argnlen, u16argnlen, const_cast<char *>(first)};
