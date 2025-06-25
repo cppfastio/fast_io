@@ -25,10 +25,6 @@ struct basic_concat_buffer
 		if (buffer_begin != stack_buffer) [[unlikely]]
 		{
 			deallocate_iobuf_space<false, ch_type>(buffer_begin, static_cast<::std::size_t>(buffer_end - buffer_begin));
-			
-			buffer_begin = stack_buffer;
-			buffer_curr = stack_buffer;
-			buffer_end = stack_buffer + buffer_size;
 		}
 	}
 };
