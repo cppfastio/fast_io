@@ -85,9 +85,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, n
 {
 	using namespace ::fast_io::manipulators;
 	constexpr ::std::size_t full_size(
-		print_reserve_size(
-			io_reserve_type<char_type, scalar_manip_t<::fast_io::details::nt_errorflags, ::std::uint_least32_t>>) +
-		print_reserve_size(io_reserve_type<char_type, nt_code>));
+		print_reserve_size(io_reserve_type<char_type, scalar_manip_t<::fast_io::details::nt_errorflags, ::std::uint_least32_t>>));
 	if constexpr (::std::same_as<char_type, char>)
 	{
 		return full_size + ::fast_io::details::string_literal_size("[nt:0x]");

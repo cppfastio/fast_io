@@ -69,7 +69,7 @@ inline int random_entropy(basic_posix_io_observer<ch_type> piob) noexcept
 template <::std::integral char_type>
 using basic_native_white_hole =
 #if defined(_WIN32) && !defined(__WINE__)
-#if defined(_WIN32_WINDOWS) || (defined(_WIN32_WINNT) && _WIN32_WINNT <= 0x0500)
+#if defined(_WIN32_WINDOWS) || (_WIN32_WINNT <= 0x0500)
 	basic_win32_crypt_gen_random_file<char_type>;
 #else
 	basic_rtl_gen_random<char_type>;

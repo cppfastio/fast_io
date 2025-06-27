@@ -94,7 +94,7 @@ namespace details
 inline void *create_posix_rtld(char const *filename, dll_mode mode)
 {
 	errno = {};
-	auto hd{noexcept_call(dlopen, filename, ::fast_io::dll_mode_to_posix_rtld_mode(mode))};
+	auto hd{noexcept_call(::dlopen, filename, ::fast_io::dll_mode_to_posix_rtld_mode(mode))};
 	if (hd == nullptr)
 	{
 		::fast_io::details::throw_posix_rtld_error(
@@ -158,7 +158,7 @@ public:
 		}
 		if (this->rtld_handle) [[likely]]
 		{
-			noexcept_call(dlclose, this->rtld_handle);
+			noexcept_call(::dlclose, this->rtld_handle);
 		}
 		this->rtld_handle = other.rtld_handle;
 		other.rtld_handle = nullptr;
@@ -169,7 +169,7 @@ public:
 		if (this->rtld_handle) [[likely]]
 		{
 			errno = {};
-			auto ret{noexcept_call(dlclose, this->rtld_handle)};
+			auto ret{noexcept_call(::dlclose, this->rtld_handle)};
 			this->rtld_handle = nullptr;
 			if (ret)
 			{
@@ -181,7 +181,7 @@ public:
 	{
 		if (this->rtld_handle) [[likely]]
 		{
-			noexcept_call(dlclose, this->rtld_handle);
+			noexcept_call(::dlclose, this->rtld_handle);
 		}
 	}
 };
@@ -191,7 +191,7 @@ namespace details
 
 inline void *posix_dll_load_symbol_impl(void *rtld_handle, char const *symbol)
 {
-	auto ptr{noexcept_call(dlsym, rtld_handle, symbol)};
+	auto ptr{noexcept_call(::dlsym, rtld_handle, symbol)};
 	if (ptr == nullptr) [[unlikely]]
 	{
 		throw_posix_error(EINVAL);
@@ -212,7 +212,7 @@ struct posix_dll_load_impl_context
 #if __GLIBC_PREREQ(2, 0)
 inline void *posix_dll_load_vers_symbol_impl(void *rtld_handle, char const *symbol, char const *vers)
 {
-	auto ptr{noexcept_call(dlvsym, rtld_handle, symbol, vers)};
+	auto ptr{noexcept_call(::dlvsym, rtld_handle, symbol, vers)};
 	if (ptr == nullptr) [[unlikely]]
 	{
 		throw_posix_error(EINVAL);

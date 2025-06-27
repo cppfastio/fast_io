@@ -38,7 +38,7 @@ concept contiguous_scannable = requires(char_type const *begin, char_type const 
 /// @struct   your_context_type
 /// @brief    The context object, usually stores partial results.
 /// @fn       scan_context_define
-/// @breif    Partially scans an object from a contiguous memory region with a context object.
+/// @brief    Partially scans an object from a contiguous memory region with a context object.
 /// @tparam   <auto-inferred>
 /// @param    ::fast_io::io_reserve_type_t<char_type, T>    tag-invoke
 /// @param    your_context_type&                            the context object
@@ -49,7 +49,7 @@ concept contiguous_scannable = requires(char_type const *begin, char_type const 
 ///                                                         and a parse code indicating parsing state
 /// @note     It's not recommended to write to T if the scanning is still partial, so as to hold strong exception guarantee.
 /// @fn       scan_context_eof_define
-/// @breif    Indicates that the scanning meets an EOF.
+/// @brief    Indicates that the scanning meets an EOF.
 /// @tparam   <auto-inferred>
 /// @param    ::fast_io::io_reserve_type_t<char_type, T>    tag-invoke
 /// @param    your_context_type&                            the context object
@@ -130,7 +130,7 @@ concept dynamic_reserve_printable = ::std::integral<char_type> && requires(T t, 
 /// @struct     your_context_type
 /// @brief      The context object, usually stores the progress of printing.
 /// @fn         print_context_define
-/// @breif      Partially prints an object to a buffer with a context object.
+/// @brief      Partially prints an object to a buffer with a context object.
 /// @tparam     <auto-inferred>
 /// @param      this                                        the context object
 /// @param      T                                           the object to be printed

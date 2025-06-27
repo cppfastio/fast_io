@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @brief generate win32 and nt apis' manglings
  */
 

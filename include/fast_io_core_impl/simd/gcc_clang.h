@@ -505,7 +505,7 @@ struct simd_vector
 									   __builtin_ia32_pshufb128(__builtin_bit_cast(value_type2, value), mask.value));
 #else
 			value_type2 v;
-			__builtin_memcpy(__builtin_addressof(v), __builtin_addressof(mask), sizeof(value_type2));
+			__builtin_memcpy(__builtin_addressof(v), __builtin_addressof(value), sizeof(value_type2));
 			v = __builtin_ia32_pshufb128(v, mask.value);
 			__builtin_memcpy(__builtin_addressof(value), __builtin_addressof(v), sizeof(value_type2));
 #endif
@@ -520,7 +520,7 @@ struct simd_vector
 									   __builtin_ia32_pshufb256(__builtin_bit_cast(value_type2, value), mask.value));
 #else
 			value_type2 v;
-			__builtin_memcpy(__builtin_addressof(v), __builtin_addressof(mask), sizeof(value_type2));
+			__builtin_memcpy(__builtin_addressof(v), __builtin_addressof(value), sizeof(value_type2));
 			v = __builtin_ia32_pshufb256(v, mask.value);
 			__builtin_memcpy(__builtin_addressof(value), __builtin_addressof(v), sizeof(value_type2));
 #endif

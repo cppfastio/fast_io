@@ -82,6 +82,7 @@ inline constexpr T addc(T a, T b, bool carryin, bool &carryout) noexcept
 		return s;
 #endif
 	}
+
 	a += b;
 	carryout = a < b;
 	a += carryin;
@@ -150,6 +151,7 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 				return (static_cast<long long unsigned>(reshigh) << 32u) | reslow;
 			}
 		}
+		
 #elif FAST_IO_HAS_BUILTIN(__builtin_sub_overflow)
 		T s;
 		auto c1 = __builtin_sub_overflow(a, b, __builtin_addressof(s));
@@ -158,6 +160,7 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 		return s;
 #endif
 	}
+
 	b = a - b;
 	carryout = a < b;
 	// b is a-b but does not handle the result of the abdication, 

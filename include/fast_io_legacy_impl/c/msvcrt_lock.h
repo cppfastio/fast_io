@@ -103,6 +103,7 @@ https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a
 	}
 	else
 	{
+		/// @error why add 1
 		EnterCriticalSection(fp + 1);
 	}
 }
@@ -118,6 +119,7 @@ inline void my_msvcrt_unlock_file(FILE *fp) noexcept
 	}
 	else
 	{
+		/// @error why add 1
 		LeaveCriticalSection(fp + 1);
 	}
 }

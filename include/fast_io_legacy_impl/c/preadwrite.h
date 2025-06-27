@@ -34,7 +34,7 @@ inline ::fast_io::io_scatter_status_t c_scatter_pread_bytes_impl(FILE *fp, ::fas
 }
 
 template <::fast_io::c_family family>
-inline ::std::byte const *c_scatter_pwrite_bytes_impl(FILE *fp, ::fast_io::io_scatter_t const *pscatter,
+inline ::fast_io::io_scatter_status_t c_scatter_pwrite_bytes_impl(FILE *fp, ::fast_io::io_scatter_t const *pscatter,
 													  ::std::size_t n, ::fast_io::intfpos_t off)
 {
 	return posix_scatter_pwrite_bytes_impl(::fast_io::details::my_fileno_impl<family>(fp), pscatter, n, off);

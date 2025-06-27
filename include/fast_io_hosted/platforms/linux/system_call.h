@@ -24,8 +24,8 @@ template <::std::integral int_type>
 inline constexpr bool linux_system_call_fails(int_type v) noexcept
 {
 	using unsigned_t = ::std::make_unsigned_t<int_type>;
-	return static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4096)) <
-		   static_cast<unsigned_t>(4096);
+	return static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4095)) <
+		   static_cast<unsigned_t>(4095);
 }
 
 template <::std::integral I>
@@ -33,8 +33,8 @@ template <::std::integral I>
 inline void linux_system_call_throw_error(I v)
 {
 	using unsigned_t = ::std::make_unsigned_t<I>;
-	if (static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4096)) <
-		static_cast<unsigned_t>(4096))
+	if (static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4095)) <
+		static_cast<unsigned_t>(4095))
 	{
 		throw_posix_error(static_cast<int>(-v));
 	}
@@ -48,8 +48,8 @@ inline void system_call_throw_error(I v)
 {
 #if defined(__linux__)
 	using unsigned_t = ::std::make_unsigned_t<I>;
-	if (static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4096)) <
-		static_cast<unsigned_t>(4096))
+	if (static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4095)) <
+		static_cast<unsigned_t>(4095))
 	{
 		if constexpr (always_terminate)
 		{

@@ -72,6 +72,7 @@ basic_concat_buffer_strlike_reserve_cold_impl(::fast_io::details::basic_concat_b
 	auto old_buffer_begin_ptr{str.buffer_begin};
 	bool onstack{old_buffer_begin_ptr == str.stack_buffer};
 	auto newptr{allocate_iobuf_space<char_type>(n)};
+	// newptr != nullptr
 	::std::size_t const elements{static_cast<::std::size_t>(str.buffer_curr - str.buffer_begin)};
 	auto newcurr_ptr{non_overlapped_copy_n(old_buffer_begin_ptr, elements, newptr)};
 	str.buffer_curr = newcurr_ptr;

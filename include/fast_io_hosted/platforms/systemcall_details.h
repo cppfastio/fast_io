@@ -10,6 +10,7 @@ extern int _close(int) noexcept __asm__("_close");
 #elif defined(__wasi__)
 inline int dup(int) noexcept
 {
+	errno = ENOSYS;
 	return -1;
 }
 

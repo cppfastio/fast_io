@@ -167,11 +167,15 @@ public:
 		}
 		return last;
 	}
+
+#if 0
 	template <::std::forward_iterator Iter>
 	static inline constexpr bool is(Iter first, Iter last) noexcept
-	{
+	{	
+		/// @error Missing Functions
 		return find_first_not(first, last) == last;
 	}
+#endif
 };
 
 using c_alnum = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::c_alnum, false>;

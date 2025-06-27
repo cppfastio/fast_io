@@ -65,6 +65,10 @@ inline ::fast_io::intfpos_t streambuf_seek_common(::std::basic_streambuf<char_ty
 			retval = static_cast<::fast_io::intfpos_t>(ret);
 		}
 	}
+	else
+	{
+		static_assert(intfposmx < ::std::numeric_limits<postype>::max());
+	}
 	return retval;
 }
 

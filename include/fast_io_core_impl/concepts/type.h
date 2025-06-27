@@ -32,10 +32,12 @@ struct basic_message_hdr
 	T const *control;                 /* Ancillary data, see below */
 	::std::size_t controllen;         /* Ancillary data buffer len */
 	int flags;                        /* Flags (unused) */
+	
 	inline operator basic_message_hdr<void>() const noexcept
 		requires(!::std::same_as<T, void>)
 	{
-		return {name, namelen * sizeof(T), iov, iovlen * sizeof(T), control, controllen, flags};
+		/// @error: Should modify the internal size of basic_io_scatter_t instead of multiplying by the size of T
+		return {name, namelen * sizeof(T), iov, iovlen, control, controllen, flags};
 	}
 };
 

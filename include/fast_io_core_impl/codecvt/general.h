@@ -97,6 +97,7 @@ general_code_cvt(src_char_type const *src_first, src_char_type const *src_last, 
 			for (; src_first != src_last; ++src_first)
 			{
 				*dst = byte_swap(*src_first);
+				++dst;
 			}
 			return {src_first, dst};
 		}
@@ -545,7 +546,8 @@ inline constexpr dest_char_type *general_code_cvt_full(src_char_type const *src_
 			}
 			else
 			{
-				new_dst += get_general_invalid_code_units<encoding>(dst);
+				/// @error det -> new_dst?
+				new_dst += get_general_invalid_code_units<encoding>(new_dst);
 			}
 		}
 		return new_dst;

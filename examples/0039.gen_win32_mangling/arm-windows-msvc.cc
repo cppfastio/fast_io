@@ -1,4 +1,4 @@
-#include "common.h"
+﻿#include "common.h"
 
 inline auto gen_pragmas(char8_t const *asmpath, ::fast_io::vector<::fast_io::u8string> const &win32_symbols, ::fast_io::vector<::fast_io::u8string> const &nt_symbols) noexcept
 {

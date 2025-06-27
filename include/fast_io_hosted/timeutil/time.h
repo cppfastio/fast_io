@@ -1164,7 +1164,7 @@ inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,unix_
 {
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/1000000000u};
 	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.seconds),static_cast<long>(timestamp.subseconds/mul_factor)};
-	auto ret{::fast_io::noexcept_call(::clock_nanosleep,pclk_id,TIMER_ABSTIME,__builtin_addressof(timestamp_spec),ptr,nullptr)};
+	auto ret{::fast_io::noexcept_call(::clock_nanosleep,pclk_id,TIMER_ABSTIME,__builtin_addressof(timestamp_spec),nullptr)};
 	if(ret<0)
 	{
 		auto ern{errno};

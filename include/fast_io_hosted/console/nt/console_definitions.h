@@ -195,7 +195,7 @@ struct console_getprocesslist
 {
 	void *ConsoleHandle;
 	::std::uint_least32_t ProcessCount;
-	::std::uint_least32_t ProcessIdsList;
+	::std::uint_least32_t* ProcessIdsList; // or ::std::uint_least32_t?
 };
 
 struct console_generatectrlevent

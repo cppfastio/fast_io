@@ -1,4 +1,4 @@
-#include <fast_io_dsal/string.h>
+﻿#include <fast_io_dsal/string.h>
 
 extern "C" int LLVMFuzzerTestOneInput(char const *data, size_t size)
 {

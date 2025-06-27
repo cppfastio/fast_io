@@ -139,6 +139,16 @@ inline pid_t posix_setsid()
 	return pid;
 }
 
+inline pid_t posix_setsid_noexcept() noexcept
+{
+#if defined(__linux__) && defined(__NR_setsid)
+	pid_t pid{system_call<__NR_setsid, pid_t>()};
+#else
+	pid_t pid{::fast_io::posix::libc_setsid()};
+#endif
+	return pid;
+}
+
 inline posix_wait_status posix_waitpid(pid_t pid)
 {
 	posix_wait_status status;
@@ -275,7 +285,7 @@ struct io_redirector
 		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
 #else
 		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
-		sys_fcntl(tmp_fd, F_SETFD, FD_CLOEXEC);
+		sys_fcntl(fd_devnull, F_SETFD, FD_CLOEXEC);
 #endif
 		return fd_devnull;
 	}
@@ -462,7 +472,7 @@ struct fd_remapper
 		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
 #else
 		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
-		sys_fcntl(tmp_fd, F_SETFD, FD_CLOEXEC);
+		sys_fcntl(fd_devnull, F_SETFD, FD_CLOEXEC);
 #endif
 		return fd_devnull;
 	}
@@ -483,9 +493,12 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 	}
 	// parent process ends here
 	// subprocess begin
+	// No modifications to the memory of the parent process are allowed until exec
 	if ((mode & process_mode::new_session) == process_mode::new_session)
 	{
-		posix_setsid();
+		// No modification of parent process memory
+		/// @error: Whether the syscall or libc implementation does not modify the parent process
+		posix_setsid_noexcept();
 	}
 
 #if defined(__linux__) && defined(__NR_execveat)

@@ -205,7 +205,7 @@ __declspec(dllimport)
 #if __has_cpp_attribute(__gnu__::__cdecl__) && ((defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__))
 [[__gnu__::__cdecl__]]
 #endif
-extern void *
+extern void
 #if !__has_cpp_attribute(__gnu__::__cdecl__) && defined(_MSC_VER)
 	__cdecl
 #endif
@@ -214,12 +214,12 @@ extern void *
 #if SIZE_MAX <= UINT_LEAST32_MAX && (defined(__x86__) || defined(_M_IX86) || defined(__i386__)) && \
 	((defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__))
 #if !defined(__clang__)
-	__asm__("mi_calloc_aligned")
+	__asm__("mi_free_aligned")
 #else
-	__asm__("_mi_calloc_aligned")
+	__asm__("_mi_free_aligned")
 #endif
 #else
-	__asm__("mi_calloc_aligned")
+	__asm__("mi_free_aligned")
 #endif
 #endif
 		;

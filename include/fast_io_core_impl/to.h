@@ -455,7 +455,7 @@ inline constexpr void u8inplace_to(T &&t, Args &&...args)
 }
 
 template <typename T, typename... Args>
-inline constexpr T u16inplace_to(T &&t, Args &&...args)
+inline constexpr void u16inplace_to(T &&t, Args &&...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char16_t, T, Args...>};
 	if constexpr (failed)
@@ -466,12 +466,11 @@ inline constexpr T u16inplace_to(T &&t, Args &&...args)
 	else
 	{
 		static_assert(failed, "either somes args not printable or some type not detectable");
-		return T();
 	}
 }
 
 template <typename T, typename... Args>
-inline constexpr T u32inplace_to(T &&t, Args &&...args)
+inline constexpr void u32inplace_to(T &&t, Args &&...args)
 {
 	constexpr bool failed{::fast_io::details::can_do_inplace_to<char32_t, T, Args...>};
 	if constexpr (failed)
@@ -482,7 +481,6 @@ inline constexpr T u32inplace_to(T &&t, Args &&...args)
 	else
 	{
 		static_assert(failed, "either somes args not printable or some type not detectable");
-		return T();
 	}
 }
 

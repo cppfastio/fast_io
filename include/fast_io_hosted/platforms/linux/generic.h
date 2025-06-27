@@ -10,10 +10,6 @@ template <::std::size_t syscall_number, ::std::signed_integral return_value_type
 inline return_value_type system_call(Args... args) noexcept
 {
 	long ret{::syscall(syscall_number, args...)};
-	if (ret == -1) [[unlikely]]
-	{
-		return static_cast<return_value_type>(-errno);
-	}
 	return static_cast<return_value_type>(ret);
 }
 

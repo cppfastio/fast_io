@@ -110,7 +110,7 @@ struct load_file_allocation_guard
 	{
 		if (address == nullptr)
 		{
-			throw_posix_error(EINVAL);
+			throw_posix_error(ENOMEM);
 		}
 	}
 	inline load_file_allocation_guard(load_file_allocation_guard const &) = delete;

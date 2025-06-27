@@ -98,7 +98,7 @@ inline void *create_win32_dll_9xa(char const *filename) // 9x kernel does not su
 inline void *create_win32_dll_ntw(char16_t const *filename, [[maybe_unused]] dll_mode mode)
 {
 	auto hmodule{
-#if defined(_WIN32_WINNT) && _WIN32_WINNT <= 0x0500
+#if _WIN32_WINNT <= 0x0500
 		// Windows 2000 does not support Ex apis
 		::fast_io::win32::LoadLibraryW(filename)
 #else

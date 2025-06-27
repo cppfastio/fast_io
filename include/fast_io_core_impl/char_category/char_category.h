@@ -1706,7 +1706,7 @@ template <::std::integral char_type>
 inline constexpr bool is_c_blank(char_type ch) noexcept
 {
 	return (ch == ::fast_io::char_literal_v<u8' ', char_type>) |
-		   (ch == ::fast_io::char_literal_v<u8'\v', char_type>);
+		   (ch == ::fast_io::char_literal_v<u8'\t', char_type>);
 }
 
 template <::std::integral char_type>

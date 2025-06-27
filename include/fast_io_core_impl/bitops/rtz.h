@@ -35,49 +35,49 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 		}
 		else
 		{
-			std::size_t s{};
+			::std::size_t s{};
 
 			if constexpr (!iec559)
 			{
 				constexpr ::std::uint_least64_t c0{230079197716545u};
-				::std::uint_least64_t r{::std::rotr(static_cast<std::uint64_t>(n * c0), 16)};
+				::std::uint_least64_t r{::std::rotr(static_cast<::std::uint64_t>(n * c0), 16)};
 				constexpr ::std::uint_least64_t d0{1845u};
 				bool b{r < d0};
 				s += s;
-				s += b;
+				s += static_cast<::std::size_t>(b);
 				n = b ? r : n;
 			}
 
 			constexpr ::std::uint_least64_t c0{28999941890838049u};
-			::std::uint_least64_t r{::std::rotr(static_cast<std::uint64_t>(n * c0), 8)};
+			::std::uint_least64_t r{::std::rotr(static_cast<::std::uint64_t>(n * c0), 8)};
 			constexpr ::std::uint_least64_t d0{184467440738u};
 			bool b{r < d0};
 			s += s;
-			s += b;
+			s += static_cast<::std::size_t>(b);
 			n = b ? r : n;
 
 			constexpr ::std::uint_least64_t c1{182622766329724561u};
-			r = ::std::rotr(static_cast<std::uint64_t>(n * c1), 4);
+			r = ::std::rotr(static_cast<::std::uint64_t>(n * c1), 4);
 			constexpr ::std::uint_least64_t d1{1844674407370956u};
 			b = r < d1;
 			s += s;
-			s += b;
+			s += static_cast<::std::size_t>(b);
 			n = b ? r : n;
 
 			constexpr ::std::uint_least64_t c2{10330176681277348905u};
-			r = ::std::rotr(static_cast<std::uint64_t>(n * c2), 2);
+			r = ::std::rotr(static_cast<::std::uint64_t>(n * c2), 2);
 			constexpr ::std::uint_least64_t d2{184467440737095517u};
 			b = r < d2;
 			s += s;
-			s += b;
+			s += static_cast<::std::size_t>(b);
 			n = b ? r : n;
 
 			constexpr ::std::uint_least64_t c3{14757395258967641293u};
-			r = ::std::rotr(static_cast<std::uint64_t>(n * c3), 1);
+			r = ::std::rotr(static_cast<::std::uint64_t>(n * c3), 1);
 			constexpr ::std::uint_least64_t d3{1844674407370955162u};
 			b = r < d3;
 			s += s;
-			s += b;
+			s += static_cast<::std::size_t>(b);
 			n = b ? r : n;
 
 			return {n, s};
@@ -102,36 +102,36 @@ inline constexpr ::fast_io::bitops::rtz_result<T> rtz_impl(T n) noexcept
 			if constexpr (!iec559)
 			{
 				constexpr ::std::uint_least64_t c0{15273505u};
-				::std::uint_least64_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 8)};
-				constexpr ::std::uint_least64_t d0{43u};
+				::std::uint_least32_t r{::std::rotr(static_cast<::std::uint32_t>(n * c0), 8)};
+				constexpr ::std::uint_least32_t d0{43u};
 				bool b{r < d0};
 				s += s;
-				s += b;
+				s += static_cast<::std::size_t>(b);
 				n = b ? r : n;
 			}
 
 			constexpr ::std::uint_least32_t c0{184254097u};
-			::std::uint_least32_t r{::std::rotr(static_cast<std::uint32_t>(n * c0), 4)};
+			::std::uint_least32_t r{::std::rotr(static_cast<::std::uint32_t>(n * c0), 4)};
 			constexpr ::std::uint_least32_t d0{429497u};
 			bool b{r < d0};
 			s += s;
-			s += b;
+			s += static_cast<::std::size_t>(b);
 			n = b ? r : n;
 
 			// c1 == d1 == 42949673u
 			constexpr ::std::uint_least32_t d1{42949673u};
-			r = ::std::rotr(static_cast<std::uint32_t>(n * d1), 2);
+			r = ::std::rotr(static_cast<::std::uint32_t>(n * d1), 2);
 			b = r < d1;
 			s += s;
-			s += b;
+			s += static_cast<::std::size_t>(b);
 			n = b ? r : n;
 
 			constexpr ::std::uint_least32_t c2{1288490189u};
-			r = ::std::rotr(static_cast<std::uint32_t>(n * c2), 1);
+			r = ::std::rotr(static_cast<::std::uint32_t>(n * c2), 1);
 			constexpr ::std::uint_least32_t d2{429496730u};
 			b = r < d2;
 			s += s;
-			s += b;
+			s += static_cast<::std::size_t>(b);
 			n = b ? r : n;
 
 			return {n, s};

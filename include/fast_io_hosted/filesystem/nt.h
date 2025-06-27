@@ -385,7 +385,7 @@ struct basic_nt_family_recursive_directory_generator
 		: root_handle(other.root_handle), entry(other.entry)
 	{
 		other.root_handle = nullptr;
-		entry = nullptr;
+		other.entry = nullptr;
 	}
 	inline constexpr basic_nt_family_recursive_directory_generator &
 	operator=(basic_nt_family_recursive_directory_generator &&__restrict other) noexcept
@@ -397,6 +397,8 @@ struct basic_nt_family_recursive_directory_generator
 		::fast_io::win32::nt::details::delete_nt_dirent<Allocator>(this->entry);
 		root_handle = other.root_handle;
 		entry = other.entry;
+		other.root_handle = nullptr;
+		other.entry = nullptr;
 		return *this;
 	}
 	inline constexpr ~basic_nt_family_recursive_directory_generator()

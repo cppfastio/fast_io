@@ -700,7 +700,7 @@ namespace win32::details
 
 inline ::fast_io::intfpos_t seek_impl(void *handle, ::fast_io::intfpos_t offset, seekdir s)
 {
-#if (defined(_WIN32_WINNT) && _WIN32_WINNT <= 0x0500) || defined(_WIN32_WINDOWS)
+#if (_WIN32_WINNT <= 0x0500) || defined(_WIN32_WINDOWS)
 	if constexpr (sizeof(::fast_io::intfpos_t) > sizeof(::std::int_least32_t))
 	{
 		constexpr ::fast_io::intfpos_t l32mx{INT_LEAST32_MAX};

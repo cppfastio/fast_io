@@ -36,7 +36,7 @@ template <::std::int_least64_t off_to_epoch>
 inline constexpr auto operator<=>(basic_timestamp<off_to_epoch> a, basic_timestamp<off_to_epoch> b) noexcept
 {
 	auto v{a.seconds <=> b.seconds};
-	if (v == 0)
+	if (v == ::std::strong_ordering::equal)
 	{
 		if (a.seconds < 0)
 		{

@@ -411,7 +411,7 @@ inline constexpr output_iter my_copy(input_iter first, input_iter second, output
 				  ::std::is_trivially_copyable_v<output_value_type> &&
 				  (::std::same_as<input_value_type, output_value_type> ||
 				   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
-					::std::is_trivially_copyable_v<input_value_type> ==
+					::std::is_trivially_copyable_v<input_value_type> &&
 						::std::is_trivially_copyable_v<output_value_type>)))
 	{
 		my_copy_n(first, static_cast<::std::size_t>(second - first), result);
@@ -482,13 +482,13 @@ inline constexpr bool my_compare_iter_n(input_iter first, ::std::size_t n, outpu
 					   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 						sizeof(input_value_type) == sizeof(output_value_type))))
 		{
-			return my_memcmp(::std::to_address(first), ::std::to_address(outier), n) == 0;
+			return my_memcmp(::std::to_address(first), ::std::to_address(outier), n * sizeof(input_value_type)) == 0;
 		}
 		else
 		{
 			for (auto last{first + n}; first != last; ++first)
 			{
-				if (*first != outier)
+				if (*first != *outier)
 				{
 					return false;
 				}

@@ -1014,7 +1014,7 @@ inline constexpr simd_vector<T, N> operator/(simd_vector<T, N> const &a, simd_ve
 				using vec2_type [[__gnu__::__vector_size__(N * sizeof(T))]] = T;
 				vec2_type amm = __builtin_bit_cast(vec2_type, a);
 				vec2_type bmm = __builtin_bit_cast(vec2_type, b);
-				return __builtin_bit_cast(vec_type, (a / b));
+				return __builtin_bit_cast(vec_type, (amm / bmm));
 #else
 				__m128i amm = __builtin_bit_cast(__m128i, a);
 				__m128i bmm = __builtin_bit_cast(__m128i, b);
@@ -1069,7 +1069,7 @@ inline constexpr simd_vector<T, N> operator/(simd_vector<T, N> const &a, simd_ve
 				using vec2_type [[__gnu__::__vector_size__(N * sizeof(T))]] = T;
 				vec2_type amm = __builtin_bit_cast(vec2_type, a);
 				vec2_type bmm = __builtin_bit_cast(vec2_type, b);
-				return __builtin_bit_cast(vec_type, (a / b));
+				return __builtin_bit_cast(vec_type, (amm / bmm));
 #else
 				__m256i amm = __builtin_bit_cast(__m256i, a);
 				__m256i bmm = __builtin_bit_cast(__m256i, b);
@@ -1124,7 +1124,7 @@ inline constexpr simd_vector<T, N> operator/(simd_vector<T, N> const &a, simd_ve
 				using vec2_type [[__gnu__::__vector_size__(N * sizeof(T))]] = T;
 				vec2_type amm = __builtin_bit_cast(vec2_type, a);
 				vec2_type bmm = __builtin_bit_cast(vec2_type, b);
-				return __builtin_bit_cast(vec_type, (a / b));
+				return __builtin_bit_cast(vec_type, (amm / bmm));
 #else
 				__m512i amm = __builtin_bit_cast(__m512i, a);
 				__m512i bmm = __builtin_bit_cast(__m512i, b);
@@ -1428,25 +1428,25 @@ inline constexpr simd_vector<T, N> operator|(simd_vector<T, N> const &a, simd_ve
 					{
 						uint8x8_t amm = __builtin_bit_cast(uint8x8_t, a);
 						uint8x8_t bmm = __builtin_bit_cast(uint8x8_t, b);
-						return __builtin_bit_cast(vec_type, vorr_s8(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorr_u8(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 2)
 					{
 						uint16x4_t amm = __builtin_bit_cast(uint16x4_t, a);
 						uint16x4_t bmm = __builtin_bit_cast(uint16x4_t, b);
-						return __builtin_bit_cast(vec_type, vorr_s16(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorr_u16(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 4)
 					{
 						uint32x2_t amm = __builtin_bit_cast(uint32x2_t, a);
 						uint32x2_t bmm = __builtin_bit_cast(uint32x2_t, b);
-						return __builtin_bit_cast(vec_type, vorr_s32(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorr_u32(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 8)
 					{
 						uint64x1_t amm = __builtin_bit_cast(uint64x1_t, a);
 						uint64x1_t bmm = __builtin_bit_cast(uint64x1_t, b);
-						return __builtin_bit_cast(vec_type, vorr_s64(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorr_u64(amm, bmm));
 					}
 				}
 				else if constexpr (sizeof(vec_type) == 16)
@@ -1455,25 +1455,25 @@ inline constexpr simd_vector<T, N> operator|(simd_vector<T, N> const &a, simd_ve
 					{
 						uint8x16_t amm = __builtin_bit_cast(uint8x16_t, a);
 						uint8x16_t bmm = __builtin_bit_cast(uint8x16_t, b);
-						return __builtin_bit_cast(vec_type, vorrq_s8(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorrq_u8(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 2)
 					{
 						uint16x8_t amm = __builtin_bit_cast(uint16x8_t, a);
 						uint16x8_t bmm = __builtin_bit_cast(uint16x8_t, b);
-						return __builtin_bit_cast(vec_type, vorrq_s16(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorrq_u16(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 4)
 					{
 						uint32x4_t amm = __builtin_bit_cast(uint32x4_t, a);
 						uint32x4_t bmm = __builtin_bit_cast(uint32x4_t, b);
-						return __builtin_bit_cast(vec_type, vorrq_s32(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorrq_u32(amm, bmm));
 					}
 					else if constexpr (sizeof(T) == 8)
 					{
 						uint64x2_t amm = __builtin_bit_cast(uint64x2_t, a);
 						uint64x2_t bmm = __builtin_bit_cast(uint64x2_t, b);
-						return __builtin_bit_cast(vec_type, vorrq_s64(amm, bmm));
+						return __builtin_bit_cast(vec_type, vorrq_u64(amm, bmm));
 					}
 				}
 			}

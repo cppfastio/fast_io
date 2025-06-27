@@ -19,7 +19,7 @@ inline ::fast_io::io_scatter_status_t posix_scatter_read_bytes_impl(int fd, ::fa
 #endif
 		= __wasi_iovec_t const *;
 	::std::size_t ret;
-	auto val{noexcept_call(__wasi_fd_read, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n,
+	auto val{noexcept_call(::__wasi_fd_read, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n,
 						   __builtin_addressof(ret))};
 	if (val)
 	{
@@ -54,7 +54,7 @@ inline ::fast_io::io_scatter_status_t posix_scatter_write_bytes_impl(int fd, ::f
 #endif
 		= __wasi_ciovec_t const *;
 	::std::size_t ret;
-	auto val{noexcept_call(__wasi_fd_write, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n,
+	auto val{noexcept_call(::__wasi_fd_write, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n,
 						   __builtin_addressof(ret))};
 	if (val)
 	{

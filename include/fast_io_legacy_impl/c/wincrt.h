@@ -487,8 +487,9 @@ template <::std::integral char_type>
 inline ::std::byte *read_some_bytes_underflow_define(::fast_io::basic_c_io_observer_unlocked<char_type> ciob,
 													 ::std::byte *first, ::std::byte *last)
 {
-	return ::fast_io::details::wincrt_fp_read_cold_impl(ciob.fp, reinterpret_cast<char *>(first),
-														reinterpret_cast<char *>(last));
+	return reinterpret_cast<::std::byte *>(::fast_io::details::wincrt_fp_read_cold_impl(ciob.fp, 
+																						reinterpret_cast<char *>(first),
+																						reinterpret_cast<char *>(last)));
 }
 
 template <::std::integral char_type>

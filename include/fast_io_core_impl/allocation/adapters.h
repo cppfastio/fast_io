@@ -103,6 +103,7 @@ public:
 						::fast_io::details::has_allocate_aligned_impl<alloc> ||
 						::fast_io::details::has_allocate_zero_impl<alloc> ||
 						::fast_io::details::has_allocate_aligned_zero_impl<alloc>)};
+
 	static inline
 		constexpr
 		void *
@@ -121,7 +122,7 @@ public:
 			{
 				return allocator_type::allocate(n);
 			}
-			else if constexpr (::fast_io::details::has_allocate_aligned_at_least_impl<alloc>)
+			else if constexpr (::fast_io::details::has_allocate_at_least_impl<alloc>)
 			{
 				return allocator_type::allocate_at_least(n).ptr;
 			}
@@ -133,7 +134,7 @@ public:
 			{
 				return allocator_type::allocate_zero(n);
 			}
-			else if constexpr (::fast_io::details::has_allocate_aligned_at_least_impl<alloc>)
+			else if constexpr (::fast_io::details::has_allocate_zero_at_least_impl<alloc>)
 			{
 				return allocator_type::allocate_zero_at_least(n).ptr;
 			}
@@ -143,7 +144,7 @@ public:
 			}
 			else
 			{
-				fast_io::fast_terminate();
+				static_assert(::fast_io::details::has_allocate_impl<alloc>);
 			}
 		}
 	}
@@ -183,6 +184,7 @@ public:
 												   ::fast_io::details::has_reallocate_zero_at_least_impl<alloc> ||
 												   ::fast_io::details::has_reallocate_aligned_zero_impl<alloc> ||
 												   ::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
+
 	static inline void *reallocate(void *p, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
 	{
@@ -219,10 +221,13 @@ public:
 			return allocator_type::reallocate_aligned_zero_at_least(p, default_alignment, n).ptr;
 		}
 	}
+
 	static inline constexpr bool has_reallocate_zero = (::fast_io::details::has_reallocate_zero_impl<alloc> ||
 														::fast_io::details::has_reallocate_zero_at_least_impl<alloc> ||
 														::fast_io::details::has_reallocate_aligned_zero_impl<alloc> ||
 														::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
+
+
 	static inline void *reallocate_zero(void *p, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_zero)
 	{
@@ -243,6 +248,7 @@ public:
 			return allocator_type::reallocate_aligned_zero_at_least(p, default_alignment, n).ptr;
 		}
 	}
+
 	static inline void *reallocate_n(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -268,7 +274,7 @@ public:
 		}
 		else if constexpr (::fast_io::details::has_reallocate_zero_n_at_least_impl<alloc>)
 		{
-			return allocator_type::reallocate_zero_n_at_least(p, oldn, default_alignment, n).ptr;
+			return allocator_type::reallocate_zero_n_at_least(p, oldn, n).ptr;
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_n_impl<alloc>)
 		{
@@ -286,13 +292,13 @@ public:
 		{
 			return allocator_type::reallocate_at_least(p, n).ptr;
 		}
-		else if constexpr (::fast_io::details::has_reallocate_aligned_n_impl<alloc>)
+		else if constexpr (::fast_io::details::has_reallocate_aligned_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_n(p, oldn, default_alignment, n);
+			return allocator_type::reallocate_aligned(p, default_alignment, n);
 		}
-		else if constexpr (::fast_io::details::has_reallocate_aligned_n_at_least_impl<alloc>)
+		else if constexpr (::fast_io::details::has_reallocate_aligned_at_least_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_n_at_least(p, oldn, default_alignment, n).ptr;
+			return allocator_type::reallocate_aligned_at_least(p, default_alignment, n).ptr;
 		}
 		else if constexpr (::fast_io::details::has_reallocate_zero_impl<alloc>)
 		{
@@ -304,13 +310,13 @@ public:
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_zero_n(p, oldn, default_alignment, n);
+			return allocator_type::reallocate_aligned_zero(p, default_alignment, n);
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_zero_n_at_least(p, oldn, default_alignment, n).ptr;
+			return allocator_type::reallocate_aligned_zero_at_least(p, default_alignment, n).ptr;
 		}
-		else
+		else 
 		{
 			auto newptr{generic_allocator_adapter::allocate(n)};
 			if (p != nullptr && n)
@@ -325,6 +331,7 @@ public:
 			return newptr;
 		}
 	}
+
 	static inline void *reallocate_zero_n(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -395,6 +402,7 @@ public:
 			}
 		}
 	}
+
 	static inline constexpr void deallocate_n(void *p, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -424,7 +432,7 @@ public:
 			}
 			else
 			{
-				fast_io::fast_terminate();
+				static_assert(::fast_io::details::has_deallocate_n_impl<alloc>);
 			}
 		}
 	}
@@ -446,6 +454,7 @@ public:
 			return ::fast_io::details::allocator_pointer_aligned_impl<alloc, false>(alignment, n);
 		}
 	}
+
 	static inline constexpr
 		void *
 		allocate_aligned_zero(::std::size_t alignment, ::std::size_t n) noexcept
@@ -462,11 +471,13 @@ public:
 			return ::fast_io::details::allocator_pointer_aligned_impl<alloc, true>(alignment, n);
 		}
 	}
+
 	static inline constexpr bool has_native_allocate_at_least{
 		!has_status && (::fast_io::details::has_allocate_at_least_impl<alloc> ||
 						::fast_io::details::has_allocate_aligned_at_least_impl<alloc> ||
 						::fast_io::details::has_allocate_zero_at_least_impl<alloc> ||
 						::fast_io::details::has_allocate_aligned_zero_at_least_impl<alloc>)};
+
 	static inline constexpr allocation_least_result
 	allocate_at_least(::std::size_t n) noexcept
 		requires(!has_status)
@@ -485,7 +496,7 @@ public:
 			}
 			else if constexpr (::fast_io::details::has_allocate_aligned_at_least_impl<alloc>)
 			{
-				return allocator_type::allocate_aligned_at_least(n, default_alignment);
+				return allocator_type::allocate_aligned_at_least(default_alignment, n);
 			}
 			else if constexpr (::fast_io::details::has_allocate_zero_at_least_impl<alloc>)
 			{
@@ -493,7 +504,7 @@ public:
 			}
 			else if constexpr (::fast_io::details::has_allocate_aligned_zero_at_least_impl<alloc>)
 			{
-				return allocator_type::allocate_aligned_zero_at_least(n, default_alignment);
+				return allocator_type::allocate_aligned_zero_at_least(default_alignment, n);
 			}
 			else
 			{
@@ -501,6 +512,7 @@ public:
 			}
 		}
 	}
+
 	static inline constexpr allocation_least_result
 	allocate_zero_at_least(::std::size_t n) noexcept
 		requires(!has_status)
@@ -519,7 +531,7 @@ public:
 			}
 			else if constexpr (::fast_io::details::has_allocate_aligned_zero_at_least_impl<alloc>)
 			{
-				return allocator_type::allocate_aligned_zero_at_least(n, default_alignment);
+				return allocator_type::allocate_aligned_zero_at_least(default_alignment, n);
 			}
 			else if constexpr (::fast_io::details::has_allocate_at_least_impl<alloc> ||
 							   ::fast_io::details::has_allocate_aligned_at_least_impl<alloc>)
@@ -598,7 +610,7 @@ public:
 			}
 			else
 			{
-				return {generic_allocator_adapter::allocate_aligned(alignment, n), n};
+				return {generic_allocator_adapter::allocate_aligned_zero(alignment, n), n};
 			}
 		}
 	}
@@ -607,8 +619,8 @@ public:
 														   ::fast_io::details::has_reallocate_aligned_at_least_impl<alloc> ||
 														   ::fast_io::details::has_reallocate_aligned_zero_impl<alloc> ||
 														   ::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
-	static inline
 
+	static inline
 		void *
 		reallocate_aligned(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_aligned)
@@ -630,10 +642,10 @@ public:
 			return allocator_type::reallocate_aligned_zero_at_least(p, alignment, n).ptr;
 		}
 	}
+
 	static inline constexpr bool has_reallocate_aligned_zero = (::fast_io::details::has_reallocate_aligned_zero_impl<alloc> ||
 																::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>);
 	static inline
-
 		void *
 		reallocate_aligned_zero(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_aligned_zero)
@@ -644,11 +656,11 @@ public:
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_zero(p, alignment, n).ptr;
+			return allocator_type::reallocate_aligned_zero_at_least(p, alignment, n).ptr;
 		}
 	}
-	static inline
 
+	static inline
 		void *
 		reallocate_aligned_n(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -681,9 +693,9 @@ public:
 		{
 			return allocator_type::reallocate_aligned_zero(p, alignment, n);
 		}
-		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_n_impl<alloc>)
+		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_zero_n(p, oldn, alignment, n).ptr;
+			return allocator_type::reallocate_aligned_zero_at_least(p, alignment, n).ptr;
 		}
 		else
 		{
@@ -710,8 +722,8 @@ public:
 			return newptr;
 		}
 	}
-	static inline
 
+	static inline
 		void *
 		reallocate_aligned_zero_n(void *p, ::std::size_t oldn, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -740,7 +752,6 @@ public:
 																   (::fast_io::details::has_reallocate_aligned_at_least_impl<alloc> ||
 																	::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>));
 	static inline
-
 		::fast_io::allocation_least_result
 		reallocate_at_least(void *p, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
@@ -782,8 +793,8 @@ public:
 	static inline constexpr bool has_native_reallocate_zero_at_least = (has_reallocate_zero &&
 																		(::fast_io::details::has_reallocate_zero_at_least_impl<alloc> ||
 																		 ::fast_io::details::has_reallocate_aligned_zero_at_least_impl<alloc>));
+	
 	static inline
-
 		::fast_io::allocation_least_result
 		reallocate_zero_at_least(void *p, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
@@ -807,7 +818,6 @@ public:
 	}
 
 	static inline
-
 		::fast_io::allocation_least_result
 		reallocate_n_at_least(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -894,7 +904,6 @@ public:
 	}
 
 	static inline
-
 		::fast_io::allocation_least_result
 		reallocate_zero_n_at_least(void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -997,19 +1006,19 @@ public:
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_n(p, oldn, alignment, n);
+			return {allocator_type::reallocate_aligned_n(p, oldn, alignment, n), n};
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned(p, alignment, n);
+			return {allocator_type::reallocate_aligned(p, alignment, n), n};
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_n_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_zero_n(p, oldn, alignment, n);
+			return {allocator_type::reallocate_aligned_zero_n(p, oldn, alignment, n), n};
 		}
 		else if constexpr (::fast_io::details::has_reallocate_aligned_zero_impl<alloc>)
 		{
-			return allocator_type::reallocate_aligned_zero(p, alignment, n);
+			return {allocator_type::reallocate_aligned_zero(p, alignment, n), n};
 		}
 		else
 		{
@@ -1088,6 +1097,7 @@ public:
 			allocator_type::deallocate(p);
 		}
 	}
+
 	static inline void deallocate_aligned_n(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
@@ -1155,7 +1165,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::allocate_aligned(n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::allocate_aligned(alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1187,7 +1197,7 @@ public:
 		}
 		else
 		{
-			auto newres{alloc::allocate_aligned_at_least(n * sizeof(T), alignof(T))};
+			auto newres{alloc::allocate_aligned_at_least(alignof(T), n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
@@ -1213,7 +1223,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::allocate_zero_aligned(n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::allocate_aligned_zero(alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1221,7 +1231,6 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		basic_allocation_least_result<T *>
 		allocate_zero_at_least(::std::size_t n) noexcept
 		requires(!has_status)
@@ -1244,7 +1253,7 @@ public:
 		}
 		else
 		{
-			auto newres{alloc::allocate_zero_aligned_at_least(n * sizeof(T), alignof(T))};
+			auto newres{alloc::allocate_zero_aligned_at_least(alignof(T), n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
@@ -1256,7 +1265,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		T *
 		reallocate(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
@@ -1272,7 +1280,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned(ptr, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::reallocate_aligned(ptr, alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1281,7 +1289,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		basic_allocation_least_result<T *>
 		reallocate_at_least(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate)
@@ -1298,7 +1305,7 @@ public:
 		}
 		else
 		{
-			auto newres{alloc::reallocate_aligned_at_least(ptr, n * sizeof(T), alignof(T))};
+			auto newres{alloc::reallocate_aligned_at_least(ptr, alignof(T), n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
@@ -1309,7 +1316,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		T *
 		reallocate_zero(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_zero)
@@ -1325,7 +1331,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned_zero(ptr, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::reallocate_aligned_zero(ptr, alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1334,7 +1340,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		basic_allocation_least_result<T *>
 		reallocate_zero_at_least(T *ptr, ::std::size_t n) noexcept
 		requires(!has_status && has_reallocate_zero)
@@ -1361,7 +1366,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		T *
 		reallocate_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -1386,7 +1390,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		basic_allocation_least_result<T *>
 		reallocate_n_at_least(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -1413,7 +1416,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		T *
 		reallocate_zero_n(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -1438,7 +1440,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-
 		basic_allocation_least_result<T *>
 		reallocate_zero_n_at_least(T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(!has_status)
@@ -1461,6 +1462,7 @@ public:
 	}
 
 	static inline constexpr bool has_deallocate = allocator_adaptor::has_deallocate;
+
 	static inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
@@ -1491,6 +1493,7 @@ public:
 			return alloc::deallocate_aligned(ptr, alignof(T));
 		}
 	}
+
 	static inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
@@ -1521,13 +1524,12 @@ public:
 			alloc::deallocate_aligned_n(ptr, alignof(T), n * sizeof(T));
 		}
 	}
+
 #if 0
 	static inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
- 
-
 		T *
 		handle_allocate(handle_type handle, ::std::size_t n) noexcept
 		requires(has_status)
@@ -1556,16 +1558,15 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_allocate_aligned(handle, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_allocate_aligned(handle, alignof(T), n * sizeof(T)));
 		}
 	}
+
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
- 
-
 		T *
 		handle_allocate_zero(handle_type handle, ::std::size_t n) noexcept
 		requires(has_status)
@@ -1581,7 +1582,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_allocate_zero_aligned(handle, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_allocate_zero_aligned(handle, alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1591,8 +1592,6 @@ public:
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
- 
-
 		T *
 		handle_reallocate(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
@@ -1608,17 +1607,17 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_reallocate_aligned(handle, ptr, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned(handle, ptr, alignof(T), n * sizeof(T)));
 		}
 	}
+
 	static inline constexpr bool has_handle_reallocate_zero = allocator_adaptor::has_handle_reallocate_zero;
+
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
- 
-
 		T *
 		handle_reallocate_zero(handle_type handle, T *ptr, ::std::size_t n) noexcept
 		requires(has_status && has_handle_reallocate)
@@ -1634,16 +1633,15 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_reallocate_aligned_zero(handle, ptr, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_zero(handle, ptr, alignof(T), n * sizeof(T)));
 		}
 	}
+
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
- 
-
 		T *
 		handle_reallocate_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
@@ -1662,13 +1660,12 @@ public:
 			return static_cast<T *>(alloc::handle_reallocate_aligned_n(handle, ptr, oldn * sizeof(T), alignof(T), n * sizeof(T)));
 		}
 	}
+
 	static inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && \
 	__cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
- 
-
 		T *
 		handle_reallocate_zero_n(handle_type handle, T *ptr, ::std::size_t oldn, ::std::size_t n) noexcept
 		requires(has_status)
@@ -1684,7 +1681,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::handle_reallocate_aligned_zero_n(handle, ptr * sizeof(T), oldn, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::handle_reallocate_aligned_zero_n(handle, ptr, oldn * sizeof(T), alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1719,6 +1716,7 @@ public:
 			return alloc::handle_deallocate_aligned(handle, ptr, alignof(T));
 		}
 	}
+
 	static inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
@@ -1756,135 +1754,112 @@ namespace details
 {
 
 template <typename alloc, bool zero>
+	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_allocate)
 inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, ::std::size_t n) noexcept
 {
-	if constexpr (!::fast_io::generic_allocator_adapter<alloc>::has_native_allocate)
+	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
+	bool const alignedadjustment{defaultalignment < alignment};
+	if (alignedadjustment)
 	{
-		::fast_io::fast_terminate();
+		n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
+	}
+	void *p;
+	if constexpr (zero)
+	{
+		p = ::fast_io::generic_allocator_adapter<alloc>::allocate_zero(n);
 	}
 	else
 	{
-		constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
-		bool const alignedadjustment{defaultalignment < alignment};
-		if (alignedadjustment)
-		{
-			n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
-		}
-		void *p;
-		if constexpr (zero)
-		{
-			p = ::fast_io::generic_allocator_adapter<alloc>::allocate_zero(n);
-		}
-		else
-		{
-			p = ::fast_io::generic_allocator_adapter<alloc>::allocate(n);
-		}
-		if (alignedadjustment)
-		{
-			p = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(p, alignment);
-		}
-		return p;
+		p = ::fast_io::generic_allocator_adapter<alloc>::allocate(n);
 	}
+	if (alignedadjustment)
+	{
+		p = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(p, alignment);
+	}
+	return p;
 }
 
 template <typename alloc, bool zero>
+	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_allocate)
 inline constexpr ::fast_io::allocation_least_result allocator_pointer_aligned_at_least_impl(::std::size_t alignment, ::std::size_t n) noexcept
 {
-	if constexpr (!::fast_io::generic_allocator_adapter<alloc>::has_native_allocate)
+	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
+	bool const alignedadjustment{defaultalignment < alignment};
+	if (alignedadjustment)
 	{
-		::fast_io::fast_terminate();
+		n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
+	}
+	::fast_io::allocation_least_result res;
+	if constexpr (zero)
+	{
+		res = ::fast_io::generic_allocator_adapter<alloc>::allocate_zero_at_least(n);
 	}
 	else
 	{
-		constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
-		bool const alignedadjustment{defaultalignment < alignment};
-		if (alignedadjustment)
-		{
-			n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
-		}
-		::fast_io::allocation_least_result res;
-		if constexpr (zero)
-		{
-			res = ::fast_io::generic_allocator_adapter<alloc>::allocate_zero_at_least(n);
-		}
-		else
-		{
-			res = ::fast_io::generic_allocator_adapter<alloc>::allocate_at_least(n);
-		}
-		if (alignedadjustment)
-		{
-			auto resptr{res.ptr};
-			auto aligned_ptr = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(resptr, alignment);
-			res = {aligned_ptr, res.count - static_cast<::std::size_t>(reinterpret_cast<char unsigned *>(aligned_ptr) - reinterpret_cast<char unsigned *>(resptr))};
-		}
-		return res;
+		res = ::fast_io::generic_allocator_adapter<alloc>::allocate_at_least(n);
 	}
+	if (alignedadjustment)
+	{
+		auto resptr{res.ptr};
+		auto aligned_ptr = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(resptr, alignment);
+		res = {aligned_ptr, res.count - static_cast<::std::size_t>(reinterpret_cast<char unsigned *>(aligned_ptr) - reinterpret_cast<char unsigned *>(resptr))};
+	}
+	return res;
 }
+
 #if 0
 template <typename alloc, bool zero>
+	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate)
 inline constexpr void *status_allocator_pointer_aligned_impl(typename alloc::handle_type handle, ::std::size_t alignment, ::std::size_t n) noexcept
 {
-	if constexpr (!::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate)
+	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
+	bool const alignedadjustment{defaultalignment < alignment};
+	if (alignedadjustment)
 	{
-		::fast_io::fast_terminate();
+		n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
+	}
+	void *p;
+	if constexpr (zero)
+	{
+		p = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate_zero(handle, n);
 	}
 	else
 	{
-		constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
-		bool const alignedadjustment{defaultalignment < alignment};
-		if (alignedadjustment)
-		{
-			n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
-		}
-		void *p;
-		if constexpr (zero)
-		{
-			p = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate_zero(handle, n);
-		}
-		else
-		{
-			p = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate(handle, n);
-		}
-		if (alignedadjustment)
-		{
-			p = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(p,alignment);
-		}
-		return p;
+		p = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate(handle, n);
 	}
+	if (alignedadjustment)
+	{
+		p = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(p,alignment);
+	}
+	return p;
 }
 
 template <typename alloc, bool zero>
+	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate)
 inline constexpr ::fast_io::allocation_least_result status_allocator_pointer_aligned_impl(typename alloc::handle_type handle, ::std::size_t alignment, ::std::size_t n) noexcept
 {
-	if constexpr (!::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate)
+	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
+	bool const alignedadjustment{defaultalignment < alignment};
+	if (alignedadjustment)
 	{
-		::fast_io::fast_terminate();
+		n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
+	}
+	::fast_io::allocation_least_result res;
+	if constexpr (zero)
+	{
+		res = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate_zero_at_least(handle, n);
 	}
 	else
 	{
-		constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
-		bool const alignedadjustment{defaultalignment < alignment};
-		if (alignedadjustment)
-		{
-			n = ::fast_io::details::allocator_compute_aligned_total_size_impl(alignment, n);
-		}
-		::fast_io::allocation_least_result res;
-		if constexpr (zero)
-		{
-			res = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate_zero_at_least(handle, n);
-		}
-		else
-		{
-			res = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate_at_least(handle, n);
-		}
-		if (alignedadjustment)
-		{
-			auto resptr{res.ptr};
-			auto aligned_ptr = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(resptr,alignment);
-			res = {aligned_ptr,res.count-static_cast<::std::size_t>(reinterpret_cast<char unsigned*>(aligned_ptr)-reinterpret_cast<char unsigned*>(resptr))};
-		}
-		return res;
+		res = ::fast_io::generic_allocator_adapter<alloc>::handle_allocate_at_least(handle, n);
 	}
+	if (alignedadjustment)
+	{
+		auto resptr{res.ptr};
+		auto aligned_ptr = ::fast_io::details::allocator_adjust_ptr_to_aligned_impl(resptr,alignment);
+		res = {aligned_ptr,res.count-static_cast<::std::size_t>(reinterpret_cast<char unsigned*>(aligned_ptr)-reinterpret_cast<char unsigned*>(resptr))};
+	}
+	return res;
 }
 #endif
 } // namespace details

@@ -9,7 +9,7 @@ struct single_thread_noop_mutex
 	{}
 	inline constexpr void unlock() noexcept
 	{}
-	inline constexpr void try_lock() noexcept
+	inline constexpr bool try_lock() noexcept
 	{}
 };
 
