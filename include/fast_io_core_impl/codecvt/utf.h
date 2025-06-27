@@ -69,7 +69,7 @@ template <::std::size_t src_char_type_size, ::std::size_t dest_char_type_size>
 	requires((dest_char_type_size <= 4) && (src_char_type_size <= 4))
 inline constexpr ::std::size_t cal_full_reserve_size(::std::size_t internal_size) noexcept
 {
-	constexpr ::std::size_t external_max{::std::numeric_limits<::std::size_t>::max() / dest_char_type_size};
+	[[maybe_unused]] constexpr ::std::size_t external_max{::std::numeric_limits<::std::size_t>::max() / dest_char_type_size};
 	constexpr ::std::size_t internal_max{::std::numeric_limits<::std::size_t>::max() / src_char_type_size};
 	if constexpr (src_char_type_size == 4)
 	{
@@ -167,7 +167,7 @@ template <::std::size_t src_char_type_size, ::std::size_t dest_char_type_size>
 	requires((dest_char_type_size <= 4) && (src_char_type_size <= 4))
 inline constexpr ::std::size_t cal_decorated_reserve_size(::std::size_t internal_size) noexcept
 {
-	constexpr ::std::size_t external_max{::std::numeric_limits<::std::size_t>::max() / dest_char_type_size};
+	[[maybe_unused]] constexpr ::std::size_t external_max{::std::numeric_limits<::std::size_t>::max() / dest_char_type_size};
 	constexpr ::std::size_t internal_max{::std::numeric_limits<::std::size_t>::max() / src_char_type_size};
 	if constexpr (src_char_type_size == 4)
 	{
