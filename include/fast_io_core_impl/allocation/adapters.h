@@ -1754,9 +1754,10 @@ namespace details
 {
 
 template <typename alloc, bool zero>
-	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_allocate)
 inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, ::std::size_t n) noexcept
-{
+{	
+	static_assert(::fast_io::generic_allocator_adapter<alloc>::has_native_allocate);
+
 	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
 	bool const alignedadjustment{defaultalignment < alignment};
 	if (alignedadjustment)
@@ -1780,9 +1781,10 @@ inline constexpr void *allocator_pointer_aligned_impl(::std::size_t alignment, :
 }
 
 template <typename alloc, bool zero>
-	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_allocate)
 inline constexpr ::fast_io::allocation_least_result allocator_pointer_aligned_at_least_impl(::std::size_t alignment, ::std::size_t n) noexcept
-{
+{	
+	static_assert(::fast_io::generic_allocator_adapter<alloc>::has_native_allocate);
+
 	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
 	bool const alignedadjustment{defaultalignment < alignment};
 	if (alignedadjustment)
@@ -1809,9 +1811,10 @@ inline constexpr ::fast_io::allocation_least_result allocator_pointer_aligned_at
 
 #if 0
 template <typename alloc, bool zero>
-	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate)
 inline constexpr void *status_allocator_pointer_aligned_impl(typename alloc::handle_type handle, ::std::size_t alignment, ::std::size_t n) noexcept
 {
+	static_assert(::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate);
+
 	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
 	bool const alignedadjustment{defaultalignment < alignment};
 	if (alignedadjustment)
@@ -1835,9 +1838,10 @@ inline constexpr void *status_allocator_pointer_aligned_impl(typename alloc::han
 }
 
 template <typename alloc, bool zero>
-	requires(::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate)
 inline constexpr ::fast_io::allocation_least_result status_allocator_pointer_aligned_impl(typename alloc::handle_type handle, ::std::size_t alignment, ::std::size_t n) noexcept
 {
+	static_assert(::fast_io::generic_allocator_adapter<alloc>::has_native_handle_allocate);
+
 	constexpr ::std::size_t defaultalignment{::fast_io::details::calculate_default_alignment<alloc>()};
 	bool const alignedadjustment{defaultalignment < alignment};
 	if (alignedadjustment)
