@@ -23,7 +23,7 @@ struct posix_mmap_options
 			{
 				// 0x4000000u on pdp11 is ul, on pdp11 mask is all poped
 				constexpr unsigned mask{~static_cast<unsigned>(0x4000000u)};
-				flags = staic_cast<int>(staic_cast<unsigned>(flags) & mask);
+				flags = static_cast<int>(static_cast<unsigned>(flags) & mask);
 			}
 		}
 #endif
