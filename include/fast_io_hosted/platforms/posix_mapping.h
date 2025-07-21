@@ -291,7 +291,7 @@ public:
 	{
 		return address_begin[pos];
 	}
-	inline void close() noexcept
+	inline void close()
 	{
 		if (this->address_begin != MAP_FAILED) [[likely]]
 		{

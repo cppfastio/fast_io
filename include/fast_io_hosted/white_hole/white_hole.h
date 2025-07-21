@@ -49,7 +49,7 @@ inline int my_random_entropy(int fd) noexcept
 		return 0;
 	}
 #else
-	if (::fast_io::posix::ioctl(fd, RNDGETENTCNT, __builtin_addressof(ent)) != 0)
+	if (::fast_io::posix::libc_ioctl(fd, RNDGETENTCNT, __builtin_addressof(ent)) != 0)
 	{
 		return 0;
 	}

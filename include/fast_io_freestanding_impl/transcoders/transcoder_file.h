@@ -234,7 +234,7 @@ public:
 		other.transhandle = nullptr;
 		return *this;
 	}
-	inline constexpr void close() noexcept
+	inline constexpr void close()
 	{
 		this->transhandle->destroy();
 		this->transhandle = nullptr;

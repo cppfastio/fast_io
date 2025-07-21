@@ -1234,7 +1234,7 @@ public:
 	{
 		return handle;
 	}
-	inline explicit operator bool() const noexcept
+	inline explicit constexpr operator bool() const noexcept
 	{
 		return !handle.path.empty();
 	}
@@ -1244,6 +1244,7 @@ public:
 		return temp;
 	}
 };
+
 inline constexpr bool operator==(win32_9xa_dir_io_observer const &a,
 								 win32_9xa_dir_io_observer const &b) noexcept
 {
@@ -1310,11 +1311,11 @@ public:
 		}
 		this->handle = ::std::move(newhandle);
 	}
-	inline void close() noexcept
+	inline void close()
 	{
 		if (*this) [[likely]]
 		{
-			::fast_io::win32::details::close_win32_9xa_dir_handle(this->handle);
+			::fast_io::win32::details::close_win32_9xa_dir_handle<true>(this->handle);
 		}
 	}
 
