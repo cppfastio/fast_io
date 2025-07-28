@@ -6,7 +6,7 @@ inline auto gen_pragmas(char8_t const *asmpath, ::fast_io::vector<::fast_io::u8s
 	bool is_win32_symbols{true};
 	::std::size_t symbols_index{};
 	auto asmfile = ::fast_io::native_file_loader{::fast_io::mnp::os_c_str(asmpath)};
-	auto const &&asmfile_size = asmfile.size();
+	auto const asmfile_size = asmfile.size();
 	for (::std::size_t i{}; i < asmfile_size; ++i)
 	{
 		while (asmfile[i] == u8'\t' || asmfile[i] == u8' ' || asmfile[i] == u8'\n')

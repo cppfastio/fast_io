@@ -28,7 +28,7 @@ inline auto gen_apis(
 {
 	::fast_io::u8string main_body{};
 	function_declaration.append(::fast_io::u8concat_fast_io(u8"namespace ", prefix, u8" {\n"));
-	auto const &&header_size = context.size();
+	auto const header_size = context.size();
 	for (::std::size_t i{}; i < header_size; ++i)
 	{
 		// FAST_IO_DLLIMPORT
@@ -189,8 +189,8 @@ int main(int argc, char *const *const argv)
 
 	::fast_io::native_mkdirat(::fast_io::at_fdcwd(), "build");
 
-	auto const &&nt_header = ::fast_io::native_file_loader{"../../include/fast_io_hosted/platforms/nt/nt_api.h"};
-	auto const &&win32_header = ::fast_io::native_file_loader{"../../include/fast_io_hosted/platforms/win32/apis.h"};
+	auto const nt_header = ::fast_io::native_file_loader{"../../include/fast_io_hosted/platforms/nt/nt_api.h"};
+	auto const win32_header = ::fast_io::native_file_loader{"../../include/fast_io_hosted/platforms/win32/apis.h"};
 
 	::fast_io::u8string win32_declaration{}, nt_declaration{}, win32_symbols{}, nt_symbols{};
 	// process win32 apis.h

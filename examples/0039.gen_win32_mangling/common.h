@@ -12,7 +12,7 @@ inline ::fast_io::vector<::fast_io::u8string> parse_symbols(char8_t const *path)
 	::fast_io::vector<::fast_io::u8string> result;
 	// TODO native_file_loader do not suppport ::fast_io::string_view
 	::fast_io::native_file_loader symbols_loader{::fast_io::mnp::os_c_str(path)};
-	auto const &&symbols_loader_size = symbols_loader.size();
+	auto const symbols_loader_size = symbols_loader.size();
 	for (::std::size_t i{}; i < symbols_loader_size; ++i)
 	{
 		::fast_io::u8string tmp{};
