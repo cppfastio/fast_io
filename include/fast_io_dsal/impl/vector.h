@@ -201,7 +201,7 @@ struct vector_internal
 
 } // namespace details
 
-template <::std::movable T, typename allocator>
+template <typename T, typename allocator>
 class vector FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 public:
