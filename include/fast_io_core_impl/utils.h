@@ -467,7 +467,7 @@ inline constexpr T compile_pow2{::fast_io::details::compile_pow_n<T, 2, pow>};
 
 
 inline constexpr bool is_wasi_environment{
-#if __wasi__
+#ifdef __wasi__
 	true
 #endif
 };

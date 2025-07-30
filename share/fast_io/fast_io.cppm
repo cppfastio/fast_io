@@ -20,6 +20,7 @@ export module fast_io;
 #include "fast_io_inc/core.inc"
 #include "fast_io_inc/core/allocation.inc"
 #include "fast_io_inc/freestanding.inc"
+#include "fast_io_inc/intrinsics.inc"
 
 #ifndef FAST_IO_FREESTANDING
 # include "fast_io_inc/hosted.inc"

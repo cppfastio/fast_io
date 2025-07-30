@@ -12,6 +12,7 @@
 #include <bit>
 #include <limits>
 #include <cstdint>
+#include <version>
 
 #if __cpp_lib_three_way_comparison >= 201907L
 #include <compare>

@@ -25,4 +25,6 @@ using ::fast_io::u8cstring_view;
 using ::fast_io::u16cstring_view;
 using ::fast_io::u32cstring_view;
 
+using ::fast_io::basic_string_view;
+
 } // namespace fast_io

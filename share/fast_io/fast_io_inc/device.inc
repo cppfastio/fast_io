@@ -51,6 +51,8 @@ using ::fast_io::u32ibuf_file_lockable;
 using ::fast_io::u32obuf_file_lockable;
 using ::fast_io::u32iobuf_file_lockable;
 
+using ::fast_io::io_strlike_reference_wrapper;
+
 #if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
 
 using ::fast_io::basic_iobuf_socket_file;

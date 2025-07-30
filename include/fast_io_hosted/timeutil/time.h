@@ -6,12 +6,12 @@ namespace fast_io
 namespace posix
 {
 #if !defined(_WIN32) && !defined(__AVR__) && !defined(__MSDOS__)
-#ifdef __DARWIN_C_LEVEL
+#if defined(__DARWIN_C_LEVEL)
 extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("_clock_getres");
 extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("_clock_settime");
 extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("_clock_gettime");
 #else
-#if _REDIR_TIME64
+#if defined(_REDIR_TIME64)
 extern int libc_clock_getres(clockid_t clk_id, struct timespec *tp) noexcept __asm__("__clock_getres64");
 extern int libc_clock_settime(clockid_t clk_id, struct timespec const *tp) noexcept __asm__("__clock_settime64");
 extern int libc_clock_gettime(clockid_t clk_id, struct timespec *tp) noexcept __asm__("__clock_gettime64");

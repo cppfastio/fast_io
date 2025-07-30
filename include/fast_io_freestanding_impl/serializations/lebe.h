@@ -181,7 +181,7 @@ inline constexpr auto iec559_lebe_put(T t)
 		}
 		else
 		{
-#if __STDCPP_FLOAT32_T__
+#ifdef __STDCPP_FLOAT32_T__
 			return ::fast_io::manipulators::lebe_put<en, 32>(
 				::std::bit_cast<::std::uint_least32_t>(static_cast<_Float32>(t)));
 #else
@@ -198,7 +198,7 @@ inline constexpr auto iec559_lebe_put(T t)
 		}
 		else
 		{
-#if __STDCPP_FLOAT64_T__
+#ifdef __STDCPP_FLOAT64_T__
 			return ::fast_io::manipulators::lebe_put<en, 64>(
 				::std::bit_cast<::std::uint_least64_t>(static_cast<_Float64>(t)));
 #else
@@ -208,7 +208,7 @@ inline constexpr auto iec559_lebe_put(T t)
 	}
 	else if constexpr (::std::same_as<nocvref, long double>)
 	{
-#if __STDCPP_FLOAT128_T__
+#ifdef __STDCPP_FLOAT128_T__
 		using proxy_type = ::fast_io::details::pesudo_int128type;
 		return ::fast_io::manipulators::basic_lebe_get_put<en, basic_lebe_put_integral<128, proxy_type>>{
 			{::std::bit_cast<::fast_io::details::pesudo_int128type>(static_cast<_Float128>(t))}};
@@ -480,7 +480,7 @@ scan_precise_reserve_define_lebe_float_get_impl(char_type const *iter, flttypef 
 		}
 		else
 		{
-#if __STDCPP_FLOAT32_T__
+#ifdef __STDCPP_FLOAT32_T__
 			t = static_cast<flttypef>(::std::bit_cast<_Float32>(temp));
 #else
 			static_assert(isiec559, "float is not iec60559");
@@ -495,7 +495,7 @@ scan_precise_reserve_define_lebe_float_get_impl(char_type const *iter, flttypef 
 		}
 		else
 		{
-#if __STDCPP_FLOAT64_T__
+#ifdef __STDCPP_FLOAT64_T__
 			t = static_cast<flttypef>(::std::bit_cast<_Float64>(temp));
 #else
 			static_assert(isiec559, "double is not iec60559");
@@ -504,7 +504,7 @@ scan_precise_reserve_define_lebe_float_get_impl(char_type const *iter, flttypef 
 	}
 	else if constexpr (::std::same_as<flttype, long double>)
 	{
-#if __STDCPP_FLOAT128_T__
+#ifdef __STDCPP_FLOAT128_T__
 		t = static_cast<flttypef>(::std::bit_cast<_Float128>(temp));
 #else
 		static_assert(sizeof(double) != sizeof(long) && isiec559,
