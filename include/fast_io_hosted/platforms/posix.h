@@ -61,7 +61,7 @@
 
 namespace fast_io
 {
-
+#if ((!defined(_WIN32) || defined(__WINE__)) || defined(__CYGWIN__))
 namespace posix
 {
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
@@ -70,6 +70,7 @@ extern int libc_ioctl(int fd, unsigned long request, ...) noexcept __asm__("_ioc
 extern int libc_ioctl(int fd, unsigned long request, ...) noexcept __asm__("ioctl");
 #endif
 } // namespace posix
+#endif
 
 enum class posix_family
 {
