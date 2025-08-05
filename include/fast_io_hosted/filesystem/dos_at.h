@@ -111,65 +111,16 @@ inline constexpr dos_at_flags &operator^=(dos_at_flags &x, dos_at_flags y) noexc
 namespace details
 {
 
-struct my_dos_concat_path_common_result
-{
-	bool failed{};
-	::fast_io::tlc::string path = ::fast_io::tlc::string();
-};
-
-inline my_dos_concat_path_common_result my_dos_concat_path_common(int dirfd, char const *pathname) noexcept
-{
-	if (dirfd == -100)
-	{
-		return {false, ::fast_io::tlc::string(::fast_io::mnp::os_c_str(pathname))};
-	}
-	else
-	{
-		auto pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
-		if (pathname_cstr == nullptr) [[unlikely]]
-		{
-			return {true};
-		}
-
-		// check vaildity
-		auto const sz{::fast_io::cstr_len(pathname)};
-
-		if (sz > 255) [[unlikely]]
-		{
-			return {true};
-		}
-
-		if (::fast_io::details::is_invalid_dos_filename_with_size(pathname, sz)) [[unlikely]]
-		{
-			return {true};
-		}
-
-		// concat
-		return {false, ::fast_io::tlc::concat_fast_io_tlc(::fast_io::mnp::os_c_str(pathname_cstr), ::fast_io::mnp::chvw(u8'\\'), para_pathname)};
-	}
-}
-
-template <bool always_terminate = true>
-inline ::fast_io::tlc::string my_dos_concat_path(int dirfd, char const *pathname) noexcept(always_terminate)
-{
-	auto [failed, path] = ::fast_io::details::my_dos_concat_path_common(dirfd, pathname);
-	if (failed) [[unlikely]]
-	{
-		::fast_io::system_call_throw_error<always_terminate>(-1);
-	}
-	return ::std::move(path);
-}
-
 inline void dos_renameat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_rename(::fast_io::details::my_dos_concat_path(olddirfd, oldpath).c_str(),
-																	   ::fast_io::details::my_dos_concat_path(newdirfd, newpath).c_str()));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_rename(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
+																	   ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
 }
 
 inline void dos_linkat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_link(::fast_io::details::my_dos_concat_path(olddirfd, oldpath).c_str(),
-																	 ::fast_io::details::my_dos_concat_path(newdirfd, newpath).c_str()));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_link(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
+																	 ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
 }
 
 template <posix_api_22 dsp, typename... Args>
@@ -187,7 +138,7 @@ inline auto dos22_api_dispatcher(int olddirfd, char const *oldpath, int newdirfd
 
 inline void dos_symlinkat_impl(char const *oldpath, int newdirfd, char const *newpath)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_symlink(oldpath, ::fast_io::details::my_dos_concat_path(newdirfd, newpath).c_str()));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_symlink(oldpath, ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
 }
 
 template <posix_api_12 dsp, typename... Args>
@@ -201,37 +152,37 @@ inline auto dos12_api_dispatcher(char const *oldpath, int newdirfd, char const *
 
 inline void dos_faccessat_impl(int dirfd, char const *pathname, int flags)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str(), flags));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), flags));
 }
 
 inline void dos_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner, uintmax_t group)
 {
 	// chown does nothing under MS-DOS, so just check is_valid filename
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_chown(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str(),
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_chown(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(),
 																	  static_cast<int>(owner), static_cast<int>(group)));
 }
 
 inline void dos_fchmodat_impl(int dirfd, char const *pathname, mode_t mode)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_chmod(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str(), mode));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_chmod(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
 }
 
 inline posix_file_status dos_fstatat_impl(int dirfd, char const *pathname)
 {
 	struct stat buf;
 
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_stat(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str(), __builtin_addressof(buf)));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_stat(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), __builtin_addressof(buf)));
 	return ::fast_io::details::struct_stat_to_posix_file_status(buf);
 }
 
 inline void dos_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_mkdir(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str(), mode));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_mkdir(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
 }
 
 inline void dos_unlinkat_impl(int dirfd, char const *pathname)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_unlink(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str()));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_unlink(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str()));
 }
 
 inline constexpr ::std::time_t unix_timestamp_to_time_t(unix_timestamp stmp) noexcept
@@ -271,7 +222,7 @@ inline void dos_utimensat_impl(int dirfd, char const *pathname, unix_timestamp_o
 		::fast_io::details::unix_timestamp_to_time_t(last_modification_time),
 	};
 
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_utime(::fast_io::details::my_dos_concat_path(dirfd, pathname).c_str(), __builtin_addressof(ts)));
+	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_utime(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), __builtin_addressof(ts)));
 }
 
 template <posix_api_1x dsp, typename... Args>

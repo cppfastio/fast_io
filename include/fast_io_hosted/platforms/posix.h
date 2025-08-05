@@ -61,6 +61,7 @@
 
 namespace fast_io
 {
+
 #if ((!defined(_WIN32) || defined(__WINE__)) || defined(__CYGWIN__))
 namespace posix
 {
@@ -846,13 +847,76 @@ extern int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) 
 
 #if defined(__MSDOS__)
 
-template <bool always_terminate>
-inline ::fast_io::tlc::string my_dos_concat_path(int, char const *) noexcept(always_terminate);
+using dos_path_tlc_string = ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator>;
+
+template <typename... Args>
+constexpr inline dos_path_tlc_string concat_dos_path_tlc_string(Args &&...args)
+{
+	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>, Args...>};
+	if constexpr (type_error)
+	{
+		return ::fast_io::basic_general_concat<false, char, dos_path_tlc_string>(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args))...);
+	}
+	else
+	{
+		static_assert(type_error, "some types are not printable, so we cannot concat dos_path_tlc_string");
+		return {};
+	}
+}
+
+struct my_dos_concat_tlc_path_common_result
+{
+	bool failed{};
+	dos_path_tlc_string path{};
+};
+
+inline constexpr my_dos_concat_tlc_path_common_result my_dos_concat_tlc_path_common(int dirfd, char const *pathname) noexcept
+{
+	if (dirfd == -100)
+	{
+		return {false, dos_path_tlc_string{::fast_io::mnp::os_c_str(pathname)}};
+	}
+	else
+	{
+		auto fd_pathname_cstr{::fast_io::noexcept_call(::__get_fd_name, dirfd)};
+		if (fd_pathname_cstr == nullptr) [[unlikely]]
+		{
+			return {true};
+		}
+
+		// check vaildity
+		auto const sz{::fast_io::cstr_len(pathname)};
+
+		if (sz > 255) [[unlikely]]
+		{
+			return {true};
+		}
+
+		if (::fast_io::details::is_invalid_dos_filename_with_size(pathname, sz)) [[unlikely]]
+		{
+			return {true};
+		}
+
+		// concat
+		return {false, concat_dos_path_tlc_string(::fast_io::mnp::os_c_str(fd_pathname_cstr), ::fast_io::mnp::chvw('\\'), ::fast_io::mnp::os_c_str(pathname))};
+	}
+}
+
+template <bool always_terminate = true>
+inline constexpr dos_path_tlc_string my_dos_concat_tlc_path(int dirfd, char const *pathname) noexcept(always_terminate)
+{
+	auto [failed, path]{my_dos_concat_tlc_path_common(dirfd, pathname)};
+	if (failed) [[unlikely]]
+	{
+		::fast_io::system_call_throw_error<always_terminate>(-1);
+	}
+	return path;
+}
 
 template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
-	int fd{::fast_io::details::my_posix_open_noexcept(::fast_io::details::my_dos_concat_path<always_terminate>(dirfd, pathname).c_str(), flags, mode)};
+	int fd{::fast_io::details::my_posix_open_noexcept(my_dos_concat_tlc_path<always_terminate>(dirfd, pathname).c_str(), flags, mode)};
 	system_call_throw_error<always_terminate>(fd);
 	return fd;
 }
