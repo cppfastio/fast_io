@@ -701,4 +701,33 @@ inline ::std::uint_least32_t nt_set_information_virtual_memory(Args... args) noe
 		return ::fast_io::win32::nt::NtSetInformationVirtualMemory(args...);
 	}
 }
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 2)
+inline ::std::uint_least32_t nt_delay_execution(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ::fast_io::win32::nt::ZwDelayExecution(args...);
+	}
+	else
+	{
+		return ::fast_io::win32::nt::NtDelayExecution(args...);
+	}
+}
+
+template <bool zw, typename... Args>
+	requires(sizeof...(Args) == 3)
+inline ::std::uint_least32_t nt_set_timer_resolution(Args... args) noexcept
+{
+	if constexpr (zw)
+	{
+		return ::fast_io::win32::nt::ZwSetTimerResolution(args...);
+	}
+	else
+	{
+		return ::fast_io::win32::nt::NtSetTimerResolution(args...);
+	}
+}
+
 } // namespace fast_io::win32::nt

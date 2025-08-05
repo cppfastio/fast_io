@@ -381,6 +381,18 @@ struct process_basic_information
 	void *InheritedFromUniqueProcessId;
 };
 
+struct client_id; // defined in nt_preliminary_definition.h
+
+struct thread_basic_information
+{
+	::std::uint_least32_t ExitStatus;
+	void *TebBaseAddress;
+	::fast_io::win32::nt::client_id ClientId;
+	::std::uint_least32_t AffinityMask;
+	::std::int_least32_t Priority;
+	::std::int_least32_t BasePriority;
+};
+
 struct curdir
 {
 	unicode_string DosPath;
@@ -396,8 +408,6 @@ struct rtl_drive_letter_curdir
 };
 
 inline constexpr ::std::size_t rtl_max_drive_letters{32};
-
-struct client_id; // defined in nt_preliminary_definition.h
 
 enum class section_information_class
 {
@@ -1343,7 +1353,7 @@ enum class privileges : ::std::uint_least64_t
 
 struct memory_range_entry
 {
-	void* VirtualAddress;
+	void *VirtualAddress;
 	::std::size_t NumberOfBytes;
 };
 

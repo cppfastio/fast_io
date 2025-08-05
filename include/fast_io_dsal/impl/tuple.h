@@ -185,7 +185,7 @@ constexpr auto forward_as_tuple(Args&&... args)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-braces"
 #endif
-	return ::fast_io::containers::tuple<Args&&...>(::std::forward<Args>(args)...);
+	return ::fast_io::containers::tuple<Args&&...>{::std::forward<Args>(args)...};
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif

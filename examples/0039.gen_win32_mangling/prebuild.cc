@@ -120,6 +120,7 @@ inline auto gen_apis(
 				main_body.append(u8"nullptr);\n");
 				break;
 			case argtype::va_args:
+				main_body.erase_index(main_body.size() - 1);
 				main_body.append(u8");\n");
 				break;
 			default:

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-// Don't forget to rerun codegen/win32mangling
+// Don't forget to rerun examples/0039.gen_win32_mangling
 
 namespace fast_io::win32
 {
@@ -168,5 +168,7 @@ FAST_IO_DLLIMPORT char16_t **FAST_IO_WINSTDCALL CommandLineToArgvW(char16_t cons
 FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL LocalFree(void *) noexcept FAST_IO_WINSTDCALL_RENAME(LocalFree, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL PrefetchVirtualMemory(void *, ::std::size_t, ::fast_io::win32::win32_memory_range_entry *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(PrefetchVirtualMemory, 16);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetConsoleTextAttribute(void *, ::std::int_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(SetConsoleTextAttribute, 8);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetCurrentThreadId() noexcept FAST_IO_WINSTDCALL_RENAME(GetCurrentThreadId, 0);
+FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL Sleep(::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(Sleep, 4);
 
 } // namespace fast_io::win32
