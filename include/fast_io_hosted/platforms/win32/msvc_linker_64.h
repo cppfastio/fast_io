@@ -302,10 +302,10 @@
 #pragma comment(linker,"/alternatename:__imp_?RtlQueryEnvironmentVariable_U@nt@win32@fast_io@@YAIPEAXPEAUunicode_string@123@1@Z=__imp_RtlQueryEnvironmentVariable_U")
 #pragma comment(linker,"/alternatename:__imp_?NtSetInformationVirtualMemory@nt@win32@fast_io@@YAIPEAXW4virtual_memory_information_class@123@_KPEAUmemory_range_entry@123@0I@Z=__imp_NtSetInformationVirtualMemory")
 #pragma comment(linker,"/alternatename:__imp_?ZwSetInformationVirtualMemory@nt@win32@fast_io@@YAIPEAXW4virtual_memory_information_class@123@_KPEAUmemory_range_entry@123@0I@Z=__imp_ZwSetInformationVirtualMemory")
-#pragma comment(linker,"/alternatename:__imp_?NtDelayExecution@nt@win32@fast_io@@YAI_N_J@Z=__imp_ZwSetInformationVirtualMemory")
-#pragma comment(linker,"/alternatename:__imp_?ZwDelayExecution@nt@win32@fast_io@@YAI_N_J@Z=__imp_ZwSetInformationVirtualMemory")
+#pragma comment(linker,"/alternatename:__imp_?NtDelayExecution@nt@win32@fast_io@@YAI_NPEA_J@Z=__imp_NtDelayExecution")
+#pragma comment(linker,"/alternatename:__imp_?ZwDelayExecution@nt@win32@fast_io@@YAI_NPEA_J@Z=__imp_ZwDelayExecution")
 #pragma comment(linker,"/alternatename:__imp_?NtSetTimerResolution@nt@win32@fast_io@@YAII_NPEAI@Z=__imp_NtSetTimerResolution")
-#pragma comment(linker,"/alternatename:__imp_?ZwSetTimerResolution@nt@win32@fast_io@@YAII_NPEAI@Z=__imp_NtSetTimerResolution")
+#pragma comment(linker,"/alternatename:__imp_?ZwSetTimerResolution@nt@win32@fast_io@@YAII_NPEAI@Z=__imp_ZwSetTimerResolution")
 // msvc
 #pragma comment(linker,"/alternatename:__imp_?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__imp___RTtypeid")
 #pragma comment(linker,"/alternatename:?msvc__RTtypeid@msvc@fast_io@@YAPEAXPEAX@Z=__RTtypeid")

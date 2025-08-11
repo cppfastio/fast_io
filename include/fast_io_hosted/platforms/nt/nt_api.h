@@ -139,9 +139,9 @@ FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RtlReleasePrivilege(void *) noexcept F
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlQueryEnvironmentVariable_U(void *, ::fast_io::win32::nt::unicode_string *, ::fast_io::win32::nt::unicode_string *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlQueryEnvironmentVariable_U, 12);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetInformationVirtualMemory(void *, ::fast_io::win32::nt::virtual_memory_information_class, ::std::size_t, ::fast_io::win32::nt::memory_range_entry *, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetInformationVirtualMemory, 24);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetInformationVirtualMemory(void *, ::fast_io::win32::nt::virtual_memory_information_class, ::std::size_t, ::fast_io::win32::nt::memory_range_entry *, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetInformationVirtualMemory, 24);
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtDelayExecution(bool, ::std::int_least64_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetInformationVirtualMemory, 8);
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwDelayExecution(bool, ::std::int_least64_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetInformationVirtualMemory, 8);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtDelayExecution(bool, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtDelayExecution, 8);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwDelayExecution(bool, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwDelayExecution, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetTimerResolution(::std::uint_least32_t, bool, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetTimerResolution, 12);
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetTimerResolution(::std::uint_least32_t, bool, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetTimerResolution, 12);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetTimerResolution(::std::uint_least32_t, bool, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetTimerResolution, 12);
 
 } // namespace fast_io::win32::nt
