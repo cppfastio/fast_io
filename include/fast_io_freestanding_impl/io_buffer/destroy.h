@@ -37,13 +37,13 @@ inline constexpr void destroy_basic_io_buffer(T &t) noexcept
 	constexpr auto mode{traits_type::mode};
 	if constexpr ((mode & buffer_mode::out) == buffer_mode::out)
 	{
-#if (defined(_MSC_VER) && !defined(__clang__) && _HAS_EXCEPTIONS != 0) || (!defined(_MSC_VER) && defined(__cpp_exceptions))
+#ifdef FAST_IO_CPP_EXCEPTIONS
 		try
 #endif
 		{
 			::fast_io::details::close_basic_io_buffer(t);
 		}
-#if (defined(_MSC_VER) && !defined(__clang__) && _HAS_EXCEPTIONS != 0) || (!defined(_MSC_VER) && defined(__cpp_exceptions))
+#ifdef FAST_IO_CPP_EXCEPTIONS
 		catch (...)
 		{
 		}
