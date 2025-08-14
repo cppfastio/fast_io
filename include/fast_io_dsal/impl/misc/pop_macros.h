@@ -1,6 +1,7 @@
 ﻿// Please keep it in reverse order with the macros in push_macros.h
 
 #pragma pop_macro("FAST_IO_CPP_EXCEPTIONS")
+#pragma pop_macro("FAST_IO_CPP_RTTI")
 #pragma pop_macro("FAST_IO_HAS_BUILTIN")
 #pragma pop_macro("FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE")
 #pragma pop_macro("FAST_IO_ASSERT")

@@ -225,14 +225,26 @@ Internal assert macros for fuzzing fast_io.
 # define FAST_IO_HAS_BUILTIN(...) 0
 #endif
 
+#pragma push_macro("FAST_IO_CPP_RTTI")
+#undef FAST_IO_CPP_RTTI
+#if defined(_MSC_VER) && !defined(__clang__)
+#if __cpp_rtti >= 199711L && _HAS_RTTI != 0
+#define FAST_IO_CPP_RTTI
+#endif
+#else
+#if __cpp_rtti >= 199711L
+#define FAST_IO_CPP_RTTI
+#endif
+#endif
+
 #pragma push_macro("FAST_IO_CPP_EXCEPTIONS")
 #undef FAST_IO_CPP_EXCEPTIONS
 #if defined(_MSC_VER) && !defined(__clang__)
-#if __cpp_exceptions >= 199711L && _HAS_EXCEPTIONS != 0
+#if defined(FAST_IO_CPP_RTTI) && __cpp_exceptions >= 199711L && _HAS_EXCEPTIONS != 0
 #define FAST_IO_CPP_EXCEPTIONS
 #endif
 #else
-#if __cpp_exceptions >= 199711L
+#if defined(FAST_IO_CPP_RTTI) && __cpp_exceptions >= 199711L
 #define FAST_IO_CPP_EXCEPTIONS
 #endif
 #endif
