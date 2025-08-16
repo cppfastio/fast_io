@@ -983,7 +983,7 @@ private:
 			::std::destroy_at(it);
 		}
 		::fast_io::freestanding::uninitialized_relocate(it + 1, lastele, it);
-		imp.curr_ptr = lastele;
+		imp.curr_ptr = lastele - 1;
 		return it;
 	}
 
