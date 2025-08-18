@@ -191,7 +191,7 @@ struct simd_vector
 	}
 	inline constexpr simd_vector<T,N>& operator>>=(simd_vector<T,N> const& other) noexcept
 	{
-		value<<=other.value;
+		value>>=other.value;
 		return *this;
 	}
 
