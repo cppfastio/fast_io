@@ -129,7 +129,7 @@ public:
 			{
 				return allocator_type::allocate(n);
 			}
-			else if constexpr (::fast_io::details::has_allocate_aligned_at_least_impl<alloc>)
+			else if constexpr (::fast_io::details::has_allocate_at_least_impl<alloc>)
 			{
 				return allocator_type::allocate_at_least(n).ptr;
 			}
@@ -141,7 +141,7 @@ public:
 			{
 				return allocator_type::allocate_zero(n);
 			}
-			else if constexpr (::fast_io::details::has_allocate_aligned_at_least_impl<alloc>)
+			else if constexpr (::fast_io::details::has_allocate_zero_at_least_impl<alloc>)
 			{
 				return allocator_type::allocate_zero_at_least(n).ptr;
 			}
@@ -1211,7 +1211,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::allocate_aligned(n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::allocate_aligned(alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1248,7 +1248,7 @@ public:
 		}
 		else
 		{
-			auto newres{alloc::allocate_aligned_at_least(n * sizeof(T), alignof(T))};
+			auto newres{alloc::allocate_aligned_at_least(alignof(T), n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
@@ -1274,7 +1274,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::allocate_zero_aligned(n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::allocate_zero_aligned(alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1311,7 +1311,7 @@ public:
 		}
 		else
 		{
-			auto newres{alloc::allocate_zero_aligned_at_least(n * sizeof(T), alignof(T))};
+			auto newres{alloc::allocate_zero_aligned_at_least(alignof(T), n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
@@ -1339,7 +1339,7 @@ public:
 		}
 		else
 		{
-			return static_cast<T *>(alloc::reallocate_aligned(ptr, n * sizeof(T), alignof(T)));
+			return static_cast<T *>(alloc::reallocate_aligned(ptr, alignof(T), n * sizeof(T)));
 		}
 	}
 
@@ -1365,7 +1365,7 @@ public:
 		}
 		else
 		{
-			auto newres{alloc::reallocate_aligned_zero_at_least(ptr, n * sizeof(T), alignof(T))};
+			auto newres{alloc::reallocate_aligned_zero_at_least(ptr, alignof(T), n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
