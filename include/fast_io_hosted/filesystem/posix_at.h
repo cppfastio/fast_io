@@ -126,7 +126,7 @@ inline void posix_fchownat_impl(int dirfd, char const* pathname, uintmax_t owner
 	if constexpr(sizeof(uintmax_t)>sizeof(gid_t))
 	{
 		constexpr std::uintmax_t mx{std::numeric_limits<gid_t>::max()};
-		if(static_cast<std::uintmax_t>(owner)>mx)
+		if(static_cast<std::uintmax_t>(group)>mx)
 			throw_posix_error(EOVERFLOW);
 	}
 	system_call_throw_error(
@@ -344,13 +344,13 @@ template<posix_api_12 dsp,::fast_io::constructible_to_os_c_str old_path_type,::f
 inline auto posix_deal_with12(
 	old_path_type const& oldpath,
 	int newdirfd,
-	old_path_type const& newpath)
+	new_path_type const& newpath)
 {
 	return fast_io::posix_api_common(oldpath,[&](char const* oldpath_c_str)
 	{
 		return fast_io::posix_api_common(newpath,[&](char const* newpath_c_str)
 		{
-			return posix1x_api_dispatcher<dsp>(oldpath_c_str,newdirfd,newpath_c_str);
+			return posix12_api_dispatcher<dsp>(oldpath_c_str,newdirfd,newpath_c_str);
 		});
 	});
 }

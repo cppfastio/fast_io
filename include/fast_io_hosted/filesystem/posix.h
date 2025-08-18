@@ -90,6 +90,10 @@ public:
 			throw_posix_error();
 		pioh.release();
 	}
+	posix_directory_file(posix_directory_file const& other)
+	{
+		this->dirp = details::sys_dup_dir(other.dirp);
+	}
 	posix_directory_file& operator=(posix_directory_file const& other)
 	{
 		auto newdir{details::sys_dup_dir(other.dirp)};

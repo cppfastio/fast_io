@@ -116,7 +116,7 @@ inline constexpr void dynamic_io_buffer_write_impl_unhappy(dynamic_io_buffer<::s
 template<std::integral ch_type>
 inline constexpr void oreserve(dynamic_io_buffer<ch_type>& ob,std::size_t new_capacity)  noexcept
 {
-	if(static_cast<std::size_t>(ob.buffer_end-ob.buffer_begin)<=new_capacity)
+	if(static_cast<std::size_t>(ob.buffer_end-ob.buffer_begin)>=new_capacity) // return if enough space
 		return;
 	details::dynamic_io_buffer_oreallocate_impl(ob,new_capacity);
 }
@@ -159,7 +159,7 @@ inline constexpr void write(dynamic_io_buffer<ch_type>& ob,Iter first,Iter last)
 			details::dynamic_io_buffer_write_impl_unhappy(ob,first,diff);
 			return;
 		}
-		ob.buffer_curr=details::non_overlapped_copy(first,last,ob.buffer_begin);
+		ob.buffer_curr=details::non_overlapped_copy(first,last,ob.buffer_curr); // copy to buffer_curr, not buffer_begin
 	}
 }
 
