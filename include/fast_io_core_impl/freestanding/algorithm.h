@@ -82,6 +82,10 @@ inline constexpr output_iter copy(input_iter first, input_iter last, output_iter
 		{
 			*result = static_cast<::std::byte>(*first);
 		}
+		else
+		{
+			*result = *first;
+		}
 		++first;
 		++result;
 	}
