@@ -303,7 +303,7 @@ inline constexpr hash_compress_t<digest_format::upper,ctx> hash_compress_upper(T
 	}
 	else
 	{
-		return {reinterpret_cast<std::byte const*>(::std::ranges::data(t)),static_cast<std::size_t>(::std::ranges::size(t))*sizeof(T)};
+		return {reinterpret_cast<std::byte const*>(::std::ranges::data(t)),static_cast<std::size_t>(::std::ranges::size(t))*sizeof(::std::ranges::range_value_t<T>)};
 	}
 }
 
@@ -317,7 +317,7 @@ inline constexpr hash_compress_t<digest_format::raw_bytes,ctx> hash_compress_raw
 	}
 	else
 	{
-		return {reinterpret_cast<std::byte const*>(::std::ranges::data(t)),static_cast<std::size_t>(::std::ranges::size(t))*sizeof(T)};
+		return {reinterpret_cast<std::byte const*>(::std::ranges::data(t)),static_cast<std::size_t>(::std::ranges::size(t))*sizeof(::std::ranges::range_value_t<T>)};
 	}
 }
 
@@ -511,7 +511,7 @@ inline constexpr char_type* prv_srv_hash_compress_df_impl(char_type* iter,std::b
 			{
 				std::byte buffer[digest_size];
 				auto ret{cal_hash_internal_impl<T>(base,len,buffer)};
-				return ::fast_io::details::copy_to_hash_df_commom_impl<d==::fast_io::manipulators::digest_format::upper>(buffer,iter,static_cast<std::size_t>(ret-buffer));
+				return ::fast_io::details::copy_to_hash_df_commom_impl<d==::fast_io::manipulators::digest_format::upper>(iter,buffer,static_cast<std::size_t>(ret-buffer));
 			}
 			else
 #endif
