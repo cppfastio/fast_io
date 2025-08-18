@@ -35,7 +35,7 @@ struct basic_message_hdr
 	int           flags;      /* Flags (unused) */
 	inline operator basic_message_hdr<void>() const noexcept requires(!std::same_as<T,void>)
 	{
-		return {name,namelen*sizeof(T),iov,iovlen*sizeof(T),control,controllen,flags};
+		return {name,namelen,iov,iovlen,control,controllen,flags};
 	}
 };
 
