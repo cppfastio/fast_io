@@ -1273,7 +1273,14 @@ public:
 		{
 			return *this;
 		}
-		this->fd = ::fast_io::details::sys_dup2(dp.fd, this->fd);
+		if (this->fd == -1) [[unlikely]]
+		{
+			this->fd = ::fast_io::details::sys_dup(dp.fd);
+		}
+		else
+		{
+			this->fd = ::fast_io::details::sys_dup2(dp.fd, this->fd);
+		}
 		return *this;
 	}
 	inline constexpr basic_posix_family_file(basic_posix_family_file &&__restrict b) noexcept
