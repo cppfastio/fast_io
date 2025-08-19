@@ -99,7 +99,7 @@ inline void mfc_scatter_write_impl(CFile *cfp, io_scatter_t const *scats, ::std:
 	auto e{scats + n};
 	for (; i != e; ++i)
 	{
-		mfc_write_n_impl(cfp, reinterpret_cast<::std::byte const *>(scats->base), scats->len);
+		mfc_write_n_impl(cfp, reinterpret_cast<::std::byte const *>(i->base), i->len);
 	}
 }
 
