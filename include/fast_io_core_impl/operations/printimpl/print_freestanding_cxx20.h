@@ -141,7 +141,7 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 	{
 		if constexpr (sizeof...(Args) == 0)
 		{
-			return {1, 0, ::fast_io::details::intrinsics::add_or_overflow_die_chain(static_cast<::std::size_t>(0), static_cast<::std::size_t>(1))};
+			return {1, 0, 1};
 		}
 		else
 		{
