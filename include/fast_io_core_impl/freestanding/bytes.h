@@ -137,6 +137,7 @@ inline constexpr ::std::byte *nonoverlapped_bytes_copy(::std::byte const *first,
 }
 
 template <typename T>
+	requires(::std::is_trivially_copyable_v<T>) // make sure the type is trivially copyable for safely using memcpy
 inline constexpr ::std::byte const *type_punning_from_bytes(::std::byte const *__restrict first,
 															T &__restrict t) noexcept
 {
@@ -164,7 +165,7 @@ inline constexpr ::std::byte const *type_punning_from_bytes(::std::byte const *_
 }
 
 template <::std::size_t n, typename T>
-	requires(n <= sizeof(T))
+	requires(n <= sizeof(T) && ::std::is_trivially_copyable_v<T>)
 inline constexpr ::std::byte *type_punning_to_bytes_n(T const &__restrict first, ::std::byte *__restrict dest) noexcept
 {
 	if constexpr (n != 0)

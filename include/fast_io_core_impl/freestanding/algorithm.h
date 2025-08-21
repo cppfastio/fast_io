@@ -532,13 +532,13 @@ inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const 
 {
 	ForwardIt it;
 	typename ::std::iterator_traits<ForwardIt>::difference_type count, step;
-	count = last - first;
+	count = ::std::distance(first, last);
 
 	while (count > 0)
 	{
 		it = first;
 		step = count / 2;
-		it += step;
+		::std::advance(it, step);
 
 		if (comp(*it, value))
 		{
@@ -735,7 +735,7 @@ template <::std::input_iterator ForwardIt>
 inline constexpr void uninitialized_default_construct_n(ForwardIt first, ::std::size_t n) noexcept(
 	::std::is_nothrow_default_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
 {
-	::fast_io::freestanding::uninitialized_default_construct(first, first + n);
+	::fast_io::freestanding::uninitialized_default_construct(first, ::std::next(first, n));
 }
 
 template <::std::input_iterator ForwardIt, typename T>
@@ -771,7 +771,7 @@ template <::std::input_iterator ForwardIt, typename T>
 inline constexpr void uninitialized_fill_n(ForwardIt first, ::std::size_t n, T const &x) noexcept(
 	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
 {
-	::fast_io::freestanding::uninitialized_fill(first, first + n, x);
+	::fast_io::freestanding::uninitialized_fill(first, ::std::next(first, n), x);
 }
 
 template <::std::forward_iterator ForwardIt>

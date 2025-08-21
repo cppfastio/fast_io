@@ -281,7 +281,7 @@ inline constexpr hash_compress_t<digest_format::upper, ctx> hash_compress_upper(
 	else
 	{
 		return {reinterpret_cast<::std::byte const *>(::std::ranges::data(t)),
-				static_cast<::std::size_t>(::std::ranges::size(t)) * sizeof(T)};
+				static_cast<::std::size_t>(::std::ranges::size(t)) * sizeof(::std::ranges::range_value_t<T>)};
 	}
 }
 
@@ -478,7 +478,7 @@ inline constexpr char_type *prv_srv_hash_compress_df_impl(char_type *iter, ::std
 				::std::byte buffer[digest_size];
 				auto ret{cal_hash_internal_impl<T>(base, len, buffer)};
 				return ::fast_io::details::copy_to_hash_df_commom_impl < d ==
-					   ::fast_io::manipulators::digest_format::upper > (buffer, iter, static_cast<::std::size_t>(ret - buffer));
+					   ::fast_io::manipulators::digest_format::upper > (iter, buffer, static_cast<::std::size_t>(ret - buffer));
 			}
 			else
 			{
@@ -512,7 +512,7 @@ inline constexpr char_type *prv_srv_hash_compress_df_impl(char_type *iter, ::std
 				::std::byte buffer[digest_size];
 				cal_hash_internal<T>(base, len, buffer);
 				return ::fast_io::details::copy_to_hash_df_commom_impl < d ==
-					   ::fast_io::manipulators::digest_format::upper > (buffer, iter, digest_size);
+					   ::fast_io::manipulators::digest_format::upper > (iter, buffer, digest_size);
 			}
 			else
 			{
