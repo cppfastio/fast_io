@@ -17,6 +17,8 @@ extern int my_dos_rename(char const *oldname, char const *newname) noexcept __as
 // Because of limitations of MS-DOS, this function doesn't really link two files together.
 // However, it simulates a real link by copying the file at exists to new.
 extern int my_dos_link(char const *exists, char const *newname) noexcept __asm__("_link");
+// The symlink of djgpp only generates a 510-byte file and does not exist as a soft link, so it
+// will be disabled later.
 extern int my_dos_symlink(char const *exists, char const *newname) noexcept __asm__("_symlink");
 extern int my_dos_chmod(char const *path, mode_t mode) noexcept __asm__("_chmod");
 extern int my_dos_utime(char const *file, utimbuf const *time) noexcept __asm__("_utime");
