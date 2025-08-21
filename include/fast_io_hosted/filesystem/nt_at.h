@@ -634,6 +634,7 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 		throw_nt_error(status);
 	}
 #else
+#if defined(FAST_IO_USE_DJGPP_SYMLINK)
 	constexpr nt_open_mode symbol_mode{::fast_io::win32::nt::details::calculate_nt_open_mode({::fast_io::open_mode::out, static_cast<perms>(436)})};
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char8_t> new_file(
@@ -647,6 +648,9 @@ inline void nt_symlinkat_impl(char16_t const *oldpath_c_str, ::std::size_t oldpa
 													 u8"\nThis is just a text to force symlink file to be 510 bytes long. Do not delete it nor spaces following it.");
 
 	::fast_io::operations::write_all(new_file, buffer, buffer + 510);
+#else
+	throw_nt_error(0xC0000002);
+#endif
 #endif
 }
 
@@ -824,7 +828,7 @@ inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args
 {
 	return nt_api_common(
 		path, [&](char16_t const *path_c_str, ::std::size_t path_size) {
-			return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...);
+			return nt1x_api_dispatcher < family == nt_family::zw, dsp > (dir_handle, path_c_str, path_size, args...);
 		});
 }
 
@@ -837,7 +841,7 @@ inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_pat
 		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 			return nt_api_common(
 				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-					return nt12_api_dispatcher<family == nt_family::zw, dsp>(oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size, args...);
+					return nt12_api_dispatcher < family == nt_family::zw, dsp > (oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size, args...);
 				});
 		});
 }
@@ -849,8 +853,8 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
 							 return nt_api_common(newpath,
 												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
-													  return nt22_api_dispatcher<family == nt_family::zw, dsp>(olddirhd, oldpath_c_str, oldpath_size, newdirhd,
-																											   newpath_c_str, newpath_size, args...);
+													  return nt22_api_dispatcher < family == nt_family::zw, dsp > (olddirhd, oldpath_c_str, oldpath_size, newdirhd,
+																												   newpath_c_str, newpath_size, args...);
 												  });
 						 });
 }

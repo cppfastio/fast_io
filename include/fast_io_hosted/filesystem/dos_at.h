@@ -138,7 +138,17 @@ inline auto dos22_api_dispatcher(int olddirfd, char const *oldpath, int newdirfd
 
 inline void dos_symlinkat_impl(char const *oldpath, int newdirfd, char const *newpath)
 {
+#if defined(FAST_IO_USE_DJGPP_SYMLINK)
 	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_symlink(oldpath, ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
+#else
+	throw_posix_error(
+#ifdef ENOSYS
+		ENOSYS
+#else
+		40
+#endif
+	);
+#endif
 }
 
 template <posix_api_12 dsp, typename... Args>

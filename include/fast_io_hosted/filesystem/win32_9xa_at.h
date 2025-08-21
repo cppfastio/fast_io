@@ -308,6 +308,7 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 inline void win32_9xa_symlinkat_impl(char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 									 ::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
 {
+#if defined(FAST_IO_USE_DJGPP_SYMLINK)
 	::fast_io::containers::basic_cstring_view<char8_t> path{::fast_io::containers::null_terminated, oldpath_c_str, oldpath_size};
 
 	::fast_io::u8win32_file_9xa f{::fast_io::win32::details::basic_win32_9xa_create_file_at_fs_dirent_impl(
@@ -321,6 +322,10 @@ inline void win32_9xa_symlinkat_impl(char8_t const *oldpath_c_str, ::std::size_t
 	::fast_io::operations::print_freestanding<false>(u8obv, u8"!<symlink>", path, u8"\nThis is just a text to force symlink file to be 510 bytes long. Do not delete it nor spaces following it.");
 
 	::fast_io::operations::write_all(f, buffer, buffer + 510);
+
+#else 
+	throw_win32_error(0x1);
+#endif
 }
 
 inline void win32_9xa_linkat_impl(::fast_io::win32_9xa_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
