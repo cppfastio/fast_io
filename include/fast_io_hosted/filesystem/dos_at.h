@@ -145,7 +145,7 @@ inline void dos_symlinkat_impl(char const *oldpath, int newdirfd, char const *ne
 #ifdef ENOSYS
 		ENOSYS
 #else
-		40
+		27 // in i586-msdosdjgpp/include/errno.h
 #endif
 	);
 #endif
