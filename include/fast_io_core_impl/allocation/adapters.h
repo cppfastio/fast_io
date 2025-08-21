@@ -53,7 +53,7 @@ inline constexpr ::std::size_t allocator_compute_aligned_total_size_impl(::std::
 
 inline void *allocator_adjust_ptr_to_aligned_impl(void *p, ::std::size_t alignment) noexcept
 {
-	void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::size_t>(p) + alignment) & (0 - alignment))};
+	void *aligned_ptr{reinterpret_cast<void *>((reinterpret_cast<::std::uintptr_t>(p) + alignment) & (0 - alignment))};
 	reinterpret_cast<void **>(aligned_ptr)[-1] = p;
 	return aligned_ptr;
 }
@@ -1253,7 +1253,7 @@ public:
 		}
 		else
 		{
-			auto newres{alloc::allocate_zero_aligned_at_least(alignof(T), n * sizeof(T))};
+			auto newres{alloc::allocate_aligned_zero_at_least(alignof(T), n * sizeof(T))};
 			return {reinterpret_cast<T *>(newres.ptr), newres.count / sizeof(T)};
 		}
 	}
