@@ -209,7 +209,6 @@ inline
 		[[fallthrough]];
 	case utime_flags::omit:
 		throw_posix_error(EINVAL);
-		::fast_io::unreachable();
 	default:
 		return ::fast_io::details::unix_timestamp_to_time_t(opt.timestamp);
 	}

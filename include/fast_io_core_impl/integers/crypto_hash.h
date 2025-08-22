@@ -296,7 +296,7 @@ inline constexpr hash_compress_t<digest_format::raw_bytes, ctx> hash_compress_ra
 	else
 	{
 		return {reinterpret_cast<::std::byte const *>(::std::ranges::data(t)),
-				static_cast<::std::size_t>(::std::ranges::size(t)) * sizeof(T)};
+				static_cast<::std::size_t>(::std::ranges::size(t)) * sizeof(::std::ranges::range_value_t<T>)};
 	}
 }
 
