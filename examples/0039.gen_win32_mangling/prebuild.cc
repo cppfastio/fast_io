@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <fast_io.h>
 #include <fast_io_device.h>
 #include <fast_io_dsal/vector.h>
@@ -162,8 +163,11 @@ rule toasm
 	}
 	result.append(u8R"(
 rule compile
-  command = clang++ $in -o $out -O2 -I ../../../include -std=c++23 -lntdll
-
+  command = clang++ $in -o $out -O2 -I ../../../include -std=c++23 )"
+#ifdef _WIN32
+			"-lntdll"
+#endif
+R"(
 rule run
   command = ./$in
 )");
@@ -222,7 +226,7 @@ int main() noexcept {
 	::fast_io::native_file build_ninja{"build/build.ninja", ::fast_io::open_mode::out};
 	if (argc == 2)
 	{
-		::std::size_t len_argv = strlen(argv[1]);
+		::std::size_t len_argv = ::std::strlen(argv[1]);
 		if (argv[1][len_argv - 1] == '\\')
 		{
 			argv[1][len_argv - 1] = 0;
