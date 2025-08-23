@@ -305,8 +305,9 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 	}
 }
 
-inline void win32_9xa_symlinkat_impl(char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
-									 ::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
+inline void win32_9xa_symlinkat_impl([[maybe_unused]] char8_t const *oldpath_c_str, [[maybe_unused]] ::std::size_t oldpath_size,
+									 [[maybe_unused]] ::fast_io::win32_9xa_dir_handle const &newdirhd, 
+                                     [[maybe_unused]] char8_t const *newpath_c_str, [[maybe_unused]] ::std::size_t newpath_size)
 {
 #if defined(FAST_IO_USE_DJGPP_SYMLINK)
 	::fast_io::containers::basic_cstring_view<char8_t> path{::fast_io::containers::null_terminated, oldpath_c_str, oldpath_size};
