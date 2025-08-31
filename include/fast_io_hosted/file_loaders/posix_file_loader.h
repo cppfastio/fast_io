@@ -34,7 +34,7 @@ inline void posix_unload_address(void *address, [[maybe_unused]] ::std::size_t f
 {
 	if (address != (void *)-1) [[likely]]
 	{
-		sys_munmap(address, file_size);
+		sys_munmap_nothrow(address, file_size);
 	}
 }
 
