@@ -273,11 +273,11 @@ public:
 #endif
 	inline constexpr span_type subspan(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
-		if (this->n < pos) [[unlikely]]
+		if (N < pos) [[unlikely]]
 		{
 			::fast_io::fast_terminate();
 		}
-		size_type const val{this->n - pos};
+		size_type const val{N - pos};
 		if (val < count)
 		{
 			if (count != ::fast_io::containers::npos) [[unlikely]]
@@ -295,7 +295,7 @@ public:
 #endif
 	inline constexpr span_type subspan_unchecked(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
 	{
-		size_type const val{this->n - pos};
+		size_type const val{N - pos};
 		if (count == ::fast_io::containers::npos)
 		{
 			count = val;

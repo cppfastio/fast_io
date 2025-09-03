@@ -4,10 +4,6 @@
 #error "You must be using a C++ compiler"
 #endif
 
-#if !defined(__cplusplus)
-#error "You must be using a C++ compiler"
-#endif
-
 #include "../fast_io_core.h"
 #include "impl/misc/push_macros.h"
 #include "impl/misc/push_warnings.h"

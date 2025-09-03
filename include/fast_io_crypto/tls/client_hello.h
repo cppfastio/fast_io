@@ -13,7 +13,7 @@ struct client_hello
 	::std::uint_least8_t session_id_length{32};
 	::fast_io::freestanding::array<::std::uint_least8_t, 32> session_id{};
 	::fast_io::freestanding::array<::std::uint_least8_t, 2> cipher_suite_length = {0x00, 0x02};
-	cipher_suite::cipher_suite_type cipher_suite{cipher_suite::tls_aes_256_gcm_sha256};
+	cipher_suite::cipher_suite_type cipher_suite{cipher_suite::tls_aes_256_gcm_sha384};
 	::std::uint_least8_t number_of_compression_length = {0x01};
 	::std::uint_least8_t compression_method = {};
 };
