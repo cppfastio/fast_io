@@ -907,7 +907,10 @@ public:
 	}
 
 	inline constexpr list(list &&other) noexcept
-		: imp(other.imp), allochdl(std::move(other.allochdl))
+		: imp(other.imp)
+		  #if 0
+		  , allochdl(std::move(other.allochdl))
+		  #endif
 	{
 		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 		auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
@@ -921,7 +924,9 @@ public:
 		{
 			this->destroy();
 			imp = other.imp;
+			#if 0
 			allochdl = ::std::move(other.allochdl);
+			#endif
 			auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 			auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 			next->prev = prev->next = __builtin_addressof(imp);
