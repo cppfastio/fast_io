@@ -768,10 +768,10 @@ inline constexpr ForwardIt uninitialized_fill(ForwardIt first, ForwardIt last, T
 }
 
 template <::std::input_iterator ForwardIt, typename T>
-inline constexpr void uninitialized_fill_n(ForwardIt first, ::std::size_t n, T const &x) noexcept(
+inline constexpr ForwardIt uninitialized_fill_n(ForwardIt first, ::std::size_t n, T const &x) noexcept(
 	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
 {
-	::fast_io::freestanding::uninitialized_fill(first, ::std::next(first, n), x);
+	return ::fast_io::freestanding::uninitialized_fill(first, ::std::next(first, n), x);
 }
 
 template <::std::forward_iterator ForwardIt>

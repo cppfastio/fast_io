@@ -170,5 +170,8 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL PrefetchVirtualMemory(void *, ::std::si
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetConsoleTextAttribute(void *, ::std::int_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(SetConsoleTextAttribute, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetCurrentThreadId() noexcept FAST_IO_WINSTDCALL_RENAME(GetCurrentThreadId, 0);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL Sleep(::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(Sleep, 4);
-
+FAST_IO_DLLIMPORT char16_t *FAST_IO_WINSTDCALL GetEnvironmentStringsW() noexcept FAST_IO_WINSTDCALL_RENAME(GetEnvironmentStringsW, 0);
+FAST_IO_DLLIMPORT char *FAST_IO_WINSTDCALL GetEnvironmentStringsA() noexcept FAST_IO_WINSTDCALL_RENAME(GetEnvironmentStringsA, 0);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsW(char16_t*) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsW, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsA(char*) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsA, 4);
 } // namespace fast_io::win32
