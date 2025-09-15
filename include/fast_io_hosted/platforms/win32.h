@@ -959,7 +959,7 @@ inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
 	::fast_io::win32::win32_find_dataa wfda{};
 	tlc_win32_9xa_dir_handle_path_str temp_find_path{concat_tlc_win32_9xa_dir_handle_path_str(h.path, u8"\\*")};
 	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
-	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1)))
+	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))) [[unlikely]]
 	{
 		throw_win32_error(0x5);
 	}
@@ -969,14 +969,39 @@ inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
 	}
 }
 
+inline bool get_win32_9xa_dir_validity(win32_9xa_dir_handle const &h)
+{
+	::fast_io::win32::win32_find_dataa wfda{};
+	tlc_win32_9xa_dir_handle_path_str temp_find_path{concat_tlc_win32_9xa_dir_handle_path_str(h.path, u8"\\*")};
+	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
+	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))) [[unlikely]]
+	{
+		return false;
+	}
+	else
+	{
+		::fast_io::win32::FindClose(find_struct);
+		return true;
+	}
+}
+
 template <bool throw_eh = false>
 inline void close_win32_9xa_dir_handle(win32_9xa_dir_handle &h) noexcept(!throw_eh)
 {
 	if constexpr (throw_eh)
 	{
-		check_win32_9xa_dir_is_valid(h);
+		// Make sure to successfully close even if an exception is thrown.
+		bool const is_win32_9xa_dir_validid{get_win32_9xa_dir_validity(h)};
+		h.path.clear();
+		if (!is_win32_9xa_dir_validid) [[unlikely]]
+		{
+			throw_win32_error(0x5);
+		}
 	}
-	h.path.clear();
+	else
+	{
+		h.path.clear();
+	}
 }
 
 inline win32_9xa_dir_handle win32_9xa_dir_dup_impl(win32_9xa_dir_handle const &h) 
