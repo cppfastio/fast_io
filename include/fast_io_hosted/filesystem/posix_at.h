@@ -382,12 +382,13 @@ inline void posix_utimensat_impl(int dirfd, char const *path, unix_timestamp_opt
 	struct timespec *tsptr{ts};
 	system_call_throw_error(
 #if defined(__linux__)
-#if defined(__NR_utimensat64)
-		system_call<__NR_utimensat64, int>
-#else
+#if defined(__NR_utimensat_time64)
+		system_call<__NR_utimensat_time64, int>
+#elif defined(__NR_utimensat)
 		system_call<__NR_utimensat, int>
+#else
+        ::fast_io::posix::libc_utimensat
 #endif
-
 #else
 		::fast_io::posix::libc_utimensat
 #endif

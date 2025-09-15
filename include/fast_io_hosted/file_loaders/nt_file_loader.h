@@ -102,7 +102,7 @@ inline auto nt_load_file_options_impl(nt_mmap_options const &options, Args &&...
 
 template <::fast_io::nt_family family>
 	requires(family == ::fast_io::nt_family::nt || family == ::fast_io::nt_family::zw)
-class nt_family_file_loader
+class nt_family_file_loader FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 public:
 	using value_type = char;
@@ -454,5 +454,20 @@ inline constexpr basic_io_scatter_t<char> print_alias_define(::fast_io::io_alias
 
 using nt_file_loader = nt_family_file_loader<::fast_io::nt_family::nt>;
 using zw_file_loader = nt_family_file_loader<::fast_io::nt_family::zw>;
+
+namespace freestanding
+{
+template <::fast_io::nt_family family>
+struct is_trivially_copyable_or_relocatable<nt_family_file_loader<family>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <::fast_io::nt_family family>
+struct is_zero_default_constructible<nt_family_file_loader<family>>
+{
+	inline static constexpr bool value = true;
+};
+} // namespace freestanding
 
 } // namespace fast_io

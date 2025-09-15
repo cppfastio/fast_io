@@ -115,7 +115,7 @@ inline void win32_unload_address(void const *address) noexcept
 } // namespace win32::details
 
 template <win32_family family>
-class win32_family_file_loader
+class win32_family_file_loader FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 public:
 	using value_type = char;
@@ -439,5 +439,20 @@ inline constexpr basic_io_scatter_t<char> print_alias_define(io_alias_t,
 using win32_file_loader_9xa = win32_family_file_loader<win32_family::ansi_9x>;
 using win32_file_loader_ntw = win32_family_file_loader<win32_family::wide_nt>;
 using win32_file_loader = win32_family_file_loader<win32_family::native>;
+
+namespace freestanding
+{
+template <::fast_io::win32_family family>
+struct is_trivially_copyable_or_relocatable<win32_family_file_loader<family>>
+{
+	inline static constexpr bool value = true;
+};
+
+template <::fast_io::win32_family family>
+struct is_zero_default_constructible<win32_family_file_loader<family>>
+{
+	inline static constexpr bool value = true;
+};
+} // namespace freestanding
 
 } // namespace fast_io

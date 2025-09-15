@@ -1364,4 +1364,9 @@ enum class virtual_memory_information_class
 	VmCfgCallTargetInformation
 };
 
+struct file_allocation_information
+{
+	::std::int_least64_t AllocationSize;
+};
+
 } // namespace fast_io::win32::nt
