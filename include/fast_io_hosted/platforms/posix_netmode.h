@@ -639,7 +639,7 @@ inline int sys_socket(int domain, int type, int protocol)
 	system_call_throw_error(fd);
 	return fd;
 #else
-	int fd{socket(domain, type, protocol)};
+	int fd{::fast_io::noexcept_call(::socket, domain, type, protocol)};
 	if (fd == -1)
 	{
 		throw_posix_error();
@@ -661,7 +661,7 @@ inline ::std::size_t posix_socket_write_impl(int fd, void const *data, ::std::si
 	system_call_throw_error(written);
 	return static_cast<::std::size_t>(written);
 #else
-	::std::ptrdiff_t written{send(fd, data, to_write, 0)};
+	::std::ptrdiff_t written{::fast_io::noexcept_call(::send, fd, data, to_write, 0)};
 	if (written < 0)
 	{
 		throw_posix_error();
@@ -677,7 +677,7 @@ inline ::std::size_t posix_socket_read_impl(int fd, void *data, ::std::size_t to
 	system_call_throw_error(written);
 	return static_cast<::std::size_t>(written);
 #else
-	::std::ptrdiff_t written{recv(fd, data, to_write, 0)};
+	::std::ptrdiff_t written{::fast_io::noexcept_call(::recv, fd, data, to_write, 0)};
 	if (written < 0)
 	{
 		throw_posix_error();
@@ -696,7 +696,7 @@ inline void posix_connect_posix_socket_impl(int fd, void const *addr, posix_sock
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr const *;
-	if (::connect(fd, reinterpret_cast<sockaddr_alias_const_ptr>(addr), addrlen) == -1)
+	if (::fast_io::noexcept_call(::connect, fd, reinterpret_cast<sockaddr_alias_const_ptr>(addr), addrlen) == -1)
 	{
 		throw_posix_error();
 	}
@@ -713,7 +713,7 @@ inline void posix_bind_posix_socket_impl(int fd, void const *addr, posix_socklen
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr const *;
-	if (::bind(fd, reinterpret_cast<sockaddr_alias_const_ptr>(addr), addrlen) == -1)
+	if (::fast_io::noexcept_call(::bind, fd, reinterpret_cast<sockaddr_alias_const_ptr>(addr), addrlen) == -1)
 	{
 		throw_posix_error();
 	}
@@ -725,7 +725,7 @@ inline void posix_listen_posix_socket_impl(int fd, int backlog)
 #if defined(__linux__) && defined(__NR_listen)
 	system_call_throw_error(system_call<__NR_listen, int>(fd, backlog));
 #else
-	if (::listen(fd, backlog) == -1)
+	if (::fast_io::noexcept_call(::listen, fd, backlog) == -1)
 	{
 		throw_posix_error();
 	}
@@ -744,7 +744,7 @@ inline int posix_accept_posix_socket_impl(int fd, void *addr, posix_socklen_t *a
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr *;
-	int socfd{::accept(fd, reinterpret_cast<sockaddr_alias_ptr>(addr), addrlen)};
+	int socfd{::fast_io::noexcept_call(::accept, fd, reinterpret_cast<sockaddr_alias_ptr>(addr), addrlen)};
 	if (socfd == -1)
 	{
 		throw_posix_error();
@@ -765,7 +765,7 @@ inline ::std::ptrdiff_t posix_recvfrom_posix_socket_impl(int fd, void *buf, ::st
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr *;
-	::std::ptrdiff_t ret{::recvfrom(fd, buf, len, flags, reinterpret_cast<sockaddr_alias_ptr>(src_addr), addrlen)};
+	::std::ptrdiff_t ret{::fast_io::noexcept_call(::recvfrom, fd, buf, len, flags, reinterpret_cast<sockaddr_alias_ptr>(src_addr), addrlen)};
 	if (ret == -1)
 	{
 		throw_posix_error();
@@ -786,7 +786,7 @@ inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, 
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr const *;
-	::std::ptrdiff_t ret{::sendto(fd, buf, len, flags, reinterpret_cast<sockaddr_const_alias_ptr>(src_addr), addrlen)};
+	::std::ptrdiff_t ret{::fast_io::noexcept_call(::sendto, fd, buf, len, flags, reinterpret_cast<sockaddr_const_alias_ptr>(src_addr), addrlen)};
 	if (ret == -1)
 	{
 		throw_posix_error();

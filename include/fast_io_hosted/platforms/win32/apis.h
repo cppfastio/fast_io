@@ -174,4 +174,10 @@ FAST_IO_DLLIMPORT char16_t *FAST_IO_WINSTDCALL GetEnvironmentStringsW() noexcept
 FAST_IO_DLLIMPORT char *FAST_IO_WINSTDCALL GetEnvironmentStringsA() noexcept FAST_IO_WINSTDCALL_RENAME(GetEnvironmentStringsA, 0);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsW(char16_t*) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsW, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsA(char*) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsA, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL getsockopt(::std::size_t, int, int, char*, int*) noexcept FAST_IO_WINSTDCALL_RENAME(getsockopt, 20);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetFullPathNameW(char16_t const*, ::std::uint_least32_t, char16_t*, char16_t**) noexcept FAST_IO_WINSTDCALL_RENAME(GetFullPathNameW, 16);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetFullPathNameA(char const*, ::std::uint_least32_t, char*, char**) noexcept FAST_IO_WINSTDCALL_RENAME(GetFullPathNameA, 16);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationW(char16_t const*, char16_t*, ::std::uint_least32_t, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, char16_t*, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationW, 32);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationA(char const*, char*, ::std::uint_least32_t, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, char*, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationA, 32);
+
 } // namespace fast_io::win32

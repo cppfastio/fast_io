@@ -170,7 +170,8 @@ inline ::std::size_t file_size(::fast_io::basic_win32_family_io_observer<family,
 template <nt_family family, ::std::integral char_type>
 inline ::std::size_t file_size(::fast_io::basic_nt_family_io_observer<family, char_type> observer)
 {
-	return win32::nt::details::nt_load_file_get_file_size(observer.handle);
+	constexpr bool zw{family == nt_family::zw};
+	return win32::nt::details::nt_load_file_get_file_size<zw>(observer.handle);
 }
 #endif
 
