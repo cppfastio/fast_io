@@ -1732,9 +1732,9 @@ inline posix_file_status win32_9xa_dir_file_status_impl(win32_9xa_dir_handle con
 		tmp_file.perm = static_cast<perms>(pm);
 		tmp_file.type = ::fast_io::file_type::directory;
 		tmp_file.nlink = 1u;
-		tmp_file.size = static_cast<::std::uintmax_t>((static_cast<::std::uint_least64_t>(wfda.nFileSizeHigh) << 32u) | wfda.nFileSizeLow);
-		tmp_file.blksize = 512u;
-		tmp_file.blocks = (tmp_file.size + 511u) / 512u;
+		tmp_file.size = static_cast<::std::uintmax_t>((static_cast<::std::uint_least64_t>(wfda.nFileSizeHigh) << 32u) | wfda.nFileSizeLow);  // always zero
+		tmp_file.blksize = 512u;  // default
+		tmp_file.blocks = (tmp_file.size + 511u) / 512u;  // default
 		tmp_file.atim = to_unix_timestamp(wfda.ftLastAccessTime);
 		tmp_file.mtim = to_unix_timestamp(wfda.ftLastWriteTime);
 		tmp_file.ctim = tmp_file.mtim;
@@ -1755,27 +1755,29 @@ inline posix_file_status win32_9xa_dir_file_status_impl(win32_9xa_dir_handle con
 	char tmp_path_char[tmp_path_char_size];
 
 	auto const full_len{::fast_io::win32::GetFullPathNameA(reinterpret_cast<char_const_may_alias_ptr>(handle.path.c_str()), tmp_path_char_size, tmp_path_char, nullptr)};
-	if (!full_len || full_len >= tmp_path_char_size) [[unlikely]]
+
+	if (full_len > 2u && full_len <= tmp_path_char_size && ::fast_io::char_category::is_c_alpha(tmp_path_char[0])) [[likely]]
 	{
-		return tmp_file;
+		// Build root like "C:\\" safely
+		// The Character size of the tmp_path_char_size can accommodate the size
+		tmp_path_char[3u] = static_cast<char>(u8'\0');
+
+		// get dev
+		::std::uint_least32_t serial{};
+		if (::fast_io::win32::GetVolumeInformationA(tmp_path_char, nullptr, 0u, __builtin_addressof(serial), nullptr, nullptr, nullptr, 0u)) [[likely]]
+		{
+			tmp_file.dev = static_cast<::std::uintmax_t>(serial);
+		}
+	
+		// get blocksize
+		::std::uint_least32_t sector_per_cluster{};
+		::std::uint_least32_t bytes_per_sector{};
+		if (::fast_io::win32::GetDiskFreeSpaceA(tmp_path_char, __builtin_addressof(sector_per_cluster), __builtin_addressof(bytes_per_sector), nullptr, nullptr)) [[likely]]
+		{
+			tmp_file.blksize = static_cast<::std::uintmax_t>(bytes_per_sector) * static_cast<::std::uintmax_t>(sector_per_cluster);
+			tmp_file.blocks = (tmp_file.blksize + 511u) / 512u;
+		}
 	}
-
-	// Build root like "C:\\" safely
-	if (full_len < 3u) [[unlikely]]
-	{
-		return tmp_file;
-	}
-
-	tmp_path_char[3u] = static_cast<char>(u8'\0');
-
-	::std::uint_least32_t serial{};
-
-	if (!::fast_io::win32::GetVolumeInformationA(tmp_path_char, nullptr, 0u, __builtin_addressof(serial), nullptr, nullptr, nullptr, 0u))
-	{
-		return tmp_file;
-	}
-
-	tmp_file.dev = static_cast<::std::uintmax_t>(serial);
 
 	return tmp_file;
 }
