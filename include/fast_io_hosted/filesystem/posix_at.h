@@ -336,11 +336,11 @@ inline void posix_unlinkat_impl(int dirfd, char const *path, int flags)
 
 namespace details
 {
-inline constexpr struct timespec unix_timestamp_to_struct_timespec64(unix_timestamp stmp) noexcept
+inline constexpr struct timespec unix_timestamp_to_struct_timespec(unix_timestamp stmp) noexcept
 {
 	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
 	return {static_cast<::std::time_t>(stmp.seconds),
-			static_cast<long>(static_cast<long unsigned>((stmp.subseconds) / mul_factor))};
+			static_cast<long>(static_cast<long unsigned>(stmp.subseconds / mul_factor))};
 }
 
 inline
@@ -348,7 +348,7 @@ inline
 	constexpr
 #endif
 	struct timespec
-	unix_timestamp_to_struct_timespec64([[maybe_unused]] unix_timestamp_option opt) noexcept
+	unix_timestamp_to_struct_timespec([[maybe_unused]] unix_timestamp_option opt) noexcept
 {
 #if defined(UTIME_NOW) && defined(UTIME_OMIT)
 	switch (opt.flags)
@@ -358,12 +358,51 @@ inline
 	case utime_flags::omit:
 		return {.tv_sec = 0, .tv_nsec = UTIME_OMIT};
 	default:
+		return unix_timestamp_to_struct_timespec(opt.timestamp);
+	}
+#else
+	throw_posix_error(EINVAL);
+#endif
+}
+
+#if defined(__linux__) && defined(__NR_utimensat_time64)
+
+// https://github.com/torvalds/linux/blob/07e27ad16399afcd693be20211b0dfae63e0615f/include/uapi/linux/time_types.h#L7
+struct kernel_timespec64
+{
+	::std::int_least64_t tv_sec;
+	::std::int_least64_t tv_nsec;
+};
+
+inline constexpr kernel_timespec64 unix_timestamp_to_struct_timespec64(unix_timestamp stmp) noexcept
+{
+	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
+	return {static_cast<::std::int_least64_t>(stmp.seconds),
+			static_cast<::std::int_least64_t>(stmp.subseconds / mul_factor)};
+}
+
+inline
+#if defined(UTIME_NOW) && defined(UTIME_OMIT)
+	constexpr
+#endif
+    kernel_timespec64
+	unix_timestamp_to_struct_timespec64([[maybe_unused]] unix_timestamp_option opt) noexcept
+{
+#if defined(UTIME_NOW) && defined(UTIME_OMIT)
+	switch (opt.flags)
+	{
+	case utime_flags::now:
+		return {.tv_sec = 0, .tv_nsec = static_cast<::std::int_least64_t>(UTIME_NOW)};
+	case utime_flags::omit:
+		return {.tv_sec = 0, .tv_nsec = static_cast<::std::int_least64_t>(UTIME_OMIT)};
+	default:
 		return unix_timestamp_to_struct_timespec64(opt.timestamp);
 	}
 #else
 	throw_posix_error(EINVAL);
 #endif
 }
+#endif
 
 } // namespace details
 
@@ -375,11 +414,21 @@ inline void posix_utimensat_impl(int dirfd, char const *path, unix_timestamp_opt
 	{
 		throw_posix_error(EINVAL);
 	}
-	struct timespec ts[2]{
+
+#if defined(__linux__) && defined(__NR_utimensat_time64)
+    details::kernel_timespec64 ts[2]{
 		details::unix_timestamp_to_struct_timespec64(last_access_time),
 		details::unix_timestamp_to_struct_timespec64(last_modification_time),
 	};
+	details::kernel_timespec64 *tsptr{ts};
+#else
+	struct timespec ts[2]{
+		details::unix_timestamp_to_struct_timespec(last_access_time),
+		details::unix_timestamp_to_struct_timespec(last_modification_time),
+	};
 	struct timespec *tsptr{ts};
+#endif
+
 	system_call_throw_error(
 #if defined(__linux__)
 #if defined(__NR_utimensat_time64)
