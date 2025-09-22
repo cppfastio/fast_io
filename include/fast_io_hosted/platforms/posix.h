@@ -1377,11 +1377,114 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 	}
 #endif
 
-#elif defined(__linux__) && defined(__NR_ftruncate64)
-	system_call_throw_error(system_call<__NR_ftruncate64, int>(fd, size));
-#elif defined(__linux__) && defined(__NR_ftruncate)
-	system_call_throw_error(system_call<__NR_ftruncate, int>(fd, size));
+#elif defined(__linux__)
+	if constexpr(sizeof(::std::size_t) >= sizeof(::std::uint_least64_t))
+	{
+#if defined(__NR_ftruncate)
+		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least64_t>::max())
+		{
+            if (size > ::std::numeric_limits<::std::uint_least64_t>::max())
+			{
+				throw_posix_error(EINVAL);
+			}
+		}
+
+		system_call_throw_error(system_call<__NR_ftruncate, int>(fd, static_cast<::std::uint_least64_t>(size)));
 #else
+		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+		{
+			if (size > ::std::numeric_limits<off_t>::max())
+			{
+				throw_posix_error(EINVAL);
+			}
+		}
+
+		if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
+		{
+			throw_posix_error();
+		}
+#endif
+	}
+	else if constexpr (sizeof(::std::size_t) >= sizeof(::std::uint_least32_t))
+	{
+#if defined(__NR_ftruncate64)
+		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least64_t>::max())
+		{
+			if (size > ::std::numeric_limits<::std::uint_least64_t>::max())
+			{
+				throw_posix_error(EINVAL);
+			}
+		}
+
+		::std::uint_least64_t size_u64{static_cast<::std::uint_least64_t>(size)};
+		::std::uint_least32_t size_u32_low{static_cast<::std::uint_least32_t>(size_u64)};
+		::std::uint_least32_t size_u32_high{static_cast<::std::uint_least32_t>(size_u64 >> 32u)};
+
+		int result_syscall;  // no initlize
+
+		if constexpr(::std::endian::native == ::std::endian::big)
+		{
+			/* 3 args: fd, size (high, low) */
+			result_syscall = ::fast_io::system_call<__NR_ftruncate64, int>(fd, size_u32_high, size_u32_low);
+		}
+		else
+		{
+			/* 3 args: fd, size (low, high) */
+			result_syscall = ::fast_io::system_call<__NR_ftruncate64, int>(fd, size_u32_low, size_u32_high);
+		}
+
+		system_call_throw_error(result_syscall);
+
+#elif defined(__NR_ftruncate)
+
+		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least32_t>::max())
+		{
+			if (size > ::std::numeric_limits<::std::uint_least32_t>::max())
+			{
+				throw_posix_error(EINVAL);
+			}
+		}
+
+		system_call_throw_error(system_call<__NR_ftruncate, int>(fd, static_cast<::std::uint_least32_t>(size)));
+#else
+		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+		{
+			if (size > ::std::numeric_limits<off_t>::max())
+			{
+				throw_posix_error(EINVAL);
+			}
+		}
+
+		if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
+		{
+			throw_posix_error();
+		}
+#endif
+	}
+	else
+	{
+		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+		{
+			if (size > ::std::numeric_limits<off_t>::max())
+			{
+				throw_posix_error(EINVAL);
+			}
+		}
+
+		if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
+		{
+			throw_posix_error();
+		}
+	}
+#else
+	if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+	{
+		if (size > ::std::numeric_limits<off_t>::max())
+		{
+			throw_posix_error(EINVAL);
+		}
+	}
+
 	if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
 	{
 		throw_posix_error();
@@ -1412,7 +1515,9 @@ public:
 #if defined(__wasi__)
 		throw_posix_error(ENOTSUP);
 #else
+
 		int a2[2]{-1, -1};
+
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 		if (noexcept_call(::_pipe, a2, 131072u, _O_BINARY) == -1)
 #elif defined(__linux__)
@@ -1422,7 +1527,10 @@ public:
 #else
 		if (noexcept_call(::pipe, a2) == -1 || ::fast_io::details::sys_fcntl(a2[0], F_SETFD, FD_CLOEXEC) == -1 || ::fast_io::details::sys_fcntl(a2[1], F_SETFD, FD_CLOEXEC) == -1)
 #endif
+		{
 			throw_posix_error();
+		}
+		
 		pipes->fd = *a2;
 		pipes[1].fd = a2[1];
 #endif
