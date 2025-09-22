@@ -1750,12 +1750,6 @@ inline posix_file_status win32_9xa_dir_file_status_impl(win32_9xa_dir_handle con
 #endif
 		= char const *;
 
-	using char_may_alias_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-		[[__gnu__::__may_alias__]]
-#endif
-		= char *;
-
 	// Use A APIs and a char buffer; avoid multiplying by sizeof(char8_t)
 	constexpr ::std::size_t tmp_path_char_size{260u};
 	char tmp_path_char[tmp_path_char_size];
