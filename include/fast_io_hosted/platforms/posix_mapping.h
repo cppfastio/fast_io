@@ -44,7 +44,7 @@ inline ::std::byte *sys_mmap(void *addr, ::std::size_t len, int prot, int flags,
 		}
 	}
 	auto ret{reinterpret_cast<::std::byte *>(
-		::mmap(addr, len, prot, flags, fd, static_cast<off_t>(static_cast<my_make_unsigned_t<off_t>>(offset))))};
+		::fast_io::noexcept_call(::mmap, addr, len, prot, flags, fd, static_cast<off_t>(static_cast<my_make_unsigned_t<off_t>>(offset))))};
 	if (ret == MAP_FAILED)
 	{
 		throw_posix_error();

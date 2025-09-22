@@ -186,13 +186,13 @@ inline void posix_faccessat_impl(int dirfd, char const *pathname, int mode, int 
 {
 	system_call_throw_error(
 #if defined(__linux__) && defined(__NR_faccessat2)
-		system_call<__NR_faccessat2, int>
+		system_call<__NR_faccessat2, int>(dirfd, pathname, mode, flags)
 #elif defined(__linux__) && defined(__NR_faccessat)
-		system_call<__NR_faccessat, int>
+		system_call<__NR_faccessat, int>(dirfd, pathname, mode)
 #else
-		::fast_io::posix::libc_faccessat
+		::fast_io::posix::libc_faccessat(dirfd, pathname, mode, flags)
 #endif
-		(dirfd, pathname, mode, flags));
+		);
 }
 
 #if defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)
