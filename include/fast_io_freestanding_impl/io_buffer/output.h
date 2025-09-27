@@ -122,14 +122,30 @@ inline constexpr char_type const *write_some_overflow_impl(optstmtype optstm,
 }
 
 template <::std::integral char_type, typename optstmtype>
-inline constexpr void write_all_nullptr_case(basic_io_buffer_pointers<char_type> &__restrict pointers,
+inline constexpr void write_all_nullptr_case(optstmtype optstm, basic_io_buffer_pointers<char_type> &__restrict pointers,
 											 char_type const *first, char_type const *last)
 {
-	basic_io_scatter_t<char_type> const scatters[2]{
-		{(pointers.buffer_begin ? pointers.buffer_begin : first),
-		 static_cast<::std::size_t>(pointers.buffer_curr - pointers.buffer_begin)},
-		{first, static_cast<::std::size_t>(last - first)}};
-	::fast_io::operations::decay::scatter_write_all_decay(pointers, scatters, 2);
+	if constexpr (::fast_io::operations::decay::defines::has_any_of_write_bytes_operations<optstmtype>)
+	{
+		io_scatter_t const scatters[2]{
+			{reinterpret_cast<::std::byte const *>(pointers.buffer_begin ? pointers.buffer_begin : first),
+			 static_cast<::std::size_t>(pointers.buffer_begin
+											? (reinterpret_cast<::std::byte const *>(pointers.buffer_curr) -
+											   reinterpret_cast<::std::byte const *>(pointers.buffer_begin))
+											: 0u)},
+			{reinterpret_cast<::std::byte const *>(first),
+			 static_cast<::std::size_t>(reinterpret_cast<::std::byte const *>(last) -
+										 reinterpret_cast<::std::byte const *>(first))}};
+		::fast_io::operations::decay::scatter_write_all_bytes_decay(optstm, scatters, 2);
+	}
+	else
+	{
+		basic_io_scatter_t<char_type> const scatters[2]{
+			{(pointers.buffer_begin ? pointers.buffer_begin : first),
+			 static_cast<::std::size_t>(pointers.buffer_begin ? (pointers.buffer_curr - pointers.buffer_begin) : 0u)},
+			{first, static_cast<::std::size_t>(last - first)}};
+		::fast_io::operations::decay::scatter_write_all_decay(optstm, scatters, 2);
+	}
 	pointers.buffer_curr = pointers.buffer_begin;
 }
 

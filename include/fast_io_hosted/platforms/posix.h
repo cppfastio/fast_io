@@ -1415,14 +1415,25 @@ public:
 		int a2[2]{-1, -1};
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 		if (noexcept_call(::_pipe, a2, 131072u, _O_BINARY) == -1)
+			throw_posix_error();
 #elif defined(__linux__)
 		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
+			throw_posix_error();
 #elif (defined(__MSDOS__) || defined(__DJGPP__)) || defined(__NEWLIB__)
 		if (noexcept_call(::pipe, a2) == -1)
-#else
-		if (noexcept_call(::pipe, a2) == -1 || ::fast_io::details::sys_fcntl(a2[0], F_SETFD, FD_CLOEXEC) == -1 || ::fast_io::details::sys_fcntl(a2[1], F_SETFD, FD_CLOEXEC) == -1)
-#endif
 			throw_posix_error();
+#else
+		{
+			if (noexcept_call(::pipe, a2) == -1)
+				throw_posix_error();
+			::fast_io::posix_file_factory fd0(a2[0]);
+			::fast_io::posix_file_factory fd1(a2[1]);
+			::fast_io::details::sys_fcntl(fd0.fd, F_SETFD, FD_CLOEXEC);
+			::fast_io::details::sys_fcntl(fd1.fd, F_SETFD, FD_CLOEXEC);
+			fd0.fd = -1;
+			fd1.fd = -1;
+		}
+#endif
 		pipes->fd = *a2;
 		pipes[1].fd = a2[1];
 #endif
