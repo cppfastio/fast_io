@@ -368,6 +368,8 @@ inline
 #if defined(__linux__) && defined(__NR_utimensat_time64)
 
 // https://github.com/torvalds/linux/blob/07e27ad16399afcd693be20211b0dfae63e0615f/include/uapi/linux/time_types.h#L7
+// https://github.com/qemu/qemu/blob/ab8008b231e758e03c87c1c483c03afdd9c02e19/linux-user/syscall_defs.h#L251
+// https://github.com/bminor/glibc/blob/b7e0ec907ba94b6fcc6142bbaddea995bcc3cef3/include/struct___timespec64.h#L15
 struct kernel_timespec64
 {
 	::std::int_least64_t tv_sec;

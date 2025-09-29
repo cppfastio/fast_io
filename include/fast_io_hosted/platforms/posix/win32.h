@@ -8,15 +8,15 @@ namespace details
 
 inline ::std::byte *posix_pread_bytes_impl(int fd, ::std::byte *first, ::std::byte *last, ::fast_io::intfpos_t off)
 {
-	return ::fast_io::win32::details::pread_some_bytes_impl(::fast_io::details::my_get_osfile_handle(fd), first, last,
-															off);
+	// Here, functions from the operations module must be selected because Windows 9x may not provide the p-series functions.
+    return ::fast_io::operations::pread_some_bytes(::fast_io::win32_io_observer{::fast_io::details::my_get_osfile_handle(fd)}, first, last, off);
 }
 
 inline ::std::byte const *posix_pwrite_bytes_impl(int fd, ::std::byte const *first, ::std::byte const *last,
 												  ::fast_io::intfpos_t off)
 {
-	return ::fast_io::win32::details::pwrite_some_bytes_impl(::fast_io::details::my_get_osfile_handle(fd), first, last,
-															 off);
+	// Here, functions from the operations module must be selected because Windows 9x may not provide the p-series functions.
+	return ::fast_io::operations::pwrite_some_bytes(::fast_io::win32_io_observer{::fast_io::details::my_get_osfile_handle(fd)}, first, last, off);
 }
 
 } // namespace details
