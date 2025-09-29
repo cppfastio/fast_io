@@ -1378,12 +1378,12 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 #endif
 
 #elif defined(__linux__)
-	if constexpr(sizeof(::std::size_t) >= sizeof(::std::uint_least64_t))
+	if constexpr (sizeof(::std::size_t) >= sizeof(::std::uint_least64_t))
 	{
 #if defined(__NR_ftruncate)
-		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least64_t>::max())
+		if constexpr (::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least64_t>::max())
 		{
-            if (size > ::std::numeric_limits<::std::uint_least64_t>::max())
+			if (size > ::std::numeric_limits<::std::uint_least64_t>::max())
 			{
 				throw_posix_error(EINVAL);
 			}
@@ -1391,7 +1391,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 
 		system_call_throw_error(system_call<__NR_ftruncate, int>(fd, static_cast<::std::uint_least64_t>(size)));
 #else
-		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+		if constexpr (::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
 		{
 			if (size > ::std::numeric_limits<off_t>::max())
 			{
@@ -1408,7 +1408,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 	else if constexpr (sizeof(::std::size_t) >= sizeof(::std::uint_least32_t))
 	{
 #if defined(__NR_ftruncate64)
-		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least64_t>::max())
+		if constexpr (::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least64_t>::max())
 		{
 			if (size > ::std::numeric_limits<::std::uint_least64_t>::max())
 			{
@@ -1420,9 +1420,9 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 		::std::uint_least32_t size_u32_low{static_cast<::std::uint_least32_t>(size_u64)};
 		::std::uint_least32_t size_u32_high{static_cast<::std::uint_least32_t>(size_u64 >> 32u)};
 
-		int result_syscall;  // no initlize
+		int result_syscall; // no initlize
 
-		if constexpr(::std::endian::native == ::std::endian::big)
+		if constexpr (::std::endian::native == ::std::endian::big)
 		{
 			/* 3 args: fd, size (high, low) */
 			result_syscall = ::fast_io::system_call<__NR_ftruncate64, int>(fd, size_u32_high, size_u32_low);
@@ -1437,7 +1437,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 
 #elif defined(__NR_ftruncate)
 
-		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least32_t>::max())
+		if constexpr (::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<::std::uint_least32_t>::max())
 		{
 			if (size > ::std::numeric_limits<::std::uint_least32_t>::max())
 			{
@@ -1447,7 +1447,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 
 		system_call_throw_error(system_call<__NR_ftruncate, int>(fd, static_cast<::std::uint_least32_t>(size)));
 #else
-		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+		if constexpr (::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
 		{
 			if (size > ::std::numeric_limits<off_t>::max())
 			{
@@ -1463,7 +1463,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 	}
 	else
 	{
-		if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+		if constexpr (::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
 		{
 			if (size > ::std::numeric_limits<off_t>::max())
 			{
@@ -1477,7 +1477,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 		}
 	}
 #else
-	if constexpr(::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
+	if constexpr (::std::numeric_limits<::fast_io::uintfpos_t>::max() > ::std::numeric_limits<off_t>::max())
 	{
 		if (size > ::std::numeric_limits<off_t>::max())
 		{
@@ -1520,17 +1520,25 @@ public:
 
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 		if (noexcept_call(::_pipe, a2, 131072u, _O_BINARY) == -1)
+		{
 			throw_posix_error();
+		}
 #elif defined(__linux__)
 		if (noexcept_call(::pipe2, a2, O_CLOEXEC) == -1)
+		{
 			throw_posix_error();
+		}
 #elif (defined(__MSDOS__) || defined(__DJGPP__)) || defined(__NEWLIB__)
 		if (noexcept_call(::pipe, a2) == -1)
+		{
 			throw_posix_error();
+		}
 #else
 		{
 			if (noexcept_call(::pipe, a2) == -1)
+			{
 				throw_posix_error();
+			}
 			::fast_io::posix_file_factory fd0(a2[0]);
 			::fast_io::posix_file_factory fd1(a2[1]);
 			::fast_io::details::sys_fcntl(fd0.fd, F_SETFD, FD_CLOEXEC);
