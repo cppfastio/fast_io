@@ -5,6 +5,11 @@ https://github.com/riscvarchive/riscv-musl/blob/develop/arch/riscv64/syscall_arc
 Do we need to deal with big endian with extra code???
 */
 
+#include <cstddef>
+#include <cstdint>
+#include <concepts>
+#include <sys/syscall.h>
+
 namespace fast_io
 {
 
@@ -29,6 +34,7 @@ inline return_value_type system_call(auto p1) noexcept
 }
 
 template <::std::uint_least64_t syscall_number>
+[[noreturn]]
 inline void system_call_no_return(auto p1) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
@@ -40,6 +46,18 @@ inline void system_call_no_return(auto p1) noexcept
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2) noexcept
+{
+	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
+	register ::std::uint_least64_t a0 __asm__("a0") = (::std::uint_least64_t)p1;
+	register ::std::uint_least64_t a1 __asm__("a1") = (::std::uint_least64_t)p2;
+	__asm__ __volatile__("ecall" : "+r"(a0) : "r"(a7), "r"(a1) : "memory");
+	return static_cast<return_value_type>(a0);
+}
+
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
+	requires(1 < sizeof(return_value_type))
+[[__gnu__::__always_inline__]]
+inline return_value_type inline_syscall(auto p1, auto p2) noexcept
 {
 	register ::std::uint_least64_t a7 __asm__("a7") = syscall_number;
 	register ::std::uint_least64_t a0 __asm__("a0") = (::std::uint_least64_t)p1;
@@ -103,6 +121,7 @@ inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5
 }
 
 template <::std::integral I>
+[[noreturn]]
 inline void fast_exit(I ret) noexcept
 {
 	system_call_no_return<__NR_exit>(ret);

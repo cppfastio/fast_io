@@ -1,6 +1,11 @@
 ﻿#pragma once
 // https://github.com/bminor/glibc/master/sysdeps/unix/sysv/linux/x86_64/sysdep.h
 
+#include <cstddef>
+#include <cstdint>
+#include <concepts>
+#include <sys/syscall.h>
+
 namespace fast_io
 {
 
@@ -31,6 +36,7 @@ inline return_value_type system_call(auto p1) noexcept
 }
 
 template <::std::uint_least64_t syscall_number>
+[[noreturn]]
 inline void system_call_no_return(auto p1) noexcept
 {
 	::std::uint_least64_t ret;
@@ -45,6 +51,20 @@ inline void system_call_no_return(auto p1) noexcept
 template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
 	requires(1 < sizeof(return_value_type))
 inline return_value_type system_call(auto p1, auto p2) noexcept
+{
+	return_value_type ret;
+	__asm__ __volatile__("syscall"
+						 : "=a"(ret)
+						 // EDI      RSI       RDX
+						 : "0"(syscall_number), "D"(p1), "S"(p2)
+						 : "memory", "cc", "r11", "cx");
+	return ret;
+}
+
+template <::std::uint_least64_t syscall_number, ::std::signed_integral return_value_type>
+	requires(1 < sizeof(return_value_type))
+[[__gnu__::__always_inline__]]
+inline return_value_type inline_syscall(auto p1, auto p2) noexcept
 {
 	return_value_type ret;
 	__asm__ __volatile__("syscall"
@@ -114,6 +134,7 @@ inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5
 }
 
 template <::std::integral I>
+[[noreturn]]
 inline void fast_exit(I ret) noexcept
 {
 	system_call_no_return<__NR_exit>(ret);
