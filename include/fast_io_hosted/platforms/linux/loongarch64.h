@@ -8,7 +8,6 @@ loongarch syscall is very similar to riscv. but it is using syscall instruction 
 #include <cstddef>
 #include <cstdint>
 #include <concepts>
-#include <sys/syscall.h>
 
 namespace fast_io
 {

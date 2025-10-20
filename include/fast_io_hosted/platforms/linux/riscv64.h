@@ -8,7 +8,6 @@ Do we need to deal with big endian with extra code???
 #include <cstddef>
 #include <cstdint>
 #include <concepts>
-#include <sys/syscall.h>
 
 namespace fast_io
 {
