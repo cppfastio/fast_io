@@ -308,7 +308,7 @@ inline void *nt_family_create_alpc_ipc_server_port_impl(nt_alpc_char_type const 
 	us.Buffer = const_cast<char16_t *>(temp_ipc_name_tlc_str.c_str());
 	auto const temp_ipc_name_tlc_str_size_bytes{temp_ipc_name_tlc_str.size_bytes()};
 	us.Length = static_cast<::std::uint_least16_t>(temp_ipc_name_tlc_str_size_bytes);
-	us.MaximumLength = static_cast<::std::uint_least16_t>(temp_ipc_name_tlc_str_size_bytes + sizeof(char16_t));
+	us.MaximumLength = ::fast_io::win32::nt::details::nt_filename_bytes_check(temp_ipc_name_tlc_str_size_bytes + sizeof(char16_t));
 
 	::fast_io::win32::nt::object_attributes oa{};
 	oa.Length = sizeof(::fast_io::win32::nt::object_attributes);
@@ -701,7 +701,7 @@ inline void *nt_family_ipc_alpc_client_connect_impl(nt_alpc_char_type const *ser
 	us.Buffer = const_cast<char16_t *>(temp_ipc_name_tlc_str.c_str());
 	auto const temp_ipc_name_tlc_str_size_bytes{temp_ipc_name_tlc_str.size_bytes()};
 	us.Length = static_cast<::std::uint_least16_t>(temp_ipc_name_tlc_str_size_bytes);
-	us.MaximumLength = static_cast<::std::uint_least16_t>(temp_ipc_name_tlc_str_size_bytes + sizeof(char16_t));
+	us.MaximumLength = ::fast_io::win32::nt::details::nt_filename_bytes_check(temp_ipc_name_tlc_str_size_bytes + sizeof(char16_t));
 
 	::fast_io::win32::nt::security_quality_of_service SecurityQos{};
 	SecurityQos.ImpersonationLevel = ::fast_io::win32::nt::security_impersonation_level::SecurityImpersonation;

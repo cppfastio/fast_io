@@ -117,7 +117,7 @@ public:
 		{
 			if (this->joinable()) [[unlikely]]
 			{
-				::std::terminate();
+				::fast_io::fast_terminate();
 			}
 			if (!::fast_io::win32::CloseHandle(this->handle_)) [[unlikely]]
 			{

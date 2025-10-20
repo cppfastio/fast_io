@@ -218,9 +218,9 @@ u8filename(nt_directory_entry pioe) noexcept
 	return {ent.u8d_name, ent.u8d_namlen};
 }
 
-inline constexpr ::std::uint_least64_t inode_ul64(nt_directory_entry) noexcept
+inline constexpr ::std::uint_least64_t inode_ul64(nt_directory_entry pioe) noexcept
 {
-	return 0;
+	return pioe.entry->d_ino;
 }
 
 inline constexpr file_type type(nt_directory_entry pioe) noexcept

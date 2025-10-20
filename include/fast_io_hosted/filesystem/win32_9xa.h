@@ -14,7 +14,7 @@ struct win32_9xa_dirent
 
 	inline constexpr ~win32_9xa_dirent()
 	{
-		if (file_struct) [[likely]]
+		if (file_struct && file_struct != reinterpret_cast<void*>(-1)) [[likely]]
 		{
 			::fast_io::win32::FindClose(file_struct);
 		}
@@ -30,10 +30,16 @@ inline bool set_win32_9xa_dirent(win32_9xa_dirent &entry, bool start)
 	{
 		entry.find_path = ::fast_io::win32::details::concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(entry.d_handle.path), u8"\\*");
 		entry.file_struct = ::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(entry.find_path.c_str()), __builtin_addressof(wfda));
+		if (entry.file_struct == reinterpret_cast<void*>(-1)) [[unlikely]]
+		{
+			entry.file_struct = nullptr;
+			return false;
+		}
 	}
 	else
 	{
-		if (::fast_io::win32::FindNextFileA(entry.file_struct, __builtin_addressof(wfda)) == 0) [[unlikely]]
+		if (entry.file_struct == nullptr || entry.file_struct == reinterpret_cast<void*>(-1) ||
+			::fast_io::win32::FindNextFileA(entry.file_struct, __builtin_addressof(wfda)) == 0) [[unlikely]]
 		{
 			return false;
 		}
@@ -207,8 +213,8 @@ struct basic_win32_9xa_directory_generator
 
 inline win32_9xa_family_directory_iterator begin(basic_win32_9xa_directory_generator &pdg)
 {
-	win32::details::set_win32_9xa_dirent_first(pdg.entry);
-	return {__builtin_addressof(pdg.entry), false};
+	bool ok{win32::details::set_win32_9xa_dirent_first(pdg.entry)};
+	return {__builtin_addressof(pdg.entry), !ok};
 }
 
 inline ::std::default_sentinel_t end(basic_win32_9xa_directory_generator const &) noexcept
@@ -303,7 +309,10 @@ struct win32_9xa_dir_file_stack_type
 
 		if (this->file_struct) [[likely]]
 		{
-			::fast_io::win32::FindClose(this->file_struct);
+			if (this->file_struct != reinterpret_cast<void*>(-1))
+			{
+				::fast_io::win32::FindClose(this->file_struct);
+			}
 		}
 		dirf = ::std::move(other.dirf);
 		this->file_struct = other.file_struct;
@@ -314,7 +323,7 @@ struct win32_9xa_dir_file_stack_type
 
 	inline ~win32_9xa_dir_file_stack_type()
 	{
-		if (file_struct) [[likely]]
+		if (file_struct && file_struct != reinterpret_cast<void*>(-1)) [[likely]]
 		{
 			::fast_io::win32::FindClose(file_struct);
 		}
@@ -353,14 +362,19 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 			prdit.entry->file_struct = back.file_struct;
 			if (back.file_struct == nullptr)
 			{
-				win32::details::set_win32_9xa_dirent_first(*prdit.entry);
+				bool ok{win32::details::set_win32_9xa_dirent_first(*prdit.entry)};
 				back.file_struct = prdit.entry->file_struct;
+				if (!ok)
+				{
+					prdit.finish = true;
+					prdit.stack.pop_back();
+					continue;
+				}
 			}
-			if (!win32::details::win32_9xa_dirent_next(*prdit.entry))
+			else if (!win32::details::win32_9xa_dirent_next(*prdit.entry))
 			{
 				prdit.finish = true;
 				prdit.stack.pop_back();
-
 				continue;
 			}
 		}
@@ -405,10 +419,11 @@ begin(basic_win32_9xa_recursive_directory_generator<StackType> &prg) noexcept
 	basic_win32_9xa_recursive_directory_iterator<StackType> prdit{prg.root_handle, __builtin_addressof(prg.entry)};
 
 	prdit.entry->d_handle = prg.root_handle;
-	bool finish{win32::details::set_win32_9xa_dirent_first(*prdit.entry)};
+	bool ok{win32::details::set_win32_9xa_dirent_first(*prdit.entry)};
 	prdit.root_file_struct = prdit.entry->file_struct;
+	prdit.finish = !ok;
 
-	if (finish && prdit.entry->d_type == file_type::directory)
+	if (ok && prdit.entry->d_type == file_type::directory)
 	{
 		auto &ent{*prdit.entry};
 		char8_t const *native_d_name_ptr{ent.filename.c_str()};

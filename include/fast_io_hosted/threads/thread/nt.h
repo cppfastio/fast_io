@@ -128,7 +128,7 @@ public:
 		{
 			if (this->joinable()) [[unlikely]]
 			{
-				::std::terminate();
+				::fast_io::fast_terminate();
 			}
 			auto status{::fast_io::win32::nt::nt_close<zw>(this->handle_)};
 			if (status) [[unlikely]]

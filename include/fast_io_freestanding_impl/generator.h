@@ -45,7 +45,7 @@ public:
 #ifdef __cpp_exceptions
 		ex_ptr = ::std::current_exception();
 #else
-		::std::terminate();
+		::fast_io::fast_terminate();
 #endif
 	}
 	inline constexpr void return_void() noexcept

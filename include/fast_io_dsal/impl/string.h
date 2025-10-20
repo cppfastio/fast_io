@@ -524,6 +524,11 @@ public:
 		this->assign_impl(other.imp.begin_ptr, static_cast<::std::size_t>(other.imp.curr_ptr - other.imp.begin_ptr));
 		return *this;
 	}
+	inline constexpr basic_string& operator=(string_view_type const &other) noexcept
+	{
+		this->assign(other);
+		return *this;
+	}
 
 private:
 #if __has_cpp_attribute(__gnu__::__cold__)

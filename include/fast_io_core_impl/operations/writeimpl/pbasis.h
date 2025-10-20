@@ -262,7 +262,7 @@ inline constexpr void pwrite_all_cold_impl(outstmtype outsm, typename outstmtype
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_decay(outsm, 0, ::fast_io::seekdir::cur)};
 		::fast_io::operations::decay::output_stream_seek_decay(outsm, off, ::fast_io::seekdir::beg);
-		::fast_io::details::write_all_bytes_impl(outsm, first, last);
+		::fast_io::details::write_all_bytes_impl(outsm, reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last));
 		::fast_io::operations::decay::output_stream_seek_decay(outsm, oldoff, ::fast_io::seekdir::beg);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_output_or_io_stream_seek_bytes_define<outstmtype> &&
@@ -275,7 +275,7 @@ inline constexpr void pwrite_all_cold_impl(outstmtype outsm, typename outstmtype
 	{
 		auto oldoff{::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, 0, ::fast_io::seekdir::cur)};
 		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, off, ::fast_io::seekdir::beg);
-		::fast_io::details::write_all_bytes_impl(outsm, first, last);
+		::fast_io::details::write_all_bytes_impl(outsm, reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last));
 		::fast_io::operations::decay::output_stream_seek_bytes_decay(outsm, oldoff, ::fast_io::seekdir::beg);
 	}
 }

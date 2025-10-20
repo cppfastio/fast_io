@@ -543,6 +543,9 @@ template <nt_family family>
 inline ::std::byte *nt_pread_some_bytes_impl(void *__restrict handle, ::std::byte *first, ::std::byte *last,
 											 ::fast_io::intfpos_t off)
 {
+	// The difference between P-series functions in Windows synchronization mode and POSIX is that under Windows,
+	// the functions will advance the position by the number of bytes written or read after each write/read operation.
+
 	::std::int_least64_t offs{nt_calculate_offset_impl(off)};
 	return ::fast_io::win32::nt::details::nt_read_pread_some_bytes_common_impl<family>(handle, first, last,
 																					   __builtin_addressof(offs));
@@ -574,6 +577,9 @@ template <nt_family family>
 inline ::std::byte const *nt_pwrite_some_bytes_impl(void *__restrict handle, ::std::byte const *first,
 													::std::byte const *last, ::fast_io::intfpos_t off)
 {
+	// The difference between P-series functions in Windows synchronization mode and POSIX is that under Windows,
+	// the functions will advance the position by the number of bytes written or read after each write/read operation.
+
 	::std::int_least64_t offs{nt_calculate_offset_impl(off)};
 	return ::fast_io::win32::nt::details::nt_write_pwrite_some_bytes_common_impl<family>(handle, first, last,
 																						 __builtin_addressof(offs));
@@ -827,7 +833,7 @@ inline nt_file_position_status nt_get_file_position_impl(void *__restrict handle
 			::fast_io::win32::nt::file_information_class::FilePositionInformation)};
 		if (status)
 		{
-			return {status};
+			return {.status = status, .file_position = 0u};
 		}
 		file_position += fps;
 	}
@@ -841,7 +847,7 @@ inline nt_file_position_status nt_get_file_position_impl(void *__restrict handle
 			::fast_io::win32::nt::file_information_class::FileStandardInformation)};
 		if (status)
 		{
-			return {status};
+			return {.status = status, .file_position = 0u};
 		}
 		file_position += fsi.end_of_file;
 	}

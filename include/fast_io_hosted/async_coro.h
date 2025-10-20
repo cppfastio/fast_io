@@ -21,7 +21,7 @@ struct task
 		}
 		inline void unhandled_exception()
 		{
-			::std::terminate();
+			::fast_io::fast_terminate();
 		}
 		inline constexpr void return_void()
 		{}
