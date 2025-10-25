@@ -96,11 +96,11 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	}
 	if ((value & open_mode::no_shared_write) == open_mode::none)
 	{
-		mode.ShareAccess |= 2; // FILE_SHARE_DELETE
+		mode.ShareAccess |= 2; // FILE_SHARE_WRITE
 	}
 	if ((value & open_mode::shared_delete) != open_mode::none)
 	{
-		mode.ShareAccess |= 4; // FILE_SHARE_WRITE
+		mode.ShareAccess |= 4; // FILE_SHARE_DELETE
 	}
 	bool generic_write{};
 	if ((value & open_mode::app) != open_mode::none)
@@ -282,14 +282,17 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 			mode.DesiredAccess |= default_write_attribute | default_read_attribute; // GENERIC_READ | GENERIC_WRITE
 		}
 	}
+	
 	if ((value & open_mode::no_block) == open_mode::none)
 	{
 		mode.CreateOptions |= 0x00000020; // FILE_SYNCHRONOUS_IO_NONALERT 0x00000020
 	}
+#if 0
 	else
 	{
 		mode.CreateOptions |= 0x00000010; // FILE_SYNCHRONOUS_IO_ALERT 0x00000010
 	}
+#endif
 
 	if ((value & open_mode::random_access) == open_mode::none)
 	{
