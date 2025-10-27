@@ -766,6 +766,17 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 		});
 }
 
+template <bool zw, ::std::integral char_type>
+inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *olddirhd, char16_t const* path_c_str, ::std::size_t path_size, bool kernel)
+{
+	// core algorithm will be implemented by the user
+	[[maybe_unused]] void *dir_handle{olddirhd};
+	[[maybe_unused]] char16_t const *path_ptr{path_c_str};
+	[[maybe_unused]] ::std::size_t path_len{path_size};
+	[[maybe_unused]] bool kernel_mode{kernel};
+	return {};
+}
+
 template <bool zw, ::fast_io::details::posix_api_22 dsp, typename... Args>
 inline auto nt22_api_dispatcher(void *olddirhd, char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 								void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, Args... args)
@@ -824,6 +835,15 @@ inline auto nt1x_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::
 	}
 }
 
+template <bool zw, ::std::integral char_type, ::fast_io::details::posix_api_ct dsp, typename... Args>
+inline auto ntct_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::std::size_t path_size, Args... args)
+{
+	if constexpr (dsp == ::fast_io::details::posix_api_ct::readlinkat)
+	{
+		return nt_readlinkat_impl<zw, char_type>(dir_handle, path_c_str, path_size, args...);
+	}
+}
+
 template <nt_family family, ::fast_io::details::posix_api_1x dsp, typename path_type, typename... Args>
 inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args)
 {
@@ -858,6 +878,15 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 																												   newpath_c_str, newpath_size, args...);
 												  });
 						 });
+}
+
+template <nt_family family, ::std::integral char_type, ::fast_io::details::posix_api_ct dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
+inline auto nt_deal_withct(void *dir_handle, path_type const &path, Args... args)
+{
+	return nt_api_common(
+		path, [&](char16_t const *path_c_str, ::std::size_t path_size) {
+			return ntct_api_dispatcher<family == nt_family::zw, char_type, dsp>(dir_handle, path_c_str, path_size, args...);
+		});
 }
 
 } // namespace win32::nt::details
@@ -1130,6 +1159,32 @@ inline void nt_family_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_a
 																									  newent.handle, newpath, kernel);
 }
 
+// ct
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat(nt_at_entry ent, path_type const &path)
+{
+	return ::fast_io::win32::nt::details::nt_deal_withct<nt_family::nt, char_type, details::posix_api_ct::readlinkat>(ent.handle, path, false);
+}
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> zw_readlinkat(nt_at_entry ent, path_type const &path)
+{
+	return ::fast_io::win32::nt::details::nt_deal_withct<nt_family::zw, char_type, details::posix_api_ct::readlinkat>(ent.handle, path, false);
+}
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat(io_kernel_t, nt_at_entry ent, path_type const &path)
+{
+	return ::fast_io::win32::nt::details::nt_deal_withct<nt_family::nt, char_type, details::posix_api_ct::readlinkat>(ent.handle, path, true);
+}
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> zw_readlinkat(io_kernel_t, nt_at_entry ent, path_type const &path)
+{
+	return ::fast_io::win32::nt::details::nt_deal_withct<nt_family::zw, char_type, details::posix_api_ct::readlinkat>(ent.handle, path, true);
+}
+
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void nt_renameat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_entry newent, new_path_type &&newpath)
 {
@@ -1259,6 +1314,12 @@ inline void native_linkat(nt_at_entry oldent, old_path_type &&oldpath, nt_at_ent
 {
 	::fast_io::win32::nt::details::nt_deal_with22<nt_family::nt, ::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath,
 																										   newent.handle, newpath, flags, false);
+}
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> native_readlinkat(nt_at_entry ent, path_type const &path)
+{
+	return ::fast_io::win32::nt::details::nt_deal_withct<nt_family::nt, char_type, details::posix_api_ct::readlinkat>(ent.handle, path, false);
 }
 #endif
 } // namespace fast_io
