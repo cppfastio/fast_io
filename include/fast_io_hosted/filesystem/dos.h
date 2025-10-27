@@ -129,6 +129,10 @@ public:
 		{
 			noexcept_call(::closedir, this->dirp.dirp);
 		}
+		if (this->dirp.fd != -1) [[likely]]
+		{
+			details::sys_close(this->dirp.fd);
+		}
 		this->dirp = newdir;
 		return *this;
 	}
@@ -147,6 +151,10 @@ public:
 		{
 			noexcept_call(::closedir, this->dirp.dirp);
 		}
+		if (this->dirp.fd != -1) [[likely]]
+		{
+			details::sys_close(this->dirp.fd);
+		}
 		this->dirp = other.release();
 		return *this;
 	}
@@ -157,6 +165,10 @@ public:
 		{
 			noexcept_call(::closedir, this->dirp.dirp);
 		}
+		if (this->dirp.fd != -1) [[likely]]
+		{
+			details::sys_close(this->dirp.fd);
+		}
 		this->dirp = dirp1;
 	}
 
@@ -164,9 +176,14 @@ public:
 	{
 		if (*this) [[likely]]
 		{
+			int fd_to_close{this->dirp.fd};
 			int ret{noexcept_call(::closedir, this->dirp.dirp)};
 			this->dirp.dirp = nullptr;
 			this->dirp.fd = -1;
+			if (fd_to_close != -1)
+			{
+				details::sys_close(fd_to_close);
+			}
 			if (ret == -1)
 			{
 				throw_posix_error();
@@ -179,6 +196,11 @@ public:
 		if (this->dirp.dirp) [[likely]]
 		{
 			noexcept_call(::closedir, this->dirp.dirp);
+		}
+		if (this->dirp.fd != -1) [[likely]]
+		{
+			// best-effort close for fd; ignore failures in destructor
+			details::sys_close(this->dirp.fd);
 		}
 	}
 };
