@@ -63,7 +63,7 @@ inline constexpr nt_open_mode calculate_nt_delete_flag(nt_at_flags flags) noexce
 		.CreateDisposition = 0x00000001, /*OPEN_EXISTING	=>	FILE_OPEN*/
 		.CreateOptions = 0x00001000      /*FILE_DELETE_ON_CLOSE*/
 	};
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		mode.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
@@ -132,7 +132,7 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
 	};
 
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
@@ -185,7 +185,7 @@ inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
 
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
@@ -243,7 +243,7 @@ template <bool zw>
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
 	};
 
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
@@ -289,7 +289,7 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		.CreateDisposition = 0x00000001,                   // OPEN_EXISTING => FILE_OPEN
 	};
 
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
@@ -707,7 +707,7 @@ inline constexpr nt_open_mode calculate_nt_link_flag(nt_at_flags flags) noexcept
 		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,      /*OPEN_EXISTING	=>	FILE_OPEN*/
 	};
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		mode.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
@@ -769,12 +769,7 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 template <bool zw, ::std::integral char_type>
 inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *olddirhd, char16_t const* path_c_str, ::std::size_t path_size, bool kernel)
 {
-	// core algorithm will be implemented by the user
-	[[maybe_unused]] void *dir_handle{olddirhd};
-	[[maybe_unused]] char16_t const *path_ptr{path_c_str};
-	[[maybe_unused]] ::std::size_t path_len{path_size};
-	[[maybe_unused]] bool kernel_mode{kernel};
-	return {};
+	throw_nt_error(0xC0000002);
 }
 
 template <bool zw, ::fast_io::details::posix_api_22 dsp, typename... Args>

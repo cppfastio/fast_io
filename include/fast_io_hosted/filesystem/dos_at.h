@@ -363,17 +363,17 @@ inline void native_symlinkat(old_path_type const &oldpath, posix_at_entry newent
 
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void dos_faccessat(posix_at_entry ent, path_type const &path, [[maybe_unused]] access_how mode,
-						  dos_at_flags flags = dos_at_flags::symlink_nofollow)
+inline void dos_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
+						  [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
 {
-	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(flags));
+	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_faccessat(posix_at_entry ent, path_type const &path, [[maybe_unused]] access_how mode,
-							 dos_at_flags flags = dos_at_flags::symlink_nofollow)
+inline void native_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
+							 [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
 {
-	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(flags));
+	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>

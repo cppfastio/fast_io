@@ -214,7 +214,7 @@ inline void posix_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner
 	if constexpr (sizeof(uintmax_t) > sizeof(gid_t))
 	{
 		constexpr ::std::uintmax_t mx{::std::numeric_limits<gid_t>::max()};
-		if (static_cast<::std::uintmax_t>(owner) > mx)
+		if (static_cast<::std::uintmax_t>(group) > mx)
 		{
 			throw_posix_error(EOVERFLOW);
 		}
