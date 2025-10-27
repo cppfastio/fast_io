@@ -100,7 +100,7 @@ inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_cha
 					}
 					else if constexpr (family == win32_family::ansi_9x)
 					{
-						throw_win32_error(3221225530);
+						throw_win32_error(3);
 					}
 				}
 				is_new_dir = true;
@@ -121,7 +121,7 @@ inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_cha
 			}
 			else if constexpr (family == win32_family::ansi_9x)
 			{
-				throw_win32_error(3221225530);
+				throw_win32_error(3);
 			}
 		}
 	}
@@ -136,7 +136,7 @@ inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_cha
 		}
 		else if constexpr (family == win32_family::ansi_9x)
 		{
-			throw_win32_error(3221225530);
+			throw_win32_error(3);
 		}
 	}
 #endif
@@ -295,7 +295,7 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 					}
 					else if constexpr (family == win32_family::ansi_9x)
 					{
-						throw_win32_error(3221225530);
+						throw_win32_error(3);
 					}
 				}
 				is_new_dir = true;
@@ -316,7 +316,7 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 			}
 			else if constexpr (family == win32_family::ansi_9x)
 			{
-				throw_win32_error(3221225530);
+				throw_win32_error(3);
 			}
 		}
 	}
@@ -331,7 +331,7 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 		}
 		else if constexpr (family == win32_family::ansi_9x)
 		{
-			throw_win32_error(3221225530);
+			throw_win32_error(3);
 		}
 	}
 #endif
