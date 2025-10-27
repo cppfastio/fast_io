@@ -1132,7 +1132,7 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 	return handle;
 }
 
-inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size) noexcept
+inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_win32_9xa_path_uncheck_whether_exist(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size)
 {
 	auto const beg{path_c_str};
 
