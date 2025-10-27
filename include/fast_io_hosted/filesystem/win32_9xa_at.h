@@ -356,6 +356,22 @@ inline void win32_9xa_renameat_impl(::fast_io::win32_9xa_dir_handle const &olddi
 	}
 }
 
+template <::std::integral char_type>
+inline ::fast_io::details::basic_ct_string<char_type> win32_9xa_readlinkat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size)
+{
+	auto const path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+
+	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
+	if (attr == static_cast<::std::uint_least32_t>(-1)) [[unlikely]]
+	{
+		throw_win32_error(0x2);
+	}
+
+	throw_win32_error(0x1126); /*ERROR_NOT_A_REPARSE_POINT*/
+
+	return {};
+}
+
 template <::fast_io::details::posix_api_22 dsp, typename... Args>
 inline auto win32_9xa_22_api_dispatcher(::fast_io::win32_9xa_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 										::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size, Args... args)
@@ -414,6 +430,15 @@ inline auto win32_9xa_1x_api_dispatcher(::fast_io::win32_9xa_dir_handle const &d
 	}
 }
 
+template <::std::integral char_type, ::fast_io::details::posix_api_ct dsp, typename... Args>
+inline auto win32_9xa_ct_api_dispatcher(::fast_io::win32_9xa_dir_handle const &dir_handle, char8_t const *path_c_str, ::std::size_t path_size, Args... args)
+{
+	if constexpr (dsp == ::fast_io::details::posix_api_ct::readlinkat)
+	{
+		return win32_9xa_readlinkat_impl<char_type>(dir_handle, path_c_str, path_size, args...);
+	}
+}
+
 template <::fast_io::details::posix_api_1x dsp, typename path_type, typename... Args>
 inline auto win32_9xa_deal_with1x(::fast_io::win32_9xa_dir_handle const &dir_handle, path_type const &path, Args... args)
 {
@@ -466,9 +491,31 @@ inline auto win32_9xa_deal_with22(::fast_io::win32_9xa_dir_handle const &olddirh
 								});
 }
 
+
+
+template <::std::integral char_type, ::fast_io::details::posix_api_ct dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
+inline auto win32_9xa_deal_withct(::fast_io::win32_9xa_dir_handle const &dir_handle, path_type const &path, Args... args)
+{
+	using char8_t_const_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= char8_t const *;
+
+	return win32_api_common_9xa(
+		path, [&](char const *path_c_str, ::std::size_t path_size) {
+			return win32_9xa_ct_api_dispatcher<char_type, dsp>(
+				dir_handle,
+				reinterpret_cast<char8_t_const_may_alias_ptr>(path_c_str),
+				path_size,
+				args...);
+		});
+}
+
 } // namespace win32::details
 
 // 1x
+
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void win32_9xa_unlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, win32_9xa_at_flags flags = {})
 {
@@ -513,11 +560,15 @@ inline void win32_9xa_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry cons
 	::fast_io::win32::details::win32_9xa_deal_with12<details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
 }
 
+// 12
+
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void win32_9xa_linkat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath, newent.handle, newpath);
 }
+
+// 22
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void win32_9xa_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath)
@@ -529,6 +580,14 @@ template <::fast_io::constructible_to_os_c_str path_type>
 inline void win32_9xa_fchmodat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, perms mode, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::fchmodat>(ent.handle, path, mode);
+}
+
+// ct
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> win32_9xa_readlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path)
+{
+	return ::fast_io::win32::details::win32_9xa_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.handle, path);
 }
 
 #if defined(_WIN32_WINDOWS) && !defined(__CYGWIN__) && !defined(__WINE__)
@@ -598,6 +657,14 @@ template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constru
 inline void native_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath)
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath, newent.handle, newpath);
+}
+
+// ct
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> native_readlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path)
+{
+	return ::fast_io::win32::details::win32_9xa_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.handle, path);
 }
 
 #endif

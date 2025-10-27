@@ -65,4 +65,23 @@ find_dot_and_sep(char_type const *beg_ptr, ::std::size_t namlen) noexcept
 	}
 }
 
+template <::std::integral char_type>
+using basic_ct_string = ::fast_io::containers::basic_string<char_type, ::fast_io::native_global_allocator>;
+
+template <::std::integral char_type, typename... Args>
+inline constexpr basic_ct_string<char_type> concat_ct(Args &&...args)
+{
+	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char_type>,Args...>};
+	if constexpr (type_error)
+	{
+		return ::fast_io::details::decay::basic_general_concat_phase1_decay_impl<false, char_type, ::fast_io::containers::basic_string<char_type, ::fast_io::native_global_allocator>>(
+			io_print_forward<char_type>(io_print_alias(args))...);
+	}
+	else
+	{
+		static_assert(type_error, "some types are not printable, so we cannot concat ::fast_io::containers::basic_string<char_type>");
+		return {};
+	}
+}
+
 } // namespace fast_io::details

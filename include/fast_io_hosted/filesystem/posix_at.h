@@ -5,6 +5,8 @@ namespace fast_io
 
 namespace posix
 {
+using posix_ssize_t = ::std::make_signed_t<::std::size_t>;
+
 #ifdef __DARWIN_C_LEVEL
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("_faccessat");
 extern int libc_renameat(int olddirfd, char const *oldpath, int newdirfd, char const *newpath) noexcept
@@ -21,8 +23,7 @@ extern int libc_fstatat(int dirfd, char const *pathname, struct stat *buf, int f
 extern int libc_mkdirat(int dirfd, char const *pathname, mode_t mode) noexcept __asm__("_mkdirat");
 extern int libc_mknodat(int dirfd, char const *pathname, mode_t mode, dev_t dev) noexcept __asm__("_mknodat");
 extern int libc_unlinkat(int dirfd, char const *pathname, int flags) noexcept __asm__("_unlinkat");
-extern int libc_readlinkat(int dirfd, char const *pathname, char *buf, ::std::size_t bufsiz) noexcept
-	__asm__("_readlinkat");
+extern posix_ssize_t libc_readlinkat(int dirfd, char const *pathname, char *buf, ::std::size_t bufsiz) noexcept __asm__("_readlinkat");
 #else
 extern int libc_faccessat(int dirfd, char const *pathname, int mode, int flags) noexcept __asm__("faccessat");
 extern int libc_renameat(int olddirfd, char const *oldpath, int newdirfd, char const *newpath) noexcept
@@ -39,8 +40,7 @@ extern int libc_fstatat(int dirfd, char const *pathname, struct stat *buf, int f
 extern int libc_mkdirat(int dirfd, char const *pathname, mode_t mode) noexcept __asm__("mkdirat");
 extern int libc_mknodat(int dirfd, char const *pathname, mode_t mode, dev_t dev) noexcept __asm__("mknodat");
 extern int libc_unlinkat(int dirfd, char const *pathname, int flags) noexcept __asm__("unlinkat");
-extern int libc_readlinkat(int dirfd, char const *pathname, char *buf, ::std::size_t bufsiz) noexcept
-	__asm__("readlinkat");
+extern posix_ssize_t libc_readlinkat(int dirfd, char const *pathname, char *buf, ::std::size_t bufsiz) noexcept __asm__("readlinkat");
 #endif
 } // namespace posix
 
@@ -446,6 +446,100 @@ inline void posix_utimensat_impl(int dirfd, char const *path, unix_timestamp_opt
 		(dirfd, path, tsptr, flags));
 }
 
+template<::std::integral char_type>
+inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat_impl(int dirfd, char const *pathname)
+{
+#if defined(AT_SYMLINK_NOFOLLOW)
+    using posix_ssize_t = ::std::make_signed_t<::std::size_t>;
+
+	// The standard POSIX API does not provide a direct interface to call readlink using an fd, so toctou cannot be avoided.
+
+#if defined(__linux__)
+
+#if defined(__USE_LARGEFILE64) && (defined(__NR_newfstatat) || defined(__NR_fstatat64))
+	struct ::stat64 buf;
+#else
+	struct ::stat buf;
+#endif
+#if defined(__NR_newfstatat) || defined(__NR_fstatat64) || defined(__NR_fstatat)
+	system_call_throw_error(system_call<
+#if defined(__NR_newfstatat)
+							__NR_newfstatat
+#elif defined(__NR_fstatat64)
+							__NR_fstatat64
+#else
+							__NR_fstatat
+#endif
+							,
+							int>(dirfd, pathname, __builtin_addressof(buf), AT_SYMLINK_NOFOLLOW));
+
+#else
+	if ((::fast_io::posix::libc_fstatat(dirfd, pathname, __builtin_addressof(buf), AT_SYMLINK_NOFOLLOW)) < 0)
+	{
+		throw_posix_error();
+	}
+#endif
+
+#else
+	struct ::stat buf;
+	system_call_throw_error(::fast_io::posix::libc_fstatat(dirfd, pathname, __builtin_addressof(buf),AT_SYMLINK_NOFOLLOW));
+#endif
+
+    auto const symlink_size{static_cast<::std::size_t>(buf.st_size)};
+
+	if (symlink_size == 0u)
+	{
+		return {};
+	}
+
+	if constexpr (::std::same_as<char_type, char>)
+	{
+		::fast_io::details::basic_ct_string<char> result(symlink_size);
+
+		posix_ssize_t readlink_bytes{
+#if defined(__linux__) && defined(__NR_readlinkat)
+							system_call<__NR_readlinkat, posix_ssize_t>(dirfd, pathname, result.data(), symlink_size)
+#else
+							static_cast<posix_ssize_t>(::fast_io::posix::libc_readlinkat(dirfd, pathname, result.data(), symlink_size))
+#endif
+						};
+			
+		system_call_throw_error(readlink_bytes);
+			
+		if(static_cast<::std::size_t>(readlink_bytes) != symlink_size)
+		{
+			throw_posix_error(EIO);
+		}
+
+		return result;
+	}
+	else 
+	{
+		local_operator_new_array_ptr<char> dynamic_buffer{symlink_size};
+
+		posix_ssize_t readlink_bytes{
+#if defined(__linux__) && defined(__NR_readlinkat)
+							system_call<__NR_readlinkat, posix_ssize_t>(dirfd, pathname, dynamic_buffer.get(), symlink_size)
+#else
+							static_cast<posix_ssize_t>(::fast_io::posix::libc_readlinkat(dirfd, pathname, dynamic_buffer.get(), symlink_size))
+#endif
+						};
+			
+		system_call_throw_error(readlink_bytes);
+			
+		if(static_cast<::std::size_t>(readlink_bytes) != symlink_size) [[unlikely]]
+		{
+			throw_posix_error(EIO);
+		}
+
+		return ::fast_io::details::concat_ct<char_type>(::fast_io::mnp::code_cvt(::fast_io::mnp::strvw(dynamic_buffer.get(), dynamic_buffer.get() + symlink_size)));
+	}
+#else
+	// Since faccessat also requires the AT_SYMLINK_NOFOLLOW flag, it can only result in an error.
+	throw_posix_error(EINVAL);
+#endif
+}
+
 template <posix_api_1x dsp, typename... Args>
 inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
 {
@@ -483,6 +577,15 @@ inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
 	}
 }
 
+template <::std::integral char_type, posix_api_ct dsp, typename... Args>
+inline auto posixct_api_dispatcher(int dirfd, char const *path, Args... args)
+{
+    if constexpr (dsp == posix_api_ct::readlinkat)
+    {
+        return posix_readlinkat_impl<char_type>(dirfd, path, args...);
+    }
+}
+
 template <posix_api_22 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
 inline auto posix_deal_with22(int olddirfd, old_path_type const &oldpath, int newdirfd, new_path_type const &newpath, Args... args)
@@ -511,6 +614,12 @@ template <posix_api_1x dsp, ::fast_io::constructible_to_os_c_str path_type, type
 inline auto posix_deal_with1x(int dirfd, path_type const &path, Args... args)
 {
 	return fast_io::posix_api_common(path, [&](char const *path_c_str) { return posix1x_api_dispatcher<dsp>(dirfd, path_c_str, args...); });
+}
+
+template <::std::integral char_type, posix_api_ct dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
+inline auto posix_deal_withct(int dirfd, path_type const &path, Args... args)
+{
+    return fast_io::posix_api_common(path, [&](char const *path_c_str) { return posixct_api_dispatcher<char_type, dsp>(dirfd, path_c_str, args...); });
 }
 
 } // namespace details
@@ -626,19 +735,7 @@ inline void native_mkdirat(posix_at_entry ent, path_type const &path, perms perm
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mkdirat>(ent.fd, path, static_cast<mode_t>(perm));
 }
-#if 0
-template<::fast_io::constructible_to_os_c_str path_type>
-inline void posix_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
-{
-	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
-}
 
-template<::fast_io::constructible_to_os_c_str path_type>
-inline void native_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
-{
-	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
-}
-#endif
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void posix_unlinkat(posix_at_entry ent, path_type const &path, posix_at_flags flags = {})
 {
@@ -684,6 +781,34 @@ inline void native_utimensat(posix_at_entry ent, path_type const &path, unix_tim
 	details::posix_deal_with1x<details::posix_api_1x::utimensat>(ent.fd, path, creation_time, last_access_time,
 																 last_modification_time, static_cast<int>(flags));
 }
+
+// ct
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat(posix_at_entry ent, path_type const &path)
+{
+    return details::posix_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.fd, path);
+}
+
+template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
+inline ::fast_io::details::basic_ct_string<char_type> native_readlinkat(posix_at_entry ent, path_type const &path)
+{
+    return details::posix_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.fd, path);
+}
+
+#if 0
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void posix_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
+{
+	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
+}
+
+template<::fast_io::constructible_to_os_c_str path_type>
+inline void native_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
+{
+	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
+}
+#endif
+
 #if 0
 template<::std::integral ch_type>
 struct basic_posix_readlinkat_t
