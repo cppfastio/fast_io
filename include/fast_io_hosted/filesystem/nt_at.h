@@ -795,7 +795,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 															 nullptr,
 															 0u,
 															 buffer,
-															 buffer_size)};
+															 static_cast<::std::uint_least32_t>(buffer_size))};
 
 
 	if (status)
