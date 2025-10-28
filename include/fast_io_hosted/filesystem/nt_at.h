@@ -267,7 +267,7 @@ inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
 	};
 
-	if ((flags & nt_at_flags::symlink_nofollow) != nt_at_flags::symlink_nofollow)
+	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		md.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
