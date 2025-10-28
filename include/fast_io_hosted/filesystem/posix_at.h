@@ -487,11 +487,6 @@ inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat_impl(int 
 
     auto const symlink_size{static_cast<::std::size_t>(buf.st_size)};
 
-	if (symlink_size == 0u)
-	{
-		return {};
-	}
-
 	if constexpr (::std::same_as<char_type, char>)
 	{
 		::fast_io::details::basic_ct_string<char> result(symlink_size);
