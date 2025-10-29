@@ -29,7 +29,7 @@ inline constexpr bool is_invalid_dos_filename_with_size(char_type const *filenam
 
 	for (; curr != end; ++curr)
 	{
-		if (auto fc{*curr}; ::fast_io::char_category::is_dos_path_invalid_character(fc)) [[unlikely]]
+		if (auto fc{*curr}; ::fast_io::char_category::is_dos_file_invalid_character(fc)) [[unlikely]]
 		{
 			return true;
 		}

@@ -567,11 +567,13 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 #endif
 				= char8_t const *;
 
+#if 0
 			auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename)};
-			if (::fast_io::details::is_invalid_dos_filename_with_size(beg, filename_c_str_len)) [[unlikely]]
+			if (::fast_io::details::is_invalid_dos_pathname_with_size(beg, filename_c_str_len)) [[unlikely]]
 			{
 				throw_win32_error(3);
 			}
+#endif
 
 			// check path handle
 			::fast_io::win32::details::check_win32_9xa_dir_is_valid(*directory_handle);

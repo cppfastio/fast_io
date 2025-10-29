@@ -19,7 +19,7 @@ enum class char_category_family : ::std::uint_least32_t
 	c_space,                    // Whitespace characters (space, tab, newline, etc.)
 	c_upper,                    // Uppercase alphabetic characters
 	c_xdigit,                   // Hexadecimal digits (0-9, A-F, a-f)
-	dos_path_invalid_character, // DOS Path invalid character
+	dos_file_invalid_character, // DOS Path invalid character
 	html_whitespace             // HTML whitespace
 };
 
@@ -96,9 +96,9 @@ public:
 		{
 			ret = ::fast_io::char_category::is_c_fullwidth(ch);
 		}
-		else if constexpr (fam == ::fast_io::char_category::char_category_family::dos_path_invalid_character)
+		else if constexpr (fam == ::fast_io::char_category::char_category_family::dos_file_invalid_character)
 		{
-			ret = ::fast_io::char_category::is_dos_path_invalid_character(ch);
+			ret = ::fast_io::char_category::is_dos_file_invalid_character(ch);
 		}
 		if constexpr (negate)
 		{
@@ -192,7 +192,7 @@ using c_punct = ::fast_io::char_category::char_category_traits<::fast_io::char_c
 using c_space = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::c_space, false>;
 using c_upper = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::c_upper, false>;
 using c_xdigit = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::c_xdigit, false>;
-using dos_path_invalid_character = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::dos_path_invalid_character, false>;
+using dos_file_invalid_character = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::dos_file_invalid_character, false>;
 using html_whitespace = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::html_whitespace, false>;
 
 
@@ -210,7 +210,7 @@ using not_c_punct = ::fast_io::char_category::char_category_traits<::fast_io::ch
 using not_c_space = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::c_space, true>;
 using not_c_upper = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::c_upper, true>;
 using not_c_xdigit = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::c_xdigit, true>;
-using not_dos_path_invalid_character = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::dos_path_invalid_character, true>;
+using not_dos_file_invalid_character = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::dos_file_invalid_character, true>;
 using not_html_whitespace = ::fast_io::char_category::char_category_traits<::fast_io::char_category::char_category_family::html_whitespace, true>;
 
 namespace details

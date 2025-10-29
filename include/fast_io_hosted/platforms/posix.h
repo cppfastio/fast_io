@@ -892,10 +892,12 @@ inline constexpr my_dos_concat_tlc_path_common_result my_dos_concat_tlc_path_com
 			return {true};
 		}
 
-		if (::fast_io::details::is_invalid_dos_filename_with_size(pathname, sz)) [[unlikely]]
+#if 0
+		if (::fast_io::details::is_invalid_dos_pathname_with_size(pathname, sz)) [[unlikely]]
 		{
 			return {true};
 		}
+#endif
 
 		// concat
 		return {false, concat_dos_path_tlc_string(::fast_io::mnp::os_c_str(fd_pathname_cstr), ::fast_io::mnp::chvw('\\'), ::fast_io::mnp::os_c_str(pathname))};

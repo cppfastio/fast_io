@@ -781,7 +781,7 @@ inline ::std::byte *win32_read_some_bytes_impl(void *__restrict handle, ::std::b
 }
 
 inline ::std::byte *win32_ntw_pread_some_bytes_impl(void *__restrict handle, ::std::byte *first, ::std::byte *last,
-										  ::fast_io::intfpos_t off)
+													::fast_io::intfpos_t off)
 {
 	// The difference between P-series functions in Windows synchronization mode and POSIX is that under Windows,
 	// the functions will advance the position by the number of bytes written or read after each write/read operation.
@@ -808,13 +808,13 @@ inline ::std::byte const *write_or_pwrite_some_bytes_common_impl(void *__restric
 }
 
 inline ::std::byte const *win32_write_some_bytes_impl(void *__restrict handle, ::std::byte const *first,
-												::std::byte const *last)
+													  ::std::byte const *last)
 {
 	return ::fast_io::win32::details::write_or_pwrite_some_bytes_common_impl(handle, first, last, nullptr);
 }
 
 inline ::std::byte const *win32_ntw_pwrite_some_bytes_impl(void *__restrict handle, ::std::byte const *first,
-												 ::std::byte const *last, ::fast_io::intfpos_t off)
+														   ::std::byte const *last, ::fast_io::intfpos_t off)
 {
 	// The difference between P-series functions in Windows synchronization mode and POSIX is that under Windows,
 	// the functions will advance the position by the number of bytes written or read after each write/read operation.
@@ -853,7 +853,7 @@ inline ::fast_io::intfpos_t io_stream_seek_bytes_define(basic_win32_family_io_ob
 I am not confident that i understand semantics correctly. Disabled first and test it later
 */
 
-// Windows 9x does not support atomic p-series functions. When using operation::p-series functions, 
+// Windows 9x does not support atomic p-series functions. When using operation::p-series functions,
 // they will be emulated through seek and non-p-series functions.
 // For Win9x, use the operation::p series functions, which automatically combine seek operations with non-p series functions.
 #if !defined(_WIN32_WINDOWS)
@@ -1098,10 +1098,12 @@ inline win32_9xa_dir_handle basic_win32_9xa_create_dir_file_at_fs_dirent_impl(wi
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
 
-	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, filename_c_str_len)) [[unlikely]]
+#if 0
+	if (::fast_io::details::is_invalid_dos_pathname_with_size(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3);
 	}
+#endif
 
 	check_win32_9xa_dir_is_valid(*directory_handle);
 	win32_9xa_dir_handle ret{concat_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
@@ -1121,10 +1123,12 @@ inline void *basic_win32_9xa_create_file_at_fs_dirent_impl(win32_9xa_dir_handle 
 
 	auto const beg{reinterpret_cast<char8_t_const_may_alias_ptr>(filename_c_str)};
 
-	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, filename_c_str_len)) [[unlikely]]
+#if 0
+	if (::fast_io::details::is_invalid_dos_pathname_with_size(beg, filename_c_str_len)) [[unlikely]]
 	{
 		throw_win32_error(3);
 	}
+#endif
 
 	check_win32_9xa_dir_is_valid(*directory_handle);
 	tlc_win32_9xa_dir_handle_path_str str{concat_tlc_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, filename_c_str_len))};
@@ -1136,10 +1140,12 @@ inline ::fast_io::win32::details::tlc_win32_9xa_dir_handle_path_str concat_tlc_w
 {
 	auto const beg{path_c_str};
 
-	if (::fast_io::details::is_invalid_dos_filename_with_size(beg, path_size)) [[unlikely]]
+#if 0
+	if (::fast_io::details::is_invalid_dos_pathname_with_size(beg, path_size)) [[unlikely]]
 	{
 		throw_win32_error(3);
 	}
+#endif
 
 	return ::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(dirhd.path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(beg, path_size));
 }
@@ -1745,9 +1751,9 @@ inline posix_file_status win32_9xa_dir_file_status_impl(win32_9xa_dir_handle con
 		tmp_file.perm = static_cast<perms>(pm);
 		tmp_file.type = ::fast_io::file_type::directory;
 		tmp_file.nlink = 1u;
-		tmp_file.size = static_cast<::std::uintmax_t>((static_cast<::std::uint_least64_t>(wfda.nFileSizeHigh) << 32u) | wfda.nFileSizeLow);  // always zero
-		tmp_file.blksize = 512u;  // default
-		tmp_file.blocks = (tmp_file.size + 511u) / 512u;  // default
+		tmp_file.size = static_cast<::std::uintmax_t>((static_cast<::std::uint_least64_t>(wfda.nFileSizeHigh) << 32u) | wfda.nFileSizeLow); // always zero
+		tmp_file.blksize = 512u;                                                                                                            // default
+		tmp_file.blocks = (tmp_file.size + 511u) / 512u;                                                                                    // default
 		tmp_file.atim = to_unix_timestamp(wfda.ftLastAccessTime);
 		tmp_file.mtim = to_unix_timestamp(wfda.ftLastWriteTime);
 		tmp_file.ctim = tmp_file.mtim;
@@ -1781,7 +1787,7 @@ inline posix_file_status win32_9xa_dir_file_status_impl(win32_9xa_dir_handle con
 		{
 			tmp_file.dev = static_cast<::std::uintmax_t>(serial);
 		}
-	
+
 		// get blocksize
 		::std::uint_least32_t sector_per_cluster{};
 		::std::uint_least32_t bytes_per_sector{};

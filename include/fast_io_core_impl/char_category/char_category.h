@@ -1795,7 +1795,7 @@ inline constexpr bool is_html_whitespace_wide_impl(wchar_t ch) noexcept
 	};
 }
 
-inline constexpr bool is_dos_path_invalid_character_impl(char32_t ch) noexcept
+inline constexpr bool is_dos_file_invalid_character_impl(char32_t ch) noexcept
 {
 	if (ch < static_cast<char32_t>(32u))
 	{
@@ -1926,15 +1926,15 @@ To do: to_c_fullwidth
 */
 
 template <::std::integral T>
-inline constexpr bool is_dos_path_invalid_character(T ch) noexcept
+inline constexpr bool is_dos_file_invalid_character(T ch) noexcept
 {
 	if constexpr (::std::signed_integral<T>)
 	{
-		return ::fast_io::char_category::details::is_dos_path_invalid_character_impl(static_cast<char32_t>(static_cast<::std::make_unsigned_t<T>>(ch)));
+		return ::fast_io::char_category::details::is_dos_file_invalid_character_impl(static_cast<char32_t>(static_cast<::std::make_unsigned_t<T>>(ch)));
 	}
 	else
 	{
-		return ::fast_io::char_category::details::is_dos_path_invalid_character_impl(static_cast<char32_t>(ch));
+		return ::fast_io::char_category::details::is_dos_file_invalid_character_impl(static_cast<char32_t>(ch));
 	}
 }
 
