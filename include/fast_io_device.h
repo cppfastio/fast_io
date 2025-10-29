@@ -29,6 +29,20 @@ using dir_file = directory_file_wrapper<
 #endif
 	>;
 
+// Note:
+// The Win32 API layer is not well-suited for precise "dirfile" semantics,
+// because it abstracts away the underlying NT object types. Unlike the NT I/O
+// manager (where FILE_DIRECTORY_FILE and FILE_NON_DIRECTORY_FILE flags enforce
+// strict open-type constraints), Win32’s CreateFileW does not distinguish
+// between files and directories unless explicitly checked afterwards.
+//
+// FILE_FLAG_BACKUP_SEMANTICS merely *permits* opening a directory handle,
+// but does not *require* the target to be a directory. Similarly, adding
+// FILE_ATTRIBUTE_DIRECTORY has no enforcement effect — it's only a metadata hint.
+// Therefore, to emulate dirfile-style correctness, one must explicitly query
+// the object type (e.g., via GetFileInformationByHandle or GetFileAttributes)
+// after opening the handle.
+
 /*
 template region
 */

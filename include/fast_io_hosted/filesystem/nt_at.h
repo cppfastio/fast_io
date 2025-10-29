@@ -93,15 +93,21 @@ inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 template <bool zw>
 inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, bool kernel)
 {
-	constexpr fast_io::win32::nt::details::nt_open_mode create_dir_mode{
-		fast_io::win32::nt::details::calculate_nt_open_mode(
-			{fast_io::open_mode::creat | fast_io::open_mode::directory})};
-	auto m_dir_mode{create_dir_mode};
+	nt_open_mode m_dir_mode{
+		.DesiredAccess = 0x00100000 | 0x0001, // SYNCHRONIZE | FILE_LIST_DIRECTORY
+		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000003,            // FILE_SHARE_READ | FILE_SHARE_WRITE
+		.CreateDisposition = 0x00000002,      // CREATE_NEW	=>	FILE_CREATE		(0x00000002)
+		.CreateOptions = 0x00004021           // FILE_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT
+	};
+
 	if ((pm & perms::owner_write) == perms::none)
 	{
 		m_dir_mode.FileAttributes |= 0x00000001; // FILE_ATTRIBUTE_READONLY
 	}
+
 	auto status{nt_close<zw>(nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{m_dir_mode}))};
+	
 	if (status)
 	{
 		throw_nt_error(status);
