@@ -60,6 +60,8 @@ namespace posix
 // extern char const* my_dos_get_fd_name(int) noexcept __asm__("___get_fd_name");
 extern DIR *my_dos_opendir(char const *) noexcept __asm__("_opendir");
 
+extern int my_dos_closedir(DIR *) noexcept __asm__("_closedir");
+
 inline DIR *my_dos_fdopendir(int fd) noexcept
 {
 	return my_dos_opendir(::fast_io::noexcept_call(::__get_fd_name, fd));
@@ -68,6 +70,16 @@ inline DIR *my_dos_fdopendir(int fd) noexcept
 
 namespace details
 {
+
+inline void check_dos_fd_is_dir(int fd)
+{
+	auto const dir{::fast_io::posix::my_dos_fdopendir(fd)};
+	if (dir == nullptr) [[unlikely]]
+	{
+		throw_posix_error(ENOTDIR);
+	}
+	::fast_io::posix::my_dos_closedir(dir);
+}
 
 inline dos_DIR sys_dup_dir(dos_DIR dirp)
 {
@@ -127,7 +139,7 @@ public:
 		auto newdir{details::sys_dup_dir(other.dirp)};
 		if (this->dirp.dirp) [[likely]]
 		{
-			noexcept_call(::closedir, this->dirp.dirp);
+			::fast_io::posix::my_dos_closedir(this->dirp.dirp);
 		}
 		if (this->dirp.fd != -1) [[likely]]
 		{
@@ -149,7 +161,7 @@ public:
 		}
 		if (this->dirp.dirp) [[likely]]
 		{
-			noexcept_call(::closedir, this->dirp.dirp);
+			::fast_io::posix::my_dos_closedir(this->dirp.dirp);
 		}
 		if (this->dirp.fd != -1) [[likely]]
 		{
@@ -163,7 +175,7 @@ public:
 	{
 		if (this->dirp.dirp) [[likely]]
 		{
-			noexcept_call(::closedir, this->dirp.dirp);
+			::fast_io::posix::my_dos_closedir(this->dirp.dirp);		
 		}
 		if (this->dirp.fd != -1) [[likely]]
 		{
@@ -177,7 +189,7 @@ public:
 		if (*this) [[likely]]
 		{
 			int fd_to_close{this->dirp.fd};
-			int ret{noexcept_call(::closedir, this->dirp.dirp)};
+			int ret{::fast_io::posix::my_dos_closedir(this->dirp.dirp)};
 			this->dirp.dirp = nullptr;
 			this->dirp.fd = -1;
 			if (fd_to_close != -1)
@@ -195,7 +207,7 @@ public:
 	{
 		if (this->dirp.dirp) [[likely]]
 		{
-			noexcept_call(::closedir, this->dirp.dirp);
+			::fast_io::posix::my_dos_closedir(this->dirp.dirp);
 		}
 		if (this->dirp.fd != -1) [[likely]]
 		{

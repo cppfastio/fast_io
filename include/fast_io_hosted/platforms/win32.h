@@ -1001,7 +1001,7 @@ inline void check_win32_9xa_dir_is_valid(win32_9xa_dir_handle const &h)
 	auto find_struct{::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(temp_find_path.c_str()), __builtin_addressof(wfda))};
 	if (find_struct == reinterpret_cast<void *>(static_cast<::std::ptrdiff_t>(-1))) [[unlikely]]
 	{
-		throw_win32_error(0x5);
+		throw_win32_error(0x2);
 	}
 	else
 	{
