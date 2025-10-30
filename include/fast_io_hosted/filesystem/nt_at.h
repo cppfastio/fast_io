@@ -781,7 +781,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
 		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
 		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
-		.CreateOptions = 0x00200000           // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
+		.CreateOptions = 0x00200000 | 0x00000020 // FILE_FLAG_OPEN_REPARSE_POINT | FILE_SYNCHRONOUS_IO_NONALERT
 	};
 
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
