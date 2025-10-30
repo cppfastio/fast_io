@@ -98,7 +98,7 @@ inline constexpr bool mul_parity_float64(::std::uint_least64_t two_f, ::std::uin
 	::std::uint_least64_t const p10{::fast_io::intrinsics::umulh(two_f, pow10_low)};
 	::std::uint_least64_t const mid{p01 + p10};
 	constexpr ::std::uint_least64_t one{1};
-	return (mid & (one << (64 - beta_minus_1)));
+	return (mid & (one << (63 - beta_minus_1)));
 }
 
 inline constexpr bool mul_parity_float32(::std::uint_least64_t two_f, ::std::uint_least64_t pow10,
@@ -106,7 +106,7 @@ inline constexpr bool mul_parity_float32(::std::uint_least64_t two_f, ::std::uin
 {
 	::std::uint_least64_t const p01{two_f * pow10};
 	constexpr ::std::uint_least64_t one{1};
-	return (p01 & (one << (64 - beta_minus_1)));
+	return (p01 & (one << (63 - beta_minus_1)));
 }
 
 template <my_unsigned_integral value_type>
@@ -120,7 +120,7 @@ template <my_unsigned_integral value_type>
 inline constexpr bool multiple_of_pow2(value_type value, ::std::int_least32_t e2) noexcept
 {
 	constexpr ::std::int_least32_t e2max_bits{static_cast<::std::int_least32_t>(sizeof(value_type) * 8)};
-	return e2 < e2max_bits && multiple_of_pow2_unchecked(value, static_cast<::std::uint_least32_t>(e2));
+	return (e2 >= 0) && (e2 < e2max_bits) && multiple_of_pow2_unchecked(value, static_cast<::std::uint_least32_t>(e2));
 }
 
 inline constexpr bool multiple_of_pow5(::std::uint_least64_t value, ::std::uint_least32_t e5) noexcept
@@ -303,13 +303,14 @@ dragonbox_main(typename iec559_traits<flt>::mantissa_type m2, ::std::int_least32
 	{
 		auto e2_temp{e2};
 		e2 -= exponent_bias;
+		auto orig_m2{m2};
 		m2 |= mflags;
 		::std::uint_least32_t pos_e2{static_cast<::std::uint_least32_t>(-e2)};
 		if (pos_e2 < mbits && multiple_of_pow2_unchecked(m2, pos_e2)) [[unlikely]]
 		{
 			return {m2 >> pos_e2, 0};
 		}
-		if (m2 == 0 && e2_temp > 1) [[unlikely]]
+		if (orig_m2 == 0 && e2_temp > 1) [[unlikely]]
 		{
 			return schubfach_asymmetric_interval<flt>(e2);
 		}
