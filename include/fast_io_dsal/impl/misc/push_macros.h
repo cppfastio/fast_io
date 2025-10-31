@@ -212,7 +212,12 @@ Internal assert macros for fuzzing fast_io.
 #pragma push_macro("FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE")
 #if defined(__cpp_trivial_relocatability)
 #undef FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
+#if defined(__clang__)
+#define FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE \
+	_Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wc++26-extensions\"") trivially_relocatable_if_eligible _Pragma("clang diagnostic pop")
+#else // ^^^ defined(__clang__) / vvv !defined(__clang__)
 #define FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE trivially_relocatable_if_eligible
+#endif // ^^^ !defined(__clang__)
 #else
 #define FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 #endif
@@ -220,9 +225,9 @@ Internal assert macros for fuzzing fast_io.
 #pragma push_macro("FAST_IO_HAS_BUILTIN")
 #undef FAST_IO_HAS_BUILTIN
 #ifdef __has_builtin
-# define FAST_IO_HAS_BUILTIN(...) __has_builtin(__VA_ARGS__)
+#define FAST_IO_HAS_BUILTIN(...) __has_builtin(__VA_ARGS__)
 #else
-# define FAST_IO_HAS_BUILTIN(...) 0
+#define FAST_IO_HAS_BUILTIN(...) 0
 #endif
 
 #pragma push_macro("FAST_IO_CPP_RTTI")
