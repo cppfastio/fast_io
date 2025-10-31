@@ -447,7 +447,7 @@ inline void posix_utimensat_impl(int dirfd, char const *path, unix_timestamp_opt
 }
 
 template<::std::integral char_type>
-inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat_impl(int dirfd, char const *pathname)
+inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat_impl([[maybe_unused]] int dirfd, [[maybe_unused]] char const *pathname)
 {
 #if defined(AT_SYMLINK_NOFOLLOW)
     using posix_ssize_t = ::std::make_signed_t<::std::size_t>;

@@ -25,7 +25,7 @@ concept minimum_buffer_input_stream_require_size_impl =
 
 } // namespace fast_io::details
 #if ((defined(__linux__) && defined(__NR_getrandom)) || \
-	 (!defined(__linux__) && __has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__DARWIN_C_LEVEL)
+	 (!defined(__linux__) && __has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__DARWIN_C_LEVEL) && !defined(__CYGWIN__)
 #include "linux_getrandom.h"
 #endif
 #if ((defined(__linux__) && defined(__GLIBC__)) || (defined(__BSD_VISIBLE) && !defined(__DARWIN_C_LEVEL))) && 0
@@ -69,7 +69,7 @@ inline int random_entropy(basic_posix_io_observer<ch_type> piob) noexcept
 template <::std::integral char_type>
 using basic_native_white_hole =
 #if defined(_WIN32) && !defined(__WINE__)
-#if defined(_WIN32_WINDOWS) || (_WIN32_WINNT <= 0x0500)
+#if defined(_WIN32_WINDOWS) || (defined(_WIN32_WINNT) && _WIN32_WINNT <= 0x0500)
 	basic_win32_crypt_gen_random_file<char_type>;
 #else
 	basic_rtl_gen_random<char_type>;
@@ -79,7 +79,7 @@ using basic_native_white_hole =
 #elif (((defined(__linux__) && defined(__GLIBC__)) || (defined(__BSD_VISIBLE) && !defined(__DARWIN_C_LEVEL)))) && 0
 	basic_bsd_arc4random<char_type>;
 #elif (defined(__linux__) && defined(__NR_getrandom)) || \
-	(!defined(__linux__) && __has_include(<sys/random.h>)) && !defined(__DARWIN_C_LEVEL)
+	(!defined(__linux__) && __has_include(<sys/random.h>)) && !defined(__DARWIN_C_LEVEL) && !defined(__CYGWIN__)
 	basic_linux_getrandom<char_type>;
 #else
 	basic_posix_dev_urandom<char_type>;

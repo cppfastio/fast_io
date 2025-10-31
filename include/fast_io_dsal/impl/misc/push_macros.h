@@ -14,7 +14,10 @@
 #undef move
 
 #pragma push_macro("new")
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wkeyword-macro"
 #undef new
+#pragma GCC diagnostic pop
 
 #pragma push_macro("refresh")
 #undef refresh

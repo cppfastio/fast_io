@@ -221,7 +221,7 @@ public:
 	}
 };
 
-#if (defined(_WIN32_WINDOWS) || _WIN32_WINNT <= 0x0500)
+#if (defined(_WIN32_WINDOWS) || (defined(_WIN32_WINNT) && _WIN32_WINNT <= 0x0500))
 using native_dns_io_observer = win32_9xa_dns_io_observer;
 using native_dns_file = win32_9xa_dns_file;
 using native_dns_iterator = win32_9xa_dns_iterator;
