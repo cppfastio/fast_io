@@ -65,13 +65,11 @@ public:
 	using native_handle_type = void *;
 
 private:
-	id id_;
-	native_handle_type handle_;
+	id id_{};
+	native_handle_type handle_{nullptr};
 
 public:
-	win32_thread() noexcept
-		: id_{}, handle_{nullptr}
-	{}
+	win32_thread() noexcept = default;
 
 	template <typename Func, typename... Args>
 		requires(::std::invocable<Func, Args...>)
@@ -104,12 +102,7 @@ public:
 
 	constexpr win32_thread(win32_thread const &) noexcept = delete;
 
-	constexpr win32_thread(win32_thread &&other) noexcept
-		: id_(other.id_), handle_(other.handle_)
-	{
-		other.id_ = 0;
-		other.handle_ = nullptr;
-	}
+	constexpr win32_thread(win32_thread &&other) noexcept = default;
 
 	constexpr ~win32_thread() noexcept
 	{
@@ -142,7 +135,12 @@ public:
 		return this->id_ != 0;
 	}
 
-	constexpr void join()
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+		void join()
 	{
 		if (!this->joinable()) [[unlikely]]
 		{
@@ -152,7 +150,12 @@ public:
 		this->id_ = 0;
 	}
 
-	constexpr void detach()
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+		void detach()
 	{
 		if (!this->joinable()) [[unlikely]]
 		{
@@ -172,22 +175,26 @@ public:
 		::std::ranges::swap(id_, other.id_);
 	}
 
-	/**
-	 * @note Unlike std::thread::get_id, this method return the const reference.
-	 */
 	[[nodiscard]]
-	constexpr auto &&get_id() const noexcept
+	constexpr auto get_id() const noexcept
 	{
 		return this->id_;
 	}
 
 	[[nodiscard]]
-	constexpr auto &&native_handle() const noexcept
+	constexpr auto native_handle() const noexcept
 	{
 		return this->handle_;
 	}
 
-	static constexpr ::std::uint_least32_t hardware_concurrency() noexcept
+	[[nodiscard]]
+	static
+#if __cpp_constexpr >= 202207L
+		// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+		// for reduce some warning purpose
+		constexpr
+#endif
+		::std::uint_least32_t hardware_concurrency() noexcept
 	{
 		::fast_io::win32::system_info si{};
 		::fast_io::win32::GetSystemInfo(__builtin_addressof(si));
@@ -198,7 +205,13 @@ public:
 namespace this_thread
 {
 
-constexpr auto get_id() noexcept -> ::fast_io::win32::win32_thread::id
+[[nodiscard]]
+#if __cpp_constexpr >= 202207L
+// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+// for reduce some warning purpose
+constexpr
+#endif
+	auto get_id() noexcept -> ::fast_io::win32::win32_thread::id
 {
 	return ::fast_io::win32::GetCurrentThreadId();
 }

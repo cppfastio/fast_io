@@ -66,13 +66,11 @@ public:
 	using native_handle_type = void *;
 
 private:
-	id id_;
-	native_handle_type handle_;
+	id id_{nullptr};
+	native_handle_type handle_{nullptr};
 
 public:
-	nt_thread() noexcept
-		: id_{nullptr}, handle_{nullptr}
-	{}
+	constexpr nt_thread() noexcept = default;
 
 	template <typename Func, typename... Args>
 		requires(::std::invocable<Func, Args...>)
@@ -115,12 +113,7 @@ public:
 
 	constexpr nt_thread(nt_thread const &) noexcept = delete;
 
-	constexpr nt_thread(nt_thread &&other) noexcept
-		: id_(other.id_), handle_(other.handle_)
-	{
-		other.id_ = nullptr;
-		other.handle_ = nullptr;
-	}
+	constexpr nt_thread(nt_thread &&other) noexcept = default;
 
 	constexpr ~nt_thread() noexcept
 	{
@@ -189,17 +182,14 @@ public:
 		::std::ranges::swap(id_, other.id_);
 	}
 
-	/**
-	 * @note Unlike std::thread::get_id, this method return the const reference.
-	 */
 	[[nodiscard]]
-	constexpr auto &&get_id() const noexcept
+	constexpr auto get_id() const noexcept
 	{
 		return this->id_;
 	}
 
 	[[nodiscard]]
-	constexpr auto &&native_handle() const noexcept
+	constexpr auto native_handle() const noexcept
 	{
 		return this->handle_;
 	}
