@@ -116,7 +116,6 @@ public:
 	}
 #endif
 
-#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 	[[__gnu__::__returns_nonnull__]]
 #endif
@@ -139,7 +138,13 @@ public:
 		}
 		else
 		{
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
 			p = ::fast_io::noexcept_call(_aligned_malloc, n, alignment);
+#elif FAST_IO_HAS_BUILTIN(__builtin_aligned_alloc) // gcc
+			p = __builtin_aligned_alloc(alignment, n);
+#else
+			p = ::std::aligned_alloc(alignment, n);
+#endif
 		}
 		if (p == nullptr)
 		{
@@ -147,6 +152,8 @@ public:
 		}
 		return p;
 	}
+
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
 #if __has_cpp_attribute(__gnu__::__returns_nonnull__)
 	[[__gnu__::__returns_nonnull__]]
 #endif
@@ -177,6 +184,8 @@ public:
 		}
 		return p;
 	}
+#endif
+
 	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
 	{
 		if (p == nullptr)
@@ -194,19 +203,23 @@ public:
 		}
 		else
 		{
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
 			::fast_io::noexcept_call(_aligned_free, p);
+#else
+			::std::free(p);
+#endif
 		}
 	}
-#endif
+
 	static inline void deallocate(void *p) noexcept
 	{
 		if (p == nullptr)
 		{
 			return;
 		}
-		
+
 #if FAST_IO_HAS_BUILTIN(__builtin_free)
-        __builtin_free
+		__builtin_free
 #else
 		::std::free
 #endif
