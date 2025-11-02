@@ -26,11 +26,7 @@ public:
 	{}
 
 	constexpr nt_thread_start_routine_tuple_allocate_guard(nt_thread_start_routine_tuple_allocate_guard const &) noexcept = delete;
-	constexpr nt_thread_start_routine_tuple_allocate_guard(nt_thread_start_routine_tuple_allocate_guard &&other) noexcept
-		: ptr_{other.ptr_}
-	{
-		other.ptr_ = nullptr;
-	}
+	constexpr nt_thread_start_routine_tuple_allocate_guard(nt_thread_start_routine_tuple_allocate_guard &&other) noexcept = default;
 
 	constexpr ~nt_thread_start_routine_tuple_allocate_guard()
 	{

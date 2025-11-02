@@ -26,11 +26,7 @@ public:
 	{}
 
 	constexpr win32_thread_start_routine_tuple_allocate_guard(win32_thread_start_routine_tuple_allocate_guard const &) noexcept = delete;
-	constexpr win32_thread_start_routine_tuple_allocate_guard(win32_thread_start_routine_tuple_allocate_guard &&other) noexcept
-		: ptr_{other.ptr_}
-	{
-		other.ptr_ = nullptr;
-	}
+	constexpr win32_thread_start_routine_tuple_allocate_guard(win32_thread_start_routine_tuple_allocate_guard &&other) noexcept = default;
 
 	constexpr ~win32_thread_start_routine_tuple_allocate_guard()
 	{

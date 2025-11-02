@@ -13,11 +13,7 @@ public:
 	{}
 
 	constexpr thread_start_routine_tuple_c_malloc_allocate_guard(thread_start_routine_tuple_c_malloc_allocate_guard const &) noexcept = delete;
-	constexpr thread_start_routine_tuple_c_malloc_allocate_guard(thread_start_routine_tuple_c_malloc_allocate_guard &&other) noexcept
-		: ptr_{other.ptr_}
-	{
-		other.ptr_ = nullptr;
-	}
+	constexpr thread_start_routine_tuple_c_malloc_allocate_guard(thread_start_routine_tuple_c_malloc_allocate_guard &&other) noexcept = default;
 
 	constexpr ~thread_start_routine_tuple_c_malloc_allocate_guard()
 	{
