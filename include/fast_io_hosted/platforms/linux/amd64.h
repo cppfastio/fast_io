@@ -36,6 +36,7 @@ inline return_value_type system_call(auto p1) noexcept
 
 template <::std::uint_least64_t syscall_number>
 [[noreturn]]
+[[__gnu__::__always_inline__]]
 inline void system_call_no_return(auto p1) noexcept
 {
 	::std::uint_least64_t ret;
@@ -134,6 +135,7 @@ inline return_value_type system_call(auto p1, auto p2, auto p3, auto p4, auto p5
 
 template <::std::integral I>
 [[noreturn]]
+[[__gnu__::__always_inline__, __gnu__::__artificial__]]
 inline void fast_exit(I ret) noexcept
 {
 	system_call_no_return<__NR_exit>(ret);
