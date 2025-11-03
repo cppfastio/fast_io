@@ -66,24 +66,24 @@ public:
 	const_pointer ptr{};
 	size_type n{};
 
-#if __has_cpp_attribute(__gnu__::__const__)
-	[[__gnu__::__const__]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+	[[__gnu__::__pure__]]
 #endif
 	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
 		return !n;
 	}
 
-#if __has_cpp_attribute(__gnu__::__const__)
-	[[__gnu__::__const__]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+	[[__gnu__::__pure__]]
 #endif
 	[[nodiscard]] inline constexpr bool empty() const noexcept
 	{
 		return !n;
 	}
 
-#if __has_cpp_attribute(__gnu__::__const__)
-	[[__gnu__::__const__]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+	[[__gnu__::__pure__]]
 #endif
 	[[nodiscard]] inline constexpr size_type size() const noexcept
 	{

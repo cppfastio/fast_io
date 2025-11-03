@@ -605,16 +605,16 @@ public:
 		return const_reverse_iterator({__builtin_addressof(imp)});
 	}
 
-#if __has_cpp_attribute(__gnu__::__const__)
-	[[__gnu__::__const__]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+	[[__gnu__::__pure__]]
 #endif
 	[[nodiscard]] inline constexpr bool empty() const noexcept
 	{
 		return imp.next == __builtin_addressof(imp);
 	}
 
-#if __has_cpp_attribute(__gnu__::__const__)
-	[[__gnu__::__const__]]
+#if __has_cpp_attribute(__gnu__::__pure__)
+	[[__gnu__::__pure__]]
 #endif
 	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
