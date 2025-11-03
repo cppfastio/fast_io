@@ -605,11 +605,17 @@ public:
 		return const_reverse_iterator({__builtin_addressof(imp)});
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
 	[[nodiscard]] inline constexpr bool empty() const noexcept
 	{
 		return imp.next == __builtin_addressof(imp);
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
 	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
 		return imp.next == __builtin_addressof(imp);
@@ -908,9 +914,9 @@ public:
 
 	inline constexpr list(list &&other) noexcept
 		: imp(other.imp)
-		  #if 0
+#if 0
 		  , allochdl(std::move(other.allochdl))
-		  #endif
+#endif
 	{
 		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 		auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
@@ -924,9 +930,9 @@ public:
 		{
 			this->destroy();
 			imp = other.imp;
-			#if 0
+#if 0
 			allochdl = ::std::move(other.allochdl);
-			#endif
+#endif
 			auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 			auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 			next->prev = prev->next = __builtin_addressof(imp);

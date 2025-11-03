@@ -218,20 +218,33 @@ public:
 		return imp.begin_ptr;
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
+	[[nodiscard]]
 	inline constexpr bool is_empty() const noexcept
 	{
 		return imp.begin_ptr == imp.curr_ptr;
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
+	[[nodiscard]]
 	inline constexpr bool empty() const noexcept
 	{
 		return imp.begin_ptr == imp.curr_ptr;
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
+	[[nodiscard]]
 	inline constexpr size_type size() const noexcept
 	{
 		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr);
 	}
+
 	inline constexpr size_type size_bytes() const noexcept
 	{
 		return static_cast<size_type>(imp.curr_ptr - imp.begin_ptr) * sizeof(value_type);
@@ -524,7 +537,7 @@ public:
 		this->assign_impl(other.imp.begin_ptr, static_cast<::std::size_t>(other.imp.curr_ptr - other.imp.begin_ptr));
 		return *this;
 	}
-	inline constexpr basic_string& operator=(string_view_type const &other) noexcept
+	inline constexpr basic_string &operator=(string_view_type const &other) noexcept
 	{
 		this->assign(other);
 		return *this;

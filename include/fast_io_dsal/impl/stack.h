@@ -87,6 +87,10 @@ public:
 		}
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
+	[[nodiscard]]
 	inline constexpr bool empty() const noexcept
 	{
 		if constexpr (requires() {
@@ -101,11 +105,19 @@ public:
 		}
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
+	[[nodiscard]]
 	inline constexpr bool is_empty() const noexcept
 	{
 		return container.is_empty();
 	}
 
+#if __has_cpp_attribute(__gnu__::__const__)
+	[[__gnu__::__const__]]
+#endif
+	[[nodiscard]]
 	inline constexpr size_type size() const noexcept
 		requires(requires() {
 			container.size();
@@ -113,6 +125,7 @@ public:
 	{
 		return container.size();
 	}
+
 	inline constexpr void push(value_type const &value)
 	{
 		if constexpr (requires() {
