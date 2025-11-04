@@ -1,4 +1,6 @@
+#if defined (__GNUC__) || defined (__clang__)
 #include <fast_io_hosted/stack_pointer.h>
+#endif
 
 int main() noexcept {
 #if defined (__GNUC__) || defined (__clang__)
