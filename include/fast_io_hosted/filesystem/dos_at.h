@@ -201,7 +201,7 @@ inline
 	constexpr
 #endif
 	::std::time_t
-	unix_timestamp_to_time_t(unix_timestamp_option opt) noexcept
+	unix_timestamp_to_time_t(unix_timestamp_option opt)
 {
 	switch (opt.flags)
 	{

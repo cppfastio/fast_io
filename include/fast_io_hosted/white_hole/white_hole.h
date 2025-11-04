@@ -25,7 +25,7 @@ concept minimum_buffer_input_stream_require_size_impl =
 
 } // namespace fast_io::details
 #if ((defined(__linux__) && defined(__NR_getrandom)) || \
-	 (!defined(__linux__) && __has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__DARWIN_C_LEVEL) && !defined(__CYGWIN__)
+	 (!(defined(__linux__) && defined(__NR_getrandom)) && __has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__DARWIN_C_LEVEL) && !defined(__CYGWIN__)
 #include "linux_getrandom.h"
 #endif
 #if ((defined(__linux__) && defined(__GLIBC__)) || (defined(__BSD_VISIBLE) && !defined(__DARWIN_C_LEVEL))) && 0

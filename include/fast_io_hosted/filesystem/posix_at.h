@@ -747,6 +747,17 @@ template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constru
 inline void posix_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						 new_path_type const &newpath, posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
+	if ((flags & posix_at_flags::symlink_nofollow) == posix_at_flags::symlink_nofollow)
+	{
+		flags &= ~posix_at_flags::symlink_nofollow;
+	}
+	else
+	{
+#ifdef AT_SYMLINK_FOLLOW
+		flags |= static_cast<posix_at_flags>(AT_SYMLINK_FOLLOW);
+#endif
+	}
+
 	details::posix_deal_with22<details::posix_api_22::linkat>(oldent.fd, oldpath, newent.fd, newpath,
 															  static_cast<int>(flags));
 }
@@ -755,6 +766,17 @@ template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constru
 inline void native_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						  new_path_type const &newpath, posix_at_flags flags = posix_at_flags::symlink_nofollow)
 {
+	if ((flags & posix_at_flags::symlink_nofollow) == posix_at_flags::symlink_nofollow)
+	{
+		flags &= ~posix_at_flags::symlink_nofollow;
+	}
+	else
+	{
+#ifdef AT_SYMLINK_FOLLOW
+		flags |= static_cast<posix_at_flags>(AT_SYMLINK_FOLLOW);
+#endif
+	}
+
 	details::posix_deal_with22<details::posix_api_22::linkat>(oldent.fd, oldpath, newent.fd, newpath,
 															  static_cast<int>(flags));
 }

@@ -1,5 +1,5 @@
 ﻿#pragma once
-#if !(defined(__linux__) && defined(__NR_getrandom)) && !__has_include(<sys/random.h>)
+#if !(defined(__linux__) && defined(__NR_getrandom)) && __has_include(<sys/random.h>)
 #include <sys/random.h>
 #endif
 
