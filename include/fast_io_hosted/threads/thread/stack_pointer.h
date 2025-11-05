@@ -4,7 +4,7 @@
 #error "fast_io: get_stack_pointer is not supported on MSVC"
 #endif
 
-namespace fast_io
+namespace fast_io::details
 {
 
 /**
@@ -47,7 +47,7 @@ inline void *get_stack_pointer() noexcept
 #elif defined(__powerpc__)
 	__asm__ volatile("mr %0, 1" : "=r"(result));
 #else
-#error "Unknown arch to get stack pointer"
+    static_assert(false, "Unknown arch to get stack pointer");
 #endif
 	return result;
 }
