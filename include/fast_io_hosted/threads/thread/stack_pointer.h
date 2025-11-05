@@ -47,7 +47,7 @@ inline void *get_stack_pointer() noexcept
 #elif defined(__powerpc__)
 	__asm__ volatile("mr %0, 1" : "=r"(result));
 #else
-    static_assert(false, "Unknown arch to get stack pointer");
+    ::fast_io::fast_terminate();
 #endif
 	return result;
 }
