@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined (_MSC_VER) && !defined(__clang__)
-#error "fast_io: get_stack_pointer is not supported on MSVC"
+#error "get_stack_pointer is not supported on MSVC"
 #endif
 
 namespace fast_io::details
