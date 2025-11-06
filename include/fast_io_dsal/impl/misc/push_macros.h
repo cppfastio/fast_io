@@ -16,6 +16,7 @@
 #pragma push_macro("new")
 #if __GNUC__ >= 16
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wkeyword-macro"
 #undef new
 #pragma GCC diagnostic pop
