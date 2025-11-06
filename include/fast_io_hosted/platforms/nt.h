@@ -220,7 +220,7 @@ inline constexpr nt_open_mode calculate_nt_open_mode(open_mode_perms ompm) noexc
 	{
 		mode.CreateOptions |= 0x00000002; // FILE_WRITE_THROUGH
 	}
-	if ((value & open_mode::follow) != open_mode::none)
+	if ((value & open_mode::follow) == open_mode::none)
 	{
 		mode.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}

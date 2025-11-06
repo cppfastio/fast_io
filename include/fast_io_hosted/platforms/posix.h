@@ -227,6 +227,18 @@ inline constexpr int calculate_posix_open_mode(open_mode value) noexcept
 		mode |= O_SYNC;
 	}
 #endif
+#ifdef O_DSYNC
+	if ((value & open_mode::dsync) != open_mode::none)
+	{
+		mode |= O_DSYNC;
+	}
+#endif
+#ifdef O_RSYNC
+	if ((value & open_mode::rsync) != open_mode::none)
+	{
+		mode |= O_RSYNC;
+	}
+#endif
 #ifdef O_TTY_INIT
 	if ((value & open_mode::tty_init) != open_mode::none)
 	{

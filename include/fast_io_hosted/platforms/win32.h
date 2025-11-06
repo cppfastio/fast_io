@@ -406,7 +406,7 @@ inline constexpr win32_open_mode calculate_win32_open_mode(open_mode_perms ompm)
 	{
 		mode.dwFlagsAndAttributes |= 0x40000000; // FILE_FLAG_OVERLAPPED
 	}
-	if ((value & open_mode::follow) != open_mode::none)
+	if ((value & open_mode::follow) == open_mode::none)
 	{
 		mode.dwFlagsAndAttributes |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT
 	}

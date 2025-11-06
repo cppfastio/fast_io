@@ -332,7 +332,7 @@ inline posix_directory_iterator &operator++(posix_directory_iterator &pdit)
 	To fix: avoid setting errno
 	*/
 	errno = 0; // [tls]
-	auto entry{readdir(pdit.dirp)};
+	auto entry{::fast_io::noexcept_call(::readdir, pdit.dirp)};
 	auto en{errno};
 	if (entry == nullptr && en)
 	{
@@ -357,7 +357,7 @@ inline posix_directory_iterator &operator++(posix_directory_iterator &pdit)
 inline posix_directory_iterator begin(posix_directory_generator const &pdg)
 {
 	auto dirp{pdg.dir_fl.dirp};
-	::rewinddir(dirp);
+	::fast_io::noexcept_call(::rewinddir, dirp);
 	posix_directory_iterator pdit{dirp};
 	++pdit;
 	return pdit;
@@ -433,7 +433,7 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 		errno = 0;
 		if (prdit.stack.empty())
 		{
-			auto entry{readdir(prdit.dirp)};
+			auto entry{::fast_io::noexcept_call(::readdir, prdit.dirp)};
 			if (entry == nullptr)
 			{
 				auto en{errno};
@@ -448,7 +448,7 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 		}
 		else
 		{
-			auto entry = readdir(prdit.stack.back().dirp);
+			auto entry = ::fast_io::noexcept_call(::readdir, prdit.stack.back().dirp);
 			if (entry == nullptr)
 			{
 				auto en{errno};
@@ -515,7 +515,7 @@ inline basic_posix_recursive_directory_iterator<StackType>
 begin(basic_posix_recursive_directory_generator<StackType> const &pdg)
 {
 	auto dirp{pdg.dir_fl.dirp};
-	::rewinddir(dirp);
+	::fast_io::noexcept_call(::rewinddir, dirp);
 	basic_posix_recursive_directory_iterator<StackType> pdit{dirp};
 	++pdit;
 	return pdit;
