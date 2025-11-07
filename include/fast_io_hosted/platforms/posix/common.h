@@ -20,7 +20,7 @@ inline ::std::byte *posix_read_bytes_impl(int fd, ::std::byte *first, ::std::byt
 #else
 	auto ret{::fast_io::noexcept_call(::read, fd, first, static_cast<::std::size_t>(last - first))};
 #endif
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}
@@ -42,7 +42,7 @@ inline ::std::byte const *posix_write_bytes_impl(int fd, ::std::byte const *firs
 #else
 	auto ret{::fast_io::noexcept_call(::write, fd, first, static_cast<::std::size_t>(last - first))};
 #endif
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}

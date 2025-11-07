@@ -33,7 +33,7 @@ inline ::fast_io::io_scatter_status_t posix_scatter_read_bytes_impl(int fd, ::fa
 		= struct iovec const *;
 
 	auto ret{::fast_io::noexcept_call(::readv, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n)};
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}
@@ -68,7 +68,7 @@ inline ::fast_io::io_scatter_status_t posix_scatter_write_bytes_impl(int fd, ::f
 		= struct iovec const *;
 
 	auto ret{::fast_io::noexcept_call(::writev, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n)};
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}

@@ -662,7 +662,7 @@ inline ::std::size_t posix_socket_write_impl(int fd, void const *data, ::std::si
 	return static_cast<::std::size_t>(written);
 #else
 	::std::ptrdiff_t written{::fast_io::noexcept_call(::send, fd, data, to_write, 0)};
-	if (written < 0)
+	if (written == -1)
 	{
 		throw_posix_error();
 	}
@@ -678,7 +678,7 @@ inline ::std::size_t posix_socket_read_impl(int fd, void *data, ::std::size_t to
 	return static_cast<::std::size_t>(written);
 #else
 	::std::ptrdiff_t written{::fast_io::noexcept_call(::recv, fd, data, to_write, 0)};
-	if (written < 0)
+	if (written == -1)
 	{
 		throw_posix_error();
 	}

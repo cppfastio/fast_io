@@ -65,7 +65,10 @@ inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset,
 		::lseek
 #endif
 		(fd, static_cast<off_t>(offset), static_cast<int>(s)));
-	system_call_throw_error(ret);
+	if(ret == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
 	return static_cast<::fast_io::intfpos_t>(static_cast<::std::uint_least64_t>(ret));
 #endif
 }

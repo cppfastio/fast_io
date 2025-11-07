@@ -10,7 +10,7 @@ namespace details
 inline ::std::byte *posix_pread_bytes_impl(int fd, ::std::byte *first, ::std::byte *last, ::fast_io::intfpos_t off)
 {
 	auto ret{::fast_io::noexcept_call(::pread, fd, first, static_cast<::std::size_t>(last - first), off)};
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}
@@ -21,7 +21,7 @@ inline ::std::byte const *posix_pwrite_bytes_impl(int fd, ::std::byte const *fir
 												  ::fast_io::intfpos_t off)
 {
 	auto ret{::fast_io::noexcept_call(::pwrite, fd, first, static_cast<::std::size_t>(last - first), off)};
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}
@@ -56,7 +56,7 @@ inline ::fast_io::io_scatter_status_t posix_scatter_pread_bytes_impl(int fd, ::f
 		= struct iovec const *;
 
 	auto ret{::fast_io::noexcept_call(::preadv, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n, off)};
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}
@@ -91,7 +91,7 @@ inline ::fast_io::io_scatter_status_t posix_scatter_pwrite_bytes_impl(int fd, ::
 		= struct iovec const *;
 
 	auto ret{::fast_io::noexcept_call(::pwritev, fd, reinterpret_cast<iovec_may_alias_const_ptr>(pscatter), n, off)};
-	if (ret < 0)
+	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
 	}

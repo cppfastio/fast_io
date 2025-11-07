@@ -22,8 +22,9 @@ inline ::fast_io::install_path get_module_install_path()
 	char buffer[PATH_MAX + 1];
 	::fast_io::install_path ret;
 
+	using my_ssize_t = ::std::make_signed_t<::std::size_t>;
 #if defined(__linux__) && defined(__NR_readlink)
-	auto resolved{::fast_io::system_call<__NR_readlink, int>("/proc/self/exe", buffer, PATH_MAX)};
+	auto resolved{::fast_io::system_call<__NR_readlink, my_ssize_t>("/proc/self/exe", buffer, PATH_MAX)};
 	system_call_throw_error(resolved);
 	buffer[resolved] = '\0';
 	ret.module_name = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt(::fast_io::mnp::os_c_str_with_known_size(buffer, resolved)));

@@ -11,6 +11,6 @@ namespace fast_io::details
 [[noreturn]]
 inline void get_module_install_path()
 {
-	throw_posix_error();
+	throw_posix_error(ENOTSUP);
 }
 } // namespace fast_io::details

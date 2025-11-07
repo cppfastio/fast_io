@@ -545,9 +545,9 @@ inline constexpr posix_at_entry posix_at_fdcwd() noexcept
 {
 	return posix_at_entry(
 #if defined(AT_FDCWD)
-			AT_FDCWD
+		AT_FDCWD
 #else
-			-2
+		-2
 #endif
 	);
 }
@@ -556,9 +556,9 @@ inline constexpr posix_at_entry at_fdcwd() noexcept
 {
 	return posix_at_entry(
 #if defined(AT_FDCWD)
-			AT_FDCWD
+		AT_FDCWD
 #else
-			-2
+		-2
 #endif
 	);
 }
@@ -783,17 +783,17 @@ inline posix_file_status fstat_impl(int fd)
 	if (::fast_io::noexcept_call(
 #if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
 #if (!defined(__MINGW32__) || __has_include(<_mingw_stat64.h>))
-			_fstat64
+			::_fstat64
 #else
-			_fstati64
+			::_fstati64
 #endif
 #elif defined(__linux__) && defined(__USE_LARGEFILE64)
-			fstat64
+			::fstat64
 #else
-			fstat
+			::fstat
 #endif
 			,
-			fd, __builtin_addressof(st)) < 0)
+			fd, __builtin_addressof(st)) == -1) [[unlikely]]
 		throw_posix_error();
 	return struct_stat_to_posix_file_status(st);
 }
@@ -950,7 +950,14 @@ inline constexpr dos_path_tlc_string my_dos_concat_tlc_path(int dirfd, char cons
 	auto [failed, path]{my_dos_concat_tlc_path_common(dirfd, pathname)};
 	if (failed) [[unlikely]]
 	{
-		::fast_io::system_call_throw_error<always_terminate>(-1);
+		if constexpr (always_terminate)
+		{
+			fast_terminate();
+		}
+		else
+		{
+			throw_posix_error(EINVAL);
+		}
 	}
 	return path;
 }
@@ -959,7 +966,17 @@ template <bool always_terminate = false>
 inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mode)
 {
 	int fd{::fast_io::details::my_posix_open_noexcept(my_dos_concat_tlc_path<always_terminate>(dirfd, pathname).c_str(), flags, mode)};
-	system_call_throw_error<always_terminate>(fd);
+	if (fd == -1) [[unlikely]]
+	{
+		if constexpr (always_terminate)
+		{
+			fast_terminate();
+		}
+		else
+		{
+			throw_posix_error();
+		}
+	}
 	return fd;
 }
 
@@ -995,7 +1012,23 @@ inline int my_posix_openat(int dirfd, char const *pathname, int flags, mode_t mo
 		my_posix_openat_noexcept
 #endif
 		(dirfd, pathname, flags, mode)};
+
+#if defined(__linux__) && defined(__NR_openat)
 	system_call_throw_error<always_terminate>(fd);
+#else
+	if (fd == -1) [[unlikely]]
+	{
+		if constexpr (always_terminate)
+		{
+			fast_terminate();
+		}
+		else
+		{
+			throw_posix_error();
+		}
+	}
+#endif
+
 	return fd;
 }
 #endif
@@ -1061,7 +1094,17 @@ inline int my_posix_open(char const *pathname, int flags,
 {
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
 	int fd{::fast_io::details::my_posix_open_noexcept(pathname, flags, mode)};
-	::fast_io::system_call_throw_error<always_terminate>(fd);
+	if(fd == -1) [[unlikely]]
+	{
+		if constexpr (always_terminate)
+		{
+			fast_terminate();
+		}
+		else
+		{
+			throw_posix_error();
+		}
+	}
 	return fd;
 #else
 	return ::fast_io::details::my_posix_openat<always_terminate>(AT_FDCWD, pathname, flags, mode);
@@ -1152,7 +1195,7 @@ inline int my_open_posix_fd_temp_file()
 	}
 	wf.release();
 	return fd;
-#elif defined(O_TMPFILE) && defined(__linux__)
+#elif defined(O_TMPFILE) && defined(__linux__) && defined(__NR_openat)
 	int fd{system_call<__NR_openat, int>(AT_FDCWD, u8"/tmp", O_EXCL | O_RDWR | O_TMPFILE | O_APPEND | O_NOATIME,
 										 S_IRUSR | S_IWUSR)};
 	system_call_throw_error(fd);
@@ -1441,7 +1484,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 			}
 		}
 
-		if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
+		if (noexcept_call(::ftruncate, fd, static_cast<off_t>(size)) < 0)
 		{
 			throw_posix_error();
 		}
@@ -1497,7 +1540,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 			}
 		}
 
-		if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
+		if (noexcept_call(::ftruncate, fd, static_cast<off_t>(size)) < 0)
 		{
 			throw_posix_error();
 		}
@@ -1513,7 +1556,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 			}
 		}
 
-		if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
+		if (noexcept_call(::ftruncate, fd, static_cast<off_t>(size)) < 0)
 		{
 			throw_posix_error();
 		}
@@ -1527,7 +1570,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 		}
 	}
 
-	if (noexcept_call(ftruncate, fd, static_cast<off_t>(size)) < 0)
+	if (noexcept_call(::ftruncate, fd, static_cast<off_t>(size)) < 0)
 	{
 		throw_posix_error();
 	}

@@ -739,11 +739,11 @@ inline struct tm unix_timestamp_to_tm_impl(::std::int_least64_t seconds)
 #if defined(__AVR__)
 	if constexpr (local_tm)
 	{
-		noexcept_call(localtime_r, __builtin_addressof(val), __builtin_addressof(t));
+		noexcept_call(::localtime_r, __builtin_addressof(val), __builtin_addressof(t));
 	}
 	else
 	{
-		noexcept_call(gmtime_r, __builtin_addressof(val), __builtin_addressof(t));
+		noexcept_call(::gmtime_r, __builtin_addressof(val), __builtin_addressof(t));
 	}
 #elif defined(__MSDOS__)
 	if constexpr (local_tm)
@@ -763,14 +763,14 @@ inline struct tm unix_timestamp_to_tm_impl(::std::int_least64_t seconds)
 #else
 	if constexpr (local_tm)
 	{
-		if (localtime_r(__builtin_addressof(val), __builtin_addressof(t)) == 0)
+		if (::fast_io::noexcept_call(::localtime_r, __builtin_addressof(val), __builtin_addressof(t)) == 0)
 		{
 			throw_posix_error();
 		}
 	}
 	else
 	{
-		if (gmtime_r(__builtin_addressof(val), __builtin_addressof(t)) == 0)
+		if (::fast_io::noexcept_call(::gmtime_r, __builtin_addressof(val), __builtin_addressof(t)) == 0)
 		{
 			throw_posix_error();
 		}

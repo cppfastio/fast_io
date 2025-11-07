@@ -10,7 +10,7 @@ enum process_mode : ::std::uint_least64_t
 	// [POSIX] setsid(), [WINDOWS, WINNT] CREATE_NEW_PROCESS_GROUP (Windows is currently not implemented)
 	alloc_new_console = static_cast<::std::uint_least64_t>(1) << 1,
 	// [WINDOWS, WINNT] CREATE_NEW_CONSOLE (Automatically assign a console to new threads)
-	argv0_no_appname = static_cast<::std::uint_least64_t>(1) << 2,
+	argv0_no_path_append = static_cast<::std::uint_least64_t>(1) << 2,
 	// Do not automatically append appname to argv0
 };
 

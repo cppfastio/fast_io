@@ -108,6 +108,161 @@ inline constexpr Iter print_reserve_define(io_reserve_type_t<char_type,posix_wai
 
 namespace details
 {
+/*
+ * portable_fd_path.c
+ *
+ * Cross-platform helper to query the absolute pathname of an open file descriptor.
+ *
+ * Supports:
+ *   - Linux:       /proc/self/fd/<fd>
+ *   - macOS:       fcntl(fd, F_GETPATH, ...)
+ *   - FreeBSD:     /dev/fd/<fd> (requires fdescfs mounted)
+ *   - Solaris:     /proc/self/path/<fd>
+ *
+ * Returns:
+ *   0  on success, with `buf` containing a NUL-terminated absolute path
+ *  -1  on error, with errno set appropriately
+ *
+ * Limitations:
+ *   - If file has been unlinked or is anonymous (memfd, pipe, etc.), no valid path can be returned.
+ *   - The returned path may differ from original open() argument due to symlinks or namespaces.
+ */
+
+inline void portable_fd_path(int fd, char *buf, ::std::size_t bufsz)
+{
+	if (buf == nullptr || bufsz == 0u) [[unlikely]]
+	{
+		throw_posix_error(EINVAL);
+	}
+
+#if defined(__APPLE__) || defined(__DARWIN_C_LEVEL)
+	/* macOS / Darwin */
+
+#if defined(PATH_MAX)
+	if (bufsz < static_cast<::std::size_t>(PATH_MAX)) [[unlikely]]
+	{
+		throw_posix_error(ENOBUFS);
+	}
+#elif defined(MAXPATHLEN)
+	if (bufsz < static_cast<::std::size_t>(MAXPATHLEN)) [[unlikely]]
+	{
+		throw_posix_error(ENOBUFS);
+	}
+#else
+	if (bufsz < 1024u) [[unlikely]]
+	{
+		throw_posix_error(ENOBUFS);
+	}
+#endif
+
+	if (::fast_io::details::posix::fcntl(fd, F_GETPATH, buf) == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+
+#elif defined(__linux__)
+	/* Linux: /proc/self/fd/<fd> */
+
+	if (bufsz == 0u) [[unlikely]]
+	{
+		throw_posix_error(ENOBUFS);
+	}
+
+	decltype(auto) path_str{"/proc/self/fd/"};
+	constexpr auto path_str_sz{::fast_io::cstr_len(path_str)};
+	constexpr auto fd_sz{::fast_io::pr_rsv_size<char, int>};
+	constexpr auto all_sz{path_str_sz + fd_sz};
+
+	char linkpath[all_sz];
+	::fast_io::obuffer_view linkpath_ov{linkpath, linkpath + all_sz};
+	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd);
+
+	using my_ssize_t = ::std::make_signed_t<::std::size_t>;
+
+#if defined(__linux__) && defined(__NR_readlink)
+	auto resolved{::fast_io::system_call<__NR_readlink, my_ssize_t>(linkpath, buf, bufsz - 1u)};
+	system_call_throw_error(resolved);
+#else
+	auto resolved{::fast_io::noexcept_call(::readlink, linkpath, buf, bufsz - 1u)};
+	if (resolved == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+#endif
+
+	if (static_cast<::std::size_t>(resolved) >= bufsz - 1u) [[unlikely]]
+	{
+		throw_posix_error(ENAMETOOLONG);
+	}
+
+	buf[resolved] = '\0';
+
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+	/* BSD: /dev/fd/<fd> (requires fdescfs mounted) */
+
+	if (bufsz == 0u) [[unlikely]]
+	{
+		throw_posix_error(ENOBUFS);
+	}
+
+	decltype(auto) path_str{"/dev/fd/"};
+	constexpr auto path_str_sz{::fast_io::cstr_len(path_str)};
+	constexpr auto fd_sz{::fast_io::pr_rsv_size<char, int>};
+	constexpr auto all_sz{path_str_sz + fd_sz};
+
+	char linkpath[all_sz];
+	::fast_io::obuffer_view linkpath_ov{linkpath, linkpath + all_sz};
+	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd);
+
+	auto resolved{::fast_io::noexcept_call(::readlink, linkpath, buf, bufsz - 1u)};
+	if (resolved == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+
+	if (static_cast<::std::size_t>(resolved) >= bufsz - 1u) [[unlikely]]
+	{
+		throw_posix_error(ENAMETOOLONG);
+	}
+
+	buf[resolved] = '\0';
+
+#elif defined(__sun)
+	/* Solaris / illumos */
+
+	if (bufsz == 0u) [[unlikely]]
+	{
+		throw_posix_error(ENOBUFS);
+	}
+
+	decltype(auto) path_str{"/proc/self/path/"};
+	constexpr auto path_str_sz{::fast_io::cstr_len(path_str)};
+	constexpr auto fd_sz{::fast_io::pr_rsv_size<char, int>};
+	constexpr auto all_sz{path_str_sz + fd_sz};
+
+	char linkpath[all_sz];
+	::fast_io::obuffer_view linkpath_ov{linkpath, linkpath + all_sz};
+	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd);
+
+	auto resolved{::fast_io::noexcept_call(::readlink, linkpath, buf, bufsz - 1u)};
+	if (resolved == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+
+	if (static_cast<::std::size_t>(resolved) >= bufsz - 1u) [[unlikely]]
+	{
+		throw_posix_error(ENAMETOOLONG);
+	}
+
+	buf[resolved] = '\0';
+
+#else
+	throw_posix_error(ENOTSUP);
+#endif
+}
+
+
 inline pid_t posix_fork()
 {
 
@@ -481,7 +636,7 @@ struct fd_remapper
 // only used in vfork_execveat_common_impl()
 inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, process_mode mode) noexcept
 {
-    // vfork can only be called through libc wrapper
+	// vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
 	if (pid == -1) [[unlikely]]
 	{
@@ -627,7 +782,10 @@ inline void kill(posix_process_observer ppob, posix_wait_status exit_code)
 #if defined(__linux__) && defined(__NR_kill)
 	system_call_throw_error(system_call<__NR_kill, int>(ppob.pid, exit_code.wait_loc));
 #else
-	system_call_throw_error(::fast_io::posix::libc_kill(ppob.pid, exit_code.wait_loc));
+	if(::fast_io::posix::libc_kill(ppob.pid, exit_code.wait_loc) == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
 #endif
 }
 

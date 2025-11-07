@@ -29,7 +29,7 @@ inline ::std::byte *sys_mmap(void *addr, ::std::size_t len, int prot, int flags,
 			throw_posix_error(EINVAL);
 		}
 	}
-	auto ret{reinterpret_cast<::std::byte *>(mmap64(addr, len, prot, flags, fd, offset))};
+	auto ret{reinterpret_cast<::std::byte *>(::fast_io::noexcept_call(::mmap64, addr, len, prot, flags, fd, offset))};
 	if (ret == MAP_FAILED)
 	{
 		throw_posix_error();
@@ -59,13 +59,19 @@ inline int sys_mprotect(void *start, ::std::size_t len, int prot)
 #if defined(__linux__) && defined(__NR_mprotect)
 		system_call<__NR_mprotect, int>(start, len, prot)
 #else
-		::mprotect(start, len, prot)
+		::fast_io::noexcept_call(::mprotect, start, len, prot)
 #endif
 	};
-	if (result) [[unlikely]]
+	
+#if defined(__linux__) && defined(__NR_mprotect)
+	system_call_throw_error(result);
+#else
+	if (result == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}
+#endif
+
 	return result;
 }
 
@@ -75,13 +81,21 @@ inline int sys_munmap_nothrow(void *addr, ::std::size_t len)
 #if defined(__linux__) && defined(__NR_munmap)
 		system_call<__NR_munmap, int>(addr, len);
 #else
-		::munmap(addr, len);
+		::fast_io::noexcept_call(::munmap, addr, len);
 #endif
 }
 
 inline void sys_munmap(void *addr, ::std::size_t len)
 {
-	system_call_throw_error(sys_munmap_nothrow(addr, len));
+	auto const ret{sys_munmap_nothrow(addr, len)};
+#if defined(__linux__) && defined(__NR_munmap)
+	system_call_throw_error(ret);
+#else
+	if (ret == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+#endif
 }
 } // namespace details
 
@@ -174,7 +188,7 @@ public:
 	{
 	}
 	inline posix_memory_map_file(posix_at_entry bf, file_map_attribute attr, ::std::size_t bytes,
-						  ::std::uintmax_t start_address = 0)
+								 ::std::uintmax_t start_address = 0)
 		: address_begin{details::sys_mmap(nullptr, bytes, static_cast<int>(to_posix_file_map_attribute(attr)),
 										  MAP_SHARED, bf.fd, start_address)},
 		  address_end{address_begin + bytes}
@@ -297,7 +311,14 @@ public:
 		{
 			auto ret{details::sys_munmap_nothrow(this->address_begin, static_cast<::std::size_t>(address_end - address_begin))};
 			this->address_end = this->address_begin = reinterpret_cast<::std::byte *>(MAP_FAILED);
+#if defined(__linux__) && defined(__NR_munmap)
 			system_call_throw_error(ret);
+#else
+			if (ret == -1) [[unlikely]]
+			{
+				throw_posix_error();
+			}
+#endif
 		}
 	}
 	inline constexpr ~posix_memory_map_file()

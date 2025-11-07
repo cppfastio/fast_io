@@ -43,7 +43,7 @@ inline ::fast_io::install_path get_module_install_path()
 
 	if (size > PATH_MAX) [[unlikely]]
 	{
-		throw_posix_error();
+		throw_posix_error(ERANGE);
 	}
 
 	if (::fast_io::noexcept_call(::sysctl, mib, 4, argv, __builtin_addressof(size), nullptr, 0) != 0) [[unlikely]]

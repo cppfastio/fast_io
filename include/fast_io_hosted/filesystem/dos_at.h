@@ -113,16 +113,24 @@ inline constexpr dos_at_flags &operator^=(dos_at_flags &x, dos_at_flags y) noexc
 namespace details
 {
 
+inline void djgpp_libc_throw_posix_error(int ret)
+{
+	if (ret == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+}
+
 inline void dos_renameat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_rename(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
-																	   ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_rename(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
+																 ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
 }
 
 inline void dos_linkat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_link(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
-																	 ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_link(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
+															   ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
 }
 
 template <posix_api_22 dsp, typename... Args>
@@ -141,7 +149,7 @@ inline auto dos22_api_dispatcher(int olddirfd, char const *oldpath, int newdirfd
 inline void dos_symlinkat_impl([[maybe_unused]] char const *oldpath, [[maybe_unused]] int newdirfd, [[maybe_unused]] char const *newpath)
 {
 #if defined(FAST_IO_USE_DJGPP_SYMLINK)
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_symlink(oldpath, ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_symlink(oldpath, ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
 #else
 	throw_posix_error(ENOSYS);
 #endif
@@ -158,37 +166,37 @@ inline auto dos12_api_dispatcher(char const *oldpath, int newdirfd, char const *
 
 inline void dos_faccessat_impl(int dirfd, char const *pathname, int flags)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), flags));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), flags));
 }
 
 inline void dos_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner, uintmax_t group)
 {
 	// chown does nothing under MS-DOS, so just check is_valid filename
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_chown(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(),
-																	  static_cast<int>(owner), static_cast<int>(group)));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_chown(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(),
+																static_cast<int>(owner), static_cast<int>(group)));
 }
 
 inline void dos_fchmodat_impl(int dirfd, char const *pathname, mode_t mode)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_chmod(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_chmod(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
 }
 
 inline posix_file_status dos_fstatat_impl(int dirfd, char const *pathname)
 {
 	struct stat buf;
 
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_stat(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), __builtin_addressof(buf)));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_stat(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), __builtin_addressof(buf)));
 	return ::fast_io::details::struct_stat_to_posix_file_status(buf);
 }
 
 inline void dos_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_mkdir(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_mkdir(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
 }
 
 inline void dos_unlinkat_impl(int dirfd, char const *pathname)
 {
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_unlink(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str()));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_unlink(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str()));
 }
 
 inline constexpr ::std::time_t unix_timestamp_to_time_t(unix_timestamp stmp) noexcept
@@ -227,7 +235,7 @@ inline void dos_utimensat_impl(int dirfd, char const *pathname, unix_timestamp_o
 		::fast_io::details::unix_timestamp_to_time_t(last_modification_time),
 	};
 
-	::fast_io::system_call_throw_error(::fast_io::posix::my_dos_utime(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), __builtin_addressof(ts)));
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_utime(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), __builtin_addressof(ts)));
 }
 
 template <posix_api_1x dsp, typename... Args>
@@ -266,12 +274,12 @@ inline auto dos1x_api_dispatcher(int dirfd, char const *path, Args... args)
 template <::std::integral char_type>
 inline ::fast_io::details::basic_ct_string<char_type> dos_readlinkat_impl(int dirfd, char const *pathname)
 {
-    // DOS does not support readlink, so you must first verify its validity before throwing a einval exception (not symlink).
-    ::fast_io::system_call_throw_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), 0));
+	// DOS does not support readlink, so you must first verify its validity before throwing a einval exception (not symlink).
+	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), 0));
 
-    throw_posix_error(EINVAL);
+	throw_posix_error(EINVAL);
 
-    return {};
+	return {};
 }
 
 template <::std::integral char_type, posix_api_ct dsp, typename... Args>

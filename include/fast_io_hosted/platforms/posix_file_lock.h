@@ -4,9 +4,9 @@ namespace fast_io
 
 namespace details
 {
-inline int fcntl_file_lock(int fd, int cmd, struct flock const *lockp)
+inline int fcntl_file_lock(int fd, int cmd, struct flock const *lockp) noexcept
 {
-	return ::fcntl(fd, cmd, lockp);
+	return ::fast_io::details::posix::fcntl(fd, cmd, lockp);
 }
 
 inline void posix_file_lock_lock_common_impl(int fd, struct flock const &lockp)
@@ -14,8 +14,8 @@ inline void posix_file_lock_lock_common_impl(int fd, struct flock const &lockp)
 #if defined(__linux__) && defined(__NR_fcntl)
 	system_call_throw_error(system_call<__NR_fcntl, int>(fd, F_SETLKW, __builtin_addressof(lockp)));
 #else
-	int ret{noexcept_call(fcntl_file_lock, fd, F_SETLKW, __builtin_addressof(lockp))};
-	if (ret < 0)
+	int ret{fcntl_file_lock(fd, F_SETLKW, __builtin_addressof(lockp))};
+	if (ret == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}

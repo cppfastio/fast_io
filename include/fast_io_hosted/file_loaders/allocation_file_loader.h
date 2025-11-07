@@ -141,7 +141,7 @@ inline allocation_file_loader_ret allocation_load_address_impl(int fd)
 inline void rewind_allocation_file_loader(int fd)
 {
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
-	auto seekret = ::fast_io::noexcept_call(_lseeki64, fd, 0, 0);
+	auto seekret = ::fast_io::noexcept_call(::_lseeki64, fd, 0, 0);
 #else
 #if defined(_LARGEFILE64_SOURCE)
 	auto seekret = ::fast_io::noexcept_call(::lseek64, fd, 0, 0);

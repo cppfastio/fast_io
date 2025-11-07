@@ -14,7 +14,10 @@ using ::fast_io::containers::tuple;
 using ::fast_io::containers::get;
 using ::fast_io::containers::is_tuple;
 using ::fast_io::containers::forward_as_tuple;
+using ::fast_io::containers::apply;
 
+using ::std::tuple_element;
+using ::std::tuple_size;
 }
 
 #include "impl/misc/pop_macros.h"

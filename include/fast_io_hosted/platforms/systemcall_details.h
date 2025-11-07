@@ -29,9 +29,9 @@ inline int sys_dup(int old_fd)
 #else
 	auto fd{noexcept_call(
 #if defined(_WIN32) && !defined(__BIONIC__)
-		_dup
+		::_dup
 #else
-		dup
+		::dup
 #endif
 		,
 		old_fd)};
@@ -121,7 +121,14 @@ inline void sys_close_throw_error(int &fd)
 {
 	auto ret{sys_close(fd)};
 	fd = -1; // POSIX standard says we should never call close(2) again even close syscall fails
+#if defined(__linux__) && defined(__NR_close)
 	system_call_throw_error(ret);
+#else
+	if (ret == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+#endif
 }
 #if (!defined(__NEWLIB__) || defined(__CYGWIN__)) && !defined(_WIN32) && __has_include(<dirent.h>) && !defined(_PICOLIBC__)
 

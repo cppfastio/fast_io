@@ -30,7 +30,14 @@ inline ::fast_io::install_path get_module_install_path()
 	::std::uint_least32_t size{PATH_MAX};
 	if (::fast_io::noexcept_call(::_NSGetExecutablePath, buffer, __builtin_addressof(size)) == -1) [[unlikely]]
 	{
-		throw_posix_error();
+		if (size > PATH_MAX) 
+		{
+			throw_posix_error(ERANGE);
+		}
+		else
+		{
+			throw_posix_error(EINVAL);
+		}
 	}
 	char buffer2[PATH_MAX + 1];
 	char *resolved{::fast_io::noexcept_call(::realpath, buffer, buffer2)};
