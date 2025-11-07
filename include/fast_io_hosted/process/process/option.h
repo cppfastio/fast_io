@@ -8,8 +8,10 @@ enum process_mode : ::std::uint_least64_t
 	// *indicates that the process mode has not been evaluated yet
 	new_session = static_cast<::std::uint_least64_t>(1) << 0,
 	// [POSIX] setsid(), [WINDOWS, WINNT] CREATE_NEW_PROCESS_GROUP (Windows is currently not implemented)
-	alloc_new_console = static_cast<::std::uint_least64_t>(1) << 1
+	alloc_new_console = static_cast<::std::uint_least64_t>(1) << 1,
 	// [WINDOWS, WINNT] CREATE_NEW_CONSOLE (Automatically assign a console to new threads)
+	argv0_no_appname = static_cast<::std::uint_least64_t>(1) << 2,
+	// Do not automatically append appname to argv0
 };
 
 inline constexpr process_mode operator&(process_mode x, process_mode y) noexcept
