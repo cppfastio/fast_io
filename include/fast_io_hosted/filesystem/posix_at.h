@@ -190,7 +190,17 @@ inline void posix_faccessat_impl(int dirfd, char const *pathname, int mode, int 
 #if defined(__linux__) && defined(__NR_faccessat2)
 	system_call_throw_error(system_call<__NR_faccessat2, int>(dirfd, pathname, mode, flags));
 #elif defined(__linux__) && defined(__NR_faccessat)
-	system_call_throw_error(system_call<__NR_faccessat, int>(dirfd, pathname, mode));
+	if (flags != 0)
+	{
+		if (::fast_io::posix::libc_faccessat(dirfd, pathname, mode, flags) == -1) [[unlikely]]
+		{
+			throw_posix_error();
+		}
+	}
+	else
+	{
+		system_call_throw_error(system_call<__NR_faccessat, int>(dirfd, pathname, mode));
+	}
 #else
 	if (::fast_io::posix::libc_faccessat(dirfd, pathname, mode, flags) == -1) [[unlikely]]
 	{
@@ -246,7 +256,17 @@ inline void posix_fchmodat_impl(int dirfd, char const *pathname, mode_t mode, in
 #if defined(__linux__) && defined(__NR_fchmodat2)
 	system_call_throw_error(system_call<__NR_fchmodat2, int>(dirfd, pathname, mode, flags));
 #elif defined(__linux__) && defined(__NR_fchmodat)
-	system_call_throw_error(system_call<__NR_fchmodat, int>(dirfd, pathname, mode));
+	if (flags != 0)
+	{
+		if (::fast_io::posix::libc_fchmodat(dirfd, pathname, mode, flags) == -1) [[unlikely]]
+		{
+			throw_posix_error();
+		}
+	}
+	else
+	{
+		system_call_throw_error(system_call<__NR_fchmodat, int>(dirfd, pathname, mode));
+	}
 #else
 	if (::fast_io::posix::libc_fchmodat(dirfd, pathname, mode, flags) == -1) [[unlikely]]
 	{

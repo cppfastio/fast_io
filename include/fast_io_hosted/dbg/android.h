@@ -167,18 +167,18 @@ inline void my_android_log_write_message_impl(android_logmessage_meta_v30 const 
 struct my_android_log_write_common
 {
 	android_logmessage_meta_base b{};
-	inline void operator()(char const *text)
+	inline void operator()(char const *text) noexcept
 	{
 		my_android_log_write_impl(b.priority, b.tag, text);
 	}
 };
 
-inline void android_logger_write_impl(android_logmessage_meta_base b, void const *base, ::std::size_t n)
+inline void android_logger_write_impl(android_logmessage_meta_base b, void const *base, ::std::size_t n) noexcept
 {
 	cstr_concat_write_impl(base, n, my_android_log_write_common{b});
 }
 
-inline void android_logger_writev_impl(android_logmessage_meta_base b, io_scatter_t const *first, ::std::size_t n)
+inline void android_logger_writev_impl(android_logmessage_meta_base b, io_scatter_t const *first, ::std::size_t n) noexcept
 {
 	cstr_concat_writev_impl(first, n, my_android_log_write_common{b});
 }
@@ -186,33 +186,33 @@ inline void android_logger_writev_impl(android_logmessage_meta_base b, io_scatte
 struct my_android_log_write_v30_common
 {
 	android_logmessage_meta_v30 const *pmeta{};
-	inline void operator()(char const *text)
+	inline void operator()(char const *text) noexcept
 	{
 		my_android_log_write_message_impl(pmeta, text);
 	}
 };
 
-inline void android_logger_write_impl(android_logmessage_meta_v30 const &meta, void const *base, ::std::size_t n)
+inline void android_logger_write_impl(android_logmessage_meta_v30 const &meta, void const *base, ::std::size_t n) noexcept
 {
 	cstr_concat_write_impl(base, n, my_android_log_write_v30_common{__builtin_addressof(meta)});
 }
 
 inline void android_logger_writev_impl(android_logmessage_meta_v30 const &meta, io_scatter_t const *first,
-									   ::std::size_t n)
+									   ::std::size_t n) noexcept
 {
 	cstr_concat_writev_impl(first, n, my_android_log_write_v30_common{__builtin_addressof(meta)});
 }
 } // namespace details
 
 template <android_logger_family_tag fam, ::std::integral char_type, ::std::contiguous_iterator Iter>
-inline void write(basic_android_family_logger<fam, char_type> const &b, Iter first, Iter last)
+inline void write(basic_android_family_logger<fam, char_type> const &b, Iter first, Iter last) noexcept
 {
 	::fast_io::details::android_logger_write_impl(b.meta, ::std::to_address(first),
 												  static_cast<::std::size_t>(last - first) * sizeof(*first));
 }
 
 template <android_logger_family_tag fam, ::std::integral char_type>
-inline void scatter_write(basic_android_family_logger<fam, char_type> const &b, io_scatters_t scatters)
+inline void scatter_write(basic_android_family_logger<fam, char_type> const &b, io_scatters_t scatters) noexcept
 {
 	::fast_io::details::android_logger_writev_impl(b.meta, scatters.base, scatters.len);
 }
@@ -223,7 +223,7 @@ namespace details
 {
 
 template <::std::integral char_type>
-inline constexpr auto android_dbg_impl(::std::int_least32_t priorit, char const *tg, ::std::source_location const &loc)
+inline constexpr auto android_dbg_impl(::std::int_least32_t priorit, char const *tg, ::std::source_location const &loc) noexcept
 {
 	return basic_android_logger<char_type>{.meta = {.priority = priorit,
 													.tag = tg,

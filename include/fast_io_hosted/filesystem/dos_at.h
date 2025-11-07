@@ -201,7 +201,7 @@ inline void dos_unlinkat_impl(int dirfd, char const *pathname)
 
 inline constexpr ::std::time_t unix_timestamp_to_time_t(unix_timestamp stmp) noexcept
 {
-	return static_cast<int>(static_cast<::std::time_t>(stmp.seconds));
+	return static_cast<::std::time_t>(stmp.seconds);
 }
 
 inline
