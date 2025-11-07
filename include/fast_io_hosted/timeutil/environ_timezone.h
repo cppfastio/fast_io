@@ -17,13 +17,23 @@ struct environ_timezone_name
 
 namespace details
 {
+namespace posix
+{
+extern char const *libc_getenv(char const *) noexcept
+#if (defined(__APPLE__) || defined(__DARWIN_C_LEVEL)) || (defined(__MSDOS__) || defined(__DJGPP__))
+	__asm__("_getenv");
+#else
+	__asm__("getenv");
+#endif
+} // namespace posix
+
 inline environ_timezone_name environ_localtimezone_impl() noexcept
 {
 	auto ptr{reinterpret_cast<::fast_io::environ_timezone_name::char8_const_may_alias_ptr>(
 #if FAST_IO_HAS_BUILTIN(__builtin_getenv)
 		__builtin_getenv
 #else
-		::std::getenv
+		posix::libc_getenv
 #endif
 		(reinterpret_cast<char const *>(u8"TZ")))};
 	if (ptr == nullptr)

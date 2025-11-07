@@ -29,7 +29,8 @@ inline ::std::byte *rtl_gen_random_some_impl(::std::byte *first, ::std::byte *la
 		::std::size_t sz{static_cast<::std::size_t>(last - first)};
 		if (!::fast_io::win32::SystemFunction036(first, static_cast<::std::uint_least32_t>(sz)))
 		{
-			throw_win32_error();
+			//However, according to MSDN, this API does not set LastError.
+			throw_win32_error(31 /*ERROR_GEN_FAILURE*/);
 		}
 		return last;
 	}
@@ -46,7 +47,8 @@ inline ::std::byte *rtl_gen_random_some_impl(::std::byte *first, ::std::byte *la
 			}
 			if (!::fast_io::win32::SystemFunction036(first, static_cast<::std::uint_least32_t>(toreadthisround)))
 			{
-				throw_win32_error();
+				// However, according to MSDN, this API does not set LastError.
+				throw_win32_error(31 /*ERROR_GEN_FAILURE*/);
 			}
 			first += toreadthisround;
 		}

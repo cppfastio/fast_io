@@ -72,6 +72,18 @@ inline constexpr win32_file_map_attribute to_win32_file_map_attribute(file_map_a
 	};
 }
 
+inline constexpr ::std::uint_least32_t to_win32_page_protect(file_map_attribute x)
+{
+	static_assert(file_map_attribute::execute_read == 0x00000020);
+	static_assert(file_map_attribute::execute_read_write == 0x00000040);
+	static_assert(file_map_attribute::execute_write_copy == 0x00000080);
+	static_assert(file_map_attribute::read_only == 0x00000002);
+	static_assert(file_map_attribute::read_write == 0x00000004);
+	static_assert(file_map_attribute::write_copy == 0x00000008);
+
+	return static_cast<::std::uint_least32_t>(x);
+}
+
 namespace win32::details
 {
 
@@ -80,7 +92,7 @@ inline void *create_file_mapping_impl(void *handle, file_map_attribute attr)
 {
 	if constexpr (family == win32_family::wide_nt)
 	{
-		void *addr{win32::CreateFileMappingW(handle, nullptr, static_cast<::std::uint_least32_t>(attr), 0, 0, nullptr)};
+        void *addr{win32::CreateFileMappingW(handle, nullptr, to_win32_page_protect(attr), 0, 0, nullptr)};
 		if (addr == nullptr)
 		{
 			throw_win32_error();
@@ -89,7 +101,7 @@ inline void *create_file_mapping_impl(void *handle, file_map_attribute attr)
 	}
 	else
 	{
-		void *addr{win32::CreateFileMappingA(handle, nullptr, static_cast<::std::uint_least32_t>(attr), 0, 0, nullptr)};
+        void *addr{win32::CreateFileMappingA(handle, nullptr, to_win32_page_protect(attr), 0, 0, nullptr)};
 		if (addr == nullptr)
 		{
 			throw_win32_error();

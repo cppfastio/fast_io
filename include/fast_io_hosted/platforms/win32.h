@@ -137,7 +137,8 @@ inline void *create_win32_temp_file_impl()
 		{
 			if (!::fast_io::win32::SystemFunction036(uuid_buffer, uuid_buffer_sz))
 			{
-				throw_win32_error();
+				//However, according to MSDN, this API does not set LastError.
+				throw_win32_error(31 /*ERROR_GEN_FAILURE*/);
 			}
 		}
 		else

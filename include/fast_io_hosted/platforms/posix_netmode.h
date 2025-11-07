@@ -650,8 +650,35 @@ inline int sys_socket(int domain, int type, int protocol)
 
 inline int open_socket_impl(sock_family d, sock_type t, open_mode m, sock_protocol p)
 {
-	return sys_socket(to_posix_sock_family(d), to_posix_sock_type(t) | to_posix_sock_open_mode(m),
-					  to_posix_sock_protocol(p));
+    int domain{to_posix_sock_family(d)};
+    int type{to_posix_sock_type(t)};
+    int mode{to_posix_sock_open_mode(m)};
+    if (mode < 0)
+    {
+        mode = 0;
+    }
+    int fd{sys_socket(domain, type | mode, to_posix_sock_protocol(p))};
+
+#if !defined(SOCK_NONBLOCK)
+    if ((m & open_mode::no_block) == open_mode::no_block)
+    {
+#if defined(F_GETFL) && defined(F_SETFL) && defined(O_NONBLOCK)
+        int flags{details::sys_fcntl(fd, F_GETFL)};
+        details::sys_fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+#endif
+    }
+#endif
+
+#if !defined(SOCK_CLOEXEC)
+    if ((m & open_mode::inherit) != open_mode::inherit)
+    {
+#if defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
+        int fdflags{details::sys_fcntl(fd, F_GETFD)};
+        details::sys_fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
+#endif
+    }
+#endif
+    return fd;
 }
 
 inline ::std::size_t posix_socket_write_impl(int fd, void const *data, ::std::size_t to_write)

@@ -11,16 +11,16 @@ namespace details
 inline ::std::byte *sys_mmap(void *addr, ::std::size_t len, int prot, int flags, int fd, ::std::uintmax_t offset)
 {
 #if defined(__linux__) && defined(__NR_mmap) && !defined(__NR_mmap2)
-	if constexpr (sizeof(::std::uintmax_t) > sizeof(off_t))
-	{
-		if (offset > static_cast<::std::uintmax_t>(::std::numeric_limits<off_t>::max()))
-		{
-			throw_posix_error(EINVAL);
-		}
-	}
-	::std::ptrdiff_t ret{system_call<__NR_mmap, ::std::ptrdiff_t>(addr, len, prot, flags, fd, offset)};
-	system_call_throw_error(ret);
-	return reinterpret_cast<::std::byte *>(ret);
+    if constexpr (sizeof(::std::uintmax_t) > sizeof(off_t))
+    {
+        if (offset > static_cast<::std::uintmax_t>(::std::numeric_limits<off_t>::max()))
+        {
+            throw_posix_error(EINVAL);
+        }
+    }
+    long ret{system_call<__NR_mmap, long>(addr, len, prot, flags, fd, offset)};
+    system_call_throw_error(ret);
+    return reinterpret_cast<::std::byte *>(static_cast<::std::uintptr_t>(ret));
 #elif defined(HAVE_MMAP64)
 	if constexpr (sizeof(::std::uintmax_t) > sizeof(off64_t))
 	{
