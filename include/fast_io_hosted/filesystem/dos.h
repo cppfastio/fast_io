@@ -340,7 +340,7 @@ inline dos_directory_iterator &operator++(dos_directory_iterator &pdit)
 	To fix: avoid setting errno
 	*/
 	errno = 0;
-	auto entry{readdir(pdit.dirp.dirp)};
+	auto entry{::fast_io::noexcept_call(::readdir, pdit.dirp.dirp)};
 	auto en{errno};
 	if (entry == nullptr && en)
 	{
@@ -365,7 +365,7 @@ inline dos_directory_iterator &operator++(dos_directory_iterator &pdit)
 inline dos_directory_iterator begin(posix_directory_generator const &pdg)
 {
 	auto dirp{pdg.dir_fl.dirp.dirp};
-	::rewinddir(dirp);
+	::fast_io::noexcept_call(::rewinddir, dirp);
 	dos_directory_iterator pdit{dirp};
 	++pdit;
 	return pdit;
@@ -445,7 +445,7 @@ inline basic_dos_recursive_directory_iterator<StackType> &operator++(basic_dos_r
 		errno = 0;
 		if (prdit.stack.empty())
 		{
-			auto entry{readdir(prdit.dirp.dirp)};
+			auto entry{::fast_io::noexcept_call(::readdir, prdit.dirp.dirp)};
 			if (entry == nullptr)
 			{
 				auto en{errno};
@@ -460,7 +460,7 @@ inline basic_dos_recursive_directory_iterator<StackType> &operator++(basic_dos_r
 		}
 		else
 		{
-			auto entry = readdir(prdit.stack.back().dirp.dirp);
+			auto entry = ::fast_io::noexcept_call(::readdir, prdit.stack.back().dirp.dirp);
 			if (entry == nullptr)
 			{
 				auto en{errno};
@@ -524,7 +524,7 @@ inline void pop(basic_dos_recursive_directory_iterator<StackType> &prdit) noexce
 template <typename StackType>
 inline basic_dos_recursive_directory_iterator<StackType> begin(basic_posix_recursive_directory_generator<StackType> const &pdg)
 {
-	::rewinddir(pdg.dir_fl.dirp.dirp);
+	::fast_io::noexcept_call(::rewinddir, pdg.dir_fl.dirp.dirp);
 	basic_dos_recursive_directory_iterator<StackType> pdit{pdg.dir_fl.dirp};
 	++pdit;
 	return pdit;
