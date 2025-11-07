@@ -72,7 +72,7 @@ inline constexpr win32_file_map_attribute to_win32_file_map_attribute(file_map_a
 	};
 }
 
-inline constexpr ::std::uint_least32_t to_win32_page_protect(file_map_attribute x)
+inline constexpr ::std::uint_least32_t to_win32_page_protect(file_map_attribute x) noexcept
 {
 	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::execute_read) == 0x00000020);
 	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::execute_read_write) == 0x00000040);
