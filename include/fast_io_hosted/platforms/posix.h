@@ -194,7 +194,7 @@ inline constexpr int calculate_posix_open_mode(open_mode value) noexcept
 	if ((value & open_mode::inherit) == open_mode::none)
 #ifdef O_CLOEXEC
 		mode |= O_CLOEXEC;
-#elif _O_NOINHERIT
+#elif defined(_O_NOINHERIT)
 		mode |= _O_NOINHERIT;
 #endif
 #ifdef O_BINARY

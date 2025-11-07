@@ -38,7 +38,7 @@ public:
 };
 
 template <typename Tuple, ::std::size_t... Is>
-constexpr ::std::uint_least32_t thread_start_routine(void *args) noexcept(noexcept(
+constexpr ::std::uint_least32_t FAST_IO_WINSTDCALL thread_start_routine(void *args) noexcept(noexcept(
 	::std::invoke(::fast_io::get<Is>(*reinterpret_cast<Tuple *>(args))...)))
 {
 	[[maybe_unused]] ::fast_io::win32::nt::details::nt_thread_start_routine_tuple_allocate_guard _(args);

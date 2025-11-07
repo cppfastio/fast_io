@@ -66,7 +66,7 @@ inline ::fast_io::install_path get_module_install_path_from_argv0(char const *ar
 		::fast_io::noexcept_call(::strncat, newpath2, path_separator_as_string, PATH_MAX + 256);
 		::fast_io::noexcept_call(::strncat, newpath2, argv0, PATH_MAX + 256);
 		[[maybe_unused]] auto const unused2{::fast_io::noexcept_call(::realpath, newpath2, newpath)};
-		if (auto status{::fast_io::noexcept_call(::access, newpath, F_OK)};!status)
+		if (auto status{::fast_io::noexcept_call(::access, newpath, F_OK)}; !status)
 		{
 			newpath[PATH_MAX - 1] = 0;
 			ret.module_name = ::fast_io::u8concat_fast_io(::fast_io::mnp::code_cvt_os_c_str(newpath));
@@ -91,10 +91,17 @@ inline ::fast_io::install_path get_module_install_path_from_argv0(char const *ar
 	}
 	else
 	{
-		char *saveptr;
-		char *pathitem;
-		char *save_path{::fast_io::noexcept_call(::getenv, "PATH")};
-		for (pathitem = ::fast_io::noexcept_call(::strtok_r, save_path, path_list_separator, &saveptr); pathitem;
+		char *saveptr{};
+		char *pathitem{};
+		char const *env_path{::fast_io::noexcept_call(::getenv, "PATH")};
+		if (!env_path) [[unlikely]]
+		{
+			throw_posix_error(EINVAL);
+		}
+		char pathbuf[PATH_MAX + 256 + 1]{};
+		::fast_io::noexcept_call(::strncpy, pathbuf, env_path, PATH_MAX + 256);
+
+		for (pathitem = ::fast_io::noexcept_call(::strtok_r, pathbuf, path_list_separator, &saveptr); pathitem;
 			 pathitem = ::fast_io::noexcept_call(::strtok_r, nullptr, path_list_separator, &saveptr))
 		{
 			::fast_io::noexcept_call(::strncpy, newpath2, pathitem, PATH_MAX + 256);
