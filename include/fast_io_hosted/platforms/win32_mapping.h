@@ -74,12 +74,12 @@ inline constexpr win32_file_map_attribute to_win32_file_map_attribute(file_map_a
 
 inline constexpr ::std::uint_least32_t to_win32_page_protect(file_map_attribute x)
 {
-	static_assert(file_map_attribute::execute_read == 0x00000020);
-	static_assert(file_map_attribute::execute_read_write == 0x00000040);
-	static_assert(file_map_attribute::execute_write_copy == 0x00000080);
-	static_assert(file_map_attribute::read_only == 0x00000002);
-	static_assert(file_map_attribute::read_write == 0x00000004);
-	static_assert(file_map_attribute::write_copy == 0x00000008);
+	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::execute_read) == 0x00000020);
+	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::execute_read_write) == 0x00000040);
+	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::execute_write_copy) == 0x00000080);
+	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::read_only) == 0x00000002);
+	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::read_write) == 0x00000004);
+	static_assert(static_cast<::std::uint_least32_t>(file_map_attribute::write_copy) == 0x00000008);
 
 	return static_cast<::std::uint_least32_t>(x);
 }
