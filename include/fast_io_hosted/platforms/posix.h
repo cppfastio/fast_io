@@ -1448,7 +1448,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 	auto err(noexcept_call(_chsize_s, fd, static_cast<::std::int_least64_t>(size)));
 	if (err)
 	{
-		throw_posix_error(err);
+		throw_posix_error();
 	}
 #else
 	if (size > ::std::numeric_limits<long>::max())
@@ -1458,7 +1458,7 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 	auto err(noexcept_call(_chsize, fd, static_cast<long>(size)));
 	if (err)
 	{
-		throw_posix_error(err);
+		throw_posix_error();
 	}
 #endif
 
