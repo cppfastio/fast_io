@@ -184,6 +184,32 @@ FAST_IO_GNU_ALWAYS_INLINE
 
 namespace details
 {
+template <typename F, typename Tuple, std::size_t... I>
+inline constexpr decltype(auto) apply_impl(F &&f, Tuple &&t, ::std::index_sequence<I...>)
+{
+	return ::std::forward<F>(f)(get<I>(::std::forward<Tuple>(t))...);
+}
+
+template <typename... Args>
+inline consteval ::std::size_t tuple_size(::fast_io::containers::tuple<Args...> const &) noexcept
+{
+	return sizeof...(Args);
+}
+
+} // namespace details
+
+template <typename F, typename Tuple>
+inline constexpr decltype(auto) apply(F &&f, Tuple &&t)
+{
+	constexpr ::std::size_t N{details::tuple_size(t)};
+	return details::apply_impl(
+		::std::forward<F>(f),
+		::std::forward<Tuple>(t),
+		::std::make_index_sequence<N>{});
+}
+
+namespace details
+{
 
 template <typename T>
 constexpr bool is_tuple_ = false;
