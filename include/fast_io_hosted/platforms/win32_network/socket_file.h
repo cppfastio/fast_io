@@ -190,7 +190,7 @@ inline ::std::size_t win32_duphsocket(::std::size_t s)
 	// Duplicate a SOCKET using WSADuplicateSocket + WSASocket, per MSDN guidance.
 	::fast_io::win32::wsaprotocol_infoa info{};
 	::std::uint_least32_t const pid{::fast_io::win32::GetCurrentProcessId()};
-	if (::fast_io::win32::WSADuplicateSocketA(reinterpret_cast<void *>(s), pid, __builtin_addressof(info)) != 0)
+	if (::fast_io::win32::WSADuplicateSocketA(s, pid, __builtin_addressof(info)) != 0)
 	{
 		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
 	}
