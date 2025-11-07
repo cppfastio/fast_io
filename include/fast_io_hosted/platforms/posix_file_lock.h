@@ -137,9 +137,9 @@ struct posix_file_lock
 		::fast_io::details::posix_file_lock_unlock_impl(this->fd, t);
 	}
 	template <::std::integral int_type>
-	inline void try_lock(basic_flock_request<int_type> const &__restrict t)
+	inline bool try_lock(basic_flock_request<int_type> const &__restrict t) noexcept
 	{
-		::fast_io::details::posix_file_lock_lock_impl(this->fd, t);
+		return ::fast_io::details::posix_file_lock_try_lock_impl(this->fd, t);
 	}
 };
 

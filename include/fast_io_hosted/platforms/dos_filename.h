@@ -4,6 +4,11 @@ namespace fast_io::details
 template <::std::integral char_type>
 inline constexpr bool is_invalid_dos_filename_with_size(char_type const *filename, ::std::size_t filename_size) noexcept
 {
+	if (filename == nullptr) [[unlikely]]
+	{
+		return true;
+	}
+
 	auto const os_str_filename_len{filename_size};
 
 	if (os_str_filename_len == 0) [[unlikely]]

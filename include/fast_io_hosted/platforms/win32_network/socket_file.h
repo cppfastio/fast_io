@@ -187,7 +187,20 @@ namespace win32::details
 
 inline ::std::size_t win32_duphsocket(::std::size_t s)
 {
-	return reinterpret_cast<::std::size_t>(win32_dup_impl(reinterpret_cast<void *>(s)));
+	// Duplicate a SOCKET using WSADuplicateSocket + WSASocket, per MSDN guidance.
+	::fast_io::win32::wsaprotocol_infoa info{};
+	::std::uint_least32_t const pid{::fast_io::win32::GetCurrentProcessId()};
+	if (::fast_io::win32::WSADuplicateSocketA(reinterpret_cast<void *>(s), pid, __builtin_addressof(info)) != 0)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+	}
+	::std::size_t dup{
+		::fast_io::win32::WSASocketA(info.iAddressFamily, info.iSocketType, info.iProtocol, __builtin_addressof(info), 0, 0)};
+	if (dup == UINTPTR_MAX)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+	}
+	return dup;
 }
 inline ::std::size_t win32_dup2hsocket(::std::size_t handle, ::std::size_t newhandle)
 {

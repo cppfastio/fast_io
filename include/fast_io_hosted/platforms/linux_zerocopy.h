@@ -120,32 +120,30 @@ inline ::std::uint_least64_t zero_copy_transmit64_define(io_alias_t, basic_linux
 														 ::std::uint_least64_t characters)
 {
 	constexpr ::std::size_t input_char_type_size{sizeof(ch_type2)};
-	if constexpr (input_char_type_size != 1)
+	if constexpr (input_char_type_size == 1)
 	{
-		constexpr ::std::uint_least64_t mx{::std::numeric_limits<::std::uint_least64_t>::max() / input_char_type_size};
-		::std::uint_least64_t chars{};
-		for (::std::size_t i{}; i != input_char_type_size; ++i)
-		{
-			bool const overflow_copy{characters > mx};
-			::std::uint_least64_t copy_this_round{characters};
-			if (overflow_copy) [[unlikely]]
-			{
-				copy_this_round = mx;
-			}
-			chars += ::fast_io::details::zero_copy_transmit_define64_impl(io_alias, outs.fd, ins.fd, characters,
-																		  copy_this_round) /
-					 sizeof(input_char_type_size);
-			if (!overflow_copy) [[likely]]
-			{
-				break;
-			}
-			characters -= mx;
-		}
-		return chars;
+		return ::fast_io::details::zero_copy_transmit_define64_impl(outs.fd, ins.fd, characters);
 	}
 	else
 	{
-		return ::fast_io::details::zero_copy_transmit_define64_impl(outs.fd, ins.fd, characters);
+		constexpr ::std::uint_least64_t max_chars_per_round{
+			::std::numeric_limits<::std::uint_least64_t>::max() / input_char_type_size};
+		::std::uint_least64_t total_chars{};
+		while (characters)
+		{
+			::std::uint_least64_t this_round_chars{characters > max_chars_per_round ? max_chars_per_round : characters};
+			::std::uint_least64_t this_round_bytes{this_round_chars * static_cast<::std::uint_least64_t>(input_char_type_size)};
+			::std::uint_least64_t transferred_bytes{
+				::fast_io::details::zero_copy_transmit_define64_impl(outs.fd, ins.fd, this_round_bytes)};
+			::std::uint_least64_t transferred_chars{transferred_bytes / static_cast<::std::uint_least64_t>(input_char_type_size)};
+			total_chars += transferred_chars;
+			if (transferred_chars < this_round_chars)
+			{
+				break;
+			}
+			characters -= this_round_chars;
+		}
+		return total_chars;
 	}
 }
 

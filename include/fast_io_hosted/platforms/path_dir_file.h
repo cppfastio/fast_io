@@ -19,7 +19,7 @@ public:
 	char8_t const *directory_path_buffer{};
 	::std::size_t directory_path_length{};
 
-	inline explicit constexpr basic_path_dir_file() noexcept
+	inline explicit constexpr basic_path_dir_file() noexcept {}
 
 		basic_path_dir_file(basic_path_dir_file const &) = delete;
 	inline basic_path_dir_file &operator=(basic_path_dir_file const &) = delete;

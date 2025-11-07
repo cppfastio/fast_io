@@ -12,7 +12,7 @@ inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset,
 		if (offset < static_cast<::fast_io::intfpos_t>(::std::numeric_limits<off_t>::min()) ||
 			offset > static_cast<::fast_io::intfpos_t>(::std::numeric_limits<off_t>::max()))
 		{
-			throw_posix_error(EINVAL);
+			throw_posix_error(EOVERFLOW);
 		}
 	}
 	auto ret{noexcept_call(::lseek, fd, static_cast<off_t>(offset), static_cast<int>(s))};
@@ -37,7 +37,7 @@ inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset,
 	else
 #endif
 	{
-		if constexpr (sizeof(off_t) <= sizeof(::std::int_least32_t))
+		if constexpr (sizeof(off_t) < sizeof(::fast_io::intfpos_t))
 		{
 			if (offset < static_cast<::fast_io::intfpos_t>(::std::numeric_limits<off_t>::min()) ||
 				offset > static_cast<::fast_io::intfpos_t>(::std::numeric_limits<off_t>::max()))
@@ -49,8 +49,24 @@ inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset,
 		system_call_throw_error(ret);
 		return static_cast<::fast_io::intfpos_t>(static_cast<::std::uint_least64_t>(ret));
 	}
+#elif (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
+	if constexpr (sizeof(::std::int_least64_t) < sizeof(::fast_io::intfpos_t))
+	{
+		if (offset < static_cast<::fast_io::intfpos_t>(::std::numeric_limits<::std::int_least64_t>::min()) ||
+			offset > static_cast<::fast_io::intfpos_t>(::std::numeric_limits<::std::int_least64_t>::max()))
+		{
+			throw_posix_error(EOVERFLOW);
+		}
+	}
+	auto ret(::fast_io::noexcept_call(::_lseeki64, fd, static_cast<::std::int_least64_t>(offset), static_cast<int>(s)));
+	if (ret == -1) [[unlikely]]
+	{
+		throw_posix_error();
+	}
+	return static_cast<::fast_io::intfpos_t>(static_cast<::std::uint_least64_t>(ret));
+
 #else
-	if constexpr (sizeof(off_t) <= sizeof(::std::int_least32_t))
+	if constexpr (sizeof(off_t) < sizeof(::fast_io::intfpos_t))
 	{
 		if (offset < static_cast<::fast_io::intfpos_t>(::std::numeric_limits<off_t>::min()) ||
 			offset > static_cast<::fast_io::intfpos_t>(::std::numeric_limits<off_t>::max()))
@@ -58,14 +74,8 @@ inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset,
 			throw_posix_error(EOVERFLOW);
 		}
 	}
-	auto ret(
-#if (defined(_WIN32) && !defined(__WINE__) && !defined(__BIONIC__)) && !defined(__CYGWIN__)
-		::_lseeki64
-#else
-		::lseek
-#endif
-		(fd, static_cast<off_t>(offset), static_cast<int>(s)));
-	if(ret == -1) [[unlikely]]
+	auto ret(::fast_io::noexcept_call(::lseek, fd, static_cast<off_t>(offset), static_cast<int>(s)));
+	if (ret == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}

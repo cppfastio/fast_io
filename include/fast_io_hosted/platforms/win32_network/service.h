@@ -9,9 +9,13 @@ struct win32_wsa_service
 	native_handle_type wsa_data;
 	inline explicit win32_wsa_service(::std::uint_least16_t version)
 	{
-		if (::fast_io::win32::WSAStartup(version, __builtin_addressof(wsa_data)))
+		// The WSAStartup function directly returns the extended error code in its return value. Calling the WSAGetLastError function is unnecessary and should not be used.
+		
+		auto const res{::fast_io::win32::WSAStartup(version, __builtin_addressof(wsa_data))};
+
+		if (res) [[unlikely]]
 		{
-			throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+			throw_win32_error(static_cast<::std::uint_least32_t>(res));
 		}
 	}
 	inline win32_wsa_service()

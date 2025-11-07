@@ -138,6 +138,7 @@ inline posix_addrinfo *my_getaddrinfo_impl(char const *node, char const *service
 	int ec{libc_getaddrinfo(node, service, hints, __builtin_addressof(res))};
 	if (ec)
 	{
+		// EAL* error
 		throw_posix_error(ec);
 	}
 	return res;
