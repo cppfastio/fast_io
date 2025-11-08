@@ -394,12 +394,24 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 #endif
 }
 
-inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp) noexcept
+inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp, process_mode mode) noexcept
 {
+	bool const follow{(mode & process_mode::follow) == process_mode::follow};
+
 #if defined(__linux__) && defined(__NR_execveat)
-	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW));
+	int flags{};
+	if (!follow)
+	{
+		flags |= AT_SYMLINK_NOFOLLOW;
+	}
+	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, flags));
 #else
-	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
+	int flags{O_RDONLY};
+	if (!follow)
+	{
+		flags |= O_NOFOLLOW;
+	}
+	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, flags, 0644)};
 	if (fd != -1) [[likely]]
 	{
 		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
@@ -537,7 +549,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 
 		if (t_errno == 0)
 		{
-			t_errno = posix_execveat(dirfd, cstr, args, envp);
+			t_errno = posix_execveat(dirfd, cstr, args, envp, mode);
 		}
 		// execve only return on error, so t_errno always contains an error code
 		// send error code back to parent process
@@ -697,7 +709,7 @@ struct fd_remapper
 };
 
 // only used in vfork_execveat_common_impl()
-inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, [[maybe_unused]] process_mode mode) noexcept
+inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, process_mode mode) noexcept
 {
 	// vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
@@ -722,8 +734,16 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 	}
 #endif
 
+	bool const follow{(mode & process_mode::follow) == process_mode::follow};
+
 #if defined(__linux__) && defined(__NR_execveat)
-	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW)};
+	int flags{};
+	if (!follow)
+	{
+		flags |= AT_SYMLINK_NOFOLLOW;
+	}
+
+	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, flags)};
 	if (::fast_io::linux_system_call_fails(ret))
 	{
 		t_errno = -ret;
@@ -738,7 +758,13 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 	::fast_io::system_call_no_return<__NR_exit>(127);
 #endif
 #else
-	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, O_RDONLY | O_NOFOLLOW, 0644)};
+	int flags{O_RDONLY};
+	if (!follow)
+	{
+		flags |= O_NOFOLLOW;
+	}
+
+	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, flags, 0644)};
 	if (fd != -1) [[likely]]
 	{
 		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));

@@ -2,7 +2,7 @@
 
 namespace fast_io
 {
-enum process_mode : ::std::uint_least64_t
+enum class process_mode : ::std::uint_least64_t
 {
 	none = 0,
 	// *indicates that the process mode has not been evaluated yet
@@ -14,6 +14,9 @@ enum process_mode : ::std::uint_least64_t
 	// [POSIX, WINDOWS, WINNT] Do not automatically append appname to argv0
 	posix_vfork = static_cast<::std::uint_least64_t>(1) << 3,
 	// [POSIX] Using vfork to create processes, but this prevents many parameters from taking effect (vfork does not allow modification of global memory before exec).
+	follow = static_cast<::std::uint_least64_t>(1) << 4,
+	// [POSIX, WINDOWS, WINNT] Allow symbolic links to follow
+
 };
 
 inline constexpr process_mode operator&(process_mode x, process_mode y) noexcept
