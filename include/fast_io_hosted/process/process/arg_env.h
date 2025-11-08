@@ -295,7 +295,7 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		if (others.cstr == nullptr)
 		{
 			cstr = nullptr;
-			return *this;
+			return;
 		}
 
 		::std::size_t str_size{::fast_io::cstr_len(others.cstr)};
@@ -473,6 +473,20 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(arg_envs.data());
 	}
 
+	namespace posix
+    {
+#if defined(__APPLE__) || defined(__DARWIN_C_LEVEL)
+        // Darwin does not provide an `environ` function; here we use `_NSGetEnviron` to obtain it.
+        extern char*** _NSGetEnviron() noexcept __asm__("__NSGetEnviron");
+#elif defined(__MSDOS__) || defined(__DJGPP__)
+        // djgpp only provides `char** _environ`. For consistency, a symbolic link is used here.
+        extern char** environ __asm__("__environ");
+#elif !(defined(_WIN32) || defined(__CYGWIN__))
+        // Reference to the global `environ` variable
+        extern "C" char** environ;
+#endif
+    }  // namespace details
+
 	inline char const *const *get_envs() const noexcept
 	{
 		using char_const_p_const_p_may_alias_ptr
@@ -484,19 +498,9 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		if (arg_envs.size() < 2u)
 		{
 #if defined(__APPLE__) && defined(__MACH__)
-			extern char ***_NSGetEnviron() noexcept __asm__("__NSGetEnviron");
-			
-			return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(*_NSGetEnviron());
+			return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(*posix::_NSGetEnviron());
 #else
-#if defined(__MSDOS__) || defined(__DJGPP__)
-			// djgpp only provides `char** _environ`. For consistency, a symbolic link is used here.
-			extern char **environ __asm__("__environ");
-#elif !(defined(_WIN32) || defined(__CYGWIN__))
-			// Reference to the global `environ` variable
-			extern "C" char **environ;
-#endif
-
-			return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(environ);
+			return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(posix::environ);
 #endif
 		}
 		else
