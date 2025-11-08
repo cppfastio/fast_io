@@ -11,7 +11,9 @@ enum process_mode : ::std::uint_least64_t
 	alloc_new_console = static_cast<::std::uint_least64_t>(1) << 1,
 	// [WINDOWS, WINNT] CREATE_NEW_CONSOLE (Automatically assign a console to new threads)
 	argv0_no_path_append = static_cast<::std::uint_least64_t>(1) << 2,
-	// Do not automatically append appname to argv0
+	// [POSIX, WINDOWS, WINNT] Do not automatically append appname to argv0
+	posix_vfork = static_cast<::std::uint_least64_t>(1) << 3,
+	// [POSIX] Using vfork to create processes, but this prevents many parameters from taking effect (vfork does not allow modification of global memory before exec).
 };
 
 inline constexpr process_mode operator&(process_mode x, process_mode y) noexcept

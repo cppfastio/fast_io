@@ -322,7 +322,7 @@ inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_
 
 	ret.push_back('/');
 	ret.append(::fast_io::containers::basic_string_view<char>{filename, ::fast_io::cstr_len(filename)});
-	
+
 	return ret;
 }
 
@@ -791,6 +791,44 @@ inline pid_t vfork_execve_impl(path_type const &csv, char const *const *args, ch
 #endif
 }
 
+inline pid_t fork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+{
+	if ((mode & process_mode::posix_vfork) == process_mode::posix_vfork)
+	{
+		return vfork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode);
+	}
+	else
+	{
+		return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode);
+	}
+}
+
+template <typename path_type>
+inline pid_t fork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+{
+	if ((mode & process_mode::posix_vfork) == process_mode::posix_vfork)
+	{
+		return vfork_execveat_impl<path_type>(dirfd, csv, args, envp, pio, mode);
+	}
+	else
+	{
+		return pipefork_execveat_impl<path_type>(dirfd, csv, args, envp, pio, mode);
+	}
+}
+
+template <typename path_type>
+inline pid_t fork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+{
+	if ((mode & process_mode::posix_vfork) == process_mode::posix_vfork)
+	{
+		return vfork_execve_impl<path_type>(csv, args, envp, pio, mode);
+	}
+	else
+	{
+		return pipefork_execve_impl<path_type>(csv, args, envp, pio, mode);
+	}
+}
+
 } // namespace details
 
 class posix_process_observer
@@ -877,16 +915,10 @@ public:
 	inline posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args = {},
 						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
-// #ifdef __DARWIN_C_LEVEL
-#ifdef FAST_IO_POSIX_PROCESS_USE_FORK
-			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename,
-														 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get(),
-														 args.get(), envp.get(), pio, mode)
-#else
-			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename,
-													  (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get(),
-													  envp.get(), pio, mode)
-#endif
+			  ::fast_io::details::fork_execveat_impl(pate.fd, filename,
+													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get(),
+													 envp.get(), pio, mode)
+
 		  }
 	{
 	}
@@ -895,16 +927,10 @@ public:
 	inline posix_process(path_type const &filename, posix_process_args const &args = {}, posix_process_envs const &envp = {},
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
-// #ifdef __DARWIN_C_LEVEL
-#ifdef FAST_IO_POSIX_PROCESS_USE_FORK
-			  ::fast_io::details::pipefork_execve_impl(filename,
-													   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{filename}.append(args).get(),
-													   envp.get(), pio, mode)
-#else
-			  ::fast_io::details::vfork_execve_impl(filename,
-													(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{filename}.append(args).get(),
-													envp.get(), pio, mode)
-#endif
+			  ::fast_io::details::fork_execve_impl(filename,
+												   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{filename}.append(args).get(),
+												   envp.get(), pio, mode)
+
 		  }
 	{
 	}
@@ -912,17 +938,9 @@ public:
 	inline posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args = {}, posix_process_envs const &envp = {},
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
-// #ifdef __DARWIN_C_LEVEL
-#ifdef FAST_IO_POSIX_PROCESS_USE_FORK
-			  ::fast_io::details::pipefork_execveat_common_impl(ent.fd, ent.filename,
-																(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get(),
-																envp.get(), pio, mode)
-#else
-			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename,
-															 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get(),
-															 envp.get(), pio, mode)
-#endif
-		  }
+			  ::fast_io::details::fork_execveat_common_impl(ent.fd, ent.filename,
+															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get(),
+															envp.get(), pio, mode)}
 	{
 	}
 
