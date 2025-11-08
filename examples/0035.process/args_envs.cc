@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 
 	::fast_io::native_process p{
 		::fast_io::mnp::os_c_str(argv[1]),
-		native_process_args{"char",
+		::fast_io::native_process_args{"char",
 							L"wchar Double\"quotation\"marks",
 							u8"u8",
 							u"u16",
