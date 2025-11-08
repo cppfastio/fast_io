@@ -288,7 +288,7 @@ inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_
 	::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> ret{};
 	ret.resize(path_max + 1u);
 	portable_fd_path(fd, ret.data(), path_max);
-	ret.resize(::fast_io::cstr_nlen(ret.data(), path_max));
+	ret.resize(::fast_io::cstr_nlen(ret.data(), path_max + 1u));
 	return ret;
 }
 
@@ -318,8 +318,11 @@ inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_
 	::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> ret{};
 	ret.resize(path_max + 1u);
 	portable_fd_path(fd, ret.data(), path_max);
-	ret.resize(::fast_io::cstr_nlen(ret.data(), path_max));
+	ret.resize(::fast_io::cstr_nlen(ret.data(), path_max + 1u));
+
+	ret.push_back('/');
 	ret.append(::fast_io::containers::basic_string_view<char>{filename, ::fast_io::cstr_len(filename)});
+	
 	return ret;
 }
 
