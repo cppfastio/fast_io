@@ -181,9 +181,11 @@ struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		}
 	}
 
-	inline constexpr void append(basic_win32_process_args const &others) noexcept
+	inline constexpr basic_win32_process_args& append(basic_win32_process_args const &others) noexcept
 	{
 		args.append(others.args);
+
+		return *this;
 	}
 };
 
@@ -240,9 +242,11 @@ struct basic_win32_process_envs FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		}
 	}
 
-	inline constexpr void append(basic_win32_process_envs const &others) noexcept
+	inline constexpr basic_win32_process_envs& append(basic_win32_process_envs const &others) noexcept
 	{
 		envs.append(others.envs);
+
+		return *this;
 	}
 };
 
@@ -440,7 +444,7 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(arg_envs.data());
 	}
 
-	inline constexpr void append(posix_process_args const &others) noexcept
+	inline constexpr posix_process_args& append(posix_process_args const &others) noexcept
 	{
 		if (others.arg_envs.size() > 1) [[likely]]
 		{
@@ -456,6 +460,8 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 			arg_envs.emplace_back_unchecked(); // nullptr
 		}
+
+		return *this;
 	}
 };
 

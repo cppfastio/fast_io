@@ -262,6 +262,66 @@ inline void portable_fd_path(int fd, char *buf, ::std::size_t bufsz)
 #endif
 }
 
+inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> get_tls_str_fd_path(int fd)
+{
+	constexpr auto fdcwd_val{
+#if defined(AT_FDCWD)
+		AT_FDCWD
+#else
+		-2
+#endif
+	};
+
+	if (fd == fdcwd_val)
+	{
+		return {};
+	}
+
+#if defined(PATH_MAX)
+	constexpr ::std::size_t path_max{PATH_MAX};
+#elif defined(MAXPATHLEN)
+	constexpr ::std::size_t path_max{MAXPATHLEN};
+#else
+	constexpr ::std::size_t path_max{1024u};
+#endif
+
+	::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> ret{};
+	ret.resize(path_max + 1u);
+	portable_fd_path(fd, ret.data(), path_max);
+	ret.resize(::fast_io::cstr_nlen(ret.data(), path_max));
+	return ret;
+}
+
+inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> get_tls_str_fd_path_filename(int fd, char const *filename)
+{
+	constexpr auto fdcwd_val{
+#if defined(AT_FDCWD)
+		AT_FDCWD
+#else
+		-2
+#endif
+	};
+
+	if (fd == fdcwd_val)
+	{
+		return ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator>{filename, filename + ::fast_io::cstr_len(filename)};
+	}
+
+#if defined(PATH_MAX)
+	constexpr ::std::size_t path_max{PATH_MAX};
+#elif defined(MAXPATHLEN)
+	constexpr ::std::size_t path_max{MAXPATHLEN};
+#else
+	constexpr ::std::size_t path_max{1024u};
+#endif
+
+	::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> ret{};
+	ret.resize(path_max + 1u);
+	portable_fd_path(fd, ret.data(), path_max);
+	ret.resize(::fast_io::cstr_nlen(ret.data(), path_max));
+	ret.append(::fast_io::containers::basic_string_view<char>{filename, ::fast_io::cstr_len(filename)});
+	return ret;
+}
 
 inline pid_t posix_fork()
 {
@@ -782,7 +842,7 @@ inline void kill(posix_process_observer ppob, posix_wait_status exit_code)
 #if defined(__linux__) && defined(__NR_kill)
 	system_call_throw_error(system_call<__NR_kill, int>(ppob.pid, exit_code.wait_loc));
 #else
-	if(::fast_io::posix::libc_kill(ppob.pid, exit_code.wait_loc) == -1) [[unlikely]]
+	if (::fast_io::posix::libc_kill(ppob.pid, exit_code.wait_loc) == -1) [[unlikely]]
 	{
 		throw_posix_error();
 	}
@@ -815,10 +875,14 @@ public:
 						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
-#if 0
-			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio, mode)
+#ifdef FAST_IO_POSIX_PROCESS_USE_FORK
+			  ::fast_io::details::pipefork_execveat_impl(pate.fd, filename,
+														 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get(),
+														 args.get(), envp.get(), pio, mode)
 #else
-			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename, args.get(), envp.get(), pio, mode)
+			  ::fast_io::details::vfork_execveat_impl(pate.fd, filename,
+													  (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get(),
+													  envp.get(), pio, mode)
 #endif
 		  }
 	{
@@ -829,10 +893,14 @@ public:
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
-#if 0
-			  ::fast_io::details::pipefork_execve_impl(filename, args.get(), envp.get(), pio, mode)
+#ifdef FAST_IO_POSIX_PROCESS_USE_FORK
+			  ::fast_io::details::pipefork_execve_impl(filename,
+													   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{filename}.append(args).get(),
+													   envp.get(), pio, mode)
 #else
-			  ::fast_io::details::vfork_execve_impl(filename, args.get(), envp.get(), pio, mode)
+			  ::fast_io::details::vfork_execve_impl(filename,
+													(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{filename}.append(args).get(),
+													envp.get(), pio, mode)
 #endif
 		  }
 	{
@@ -842,10 +910,14 @@ public:
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 // #ifdef __DARWIN_C_LEVEL
-#if 0
-			  ::fast_io::details::pipefork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio, mode)
+#ifdef FAST_IO_POSIX_PROCESS_USE_FORK
+			  ::fast_io::details::pipefork_execveat_common_impl(ent.fd, ent.filename,
+																(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get(),
+																envp.get(), pio, mode)
 #else
-			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename, args.get(), envp.get(), pio, mode)
+			  ::fast_io::details::vfork_execveat_common_impl(ent.fd, ent.filename,
+															 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get(),
+															 envp.get(), pio, mode)
 #endif
 		  }
 	{
