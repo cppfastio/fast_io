@@ -363,7 +363,11 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		if (args && !argv0_no_path_append)
 		{
 			// Whether argv0 is set to nullptr or points to u"" will automatically populate argv0.
+			// Neither DOS paths nor NT paths contain double quotation marks internally.
+			tmp_append.push_back('\"');
 			tmp_append.append(NtImagePath->Buffer, static_cast<::std::size_t>(NtImagePath->Length / sizeof(char16_t)));
+			tmp_append.push_back('\"');
+			tmp_append.push_back(' ');
 			tmp_append.append(ps_para.Buffer, static_cast<::std::size_t>(ps_para.Length / sizeof(char16_t)));
 
 			ps_para.Buffer = tmp_append.data();
@@ -494,7 +498,11 @@ inline nt_user_process_information nt_6x_process_create_impl(void *__restrict fh
 		if (args && !argv0_no_path_append)
 		{
 			// Whether argv0 is set to nullptr or points to u"" will automatically populate argv0.
+			// Neither DOS paths nor NT paths contain double quotation marks internally.
+			tmp_append.push_back('\"');
 			tmp_append.append(str_uni.Buffer, static_cast<::std::size_t>(str_uni.Length / sizeof(char16_t)));
+			tmp_append.push_back('\"');
+			tmp_append.push_back(' ');
 			tmp_append.append(ps_para.Buffer, static_cast<::std::size_t>(ps_para.Length / sizeof(char16_t)));
 
 			ps_para.Buffer = tmp_append.data();
