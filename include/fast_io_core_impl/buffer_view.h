@@ -181,6 +181,11 @@ struct basic_obuffer_view
 	{
 		return static_cast<::std::size_t>(end_ptr - begin_ptr);
 	}
+
+	inline constexpr bool empty() const noexcept
+	{
+		return begin_ptr == curr_ptr;
+	}
 };
 
 template <::std::integral char_type>

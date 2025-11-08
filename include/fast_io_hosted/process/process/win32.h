@@ -584,9 +584,9 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 	}
 };
 
-template <win32_family family, typename path_type>
+template <win32_family family, bool is_first, typename path_type>
 inline win32_user_process_information win32_winnt_create_process_overloads(nt_at_entry entry, path_type const &filename,
-																		   basic_win32_process_args<family> const &args, basic_win32_process_envs<family> const &envs,
+																		   basic_win32_process_args<family, is_first> const &args, basic_win32_process_envs<family> const &envs,
 																		   win32_process_io const &processio, process_mode mode)
 {
 	basic_win32_family_file<family, char> nf(entry, filename, open_mode::in | open_mode::excl);
@@ -608,8 +608,8 @@ inline win32_user_process_information win32_9xa_win9x_create_process_overloads(w
 									mode});
 }
 
-template <win32_family family, typename path_type>
-inline win32_user_process_information win32_winnt_create_process_overloads(path_type const &filename, basic_win32_process_args<family> const &args,
+template <win32_family family, bool is_first, typename path_type>
+inline win32_user_process_information win32_winnt_create_process_overloads(path_type const &filename, basic_win32_process_args<family, is_first> const &args,
 																		   basic_win32_process_envs<family> const &envs,
 																		   win32_process_io const &processio, process_mode mode)
 {
@@ -631,8 +631,8 @@ inline win32_user_process_information win32_9xa_win9x_create_process_overloads(p
 									mode});
 }
 
-template <win32_family family>
-inline win32_user_process_information win32_winnt_create_process_overloads(::fast_io::nt_fs_dirent const &ent, basic_win32_process_args<family> const &args,
+template <win32_family family, bool is_first>
+inline win32_user_process_information win32_winnt_create_process_overloads(::fast_io::nt_fs_dirent const &ent, basic_win32_process_args<family, is_first> const &args,
 																		   basic_win32_process_envs<family> const &envs,
 																		   win32_process_io const &processio, process_mode mode)
 {
@@ -775,24 +775,24 @@ public:
 	{
 	}
 
-	template <::fast_io::constructible_to_os_c_str path_type>
-	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, basic_win32_process_args<family> const &args = {},
+	template <::fast_io::constructible_to_os_c_str path_type, bool is_first>
+	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, basic_win32_process_args<family, is_first> const &args = {},
 										 basic_win32_process_envs<family> const &envs = {}, win32_process_io const &processio = {}, process_mode mode = {})
 		: win32_family_process_observer<family>{
 			  win32::details::win32_winnt_create_process_overloads<family>(nate, filename, args, envs, processio, mode)}
 	{
 	}
 
-	template <::fast_io::constructible_to_os_c_str path_type>
-	inline explicit win32_family_process(win32_9xa_at_entry nate, path_type const &filename, basic_win32_process_args<family> const &args = {},
+	template <::fast_io::constructible_to_os_c_str path_type, bool is_first>
+	inline explicit win32_family_process(win32_9xa_at_entry nate, path_type const &filename, basic_win32_process_args<family, is_first> const &args = {},
 										 basic_win32_process_envs<family> const &envs = {}, win32_process_io const &processio = {}, process_mode mode = {})
 		: win32_family_process_observer<family>{
 			  win32::details::win32_9xa_win9x_create_process_overloads(nate, filename, args, envs, processio, mode)}
 	{
 	}
 
-	template <::fast_io::constructible_to_os_c_str path_type>
-	inline explicit win32_family_process(path_type const &filename, basic_win32_process_args<family> const &args = {}, basic_win32_process_envs<family> const &envs = {},
+	template <::fast_io::constructible_to_os_c_str path_type, bool is_first>
+	inline explicit win32_family_process(path_type const &filename, basic_win32_process_args<family, is_first> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = {})
 		: win32_family_process_observer<family>{
 #if defined(_WIN32_WINDOWS)
@@ -804,14 +804,16 @@ public:
 	{
 	}
 
-	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family> const &args = {}, basic_win32_process_envs<family> const &envs = {},
+	template<bool is_first>
+	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family, is_first> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = {})
 		: win32_family_process_observer<family>{
 			  win32::details::win32_winnt_create_process_overloads<family>(ent, args, envs, processio, mode)}
 	{
 	}
 
-	inline explicit win32_family_process(::fast_io::win32_9xa_fs_dirent ent, basic_win32_process_args<family> const &args = {}, basic_win32_process_envs<family> const &envs = {},
+	template <bool is_first>
+	inline explicit win32_family_process(::fast_io::win32_9xa_fs_dirent ent, basic_win32_process_args<family, is_first> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = {})
 		: win32_family_process_observer<family>{
 			  win32::details::win32_9xa_win9x_create_process_overloads(ent, args, envs, processio, mode)}

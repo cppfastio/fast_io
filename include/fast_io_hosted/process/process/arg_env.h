@@ -11,6 +11,59 @@ inline constexpr default_args_t default_args{};
 
 namespace details
 {
+template <::std::integral replace_char_type, typename Iter>
+inline constexpr void append_win32_quoted_arg_common(
+	bool is_first,
+	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str,
+	Iter first, Iter last)
+{
+	// Reserve rough upper bound: quotes + worst-case doubling
+	str.reserve(str.size() + 3 + static_cast<::std::size_t>(last - first) * 2u);
+	str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+
+	::std::size_t backslash_count{};
+	for (; first != last; ++first)
+	{
+		auto const c{*first};
+		if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
+		{
+			if (is_first) [[unlikely]]
+			{
+				// Windows argv[0] does not allow double quotes even if escaped
+				throw_win32_error(13);
+			}
+			// Output 2*n+1 backslashes before a quote
+			for (::std::size_t i{}; i != ((backslash_count << 1u) + 1u); ++i)
+			{
+				str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+			}
+			str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+			backslash_count = 0;
+		}
+		else if (c == ::fast_io::char_literal_v<u8'\\', replace_char_type>)
+		{
+			++backslash_count;
+		}
+		else
+		{
+			// Flush pending backslashes (not before a quote): output as-is
+			for (::std::size_t i{}; i != backslash_count; ++i)
+			{
+				str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+			}
+			backslash_count = 0;
+			str.push_back_unchecked(c);
+		}
+	}
+	// Before closing quote, double any trailing backslashes
+	for (::std::size_t i{}; i != (backslash_count << 1u); ++i)
+	{
+		str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+	}
+	str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+	str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+}
+
 template <::std::integral replace_char_type, typename T>
 inline constexpr void construct_win32_process_args_decay_singal(bool is_first, ::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t)
 {
@@ -21,30 +74,7 @@ inline constexpr void construct_win32_process_args_decay_singal(bool is_first, :
 		replace_char_type buf[32767];
 		::fast_io::basic_obuffer_view<replace_char_type> obf{buf, buf + 32767};
 		::fast_io::operations::decay::print_freestanding_decay<false>(::fast_io::operations::output_stream_ref(obf), t);
-		str.reserve(str.size() + 3 + obf.size() * 2);
-		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-		for (auto const c : obf)
-		{
-			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
-			{
-				if (is_first) [[unlikely]]
-				{
-					// The first argument of windows does not support double quotes
-					throw_win32_error(13);
-				}
-				else
-				{
-					str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
-					str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-				}
-			}
-			else
-			{
-				str.push_back_unchecked(c);
-			}
-		}
-		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-		str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+		append_win32_quoted_arg_common<replace_char_type>(is_first, str, obf.cbegin(), obf.cend());
 	}
 	else if constexpr (requires { ::fast_io::mnp::code_cvt(t); })
 	{
@@ -52,30 +82,7 @@ inline constexpr void construct_win32_process_args_decay_singal(bool is_first, :
 		::fast_io::basic_obuffer_view<replace_char_type> obf{buf, buf + 32767};
 		// need decay
 		::fast_io::operations::print_freestanding<false>(obf, ::fast_io::mnp::code_cvt(t));
-		str.reserve(str.size() + 3 + obf.size() * 2);
-		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-		for (auto const c : obf)
-		{
-			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
-			{
-				if (is_first) [[unlikely]]
-				{
-					// The first argument of windows does not support double quotes
-					throw_win32_error(13);
-				}
-				else
-				{
-					str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
-					str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-				}
-			}
-			else
-			{
-				str.push_back_unchecked(c);
-			}
-		}
-		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-		str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+		append_win32_quoted_arg_common<replace_char_type>(is_first, str, obf.cbegin(), obf.cend());
 	}
 	else
 	{
@@ -133,7 +140,7 @@ inline constexpr void construct_win32_process_envs_decay(
 
 } // namespace details
 
-template <::fast_io::win32_family family>
+template <::fast_io::win32_family family, bool is_first>
 struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	inline static constexpr bool is_nt{family == ::fast_io::win32_family::wide_nt};
@@ -164,9 +171,9 @@ struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		requires(!::std::same_as<::std::remove_cvref_t<T>, default_args_t>)
 	inline constexpr basic_win32_process_args(T &&t, Args &&...as)
 	{
-		details::construct_win32_process_args_decay<true>(args,
-														  ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
-														  ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(as))...);
+		details::construct_win32_process_args_decay<is_first>(args,
+															  ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
+															  ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(as))...);
 	}
 
 	inline constexpr char_type_may_alias_const_ptr get() const noexcept
@@ -181,7 +188,7 @@ struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		}
 	}
 
-	inline constexpr basic_win32_process_args& append(basic_win32_process_args const &others) noexcept
+	inline constexpr basic_win32_process_args &append(basic_win32_process_args const &others) noexcept
 	{
 		args.append(others.args);
 
@@ -242,7 +249,7 @@ struct basic_win32_process_envs FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		}
 	}
 
-	inline constexpr basic_win32_process_envs& append(basic_win32_process_envs const &others) noexcept
+	inline constexpr basic_win32_process_envs &append(basic_win32_process_envs const &others) noexcept
 	{
 		envs.append(others.envs);
 
@@ -250,16 +257,22 @@ struct basic_win32_process_envs FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	}
 };
 
-using win32_process_args_ntw = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt>;
+// Provide a Windows command line with argv0 version conversion, where argv0 is specially handled.
+
+using win32_process_args_ntw = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt, false>;
+using win32_process_args_ntw_with_argv0 = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt, true>;
 using win32_process_envs_ntw = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::wide_nt>;
 
-using win32_process_args_9xa = ::fast_io::basic_win32_process_args<::fast_io::win32_family::ansi_9x>;
+using win32_process_args_9xa = ::fast_io::basic_win32_process_args<::fast_io::win32_family::ansi_9x, false>;
+using win32_process_args_9xa_with_argv0 = ::fast_io::basic_win32_process_args<::fast_io::win32_family::ansi_9x, true>;
 using win32_process_envs_9xa = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::ansi_9x>;
 
-using win32_process_args = ::fast_io::basic_win32_process_args<::fast_io::win32_family::native>;
+using win32_process_args = ::fast_io::basic_win32_process_args<::fast_io::win32_family::native, false>;
+using win32_process_args_with_argv0 = ::fast_io::basic_win32_process_args<::fast_io::win32_family::native, true>;
 using win32_process_envs = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::native>;
 
-using nt_process_args = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt>;
+using nt_process_args = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt, false>;
+using nt_process_args_with_argv0 = ::fast_io::basic_win32_process_args<::fast_io::win32_family::wide_nt, true>;
 using nt_process_envs = ::fast_io::basic_win32_process_envs<::fast_io::win32_family::wide_nt>;
 
 #else
@@ -273,12 +286,18 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using Alloc = ::fast_io::native_typed_global_allocator<char_type>;
 
-	char_type *cstr;
+	char_type *cstr{};
 
 	inline constexpr cstr_guard() noexcept = default;
 
 	inline constexpr cstr_guard(cstr_guard const &others) noexcept
 	{
+		if (others.cstr == nullptr)
+		{
+			cstr = nullptr;
+			return *this;
+		}
+
 		::std::size_t str_size{::fast_io::cstr_len(others.cstr)};
 		cstr = Alloc::allocate(str_size + 1);
 		auto const lase_ptr{::fast_io::freestanding::non_overlapped_copy_n(others.cstr, str_size, cstr)};
@@ -294,10 +313,18 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 		Alloc::deallocate(cstr);
 
+		if (others.cstr == nullptr)
+		{
+			cstr = nullptr;
+			return *this;
+		}
+
 		::std::size_t str_size{::fast_io::cstr_len(others.cstr)};
 		cstr = Alloc::allocate(str_size + 1);
 		auto const lase_ptr{::fast_io::freestanding::non_overlapped_copy_n(others.cstr, str_size, cstr)};
 		*lase_ptr = ::fast_io::char_literal_v<u8'\0', char_type>;
+
+		return *this;
 	}
 
 	inline constexpr cstr_guard(cstr_guard &&others) noexcept
@@ -317,6 +344,8 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 		cstr = others.cstr;
 		others.cstr = nullptr;
+
+		return *this;
 	}
 
 	inline constexpr ~cstr_guard()
@@ -433,7 +462,7 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		arg_envs.emplace_back(); // nullptr
 	}
 
-	inline char const *const *get() const noexcept
+	inline char const *const *get_argv() const noexcept
 	{
 		using char_const_p_const_p_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -444,7 +473,39 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(arg_envs.data());
 	}
 
-	inline constexpr posix_process_args& append(posix_process_args const &others) noexcept
+	inline char const *const *get_envs() const noexcept
+	{
+		using char_const_p_const_p_may_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= char const *const *;
+
+		if (arg_envs.size() < 2u)
+		{
+#if defined(__APPLE__) && defined(__MACH__)
+			extern char ***_NSGetEnviron() noexcept __asm__("__NSGetEnviron");
+			
+			return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(*_NSGetEnviron());
+#else
+#if defined(__MSDOS__) || defined(__DJGPP__)
+			// djgpp only provides `char** _environ`. For consistency, a symbolic link is used here.
+			extern char **environ __asm__("__environ");
+#elif !(defined(_WIN32) || defined(__CYGWIN__))
+			// Reference to the global `environ` variable
+			extern "C" char **environ;
+#endif
+
+			return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(environ);
+#endif
+		}
+		else
+		{
+			return reinterpret_cast<char_const_p_const_p_may_alias_ptr>(arg_envs.data());
+		}
+	}
+
+	inline constexpr posix_process_args &append(posix_process_args const &others) noexcept
 	{
 		if (others.arg_envs.size() > 1) [[likely]]
 		{
@@ -473,8 +534,8 @@ namespace freestanding
 {
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 
-template <::fast_io::win32_family family>
-struct is_trivially_copyable_or_relocatable<basic_win32_process_args<family>>
+template <::fast_io::win32_family family, bool is_first>
+struct is_trivially_copyable_or_relocatable<basic_win32_process_args<family, is_first>>
 {
 	inline static constexpr bool value = true;
 };

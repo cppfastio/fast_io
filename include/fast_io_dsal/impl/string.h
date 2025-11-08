@@ -631,6 +631,14 @@ public:
 	{
 		this->append_impl(other.data(), other.size());
 	}
+	inline constexpr void append(char_type const *begin, char_type const *end) noexcept
+	{
+		this->append_impl(begin, static_cast<::std::size_t>(end - begin));
+	}
+	inline constexpr void append(char_type const *otherptr, size_type othern) noexcept
+	{
+		this->append_impl(otherptr, othern);
+	}
 
 	inline constexpr void clear() noexcept
 	{

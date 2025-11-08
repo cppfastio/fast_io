@@ -964,8 +964,8 @@ public:
 						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_impl(pate.fd, filename,
-													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get(),
-													 envp.get(), pio, mode)
+													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get_argv(),
+													 envp.get_envs(), pio, mode)
 
 		  }
 	{
@@ -976,8 +976,8 @@ public:
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 			  ::fast_io::details::fork_execve_impl(filename,
-												   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{filename}.append(args).get(),
-												   envp.get(), pio, mode)
+												   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{filename}.append(args).get_argv(),
+												   envp.get_envs(), pio, mode)
 
 		  }
 	{
@@ -987,8 +987,8 @@ public:
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_common_impl(ent.fd, ent.filename,
-															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get(),
-															envp.get(), pio, mode)}
+															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get_argv(),
+															envp.get_envs(), pio, mode)}
 	{
 	}
 
