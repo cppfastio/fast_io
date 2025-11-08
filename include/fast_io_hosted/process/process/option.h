@@ -8,6 +8,7 @@ enum class process_mode : ::std::uint_least64_t
 	// *indicates that the process mode has not been evaluated yet
 	new_session = static_cast<::std::uint_least64_t>(1) << 0,
 	// [POSIX] setsid(), [WINDOWS, WINNT] CREATE_NEW_PROCESS_GROUP (Windows is currently not implemented)
+	// POSIX: This parameter is only valid under fork; vfork does not support it.
 	alloc_new_console = static_cast<::std::uint_least64_t>(1) << 1,
 	// [WINDOWS, WINNT] CREATE_NEW_CONSOLE (Automatically assign a console to new threads)
 	argv0_no_path_append = static_cast<::std::uint_least64_t>(1) << 2,
@@ -16,7 +17,6 @@ enum class process_mode : ::std::uint_least64_t
 	// [POSIX] Using vfork to create processes, but this prevents many parameters from taking effect (vfork does not allow modification of global memory before exec).
 	follow = static_cast<::std::uint_least64_t>(1) << 4,
 	// [POSIX, WINDOWS, WINNT] Allow symbolic links to follow
-
 };
 
 inline constexpr process_mode operator&(process_mode x, process_mode y) noexcept

@@ -10,6 +10,7 @@ namespace posix
 {
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
+extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("_execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
@@ -19,6 +20,7 @@ extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__(
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__exit");
 #else
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
+extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
@@ -171,11 +173,11 @@ inline void portable_fd_path(int fd, char *buf, ::std::size_t bufsz)
 	decltype(auto) path_str{"/proc/self/fd/"};
 	constexpr auto path_str_sz{::fast_io::cstr_len(path_str)};
 	constexpr auto fd_sz{::fast_io::pr_rsv_size<char, int>};
-	constexpr auto all_sz{path_str_sz + fd_sz};
+	constexpr auto all_sz{path_str_sz + fd_sz + 1u};
 
 	char linkpath[all_sz];
 	::fast_io::obuffer_view linkpath_ov{linkpath, linkpath + all_sz};
-	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd);
+	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd, ::fast_io::mnp::chvw(::fast_io::char_literal_v<u8'\0', char>));
 
 	using my_ssize_t = ::std::make_signed_t<::std::size_t>;
 
@@ -208,11 +210,11 @@ inline void portable_fd_path(int fd, char *buf, ::std::size_t bufsz)
 	decltype(auto) path_str{"/dev/fd/"};
 	constexpr auto path_str_sz{::fast_io::cstr_len(path_str)};
 	constexpr auto fd_sz{::fast_io::pr_rsv_size<char, int>};
-	constexpr auto all_sz{path_str_sz + fd_sz};
+	constexpr auto all_sz{path_str_sz + fd_sz + 1u};
 
 	char linkpath[all_sz];
 	::fast_io::obuffer_view linkpath_ov{linkpath, linkpath + all_sz};
-	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd);
+	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd, ::fast_io::mnp::chvw(::fast_io::char_literal_v<u8'\0', char>));
 
 	auto resolved{::fast_io::noexcept_call(::readlink, linkpath, buf, bufsz - 1u)};
 	if (resolved == -1) [[unlikely]]
@@ -238,11 +240,11 @@ inline void portable_fd_path(int fd, char *buf, ::std::size_t bufsz)
 	decltype(auto) path_str{"/proc/self/path/"};
 	constexpr auto path_str_sz{::fast_io::cstr_len(path_str)};
 	constexpr auto fd_sz{::fast_io::pr_rsv_size<char, int>};
-	constexpr auto all_sz{path_str_sz + fd_sz};
+	constexpr auto all_sz{path_str_sz + fd_sz + 1u};
 
 	char linkpath[all_sz];
 	::fast_io::obuffer_view linkpath_ov{linkpath, linkpath + all_sz};
-	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd);
+	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd, ::fast_io::mnp::chvw(::fast_io::char_literal_v<u8'\0', char>));
 
 	auto resolved{::fast_io::noexcept_call(::readlink, linkpath, buf, bufsz - 1u)};
 	if (resolved == -1) [[unlikely]]
@@ -409,7 +411,7 @@ inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, 
 	int flags{O_RDONLY};
 	if (!follow)
 	{
-		flags |= O_NOFOLLOW;
+		flags |= AT_SYMLINK_NOFOLLOW;
 	}
 	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, flags, 0644)};
 	if (fd != -1) [[likely]]
@@ -709,7 +711,7 @@ struct fd_remapper
 };
 
 // only used in vfork_execveat_common_impl()
-inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, process_mode mode) noexcept
+inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, sig_atomic_t volatile &t_errno, process_mode mode) noexcept
 {
 	// vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
@@ -736,7 +738,9 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 
 	bool const follow{(mode & process_mode::follow) == process_mode::follow};
 
-#if defined(__linux__) && defined(__NR_execveat)
+#if defined(__linux__)
+
+#if defined(__NR_execveat)
 	int flags{};
 	if (!follow)
 	{
@@ -752,41 +756,56 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 	{
 		t_errno = 0;
 	}
-#if defined(__NR_exit_group)
-	::fast_io::system_call_no_return<__NR_exit_group>(127);
 #else
-	::fast_io::system_call_no_return<__NR_exit>(127);
-#endif
-#else
-	int flags{O_RDONLY};
+	int flags{};
 	if (!follow)
 	{
-		flags |= O_NOFOLLOW;
+		flags |= AT_SYMLINK_NOFOLLOW;
 	}
 
-	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, flags, 0644)};
-	if (fd != -1) [[likely]]
+	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, args, envp, flags)};
+	if (ret == -1)
 	{
-		::fast_io::posix::libc_fexecve(fd, const_cast<char *const *>(args), const_cast<char *const *>(envp));
+		t_errno = errno;
 	}
-	t_errno = errno;
-#if defined(__linux__)
+	else
+	{
+		t_errno = 0;
+	}
+#endif
+
 #if defined(__NR_exit_group)
 	::fast_io::system_call_no_return<__NR_exit_group>(127);
 #else
 	::fast_io::system_call_no_return<__NR_exit>(127);
 #endif
 #else
+	int flags{};
+	if (!follow)
+	{
+		flags |= AT_SYMLINK_NOFOLLOW;
+	}
+
+	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, args, envp, flags)};
+	if (ret == -1)
+	{
+		t_errno = errno;
+	}
+	else
+	{
+		t_errno = 0;
+	}
+
 	::fast_io::posix::libc_exit2(127);
 #endif
-#endif
+
 	__builtin_unreachable();
 }
 
 inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 	pid_t pid{};
-	int volatile t_errno{}; // receive error from vfork subproc
+	sig_atomic_t volatile t_errno{}; // receive error from vfork subproc
 	{
 		fd_remapper fm;
 		fm.map(0, pio.in);
