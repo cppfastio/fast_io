@@ -712,12 +712,15 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 	// parent process ends here
 	// subprocess begin
 	// No modifications to the memory of the parent process are allowed until exec
+
+#if 0
 	if ((mode & process_mode::new_session) == process_mode::new_session)
 	{
 		// No modification of parent process memory
 		/// @error: Whether the syscall or libc implementation does not modify the parent process
 		posix_setsid_noexcept();
 	}
+#endif
 
 #if defined(__linux__) && defined(__NR_execveat)
 	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, AT_SYMLINK_NOFOLLOW)};
