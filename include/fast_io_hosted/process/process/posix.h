@@ -697,7 +697,7 @@ struct fd_remapper
 };
 
 // only used in vfork_execveat_common_impl()
-inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, process_mode mode) noexcept
+inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, [[maybe_unused]] process_mode mode) noexcept
 {
 	// vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
