@@ -7,6 +7,12 @@ struct default_args_t
 };
 inline constexpr default_args_t default_args{};
 
+struct args_with_argv0_t
+{
+	inline explicit constexpr args_with_argv0_t() noexcept = default;
+};
+inline constexpr args_with_argv0_t args_with_argv0{};
+
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 
 namespace details
