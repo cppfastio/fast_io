@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 		::fast_io::iobuf_pipe pipe_err;
 		::fast_io::native_process p{
 			::fast_io::mnp::os_c_str(argv[1]),
-			{},
+			::fast_io::native_process_args{},
 			{},
 			{::fast_io::posix_dev_null(), pipe_out.handle, pipe_err.handle},
 			::fast_io::process_mode::none};
