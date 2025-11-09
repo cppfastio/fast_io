@@ -994,7 +994,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(posix_at_entry pate, path_type const &filename, ::fast_io::args_with_argv0_t, posix_process_args const &args = {},
-						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
+						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = process_mode::argv0_no_path_append)
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_impl(pate.fd, filename,
 													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get_argv(),
@@ -1006,7 +1006,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(path_type const &filename, ::fast_io::args_with_argv0_t, posix_process_args const &args = {}, posix_process_envs const &envp = {},
-						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
+						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = process_mode::argv0_no_path_append)
 		: posix_process_observer{
 			  ::fast_io::details::fork_execve_impl(filename,
 												   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{filename}.append(args).get_argv(),
@@ -1017,7 +1017,7 @@ public:
 	}
 
 	inline posix_process(::fast_io::posix_fs_dirent ent, ::fast_io::args_with_argv0_t, posix_process_args const &args = {}, posix_process_envs const &envp = {},
-						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
+						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = process_mode::argv0_no_path_append)
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_common_impl(ent.fd, ent.filename,
 															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get_argv(),

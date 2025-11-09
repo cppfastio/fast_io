@@ -1010,7 +1010,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit nt_family_process(nt_at_entry nate, path_type const &filename, ::fast_io::args_with_argv0_t, nt_process_args_with_argv0 const &args = {},
-									  nt_process_envs const &envs = {}, win32_process_io const &processio = {}, process_mode mode = {})
+									  nt_process_envs const &envs = {}, win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio, mode, false)}
 	{
@@ -1018,14 +1018,14 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit nt_family_process(path_type const &filename, ::fast_io::args_with_argv0_t, nt_process_args_with_argv0 const &args = {}, nt_process_envs const &envs = {},
-									  win32_process_io const &processio = {}, process_mode mode = {})
+									  win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio, mode, false)}
 	{
 	}
 
 	inline explicit nt_family_process(::fast_io::nt_fs_dirent ent, ::fast_io::args_with_argv0_t, nt_process_args_with_argv0 const &args = {}, nt_process_envs const &envs = {},
-									  win32_process_io const &processio = {}, process_mode mode = {})
+									  win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio, mode, false)}
 	{
@@ -1033,7 +1033,7 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit nt_family_process(io_kernel_t, nt_at_entry nate, path_type const &filename, ::fast_io::args_with_argv0_t, nt_process_args_with_argv0 const &args = {},
-									  nt_process_envs const &envs = {}, win32_process_io const &processio = {}, process_mode mode = {})
+									  nt_process_envs const &envs = {}, win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(nate, filename, args, envs, processio, mode, true)}
 	{
@@ -1041,14 +1041,14 @@ public:
 
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit nt_family_process(io_kernel_t, path_type const &filename, ::fast_io::args_with_argv0_t, nt_process_args_with_argv0 const &args = {}, nt_process_envs const &envs = {},
-									  win32_process_io const &processio = {}, process_mode mode = {})
+									  win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(filename, args, envs, processio, mode, true)}
 	{
 	}
 
 	inline explicit nt_family_process(io_kernel_t, ::fast_io::nt_fs_dirent ent, ::fast_io::args_with_argv0_t, nt_process_args_with_argv0 const &args = {}, nt_process_envs const &envs = {},
-									  win32_process_io const &processio = {}, process_mode mode = {})
+									  win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
 		: nt_family_process_observer<family>{
 			  win32::nt::details::nt_create_process_overloads<family>(ent, args, envs, processio, mode, true)}
 	{
