@@ -40,13 +40,18 @@ inline void win32_wait_and_close_user_process_or_thread(void *handle) noexcept(!
 	{
 		return;
 	}
+	
 	auto status{win32_wait_user_process_or_thread(handle)};
+	auto const last_error{::fast_io::win32::GetLastError()};
+
 	::fast_io::win32::CloseHandle(handle);
+
 	if constexpr (throw_eh)
 	{
-		if (status) [[unlikely]]
+		if (status == 0xFFFFFFFF) [[unlikely]]
 		{
-			throw_win32_error();
+			// Preventing errors caused by replacing closehandle
+			throw_win32_error(last_error);
 		}
 	}
 }
@@ -786,11 +791,11 @@ inline win32_wait_status wait(win32_family_process_observer<family> ppob) noexce
 
 	// wait for process
 	auto const status{win32::details::win32_wait_user_process_or_thread(ppob.hnt_user_process_info.hprocess)};
-	if (status) [[unlikely]]
+	if (status == 0xFFFFFFFF) [[unlikely]]
 	{
 		if constexpr (throw_eh)
 		{
-			throw_win32_error(status);
+			throw_win32_error();
 		}
 		else
 		{
