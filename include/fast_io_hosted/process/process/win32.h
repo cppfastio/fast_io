@@ -46,7 +46,7 @@ inline void win32_wait_and_close_user_process_or_thread(void *handle) noexcept(!
 	{
 		if (status) [[unlikely]]
 		{
-			throw_win32_error(status);
+			throw_win32_error();
 		}
 	}
 }
@@ -68,8 +68,8 @@ inline void win32_duplicate_object_std(void *parent_process, void *&standard_io_
 		return;
 	}
 	if (!::fast_io::win32::DuplicateHandle(
-			parent_process, standard_io_handle, process_handle, __builtin_addressof(standard_io_handle), 0, 0,
-			0x00000002 | 0x00000004)) [[unlikely]]
+			parent_process, standard_io_handle, process_handle, __builtin_addressof(standard_io_handle), 0, true,
+			0x00000002 /*DUPLICATE_SAME_ACCESS*/)) [[unlikely]]
 	{
 		throw_win32_error();
 	}
