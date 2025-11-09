@@ -255,10 +255,10 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		::fast_io::containers::basic_string<win32_process_char_type<family>, ::fast_io::native_thread_local_allocator> tmp_actrual_args{};
 		if (args && !argv0_no_path_append)
 		{
-			tmp_actrual_args.push_back(::fast_io::char_literal_v < u8'\"', win32_process_char_type<family>);
+			tmp_actrual_args.push_back(::fast_io::char_literal_v<u8'\"', win32_process_char_type<family>>);
 			tmp_actrual_args.append(address_begin, ::fast_io::cstr_len(address_begin));
-			tmp_actrual_args.push_back(::fast_io::char_literal_v < u8'\"', win32_process_char_type<family>);
-			tmp_actrual_args.push_back(::fast_io::char_literal_v < u8' ', win32_process_char_type<family>);
+			tmp_actrual_args.push_back(::fast_io::char_literal_v<u8'\"', win32_process_char_type<family>>);
+			tmp_actrual_args.push_back(::fast_io::char_literal_v<u8' ', win32_process_char_type<family>>);
 			tmp_actrual_args.append(args, ::fast_io::cstr_len(args));
 
 			actrual_args = tmp_actrual_args.data();
@@ -444,10 +444,10 @@ inline win32_user_process_information win32_winnt_process_create_from_handle_imp
 		::fast_io::containers::basic_string<win32_process_char_type<family>, ::fast_io::native_thread_local_allocator> tmp_actrual_args{};
 		if (args && !argv0_no_path_append)
 		{
-			tmp_actrual_args.push_back(::fast_io::char_literal_v < u8'\"', win32_process_char_type<family>);
+			tmp_actrual_args.push_back(::fast_io::char_literal_v<u8'\"', win32_process_char_type<family>>);
 			tmp_actrual_args.append(address_begin, ::fast_io::cstr_len(address_begin));
-			tmp_actrual_args.push_back(::fast_io::char_literal_v < u8'\"', win32_process_char_type<family>);
-			tmp_actrual_args.push_back(::fast_io::char_literal_v < u8' ', win32_process_char_type<family>);
+			tmp_actrual_args.push_back(::fast_io::char_literal_v<u8'\"', win32_process_char_type<family>>);
+			tmp_actrual_args.push_back(::fast_io::char_literal_v<u8' ', win32_process_char_type<family>>);
 			tmp_actrual_args.append(args, ::fast_io::cstr_len(args));
 
 			actrual_args = tmp_actrual_args.data();
