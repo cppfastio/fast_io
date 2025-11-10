@@ -4,7 +4,7 @@
 int main()
 {
 #ifdef _WIN32 // temporaryly disable this example on rest platforms
-	auto t = ::fast_io::thread{[](int param)
+	auto t = ::fast_io::native_thread{[](int param)
 #if __cpp_static_call_operator >= 2020207L
 								   static
 #endif
