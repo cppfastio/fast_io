@@ -27,14 +27,18 @@ public:
 	{}
 
 	inline constexpr win32_thread_start_routine_tuple_allocate_guard(win32_thread_start_routine_tuple_allocate_guard const &) noexcept = delete;
-	inline constexpr win32_thread_start_routine_tuple_allocate_guard(win32_thread_start_routine_tuple_allocate_guard &&other) noexcept = default;
+	inline constexpr win32_thread_start_routine_tuple_allocate_guard(win32_thread_start_routine_tuple_allocate_guard &&other) noexcept = delete;
+	inline constexpr win32_thread_start_routine_tuple_allocate_guard &operator=(win32_thread_start_routine_tuple_allocate_guard const &) noexcept = delete;
+	inline constexpr win32_thread_start_routine_tuple_allocate_guard &operator=(win32_thread_start_routine_tuple_allocate_guard &&other) noexcept = delete;
 
 	inline constexpr ~win32_thread_start_routine_tuple_allocate_guard()
 	{
 		if (ptr_ != nullptr)
 		{
 			::std::destroy_at(reinterpret_cast<Tuple *>(this->ptr_));
-			::fast_io::generic_allocator_adapter<::fast_io::win32_heapalloc_allocator>::deallocate(this->ptr_);
+
+			using alloc = ::fast_io::native_typed_global_allocator<Tuple>;
+			alloc::deallocate_n(reinterpret_cast<Tuple *>(this->ptr_), 1u);
 		}
 	}
 };
@@ -53,7 +57,7 @@ inline constexpr ::std::uint_least32_t FAST_IO_WINSTDCALL thread_start_routine(v
 	try
 #endif
 	{
-		::std::invoke(::fast_io::get<Is>(*reinterpret_cast<Tuple *>(args))...);
+		::std::invoke(::fast_io::containers::get<Is>(*reinterpret_cast<Tuple *>(args))...);
 	}
 #ifdef FAST_IO_CPP_EXCEPTIONS
 	catch (...)
@@ -91,7 +95,9 @@ public:
 	inline constexpr win32_thread(Func &&func, Args &&...args)
 	{
 		using start_routine_tuple_type = ::fast_io::containers::tuple<::std::decay_t<Func>, ::std::decay_t<Args>...>;
-		void *start_routine_tuple{::fast_io::generic_allocator_adapter<::fast_io::win32_heapalloc_allocator>::allocate(sizeof(start_routine_tuple_type))};
+		using alloc = ::fast_io::native_typed_global_allocator<start_routine_tuple_type>;
+
+		auto start_routine_tuple{alloc::allocate(1u)};
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-braces"
@@ -113,7 +119,7 @@ public:
 		{
 			// Creation failed; manual release is required
 			::std::destroy_at(reinterpret_cast<start_routine_tuple_type *>(start_routine_tuple));
-			::fast_io::generic_allocator_adapter<::fast_io::win32_heapalloc_allocator>::deallocate(start_routine_tuple);
+			alloc::deallocate_n(start_routine_tuple, 1u);
 
 			::fast_io::throw_win32_error();
 		}
@@ -121,7 +127,11 @@ public:
 
 	inline constexpr win32_thread(win32_thread const &) noexcept = delete;
 
-	inline constexpr win32_thread(win32_thread &&other) noexcept = default;
+	inline constexpr win32_thread(win32_thread &&other) noexcept : id_{other.id_}, handle_{other.handle_}
+	{
+		other.id_ = 0;
+		other.handle_ = nullptr;
+	}
 
 	inline constexpr ~win32_thread() noexcept
 	{
@@ -312,9 +322,11 @@ inline
 		return;
 	}
 
+	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1000000000u};
+
 	auto const win_100ns{
 		static_cast<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(sleep_duration.seconds) * 10'000'000ULL +
-										   sleep_duration.subseconds / 100u)};
+										   sleep_duration.subseconds / mul_factor / 100u)};
 
 	auto const ms64{win_100ns / 10'000ULL};
 	auto const ms{ms64 > 0xFFFFFFFFu ? static_cast<::std::uint_least32_t>(0xFFFFFFFFu)
@@ -348,9 +360,12 @@ inline
 	{
 		return;
 	}
+
+	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1000000000u};
+
 	auto const expect_100ns{
 		static_cast<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(win32_ts.seconds) * 10'000'000ULL +
-										   win32_ts.subseconds / 100u)};
+										   win32_ts.subseconds / mul_factor / 100u)};
 
 	if (expect_100ns <= now_100ns)
 	{

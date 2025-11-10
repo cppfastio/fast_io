@@ -5,6 +5,7 @@
 #ifndef _WIN32_WINDOWS
 #include "nt.h"
 #endif
-#elif defined(__linux__)
-#include "linux_clone3.h"
+#elif !defined(__SINGLE_THREAD__) && !defined(__NEWLIB__) && \
+	!defined(__MSDOS__) && !defined(__wasi__) && __has_include(<pthread.h>)
+#include "pthread.h"
 #endif

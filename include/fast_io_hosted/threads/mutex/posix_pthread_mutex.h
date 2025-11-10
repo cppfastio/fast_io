@@ -16,9 +16,10 @@ struct posix_pthread_mutex
 	inline posix_pthread_mutex &operator=(posix_pthread_mutex const &) = delete;
 	inline void lock()
 	{
-		if (noexcept_call(pthread_mutex_lock, __builtin_addressof(mutex))) [[unlikely]]
+		auto const res{::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(mutex))};
+		if (res != 0) [[unlikely]]
 		{
-			throw_posix_error();
+			::fast_io::throw_posix_error(res);
 		}
 	}
 	inline bool try_lock() noexcept
