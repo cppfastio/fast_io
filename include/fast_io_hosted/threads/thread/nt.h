@@ -6,8 +6,6 @@
 #include <utility>
 #include <functional>
 #include <type_traits>
-#include "../../../fast_io_dsal/tuple.h"
-#include "../../../fast_io_core_impl/allocation/common.h"
 
 namespace fast_io
 {
@@ -94,7 +92,7 @@ public:
 		requires(::std::invocable<Func, Args...>)
 	inline constexpr nt_thread(Func &&func, Args &&...args)
 	{
-		using start_routine_tuple_type = ::fast_io::tuple<::std::decay_t<Func>, ::std::decay_t<Args>...>;
+		using start_routine_tuple_type = ::fast_io::containers::tuple<::std::decay_t<Func>, ::std::decay_t<Args>...>;
 #if __has_cpp_attribute(indeterminate)
 		::fast_io::win32::nt::client_id cid [[indeterminate]];
 #else
