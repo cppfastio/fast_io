@@ -45,7 +45,7 @@ FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RtlEnterCriticalSection(void *) noexce
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL RtlTryEnterCriticalSection(void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlTryEnterCriticalSection, 4);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RtlLeaveCriticalSection(void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlLeaveCriticalSection, 4);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RtlDeleteCriticalSection(void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlDeleteCriticalSection, 4);
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlCreateUserThread(void *, void *, int, ::std::uint_least32_t, ::std::size_t, ::std::size_t, void *, void *, void **, ::fast_io::win32::nt::client_id *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlCreateUserThread, 40);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlCreateUserThread(void *, void *, int, ::std::uint_least32_t, ::std::size_t, ::std::size_t, ::std::uint_least32_t (FAST_IO_WINSTDCALL*)(void*), void *, void **, ::fast_io::win32::nt::client_id *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlCreateUserThread, 40);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtResumeThread(void *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtResumeThread, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwResumeThread(void *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwResumeThread, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtLockFile(void *, void *, ::fast_io::win32::nt::pio_apc_routine, void *, ::fast_io::win32::nt::io_status_block *, ::std::int_least64_t *, ::std::int_least64_t *, ::std::uint_least32_t, char unsigned, char unsigned) noexcept FAST_IO_WINSTDCALL_RENAME(NtLockFile, 40);

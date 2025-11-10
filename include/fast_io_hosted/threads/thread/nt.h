@@ -43,11 +43,23 @@ public:
 };
 
 template <typename Tuple, ::std::size_t... Is>
-inline constexpr ::std::uint_least32_t FAST_IO_WINSTDCALL thread_start_routine(void *args) noexcept(noexcept(
-	::std::invoke(::fast_io::get<Is>(*reinterpret_cast<Tuple *>(args))...)))
+inline constexpr ::std::uint_least32_t FAST_IO_WINSTDCALL thread_start_routine(void *args) noexcept
 {
 	[[maybe_unused]] ::fast_io::win32::nt::details::nt_thread_start_routine_tuple_allocate_guard<Tuple> _(args);
-	::std::invoke(::fast_io::get<Is>(*reinterpret_cast<Tuple *>(args))...);
+
+#ifdef FAST_IO_CPP_EXCEPTIONS
+	try
+#endif
+	{
+		::std::invoke(::fast_io::get<Is>(*reinterpret_cast<Tuple *>(args))...);
+	}
+#ifdef FAST_IO_CPP_EXCEPTIONS
+	catch (...)
+	{
+		::fast_io::fast_terminate();
+	}
+#endif
+
 	return 0;
 }
 
@@ -101,14 +113,20 @@ public:
 			0,                            // StackZeroBits
 			0,                            // StackReserved
 			0,                            // StackCommit
-			reinterpret_cast<void *>(start_routine),
+			start_routine,
 			start_routine_tuple, // args of func
 			__builtin_addressof(this->handle_),
 			__builtin_addressof(cid))};
+
 		if (status) [[unlikely]]
 		{
+			// Creation failed; manual release is required.
+			::std::ranges::destroy_at(reinterpret_cast<start_routine_tuple_type *>(start_routine_tuple));
+			::fast_io::generic_allocator_adapter<::fast_io::nt_rtlallocateheap_allocator>::deallocate(start_routine_tuple);
+
 			::fast_io::throw_nt_error(status);
 		}
+
 		this->id_ = cid.UniqueThread;
 	}
 
@@ -159,6 +177,12 @@ public:
 		{
 			::fast_io::throw_nt_error(status);
 		}
+		status = ::fast_io::win32::nt::nt_close<zw>(this->handle_);
+		if (status) [[unlikely]]
+		{
+			::fast_io::throw_nt_error(status);
+		}
+		this->handle_ = nullptr;
 		this->id_ = nullptr;
 	}
 
@@ -211,7 +235,7 @@ public:
 			::fast_io::throw_nt_error(status);
 		}
 
-		return reinterpret_cast<::std::uint_least32_t>(tbi.ClientId.UniqueThread);
+		return static_cast<::std::uint_least32_t>(reinterpret_cast<::std::size_t>(tbi.ClientId.UniqueThread));
 	}
 
 	inline static constexpr ::std::uint_least32_t hardware_concurrency()
@@ -231,7 +255,13 @@ namespace this_thread
 {
 
 template <bool zw = false>
-inline constexpr ::fast_io::win32::nt::nt_thread<zw>::id get_id()
+inline
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+	::fast_io::win32::nt::nt_thread<zw>::id get_id()
 {
 	::fast_io::win32::nt::thread_basic_information tbi;
 	::std::uint_least32_t status{::fast_io::win32::nt::nt_query_information_thread<zw>(
@@ -247,18 +277,30 @@ inline constexpr ::fast_io::win32::nt::nt_thread<zw>::id get_id()
 	return tbi.ClientId.UniqueThread;
 }
 
-inline ::std::uint_least32_t get_win32_id() noexcept
+inline
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+	::std::uint_least32_t get_win32_id() noexcept
 {
 	auto teb{::fast_io::win32::nt::nt_current_teb()};
 	return static_cast<::std::uint_least32_t>(reinterpret_cast<::std::size_t>(teb->ClientId.UniqueThread));
 }
 
 template <bool zw = false, typename Rep, typename Period>
-inline constexpr void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration)
+inline
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration)
 {
-	auto const count{
+	auto const count{static_cast<::std::uint_least64_t>(
 		::std::chrono::duration_cast<::std::chrono::microseconds>(sleep_duration).count() * 10u +
-		::std::chrono::duration_cast<::std::chrono::nanoseconds>(sleep_duration).count() / 100u % 10u};
+		::std::chrono::duration_cast<::std::chrono::nanoseconds>(sleep_duration).count() / 100u % 10u)};
 
 	if (count > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max()))
 	{
@@ -274,7 +316,13 @@ inline constexpr void sleep_for(::std::chrono::duration<Rep, Period> const &slee
 }
 
 template <bool zw = false, ::std::int_least64_t off_to_epoch>
-inline constexpr void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &sleep_duration)
+inline
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+	void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &sleep_duration)
 {
 	if (sleep_duration.seconds < 0) [[unlikely]]
 	{
@@ -297,7 +345,13 @@ inline constexpr void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &
 }
 
 template <bool zw = false, typename Clock, typename Duration>
-inline constexpr void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time)
+inline
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time)
 {
 	auto const unix_ts = ::std::chrono::duration_cast<std::chrono::seconds>(
 							 expect_time.time_since_epoch())
@@ -329,7 +383,13 @@ inline constexpr void sleep_until(::std::chrono::time_point<Clock, Duration> con
 }
 
 template <bool zw = false, ::std::int_least64_t off_to_epoch>
-inline constexpr void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const &expect_time)
+inline
+#if __cpp_constexpr >= 202207L
+	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
+	// for reduce some warning purpose
+	constexpr
+#endif
+	void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const &expect_time)
 {
 	if (expect_time.seconds < 0) [[unlikely]]
 	{
@@ -360,7 +420,7 @@ inline constexpr void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const
 using nt_thread = win32::nt::nt_thread<false>;
 using zw_thread = win32::nt::nt_thread<true>;
 
-#if defined(_WIN32) && !defined(_WIN32_WINDOWS)
+#if ((defined(_WIN32) && !defined(__WINE__)) && !defined(__CYGWIN__)) && !defined(_WIN32_WINDOWS)
 using native_thread = nt_thread;
 
 namespace this_thread
