@@ -36,7 +36,7 @@ public:
 	{
 		if (ptr_ != nullptr)
 		{
-			::std::ranges::destroy_at(reinterpret_cast<Tuple *>(this->ptr_));
+			::std::destroy_at(reinterpret_cast<Tuple *>(this->ptr_));
 			::fast_io::generic_allocator_adapter<::fast_io::nt_rtlallocateheap_allocator>::deallocate(this->ptr_);
 		}
 	}
@@ -121,7 +121,7 @@ public:
 		if (status) [[unlikely]]
 		{
 			// Creation failed; manual release is required.
-			::std::ranges::destroy_at(reinterpret_cast<start_routine_tuple_type *>(start_routine_tuple));
+			::std::destroy_at(reinterpret_cast<start_routine_tuple_type *>(start_routine_tuple));
 			::fast_io::generic_allocator_adapter<::fast_io::nt_rtlallocateheap_allocator>::deallocate(start_routine_tuple);
 
 			::fast_io::throw_nt_error(status);

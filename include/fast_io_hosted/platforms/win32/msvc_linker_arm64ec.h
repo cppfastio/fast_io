@@ -219,7 +219,7 @@
 #pragma comment(linker,"/alternatename:?RtlTryEnterCriticalSection$exit_thunk@nt@win32@fast_io@@$$hYAHPEAX@Z=#RtlTryEnterCriticalSection")
 #pragma comment(linker,"/alternatename:?RtlLeaveCriticalSection$exit_thunk@nt@win32@fast_io@@$$hYAXPEAX@Z=#RtlLeaveCriticalSection")
 #pragma comment(linker,"/alternatename:?RtlDeleteCriticalSection$exit_thunk@nt@win32@fast_io@@$$hYAXPEAX@Z=#RtlDeleteCriticalSection")
-#pragma comment(linker,"/alternatename:?RtlCreateUserThread$exit_thunk@nt@win32@fast_io@@$$hYAIPEAX0HI_K100PEAPEAXPEAUclient_id@123@@Z=#RtlCreateUserThread")
+#pragma comment(linker,"/alternatename:?RtlCreateUserThread$exit_thunk@nt@win32@fast_io@@$$hYAIPEAX0HI_K1P6AI0@Z0PEAPEAXPEAUclient_id@123@@Z=#RtlCreateUserThread")
 #pragma comment(linker,"/alternatename:?NtResumeThread$exit_thunk@nt@win32@fast_io@@$$hYAIPEAXPEAI@Z=#NtResumeThread")
 #pragma comment(linker,"/alternatename:?ZwResumeThread$exit_thunk@nt@win32@fast_io@@$$hYAIPEAXPEAI@Z=#ZwResumeThread")
 #pragma comment(linker,"/alternatename:?NtLockFile$exit_thunk@nt@win32@fast_io@@$$hYAIPEAX0P6AX0PEAUio_status_block@123@I@_E01PEA_J3IEE@Z=#NtLockFile")

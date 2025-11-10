@@ -219,7 +219,7 @@
 #pragma comment(linker,"/alternatename:__imp_?RtlTryEnterCriticalSection@nt@win32@fast_io@@YGHPAX@Z=__imp__RtlTryEnterCriticalSection@4")
 #pragma comment(linker,"/alternatename:__imp_?RtlLeaveCriticalSection@nt@win32@fast_io@@YGXPAX@Z=__imp__RtlLeaveCriticalSection@4")
 #pragma comment(linker,"/alternatename:__imp_?RtlDeleteCriticalSection@nt@win32@fast_io@@YGXPAX@Z=__imp__RtlDeleteCriticalSection@4")
-#pragma comment(linker,"/alternatename:__imp_?RtlCreateUserThread@nt@win32@fast_io@@YGIPAX0HIII00PAPAXPAUclient_id@123@@Z=__imp__RtlCreateUserThread@40")
+#pragma comment(linker,"/alternatename:__imp_?RtlCreateUserThread@nt@win32@fast_io@@YGIPAX0HIIIP6GI0@Z0PAPAXPAUclient_id@123@@Z=__imp__RtlCreateUserThread@40")
 #pragma comment(linker,"/alternatename:__imp_?NtResumeThread@nt@win32@fast_io@@YGIPAXPAI@Z=__imp__NtResumeThread@8")
 #pragma comment(linker,"/alternatename:__imp_?ZwResumeThread@nt@win32@fast_io@@YGIPAXPAI@Z=__imp__ZwResumeThread@8")
 #pragma comment(linker,"/alternatename:__imp_?NtLockFile@nt@win32@fast_io@@YGIPAX0P6AX0PAUio_status_block@123@I@_E01PA_J3IEE@Z=__imp__NtLockFile@40")
