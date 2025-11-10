@@ -18,7 +18,7 @@ inline ::std::byte *sys_mmap(void *addr, ::std::size_t len, int prot, int flags,
             throw_posix_error(EINVAL);
         }
     }
-    long ret{system_call<__NR_mmap, long>(addr, len, prot, flags, fd, offset)};
+    ::std::ptrdiff_t ret{system_call<__NR_mmap, ::std::ptrdiff_t>(addr, len, prot, flags, fd, offset)};
     system_call_throw_error(ret);
     return reinterpret_cast<::std::byte *>(static_cast<::std::uintptr_t>(ret));
 #elif defined(HAVE_MMAP64)
