@@ -44,6 +44,11 @@ public:
 template <typename Tuple, ::std::size_t... Is>
 inline constexpr ::std::uint_least32_t FAST_IO_WINSTDCALL thread_start_routine(void *args) noexcept
 {
+	/*
+	 * Just call the API function. Any CRT specific processing is done in
+	 * DllMain DLL_THREAD_ATTACH
+	 */
+
 	[[maybe_unused]] ::fast_io::win32::details::win32_thread_start_routine_tuple_allocate_guard<Tuple> _(args);
 
 #ifdef FAST_IO_CPP_EXCEPTIONS
