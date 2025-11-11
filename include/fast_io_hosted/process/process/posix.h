@@ -10,7 +10,7 @@ namespace posix
 {
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
-extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("_execveat");
+extern int libc_execveat(int dirfd, char const *pathname, char const *const *argv, char const *const *envp, int flags) noexcept __asm__("_execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
@@ -20,7 +20,7 @@ extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__(
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__exit");
 #else
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
-extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("execveat");
+extern int libc_execveat(int dirfd, char const *pathname, char const *const *argv, char const *const *envp, int flags) noexcept __asm__("execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
