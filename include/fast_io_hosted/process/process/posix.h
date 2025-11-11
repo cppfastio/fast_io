@@ -8,6 +8,11 @@ namespace fast_io
 
 namespace posix
 {
+// The statement about argu[] and enopl] being constants is included to make explicit to future writers of language bindings that these objects are completely constant. 
+// Due toa limitation of the ISOC standard, it is not possible to state that idea in standard C. Specifying two levels of const-qualification for the argol] and enopll 
+// parameters for the exec functions may seem to be the natural choice, given that these functions do not modify either the array of pointers or the characters to which the 
+// function points, but this would disallow existing correct code. Instead, only the array of pointers is noted as constant.
+
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
 extern int libc_execveat(int dirfd, char const *pathname, char const *const *argv, char const *const *envp, int flags) noexcept __asm__("_execveat");
