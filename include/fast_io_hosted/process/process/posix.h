@@ -8,14 +8,14 @@ namespace fast_io
 
 namespace posix
 {
-// The statement about argu[] and enopl] being constants is included to make explicit to future writers of language bindings that these objects are completely constant. 
-// Due toa limitation of the ISOC standard, it is not possible to state that idea in standard C. Specifying two levels of const-qualification for the argol] and enopll 
-// parameters for the exec functions may seem to be the natural choice, given that these functions do not modify either the array of pointers or the characters to which the 
+// The statement about argu[] and enopl] being constants is included to make explicit to future writers of language bindings that these objects are completely constant.
+// Due toa limitation of the ISOC standard, it is not possible to state that idea in standard C. Specifying two levels of const-qualification for the argol] and enopll
+// parameters for the exec functions may seem to be the natural choice, given that these functions do not modify either the array of pointers or the characters to which the
 // function points, but this would disallow existing correct code. Instead, only the array of pointers is noted as constant.
 
 #if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
-extern int libc_execveat(int dirfd, char const *pathname, char const *const *argv, char const *const *envp, int flags) noexcept __asm__("_execveat");
+extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("_execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
 extern pid_t libc_fork() noexcept __asm__("_fork");
 extern pid_t libc_vfork() noexcept __asm__("_vfork");
@@ -25,7 +25,7 @@ extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__(
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__exit");
 #else
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
-extern int libc_execveat(int dirfd, char const *pathname, char const *const *argv, char const *const *envp, int flags) noexcept __asm__("execveat");
+extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
 extern pid_t libc_fork() noexcept __asm__("fork");
 extern pid_t libc_vfork() noexcept __asm__("vfork");
@@ -768,7 +768,7 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 		flags |= AT_SYMLINK_NOFOLLOW;
 	}
 
-	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, args, envp, flags)};
+	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, const_cast<char *const *>(args), const_cast<char *const *>(envp), flags)};
 	if (ret == -1)
 	{
 		t_errno = errno;
@@ -791,7 +791,7 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 		flags |= AT_SYMLINK_NOFOLLOW;
 	}
 
-	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, args, envp, flags)};
+	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, const_cast<char *const *>(args), const_cast<char *const *>(envp), flags)};
 	if (ret == -1)
 	{
 		t_errno = errno;
