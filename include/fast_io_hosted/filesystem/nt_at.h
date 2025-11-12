@@ -851,7 +851,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{md})};
 
-	throw_nt_error(0xC0000002);
+	throw_nt_error(0xC0000275u /*STATUS_NOT_A_REPARSE_POINT*/);
 
 	return {};
 #endif
