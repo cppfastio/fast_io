@@ -27,7 +27,7 @@ inline ::fast_io::install_path get_module_install_path()
 	char buffer1[PATH_MAX + 1];
 	char buffer2[PATH_MAX + 1];
 	char *resolved{};
-	int length = -1;
+	// int length = -1;
 
 #if defined(__NetBSD__)
 	int mib[4]{CTL_KERN, KERN_PROC_ARGS, -1, KERN_PROC_PATHNAME};
