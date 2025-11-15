@@ -907,15 +907,19 @@ public:
 	}
 
 	inline constexpr list(list &&other) noexcept
-		: imp(other.imp)
 		  #if 0
-		  , allochdl(std::move(other.allochdl))
+		  : allochdl(std::move(other.allochdl))
 		  #endif
 	{
-		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
-		auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
-		next->prev = prev->next = __builtin_addressof(imp);
-		other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
+		if (other.empty()) {
+			imp = {__builtin_addressof(imp), __builtin_addressof(imp)};
+		} else {
+			imp = other.imp;
+			auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
+			auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
+			next->prev = prev->next = __builtin_addressof(imp);
+			other.imp = {__builtin_addressof(other.imp), __builtin_addressof(other.imp)};
+		}
 	}
 
 	inline constexpr list &operator=(list &&other) noexcept
