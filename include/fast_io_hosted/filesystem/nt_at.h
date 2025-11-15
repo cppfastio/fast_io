@@ -62,18 +62,17 @@ inline constexpr nt_open_mode calculate_nt_delete_flag(nt_at_flags flags) noexce
 	// The actual delete operation happens inside NtClose, which does not provide detailed error codes.
 	// Therefore, you cannot reliably retrieve the actual delete failure reason.
 
-	nt_open_mode mode{
-		.DesiredAccess = 0x00010000 | 0x00100000, // DELETE | SYNCHRONIZE
-		.FileAttributes = 0x80,                   // FILE_ATTRIBUTE_NORMAL
-		.ShareAccess = 0x00000007,                // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
-		.CreateDisposition = 0x00000001,          // OPEN_EXISTING	=>	FILE_OPEN
-		.CreateOptions = 0x00000020 | 0x00004000  // FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT
-	};
+	// POSIX requires unlinkat() to always operate in no-follow mode (symlinks are
+	// unconditionally unlinked as directory entries and never resolved). Therefore,
+	// we must enforce the same no-follow behavior here.
 
-	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
-	{
-		mode.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
-	}
+	nt_open_mode mode{
+		.DesiredAccess = 0x00010000 | 0x00100000,             // DELETE | SYNCHRONIZE
+		.FileAttributes = 0x80,                               // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,                            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,                      // OPEN_EXISTING	=>	FILE_OPEN
+		.CreateOptions = 0x00000020 | 0x00004000 | 0x00200000 // FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT | FILE_FLAG_OPEN_REPARSE_POINT
+	};
 
 	if ((flags & nt_at_flags::removedir) == nt_at_flags::removedir)
 	{
