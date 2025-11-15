@@ -852,7 +852,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 #endif
 	else
 	{
-		throw_nt_error(0xC0000002);
+		throw_nt_error(0xC0000275u /*STATUS_NOT_A_REPARSE_POINT*/);
 	}
 
 	return {};
