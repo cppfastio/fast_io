@@ -56,35 +56,53 @@ namespace win32::nt::details
 
 inline constexpr nt_open_mode calculate_nt_delete_flag(nt_at_flags flags) noexcept
 {
+	// FILE_DELETE_ON_CLOSE is not used here. Instead, use FILE_DISPOSITION_INFORMATION to control deletion!
+
+	// FILE_DELETE_ON_CLOSE schedules deletion at handle close.
+	// The actual delete operation happens inside NtClose, which does not provide detailed error codes.
+	// Therefore, you cannot reliably retrieve the actual delete failure reason.
+
 	nt_open_mode mode{
-		.DesiredAccess = 0x00010000,     // FILE_GENERIC_READ
-		.FileAttributes = 0x80,          // FILE_ATTRIBUTE_NORMAL
-		.ShareAccess = 0x00000007,       // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
-		.CreateDisposition = 0x00000001, /*OPEN_EXISTING	=>	FILE_OPEN*/
-		.CreateOptions = 0x00001000      /*FILE_DELETE_ON_CLOSE*/
+		.DesiredAccess = 0x00010000 | 0x00100000, // DELETE | SYNCHRONIZE
+		.FileAttributes = 0x80,                   // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,                // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,          // OPEN_EXISTING	=>	FILE_OPEN
+		.CreateOptions = 0x00000020 | 0x00004000  // FILE_SYNCHRONOUS_IO_NONALERT | FILE_OPEN_FOR_BACKUP_INTENT
 	};
+
 	if ((flags & nt_at_flags::symlink_nofollow) == nt_at_flags::symlink_nofollow)
 	{
 		mode.CreateOptions |= 0x00200000; // FILE_FLAG_OPEN_REPARSE_POINT => FILE_OPEN_REPARSE_POINT (0x00200000)
 	}
+
 	if ((flags & nt_at_flags::removedir) == nt_at_flags::removedir)
 	{
-		mode.CreateOptions |= 0x00004000; // FILE_OPEN_FOR_BACKUP_INTENT
 		mode.CreateOptions |= 0x00000001; // FILE_DIRECTORY_FILE
 	}
 	else
 	{
-		mode.CreateOptions |= 0x00000040; // FILE_NON_DIRECTORY_FILE 0x00000040
+		mode.CreateOptions |= 0x00000040; // FILE_NON_DIRECTORY_FILE
 	}
+
 	return mode;
 }
 
 template <bool zw>
 inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags, bool kernel)
 {
-	auto status{nt_close<zw>(
-		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{calculate_nt_delete_flag(flags)}))};
-	if (status)
+	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
+		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{calculate_nt_delete_flag(flags)})};
+
+	::fast_io::win32::nt::io_status_block IoStatusBlock; // no initialization needed
+	::fast_io::win32::nt::file_disposition_information fdi{.DeleteFile = true};
+
+	auto status{::fast_io::win32::nt::nt_set_information_file<zw>(file.native_handle(),
+																  __builtin_addressof(IoStatusBlock),
+																  __builtin_addressof(fdi),
+																  sizeof(fdi),
+																  ::fast_io::win32::nt::file_information_class::FileDispositionInformation)};
+
+	if (status) [[unlikely]]
 	{
 		throw_nt_error(status);
 	}
@@ -107,7 +125,7 @@ inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size
 	}
 
 	auto status{nt_close<zw>(nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{m_dir_mode}))};
-	
+
 	if (status)
 	{
 		throw_nt_error(status);
@@ -777,10 +795,10 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 {
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT > 0x0600
 	constexpr ::fast_io::win32::nt::details::nt_open_mode md{
-		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
-		.FileAttributes = 0x80,               // FILE_ATTRIBUTE_NORMAL
-		.ShareAccess = 0x00000007,            // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
-		.CreateDisposition = 0x00000001,      // OPEN_EXISTING => FILE_OPEN
+		.DesiredAccess = 0x00100000 | 0x0080,    // SYNCHRONIZE | FILE_READ_ATTRIBUTES
+		.FileAttributes = 0x80,                  // FILE_ATTRIBUTE_NORMAL
+		.ShareAccess = 0x00000007,               // FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE
+		.CreateDisposition = 0x00000001,         // OPEN_EXISTING => FILE_OPEN
 		.CreateOptions = 0x00200000 | 0x00000020 // FILE_FLAG_OPEN_REPARSE_POINT | FILE_SYNCHRONOUS_IO_NONALERT
 	};
 

@@ -24,7 +24,7 @@ inline ::fast_io::install_path get_module_install_path()
 	char buffer[path_max + 1];
 	::fast_io::install_path ret;
 
-	using my_ssize_t = ::std::make_signed_t<::std::size_t>;
+	using my_ssize_t [[maybe_unused]] = ::std::make_signed_t<::std::size_t>;
 #if defined(__linux__) && defined(__NR_readlink)
 	auto resolved{::fast_io::system_call<__NR_readlink, my_ssize_t>("/proc/self/exe", buffer, path_max)};
 	system_call_throw_error(resolved);
