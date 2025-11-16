@@ -566,7 +566,7 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_iterator end() const noexcept
 	{
-		return {__builtin_addressof(imp)};
+		return {const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))};
 	}
 
 	[[nodiscard]] inline constexpr const_iterator cbegin() const noexcept
@@ -575,16 +575,17 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_iterator cend() const noexcept
 	{
-		return {__builtin_addressof(imp)};
+		return {const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))};
+	}
+
+	[[nodiscard]] inline constexpr reverse_iterator rbegin() noexcept
+	{
+		return reverse_iterator({__builtin_addressof(imp)});
 	}
 
 	[[nodiscard]] inline constexpr reverse_iterator rend() noexcept
 	{
 		return reverse_iterator({imp.next});
-	}
-	[[nodiscard]] inline constexpr reverse_iterator rbegin() noexcept
-	{
-		return reverse_iterator({__builtin_addressof(imp)});
 	}
 
 	[[nodiscard]] inline constexpr const_reverse_iterator rend() const noexcept
@@ -593,7 +594,7 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_reverse_iterator rbegin() const noexcept
 	{
-		return const_reverse_iterator({__builtin_addressof(imp)});
+		return const_reverse_iterator({const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))});
 	}
 
 	[[nodiscard]] inline constexpr const_reverse_iterator crend() const noexcept
@@ -602,7 +603,7 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
-		return const_reverse_iterator({__builtin_addressof(imp)});
+		return const_reverse_iterator({const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))});
 	}
 
 	[[nodiscard]] inline constexpr bool empty() const noexcept
