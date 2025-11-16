@@ -911,7 +911,7 @@ public:
 		  : allochdl(std::move(other.allochdl))
 		  #endif
 	{
-		if (other.empty()) {
+		if (other.is_empty()) {
 			imp = {__builtin_addressof(imp), __builtin_addressof(imp)};
 		} else {
 			imp = other.imp;
