@@ -98,7 +98,7 @@ inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 	auto status{::fast_io::win32::nt::nt_set_information_file<zw>(file.native_handle(),
 																  __builtin_addressof(IoStatusBlock),
 																  __builtin_addressof(fdi),
-																  sizeof(fdi),
+																  static_cast<::std::uint_least32_t>(sizeof(fdi)),
 																  ::fast_io::win32::nt::file_information_class::FileDispositionInformation)};
 
 	if (status) [[unlikely]]
