@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <type_traits>
+
 namespace fast_io
 {
 
@@ -22,15 +24,73 @@ struct list_node
 	T element;
 };
 
-template <typename T, bool isconst>
+template <typename T>
+class list_const_iterator
+{
+public:
+	using value_type = T;
+	using pointer = value_type const *;
+	using const_pointer = value_type const *;
+
+	using reference = value_type const &;
+	using const_reference = value_type const &;
+
+	using size_type = ::std::size_t;
+	using difference_type = ::std::ptrdiff_t;
+	void const *iter{};
+
+	inline constexpr list_const_iterator &operator++() noexcept
+	{
+		iter = static_cast<list_node_common const *>(iter)->next;
+		return *this;
+	}
+
+	inline constexpr list_const_iterator &operator--() noexcept
+	{
+		iter = static_cast<list_node_common const *>(iter)->prev;
+		return *this;
+	}
+
+	inline constexpr list_const_iterator operator++(int) noexcept
+	{
+		auto temp(*this);
+		++*this;
+		return temp;
+	}
+
+	inline constexpr list_const_iterator operator--(int) noexcept
+	{
+		auto temp(*this);
+		--*this;
+		return temp;
+	}
+
+	inline constexpr const_reference operator*() const noexcept
+	{
+		return static_cast<list_node<T> const *>(iter)->element;
+	}
+
+	inline constexpr const_pointer operator->() const noexcept
+	{
+		return __builtin_addressof(static_cast<list_node<T> const *>(iter)->element);
+	}
+};
+
+template <typename T>
+constexpr bool is_list_const_iterator_ = false;
+
+template <typename T>
+constexpr bool is_list_const_iterator_<::fast_io::containers::details::list_const_iterator<T>> = true;
+
+template <typename T>
 class list_iterator
 {
 public:
 	using value_type = T;
-	using pointer = ::std::conditional_t<isconst, value_type const *, value_type *>;
+	using pointer = value_type *;
 	using const_pointer = value_type const *;
 
-	using reference = ::std::conditional_t<isconst, value_type const &, value_type &>;
+	using reference = value_type &;
 	using const_reference = value_type const &;
 
 	using size_type = ::std::size_t;
@@ -73,23 +133,25 @@ public:
 		return __builtin_addressof(static_cast<list_node<T> *>(iter)->element);
 	}
 
-	inline constexpr operator list_iterator<T, true>() const noexcept
-		requires(!isconst)
+	inline constexpr operator list_const_iterator<T>() const noexcept
 	{
 		return {this->iter};
 	}
 };
 
-template <typename T, bool isconst1, bool isconst2>
-inline constexpr bool operator==(list_iterator<T, isconst1> a, list_iterator<T, isconst2> b) noexcept
+template <typename T>
+constexpr bool is_list_iterator_ = false;
+
+template <typename T>
+constexpr bool is_list_iterator_<::fast_io::containers::details::list_iterator<T>> = true;
+
+template <typename T>
+concept is_list_forward_iterator = ::fast_io::containers::details::is_list_iterator_<::std::remove_cvref_t<T>> || ::fast_io::containers::details::is_list_const_iterator_<::std::remove_cvref_t<T>>;
+
+template <is_list_forward_iterator T, is_list_forward_iterator U>
+inline constexpr bool operator==(T &&a, U &&b) noexcept
 {
 	return a.iter == b.iter;
-}
-
-template <typename T, bool isconst1, bool isconst2>
-inline constexpr bool operator!=(list_iterator<T, isconst1> a, list_iterator<T, isconst2> b) noexcept
-{
-	return a.iter != b.iter;
 }
 
 template <typename allocator>
@@ -494,8 +556,8 @@ public:
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
 
-	using iterator = ::fast_io::containers::details::list_iterator<T, false>;
-	using const_iterator = ::fast_io::containers::details::list_iterator<T, true>;
+	using iterator = ::fast_io::containers::details::list_iterator<T>;
+	using const_iterator = ::fast_io::containers::details::list_const_iterator<T>;
 
 	using reverse_iterator = ::std::reverse_iterator<iterator>;
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
