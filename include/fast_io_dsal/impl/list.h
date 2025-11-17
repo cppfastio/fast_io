@@ -457,7 +457,7 @@ private:
 			}
 			else
 			{
-				typed_allocator_type::deallocate(ptr);
+				typed_allocator_type::deallocate_n(ptr, 1);
 			}
 		}
 	};
