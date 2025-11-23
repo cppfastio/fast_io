@@ -29,9 +29,9 @@ inline int sys_dup(int old_fd)
 #else
 	auto fd{noexcept_call(
 #if defined(_WIN32) && !defined(__BIONIC__)
-		::_dup
+		_dup
 #else
-		::dup
+		dup
 #endif
 		,
 		old_fd)};
