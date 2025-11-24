@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined (_MSC_VER) && !defined(__clang__)
 #error "get_stack_pointer is not supported on MSVC"

@@ -184,7 +184,7 @@ inline void portable_fd_path([[maybe_unused]] int fd, char *buf, ::std::size_t b
 	::fast_io::obuffer_view linkpath_ov{linkpath, linkpath + all_sz};
 	::fast_io::operations::print_freestanding<false>(linkpath_ov, path_str, fd, ::fast_io::mnp::chvw(::fast_io::char_literal_v<u8'\0', char>));
 
-    using my_ssize_t [[maybe_unused]] = ::std::make_signed_t<::std::size_t>;
+	using my_ssize_t [[maybe_unused]] = ::std::make_signed_t<::std::size_t>;
 
 #if defined(__linux__) && defined(__NR_readlink)
 	auto resolved{::fast_io::system_call<__NR_readlink, my_ssize_t>(linkpath, buf, bufsz - 1u)};
@@ -716,7 +716,7 @@ struct fd_remapper
 };
 
 // only used in vfork_execveat_common_impl()
-inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, sig_atomic_t volatile &t_errno, process_mode mode) noexcept
+inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, unsigned volatile &t_errno, process_mode mode) noexcept
 {
 	// vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
@@ -810,7 +810,7 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 	pid_t pid{};
-	sig_atomic_t volatile t_errno{}; // receive error from vfork subproc
+	unsigned volatile t_errno{}; // receive error from vfork subproc
 	{
 		fd_remapper fm;
 		fm.map(0, pio.in);

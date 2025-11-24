@@ -23,51 +23,97 @@ inline constexpr void append_win32_quoted_arg_common(
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str,
 	Iter first, Iter last)
 {
-	// Reserve rough upper bound: quotes + worst-case doubling
-	str.reserve(str.size() + 3 + static_cast<::std::size_t>(last - first) * 2u);
-	str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-
-	::std::size_t backslash_count{};
-	for (; first != last; ++first)
+	if (is_first)
 	{
-		auto const c{*first};
-		if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
+		bool needs_quote{};
+		auto it{first};
+		for (; it != last; ++it)
 		{
-			if (is_first) [[unlikely]]
+			auto const c{*it};
+			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>) [[unlikely]]
 			{
-				// Windows argv[0] does not allow double quotes even if escaped
 				throw_win32_error(13);
 			}
-			// Output 2*n+1 backslashes before a quote
-			for (::std::size_t i{}; i != ((backslash_count << 1u) + 1u); ++i)
+			if (c <= ::fast_io::char_literal_v<u8' ', replace_char_type>)
 			{
-				str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+				needs_quote = true;
 			}
+		}
+
+		if (first == last)
+		{
+			str.reserve(str.size() + 3u);
 			str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-			backslash_count = 0;
+			str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+			str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+			return;
 		}
-		else if (c == ::fast_io::char_literal_v<u8'\\', replace_char_type>)
+
+		if (!needs_quote)
 		{
-			++backslash_count;
-		}
-		else
-		{
-			// Flush pending backslashes (not before a quote): output as-is
-			for (::std::size_t i{}; i != backslash_count; ++i)
+			auto const sz{static_cast<::std::size_t>(last - first)};
+			str.reserve(str.size() + sz + 1u);
+			for (it = first; it != last; ++it)
 			{
-				str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+				str.push_back_unchecked(*it);
 			}
-			backslash_count = 0;
-			str.push_back_unchecked(c);
+			str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+			return;
 		}
+
+		auto const sz{static_cast<::std::size_t>(last - first)};
+		str.reserve(str.size() + sz + 3u);
+		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+		for (it = first; it != last; ++it)
+		{
+			str.push_back_unchecked(*it);
+		}
+		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+		str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
 	}
-	// Before closing quote, double any trailing backslashes
-	for (::std::size_t i{}; i != (backslash_count << 1u); ++i)
+	else
 	{
-		str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+		// Reserve rough upper bound: quotes + worst-case doubling
+		str.reserve(str.size() + 3 + static_cast<::std::size_t>(last - first) * 2u);
+		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+
+		::std::size_t backslash_count{};
+		for (; first != last; ++first)
+		{
+			auto const c{*first};
+			if (c == ::fast_io::char_literal_v<u8'\"', replace_char_type>)
+			{
+				// Output 2*n+1 backslashes before a quote
+				for (::std::size_t i{}; i != ((backslash_count << 1u) + 1u); ++i)
+				{
+					str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+				}
+				str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+				backslash_count = 0;
+			}
+			else if (c == ::fast_io::char_literal_v<u8'\\', replace_char_type>)
+			{
+				++backslash_count;
+			}
+			else
+			{
+				// Flush pending backslashes (not before a quote): output as-is
+				for (::std::size_t i{}; i != backslash_count; ++i)
+				{
+					str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+				}
+				backslash_count = 0;
+				str.push_back_unchecked(c);
+			}
+		}
+		// Before closing quote, double any trailing backslashes
+		for (::std::size_t i{}; i != (backslash_count << 1u); ++i)
+		{
+			str.push_back_unchecked(::fast_io::char_literal_v<u8'\\', replace_char_type>);
+		}
+		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+		str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
 	}
-	str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-	str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
 }
 
 template <::std::integral replace_char_type, typename T>
@@ -423,16 +469,16 @@ inline constexpr void construct_posix_process_argenvs_decay(
 namespace posix
 {
 #if defined(__APPLE__) || defined(__DARWIN_C_LEVEL)
-	// Darwin does not provide an `environ` function; here we use `_NSGetEnviron` to obtain it.
-	extern char*** _NSGetEnviron() noexcept __asm__("__NSGetEnviron");
+// Darwin does not provide an `environ` function; here we use `_NSGetEnviron` to obtain it.
+extern char ***_NSGetEnviron() noexcept __asm__("__NSGetEnviron");
 #elif defined(__MSDOS__) || defined(__DJGPP__)
-	// djgpp only provides `char** _environ`. For consistency, a symbolic link is used here.
-	extern char** environ __asm__("__environ");
+// djgpp only provides `char** _environ`. For consistency, a symbolic link is used here.
+extern char **environ __asm__("__environ");
 #elif !(defined(_WIN32) || defined(__CYGWIN__))
-	// Reference to the global `environ` variable
-	extern "C" char** environ;
+// Reference to the global `environ` variable
+extern "C" char **environ;
 #endif
-}  // namespace details
+} // namespace posix
 } // namespace details
 
 struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
