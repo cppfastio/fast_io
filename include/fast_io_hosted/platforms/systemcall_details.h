@@ -31,7 +31,7 @@ inline int sys_dup(int old_fd)
 #else
 
 #if (defined(__MSDOS__) || defined(__DJGPP__)) || defined(__wasi__)
-	auto fd{::fast_io::details::dup(old_fd)};
+	auto fd{::fast_io::details::posix::dup(old_fd)};
 #else
 	auto fd{::fast_io::noexcept_call(
 #if defined(_WIN32) && !defined(__BIONIC__)
@@ -61,7 +61,7 @@ inline int sys_dup2(int old_fd, int new_fd)
 #else
 
 #if (defined(__MSDOS__) || defined(__DJGPP__)) || defined(__wasi__)
-	auto fd{::fast_io::details::dup2(old_fd, new_fd)};
+	auto fd{::fast_io::details::posix::dup2(old_fd, new_fd)};
 #else
 	auto fd{::fast_io::noexcept_call(
 #if defined(_WIN32) && !defined(__BIONIC__)
@@ -105,7 +105,7 @@ inline return_code sys_dup2_nothrow(int old_fd, int new_fd) noexcept
 #else
 
 #if (defined(__MSDOS__) || defined(__DJGPP__)) || defined(__wasi__)
-	auto fd{::fast_io::details::dup2(old_fd, new_fd)};
+	auto fd{::fast_io::details::posix::dup2(old_fd, new_fd)};
 #else
 	auto fd{::fast_io::noexcept_call(
 #if defined(_WIN32) && !defined(__BIONIC__)
@@ -130,7 +130,7 @@ inline int sys_close(int fd) noexcept
 	return
 #if defined(__linux__) && defined(__NR_close)
 		::fast_io::system_call<__NR_close, int>(fd);
-#elif (defined(_WIN32) && !defined(__BIONIC__)) || defined(__MSDOS__)
+#elif (defined(_WIN32) && !defined(__BIONIC__))
 		::fast_io::noexcept_call(::_close, fd);
 #elif defined(__MSDOS__) || defined(__DJGPP__)
 		::fast_io::details::posix::close(fd);
