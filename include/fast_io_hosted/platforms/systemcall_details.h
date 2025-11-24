@@ -141,7 +141,7 @@ inline int sys_close(int fd) noexcept
 
 inline void sys_close_throw_error(int &fd)
 {
-	auto ret{::fast_io::sys_close(fd)};
+	auto ret{::fast_io::details::sys_close(fd)};
 	fd = -1; // POSIX standard says we should never call close(2) again even close syscall fails
 #if defined(__linux__) && defined(__NR_close)
 	::fast_io::system_call_throw_error(ret);
