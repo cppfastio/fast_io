@@ -218,6 +218,17 @@ public:
 		return imp.begin_ptr;
 	}
 
+	/**
+	 * @brief Detach the string and release the memory which against RAII
+	 * @return The pointer to the string
+	 * @note This methods is dangerous, which only helps to c-ptr style interface
+	 */
+	inline constexpr pointer unsafe_detached_release() noexcept {
+		auto result = imp.begin_ptr;
+		imp = {nullptr, nullptr, nullptr};
+		return result;
+	}
+
 	inline constexpr bool is_empty() const noexcept
 	{
 		return imp.begin_ptr == imp.curr_ptr;
