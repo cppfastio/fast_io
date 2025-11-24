@@ -42,34 +42,31 @@ inline constexpr void append_win32_quoted_arg_common(
 
 		if (first == last)
 		{
-			str.reserve(str.size() + 3u);
-			str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-			str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-			str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+			str.push_back(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+			str.push_back(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+			str.push_back(::fast_io::char_literal_v<u8' ', replace_char_type>);
 			return;
 		}
 
 		if (!needs_quote)
 		{
 			auto const sz{static_cast<::std::size_t>(last - first)};
-			str.reserve(str.size() + sz + 1u);
 			for (it = first; it != last; ++it)
 			{
-				str.push_back_unchecked(*it);
+				str.push_back(*it);
 			}
-			str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+			str.push_back(::fast_io::char_literal_v<u8' ', replace_char_type>);
 			return;
 		}
 
 		auto const sz{static_cast<::std::size_t>(last - first)};
-		str.reserve(str.size() + sz + 3u);
-		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+		str.push_back(::fast_io::char_literal_v<u8'\"', replace_char_type>);
 		for (it = first; it != last; ++it)
 		{
-			str.push_back_unchecked(*it);
+			str.push_back(*it);
 		}
-		str.push_back_unchecked(::fast_io::char_literal_v<u8'\"', replace_char_type>);
-		str.push_back_unchecked(::fast_io::char_literal_v<u8' ', replace_char_type>);
+		str.push_back(::fast_io::char_literal_v<u8'\"', replace_char_type>);
+		str.push_back(::fast_io::char_literal_v<u8' ', replace_char_type>);
 	}
 	else
 	{
