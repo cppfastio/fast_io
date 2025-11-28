@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io::win32::nt::details
 {
@@ -99,11 +99,6 @@ inline auto nt_call_invoke_with_directory_handle_impl(void *directory, char_type
 		= char16_t const *;
 	if constexpr (::std::same_as<char_type, char16_t>)
 	{
-		using char16_may_alias_ptr
-#if __has_cpp_attribute(__gnu__::__may_alias__)
-			[[__gnu__::__may_alias__]]
-#endif
-			= char16_t *;
 		::std::uint_least16_t const bytes(strlen_to_nt_filename_bytes(filename_len));
 
 		// Since this involves escaping Win32-style paths to NT, all forward slashes '/' are converted to backslashes '\\'.
