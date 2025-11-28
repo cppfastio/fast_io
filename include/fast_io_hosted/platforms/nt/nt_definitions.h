@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include "../../../fast_io_core_impl/allocation/common.h"
 
 namespace fast_io::win32::nt
@@ -50,7 +51,27 @@ struct io_status_block
 	::std::size_t Information;
 };
 
+enum class wait_type
+{
+	WaitAll,
+	WaitAny
+};
+
+enum class event_type
+{
+	NotificationEvent,
+	SynchronizationEvent
+};
+
+enum class timer_type
+{
+	NotificationTimer,
+	SynchronizationTimer
+};
+
 using pio_apc_routine = void (*)(void *, io_status_block *, ::std::uint_least32_t) noexcept;
+
+using ptimer_apc_routine = void (*)(void *, ::std::uint_least32_t, ::std::int_least32_t) noexcept;
 
 struct rtlp_curdir_def
 {

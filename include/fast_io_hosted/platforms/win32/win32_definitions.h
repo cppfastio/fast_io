@@ -284,6 +284,22 @@ struct wsamsg
 	::std::uint_least32_t dwflags;
 };
 
+inline constexpr ::std::size_t fd_max_events{10u};
+
+struct wsanetworkevents
+{
+	::std::int_least32_t lNetworkEvents;
+	int iErrorCode[fd_max_events];
+};
+
+using ptimerapcroutine = void(
+#if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+	__stdcall
+#elif (__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
+	__attribute__((__stdcall__))
+#endif
+		*)(void *, ::std::uint_least32_t, ::std::uint_least32_t) noexcept;
+
 using lpwsaoverlapped_completion_routine = void(
 #if defined(_MSC_VER) && (!__has_cpp_attribute(__gnu__::__stdcall__) && !defined(__WINE__))
 	__stdcall

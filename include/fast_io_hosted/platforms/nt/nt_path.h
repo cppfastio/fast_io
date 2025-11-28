@@ -45,6 +45,50 @@ ReactOS shows that RtlDosPathNameToNtPathName_U_WithStatus was added since Windo
 #endif
 }
 
+struct rtl_alloc_guard
+{
+	using allocator = ::fast_io::native_typed_thread_local_allocator<char16_t>;
+
+	char16_t *ptr{};
+	inline constexpr rtl_alloc_guard() noexcept = default;
+	inline constexpr rtl_alloc_guard(char16_t *ptr) noexcept : ptr{ptr}
+	{}
+
+	inline constexpr rtl_alloc_guard(rtl_alloc_guard const &) = delete;
+	inline constexpr rtl_alloc_guard &operator=(rtl_alloc_guard const &) = delete;
+
+	inline constexpr rtl_alloc_guard(rtl_alloc_guard &&other) noexcept : ptr{other.ptr}
+	{
+		other.ptr = nullptr;
+	}
+
+	inline constexpr rtl_alloc_guard &operator=(rtl_alloc_guard &&other) noexcept
+	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
+
+		if (this->ptr) [[likely]]
+		{
+			allocator::deallocate(this->ptr);
+		}
+
+		this->ptr = other.ptr;
+		other.ptr = nullptr;
+
+		return *this;
+	}
+
+	inline constexpr ~rtl_alloc_guard()
+	{
+		if (this->ptr) [[likely]]
+		{
+			allocator::deallocate(this->ptr);
+		}
+	}
+};
+
 template <::std::integral char_type, typename func>
 inline auto nt_call_invoke_with_directory_handle_impl(void *directory, char_type const *filename, ::std::size_t filename_len, func callback)
 {
@@ -61,8 +105,25 @@ inline auto nt_call_invoke_with_directory_handle_impl(void *directory, char_type
 #endif
 			= char16_t *;
 		::std::uint_least16_t const bytes(strlen_to_nt_filename_bytes(filename_len));
+
+		// Since this involves escaping Win32-style paths to NT, all forward slashes '/' are converted to backslashes '\\'.
+
+		auto const char16_t_size{bytes / sizeof(char16_t)};
+
+		rtl_alloc_guard rtl_guard{rtl_alloc_guard::allocator::allocate(char16_t_size)};
+
+		::fast_io::freestanding::nonoverlapped_bytes_copy_n(reinterpret_cast<::std::byte const *>(filename), bytes, reinterpret_cast<::std::byte *>(rtl_guard.ptr));
+
+		for (auto curr{rtl_guard.ptr}; curr != rtl_guard.ptr + char16_t_size; ++curr)
+		{
+			if (*curr == u'/')
+			{
+				*curr = u'\\';
+			}
+		}
+
 		win32::nt::unicode_string relative_path{
-			.Length = bytes, .MaximumLength = bytes, .Buffer = const_cast<char16_may_alias_ptr>(filename)};
+			.Length = bytes, .MaximumLength = bytes, .Buffer = rtl_guard.ptr};
 		return callback(directory, __builtin_addressof(relative_path));
 	}
 	else if constexpr (sizeof(char_type) == sizeof(char16_t))

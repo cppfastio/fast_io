@@ -94,6 +94,11 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL recvfrom(::std::size_t, char *, int, in
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSARecv(::std::size_t, ::fast_io::win32::wsabuf *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t *, ::fast_io::win32::overlapped *, ::fast_io::win32::lpwsaoverlapped_completion_routine) noexcept FAST_IO_WINSTDCALL_RENAME(WSARecv, 28);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSARecvFrom(::std::size_t, ::fast_io::win32::wsabuf *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t *, void *, int *, ::fast_io::win32::overlapped *, ::fast_io::win32::lpwsaoverlapped_completion_routine) noexcept FAST_IO_WINSTDCALL_RENAME(WSARecvFrom, 36);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL connect(::std::size_t, void const *, int) noexcept FAST_IO_WINSTDCALL_RENAME(connect, 12);
+FAST_IO_DLLIMPORT ::std::size_t FAST_IO_WINSTDCALL WSACreateEvent() noexcept FAST_IO_WINSTDCALL_RENAME(WSACreateEvent, 0);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSACloseEvent(::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(WSACloseEvent, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAResetEvent(::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(WSAResetEvent, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAEventSelect(::std::size_t, ::std::size_t, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(WSAEventSelect, 12);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAEnumNetworkEvents(::std::size_t, ::std::size_t, ::fast_io::win32::wsanetworkevents *) noexcept FAST_IO_WINSTDCALL_RENAME(WSAEnumNetworkEvents, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAConnect(::std::size_t, void const *, int, ::fast_io::win32::wsabuf *, ::fast_io::win32::wsabuf *, ::fast_io::win32::qualityofservice *, ::fast_io::win32::qualityofservice *) noexcept FAST_IO_WINSTDCALL_RENAME(WSAConnect, 28);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL shutdown(::std::size_t, int) noexcept FAST_IO_WINSTDCALL_RENAME(shutdown, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetCurrentProcessId() noexcept FAST_IO_WINSTDCALL_RENAME(GetCurrentProcessId, 0);
@@ -161,6 +166,10 @@ FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateNamedPipeW(char16_t const *, ::
 FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateNamedPipeA(char const *, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::fast_io::win32::security_attributes *) noexcept FAST_IO_WINSTDCALL_RENAME(CreateNamedPipeA, 32);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL ConnectNamedPipe(void *, ::fast_io::win32::overlapped *) noexcept FAST_IO_WINSTDCALL_RENAME(ConnectNamedPipe, 8);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL DisconnectNamedPipe(void *) noexcept FAST_IO_WINSTDCALL_RENAME(DisconnectNamedPipe, 4);
+FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateWaitableTimerW(::fast_io::win32::security_attributes *, int, char16_t const *) noexcept FAST_IO_WINSTDCALL_RENAME(CreateWaitableTimerW, 12);
+FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateWaitableTimerA(::fast_io::win32::security_attributes *, int, char const *) noexcept FAST_IO_WINSTDCALL_RENAME(CreateWaitableTimerA, 12);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetWaitableTimer(void *, ::std::int_least64_t const *, ::std::int_least32_t, ::fast_io::win32::ptimerapcroutine, void *, int) noexcept FAST_IO_WINSTDCALL_RENAME(SetWaitableTimer, 24);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL CancelWaitableTimer(void *) noexcept FAST_IO_WINSTDCALL_RENAME(CancelWaitableTimer, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL LookupPrivilegeValueA(char const *__restrict, char const *__restrict, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueA, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL LookupPrivilegeValueW(char16_t const *__restrict, char16_t const *__restrict, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueW, 12);
 FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateThread(security_attributes *, ::std::size_t, ::std::uint_least32_t (FAST_IO_WINSTDCALL*)(void*), void*, ::std::uint_least32_t, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(CreateThread, 24);
@@ -181,5 +190,6 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationW(char16_t const*, 
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationA(char const*, char*, ::std::uint_least32_t, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, char*, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationA, 32);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceW(char16_t const*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceW, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceA(char const*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceA, 20);
+FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL ExitProcess(::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ExitProcess, 4);
 
 } // namespace fast_io::win32

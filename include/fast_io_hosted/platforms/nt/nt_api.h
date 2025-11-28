@@ -32,6 +32,8 @@ FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtDuplicateObject(voi
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwDuplicateObject(void *, void *, void *, void **, ::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwDuplicateObject, 28);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtWaitForSingleObject(void *, int, ::std::uint_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtWaitForSingleObject, 12);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwWaitForSingleObject(void *, int, ::std::uint_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwWaitForSingleObject, 12);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtWaitForMultipleObjects(::std::uint_least32_t, void *const *, ::fast_io::win32::nt::wait_type, int, ::std::uint_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtWaitForMultipleObjects, 20);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwWaitForMultipleObjects(::std::uint_least32_t, void *const *, ::fast_io::win32::nt::wait_type, int, ::std::uint_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwWaitForMultipleObjects, 20);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetSystemTime(::std::int_least64_t *, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetSystemTime, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetSystemTime(::std::int_least64_t *, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetSystemTime, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtCreateProcess(void **, ::std::uint_least32_t, ::fast_io::win32::nt::object_attributes *, void *, ::std::uint_least32_t, void *, void *, void *) noexcept FAST_IO_WINSTDCALL_RENAME(NtCreateProcess, 32);
@@ -96,6 +98,12 @@ FAST_IO_DLLIMPORT ::std::uint_least64_t FAST_IO_WINSTDCALL RtlGetSystemTimePreci
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtQueryInformationThread(void *__restrict, ::fast_io::win32::nt::thread_information_class, void *, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtQueryInformationThread, 20);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwQueryInformationThread(void *__restrict, ::fast_io::win32::nt::thread_information_class, void *, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwQueryInformationThread, 20);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL RtlAdjustPrivilege(::std::uint_least32_t, ::std::uint_least8_t, ::std::uint_least8_t, ::std::uint_least8_t *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlAdjustPrivilege, 16); // TODO can the first param be `::fast_io::win32::nt::privileges`?
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtCreateEvent(void **, ::std::uint_least32_t, ::fast_io::win32::nt::object_attributes *, ::fast_io::win32::nt::event_type, ::std::uint_least8_t) noexcept FAST_IO_WINSTDCALL_RENAME(NtCreateEvent, 20);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwCreateEvent(void **, ::std::uint_least32_t, ::fast_io::win32::nt::object_attributes *, ::fast_io::win32::nt::event_type, ::std::uint_least8_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwCreateEvent, 20);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetEvent(void *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetEvent, 8);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetEvent(void *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetEvent, 8);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtResetEvent(void *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtResetEvent, 8);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwResetEvent(void *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwResetEvent, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetInformationObject(void *__restrict, ::fast_io::win32::nt::object_information_class, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetInformationObject, 16);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetInformationObject(void *__restrict, ::fast_io::win32::nt::object_information_class, void *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetInformationObject, 16);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtQueryAuxiliaryCounterFrequency(::std::uint_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtQueryAuxiliaryCounterFrequency, 4);
@@ -143,5 +151,11 @@ FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtDelayExecution(bool
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwDelayExecution(bool, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwDelayExecution, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetTimerResolution(::std::uint_least32_t, bool, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetTimerResolution, 12);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetTimerResolution(::std::uint_least32_t, bool, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetTimerResolution, 12);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtCreateTimer(void **, ::std::uint_least32_t, ::fast_io::win32::nt::object_attributes *, ::fast_io::win32::nt::timer_type) noexcept FAST_IO_WINSTDCALL_RENAME(NtCreateTimer, 16);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwCreateTimer(void **, ::std::uint_least32_t, ::fast_io::win32::nt::object_attributes *, ::fast_io::win32::nt::timer_type) noexcept FAST_IO_WINSTDCALL_RENAME(ZwCreateTimer, 16);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtSetTimer(void *, ::std::uint_least64_t const *, ::fast_io::win32::nt::ptimer_apc_routine, void *, ::std::uint_least8_t, ::std::int_least32_t, ::std::uint_least8_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtSetTimer, 28);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwSetTimer(void *, ::std::uint_least64_t const *, ::fast_io::win32::nt::ptimer_apc_routine, void *, ::std::uint_least8_t, ::std::int_least32_t, ::std::uint_least8_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwSetTimer, 28);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL NtCancelTimer(void *, ::std::uint_least8_t *) noexcept FAST_IO_WINSTDCALL_RENAME(NtCancelTimer, 8);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL ZwCancelTimer(void *, ::std::uint_least8_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ZwCancelTimer, 8);
 
 } // namespace fast_io::win32::nt

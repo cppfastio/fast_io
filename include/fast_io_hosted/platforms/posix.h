@@ -1094,7 +1094,7 @@ inline int my_posix_open(char const *pathname, int flags,
 {
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(AT_FDCWD)) || defined(_PICOLIBC__)
 	int fd{::fast_io::details::my_posix_open_noexcept(pathname, flags, mode)};
-	if(fd == -1) [[unlikely]]
+	if (fd == -1) [[unlikely]]
 	{
 		if constexpr (always_terminate)
 		{
@@ -1570,7 +1570,13 @@ inline void posix_truncate_impl(int fd, ::fast_io::uintfpos_t size)
 		}
 	}
 
-	if (noexcept_call(::ftruncate, fd, static_cast<off_t>(size)) < 0)
+	if (
+#if defined(__CYGWIN__)
+		::fast_io::details::ftruncate(fd, static_cast<off_t>(size)) < 0
+#else
+		noexcept_call(::ftruncate, fd, static_cast<off_t>(size)) < 0
+#endif
+	)
 	{
 		throw_posix_error();
 	}

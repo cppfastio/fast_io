@@ -3,6 +3,69 @@
 namespace fast_io
 {
 
+struct win32_socket_event_guard_t
+{
+	using native_handle_type = ::std::size_t;
+
+	native_handle_type curr_handle{};
+
+	inline constexpr win32_socket_event_guard_t() noexcept = default;
+
+	inline constexpr win32_socket_event_guard_t(native_handle_type handle) noexcept : curr_handle(handle)
+	{}
+
+	inline constexpr win32_socket_event_guard_t(win32_socket_event_guard_t const &) = delete;
+	inline constexpr win32_socket_event_guard_t &operator=(win32_socket_event_guard_t const &) = delete;
+
+	inline constexpr win32_socket_event_guard_t(win32_socket_event_guard_t &&other) noexcept : curr_handle{other.curr_handle}
+	{
+		other.curr_handle = {};
+	}
+
+	inline constexpr win32_socket_event_guard_t &operator=(win32_socket_event_guard_t &&other) noexcept
+	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
+
+		if(curr_handle) [[likely]]
+		{
+			::fast_io::win32::CloseHandle(curr_handle);
+		}
+
+		curr_handle = other.curr_handle;
+		other.curr_handle = {};
+
+		return *this;
+	}
+
+	inline constexpr native_handle_type release() noexcept
+	{
+		native_handle_type temp{curr_handle};
+		curr_handle = {};
+		return temp;
+	}
+	
+	inline constexpr native_handle_type native_handle() const noexcept
+	{
+		return curr_handle;
+	}
+
+	inline constexpr native_handle_type native_handle() noexcept
+	{
+		return curr_handle;
+	}
+
+	inline constexpr ~win32_socket_event_guard_t()
+	{
+		if (curr_handle) [[likely]]
+		{
+			::fast_io::win32::CloseHandle(curr_handle);
+		}
+	}
+};
+
 using win32_socklen_t = int;
 
 template <win32_family family, ::std::integral ch_type>
