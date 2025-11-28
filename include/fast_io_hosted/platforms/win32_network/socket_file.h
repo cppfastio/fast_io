@@ -31,7 +31,7 @@ struct win32_socket_event_guard_t
 
 		if(curr_handle) [[likely]]
 		{
-			::fast_io::win32::CloseHandle(curr_handle);
+			::fast_io::win32::WSACloseEvent(curr_handle);
 		}
 
 		curr_handle = other.curr_handle;
@@ -61,7 +61,7 @@ struct win32_socket_event_guard_t
 	{
 		if (curr_handle) [[likely]]
 		{
-			::fast_io::win32::CloseHandle(curr_handle);
+			::fast_io::win32::WSACloseEvent(curr_handle);
 		}
 	}
 };
