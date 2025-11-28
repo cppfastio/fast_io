@@ -7,7 +7,8 @@
 #endif
 #elif defined(__MSDOS__) || defined(__DJGPP__)
 #include "dos.h"
-#elif !defined(__SINGLE_THREAD__) && !defined(__NEWLIB__) && \
-	!defined(__MSDOS__) && !defined(__wasi__) && __has_include(<pthread.h>)
+#elif defined(__wasi__)
+#include "wasi.h"
+#elif !defined(__SINGLE_THREAD__) && !defined(__NEWLIB__) && !defined(__MSDOS__) && __has_include(<pthread.h>)
 #include "pthread.h"
 #endif

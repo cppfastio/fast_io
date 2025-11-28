@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 namespace fast_io
 {
 struct default_args_t

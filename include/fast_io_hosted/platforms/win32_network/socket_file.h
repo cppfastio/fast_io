@@ -46,7 +46,7 @@ struct win32_socket_event_guard_t
 		curr_handle = {};
 		return temp;
 	}
-	
+
 	inline constexpr native_handle_type native_handle() const noexcept
 	{
 		return curr_handle;
