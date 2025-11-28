@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 namespace fast_io
 {
 struct default_args_t
@@ -50,7 +50,6 @@ inline constexpr void append_win32_quoted_arg_common(
 
 		if (!needs_quote)
 		{
-			auto const sz{static_cast<::std::size_t>(last - first)};
 			for (it = first; it != last; ++it)
 			{
 				str.push_back(*it);
@@ -59,7 +58,6 @@ inline constexpr void append_win32_quoted_arg_common(
 			return;
 		}
 
-		auto const sz{static_cast<::std::size_t>(last - first)};
 		str.push_back(::fast_io::char_literal_v<u8'\"', replace_char_type>);
 		for (it = first; it != last; ++it)
 		{
