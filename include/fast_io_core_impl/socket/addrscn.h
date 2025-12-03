@@ -388,7 +388,7 @@ scn_cnt_define_in6addr_4_digits_impl(char_type const *begin, char_type const *en
 	return {it, parse_code::ok};
 }
 
-template <bool allowv6uppercase, ::std::integral char_type>
+template <bool allowv6uppercase, bool allowv4mapped_ipv4, ::std::integral char_type>
 inline constexpr parse_result<char_type const *>
 scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end, posix_in6_addr &t) noexcept
 {
@@ -398,6 +398,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 	::std::uint_least16_t *cur{words};
 	::std::uint_least16_t *const words_end{words + 8u};
 	::std::uint_least16_t *colonp{}; // Record the expansion position of “::” (pointer within words)
+	bool used_ipv4_suffix{};
 
 	auto it{begin};
 
@@ -440,46 +441,52 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 			// Empty token, should not occur ("::" has already been handled above)
 			return {it, parse_code::invalid};
 		}
-		bool has_dot{};
-		for (auto p{token_begin}; p != token_end; ++p)
+
+		if constexpr (allowv4mapped_ipv4)
 		{
-			if (*p == char_literal_v<u8'.', char_type>)
+			bool has_dot{};
+			for (auto p{token_begin}; p != token_end; ++p)
 			{
-				has_dot = true;
+				if (*p == char_literal_v<u8'.', char_type>)
+				{
+					has_dot = true;
+					break;
+				}
+			}
+
+			if (has_dot)
+			{
+				if (static_cast<::std::size_t>(words_end - cur) < 2u) [[unlikely]]
+				{
+					return {it, parse_code::overflow};
+				}
+				posix_in_addr v4{};
+				auto [next4, ec4] = scn_cnt_define_inaddr_impl(token_begin, token_end, v4);
+				if (ec4 != parse_code::ok || next4 != token_end) [[unlikely]]
+				{
+					return {next4, ec4 == parse_code::ok ? parse_code::invalid : ec4};
+				}
+				it = token_end;
+				if (it != end) [[unlikely]]
+				{
+					return {it, parse_code::invalid};
+				}
+				::std::uint_least16_t hi{
+					static_cast<::std::uint_least16_t>(
+						(static_cast<::std::uint_least16_t>(v4.address[0]) << 8u) |
+						static_cast<::std::uint_least16_t>(v4.address[1]))};
+				::std::uint_least16_t lo{
+					static_cast<::std::uint_least16_t>(
+						(static_cast<::std::uint_least16_t>(v4.address[2]) << 8u) |
+						static_cast<::std::uint_least16_t>(v4.address[3]))};
+				*cur = ::fast_io::big_endian(hi);
+				++cur;
+				*cur = ::fast_io::big_endian(lo);
+				++cur;
+				
+				used_ipv4_suffix = true;
 				break;
 			}
-		}
-
-		if (has_dot)
-		{
-			if (static_cast<::std::size_t>(words_end - cur) < 2u) [[unlikely]]
-			{
-				return {it, parse_code::overflow};
-			}
-			posix_in_addr v4{};
-			auto [next4, ec4] = scn_cnt_define_inaddr_impl(token_begin, token_end, v4);
-			if (ec4 != parse_code::ok || next4 != token_end) [[unlikely]]
-			{
-				return {next4, ec4 == parse_code::ok ? parse_code::invalid : ec4};
-			}
-			it = token_end;
-			if (it != end) [[unlikely]]
-			{
-				return {it, parse_code::invalid};
-			}
-			::std::uint_least16_t hi{
-				static_cast<::std::uint_least16_t>(
-					(static_cast<::std::uint_least16_t>(v4.address[0]) << 8u) |
-					static_cast<::std::uint_least16_t>(v4.address[1]))};
-			::std::uint_least16_t lo{
-				static_cast<::std::uint_least16_t>(
-					(static_cast<::std::uint_least16_t>(v4.address[2]) << 8u) |
-					static_cast<::std::uint_least16_t>(v4.address[3]))};
-			*cur = ::fast_io::big_endian(hi);
-			++cur;
-			*cur = ::fast_io::big_endian(lo);
-			++cur;
-			break;
 		}
 
 		// Use the existing 4-digit parsing function to parse this group
@@ -574,6 +581,37 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		return {it, parse_code::invalid};
 	}
 
+	if constexpr (allowv4mapped_ipv4)
+	{
+		if (used_ipv4_suffix)
+		{
+			auto words_curr{words};
+			auto const word_end{words_curr + 5u};
+			for (; words_curr != word_end; ++words_curr)
+			{
+				if (*words_curr != 0)
+				{
+					return {it, parse_code::invalid};
+				}
+			}
+
+			::std::uint_least16_t prefix_word;
+			if constexpr (::std::numeric_limits<::std::uint_least16_t>::digits != 16)
+			{
+				prefix_word = ::fast_io::big_endian(*words_curr);
+			}
+			else
+			{
+				prefix_word = *words_curr;
+			}
+
+			if (prefix_word != static_cast<::std::uint_least16_t>(0xFFFFu))
+			{
+				return {it, parse_code::invalid};
+			}
+		}
+	}
+
 	// Copy to target in6_addr
 	{
 		auto src{words};
@@ -588,7 +626,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 }
 
 template <bool allowv6shorten, bool allowv6uppercase, bool allowv6bracket, bool requirev6full,
-		  ::std::integral char_type>
+		  bool allowv4mapped_ipv4, ::std::integral char_type>
 inline constexpr parse_result<char_type const *>
 scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_in6_addr &t) noexcept
 {
@@ -601,7 +639,8 @@ scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_
 		}
 		if (*begin != char_literal_v<u8'[', char_type>) [[unlikely]]
 		{
-			return scn_cnt_define_in6addr_impl<allowv6shorten, allowv6uppercase, false, requirev6full>(begin, end, t);
+			return scn_cnt_define_in6addr_impl<allowv6shorten, allowv6uppercase, false, requirev6full,
+											   allowv4mapped_ipv4>(begin, end, t);
 		}
 		auto inner_begin{begin + 1u};
 		auto inner_end{inner_begin};
@@ -613,7 +652,8 @@ scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_
 			return {inner_end, parse_code::invalid};
 		}
 		auto result =
-			scn_cnt_define_in6addr_impl<allowv6shorten, allowv6uppercase, false, requirev6full>(inner_begin, inner_end, t);
+			scn_cnt_define_in6addr_impl<allowv6shorten, allowv6uppercase, false, requirev6full,
+										allowv4mapped_ipv4>(inner_begin, inner_end, t);
 		if (result.code != parse_code::ok || result.iter != inner_end) [[unlikely]]
 		{
 			return {result.iter, result.code == parse_code::ok ? parse_code::invalid : result.code};
@@ -622,7 +662,7 @@ scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_
 	}
 	if constexpr (allowv6shorten)
 	{
-		return scn_cnt_define_in6addr_shorten_impl<allowv6uppercase>(begin, end, t);
+		return scn_cnt_define_in6addr_shorten_impl<allowv6uppercase, allowv4mapped_ipv4>(begin, end, t);
 	}
 	else if constexpr (requirev6full)
 	{
@@ -634,13 +674,13 @@ scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_
 	}
 }
 
-template <::std::integral char_type>
+template <bool allowv4mapped_ipv4, ::std::integral char_type>
 inline constexpr parse_result<char_type const *>
 scn_ctx_define_in6addr_impl(ipv6_scan_state_t<char_type> &state, char_type const *begin, char_type const *end,
 							posix_in6_addr &addr) noexcept
 {
 	auto result{
-		scn_cnt_define_in6addr_impl<true, true, true, false>(begin, end, addr)};
+		scn_cnt_define_in6addr_impl<true, true, true, false, allowv4mapped_ipv4>(begin, end, addr)};
 	// If parsing fails exactly at the buffer end, treat it as a "need more input" case
 	// for the streaming context scanner, similar to IPv4 behavior.
 	if (result.code == parse_code::invalid && result.iter == end)
@@ -739,7 +779,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 	{
 		auto result{
 			details::scn_cnt_define_in6addr_impl<flags.allowv6shorten, flags.allowv6uppercase, flags.allowv6bracket,
-												 flags.requirev6full>(begin, end, *val.reference)};
+												 flags.requirev6full, flags.ipv4_mapped_ipv6>(begin, end, *val.reference)};
 		if constexpr (flags.requireport == true)
 		{
 			if (result.code != parse_code::ok) [[unlikely]]
@@ -758,7 +798,8 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 				flags.allowv6shorten,
 				flags.allowv6uppercase,
 				flags.allowv6bracket,
-				flags.requirev6full>(begin, end, val.reference->address)};
+				flags.requirev6full,
+				flags.ipv4_mapped_ipv6>(begin, end, val.reference->address)};
 		if (result.code != parse_code::ok) [[unlikely]]
 		{
 			return result;
@@ -919,7 +960,8 @@ scan_context_define(
 	::fast_io::manipulators::ip_scan_manip_t<flags, posix_in6_addr *> t) noexcept
 {
 	// IPv6 only has one parsing stage, entering it means full parsing
-	auto result{::fast_io::details::scn_ctx_define_in6addr_impl(state, begin, end, *t.reference)};
+	auto result{
+		::fast_io::details::scn_ctx_define_in6addr_impl<flags.ipv4_mapped_ipv6>(state, begin, end, *t.reference)};
 	return result;
 }
 
@@ -932,7 +974,8 @@ scan_context_define(
 	::fast_io::manipulators::ip_scan_manip_t<flags, ipv6 *> t) noexcept
 {
 	auto result{
-		::fast_io::details::scn_ctx_define_in6addr_impl(state, begin, end, t.reference->address)};
+		::fast_io::details::scn_ctx_define_in6addr_impl<flags.ipv4_mapped_ipv6>(state, begin, end,
+																				t.reference->address)};
 
 	if (result.code != parse_code::ok)
 	{
