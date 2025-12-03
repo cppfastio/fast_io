@@ -23,8 +23,14 @@ enum class scan_integral_context_phase : ::std::uint_least8_t;
 template <typename phase_t, ::std::integral char_type>
 struct ip_scan_state_t
 {
-	/// @todo forgot?
-	// TODO: to find out why +1 is needed here
+	// to find out why +1 is needed here:
+	
+	// Reserve one extra character beyond the maximum decimal length of
+	// uint_least16_t so that the streaming integer scanner
+	// (scan_context_define_parse_impl / sc_int_ctx_digit_phase) can
+	// accept the longest valid value without treating it as an
+	// overflow/partial state at the length boundary.
+
 	static inline constexpr auto max_size{
 		::fast_io::details::print_integer_reserved_size_cache<10, false, false, ::std::uint_least16_t> + 1};
 	::fast_io::freestanding::array<char_type, max_size> buffer;
