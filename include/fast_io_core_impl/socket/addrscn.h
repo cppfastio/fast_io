@@ -978,7 +978,7 @@ scan_context_eof_define(
 	io_reserve_type_t<char_type,
 					  ::fast_io::manipulators::ip_scan_manip_t<flags, ipv6 *>>,
 	ipv6_scan_state_t<char_type> &state,
-	::fast_io::manipulators::ip_scan_manip_t<flags, ipv6 *>) noexcept
+	::fast_io::manipulators::ip_scan_manip_t<flags, ipv6 *> t) noexcept
 {
 	if constexpr (flags.requireport == false)
 	{
