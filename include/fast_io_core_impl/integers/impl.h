@@ -109,6 +109,7 @@ struct ip_scan_flags
 };
 
 inline constexpr ip_scan_flags ip_scan_default_flags{.requireport = true};
+inline constexpr ip_scan_flags ip_scan_no_ipv4_mapped_ipv6{.requireport = true, .ipv4_mapped_ipv6 = false};
 inline constexpr ip_scan_flags ip_scan_default_inaddr_flags{};
 
 template <ip_scan_flags flags, typename T>
