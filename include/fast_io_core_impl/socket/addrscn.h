@@ -641,7 +641,14 @@ scn_ctx_define_in6addr_impl(ipv6_scan_state_t<char_type> &state, char_type const
 {
 	auto result{
 		scn_cnt_define_in6addr_impl<true, true, true, false>(begin, end, addr)};
-	if (result.code != parse_code::partial)
+	// If parsing fails exactly at the buffer end, treat it as a "need more input" case
+	// for the streaming context scanner, similar to IPv4 behavior.
+	if (result.code == parse_code::invalid && result.iter == end)
+	{
+		state.size = 1; // mark that we have an unfinished IPv6 parse for EOF handling
+		result.code = parse_code::partial;
+	}
+	else if (result.code != parse_code::partial)
 	{
 		state.size = 0;
 		state.integer_phase = scan_integral_context_phase::zero;
@@ -912,29 +919,8 @@ scan_context_define(
 	::fast_io::manipulators::ip_scan_manip_t<flags, posix_in6_addr *> t) noexcept
 {
 	// IPv6 only has one parsing stage, entering it means full parsing
-	auto result{
-		::fast_io::details::scn_ctx_define_in6addr_impl(state, begin, end, *t.reference)};
-
-	if constexpr (flags.requireport == false)
-	{
-		return result; // do not require port parsing
-	}
-
-	if (result.code != parse_code::ok)
-	{
-		return result;
-	}
-
-	// port parsing
-	auto newstate = ::std::bit_cast<ip_port_scan_state_t<char_type>>(state);
-	newstate.ip_phase = newstate.port_mark;
-
-	auto result2{
-		::fast_io::details::scn_ctx_define_port_impl(newstate, result.iter, end,
-													 *reinterpret_cast<::std::uint_least16_t *>(&t.reference->port))};
-
-	state = ::std::bit_cast<ipv6_scan_state_t<char_type>>(newstate);
-	return result2;
+	auto result{::fast_io::details::scn_ctx_define_in6addr_impl(state, begin, end, *t.reference)};
+	return result;
 }
 
 template <::std::integral char_type, ::fast_io::manipulators::ip_scan_flags flags>
