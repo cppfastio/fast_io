@@ -1425,7 +1425,7 @@ public:
 	}
 };
 
-inline win32_9xa_at_entry at(win32_9xa_dir_file const &wiob) noexcept
+inline win32_9xa_at_entry at(win32_9xa_dir_io_observer const &wiob) noexcept
 {
 	return win32_9xa_at_entry{wiob.handle};
 }

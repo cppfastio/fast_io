@@ -179,6 +179,7 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL PrefetchVirtualMemory(void *, ::std::si
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetConsoleTextAttribute(void *, ::std::int_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(SetConsoleTextAttribute, 8);
 FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetCurrentThreadId() noexcept FAST_IO_WINSTDCALL_RENAME(GetCurrentThreadId, 0);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL Sleep(::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(Sleep, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SwitchToThread() noexcept FAST_IO_WINSTDCALL_RENAME(SwitchToThread, 0);
 FAST_IO_DLLIMPORT char16_t *FAST_IO_WINSTDCALL GetEnvironmentStringsW() noexcept FAST_IO_WINSTDCALL_RENAME(GetEnvironmentStringsW, 0);
 FAST_IO_DLLIMPORT char *FAST_IO_WINSTDCALL GetEnvironmentStringsA() noexcept FAST_IO_WINSTDCALL_RENAME(GetEnvironmentStringsA, 0);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsW(char16_t*) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsW, 4);
@@ -190,6 +191,7 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationW(char16_t const*, 
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationA(char const*, char*, ::std::uint_least32_t, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, char*, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationA, 32);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceW(char16_t const*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceW, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceA(char const*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceA, 20);
+FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RaiseException(::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::size_t const *) noexcept FAST_IO_WINSTDCALL_RENAME(RaiseException, 16);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL ExitProcess(::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ExitProcess, 4);
 
 } // namespace fast_io::win32

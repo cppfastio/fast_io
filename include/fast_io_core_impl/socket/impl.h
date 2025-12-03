@@ -7,9 +7,7 @@
 #include "ip.h"
 
 #include "addrprt.h"
-#if 0
 #include "addrscn.h"
-#endif
 
 namespace fast_io
 {

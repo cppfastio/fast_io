@@ -29,6 +29,14 @@ using dir_file = directory_file_wrapper<
 #endif
 	>;
 
+using dir_io_observer =
+#if ((defined(_WIN32) || defined(__CYGWIN__)) && defined(_WIN32_WINDOWS))
+	win32_9xa_dir_io_observer
+#else
+	basic_native_io_observer<char>
+#endif
+	;
+
 // Note:
 // The Win32 API layer is not well-suited for precise "dirfile" semantics,
 // because it abstracts away the underlying NT object types. Unlike the NT I/O

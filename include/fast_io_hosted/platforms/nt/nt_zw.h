@@ -730,6 +730,19 @@ inline ::std::uint_least32_t nt_delay_execution(Args... args) noexcept
 	}
 }
 
+template <bool zw>
+inline ::std::uint_least32_t nt_yield_execution() noexcept
+{
+	if constexpr (zw)
+	{
+		return ::fast_io::win32::nt::ZwYieldExecution();
+	}
+	else
+	{
+		return ::fast_io::win32::nt::NtYieldExecution();
+	}
+}
+
 template <bool zw, typename... Args>
 	requires(sizeof...(Args) == 3)
 inline ::std::uint_least32_t nt_set_timer_resolution(Args... args) noexcept
