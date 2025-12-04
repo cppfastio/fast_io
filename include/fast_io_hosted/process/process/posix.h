@@ -528,6 +528,55 @@ struct io_redirector
 	}
 };
 
+inline pid_t detach_fork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+{
+	pid_t pid = posix_fork();
+	if (pid == 0)
+	{
+		// subprocess
+		if ((mode & process_mode::new_session) == process_mode::new_session)
+		{
+			posix_setsid();
+		}
+
+		int t_errno{};
+		// io redirection
+		{
+			io_redirector r;
+			auto rc = r.redirect_all(pio);
+			if (rc.error)
+			{
+				t_errno = rc.code;
+			}
+		}
+
+		if (t_errno == 0)
+		{
+			posix_execveat(dirfd, cstr, args, envp, mode);
+		}
+		// execve only return on error, so t_errno always contains an error code
+		// special exit code 127 indicates error of exec
+#if defined(__linux__)
+#ifdef __NR_exit_group
+		::fast_io::system_call_no_return<__NR_exit_group>(127);
+#else
+		::fast_io::system_call_no_return<__NR_exit>(127);
+#endif
+#else
+		::fast_io::posix::libc_exit(127);
+#endif
+	}
+	// parent process
+	// currently parent process never close pipes
+	// uncomment those lines to enable automatically closing pipe ends
+#if 0
+	io_redirector::close_pipe_ends(0, pio.in);
+	io_redirector::close_pipe_ends(1, pio.out);
+	io_redirector::close_pipe_ends(2, pio.err);
+#endif
+	return pid;
+}
+
 inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
 	posix_pipe error_pipe;
@@ -611,7 +660,14 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 template <typename path_type>
 inline pid_t pipefork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
 {
-	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
+	if ((mode & process_mode::detach) == process_mode::detach)
+	{
+		return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return detach_fork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
+	}
+	else
+	{
+		return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
+	}
 }
 
 template <typename path_type>
