@@ -1248,9 +1248,9 @@ struct posix_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	}
 	inline constexpr native_handle_type release() noexcept
 	{
-		auto fd{this->fd};
+		auto curr_fd{this->fd};
 		this->fd = -1;
-		return fd;
+		return curr_fd;
 	}
 };
 
