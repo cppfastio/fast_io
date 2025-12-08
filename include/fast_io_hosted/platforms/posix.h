@@ -1211,16 +1211,46 @@ struct posix_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 {
 	using native_handle_type = int;
 	int fd{-1};
-	inline explicit constexpr posix_file_factory(int v) noexcept
-		: fd(v) {};
-	inline posix_file_factory(posix_file_factory const &) = delete;
-	inline posix_file_factory &operator=(posix_file_factory const &) = delete;
-	inline ~posix_file_factory()
+	inline constexpr posix_file_factory() noexcept = default;
+	inline explicit constexpr posix_file_factory(int v) noexcept : fd(v)
+	{}
+	inline constexpr posix_file_factory(posix_file_factory const &) = delete;
+	inline constexpr posix_file_factory &operator=(posix_file_factory const &) = delete;
+	inline constexpr posix_file_factory(posix_file_factory &&other) noexcept
+		: fd(other.fd)
+	{
+		other.fd = -1;
+	}
+	inline constexpr posix_file_factory &operator=(posix_file_factory &&other) noexcept
+	{
+		if (__builtin_addressof(other) == this) [[unlikely]]
+		{
+			return *this;
+		}
+		if (this->fd != -1) [[likely]]
+		{
+			::fast_io::details::sys_close(this->fd);
+		}
+		this->fd = other.fd;
+		other.fd = -1;
+		return *this;
+	}
+	inline constexpr ~posix_file_factory()
 	{
 		if (fd != -1) [[likely]]
 		{
 			::fast_io::details::sys_close(fd);
 		}
+	}
+	inline constexpr native_handle_type native_handle() const noexcept
+	{
+		return this->fd;
+	}
+	inline constexpr native_handle_type release() noexcept
+	{
+		auto fd{this->fd};
+		this->fd = -1;
+		return fd;
 	}
 };
 
