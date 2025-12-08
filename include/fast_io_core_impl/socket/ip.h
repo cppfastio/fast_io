@@ -40,13 +40,13 @@ struct ip
 	}
 
 	inline explicit constexpr ip() noexcept = default;
-	inline explicit constexpr ip(ipv4 add)
+	inline explicit constexpr ip(ipv4 add) noexcept
 		: address{.address = {.v4 = add.address}, .isv4 = true}, port(add.port)
 	{}
-	inline explicit constexpr ip(ipv6 add)
+	inline explicit constexpr ip(ipv6 add) noexcept
 		: address{.address = {.v6 = add.address}}, port(add.port)
 	{}
-	inline explicit constexpr ip(ip_address addr, ::std::uint_least16_t prt)
+	inline explicit constexpr ip(ip_address addr, ::std::uint_least16_t prt) noexcept
 		: address{addr}, port{prt}
 	{}
 };

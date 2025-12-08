@@ -13,7 +13,8 @@ namespace posix
 // parameters for the exec functions may seem to be the natural choice, given that these functions do not modify either the array of pointers or the characters to which the
 // function points, but this would disallow existing correct code. Instead, only the array of pointers is noted as constant.
 
-#if defined(__DARWIN_C_LEVEL) || defined(__MSDOS__)
+#if (defined(__APPLE__) || defined(__DARWIN_C_LEVEL)) || (defined(__MSDOS__) || defined(__DJGPP__))
+extern int libc_execve(char const *pathname, char *const *argv, char *const *envp) noexcept __asm__("_execve");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("_fexecve");
 extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("_execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("_kill");
@@ -24,6 +25,7 @@ extern pid_t libc_waitpid(pid_t pid, int *status, int options) noexcept __asm__(
 [[noreturn]] extern void libc_exit(int status) noexcept __asm__("__Exit");
 [[noreturn]] extern void libc_exit2(int status) noexcept __asm__("__exit");
 #else
+extern int libc_execve(char const *pathname, char *const *argv, char *const *envp) noexcept __asm__("execve");
 extern int libc_fexecve(int fd, char *const *argv, char *const *envp) noexcept __asm__("fexecve");
 extern int libc_execveat(int dirfd, char const *pathname, char *const *argv, char *const *envp, int flags) noexcept __asm__("execveat");
 extern int libc_kill(pid_t pid, int sig) noexcept __asm__("kill");
@@ -403,20 +405,102 @@ inline void posix_waitpid_noexcept(pid_t pid) noexcept
 
 inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, char const *const *envp, process_mode mode) noexcept
 {
-	bool const follow{(mode & process_mode::follow) == process_mode::follow};
+	[[maybe_unused]] bool const follow{(mode & process_mode::follow) == process_mode::follow};
 
 #if defined(__linux__) && defined(__NR_execveat)
+	// linux execveat
+
 	int flags{};
 	if (!follow)
 	{
 		flags |= AT_SYMLINK_NOFOLLOW;
 	}
 	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, flags));
+	
+#elif defined(__APPLE__) || defined(__DARWIN_C_LEVEL)
+	// macOS / Darwin: no public execveat/fexecve
+	// Fallback: emulate execveat(dirfd, path, ...) using execve() and F_GETPATH.
+	// Limitations:
+	//   - AT_SYMLINK_NOFOLLOW is ignored (no equivalent execve flag).
+	//   - AT_EMPTY_PATH / other execveat-specific flags are not supported.
+
+	if (cstr == nullptr)
+	{
+		errno = EFAULT;
+		return errno;
+	}
+
+#if defined(AT_FDCWD)
+	constexpr int fdcwd_val{AT_FDCWD};
 #else
+	constexpr int fdcwd_val{-2};
+#endif
+
+	// Absolute path: ignore dirfd, behave like execve()
+	if (cstr[0] == '/')
+	{
+		::fast_io::posix::libc_execve(cstr, const_cast<char *const *>(args), const_cast<char *const *>(envp));
+		return errno;
+	}
+
+	// Relative path and "current working directory" dirfd: just use execve()
+	if (dirfd == fdcwd_val)
+	{
+		::fast_io::posix::libc_execve(cstr, const_cast<char *const *>(args), const_cast<char *const *>(envp));
+		return errno;
+	}
+
+	// dirfd refers to a directory: resolve its absolute path via F_GETPATH and
+	// append the relative filename to form an absolute pathname.
+#if defined(PATH_MAX)
+	constexpr ::std::size_t path_max{PATH_MAX};
+#elif defined(MAXPATHLEN)
+	constexpr ::std::size_t path_max{MAXPATHLEN};
+#else
+	constexpr ::std::size_t path_max{1024u};
+#endif
+
+	constexpr ::std::size_t dirbuf_sz{path_max + 1u};
+
+	char dirbuf[dirbuf_sz]{};
+	auto ret_dir{::fast_io::details::posix::fcntl(dirfd, F_GETPATH, dirbuf)};
+	if (ret_dir == -1) [[unlikely]]
+	{
+		return errno;
+	}
+
+	auto dir_len{::fast_io::cstr_nlen(dirbuf, path_max)};
+	auto name_len{::fast_io::cstr_len(cstr)};
+
+	// Ensure combined path fits into our fixed buffer
+	if (dir_len + 1u + name_len >= path_max) [[unlikely]]
+	{
+		errno = ENAMETOOLONG;
+		return errno;
+	}
+
+	char fullpath[dirbuf_sz];
+	auto it{fullpath};
+	for (::std::size_t i{}; i < dir_len; ++i)
+	{
+		it[i] = dirbuf[i];
+	}
+	it[dir_len] = '/';
+	for (::std::size_t i{}; i < name_len; ++i)
+	{
+		it[dir_len + 1u + i] = cstr[i];
+	}
+	fullpath[dir_len + 1u + name_len] = '\0';
+
+	::fast_io::posix::libc_execve(fullpath, const_cast<char *const *>(args), const_cast<char *const *>(envp));
+	return errno;
+#else
+	// POSIX 2008: openat + fexecve
+
 	int flags{O_RDONLY};
 	if (!follow)
 	{
-		flags |= AT_SYMLINK_NOFOLLOW;
+		flags |= O_NOFOLLOW;
 	}
 	int fd{::fast_io::details::my_posix_openat_noexcept(dirfd, cstr, flags, 0644)};
 	if (fd != -1) [[likely]]
@@ -716,7 +800,7 @@ struct fd_remapper
 };
 
 // only used in vfork_execveat_common_impl()
-inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, unsigned volatile &t_errno, process_mode mode) noexcept
+inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, unsigned volatile &t_errno, process_mode mode)
 {
 	// vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
@@ -741,68 +825,8 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 	}
 #endif
 
-	bool const follow{(mode & process_mode::follow) == process_mode::follow};
-
-#if defined(__linux__)
-
-#if defined(__NR_execveat)
-	int flags{};
-	if (!follow)
-	{
-		flags |= AT_SYMLINK_NOFOLLOW;
-	}
-
-	auto ret{system_call<__NR_execveat, int>(dirfd, cstr, args, envp, flags)};
-	if (::fast_io::linux_system_call_fails(ret))
-	{
-		t_errno = -ret;
-	}
-	else
-	{
-		t_errno = 0;
-	}
-#else
-	int flags{};
-	if (!follow)
-	{
-		flags |= AT_SYMLINK_NOFOLLOW;
-	}
-
-	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, const_cast<char *const *>(args), const_cast<char *const *>(envp), flags)};
-	if (ret == -1)
-	{
-		t_errno = errno;
-	}
-	else
-	{
-		t_errno = 0;
-	}
-#endif
-
-#if defined(__NR_exit_group)
-	::fast_io::system_call_no_return<__NR_exit_group>(127);
-#else
-	::fast_io::system_call_no_return<__NR_exit>(127);
-#endif
-#else
-	int flags{};
-	if (!follow)
-	{
-		flags |= AT_SYMLINK_NOFOLLOW;
-	}
-
-	auto ret{::fast_io::posix::libc_execveat(dirfd, cstr, const_cast<char *const *>(args), const_cast<char *const *>(envp), flags)};
-	if (ret == -1)
-	{
-		t_errno = errno;
-	}
-	else
-	{
-		t_errno = 0;
-	}
-
+	t_errno = posix_execveat(dirfd, cstr, args, envp, mode);
 	::fast_io::posix::libc_exit2(127);
-#endif
 
 	__builtin_unreachable();
 }

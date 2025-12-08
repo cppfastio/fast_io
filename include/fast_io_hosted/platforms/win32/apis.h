@@ -172,7 +172,7 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SetWaitableTimer(void *, ::std::int_lea
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL CancelWaitableTimer(void *) noexcept FAST_IO_WINSTDCALL_RENAME(CancelWaitableTimer, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL LookupPrivilegeValueA(char const *__restrict, char const *__restrict, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueA, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL LookupPrivilegeValueW(char16_t const *__restrict, char16_t const *__restrict, ::std::int_least64_t *) noexcept FAST_IO_WINSTDCALL_RENAME(LookupPrivilegeValueW, 12);
-FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateThread(security_attributes *, ::std::size_t, ::std::uint_least32_t (FAST_IO_WINSTDCALL*)(void*), void*, ::std::uint_least32_t, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(CreateThread, 24);
+FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL CreateThread(security_attributes *, ::std::size_t, ::std::uint_least32_t(FAST_IO_WINSTDCALL *)(void *), void *, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(CreateThread, 24);
 FAST_IO_DLLIMPORT char16_t **FAST_IO_WINSTDCALL CommandLineToArgvW(char16_t const *, int *) noexcept FAST_IO_WINSTDCALL_RENAME(CommandLineToArgvW, 8);
 FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL LocalFree(void *) noexcept FAST_IO_WINSTDCALL_RENAME(LocalFree, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL PrefetchVirtualMemory(void *, ::std::size_t, ::fast_io::win32::win32_memory_range_entry *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(PrefetchVirtualMemory, 16);
@@ -182,16 +182,17 @@ FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL Sleep(::std::uint_least32_t) noexcept 
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL SwitchToThread() noexcept FAST_IO_WINSTDCALL_RENAME(SwitchToThread, 0);
 FAST_IO_DLLIMPORT char16_t *FAST_IO_WINSTDCALL GetEnvironmentStringsW() noexcept FAST_IO_WINSTDCALL_RENAME(GetEnvironmentStringsW, 0);
 FAST_IO_DLLIMPORT char *FAST_IO_WINSTDCALL GetEnvironmentStringsA() noexcept FAST_IO_WINSTDCALL_RENAME(GetEnvironmentStringsA, 0);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsW(char16_t*) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsW, 4);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsA(char*) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsA, 4);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL getsockopt(::std::size_t, int, int, char*, int*) noexcept FAST_IO_WINSTDCALL_RENAME(getsockopt, 20);
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetFullPathNameW(char16_t const*, ::std::uint_least32_t, char16_t*, char16_t**) noexcept FAST_IO_WINSTDCALL_RENAME(GetFullPathNameW, 16);
-FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetFullPathNameA(char const*, ::std::uint_least32_t, char*, char**) noexcept FAST_IO_WINSTDCALL_RENAME(GetFullPathNameA, 16);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationW(char16_t const*, char16_t*, ::std::uint_least32_t, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, char16_t*, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationW, 32);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationA(char const*, char*, ::std::uint_least32_t, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, char*, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationA, 32);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceW(char16_t const*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceW, 20);
-FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceA(char const*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*, ::std::uint_least32_t*) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceA, 20);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsW(char16_t *) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsW, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL FreeEnvironmentStringsA(char *) noexcept FAST_IO_WINSTDCALL_RENAME(FreeEnvironmentStringsA, 4);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL getsockopt(::std::size_t, int, int, char *, int *) noexcept FAST_IO_WINSTDCALL_RENAME(getsockopt, 20);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetFullPathNameW(char16_t const *, ::std::uint_least32_t, char16_t *, char16_t **) noexcept FAST_IO_WINSTDCALL_RENAME(GetFullPathNameW, 16);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetFullPathNameA(char const *, ::std::uint_least32_t, char *, char **) noexcept FAST_IO_WINSTDCALL_RENAME(GetFullPathNameA, 16);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationW(char16_t const *, char16_t *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t *, ::std::uint_least32_t *, char16_t *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationW, 32);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetVolumeInformationA(char const *, char *, ::std::uint_least32_t, ::std::uint_least32_t *, ::std::uint_least32_t *, ::std::uint_least32_t *, char *, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(GetVolumeInformationA, 32);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceW(char16_t const *, ::std::uint_least32_t *, ::std::uint_least32_t *, ::std::uint_least32_t *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceW, 20);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetDiskFreeSpaceA(char const *, ::std::uint_least32_t *, ::std::uint_least32_t *, ::std::uint_least32_t *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(GetDiskFreeSpaceA, 20);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL RaiseException(::std::uint_least32_t, ::std::uint_least32_t, ::std::uint_least32_t, ::std::size_t const *) noexcept FAST_IO_WINSTDCALL_RENAME(RaiseException, 16);
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL ExitProcess(::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(ExitProcess, 4);
+FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL AddVectoredExceptionHandler(::std::uint_least32_t, pvectored_exception_handler) noexcept FAST_IO_WINSTDCALL_RENAME(AddVectoredExceptionHandler, 8);
 
 } // namespace fast_io::win32

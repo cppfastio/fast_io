@@ -459,4 +459,46 @@ struct win32_memory_range_entry
 	void* VirtualAddress;
 	::std::size_t NumberOfBytes;
 };
+
+inline constexpr ::std::size_t exception_maximum_parameters{15u};
+
+struct exception_record
+{
+    ::std::uint_least32_t ExceptionCode;
+    ::std::uint_least32_t ExceptionFlags;
+    exception_record* ExceptionRecord;
+    void* ExceptionAddress;
+    ::std::uint_least32_t NumberParameters;
+    ::std::size_t ExceptionInformation[exception_maximum_parameters];
+};
+
+struct exception_record32
+{
+    ::std::uint_least32_t ExceptionCode;
+    ::std::uint_least32_t ExceptionFlags;
+    ::std::uint_least32_t ExceptionRecord;
+    ::std::uint_least32_t ExceptionAddress;
+    ::std::uint_least32_t NumberParameters;
+    ::std::uint_least32_t ExceptionInformation[exception_maximum_parameters];
+};
+
+struct exception_record64
+{
+    ::std::uint_least32_t ExceptionCode;
+    ::std::uint_least32_t ExceptionFlags;
+    ::std::uint_least64_t ExceptionRecord;
+    ::std::uint_least64_t ExceptionAddress;
+    ::std::uint_least32_t NumberParameters;
+    ::std::uint_least32_t UnusedAlignment;
+    ::std::uint_least64_t ExceptionInformation[exception_maximum_parameters];
+};
+
+struct exception_pointers
+{
+    exception_record* ExceptionRecord;
+    void* ContextRecord;
+};
+
+using pvectored_exception_handler = ::std::int_least32_t(FAST_IO_WINSTDCALL *)(exception_pointers *) noexcept;
+
 } // namespace fast_io::win32

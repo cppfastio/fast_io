@@ -114,7 +114,7 @@ struct win32_9xa_dns_iterator
 
 inline constexpr win32_9xa_dns_iterator operator*(win32_9xa_dns_iterator d) noexcept
 {
-	return {d.res};
+	return {d.res, d.pos};
 }
 
 inline constexpr win32_9xa_dns_iterator &operator++(win32_9xa_dns_iterator &d) noexcept
@@ -159,9 +159,14 @@ inline constexpr bool operator!=(win32_9xa_dns_iterator a, ::std::default_sentin
 	return !(a == b);
 }
 
-inline constexpr ::fast_io::ip to_ip(win32_9xa_dns_iterator d, ::std::uint_least16_t port)
+inline constexpr ::fast_io::ip to_ip(win32_9xa_dns_iterator d, ::std::uint_least16_t port) noexcept
 {
 	return ::fast_io::details::hostent_to_ip_impl(d.res, d.pos, port);
+}
+
+inline constexpr ::fast_io::ip_address to_ip_address(win32_9xa_dns_iterator d) noexcept
+{
+	return ::fast_io::details::hostent_to_ip_address_impl(d.res, d.pos);
 }
 
 namespace details
