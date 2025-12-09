@@ -21,6 +21,17 @@ static std::string make_hex_numbers_buffer(std::size_t n)
 		auto *first = s.data() + old;
 		auto *last = s.data() + s.size();
 		auto res = std::to_chars(first, last - 1, i, 16);
+		// mix lowercase/uppercase hex digits in the buffer
+		if ((i & 1u) != 0u)
+		{
+			for (auto p = first; p != res.ptr; ++p)
+			{
+				if (*p >= 'a' && *p <= 'f')
+				{
+					*p = static_cast<char>(*p - 'a' + 'A');
+				}
+			}
+		}
 		*res.ptr = '\n';
 		s.resize(static_cast<std::size_t>(res.ptr - s.data() + 1));
 	}
