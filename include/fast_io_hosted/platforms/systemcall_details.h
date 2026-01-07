@@ -152,7 +152,8 @@ inline void sys_close_throw_error(int &fd)
 	}
 #endif
 }
-#if (!defined(__NEWLIB__) || defined(__CYGWIN__)) && !defined(_WIN32) && __has_include(<dirent.h>) && !defined(_PICOLIBC__)
+
+#if !defined(_WIN32) && __has_include(<dirent.h>) && !defined(_PICOLIBC__)
 
 namespace posix
 {

@@ -11,4 +11,6 @@
 #include "wasi.h"
 #elif !defined(__SINGLE_THREAD__) && !defined(__NEWLIB__) && !defined(__MSDOS__) && __has_include(<pthread.h>)
 #include "pthread.h"
+#elif defined(__NEWLIB__)
+#include "newlib.h"
 #endif
