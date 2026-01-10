@@ -1,7 +1,10 @@
 ﻿#pragma once
 
 // std
+#if __has_include(<chrono>)
 #include <chrono>
+#endif
+
 #include <ranges>
 #include <cstdint>
 #include <utility>
@@ -237,6 +240,7 @@ inline
 	return ::fast_io::noexcept_call(::pthread_self);
 }
 
+#if __has_include(<chrono>)
 template <typename Rep, typename Period>
 inline
 #if __cpp_constexpr >= 202207L
@@ -293,6 +297,7 @@ inline
 #endif
 	}
 }
+#endif
 
 template <::std::int_least64_t off_to_epoch>
 inline

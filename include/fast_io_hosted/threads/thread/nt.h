@@ -1,6 +1,9 @@
 ﻿#pragma once
 
+#if __has_include(<chrono>)
 #include <chrono>
+#endif
+
 #include <ranges>
 #include <cstdint>
 #include <utility>
@@ -300,6 +303,7 @@ inline
 	return static_cast<::std::uint_least32_t>(reinterpret_cast<::std::size_t>(teb->ClientId.UniqueThread));
 }
 
+#if __has_include(<chrono>)
 template <bool zw = false, typename Rep, typename Period>
 inline
 #if __cpp_constexpr >= 202207L
@@ -325,6 +329,7 @@ inline
 		::fast_io::throw_nt_error(status);
 	}
 }
+#endif
 
 template <bool zw = false, ::std::int_least64_t off_to_epoch>
 inline
@@ -357,6 +362,7 @@ inline
 	}
 }
 
+#if __has_include(<chrono>)
 template <bool zw = false, typename Clock, typename Duration>
 inline
 #if __cpp_constexpr >= 202207L
@@ -394,6 +400,7 @@ inline
 		::fast_io::throw_nt_error(status);
 	}
 }
+#endif
 
 template <bool zw = false, ::std::int_least64_t off_to_epoch>
 inline

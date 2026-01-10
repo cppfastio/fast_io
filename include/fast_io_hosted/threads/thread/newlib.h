@@ -1,7 +1,9 @@
 ﻿#pragma once
 
 // std
+#if __has_include(<chrono>)
 #include <chrono>
+#endif
 #include <ranges>
 #include <cstdint>
 #include <utility>
@@ -27,6 +29,7 @@ inline constexpr dos_thread_id get_id() noexcept
 	return 0u;
 }
 
+#if __has_include(<chrono>)
 template <typename Rep, typename Period>
 inline
 #if __cpp_constexpr >= 202207L
@@ -66,6 +69,7 @@ inline
 		::fast_io::newlib::this_thread::sleep_for(expect_time - now);
 	}
 }
+#endif
 
 template <::std::int_least64_t off_to_epoch>
 inline

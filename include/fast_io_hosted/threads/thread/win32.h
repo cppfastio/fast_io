@@ -1,6 +1,9 @@
 ﻿#pragma once
 
+#if __has_include(<chrono>)
 #include <chrono>
+#endif
+
 #include <ranges>
 #include <cstdint>
 #include <utility>
@@ -261,6 +264,7 @@ inline
 	return ::fast_io::win32::GetCurrentThreadId();
 }
 
+#if __has_include(<chrono>)
 template <typename Rep, typename Period>
 inline
 #if __cpp_constexpr >= 202207L
@@ -306,6 +310,7 @@ inline
 		::fast_io::win32::Sleep(ms);
 	}
 }
+#endif
 
 template <::std::int_least64_t off_to_epoch>
 inline

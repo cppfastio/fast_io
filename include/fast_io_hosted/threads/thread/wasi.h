@@ -2,7 +2,10 @@
 
 #if defined(__wasi__)
 
+#if __has_include(<chrono>)
 #include <chrono>
+#endif
+
 #include <ranges>
 #include <cstdint>
 #include <utility>
@@ -31,7 +34,7 @@ inline
 #if __cpp_constexpr >= 202207L
 	constexpr
 #endif
-wasi_thread_id get_or_assign_thread_id() noexcept
+	wasi_thread_id get_or_assign_thread_id() noexcept
 {
 	auto id{current_thread_id};
 	if (id == 0)
@@ -81,8 +84,8 @@ struct wasi_thread_control_block
 {
 	wasi_thread_id id{};
 	void *data{};
-	void (*run)(void *) noexcept{};
-	void (*destroy)(void *) noexcept{};
+	void (*run)(void *) noexcept {};
+	void (*destroy)(void *) noexcept {};
 	::std::atomic<::std::uint_least32_t> refcount{2u};
 	::std::atomic<bool> done{false};
 };
@@ -147,7 +150,7 @@ inline wasi_thread_control_block *make_control_block(Func &&func, Args &&...args
 
 	auto cb{alloc_cb::allocate(1u)};
 	::new (cb) wasi_thread_control_block{next_thread_id.fetch_add(1u, ::std::memory_order_relaxed), tup,
-											 &run_impl<tuple_type>, &destroy_impl<tuple_type>, 2u, false};
+										 &run_impl<tuple_type>, &destroy_impl<tuple_type>, 2u, false};
 	return cb;
 }
 
@@ -181,17 +184,18 @@ inline
 #if __cpp_constexpr >= 202207L
 	constexpr
 #endif
-id get_id() noexcept
+	id get_id() noexcept
 {
 	return ::fast_io::wasi::details::get_or_assign_thread_id();
 }
 
+#if __has_include(<chrono>)
 template <typename Rep, typename Period>
 inline
 #if __cpp_constexpr >= 202207L
 	constexpr
 #endif
-void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration) noexcept
+	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration) noexcept
 {
 	auto const ns64{::std::chrono::duration_cast<::std::chrono::nanoseconds>(sleep_duration).count()};
 	if (ns64 <= 0)
@@ -206,7 +210,7 @@ inline
 #if __cpp_constexpr >= 202207L
 	constexpr
 #endif
-void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time) noexcept
+	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time) noexcept
 {
 	auto const now{Clock::now()};
 	if (now < expect_time)
@@ -214,13 +218,14 @@ void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time) 
 		::fast_io::wasi::this_thread::sleep_for(expect_time - now);
 	}
 }
+#endif
 
 template <::std::int_least64_t off_to_epoch>
 inline
 #if __cpp_constexpr >= 202207L
 	constexpr
 #endif
-void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &sleep_duration) noexcept
+	void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &sleep_duration) noexcept
 {
 	if (sleep_duration.seconds < 0)
 	{
@@ -246,7 +251,7 @@ inline
 #if __cpp_constexpr >= 202207L
 	constexpr
 #endif
-void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const &expect_time) noexcept
+	void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const &expect_time) noexcept
 {
 	if (expect_time.seconds < 0)
 	{
@@ -268,7 +273,7 @@ inline
 #if __cpp_constexpr >= 202207L
 	constexpr
 #endif
-void yield() noexcept
+	void yield() noexcept
 {
 	(void)__wasi_sched_yield();
 }
@@ -296,7 +301,7 @@ public:
 	inline wasi_thread(Func &&func, Args &&...args)
 	{
 		auto *cb{::fast_io::wasi::details::make_control_block(::std::forward<Func>(func),
-											 ::std::forward<Args>(args)...)};
+															  ::std::forward<Args>(args)...)};
 		auto ec{__wasi_thread_spawn(cb)};
 		if (ec != 0)
 		{
