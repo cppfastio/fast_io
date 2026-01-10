@@ -2,18 +2,6 @@
 
 #if defined(__wasi__)
 
-#if __has_include(<chrono>)
-#include <chrono>
-#endif
-
-#include <ranges>
-#include <cstdint>
-#include <utility>
-#include <functional>
-#include <type_traits>
-#include <atomic>
-
-#include <wasi/api.h>
 
 namespace fast_io
 {
