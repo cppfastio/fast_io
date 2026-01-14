@@ -1,4 +1,3 @@
-#include <chrono>
 #include <fast_io.h>
 
 int main()
@@ -19,7 +18,7 @@ int main()
 								   ::fast_io::println("the child thread id is: ", ::fast_io::this_thread::get_id());
 #endif
 								   //    ::fflush(stdout);
-								   ::fast_io::this_thread::sleep_for(::std::chrono::seconds{1});
+								   ::fast_io::this_thread::sleep_for(::fast_io::unix_timestamp{.seconds = 1});
 							   },
 							   5};
 
