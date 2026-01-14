@@ -1,20 +1,6 @@
 ﻿#pragma once
 
-// std
-#if __has_include(<chrono>)
-#include <chrono>
-#endif
 
-#include <ranges>
-#include <cstdint>
-#include <utility>
-#include <functional>
-#include <type_traits>
-// system
-#include <pthread.h>
-#include <sched.h>
-#include <time.h>
-#include <unistd.h>
 
 namespace fast_io
 {
@@ -239,65 +225,6 @@ inline
 {
 	return ::fast_io::noexcept_call(::pthread_self);
 }
-
-#if __has_include(<chrono>)
-template <typename Rep, typename Period>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration) noexcept
-{
-	auto const ns64{::std::chrono::duration_cast<::std::chrono::nanoseconds>(sleep_duration).count()};
-	if (ns64 <= 0)
-	{
-		return;
-	}
-	::timespec req{};
-	req.tv_sec = static_cast<::time_t>(ns64 / 1'000'000'000LL);
-	req.tv_nsec = static_cast<long>(ns64 % 1'000'000'000LL);
-	(void)::fast_io::noexcept_call(::nanosleep, __builtin_addressof(req), nullptr);
-}
-
-template <typename Clock, typename Duration>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time) noexcept
-{
-	auto const now{Clock::now()};
-	if (now < expect_time)
-	{
-		auto const ns64{::std::chrono::duration_cast<::std::chrono::nanoseconds>(expect_time - now).count()};
-		if (ns64 <= 0)
-		{
-			return;
-		}
-		::timespec delta{};
-		delta.tv_sec = static_cast<::time_t>(ns64 / 1'000'000'000LL);
-		delta.tv_nsec = static_cast<long>(ns64 % 1'000'000'000LL);
-#if defined(CLOCK_REALTIME) && defined(TIMER_ABSTIME)
-		::timespec abs_ts{};
-		(void)::fast_io::noexcept_call(::clock_gettime, CLOCK_REALTIME, __builtin_addressof(abs_ts));
-		abs_ts.tv_sec += delta.tv_sec;
-		abs_ts.tv_nsec += delta.tv_nsec;
-		if (abs_ts.tv_nsec >= 1'000'000'000L)
-		{
-			abs_ts.tv_nsec -= 1'000'000'000L;
-			++abs_ts.tv_sec;
-		}
-		::fast_io::noexcept_call(::clock_nanosleep, CLOCK_REALTIME, TIMER_ABSTIME, __builtin_addressof(abs_ts), nullptr);
-#else
-		::fast_io::noexcept_call(::nanosleep, __builtin_addressof(delta), nullptr);
-#endif
-	}
-}
-#endif
 
 template <::std::int_least64_t off_to_epoch>
 inline

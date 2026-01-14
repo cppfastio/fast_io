@@ -293,33 +293,6 @@ inline
 	return static_cast<::std::uint_least32_t>(reinterpret_cast<::std::size_t>(teb->ClientId.UniqueThread));
 }
 
-#if __has_include(<chrono>)
-template <bool zw = false, typename Rep, typename Period>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration)
-{
-	auto const count{static_cast<::std::uint_least64_t>(
-		::std::chrono::duration_cast<::std::chrono::microseconds>(sleep_duration).count() * 10u +
-		::std::chrono::duration_cast<::std::chrono::nanoseconds>(sleep_duration).count() / 100u % 10u)};
-
-	if (count > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max()))
-	{
-		::fast_io::throw_nt_error(0xC000000D);
-	}
-
-	auto val{-static_cast<::std::int_least64_t>(count)};
-	::std::uint_least32_t status{::fast_io::win32::nt::nt_delay_execution<zw>(false, __builtin_addressof(val))};
-	if (status) [[unlikely]]
-	{
-		::fast_io::throw_nt_error(status);
-	}
-}
-#endif
 
 template <bool zw = false, ::std::int_least64_t off_to_epoch>
 inline
@@ -351,46 +324,6 @@ inline
 		::fast_io::throw_nt_error(status);
 	}
 }
-
-#if __has_include(<chrono>)
-template <bool zw = false, typename Clock, typename Duration>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time)
-{
-	auto const unix_ts = ::std::chrono::duration_cast<std::chrono::seconds>(
-							 expect_time.time_since_epoch())
-							 .count();
-	auto const unix_subsec_ts = ::std::chrono::duration_cast<std::chrono::nanoseconds>(
-									expect_time.time_since_epoch())
-									.count() /
-								100u % 10000000u;
-
-	auto const unix_to_nt_secs{static_cast<::std::int_least64_t>(unix_ts) + 11644473600};
-	if (unix_to_nt_secs < 0) [[unlikely]]
-	{
-		::fast_io::throw_nt_error(0xC000000D);
-	}
-
-	auto const count{static_cast<::std::uint_least64_t>(unix_to_nt_secs) * 10000000u + static_cast<::std::uint_least64_t>(unix_subsec_ts)};
-
-	if (count > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max()))
-	{
-		::fast_io::throw_nt_error(0xC000000D);
-	}
-
-	auto nt_ts{static_cast<::std::int_least64_t>(count)};
-	::std::uint_least32_t status{::fast_io::win32::nt::nt_delay_execution<zw>(false, __builtin_addressof(nt_ts))};
-	if (status) [[unlikely]]
-	{
-		::fast_io::throw_nt_error(status);
-	}
-}
-#endif
 
 template <bool zw = false, ::std::int_least64_t off_to_epoch>
 inline

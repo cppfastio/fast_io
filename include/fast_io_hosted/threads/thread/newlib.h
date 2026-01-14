@@ -18,47 +18,6 @@ inline constexpr dos_thread_id get_id() noexcept
 	return 0u;
 }
 
-#if __has_include(<chrono>)
-template <typename Rep, typename Period>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration) noexcept
-{
-	auto const us64{::std::chrono::duration_cast<::std::chrono::microseconds>(sleep_duration).count()};
-	if (us64 <= 0)
-	{
-		return;
-	}
-	auto remaining{static_cast<::std::uint_least64_t>(us64)};
-	constexpr ::std::uint_least64_t max_chunk{static_cast<::std::uint_least64_t>(static_cast<unsigned>(-1))};
-	while (remaining != 0)
-	{
-		auto const chunk{remaining > max_chunk ? max_chunk : remaining};
-		::fast_io::details::posix::my_usleep(static_cast<unsigned>(chunk));
-		remaining -= chunk;
-	}
-}
-
-template <typename Clock, typename Duration>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time) noexcept
-{
-	auto const now{Clock::now()};
-	if (now < expect_time)
-	{
-		::fast_io::newlib::this_thread::sleep_for(expect_time - now);
-	}
-}
-#endif
 
 template <::std::int_least64_t off_to_epoch>
 inline

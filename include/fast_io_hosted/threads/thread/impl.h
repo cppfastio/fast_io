@@ -1,10 +1,6 @@
 ﻿#pragma once
 
 // std
-#if __has_include(<chrono>)
-#include <chrono>
-#endif
-
 #include <ranges>
 #include <cstdint>
 #include <utility>

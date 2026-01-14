@@ -254,54 +254,6 @@ inline
 	return ::fast_io::win32::GetCurrentThreadId();
 }
 
-#if __has_include(<chrono>)
-template <typename Rep, typename Period>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration) noexcept
-{
-	auto const ms64{::std::chrono::duration_cast<::std::chrono::milliseconds>(sleep_duration).count()};
-	if (ms64 <= 0)
-	{
-		return;
-	}
-
-	auto const u64{static_cast<::std::uint_least64_t>(ms64)};
-	auto const ms{u64 > 0xFFFFFFFFu ? static_cast<::std::uint_least32_t>(0xFFFFFFFFu)
-									: static_cast<::std::uint_least32_t>(u64)};
-	::fast_io::win32::Sleep(ms);
-}
-
-template <typename Clock, typename Duration>
-inline
-#if __cpp_constexpr >= 202207L
-	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
-	// for reduce some warning purpose
-	constexpr
-#endif
-	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time) noexcept
-{
-
-	auto const now{Clock::now()};
-	if (now < expect_time)
-	{
-		auto const ms64{::std::chrono::duration_cast<::std::chrono::milliseconds>(expect_time - now).count()};
-		if (ms64 <= 0)
-		{
-			return;
-		}
-		auto const u64{static_cast<::std::uint_least64_t>(ms64)};
-		auto const ms{u64 > 0xFFFFFFFFu ? static_cast<::std::uint_least32_t>(0xFFFFFFFFu)
-										: static_cast<::std::uint_least32_t>(u64)};
-		::fast_io::win32::Sleep(ms);
-	}
-}
-#endif
-
 template <::std::int_least64_t off_to_epoch>
 inline
 #if __cpp_constexpr >= 202207L

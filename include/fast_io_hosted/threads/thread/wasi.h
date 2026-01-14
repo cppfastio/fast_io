@@ -177,37 +177,6 @@ inline
 	return ::fast_io::wasi::details::get_or_assign_thread_id();
 }
 
-#if __has_include(<chrono>)
-template <typename Rep, typename Period>
-inline
-#if __cpp_constexpr >= 202207L
-	constexpr
-#endif
-	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration) noexcept
-{
-	auto const ns64{::std::chrono::duration_cast<::std::chrono::nanoseconds>(sleep_duration).count()};
-	if (ns64 <= 0)
-	{
-		return;
-	}
-	::fast_io::wasi::details::sleep_for_ns(static_cast<__wasi_timestamp_t>(ns64));
-}
-
-template <typename Clock, typename Duration>
-inline
-#if __cpp_constexpr >= 202207L
-	constexpr
-#endif
-	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time) noexcept
-{
-	auto const now{Clock::now()};
-	if (now < expect_time)
-	{
-		::fast_io::wasi::this_thread::sleep_for(expect_time - now);
-	}
-}
-#endif
-
 template <::std::int_least64_t off_to_epoch>
 inline
 #if __cpp_constexpr >= 202207L
