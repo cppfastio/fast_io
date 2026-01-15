@@ -3,7 +3,7 @@
 #include "rtl_gen_random.h"
 #include "win32_crypt_gen_random.h"
 #endif
-#if defined(__wasi__) || defined(__emscripten__)
+#if defined(__wasi__) || defined(__EMSCRIPTEN__)
 #include "wasi_random_get.h"
 #endif
 
@@ -25,7 +25,7 @@ concept minimum_buffer_input_stream_require_size_impl =
 
 } // namespace fast_io::details
 #if ((defined(__linux__) && defined(__NR_getrandom)) || \
-	 (!(defined(__linux__) && defined(__NR_getrandom)) && __has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__emscripten__) && !defined(__DARWIN_C_LEVEL) && !defined(__CYGWIN__)
+	 (!(defined(__linux__) && defined(__NR_getrandom)) && __has_include(<sys/random.h>))) && !defined(__wasi__) && !defined(__EMSCRIPTEN__) && !defined(__DARWIN_C_LEVEL) && !defined(__CYGWIN__)
 #include "linux_getrandom.h"
 #endif
 #if ((defined(__linux__) && defined(__GLIBC__)) || (defined(__BSD_VISIBLE) && !defined(__DARWIN_C_LEVEL))) && 0
@@ -74,7 +74,7 @@ using basic_native_white_hole =
 #else
 	basic_rtl_gen_random<char_type>;
 #endif
-#elif defined(__wasi__) || defined(__emscripten__)
+#elif defined(__wasi__) || defined(__EMSCRIPTEN__)
 	basic_wasi_random_get<char_type>;
 #elif (((defined(__linux__) && defined(__GLIBC__)) || (defined(__BSD_VISIBLE) && !defined(__DARWIN_C_LEVEL)))) && 0
 	basic_bsd_arc4random<char_type>;
