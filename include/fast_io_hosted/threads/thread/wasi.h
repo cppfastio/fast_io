@@ -14,9 +14,6 @@ namespace details
 
 using wasi_thread_id = ::std::uint_least64_t;
 
-inline ::std::atomic<wasi_thread_id> next_thread_id{1u};
-
-inline thread_local wasi_thread_id current_thread_id{};
 
 inline
 #if __cpp_constexpr >= 202207L
@@ -24,13 +21,7 @@ inline
 #endif
 	wasi_thread_id get_or_assign_thread_id() noexcept
 {
-	auto id{current_thread_id};
-	if (id == 0)
-	{
-		id = next_thread_id.fetch_add(1u, ::std::memory_order_relaxed);
-		current_thread_id = id;
-	}
-	return id;
+	return static_cast<wasi_thread_id>(-1);
 }
 
 inline void assign_thread_id_for_current(wasi_thread_id id) noexcept
