@@ -57,7 +57,7 @@ inline void sleep_for_ns(__wasi_timestamp_t ns) noexcept
 	}
 }
 
-#if defined(__wasi_thread__)
+#if defined(__wasi_thread__) & 0
 
 struct wasi_thread_control_block
 {
