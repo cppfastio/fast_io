@@ -1177,7 +1177,7 @@ public:
 
 	static inline constexpr bool has_deallocate_aligned = (::fast_io::details::has_deallocate_aligned_impl<alloc> ||
 														   ::fast_io::details::has_deallocate_impl<alloc>);
-	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
+ 	static inline constexpr void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
 		requires(!has_status && has_deallocate_aligned)
 	{
 #if __cpp_constexpr_dynamic_alloc >= 201907L
@@ -1212,7 +1212,7 @@ public:
 		}
 	}
 
-	static inline void deallocate_aligned_n(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
+ 	static inline constexpr void deallocate_aligned_n(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
 #if __cpp_constexpr_dynamic_alloc >= 201907L
