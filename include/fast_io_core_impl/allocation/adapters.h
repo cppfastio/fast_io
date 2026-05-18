@@ -116,7 +116,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_new)
+			return __builtin_operator_new(n);
+#else
 			return ::operator new(n);
+#endif
 		}
 		else
 #endif
@@ -416,7 +420,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_delete)
+			__builtin_operator_delete(p);
+#else
 			::operator delete(p);
+#endif
 		}
 		else
 #endif
@@ -438,7 +446,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_delete)
+			__builtin_operator_delete(p);
+#else
 			::operator delete(p);
+#endif
 		}
 		else
 #endif
@@ -478,7 +490,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_new)
+			return __builtin_operator_new(n);
+#else
 			return ::operator new(n);
+#endif
 		}
 		else
 #endif
@@ -498,7 +514,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
-			return ::operator new(n); // this is problematic. No way to clean it up at compile time.
+#if __has_builtin(__builtin_operator_new)
+			return __builtin_operator_new(n);
+#else
+			return ::operator new(n);
+#endif // this is problematic. No way to clean it up at compile time.
 		}
 		else
 #endif
@@ -520,7 +540,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_new)
+			return {__builtin_operator_new(n), n};
+#else
 			return {::operator new(n), n};
+#endif
 		}
 		else
 #endif
@@ -555,7 +579,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_new)
+			return {__builtin_operator_new(n), n};
+#else
 			return {::operator new(n), n};
+#endif
 		}
 		else
 #endif
@@ -591,7 +619,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_new)
+			return {__builtin_operator_new(n), n};
+#else
 			return {::operator new(n), n};
+#endif
 		}
 		else
 #endif
@@ -623,7 +655,11 @@ public:
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		if (__builtin_is_constant_evaluated())
 		{
+#if __has_builtin(__builtin_operator_new)
+			return {__builtin_operator_new(n), n};
+#else
 			return {::operator new(n), n};
+#endif
 		}
 		else
 #endif
@@ -1144,54 +1180,82 @@ public:
 	static inline void deallocate_aligned(void *p, ::std::size_t alignment) noexcept
 		requires(!has_status && has_deallocate_aligned)
 	{
-		if constexpr (::fast_io::details::has_deallocate_aligned_impl<alloc>)
+#if __cpp_constexpr_dynamic_alloc >= 201907L
+		if (__builtin_is_constant_evaluated())
 		{
-			allocator_type::deallocate_aligned(p, alignment);
+#if __has_builtin(__builtin_operator_delete)
+			__builtin_operator_delete(p);
+#else
+			::operator delete(p);
+#endif
+			return;
 		}
 		else
+#endif
 		{
-			if (p == nullptr)
+			if constexpr (::fast_io::details::has_deallocate_aligned_impl<alloc>)
 			{
-				return;
+				allocator_type::deallocate_aligned(p, alignment);
 			}
-			if (default_alignment < alignment)
+			else
 			{
-				p = reinterpret_cast<void **>(p)[-1];
+				if (p == nullptr)
+				{
+					return;
+				}
+				if (default_alignment < alignment)
+				{
+					p = reinterpret_cast<void **>(p)[-1];
+				}
+				allocator_type::deallocate(p);
 			}
-			allocator_type::deallocate(p);
 		}
 	}
 
 	static inline void deallocate_aligned_n(void *p, ::std::size_t alignment, ::std::size_t n) noexcept
 		requires(!has_status)
 	{
-		if constexpr (::fast_io::details::has_deallocate_aligned_n_impl<alloc>)
+#if __cpp_constexpr_dynamic_alloc >= 201907L
+		if (__builtin_is_constant_evaluated())
 		{
-			allocator_type::deallocate_aligned_n(p, alignment, n);
-		}
-		else if constexpr (::fast_io::details::has_deallocate_aligned_impl<alloc>)
-		{
-			allocator_type::deallocate_aligned(p, alignment);
+#if __has_builtin(__builtin_operator_delete)
+			__builtin_operator_delete(p);
+#else
+			::operator delete(p);
+#endif
+			return;
 		}
 		else
+#endif
 		{
-			if (p == nullptr)
+			if constexpr (::fast_io::details::has_deallocate_aligned_n_impl<alloc>)
 			{
-				return;
+				allocator_type::deallocate_aligned_n(p, alignment, n);
 			}
-			if (default_alignment < alignment)
+			else if constexpr (::fast_io::details::has_deallocate_aligned_impl<alloc>)
 			{
-				auto start{reinterpret_cast<void **>(p)[-1]};
-				n += static_cast<::std::size_t>(reinterpret_cast<char unsigned *>(p) - reinterpret_cast<char unsigned *>(start));
-				p = start;
-			}
-			if constexpr (::fast_io::details::has_deallocate_impl<alloc>)
-			{
-				allocator_type::deallocate(p);
+				allocator_type::deallocate_aligned(p, alignment);
 			}
 			else
 			{
-				allocator_type::deallocate_n(p, n);
+				if (p == nullptr)
+				{
+					return;
+				}
+				if (default_alignment < alignment)
+				{
+					auto start{reinterpret_cast<void **>(p)[-1]};
+					n += static_cast<::std::size_t>(reinterpret_cast<char unsigned *>(p) - reinterpret_cast<char unsigned *>(start));
+					p = start;
+				}
+				if constexpr (::fast_io::details::has_deallocate_impl<alloc>)
+				{
+					allocator_type::deallocate(p);
+				}
+				else
+				{
+					allocator_type::deallocate_n(p, n);
+				}
 			}
 		}
 	}
