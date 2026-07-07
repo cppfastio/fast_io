@@ -17,6 +17,8 @@ enum class process_mode : ::std::uint_least64_t
 	// [POSIX] Using vfork to create processes, but this prevents many parameters from taking effect (vfork does not allow modification of global memory before exec).
 	follow = static_cast<::std::uint_least64_t>(1) << 4,
 	// [POSIX, WINDOWS, WINNT] Allow symbolic links to follow
+	detach = static_cast<::std::uint_least64_t>(1) << 5,
+	// [POSIX] Detach after process created. Always success even if the process fails to launch. This flag disable pipes used to collect status from subprocess. Takes no effect if posix_vfork is set
 };
 
 inline constexpr process_mode operator&(process_mode x, process_mode y) noexcept
