@@ -33,7 +33,7 @@ struct async_scatter_pread_some_bytes_state_base
 	 * functor -- the resubmit machinery never sees the callback type */
 	void (*finish)(async_scatter_pread_some_bytes_state_base *state, ::std::cxx_std_error err) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											   ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -42,14 +42,14 @@ struct async_scatter_pread_some_bytes_state;
 
 template <typename scheduler, typename stmtype, typename alloc_type, typename T>
 inline void async_scatter_pread_some_bytes_state_finish_cb(async_scatter_pread_some_bytes_state_base<scheduler, stmtype, alloc_type> *b,
-							::std::cxx_std_error err) noexcept
+														   ::std::cxx_std_error err) noexcept
 {
 	auto *state{static_cast<async_scatter_pread_some_bytes_state<scheduler, stmtype, alloc_type, T> *>(b)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::io_scatter_status_t const status{state->index, state->elem_off};
 	::fast_io::details::async_delete_state(state);
 	if constexpr (::std::is_invocable_v<T, ::std::cxx_std_error,
-									 ::fast_io::io_scatter_status_t>)
+										::fast_io::io_scatter_status_t>)
 	{
 		callback(err, status);
 	}
@@ -66,9 +66,9 @@ struct async_scatter_pread_some_bytes_state : async_scatter_pread_some_bytes_sta
 	T callback;
 
 	inline async_scatter_pread_some_bytes_state(scheduler s, stmtype st, ::fast_io::io_scatter_t const *sc,
-				 ::std::size_t n_, ::std::size_t index, ::std::size_t elem_off,
-				 ::fast_io::intfpos_opt o,
-				 ::fast_io::posix_statx_timestamp_opt tmo, T cb) noexcept
+												::std::size_t n_, ::std::size_t index, ::std::size_t elem_off,
+												::fast_io::intfpos_opt o,
+												::fast_io::posix_statx_timestamp_opt tmo, T cb) noexcept
 		: base_type{s, st, sc, n_, index, elem_off, o, tmo},
 		  callback{::std::move(cb)}
 	{
@@ -201,7 +201,7 @@ struct async_scatter_pwrite_some_bytes_state_base
 	 * functor -- the resubmit machinery never sees the callback type */
 	void (*finish)(async_scatter_pwrite_some_bytes_state_base *state, ::std::cxx_std_error err) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											   ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -210,14 +210,14 @@ struct async_scatter_pwrite_some_bytes_state;
 
 template <typename scheduler, typename stmtype, typename alloc_type, typename T>
 inline void async_scatter_pwrite_some_bytes_state_finish_cb(async_scatter_pwrite_some_bytes_state_base<scheduler, stmtype, alloc_type> *b,
-							::std::cxx_std_error err) noexcept
+															::std::cxx_std_error err) noexcept
 {
 	auto *state{static_cast<async_scatter_pwrite_some_bytes_state<scheduler, stmtype, alloc_type, T> *>(b)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::io_scatter_status_t const status{state->index, state->elem_off};
 	::fast_io::details::async_delete_state(state);
 	if constexpr (::std::is_invocable_v<T, ::std::cxx_std_error,
-									 ::fast_io::io_scatter_status_t>)
+										::fast_io::io_scatter_status_t>)
 	{
 		callback(err, status);
 	}
@@ -234,9 +234,9 @@ struct async_scatter_pwrite_some_bytes_state : async_scatter_pwrite_some_bytes_s
 	T callback;
 
 	inline async_scatter_pwrite_some_bytes_state(scheduler s, stmtype st, ::fast_io::io_scatter_t const *sc,
-				 ::std::size_t n_, ::std::size_t index, ::std::size_t elem_off,
-				 ::fast_io::intfpos_opt o,
-				 ::fast_io::posix_statx_timestamp_opt tmo, T cb) noexcept
+												 ::std::size_t n_, ::std::size_t index, ::std::size_t elem_off,
+												 ::fast_io::intfpos_opt o,
+												 ::fast_io::posix_statx_timestamp_opt tmo, T cb) noexcept
 		: base_type{s, st, sc, n_, index, elem_off, o, tmo},
 		  callback{::std::move(cb)}
 	{
@@ -398,7 +398,7 @@ inline void async_scatter_pread_some_bytes_decay_callback(
 				::fast_io::details::async_new_state<state_type>(
 					scheduler,
 					instm,
-					pscatters, n, 0, 0, off, timeout,
+					pscatters, n, 0zu, 0zu, off, timeout,
 					::std::move(callback)));
 			return;
 		}
@@ -438,7 +438,7 @@ inline void async_scatter_pread_all_bytes_decay_callback(
 			::fast_io::details::async_new_state<state_type>(
 				scheduler,
 				instm,
-				pscatters, n, 0, 0, off, timeout, ::std::move(callback)));
+				pscatters, n, 0zu, 0zu, off, timeout, ::std::move(callback)));
 		return;
 	}
 	catch throws(::std::error e)
@@ -492,7 +492,7 @@ inline void async_scatter_pwrite_some_bytes_decay_callback(
 				::fast_io::details::async_new_state<state_type>(
 					scheduler,
 					outstm,
-					pscatters, n, 0, 0, off, timeout,
+					pscatters, n, 0zu, 0zu, off, timeout,
 					::std::move(callback)));
 			return;
 		}
@@ -532,7 +532,7 @@ inline void async_scatter_pwrite_all_bytes_decay_callback(
 			::fast_io::details::async_new_state<state_type>(
 				scheduler,
 				outstm,
-				pscatters, n, 0, 0, off, timeout, ::std::move(callback)));
+				pscatters, n, 0zu, 0zu, off, timeout, ::std::move(callback)));
 		return;
 	}
 	catch throws(::std::error e)

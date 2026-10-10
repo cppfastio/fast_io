@@ -60,7 +60,7 @@ struct ktls_crypto_info_chacha20_poly1305
 	ktls_crypto_info info;
 	::std::uint_least8_t iv[12];
 	::std::uint_least8_t key[32];
-	::std::uint_least8_t salt[0]; /* extended layout; unused for chacha */
+	__extension__ ::std::uint_least8_t salt[0]; /* extended layout; unused for chacha */
 	::std::uint_least8_t rec_seq[8];
 };
 

@@ -57,7 +57,7 @@ inline constexpr ::std::size_t ws_frame_header_size_impl(::std::byte b1) noexcep
  * rsv bits set (no extensions negotiated), reserved opcode, a
  * fragmented or oversized control frame, or a 64-bit length with the
  * top bit set */
-inline constexpr bool ws_parse_frame_header_impl(::std::byte const *b, ::std::size_t n,
+inline constexpr bool ws_parse_frame_header_impl(::std::byte const *b,
 												 ::fast_io::websocket_frame_header &hdr) noexcept
 {
 	auto const b0{static_cast<::std::uint_least8_t>(b[0])};
@@ -328,7 +328,7 @@ scan_context_define(::fast_io::io_reserve_type_t<
 		if (sc.expected != 0 && sc.size == sc.expected)
 		{
 			::std::byte const *b{reinterpret_cast<::std::byte const *>(sc.buffer)};
-			if (!details::ws_parse_frame_header_impl(b, sc.expected, *t.reference))
+			if (!details::ws_parse_frame_header_impl(b, *t.reference))
 			{
 				return {begin, ::fast_io::freestanding::parse_errc::invalid};
 			}

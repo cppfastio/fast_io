@@ -56,31 +56,49 @@ inline constexpr ::std::uint_least64_t io_uring_register_syscall_number{
  * Kernel UAPI (stable ABI, mirrored from linux/io_uring.h so neither
  * liburing nor kernel headers are required).
  */
+struct sqe_uring_cmd
+{
+	::std::uint_least32_t cmd_op;
+	::std::uint_least32_t pad1;
+};
+struct sqe_sockopt
+{
+	::std::uint_least32_t level;
+	::std::uint_least32_t optname;
+};
+struct sqe_addrlen
+{
+	::std::uint_least16_t addr_len;
+	::std::uint_least16_t pad3;
+};
+struct sqe_addr3_and_pad
+{
+	::std::uint_least64_t addr3;
+	::std::uint_least64_t pad2;
+};
+struct sqe_attr
+{
+	::std::uint_least64_t attr_ptr;       /* pointer to attribute information */
+	::std::uint_least64_t attr_type_mask; /* bit mask of attributes */
+};
+
 struct io_uring_sqe
 {
 	::std::uint_least8_t opcode;  /* type of operation for this sqe */
 	::std::uint_least8_t flags;   /* io_uring_sqe_flag */
 	::std::uint_least16_t ioprio; /* ioprio for the request */
-	::std::int32_t fd;      /* file descriptor to do IO on */
+	::std::int32_t fd;            /* file descriptor to do IO on */
 	union
 	{
 		::std::uint_least64_t off;   /* offset into file */
 		::std::uint_least64_t addr2; /* literal pointer / second address */
-		struct
-		{
-			::std::uint_least32_t cmd_op;
-			::std::uint_least32_t pad1;
-		} uring_cmd;
+		sqe_uring_cmd uring_cmd;
 	};
 	union
 	{
 		::std::uint_least64_t addr; /* pointer to buffer or iovecs */
 		::std::uint_least64_t splice_off_in;
-		struct
-		{
-			::std::uint_least32_t level;
-			::std::uint_least32_t optname;
-		} sockopt;
+		sqe_sockopt sockopt;
 	};
 	::std::uint_least32_t len; /* buffer size or number of iovecs */
 	union
@@ -122,24 +140,12 @@ struct io_uring_sqe
 		::std::int32_t splice_fd_in;
 		::std::uint_least32_t file_index;
 		::std::uint_least32_t optlen;
-		struct
-		{
-			::std::uint_least16_t addr_len;
-			::std::uint_least16_t pad3;
-		} addrlen;
+		sqe_addrlen addrlen;
 	};
 	union
 	{
-		struct
-		{
-			::std::uint_least64_t addr3;
-			::std::uint_least64_t pad2;
-		} addr3_and_pad;
-		struct
-		{
-			::std::uint_least64_t attr_ptr;       /* pointer to attribute information */
-			::std::uint_least64_t attr_type_mask; /* bit mask of attributes */
-		} attr;
+		sqe_addr3_and_pad addr3_and_pad;
+		sqe_attr attr;
 		::std::uint_least64_t optval;
 		/*
 		 * If the ring is initialized with io_uring_setup_sqe128, then
@@ -150,14 +156,12 @@ struct io_uring_sqe
 };
 
 
-
 struct io_uring_cqe
 {
 	::std::uint_least64_t user_data; /* sqe->user_data value passed back */
-	::std::int32_t res;        /* result code for this event */
+	::std::int32_t res;              /* result code for this event */
 	::std::uint_least32_t flags;     /* io_uring_cqe_flag */
 };
-
 
 
 /* Filled with the offsets for mmap(2) by io_uring_setup(2) */
@@ -201,7 +205,6 @@ struct io_uring_params
 	::fast_io::liburing::io_sqring_offsets sq_off;
 	::fast_io::liburing::io_cqring_offsets cq_off;
 };
-
 
 
 /* Argument for io_uring_enter(2) with io_uring_enter_ext_arg */
@@ -629,7 +632,7 @@ inline void io_uring_unmap_rings(::fast_io::liburing::io_uring_ring_state &ring)
  */
 inline ::std::ptrdiff_t io_uring_mmap_impl(::std::size_t len, int fd, ::std::uint_least64_t offset) noexcept
 {
-	constexpr int prot_read_write{3};        /* PROT_READ | PROT_WRITE */
+	constexpr int prot_read_write{3};          /* PROT_READ | PROT_WRITE */
 	constexpr int map_shared_populate{0x8001}; /* MAP_SHARED | MAP_POPULATE */
 #if defined(__s390__) || defined(__s390x__)
 	// s390's __NR_mmap is the old single-argument entry; pass the kernel's
@@ -650,12 +653,12 @@ inline ::std::ptrdiff_t io_uring_mmap_impl(::std::size_t len, int fd, ::std::uin
 	return ::fast_io::system_call<__NR_mmap, ::std::ptrdiff_t>(__builtin_addressof(args));
 #elif defined(__NR_mmap)
 	return ::fast_io::system_call<__NR_mmap, ::std::ptrdiff_t>(nullptr, len, prot_read_write, map_shared_populate, fd,
-												   offset);
+															   offset);
 #elif defined(__NR_mmap2)
 	/* mmap2 takes the offset in 4KiB units; the io_uring magic offsets are
 	 * all page aligned */
 	return ::fast_io::system_call<__NR_mmap2, ::std::ptrdiff_t>(nullptr, len, prot_read_write, map_shared_populate, fd,
-													offset >> 12);
+																offset >> 12);
 #else
 	void *p{::fast_io::noexcept_call(::mmap, nullptr, len, prot_read_write, map_shared_populate, fd,
 									 static_cast<::std::int_least64_t>(offset))};
@@ -955,8 +958,8 @@ inline bool io_uring_skip_cqe(::fast_io::liburing::io_uring_ring_state &ring, ::
 
 struct io_uring_peek_cqe_result
 {
-::fast_io::liburing::io_uring_cqe* cqe_ptr;
-::std::uint_least32_t available;
+	::fast_io::liburing::io_uring_cqe *cqe_ptr;
+	::std::uint_least32_t available;
 };
 
 /* returns the first visible CQE (or nullptr) plus the number of CQEs
@@ -1564,8 +1567,7 @@ inline io_uring_cqe *io_uring_peek_cqe(::fast_io::liburing::io_uring_ring_state 
 inline io_uring_cqe *io_uring_wait_cqes(::fast_io::liburing::io_uring_ring_state &ring, ::std::uint_least32_t wait_nr)
 	throws
 {
-	::fast_io::liburing::details::io_uring_get_data data{.submit = 0, .wait_nr = wait_nr, .get_flags = 0, .sz = 0, .has_ts = false,
-									.arg = nullptr};
+	::fast_io::liburing::details::io_uring_get_data data{.submit = 0, .wait_nr = wait_nr, .get_flags = 0, .sz = 0, .has_ts = false, .arg = nullptr};
 	return ::fast_io::liburing::details::io_uring_get_cqe_impl(ring, data);
 }
 
@@ -1576,14 +1578,14 @@ inline io_uring_cqe *io_uring_wait_cqe(::fast_io::liburing::io_uring_ring_state 
 
 /* Submit pending SQEs, then wait for wait_nr completions */
 inline io_uring_cqe *io_uring_submit_and_wait_cqes(::fast_io::liburing::io_uring_ring_state &ring,
-													 ::std::uint_least32_t wait_nr) throws
+												   ::std::uint_least32_t wait_nr) throws
 {
 	::fast_io::liburing::details::io_uring_get_data data{.submit = ::fast_io::liburing::details::io_uring_flush_sq(ring),
-									.wait_nr = wait_nr,
-									.get_flags = 0,
-									.sz = 0,
-									.has_ts = false,
-									.arg = nullptr};
+														 .wait_nr = wait_nr,
+														 .get_flags = 0,
+														 .sz = 0,
+														 .has_ts = false,
+														 .arg = nullptr};
 	return ::fast_io::liburing::details::io_uring_get_cqe_impl(ring, data);
 }
 
@@ -1606,11 +1608,11 @@ inline io_uring_cqe *io_uring_wait_cqe_timeout(::fast_io::liburing::io_uring_rin
 	{
 		io_uring_getevents_arg arg{0, 0, 0, reinterpret_cast<::std::uint_least64_t>(__builtin_addressof(ts))};
 		::fast_io::liburing::details::io_uring_get_data data{.submit = 0,
-										.wait_nr = 1,
-										.get_flags = io_uring_enter_ext_arg,
-										.sz = sizeof(arg),
-										.has_ts = true,
-										.arg = __builtin_addressof(arg)};
+															 .wait_nr = 1,
+															 .get_flags = io_uring_enter_ext_arg,
+															 .sz = sizeof(arg),
+															 .has_ts = true,
+															 .arg = __builtin_addressof(arg)};
 		cqe = ::fast_io::liburing::details::io_uring_get_cqe_impl(ring, data);
 	}
 	else
@@ -1626,11 +1628,11 @@ inline io_uring_cqe *io_uring_wait_cqe_timeout(::fast_io::liburing::io_uring_rin
 		sqe->timeout_flags = 0;
 		sqe->user_data = io_uring_internal_timeout_user_data;
 		::fast_io::liburing::details::io_uring_get_data data{.submit = ::fast_io::liburing::details::io_uring_flush_sq(ring),
-										.wait_nr = 1,
-										.get_flags = 0,
-										.sz = 0,
-										.has_ts = false,
-										.arg = nullptr};
+															 .wait_nr = 1,
+															 .get_flags = 0,
+															 .sz = 0,
+															 .has_ts = false,
+															 .arg = nullptr};
 		try
 		{
 			cqe = ::fast_io::liburing::details::io_uring_get_cqe_impl(ring, data);
@@ -1654,7 +1656,7 @@ inline io_uring_cqe *io_uring_wait_cqe_timeout(::fast_io::liburing::io_uring_rin
  * (sum of io_uring_cqe_nr over the returned CQEs).
  */
 inline ::std::uint_least32_t io_uring_peek_batch_cqe(::fast_io::liburing::io_uring_ring_state &ring, io_uring_cqe **cqes,
-											   ::std::uint_least32_t count) throws
+													 ::std::uint_least32_t count) throws
 {
 	::std::uint_least32_t ready{io_uring_cq_ready(ring)};
 	if (ready == 0)
@@ -1701,7 +1703,7 @@ inline int io_uring_register(::fast_io::liburing::io_uring_ring_state &ring, ::s
 							 ::std::uint_least32_t nr_args) throws
 {
 	int ret{::fast_io::liburing::details::io_uring_register_impl(static_cast<::std::uint_least32_t>(ring.ring_fd), opcode, arg,
-											nr_args)};
+																 nr_args)};
 	::fast_io::system_call_throw_error(ret);
 	return ret;
 }

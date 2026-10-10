@@ -163,7 +163,7 @@ struct io_uring_tls_recv_cookie
    signature */
 template <typename client_t>
 inline void io_uring_tls_recv_key_update_cb(void *cc, ::std::uint_least8_t req,
-										  ::std::cxx_std_error *err) noexcept
+											::std::cxx_std_error *err) noexcept
 {
 	try
 	{
@@ -180,16 +180,16 @@ struct io_uring_tls_recv_cookie_of;
 
 template <typename client_t, typename func>
 inline void io_uring_tls_recv_finish_cb(io_uring_tls_recv_cookie *self,
-									  ::std::cxx_std_error err) noexcept
+										::std::cxx_std_error err) noexcept
 {
 	auto *cookie{static_cast<io_uring_tls_recv_cookie_of<client_t, func> *>(self)};
 	auto callback{::std::move(cookie->callback)};
 	if constexpr (::std::is_invocable_v<func, ::std::cxx_std_error,
-									  ::fast_io::io_scatter_status_t>)
+										::fast_io::io_scatter_status_t>)
 	{
 		::fast_io::io_scatter_status_t const status{
 			::fast_io::scatter_size_to_status(cookie->transferred, cookie->scatters,
-											   cookie->nscatters)};
+											  cookie->nscatters)};
 		::fast_io::details::async_delete_state(cookie);
 		callback(err, status);
 	}
@@ -480,9 +480,9 @@ struct io_uring_tls_sw_recv_cookie
    the functor's signature */
 template <typename client_t>
 inline bool io_uring_tls_sw_open_record_cb(void *cc, ::std::byte const *rec,
-										 ::std::size_t rec_size, ::std::byte *inner,
-										 sw_record_result *rr,
-										 ::std::cxx_std_error *err) noexcept
+										   ::std::size_t rec_size, ::std::byte *inner,
+										   sw_record_result *rr,
+										   ::std::cxx_std_error *err) noexcept
 {
 	try
 	{
@@ -498,8 +498,8 @@ inline bool io_uring_tls_sw_open_record_cb(void *cc, ::std::byte const *rec,
 
 template <typename client_t>
 inline void io_uring_tls_sw_rx_stash_cb(void *cc, ::std::byte const *pt,
-									  ::std::size_t n,
-									  ::std::cxx_std_error *err) noexcept
+										::std::size_t n,
+										::std::cxx_std_error *err) noexcept
 {
 	try
 	{
@@ -516,16 +516,16 @@ struct io_uring_tls_sw_recv_cookie_of;
 
 template <typename client_t, typename func>
 inline void io_uring_tls_sw_recv_finish_cb(io_uring_tls_sw_recv_cookie *self,
-										 ::std::cxx_std_error err) noexcept
+										   ::std::cxx_std_error err) noexcept
 {
 	auto *cookie{static_cast<io_uring_tls_sw_recv_cookie_of<client_t, func> *>(self)};
 	auto callback{::std::move(cookie->callback)};
 	if constexpr (::std::is_invocable_v<func, ::std::cxx_std_error,
-									  ::fast_io::io_scatter_status_t>)
+										::fast_io::io_scatter_status_t>)
 	{
 		::fast_io::io_scatter_status_t const status{
 			::fast_io::scatter_size_to_status(cookie->transferred, cookie->scatters,
-											   cookie->nscatters)};
+											  cookie->nscatters)};
 		::fast_io::details::async_delete_state(cookie);
 		callback(err, status);
 	}
@@ -600,7 +600,9 @@ inline void io_uring_tls_sw_recv_round(
 	auto *sqe{::fast_io::liburing::io_uring_get_sqe(ring)};
 	::fast_io::liburing::io_uring_prep_rw(::fast_io::liburing::io_uring_op_read, sqe,
 										  cookie->fd, cookie->ct + cookie->ct_have,
-										  sizeof(cookie->ct) - cookie->ct_have, 0);
+										  static_cast<::std::uint_least32_t>(
+											  sizeof(cookie->ct) - cookie->ct_have),
+										  0);
 	::fast_io::liburing::details::io_uring_arm_timeout(
 		ring, cookie, sqe, io_uring_tls_sw_recv_deliver,
 		cookie->timeout);
@@ -807,13 +809,13 @@ struct io_uring_tls_sw_write_cookie_of;
 
 template <typename client_t, typename func>
 inline void io_uring_tls_sw_write_finish_cb(io_uring_tls_sw_write_cookie *self,
-										  ::std::cxx_std_error err) noexcept
+											::std::cxx_std_error err) noexcept
 {
 	auto *cookie{static_cast<io_uring_tls_sw_write_cookie_of<client_t, func> *>(self)};
 	auto callback{::std::move(cookie->callback)};
 	::std::size_t const n{cookie->plaintext};
 	if constexpr (::std::is_invocable_v<func, ::std::cxx_std_error,
-									  ::fast_io::io_scatter_status_t>)
+										::fast_io::io_scatter_status_t>)
 	{
 		::fast_io::details::async_delete_state(cookie);
 		callback(err, ::fast_io::io_scatter_status_t{n, 0zu});
@@ -859,7 +861,9 @@ inline void io_uring_tls_sw_write_round(
 	auto *sqe{::fast_io::liburing::io_uring_get_sqe(ring)};
 	::fast_io::liburing::io_uring_prep_rw(::fast_io::liburing::io_uring_op_write, sqe,
 										  cookie->fd, cookie->rec + cookie->sent,
-										  cookie->rec_size - cookie->sent, 0);
+										  static_cast<::std::uint_least32_t>(
+											  cookie->rec_size - cookie->sent),
+										  0);
 	::fast_io::liburing::details::io_uring_arm_timeout(
 		ring, cookie, sqe, io_uring_tls_sw_write_deliver,
 		cookie->timeout);
@@ -1014,7 +1018,7 @@ struct io_uring_tls_close_cookie_of;
 
 template <typename client_t, typename func>
 inline void io_uring_tls_close_finish_cb(io_uring_tls_close_cookie *self,
-									   ::std::cxx_std_error err) noexcept
+										 ::std::cxx_std_error err) noexcept
 {
 	auto *cookie{static_cast<io_uring_tls_close_cookie_of<client_t, func> *>(self)};
 	auto callback{::std::move(cookie->callback)};
@@ -1070,10 +1074,12 @@ inline void io_uring_tls_close_arm_notify(
 	if (cookie->sw)
 	{
 		cookie->notify_size = cookie->seal_alert(cookie->client,
-											   cookie->notify_rec, alert_description::close_notify);
+												 cookie->notify_rec, alert_description::close_notify);
 		::fast_io::liburing::io_uring_prep_rw(::fast_io::liburing::io_uring_op_write, sqe,
 											  cookie->fd, cookie->notify_rec,
-											  cookie->notify_size, 0);
+											  static_cast<::std::uint_least32_t>(
+												  cookie->notify_size),
+											  0);
 	}
 	else
 	{
@@ -1747,7 +1753,7 @@ inline void async_handshake_callback_define(
 	using client_type = ::std::remove_cvref_t<decltype(*tob.handle)>;
 	using cookie_type =
 		::fast_io::tls::details::posix_thread_pool_tls_server_handshake_cookie<client_type,
-																			 ::std::remove_cvref_t<func>>;
+																			   ::std::remove_cvref_t<func>>;
 	try
 	{
 		auto *cookie{::fast_io::details::async_new_state_plain<cookie_type>(

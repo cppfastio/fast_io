@@ -395,7 +395,7 @@ inline void win32_iocp_rw_submit(sched_type sched, stream_type stream, void *fir
 												nullptr) == 0;
 			if (!pending)
 			{
-				err = ::fast_io::win32::WSAGetLastError();
+				err = static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError());
 				pending = err == 997u; // WSA_IO_PENDING
 			}
 		}
@@ -408,7 +408,7 @@ inline void win32_iocp_rw_submit(sched_type sched, stream_type stream, void *fir
 												nullptr) == 0;
 			if (!pending)
 			{
-				err = ::fast_io::win32::WSAGetLastError();
+				err = static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError());
 				pending = err == 997u;
 			}
 		}

@@ -132,28 +132,28 @@ struct fast_io_crypto_backend
 		if (a == md::sha384)
 		{
 			details::hkdf_extract_to_ptr<::fast_io::sha384_context>(out, salt, salt_size,
-																  ikm, ikm_size);
+																	ikm, ikm_size);
 		}
 		else
 		{
 			details::hkdf_extract_to_ptr<::fast_io::sha256_context>(out, salt, salt_size,
-																  ikm, ikm_size);
+																	ikm, ikm_size);
 		}
 	}
 
 	static inline void hkdf_expand(md a, ::std::byte *out, ::std::size_t out_size,
-								   ::std::byte const *prk, ::std::size_t prk_size,
+								   ::std::byte const *prk, ::std::size_t,
 								   ::std::byte const *info, ::std::size_t info_size) noexcept
 	{
 		if (a == md::sha384)
 		{
 			details::hkdf_expand_to_ptr<::fast_io::sha384_context>(out, out_size, prk,
-																 info, info_size);
+																   info, info_size);
 		}
 		else
 		{
 			details::hkdf_expand_to_ptr<::fast_io::sha256_context>(out, out_size, prk,
-																 info, info_size);
+																   info, info_size);
 		}
 	}
 
@@ -164,12 +164,12 @@ struct fast_io_crypto_backend
 		if (a == md::sha384)
 		{
 			::fast_io::hmac_once_to_ptr<::fast_io::sha384_context>(out, key, key_size,
-																 data, data_size);
+																   data, data_size);
 		}
 		else
 		{
 			::fast_io::hmac_once_to_ptr<::fast_io::sha256_context>(out, key, key_size,
-																 data, data_size);
+																   data, data_size);
 		}
 	}
 
@@ -194,7 +194,7 @@ struct fast_io_crypto_backend
 								   ::std::byte const *iv, ::std::uint_least64_t seq) noexcept
 	{
 		return details::tls_record_open(out, out_size, inner_type, hdr5, ct,
-										  ct_size, suite, key, iv, seq);
+										ct_size, suite, key, iv, seq);
 	}
 
 	static inline ::std::size_t

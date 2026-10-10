@@ -119,7 +119,7 @@ inline void posix_thread_pool_wait_io(int fd, short events) FAST_IO_HERBCEPTIONS
 	::pollfd pfd{fd, events, 0};
 	for (;;)
 	{
-		int const rc{::fast_io::noexcept_call(::poll, __builtin_addressof(pfd), 1, -1)};
+		int const rc{::fast_io::noexcept_call(::poll, __builtin_addressof(pfd), ::nfds_t{1}, -1)};
 		if (rc < 0)
 		{
 			if (errno == EINTR)
@@ -648,7 +648,7 @@ public:
 	pthread_t *workers{};
 	::std::size_t worker_count{};
 
-	inline explicit posix_thread_pool(::std::size_t workers) throws
+	inline explicit posix_thread_pool(::std::size_t worker_cap) throws
 	{
 		int ec{::fast_io::noexcept_call(::pthread_mutex_init, __builtin_addressof(this->storage.mutex),
 										nullptr)};
@@ -672,21 +672,22 @@ public:
 		this->state = __builtin_addressof(this->storage);
 		try
 		{
-			if (workers == 0)
+			if (worker_cap == 0)
 			{
-				auto online{::fast_io::noexcept_call(::sysconf, _SC_NPROCESSORS_ONLN)};
-				workers = online > 0 ? static_cast<::std::size_t>(online) : 4zu;
+				auto const online{::fast_io::noexcept_call(::sysconf, _SC_NPROCESSORS_ONLN)};
+				worker_cap = online > 0 ? static_cast<::std::size_t>(online) : 4zu;
 			}
-			this->workers = ::fast_io::native_typed_global_allocator<pthread_t>::allocate(workers);
-			for (; this->worker_count < workers; ++this->worker_count)
+			this->workers = ::fast_io::native_typed_global_allocator<pthread_t>::allocate(worker_cap);
+			for (; this->worker_count < worker_cap; ++this->worker_count)
 			{
-				int const ec{::fast_io::noexcept_call(::pthread_create,
-													  this->workers + this->worker_count, nullptr,
-													  &::fast_io::details::posix_thread_pool_worker,
-													  __builtin_addressof(this->storage))};
-				if (ec != 0)
+				int const create_ec{::fast_io::noexcept_call(::pthread_create,
+															 this->workers + this->worker_count,
+															 nullptr,
+															 &::fast_io::details::posix_thread_pool_worker,
+															 __builtin_addressof(this->storage))};
+				if (create_ec != 0)
 				{
-					::fast_io::throw_posix_error(ec);
+					::fast_io::throw_posix_error(create_ec);
 				}
 			}
 		}

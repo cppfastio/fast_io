@@ -261,7 +261,7 @@ inline constexpr auto strlike_construct_single_character_define(
 {
 	return strlike_construct_define(
 		::fast_io::io_strlike_type<char_type,
-								 async_print_strlike_buffer<char_type, allocator_type>>,
+								   async_print_strlike_buffer<char_type, allocator_type>>,
 		__builtin_addressof(ch), __builtin_addressof(ch) + 1);
 }
 
@@ -482,19 +482,19 @@ inline auto async_print_decay(async_scheduler_type sched,
 											   ::std::forward<Args>(args)...);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::
-					  has_obuffer_flush_reserve_define<outstmtype>)
+						   has_obuffer_flush_reserve_define<outstmtype>)
 	{
 		/* in-memory strlike target: formatting is the whole job */
 		print_freestanding_decay<line>(outstm, ::std::forward<Args>(args)...);
 		return ::fast_io::details::async_print_awaiter<
 			async_scheduler_type, outstmtype, ::fast_io::details::empty,
 			::fast_io::details::async_print_strlike_buffer<char_type,
-												::fast_io::native_global_allocator>>{};
+														   ::fast_io::native_global_allocator>>{};
 	}
 	else if constexpr (requires {
-							  async_iobuffer_print_decay<line>(
-								  sched, timeout, outstm, ::std::forward<Args>(args)...);
-					  })
+						   async_iobuffer_print_decay<line>(
+							   sched, timeout, outstm, ::std::forward<Args>(args)...);
+					   })
 	{
 		/* basic_io_buffer_ref streams: the buffer-aware path lives with
 		 * the io_buffer layer — found by ADL, no freestanding dependency
@@ -508,9 +508,6 @@ inline auto async_print_decay(async_scheduler_type sched,
 		using payload_alloc_type =
 			::fast_io::operations::decay::output_stream_allocator_t<
 				outstmtype, ::fast_io::native_global_allocator>;
-		using payload_typed_alloc_type =
-			::fast_io::typed_generic_allocator_adapter<payload_alloc_type, char_type>;
-		constexpr bool payload_status{payload_typed_alloc_type::has_status};
 		using payload_string_type =
 			::fast_io::details::async_print_strlike_buffer<char_type, payload_alloc_type>;
 		constexpr bool is_buffered{

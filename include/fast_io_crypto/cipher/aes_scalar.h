@@ -61,7 +61,8 @@ inline constexpr ::std::uint_least8_t rcon[11]{
 
 inline constexpr ::std::uint_least8_t xtime(::std::uint_least8_t x) noexcept
 {
-	return static_cast<::std::uint_least8_t>((x << 1) ^ (((x >> 7) & 1u) * 0x1bu));
+	return static_cast<::std::uint_least8_t>((static_cast<::std::uint_least32_t>(x) << 1) ^
+											 (((x >> 7) & 1u) * 0x1bu));
 }
 
 /* load/store a 32-bit AES word: byte 0 of the group is the MSB */
@@ -281,40 +282,76 @@ inline constexpr void inv_sub_bytes(::std::uint_least8_t *state) noexcept
 inline constexpr void shift_rows(::std::uint_least8_t *s) noexcept
 {
 	::std::uint_least8_t t;
-	t = s[1]; s[1] = s[5]; s[5] = s[9]; s[9] = s[13]; s[13] = t;
-	t = s[2]; s[2] = s[10]; s[10] = t;
-	t = s[6]; s[6] = s[14]; s[14] = t;
-	t = s[15]; s[15] = s[11]; s[11] = s[7]; s[7] = s[3]; s[3] = t;
+	t = s[1];
+	s[1] = s[5];
+	s[5] = s[9];
+	s[9] = s[13];
+	s[13] = t;
+	t = s[2];
+	s[2] = s[10];
+	s[10] = t;
+	t = s[6];
+	s[6] = s[14];
+	s[14] = t;
+	t = s[15];
+	s[15] = s[11];
+	s[11] = s[7];
+	s[7] = s[3];
+	s[3] = t;
 }
 
 inline constexpr void inv_shift_rows(::std::uint_least8_t *s) noexcept
 {
 	::std::uint_least8_t t;
-	t = s[13]; s[13] = s[9]; s[9] = s[5]; s[5] = s[1]; s[1] = t;
-	t = s[2]; s[2] = s[10]; s[10] = t;
-	t = s[6]; s[6] = s[14]; s[14] = t;
-	t = s[3]; s[3] = s[7]; s[7] = s[11]; s[11] = s[15]; s[15] = t;
+	t = s[13];
+	s[13] = s[9];
+	s[9] = s[5];
+	s[5] = s[1];
+	s[1] = t;
+	t = s[2];
+	s[2] = s[10];
+	s[10] = t;
+	t = s[6];
+	s[6] = s[14];
+	s[14] = t;
+	t = s[3];
+	s[3] = s[7];
+	s[7] = s[11];
+	s[11] = s[15];
+	s[15] = t;
 }
 
 inline constexpr void mix_columns(::std::uint_least8_t *s) noexcept
 {
 	::std::uint_least8_t a0, a1, a2, a3;
-	a0 = s[0]; a1 = s[1]; a2 = s[2]; a3 = s[3];
+	a0 = s[0];
+	a1 = s[1];
+	a2 = s[2];
+	a3 = s[3];
 	s[0] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[1] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[2] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
 	s[3] = static_cast<::std::uint_least8_t>(xtime(a0) ^ a0) ^ a1 ^ a2 ^ xtime(a3);
-	a0 = s[4]; a1 = s[5]; a2 = s[6]; a3 = s[7];
+	a0 = s[4];
+	a1 = s[5];
+	a2 = s[6];
+	a3 = s[7];
 	s[4] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[5] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[6] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
 	s[7] = static_cast<::std::uint_least8_t>(xtime(a0) ^ a0) ^ a1 ^ a2 ^ xtime(a3);
-	a0 = s[8]; a1 = s[9]; a2 = s[10]; a3 = s[11];
+	a0 = s[8];
+	a1 = s[9];
+	a2 = s[10];
+	a3 = s[11];
 	s[8] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[9] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[10] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
 	s[11] = static_cast<::std::uint_least8_t>(xtime(a0) ^ a0) ^ a1 ^ a2 ^ xtime(a3);
-	a0 = s[12]; a1 = s[13]; a2 = s[14]; a3 = s[15];
+	a0 = s[12];
+	a1 = s[13];
+	a2 = s[14];
+	a3 = s[15];
 	s[12] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[13] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[14] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
@@ -330,38 +367,58 @@ turns the 14/11/13/9 matrix into the plain 2/3/1/1 MixColumns, since
 inline constexpr void inv_mix_columns(::std::uint_least8_t *s) noexcept
 {
 	::std::uint_least8_t a0, a1, a2, a3, t;
-	a0 = s[0]; a1 = s[1]; a2 = s[2]; a3 = s[3];
+	a0 = s[0];
+	a1 = s[1];
+	a2 = s[2];
+	a3 = s[3];
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a0 ^ a2)));
-	a0 ^= t; a2 ^= t;
+	a0 ^= t;
+	a2 ^= t;
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a1 ^ a3)));
-	a1 ^= t; a3 ^= t;
+	a1 ^= t;
+	a3 ^= t;
 	s[0] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[1] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[2] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
 	s[3] = static_cast<::std::uint_least8_t>(xtime(a0) ^ a0) ^ a1 ^ a2 ^ xtime(a3);
-	a0 = s[4]; a1 = s[5]; a2 = s[6]; a3 = s[7];
+	a0 = s[4];
+	a1 = s[5];
+	a2 = s[6];
+	a3 = s[7];
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a0 ^ a2)));
-	a0 ^= t; a2 ^= t;
+	a0 ^= t;
+	a2 ^= t;
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a1 ^ a3)));
-	a1 ^= t; a3 ^= t;
+	a1 ^= t;
+	a3 ^= t;
 	s[4] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[5] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[6] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
 	s[7] = static_cast<::std::uint_least8_t>(xtime(a0) ^ a0) ^ a1 ^ a2 ^ xtime(a3);
-	a0 = s[8]; a1 = s[9]; a2 = s[10]; a3 = s[11];
+	a0 = s[8];
+	a1 = s[9];
+	a2 = s[10];
+	a3 = s[11];
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a0 ^ a2)));
-	a0 ^= t; a2 ^= t;
+	a0 ^= t;
+	a2 ^= t;
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a1 ^ a3)));
-	a1 ^= t; a3 ^= t;
+	a1 ^= t;
+	a3 ^= t;
 	s[8] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[9] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[10] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
 	s[11] = static_cast<::std::uint_least8_t>(xtime(a0) ^ a0) ^ a1 ^ a2 ^ xtime(a3);
-	a0 = s[12]; a1 = s[13]; a2 = s[14]; a3 = s[15];
+	a0 = s[12];
+	a1 = s[13];
+	a2 = s[14];
+	a3 = s[15];
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a0 ^ a2)));
-	a0 ^= t; a2 ^= t;
+	a0 ^= t;
+	a2 ^= t;
 	t = xtime(xtime(static_cast<::std::uint_least8_t>(a1 ^ a3)));
-	a1 ^= t; a3 ^= t;
+	a1 ^= t;
+	a3 ^= t;
 	s[12] = xtime(a0) ^ static_cast<::std::uint_least8_t>(xtime(a1) ^ a1) ^ a2 ^ a3;
 	s[13] = a0 ^ xtime(a1) ^ static_cast<::std::uint_least8_t>(xtime(a2) ^ a2) ^ a3;
 	s[14] = a0 ^ a1 ^ xtime(a2) ^ static_cast<::std::uint_least8_t>(xtime(a3) ^ a3);
@@ -392,10 +449,22 @@ inline constexpr void encrypt(::std::uint_least8_t const *round_keys,
 		add_round_key(state, round_keys + rounds * 16);
 		store_block(to, state);
 	}
-	state[0] = 0; state[1] = 0; state[2] = 0; state[3] = 0;
-	state[4] = 0; state[5] = 0; state[6] = 0; state[7] = 0;
-	state[8] = 0; state[9] = 0; state[10] = 0; state[11] = 0;
-	state[12] = 0; state[13] = 0; state[14] = 0; state[15] = 0;
+	state[0] = 0;
+	state[1] = 0;
+	state[2] = 0;
+	state[3] = 0;
+	state[4] = 0;
+	state[5] = 0;
+	state[6] = 0;
+	state[7] = 0;
+	state[8] = 0;
+	state[9] = 0;
+	state[10] = 0;
+	state[11] = 0;
+	state[12] = 0;
+	state[13] = 0;
+	state[14] = 0;
+	state[15] = 0;
 }
 
 /* ECB decrypt: same round keys, used in reverse order */
@@ -422,10 +491,22 @@ inline constexpr void decrypt(::std::uint_least8_t const *round_keys,
 		add_round_key(state, round_keys);
 		store_block(to, state);
 	}
-	state[0] = 0; state[1] = 0; state[2] = 0; state[3] = 0;
-	state[4] = 0; state[5] = 0; state[6] = 0; state[7] = 0;
-	state[8] = 0; state[9] = 0; state[10] = 0; state[11] = 0;
-	state[12] = 0; state[13] = 0; state[14] = 0; state[15] = 0;
+	state[0] = 0;
+	state[1] = 0;
+	state[2] = 0;
+	state[3] = 0;
+	state[4] = 0;
+	state[5] = 0;
+	state[6] = 0;
+	state[7] = 0;
+	state[8] = 0;
+	state[9] = 0;
+	state[10] = 0;
+	state[11] = 0;
+	state[12] = 0;
+	state[13] = 0;
+	state[14] = 0;
+	state[15] = 0;
 }
 
 } // namespace fast_io::details::aes

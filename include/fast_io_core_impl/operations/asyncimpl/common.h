@@ -110,7 +110,7 @@ inline T *async_new_state(scheduler sched, Args &&...args) throws
 	}
 	else
 	{
-		guard_type guard{1};
+		guard_type guard{1zu};
 		new (guard.ptr) T(sched, ::std::forward<Args>(args)...);
 		return guard.release();
 	}
@@ -133,7 +133,7 @@ inline T *async_new_state_plain(scheduler sched, Args &&...args) throws
 	}
 	else
 	{
-		guard_type guard{1};
+		guard_type guard{1zu};
 		new (guard.ptr) T(::std::forward<Args>(args)...);
 		return guard.release();
 	}

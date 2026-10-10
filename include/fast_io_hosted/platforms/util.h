@@ -4,7 +4,7 @@ namespace fast_io::details
 {
 
 template <::std::integral T>
-inline constexpr T read_write_bytes_compute(::std::byte const *first, ::std::size_t count) noexcept
+inline constexpr T read_write_bytes_compute(::std::byte const *, ::std::size_t count) noexcept
 {
 	::std::ptrdiff_t sz{static_cast<::std::ptrdiff_t>(count)};
 	constexpr auto ul32mx{::std::numeric_limits<T>::max()};

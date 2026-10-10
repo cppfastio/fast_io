@@ -106,19 +106,8 @@ static bool mime_is_text(fi::u8string_view type) noexcept
 /* --------------------------- http dates --------------------------- */
 
 static constexpr char8_t wkday_names[][4]{{u8"Sun"}, {u8"Mon"}, {u8"Tue"}, {u8"Wed"}, {u8"Thu"}, {u8"Fri"}, {u8"Sat"}};
-static constexpr char8_t month_names[][4]{{u8"Jan"}, {u8"Feb"}, {u8"Mar"}, {u8"Apr"}, {u8"May"}, {u8"Jun"}, {u8"Jul"}, {u8"Aug"}, {u8"Sep"}, {u8"Oct"}, {u8"Nov"}, {u8"Dec"}};
 
-/* days since 1970-01-01 — Howard Hinnant's days_from_civil */
-static constexpr ::std::int_least64_t days_from_civil(::std::int_least64_t y, unsigned m,
-													  unsigned d) noexcept
-{
-	y -= m <= 2;
-	auto const era{(y >= 0 ? y : y - 399) / 400};
-	auto const yoe{static_cast<::std::uint_least64_t>(y - era * 400)};
-	auto const doy{(153u * (m + (m > 2 ? static_cast<unsigned>(-3) : 9u)) + 2u) / 5u + d - 1u};
-	auto const doe{yoe * 365u + yoe / 4u - yoe / 100u + doy};
-	return era * 146097 + static_cast<::std::int_least64_t>(doe) - 719468;
-}
+static constexpr char8_t month_names[][4]{{u8"Jan"}, {u8"Feb"}, {u8"Mar"}, {u8"Apr"}, {u8"May"}, {u8"Jun"}, {u8"Jul"}, {u8"Aug"}, {u8"Sep"}, {u8"Oct"}, {u8"Nov"}, {u8"Dec"}};
 
 /* "Sun, 06 Nov 1994 08:49:37 GMT" — a fixed 29 bytes */
 static fi::u8string imf_date(::std::int_least64_t unix_seconds) noexcept

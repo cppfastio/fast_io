@@ -48,7 +48,7 @@ namespace details
 
 /* rethrow the peer's own alert, preserving its level+description bytes */
 [[noreturn]] inline void tls_throw_peer_alert(::std::byte const *alert_body,
-												::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+											  ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least8_t level{2}; /* RFC: unknown alerts are fatal */
 	::std::uint_least8_t desc{50}; /* decode_error */
@@ -151,7 +151,7 @@ inline void tls_wait_for_io(stmtype sock, bool want_write) FAST_IO_HERBCEPTIONS_
 	::std::size_t ev{w::WSACreateEvent()};
 	if (ev == static_cast<::std::size_t>(-1) || ev == 0) [[unlikely]]
 	{
-		::fast_io::throw_win32_error(w::WSAGetLastError());
+		::fast_io::throw_win32_error(static_cast<::std::uint_least32_t>(w::WSAGetLastError()));
 	}
 	::std::uint_least32_t const mask{
 		(want_write ? tls_wsa_fd_write : tls_wsa_fd_read) | tls_wsa_fd_close};
@@ -159,7 +159,7 @@ inline void tls_wait_for_io(stmtype sock, bool want_write) FAST_IO_HERBCEPTIONS_
 	{
 		auto const ec{w::WSAGetLastError()};
 		w::WSACloseEvent(ev);
-		::fast_io::throw_win32_error(ec);
+		::fast_io::throw_win32_error(static_cast<::std::uint_least32_t>(ec));
 	}
 	w::WaitForSingleObject(reinterpret_cast<void *>(ev), tls_wsa_infinite);
 	w::WSAEventSelect(sock.hsocket, 0, 0);
@@ -328,7 +328,7 @@ inline void ktls_offload_key(stmtype sock, ::std::uint_least32_t dir, cipher_sui
 #if defined(__linux__)
 	if constexpr (tls_transport_is_fd<stmtype>)
 	{
-		ktls_set_key(sock.fd, dir, suite, key, iv, 0);
+		ktls_set_key(sock.fd, static_cast<int>(dir), suite, key, iv, 0);
 		return;
 	}
 #endif
@@ -642,7 +642,7 @@ inline void tls_send_alert(stmtype sock, alert_description desc, bool tx_offload
 
 template <typename stmtype>
 [[noreturn]] inline void tls_fail(stmtype sock, alert_description desc,
-									bool tx_offloaded) FAST_IO_HERBCEPTIONS_THROWS
+								  bool tx_offloaded) FAST_IO_HERBCEPTIONS_THROWS
 {
 	tls_send_alert(sock, desc, tx_offloaded);
 	tls_throw_alert(desc);
@@ -657,9 +657,9 @@ encrypted records only and is advanced by the caller.
 */
 template <typename crypto, typename stmtype>
 inline bool tls_recv_flight_record(stmtype sock, ::std::byte *buf, ::std::size_t buf_cap,
-									 content_type *inner_type, ::std::size_t *inner_size,
-									 cipher_suite suite, ::std::byte const *key,
-									 ::std::byte const *iv, ::std::uint_least64_t seq) FAST_IO_HERBCEPTIONS_THROWS
+								   content_type *inner_type, ::std::size_t *inner_size,
+								   cipher_suite suite, ::std::byte const *key,
+								   ::std::byte const *iv, ::std::uint_least64_t seq) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::byte hdr[record_header_size];
 	tls_read_full(sock, hdr, record_header_size);
@@ -697,7 +697,7 @@ ctype gets the record type.
 */
 template <typename stmtype>
 inline ::std::size_t tls_read_plaintext_record(stmtype sock, ::std::byte *buf, ::std::size_t buf_cap,
-												 content_type *ctype) FAST_IO_HERBCEPTIONS_THROWS
+											   content_type *ctype) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::byte hdr[record_header_size];
 	details::tls_read_full(sock, hdr, record_header_size);
@@ -940,7 +940,7 @@ inline void ktls_handshake_flight2(stmtype sock, cipher_suite suite,
 					details::tls_fail(sock, alert_description::unexpected_message, false);
 				}
 				if (!details::cr_context_copy(body, body_size, cr_context,
-											 __builtin_addressof(cr_context_size)))
+											  __builtin_addressof(cr_context_size)))
 				{
 					details::tls_fail(sock, alert_description::decode_error, false);
 				}
@@ -1018,7 +1018,7 @@ inline void ktls_handshake_flight2(stmtype sock, cipher_suite suite,
 		content_type inner{};
 		::std::size_t inner_size{};
 		if (!details::tls_recv_flight_record<crypto>(sock, recbuf, sizeof(recbuf), __builtin_addressof(inner), __builtin_addressof(inner_size),
-													   suite, hs_rx_key, hs_rx_iv, hs_rx_seq))
+													 suite, hs_rx_key, hs_rx_iv, hs_rx_seq))
 		{
 			details::tls_fail(sock, alert_description::bad_record_mac, false);
 		}

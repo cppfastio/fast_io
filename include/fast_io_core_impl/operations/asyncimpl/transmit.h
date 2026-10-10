@@ -43,7 +43,7 @@ struct async_transmit_bytes_state_base
 	void (*finish)(async_transmit_bytes_state_base *state, ::std::cxx_std_error err,
 				   ::std::size_t moved) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											   ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -88,7 +88,7 @@ struct async_transmit_bytes_state
 		::fast_io::intfpos_opt oi, ::std::size_t rem,
 		::fast_io::posix_statx_timestamp_opt tmo, T cb, ::std::size_t staged,
 		::std::size_t moved, ::std::size_t round_base) noexcept
-		: base_type{s, o, oo, i, oi, rem, tmo, staged, moved, round_base},
+		: base_type{s, o, oo, i, oi, rem, tmo, staged, moved, round_base, {}},
 		  callback{::std::move(cb)}
 	{
 		this->finish =
@@ -378,7 +378,7 @@ struct async_transmit_all_native_state_base
 	void (*finish)(async_transmit_all_native_state_base *state,
 				   ::std::cxx_std_error err) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											   ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -393,7 +393,7 @@ inline void async_transmit_all_native_finish_cb(
 	::std::cxx_std_error err) noexcept
 {
 	auto *state{static_cast<async_transmit_all_native_state<scheduler, outstmtype, instmtype,
-														 alloc_type, T> *>(b)};
+															alloc_type, T> *>(b)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::details::async_delete_state(state);
 	callback(err);
@@ -415,7 +415,7 @@ struct async_transmit_all_native_state
 		: base_type{s, o, oo, i, oi, rem, tmo}, callback{::std::move(cb)}
 	{
 		this->finish = &async_transmit_all_native_finish_cb<scheduler, outstmtype, instmtype,
-														  alloc_type, T>;
+															alloc_type, T>;
 	}
 };
 
@@ -561,7 +561,7 @@ inline void async_transmit_some_bytes_decay_callback(
 					off_out,
 					instm,
 					off_in, remaining, timeout,
-					::std::move(callback), 0, 0, 0));
+					::std::move(callback), 0zu, 0zu, 0zu));
 			return;
 		}
 		catch throws(::std::error e)
@@ -659,7 +659,7 @@ inline void async_transmit_all_bytes_decay_callback(
 					outstm,
 					off_out,
 					instm,
-					off_in, remaining, timeout, ::std::move(callback), 0, 0, 0));
+					off_in, remaining, timeout, ::std::move(callback), 0zu, 0zu, 0zu));
 		}
 		return;
 	}

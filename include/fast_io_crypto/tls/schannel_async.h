@@ -260,8 +260,8 @@ struct schannel_tls_send_state
 	func callback;
 
 	inline schannel_tls_send_state(sched_t s, ::fast_io::posix_statx_timestamp_opt to,
-								   client_type *c, ::std::size_t n, func cb) noexcept
-		: base_type{s, to, c}, callback{::std::move(cb)}
+								   client_type *c, ::std::size_t, func cb) noexcept
+		: base_type{s, to, c, {}}, callback{::std::move(cb)}
 	{
 		this->finish = &schannel_tls_send_finish_cb<sched_t, client_type, alloc_type, func>;
 	}
@@ -302,7 +302,7 @@ inline void schannel_tls_send_piece(
 template <typename sched_t, typename client_type, typename alloc_type>
 inline void schannel_tls_send_submit(
 	schannel_tls_send_state_base<sched_t, client_type, alloc_type> *st, ::std::byte const *first,
-									 ::std::size_t count) noexcept
+	::std::size_t count) noexcept
 {
 	auto *client{st->client};
 	::std::size_t const limit{client->stream_sizes_.maximum_message};
@@ -328,9 +328,7 @@ inline void schannel_tls_send_submit(
 	if (status < 0)
 	{
 		schannel_tls_send_finish(
-			st, ::fast_io::details::async_make_error(
-					static_cast<::fast_io::freestanding::win32_errc>(
-						static_cast<::std::uint_least32_t>(status))),
+			st, ::fast_io::details::async_make_error(static_cast<::fast_io::freestanding::win32_errc>(static_cast<::std::uint_least32_t>(status))),
 			0);
 		return;
 	}

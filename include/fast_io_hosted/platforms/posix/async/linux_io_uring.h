@@ -771,7 +771,8 @@ inline void io_uring_accept_submit(sched_type sched, ::fast_io::liburing::io_uri
 		 * CLOEXEC choice survives */
 		::fast_io::liburing::io_uring_prep_accept(
 			sqe, fd, nullptr, nullptr,
-			::fast_io::to_posix_sock_open_mode(m & ~::fast_io::open_mode::no_block));
+			static_cast<::std::uint_least32_t>(
+				::fast_io::to_posix_sock_open_mode(m & ~::fast_io::open_mode::no_block)));
 		io_uring_arm_timeout(ring, guard.cookie, sqe,
 							 io_uring_accept_deliver<alloc_type, T>, timeout);
 		guard.release();
