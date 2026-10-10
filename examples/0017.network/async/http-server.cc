@@ -16,6 +16,7 @@
  */
 #include <fast_io.h>
 #include <fast_io_device.h>
+#include <fast_io_crypto.h>
 #include <fast_io_dsal/string.h>
 #include <fast_io_dsal/string_view.h>
 
@@ -342,6 +343,9 @@ struct http_request
 	fi::u8string_view inm{};      /* If-None-Match */
 	fi::u8string_view ims{};      /* If-Modified-Since */
 	fi::u8string_view if_range{}; /* If-Range — mismatch degrades 206 to 200 */
+	fi::u8string_view upgrade{};  /* Upgrade */
+	fi::u8string_view wskey{};    /* Sec-WebSocket-Key */
+	fi::u8string_view wsver{};    /* Sec-WebSocket-Version */
 	bool head_only{};
 	bool keep_alive{};
 };
@@ -769,6 +773,124 @@ static fi::io_async_task<> respond_directory(fi::io_async_observer sched,
 	co_await respond_status(sched, sock, 404, u8"Not Found", req, cfg);
 }
 
+/* ------------------------------ websocket ------------------------- */
+
+/* comma-list header token match — Connection: keep-alive, Upgrade */
+static bool has_token(fi::u8string_view list, fi::u8string_view tok) noexcept
+{
+	for (::std::size_t off{}; off < list.size();)
+	{
+		::std::size_t comma{list.size()};
+		for (::std::size_t i{off}; i != list.size(); ++i)
+		{
+			if (list[i] == char8_t{','})
+			{
+				comma = i;
+				break;
+			}
+		}
+		auto seg{fi::u8string_view{list.data() + off, comma - off}};
+		while (!seg.empty() && (seg.front() == char8_t{' '} || seg.front() == char8_t{'\t'}))
+		{
+			seg.remove_prefix(1);
+		}
+		while (!seg.empty() && (seg.back() == char8_t{' '} || seg.back() == char8_t{'\t'}))
+		{
+			seg.remove_suffix(1);
+		}
+		if (ascii_ieq(seg, tok))
+		{
+			return true;
+		}
+		off = comma == list.size() ? list.size() : comma + 1;
+	}
+	return false;
+}
+
+static bool is_ws_upgrade(http_request const &req) noexcept
+{
+	return req.method == fi::u8string_view{u8"GET"} &&
+		   ascii_ieq(req.upgrade, u8"websocket") && has_token(req.connection, u8"upgrade") &&
+		   !req.wskey.empty() && req.wsver == fi::u8string_view{u8"13"};
+}
+
+/* one ws frame out: encoded header + payload in a single scatter op —
+ * the server direction is never masked */
+static fi::io_async_task<> ws_send_frame(fi::io_async_observer sched,
+										 fi::u8iobuf_socket_file &sock, bool fin,
+										 fi::websocket_opcode op, ::std::byte const *data,
+										 ::std::size_t len) throws
+{
+	::std::byte hdrbytes[10];
+	auto const hn{fi::websocket_encode_frame_header(hdrbytes, fin, op, len)};
+	fi::io_scatter_t const sc[]{{hdrbytes, hn}, {data, len}};
+	co_await fop::async_scatter_pwrite_all_bytes(sched, {}, sock, sc, 2, {});
+}
+
+/*
+ * rfc6455 session after the 101: echo data frames back verbatim
+ * (continuation frames pass through — the peer sees the same
+ * fragmentation shape), ping -> pong with the same payload, close ->
+ * answer close and end. Clients MUST mask; an unmasked frame and an
+ * oversized frame get a protocol close instead of a silent accept.
+ */
+static fi::io_async_task<> ws_session(fi::io_async_observer sched,
+									  fi::u8iobuf_socket_file &sock,
+									  http_request const &req) throws
+{
+	char8_t accept[fi::websocket_accept_key_size];
+	fi::websocket_accept_key(accept, req.wskey.data(), req.wskey.size());
+	co_await fi::io::async_print(
+		sched, {}, sock,
+		u8"HTTP/1.1 101 Switching Protocols\r\n"
+		u8"Upgrade: websocket\r\n"
+		u8"Connection: Upgrade\r\n"
+		u8"Sec-WebSocket-Accept: ",
+		fi::u8string_view{accept, fi::websocket_accept_key_size}, u8"\r\n\r\n");
+	co_await fop::async_output_stream_flush(sched, {}, sock);
+
+	constexpr ::std::size_t max_payload{16u << 20};
+	fi::u8string payload;
+	for (;;)
+	{
+		fi::websocket_frame_header fh{};
+		co_await fi::io::async_scan(sched, {}, sock,
+									fi::mnp::websocket_frame_header_get(fh));
+		if (!fh.mask || fh.payload_length > max_payload)
+		{
+			::std::uint_least16_t const code{
+				static_cast<::std::uint_least16_t>(!fh.mask ? 1002 : 1009)};
+			::std::byte const reason[2]{static_cast<::std::byte>(code >> 8),
+										static_cast<::std::byte>(code)};
+			co_await ws_send_frame(sched, sock, true, fi::websocket_opcode::close, reason,
+								   2);
+			co_return;
+		}
+		payload.resize(fh.payload_length);
+		auto const pdata{reinterpret_cast<::std::byte *>(payload.data())};
+		co_await fop::async_pread_all_bytes(sched, {}, sock, pdata, payload.size(), {});
+		fi::websocket_apply_mask(pdata, payload.size(), fh.mask_key);
+		switch (fh.opcode)
+		{
+		case fi::websocket_opcode::text:
+		case fi::websocket_opcode::binary:
+		case fi::websocket_opcode::continuation:
+			co_await ws_send_frame(sched, sock, fh.fin, fh.opcode, pdata, payload.size());
+			break;
+		case fi::websocket_opcode::ping:
+			co_await ws_send_frame(sched, sock, true, fi::websocket_opcode::pong, pdata,
+								   payload.size());
+			break;
+		case fi::websocket_opcode::close:
+			co_await ws_send_frame(sched, sock, true, fi::websocket_opcode::close, pdata,
+								   payload.size());
+			co_return;
+		default: /* pong — ignore */
+			break;
+		}
+	}
+}
+
 /* ------------------------------- core ----------------------------- */
 
 /*
@@ -847,6 +969,18 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 			{
 				req.if_range = v;
 			}
+			else if (ascii_ieq(k, u8"upgrade"))
+			{
+				req.upgrade = v;
+			}
+			else if (ascii_ieq(k, u8"sec-websocket-key"))
+			{
+				req.wskey = v;
+			}
+			else if (ascii_ieq(k, u8"sec-websocket-version"))
+			{
+				req.wsver = v;
+			}
 		}
 		req.keep_alive = req.version == fi::u8string_view{u8"HTTP/1.0"}
 							 ? ascii_ieq(req.connection, u8"keep-alive")
@@ -870,6 +1004,13 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 		else if (!get && !req.head_only)
 		{
 			co_await respond_status(sched, sock, 405, u8"Method Not Allowed", req, cfg);
+		}
+		else if (is_ws_upgrade(req))
+		{
+			/* the connection switches protocols — ws_session owns it
+			 * from here and the request loop ends */
+			co_await ws_session(sched, sock, req);
+			co_return;
 		}
 		else
 		{

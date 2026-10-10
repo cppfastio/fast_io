@@ -27,6 +27,7 @@
 #include "fast_io_crypto/rsa/impl.h"
 #include "fast_io_crypto/ecc/impl.h"
 #include "fast_io_crypto/tls/impl.h"
+#include "fast_io_crypto/websocket/impl.h"
 
 #include "fast_io_dsal/impl/misc/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"
