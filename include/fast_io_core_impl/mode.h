@@ -585,11 +585,70 @@ struct native_interface_t
 };
 inline constexpr native_interface_t native_interface{};
 
+enum class net_service_flags : ::std::uint_least32_t
+{
+	none = 0,
+	/* opt OUT of the service's SIGPIPE drop: with the flag set the
+	 * disposition stays untouched (a program that installs its own
+	 * SIGPIPE handler wants this). posix: io_uring WRITE/WRITEV/
+	 * SPLICE and plain writev on a socket can't carry MSG_NOSIGNAL,
+	 * so a dead peer would otherwise kill the process. win32 has no
+	 * SIGPIPE and ignores the bit */
+	posix_no_ignore_sigpipe = 1U << 0
+};
+
+inline constexpr ::fast_io::net_service_flags operator&(::fast_io::net_service_flags x, ::fast_io::net_service_flags y) noexcept
+{
+	using utype = typename ::std::underlying_type<::fast_io::net_service_flags>::type;
+	return static_cast<::fast_io::net_service_flags>(static_cast<utype>(x) & static_cast<utype>(y));
+}
+
+inline constexpr ::fast_io::net_service_flags operator|(::fast_io::net_service_flags x, ::fast_io::net_service_flags y) noexcept
+{
+	using utype = typename ::std::underlying_type<::fast_io::net_service_flags>::type;
+	return static_cast<::fast_io::net_service_flags>(static_cast<utype>(x) | static_cast<utype>(y));
+}
+
+inline constexpr ::fast_io::net_service_flags operator^(::fast_io::net_service_flags x, ::fast_io::net_service_flags y) noexcept
+{
+	using utype = typename ::std::underlying_type<::fast_io::net_service_flags>::type;
+	return static_cast<::fast_io::net_service_flags>(static_cast<utype>(x) ^ static_cast<utype>(y));
+}
+
+inline constexpr ::fast_io::net_service_flags operator~(::fast_io::net_service_flags x) noexcept
+{
+	using utype = typename ::std::underlying_type<::fast_io::net_service_flags>::type;
+	return static_cast<::fast_io::net_service_flags>(~static_cast<utype>(x));
+}
+
+inline constexpr ::fast_io::net_service_flags &operator&=(::fast_io::net_service_flags &x, ::fast_io::net_service_flags y) noexcept
+{
+	return x = x & y;
+}
+
+inline constexpr ::fast_io::net_service_flags &operator|=(::fast_io::net_service_flags &x, ::fast_io::net_service_flags y) noexcept
+{
+	return x = x | y;
+}
+
+inline constexpr ::fast_io::net_service_flags &operator^=(::fast_io::net_service_flags &x, ::fast_io::net_service_flags y) noexcept
+{
+	return x = x ^ y;
+}
+
 struct io_async_t
 {
 	inline explicit constexpr io_async_t() noexcept = default;
 };
 inline constexpr io_async_t io_async{};
+
+/* enumerate network interfaces — the query is parameterless, so a tag
+ * keeps `file{}` meaning "empty" like every other RAII handle */
+struct ifaddrs_enumerate_t
+{
+	inline explicit constexpr ifaddrs_enumerate_t() noexcept = default;
+};
+inline constexpr ifaddrs_enumerate_t ifaddrs_enumerate{};
 
 struct io_temp_t
 {

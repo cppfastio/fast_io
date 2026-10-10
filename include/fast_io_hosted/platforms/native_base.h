@@ -37,6 +37,9 @@ inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::ui
 #if __has_include(<netdb.h>)
 #include "posix_dns.h"
 #endif
+#if __has_include(<ifaddrs.h>)
+#include "posix_ifaddrs.h"
+#endif
 #endif
 
 namespace fast_io

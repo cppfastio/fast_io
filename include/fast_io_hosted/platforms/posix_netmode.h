@@ -636,6 +636,19 @@ inline constexpr int to_native_sock_open_mode(open_mode om) noexcept
 namespace details
 {
 
+/* A dead peer must surface as EPIPE through the error channel, never as
+ * a process-killing SIGPIPE. MSG_NOSIGNAL covers the explicit send
+ * calls; anything it can't reach — io_uring WRITE/WRITEV/SPLICE ops
+ * take no msg_flags — needs the disposition dropped at the process
+ * level, so the io_async services do it once at construction (opt-out
+ * via io_async_flags) */
+inline void posix_socket_ignore_sigpipe_impl() noexcept
+{
+#if defined(SIGPIPE) && defined(SIG_IGN)
+	::fast_io::noexcept_call(::signal, SIGPIPE, SIG_IGN);
+#endif
+}
+
 inline int sys_socket(int domain, int type, int protocol)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
@@ -656,46 +669,62 @@ inline int sys_socket(int domain, int type, int protocol)
 inline int open_socket_impl(sock_family d, sock_type t, open_mode m, sock_protocol p)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-    int domain{to_posix_sock_family(d)};
-    int type{to_posix_sock_type(t)};
-    int mode{to_posix_sock_open_mode(m)};
-    if (mode < 0)
+	int domain{to_posix_sock_family(d)};
+	int type{to_posix_sock_type(t)};
+	int mode{to_posix_sock_open_mode(m)};
+	if (mode < 0)
 	{
 		mode = 0;
 	}
 	int fd{sys_socket(domain, type | mode, to_posix_sock_protocol(p))};
 
 #if !defined(SOCK_NONBLOCK)
-    if ((m & open_mode::no_block) == open_mode::no_block)
+	if ((m & open_mode::no_block) == open_mode::no_block)
 	{
 #if defined(F_GETFL) && defined(F_SETFL) && defined(O_NONBLOCK)
-        int flags{details::sys_fcntl(fd, F_GETFL)};
-        details::sys_fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+		int flags{details::sys_fcntl(fd, F_GETFL)};
+		details::sys_fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 #endif
 	}
 #endif
 
 #if !defined(SOCK_CLOEXEC)
-    if ((m & open_mode::inherit) != open_mode::inherit)
-    {
+	if ((m & open_mode::inherit) != open_mode::inherit)
+	{
 #if defined(F_GETFD) && defined(F_SETFD) && defined(FD_CLOEXEC)
-        int fdflags{details::sys_fcntl(fd, F_GETFD)};
-        details::sys_fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
+		int fdflags{details::sys_fcntl(fd, F_GETFD)};
+		details::sys_fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
 #endif
-    }
+	}
 #endif
-    return fd;
+	return fd;
 }
 
 inline ::std::size_t posix_socket_write_impl(int fd, void const *data, ::std::size_t to_write)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
+	/* MSG_NOSIGNAL: a dead peer must surface as EPIPE through the error
+	 * channel, never as a process-killing SIGPIPE — and io_uring writev
+	 * ops cannot carry msg_flags, so tcp_listen also drops the
+	 * disposition for anything the flag can't reach */
 #if defined(__linux__) && defined(__NR_send)
-	::std::ptrdiff_t written{system_call<__NR_send, ::std::ptrdiff_t>(fd, data, to_write)};
+	::std::ptrdiff_t written{system_call<__NR_send, ::std::ptrdiff_t>(fd, data, to_write,
+#ifdef MSG_NOSIGNAL
+																	  MSG_NOSIGNAL
+#else
+																	  0
+#endif
+																	  )};
 	system_call_throw_error(written);
 	return static_cast<::std::size_t>(written);
 #else
-	::std::ptrdiff_t written{::fast_io::noexcept_call(::send, fd, data, to_write, 0)};
+	::std::ptrdiff_t written{::fast_io::noexcept_call(::send, fd, data, to_write,
+#ifdef MSG_NOSIGNAL
+													  MSG_NOSIGNAL
+#else
+													  0
+#endif
+													  )};
 	if (written == -1)
 	{
 		throw_posix_error();
@@ -784,6 +813,36 @@ inline void posix_setsockopt_posix_socket_impl(int fd, int level, int optname, v
 #endif
 }
 
+inline void posix_getpeername_posix_socket_impl(int fd, void *addr, posix_socklen_t *addrlen)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	using sockaddr_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= struct sockaddr *;
+	if (::fast_io::noexcept_call(::getpeername, fd, reinterpret_cast<sockaddr_alias_ptr>(addr),
+								 addrlen) == -1)
+	{
+		throw_posix_error();
+	}
+}
+
+inline void posix_getsockname_posix_socket_impl(int fd, void *addr, posix_socklen_t *addrlen)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	using sockaddr_alias_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+		[[__gnu__::__may_alias__]]
+#endif
+		= struct sockaddr *;
+	if (::fast_io::noexcept_call(::getsockname, fd, reinterpret_cast<sockaddr_alias_ptr>(addr),
+								 addrlen) == -1)
+	{
+		throw_posix_error();
+	}
+}
+
 inline int posix_accept_posix_socket_impl(int fd, void *addr, posix_socklen_t *addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
@@ -832,7 +891,13 @@ inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, 
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_sendto)
-	::std::ptrdiff_t ret{system_call<__NR_sendto, ::std::ptrdiff_t>(fd, buf, len, flags, src_addr, addrlen)};
+	::std::ptrdiff_t ret{system_call<__NR_sendto, ::std::ptrdiff_t>(
+		fd, buf, len, flags
+#ifdef MSG_NOSIGNAL
+						  | MSG_NOSIGNAL
+#endif
+		,
+		src_addr, addrlen)};
 	system_call_throw_error(ret);
 	return ret;
 #else
@@ -841,7 +906,14 @@ inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, 
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct sockaddr const *;
-	::std::ptrdiff_t ret{::fast_io::noexcept_call(::sendto, fd, buf, len, flags, reinterpret_cast<sockaddr_const_alias_ptr>(src_addr), addrlen)};
+	::std::ptrdiff_t ret{::fast_io::noexcept_call(::sendto, fd, buf, len,
+												  flags
+#ifdef MSG_NOSIGNAL
+													  | MSG_NOSIGNAL
+#endif
+												  ,
+												  reinterpret_cast<sockaddr_const_alias_ptr>(src_addr),
+												  addrlen)};
 	if (ret == -1)
 	{
 		throw_posix_error();
@@ -851,5 +923,38 @@ inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, 
 }
 
 } // namespace details
+
+/* POSIX net service — owns the process-level socket-error contract:
+ * a dead peer surfaces as EPIPE through the error channel, never as a
+ * process-killing SIGPIPE. MSG_NOSIGNAL covers the explicit send
+ * calls; anything it can't reach — io_uring WRITE/WRITEV/SPLICE and
+ * plain writev take no msg_flags — needs the disposition dropped, and
+ * SIGPIPE exists on every POSIX, not just linux. Construct once per
+ * program that writes sockets; the io_async schedulers hold one so the
+ * default path is covered automatically. Pass
+ * net_service_flags::posix_no_ignore_sigpipe to keep the
+ * disposition untouched */
+class posix_net_service
+{
+public:
+	inline explicit posix_net_service(
+		::fast_io::net_service_flags flags = ::fast_io::net_service_flags::none) noexcept
+	{
+		if ((flags & ::fast_io::net_service_flags::posix_no_ignore_sigpipe) ==
+			::fast_io::net_service_flags::none)
+		{
+			details::posix_socket_ignore_sigpipe_impl();
+		}
+	}
+	posix_net_service(posix_net_service const &) = delete;
+	posix_net_service &operator=(posix_net_service const &) = delete;
+	inline posix_net_service(posix_net_service &&) noexcept
+	{
+	}
+	inline posix_net_service &operator=(posix_net_service &&) noexcept
+	{
+		return *this;
+	}
+};
 
 } // namespace fast_io

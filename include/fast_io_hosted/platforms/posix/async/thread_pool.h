@@ -642,6 +642,9 @@ class posix_thread_pool : public posix_thread_pool_observer
 {
 public:
 	details::posix_thread_pool_state storage{};
+	/* every socket write through this service must see EPIPE, not a
+	 * process kill */
+	::fast_io::posix_net_service net_service{};
 	pthread_t *workers{};
 	::std::size_t worker_count{};
 

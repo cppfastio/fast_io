@@ -159,6 +159,25 @@ inline void posix_listen_win32_socket_impl(::std::size_t hsocket, int backlog)
 	}
 }
 
+inline void posix_setsockopt_win32_socket_impl(::std::size_t hsocket, int level, int optname,
+											   void const *optval, int optlen)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	if (::fast_io::win32::setsockopt(hsocket, level, optname, optval, optlen) == -1)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+	}
+}
+
+inline void posix_getpeername_win32_socket_impl(::std::size_t hsocket, void *addr, int *addrlen)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	if (::fast_io::win32::getpeername(hsocket, addr, addrlen) == -1)
+	{
+		throw_win32_error(static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+	}
+}
+
 inline ::std::size_t posix_accept_win32_socket_impl(::std::size_t hsocket, void *addr, int *addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
@@ -816,13 +835,93 @@ inline void win32_tcp_listen_common_impl(::std::size_t hsocket, ::std::uint_leas
 	::fast_io::win32::details::posix_listen_win32_socket_impl(hsocket, 128);
 }
 
+inline ::fast_io::ip win32_sockaddr_to_ip_impl(posix_sockaddr const *sa) noexcept
+{
+	::fast_io::ip ret;
+	if (sa == nullptr)
+	{
+		return ret;
+	}
+	if (sa->sa_family == to_win32_sock_family(::fast_io::sock_family::inet))
+	{
+		auto const *in{reinterpret_cast<posix_sockaddr_in const *>(sa)};
+		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.address.v4.address),
+									  __builtin_addressof(in->sin_addr), sizeof(posix_in_addr));
+		ret.address.isv4 = true;
+		ret.port = big_endian(in->sin_port);
+	}
+	else if (sa->sa_family == to_win32_sock_family(::fast_io::sock_family::inet6))
+	{
+		auto const *in6{reinterpret_cast<posix_sockaddr_in6 const *>(sa)};
+		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.address.v6.address),
+									  __builtin_addressof(in6->sin6_addr), sizeof(posix_in6_addr));
+		ret.port = big_endian(in6->sin6_port);
+	}
+	return ret;
+}
+
+inline void win32_tcp_listen_v6_common_impl(::std::size_t hsocket, ipv6 v6)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	/* winsock IPPROTO_IPV6 = 41, IPV6_V6ONLY = 27 — the v6 socket stays
+	 * v6-only so a companion v4 listener owns the v4 traffic */
+	constexpr int one{1};
+	::fast_io::win32::details::posix_setsockopt_win32_socket_impl(
+		hsocket, 41, 27, __builtin_addressof(one), static_cast<int>(sizeof(one)));
+	constexpr auto inet6{to_win32_sock_family(sock_family::inet6)};
+	posix_sockaddr_in6 in6{
+		.sin6_family = inet6, .sin6_port = big_endian(v6.port), .sin6_addr = v6.address};
+	::fast_io::win32::details::posix_bind_win32_socket_impl(hsocket, __builtin_addressof(in6),
+															sizeof(in6));
+	::fast_io::win32::details::posix_listen_win32_socket_impl(hsocket, 128);
+}
+
+template <win32_family family>
+inline ::std::size_t win32_tcp_listen_v6_impl(ipv6 v6, open_mode m)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	basic_win32_family_socket_file<family, char> soc(sock_family::inet6, sock_type::stream, m,
+													 sock_protocol::tcp);
+	win32_tcp_listen_v6_common_impl(soc.hsocket, v6);
+	return soc.release();
+}
+
+/* dual-stack: winsock calls it DualMode — an AF_INET6 socket with
+ * IPV6_V6ONLY cleared accepts both families on one socket, matching
+ * node's server.listen(port) bound to ::. No v6 support or a refused
+ * V6ONLY clear falls back to the v4 socket */
+template <win32_family family>
+inline ::std::size_t win32_tcp_listen_dual_impl(::std::uint_least16_t port, open_mode m)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	try
+	{
+		basic_win32_family_socket_file<family, char> soc(sock_family::inet6, sock_type::stream, m,
+														 sock_protocol::tcp);
+		constexpr int zero{};
+		::fast_io::win32::details::posix_setsockopt_win32_socket_impl(
+			soc.hsocket, 41, 27, __builtin_addressof(zero), static_cast<int>(sizeof(zero)));
+		constexpr auto inet6{to_win32_sock_family(sock_family::inet6)};
+		posix_sockaddr_in6 in6{.sin6_family = inet6, .sin6_port = big_endian(port), .sin6_addr = {}};
+		::fast_io::win32::details::posix_bind_win32_socket_impl(soc.hsocket, __builtin_addressof(in6),
+																sizeof(in6));
+		::fast_io::win32::details::posix_listen_win32_socket_impl(soc.hsocket, 128);
+		return soc.release();
+	}
+	catch throws(::std::error)
+	{
+	}
+	basic_win32_family_socket_file<family, char> soc(sock_family::inet, sock_type::stream, m,
+													 sock_protocol::tcp);
+	win32_tcp_listen_common_impl(soc.hsocket, port);
+	return soc.release();
+}
+
 template <win32_family family>
 inline ::std::size_t win32_tcp_listen_impl(::std::uint_least16_t port, open_mode m)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	basic_win32_family_socket_file<family, char> soc(sock_family::inet, sock_type::stream, m, sock_protocol::tcp);
-	win32_tcp_listen_common_impl(soc.hsocket, port);
-	return soc.release();
+	return win32_tcp_listen_dual_impl<family>(port, m);
 }
 
 } // namespace details
@@ -918,6 +1017,65 @@ inline win32_socket_factory win32_tcp_listen(::std::uint_least16_t port, open_mo
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return win32_socket_factory{details::win32_tcp_listen_impl<win32_family::native>(port, m)};
+}
+
+template <win32_family family>
+inline win32_socket_factory win32_family_tcp_listen(ipv6 v6, open_mode m = open_mode{})
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return win32_socket_factory{details::win32_tcp_listen_v6_impl<family>(v6, m)};
+}
+
+inline win32_socket_factory win32_tcp_listen_ntw(ipv6 v6, open_mode m = open_mode{})
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return win32_socket_factory{details::win32_tcp_listen_v6_impl<win32_family::wide_nt>(v6, m)};
+}
+
+inline win32_socket_factory win32_tcp_listen_9xa(ipv6 v6, open_mode m = open_mode{})
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return win32_socket_factory{details::win32_tcp_listen_v6_impl<win32_family::ansi_9x>(v6, m)};
+}
+
+inline win32_socket_factory win32_tcp_listen(ipv6 v6, open_mode m = open_mode{})
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return win32_socket_factory{details::win32_tcp_listen_v6_impl<win32_family::native>(v6, m)};
+}
+
+template <win32_family fam, ::std::integral ch_type>
+inline void getpeername(basic_win32_family_socket_io_observer<fam, ch_type> h, void *addr,
+						int *addrlen) FAST_IO_HERBCEPTIONS_THROWS
+{
+	::fast_io::win32::details::posix_getpeername_win32_socket_impl(h.hsocket, addr, addrlen);
+}
+
+template <win32_family fam, ::std::integral ch_type>
+inline ::fast_io::ip getpeername(basic_win32_family_socket_io_observer<fam, ch_type> h)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	posix_sockaddr_storage sa{};
+	int addrlen{static_cast<int>(sizeof(sa))};
+	::fast_io::win32::details::posix_getpeername_win32_socket_impl(
+		h.hsocket, __builtin_addressof(sa), __builtin_addressof(addrlen));
+	return details::win32_sockaddr_to_ip_impl(
+		reinterpret_cast<posix_sockaddr const *>(__builtin_addressof(sa)));
+}
+/* WICG local-network-access on the peer: classify the connected
+ * socket's source address into its address space, and the containment
+ * check `peer_space <= max` as one call */
+template <win32_family fam, ::std::integral ch_type>
+inline ::fast_io::ip_address_space lna_classify(
+	basic_win32_family_socket_io_observer<fam, ch_type> h) FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::lna_classify(getpeername(h).address);
+}
+template <win32_family fam, ::std::integral ch_type>
+inline bool lna_allows(basic_win32_family_socket_io_observer<fam, ch_type> h,
+					   ::fast_io::ip_address_space max) FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::lna_classify(h) <= max;
 }
 
 template <::std::integral ch_type>

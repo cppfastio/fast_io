@@ -401,6 +401,69 @@ struct
 using win32_addrinfo_9xa = win32_family_addrinfo<win32_family::ansi_9x>;
 using win32_addrinfo_ntw = win32_family_addrinfo<win32_family::wide_nt>;
 
+/* GetAdaptersAddresses types — field-faithful prefixes of the SDK's
+ * IP_ADAPTER_* structs: every member up to the last one accessed is
+ * declared, trailing members are irrelevant since traversal follows
+ * Next pointers rather than sizeof. */
+struct win32_socket_address
+{
+	posix_sockaddr *lpSockaddr;
+	int iSockaddrLength;
+};
+
+struct win32_ip_adapter_prefix;
+struct win32_ip_adapter_anycast_address;
+struct win32_ip_adapter_multicast_address;
+struct win32_ip_adapter_dns_server_address;
+
+struct win32_ip_adapter_unicast_address
+{
+	union
+	{
+		::std::uint_least64_t alignment;
+		struct
+		{
+			::std::uint_least32_t length;
+			::std::uint_least32_t flags;
+		};
+	};
+	win32_ip_adapter_unicast_address *next;
+	win32_socket_address address;
+	::std::uint_least32_t prefix_origin;
+	::std::uint_least32_t suffix_origin;
+	::std::uint_least32_t dad_state;
+	::std::uint_least32_t valid_lifetime;
+	::std::uint_least32_t preferred_lifetime;
+	::std::uint_least32_t lease_lifetime;
+	::std::uint_least8_t on_link_prefix_length;
+};
+
+struct win32_ip_adapter_addresses
+{
+	union
+	{
+		::std::uint_least64_t alignment;
+		struct
+		{
+			::std::uint_least32_t length;
+			::std::uint_least32_t if_index;
+		};
+	};
+	win32_ip_adapter_addresses *next;
+	char *adapter_name;
+	win32_ip_adapter_prefix *first_prefix;
+	win32_ip_adapter_unicast_address *first_unicast_address;
+	win32_ip_adapter_anycast_address *first_anycast_address;
+	win32_ip_adapter_multicast_address *first_multicast_address;
+	win32_ip_adapter_dns_server_address *first_dns_server_address;
+	char16_t *dns_suffix;
+	char16_t *description;
+	char16_t *friendly_name;
+	::std::uint_least8_t physical_address[8];
+	::std::uint_least32_t physical_address_length;
+	::std::uint_least32_t flags;
+};
+
 struct systemtime
 {
 	::std::uint_least16_t wYear;

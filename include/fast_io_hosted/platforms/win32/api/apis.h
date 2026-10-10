@@ -89,6 +89,7 @@ FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL listen(::std::size_t, int) noexcept FAS
 FAST_IO_DLLIMPORT ::std::size_t FAST_IO_WINSTDCALL WSAAccept(::std::size_t, void const *, int *, ::fast_io::win32::lpconditionproc, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(WSAAccept, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL ioctlsocket(::std::size_t, long, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(ioctlsocket, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL getsockname(::std::size_t, void *, int *) noexcept FAST_IO_WINSTDCALL_RENAME(getsockname, 12);
+FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL getpeername(::std::size_t, void *, int *) noexcept FAST_IO_WINSTDCALL_RENAME(getpeername, 12);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL setsockopt(::std::size_t, int, int, void const *, int) noexcept FAST_IO_WINSTDCALL_RENAME(setsockopt, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL WSAIoctl(::std::size_t, ::std::uint_least32_t, void *, ::std::uint_least32_t, void *, ::std::uint_least32_t, ::std::uint_least32_t *, ::fast_io::win32::overlapped *, ::fast_io::win32::lpwsaoverlapped_completion_routine) noexcept FAST_IO_WINSTDCALL_RENAME(WSAIoctl, 36);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL sendto(::std::size_t, char const *, int, int, void const *, int) noexcept FAST_IO_WINSTDCALL_RENAME(sendto, 24);
@@ -114,6 +115,7 @@ FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL freeaddrinfo(::fast_io::win32::win32_a
 FAST_IO_DLLIMPORT void FAST_IO_WINSTDCALL FreeAddrInfoW(::fast_io::win32::win32_addrinfo_ntw *) noexcept FAST_IO_WINSTDCALL_RENAME(FreeAddrInfoW, 4);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL getaddrinfo(char const *, char const *, ::fast_io::win32::win32_addrinfo_9xa const *, ::fast_io::win32::win32_addrinfo_9xa **) noexcept FAST_IO_WINSTDCALL_RENAME(getaddrinfo, 16);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL GetAddrInfoW(char16_t const *, char16_t const *, ::fast_io::win32::win32_addrinfo_ntw const *, ::fast_io::win32::win32_addrinfo_ntw **) noexcept FAST_IO_WINSTDCALL_RENAME(GetAddrInfoW, 16);
+FAST_IO_DLLIMPORT ::std::uint_least32_t FAST_IO_WINSTDCALL GetAdaptersAddresses(::std::uint_least32_t, ::std::uint_least32_t, void *, ::fast_io::win32::win32_ip_adapter_addresses *, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(GetAdaptersAddresses, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL CryptAcquireContextA(::std::size_t *, char8_t const *, char8_t const *, ::std::uint_least32_t, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(CryptAcquireContextA, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL CryptAcquireContextW(::std::size_t *, char16_t const *, char16_t const *, ::std::uint_least32_t, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(CryptAcquireContextW, 20);
 FAST_IO_DLLIMPORT int FAST_IO_WINSTDCALL CryptReleaseContext(::std::size_t, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(CryptReleaseContext, 8);

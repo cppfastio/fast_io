@@ -182,54 +182,20 @@ static constexpr int hex_val(char8_t c) noexcept
 	return -1;
 }
 
-/* IMF-fixdate parser; -1 on anything unrecognized — node's Date.parse
- * fails the same way and it simply skips the 304 check */
-static ::std::int_least64_t parse_imf_date(fi::u8string_view v) noexcept
+/* IMF-fixdate parse through the library manipulator — throws a parse
+ * error on anything unrecognized or not fully consumed; the callers
+ * catch it the same way node's Date.parse failure just skips the 304
+ * check */
+static ::std::int_least64_t parse_imf_date(fi::u8string_view v) throws
 {
-	if (v.size() != 29 || v.data()[3] != u8',' || v.data()[28] != u8'T' ||
-		v.data()[27] != u8'M')
+	::std::int_least64_t t{};
+	fi::basic_ibuffer_view<char8_t> ibv{v.data(), v.data() + v.size()};
+	fi::scan(ibv, fi::mnp::imf_date_get(t));
+	if (ibv.curr_ptr != ibv.end_ptr)
 	{
-		return -1;
+		fi::herbceptions::throws_parse_errc(fi::freestanding::parse_errc::invalid);
 	}
-	auto const *p{v.data() + 5}; /* past "<wkday>, " */
-	auto dig{[](char8_t c) noexcept -> int {
-		return (u8'0' <= c && c <= u8'9') ? c - u8'0' : -1;
-	}};
-	if (dig(p[0]) < 0 || dig(p[1]) < 0 || p[2] != u8' ')
-	{
-		return -1;
-	}
-	unsigned const day{static_cast<unsigned>(dig(p[0]) * 10 + dig(p[1]))};
-	p += 3;
-	unsigned month{};
-	for (; month != 12; ++month)
-	{
-		if (p[0] == month_names[month][0] && p[1] == month_names[month][1] &&
-			p[2] == month_names[month][2])
-		{
-			break;
-		}
-	}
-	if (month == 12 || p[3] != u8' ')
-	{
-		return -1;
-	}
-	++month;
-	p += 4;
-	if (dig(p[0]) < 0 || dig(p[1]) < 0 || dig(p[2]) < 0 || dig(p[3]) < 0 || p[4] != u8' ')
-	{
-		return -1;
-	}
-	auto const year{dig(p[0]) * 1000 + dig(p[1]) * 100 + dig(p[2]) * 10 + dig(p[3])};
-	p += 5;
-	if (dig(p[0]) < 0 || dig(p[1]) < 0 || p[2] != u8':' || dig(p[3]) < 0 ||
-		dig(p[4]) < 0 || p[5] != u8':' || dig(p[6]) < 0 || dig(p[7]) < 0)
-	{
-		return -1;
-	}
-	return days_from_civil(year, month, day) * 86400 +
-		   (dig(p[0]) * 10 + dig(p[1])) * 3600 + (dig(p[3]) * 10 + dig(p[4])) * 60 +
-		   dig(p[6]) * 10 + dig(p[7]);
+	return t;
 }
 
 /* --------------------- request-target handling -------------------- */
@@ -257,6 +223,17 @@ static bool decode_target(fi::u8string_view target, fi::u8string &out,
 		}
 	}
 	trailing_slash = last != first && last[-1] == u8'/';
+	/* the url_path filter is the traversal guard: malformed escapes,
+	 * decoded control/NUL/backslash, or any ".." segment → 400 */
+	try
+	{
+		fi::mnp::string_filters::url_path(
+			fi::u8string_view{first, static_cast<::std::size_t>(last - first)});
+	}
+	catch throws(::std::error)
+	{
+		return false;
+	}
 	fi::u8string decoded;
 	for (auto i{first}; i != last; ++i)
 	{
@@ -335,12 +312,22 @@ static bool decode_target(fi::u8string_view target, fi::u8string &out,
  * rel (no "..", no leading slash) a request physically cannot name a
  * file outside the tree.
  */
+/* a peer whose source is broader than the configured WICG LNA space
+ * gets a 403 and nothing else — decided once per connection */
 struct server_cfg
 {
 	fi::native_at_entry root{};
+	/* full "\r\nAccess-Control-Allow-Origin: *..." header block, built
+	 * once in main when --cors is on; empty means no CORS headers */
+	fi::u8string cors_block;
 	::std::size_t cache_seconds{3600};
+	fi::ip_address_space lna_max{fi::ip_address_space::local_address};
+	/* exact-match peers from --lna <literal|hostname> — non-empty
+	 * switches the gate from space-cap to allow-list */
+	fi::containers::vector<fi::ip_address, fi::native_global_allocator> allowed_peers;
 	bool autoindex{true};
 	bool showdir{true};
+	bool cors{};
 };
 
 /* views point into the request's http_header_buffer — alive until the
@@ -363,22 +350,23 @@ struct range_result
 {
 	::std::uint_least64_t start{};
 	::std::uint_least64_t length{};
-	bool valid{};
 	bool present{};
 };
 
 /*
  * Range: bytes=a-b | a- | -n — a single range, like node's parse.
  * Empty or non-"bytes=" input is "not present" (serve the whole file);
- * a malformed range is !valid → 416.
+ * a malformed or unsatisfiable range throws parse_errc → the caller
+ * answers 416. Number fields go through parse_by_scan — the scanner's
+ * own overflow/invalid reporting is the field check.
  */
-static range_result parse_range(fi::u8string_view rv, ::std::uint_least64_t size) noexcept
+static range_result parse_range(fi::u8string_view rv, ::std::uint_least64_t size) throws
 {
 	constexpr fi::u8string_view prefix{u8"bytes="};
 	if (rv.size() <= prefix.size() ||
 		fi::u8string_view{rv.data(), prefix.size()} != prefix)
 	{
-		return {.valid = true};
+		return {};
 	}
 	rv = fi::u8string_view{rv.data() + prefix.size(), rv.size() - prefix.size()};
 	auto const *p{rv.data()};
@@ -388,52 +376,49 @@ static range_result parse_range(fi::u8string_view rv, ::std::uint_least64_t size
 	{
 		++dash;
 	}
-	if (dash == e || (e - dash - 1 == 0 && dash == p))
+	if (dash == e || (dash == p && dash + 1 == e))
 	{
-		return {.valid = true}; /* "bytes=-" — nothing usable, ignore */
+		return {}; /* "bytes=-" or no dash — nothing usable, ignore */
 	}
+	auto const field{[](char8_t const *f, char8_t const *l, ::std::uint_least64_t &v) throws {
+		auto const [it, ec] = ::fast_io::parse_by_scan(f, l, v);
+		if (ec != ::fast_io::freestanding::parse_errc::ok || it != l)
+		{
+			::fast_io::herbceptions::throws_parse_errc(
+				::fast_io::freestanding::parse_errc::invalid);
+		}
+	}};
 	if (size == 0)
 	{
-		return {}; /* any range on an empty file is unsatisfiable */
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
 	}
-	auto digits{[](char8_t const *f, char8_t const *l, ::std::uint_least64_t &v) noexcept {
-		if (f == l)
-		{
-			return false;
-		}
-		v = 0;
-		for (; f != l; ++f)
-		{
-			if (*f < u8'0' || u8'9' < *f)
-			{
-				return false;
-			}
-			v = v * 10 + static_cast<::std::uint_least64_t>(*f - u8'0');
-		}
-		return true;
-	}};
 	::std::uint_least64_t s{}, n{};
 	if (dash == p)
 	{
 		/* suffix form "-n": the last n bytes */
-		if (!digits(dash + 1, e, n) || n == 0)
+		field(dash + 1, e, n);
+		if (n == 0)
 		{
-			return {};
+			::fast_io::herbceptions::throws_parse_errc(
+				::fast_io::freestanding::parse_errc::invalid);
 		}
 		if (n > size)
 		{
 			n = size;
 		}
-		return {.start = size - n, .length = n, .valid = true, .present = true};
+		return {.start = size - n, .length = n, .present = true};
 	}
-	if (!digits(p, dash, s) || s >= size)
+	field(p, dash, s);
+	if (s >= size)
 	{
-		return {};
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
 	}
 	::std::uint_least64_t endv{size - 1};
-	if (dash + 1 != e && !digits(dash + 1, e, endv))
+	if (dash + 1 != e)
 	{
-		return {};
+		field(dash + 1, e, endv);
 	}
 	if (endv >= size)
 	{
@@ -441,9 +426,10 @@ static range_result parse_range(fi::u8string_view rv, ::std::uint_least64_t size
 	}
 	if (s > endv)
 	{
-		return {};
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
 	}
-	return {.start = s, .length = endv - s + 1, .valid = true, .present = true};
+	return {.start = s, .length = endv - s + 1, .present = true};
 }
 
 /* --------------------------- responders --------------------------- */
@@ -456,7 +442,8 @@ static range_result parse_range(fi::u8string_view rv, ::std::uint_least64_t size
 
 static fi::io_async_task<> respond_status(fi::io_async_observer sched,
 										  fi::u8iobuf_socket_file &sock, unsigned code,
-										  fi::u8string_view phrase, http_request const &req) throws
+										  fi::u8string_view phrase, http_request const &req,
+										  server_cfg const &cfg) throws
 {
 	fi::u8string const body{fi::u8concat_fast_io(
 		u8"<!doctype html><title>", code, u8" ", phrase, u8"</title><h1>", code, u8" ",
@@ -467,7 +454,7 @@ static fi::io_async_task<> respond_status(fi::io_async_observer sched,
 		u8"\r\nContent-Type: text/html\r\nContent-Length: ", body.size(),
 		u8"\r\nConnection: ",
 		req.keep_alive ? fi::u8string_view{u8"keep-alive"} : fi::u8string_view{u8"close"},
-		u8"\r\n\r\n");
+		fi::u8string_view{cfg.cors_block.data(), cfg.cors_block.size()}, u8"\r\n\r\n");
 	if (!req.head_only)
 	{
 		co_await fi::io::async_print(sched, {}, sock,
@@ -552,7 +539,7 @@ static fi::io_async_task<> respond_listing(fi::io_async_observer sched,
 		u8"Content-Length: ", page.size(), u8"\r\nCache-Control: max-age=",
 		cfg.cache_seconds, u8"\r\nConnection: ",
 		req.keep_alive ? fi::u8string_view{u8"keep-alive"} : fi::u8string_view{u8"close"},
-		u8"\r\n\r\n");
+		fi::u8string_view{cfg.cors_block.data(), cfg.cors_block.size()}, u8"\r\n\r\n");
 	if (!req.head_only)
 	{
 		co_await fi::io::async_print(sched, {}, sock,
@@ -617,19 +604,47 @@ static fi::io_async_task<> respond_file(fi::io_async_observer sched,
 	}
 	if (!not_modified && !req.ims.empty())
 	{
-		auto const since{parse_imf_date(req.ims)};
-		not_modified = since >= 0 && since >= st.mtim.tv_sec;
+		try
+		{
+			not_modified = parse_imf_date(req.ims) >= st.mtim.tv_sec;
+		}
+		catch throws(::std::error)
+		{
+		}
 	}
 	if (not_modified)
 	{
 		co_await fi::io::async_print(sched, {}, sock,
 									 u8"HTTP/1.1 304 Not Modified\r\nETag: ", ev,
-									 u8"\r\nConnection: ", connv, u8"\r\n\r\n");
+									 u8"\r\nConnection: ", connv,
+									 fi::u8string_view{cfg.cors_block.data(),
+													   cfg.cors_block.size()},
+									 u8"\r\n\r\n");
 		co_await fop::async_output_stream_flush(sched, {}, sock);
 		co_return;
 	}
 
-	auto rng{parse_range(req.range, st.size)};
+	range_result rng{};
+	bool bad_range{};
+	try
+	{
+		rng = parse_range(req.range, st.size);
+	}
+	catch throws(::std::error)
+	{
+		bad_range = true;
+	}
+	if (bad_range)
+	{
+		co_await fi::io::async_print(
+			sched, {}, sock,
+			u8"HTTP/1.1 416 Range Not Satisfiable\r\nContent-Range: bytes */", st.size,
+			u8"\r\nContent-Length: 0\r\nConnection: ", connv,
+			fi::u8string_view{cfg.cors_block.data(), cfg.cors_block.size()},
+			u8"\r\n\r\n");
+		co_await fop::async_output_stream_flush(sched, {}, sock);
+		co_return;
+	}
 	/*
 	 * If-Range: a validator that doesn't match downgrades the 206 to a
 	 * full 200 — video clients send it so a changed file isn't resumed
@@ -649,22 +664,19 @@ static fi::io_async_task<> respond_file(fi::io_async_observer sched,
 		}
 		else
 		{
-			auto const since{parse_imf_date(iv)};
-			match = since >= 0 && since >= st.mtim.tv_sec;
+			try
+			{
+				match = parse_imf_date(iv) >= st.mtim.tv_sec;
+			}
+			catch throws(::std::error)
+			{
+				match = false;
+			}
 		}
 		if (!match)
 		{
 			rng.present = false;
 		}
-	}
-	if (!rng.valid)
-	{
-		co_await fi::io::async_print(
-			sched, {}, sock,
-			u8"HTTP/1.1 416 Range Not Satisfiable\r\nContent-Range: bytes */", st.size,
-			u8"\r\nContent-Length: 0\r\nConnection: ", connv, u8"\r\n\r\n");
-		co_await fop::async_output_stream_flush(sched, {}, sock);
-		co_return;
 	}
 	auto const length{rng.present ? rng.length : st.size};
 
@@ -680,7 +692,8 @@ static fi::io_async_task<> respond_file(fi::io_async_observer sched,
 		rng.present ? fi::u8concat_fast_io(u8"\r\nContent-Range: bytes ", rng.start, u8"-",
 										   rng.start + length - 1, u8"/", st.size)
 					: fi::u8string{},
-		u8"\r\nContent-Length: ", length, u8"\r\nConnection: ", connv, u8"\r\n\r\n");
+		u8"\r\nContent-Length: ", length, u8"\r\nConnection: ", connv,
+		fi::u8string_view{cfg.cors_block.data(), cfg.cors_block.size()}, u8"\r\n\r\n");
 	if (!req.head_only && length != 0)
 	{
 		::fast_io::intfpos_t const off{static_cast<::fast_io::intfpos_t>(rng.start)};
@@ -703,13 +716,29 @@ static fi::io_async_task<> respond_directory(fi::io_async_observer sched,
 {
 	if (!trailing_slash)
 	{
-		/* node: Location = pathname + '/' (+ '?query') — url_path is the
-		 * raw target, which still carries the query in the right spot */
+		/* node: Location = pathname + '/' + '?query' — url_path is the
+		 * raw target, so the '/' has to go in BEFORE the '?' or the
+		 * query swallows it and the redirect loops forever */
+		::std::size_t qpos{url_path.size()};
+		for (::std::size_t i{}; i != url_path.size(); ++i)
+		{
+			auto const ch{url_path.data()[i]};
+			if (ch == u8'?' || ch == u8'#')
+			{
+				qpos = i;
+				break;
+			}
+		}
 		co_await fi::io::async_print(sched, {}, sock,
-									 u8"HTTP/1.1 302 Found\r\nLocation: ", url_path,
-									 u8"/\r\nContent-Length: 0\r\nConnection: ",
+									 u8"HTTP/1.1 302 Found\r\nLocation: ",
+									 fi::u8string_view{url_path.data(), qpos}, u8"/",
+									 fi::u8string_view{url_path.data() + qpos,
+													   url_path.size() - qpos},
+									 u8"\r\nContent-Length: 0\r\nConnection: ",
 									 req.keep_alive ? fi::u8string_view{u8"keep-alive"}
 													: fi::u8string_view{u8"close"},
+									 fi::u8string_view{cfg.cors_block.data(),
+													   cfg.cors_block.size()},
 									 u8"\r\n\r\n");
 		co_await fop::async_output_stream_flush(sched, {}, sock);
 		co_return;
@@ -737,7 +766,7 @@ static fi::io_async_task<> respond_directory(fi::io_async_observer sched,
 		co_await respond_listing(sched, sock, url_path, dirat, cfg, req);
 		co_return;
 	}
-	co_await respond_status(sched, sock, 404, u8"Not Found", req);
+	co_await respond_status(sched, sock, 404, u8"Not Found", req, cfg);
 }
 
 /* ------------------------------- core ----------------------------- */
@@ -751,6 +780,35 @@ static fi::io_async_task<> respond_directory(fi::io_async_observer sched,
 static fi::io_async_task<> session(fi::io_async_observer sched,
 								   fi::u8iobuf_socket_file sock, server_cfg cfg) throws
 {
+	/* LNA gate: space-cap mode checks the peer's address space; the
+	 * allow-list mode (--lna with a literal/hostname) matches the peer
+	 * address exactly — checked once since the peer never changes */
+	{
+		auto const peer{fi::getpeername(sock.handle).address};
+		bool allowed{cfg.allowed_peers.is_empty()};
+		if (allowed)
+		{
+			allowed = fi::lna_allows(peer, cfg.lna_max);
+		}
+		else
+		{
+			for (auto const &ent : cfg.allowed_peers)
+			{
+				if (fi::lna_peer_eq(peer, ent))
+				{
+					allowed = true;
+					break;
+				}
+			}
+		}
+		if (!allowed)
+		{
+			http_request denied{};
+			denied.keep_alive = false;
+			co_await respond_status(sched, sock, 403, u8"Forbidden", denied, cfg);
+			co_return;
+		}
+	}
 	for (;;)
 	{
 		fi::u8http_header_buffer hdr{};
@@ -794,9 +852,24 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 							 ? ascii_ieq(req.connection, u8"keep-alive")
 							 : !ascii_ieq(req.connection, u8"close");
 
-		if (!get && !req.head_only)
+		bool const options{req.method == fi::u8string_view{u8"OPTIONS"}};
+		if (options && cfg.cors)
 		{
-			co_await respond_status(sched, sock, 405, u8"Method Not Allowed", req);
+			/* node's handleOptionsMethod: preflight gets a bare 200
+			 * carrying the CORS headers */
+			co_await fi::io::async_print(
+				sched, {}, sock,
+				u8"HTTP/1.1 200 OK\r\nAccess-Control-Allow-Methods: GET, HEAD, OPTIONS\r\n"
+				u8"Content-Length: 0\r\nConnection: ",
+				req.keep_alive ? fi::u8string_view{u8"keep-alive"}
+							   : fi::u8string_view{u8"close"},
+				fi::u8string_view{cfg.cors_block.data(), cfg.cors_block.size()},
+				u8"\r\n\r\n");
+			co_await fop::async_output_stream_flush(sched, {}, sock);
+		}
+		else if (!get && !req.head_only)
+		{
+			co_await respond_status(sched, sock, 405, u8"Method Not Allowed", req, cfg);
 		}
 		else
 		{
@@ -804,7 +877,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 			bool trailing_slash{};
 			if (!decode_target(req.target, rel, trailing_slash))
 			{
-				co_await respond_status(sched, sock, 400, u8"Bad Request", req);
+				co_await respond_status(sched, sock, 400, u8"Bad Request", req, cfg);
 			}
 			else if (rel.empty())
 			{
@@ -820,7 +893,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 					auto const relc{fi::mnp::os_c_str(rel.c_str())};
 					/* one fstatat decides the branch; symlink_nofollow
 					 * would diverge from node's fs.stat, so flags stay 0 */
-					auto const st{fi::native_fstatat(cfg.root, relc, fi::posix_at_flags{})};
+					auto const st{fi::native_fstatat(cfg.root, relc, fi::native_at_flags{})};
 					if (st.type == fi::file_type::directory)
 					{
 						fi::u8native_file df{cfg.root, relc,
@@ -837,7 +910,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 					}
 					else
 					{
-						co_await respond_status(sched, sock, 403, u8"Forbidden", req);
+						co_await respond_status(sched, sock, 403, u8"Forbidden", req, cfg);
 					}
 				}
 				catch throws(::std::error)
@@ -849,7 +922,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 					/* ENOENT/ENOTDIR/EACCES all collapse to 404 — node's
 					 * effectively404 counts unreadable too. (co_await
 					 * can't live inside the catch itself) */
-					co_await respond_status(sched, sock, 404, u8"Not Found", req);
+					co_await respond_status(sched, sock, 404, u8"Not Found", req, cfg);
 				}
 			}
 		}
@@ -861,7 +934,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 }
 
 static fi::io_async_task<> accept_loop(fi::io_async_observer sched,
-									   fi::u8native_io_observer listener,
+									   fi::u8native_socket_io_observer listener,
 									   server_cfg cfg) throws
 {
 	for (;;)
@@ -885,10 +958,18 @@ int main(int argc, char const **argv)
 	::std::uint_least16_t port{8080};
 	fi::u8cstring_view rootarg;
 	fi::u8string rootpath;
+	fi::u8string_view cors_extra;
 	for (int i{1}; i != argc; ++i)
 	{
 		fi::u8cstring_view const arg{fi::mnp::os_c_str(
 			reinterpret_cast<char8_t const *>(argv[i]))};
+		if (arg == fi::u8cstring_view{u8"--help"} || arg == fi::u8cstring_view{u8"-h"})
+		{
+			perr("Usage: ", ::fast_io::mnp::os_c_str(*argv),
+				 " [root] [-p port] [-c seconds] [--cors[=headers]] "
+				 "[--lna loopback|local|public|address|hostname] [--no-index] [--no-dir]\n");
+			return 0;
+		}
 		if (arg == fi::u8cstring_view{u8"-p"} || arg == fi::u8cstring_view{u8"--port"})
 		{
 			if (++i == argc)
@@ -908,6 +989,42 @@ int main(int argc, char const **argv)
 			cfg.cache_seconds = fi::u8to<::std::size_t>(
 				fi::u8cstring_view{fi::mnp::os_c_str(
 					reinterpret_cast<char8_t const *>(argv[i]))});
+		}
+		else if (arg == fi::u8cstring_view{u8"--cors"})
+		{
+			cfg.cors = true;
+		}
+		else if (arg.size() > 7 && fi::u8string_view{arg.data(), 7} ==
+									   fi::u8string_view{u8"--cors="})
+		{
+			/* node: --cors=hdr1,hdr2 appends to Access-Control-Allow-Headers */
+			cfg.cors = true;
+			cors_extra = fi::u8string_view{arg.data() + 7, arg.size() - 7};
+		}
+		else if (arg == fi::u8cstring_view{u8"--lna"} && i + 1 != argc)
+		{
+			++i;
+			fi::u8cstring_view const val{fi::mnp::os_c_str(
+				reinterpret_cast<char8_t const *>(argv[i]))};
+			auto const rule{fi::lna_parse(val.data(), val.data() + val.size())};
+			if (rule.kind == fi::lna_rule_kind::space)
+			{
+				cfg.lna_max = rule.space;
+			}
+			else if (rule.kind == fi::lna_rule_kind::literal)
+			{
+				cfg.allowed_peers.push_back(rule.address);
+			}
+			else
+			{
+				/* hostname — includes mDNS ".local" names, resolved
+				 * through the system resolver like any other name */
+				fi::native_dns_file dns{fi::mnp::os_c_str(argv[i])};
+				for (auto const ent : dns)
+				{
+					cfg.allowed_peers.push_back(fi::to_ip_address(ent));
+				}
+			}
 		}
 		else if (arg == fi::u8cstring_view{u8"--no-index"})
 		{
@@ -955,8 +1072,74 @@ int main(int argc, char const **argv)
 		 * failure (EADDRINUSE etc.) is fatal, not retryable: rebuilding
 		 * the listener in a loop would spin on a permanent error */
 		fi::u8native_socket_file listener{fi::tcp_listen(port, fi::open_mode::no_block)};
-		println("Serving ", ::fast_io::mnp::code_cvt(fi::u8string_view{rootpath.data(), rootpath.size()}),
-				" on http://0.0.0.0:", port);
+
+		if (cfg.cors)
+		{
+			/* node's header set: Allow-Origin "*" plus the shared
+			 * Allow-Headers list, with --cors=extra appended */
+			cfg.cors_block = fi::u8concat_fast_io(
+				u8"\r\nAccess-Control-Allow-Origin: *"
+				u8"\r\nAccess-Control-Allow-Headers: Authorization, Content-Type, "
+				"If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since",
+				cors_extra.empty() ? fi::u8string{}
+								   : fi::u8concat_fast_io(u8", ", cors_extra));
+		}
+
+		/* status goes to stderr: stdout is block-buffered when piped,
+		 * and a startup banner that never flushes isn't a banner */
+		perr("Starting up http-server, serving ",
+			 ::fast_io::mnp::code_cvt(fi::u8string_view{rootpath.data(), rootpath.size()}),
+			 "\n\nhttp-server settings:\n"
+			 "CORS (--cors[=headers]): ",
+			 ::fast_io::mnp::os_c_str(cfg.cors ? "enabled" : "disabled"),
+			 "\nCache (-c): ", cfg.cache_seconds,
+			 " seconds\n"
+			 "Directory Listings (--no-dir): ",
+			 ::fast_io::mnp::os_c_str(cfg.showdir ? "visible" : "not visible"),
+			 "\nAutoIndex (--no-index): ",
+			 ::fast_io::mnp::os_c_str(cfg.autoindex ? "visible" : "not visible"),
+			 "\nAccess space (--lna): ",
+			 ::fast_io::mnp::os_c_str(
+				 !cfg.allowed_peers.is_empty()
+					 ? "allow-list"
+				 : cfg.lna_max == fi::ip_address_space::loopback_address
+					 ? "loopback"
+				 : cfg.lna_max == fi::ip_address_space::public_address
+					 ? "public"
+					 : "local (LAN only)"),
+			 "\n\nAvailable on:\n");
+		if (!cfg.allowed_peers.is_empty())
+		{
+			perr("Allowed peers:\n");
+			for (auto const &p : cfg.allowed_peers)
+			{
+				perr("  ", p, "\n");
+			}
+		}
+		if (fi::native_ifaddrs_file ifas{fi::ifaddrs_enumerate}; ifas)
+		{
+			/* two passes: loopback first, like node's listing */
+			for (int pass{}; pass != 2; ++pass)
+			{
+				for (auto const ent : ifas)
+				{
+					if (fi::family(ent) != fi::sock_family::inet &&
+						fi::family(ent) != fi::sock_family::inet6)
+					{
+						continue;
+					}
+					auto const addr{fi::address(ent)};
+					bool const loop{addr.isv4 && addr.address.v4.address[0] == 127};
+					if (loop == (pass == 0))
+					{
+						/* ip prints [::v6]:port / v4:port — brackets and
+						 * port are part of the type's own format */
+						perr("  http://", fi::ip{addr, port}, "\n");
+					}
+				}
+			}
+		}
+		perr("Hit CTRL-C to stop the server\n");
 
 		/* supervisor: if the accept coroutine dies to a mid-run error
 		 * (EMFILE & co.), log and rebuild it on the same listener */
@@ -983,7 +1166,5 @@ int main(int argc, char const **argv)
 		perrln(e);
 		return 1;
 	}
-	perr("Usage: ", ::fast_io::mnp::os_c_str(*argv),
-		 " [root] [-p port] [-c seconds] [--no-index] [--no-dir]\n");
-	return 1;
+	return 0;
 }

@@ -25,6 +25,33 @@ struct ip_address
 	bool isv4{};
 };
 
+inline constexpr bool operator==(ip_address const &a, ip_address const &b) noexcept
+{
+	if (a.isv4 != b.isv4)
+	{
+		return false;
+	}
+	if (a.isv4)
+	{
+		for (unsigned i{}; i != 4; ++i)
+		{
+			if (a.address.v4.address[i] != b.address.v4.address[i])
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	for (unsigned i{}; i != 8; ++i)
+	{
+		if (a.address.v6.address[i] != b.address.v6.address[i])
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 struct ip
 {
 	ip_address address;

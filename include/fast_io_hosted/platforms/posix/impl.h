@@ -38,6 +38,10 @@
 #include <sys/socket.h>
 #endif
 
+#if __has_include(<signal.h>)
+#include <signal.h>
+#endif
+
 #if defined(__wasi__)
 #include <wasi/api.h>
 #endif

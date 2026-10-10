@@ -293,13 +293,85 @@ inline constexpr bool string_filters_validate_token(ch_type const *first,
 	return true;
 }
 
+/* percent-encoded request-target path: every '%' must introduce two
+ * hex digits; decoded characters reject C0 controls, DEL, NUL (a %00
+ * would truncate a C-string path) and '\' (a windows separator
+ * hazard); any '/'-separated segment that decodes to exactly ".."
+ * fails — the path-traversal guard for request paths that get mapped
+ * onto a filesystem. Decoded non-ASCII (UTF-8 filenames) and '.'
+ * segments stay legal */
+template <::std::integral ch_type>
+inline constexpr bool string_filters_validate_url_path(ch_type const *first,
+													   ch_type const *last) noexcept
+{
+	constexpr auto slashesc{::fast_io::char_literal_v<u8'/', ch_type>};
+	constexpr auto percent{::fast_io::char_literal_v<u8'%', ch_type>};
+	constexpr auto nine{::fast_io::char_literal_v<u8'9', ch_type>};
+	constexpr auto zero{::fast_io::char_literal_v<u8'0', ch_type>};
+	constexpr auto hexval{[&](ch_type c) noexcept -> unsigned {
+		return c <= nine ? static_cast<unsigned>(c - zero)
+						 : static_cast<unsigned>((c | 0x20) - 'a' + 10);
+	}};
+	for (auto seg{first};;)
+	{
+		auto se{seg};
+		while (se != last && *se != slashesc)
+		{
+			++se;
+		}
+		bool dotdot{true};
+		::std::size_t nch{};
+		for (auto p{seg}; p != se;)
+		{
+			::std::uint_least32_t ch;
+			if (*p == percent)
+			{
+				if (se - p < 3 || !::fast_io::char_category::is_c_xdigit(p[1]) ||
+					!::fast_io::char_category::is_c_xdigit(p[2]))
+				{
+					return false;
+				}
+				ch = hexval(p[1]) * 16 + hexval(p[2]);
+				p += 3;
+			}
+			else
+			{
+				ch = static_cast<::std::uint_least32_t>(*p);
+				++p;
+			}
+			if (ch < 0x20 || ch == 0x7f || ch == 0x5c)
+			{
+				return false;
+			}
+			if (dotdot)
+			{
+				if (nch == 2 || ch != 0x2e)
+				{
+					dotdot = false;
+				}
+				++nch;
+			}
+		}
+		if (dotdot && nch == 2)
+		{
+			return false;
+		}
+		if (se == last)
+		{
+			return true;
+		}
+		seg = se + 1;
+	}
+}
+
 enum class string_filter_kind : ::std::uint_least32_t
 {
 	host,
 	url,
 	sql_string,
 	header_value,
-	token
+	token,
+	url_path
 };
 
 template <string_filter_kind kind, ::std::integral ch_type>
@@ -327,6 +399,10 @@ inline constexpr void string_filters_validate_or_throw(ch_type const *first,
 	else if constexpr (kind == string_filter_kind::token)
 	{
 		valid = string_filters_validate_token(first, last);
+	}
+	else if constexpr (kind == string_filter_kind::url_path)
+	{
+		valid = string_filters_validate_url_path(first, last);
 	}
 	else
 	{
@@ -459,6 +535,20 @@ inline constexpr auto token(T &&t) FAST_IO_HERBCEPTIONS_THROWS
 }
 
 inline constexpr void token(::std::nullptr_t) = delete;
+
+/* percent-encoded request-target path — rejects malformed escapes,
+ * decoded control/del/NUL/backslash characters, and any segment that
+ * decodes to ".."; the traversal guard for paths bound for a
+ * filesystem */
+template <typename T>
+inline constexpr auto url_path(T &&t) FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::details::string_filters_apply<
+		::fast_io::details::string_filter_kind::url_path>(
+		::fast_io::freestanding::forward<T>(t));
+}
+
+inline constexpr void url_path(::std::nullptr_t) = delete;
 
 } // namespace string_filters
 

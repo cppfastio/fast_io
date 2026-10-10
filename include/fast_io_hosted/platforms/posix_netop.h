@@ -94,10 +94,38 @@ inline int posix_tcp_connect_ip_impl(ip v, open_mode m)
 	return soc.release();
 }
 
-inline int posix_tcp_listen_impl(::std::uint_least16_t port, open_mode m)
-	FAST_IO_HERBCEPTIONS_THROWS
+inline ::fast_io::ip posix_sockaddr_to_ip_impl(posix_sockaddr const *sa) noexcept
 {
-	posix_file soc(sock_family::inet, sock_type::stream, m, sock_protocol::tcp);
+	::fast_io::ip ret;
+	if (sa == nullptr)
+	{
+		return ret;
+	}
+	switch (sa->sa_family)
+	{
+	case AF_INET:
+	{
+		auto const *in{reinterpret_cast<posix_sockaddr_in const *>(sa)};
+		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.address.v4.address),
+									  __builtin_addressof(in->sin_addr), sizeof(posix_in_addr));
+		ret.address.isv4 = true;
+		ret.port = big_endian(in->sin_port);
+		break;
+	}
+	case AF_INET6:
+	{
+		auto const *in6{reinterpret_cast<posix_sockaddr_in6 const *>(sa)};
+		::fast_io::details::my_memcpy(__builtin_addressof(ret.address.address.v6.address),
+									  __builtin_addressof(in6->sin6_addr), sizeof(posix_in6_addr));
+		ret.port = big_endian(in6->sin6_port);
+		break;
+	}
+	}
+	return ret;
+}
+
+inline void posix_tcp_listen_reuse_impl(int fd) FAST_IO_HERBCEPTIONS_THROWS
+{
 	constexpr int one{1};
 	/* rebind must succeed even while sessions accepted by a previous
 	 * listener on this port linger in TIME_WAIT — otherwise a supervisor
@@ -114,13 +142,68 @@ inline int posix_tcp_listen_impl(::std::uint_least16_t port, open_mode m)
 	constexpr int sol_socket_v{0xffff};
 	constexpr int so_reuseaddr_v{4};
 #endif
-	posix_setsockopt_posix_socket_impl(soc.fd, sol_socket_v, so_reuseaddr_v,
+	posix_setsockopt_posix_socket_impl(fd, sol_socket_v, so_reuseaddr_v,
 									   __builtin_addressof(one), sizeof(one));
+}
+
+inline int posix_tcp_listen_impl(ipv4 v4, open_mode m)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	posix_file soc(sock_family::inet, sock_type::stream, m, sock_protocol::tcp);
+	posix_tcp_listen_reuse_impl(soc.fd);
 	constexpr auto inet{to_posix_sock_family(sock_family::inet)};
-	posix_sockaddr_in in{.sin_family = inet, .sin_port = big_endian(port), .sin_addr = {}};
+	posix_sockaddr_in in{.sin_family = inet, .sin_port = big_endian(v4.port), .sin_addr = v4.address};
 	posix_bind_posix_socket_impl(soc.fd, __builtin_addressof(in), sizeof(in));
 	posix_listen_posix_socket_impl(soc.fd, 128);
 	return soc.release();
+}
+
+inline int posix_tcp_listen_v6_impl(ipv6 v6, open_mode m)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	posix_file soc(sock_family::inet6, sock_type::stream, m, sock_protocol::tcp);
+	posix_tcp_listen_reuse_impl(soc.fd);
+	/* keep the v6 socket v6-only — a companion v4 listener owns the v4
+	 * traffic, so nothing arrives v4-mapped on the wrong socket */
+#ifdef IPV6_V6ONLY
+	constexpr int one{1};
+	posix_setsockopt_posix_socket_impl(soc.fd, IPPROTO_IPV6, IPV6_V6ONLY,
+									   __builtin_addressof(one), sizeof(one));
+#endif
+	constexpr auto inet6{to_posix_sock_family(sock_family::inet6)};
+	posix_sockaddr_in6 in6{
+		.sin6_family = inet6, .sin6_port = big_endian(v6.port), .sin6_addr = v6.address};
+	posix_bind_posix_socket_impl(soc.fd, __builtin_addressof(in6), sizeof(in6));
+	posix_listen_posix_socket_impl(soc.fd, 128);
+	return soc.release();
+}
+
+/* dual-stack: an AF_INET6 socket bound to :: with V6ONLY off accepts
+ * both families on one fd — the same shape node's server.listen(port)
+ * gets by binding ::. Systems without v6 or where V6ONLY can't be
+ * cleared (OpenBSD pins it on) fall back to the v4 socket */
+inline int posix_tcp_listen_dual_impl(::std::uint_least16_t port, open_mode m)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	try
+	{
+		posix_file soc(sock_family::inet6, sock_type::stream, m, sock_protocol::tcp);
+		posix_tcp_listen_reuse_impl(soc.fd);
+#ifdef IPV6_V6ONLY
+		constexpr int zero{};
+		posix_setsockopt_posix_socket_impl(soc.fd, IPPROTO_IPV6, IPV6_V6ONLY,
+										   __builtin_addressof(zero), sizeof(zero));
+#endif
+		constexpr auto inet6{to_posix_sock_family(sock_family::inet6)};
+		posix_sockaddr_in6 in6{.sin6_family = inet6, .sin6_port = big_endian(port), .sin6_addr = {}};
+		posix_bind_posix_socket_impl(soc.fd, __builtin_addressof(in6), sizeof(in6));
+		posix_listen_posix_socket_impl(soc.fd, 128);
+		return soc.release();
+	}
+	catch throws(::std::error)
+	{
+	}
+	return posix_tcp_listen_impl(ipv4{.port = port}, m);
 }
 
 } // namespace details
@@ -175,14 +258,56 @@ inline posix_file_factory tcp_connect(ip v, open_mode m = open_mode{})
 inline posix_file_factory tcp_listen(::std::uint_least16_t port, open_mode m = open_mode{})
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return posix_file_factory{details::posix_tcp_listen_impl(port, m)};
+	return posix_file_factory{details::posix_tcp_listen_dual_impl(port, m)};
+}
+template <::std::integral ch_type>
+inline void getpeername(basic_posix_io_observer<ch_type> h, void *addr, posix_socklen_t *addrlen)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	details::posix_getpeername_posix_socket_impl(h.fd, addr, addrlen);
+}
+template <::std::integral ch_type>
+inline ::fast_io::ip getpeername(basic_posix_io_observer<ch_type> h)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	posix_sockaddr_storage sa{};
+	posix_socklen_t addrlen{static_cast<posix_socklen_t>(sizeof(sa))};
+	details::posix_getpeername_posix_socket_impl(h.fd, __builtin_addressof(sa),
+												 __builtin_addressof(addrlen));
+	return details::posix_sockaddr_to_ip_impl(
+		reinterpret_cast<posix_sockaddr const *>(__builtin_addressof(sa)));
+}
+/* WICG local-network-access on the peer: classify the connected
+ * socket's source address into its address space, and the containment
+ * check `peer_space <= max` as one call */
+template <::std::integral ch_type>
+inline ::fast_io::ip_address_space lna_classify(basic_posix_io_observer<ch_type> h)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::lna_classify(getpeername(h).address);
+}
+template <::std::integral ch_type>
+inline bool lna_allows(basic_posix_io_observer<ch_type> h, ::fast_io::ip_address_space max)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::lna_classify(h) <= max;
+}
+inline posix_file_factory tcp_listen(ipv4 v4, open_mode m = open_mode{})
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return posix_file_factory{details::posix_tcp_listen_impl(v4, m)};
+}
+inline posix_file_factory tcp_listen(ipv6 v6, open_mode m = open_mode{})
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return posix_file_factory{details::posix_tcp_listen_v6_impl(v6, m)};
 }
 
 template <::std::integral ch_type>
 using basic_native_socket_io_observer = basic_posix_io_observer<ch_type>;
 template <::std::integral ch_type>
 using basic_native_socket_file = basic_posix_file<ch_type>;
-using net_service = posix_empty_network_service;
+using net_service = posix_net_service;
 
 namespace operations
 {
