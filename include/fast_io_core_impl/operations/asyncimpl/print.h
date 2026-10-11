@@ -360,6 +360,29 @@ struct async_print_work_state
 		alloc_handle{};
 };
 
+/* write completion for a suspended print awaiter: records the error,
+ * frees the work state and resumes (or marks done when the suspend was
+ * skipped). Typed -- the pair it carries is awaiter-specific anyway. */
+template <typename awaiter_type>
+struct async_print_write_cb
+{
+	awaiter_type *awaiter;
+	typename awaiter_type::work_state_type *work;
+	inline void operator()(::std::cxx_std_error e) noexcept
+	{
+		awaiter->err = e;
+		::fast_io::details::async_delete_state(work);
+		if (awaiter->suspended)
+		{
+			awaiter->coro.resume();
+		}
+		else
+		{
+			awaiter->done = true;
+		}
+	}
+};
+
 /*
  * The co_await face of async_print: formatting ran eagerly at call time,
  * so the awaiter carries only the submission parameters plus a work
@@ -415,18 +438,7 @@ struct async_print_awaiter : async_awaiter_result<void>
 		{
 			w->scatters[nsc++] = {w->payload.data(), scount};
 		}
-		auto callback{[this, w](::std::cxx_std_error e) noexcept {
-			this->err = e;
-			::fast_io::details::async_delete_state(w);
-			if (this->suspended)
-			{
-				this->coro.resume();
-			}
-			else
-			{
-				this->done = true;
-			}
-		}};
+		async_print_write_cb<async_print_awaiter> callback{this, w};
 		if (nsc == 1)
 		{
 			::fast_io::operations::decay::async_pwrite_all_bytes_decay_callback(

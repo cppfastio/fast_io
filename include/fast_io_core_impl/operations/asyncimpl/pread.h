@@ -113,7 +113,7 @@ struct async_pread_all_bytes_state_base
 	void (*finish)(async_pread_all_bytes_state_base *state,
 				   ::std::cxx_std_error err) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											   ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -157,37 +157,43 @@ struct async_pread_all_bytes_state
  * semantics.
  */
 template <typename scheduler, typename instmtype, typename alloc_type>
+inline void async_pread_all_bytes_step(void *vst, ::std::cxx_std_error err,
+									   ::std::size_t bytesread) noexcept
+{
+	auto *state{static_cast<async_pread_all_bytes_state_base<scheduler, instmtype, alloc_type> *>(vst)};
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		state->finish(state, err);
+		return;
+	}
+	state->first += bytesread;
+	state->remaining -= bytesread;
+	if (state->off.has_opt)
+	{
+		state->off.opt = ::fast_io::fposoffadd_nonegative(
+			state->off.opt, static_cast<::std::ptrdiff_t>(bytesread));
+	}
+	if (state->remaining == 0)
+	{
+		state->finish(state, {});
+		return;
+	}
+	if (bytesread == 0) [[unlikely]]
+	{
+		state->finish(state, ::fast_io::details::async_make_error(
+								 ::fast_io::freestanding::parse_errc::end_of_file));
+		return;
+	}
+	async_pread_all_bytes_submit(state);
+}
+
+template <typename scheduler, typename instmtype, typename alloc_type>
 inline void async_pread_all_bytes_submit(
 	async_pread_all_bytes_state_base<scheduler, instmtype, alloc_type> *state) noexcept
 {
 	async_pread_some_bytes_underflow_callback_define(
 		state->sched, state->timeout, state->instm, state->first, state->remaining, state->off,
-		[state](::std::cxx_std_error err, ::std::size_t bytesread) noexcept {
-			if (err.domain != nullptr) [[unlikely]]
-			{
-				state->finish(state, err);
-				return;
-			}
-			state->first += bytesread;
-			state->remaining -= bytesread;
-			if (state->off.has_opt)
-			{
-				state->off.opt = ::fast_io::fposoffadd_nonegative(
-					state->off.opt, static_cast<::std::ptrdiff_t>(bytesread));
-			}
-			if (state->remaining == 0)
-			{
-				state->finish(state, {});
-				return;
-			}
-			if (bytesread == 0) [[unlikely]]
-			{
-				state->finish(state, ::fast_io::details::async_make_error(
-					::fast_io::freestanding::parse_errc::end_of_file));
-				return;
-			}
-			async_pread_all_bytes_submit(state);
-		});
+		async_bytes_step_cb{state, &async_pread_all_bytes_step<scheduler, instmtype, alloc_type>});
 }
 
 } // namespace fast_io::details

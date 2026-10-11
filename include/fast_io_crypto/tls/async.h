@@ -590,7 +590,9 @@ inline ::std::size_t io_uring_tls_sw_recv_copy_out(
 	return done;
 }
 
-/* arm one READ round into the ciphertext tail */
+/* arm one READ round into the ciphertext tail -- bounded to the framed
+   record's own end: bytes past it belong to the next record and would
+   be freed with the op */
 inline void io_uring_tls_sw_recv_round(
 	io_uring_tls_sw_recv_cookie *cookie) FAST_IO_HERBCEPTIONS_THROWS
 {
@@ -601,7 +603,8 @@ inline void io_uring_tls_sw_recv_round(
 	::fast_io::liburing::io_uring_prep_rw(::fast_io::liburing::io_uring_op_read, sqe,
 										  cookie->fd, cookie->ct + cookie->ct_have,
 										  static_cast<::std::uint_least32_t>(
-											  sizeof(cookie->ct) - cookie->ct_have),
+											  ::fast_io::tls::details::tls_record_read_need(
+												  cookie->ct, cookie->ct_have)),
 										  0);
 	::fast_io::liburing::details::io_uring_arm_timeout(
 		ring, cookie, sqe, io_uring_tls_sw_recv_deliver,

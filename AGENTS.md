@@ -221,3 +221,24 @@ format machinery, and may themselves be part of the bug; a raw
 `__builtin_printf("%p %zu\n", ptr, n)` touches none of it. Strip the
 probes before committing.
 
+## Verification
+
+Compile-check changed headers with the full warning set:
+
+```sh
+clang++ --config=$HOME/herbcfgs/x86_64-linux-gnu-libcxx.cfg \
+	-fherbceptions -std=c++2c -fsyntax-only -Iinclude \
+	-Wall -Wextra -Wpedantic -Wmisleading-indentation -Wunused \
+	-Wuninitialized -Wshadow -Wconversion your_check.cc
+```
+
+- Zero warnings is the bar -- latent warnings in uninstantiated
+  templates only surface when something instantiates them, so prefer a
+  check TU that forces the touched machinery (explicit
+  `template void f<...>(...)` instantiation or a call path through it).
+- Format touched files with `clang-format` before committing.
+
+## Commits
+
+Plain `git commit -m "message"` -- no co-author lines, no signature
+trailers, no "Generated with" footers.

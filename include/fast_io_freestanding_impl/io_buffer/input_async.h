@@ -42,7 +42,7 @@ struct async_iobuffer_pread_state_base
 	void (*relay)(async_iobuffer_pread_state_base *state, bool positional) noexcept {};
 	bool output_flushed{};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											 ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -59,7 +59,7 @@ inline void async_iobuffer_pread_finish_cb(
 	::std::cxx_std_error err, ::std::size_t n) noexcept
 {
 	auto *state{static_cast<async_iobuffer_pread_state<scheduler, io_buffer_type,
-													 alloc_type, T> *>(base)};
+													   alloc_type, T> *>(base)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::details::async_delete_state(state);
 	callback(err, n);
@@ -71,7 +71,7 @@ inline void async_iobuffer_pread_relay_cb(
 	bool positional) noexcept
 {
 	auto *state{static_cast<async_iobuffer_pread_state<scheduler, io_buffer_type,
-													 alloc_type, T> *>(base)};
+													   alloc_type, T> *>(base)};
 	auto sched{state->sched};
 	auto instm{::fast_io::operations::input_stream_ref(state->iobref.iobptr->handle)};
 	auto first{state->first};
@@ -139,6 +139,23 @@ inline constexpr bool async_iobuffer_output_pending(iobref_type iobref) noexcept
 /* submit the tied-output flush leg: pwrite_all the pending obuffer bytes
  * on the handle, then re-enter the state machine */
 template <typename state_type>
+inline void async_iobuffer_flush_step(void *vst, ::std::cxx_std_error err) noexcept
+{
+	auto *state{static_cast<state_type *>(vst)};
+	if (err.domain == nullptr)
+	{
+		auto &ob{state->iobref.iobptr->output_buffer};
+		ob.buffer_curr = ob.buffer_begin;
+	}
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		state->finish(state, err, 0);
+		return;
+	}
+	state->resume(state);
+}
+
+template <typename state_type>
 inline void async_iobuffer_flush_submit(state_type *state) noexcept
 {
 	auto iobref{state->iobref};
@@ -151,22 +168,31 @@ inline void async_iobuffer_flush_submit(state_type *state) noexcept
 		static_cast<::std::size_t>(obuffer.buffer_curr - obuffer.buffer_begin) *
 			sizeof(typename state_type::io_buffer_type_t::output_char_type),
 		::fast_io::intfpos_opt{},
-		[state](::std::cxx_std_error err) noexcept {
-			if (err.domain == nullptr)
-			{
-				auto &ob{state->iobref.iobptr->output_buffer};
-				ob.buffer_curr = ob.buffer_begin;
-			}
-			if (err.domain != nullptr) [[unlikely]]
-			{
-				state->finish(state, err, 0);
-				return;
-			}
-			state->resume(state);
-		});
+		::fast_io::details::async_err_step_cb{
+			state, &async_iobuffer_flush_step<state_type>});
 }
 
 /* the dispatch behind the async pread define's slow path */
+template <typename scheduler, typename io_buffer_type, typename alloc_type>
+inline void async_iobuffer_pread_step(void *vst, ::std::cxx_std_error err,
+									  ::std::size_t got) noexcept
+{
+	auto *state{static_cast<async_iobuffer_pread_state_base<scheduler, io_buffer_type, alloc_type> *>(vst)};
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		async_iobuffer_pread_deliver(state, err, 0);
+		return;
+	}
+	auto &ibuffer{state->iobref.iobptr->input_buffer};
+	ibuffer.buffer_curr = ibuffer.buffer_begin;
+	ibuffer.buffer_end = ibuffer.buffer_begin + got;
+	::std::size_t const n{got < state->count ? got : state->count};
+	::fast_io::details::non_overlapped_copy_n(
+		reinterpret_cast<::std::byte const *>(ibuffer.buffer_begin), n, state->first);
+	ibuffer.buffer_curr += n;
+	async_iobuffer_pread_deliver(state, ::std::cxx_std_error{}, n);
+}
+
 template <typename scheduler, typename io_buffer_type, typename alloc_type>
 inline void async_iobuffer_pread_submit(
 	async_iobuffer_pread_state_base<scheduler, io_buffer_type, alloc_type> *state) noexcept
@@ -226,21 +252,8 @@ inline void async_iobuffer_pread_submit(
 			state->sched, state->timeout,
 			::fast_io::operations::input_stream_ref(iobref.iobptr->handle),
 			reinterpret_cast<::std::byte *>(ibuffer.buffer_begin), bfsz, ::fast_io::intfpos_opt{},
-			[state](::std::cxx_std_error err, ::std::size_t got) noexcept {
-				if (err.domain != nullptr) [[unlikely]]
-				{
-					async_iobuffer_pread_deliver(state, err, 0);
-					return;
-				}
-				auto &ibuffer{state->iobref.iobptr->input_buffer};
-				ibuffer.buffer_curr = ibuffer.buffer_begin;
-				ibuffer.buffer_end = ibuffer.buffer_begin + got;
-				::std::size_t const n{got < state->count ? got : state->count};
-				::fast_io::details::non_overlapped_copy_n(
-					reinterpret_cast<::std::byte const *>(ibuffer.buffer_begin), n, state->first);
-				ibuffer.buffer_curr += n;
-				async_iobuffer_pread_deliver(state, ::std::cxx_std_error{}, n);
-			});
+			::fast_io::details::async_bytes_step_cb{
+				state, &async_iobuffer_pread_step<scheduler, io_buffer_type, alloc_type>});
 	}
 	catch throws(::std::error e)
 	{
@@ -266,7 +279,7 @@ struct async_iobuffer_underflow_state_base
 	void (*resume)(async_iobuffer_underflow_state_base *state) noexcept {};
 	bool output_flushed{};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											 ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -283,7 +296,7 @@ inline void async_iobuffer_underflow_finish_cb(
 	::std::cxx_std_error err, ::std::size_t n) noexcept
 {
 	auto *state{static_cast<async_iobuffer_underflow_state<scheduler, io_buffer_type,
-														 alloc_type, T> *>(base)};
+														   alloc_type, T> *>(base)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::details::async_delete_state(state);
 	callback(err, n);
@@ -313,6 +326,20 @@ inline void async_iobuffer_underflow_deliver(state_type *state,
 											 ::std::cxx_std_error err, ::std::size_t n) noexcept
 {
 	state->finish(state, err, n);
+}
+
+template <typename scheduler, typename io_buffer_type, typename alloc_type>
+inline void async_iobuffer_underflow_step(void *vst, ::std::cxx_std_error err,
+										  ::std::size_t got) noexcept
+{
+	auto *state{static_cast<async_iobuffer_underflow_state_base<scheduler, io_buffer_type, alloc_type> *>(vst)};
+	if (err.domain == nullptr)
+	{
+		auto &ibuffer{state->iobref.iobptr->input_buffer};
+		ibuffer.buffer_curr = ibuffer.buffer_begin;
+		ibuffer.buffer_end = ibuffer.buffer_begin + got;
+	}
+	async_iobuffer_underflow_deliver(state, err, got);
 }
 
 template <typename scheduler, typename io_buffer_type, typename alloc_type>
@@ -346,15 +373,8 @@ inline void async_iobuffer_underflow_submit(
 			state->sched, state->timeout,
 			::fast_io::operations::input_stream_ref(iobref.iobptr->handle),
 			reinterpret_cast<::std::byte *>(ibuffer.buffer_begin), bfsz, ::fast_io::intfpos_opt{},
-			[state](::std::cxx_std_error err, ::std::size_t got) noexcept {
-				if (err.domain == nullptr)
-				{
-					auto &ibuffer{state->iobref.iobptr->input_buffer};
-					ibuffer.buffer_curr = ibuffer.buffer_begin;
-					ibuffer.buffer_end = ibuffer.buffer_begin + got;
-				}
-				async_iobuffer_underflow_deliver(state, err, got);
-			});
+			::fast_io::details::async_bytes_step_cb{
+				state, &async_iobuffer_underflow_step<scheduler, io_buffer_type, alloc_type>});
 	}
 	catch throws(::std::error e)
 	{

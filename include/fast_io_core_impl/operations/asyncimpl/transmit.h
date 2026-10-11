@@ -288,38 +288,95 @@ inline void async_transmit_bytes_sync_write(async_transmit_bytes_state_base<all,
  */
 template <bool all, typename scheduler, typename outstmtype, typename instmtype,
 		  typename alloc_type>
+inline void async_transmit_bytes_read_done_step(void *vst, ::std::cxx_std_error err,
+												::std::size_t bytesread) noexcept
+{
+	auto *state{static_cast<async_transmit_bytes_state_base<all, scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	::fast_io::details::async_transmit_bytes_read_done(state, err, bytesread);
+}
+
+template <bool all, typename scheduler, typename outstmtype, typename instmtype,
+		  typename alloc_type>
+inline void async_transmit_bytes_deliver_step(void *vst, ::std::cxx_std_error err) noexcept
+{
+	auto *state{static_cast<async_transmit_bytes_state_base<all, scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	::fast_io::details::async_transmit_bytes_deliver(state, err, state->moved);
+}
+
+template <bool all, typename scheduler, typename outstmtype, typename instmtype,
+		  typename alloc_type>
+inline void async_transmit_bytes_read_work(void *vst, ::std::size_t chunk) noexcept
+{
+	auto *state{static_cast<async_transmit_bytes_state_base<all, scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	if constexpr (::fast_io::operations::decay::defines::
+					  has_async_pread_some_bytes_underflow_callback_define<
+						  typename ::std::remove_cvref_t<decltype(*state)>::scheduler_type, instmtype,
+						  ::fast_io::details::async_io_callback>)
+	{
+		async_pread_some_bytes_underflow_callback_define(
+			state->sched, state->timeout, state->instm, state->buf, chunk, state->off_in,
+			async_bytes_step_cb{state, &async_transmit_bytes_read_done_step<all, scheduler, outstmtype, instmtype, alloc_type>});
+	}
+	else if constexpr (::fast_io::operations::decay::defines::bytes_readable<instmtype> ||
+					   ::fast_io::operations::decay::defines::bytes_preadable<instmtype>)
+	{
+		::fast_io::details::async_transmit_bytes_sync_read(state, chunk);
+	}
+	else
+	{
+		static_assert(!sizeof(decltype(*state)),
+					  "async_transmit input supports neither async nor synchronous byte reads");
+	}
+}
+
+template <bool all, typename scheduler, typename outstmtype, typename instmtype,
+		  typename alloc_type>
 inline void async_transmit_bytes_read_round(async_transmit_bytes_state_base<all, scheduler, outstmtype, instmtype, alloc_type> *state) noexcept
 {
 	::std::size_t const chunk{state->remaining < ::fast_io::details::async_transmit_bounce_size
 								  ? state->remaining
 								  : ::fast_io::details::async_transmit_bounce_size};
 	::fast_io::details::async_submit_catching(
-		[state, chunk]() noexcept {
-			if constexpr (::fast_io::operations::decay::defines::
-							  has_async_pread_some_bytes_underflow_callback_define<
-								  typename ::std::remove_cvref_t<decltype(*state)>::scheduler_type, instmtype,
-								  ::fast_io::details::async_io_callback>)
-			{
-				async_pread_some_bytes_underflow_callback_define(
-					state->sched, state->timeout, state->instm, state->buf, chunk, state->off_in,
-					[state](::std::cxx_std_error err, ::std::size_t bytesread) noexcept {
-						::fast_io::details::async_transmit_bytes_read_done(state, err, bytesread);
-					});
-			}
-			else if constexpr (::fast_io::operations::decay::defines::bytes_readable<instmtype> ||
-							   ::fast_io::operations::decay::defines::bytes_preadable<instmtype>)
-			{
-				::fast_io::details::async_transmit_bytes_sync_read(state, chunk);
-			}
-			else
-			{
-				static_assert(!sizeof(decltype(*state)),
-							  "async_transmit input supports neither async nor synchronous byte reads");
-			}
-		},
-		[state](::std::cxx_std_error err) noexcept {
-			::fast_io::details::async_transmit_bytes_deliver(state, err, state->moved);
-		});
+		async_work_step_cb{state, chunk,
+						   &async_transmit_bytes_read_work<all, scheduler, outstmtype, instmtype, alloc_type>},
+		async_err_step_cb{state, &async_transmit_bytes_deliver_step<all, scheduler, outstmtype, instmtype, alloc_type>});
+}
+
+template <bool all, typename scheduler, typename outstmtype, typename instmtype,
+		  typename alloc_type>
+inline void async_transmit_bytes_write_done_step(void *vst, ::std::cxx_std_error err,
+												 ::std::size_t byteswritten) noexcept
+{
+	auto *state{static_cast<async_transmit_bytes_state_base<all, scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	::fast_io::details::async_transmit_bytes_write_done(state, err, byteswritten);
+}
+
+template <bool all, typename scheduler, typename outstmtype, typename instmtype,
+		  typename alloc_type>
+inline void async_transmit_bytes_write_work(void *vst, ::std::size_t left) noexcept
+{
+	auto *state{static_cast<async_transmit_bytes_state_base<all, scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	::std::byte const *first{state->buf + (state->moved - state->round_base)};
+	if constexpr (::fast_io::operations::decay::defines::
+					  has_async_pwrite_some_bytes_overflow_callback_define<
+						  typename ::std::remove_cvref_t<decltype(*state)>::scheduler_type, outstmtype,
+						  ::fast_io::details::async_io_callback>)
+	{
+		async_pwrite_some_bytes_overflow_callback_define(
+			state->sched, state->timeout, state->outstm, first, left,
+			state->off_out,
+			async_bytes_step_cb{state, &async_transmit_bytes_write_done_step<all, scheduler, outstmtype, instmtype, alloc_type>});
+	}
+	else if constexpr (::fast_io::operations::decay::defines::bytes_writable<outstmtype> ||
+					   ::fast_io::operations::decay::defines::bytes_pwritable<outstmtype>)
+	{
+		::fast_io::details::async_transmit_bytes_sync_write(state, first, left);
+	}
+	else
+	{
+		static_assert(!sizeof(decltype(*state)),
+					  "async_transmit output supports neither async nor synchronous byte writes");
+	}
 }
 
 template <bool all, typename scheduler, typename outstmtype, typename instmtype,
@@ -328,34 +385,9 @@ inline void async_transmit_bytes_write_staged(async_transmit_bytes_state_base<al
 {
 	::std::size_t const left{state->staged - (state->moved - state->round_base)};
 	::fast_io::details::async_submit_catching(
-		[state, left]() noexcept {
-			::std::byte const *first{state->buf + (state->moved - state->round_base)};
-			if constexpr (::fast_io::operations::decay::defines::
-							  has_async_pwrite_some_bytes_overflow_callback_define<
-								  typename ::std::remove_cvref_t<decltype(*state)>::scheduler_type, outstmtype,
-								  ::fast_io::details::async_io_callback>)
-			{
-				async_pwrite_some_bytes_overflow_callback_define(
-					state->sched, state->timeout, state->outstm, first, left,
-					state->off_out,
-					[state](::std::cxx_std_error err, ::std::size_t byteswritten) noexcept {
-						::fast_io::details::async_transmit_bytes_write_done(state, err, byteswritten);
-					});
-			}
-			else if constexpr (::fast_io::operations::decay::defines::bytes_writable<outstmtype> ||
-							   ::fast_io::operations::decay::defines::bytes_pwritable<outstmtype>)
-			{
-				::fast_io::details::async_transmit_bytes_sync_write(state, first, left);
-			}
-			else
-			{
-				static_assert(!sizeof(decltype(*state)),
-							  "async_transmit output supports neither async nor synchronous byte writes");
-			}
-		},
-		[state](::std::cxx_std_error err) noexcept {
-			::fast_io::details::async_transmit_bytes_deliver(state, err, state->moved);
-		});
+		async_work_step_cb{state, left,
+						   &async_transmit_bytes_write_work<all, scheduler, outstmtype, instmtype, alloc_type>},
+		async_err_step_cb{state, &async_transmit_bytes_deliver_step<all, scheduler, outstmtype, instmtype, alloc_type>});
 }
 
 /*
@@ -421,41 +453,58 @@ struct async_transmit_all_native_state
 
 
 template <typename scheduler, typename outstmtype, typename instmtype, typename alloc_type>
+inline void async_transmit_all_native_moved_step(void *vst, ::std::cxx_std_error err,
+												 ::std::size_t moved) noexcept
+{
+	auto *state{static_cast<async_transmit_all_native_state_base<scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	if (err.domain == nullptr)
+	{
+		state->remaining -= moved;
+		if (state->off_out.has_opt)
+		{
+			state->off_out.opt = ::fast_io::fposoffadd_nonegative(
+				state->off_out.opt, static_cast<::std::ptrdiff_t>(moved));
+		}
+		if (state->off_in.has_opt)
+		{
+			state->off_in.opt = ::fast_io::fposoffadd_nonegative(
+				state->off_in.opt, static_cast<::std::ptrdiff_t>(moved));
+		}
+		if (moved != 0 && state->remaining != 0)
+		{
+			async_transmit_all_native_submit(state);
+			return;
+		}
+	}
+	state->finish(state, err);
+}
+
+template <typename scheduler, typename outstmtype, typename instmtype, typename alloc_type>
+inline void async_transmit_all_native_err_step(void *vst, ::std::cxx_std_error err) noexcept
+{
+	auto *state{static_cast<async_transmit_all_native_state_base<scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	state->finish(state, err);
+}
+
+template <typename scheduler, typename outstmtype, typename instmtype, typename alloc_type>
+inline void async_transmit_all_native_work(void *vst, ::std::size_t bound) noexcept
+{
+	auto *state{static_cast<async_transmit_all_native_state_base<scheduler, outstmtype, instmtype, alloc_type> *>(vst)};
+	async_transmit_some_bytes_overflow_underflow_callback_define(
+		state->sched, state->timeout, state->outstm, state->off_out, state->instm,
+		state->off_in, ::fast_io::size_t_opt{bound},
+		async_bytes_step_cb{state, &async_transmit_all_native_moved_step<scheduler, outstmtype, instmtype, alloc_type>});
+}
+
+template <typename scheduler, typename outstmtype, typename instmtype, typename alloc_type>
 inline void async_transmit_all_native_submit(
 	async_transmit_all_native_state_base<scheduler, outstmtype, instmtype, alloc_type> *state) noexcept
 {
 	::std::size_t const bound{state->remaining};
 	::fast_io::details::async_submit_catching(
-		[state, bound]() noexcept {
-			async_transmit_some_bytes_overflow_underflow_callback_define(
-				state->sched, state->timeout, state->outstm, state->off_out, state->instm,
-				state->off_in, ::fast_io::size_t_opt{bound},
-				[state](::std::cxx_std_error err, ::std::size_t moved) noexcept {
-					if (err.domain == nullptr)
-					{
-						state->remaining -= moved;
-						if (state->off_out.has_opt)
-						{
-							state->off_out.opt = ::fast_io::fposoffadd_nonegative(
-								state->off_out.opt, static_cast<::std::ptrdiff_t>(moved));
-						}
-						if (state->off_in.has_opt)
-						{
-							state->off_in.opt = ::fast_io::fposoffadd_nonegative(
-								state->off_in.opt, static_cast<::std::ptrdiff_t>(moved));
-						}
-						if (moved != 0 && state->remaining != 0)
-						{
-							async_transmit_all_native_submit(state);
-							return;
-						}
-					}
-					state->finish(state, err);
-				});
-		},
-		[state](::std::cxx_std_error err) noexcept {
-			state->finish(state, err);
-		});
+		async_work_step_cb{state, bound,
+						   &async_transmit_all_native_work<scheduler, outstmtype, instmtype, alloc_type>},
+		async_err_step_cb{state, &async_transmit_all_native_err_step<scheduler, outstmtype, instmtype, alloc_type>});
 }
 
 } // namespace fast_io::details

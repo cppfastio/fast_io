@@ -56,6 +56,12 @@ inline void tls_sw_cb_deliver(func &&cb, ::std::cxx_std_error err, ::std::size_t
 	}
 }
 
+/* socket byte-op completions ride the shared untyped functor
+   (::fast_io::details::async_bytes_step_cb): a lambda would mint a
+   fresh closure type -- and a whole rw-cookie instantiation -- per
+   enclosing template arg pack. st plus its typed step function recover
+   everything the completion needs. */
+
 /* ---------------- generic sw recv ---------------- */
 
 template <typename sched_t, typename client_t, typename alloc_type>
@@ -102,7 +108,7 @@ inline void tls_sw_recv_finish_cb(
 	}
 	::fast_io::details::async_delete_state(self);
 	if constexpr (::std::is_invocable_v<func, ::std::cxx_std_error,
-									  ::fast_io::io_scatter_status_t>)
+										::fast_io::io_scatter_status_t>)
 	{
 		cb(err, st_status);
 	}
@@ -122,7 +128,7 @@ struct tls_sw_recv_state : tls_sw_recv_state_base<sched_t, client_t, alloc_type>
 							 client_t *c, ::std::byte *b, ::std::size_t n,
 							 ::fast_io::io_scatter_t const *sc, ::std::size_t nsc,
 							 func cb) noexcept
-		: base_type{s, to, c, b, n, sc, nsc}, callback{::std::move(cb)}
+		: base_type{s, to, c, b, n, sc, nsc, {}, {}, {}, {}, {}}, callback{::std::move(cb)}
 	{
 		this->finish = &tls_sw_recv_finish_cb<sched_t, client_t, func, alloc_type>;
 	}
@@ -140,7 +146,7 @@ inline void tls_sw_recv_finish(
 template <typename sched_t, typename client_t, typename alloc_type>
 inline ::std::size_t tls_sw_copy_out(
 	tls_sw_recv_state_base<sched_t, client_t, alloc_type> *st, ::std::byte const *src,
-									 ::std::size_t n) noexcept
+	::std::size_t n) noexcept
 {
 	if (st->buf != nullptr)
 	{
@@ -162,29 +168,37 @@ inline ::std::size_t tls_sw_copy_out(
 }
 
 template <typename sched_t, typename client_t, typename alloc_type>
+inline void tls_sw_recv_step(void *vst, ::std::cxx_std_error err, ::std::size_t n) noexcept
+{
+	auto *st{static_cast<tls_sw_recv_state_base<sched_t, client_t, alloc_type> *>(vst)};
+	if (err.domain != nullptr)
+	{
+		tls_sw_recv_finish(st, err, 0);
+		return;
+	}
+	if (n == 0)
+	{
+		tls_sw_recv_finish(st, ::std::cxx_std_error{}, 0);
+		return;
+	}
+	st->ct_have += n;
+	tls_sw_recv_pump(st);
+}
+
+template <typename sched_t, typename client_t, typename alloc_type>
 inline void tls_sw_recv_round(
 	tls_sw_recv_state_base<sched_t, client_t, alloc_type> *st) noexcept
 {
 	/* the backend define is noexcept -- submission failures arrive
-	   through the callback it was given */
+	   through the callback it was given. the round is bounded to the
+	   framed record's own end -- bytes past it belong to the next
+	   record and would be freed with the op */
 	async_pread_some_bytes_underflow_callback_define(
 		st->sched, st->timeout, st->client->sock_,
-		st->ct + st->ct_have, sizeof(st->ct) - st->ct_have,
+		st->ct + st->ct_have,
+		::fast_io::tls::details::tls_record_read_need(st->ct, st->ct_have),
 		::fast_io::intfpos_opt{},
-		[st](::std::cxx_std_error err, ::std::size_t n) noexcept {
-			if (err.domain != nullptr)
-			{
-				tls_sw_recv_finish(st, err, 0);
-				return;
-			}
-			if (n == 0)
-			{
-				tls_sw_recv_finish(st, ::std::cxx_std_error{}, 0);
-				return;
-			}
-			st->ct_have += n;
-			tls_sw_recv_pump(st);
-		});
+		::fast_io::details::async_bytes_step_cb{st, &tls_sw_recv_step<sched_t, client_t, alloc_type>});
 }
 
 /* drain pending plaintext -> frame -> open -> dispatch; resubmits a
@@ -342,7 +356,7 @@ struct tls_sw_write_state : tls_sw_write_state_base<sched_t, client_t, alloc_typ
 	inline tls_sw_write_state(sched_t s, ::fast_io::posix_statx_timestamp_opt to,
 							  client_t *c, ::fast_io::io_scatter_t const *sc,
 							  ::std::size_t nsc, func cb) noexcept
-		: base_type{s, to, c, {}, 0, 0, 0, sc, nsc}, callback{::std::move(cb)}
+		: base_type{s, to, c, {}, 0, 0, 0, sc, nsc, {}, {}}, callback{::std::move(cb)}
 	{
 		this->finish = &tls_sw_write_finish_cb<sched_t, client_t, func, alloc_type>;
 	}
@@ -357,6 +371,24 @@ inline void tls_sw_write_finish(
 }
 
 template <typename sched_t, typename client_t, typename alloc_type>
+inline void tls_sw_write_step(void *vst, ::std::cxx_std_error err, ::std::size_t n) noexcept
+{
+	auto *st{static_cast<tls_sw_write_state_base<sched_t, client_t, alloc_type> *>(vst)};
+	if (err.domain != nullptr)
+	{
+		tls_sw_write_finish(st, err);
+		return;
+	}
+	st->wire_done += n;
+	if (st->wire_done != st->wire_size)
+	{
+		tls_sw_write_round(st); /* short ciphertext write */
+		return;
+	}
+	tls_sw_write_finish(st, ::std::cxx_std_error{});
+}
+
+template <typename sched_t, typename client_t, typename alloc_type>
 inline void tls_sw_write_round(
 	tls_sw_write_state_base<sched_t, client_t, alloc_type> *st) noexcept
 {
@@ -364,20 +396,7 @@ inline void tls_sw_write_round(
 		st->sched, st->timeout, st->client->sock_,
 		st->wire + st->wire_done, st->wire_size - st->wire_done,
 		::fast_io::intfpos_opt{},
-		[st](::std::cxx_std_error err, ::std::size_t n) noexcept {
-			if (err.domain != nullptr)
-			{
-				tls_sw_write_finish(st, err);
-				return;
-			}
-			st->wire_done += n;
-			if (st->wire_done != st->wire_size)
-			{
-				tls_sw_write_round(st); /* short ciphertext write */
-				return;
-			}
-			tls_sw_write_finish(st, ::std::cxx_std_error{});
-		});
+		::fast_io::details::async_bytes_step_cb{st, &tls_sw_write_step<sched_t, client_t, alloc_type>});
 }
 
 template <typename async_scheduler_type, typename client_t, typename func>
@@ -467,7 +486,7 @@ struct tls_sw_close_state : tls_sw_close_state_base<sched_t, client_t, alloc_typ
 
 	inline tls_sw_close_state(sched_t s, ::fast_io::posix_statx_timestamp_opt to,
 							  client_t *c, func cb) noexcept
-		: base_type{s, to, c}, callback{::std::move(cb)}
+		: base_type{s, to, c, {}, 0, 0, {}, {}}, callback{::std::move(cb)}
 	{
 		this->proceed = &tls_sw_close_proceed_cb<sched_t, client_t, func, alloc_type>;
 	}
@@ -485,6 +504,24 @@ inline void tls_sw_close_socket(
 
 /* leg 1 -- the sealed close_notify write; failures go straight to leg 2 */
 template <typename sched_t, typename client_t, typename alloc_type>
+inline void tls_sw_close_step(void *vst, ::std::cxx_std_error err, ::std::size_t n) noexcept
+{
+	auto *st{static_cast<tls_sw_close_state_base<sched_t, client_t, alloc_type> *>(vst)};
+	if (err.domain != nullptr)
+	{
+		tls_sw_close_socket(st); /* notify failed -- close anyway */
+		return;
+	}
+	st->wire_done += n;
+	if (st->wire_done != st->wire_size)
+	{
+		tls_sw_close_round(st);
+		return;
+	}
+	tls_sw_close_socket(st);
+}
+
+template <typename sched_t, typename client_t, typename alloc_type>
 inline void tls_sw_close_round(
 	tls_sw_close_state_base<sched_t, client_t, alloc_type> *st) noexcept
 {
@@ -492,20 +529,7 @@ inline void tls_sw_close_round(
 		st->sched, st->timeout, st->client->sock_,
 		st->wire + st->wire_done, st->wire_size - st->wire_done,
 		::fast_io::intfpos_opt{},
-		[st](::std::cxx_std_error err, ::std::size_t n) noexcept {
-			if (err.domain != nullptr)
-			{
-				tls_sw_close_socket(st); /* notify failed -- close anyway */
-				return;
-			}
-			st->wire_done += n;
-			if (st->wire_done != st->wire_size)
-			{
-				tls_sw_close_round(st);
-				return;
-			}
-			tls_sw_close_socket(st);
-		});
+		::fast_io::details::async_bytes_step_cb{st, &tls_sw_close_step<sched_t, client_t, alloc_type>});
 }
 
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
@@ -971,9 +995,9 @@ template <typename T>
 struct async_handshake_stored_arg
 {
 	using type = ::std::remove_cvref_t<T>;
-	static constexpr type store(type t) noexcept(noexcept(type{static_cast<type&&>(t)}))
+	static constexpr type store(type t) noexcept(noexcept(type{static_cast<type &&>(t)}))
 	{
-		return static_cast<type&&>(t);
+		return static_cast<type &&>(t);
 	}
 };
 template <>
@@ -1088,7 +1112,7 @@ inline auto async_handshake_decay(async_scheduler_type scheduler,
 {
 	using traits = ::fast_io::details::async_handshake_stored_arg<::std::remove_cvref_t<argtype>>;
 	return ::fast_io::details::async_handshake_awaiter<async_scheduler_type, streamtype,
-													 typename traits::type>{
+													   typename traits::type>{
 		{}, scheduler, stm, traits::store(arg), timeout};
 }
 
@@ -1117,7 +1141,7 @@ inline auto async_handshake(async_scheduler_type &&scheduler,
 			 ::std::remove_cvref_t<decltype(::fast_io::operations::async_scheduler_ref(scheduler))>,
 			 ::std::remove_cvref_t<decltype(::fast_io::operations::io_stream_ref(stm))>,
 			 decltype(::fast_io::details::async_handshake_submit_arg<
-						  ::std::remove_cvref_t<argtype>>::get(*static_cast<::std::remove_cvref_t<argtype> const *>(nullptr))),
+					  ::std::remove_cvref_t<argtype>>::get(*static_cast<::std::remove_cvref_t<argtype> const *>(nullptr))),
 			 ::fast_io::details::async_io_error_callback>)
 {
 	return ::fast_io::operations::decay::async_handshake_decay(
@@ -1134,7 +1158,7 @@ inline void async_handshake_callback(async_scheduler_type &&scheduler,
 			 ::std::remove_cvref_t<decltype(::fast_io::operations::async_scheduler_ref(scheduler))>,
 			 ::std::remove_cvref_t<decltype(::fast_io::operations::io_stream_ref(stm))>,
 			 decltype(::fast_io::details::async_handshake_submit_arg<
-						  ::std::remove_cvref_t<argtype>>::get(*static_cast<::std::remove_cvref_t<argtype> const *>(nullptr))),
+					  ::std::remove_cvref_t<argtype>>::get(*static_cast<::std::remove_cvref_t<argtype> const *>(nullptr))),
 			 ::std::remove_cvref_t<callback_type>>)
 {
 	::fast_io::operations::decay::async_handshake_decay_callback(

@@ -107,6 +107,24 @@ inline constexpr ::std::size_t tls_record_frame(::std::byte const *ct,
 	return have >= 5 + clen ? 5 + clen : 0;
 }
 
+/* remaining bytes of the record under framing: bounds a wire read to
+   the record's own end. An accumulator that swallowed the head of the
+   NEXT record would lose it when the op completes -- a fresh op starts
+   with an empty accumulator, so the wire position must sit on a record
+   boundary at every completion */
+inline constexpr ::std::size_t tls_record_read_need(::std::byte const *ct,
+													::std::size_t ct_have) noexcept
+{
+	if (ct_have < record_header_size)
+	{
+		return record_header_size - ct_have;
+	}
+	::std::size_t const clen{tls_record_payload_size(ct)};
+	return clen == ~static_cast<::std::size_t>(0)
+			   ? ::std::size_t{0}
+			   : record_header_size + clen - ct_have;
+}
+
 /* constant-time-ish all-zero test -- the X25519 all-zero shared-secret
    check (rfc8446 4.2.8.1) */
 inline constexpr bool tls_all_zero(::std::byte const *p, ::std::size_t n) noexcept
@@ -1258,7 +1276,11 @@ inline void tls_client_handshake(basic_tls_client<allocator_type, socket_observe
 	::std::byte sh_msg[4096];
 	::std::size_t sh_msg_size{};
 	{
-		::std::byte rec[8192];
+		/* one wire record, not one message: a <=1.2 server coalesces its
+		   first flight (SH + Certificate + ...) into a single plaintext
+		   record, so the buffer is the protocol's record cap -- the SH
+		   is just the first handshake message inside it */
+		::std::byte rec[details::tls_max_ciphertext];
 		for (;;)
 		{
 			content_type ctype;
@@ -1271,12 +1293,23 @@ inline void tls_client_handshake(basic_tls_client<allocator_type, socket_observe
 			{
 				details::tls_throw_peer_alert(rec, n);
 			}
-			if (ctype != content_type::handshake || n < 4 || n > sizeof(sh_msg))
+			if (ctype != content_type::handshake || n < 4 ||
+				rec[0] != static_cast<::std::byte>(handshake_type::server_hello))
 			{
 				details::tls_fail(client->sock_, alert_description::unexpected_message, false);
 			}
-			::fast_io::freestanding::non_overlapped_copy_n(rec, n, sh_msg);
-			sh_msg_size = n;
+			::std::size_t const mlen{
+				(static_cast<::std::size_t>(static_cast<::std::uint_least8_t>(rec[1])) << 16u) |
+				(static_cast<::std::size_t>(static_cast<::std::uint_least8_t>(rec[2])) << 8u) |
+				static_cast<::std::size_t>(static_cast<::std::uint_least8_t>(rec[3]))};
+			if (mlen > n - 4 || mlen + 4 > sizeof(sh_msg))
+			{
+				details::tls_fail(client->sock_, alert_description::decode_error, false);
+			}
+			/* record bytes past the SH belong to a flight the version
+			   check aborts anyway -- only the message itself is kept */
+			::fast_io::freestanding::non_overlapped_copy_n(rec, mlen + 4, sh_msg);
+			sh_msg_size = mlen + 4;
 			break;
 		}
 	}

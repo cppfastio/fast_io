@@ -211,6 +211,47 @@ inline void async_submit_catching(submitfunc &&submit, errfunc &&onerr) noexcept
 	}
 }
 
+/*
+ * Type-erased async completions. A lambda passed to a backend's
+ * *_callback_define mints a fresh closure type -- and a whole backend
+ * cookie instantiation -- per call site. The erasure carries the state
+ * pointer plus the typed step function that knows how to continue, so
+ * every generic async chain shares the same callback type at the
+ * backend boundary.
+ */
+struct async_bytes_step_cb
+{
+	void *ctx;
+	void (*step)(void *ctx, ::std::cxx_std_error err, ::std::size_t n) noexcept;
+	inline void operator()(::std::cxx_std_error err, ::std::size_t n) const noexcept
+	{
+		step(ctx, err, n);
+	}
+};
+
+struct async_err_step_cb
+{
+	void *ctx;
+	void (*step)(void *ctx, ::std::cxx_std_error err) noexcept;
+	inline void operator()(::std::cxx_std_error err) const noexcept
+	{
+		step(ctx, err);
+	}
+};
+
+/* submit-side work for async_submit_catching: aux carries the round's
+ * computed operand (chunk/left/bound) */
+struct async_work_step_cb
+{
+	void *ctx;
+	::std::size_t aux;
+	void (*work)(void *ctx, ::std::size_t aux) noexcept;
+	inline void operator()() const noexcept
+	{
+		work(ctx, aux);
+	}
+};
+
 /* Coroutine plumbing shared by every async_*_decay awaiter: the awaiter
  * stores params by value, awaits submission of the callback form, and
  * await_resume rethrows a recorded error through the channel. */

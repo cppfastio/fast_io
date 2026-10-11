@@ -32,7 +32,7 @@ struct async_iobuffer_close_state_base
 				   ::std::cxx_std_error err) noexcept {};
 	void (*proceed)(async_iobuffer_close_state_base *state) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											   ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -45,7 +45,7 @@ inline void async_iobuffer_close_finish_cb(
 	::std::cxx_std_error err) noexcept
 {
 	auto *state{static_cast<async_iobuffer_close_state<scheduler, io_buffer_type,
-													 alloc_type, T> *>(base)};
+													   alloc_type, T> *>(base)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::details::async_delete_state(state);
 	callback(err);
@@ -56,7 +56,7 @@ inline void async_iobuffer_close_proceed_cb(
 	async_iobuffer_close_state_base<scheduler, io_buffer_type, alloc_type> *base) noexcept
 {
 	auto *state{static_cast<async_iobuffer_close_state<scheduler, io_buffer_type,
-													 alloc_type, T> *>(base)};
+													   alloc_type, T> *>(base)};
 	auto sched{state->sched};
 	auto iobref{state->iobref};
 	auto timeout{state->timeout};
@@ -119,6 +119,24 @@ inline void async_iobuffer_close_handle(
 	}
 }
 
+/* the flush leg's completion: failure finishes with the error, success
+ * proceeds into the close leg */
+template <typename scheduler, typename io_buffer_type, typename alloc_type>
+inline void async_iobuffer_close_step(void *vst, ::std::cxx_std_error err) noexcept
+{
+	auto *state{static_cast<async_iobuffer_close_state_base<scheduler, io_buffer_type, alloc_type> *>(vst)};
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		/* flush failed — sync close() propagates
+		 * the flush error and leaves the handle
+		 * open; do the same so the caller may
+		 * retry or destroy */
+		state->finish(state, err);
+		return;
+	}
+	state->proceed(state);
+}
+
 } // namespace details::io_buffer
 
 /*
@@ -164,18 +182,10 @@ inline void async_close_define(
 					::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
 					reinterpret_cast<::std::byte const *>(obuffer.buffer_begin), pending,
 					::fast_io::intfpos_opt{},
-					[state](::std::cxx_std_error err) noexcept {
-						if (err.domain != nullptr) [[unlikely]]
-						{
-							/* flush failed — sync close() propagates
-							 * the flush error and leaves the handle
-							 * open; do the same so the caller may
-							 * retry or destroy */
-							state->finish(state, err);
-							return;
-						}
-						state->proceed(state);
-					});
+					::fast_io::details::async_err_step_cb{
+						state,
+						&::fast_io::details::io_buffer::async_iobuffer_close_step<
+							scheduler, io_buffer_type, alloc_type>});
 			}
 			catch throws(::std::error e)
 			{

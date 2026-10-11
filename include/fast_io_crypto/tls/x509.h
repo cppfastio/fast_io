@@ -677,6 +677,28 @@ inline constexpr bool ecdsa_signature_decode(::std::byte const *sig,
 	return rd.empty() && b.empty();
 }
 
+/* one functor for both RSA verify dispatches below (PSS and v1.5):
+   a lambda per site would mint two x509_hash_dispatch instantiations
+   of the same shape */
+struct x509_rsa_verify_cb
+{
+	x509_certificate const *cert;
+	::std::byte const *issuer_public_key;
+	::std::size_t issuer_public_key_size;
+	bool use_pss;
+	::std::size_t pss_salt_size;
+	bool *ok;
+	template <typename hash_ctx>
+	inline constexpr bool operator()(hash_ctx) const noexcept
+	{
+		*ok = x509_rsa_verify_impl<hash_ctx>(use_pss, pss_salt_size,
+											 cert->tbs, cert->tbs_size,
+											 cert->signature, cert->signature_size,
+											 issuer_public_key, issuer_public_key_size);
+		return true;
+	}
+};
+
 /*
 verify cert.signature over cert.tbs with the issuer's public key.
 issuer_* come from the issuer certificate's SPKI.
@@ -729,13 +751,10 @@ inline constexpr x509_verify_result x509_verify_signature(
 		}
 		::std::size_t const salt{pp.has_salt ? pp.salt_size : 20u /* rfc8017 default */};
 		bool ok{false};
-		bool const known{x509_hash_dispatch(hash_oid, [&](auto htag) noexcept {
-			using hctx = decltype(htag);
-			ok = x509_rsa_verify_impl<hctx>(true, salt,
-											cert.tbs, cert.tbs_size, cert.signature, cert.signature_size,
-											issuer_public_key, issuer_public_key_size);
-			return true;
-		})};
+		bool const known{x509_hash_dispatch(
+			hash_oid,
+			x509_rsa_verify_cb{&cert, issuer_public_key, issuer_public_key_size,
+							   true, salt, &ok})};
 		if (!known)
 		{
 			return x509_verify_result::unsupported_algorithm;
@@ -782,13 +801,10 @@ inline constexpr x509_verify_result x509_verify_signature(
 		hash_oid.value = reinterpret_cast<::std::byte const *>(e.hash_oid);
 		hash_oid.value_size = e.hash_oid_size;
 		bool ok{false};
-		bool const known{x509_hash_dispatch(hash_oid, [&](auto htag) noexcept {
-			using hctx = decltype(htag);
-			ok = x509_rsa_verify_impl<hctx>(false, 0,
-											cert.tbs, cert.tbs_size, cert.signature, cert.signature_size,
-											issuer_public_key, issuer_public_key_size);
-			return true;
-		})};
+		bool const known{x509_hash_dispatch(
+			hash_oid,
+			x509_rsa_verify_cb{&cert, issuer_public_key, issuer_public_key_size,
+							   false, 0, &ok})};
 		if (!known)
 		{
 			return x509_verify_result::unsupported_algorithm;

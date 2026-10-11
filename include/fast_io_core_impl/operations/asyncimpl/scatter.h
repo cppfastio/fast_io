@@ -77,6 +77,38 @@ struct async_scatter_pread_some_bytes_state : async_scatter_pread_some_bytes_sta
 };
 
 template <typename scheduler, typename stmtype, typename alloc_type>
+inline void async_scatter_pread_some_bytes_step(void *vst, ::std::cxx_std_error err,
+												::std::size_t bytesread) noexcept
+{
+	auto *state{static_cast<async_scatter_pread_some_bytes_state_base<scheduler, stmtype, alloc_type> *>(vst)};
+	state->elem_off += bytesread;
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		goto report;
+	}
+	if (state->off.has_opt)
+	{
+		state->off.opt = ::fast_io::fposoffadd_nonegative(
+			state->off.opt, static_cast<::std::ptrdiff_t>(bytesread));
+	}
+	if (state->elem_off == state->scatters[state->index].len)
+	{
+		++state->index;
+		state->elem_off = 0;
+		if (state->index == state->n)
+		{
+			goto report;
+		}
+		async_scatter_pread_some_bytes_submit(state);
+		return;
+	}
+	/* a short element transfer ends the some operation */
+	goto report;
+report:
+	state->finish(state, err);
+}
+
+template <typename scheduler, typename stmtype, typename alloc_type>
 inline void async_scatter_pread_some_bytes_submit(
 	async_scatter_pread_some_bytes_state_base<scheduler, stmtype, alloc_type> *state) noexcept
 {
@@ -97,33 +129,7 @@ inline void async_scatter_pread_some_bytes_submit(
 	::std::size_t const elem_remaining{elem.len - state->elem_off};
 	async_pread_some_bytes_underflow_callback_define(
 		state->sched, state->timeout, state->instm, base, elem_remaining, state->off,
-		[state](::std::cxx_std_error err, ::std::size_t bytesread) noexcept {
-			state->elem_off += bytesread;
-			if (err.domain != nullptr) [[unlikely]]
-			{
-				goto report;
-			}
-			if (state->off.has_opt)
-			{
-				state->off.opt = ::fast_io::fposoffadd_nonegative(
-					state->off.opt, static_cast<::std::ptrdiff_t>(bytesread));
-			}
-			if (state->elem_off == state->scatters[state->index].len)
-			{
-				++state->index;
-				state->elem_off = 0;
-				if (state->index == state->n)
-				{
-					goto report;
-				}
-				async_scatter_pread_some_bytes_submit(state);
-				return;
-			}
-			/* a short element transfer ends the some operation */
-			goto report;
-		report:
-			state->finish(state, err);
-		});
+		async_bytes_step_cb{state, &async_scatter_pread_some_bytes_step<scheduler, stmtype, alloc_type>});
 }
 
 /*
@@ -131,6 +137,41 @@ inline void async_scatter_pread_some_bytes_submit(
  * keeps resubmitting and a zero-byte read short of the goal is EOF
  * (parse_errc::end_of_file, matching sync scatter_read_all_bytes).
  */
+template <typename scheduler, typename stmtype, typename alloc_type>
+inline void async_scatter_pread_all_bytes_step(void *vst, ::std::cxx_std_error err,
+											   ::std::size_t bytesread) noexcept
+{
+	auto *state{static_cast<async_scatter_pread_some_bytes_state_base<scheduler, stmtype, alloc_type> *>(vst)};
+	if (err.domain == nullptr)
+	{
+		if (bytesread == 0) [[unlikely]]
+		{
+			err = ::fast_io::details::async_make_error(
+				::fast_io::freestanding::parse_errc::end_of_file);
+			goto report;
+		}
+		state->elem_off += bytesread;
+		if (state->off.has_opt)
+		{
+			state->off.opt = ::fast_io::fposoffadd_nonegative(
+				state->off.opt, static_cast<::std::ptrdiff_t>(bytesread));
+		}
+		if (state->elem_off == state->scatters[state->index].len)
+		{
+			++state->index;
+			state->elem_off = 0;
+			if (state->index == state->n)
+			{
+				goto report;
+			}
+		}
+		async_scatter_pread_all_bytes_submit(state);
+		return;
+	}
+report:
+	state->finish(state, err);
+}
+
 template <typename scheduler, typename stmtype, typename alloc_type>
 inline void async_scatter_pread_all_bytes_submit(
 	async_scatter_pread_some_bytes_state_base<scheduler, stmtype, alloc_type> *state) noexcept
@@ -152,36 +193,7 @@ inline void async_scatter_pread_all_bytes_submit(
 	::std::size_t const elem_remaining{elem.len - state->elem_off};
 	async_pread_some_bytes_underflow_callback_define(
 		state->sched, state->timeout, state->instm, base, elem_remaining, state->off,
-		[state](::std::cxx_std_error err, ::std::size_t bytesread) noexcept {
-			if (err.domain == nullptr)
-			{
-				if (bytesread == 0) [[unlikely]]
-				{
-					err = ::fast_io::details::async_make_error(
-						::fast_io::freestanding::parse_errc::end_of_file);
-					goto report;
-				}
-				state->elem_off += bytesread;
-				if (state->off.has_opt)
-				{
-					state->off.opt = ::fast_io::fposoffadd_nonegative(
-						state->off.opt, static_cast<::std::ptrdiff_t>(bytesread));
-				}
-				if (state->elem_off == state->scatters[state->index].len)
-				{
-					++state->index;
-					state->elem_off = 0;
-					if (state->index == state->n)
-					{
-						goto report;
-					}
-				}
-				async_scatter_pread_all_bytes_submit(state);
-				return;
-			}
-		report:
-			state->finish(state, err);
-		});
+		async_bytes_step_cb{state, &async_scatter_pread_all_bytes_step<scheduler, stmtype, alloc_type>});
 }
 
 template <typename scheduler, typename stmtype, typename alloc_type>
@@ -245,6 +257,37 @@ struct async_scatter_pwrite_some_bytes_state : async_scatter_pwrite_some_bytes_s
 };
 
 template <typename scheduler, typename stmtype, typename alloc_type>
+inline void async_scatter_pwrite_some_bytes_step(void *vst, ::std::cxx_std_error err,
+												 ::std::size_t byteswritten) noexcept
+{
+	auto *state{static_cast<async_scatter_pwrite_some_bytes_state_base<scheduler, stmtype, alloc_type> *>(vst)};
+	state->elem_off += byteswritten;
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		goto report;
+	}
+	if (state->off.has_opt)
+	{
+		state->off.opt = ::fast_io::fposoffadd_nonegative(
+			state->off.opt, static_cast<::std::ptrdiff_t>(byteswritten));
+	}
+	if (state->elem_off == state->scatters[state->index].len)
+	{
+		++state->index;
+		state->elem_off = 0;
+		if (state->index == state->n)
+		{
+			goto report;
+		}
+		async_scatter_pwrite_some_bytes_submit(state);
+		return;
+	}
+	goto report;
+report:
+	state->finish(state, err);
+}
+
+template <typename scheduler, typename stmtype, typename alloc_type>
 inline void async_scatter_pwrite_some_bytes_submit(
 	async_scatter_pwrite_some_bytes_state_base<scheduler, stmtype, alloc_type> *state) noexcept
 {
@@ -263,32 +306,42 @@ inline void async_scatter_pwrite_some_bytes_submit(
 	::std::size_t const elem_remaining{elem.len - state->elem_off};
 	async_pwrite_some_bytes_overflow_callback_define(
 		state->sched, state->timeout, state->outstm, base, elem_remaining, state->off,
-		[state](::std::cxx_std_error err, ::std::size_t byteswritten) noexcept {
-			state->elem_off += byteswritten;
-			if (err.domain != nullptr) [[unlikely]]
+		async_bytes_step_cb{state, &async_scatter_pwrite_some_bytes_step<scheduler, stmtype, alloc_type>});
+}
+
+template <typename scheduler, typename stmtype, typename alloc_type>
+inline void async_scatter_pwrite_all_bytes_step(void *vst, ::std::cxx_std_error err,
+												::std::size_t byteswritten) noexcept
+{
+	auto *state{static_cast<async_scatter_pwrite_some_bytes_state_base<scheduler, stmtype, alloc_type> *>(vst)};
+	if (err.domain == nullptr)
+	{
+		if (byteswritten == 0) [[unlikely]]
+		{
+			err = ::fast_io::details::async_make_error(
+				::std::errc::no_space_on_device);
+			goto report;
+		}
+		state->elem_off += byteswritten;
+		if (state->off.has_opt)
+		{
+			state->off.opt = ::fast_io::fposoffadd_nonegative(
+				state->off.opt, static_cast<::std::ptrdiff_t>(byteswritten));
+		}
+		if (state->elem_off == state->scatters[state->index].len)
+		{
+			++state->index;
+			state->elem_off = 0;
+			if (state->index == state->n)
 			{
 				goto report;
 			}
-			if (state->off.has_opt)
-			{
-				state->off.opt = ::fast_io::fposoffadd_nonegative(
-					state->off.opt, static_cast<::std::ptrdiff_t>(byteswritten));
-			}
-			if (state->elem_off == state->scatters[state->index].len)
-			{
-				++state->index;
-				state->elem_off = 0;
-				if (state->index == state->n)
-				{
-					goto report;
-				}
-				async_scatter_pwrite_some_bytes_submit(state);
-				return;
-			}
-			goto report;
-		report:
-			state->finish(state, err);
-		});
+		}
+		async_scatter_pwrite_all_bytes_submit(state);
+		return;
+	}
+report:
+	state->finish(state, err);
 }
 
 template <typename scheduler, typename stmtype, typename alloc_type>
@@ -310,36 +363,7 @@ inline void async_scatter_pwrite_all_bytes_submit(
 	::std::size_t const elem_remaining{elem.len - state->elem_off};
 	async_pwrite_some_bytes_overflow_callback_define(
 		state->sched, state->timeout, state->outstm, base, elem_remaining, state->off,
-		[state](::std::cxx_std_error err, ::std::size_t byteswritten) noexcept {
-			if (err.domain == nullptr)
-			{
-				if (byteswritten == 0) [[unlikely]]
-				{
-					err = ::fast_io::details::async_make_error(
-						::std::errc::no_space_on_device);
-					goto report;
-				}
-				state->elem_off += byteswritten;
-				if (state->off.has_opt)
-				{
-					state->off.opt = ::fast_io::fposoffadd_nonegative(
-						state->off.opt, static_cast<::std::ptrdiff_t>(byteswritten));
-				}
-				if (state->elem_off == state->scatters[state->index].len)
-				{
-					++state->index;
-					state->elem_off = 0;
-					if (state->index == state->n)
-					{
-						goto report;
-					}
-				}
-				async_scatter_pwrite_all_bytes_submit(state);
-				return;
-			}
-		report:
-			state->finish(state, err);
-		});
+		async_bytes_step_cb{state, &async_scatter_pwrite_all_bytes_step<scheduler, stmtype, alloc_type>});
 }
 
 } // namespace fast_io::details

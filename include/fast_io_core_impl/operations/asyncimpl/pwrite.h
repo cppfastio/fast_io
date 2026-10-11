@@ -23,7 +23,7 @@ struct async_pwrite_all_bytes_state_base
 	 * the state can be freed without it; kept last to preserve the
 	 * aggregate initialization order */
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											   ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -66,37 +66,43 @@ struct async_pwrite_all_bytes_state
  * forever, so it is delivered as errc::no_space_on_device.
  */
 template <typename scheduler, typename outstmtype, typename alloc_type>
+inline void async_pwrite_all_bytes_step(void *vst, ::std::cxx_std_error err,
+										::std::size_t byteswritten) noexcept
+{
+	auto *state{static_cast<async_pwrite_all_bytes_state_base<scheduler, outstmtype, alloc_type> *>(vst)};
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		state->finish(state, err);
+		return;
+	}
+	state->first += byteswritten;
+	state->remaining -= byteswritten;
+	if (state->off.has_opt)
+	{
+		state->off.opt = ::fast_io::fposoffadd_nonegative(
+			state->off.opt, static_cast<::std::ptrdiff_t>(byteswritten));
+	}
+	if (state->remaining == 0)
+	{
+		state->finish(state, {});
+		return;
+	}
+	if (byteswritten == 0) [[unlikely]]
+	{
+		state->finish(state, ::fast_io::details::async_make_error(
+								 ::std::errc::no_space_on_device));
+		return;
+	}
+	async_pwrite_all_bytes_submit(state);
+}
+
+template <typename scheduler, typename outstmtype, typename alloc_type>
 inline void async_pwrite_all_bytes_submit(
 	async_pwrite_all_bytes_state_base<scheduler, outstmtype, alloc_type> *state) noexcept
 {
 	async_pwrite_some_bytes_overflow_callback_define(
 		state->sched, state->timeout, state->outstm, state->first, state->remaining, state->off,
-		[state](::std::cxx_std_error err, ::std::size_t byteswritten) noexcept {
-			if (err.domain != nullptr) [[unlikely]]
-			{
-				state->finish(state, err);
-				return;
-			}
-			state->first += byteswritten;
-			state->remaining -= byteswritten;
-			if (state->off.has_opt)
-			{
-				state->off.opt = ::fast_io::fposoffadd_nonegative(
-					state->off.opt, static_cast<::std::ptrdiff_t>(byteswritten));
-			}
-			if (state->remaining == 0)
-			{
-				state->finish(state, {});
-				return;
-			}
-			if (byteswritten == 0) [[unlikely]]
-			{
-				state->finish(state, ::fast_io::details::async_make_error(
-					::std::errc::no_space_on_device));
-				return;
-			}
-			async_pwrite_all_bytes_submit(state);
-		});
+		async_bytes_step_cb{state, &async_pwrite_all_bytes_step<scheduler, outstmtype, alloc_type>});
 }
 
 } // namespace fast_io::details

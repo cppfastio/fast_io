@@ -164,6 +164,24 @@ inline void schannel_tls_recv_finish(
 }
 
 template <typename sched_t, typename client_type, typename alloc_type>
+inline void schannel_tls_recv_step(void *vst, ::std::cxx_std_error err, ::std::size_t n) noexcept
+{
+	auto *st{static_cast<schannel_tls_recv_state_base<sched_t, client_type, alloc_type> *>(vst)};
+	if (err.domain != nullptr)
+	{
+		schannel_tls_recv_finish(st, err, 0);
+		return;
+	}
+	if (n == 0)
+	{
+		schannel_tls_recv_finish(st, ::std::cxx_std_error{}, 0);
+		return;
+	}
+	st->client->ct_pending_size_ += n;
+	schannel_tls_recv_pump(st);
+}
+
+template <typename sched_t, typename client_type, typename alloc_type>
 inline void schannel_tls_recv_pump(
 	schannel_tls_recv_state_base<sched_t, client_type, alloc_type> *st) noexcept
 {
@@ -200,20 +218,8 @@ inline void schannel_tls_recv_pump(
 		st->client->ct_pending_ + st->client->ct_pending_size_,
 		sizeof(st->client->ct_pending_) - st->client->ct_pending_size_,
 		::fast_io::intfpos_opt{},
-		[st](::std::cxx_std_error err, ::std::size_t n) noexcept {
-			if (err.domain != nullptr)
-			{
-				schannel_tls_recv_finish(st, err, 0);
-				return;
-			}
-			if (n == 0)
-			{
-				schannel_tls_recv_finish(st, ::std::cxx_std_error{}, 0);
-				return;
-			}
-			st->client->ct_pending_size_ += n;
-			schannel_tls_recv_pump(st);
-		});
+		::fast_io::details::async_bytes_step_cb{
+			st, &schannel_tls_recv_step<sched_t, client_type, alloc_type>});
 }
 
 template <typename sched_t, typename client_type, typename alloc_type>
@@ -276,6 +282,19 @@ inline void schannel_tls_send_finish(
 }
 
 template <typename sched_t, typename client_type, typename alloc_type>
+inline void schannel_tls_send_step(void *vst, ::std::cxx_std_error err, ::std::size_t) noexcept
+{
+	auto *st{static_cast<schannel_tls_send_state_base<sched_t, client_type, alloc_type> *>(vst)};
+	if (err.domain != nullptr)
+	{
+		schannel_tls_send_finish(st, err, 0);
+		return;
+	}
+	++st->piece_i;
+	schannel_tls_send_piece(st);
+}
+
+template <typename sched_t, typename client_type, typename alloc_type>
 inline void schannel_tls_send_piece(
 	schannel_tls_send_state_base<sched_t, client_type, alloc_type> *st) noexcept
 {
@@ -288,15 +307,8 @@ inline void schannel_tls_send_piece(
 	async_pwrite_some_bytes_overflow_callback_define(
 		st->sched, st->timeout, st->client->sock_,
 		st->piece[i], st->piece_size[i], ::fast_io::intfpos_opt{},
-		[st](::std::cxx_std_error err, ::std::size_t) noexcept {
-			if (err.domain != nullptr)
-			{
-				schannel_tls_send_finish(st, err, 0);
-				return;
-			}
-			++st->piece_i;
-			schannel_tls_send_piece(st);
-		});
+		::fast_io::details::async_bytes_step_cb{
+			st, &schannel_tls_send_step<sched_t, client_type, alloc_type>});
 }
 
 template <typename sched_t, typename client_type, typename alloc_type>

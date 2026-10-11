@@ -29,7 +29,7 @@ struct async_iobuffer_pwrite_state_base
 				   ::std::size_t n) noexcept {};
 	void (*relay)(async_iobuffer_pwrite_state_base *state) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											 ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -42,7 +42,7 @@ inline void async_iobuffer_pwrite_finish_cb(
 	::std::cxx_std_error err, ::std::size_t n) noexcept
 {
 	auto *state{static_cast<async_iobuffer_pwrite_state<scheduler, io_buffer_type,
-													  alloc_type, T> *>(base)};
+														alloc_type, T> *>(base)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::details::async_delete_state(state);
 	callback(err, n);
@@ -53,7 +53,7 @@ inline void async_iobuffer_pwrite_relay_cb(
 	async_iobuffer_pwrite_state_base<scheduler, io_buffer_type, alloc_type> *base) noexcept
 {
 	auto *state{static_cast<async_iobuffer_pwrite_state<scheduler, io_buffer_type,
-													  alloc_type, T> *>(base)};
+														alloc_type, T> *>(base)};
 	auto sched{state->sched};
 	auto outstm{::fast_io::operations::output_stream_ref(state->iobref.iobptr->handle)};
 	auto first{state->first};
@@ -95,6 +95,32 @@ inline void async_iobuffer_pwrite_deliver(state_type *state, ::std::cxx_std_erro
 }
 
 template <typename scheduler, typename io_buffer_type, typename alloc_type>
+inline void async_iobuffer_pwrite_step(void *vst, ::std::cxx_std_error err) noexcept
+{
+	auto *state{static_cast<async_iobuffer_pwrite_state_base<scheduler, io_buffer_type, alloc_type> *>(vst)};
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		async_iobuffer_pwrite_deliver(state, err, 0);
+		return;
+	}
+	auto iobref{state->iobref};
+	auto &obuffer{iobref.iobptr->output_buffer};
+	obuffer.buffer_curr = obuffer.buffer_begin;
+	if (state->count <= io_buffer_type::traits_type::output_buffer_size)
+	{
+		/* the now-empty window takes the whole range without
+		 * touching the device — same as a fresh sync write */
+		::fast_io::details::non_overlapped_copy_n(
+			state->first, state->count,
+			reinterpret_cast<::std::byte *>(obuffer.buffer_begin));
+		obuffer.buffer_curr = obuffer.buffer_begin + state->count;
+		async_iobuffer_pwrite_deliver(state, ::std::cxx_std_error{}, state->count);
+		return;
+	}
+	state->relay(state);
+}
+
+template <typename scheduler, typename io_buffer_type, typename alloc_type>
 inline void async_iobuffer_pwrite_submit(
 	async_iobuffer_pwrite_state_base<scheduler, io_buffer_type, alloc_type> *state) noexcept
 {
@@ -114,28 +140,8 @@ inline void async_iobuffer_pwrite_submit(
 		::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
 		reinterpret_cast<::std::byte const *>(obuffer.buffer_begin), pending,
 		::fast_io::intfpos_opt{},
-		[state](::std::cxx_std_error err) noexcept {
-			if (err.domain != nullptr) [[unlikely]]
-			{
-				async_iobuffer_pwrite_deliver(state, err, 0);
-				return;
-			}
-			auto iobref{state->iobref};
-			auto &obuffer{iobref.iobptr->output_buffer};
-			obuffer.buffer_curr = obuffer.buffer_begin;
-			if (state->count <= io_buffer_type::traits_type::output_buffer_size)
-			{
-				/* the now-empty window takes the whole range without
-				 * touching the device — same as a fresh sync write */
-				::fast_io::details::non_overlapped_copy_n(
-					state->first, state->count,
-					reinterpret_cast<::std::byte *>(obuffer.buffer_begin));
-				obuffer.buffer_curr = obuffer.buffer_begin + state->count;
-				async_iobuffer_pwrite_deliver(state, ::std::cxx_std_error{}, state->count);
-				return;
-			}
-			state->relay(state);
-		});
+		::fast_io::details::async_err_step_cb{
+			state, &async_iobuffer_pwrite_step<scheduler, io_buffer_type, alloc_type>});
 }
 
 /*
@@ -163,7 +169,7 @@ struct async_iobuffer_transmit_state_base
 				   ::std::size_t n) noexcept {};
 	void (*relay)(async_iobuffer_transmit_state_base *state) noexcept {};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
-											 ::fast_io::details::empty>
+												   ::fast_io::details::empty>
 		alloc_handle{};
 };
 
@@ -178,7 +184,7 @@ inline void async_iobuffer_transmit_finish_cb(
 	::std::cxx_std_error err, ::std::size_t n) noexcept
 {
 	auto *state{static_cast<async_iobuffer_transmit_state<scheduler, io_buffer_type, instmtype,
-														alloc_type, T> *>(base)};
+														  alloc_type, T> *>(base)};
 	auto callback{::std::move(state->callback)};
 	::fast_io::details::async_delete_state(state);
 	callback(err, n);
@@ -190,7 +196,7 @@ inline void async_iobuffer_transmit_relay_cb(
 	async_iobuffer_transmit_state_base<scheduler, io_buffer_type, instmtype, alloc_type> *base) noexcept
 {
 	auto *state{static_cast<async_iobuffer_transmit_state<scheduler, io_buffer_type, instmtype,
-														alloc_type, T> *>(base)};
+														  alloc_type, T> *>(base)};
 	auto sched{state->sched};
 	auto outstm{::fast_io::operations::output_stream_ref(state->iobref.iobptr->handle)};
 	auto off_out{state->off_out};
@@ -228,6 +234,20 @@ struct async_iobuffer_transmit_state
 };
 
 template <typename state_type>
+inline void async_iobuffer_transmit_step(void *vst, ::std::cxx_std_error err) noexcept
+{
+	auto *state{static_cast<state_type *>(vst)};
+	if (err.domain != nullptr) [[unlikely]]
+	{
+		state->finish(state, err, 0);
+		return;
+	}
+	auto &ob{state->iobref.iobptr->output_buffer};
+	ob.buffer_curr = ob.buffer_begin;
+	async_iobuffer_transmit_dispatch(state);
+}
+
+template <typename state_type>
 inline void async_iobuffer_transmit_dispatch(state_type *state) noexcept
 {
 	auto iobref{state->iobref};
@@ -245,17 +265,28 @@ inline void async_iobuffer_transmit_dispatch(state_type *state) noexcept
 		::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
 		reinterpret_cast<::std::byte const *>(obuffer.buffer_begin), pending,
 		::fast_io::intfpos_opt{},
-		[state](::std::cxx_std_error err) noexcept {
-			if (err.domain != nullptr) [[unlikely]]
-			{
-				state->finish(state, err, 0);
-				return;
-			}
-			auto &ob{state->iobref.iobptr->output_buffer};
-			ob.buffer_curr = ob.buffer_begin;
-			async_iobuffer_transmit_dispatch(state);
-		});
+		::fast_io::details::async_err_step_cb{
+			state, &async_iobuffer_transmit_step<state_type>});
 }
+
+/* terminal delivery for async_output_stream_buffer_flush_define: resets
+   the window on success, then forwards to the caller's functor. Typed --
+   the functor owns the callback, so erasure cannot carry it. */
+template <typename io_buffer_type, typename func>
+struct async_iobuffer_flush_cb
+{
+	::fast_io::basic_io_buffer_ref<io_buffer_type> iobref;
+	func callback;
+	inline void operator()(::std::cxx_std_error err) noexcept
+	{
+		if (err.domain == nullptr)
+		{
+			auto &obuffer{iobref.iobptr->output_buffer};
+			obuffer.buffer_curr = obuffer.buffer_begin;
+		}
+		callback(err);
+	}
+};
 
 } // namespace details::io_buffer
 
@@ -286,14 +317,8 @@ inline void async_output_stream_buffer_flush_define(
 		sched, timeout, ::fast_io::operations::output_stream_ref(iobref.iobptr->handle),
 		reinterpret_cast<::std::byte const *>(obuffer.buffer_begin), pending,
 		::fast_io::intfpos_opt{},
-		[iobref, callback{::std::move(callback)}](::std::cxx_std_error err) mutable noexcept {
-			if (err.domain == nullptr)
-			{
-				auto &obuffer{iobref.iobptr->output_buffer};
-				obuffer.buffer_curr = obuffer.buffer_begin;
-			}
-			callback(err);
-		});
+		::fast_io::details::io_buffer::async_iobuffer_flush_cb<io_buffer_type, T>{
+			iobref, ::std::move(callback)});
 }
 
 /*
@@ -343,7 +368,7 @@ inline void async_pwrite_some_bytes_overflow_callback_define(
 					char_type, typename io_buffer_type::traits_type::allocator_type>(
 					iobref.iobptr->allocator_handle, bfsz)};
 				::fast_io::details::non_overlapped_copy_n(first, count,
-														reinterpret_cast<::std::byte *>(begin));
+														  reinterpret_cast<::std::byte *>(begin));
 				obuffer.buffer_begin = begin;
 				obuffer.buffer_curr = begin + count;
 				obuffer.buffer_end = begin + bfsz;
