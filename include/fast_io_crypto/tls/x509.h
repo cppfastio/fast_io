@@ -149,12 +149,12 @@ inline constexpr bool algorithm_identifier_parse(wire_reader &r, algorithm_ident
 	{
 		return false;
 	}
-	alg.has_params = !s.empty();
+	alg.has_params = !s.is_empty();
 	if (alg.has_params && !der_read_tlv(s, alg.params))
 	{
 		return false;
 	}
-	return s.empty();
+	return s.is_empty();
 }
 
 struct x509_certificate
@@ -340,7 +340,7 @@ inline constexpr bool x509_tbs_parse(x509_certificate &cert, wire_reader &tbs) n
 		}
 	}
 	/* optional [1] issuerUniqueID, [2] subjectUniqueID, [3] extensions */
-	while (!tbs.empty())
+	while (!tbs.is_empty())
 	{
 		::std::byte const *mark{tbs.cur};
 		if (!der_read_tlv(tbs, tlv))
@@ -356,7 +356,7 @@ inline constexpr bool x509_tbs_parse(x509_certificate &cert, wire_reader &tbs) n
 				return false;
 			}
 			wire_reader exts{der_sub(exts_seq)};
-			while (!exts.empty())
+			while (!exts.is_empty())
 			{
 				der_tlv ext_seq;
 				if (!der_expect_tag(exts, 0x30, ext_seq))
@@ -370,7 +370,7 @@ inline constexpr bool x509_tbs_parse(x509_certificate &cert, wire_reader &tbs) n
 					return false;
 				}
 				/* optional critical BOOLEAN */
-				if (!ex.empty() && *ex.cur == ::std::byte{0x01})
+				if (!ex.is_empty() && *ex.cur == ::std::byte{0x01})
 				{
 					der_tlv tmp;
 					if (!der_read_tlv(ex, tmp))
@@ -397,7 +397,7 @@ inline constexpr bool x509_tbs_parse(x509_certificate &cert, wire_reader &tbs) n
 					{
 						wire_reader b{der_sub(seq)};
 						der_tlv ca;
-						if (!b.empty() && der_read_tlv(b, ca) && ca.tag == 0x01 && ca.value_size == 1)
+						if (!b.is_empty() && der_read_tlv(b, ca) && ca.tag == 0x01 && ca.value_size == 1)
 						{
 							cert.is_ca = (ca.value[0] == ::std::byte{0xff});
 						}
@@ -419,7 +419,7 @@ inline constexpr bool x509_certificate_parse(x509_certificate &cert,
 {
 	wire_reader r{der, der + der_size};
 	der_tlv outer;
-	if (!der_expect_tag(r, 0x30, outer) || !r.empty())
+	if (!der_expect_tag(r, 0x30, outer) || !r.is_empty())
 	{
 		return false;
 	}
@@ -444,7 +444,7 @@ inline constexpr bool x509_certificate_parse(x509_certificate &cert,
 	}
 	der_tlv sig_tlv;
 	if (!der_read_tlv(body, sig_tlv) ||
-		!der_bit_string(sig_tlv, cert.signature, cert.signature_size) || !body.empty())
+		!der_bit_string(sig_tlv, cert.signature, cert.signature_size) || !body.is_empty())
 	{
 		return false;
 	}
@@ -480,7 +480,7 @@ inline constexpr bool rsassa_pss_params_parse(der_tlv const &params, rsassa_pss_
 		return false;
 	}
 	wire_reader r{der_sub(params)};
-	while (!r.empty())
+	while (!r.is_empty())
 	{
 		der_tlv tlv;
 		if (!der_read_tlv(r, tlv))
@@ -603,12 +603,12 @@ inline constexpr bool rsa_public_key_decode(::std::byte const *pk, ::std::size_t
 {
 	wire_reader r{pk, pk + pk_size};
 	der_tlv seq, ni, ei;
-	if (!der_expect_tag(r, 0x30, seq) || !r.empty())
+	if (!der_expect_tag(r, 0x30, seq) || !r.is_empty())
 	{
 		return false;
 	}
 	wire_reader s{der_sub(seq)};
-	if (!der_expect_tag(s, 0x02, ni) || !der_expect_tag(s, 0x02, ei) || !s.empty())
+	if (!der_expect_tag(s, 0x02, ni) || !der_expect_tag(s, 0x02, ei) || !s.is_empty())
 	{
 		return false;
 	}
@@ -674,7 +674,7 @@ inline constexpr bool ecdsa_signature_decode(::std::byte const *sig,
 	{
 		return false;
 	}
-	return rd.empty() && b.empty();
+	return rd.is_empty() && b.is_empty();
 }
 
 /* one functor for both RSA verify dispatches below (PSS and v1.5):
@@ -979,7 +979,7 @@ inline constexpr bool x509_hostname_match(x509_certificate const &cert,
 		return false;
 	}
 	wire_reader names{der_sub(seq)};
-	while (!names.empty())
+	while (!names.is_empty())
 	{
 		der_tlv gn;
 		if (!der_read_tlv(names, gn))

@@ -148,7 +148,7 @@ public:
 	{
 		return ins;
 	}
-	constexpr bool empty() const noexcept
+	constexpr bool is_empty() const noexcept
 	{
 		return !this->count;
 	}

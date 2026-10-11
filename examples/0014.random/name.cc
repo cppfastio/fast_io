@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	if (vec.empty())
+	if (vec.is_empty())
 	{
 		perr("No frequency\n");
 		return 1;

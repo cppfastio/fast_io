@@ -286,7 +286,7 @@ inline constexpr bool server_hello_parse(server_hello_info &info,
 	{
 		return false;
 	}
-	while (!exts.empty())
+	while (!exts.is_empty())
 	{
 		::std::uint_least16_t et;
 		::std::byte const *ep;
@@ -301,7 +301,7 @@ inline constexpr bool server_hello_parse(server_hello_info &info,
 		case extension_type::supported_versions:
 		{
 			::std::uint_least16_t v;
-			if (!e.take_u16(v) || !e.empty())
+			if (!e.take_u16(v) || !e.is_empty())
 			{
 				return false;
 			}
@@ -316,7 +316,7 @@ inline constexpr bool server_hello_parse(server_hello_info &info,
 				return false;
 			}
 			info.key_share_group = static_cast<named_group>(group);
-			if (!e.take_vector16(info.key_share_public_key, info.key_share_public_key_size) || !e.empty())
+			if (!e.take_vector16(info.key_share_public_key, info.key_share_public_key_size) || !e.is_empty())
 			{
 				return false;
 			}
@@ -438,11 +438,11 @@ inline constexpr ee_check ee_body_check(::std::byte const *body,
 {
 	wire_reader ee{body, body + body_size};
 	wire_reader exts;
-	if (!ee.take_sub16(exts) || !ee.empty())
+	if (!ee.take_sub16(exts) || !ee.is_empty())
 	{
 		return ee_check::malformed;
 	}
-	while (!exts.empty())
+	while (!exts.is_empty())
 	{
 		::std::uint_least16_t et;
 		::std::byte const *ep;

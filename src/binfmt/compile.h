@@ -23,14 +23,14 @@ namespace binfmt
 
 struct src_ctx
 {
-	::std::string_view where{}; // file / category.field context
+	::fast_io::string_view where{}; // file / category.field context
 };
 
-[[noreturn]] inline void fail(src_ctx ctx, ::std::u8string_view src,
-							  ::std::size_t pos, ::std::string_view msg) FAST_IO_HERBCEPTIONS_THROWS
+[[noreturn]] inline void fail(src_ctx ctx, ::fast_io::u8string_view src,
+							  ::std::size_t pos, ::fast_io::string_view msg) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::perrln(ctx.where, ": ", msg, " [pos ", pos, "] ",
-					  ::std::string_view{reinterpret_cast<char const *>(src.data()), src.size()});
+					  ::fast_io::string_view{reinterpret_cast<char const *>(src.data()), src.size()});
 	throw throws::std::errc::invalid_argument;
 }
 
@@ -43,7 +43,7 @@ namespace details
 
 
 // bytes of the UTF-8 code point starting at s[i]; 0 = invalid
-inline constexpr ::std::size_t utf8_cp_size(::std::u8string_view s,
+inline constexpr ::std::size_t utf8_cp_size(::fast_io::u8string_view s,
 											::std::size_t i) noexcept
 {
 	char8_t c{s[i]};
@@ -70,9 +70,9 @@ inline constexpr ::std::size_t utf8_cp_size(::std::u8string_view s,
 	return n;
 }
 
-inline ::std::uint_least32_t parse_u32(::std::u8string_view s,
+inline ::std::uint_least32_t parse_u32(::fast_io::u8string_view s,
 									   ::std::size_t &i, ::std::size_t j,
-									   src_ctx ctx, ::std::string_view what) FAST_IO_HERBCEPTIONS_THROWS
+									   src_ctx ctx, ::fast_io::string_view what) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least32_t v{};
 	char8_t const *const b{s.data()};
@@ -93,15 +93,15 @@ public:
 	{
 		lit_.push_back(static_cast<char>(c));
 	}
-	void push(::std::u8string_view v) noexcept
+	void push(::fast_io::u8string_view v) noexcept
 	{
 		lit_.append(reinterpret_cast<char const *>(v.data()), v.size());
 	}
 	void flush(encoder &b) noexcept
 	{
-		if (!lit_.empty())
+		if (!lit_.is_empty())
 		{
-			b.literal({lit_.data(), lit_.size()});
+			b.literal(::fast_io::string_view{lit_.data(), lit_.size()});
 			lit_.clear();
 		}
 	}
@@ -200,13 +200,13 @@ struct pct_options
 	bool allow_nested_fmt{false}; // chrono specs: '{...}' fields allowed
 };
 
-::fast_io::string compile_pct_impl(::std::u8string_view s, pct_options opts,
+::fast_io::string compile_pct_impl(::fast_io::u8string_view s, pct_options opts,
 								   unsigned depth, src_ctx ctx) FAST_IO_HERBCEPTIONS_THROWS;
 
-::std::size_t parse_fmt_field(::std::u8string_view s, ::std::size_t pos,
+::std::size_t parse_fmt_field(::fast_io::u8string_view s, ::std::size_t pos,
 							  encoder &b, unsigned depth, src_ctx ctx) FAST_IO_HERBCEPTIONS_THROWS;
 
-inline ::fast_io::string compile_pct_impl(::std::u8string_view s, pct_options opts,
+inline ::fast_io::string compile_pct_impl(::fast_io::u8string_view s, pct_options opts,
 										  unsigned depth, src_ctx ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (depth > 8)
@@ -395,7 +395,7 @@ struct fmt_spec
 
 // standard spec parse -> field children; on any non-standard content
 // returns ok=false (caller retries as chrono pct program)
-inline fmt_spec parse_fmt_standard(::std::u8string_view spec, src_ctx ctx,
+inline fmt_spec parse_fmt_standard(::fast_io::u8string_view spec, src_ctx ctx,
 								   unsigned depth) FAST_IO_HERBCEPTIONS_THROWS
 {
 	fmt_spec f;
@@ -427,7 +427,7 @@ inline fmt_spec parse_fmt_standard(::std::u8string_view spec, src_ctx ctx,
 			 cp != 0 && i + cp < n && align_of(spec[i + cp]))
 	{
 		// fill bytes = raw code point bytes in source charset
-		::std::string_view fv{
+		::fast_io::string_view fv{
 			reinterpret_cast<char const *>(spec.data() + i), cp};
 		k.node_bytes(static_cast<::std::uint_least32_t>(field_param::fill), fv);
 		push(k);
@@ -603,7 +603,7 @@ inline fmt_spec parse_fmt_standard(::std::u8string_view spec, src_ctx ctx,
 		{
 			++i;
 			// element spec follows — its own field-children grammar
-			::std::u8string_view elspec{spec.substr(i)};
+			::fast_io::u8string_view elspec{spec.subview(i)};
 			fmt_spec inner{parse_fmt_standard(elspec, ctx, depth + 1)};
 			if (!inner.ok)
 			{
@@ -616,7 +616,7 @@ inline fmt_spec parse_fmt_standard(::std::u8string_view spec, src_ctx ctx,
 				eb.buf.append(e.data(), e.size());
 			}
 			k.node_bytes(static_cast<::std::uint_least32_t>(field_param::element),
-						 ::std::string_view{eb.buf.data(), eb.buf.size()});
+						 ::fast_io::string_view{eb.buf.data(), eb.buf.size()});
 			push(k);
 			i = n;
 		}
@@ -642,7 +642,7 @@ inline fmt_spec parse_fmt_standard(::std::u8string_view spec, src_ctx ctx,
 	return f;
 }
 
-inline ::std::size_t parse_fmt_field(::std::u8string_view s, ::std::size_t pos,
+inline ::std::size_t parse_fmt_field(::fast_io::u8string_view s, ::std::size_t pos,
 									 encoder &b, unsigned depth, src_ctx ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (depth > 8)
@@ -692,7 +692,7 @@ inline ::std::size_t parse_fmt_field(::std::u8string_view s, ::std::size_t pos,
 		{
 			fail(ctx, s, pos, "unterminated '{'");
 		}
-		::std::u8string_view spec{s.substr(spec_begin, i - spec_begin)};
+		::fast_io::u8string_view spec{s.subview(spec_begin, i - spec_begin)};
 		fmt_spec f{parse_fmt_standard(spec, ctx, depth)};
 		if (f.ok)
 		{
@@ -710,7 +710,7 @@ inline ::std::size_t parse_fmt_field(::std::u8string_view s, ::std::size_t pos,
 			encoder ck;
 			ck.node_bytes(
 				static_cast<::std::uint_least32_t>(field_param::chrono),
-				::std::string_view{blob.data(), blob.size()});
+				::fast_io::string_view{blob.data(), blob.size()});
 			children.emplace_back(::std::move(ck.buf));
 		}
 	}
@@ -718,19 +718,19 @@ inline ::std::size_t parse_fmt_field(::std::u8string_view s, ::std::size_t pos,
 	{
 		fail(ctx, s, i, "expected '}'");
 	}
-	::fast_io::vector<::std::string_view> kidv;
+	::fast_io::vector<::fast_io::string_view> kidv;
 	for (auto const &e : children)
 	{
 		kidv.emplace_back(e.data(), e.size());
 	}
-	b.node_list(op_field, ::std::span{kidv.data(), kidv.size()});
+	b.node_list(op_field, ::fast_io::containers::span<::fast_io::string_view const>{kidv.data(), kidv.size()});
 	return i + 1;
 }
 
 } // namespace details
 
 // fmt.dev / std::format grammar
-inline ::fast_io::string compile_fmt(::std::u8string_view s, src_ctx ctx = {}) FAST_IO_HERBCEPTIONS_THROWS
+inline ::fast_io::string compile_fmt(::fast_io::u8string_view s, src_ctx ctx = {}) FAST_IO_HERBCEPTIONS_THROWS
 {
 	encoder b;
 	details::litbuf lit;
@@ -768,7 +768,7 @@ inline ::fast_io::string compile_fmt(::std::u8string_view s, src_ctx ctx = {}) F
 
 // strftime / chrono %-directive grammar (LC_TIME d_t_fmt, d_fmt, t_fmt,
 // t_fmt_ampm, date_fmt, era_*_fmt, era fmt inside era entries)
-inline ::fast_io::string compile_time(::std::u8string_view s, src_ctx ctx = {}) FAST_IO_HERBCEPTIONS_THROWS
+inline ::fast_io::string compile_time(::fast_io::u8string_view s, src_ctx ctx = {}) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::compile_pct_impl(s, {}, 0, ctx);
 }
@@ -778,7 +778,7 @@ inline ::fast_io::string compile_time(::std::u8string_view s, src_ctx ctx = {}) 
 // compiles to field{arg=letter} — the slot's consumer resolves letters
 // to components. No %n/%t escapes, no strftime conv table: the letter IS
 // the argument identity.
-inline ::fast_io::string compile_generic_pct(::std::u8string_view s,
+inline ::fast_io::string compile_generic_pct(::fast_io::u8string_view s,
 											 src_ctx ctx = {}) FAST_IO_HERBCEPTIONS_THROWS
 {
 	encoder b;
@@ -812,8 +812,8 @@ inline ::fast_io::string compile_generic_pct(::std::u8string_view s,
 		// field{arg=letter} — letter codepoint is the arg identity
 		encoder k;
 		k.node_uleb(static_cast<::std::uint_least32_t>(field_param::arg), c2);
-		::std::string_view kv{k.buf.data(), k.buf.size()};
-		b.node_list(op_field, ::std::span{__builtin_addressof(kv), 1});
+		::fast_io::string_view kv{k.buf.data(), k.buf.size()};
+		b.node_list(op_field, ::fast_io::containers::span<::fast_io::string_view const>{__builtin_addressof(kv), 1});
 	}
 	lit.flush(b);
 	return ::std::move(b.buf);
@@ -853,7 +853,7 @@ inline ctype length_int_ctype(unsigned len_kind, bool u, c_abi abi) noexcept
 
 } // namespace details
 
-inline ::fast_io::string compile_stdio(::std::u8string_view s, src_ctx ctx = {},
+inline ::fast_io::string compile_stdio(::fast_io::u8string_view s, src_ctx ctx = {},
 									   c_abi abi = {}) FAST_IO_HERBCEPTIONS_THROWS
 {
 	encoder b;
@@ -1145,12 +1145,12 @@ inline ::fast_io::string compile_stdio(::std::u8string_view s, src_ctx ctx = {},
 			k.node_none(static_cast<::std::uint_least32_t>(field_param::flag_upper));
 			push(k);
 		}
-		::fast_io::vector<::std::string_view> kidv;
+		::fast_io::vector<::fast_io::string_view> kidv;
 		for (auto const &e : children)
 		{
 			kidv.emplace_back(e.data(), e.size());
 		}
-		b.node_list(op_field, ::std::span{kidv.data(), kidv.size()});
+		b.node_list(op_field, ::fast_io::containers::span<::fast_io::string_view const>{kidv.data(), kidv.size()});
 	}
 	lit.flush(b);
 	return ::std::move(b.buf);

@@ -32,7 +32,7 @@ int main()
 	for (auto e : s3)
 	{
 		::fast_io::io::println("  ", e);
-		if (!prev.empty() && !(prev < e))
+		if (!prev.is_empty() && !(prev < e))
 		{
 			sorted = false;
 		}
@@ -197,7 +197,7 @@ int main()
 		::std::size_t idx{};
 		for (auto e : cs)
 		{
-			if (!cprev.empty() && !(cprev < e))
+			if (!cprev.is_empty() && !(cprev < e))
 			{
 				::fast_io::fast_terminate();
 			}

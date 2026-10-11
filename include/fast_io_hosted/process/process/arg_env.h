@@ -231,7 +231,7 @@ struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 	inline constexpr char_type_may_alias_const_ptr get() const noexcept
 	{
-		if (args.empty())
+		if (args.is_empty())
 		{
 			return nullptr;
 		}
@@ -293,7 +293,7 @@ struct basic_win32_process_envs FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 	inline constexpr char_type_may_alias_const_ptr get() const noexcept
 	{
-		if (envs.empty())
+		if (envs.is_empty())
 		{
 			return nullptr;
 		}

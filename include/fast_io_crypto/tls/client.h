@@ -822,12 +822,12 @@ inline bool certificate_body_parse(::fast_io::tls::peer_certificates *peer,
 	::std::size_t ctx_size;
 	::std::byte const *list;
 	::std::size_t list_size;
-	if (!r.take_vector8(ctx, ctx_size) || !r.take_vector24(list, list_size) || !r.empty())
+	if (!r.take_vector8(ctx, ctx_size) || !r.take_vector24(list, list_size) || !r.is_empty())
 	{
 		return false;
 	}
 	wire_reader l{list, list + list_size};
-	while (!l.empty())
+	while (!l.is_empty())
 	{
 		::std::byte const *der;
 		::std::size_t der_size;
@@ -1092,7 +1092,7 @@ inline void ktls_handshake_flight2(stmtype sock, cipher_suite suite,
 			details::tls_fail(sock, alert_description::bad_certificate, false);
 		}
 	}
-	if (cfg->check_hostname && !cfg->hostname.empty() &&
+	if (cfg->check_hostname && !cfg->hostname.is_empty() &&
 		!::fast_io::tls::details::x509_hostname_match(presented[0], cfg->hostname.data(), cfg->hostname.size()))
 	{
 		details::tls_fail(sock, alert_description::bad_certificate, false);
@@ -1377,7 +1377,7 @@ inline void tls_client_process_post_handshake(basic_tls_client<allocator_type, s
 											  ::std::byte const *msgs, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 {
 	wire_reader r{msgs, msgs + n};
-	while (!r.empty())
+	while (!r.is_empty())
 	{
 		::std::uint_least8_t mt;
 		::std::uint_least32_t mlen;

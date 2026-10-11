@@ -47,7 +47,7 @@ struct gnutls_evp_hash_ctx
 		: mac_{mac},
 		  digest_size_{static_cast<::std::size_t>(gnutls_hmac_get_len(mac))},
 		  block_size_{mac == GNUTLS_MAC_SHA384 ? static_cast<::std::size_t>(128)
-												  : static_cast<::std::size_t>(64)}
+											   : static_cast<::std::size_t>(64)}
 	{
 	}
 	inline gnutls_evp_hash_ctx(gnutls_evp_hash_ctx const &o) noexcept
@@ -132,7 +132,7 @@ struct gnutls_crypto_backend
 	static inline ::std::size_t md_block_size(md a) noexcept
 	{
 		return a == GNUTLS_MAC_SHA384 ? static_cast<::std::size_t>(128)
-									: static_cast<::std::size_t>(64);
+									  : static_cast<::std::size_t>(64);
 	}
 
 	struct hash_ctx : details::gnutls_evp_hash_ctx
@@ -255,7 +255,7 @@ public:
 		{
 			return false;
 		}
-		inner_type = static_cast<content_type>(::std::to_underlying(out[--inner]));
+		inner_type = static_cast<content_type>(out[--inner]);
 		out_size = inner;
 		return true;
 	}

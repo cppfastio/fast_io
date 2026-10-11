@@ -706,13 +706,13 @@ inline constexpr void deque_allocate_on_empty_common_with_n_impl(typename alloca
 	{
 		for (auto i{start_block_ptr}; i != end_block_ptr; ++i)
 		{
-			::std::construct_at(i, static_cast<begin_ptrtype>(
+			::new (static_cast<void *>(i)) begin_ptrtype(static_cast<begin_ptrtype>(
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
-									   __builtin_operator_new(bytes * sizeof(replacetype))
+				__builtin_operator_new(bytes * sizeof(replacetype))
 #else
-									   ::operator new(bytes * sizeof(replacetype))
+				::operator new(bytes * sizeof(replacetype))
 #endif
-										   ));
+					));
 		}
 	}
 	else
@@ -720,10 +720,10 @@ inline constexpr void deque_allocate_on_empty_common_with_n_impl(typename alloca
 	{
 		for (auto i{start_block_ptr}; i != end_block_ptr; ++i)
 		{
-			::std::construct_at(i, static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned<allocator>(allochdl, align, bytes * sizeof(replacetype))));
+			::new (static_cast<void *>(i)) begin_ptrtype(static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned<allocator>(allochdl, align, bytes * sizeof(replacetype))));
 		}
 	}
-	::std::construct_at(end_block_ptr, static_cast<begin_ptrtype>(nullptr));
+	::new (static_cast<void *>(end_block_ptr)) begin_ptrtype(static_cast<begin_ptrtype>(nullptr));
 	controller_block.controller_start_reserved_ptr = start_block_ptr;
 	controller_block.controller_after_reserved_ptr = end_block_ptr;
 }
@@ -808,13 +808,13 @@ inline constexpr void deque_allocate_init_blocks_dezeroing_impl(typename allocat
 	{
 		for (auto it{reserve_start}, ed{reserve_after}; it != ed; ++it)
 		{
-			::std::construct_at(it, static_cast<begin_ptrtype>(
+			::new (static_cast<void *>(it)) begin_ptrtype(static_cast<begin_ptrtype>(
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
-										__builtin_operator_new(blockbytes * sizeof(replacetype))
+				__builtin_operator_new(blockbytes * sizeof(replacetype))
 #else
-										::operator new(blockbytes * sizeof(replacetype))
+				::operator new(blockbytes * sizeof(replacetype))
 #endif
-											));
+					));
 		}
 	}
 	else
@@ -822,10 +822,10 @@ inline constexpr void deque_allocate_init_blocks_dezeroing_impl(typename allocat
 	{
 		for (auto it{reserve_start}, ed{reserve_after}; it != ed; ++it)
 		{
-			::std::construct_at(it, static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned_conditional_zero<allocator>(allochdl, align, blockbytes * sizeof(replacetype), zeroing)));
+			::new (static_cast<void *>(it)) begin_ptrtype(static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned_conditional_zero<allocator>(allochdl, align, blockbytes * sizeof(replacetype), zeroing)));
 		}
 	}
-	::std::construct_at(reserve_after, nullptr);
+	::new (static_cast<void *>(reserve_after)) begin_ptrtype(nullptr);
 	begin_ptrtype reserve_start_block{static_cast<begin_ptrtype>(*reserve_start)};
 	controller.front_block.begin_ptr = reserve_start_block;
 	controller.front_block.curr_ptr = reserve_start_block;
@@ -999,7 +999,7 @@ inline constexpr ::fast_io::containers::details::uninitialized_copy_n_for_deque_
 		uninitialized_copy_n_for_deque_guard g(toiter);
 		for (; count; --count)
 		{
-			::std::construct_at(::std::addressof(*toiter), *fromiter);
+			::new (static_cast<void *>(::std::addressof(*toiter)))::std::iter_value_t<ToIter>(*fromiter);
 			++fromiter;
 			++toiter;
 		}
@@ -1508,7 +1508,7 @@ inline constexpr void deque_grow_to_new_blocks_count_direction_impl(typename all
 	}
 	auto new_start_reserved_ptr{new_start_ptr + new_start_reserved_ptr_pos};
 	auto ed{::fast_io::freestanding::overlapped_copy(old_start_ptr + old_start_reserved_pos, old_start_ptr + old_after_reserved_pos, new_start_reserved_ptr)};
-	::std::construct_at(ed, nullptr);
+	::new (static_cast<void *>(ed)) typename dequecontroltype::controlreplacetype(nullptr);
 
 	controller.controller_block.controller_start_ptr = new_start_ptr;
 	controller.controller_block.controller_after_ptr = new_start_ptr + allocated_blocks;
@@ -1657,13 +1657,13 @@ inline constexpr void deque_reserve_back_blocks_impl_none_empty(typename allocat
 			{
 				for (auto e{pos + to_allocate_blocks}; pos != e; ++pos)
 				{
-					::std::construct_at(pos, static_cast<begin_ptrtype>(
+					::new (static_cast<void *>(pos)) begin_ptrtype(static_cast<begin_ptrtype>(
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
-												 __builtin_operator_new(blockbytes * sizeof(replacetype))
+						__builtin_operator_new(blockbytes * sizeof(replacetype))
 #else
-												 ::operator new(blockbytes * sizeof(replacetype))
+						::operator new(blockbytes * sizeof(replacetype))
 #endif
-													 ));
+							));
 				}
 			}
 			else
@@ -1671,10 +1671,10 @@ inline constexpr void deque_reserve_back_blocks_impl_none_empty(typename allocat
 			{
 				for (auto e{pos + to_allocate_blocks}; pos != e; ++pos)
 				{
-					::std::construct_at(pos, static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned<allocator>(allochdl, align, blockbytes * sizeof(replacetype))));
+					::new (static_cast<void *>(pos)) begin_ptrtype(static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned<allocator>(allochdl, align, blockbytes * sizeof(replacetype))));
 				}
 			}
-			::std::construct_at(pos, nullptr);
+			::new (static_cast<void *>(pos)) begin_ptrtype(nullptr);
 			controller.controller_block.controller_after_reserved_ptr = pos;
 		}
 	}
@@ -1850,7 +1850,7 @@ inline constexpr void deque_reserve_front_blocks_none_empty_impl(typename alloca
 			::fast_io::freestanding::non_overlapped_copy_n(new_controller_after_reserved_ptr,
 														   back_borrowed_blocks_count,
 														   new_controller_start_reserved_ptr);
-			::std::construct_at(controller.controller_block.controller_after_reserved_ptr = new_controller_after_reserved_ptr, nullptr);
+			::new (static_cast<void *>(controller.controller_block.controller_after_reserved_ptr = new_controller_after_reserved_ptr)) begin_ptrtype(nullptr);
 			// after this line Todo
 
 			auto ed{new_controller_start_reserved_ptr};
@@ -1860,13 +1860,13 @@ inline constexpr void deque_reserve_front_blocks_none_empty_impl(typename alloca
 			{
 				for (auto i{new_controller_start_reserved_ptr}; i != ed; ++i)
 				{
-					::std::construct_at(i, static_cast<begin_ptrtype>(
+					::new (static_cast<void *>(i)) begin_ptrtype(static_cast<begin_ptrtype>(
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
-											   __builtin_operator_new(blockbytes * sizeof(replacetype))
+						__builtin_operator_new(blockbytes * sizeof(replacetype))
 #else
-											   ::operator new(blockbytes * sizeof(replacetype))
+						::operator new(blockbytes * sizeof(replacetype))
 #endif
-												   ));
+							));
 				}
 			}
 			else
@@ -1874,7 +1874,7 @@ inline constexpr void deque_reserve_front_blocks_none_empty_impl(typename alloca
 			{
 				for (auto i{new_controller_start_reserved_ptr}; i != ed; ++i)
 				{
-					::std::construct_at(i, static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned<allocator>(allochdl, align, blockbytes * sizeof(replacetype))));
+					::new (static_cast<void *>(i)) begin_ptrtype(static_cast<begin_ptrtype>(::fast_io::containers::details::deque_alloc_aligned<allocator>(allochdl, align, blockbytes * sizeof(replacetype))));
 				}
 			}
 			controller.controller_block.controller_start_reserved_ptr = new_controller_start_reserved_ptr;
@@ -2904,13 +2904,13 @@ public:
 			}
 			else
 			{
-				::std::construct_at(currptr, ::std::forward<Args>(args)...);
+				::new (static_cast<void *>(currptr)) value_type(::std::forward<Args>(args)...);
 			}
 		}
 		else
 #endif
 		{
-			::std::construct_at(currptr, ::std::forward<Args>(args)...);
+			::new (static_cast<void *>(currptr)) value_type(::std::forward<Args>(args)...);
 		}
 		controller.back_block.curr_ptr = currptr + 1;
 		return *currptr;
@@ -2944,13 +2944,13 @@ public:
 			}
 			else
 			{
-				::std::construct_at(currptr, ::std::forward<Args>(args)...);
+				::new (static_cast<void *>(currptr)) value_type(::std::forward<Args>(args)...);
 			}
 		}
 		else
 #endif
 		{
-			::std::construct_at(currptr, ::std::forward<Args>(args)...);
+			::new (static_cast<void *>(currptr)) value_type(::std::forward<Args>(args)...);
 		}
 		controller.back_block.curr_ptr = currptr + 1;
 		return *currptr;
@@ -3071,12 +3071,12 @@ public:
 			{
 				if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 				{
-					return *(controller.front_block.curr_ptr = ::std::construct_at(front_curr_ptr - 1, ::std::forward<Args>(args)...));
+					return *(controller.front_block.curr_ptr = ::new (static_cast<void *>(front_curr_ptr - 1)) value_type(::std::forward<Args>(args)...));
 				}
 				else
 				{
 					emplace_front_guard guard(__builtin_addressof(this->controller));
-					front_curr_ptr = ::std::construct_at(front_curr_ptr - 1, ::std::forward<Args>(args)...);
+					front_curr_ptr = ::new (static_cast<void *>(front_curr_ptr - 1)) value_type(::std::forward<Args>(args)...);
 					guard.thisdeq = nullptr;
 					return *(controller.front_block.curr_ptr = front_curr_ptr);
 				}
@@ -3087,12 +3087,12 @@ public:
 		{
 			if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 			{
-				return *(controller.front_block.curr_ptr = ::std::construct_at(front_curr_ptr - 1, ::std::forward<Args>(args)...));
+				return *(controller.front_block.curr_ptr = ::new (static_cast<void *>(front_curr_ptr - 1)) value_type(::std::forward<Args>(args)...));
 			}
 			else
 			{
 				emplace_front_guard guard(__builtin_addressof(this->controller));
-				front_curr_ptr = ::std::construct_at(front_curr_ptr - 1, ::std::forward<Args>(args)...);
+				front_curr_ptr = ::new (static_cast<void *>(front_curr_ptr - 1)) value_type(::std::forward<Args>(args)...);
 				guard.thisdeq = nullptr;
 				return *(controller.front_block.curr_ptr = front_curr_ptr);
 			}
@@ -3129,13 +3129,13 @@ public:
 			}
 			else
 			{
-				return *(controller.front_block.curr_ptr = ::std::construct_at(front_curr_ptr - 1, ::std::forward<Args>(args)...));
+				return *(controller.front_block.curr_ptr = ::new (static_cast<void *>(front_curr_ptr - 1)) value_type(::std::forward<Args>(args)...));
 			}
 		}
 		else
 #endif
 		{
-			return *(controller.front_block.curr_ptr = ::std::construct_at(front_curr_ptr - 1, ::std::forward<Args>(args)...));
+			return *(controller.front_block.curr_ptr = ::new (static_cast<void *>(front_curr_ptr - 1)) value_type(::std::forward<Args>(args)...));
 		}
 	}
 
@@ -3463,10 +3463,6 @@ public:
 		return const_reverse_iterator({this->end_common()});
 	}
 
-	inline constexpr bool empty() const noexcept
-	{
-		return controller.front_block.curr_ptr == controller.back_block.curr_ptr;
-	}
 
 	inline constexpr bool is_empty() const noexcept
 	{
@@ -3960,14 +3956,14 @@ public:
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
 			auto retit = this->emplace_decision_common<true>(iter);
-			::std::construct_at(retit.itercontent.curr_ptr, ::std::forward<Args>(args)...);
+			::new (static_cast<void *>(retit.itercontent.curr_ptr)) value_type(::std::forward<Args>(args)...);
 			return retit;
 		}
 		else
 		{
 			auto [retit, decision] = this->emplace_decision_common<false>(iter);
 			emplace_guard guard{this, retit, decision};
-			::std::construct_at(retit.itercontent.curr_ptr, ::std::forward<Args>(args)...);
+			::new (static_cast<void *>(retit.itercontent.curr_ptr)) value_type(::std::forward<Args>(args)...);
 			guard.thisdeq = nullptr;
 			return retit;
 		}
@@ -3985,14 +3981,14 @@ public:
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
 			auto retptr = this->emplace_index_decision_common<true>(idx);
-			::std::construct_at(retptr, ::std::forward<Args>(args)...);
+			::new (static_cast<void *>(retptr)) value_type(::std::forward<Args>(args)...);
 			return *retptr;
 		}
 		else
 		{
 			auto [retptr, decision] = this->emplace_index_decision_common<false>(idx);
 			emplace_index_guard guard{this, idx, oldsize, decision};
-			::std::construct_at(retptr, ::std::forward<Args>(args)...);
+			::new (static_cast<void *>(retptr)) value_type(::std::forward<Args>(args)...);
 			guard.thisdeq = nullptr;
 			return *retptr;
 		}

@@ -1108,10 +1108,6 @@ public:
 		return imp.begin_ptr == imp.curr_ptr;
 	}
 
-	[[nodiscard]] inline constexpr bool empty() const noexcept
-	{
-		return imp.begin_ptr == imp.curr_ptr;
-	}
 	inline constexpr void clear() noexcept
 	{
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)

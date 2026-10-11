@@ -47,7 +47,7 @@ inline void test_assign_count_value()
 		}
 
 		dq.assign(0u, 999u);
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::fast_io::io::panic("deque should be empty after assign(0, val)\n");
 		}

@@ -138,7 +138,7 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 	}
 	{
 		wire_reader sl{suites, suites + suites_size};
-		while (!sl.empty())
+		while (!sl.is_empty())
 		{
 			::std::uint_least16_t v;
 			if (!sl.take_u16(v))
@@ -168,12 +168,12 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 	}
 	::std::byte const *exts_p;
 	::std::size_t exts_size;
-	if (!r.take_vector16(exts_p, exts_size) || !r.empty())
+	if (!r.take_vector16(exts_p, exts_size) || !r.is_empty())
 	{
 		return false;
 	}
 	wire_reader exts{exts_p, exts_p + exts_size};
-	while (!exts.empty())
+	while (!exts.is_empty())
 	{
 		::std::uint_least16_t et;
 		::std::byte const *ep;
@@ -189,7 +189,7 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 		{
 			::std::byte const *vs;
 			::std::size_t vn;
-			if (!e.take_vector8(vs, vn) || !e.empty())
+			if (!e.take_vector8(vs, vn) || !e.is_empty())
 			{
 				return false;
 			}
@@ -207,7 +207,7 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 		{
 			::std::byte const *gs;
 			::std::size_t gn;
-			if (!e.take_vector16(gs, gn) || !e.empty())
+			if (!e.take_vector16(gs, gn) || !e.is_empty())
 			{
 				return false;
 			}
@@ -226,12 +226,12 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 		{
 			::std::byte const *ks;
 			::std::size_t kn;
-			if (!e.take_vector16(ks, kn) || !e.empty())
+			if (!e.take_vector16(ks, kn) || !e.is_empty())
 			{
 				return false;
 			}
 			wire_reader shares{ks, ks + kn};
-			while (!shares.empty())
+			while (!shares.is_empty())
 			{
 				::std::uint_least16_t group;
 				::std::byte const *key;
@@ -253,13 +253,13 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 		{
 			::std::byte const *sa;
 			::std::size_t sn;
-			if (!e.take_vector16(sa, sn) || !e.empty())
+			if (!e.take_vector16(sa, sn) || !e.is_empty())
 			{
 				return false;
 			}
 			info.has_sigalgs = true;
 			wire_reader l{sa, sa + sn};
-			while (!l.empty())
+			while (!l.is_empty())
 			{
 				::std::uint_least16_t v;
 				if (!l.take_u16(v))
@@ -287,7 +287,7 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 		{
 			::std::byte const *ms;
 			::std::size_t mn;
-			if (!e.take_vector8(ms, mn) || !e.empty())
+			if (!e.take_vector8(ms, mn) || !e.is_empty())
 			{
 				return false;
 			}
@@ -311,7 +311,7 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 			::std::size_t id_count{};
 			{
 				wire_reader il{ids, ids + ids_size};
-				while (!il.empty())
+				while (!il.is_empty())
 				{
 					::std::byte const *ticket;
 					::std::size_t ticket_size;
@@ -334,14 +334,14 @@ inline constexpr bool server_client_hello_parse(server_client_hello_info &info,
 			info.binders_offset = static_cast<::std::size_t>(e.cur - body);
 			::std::byte const *binders;
 			::std::size_t binders_size;
-			if (!e.take_vector16(binders, binders_size) || !e.empty() || !exts.empty())
+			if (!e.take_vector16(binders, binders_size) || !e.is_empty() || !exts.is_empty())
 			{
 				return false;
 			}
 			::std::size_t binder_count{};
 			{
 				wire_reader bl{binders, binders + binders_size};
-				while (!bl.empty())
+				while (!bl.is_empty())
 				{
 					::std::byte const *binder;
 					::std::size_t binder_size;

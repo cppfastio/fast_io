@@ -384,7 +384,7 @@ wrap_add_common(::fast_io::intrinsics::simd_vector<T, N> const &a,
 template <typename T, ::std::size_t N>
 inline constexpr ::fast_io::intrinsics::simd_vector<T, N>
 wrap_sub_common(::fast_io::intrinsics::simd_vector<T, N> const &a,
-				  ::fast_io::intrinsics::simd_vector<T, N> const &b) noexcept
+				::fast_io::intrinsics::simd_vector<T, N> const &b) noexcept
 {
 #if __cpp_if_consteval >= 202106L
 	if !consteval
@@ -656,7 +656,7 @@ wrap_sub_common(::fast_io::intrinsics::simd_vector<T, N> const &a,
 }
 
 template <::std::size_t sizeoft, ::std::size_t N>
-	requires(sizeoft *N < ::std::numeric_limits<char unsigned>::max() && (sizeoft <= sizeof(::std::uint_least64_t)))
+	requires(sizeoft * N < ::std::numeric_limits<char unsigned>::max() && (sizeoft <= sizeof(::std::uint_least64_t)))
 inline constexpr auto create_byte_swap_mask() noexcept
 {
 	using T = ::std::conditional_t<

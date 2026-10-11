@@ -67,7 +67,7 @@ struct
 		return value[nm1];
 	}
 
-	inline static constexpr bool empty() noexcept
+	inline static constexpr bool is_empty() noexcept
 	{
 		return !N;
 	}

@@ -610,10 +610,6 @@ public:
 		return {nullptr};
 	}
 
-	[[nodiscard]] inline constexpr bool empty() const noexcept
-	{
-		return this->imp == nullptr;
-	}
 	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
 		return this->imp == nullptr;

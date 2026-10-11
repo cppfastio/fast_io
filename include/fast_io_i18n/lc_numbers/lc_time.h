@@ -42,18 +42,18 @@ inline constexpr ::std::uint_least16_t month_accum[]{0, 31, 59, 90, 120, 151,
 
 struct lc_tm
 {
-	::std::int_least64_t year{};	  // full year (2025)
+	::std::int_least64_t year{}; // full year (2025)
 	::std::int_least64_t unix_seconds{};
 	::std::int_least64_t iso_year{}; // ISO week-numbering year (%G)
-	::std::uint_least32_t month{1};	 // 1-12
-	::std::uint_least32_t day{1};	 // 1-31
+	::std::uint_least32_t month{1};  // 1-12
+	::std::uint_least32_t day{1};    // 1-31
 	::std::uint_least32_t hour{};
 	::std::uint_least32_t hour12{}; // 1-12
 	::std::uint_least32_t minute{};
 	::std::uint_least32_t second{};
-	::std::uint_least32_t wday{};	 // 0=Sunday
-	::std::uint_least32_t yday{};	 // 0-365 (day of year - 1)
-	::std::uint_least32_t uday{7};	 // %u — Mon=1..Sun=7
+	::std::uint_least32_t wday{};     // 0=Sunday
+	::std::uint_least32_t yday{};     // 0-365 (day of year - 1)
+	::std::uint_least32_t uday{7};    // %u — Mon=1..Sun=7
 	::std::uint_least32_t week_sun{}; // %U
 	::std::uint_least32_t week_mon{}; // %W
 	::std::uint_least32_t iso_week{}; // %V
@@ -65,7 +65,7 @@ struct lc_tm
 // ISO week-numbering (C99 %V/%G): weeks start Monday; week 1 holds the
 // year's first Thursday. week = (yday - days_since_monday + 10) / 7
 inline constexpr ::std::int_least64_t lc_iso_week_of(::std::int_least64_t yday,
-													::std::int_least64_t wday) noexcept
+													 ::std::int_least64_t wday) noexcept
 {
 	return (yday - ((wday + 6) % 7) + 10) / 7;
 }
@@ -73,7 +73,7 @@ inline constexpr ::std::int_least64_t lc_iso_week_of(::std::int_least64_t yday,
 // a year has 53 ISO weeks iff Jan 1 is Thursday (wday 4), or a leap
 // year starting Wednesday (wday 3)
 inline constexpr ::std::int_least64_t lc_iso_max_week(::std::int_least64_t year,
-													::std::int_least64_t jan1_wday) noexcept
+													  ::std::int_least64_t jan1_wday) noexcept
 {
 	return (jan1_wday == 4 || (is_leap_year(year) && jan1_wday == 3)) ? 53 : 52;
 }
@@ -171,7 +171,7 @@ inline constexpr lc_tm lc_tm_from(T const &v) noexcept
 struct lc_prog_reader
 {
 	char8_t const *cur{}, *end{};
-	inline constexpr bool empty() const noexcept
+	inline constexpr bool is_empty() const noexcept
 	{
 		return cur >= end;
 	}
@@ -441,7 +441,7 @@ inline constexpr void lc_pct_conv(sink &sk, lc_ctx<char_type> const *ctx,
 	auto const &t{ctx->all->time};
 	// pad param bits: bit0 '-'(no pad) bit1 '_'(space) bit2 '0'(zero)
 	::std::uint_least32_t const pad_kind{
-		pad == 0 ? 1u // default zero
+		pad == 0    ? 1u // default zero
 		: (pad & 1) ? 3u
 		: (pad & 2) ? 2u
 					: 1u};
@@ -733,7 +733,7 @@ inline constexpr void lc_prog_run(char8_t const *prog, ::std::size_t plen,
 		return;
 	}
 	lc_prog_reader r{prog, prog + plen};
-	while (!r.empty())
+	while (!r.is_empty())
 	{
 		auto const tag{r.get_uleb()};
 		auto const code{static_cast<::std::uint_least32_t>(tag >> 3)};
@@ -852,7 +852,7 @@ lc_time_program(lc_ctx<char_type> const *ctx) noexcept
 // value types the interpreter can read
 template <typename T>
 concept lc_time_value = ::std::same_as<::std::remove_cvref_t<T>, ::fast_io::iso8601_timestamp> ||
-	::std::same_as<::std::remove_cvref_t<T>, ::fast_io::posix_statx_timestamp64>;
+						::std::same_as<::std::remove_cvref_t<T>, ::fast_io::posix_statx_timestamp64>;
 
 template <typename T>
 concept lc_time_value_or_chrono = lc_time_value<T> || requires(T const &v) {
@@ -877,7 +877,7 @@ inline constexpr ::fast_io::manipulators::scalar_flags base_lc_time_flags_cache{
 // strftime produces in the C locale; used only when a time scalar is
 // printed without a locale context
 inline constexpr ::fast_io::u8string_view lc_c_abday[]{u8"Sun", u8"Mon", u8"Tue", u8"Wed",
-													  u8"Thu", u8"Fri", u8"Sat"};
+													   u8"Thu", u8"Fri", u8"Sat"};
 inline constexpr ::fast_io::u8string_view lc_c_day[]{u8"Sunday", u8"Monday", u8"Tuesday",
 													 u8"Wednesday", u8"Thursday", u8"Friday",
 													 u8"Saturday"};
@@ -1106,9 +1106,9 @@ print_reserve_define(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipula
 	::fast_io::details::lc_tm tm{::fast_io::details::lc_tm_from(t.reference)};
 	::fast_io::details::lc_write_sink<char_type> sk{
 		iter, iter + print_reserve_size(
-						::fast_io::io_reserve_type<char_type,
-												 ::fast_io::manipulators::scalar_manip_t<flags, T>>,
-						t)};
+						 ::fast_io::io_reserve_type<char_type,
+													::fast_io::manipulators::scalar_manip_t<flags, T>>,
+						 t)};
 	::fast_io::details::lc_default_emit<char_type>(flags.time_flag, tm, sk);
 	return sk.it;
 }
@@ -1179,4 +1179,3 @@ era_t_fmt(T const &tsp) noexcept
 } // namespace manipulators
 
 } // namespace fast_io
-

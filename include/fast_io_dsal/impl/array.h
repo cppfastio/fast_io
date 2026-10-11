@@ -33,10 +33,6 @@ public:
 	{
 		return false;
 	}
-	static inline constexpr bool empty() noexcept
-	{
-		return false;
-	}
 	static inline constexpr size_type size() noexcept
 	{
 		return N;
@@ -284,10 +280,6 @@ public:
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 
 	static inline constexpr bool is_empty() noexcept
-	{
-		return true;
-	}
-	static inline constexpr bool empty() noexcept
 	{
 		return true;
 	}

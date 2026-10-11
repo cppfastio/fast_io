@@ -4,7 +4,7 @@
 constexpr bool default_construct()
 {
 	::fast_io::u8string s{};
-	return s.empty();
+	return s.is_empty();
 }
 static_assert(default_construct());
 
@@ -53,7 +53,7 @@ constexpr bool clear_constexpr()
 	::fast_io::u8string s{};
 	s.push_back('a');
 	s.clear();
-	return s.empty();
+	return s.is_empty();
 }
 static_assert(clear_constexpr());
 

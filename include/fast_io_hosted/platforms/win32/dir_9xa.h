@@ -343,7 +343,7 @@ struct win32_9xa_dir_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	inline win32_9xa_dir_file_factory &operator=(win32_9xa_dir_file_factory const &) = delete;
 	inline ~win32_9xa_dir_file_factory()
 	{
-		if (!handle.path.empty()) [[likely]]
+		if (!handle.path.is_empty()) [[likely]]
 		{
 			::fast_io::win32::details::close_win32_9xa_dir_handle(handle);
 		}
@@ -364,7 +364,7 @@ public:
 	}
 	inline explicit constexpr operator bool() const noexcept
 	{
-		return !handle.path.empty();
+		return !handle.path.is_empty();
 	}
 	inline constexpr native_handle_type release() noexcept
 	{

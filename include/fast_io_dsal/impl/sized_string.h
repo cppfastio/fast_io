@@ -273,10 +273,6 @@ public:
 		return imp.size == 0;
 	}
 
-	inline constexpr bool empty() const noexcept
-	{
-		return imp.size == 0;
-	}
 
 	inline constexpr size_type size() const noexcept
 	{
@@ -2015,7 +2011,7 @@ inline constexpr ::fast_io::freestanding::parse_errc scan_context_eof_define(
 {
 	if constexpr (flags.line || flags.noskipws)
 	{
-		if (str.reference.empty())
+		if (str.reference.is_empty())
 		{
 			return ::fast_io::freestanding::parse_errc::end_of_file;
 		}

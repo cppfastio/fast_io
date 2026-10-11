@@ -626,10 +626,6 @@ public:
 		return const_reverse_iterator({const_cast<::fast_io::containers::details::list_node_common *>(__builtin_addressof(imp))});
 	}
 
-	[[nodiscard]] inline constexpr bool empty() const noexcept
-	{
-		return imp.next == __builtin_addressof(imp);
-	}
 
 	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{

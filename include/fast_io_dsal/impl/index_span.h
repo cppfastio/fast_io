@@ -213,11 +213,6 @@ public:
 		return emptyval;
 	}
 
-	inline static constexpr bool empty() noexcept
-	{
-		constexpr bool emptyval{!N};
-		return emptyval;
-	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]

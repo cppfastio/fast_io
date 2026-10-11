@@ -6,10 +6,10 @@ using namespace fast_io::mnp;
 int main()
 {
 	fast_io::vector<int> numbers;
-	println("Initially, numbers.empty(): ", boolalpha(numbers.empty()));
-	if (!(numbers.empty())) ::fast_io::fast_terminate();
+	println("Initially, numbers.is_empty(): ", boolalpha(numbers.is_empty()));
+	if (!(numbers.is_empty())) ::fast_io::fast_terminate();
 
 	numbers.push_back(42);
-	println("After adding elements, numbers.empty(): ", boolalpha(numbers.empty()));
-	if (!(!numbers.empty())) ::fast_io::fast_terminate();
+	println("After adding elements, numbers.is_empty(): ", boolalpha(numbers.is_empty()));
+	if (!(!numbers.is_empty())) ::fast_io::fast_terminate();
 }

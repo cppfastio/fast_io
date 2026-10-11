@@ -425,7 +425,7 @@ operator++(basic_nt_family_recursive_directory_iterator<family, StackType> &prdi
 {
 	for (;;)
 	{
-		if (prdit.stack.empty())
+		if (prdit.stack.is_empty())
 		{
 			prdit.entry->d_handle = prdit.root_handle;
 			prdit.entry = win32::nt::details::nt_dirent_next<family>(prdit.entry);
@@ -440,7 +440,7 @@ operator++(basic_nt_family_recursive_directory_iterator<family, StackType> &prdi
 			auto entry = win32::nt::details::nt_dirent_next<family>(prdit.entry);
 			if (entry == nullptr)
 			{
-				prdit.stack.pop_back();
+				prdit.stack.pop_back_unchecked();
 				continue;
 			}
 			prdit.entry = entry;
@@ -455,7 +455,7 @@ operator++(basic_nt_family_recursive_directory_iterator<family, StackType> &prdi
 				continue;
 			}
 			prdit.stack.emplace_back(
-				nt_at_entry{prdit.stack.empty() ? prdit.root_handle : prdit.stack.back().handle},
+				nt_at_entry{prdit.stack.is_empty() ? prdit.root_handle : prdit.stack.back().handle},
 				::fast_io::manipulators::basic_os_c_str_with_known_size<char16_t>{native_d_name_ptr, native_d_namlen},
 				open_mode::directory);
 		}
@@ -468,13 +468,13 @@ template <nt_family family, typename StackType>
 inline void pop(basic_nt_family_recursive_directory_iterator<family, StackType> &prdit)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (prdit.stack.empty())
+	if (prdit.stack.is_empty())
 	{
 		prdit.entry = nullptr;
 	}
 	else
 	{
-		prdit.stack.pop_back();
+		prdit.stack.pop_back_unchecked();
 		++prdit;
 	}
 }
@@ -526,7 +526,7 @@ template <nt_family family, typename StackType>
 inline bool operator==(::std::default_sentinel_t,
 					   basic_nt_family_recursive_directory_iterator<family, StackType> const &b) noexcept
 {
-	return b.stack.empty() && b.entry == nullptr;
+	return b.stack.is_empty() && b.entry == nullptr;
 }
 
 template <nt_family family, typename StackType>
@@ -550,10 +550,22 @@ inline bool operator!=(basic_nt_family_recursive_directory_iterator<family, Stac
 	return sntnl != b;
 }
 
+namespace details
+{
+/* the recursive walk keeps a deque of open directory handles; its
+   allocator throws on failure (try flavour) rather than terminating,
+   matching the herbceptions error model — the same adapter also feeds
+   the generator's nt_dirent buffer */
+using nt_recursive_dir_allocator =
+	::fast_io::generic_allocator_adapter<::fast_io::nt_rtlallocateheap_allocator,
+										 ::fast_io::allocator_adapter_flags::throws_on_allocation_failure>;
+} // namespace details
+
 template <nt_family family>
 using nt_family_recursive_directory_generator = basic_nt_family_recursive_directory_generator<
-	family, typename nt_directory_generator::allocator_type,
-	::fast_io::containers::vector<basic_nt_family_file<family, char>, typename nt_directory_generator::allocator_type>>;
+	family, ::fast_io::details::nt_recursive_dir_allocator,
+	::fast_io::containers::deque<basic_nt_family_file<family, char>,
+								 ::fast_io::details::nt_recursive_dir_allocator>>;
 
 using nt_recursive_directory_generator = nt_family_recursive_directory_generator<nt_family::nt>;
 using zw_recursive_directory_generator = nt_family_recursive_directory_generator<nt_family::zw>;

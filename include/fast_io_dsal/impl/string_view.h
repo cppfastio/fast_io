@@ -71,10 +71,6 @@ public:
 		return !n;
 	}
 
-	[[nodiscard]] inline constexpr bool empty() const noexcept
-	{
-		return !n;
-	}
 
 	[[nodiscard]] inline constexpr size_type size() const noexcept
 	{

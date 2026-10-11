@@ -88,7 +88,7 @@ int main()
 	}
 	v.shrink_to_fit();
 	v.clear();
-	if (!v.empty())
+	if (!v.is_empty())
 	{
 		::fast_io::fast_terminate();
 	}

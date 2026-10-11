@@ -260,7 +260,7 @@ struct encoder
 		tag(code, kind_sleb);
 		put_leb128_to(buf, v);
 	}
-	void node_bytes(::std::uint_least32_t code, ::std::string_view bytes) noexcept
+	void node_bytes(::std::uint_least32_t code, ::fast_io::string_view bytes) noexcept
 	{
 		tag(code, kind_bytes);
 		put_leb128_to(buf, bytes.size());
@@ -272,7 +272,7 @@ struct encoder
 		tag(code, kind_list);
 		put_leb128_to(buf, nchildren);
 	}
-	void node_list(::std::uint_least32_t code, ::std::span<::std::string_view const> children) noexcept
+	void node_list(::std::uint_least32_t code, ::fast_io::containers::span<::fast_io::string_view const> children) noexcept
 	{
 		node_list_begin(code, children.size());
 		for (auto c : children)
@@ -280,7 +280,7 @@ struct encoder
 			buf.append(c.data(), c.size());
 		}
 	}
-	void literal(::std::string_view bytes) noexcept
+	void literal(::fast_io::string_view bytes) noexcept
 	{
 		node_bytes(op_literal, bytes);
 	}
@@ -298,17 +298,13 @@ struct reader
 	::fast_io::u8ibuffer_view iv{};
 
 	constexpr reader() noexcept = default;
-	constexpr reader(::std::u8string_view sv) noexcept
-		: iv{sv.data(), sv.data() + sv.size()}
-	{
-	}
 	constexpr reader(::fast_io::u8string_view sv) noexcept
 		: iv{sv.data(), sv.data() + sv.size()}
 	{
 	}
 	// byte buffer view: chars reinterpreted as u8 (blob payloads are
 	// charset bytes; container charset is a blob-level property)
-	constexpr reader(::std::string_view sv) noexcept
+	constexpr reader(::fast_io::string_view sv) noexcept
 		: iv{reinterpret_cast<char8_t const *>(sv.data()),
 			 reinterpret_cast<char8_t const *>(sv.data() + sv.size())}
 	{
@@ -330,7 +326,7 @@ struct reader
 		iv.curr_ptr += n;
 	}
 
-	[[nodiscard]] bool empty() const noexcept
+	[[nodiscard]] bool is_empty() const noexcept
 	{
 		return iv.curr_ptr == iv.end_ptr;
 	}

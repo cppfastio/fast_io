@@ -62,7 +62,7 @@ struct wire_reader
 		return static_cast<::std::size_t>(end - cur);
 	}
 
-	inline constexpr bool empty() const noexcept
+	inline constexpr bool is_empty() const noexcept
 	{
 		return cur == end;
 	}

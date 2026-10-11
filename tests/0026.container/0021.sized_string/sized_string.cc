@@ -50,7 +50,7 @@ int main()
 		::fast_io::fast_terminate();
 	}
 	s.clear();
-	if (!s.empty() || s.c_str()[0] != 0)
+	if (!s.is_empty() || s.c_str()[0] != 0)
 	{
 		::fast_io::fast_terminate();
 	}

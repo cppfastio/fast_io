@@ -1119,10 +1119,6 @@ public:
 		return imp.size == 0;
 	}
 
-	[[nodiscard]] inline constexpr bool empty() const noexcept
-	{
-		return imp.size == 0;
-	}
 	inline constexpr void clear() noexcept
 	{
 		if constexpr (!::std::is_trivially_destructible_v<value_type>)

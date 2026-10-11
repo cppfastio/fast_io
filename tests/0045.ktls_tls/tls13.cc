@@ -405,7 +405,7 @@ int main()
 		{
 			return 44;
 		}
-		if (!r.empty() || r.take_u8(*reinterpret_cast<::std::uint_least8_t *>(buf)))
+		if (!r.is_empty() || r.take_u8(*reinterpret_cast<::std::uint_least8_t *>(buf)))
 		{
 			return 45;
 		}
@@ -460,7 +460,7 @@ int main()
 			return 58;
 		}
 		bool saw_sv{};
-		while (!exts.empty())
+		while (!exts.is_empty())
 		{
 			::std::uint_least16_t et;
 			::std::byte const *ep;

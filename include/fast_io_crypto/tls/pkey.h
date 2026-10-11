@@ -82,7 +82,7 @@ inline constexpr bool tls_sec1_pkey_parse_body(tls_pkey *key, wire_reader &r) no
 		return false;
 	}
 	key->ec_curve = nullptr;
-	while (!r.empty())
+	while (!r.is_empty())
 	{
 		der_tlv opt;
 		if (!der_read_tlv(r, opt))

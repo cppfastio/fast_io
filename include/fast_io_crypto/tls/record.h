@@ -18,7 +18,7 @@ namespace fast_io::tls::details
 {
 
 inline constexpr void tls_nonce_to_ptr(::std::byte *out /*12*/,
-										 ::std::byte const *iv, ::std::uint_least64_t seq) noexcept
+									   ::std::byte const *iv, ::std::uint_least64_t seq) noexcept
 {
 	for (::std::size_t i{}; i != 12; ++i)
 	{
@@ -36,9 +36,9 @@ len-field bytes (ciphertext+tag). Writes the inner plaintext to out and
 returns {inner_type, content_size}, or false on tag failure.
 */
 inline bool tls_record_open(::std::byte *out, ::std::size_t &out_size, content_type &inner_type,
-							  ::std::byte const *hdr5, ::std::byte const *ct, ::std::size_t ct_size,
-							  cipher_suite suite, ::std::byte const *key, ::std::byte const *iv,
-							  ::std::uint_least64_t seq) noexcept
+							::std::byte const *hdr5, ::std::byte const *ct, ::std::size_t ct_size,
+							cipher_suite suite, ::std::byte const *key, ::std::byte const *iv,
+							::std::uint_least64_t seq) noexcept
 {
 	if (ct_size < 17) /* tag(16) + at least the inner type byte */
 	{
@@ -111,10 +111,10 @@ appended by the caller) into a ciphertext record. Writes hdr(5)+ct into
 out; returns total bytes written.
 */
 inline ::std::size_t tls_record_seal_inner(::std::byte *out,
-											 ::std::byte const *inner, ::std::size_t inner_size,
-											 cipher_suite suite,
-											 ::std::byte const *key, ::std::byte const *iv,
-											 ::std::uint_least64_t seq) noexcept
+										   ::std::byte const *inner, ::std::size_t inner_size,
+										   cipher_suite suite,
+										   ::std::byte const *key, ::std::byte const *iv,
+										   ::std::uint_least64_t seq) noexcept
 {
 	::std::byte nonce[12];
 	tls_nonce_to_ptr(nonce, iv, seq);
@@ -168,11 +168,11 @@ seal inner plaintext into a ciphertext record. Writes hdr(5)+ct into
 out; returns total bytes written.
 */
 inline ::std::size_t tls_record_seal(::std::byte *out,
-									   content_type inner_type,
-									   ::std::byte const *pt, ::std::size_t pt_size,
-									   cipher_suite suite,
-									   ::std::byte const *key, ::std::byte const *iv,
-									   ::std::uint_least64_t seq) noexcept
+									 content_type inner_type,
+									 ::std::byte const *pt, ::std::size_t pt_size,
+									 cipher_suite suite,
+									 ::std::byte const *key, ::std::byte const *iv,
+									 ::std::uint_least64_t seq) noexcept
 {
 	/* inner = pt || type || (no padding -- records are small).
 	   PERFORMANCE: 16K stack buffer per call -- fine for handshake

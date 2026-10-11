@@ -14,8 +14,8 @@
 
 // one codeset the emitter may produce: names normalized like the
 // consumer (UTF-8, gb18030, UTF_EBCDIC)
-inline bool parse_cset(::std::string_view sv, ::fast_io_i18n::lcblob::blob_charset &enc,
-					   ::std::u8string_view &canon) noexcept
+inline bool parse_cset(::fast_io::string_view sv, ::fast_io_i18n::lcblob::blob_charset &enc,
+					   ::fast_io::u8string_view &canon) noexcept
 {
 	char buf[16];
 	::std::size_t n{};
@@ -31,7 +31,7 @@ inline bool parse_cset(::std::string_view sv, ::fast_io_i18n::lcblob::blob_chars
 		}
 		buf[n++] = static_cast<char>(ch >= 'A' && ch <= 'Z' ? ch + 0x20 : ch);
 	}
-	::std::string_view nsv{buf, n};
+	::fast_io::string_view nsv{buf, n};
 	if (nsv == "utf8")
 	{
 		enc = ::fast_io_i18n::lcblob::blob_charset::utf8;
@@ -57,13 +57,13 @@ inline bool parse_cset(::std::string_view sv, ::fast_io_i18n::lcblob::blob_chars
 // a localedef source file name: aa_DJ / de_DE@euro / i18n / bokmal / C.
 // Everything else in a localedata tree (test sources, makefiles,
 // generated *.in intermediates, README/SUPPORTED/Depend) is skipped.
-inline bool locale_file_name(::std::string_view s) noexcept
+inline bool locale_file_name(::fast_io::string_view s) noexcept
 {
 	if (s == "C")
 	{
 		return true;
 	}
-	if (s.empty() || !::fast_io::char_category::is_c_lower(s.front()))
+	if (s.is_empty() || !::fast_io::char_category::is_c_lower(s.front()))
 	{
 		return false;
 	}
@@ -77,7 +77,8 @@ inline bool locale_file_name(::std::string_view s) noexcept
 	return true;
 }
 
-int main(int argc, char **argv) try
+int main(int argc, char **argv)
+try
 {
 	using namespace ::fast_io_i18n;
 	if (argc < 3)
@@ -89,13 +90,13 @@ int main(int argc, char **argv) try
 	}
 	// codesets to emit — default UTF-8 + GB18030 like the old system
 	::fast_io_i18n::lcblob::blob_charset encs[8];
-	::std::u8string_view encn[8];
+	::fast_io::u8string_view encn[8];
 	::std::size_t nenc{};
 	if (argc > 3)
 	{
 		for (int i{3}; i < argc && nenc < 8; ++i)
 		{
-			if (!parse_cset({argv[i], ::fast_io::cstr_len(argv[i])}, encs[nenc], encn[nenc]))
+			if (!parse_cset(::fast_io::string_view{argv[i], ::fast_io::cstr_len(argv[i])}, encs[nenc], encn[nenc]))
 			{
 				::fast_io::perrln("unsupported codeset: ", ::fast_io::mnp::os_c_str(argv[i]));
 				return 1;
@@ -124,32 +125,32 @@ int main(int argc, char **argv) try
 			continue;
 		}
 		auto fn{::fast_io::u8filename(ent)};
-		::std::u8string_view uname{fn.c_str(), fn.c_str() + fn.n};
+		::fast_io::u8string_view uname{fn.c_str(), fn.n};
 		// accept raw localedef sources (no extension) and the *.in
 		// preprocessed intermediates the glibc build tree produces —
 		// every other extension is test code/scripts, never a locale
 		auto const ext{::fast_io::u8extension(ent)};
-		::std::u8string_view const extsv{ext.c_str(), ext.size()};
+		::fast_io::u8string_view const extsv{ext.c_str(), ext.size()};
 		bool const is_in{extsv == u8".in"};
-		if (!extsv.empty() && !is_in)
+		if (!extsv.is_empty() && !is_in)
 		{
 			continue;
 		}
 		// file name as char string for parsing/writing
 		::fast_io::string name;
 		name.append(reinterpret_cast<char const *>(fn.c_str()), fn.n);
-		::std::string_view nsv{name.data(), name.size()};
+		::fast_io::string_view nsv{name.data(), name.size()};
 		// canonical locale name: an am_ET.UTF-8.in intermediate names
 		// the am_ET locale (file-name charset is dropped — the output
 		// codeset is appended later); plain sources name it directly
-		::std::string_view oname{nsv};
+		::fast_io::string_view oname{nsv};
 		if (is_in)
 		{
-			oname = nsv.substr(0, nsv.find_last_of('.'));
-			auto const d2{oname.find_last_of('.')};
-			if (d2 != ::std::string_view::npos)
+			oname = nsv.subview(0, nsv.rfind_character('.'));
+			auto const d2{oname.rfind_character('.')};
+			if (d2 != ::fast_io::containers::npos)
 			{
-				oname = oname.substr(0, d2);
+				oname = oname.subview(0, d2);
 			}
 		}
 		// locale file names look like aa_DJ / de_DE@euro / i18n / C —
@@ -160,8 +161,8 @@ int main(int argc, char **argv) try
 			continue;
 		}
 		if (nsv == "cns11643_stroke" ||
-		    nsv == "i18n_ctype" || nsv == "POSIX" || nsv.substr(0, 8) == "iso14651" ||
-		    nsv.substr(0, 8) == "translit")
+			nsv == "i18n_ctype" || nsv == "POSIX" || nsv.subview(0, 8) == "iso14651" ||
+			nsv.subview(0, 8) == "translit")
 		{
 			continue;
 		}
@@ -173,7 +174,7 @@ int main(int argc, char **argv) try
 			localedef::lc_file_data d;
 			localedef::parse_file(df, name, d, cache, 0);
 			::fast_io_i18n::lcblob::cat_src cats[::fast_io_i18n::lcblob::cat_count]{};
-			localedef::to_cats(d, cats, {{name.data(), name.size()}, 0});
+			localedef::to_cats(d, cats, {::fast_io::string_view{name.data(), name.size()}, 0});
 			// zero categories -> not a localedef source (charmap
 			// conversion tables, misnamed files): emit nothing
 			bool any{};
@@ -186,7 +187,7 @@ int main(int argc, char **argv) try
 				::fast_io::println("  ^^ skipped (no locale data)");
 				continue;
 			}
-			::std::string_view ctx{name.data(), name.size()};
+			::fast_io::string_view ctx{name.data(), name.size()};
 			for (::std::size_t e{}; e < (is_c ? 1 : nenc); ++e)
 			{
 				// canonical locale name = lang.codeset
@@ -202,7 +203,7 @@ int main(int argc, char **argv) try
 					lname.push_back(u8'.');
 					lname.append(encn[e].data(), encn[e].size());
 				}
-				::std::u8string_view const lv{lname.data(), lname.size()};
+				::fast_io::u8string_view const lv{lname.data(), lname.size()};
 				// section slots [charset, utf8, utf16, utf32]; the charset
 				// one is only built for non-utf8 codesets — otherwise
 				// slot 0 aliases the utf8 section
@@ -238,7 +239,7 @@ int main(int argc, char **argv) try
 					::fast_io::at(outdir),
 					::fast_io::mnp::os_c_str(reinterpret_cast<char const *>(outname.c_str()))};
 				::fast_io::print(of,
-						 ::std::string_view{blob.data(), blob.size()});
+								 ::fast_io::string_view{blob.data(), blob.size()});
 			}
 		}
 		catch throws(::std::error e)

@@ -239,7 +239,7 @@ inline void tls_client_handshake(basic_ossl_tls_client<socket_observer_type> *cl
 	client->rbio_ = rbio;
 	client->wbio_ = wbio;
 
-	if (cfg->check_hostname && !cfg->hostname.empty())
+	if (cfg->check_hostname && !cfg->hostname.is_empty())
 	{
 		char host[256];
 		::std::size_t const n{cfg->hostname.size() < sizeof(host) - 1 ? cfg->hostname.size() : sizeof(host) - 1};

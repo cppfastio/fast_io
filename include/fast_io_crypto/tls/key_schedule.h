@@ -193,7 +193,7 @@ inline constexpr void derive_secret_to_ptr(typename crypto::md md, ::std::byte *
 	::std::byte th[64];
 	transcript_digest_to_ptr<crypto>(transcript, th);
 	hkdf_expand_label_to_ptr<crypto>(md, out, crypto::md_digest_size(md), secret, label,
-									label_size, th, crypto::md_digest_size(md));
+									 label_size, th, crypto::md_digest_size(md));
 }
 
 template <typename crypto>
@@ -251,8 +251,8 @@ public:
 		empty_ctx.digest_to_byte_ptr(empty_digest);
 		::std::byte next[64];
 		hkdf_expand_label_to_ptr<crypto>(md_, next, crypto::md_digest_size(md_), secret,
-										u8"derived", 7, empty_digest,
-										crypto::md_digest_size(md_));
+										 u8"derived", 7, empty_digest,
+										 crypto::md_digest_size(md_));
 		::fast_io::details::non_overlapped_copy_n(next, crypto::md_digest_size(md_), secret);
 	}
 

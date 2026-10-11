@@ -177,7 +177,7 @@ inline
 			using x86_64_v64qi [[__gnu__::__vector_size__(64)]] = char;
 #if __has_builtin(__builtin_bit_cast)
 			return !__builtin_ia32_ptestmb512(__builtin_bit_cast(x86_64_v64qi, vec),
-											 __builtin_bit_cast(x86_64_v64qi, vec), UINT_LEAST64_MAX);
+											  __builtin_bit_cast(x86_64_v64qi, vec), UINT_LEAST64_MAX);
 #else
 			return !__builtin_ia32_ptestmb512((x86_64_v64qi)vec.value, (x86_64_v64qi)vec.value, UINT_LEAST64_MAX);
 #endif

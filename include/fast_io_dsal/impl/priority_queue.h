@@ -161,19 +161,6 @@ public:
 	{
 		container.swap(other.container);
 	}
-	inline constexpr bool empty() const noexcept
-	{
-		if constexpr (requires() {
-						  { container.is_empty() } -> ::std::convertible_to<bool>;
-					  })
-		{
-			return container.is_empty();
-		}
-		else
-		{
-			return container.empty();
-		}
-	}
 
 	inline constexpr bool is_empty() const noexcept
 	{

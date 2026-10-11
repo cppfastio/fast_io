@@ -242,7 +242,7 @@ inline constexpr ::fast_io_i18n::lcblob::field_def keyboard_fields[]{
 
 struct cat_schema
 {
-	::std::span<::fast_io_i18n::lcblob::field_def const> fields;
+	::fast_io::containers::span<::fast_io_i18n::lcblob::field_def const> fields;
 	char const *glibc_name;
 };
 
@@ -250,17 +250,17 @@ struct cat_schema
 // cat id. LC_CTYPE/LC_COLLATE are intentionally absent — their bodies
 // are ignored by the parser.
 inline constexpr ::fast_io_i18n::lcblob::cat_schema cat_schemas[cat_count]{
-	{identification_fields, "LC_IDENTIFICATION"},
-	{monetary_fields, "LC_MONETARY"},
-	{numeric_fields, "LC_NUMERIC"},
-	{time_fields, "LC_TIME"},
-	{messages_fields, "LC_MESSAGES"},
-	{paper_fields, "LC_PAPER"},
-	{telephone_fields, "LC_TELEPHONE"},
-	{name_fields, "LC_NAME"},
-	{address_fields, "LC_ADDRESS"},
-	{measurement_fields, "LC_MEASUREMENT"},
-	{keyboard_fields, "LC_KEYBOARD"},
+	{::fast_io::containers::span{identification_fields, ::std::size(identification_fields)}, "LC_IDENTIFICATION"},
+	{::fast_io::containers::span{monetary_fields, ::std::size(monetary_fields)}, "LC_MONETARY"},
+	{::fast_io::containers::span{numeric_fields, ::std::size(numeric_fields)}, "LC_NUMERIC"},
+	{::fast_io::containers::span{time_fields, ::std::size(time_fields)}, "LC_TIME"},
+	{::fast_io::containers::span{messages_fields, ::std::size(messages_fields)}, "LC_MESSAGES"},
+	{::fast_io::containers::span{paper_fields, ::std::size(paper_fields)}, "LC_PAPER"},
+	{::fast_io::containers::span{telephone_fields, ::std::size(telephone_fields)}, "LC_TELEPHONE"},
+	{::fast_io::containers::span{name_fields, ::std::size(name_fields)}, "LC_NAME"},
+	{::fast_io::containers::span{address_fields, ::std::size(address_fields)}, "LC_ADDRESS"},
+	{::fast_io::containers::span{measurement_fields, ::std::size(measurement_fields)}, "LC_MEASUREMENT"},
+	{::fast_io::containers::span{keyboard_fields, ::std::size(keyboard_fields)}, "LC_KEYBOARD"},
 };
 
 #undef LC_S
@@ -305,7 +305,7 @@ inline constexpr ::fast_io::u8string_view blob_charset_name(blob_charset cs) noe
 }
 
 // u8 source -> section payload bytes
-inline ::fast_io::string transcode(::std::u8string_view sv, blob_charset cs) FAST_IO_HERBCEPTIONS_THROWS
+inline ::fast_io::string transcode(::fast_io::u8string_view sv, blob_charset cs) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::string out;
 	switch (cs)
@@ -396,8 +396,8 @@ inline void transcode_field_children(::std::uint_least64_t nchildren,
 			r.get_leb(n);
 			::fast_io::u8string_view bytes;
 			r.get_bytes(n, bytes);
-			auto tb{transcode({bytes.data(), bytes.size()}, cs)};
-			out.node_bytes(h.code, {tb.data(), tb.size()});
+			auto tb{transcode(bytes, cs)};
+			out.node_bytes(h.code, ::fast_io::string_view{tb.data(), tb.size()});
 		}
 		else if (h.kind == kind_bytes &&
 				 (h.code == static_cast<::std::uint_least32_t>(field_param::chrono) ||
@@ -407,11 +407,11 @@ inline void transcode_field_children(::std::uint_least64_t nchildren,
 			r.get_leb(n);
 			::fast_io::u8string_view bytes;
 			r.get_bytes(n, bytes);
-			reader sub{{bytes.data(), bytes.size()}};
+			reader sub{bytes};
 			encoder subout;
 			transcode_nodes(sub, subout, cs, depth + 1);
 			out.node_bytes(h.code,
-						   ::std::string_view{subout.buf.data(), subout.buf.size()});
+						   ::fast_io::string_view{subout.buf.data(), subout.buf.size()});
 		}
 		else
 		{
@@ -429,7 +429,7 @@ inline void transcode_nodes(::fast_io_i18n::binfmt::reader &r,
 	{
 		throw throws::std::errc::invalid_argument;
 	}
-	while (!r.empty())
+	while (!r.is_empty())
 	{
 		char8_t const *start{r.cur()};
 		node_head h;
@@ -440,8 +440,8 @@ inline void transcode_nodes(::fast_io_i18n::binfmt::reader &r,
 			r.get_leb(n);
 			::fast_io::u8string_view bytes;
 			r.get_bytes(n, bytes);
-			auto tb{transcode({bytes.data(), bytes.size()}, cs)};
-			out.literal({tb.data(), tb.size()});
+			auto tb{transcode(bytes, cs)};
+			out.literal(::fast_io::string_view{tb.data(), tb.size()});
 		}
 		else if (h.code == op_field && h.kind == kind_list)
 		{
@@ -464,7 +464,7 @@ inline void transcode_nodes(::fast_io_i18n::binfmt::reader &r,
 } // namespace details
 
 // transcode every text payload of a compiled program into charset cs
-inline ::fast_io::string transcode_program(::std::string_view prog,
+inline ::fast_io::string transcode_program(::fast_io::string_view prog,
 										   blob_charset cs) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (cs == blob_charset::utf8)
@@ -473,7 +473,7 @@ inline ::fast_io::string transcode_program(::std::string_view prog,
 		r.append(prog.data(), prog.size());
 		return r;
 	}
-	::fast_io_i18n::binfmt::reader r{{prog.data(), prog.size()}};
+	::fast_io_i18n::binfmt::reader r{prog};
 	::fast_io_i18n::binfmt::encoder out;
 	details::transcode_nodes(r, out, cs, 0);
 	return ::std::move(out.buf);
@@ -493,18 +493,18 @@ struct era_src
 	::std::int_least64_t end_year{};
 	::std::int_least32_t end_month{};
 	::std::int_least32_t end_day{};
-	::std::u8string_view name{};
-	::std::u8string_view fmt{}; // pct program source text
+	::fast_io::u8string_view name{};
+	::fast_io::u8string_view fmt{}; // pct program source text
 };
 
 struct slot_src
 {
 	// STRING: strs[0]; STRLIST: all entries
-	::fast_io::vector<::std::u8string_view> strs{};
+	::fast_io::vector<::fast_io::u8string_view> strs{};
 	// INT ints[0]; INT3 ints[0..2]; BYTES ints as i8 values
 	::fast_io::vector<::std::int_least64_t> ints{};
 	// PROGRAM source text
-	::std::u8string_view fmt_src{};
+	::fast_io::u8string_view fmt_src{};
 	// ERALIST
 	::fast_io::vector<era_src> eras{};
 };
@@ -558,15 +558,15 @@ inline bool slot_has(slot_tag tag, slot_src const &s) noexcept
 	{
 	case slot_tag::string:
 	case slot_tag::strlist:
-		return !s.strs.empty();
+		return !s.strs.is_empty();
 	case slot_tag::bytes:
 	case slot_tag::integer:
 	case slot_tag::int3:
-		return !s.ints.empty();
+		return !s.ints.is_empty();
 	case slot_tag::program:
-		return !s.fmt_src.empty();
+		return !s.fmt_src.is_empty();
 	case slot_tag::eralist:
-		return !s.eras.empty();
+		return !s.eras.is_empty();
 	default:
 		return false;
 	}
@@ -669,10 +669,10 @@ inline M *mem_at(void *img, ::std::uint_least32_t off) noexcept
 
 // text member <- transcoded string; len is in section char units
 inline void sec_string(::fast_io::l10n::lc_scatter<char> &m,
-					   ::std::u8string_view sv, sec_build &b, blob_charset cs,
+					   ::fast_io::u8string_view sv, sec_build &b, blob_charset cs,
 					   ::std::size_t units) FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (sv.empty())
+	if (sv.is_empty())
 	{
 		return;
 	}
@@ -684,7 +684,7 @@ inline void sec_string(::fast_io::l10n::lc_scatter<char> &m,
 // fixed inline scatter array (abday[7], am_pm[2] ...): at most cap elems
 inline void sec_strs(::fast_io::l10n::lc_scatter<char> *arr,
 					 ::std::size_t cap,
-					 ::fast_io::vector<::std::u8string_view> const &strs,
+					 ::fast_io::vector<::fast_io::u8string_view> const &strs,
 					 sec_build &b, blob_charset cs, ::std::size_t units) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (::std::size_t i{}; i < cap && i < strs.size(); ++i)
@@ -696,10 +696,10 @@ inline void sec_strs(::fast_io::l10n::lc_scatter<char> *arr,
 // dynamic list member {tbl_rva,count} — tbl = strref{u32,u32}[] in pool
 inline void sec_strlist(
 	::fast_io::l10n::lc_scatter<::fast_io::l10n::lc_scatter<char>> &m,
-	::fast_io::vector<::std::u8string_view> const &strs, sec_build &b,
+	::fast_io::vector<::fast_io::u8string_view> const &strs, sec_build &b,
 	blob_charset cs, ::std::size_t units) FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (strs.empty())
+	if (strs.is_empty())
 	{
 		return;
 	}
@@ -724,7 +724,7 @@ inline void sec_strlist(
 // compiled-program member — a rejected directive drops the slot, not
 // the locale
 inline void sec_program(::fast_io::l10n::lc_scatter<char8_t> &m,
-						::std::u8string_view fmt_src, src_lang lang, sec_build &b,
+						::fast_io::u8string_view fmt_src, src_lang lang, sec_build &b,
 						blob_charset cs,
 						::fast_io_i18n::binfmt::src_ctx ctx,
 						char const *fname) FAST_IO_HERBCEPTIONS_THROWS
@@ -734,12 +734,12 @@ inline void sec_program(::fast_io::l10n::lc_scatter<char8_t> &m,
 		auto prog{lang == src_lang::pct_generic
 					  ? ::fast_io_i18n::binfmt::compile_generic_pct(fmt_src, ctx)
 					  : ::fast_io_i18n::binfmt::compile_time(fmt_src, ctx)};
-		auto tc{transcode_program({prog.data(), prog.size()}, cs)};
+		auto tc{transcode_program(::fast_io::string_view{prog.data(), prog.size()}, cs)};
 		b.scatter(m, b.intern(tc), static_cast<::std::uint_least32_t>(tc.size()));
 	}
 	catch throws(::std::error)
 	{
-		::fast_io::perrln("  skip program `", ::std::string_view{fname}, "' in ",
+		::fast_io::perrln("  skip program `", ::fast_io::mnp::os_c_str(fname), "' in ",
 						  ctx.where);
 	}
 }
@@ -749,7 +749,7 @@ inline void sec_bytes(::fast_io::l10n::lc_scatter<char8_t> &m,
 					  ::fast_io::vector<::std::int_least64_t> const &ints,
 					  sec_build &b) FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (ints.empty())
+	if (ints.is_empty())
 	{
 		return;
 	}
@@ -770,7 +770,7 @@ inline void sec_era(
 	::fast_io::vector<era_src> const &eras, sec_build &b, blob_charset cs,
 	::std::size_t units, ::fast_io_i18n::binfmt::src_ctx ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (eras.empty())
+	if (eras.is_empty())
 	{
 		return;
 	}
@@ -786,7 +786,7 @@ inline void sec_era(
 			name_lens.push_back(t.size());
 			name_rvas.push_back(b.intern(t));
 			auto prog{::fast_io_i18n::binfmt::compile_time(e.fmt, ctx)};
-			fmts.emplace_back(transcode_program({prog.data(), prog.size()}, cs));
+			fmts.emplace_back(transcode_program(::fast_io::string_view{prog.data(), prog.size()}, cs));
 			fmt_rvas.push_back(b.intern(fmts.back()));
 		}
 	}
@@ -1028,9 +1028,9 @@ inline void fill_cat(void *img, cat_map const &m, cat_schema const &sch,
 // locale name and encname this section's charset name — both land in
 // identification in the section's own encoding.
 inline sec_build build_section(cat_src const cats[cat_count],
-							   ::std::u8string_view name,
-							   ::std::u8string_view encname, blob_charset cs,
-							   ::std::string_view file_ctx) FAST_IO_HERBCEPTIONS_THROWS
+							   ::fast_io::u8string_view name,
+							   ::fast_io::u8string_view encname, blob_charset cs,
+							   ::fast_io::string_view file_ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	sec_build b;
 	auto const units{details::cs_units(cs)};
@@ -1059,7 +1059,7 @@ inline sec_build build_section(cat_src const cats[cat_count],
 // ---------------------------------------------------------------------------
 
 inline ::fast_io::string build_container(sec_build (&secs)[4], bool charset_is_utf8,
-										 ::std::u8string_view name,
+										 ::fast_io::u8string_view name,
 										 ::std::uint_least32_t codeset) FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr ::std::uint_least32_t img_size{

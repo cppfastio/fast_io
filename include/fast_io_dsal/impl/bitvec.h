@@ -762,10 +762,6 @@ public:
 	{
 		return !this->imp.curr_pos;
 	}
-	constexpr bool empty() const noexcept
-	{
-		return !this->imp.curr_pos;
-	}
 	constexpr void shrink_to_fit()
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation)
 	{

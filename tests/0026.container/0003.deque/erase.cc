@@ -54,7 +54,7 @@ inline void test_erase()
 
 	// 2. Erase single element in the middle
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() / 2};
 			dq.erase(dq.begin() + pos);
@@ -65,7 +65,7 @@ inline void test_erase()
 
 	// 3. Erase single element at back (last element)
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() - 1};
 			dq.erase(dq.begin() + pos);
@@ -117,7 +117,7 @@ inline void test_erase()
 	// 7. Randomized erases: erase random ranges until we have done enough iterations
 	for (::std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -197,7 +197,7 @@ inline void test_erase_index()
 
 	// Erase in middle
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() / 2};
 			dq.erase_index(pos);
@@ -208,7 +208,7 @@ inline void test_erase_index()
 
 	// Erase at back
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() - 1};
 			dq.erase_index(pos);
@@ -266,7 +266,7 @@ inline void test_erase_index()
 	//
 	for (::std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -284,7 +284,7 @@ inline void test_erase_index()
 	//
 	for (::std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -377,7 +377,7 @@ inline void test_erase_value()
 	// 4. Randomized erase(value)
 	for (std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -477,7 +477,7 @@ inline void test_erase_if()
 	// 4. Randomized erase_if
 	for (std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}

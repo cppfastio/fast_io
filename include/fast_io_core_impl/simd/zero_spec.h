@@ -32,7 +32,7 @@ struct simd_vector<T, 0>
 	{
 	}
 
-	inline static constexpr bool empty() noexcept
+	inline static constexpr bool is_empty() noexcept
 	{
 		return true;
 	}

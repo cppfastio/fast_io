@@ -394,7 +394,7 @@ public:
 		{
 			return false;
 		}
-		inner_type = static_cast<content_type>(::std::to_underlying(out[--inner]));
+		inner_type = static_cast<content_type>(out[--inner]);
 		out_size = inner;
 		return true;
 	}
@@ -724,7 +724,7 @@ public:
 		(void)salt;
 		char unsigned const *d{reinterpret_cast<char unsigned const *>(pkey_der)};
 		EVP_PKEY *pk{d2i_AutoPrivateKey(nullptr, __builtin_addressof(d),
-									   static_cast<long>(pkey_size))};
+										static_cast<long>(pkey_size))};
 		if (pk == nullptr)
 		{
 			d = reinterpret_cast<char unsigned const *>(pkey_der);

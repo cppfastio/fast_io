@@ -49,6 +49,8 @@ freestanding ones.
 #include "fast_io_dsal/impl/cstring_view.h"
 #include "fast_io_dsal/impl/string.h"
 #include "fast_io_dsal/impl/vector.h"
+#include "fast_io_dsal/impl/span.h"
+#include "fast_io_dsal/impl/deque.h"
 #if defined(FAST_IO_HAS_WINE_UNIX)
 #include "fast_io_hosted/platforms/wine/wine.h"
 #endif

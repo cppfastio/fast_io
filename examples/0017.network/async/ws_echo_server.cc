@@ -53,11 +53,11 @@ static bool has_token(fi::u8string_view list, fi::u8string_view tok) noexcept
 			}
 		}
 		auto seg{fi::u8string_view{list.data() + off, comma - off}};
-		while (!seg.empty() && (seg.front() == char8_t{' '} || seg.front() == char8_t{'\t'}))
+		while (!seg.is_empty() && (seg.front() == char8_t{' '} || seg.front() == char8_t{'\t'}))
 		{
 			seg.remove_prefix(1);
 		}
-		while (!seg.empty() && (seg.back() == char8_t{' '} || seg.back() == char8_t{'\t'}))
+		while (!seg.is_empty() && (seg.back() == char8_t{' '} || seg.back() == char8_t{'\t'}))
 		{
 			seg.remove_suffix(1);
 		}
@@ -131,7 +131,7 @@ static fi::io_async_task<> ws_session(fi::io_async_observer sched,
 	}
 
 	if (method != fi::u8string_view{u8"GET"} || !ascii_ieq(upgrade, u8"websocket") ||
-		!has_token(connection, u8"upgrade") || wskey.empty() ||
+		!has_token(connection, u8"upgrade") || wskey.is_empty() ||
 		wsver != fi::u8string_view{u8"13"})
 	{
 		co_await fi::io::async_print(

@@ -135,7 +135,7 @@ int main()
 	// empty vector through the handle ctor
 	{
 		int_vec v{int_vec::handle_type{1}};
-		assert(v.empty());
+		assert(v.is_empty());
 		assert(v.imp.begin_ptr == nullptr);
 		v.push_back(3);
 		v.push_back(4);
@@ -197,7 +197,7 @@ int main()
 		v.shrink_to_fit();
 		assert(v.capacity() == 7);
 		v.clear();
-		assert(v.empty() && pool_handle_allocator::live[1] == 1);
+		assert(v.is_empty() && pool_handle_allocator::live[1] == 1);
 	}
 	assert(pool_handle_allocator::live[1] == 0);
 
@@ -209,7 +209,7 @@ int main()
 		assert(pool_handle_allocator::live[2] == 2);
 		int_vec c{::std::move(b)};
 		assert(c.size() == 4 && c.allochdl.pool == 2);
-		assert(b.empty() && b.imp.begin_ptr == nullptr);
+		assert(b.is_empty() && b.imp.begin_ptr == nullptr);
 		int_vec d{int_vec::handle_type{3}};
 		d = a;
 		assert(d.size() == 4 && d.allochdl.pool == 2);
@@ -217,7 +217,7 @@ int main()
 		int_vec e{int_vec::handle_type{3}};
 		e = ::std::move(d);
 		assert(e.size() == 4 && e.allochdl.pool == 2);
-		assert(d.empty() && d.imp.begin_ptr == nullptr);
+		assert(d.is_empty() && d.imp.begin_ptr == nullptr);
 	}
 	assert(pool_handle_allocator::live[2] == 0);
 	assert(pool_handle_allocator::live[3] == 0);
@@ -238,7 +238,7 @@ int main()
 		noisy_vec w{v};
 		assert(w.size() == 50 && w.index_unchecked(4).v == 99 && w.index_unchecked(5).v == 5);
 		noisy_vec u{::std::move(w)};
-		assert(u.size() == 50 && w.empty());
+		assert(u.size() == 50 && w.is_empty());
 	}
 	assert(pool_handle_allocator::live[1] == 0);
 

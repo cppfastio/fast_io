@@ -28,7 +28,7 @@ void dump_program(::fast_io::u8string_view prog, unsigned indent) FAST_IO_HERBCE
 			::fast_io::print(" ");
 		}
 	}};
-	while (!r.empty())
+	while (!r.is_empty())
 	{
 		node_head h;
 		next_tag(r, h);

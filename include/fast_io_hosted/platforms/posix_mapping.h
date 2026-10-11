@@ -257,7 +257,7 @@ public:
 	{
 		return address_begin;
 	}
-	inline constexpr bool empty() const noexcept
+	inline constexpr bool is_empty() const noexcept
 	{
 		return address_begin == address_end;
 	}

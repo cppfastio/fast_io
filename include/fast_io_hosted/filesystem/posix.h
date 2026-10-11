@@ -423,7 +423,9 @@ struct basic_posix_recursive_directory_generator
 };
 
 using posix_recursive_directory_generator = basic_posix_recursive_directory_generator<
-	::fast_io::containers::vector<posix_directory_file, ::fast_io::posix_api_encoding_converter::allocator_type>>;
+	::fast_io::containers::deque<posix_directory_file,
+								 ::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator,
+																	  ::fast_io::allocator_adapter_flags::throws_on_allocation_failure>>>;
 
 template <typename StackType>
 inline ::std::size_t depth(basic_posix_recursive_directory_iterator<StackType> const &prdit) noexcept
@@ -439,7 +441,7 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 	for (;;)
 	{
 		errno = 0;
-		if (prdit.stack.empty())
+		if (prdit.stack.is_empty())
 		{
 			auto entry{::fast_io::noexcept_call(::readdir, prdit.dirp)};
 			if (entry == nullptr)
@@ -464,7 +466,7 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 				{
 					throw_posix_error(en);
 				}
-				prdit.stack.pop_back();
+				prdit.stack.pop_back_unchecked();
 				continue;
 			}
 			prdit.entry = entry;
@@ -484,7 +486,7 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 			}
 			prdit.stack.emplace_back(::fast_io::posix_file(
 				::fast_io::posix_fs_dirent{
-					details::dirp_to_fd(prdit.stack.empty() ? prdit.dirp : prdit.stack.back().dirp), name},
+					details::dirp_to_fd(prdit.stack.is_empty() ? prdit.dirp : prdit.stack.back().dirp), name},
 				::fast_io::open_mode::directory));
 		}
 		if (prdit.entry) [[likely]]
@@ -507,14 +509,14 @@ template <typename StackType>
 inline void pop(basic_posix_recursive_directory_iterator<StackType> &prdit)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (prdit.stack.empty())
+	if (prdit.stack.is_empty())
 	{
 		prdit.entry = nullptr;
 		prdit.d_namlen = 0;
 	}
 	else
 	{
-		prdit.stack.pop_back();
+		prdit.stack.pop_back_unchecked();
 		++prdit;
 	}
 }
@@ -540,13 +542,13 @@ inline ::std::default_sentinel_t end(basic_posix_recursive_directory_generator<S
 template <typename StackType>
 inline posix_directory_entry operator*(basic_posix_recursive_directory_iterator<StackType> const &prdit) noexcept
 {
-	return {prdit.stack.empty() ? prdit.dirp : prdit.stack.back().dirp, prdit.entry, prdit.d_namlen};
+	return {prdit.stack.is_empty() ? prdit.dirp : prdit.stack.back().dirp, prdit.entry, prdit.d_namlen};
 }
 
 template <typename StackType>
 inline bool operator==(::std::default_sentinel_t, basic_posix_recursive_directory_iterator<StackType> const &b) noexcept
 {
-	return b.stack.empty() && b.entry == nullptr;
+	return b.stack.is_empty() && b.entry == nullptr;
 }
 
 template <typename StackType>

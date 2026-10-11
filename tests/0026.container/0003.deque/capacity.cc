@@ -16,7 +16,7 @@ inline void test_size_empty()
 		{
 			::fast_io::io::panic("default constructed deque size should be 0\n");
 		}
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::fast_io::io::panic("default constructed deque should be empty\n");
 		}
@@ -38,7 +38,7 @@ inline void test_size_empty()
 		{
 			::fast_io::io::panic("size should be 4096\n");
 		}
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			::fast_io::io::panic("deque with elements should not be empty\n");
 		}
@@ -56,7 +56,7 @@ inline void test_size_empty()
 		{
 			::fast_io::io::panic("size should be 0 after clear\n");
 		}
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::fast_io::io::panic("deque should be empty after clear\n");
 		}
@@ -131,7 +131,7 @@ inline void test_shrink_to_fit()
 	{
 		::fast_io::deque<::std::size_t> dq;
 		dq.shrink_to_fit();
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::fast_io::io::panic("empty deque should stay empty after shrink_to_fit\n");
 		}

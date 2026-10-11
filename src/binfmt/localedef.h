@@ -31,12 +31,12 @@ struct lc_file_data
 
 struct parse_ctx
 {
-	::std::string_view file{};
+	::fast_io::string_view file{};
 	::std::size_t line_no{};
 };
 
-[[noreturn]] inline void pfails(parse_ctx const &ctx, ::std::string_view msg,
-								::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
+[[noreturn]] inline void pfails(parse_ctx const &ctx, ::fast_io::string_view msg,
+								::fast_io::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::perrln(ctx.file, ":", ctx.line_no, ": ", msg, " | ", line);
 	throw throws::std::errc::invalid_argument;
@@ -47,30 +47,30 @@ inline bool is_sp(char c) noexcept
 	return c == ' ' || c == '\t';
 }
 
-inline void rstrip(::std::string_view &s) noexcept
+inline void rstrip(::fast_io::string_view &s) noexcept
 {
-	while (!s.empty() && is_sp(s.back()))
+	while (!s.is_empty() && is_sp(s.back()))
 	{
 		s.remove_suffix(1);
 	}
 }
 
-inline void lstrip(::std::string_view &s) noexcept
+inline void lstrip(::fast_io::string_view &s) noexcept
 {
-	while (!s.empty() && is_sp(s.front()))
+	while (!s.is_empty() && is_sp(s.front()))
 	{
 		s.remove_prefix(1);
 	}
 }
 
-inline void strip(::std::string_view &s) noexcept
+inline void strip(::fast_io::string_view &s) noexcept
 {
 	lstrip(s);
 	rstrip(s);
 }
 
 // remove comment text: comment_char outside quotes ends the line
-inline void strip_comment(::std::string_view &line, char comment, char escape) noexcept
+inline void strip_comment(::fast_io::string_view &line, char comment, char escape) noexcept
 {
 	bool inq{};
 	bool esc{};
@@ -102,7 +102,7 @@ inline void strip_comment(::std::string_view &line, char comment, char escape) n
 		}
 		if (c == comment)
 		{
-			line = line.substr(0, i);
+			line = line.subview(0, i);
 			return;
 		}
 	}
@@ -117,9 +117,9 @@ inline void put_u8_cp(::fast_io::string &out, char32_t cp) noexcept
 }
 
 // decode a quoted string's interior: escape_char, <U..> names -> UTF-8
-inline void decode_string_content(::fast_io::string &out, ::std::string_view inner,
+inline void decode_string_content(::fast_io::string &out, ::fast_io::string_view inner,
 								  char escape, parse_ctx const &ctx,
-								  ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
+								  ::fast_io::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (::std::size_t i{}; i < inner.size(); ++i)
 	{
@@ -137,8 +137,8 @@ inline void decode_string_content(::fast_io::string &out, ::std::string_view inn
 		{
 			if (i + 2 < inner.size() && inner[i + 1] == 'U')
 			{
-				auto j{inner.find('>', i + 2)};
-				if (j == ::std::string_view::npos)
+				auto j{inner.find_character('>', i + 2)};
+				if (j == ::fast_io::containers::npos)
 				{
 					pfails(ctx, "unterminated <U> name", line);
 				}
@@ -174,13 +174,13 @@ inline void decode_string_content(::fast_io::string &out, ::std::string_view inn
 }
 
 // tokenize a field value: `;`-separated quoted strings / bare words
-inline void tokenize(lc_field &f, ::std::string_view val, char escape,
-					 parse_ctx const &ctx, ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
+inline void tokenize(lc_field &f, ::fast_io::string_view val, char escape,
+					 parse_ctx const &ctx, ::fast_io::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (;;)
 	{
 		lstrip(val);
-		if (val.empty())
+		if (val.is_empty())
 		{
 			return;
 		}
@@ -209,9 +209,9 @@ inline void tokenize(lc_field &f, ::std::string_view val, char escape,
 					break;
 				}
 			}
-			decode_string_content(tok, val.substr(0, i), escape, ctx, line);
+			decode_string_content(tok, val.subview(0, i), escape, ctx, line);
 			val.remove_prefix(i);
-			if (val.empty() || val.front() != '"')
+			if (val.is_empty() || val.front() != '"')
 			{
 				pfails(ctx, "unterminated string", line);
 			}
@@ -220,17 +220,17 @@ inline void tokenize(lc_field &f, ::std::string_view val, char escape,
 		}
 		else
 		{
-			auto j{val.find_first_of(";\t ")};
+			auto j{val.find_first_of(::fast_io::string_view{";\t "}, 0)};
 			f.tokens.emplace_back(::fast_io::string_view{
-				val.data(), j == ::std::string_view::npos ? val.size() : j});
-			if (j == ::std::string_view::npos)
+				val.data(), j == ::fast_io::containers::npos ? val.size() : j});
+			if (j == ::fast_io::containers::npos)
 			{
 				return;
 			}
 			val.remove_prefix(j);
 		}
 		lstrip(val);
-		if (val.empty())
+		if (val.is_empty())
 		{
 			return;
 		}
@@ -257,11 +257,11 @@ inline void upsert_field(::fast_io::vector<lc_field> &v, lc_field &&f) noexcept
 }
 
 // category id from "LC_X" name; cat_count if unknown
-inline ::std::size_t cat_id_of(::std::string_view name) noexcept
+inline ::std::size_t cat_id_of(::fast_io::string_view name) noexcept
 {
 	for (::std::size_t i{}; i < ::fast_io_i18n::lcblob::cat_count; ++i)
 	{
-		if (name == ::fast_io_i18n::lcblob::cat_schemas[i].glibc_name)
+		if (name == ::fast_io::string_view{::fast_io::mnp::os_c_str(::fast_io_i18n::lcblob::cat_schemas[i].glibc_name)})
 		{
 			return i;
 		}
@@ -277,20 +277,20 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 
 // parse one logical line's "key value" into the current category
 inline void parse_field_line(lc_file_data &out, ::std::size_t cat,
-							 ::std::string_view line, char escape,
+							 ::fast_io::string_view line, char escape,
 							 parse_ctx const &ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto it{line.find_first_of(" \t")};
-	if (it == ::std::string_view::npos)
+	auto it{line.find_first_of(::fast_io::string_view{" \t"}, 0)};
+	if (it == ::fast_io::containers::npos)
 	{
 		return; // bare keyword with no value — ignore
 	}
 	lc_field f;
-	::std::string_view key{line.substr(0, it)};
-	::std::string_view val{line.substr(it)};
+	::fast_io::string_view key{line.subview(0, it)};
+	::fast_io::string_view val{line.subview(it)};
 	strip(val);
 	tokenize(f, val, escape, ctx, line);
-	if (f.tokens.empty())
+	if (f.tokens.is_empty())
 	{
 		pfails(ctx, "empty field value", line);
 	}
@@ -303,7 +303,7 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 {
 	if (depth > 8)
 	{
-		pfails({::std::string_view{name.data(), name.size()}, 0},
+		pfails({::fast_io::string_view{name.data(), name.size()}, 0},
 			   "copy depth exceeded", {});
 	}
 	for (auto const &e : cache)
@@ -320,16 +320,16 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 	char escape_char{'/'};
 	::std::size_t cur_cat{::fast_io_i18n::lcblob::cat_count};
 	::fast_io::string pending; // continuation join buffer
-	parse_ctx ctx{{name.data(), name.size()}, 0};
-	::std::string_view fdata{fmp.data(), fmp.size()};
+	parse_ctx ctx{::fast_io::string_view{name.data(), name.size()}, 0};
+	::fast_io::string_view fdata{fmp.data(), fmp.size()};
 	for (::std::size_t pos{}; pos <= fdata.size();)
 	{
-		auto nl{fdata.find('\n', pos)};
-		if (nl == ::std::string_view::npos)
+		auto nl{fdata.find_character('\n', pos)};
+		if (nl == ::fast_io::containers::npos)
 		{
 			nl = fdata.size();
 		}
-		::std::string_view line{fdata.substr(pos, nl - pos)};
+		::fast_io::string_view line{fdata.subview(pos, nl - pos)};
 		pos = nl + 1;
 		++ctx.line_no;
 		rstrip(line);
@@ -337,22 +337,22 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 		// continuation/comment processing below — `escape_char /` ends
 		// with the escape char itself, `comment_char %` with the comment
 		// char
-		if (pending.empty() && line.substr(0, 13) == "comment_char ")
+		if (pending.is_empty() && line.subview(0, 13) == "comment_char ")
 		{
-			auto v{line.substr(13)};
+			auto v{line.subview(13)};
 			strip(v);
-			if (v.empty())
+			if (v.is_empty())
 			{
 				pfails(ctx, "bad comment_char directive", line);
 			}
 			comment_char = v.front();
 			continue;
 		}
-		if (pending.empty() && line.substr(0, 12) == "escape_char ")
+		if (pending.is_empty() && line.subview(0, 12) == "escape_char ")
 		{
-			auto v{line.substr(12)};
+			auto v{line.subview(12)};
 			strip(v);
-			if (v.empty())
+			if (v.is_empty())
 			{
 				pfails(ctx, "bad escape_char directive", line);
 			}
@@ -360,24 +360,24 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 			continue;
 		}
 		// continuation: last char == escape_char joins the next line
-		if (!line.empty() && line.back() == escape_char)
+		if (!line.is_empty() && line.back() == escape_char)
 		{
 			pending.append(line.data(), line.size() - 1);
 			continue;
 		}
-		if (!pending.empty())
+		if (!pending.is_empty())
 		{
 			pending.append(line.data(), line.size());
-			line = {pending.data(), pending.size()};
+			line = ::fast_io::string_view{pending.data(), pending.size()};
 		}
 		strip_comment(line, comment_char, escape_char);
 		strip(line);
-		if (line.empty())
+		if (line.is_empty())
 		{
 			pending.clear();
 			continue;
 		}
-		if (line.substr(0, 9) == "category ")
+		if (line.subview(0, 9) == "category ")
 		{
 			pending.clear();
 			continue; // LC_IDENTIFICATION coverage lines
@@ -388,7 +388,7 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 			pending.clear();
 			continue;
 		}
-		if (line.substr(0, 4) == "END ")
+		if (line.subview(0, 4) == "END ")
 		{
 			cur_cat = ::fast_io_i18n::lcblob::cat_count;
 			pending.clear();
@@ -399,9 +399,9 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 			pending.clear();
 			continue;
 		}
-		if (line.substr(0, 5) == "copy ")
+		if (line.subview(0, 5) == "copy ")
 		{
-			auto v{line.substr(5)};
+			auto v{line.subview(5)};
 			strip(v);
 			if (v.size() < 2 || v.front() != '"' || v.back() != '"')
 			{
@@ -431,10 +431,10 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 // lc_file_data -> cat_src bridge (typed slots for the blob builder)
 // ---------------------------------------------------------------------------
 
-inline ::std::int_least64_t to_i64(::std::string_view tok, parse_ctx const &ctx,
-								   ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::int_least64_t to_i64(::fast_io::string_view tok, parse_ctx const &ctx,
+								   ::fast_io::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (!tok.empty() && tok.front() == '+')
+	if (!tok.is_empty() && tok.front() == '+')
 	{
 		tok.remove_prefix(1);
 	}
@@ -450,29 +450,29 @@ inline ::std::int_least64_t to_i64(::std::string_view tok, parse_ctx const &ctx,
 }
 
 // era token: "dir:offset:start:end:name:fmt" — already unquoted-decoded
-inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::std::string_view tok,
-					  parse_ctx const &ctx, ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
+inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::fast_io::string_view tok,
+					  parse_ctx const &ctx, ::fast_io::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t segs[5]{};
 	{
 		// find the first 5 ':' separators; fmt may itself contain ':'
 		::std::size_t p{}, c{};
-		for (; c < 5 && p != ::std::string_view::npos; ++c)
+		for (; c < 5 && p != ::fast_io::containers::npos; ++c)
 		{
-			p = tok.find(':', c == 0 ? 0 : segs[c - 1] + 1);
+			p = tok.find_character(':', c == 0 ? 0 : segs[c - 1] + 1);
 			segs[c] = p;
 		}
-		if (segs[4] == ::std::string_view::npos)
+		if (segs[4] == ::fast_io::containers::npos)
 		{
 			pfails(ctx, "era record needs 6 fields", line);
 		}
 	}
-	auto seg{[&](unsigned n) noexcept -> ::std::string_view {
+	auto seg{[&](unsigned n) noexcept -> ::fast_io::string_view {
 		::std::size_t b{n == 0 ? 0 : segs[n - 1] + 1};
 		::std::size_t e{n == 5 ? tok.size() : segs[n]};
-		return tok.substr(b, e - b);
+		return tok.subview(b, e - b);
 	}};
-	auto date{[&](::std::string_view d, ::std::int_least64_t &yr,
+	auto date{[&](::fast_io::string_view d, ::std::int_least64_t &yr,
 				  ::std::int_least32_t &mo, ::std::int_least32_t &dy) FAST_IO_HERBCEPTIONS_THROWS {
 		if (d == "+*")
 		{
@@ -484,18 +484,18 @@ inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::std::string_view tok
 			yr = -2147483648;
 			return;
 		}
-		auto p1{d.find('/')};
-		auto p2{p1 == ::std::string_view::npos ? ::std::string_view::npos
-											   : d.find('/', p1 + 1)};
-		if (p1 == ::std::string_view::npos || p2 == ::std::string_view::npos)
+		auto p1{d.find_character('/')};
+		auto p2{p1 == ::fast_io::containers::npos ? ::fast_io::containers::npos
+												  : d.find_character('/', p1 + 1)};
+		if (p1 == ::fast_io::containers::npos || p2 == ::fast_io::containers::npos)
 		{
 			pfails(ctx, "bad era date", line);
 		}
-		yr = to_i64(d.substr(0, p1), ctx, line);
+		yr = to_i64(d.subview(0, p1), ctx, line);
 		mo = static_cast<::std::int_least32_t>(
-			to_i64(d.substr(p1 + 1, p2 - p1 - 1), ctx, line));
+			to_i64(d.subview(p1 + 1, p2 - p1 - 1), ctx, line));
 		dy = static_cast<::std::int_least32_t>(
-			to_i64(d.substr(p2 + 1), ctx, line));
+			to_i64(d.subview(p2 + 1), ctx, line));
 	}};
 	auto dir{seg(0)};
 	if (dir == "+")
@@ -515,8 +515,8 @@ inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::std::string_view tok
 	date(seg(3), e.end_year, e.end_month, e.end_day);
 	auto nm{seg(4)};
 	auto fm{seg(5)};
-	e.name = {reinterpret_cast<char8_t const *>(nm.data()), nm.size()};
-	e.fmt = {reinterpret_cast<char8_t const *>(fm.data()), fm.size()};
+	e.name = ::fast_io::u8string_view{reinterpret_cast<char8_t const *>(nm.data()), nm.size()};
+	e.fmt = ::fast_io::u8string_view{reinterpret_cast<char8_t const *>(fm.data()), fm.size()};
 }
 
 // map parsed fields onto the schema's typed slots; returns filled cats
@@ -529,7 +529,7 @@ inline void to_cats(lc_file_data const &d,
 	using ::fast_io_i18n::lcblob::slot_tag;
 	for (::std::size_t c{}; c < cat_count; ++c)
 	{
-		if (d.fields[c].empty())
+		if (d.fields[c].is_empty())
 		{
 			continue;
 		}
@@ -541,7 +541,7 @@ inline void to_cats(lc_file_data const &d,
 			::std::size_t fi{sch.fields.size()};
 			for (::std::size_t k{}; k < sch.fields.size(); ++k)
 			{
-				if (::std::string_view{f.name.data(), f.name.size()} == sch.fields[k].name)
+				if (::fast_io::string_view{f.name.data(), f.name.size()} == ::fast_io::string_view{::fast_io::mnp::os_c_str(sch.fields[k].name)})
 				{
 					fi = k;
 					break;
@@ -572,12 +572,12 @@ inline void to_cats(lc_file_data const &d,
 				for (auto const &t : f.tokens)
 				{
 					sl.ints.push_back(to_i64(
-						{t.data(), t.size()}, ctx,
-						{t.data(), t.size()}));
+						::fast_io::string_view{t.data(), t.size()}, ctx,
+						::fast_io::string_view{t.data(), t.size()}));
 				}
 				break;
 			case slot_tag::program:
-				sl.fmt_src = {
+				sl.fmt_src = ::fast_io::u8string_view{
 					reinterpret_cast<char8_t const *>(f.tokens[0].data()),
 					f.tokens[0].size()};
 				break;
@@ -585,8 +585,8 @@ inline void to_cats(lc_file_data const &d,
 				for (auto const &t : f.tokens)
 				{
 					::fast_io_i18n::lcblob::era_src e;
-					parse_era(e, {t.data(), t.size()}, ctx,
-							  {t.data(), t.size()});
+					parse_era(e, ::fast_io::string_view{t.data(), t.size()}, ctx,
+							  ::fast_io::string_view{t.data(), t.size()});
 					sl.eras.emplace_back(e);
 				}
 				break;

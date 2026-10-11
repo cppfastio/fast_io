@@ -27,7 +27,7 @@ int main(int argc, char const **argv)
 		::fast_io::tls::root_store certs;
 		::fast_io::tls::details::root_store_load_pem_file(
 			__builtin_addressof(certs), ::fast_io::mnp::os_c_str(argv[1]));
-		if (certs.sizes.empty())
+		if (certs.sizes.is_empty())
 		{
 			perrln("no CERTIFICATE blocks in ", ::fast_io::mnp::os_c_str(argv[1]));
 			return 1;

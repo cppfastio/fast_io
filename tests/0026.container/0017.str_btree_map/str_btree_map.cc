@@ -66,7 +66,7 @@ int main()
 	for (auto e : mp3)
 	{
 		::fast_io::io::println("  ", e.key(), " -> ", e.mapped());
-		if (!prev.empty() && !(prev < e.key()))
+		if (!prev.is_empty() && !(prev < e.key()))
 		{
 			sorted = false;
 		}

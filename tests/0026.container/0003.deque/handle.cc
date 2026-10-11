@@ -135,7 +135,7 @@ int main()
 	// empty deque through the handle ctor
 	{
 		int_deque d{int_deque::handle_type{1}};
-		assert(d.empty());
+		assert(d.is_empty());
 		assert(d.controller.controller_block.controller_start_ptr == nullptr);
 		d.push_back(3);
 		d.push_back(4);
@@ -210,7 +210,7 @@ int main()
 		d.reserve(300);
 		d.shrink_to_fit();
 		d.clear();
-		assert(d.empty());
+		assert(d.is_empty());
 	}
 
 	// copy adopts the source handle; move copies the state then empties the source
@@ -220,14 +220,14 @@ int main()
 		assert(b.size() == 4 && b.allochdl.pool == 2);
 		int_deque c{::std::move(b)};
 		assert(c.size() == 4 && c.allochdl.pool == 2);
-		assert(b.empty() && b.controller.controller_block.controller_start_ptr == nullptr);
+		assert(b.is_empty() && b.controller.controller_block.controller_start_ptr == nullptr);
 		int_deque d{int_deque::handle_type{3}};
 		d = a;
 		assert(d.size() == 4 && d.allochdl.pool == 2);
 		int_deque e{int_deque::handle_type{3}};
 		e = ::std::move(d);
 		assert(e.size() == 4 && e.allochdl.pool == 2);
-		assert(d.empty() && d.controller.controller_block.controller_start_ptr == nullptr);
+		assert(d.is_empty() && d.controller.controller_block.controller_start_ptr == nullptr);
 	}
 	assert(pool_handle_allocator::live[2] == 0);
 	assert(pool_handle_allocator::live[3] == 0);
@@ -248,7 +248,7 @@ int main()
 		noisy_deque w{d};
 		assert(w.size() == 100 && w.index_unchecked(4).v == 99);
 		noisy_deque u{::std::move(w)};
-		assert(u.size() == 100 && w.empty());
+		assert(u.size() == 100 && w.is_empty());
 	}
 	assert(pool_handle_allocator::live[1] == 0);
 

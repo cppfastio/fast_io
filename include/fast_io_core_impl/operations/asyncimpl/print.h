@@ -151,7 +151,7 @@ struct async_print_strlike_buffer
 	{
 		return static_cast<::std::size_t>(curr_ptr - begin_ptr);
 	}
-	inline constexpr bool empty() const noexcept
+	inline constexpr bool is_empty() const noexcept
 	{
 		return curr_ptr == begin_ptr;
 	}

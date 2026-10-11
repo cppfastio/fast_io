@@ -279,7 +279,7 @@ static bool decode_target(fi::u8string_view target, fi::u8string &out,
 		fi::u8string_view const piece{seg, static_cast<::std::size_t>(e - seg)};
 		if (piece == fi::u8string_view{u8".."})
 		{
-			if (!out.empty())
+			if (!out.is_empty())
 			{
 				auto n{out.size()};
 				while (n != 0 && out.data()[n - 1] != u8'/')
@@ -289,9 +289,9 @@ static bool decode_target(fi::u8string_view target, fi::u8string &out,
 				out.assign(fi::u8string_view{out.data(), n == 0 ? 0 : n - 1});
 			}
 		}
-		else if (!piece.empty() && piece != fi::u8string_view{u8"."})
+		else if (!piece.is_empty() && piece != fi::u8string_view{u8"."})
 		{
-			if (!out.empty())
+			if (!out.is_empty())
 			{
 				out.push_back(u8'/');
 			}
@@ -609,7 +609,7 @@ static fi::io_async_task<> respond_file(fi::io_async_observer sched,
 			i = j;
 		}
 	}
-	if (!not_modified && !req.ims.empty())
+	if (!not_modified && !req.ims.is_empty())
 	{
 		try
 		{
@@ -657,11 +657,11 @@ static fi::io_async_task<> respond_file(fi::io_async_observer sched,
 	 * full 200 — video clients send it so a changed file isn't resumed
 	 * mid-byte. ETag form wins; otherwise it's an HTTP date.
 	 */
-	if (rng.present && !req.if_range.empty())
+	if (rng.present && !req.if_range.is_empty())
 	{
 		fi::u8string_view iv{req.if_range};
 		bool match;
-		if (!iv.empty() && iv.data()[0] == u8'"')
+		if (!iv.is_empty() && iv.data()[0] == u8'"')
 		{
 			match = iv == ev;
 		}
@@ -794,11 +794,11 @@ static bool has_token(fi::u8string_view list, fi::u8string_view tok) noexcept
 			}
 		}
 		auto seg{fi::u8string_view{list.data() + off, comma - off}};
-		while (!seg.empty() && (seg.front() == char8_t{' '} || seg.front() == char8_t{'\t'}))
+		while (!seg.is_empty() && (seg.front() == char8_t{' '} || seg.front() == char8_t{'\t'}))
 		{
 			seg.remove_prefix(1);
 		}
-		while (!seg.empty() && (seg.back() == char8_t{' '} || seg.back() == char8_t{'\t'}))
+		while (!seg.is_empty() && (seg.back() == char8_t{' '} || seg.back() == char8_t{'\t'}))
 		{
 			seg.remove_suffix(1);
 		}
@@ -815,7 +815,7 @@ static bool is_ws_upgrade(http_request const &req) noexcept
 {
 	return req.method == fi::u8string_view{u8"GET"} &&
 		   ascii_ieq(req.upgrade, u8"websocket") && has_token(req.connection, u8"upgrade") &&
-		   !req.wskey.empty() && req.wsver == fi::u8string_view{u8"13"};
+		   !req.wskey.is_empty() && req.wsver == fi::u8string_view{u8"13"};
 }
 
 /* one ws frame out: encoded header + payload in a single scatter op —
@@ -1029,7 +1029,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 			{
 				co_await respond_status(sched, sock, 400, u8"Bad Request", req, cfg);
 			}
-			else if (rel.empty())
+			else if (rel.is_empty())
 			{
 				/* "/" — the root handle itself is the directory */
 				co_await respond_directory(sched, sock, req, req.target, cfg.root, cfg,
@@ -1231,7 +1231,7 @@ int main(int argc, char const **argv)
 				u8"\r\nAccess-Control-Allow-Origin: *"
 				u8"\r\nAccess-Control-Allow-Headers: Authorization, Content-Type, "
 				"If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since",
-				cors_extra.empty() ? fi::u8string{}
+				cors_extra.is_empty() ? fi::u8string{}
 								   : fi::u8concat_fast_io(u8", ", cors_extra));
 		}
 

@@ -12,8 +12,8 @@ int main()
 	print("Initially:\n");
 	print("x = {", rgvw(x, ", "), "}\ny = {", rgvw(y, ", "), "}\nz = {", rgvw(z, ", "), "}\n");
 	if (!(x.size() == 3)) ::fast_io::fast_terminate();
-	if (!(y.empty())) ::fast_io::fast_terminate();
-	if (!(z.empty())) ::fast_io::fast_terminate();
+	if (!(y.is_empty())) ::fast_io::fast_terminate();
+	if (!(z.is_empty())) ::fast_io::fast_terminate();
 
 	print("Copy assignment copies data from x to y:\n");
 	y = x;
@@ -27,7 +27,7 @@ int main()
 	if (!(z.size() == 3)) ::fast_io::fast_terminate();
 	if (!(z[0] == 1 && z[1] == 2 && z[2] == 3)) ::fast_io::fast_terminate();
 	// After move, source vector should be empty
-	if (!(x.empty())) ::fast_io::fast_terminate();
+	if (!(x.is_empty())) ::fast_io::fast_terminate();
 
 #if 0
 	auto const w = {4, 5, 6, 7};

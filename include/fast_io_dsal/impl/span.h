@@ -171,10 +171,6 @@ public:
 		return !n;
 	}
 
-	inline constexpr bool empty() const noexcept
-	{
-		return !n;
-	}
 
 	inline constexpr size_type size() const noexcept
 	{
