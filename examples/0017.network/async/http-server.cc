@@ -1242,6 +1242,7 @@ int main(int argc, char const **argv)
 			 "\n\nhttp-server settings:\n"
 			 "CORS (--cors[=headers]): ",
 			 ::fast_io::mnp::os_c_str(cfg.cors ? "enabled" : "disabled"),
+			 "\nPort (--port): ", port,
 			 "\nCache (-c): ", cfg.cache_seconds,
 			 " seconds\n"
 			 "Directory Listings (--no-dir): ",
