@@ -936,7 +936,20 @@ inline void async_connect_define(
 }
 
 /* io_async selects the pool on POSIX platforms with no real backend */
-#if !defined(__linux__)
+#if defined(__linux__) && !defined(__ANDROID__)
+
+template <::std::integral char_type>
+inline constexpr ::fast_io::io_type_t<linux_io_uring_observer>
+	async_scheduler_type(::fast_io::basic_posix_family_io_observer<::fast_io::posix_family::api, char_type>) noexcept
+{
+	return {};
+}
+
+/* generic native names matching the win32 IOCP backend's aliases */
+using io_async_observer = linux_io_uring_observer;
+using io_async_scheduler = linux_io_uring;
+
+#else
 template <::std::integral char_type>
 inline constexpr ::fast_io::io_type_t<posix_thread_pool_observer> async_scheduler_type(
 	::fast_io::basic_posix_family_io_observer<::fast_io::posix_family::api, char_type>) noexcept

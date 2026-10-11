@@ -872,7 +872,13 @@ inline void posix_getsockname_posix_socket_impl(int fd, void *addr, posix_sockle
 inline int posix_accept_posix_socket_impl(int fd, void *addr, posix_socklen_t *addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-#if defined(__linux__) && defined(__NR_accept)
+#if defined(__linux__) && defined(__NR_accept4)
+	/* accept4(flags=0) is accept() — and the ONLY form in Android's
+	 * app seccomp allowlist (bionic's accept() is an accept4 wrapper);
+	 * raw __NR_accept is killed with SIGSYS there */
+	int socfd{system_call<__NR_accept4, int>(fd, addr, addrlen, 0)};
+	system_call_throw_error(socfd);
+#elif defined(__linux__) && defined(__NR_accept)
 	int socfd{system_call<__NR_accept, int>(fd, addr, addrlen)};
 	system_call_throw_error(socfd);
 #else

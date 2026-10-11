@@ -116,17 +116,6 @@ inline constexpr linux_io_uring_observer async_scheduler_ref_define(linux_io_uri
 	return {ring.native_handle()};
 }
 
-template <::std::integral char_type>
-inline constexpr ::fast_io::io_type_t<linux_io_uring_observer>
-	async_scheduler_type(::fast_io::basic_posix_family_io_observer<::fast_io::posix_family::api, char_type>) noexcept
-{
-	return {};
-}
-
-/* generic native names matching the win32 IOCP backend's aliases */
-using io_async_observer = linux_io_uring_observer;
-using io_async_scheduler = linux_io_uring;
-
 } // namespace fast_io
 
 namespace fast_io::liburing
