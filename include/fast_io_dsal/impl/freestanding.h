@@ -74,11 +74,7 @@ inline constexpr Iter2 uninitialized_relocate_ignore_define(Iter1 first, Sent la
 						 (::std::integral<iter2valuetype> || ::std::same_as<iter2valuetype, ::std::byte>) &&
 						 sizeof(iter1valuetype) == sizeof(iter2valuetype)))))
 		{
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				return reinterpret_cast<Iter2>(::fast_io::freestanding::bytes_copy(reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last), reinterpret_cast<::std::byte *>(dest)));
 			}
@@ -186,11 +182,7 @@ inline constexpr Iter2 uninitialized_relocate_backward_ignore_define(Iter1 first
 						 (::std::integral<iter2valuetype> || ::std::same_as<iter2valuetype, ::std::byte>) &&
 						 sizeof(iter1valuetype) == sizeof(iter2valuetype)))))
 		{
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				auto const firstbyteptr{reinterpret_cast<::std::byte const *>(first)};
 				auto const lastbyteptr{reinterpret_cast<::std::byte const *>(last)};
@@ -310,11 +302,7 @@ inline constexpr Iter2 uninitialized_move(Iter1 first, Iter1 last, Iter2 dest)
 						 (::std::integral<iter2valuetype> || ::std::same_as<iter2valuetype, ::std::byte>) &&
 						 sizeof(iter1valuetype) == sizeof(iter2valuetype)))))
 		{
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				return reinterpret_cast<Iter2>(::fast_io::freestanding::bytes_copy(reinterpret_cast<::std::byte const *>(first), reinterpret_cast<::std::byte const *>(last), reinterpret_cast<::std::byte *>(dest)));
 			}
@@ -370,7 +358,7 @@ inline constexpr Iter2 uninitialized_move_backward(Iter1 first, Iter1 last, Iter
 						 sizeof(iter1valuetype) == sizeof(iter2valuetype)))))
 		{
 #ifdef __cpp_if_consteval
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 #else
 			if (!__builtin_is_constant_evaluated())
 #endif
@@ -405,7 +393,7 @@ inline constexpr Iter uninitialized_fill(Iter first, Iter last, T const &ele)
 					  ::std::is_scalar_v<itervaluetype> && sizeof(itervaluetype) == 1)
 		{
 #ifdef __cpp_if_consteval
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 #else
 			if (!__builtin_is_constant_evaluated())
 #endif

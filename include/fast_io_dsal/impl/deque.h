@@ -522,8 +522,7 @@ inline constexpr void deque_typed_dealloc_n(typename typedalloc::handle_type all
 template <typename allocator, typename controllerblocktype>
 inline constexpr void deque_destroy_trivial_common_align(typename allocator::handle_type allochdl, controllerblocktype &controller, ::std::size_t aligns, ::std::size_t totalsz) noexcept
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		if (controller.controller_start_ptr == nullptr)
 		{
@@ -543,7 +542,6 @@ inline constexpr void deque_destroy_trivial_common_align(typename allocator::han
 		return;
 	}
 	else
-#endif
 	{
 		for (auto i{controller.controller_start_reserved_ptr}, e{controller.controller_after_reserved_ptr}; i != e; ++i)
 		{
@@ -558,7 +556,7 @@ template <typename allocator, ::std::size_t align, ::std::size_t sz, typename co
 inline constexpr void deque_destroy_trivial_common(typename allocator::handle_type allochdl, controllerblocktype &controller) noexcept
 {
 	constexpr ::std::size_t totalsz{sz * ::fast_io::containers::details::deque_block_size<sz>};
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		::fast_io::containers::details::deque_destroy_trivial_common_align<allocator>(allochdl, controller, align, totalsz);
 	}
@@ -701,8 +699,7 @@ inline constexpr void deque_allocate_on_empty_common_with_n_impl(typename alloca
 	auto start_block_ptr{allocated_mid_block - initial_allocated_block_counts_half};
 
 	auto end_block_ptr{start_block_ptr + initial_allocated_block_counts};
-#if __cpp_if_consteval >= 202106L
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (auto i{start_block_ptr}; i != end_block_ptr; ++i)
 		{
@@ -716,7 +713,6 @@ inline constexpr void deque_allocate_on_empty_common_with_n_impl(typename alloca
 		}
 	}
 	else
-#endif
 	{
 		for (auto i{start_block_ptr}; i != end_block_ptr; ++i)
 		{
@@ -803,8 +799,7 @@ inline constexpr void deque_allocate_init_blocks_dezeroing_impl(typename allocat
 	auto reserve_start{start_ptr + offset}, reserve_after{reserve_start + blocks_count_least};
 	using replacetype = typename dequecontroltype::replacetype;
 	using begin_ptrtype = replacetype *;
-#if __cpp_if_consteval >= 202106L
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (auto it{reserve_start}, ed{reserve_after}; it != ed; ++it)
 		{
@@ -818,7 +813,6 @@ inline constexpr void deque_allocate_init_blocks_dezeroing_impl(typename allocat
 		}
 	}
 	else
-#endif
 	{
 		for (auto it{reserve_start}, ed{reserve_after}; it != ed; ++it)
 		{
@@ -1652,8 +1646,7 @@ inline constexpr void deque_reserve_back_blocks_impl_none_empty(typename allocat
 				controller.controller_block.controller_after_ptr-controller.controller_block.controller_start_ptr,"\n"
 				"to_allocate_blocks=",to_allocate_blocks);
 #endif
-#if __cpp_if_consteval >= 202106L
-			if consteval
+			FAST_IO_IF_CONSTEVAL
 			{
 				for (auto e{pos + to_allocate_blocks}; pos != e; ++pos)
 				{
@@ -1667,7 +1660,6 @@ inline constexpr void deque_reserve_back_blocks_impl_none_empty(typename allocat
 				}
 			}
 			else
-#endif
 			{
 				for (auto e{pos + to_allocate_blocks}; pos != e; ++pos)
 				{
@@ -1775,7 +1767,7 @@ inline constexpr void deque_reserve_back_spaces_impl(typename allocator::handle_
 		++toallocate;
 	}
 
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		::fast_io::containers::details::deque_reserve_back_blocks_impl<allocator>(allochdl, controller,
 																				  toallocate, align, block_size, 1);
@@ -1855,8 +1847,7 @@ inline constexpr void deque_reserve_front_blocks_none_empty_impl(typename alloca
 
 			auto ed{new_controller_start_reserved_ptr};
 			new_controller_start_reserved_ptr -= to_allocate_blocks;
-#if __cpp_if_consteval >= 202106L
-			if consteval
+			FAST_IO_IF_CONSTEVAL
 			{
 				for (auto i{new_controller_start_reserved_ptr}; i != ed; ++i)
 				{
@@ -1870,7 +1861,6 @@ inline constexpr void deque_reserve_front_blocks_none_empty_impl(typename alloca
 				}
 			}
 			else
-#endif
 			{
 				for (auto i{new_controller_start_reserved_ptr}; i != ed; ++i)
 				{
@@ -1937,7 +1927,7 @@ inline constexpr void deque_reserve_front_spaces_impl(typename allocator::handle
 		}
 		++toallocate;
 	}
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		::fast_io::containers::details::deque_reserve_front_blocks_impl<allocator>(allochdl, controller, toallocate, align, block_size, 1u);
 	}
@@ -2063,7 +2053,7 @@ inline constexpr Iter uninitialized_relocate_define(
 	using valtype = ::std::iter_value_t<Iter>;
 	if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<valtype>)
 	{
-		if !consteval
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			return ::std::bit_cast<Iter>(
 				::fast_io::containers::details::deque_copy_impl(
@@ -2087,7 +2077,7 @@ inline constexpr Iter uninitialized_relocate_backward_define(
 	using valtype = ::std::iter_value_t<Iter>;
 	if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<valtype>)
 	{
-		if !consteval
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			return ::std::bit_cast<Iter>(
 				::fast_io::containers::details::deque_copy_backward_impl(
@@ -2896,8 +2886,7 @@ public:
 			grow_back();
 		}
 		auto currptr{controller.back_block.curr_ptr};
-#if __cpp_if_consteval >= 202106L
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			if constexpr (::std::is_trivially_constructible_v<value_type, Args...>)
 			{
@@ -2909,7 +2898,6 @@ public:
 			}
 		}
 		else
-#endif
 		{
 			::new (static_cast<void *>(currptr)) value_type(::std::forward<Args>(args)...);
 		}
@@ -2936,8 +2924,7 @@ public:
 		FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::may_throw_constructible<value_type, Args...>)
 	{
 		auto currptr{controller.back_block.curr_ptr};
-#if __cpp_if_consteval >= 202106L
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			if constexpr (::std::is_trivially_constructible_v<value_type, Args...>)
 			{
@@ -2949,7 +2936,6 @@ public:
 			}
 		}
 		else
-#endif
 		{
 			::new (static_cast<void *>(currptr)) value_type(::std::forward<Args>(args)...);
 		}
@@ -3059,8 +3045,7 @@ public:
 			grow_front();
 		}
 		auto front_curr_ptr{controller.front_block.curr_ptr};
-#if __cpp_if_consteval >= 202106L
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			if constexpr (::std::is_trivially_constructible_v<value_type, Args...>)
 			{
@@ -3084,7 +3069,6 @@ public:
 			}
 		}
 		else
-#endif
 		{
 			if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 			{
@@ -3119,8 +3103,7 @@ public:
 		FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::may_throw_constructible<value_type, Args...>)
 	{
 		auto front_curr_ptr{controller.front_block.curr_ptr};
-#if __cpp_if_consteval >= 202106L
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			if constexpr (::std::is_trivially_constructible_v<value_type, Args...>)
 			{
@@ -3134,7 +3117,6 @@ public:
 			}
 		}
 		else
-#endif
 		{
 			return *(controller.front_block.curr_ptr = ::new (static_cast<void *>(front_curr_ptr - 1)) value_type(::std::forward<Args>(args)...));
 		}
@@ -3261,7 +3243,7 @@ public:
 
 	inline constexpr size_type front_capacity_bytes() const noexcept
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			return ::fast_io::containers::details::deque_get_front_capacity<1u, block_size>(this->controller) * sizeof(value_type);
 		}
@@ -3274,7 +3256,7 @@ public:
 
 	inline constexpr size_type front_capacity() const noexcept
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			return ::fast_io::containers::details::deque_get_front_capacity<1u, block_size>(this->controller);
 		}
@@ -3287,7 +3269,7 @@ public:
 
 	inline constexpr size_type back_capacity_bytes() const noexcept
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			return ::fast_io::containers::details::deque_get_back_capacity<1u, block_size>(this->controller) * sizeof(value_type);
 		}
@@ -3300,7 +3282,7 @@ public:
 
 	inline constexpr size_type back_capacity() const noexcept
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			return ::fast_io::containers::details::deque_get_back_capacity<1u, block_size>(this->controller);
 		}
@@ -3313,7 +3295,7 @@ public:
 
 	inline constexpr size_type capacity_bytes() const noexcept
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			return ::fast_io::containers::details::deque_get_capacity<1u, block_size>(this->controller) * sizeof(value_type);
 		}
@@ -3326,7 +3308,7 @@ public:
 
 	inline constexpr size_type capacity() const noexcept
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			return ::fast_io::containers::details::deque_get_capacity<1u, block_size>(this->controller);
 		}
@@ -3360,7 +3342,7 @@ public:
 	inline constexpr segment_span_type nth_segment(size_type pos)
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			auto [start_ptr, end_ptr] = ::fast_io::containers::details::deque_nth_element_common<block_size, throwing_violations>(this->controller, pos);
 			return segment_span_type(start_ptr, end_ptr);
@@ -3374,7 +3356,7 @@ public:
 	inline constexpr const_segment_span_type const_nth_segment(size_type pos) const
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			auto [start_ptr, end_ptr] = ::fast_io::containers::details::deque_nth_element_common<block_size, throwing_violations>(this->controller, pos);
 			return const_segment_span_type(start_ptr, end_ptr);
@@ -4072,7 +4054,7 @@ public:
 	inline constexpr void shrink_to_fit()
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			::fast_io::containers::details::deque_shrink_to_fit_impl<allocator, alignof(value_type), block_size * sizeof(value_type)>(allochdl, this->controller);
 		}
@@ -4096,7 +4078,7 @@ public:
 	inline constexpr void reserve_back(size_type backcap)
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			::fast_io::containers::details::deque_reserve_back_common<allocator, alignof(value_type), sizeof(value_type), block_size, false>(allochdl, this->controller, backcap);
 		}
@@ -4108,7 +4090,7 @@ public:
 	inline constexpr void reserve_front(size_type frontcap)
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
-		if consteval
+		FAST_IO_IF_CONSTEVAL
 		{
 			::fast_io::containers::details::deque_reserve_front_common<allocator, alignof(value_type), sizeof(value_type), block_size, false>(allochdl, this->controller, frontcap);
 		}
@@ -4301,7 +4283,7 @@ private:
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type> && 0)
 		{
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				constexpr size_type blockbytes{block_size * sizeof(value_type)};
 				return ::std::bit_cast<iterator>(
@@ -4346,7 +4328,7 @@ private:
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				auto posp1{pos.itercontent};
 				if (++posp1.curr_ptr == posp1.begin_ptr + block_size)

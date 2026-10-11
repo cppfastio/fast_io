@@ -154,7 +154,7 @@ inline constexpr void fill(fwd_iter first, fwd_iter last, T value)
 					  ::std::is_scalar_v<fwd_iter> && sizeof(fwd_iter) == 1)
 		{
 #ifdef __cpp_if_consteval
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 #else
 			if (!__builtin_is_constant_evaluated())
 #endif
@@ -185,7 +185,7 @@ inline constexpr void fill_n(fwd_iter first, ::std::size_t n, T value)
 					  ::std::is_scalar_v<fwd_iter> && sizeof(fwd_iter) == 1)
 		{
 #ifdef __cpp_if_consteval
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 #else
 			if (!__builtin_is_constant_evaluated())
 #endif
@@ -318,8 +318,7 @@ inline constexpr output_iter overlapped_copy_trivial(input_iter first, ::std::si
 	{
 		tempbufferptr[i] = first[i];
 	}
-#if __cpp_if_consteval >= 202106L
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -327,7 +326,6 @@ inline constexpr output_iter overlapped_copy_trivial(input_iter first, ::std::si
 		}
 	}
 	else
-#endif
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -776,12 +774,7 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 				   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			::std::size_t count{static_cast<::std::size_t>(last - first)};
 			if (count) // to avoid nullptr UB
@@ -790,7 +783,6 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 			}
 			return d_first += count;
 		}
-#endif
 	}
 	destroyer d{d_first, d_first};
 	for (; first != last; ++first)
@@ -836,12 +828,7 @@ uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first)
 				   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (n) // to avoid nullptr UB
 			{
@@ -849,7 +836,6 @@ uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first)
 			}
 			return d_first += n;
 		}
-#endif
 	}
 	destroyer d{d_first, d_first};
 	for (::std::size_t i{}; i != n; ++i)
@@ -882,12 +868,7 @@ uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first)
 				   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (n) // to avoid nullptr UB
 			{
@@ -895,7 +876,6 @@ uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first)
 			}
 			return d_first += n;
 		}
-#endif
 	}
 	for (::std::size_t i{}; i != n; ++i)
 	{
@@ -914,17 +894,11 @@ inline constexpr void uninitialized_default_construct(ForwardIt first, ForwardIt
 	if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<T> &&
 				  ::std::contiguous_iterator<ForwardIt> && !::std::is_volatile_v<T>)
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			::fast_io::freestanding::my_memset(::std::to_address(first), 0, sizeof(T) * static_cast<::std::size_t>(last - first));
 			return;
 		}
-#endif
 	}
 	for (; first != last; ++first)
 	{
@@ -949,17 +923,11 @@ inline constexpr ForwardIt uninitialized_fill(ForwardIt first, ForwardIt last, T
 	if constexpr (::std::integral<valuetype> && ::std::integral<T> &&
 				  sizeof(T) == 1 && sizeof(valuetype) == 1 && ::std::contiguous_iterator<ForwardIt>)
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			::fast_io::freestanding::my_memset(::std::to_address(first), static_cast<int>(static_cast<::std::uint_least8_t>(x)), sizeof(T) * static_cast<::std::size_t>(last - first));
 			return last;
 		}
-#endif
 	}
 
 	for (; first != last; ++first)

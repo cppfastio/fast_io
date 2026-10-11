@@ -194,7 +194,7 @@ inline constexpr char_type *print_reserve_define(
 	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::debug_view_t<::fast_io::containers::deque<T, allocator> const &>>,
 	char_type *ptr, ::fast_io::manipulators::debug_view_t<::fast_io::containers::deque<T, allocator> const &> val) noexcept
 {
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		return ::fast_io::details::pr_rsv_define_deque_debug_impl(ptr, val.reference.controller);
 	}

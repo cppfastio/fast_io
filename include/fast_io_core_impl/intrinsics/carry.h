@@ -20,11 +20,7 @@ inline constexpr T addc(T a, T b, bool carryin, bool &carryout) noexcept
 	[[assume(carryin == 0 || carryin == 1)]];
 #endif
 
-#if defined(__cpp_if_consteval)
-	if !consteval
-#else
-	if (!__builtin_is_constant_evaluated())
-#endif
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 #if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64)) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
 #if !__has_cpp_attribute(assume)
@@ -74,7 +70,7 @@ inline constexpr T addc(T a, T b, bool carryin, bool &carryout) noexcept
 				return (static_cast<long long unsigned>(reshigh) << 32u) | reslow;
 			}
 		}
-#elif  FAST_IO_HAS_BUILTIN(__builtin_add_overflow)
+#elif FAST_IO_HAS_BUILTIN(__builtin_add_overflow)
 		T s;
 		auto c1 = __builtin_add_overflow(a, b, __builtin_addressof(s));
 		auto c2 = __builtin_add_overflow(s, carryin, __builtin_addressof(s));
@@ -97,11 +93,7 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 	[[assume(carryin == 0 || carryin == 1)]];
 #endif
 
-#if defined(__cpp_if_consteval)
-	if !consteval
-#else
-	if (!__builtin_is_constant_evaluated())
-#endif
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 #if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_AMD64)) && !defined(__arm64ec__) && !defined(_M_ARM64EC)
 #if !__has_cpp_attribute(assume)
@@ -151,7 +143,7 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 				return (static_cast<long long unsigned>(reshigh) << 32u) | reslow;
 			}
 		}
-		
+
 #elif FAST_IO_HAS_BUILTIN(__builtin_sub_overflow)
 		T s;
 		auto c1 = __builtin_sub_overflow(a, b, __builtin_addressof(s));
@@ -163,7 +155,7 @@ inline constexpr T subc(T a, T b, bool carryin, bool &carryout) noexcept
 
 	b = a - b;
 	carryout = a < b;
-	// b is a-b but does not handle the result of the abdication, 
+	// b is a-b but does not handle the result of the abdication,
 	// at which point a can be reused for subsequent abdication underflow judgments
 	a = b - static_cast<T>(carryin);
 	carryout |= b < a;

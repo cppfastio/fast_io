@@ -101,6 +101,10 @@ namespace fast_io
 #include "fast_io_core_impl/http_header.h"
 #include "fast_io_core_impl/string_filters.h"
 #include "fast_io_core_impl/io_lockable.h"
+#if !defined(__HERBCEPTIONS__) && !defined(__cpp_expansion_statements)
+#include "fast_io_core_impl/concat/impl.h"
+#include "fast_io_core_impl/operations/to/to.h"
+#endif
 
 #include "fast_io_dsal/impl/misc/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"

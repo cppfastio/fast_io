@@ -682,13 +682,7 @@ public:
 		imp.begin_ptr = this->allocate_elements(vecsize);
 		if constexpr (::std::is_trivially_copyable_v<value_type>)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				static_cast<void>(::fast_io::freestanding::nonoverlapped_bytes_copy(
 					reinterpret_cast<::std::byte const *>(vec.imp.begin_ptr),
@@ -801,13 +795,7 @@ private:
 		}
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				if constexpr (alloc_with_status)
 				{
@@ -938,13 +926,7 @@ private:
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type> && !alloc_with_status)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				return reinterpret_cast<pointer>(::fast_io::containers::details::sized_vector::grow_twice_iter_impl<allocator_type, uinttype, sizeof(value_type), alignof(value_type)>(*reinterpret_cast<::fast_io::containers::details::sized_vector_model<uinttype> *>(__builtin_addressof(imp)),
 																																													   iter));
@@ -971,13 +953,7 @@ private:
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				static_cast<void>(::fast_io::freestanding::uninitialized_move_backward(iter, (imp.begin_ptr + imp.size), (imp.begin_ptr + imp.size) + 1));
 				return;
@@ -1000,13 +976,7 @@ private:
 		}
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type> && !alloc_with_status)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				static_cast<void>(::fast_io::containers::details::sized_vector::grow_to_size_impl<allocator_type, uinttype, sizeof(value_type), alignof(value_type)>(
 					*reinterpret_cast<::fast_io::containers::details::sized_vector_model<uinttype> *>(__builtin_addressof(imp)), newcap));
@@ -1023,13 +993,7 @@ private:
 	{
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type> && !alloc_with_status)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				static_cast<void>(::fast_io::containers::details::sized_vector::grow_twice_impl<allocator_type, uinttype, sizeof(value_type), alignof(value_type)>(
 					*reinterpret_cast<::fast_io::containers::details::sized_vector_model<uinttype> *>(__builtin_addressof(imp))));
@@ -1792,13 +1756,7 @@ private:
 		auto lastele{(imp.begin_ptr + imp.size)};
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				if constexpr (!::std::is_trivially_destructible_v<value_type>)
 				{
@@ -1827,13 +1785,7 @@ private:
 		auto currptr{(imp.begin_ptr + imp.size)};
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
-#if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				if constexpr (!::std::is_trivially_destructible_v<value_type>)
 				{

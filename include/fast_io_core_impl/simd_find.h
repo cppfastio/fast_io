@@ -362,11 +362,7 @@ template <bool findnot>
 inline constexpr char unsigned const *find_characters_musl(char unsigned const *first, char unsigned const *last,
 														   char unsigned ch) noexcept
 {
-#if __cpp_if_consteval >= 202106L
-	if !consteval
-#else
-	if (!__builtin_is_constant_evaluated())
-#endif
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 		constexpr ::std::size_t diff{sizeof(::std::size_t)};
 
@@ -422,12 +418,7 @@ inline constexpr char_type const *find_simd_constant_common_cold_impl(char_type 
 																	  char_type const *last) noexcept
 {
 	constexpr char_type lfchct{char_literal_v<lfch, ::std::remove_cvref_t<char_type>>};
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if !consteval
-#else
-	if (!__builtin_is_constant_evaluated())
-#endif
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 		constexpr bool use_builtin_memchr{
 #if (__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1)) && !defined(_LIBCPP_FREESTANDING)
@@ -475,7 +466,6 @@ inline constexpr char_type const *find_simd_constant_common_cold_impl(char_type 
 				   firstconstptr + first;
 		}
 	}
-#endif
 	if constexpr (findnot)
 	{
 		return ::fast_io::freestanding::find_not(first, last, lfchct);
@@ -569,12 +559,7 @@ inline constexpr Iter find_space_common_iterator_generic_impl(Iter begin, Iter e
 template <bool ishtml, bool findnot, ::std::integral char_type>
 inline constexpr char_type const *find_space_common_cold_impl(char_type const *first, char_type const *last) noexcept
 {
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-	if !consteval
-#else
-	if (!__builtin_is_constant_evaluated())
-#endif
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 		if constexpr (::fast_io::details::optimal_simd_vector_run_with_cpu_instruction_size)
 		{
@@ -583,7 +568,6 @@ inline constexpr char_type const *find_space_common_cold_impl(char_type const *f
 				first, last);
 		}
 	}
-#endif
 	return find_space_common_iterator_generic_impl<ishtml, findnot>(first, last);
 }
 

@@ -68,7 +68,7 @@ inline constexpr ::std::uint_least8_t xtime(::std::uint_least8_t x) noexcept
 /* load/store a 32-bit AES word: byte 0 of the group is the MSB */
 inline constexpr ::std::uint_least32_t load_be32(::std::byte const *p) noexcept
 {
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		return (static_cast<::std::uint_least32_t>(::std::to_integer<::std::uint_least8_t>(p[0])) << 24) |
 			   (static_cast<::std::uint_least32_t>(::std::to_integer<::std::uint_least8_t>(p[1])) << 16) |
@@ -85,7 +85,7 @@ inline constexpr ::std::uint_least32_t load_be32(::std::byte const *p) noexcept
 
 inline constexpr void store_be32(::std::uint_least8_t *p, ::std::uint_least32_t v) noexcept
 {
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		p[0] = static_cast<::std::uint_least8_t>(v >> 24);
 		p[1] = static_cast<::std::uint_least8_t>(v >> 16);
@@ -102,7 +102,7 @@ inline constexpr void store_be32(::std::uint_least8_t *p, ::std::uint_least32_t 
 /* state <-> byte block transfer */
 inline constexpr void load_block(::std::uint_least8_t *state, ::std::byte const *in) noexcept
 {
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		state[0] = ::std::to_integer<::std::uint_least8_t>(in[0]);
 		state[1] = ::std::to_integer<::std::uint_least8_t>(in[1]);
@@ -129,7 +129,7 @@ inline constexpr void load_block(::std::uint_least8_t *state, ::std::byte const 
 
 inline constexpr void store_block(::std::byte *out, ::std::uint_least8_t const *state) noexcept
 {
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		out[0] = ::std::byte{state[0]};
 		out[1] = ::std::byte{state[1]};

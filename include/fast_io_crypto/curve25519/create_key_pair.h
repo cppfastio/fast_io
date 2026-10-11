@@ -8,7 +8,7 @@ template <std::endian end, typename D>
 inline constexpr void hash_digest_to_ptr_common_impl(std::byte const *ptr, std::size_t n, D &digest) noexcept
 {
 	using U = typename D::value_type;
-if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (std::size_t i{}; i != n; ++i)
 		{
@@ -43,7 +43,7 @@ template <std::endian end, typename D>
 inline constexpr void hash_digest_from_ptr_common_impl(D const &digest, std::size_t n, std::byte *ptr) noexcept
 {
 	using U = typename D::value_type;
-if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (std::size_t i{}; i != n; ++i)
 		{
@@ -81,7 +81,7 @@ inline constexpr void hash_digest_to_ptr_simd16_impl(std::byte const *ptr, std::
 {
 	using U = typename D::value_type;
 	constexpr std::size_t usz{sizeof(U)};
-if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		hash_digest_to_ptr_common_impl<end>(ptr, n, digest);
 	}
@@ -115,7 +115,7 @@ inline constexpr void hash_digest_from_ptr_simd16_impl(D const &digest, std::siz
 {
 	using U = typename D::value_type;
 	constexpr std::size_t usz{sizeof(U)};
-if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		hash_digest_from_ptr_common_impl<end>(digest, n, ptr);
 	}
@@ -320,8 +320,8 @@ inline constexpr void ed25519_sign_message_impl(::std::byte *signature, ::std::b
 		limb_to_bytes_little_endian(signature + 32 + i * sizeof(field_number::value_type), t.index_unchecked(i));
 	}
 
-// Clear sensitive data. Not needed (nor possible) during constant evaluation.
-	if !consteval
+	// Clear sensitive data. Not needed (nor possible) during constant evaluation.
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 		::fast_io::secure_clear(__builtin_addressof(a), sizeof(a));
 		::fast_io::secure_clear(__builtin_addressof(r), sizeof(r));

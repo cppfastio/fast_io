@@ -988,11 +988,7 @@ public:
 private:
 	inline constexpr void destroy() noexcept
 	{
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if constexpr (::std::is_trivially_destructible_v<value_type> && !alloc_with_status)
 			{

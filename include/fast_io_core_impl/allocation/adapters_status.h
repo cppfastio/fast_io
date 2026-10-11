@@ -8,13 +8,7 @@ static inline void *handle_allocate_impl(handle_type handle, ::std::size_t n)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(has_status && has_native_handle_allocate)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return static_cast<void *>(::fast_io::freestanding::allocator<::std::byte>{}.allocate(n));
 	}
@@ -584,7 +578,7 @@ static inline void handle_deallocate_n(handle_type handle, void *p, ::std::size_
 {
 	if constexpr (secure_clear)
 	{
-		if !consteval
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (p != nullptr)
 			{
@@ -644,7 +638,7 @@ static inline void handle_deallocate_aligned_n(handle_type handle, void *p, ::st
 {
 	if constexpr (secure_clear)
 	{
-		if !consteval
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (p != nullptr)
 			{
@@ -1388,7 +1382,7 @@ public:
 	{
 		if constexpr (secure_clear)
 		{
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				if (ptr != nullptr)
 				{
@@ -1593,7 +1587,7 @@ public:
 	{
 		if constexpr (secure_clear)
 		{
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 				if (ptr != nullptr)
 				{

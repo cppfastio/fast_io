@@ -161,11 +161,7 @@ inline constexpr ::std::uint_least32_t calculate_crc32(::std::uint_least32_t crc
 {
 	if constexpr (opt == crc32_option::crc32)
 	{
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if constexpr (support_hardware_crc32)
 			{
@@ -176,11 +172,7 @@ inline constexpr ::std::uint_least32_t calculate_crc32(::std::uint_least32_t crc
 	}
 	else
 	{
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if constexpr (support_hardware_crc32c)
 			{

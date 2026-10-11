@@ -930,7 +930,7 @@ inline constexpr parse_result<char_type const *>
 scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, char_type const *last, T &res) noexcept
 {
 #ifdef __cpp_if_consteval
-	if !consteval
+	FAST_IO_IF_NOT_CONSTEVAL
 #else
 	if (!__builtin_is_constant_evaluated())
 #endif

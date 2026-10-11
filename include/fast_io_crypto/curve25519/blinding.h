@@ -97,7 +97,7 @@ inline constexpr edp_blinding_context &ed25519_blinding_init_to_ptr(edp_blinding
 	edp_ext_point_2e(ctx.bp, T);
 
 	// Clear sensitive data. Not needed (nor possible) during constant evaluation.
-	if !consteval
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 		::fast_io::secure_clear(__builtin_addressof(t), sizeof(t));
 		::fast_io::secure_clear(__builtin_addressof(g), sizeof(g));

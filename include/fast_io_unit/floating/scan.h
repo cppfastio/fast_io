@@ -45,11 +45,11 @@ template <::std::integral char_type, typename flt>
 struct scan_floating_context
 {
 	char buffer[scan_flt_digits_cap<flt>];
-	::std::int_least64_t exponent{};  // parsed exponent magnitude (clamped)
-	::std::size_t int_digits{};       // digits before the point (all of them)
-	::std::size_t total_digits{};     // index across the combined int+frac stream
-	::std::size_t first_sig{};        // combined index of the first nonzero digit
-	::std::size_t ndigits{};          // retained significant digits
+	::std::int_least64_t exponent{}; // parsed exponent magnitude (clamped)
+	::std::size_t int_digits{};      // digits before the point (all of them)
+	::std::size_t total_digits{};    // index across the combined int+frac stream
+	::std::size_t first_sig{};       // combined index of the first nonzero digit
+	::std::size_t ndigits{};         // retained significant digits
 	scan_floating_phase phase{scan_floating_phase::space};
 	::std::uint_least8_t special_idx{};
 	bool negative{};
@@ -187,7 +187,7 @@ inline constexpr void scan_flt_assign(flt &v, fp_scan_result const &r, bool nega
 		float80_storage<sizeof(flt) - sizeof(::std::uint_least64_t) - sizeof(::std::uint_least16_t)>
 			st{r.lo,
 			   static_cast<::std::uint_least16_t>((negative ? 0x8000u : 0u) |
-												static_cast<::std::uint_least16_t>(r.efield)),
+												  static_cast<::std::uint_least16_t>(r.efield)),
 			   {}};
 		v = ::std::bit_cast<flt>(st);
 	}
@@ -498,10 +498,10 @@ scan_flt_define_impl(scan_floating_context<char_type, flt> &st, char_type const 
 				auto const ch{*first};
 				if (st.buffer[0] == 'n')
 				{
-					static constexpr char_type tail_lo[]{char_literal_v<u8'a', char_type>,
-														 char_literal_v<u8'n', char_type>};
-					static constexpr char_type tail_up[]{char_literal_v<u8'A', char_type>,
-														 char_literal_v<u8'N', char_type>};
+					constexpr char_type tail_lo[]{char_literal_v<u8'a', char_type>,
+												  char_literal_v<u8'n', char_type>};
+					constexpr char_type tail_up[]{char_literal_v<u8'A', char_type>,
+												  char_literal_v<u8'N', char_type>};
 					if (st.special_idx < 3u &&
 						(ch == tail_lo[st.special_idx - 1u] || ch == tail_up[st.special_idx - 1u]))
 					{
@@ -515,20 +515,20 @@ scan_flt_define_impl(scan_floating_context<char_type, flt> &st, char_type const 
 					st.phase = scan_floating_phase::done;
 					break;
 				}
-				static constexpr char_type tail_lo[]{char_literal_v<u8'n', char_type>,
-													 char_literal_v<u8'f', char_type>,
-													 char_literal_v<u8'i', char_type>,
-													 char_literal_v<u8'n', char_type>,
-													 char_literal_v<u8'i', char_type>,
-													 char_literal_v<u8't', char_type>,
-													 char_literal_v<u8'y', char_type>};
-				static constexpr char_type tail_up[]{char_literal_v<u8'N', char_type>,
-													 char_literal_v<u8'F', char_type>,
-													 char_literal_v<u8'I', char_type>,
-													 char_literal_v<u8'N', char_type>,
-													 char_literal_v<u8'I', char_type>,
-													 char_literal_v<u8'T', char_type>,
-													 char_literal_v<u8'Y', char_type>};
+				constexpr char_type tail_lo[]{char_literal_v<u8'n', char_type>,
+											  char_literal_v<u8'f', char_type>,
+											  char_literal_v<u8'i', char_type>,
+											  char_literal_v<u8'n', char_type>,
+											  char_literal_v<u8'i', char_type>,
+											  char_literal_v<u8't', char_type>,
+											  char_literal_v<u8'y', char_type>};
+				constexpr char_type tail_up[]{char_literal_v<u8'N', char_type>,
+											  char_literal_v<u8'F', char_type>,
+											  char_literal_v<u8'I', char_type>,
+											  char_literal_v<u8'N', char_type>,
+											  char_literal_v<u8'I', char_type>,
+											  char_literal_v<u8'T', char_type>,
+											  char_literal_v<u8'Y', char_type>};
 				if (st.special_idx < 8u &&
 					(ch == tail_lo[st.special_idx - 1u] || ch == tail_up[st.special_idx - 1u]))
 				{
@@ -588,7 +588,7 @@ scan_flt_eof_impl(scan_floating_context<char_type, flt> &st, flt &t) noexcept
 		return st.has_digit ? scan_flt_assign_result(st, t) : invalid;
 	case scan_floating_phase::special:
 		if (st.buffer[0] == 'n' ? st.special_idx == 3u
-							  : st.special_idx == 3u || st.special_idx == 8u)
+								: st.special_idx == 3u || st.special_idx == 8u)
 		{
 			return scan_flt_assign_result(st, t);
 		}

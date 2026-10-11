@@ -185,7 +185,7 @@ inline int posix_tcp_listen_v6_impl(ipv6 v6, open_mode m)
 inline int posix_tcp_listen_dual_impl(::std::uint_least16_t port, open_mode m)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	try
+	FAST_IO_HERBCEPTIONS_TRY
 	{
 		posix_file soc(sock_family::inet6, sock_type::stream, m, sock_protocol::tcp);
 		posix_tcp_listen_reuse_impl(soc.fd);
@@ -200,7 +200,7 @@ inline int posix_tcp_listen_dual_impl(::std::uint_least16_t port, open_mode m)
 		posix_listen_posix_socket_impl(soc.fd, 128);
 		return soc.release();
 	}
-	catch throws(::std::error)
+	FAST_IO_HERBCEPTIONS_CATCH_ALL
 	{
 	}
 	return posix_tcp_listen_impl(ipv4{.port = port}, m);

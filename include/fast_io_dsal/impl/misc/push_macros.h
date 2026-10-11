@@ -326,3 +326,23 @@ target (dllimport decls only pull in wineunix.dll when actually used).
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 #define FAST_IO_HAS_WINE_UNIX
 #endif
+
+/* if consteval is C++23. GCC/Clang accept it as an extension in older
+ * modes (warning only); where it is unavailable entirely, fall back to
+ * __builtin_is_constant_evaluated(), and where even that is missing,
+ * assume the runtime path. */
+#pragma push_macro("FAST_IO_IF_CONSTEVAL")
+#pragma push_macro("FAST_IO_IF_NOT_CONSTEVAL")
+#undef FAST_IO_IF_CONSTEVAL
+#undef FAST_IO_IF_NOT_CONSTEVAL
+#if defined(__cpp_if_consteval) && __cpp_if_consteval >= 202106L
+#define FAST_IO_IF_CONSTEVAL if consteval
+#define FAST_IO_IF_NOT_CONSTEVAL if !consteval
+#elif (defined(__cpp_lib_is_constant_evaluated) && __cpp_lib_is_constant_evaluated >= 201811L) || \
+	FAST_IO_HAS_BUILTIN(__builtin_is_constant_evaluated)
+#define FAST_IO_IF_CONSTEVAL if (__builtin_is_constant_evaluated())
+#define FAST_IO_IF_NOT_CONSTEVAL if (!__builtin_is_constant_evaluated())
+#else
+#define FAST_IO_IF_CONSTEVAL if (false)
+#define FAST_IO_IF_NOT_CONSTEVAL if (true)
+#endif

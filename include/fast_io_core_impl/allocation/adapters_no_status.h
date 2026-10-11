@@ -35,13 +35,7 @@ static inline void *allocate_conditional_zero_impl(::std::size_t n, bool zero)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		auto p{
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
@@ -209,11 +203,7 @@ allocate_impl(::std::size_t n)
 	requires(!has_status)
 {
 #if __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return allocate_conditional_zero_impl<throwing>(n, false);
 	}
@@ -256,11 +246,7 @@ static inline void *allocate_zero_impl(::std::size_t n)
 	requires(!has_status)
 {
 #if __cpp_constexpr_dynamic_alloc >= 201907L
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#else
-	if (__builtin_is_constant_evaluated())
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return allocate_conditional_zero_impl<throwing>(n, true);
 	}
@@ -532,13 +518,7 @@ static inline void *reallocate_n_conditional_zero_impl(void *p, ::std::size_t ol
 	{
 		return p;
 	}
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		auto newptr{::operator new(n)};
 		if (p != nullptr)
@@ -787,7 +767,7 @@ static inline constexpr void deallocate_n(void *p, ::std::size_t n) noexcept
 {
 	if constexpr (secure_clear)
 	{
-		if !consteval
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (p != nullptr)
 			{
@@ -839,13 +819,7 @@ allocate_aligned_conditional_zero_impl(::std::size_t alignment, ::std::size_t n,
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		auto p{
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
@@ -963,13 +937,7 @@ allocate_aligned_impl(::std::size_t alignment, ::std::size_t n)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
@@ -1014,13 +982,7 @@ allocate_aligned_zero_impl(::std::size_t alignment, ::std::size_t n)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
@@ -1073,13 +1035,7 @@ allocate_at_least_impl(::std::size_t n)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return {
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
@@ -1125,13 +1081,7 @@ allocate_zero_at_least_impl(::std::size_t n)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return {
 #if FAST_IO_HAS_BUILTIN(__builtin_operator_new)
@@ -1177,13 +1127,7 @@ allocate_conditional_zero_at_least_impl(::std::size_t n, bool zero)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		auto p{::operator new(n)};
 		if (zero)
@@ -1341,13 +1285,7 @@ allocate_aligned_at_least_impl(::std::size_t alignment, ::std::size_t n)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return allocate_aligned_conditional_zero_at_least_impl<throwing>(alignment, n, false);
 	}
@@ -1386,13 +1324,7 @@ allocate_aligned_zero_at_least_impl(::std::size_t alignment, ::std::size_t n)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		return allocate_aligned_conditional_zero_at_least_impl<throwing>(alignment, n, true);
 	}
@@ -1430,13 +1362,7 @@ allocate_aligned_conditional_zero_at_least_impl(::std::size_t alignment, ::std::
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(!has_status)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		auto p{::operator new(n)};
 		if (zero)
@@ -1720,13 +1646,7 @@ reallocate_aligned_n_conditional_zero_impl(void *p, ::std::size_t oldn, ::std::s
 	{
 		return p;
 	}
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		auto newptr{::operator new(n)};
 		if (p != nullptr)
@@ -2461,7 +2381,7 @@ static inline void deallocate_aligned_n(void *p, ::std::size_t alignment, ::std:
 {
 	if constexpr (secure_clear)
 	{
-		if !consteval
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (p != nullptr)
 			{
@@ -2536,13 +2456,7 @@ static inline void *handle_allocate_conditional_zero_impl(handle_type handle, ::
 	FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 	requires(has_status && has_native_handle_allocate)
 {
-#if __cpp_if_consteval >= 202106L
-	if consteval
-#elif __cpp_lib_is_constant_evaluated >= 201811L && __cpp_constexpr_dynamic_alloc >= 201907L
-	if (__builtin_is_constant_evaluated())
-#else
-	if (false)
-#endif
+	FAST_IO_IF_CONSTEVAL
 	{
 		auto p{::operator new(n)};
 		if (zero)

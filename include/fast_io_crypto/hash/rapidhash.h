@@ -34,7 +34,7 @@ inline constexpr T rapidhash_generic_fio(::std::byte const *p) noexcept
 inline constexpr ::std::uint_least64_t
 rapidhash_read64_fio(::std::byte const *p) noexcept
 {
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		return ::fast_io::details::rapidhash_generic_fio<::std::uint_least64_t>(p);
 	}
@@ -54,7 +54,7 @@ rapidhash_read64_fio(::std::byte const *p) noexcept
 inline constexpr ::std::uint_least32_t
 rapidhash_read32_fio(::std::byte const *p) noexcept
 {
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		return ::fast_io::details::rapidhash_generic_fio<::std::uint_least32_t>(p);
 	}

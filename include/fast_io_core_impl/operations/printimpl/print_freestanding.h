@@ -714,7 +714,7 @@ print_freestanding_decay(outputstmtype optstm,
 				{
 					last_pos = it;
 				}
-				if consteval
+				FAST_IO_IF_CONSTEVAL
 				{
 					itconst = it;
 				}
@@ -784,7 +784,7 @@ print_freestanding_decay(outputstmtype optstm,
 						{
 							if (buffer_enough_space) [[likely]]
 							{
-								if consteval
+								FAST_IO_IF_CONSTEVAL
 								{
 									auto oldit{it};
 									it = ::fast_io::details::copy_scatter(scatteri, it);
@@ -810,7 +810,7 @@ print_freestanding_decay(outputstmtype optstm,
 						if constexpr (only_one_scatter && !islastwithlf)
 						{
 							bufferbase = scatteri.base;
-							if consteval
+							FAST_IO_IF_CONSTEVAL
 							{
 								itconst = bufferbase + scatteri.len;
 							}
@@ -849,7 +849,7 @@ print_freestanding_decay(outputstmtype optstm,
 				if constexpr (only_one_scatter)
 				{
 					output_char_type const *itend FAST_IO_INDETERMINATE;
-					if consteval
+					FAST_IO_IF_CONSTEVAL
 					{
 						itend = itconst;
 					}
