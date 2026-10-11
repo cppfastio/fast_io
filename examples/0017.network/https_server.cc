@@ -8,9 +8,6 @@ curl, or the fast_io https client.
 */
 #include <fast_io.h>
 #include <fast_io_hosted_crypto.h>
-#if !defined(_WIN32)
-#include <signal.h>
-#endif
 
 int main(int argc, char const **argv)
 {
@@ -26,10 +23,6 @@ int main(int argc, char const **argv)
 	}
 	try
 	{
-#if !defined(_WIN32)
-		/* a peer RST mid-write would otherwise SIGPIPE the process */
-		::signal(SIGPIPE, SIG_IGN);
-#endif
 		/* cert chain (leaf first) -- reuses the trust-store PEM loader */
 		::fast_io::tls::root_store certs;
 		::fast_io::tls::details::root_store_load_pem_file(
