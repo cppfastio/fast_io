@@ -23,6 +23,11 @@ invalid index range ...). When the allocator adapter carries the
 throws_on_violations flag the violation is reported through herbceptions,
 otherwise the program terminates.
 */
+template <::fast_io::allocator_adapter_flags flags>
+concept valid_view_flags =
+	flags == ::fast_io::allocator_adapter_flags::none ||
+	flags == ::fast_io::allocator_adapter_flags::throws_on_violations;
+
 template <bool throwing>
 [[noreturn]] inline constexpr void contract_violation_report(::std::errc ec) FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
 {
@@ -178,9 +183,13 @@ template <typename allocator>
 inline constexpr bool allocator_throws_on_violations{
 	(::fast_io::details::adapter_flags_or_default<allocator>() & ::fast_io::allocator_adapter_flags::throws_on_violations) != ::fast_io::allocator_adapter_flags::none};
 template <typename allocator>
+inline constexpr bool allocator_throws_on_overflow{
+	(::fast_io::details::adapter_flags_or_default<allocator>() & ::fast_io::allocator_adapter_flags::throws_on_overflow) != ::fast_io::allocator_adapter_flags::none};
+template <typename allocator>
 inline constexpr bool allocator_throws_any{
 	::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator> ||
-	::fast_io::containers::details::allocator_throws_on_violations<allocator>};
+	::fast_io::containers::details::allocator_throws_on_violations<allocator> ||
+	::fast_io::containers::details::allocator_throws_on_overflow<allocator>};
 
 template <typename sztype>
 inline constexpr sztype cal_grow_twice_size_size_based(sztype cap) noexcept

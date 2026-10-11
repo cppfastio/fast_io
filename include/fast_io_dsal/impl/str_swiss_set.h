@@ -132,7 +132,7 @@ inline constexpr void str_swiss_set_reserve(
 	{
 		return;
 	}
-	::std::size_t newcap{::fast_io::details::str_swiss_table_reserve_compute_newcap<::fast_io::containers::details::allocator_throws_on_violations<allocator_type>>(n)};
+	::std::size_t newcap{::fast_io::details::str_swiss_table_reserve_compute_newcap<::fast_io::containers::details::allocator_throws_on_overflow<allocator_type>>(n)};
 	if (newcap <= imp.cap)
 	{
 		return;
@@ -149,7 +149,7 @@ inline constexpr void str_swiss_set_grow(
 	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator_type>)
 {
 	::fast_io::details::str_swiss_set_reserve_to_newcap<allocator_type, hasher, chtype>(imp,
-																						::fast_io::details::str_swiss_table_grow_compute_newcap<::fast_io::containers::details::allocator_throws_on_violations<allocator_type>>(imp.cap), hash);
+																						::fast_io::details::str_swiss_table_grow_compute_newcap<::fast_io::containers::details::allocator_throws_on_overflow<allocator_type>>(imp.cap), hash);
 }
 
 template <typename allocator_type, ::std::integral chtype>

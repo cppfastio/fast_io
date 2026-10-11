@@ -135,7 +135,8 @@ private:
 	using typed_allocator = ::fast_io::typed_generic_allocator_adapter<allocator, underlying_type>;
 	static inline constexpr bool throwing_allocation{typed_allocator::throws_on_allocation_failure};
 	static inline constexpr bool throwing_violations{typed_allocator::throws_on_violations};
-	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations};
+	static inline constexpr bool throwing_overflow{typed_allocator::throws_on_overflow};
+	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations || throwing_overflow};
 	inline constexpr void grow_to_new_capacity(size_type n)
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation)
 	{
@@ -181,7 +182,7 @@ private:
 		constexpr ::std::size_t mxbyteshalf{max_size() >> 1};
 		if (mxbyteshalf < current_capacity)
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		::std::size_t toallocate{current_capacity << 1u};
 		if (current_capacity == 0)
@@ -200,7 +201,7 @@ private:
 		}
 		if (mxbytes < to_allocate_bytes)
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		auto [new_begin_ptr, new_capacity] = typed_allocator::allocate_zero_at_least(to_allocate_bytes);
 		if (mxbytes < new_capacity)
@@ -751,7 +752,7 @@ public:
 	{
 		if (max_size() - (underlying_digits - 1u) < n) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		if (this->imp.end_pos < n)
 		{

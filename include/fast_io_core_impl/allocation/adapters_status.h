@@ -34,17 +34,17 @@ static inline void *handle_allocate_impl(handle_type handle, ::std::size_t n)
 		}
 	}
 }
-static inline constexpr void * handle_allocate(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_allocate(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_native_handle_allocate)) || (throws_on_allocation_failure && (has_status && has_native_handle_allocate_try)))
 {
 	return handle_allocate_impl<throws_on_allocation_failure>(handle, n);
 }
-static inline constexpr void * handle_allocate_die(handle_type handle, ::std::size_t n) noexcept
+static inline constexpr void *handle_allocate_die(handle_type handle, ::std::size_t n) noexcept
 	requires(has_status && has_native_handle_allocate)
 {
 	return handle_allocate_impl<false>(handle, n);
 }
-static inline constexpr void * handle_allocate_try(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_allocate_try(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_native_handle_allocate_try)
 {
 	return handle_allocate_impl<true>(handle, n);
@@ -72,17 +72,17 @@ static inline void *handle_allocate_zero_impl(handle_type handle, ::std::size_t 
 		return handle_allocate_conditional_zero_impl<throwing>(handle, n, true);
 	}
 }
-static inline constexpr void * handle_allocate_zero(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_allocate_zero(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_native_handle_allocate)) || (throws_on_allocation_failure && (has_status && has_native_handle_allocate_try)))
 {
 	return handle_allocate_zero_impl<throws_on_allocation_failure>(handle, n);
 }
-static inline constexpr void * handle_allocate_zero_die(handle_type handle, ::std::size_t n) noexcept
+static inline constexpr void *handle_allocate_zero_die(handle_type handle, ::std::size_t n) noexcept
 	requires(has_status && has_native_handle_allocate)
 {
 	return handle_allocate_zero_impl<false>(handle, n);
 }
-static inline constexpr void * handle_allocate_zero_try(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_allocate_zero_try(handle_type handle, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_native_handle_allocate_try)
 {
 	return handle_allocate_zero_impl<true>(handle, n);
@@ -212,17 +212,17 @@ static inline void *handle_reallocate_conditional_zero_impl(handle_type handle, 
 		}
 	}
 }
-static inline constexpr void * handle_reallocate_conditional_zero(handle_type handle, void *p, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_reallocate_conditional_zero(handle_type handle, void *p, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_handle_reallocate)) || (throws_on_allocation_failure && (has_status && has_handle_reallocate_try)))
 {
 	return handle_reallocate_conditional_zero_impl<throws_on_allocation_failure>(handle, p, n, zero);
 }
-static inline constexpr void * handle_reallocate_conditional_zero_die(handle_type handle, void *p, ::std::size_t n, bool zero) noexcept
+static inline constexpr void *handle_reallocate_conditional_zero_die(handle_type handle, void *p, ::std::size_t n, bool zero) noexcept
 	requires(has_status && has_handle_reallocate)
 {
 	return handle_reallocate_conditional_zero_impl<false>(handle, p, n, zero);
 }
-static inline constexpr void * handle_reallocate_conditional_zero_try(handle_type handle, void *p, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_reallocate_conditional_zero_try(handle_type handle, void *p, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_handle_reallocate_try)
 {
 	return handle_reallocate_conditional_zero_impl<true>(handle, p, n, zero);
@@ -250,17 +250,17 @@ static inline void *handle_reallocate_impl(handle_type handle, void *p, ::std::s
 		return handle_reallocate_conditional_zero_impl<throwing>(handle, p, n, false);
 	}
 }
-static inline constexpr void * handle_reallocate(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_reallocate(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_handle_reallocate)) || (throws_on_allocation_failure && (has_status && has_handle_reallocate_try)))
 {
 	return handle_reallocate_impl<throws_on_allocation_failure>(handle, p, n);
 }
-static inline constexpr void * handle_reallocate_die(handle_type handle, void *p, ::std::size_t n) noexcept
+static inline constexpr void *handle_reallocate_die(handle_type handle, void *p, ::std::size_t n) noexcept
 	requires(has_status && has_handle_reallocate)
 {
 	return handle_reallocate_impl<false>(handle, p, n);
 }
-static inline constexpr void * handle_reallocate_try(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_reallocate_try(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_handle_reallocate_try)
 {
 	return handle_reallocate_impl<true>(handle, p, n);
@@ -288,17 +288,17 @@ static inline void *handle_reallocate_zero_impl(handle_type handle, void *p, ::s
 		return handle_reallocate_conditional_zero_impl<throwing>(handle, p, n, true);
 	}
 }
-static inline constexpr void * handle_reallocate_zero(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_reallocate_zero(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_handle_reallocate)) || (throws_on_allocation_failure && (has_status && has_handle_reallocate_try)))
 {
 	return handle_reallocate_zero_impl<throws_on_allocation_failure>(handle, p, n);
 }
-static inline constexpr void * handle_reallocate_zero_die(handle_type handle, void *p, ::std::size_t n) noexcept
+static inline constexpr void *handle_reallocate_zero_die(handle_type handle, void *p, ::std::size_t n) noexcept
 	requires(has_status && has_handle_reallocate)
 {
 	return handle_reallocate_zero_impl<false>(handle, p, n);
 }
-static inline constexpr void * handle_reallocate_zero_try(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_reallocate_zero_try(handle_type handle, void *p, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_handle_reallocate_try)
 {
 	return handle_reallocate_zero_impl<true>(handle, p, n);
@@ -451,17 +451,17 @@ static inline void *handle_reallocate_n_conditional_zero_impl(handle_type handle
 		}
 	}
 }
-static inline constexpr void * handle_reallocate_n_conditional_zero(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_reallocate_n_conditional_zero(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_handle_reallocate_n)) || (throws_on_allocation_failure && (has_status && has_handle_reallocate_n_try)))
 {
 	return handle_reallocate_n_conditional_zero_impl<throws_on_allocation_failure>(handle, p, oldn, n, zero);
 }
-static inline constexpr void * handle_reallocate_n_conditional_zero_die(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n, bool zero) noexcept
+static inline constexpr void *handle_reallocate_n_conditional_zero_die(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n, bool zero) noexcept
 	requires(has_status && has_handle_reallocate_n)
 {
 	return handle_reallocate_n_conditional_zero_impl<false>(handle, p, oldn, n, zero);
 }
-static inline constexpr void * handle_reallocate_n_conditional_zero_try(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_reallocate_n_conditional_zero_try(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n, bool zero) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_handle_reallocate_n_try)
 {
 	return handle_reallocate_n_conditional_zero_impl<true>(handle, p, oldn, n, zero);
@@ -493,17 +493,17 @@ static inline void *handle_reallocate_n_impl(handle_type handle, void *p, ::std:
 		return handle_reallocate_n_conditional_zero_impl<throwing>(handle, p, oldn, n, false);
 	}
 }
-static inline constexpr void * handle_reallocate_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_reallocate_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_handle_reallocate_n)) || (throws_on_allocation_failure && (has_status && has_handle_reallocate_n_try)))
 {
 	return handle_reallocate_n_impl<throws_on_allocation_failure>(handle, p, oldn, n);
 }
-static inline constexpr void * handle_reallocate_n_die(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) noexcept
+static inline constexpr void *handle_reallocate_n_die(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 	requires(has_status && has_handle_reallocate_n)
 {
 	return handle_reallocate_n_impl<false>(handle, p, oldn, n);
 }
-static inline constexpr void * handle_reallocate_n_try(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_reallocate_n_try(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_handle_reallocate_n_try)
 {
 	return handle_reallocate_n_impl<true>(handle, p, oldn, n);
@@ -535,17 +535,17 @@ static inline void *handle_reallocate_zero_n_impl(handle_type handle, void *p, :
 		return handle_reallocate_n_conditional_zero_impl<throwing>(handle, p, oldn, n, true);
 	}
 }
-static inline constexpr void * handle_reallocate_zero_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
+static inline constexpr void *handle_reallocate_zero_n(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS_IF(throws_on_allocation_failure)
 	requires((!throws_on_allocation_failure && (has_status && has_handle_reallocate_n)) || (throws_on_allocation_failure && (has_status && has_handle_reallocate_n_try)))
 {
 	return handle_reallocate_zero_n_impl<throws_on_allocation_failure>(handle, p, oldn, n);
 }
-static inline constexpr void * handle_reallocate_zero_n_die(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) noexcept
+static inline constexpr void *handle_reallocate_zero_n_die(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) noexcept
 	requires(has_status && has_handle_reallocate_n)
 {
 	return handle_reallocate_zero_n_impl<false>(handle, p, oldn, n);
 }
-static inline constexpr void * handle_reallocate_zero_n_try(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+static inline constexpr void *handle_reallocate_zero_n_try(handle_type handle, void *p, ::std::size_t oldn, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 	requires(has_status && has_handle_reallocate_n_try)
 {
 	return handle_reallocate_zero_n_impl<true>(handle, p, oldn, n);
@@ -584,7 +584,7 @@ static inline void handle_deallocate_n(handle_type handle, void *p, ::std::size_
 {
 	if constexpr (secure_clear)
 	{
-if !consteval
+		if !consteval
 		{
 			if (p != nullptr)
 			{
@@ -644,7 +644,7 @@ static inline void handle_deallocate_aligned_n(handle_type handle, void *p, ::st
 {
 	if constexpr (secure_clear)
 	{
-if !consteval
+		if !consteval
 		{
 			if (p != nullptr)
 			{
@@ -700,6 +700,10 @@ public:
 		(flags & ::fast_io::allocator_adapter_flags::throws_on_allocation_failure) != ::fast_io::allocator_adapter_flags::none};
 	static inline constexpr bool throws_on_violations{
 		(flags & ::fast_io::allocator_adapter_flags::throws_on_violations) != ::fast_io::allocator_adapter_flags::none};
+	static inline constexpr bool throws_on_overflow{
+		(flags & ::fast_io::allocator_adapter_flags::throws_on_overflow) != ::fast_io::allocator_adapter_flags::none};
+	static inline constexpr bool prefer_big_allocation_on_stack{
+		(flags & ::fast_io::allocator_adapter_flags::prefer_big_allocation_on_stack) != ::fast_io::allocator_adapter_flags::none};
 	static inline constexpr bool secure_clear{
 		(flags & ::fast_io::allocator_adapter_flags::secure_clear) != ::fast_io::allocator_adapter_flags::none};
 	static inline constexpr bool has_status{allocator_adaptor::has_status};
@@ -1384,7 +1388,7 @@ public:
 	{
 		if constexpr (secure_clear)
 		{
-if !consteval
+			if !consteval
 			{
 				if (ptr != nullptr)
 				{
@@ -1589,7 +1593,7 @@ if !consteval
 	{
 		if constexpr (secure_clear)
 		{
-if !consteval
+			if !consteval
 			{
 				if (ptr != nullptr)
 				{

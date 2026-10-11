@@ -79,19 +79,19 @@ inline void *grow_to_size_iter_impl(sized_vector_model<uinttype> &imp, void *ite
 {
 	if (static_cast<::std::size_t>(::std::numeric_limits<uinttype>::max()) < newcap) [[unlikely]]
 	{
-		::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+		::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 	}
 #if defined(_MSC_VER) && !defined(__clang__)
 	::std::size_t mx{SIZE_MAX / size};
 	if (newcap > mx) [[unlikely]]
 	{
-		::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+		::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 	}
 	newcap *= size;
 #else
 	if (__builtin_mul_overflow(size, newcap, __builtin_addressof(newcap))) [[unlikely]]
 	{
-		::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+		::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 	}
 #endif
 	return grow_to_byte_size_iter_impl<allocator>(imp, iter, newcap, size, size, alignment);
@@ -118,13 +118,13 @@ inline constexpr void *grow_twice_iter_impl(sized_vector_model<uinttype> &imp, v
 		constexpr ::std::size_t mx{SIZE_MAX / 2};
 		if (static_cast<::std::size_t>(imp.capacity) > mx) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 		toallocate = (static_cast<::std::size_t>(imp.capacity) << 1u);
 #else
 		if (__builtin_mul_overflow(static_cast<::std::size_t>(imp.capacity), 2u, __builtin_addressof(toallocate))) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 #endif
 	}
@@ -299,7 +299,8 @@ private:
 
 	static inline constexpr bool throwing_allocation{typed_allocator_type::throws_on_allocation_failure};
 	static inline constexpr bool throwing_violations{typed_allocator_type::throws_on_violations};
-	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations};
+	static inline constexpr bool throwing_overflow{typed_allocator_type::throws_on_overflow};
+	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations || throwing_overflow};
 	// moving elements into a new buffer during growth may throw when the move
 	// can throw and the sized_vector cannot fall back to copying
 	// relocation never throws: element move constructors are required to be
@@ -468,7 +469,7 @@ private:
 				::std::size_t const rgdist{::fast_io::containers::details::sized_vector::iter_distance(first, last)};
 				if (static_cast<::std::size_t>(max_size()) < rgdist) [[unlikely]]
 				{
-					::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+					::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 				}
 				size_type const n{static_cast<size_type>(rgdist)};
 				this->imp.begin_ptr = this->allocate_elements(n);
@@ -530,7 +531,7 @@ private:
 	{
 		if (max_size() < n) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<value_type>)
 		{
@@ -549,7 +550,7 @@ private:
 	{
 		if (max_size() < n) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		if constexpr (::std::is_trivially_default_constructible_v<value_type>)
 		{
@@ -574,7 +575,7 @@ private:
 	{
 		if (max_size() < n) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		this->imp.begin_ptr = this->allocate_elements(n);
 		this->imp.size = 0;
@@ -796,7 +797,7 @@ private:
 	{
 		if (max_size() < newcap) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type>)
 		{
@@ -835,7 +836,7 @@ private:
 					::std::size_t newcapbytes;
 					if (__builtin_mul_overflow(sizeof(value_type), newcap, __builtin_addressof(newcapbytes))) [[unlikely]]
 					{
-						::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+						::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 					}
 					return reinterpret_cast<pointer>(::fast_io::containers::details::sized_vector::detemplate::grow_to_byte_size_iter_impl<allocator_type>(
 						*reinterpret_cast<::fast_io::containers::details::sized_vector_model<uinttype> *>(__builtin_addressof(imp)),
@@ -950,10 +951,10 @@ private:
 			}
 		}
 		std::size_t const cap{static_cast<::std::size_t>(imp.capacity)};
-		::std::size_t const ncap{::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false, throwing_violations>(cap)};
+		::std::size_t const ncap{::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false, throwing_overflow>(cap)};
 		if (static_cast<::std::size_t>(max_size()) < ncap) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		return this->grow_to_size_iter_impl(static_cast<size_type>(ncap), iter, 1);
 	}
@@ -995,7 +996,7 @@ private:
 	{
 		if (max_size() < newcap) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		if constexpr (::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<value_type> && !alloc_with_status)
 		{
@@ -1036,10 +1037,10 @@ private:
 			}
 		}
 		std::size_t const cap{static_cast<::std::size_t>(imp.capacity)};
-		::std::size_t const ncap{::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false, throwing_violations>(cap)};
+		::std::size_t const ncap{::fast_io::containers::details::cal_grow_twice_size<sizeof(value_type), false, throwing_overflow>(cap)};
 		if (static_cast<::std::size_t>(max_size()) < ncap) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		grow_to_size_impl(static_cast<size_type>(ncap));
 	}
@@ -1385,7 +1386,7 @@ public:
 			size_type const old_size{imp.size};
 			if (static_cast<::std::size_t>(max_size() - old_size) < rgdist) [[unlikely]]
 			{
-				::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+				::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 			}
 			size_type const rgsize{static_cast<size_type>(rgdist)};
 			size_type const new_size{static_cast<size_type>(old_size + rgsize)};
@@ -1598,7 +1599,7 @@ private:
 		size_type const old_size{static_cast<size_type>(imp.size)};
 		if (max_size() - old_size < count) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		size_type const new_size{old_size + count};
 		if (static_cast<size_type>((imp.capacity - imp.size)) < count)
@@ -1635,7 +1636,7 @@ private:
 		size_type const old_size{static_cast<size_type>(imp.size)};
 		if (max_size() - old_size < rgsize) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		size_type const new_size{old_size + rgsize};
 		if (static_cast<size_type>((imp.capacity - imp.size)) < rgsize)
@@ -1753,7 +1754,7 @@ public:
 			}
 			if (static_cast<::std::size_t>(max_size()) < rgdist) [[unlikely]]
 			{
-				::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+				::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 			}
 			return this->insert_range_hole_impl(it, ::std::forward<R>(rg), static_cast<size_type>(rgdist));
 		}

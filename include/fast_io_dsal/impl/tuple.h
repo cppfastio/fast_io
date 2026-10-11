@@ -187,6 +187,7 @@ namespace details
 {
 template <typename F, typename Tuple, std::size_t... I>
 inline constexpr decltype(auto) apply_impl(F &&f, Tuple &&t, ::std::index_sequence<I...>)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::forward<F>(f)(get<I>(::std::forward<Tuple>(t))...)))
 {
 	return ::std::forward<F>(f)(get<I>(::std::forward<Tuple>(t))...);
 }
@@ -201,6 +202,9 @@ inline consteval ::std::size_t tuple_size(::fast_io::containers::tuple<Args...> 
 
 template <typename F, typename Tuple>
 inline constexpr decltype(auto) apply(F &&f, Tuple &&t)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!noexcept(details::apply_impl(::std::forward<F>(f), ::std::forward<Tuple>(t),
+									  ::std::make_index_sequence<::std::tuple_size_v<::std::remove_cvref_t<Tuple>>>{})))
 {
 	constexpr ::std::size_t N{details::tuple_size(t)};
 	return details::apply_impl(

@@ -324,12 +324,51 @@ inline constexpr bool print_freestanding_scratch_allocation_possible{[]() conste
 	}
 }()};
 
+/*
+Whether the size-accumulation overflow check is reachable: the else path runs
+with an obuffer_flush_reserve (strlike) stream or a dynamic_reserve arg.
+*/
+template <bool line, typename outputstmtype, typename... Args>
+inline constexpr bool print_freestanding_overflow_report_possible{[]() consteval -> bool {
+	if constexpr (sizeof...(Args) == 0 ||
+				  ::fast_io::operations::decay::defines::has_status_print_define<outputstmtype>)
+	{
+		return false;
+	}
+	else if constexpr ((::std::same_as<::std::remove_cvref_t<Args>, ::fast_io::io_null_t> || ...) ||
+					   ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outputstmtype>)
+	{
+		return true; // filters/unwraps, then re-enters this path
+	}
+	else
+	{
+		using output_char_type = typename outputstmtype::output_char_type;
+		constexpr auto range{::fast_io::details::first_print_define_index_range<output_char_type, Args...>()};
+		if constexpr (range.first != sizeof...(Args))
+		{
+			return false;
+		}
+		else
+		{
+			return ::fast_io::operations::decay::defines::has_obuffer_flush_reserve_define<outputstmtype> ||
+				   (::fast_io::dynamic_reserve_printable<output_char_type, ::std::remove_cvref_t<Args>> || ...);
+		}
+	}
+}()};
+
 template <bool line, typename outputstmtype, typename... Args>
 inline constexpr bool print_freestanding_allocation_may_throw{
 	print_freestanding_scratch_allocation_possible<line, outputstmtype, Args...> &&
 	::fast_io::typed_generic_allocator_adapter<
 		::fast_io::operations::decay::output_stream_allocator_t<outputstmtype>,
 		typename outputstmtype::output_char_type>::throws_on_allocation_failure};
+
+template <bool line, typename outputstmtype, typename... Args>
+inline constexpr bool print_freestanding_overflow_may_throw{
+	print_freestanding_overflow_report_possible<line, outputstmtype, Args...> &&
+	::fast_io::typed_generic_allocator_adapter<
+		::fast_io::operations::decay::output_stream_allocator_t<outputstmtype>,
+		typename outputstmtype::output_char_type>::throws_on_overflow};
 
 template <typename outputstmtype, typename typed_allocator_type>
 inline constexpr typename typed_allocator_type::handle_type
@@ -352,7 +391,8 @@ print_output_stream_allocator_handle(outputstmtype optstm) noexcept
 template <bool line, typename outputstmtype, typename... Args>
 concept decayed_output_stream_print_may_throw = (!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outputstmtype>) ||
 												(::fast_io::details::has_any_print_define_operations_may_throw<typename outputstmtype::char_type, Args...>) ||
-												::fast_io::details::print_freestanding_allocation_may_throw<line, outputstmtype, Args...>;
+												::fast_io::details::print_freestanding_allocation_may_throw<line, outputstmtype, Args...> ||
+												::fast_io::details::print_freestanding_overflow_may_throw<line, outputstmtype, Args...>;
 
 } // namespace fast_io::details
 
@@ -462,6 +502,12 @@ print_freestanding_decay(outputstmtype optstm,
 											(::fast_io::dynamic_reserve_printable<output_char_type,
 																				  ::std::remove_cvref_t<Args>> ||
 											 ...))};
+			using print_allocator_type =
+				::fast_io::operations::decay::output_stream_allocator_t<outputstmtype>;
+			using print_typed_allocator_type =
+				::fast_io::typed_generic_allocator_adapter<print_allocator_type, output_char_type>;
+			constexpr bool report_overflow{
+				print_typed_allocator_type::throws_on_overflow};
 			::std::size_t total_to_allocate_size{total_normal_reserved_size};
 			output_char_type *currptr FAST_IO_INDETERMINATE;
 			::std::size_t buffer_remained_spaces FAST_IO_INDETERMINATE;
@@ -501,13 +547,13 @@ print_freestanding_decay(outputstmtype optstm,
 #if FAST_IO_HAS_BUILTIN(__builtin_add_overflow)
 							if (__builtin_add_overflow(total_to_allocate_size, argsz, __builtin_addressof(total_to_allocate_size)))
 							{
-								::fast_io::fast_terminate();
+								::fast_io::containers::details::contract_violation_report<report_overflow>(::std::errc::value_too_large);
 							}
 #else
 							if (static_cast<::std::size_t>(szmx - argsz) <
 								total_to_allocate_size)
 							{
-								::fast_io::fast_terminate();
+								::fast_io::containers::details::contract_violation_report<report_overflow>(::std::errc::value_too_large);
 							}
 							total_to_allocate_size += argsz;
 #endif
@@ -518,13 +564,13 @@ print_freestanding_decay(outputstmtype optstm,
 #if FAST_IO_HAS_BUILTIN(__builtin_add_overflow)
 							if (__builtin_add_overflow(total_to_allocate_size, argsz, __builtin_addressof(total_to_allocate_size)))
 							{
-								::fast_io::fast_terminate();
+								::fast_io::containers::details::contract_violation_report<report_overflow>(::std::errc::value_too_large);
 							}
 #else
 							if (static_cast<::std::size_t>(szmx - argsz) <
 								total_to_allocate_size)
 							{
-								::fast_io::fast_terminate();
+								::fast_io::containers::details::contract_violation_report<report_overflow>(::std::errc::value_too_large);
 							}
 							total_to_allocate_size += argsz;
 #endif
@@ -592,10 +638,6 @@ print_freestanding_decay(outputstmtype optstm,
 					output_char_type,
 					use_dynamic_storage ? 0zu : total_normal_reserved_size>
 					buffer FAST_IO_INDETERMINATE;
-				using print_allocator_type =
-					::fast_io::operations::decay::output_stream_allocator_t<outputstmtype>;
-				using print_typed_allocator_type =
-					::fast_io::typed_generic_allocator_adapter<print_allocator_type, output_char_type>;
 				::std::conditional_t<
 					use_dynamic_storage,
 					::fast_io::details::buffer_alloc_arr_ptr<output_char_type, false, print_allocator_type>,

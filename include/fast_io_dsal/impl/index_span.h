@@ -9,14 +9,17 @@ struct index_unchecked_t
 };
 inline constexpr index_unchecked_t index_unchecked{};
 
-template <typename T, ::std::size_t N>
+template <typename T, ::std::size_t N, ::fast_io::allocator_adapter_flags flags = ::fast_io::allocator_adapter_flags::none>
+	requires ::fast_io::containers::details::valid_view_flags<flags>
 class index_span
 {
+	static inline constexpr bool throwing_violations{
+		flags == ::fast_io::allocator_adapter_flags::throws_on_violations};
 	static_assert((N <= ::std::numeric_limits<::std::size_t>::max() / sizeof(T)), "N is too big");
 
 public:
 	using element_type = T;
-	using span_type = ::fast_io::containers::span<element_type>;
+	using span_type = ::fast_io::containers::span<element_type, flags>;
 	using value_type = std::remove_cv_t<element_type>;
 	using size_type = ::std::size_t;
 	using difference_type = ::std::ptrdiff_t;
@@ -53,12 +56,12 @@ public:
 	{}
 	template <::std::ranges::contiguous_range R>
 		requires(::std::same_as<value_type, ::std::ranges::range_value_t<R>> && !::std::is_rvalue_reference_v<R &&>)
-	inline constexpr index_span(::fast_io::freestanding::from_range_t, R &&range) noexcept(noexcept(::std::ranges::data(range)) && noexcept(::std::ranges::size(range)))
+	inline constexpr index_span(::fast_io::freestanding::from_range_t, R &&range) FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations || !noexcept(noexcept(::std::ranges::data(range)) && noexcept(::std::ranges::size(range))))
 		: ptr{::std::ranges::data(range)}
 	{
 		if (::std::ranges::size(range) < N) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 	}
 
@@ -127,11 +130,11 @@ public:
 	[[msvc::forceinline]]
 #endif
 	inline constexpr reference
-	operator[](size_type idx) const noexcept
+	operator[](size_type idx) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (N <= idx) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return ptr[idx];
 	}
@@ -153,11 +156,11 @@ public:
 	[[msvc::forceinline]]
 #endif
 	inline constexpr reference
-	back() const noexcept
+	back() const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if constexpr (!N)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		else
 		{
@@ -184,11 +187,11 @@ public:
 	[[msvc::forceinline]]
 #endif
 	inline constexpr reference
-	front() const noexcept
+	front() const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if constexpr (!N)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		else
 		{
@@ -219,13 +222,13 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr ::fast_io::containers::span<element_type> subspan_front(size_type count) const noexcept
+	inline constexpr span_type subspan_front(size_type count) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (N < count) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
-		return ::fast_io::containers::span<element_type>(this->ptr, count);
+		return span_type(this->ptr, count);
 	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -233,9 +236,9 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr ::fast_io::containers::span<element_type> subspan_front_unchecked(size_type count) const noexcept
+	inline constexpr span_type subspan_front_unchecked(size_type count) const noexcept
 	{
-		return ::fast_io::containers::span<element_type>(this->ptr, count);
+		return span_type(this->ptr, count);
 	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -243,11 +246,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr span_type subspan_back(size_type count) const noexcept
+	inline constexpr span_type subspan_back(size_type count) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (N < count) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return span_type(this->ptr + (N - count), count);
 	}
@@ -267,18 +270,18 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr span_type subspan(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr span_type subspan(size_type pos, size_type count = ::fast_io::containers::npos) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (N < pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		size_type const val{N - pos};
 		if (val < count)
 		{
 			if (count != ::fast_io::containers::npos) [[unlikely]]
 			{
-				::fast_io::fast_terminate();
+				::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 			}
 			count = val;
 		}
@@ -304,11 +307,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr size_type copy(element_type *dest, size_type count, size_type pos = 0) const noexcept
+	inline constexpr size_type copy(element_type *dest, size_type count, size_type pos = 0) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (N < pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return this->copy_unchecked(dest, count, pos);
 	}

@@ -590,7 +590,7 @@ inline constexpr void deque_grow_to_new_blocks_count_impl(typename allocator::ha
 	{
 		if (__builtin_add_overflow(new_blocks_count_least, 1zu, __builtin_addressof(new_blocks_count_least_p1))) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 	}
 	else
@@ -600,7 +600,7 @@ inline constexpr void deque_grow_to_new_blocks_count_impl(typename allocator::ha
 		new_blocks_count_least_p1 = new_blocks_count_least;
 		if (mx == new_blocks_count_least)
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 		++new_blocks_count_least_p1;
 	}
@@ -668,7 +668,7 @@ inline constexpr void deque_allocate_on_empty_common_with_n_impl(typename alloca
 		if (__builtin_add_overflow(initial_allocated_block_counts, 1u,
 								   __builtin_addressof(initial_allocated_block_counts_with_sentinel)))
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 	}
 	else
@@ -677,7 +677,7 @@ inline constexpr void deque_allocate_on_empty_common_with_n_impl(typename alloca
 		constexpr ::std::size_t maxval{::std::numeric_limits<::std::size_t>::max()};
 		if (initial_allocated_block_counts == maxval) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 		initial_allocated_block_counts_with_sentinel = initial_allocated_block_counts + 1u;
 	}
@@ -792,7 +792,7 @@ inline constexpr void deque_allocate_init_blocks_dezeroing_impl(typename allocat
 	constexpr ::std::size_t mx{::std::numeric_limits<::std::size_t>::max()};
 	if (blocks_count_least == mx)
 	{
-		::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+		::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 	}
 	using block_typed_allocator = ::fast_io::typed_generic_allocator_adapter<allocator, typename dequecontroltype::controlreplacetype>;
 	auto [start_ptr, blocks_count] = ::fast_io::containers::details::deque_alloc_at_least<block_typed_allocator>(allochdl, blocks_count_least + 1u);
@@ -1472,8 +1472,8 @@ inline constexpr void deque_grow_to_new_blocks_count_direction_impl(typename all
 	"new_blocks_count_least=",new_blocks_count_least,"\n\n"
 	);
 #endif
-	::std::size_t to_allocated_blocks_least_p1{::fast_io::containers::details::deque_new_blocks_count_compute_impl<allocator::throws_on_violations>(new_blocks_count_least,
-																																					old_blocks_count, (no_space_at_back ? static_cast<::std::size_t>(old_back_block_controller_ptr_p1 - old_start_reserved_ptr) : static_cast<::std::size_t>(old_after_reserved_ptr - old_front_block_controller_ptr)))};
+	::std::size_t to_allocated_blocks_least_p1{::fast_io::containers::details::deque_new_blocks_count_compute_impl<allocator::throws_on_overflow>(new_blocks_count_least,
+																																				  old_blocks_count, (no_space_at_back ? static_cast<::std::size_t>(old_back_block_controller_ptr_p1 - old_start_reserved_ptr) : static_cast<::std::size_t>(old_after_reserved_ptr - old_front_block_controller_ptr)))};
 	using block_typed_allocator = ::fast_io::typed_generic_allocator_adapter<allocator, typename dequecontroltype::controlreplacetype>;
 	decltype(old_start_ptr) new_start_ptr;
 	::std::size_t allocated_blocks;
@@ -1537,7 +1537,7 @@ inline constexpr void deque_rebalance_or_grow_insertation_direction_impl(typenam
 	{
 		if (__builtin_add_overflow(old_elements_blocks_count, extrablocks, __builtin_addressof(new_elements_blocks_count))) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 	}
 	else
@@ -1547,7 +1547,7 @@ inline constexpr void deque_rebalance_or_grow_insertation_direction_impl(typenam
 		::std::size_t const mx_sub_extrablocks{mx - extrablocks};
 		if (mx_sub_extrablocks < old_elements_blocks_count)
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 		new_elements_blocks_count = old_elements_blocks_count + extrablocks;
 	}
@@ -1561,7 +1561,7 @@ inline constexpr void deque_rebalance_or_grow_insertation_direction_impl(typenam
 	{
 		if (__builtin_add_overflow(capacity_blocks_count_direction, capacity_blocks_count_direction, __builtin_addressof(capacity_blocks_count_direction)))
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 	}
 	else
@@ -1571,7 +1571,7 @@ inline constexpr void deque_rebalance_or_grow_insertation_direction_impl(typenam
 		constexpr ::std::size_t mxdv2m1{(mx >> 1u)};
 		if (mxdv2m1 < capacity_blocks_count_direction)
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 		capacity_blocks_count_direction <<= 1u;
 	}
@@ -1761,7 +1761,7 @@ inline constexpr void deque_reserve_back_spaces_impl(typename allocator::handle_
 	{
 		if (__builtin_add_overflow(toallocate, 1u, __builtin_addressof(toallocate)))
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 	}
 	else
@@ -1770,7 +1770,7 @@ inline constexpr void deque_reserve_back_spaces_impl(typename allocator::handle_
 		constexpr ::std::size_t mxval{::std::numeric_limits<::std::size_t>::max()};
 		if (toallocate == mxval)
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 		++toallocate;
 	}
@@ -1924,7 +1924,7 @@ inline constexpr void deque_reserve_front_spaces_impl(typename allocator::handle
 	{
 		if (__builtin_add_overflow(toallocate, 1u, __builtin_addressof(toallocate)))
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 	}
 	else
@@ -1933,7 +1933,7 @@ inline constexpr void deque_reserve_front_spaces_impl(typename allocator::handle
 		constexpr ::std::size_t mxval{::std::numeric_limits<::std::size_t>::max()};
 		if (toallocate == mxval)
 		{
-			::fast_io::containers::details::contract_violation_report<allocator::throws_on_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<allocator::throws_on_overflow>(::std::errc::value_too_large);
 		}
 		++toallocate;
 	}
@@ -2325,7 +2325,8 @@ private:
 
 	static inline constexpr bool throwing_allocation{typed_allocator_type::throws_on_allocation_failure};
 	static inline constexpr bool throwing_violations{typed_allocator_type::throws_on_violations};
-	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations};
+	static inline constexpr bool throwing_overflow{typed_allocator_type::throws_on_overflow};
+	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations || throwing_overflow};
 	// element shifts are relocations (move construct plus destroy), which
 	// cannot throw for the element types this container accepts; only
 	// swap-based range rotation can still fail on a throwing move assignment
@@ -3347,42 +3348,46 @@ public:
 		return sz;
 	}
 
+	static inline constexpr ::fast_io::allocator_adapter_flags segment_view_flags{throwing_violations ? ::fast_io::allocator_adapter_flags::throws_on_violations : ::fast_io::allocator_adapter_flags::none};
+	using segment_span_type = ::fast_io::containers::span<value_type, segment_view_flags>;
+	using const_segment_span_type = ::fast_io::containers::span<value_type const, segment_view_flags>;
+
 	inline constexpr size_type segments_count() noexcept
 	{
 		return static_cast<size_type>(static_cast<size_type>(this->controller.back_block.controller_ptr - this->controller.front_block.controller_ptr) + 1u);
 	}
 
-	inline constexpr ::fast_io::containers::span<value_type> nth_segment(size_type pos)
+	inline constexpr segment_span_type nth_segment(size_type pos)
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if consteval
 		{
 			auto [start_ptr, end_ptr] = ::fast_io::containers::details::deque_nth_element_common<block_size, throwing_violations>(this->controller, pos);
-			return ::fast_io::containers::span<value_type>(start_ptr, end_ptr);
+			return segment_span_type(start_ptr, end_ptr);
 		}
 		else
 		{
 			auto [start_ptr, end_ptr] = ::std::bit_cast<::fast_io::containers::details::deque_nth_element_result<pointer>>(::fast_io::containers::details::deque_nth_element_common<block_size * sizeof(value_type), throwing_violations>(*reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(__builtin_addressof(this->controller)), pos));
-			return ::fast_io::containers::span<value_type>(start_ptr, end_ptr);
+			return segment_span_type(start_ptr, end_ptr);
 		}
 	}
-	inline constexpr ::fast_io::containers::span<value_type const> const_nth_segment(size_type pos) const
+	inline constexpr const_segment_span_type const_nth_segment(size_type pos) const
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if consteval
 		{
 			auto [start_ptr, end_ptr] = ::fast_io::containers::details::deque_nth_element_common<block_size, throwing_violations>(this->controller, pos);
-			return ::fast_io::containers::span<value_type const>(start_ptr, end_ptr);
+			return const_segment_span_type(start_ptr, end_ptr);
 		}
 		else
 		{
 			auto [start_ptr, end_ptr] = ::std::bit_cast<::fast_io::containers::details::deque_nth_element_result<const_pointer>>(::fast_io::containers::details::deque_nth_element_common<block_size * sizeof(value_type), throwing_violations>(*reinterpret_cast<::fast_io::containers::details::deque_controller_common *>(
 																																																													const_cast<controller_type *>(__builtin_addressof(this->controller))),
 																																																												pos));
-			return ::fast_io::containers::span<value_type const>(start_ptr, end_ptr);
+			return const_segment_span_type(start_ptr, end_ptr);
 		}
 	}
-	inline constexpr ::fast_io::containers::span<value_type const> nth_segment(size_type pos) const
+	inline constexpr const_segment_span_type nth_segment(size_type pos) const
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		return this->const_nth_segment(pos);

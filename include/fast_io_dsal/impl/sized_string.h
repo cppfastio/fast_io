@@ -109,12 +109,12 @@ inline constexpr void sized_string_push_back_heap_grow_twice(::fast_io::containe
 	constexpr ::std::size_t mxsz{SIZE_MAX / sizeof(chtype) / 2u};
 	if (mxsz < bfsizep1) [[unlikely]]
 	{
-		::fast_io::containers::details::contract_violation_report<::fast_io::containers::details::allocator_throws_on_violations<allocator_type>>(::std::errc::value_too_large);
+		::fast_io::containers::details::contract_violation_report<::fast_io::containers::details::allocator_throws_on_overflow<allocator_type>>(::std::errc::value_too_large);
 	}
 	::std::size_t const bfsizep1mul2{bfsizep1 << 1u};
 	if (static_cast<::std::size_t>(::std::numeric_limits<uinttype>::max()) < bfsizep1mul2) [[unlikely]]
 	{
-		::fast_io::containers::details::contract_violation_report<::fast_io::containers::details::allocator_throws_on_violations<allocator_type>>(::std::errc::value_too_large);
+		::fast_io::containers::details::contract_violation_report<::fast_io::containers::details::allocator_throws_on_overflow<allocator_type>>(::std::errc::value_too_large);
 	}
 	return ::fast_io::containers::details::sized_string_heap_dilate_uncheck<allocator_type>(imp, bfsizep1mul2);
 }
@@ -147,7 +147,8 @@ public:
 private:
 	static inline constexpr bool throwing_allocation{::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator_type>};
 	static inline constexpr bool throwing_violations{::fast_io::containers::details::allocator_throws_on_violations<allocator_type>};
-	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations};
+	static inline constexpr bool throwing_overflow{::fast_io::containers::details::allocator_throws_on_overflow<allocator_type>};
+	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations || throwing_overflow};
 
 	constexpr void reset_imp()
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation)
@@ -194,7 +195,7 @@ public:
 			constexpr size_type mx{::std::numeric_limits<size_type>::max()};
 			if (n == mx)
 			{
-				::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+				::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 			}
 			auto [ptr, newcap]{typed_allocator_type::allocate_zero_at_least(n + 1u)};
 			this->imp = {ptr, n, static_cast<uinttype>(newcap - 1u)};
@@ -216,7 +217,7 @@ public:
 			constexpr size_type mx{::std::numeric_limits<size_type>::max()};
 			if (n == mx)
 			{
-				::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+				::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 			}
 			auto [ptr, cap]{typed_allocator_type::allocate_at_least(n + 1u)};
 			this->imp = {ptr, n, static_cast<uinttype>(cap - 1u)};
@@ -554,7 +555,7 @@ public:
 			constexpr size_type mx{::std::numeric_limits<size_type>::max()};
 			if (n == mx)
 			{
-				::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+				::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 			}
 			this->destroy();
 			size_type const np1{static_cast<size_type>(n + 1u)};
@@ -643,7 +644,7 @@ private:
 		}
 		if (newcap == mx)
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		size_type const newcapp1{static_cast<size_type>(newcap + 1u)};
 
@@ -854,7 +855,7 @@ public:
 	{
 		if (::std::numeric_limits<size_type>::max() <= new_cap) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		auto begin_ptr{this->imp.begin_ptr};
 		if (new_cap <= static_cast<size_type>((imp.begin_ptr + imp.capacity) - begin_ptr))
@@ -1075,7 +1076,7 @@ private:
 		}
 		if (newcap == mx)
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::value_too_large);
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		size_type const newcapp1{static_cast<size_type>(newcap + 1u)};
 		auto [ptr, allocn]{typed_allocator_type::allocate_at_least(newcapp1)};

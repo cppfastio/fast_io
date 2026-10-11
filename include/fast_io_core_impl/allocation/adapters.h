@@ -102,34 +102,34 @@ inline void *allocator_adjust_ptr_to_aligned_impl(void *p, ::std::size_t alignme
 template <typename alloc, bool throwing>
 struct allocator_die_try_dispatch
 {
-#define FAST_IO_ALLOCATION_DISPATCH(api)                                                               \
-	template <typename... Args>                                                                         \
-	static inline constexpr decltype(auto) api(Args &&...args)                                          \
-		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)                                                          \
-	{                                                                                                  \
-		if constexpr (throwing)                                                                           \
-		{                                                                                               \
-			static_assert(::fast_io::details::has_##api##_try_impl<alloc>,                                \
-						  "the underlying allocator does not provide " #api "_try");                     \
-			return alloc::api##_try(::std::forward<Args>(args)...);                                       \
-		}                                                                                               \
-		else if constexpr (::fast_io::details::has_##api##_die_impl<alloc>)                               \
-		{                                                                                               \
-			return alloc::api##_die(::std::forward<Args>(args)...);                                       \
-		}                                                                                               \
-		else                                                                                            \
-		{                                                                                               \
-			static_assert(::fast_io::details::has_##api##_try_impl<alloc>,                                \
-						  "the underlying allocator provides neither " #api "_die nor " #api "_try");    \
-			FAST_IO_HERBCEPTIONS_TRY                                                                      \
-			{                                                                                             \
-				return alloc::api##_try(::std::forward<Args>(args)...);                                   \
-			}                                                                                             \
-			FAST_IO_HERBCEPTIONS_CATCH_ALL                                                                \
-			{                                                                                             \
-				::fast_io::fast_terminate();                                                              \
-			}                                                                                             \
-		}                                                                                               \
+#define FAST_IO_ALLOCATION_DISPATCH(api)                                                              \
+	template <typename... Args>                                                                       \
+	static inline constexpr decltype(auto) api(Args &&...args)                                        \
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)                                                      \
+	{                                                                                                 \
+		if constexpr (throwing)                                                                       \
+		{                                                                                             \
+			static_assert(::fast_io::details::has_##api##_try_impl<alloc>,                            \
+						  "the underlying allocator does not provide " #api "_try");                  \
+			return alloc::api##_try(::std::forward<Args>(args)...);                                   \
+		}                                                                                             \
+		else if constexpr (::fast_io::details::has_##api##_die_impl<alloc>)                           \
+		{                                                                                             \
+			return alloc::api##_die(::std::forward<Args>(args)...);                                   \
+		}                                                                                             \
+		else                                                                                          \
+		{                                                                                             \
+			static_assert(::fast_io::details::has_##api##_try_impl<alloc>,                            \
+						  "the underlying allocator provides neither " #api "_die nor " #api "_try"); \
+			FAST_IO_HERBCEPTIONS_TRY                                                                  \
+			{                                                                                         \
+				return alloc::api##_try(::std::forward<Args>(args)...);                               \
+			}                                                                                         \
+			FAST_IO_HERBCEPTIONS_CATCH_ALL                                                            \
+			{                                                                                         \
+				::fast_io::fast_terminate();                                                          \
+			}                                                                                         \
+		}                                                                                             \
 	}
 
 	FAST_IO_ALLOCATION_DISPATCH(allocate)
@@ -260,6 +260,10 @@ public:
 		(flags & ::fast_io::allocator_adapter_flags::throws_on_allocation_failure) != ::fast_io::allocator_adapter_flags::none};
 	static inline constexpr bool throws_on_violations{
 		(flags & ::fast_io::allocator_adapter_flags::throws_on_violations) != ::fast_io::allocator_adapter_flags::none};
+	static inline constexpr bool throws_on_overflow{
+		(flags & ::fast_io::allocator_adapter_flags::throws_on_overflow) != ::fast_io::allocator_adapter_flags::none};
+	static inline constexpr bool prefer_big_allocation_on_stack{
+		(flags & ::fast_io::allocator_adapter_flags::prefer_big_allocation_on_stack) != ::fast_io::allocator_adapter_flags::none};
 	static inline constexpr bool secure_clear{
 		(flags & ::fast_io::allocator_adapter_flags::secure_clear) != ::fast_io::allocator_adapter_flags::none};
 	static inline constexpr bool has_status{::fast_io::details::has_non_empty_handle_type<allocator_type>};

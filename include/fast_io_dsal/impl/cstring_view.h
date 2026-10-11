@@ -10,11 +10,15 @@ struct null_terminated_t
 
 inline constexpr null_terminated_t null_terminated{};
 
-template <::std::integral char_type>
-class basic_cstring_view : private ::fast_io::containers::basic_string_view<char_type>
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags flags>
+	requires(::fast_io::containers::details::valid_view_flags<flags>)
+class basic_cstring_view : private ::fast_io::containers::basic_string_view<char_type, flags>
 {
+	static inline constexpr bool throwing_violations{
+		flags == ::fast_io::allocator_adapter_flags::throws_on_violations};
+
 public:
-	using string_view_type = ::fast_io::containers::basic_string_view<char_type>;
+	using string_view_type = ::fast_io::containers::basic_string_view<char_type, flags>;
 	using typename string_view_type::value_type;
 	using typename string_view_type::size_type;
 	using typename string_view_type::difference_type;
@@ -44,13 +48,13 @@ public:
 	{}
 
 	template <size_type N>
-	inline constexpr basic_cstring_view(char_type const (&buffer)[N]) noexcept
+	inline constexpr basic_cstring_view(char_type const (&buffer)[N]) FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 		: string_view_type(buffer)
 	{
 		constexpr size_type nm1{N - 1};
 		if (buffer[nm1]) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 	}
 
@@ -132,11 +136,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_cstring_view subview_back(size_type count) const noexcept
+	inline constexpr basic_cstring_view subview_back(size_type count) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->n < count) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return basic_cstring_view(this->ptr + (this->n - count), count);
 	}
@@ -187,78 +191,90 @@ public:
 	using string_view_type::trim_suffix_subview_c_space;
 };
 
-template <::std::integral char_type>
-inline constexpr void swap(::fast_io::containers::basic_cstring_view<char_type> &a, basic_cstring_view<char_type> &b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags flags>
+	requires(::fast_io::containers::details::valid_view_flags<flags>)
+inline constexpr void swap(::fast_io::containers::basic_cstring_view<char_type, flags> &a, basic_cstring_view<char_type, flags> &b) noexcept
 {
 	a.swap(b);
 }
-template <::std::integral char_type>
-inline constexpr ::fast_io::basic_io_scatter_t<char_type> print_alias_define(::fast_io::io_alias_t, ::fast_io::containers::basic_cstring_view<char_type> str) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags flags>
+	requires(::fast_io::containers::details::valid_view_flags<flags>)
+inline constexpr ::fast_io::basic_io_scatter_t<char_type> print_alias_define(::fast_io::io_alias_t, ::fast_io::containers::basic_cstring_view<char_type, flags> str) noexcept
 {
 	return {str.ptr, str.n};
 }
 
-template <::std::integral char_type>
-inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2>)
+inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type, f1> a, ::fast_io::containers::basic_cstring_view<char_type, f2> b) noexcept
 {
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, char_type const (&buffer)[n]) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+	requires(::fast_io::containers::details::valid_view_flags<flags>)
+inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type, flags> a, char_type const (&buffer)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::equal(a.ptr, a.ptr + a.n, buffer, buffer + nm1);
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type> a) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+	requires(::fast_io::containers::details::valid_view_flags<flags>)
+inline constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type, flags> a) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::equal(buffer, buffer + nm1, a.ptr, a.ptr + a.n);
 }
 
-template <::std::integral char_type>
-inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2>)
+inline constexpr bool operator==(::fast_io::containers::basic_cstring_view<char_type, f1> a, ::fast_io::containers::basic_string_view<char_type, f2> b) noexcept
 {
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }
 
-template <::std::integral char_type>
-inline constexpr bool operator==(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2>)
+inline constexpr bool operator==(::fast_io::containers::basic_string_view<char_type, f1> a, ::fast_io::containers::basic_cstring_view<char_type, f2> b) noexcept
 {
 	return b == a;
 }
 
 #if __cpp_impl_three_way_comparison >= 201907L
-template <::std::integral char_type>
-inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2>)
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type, f1> a, ::fast_io::containers::basic_cstring_view<char_type, f2> b) noexcept
 {
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, char_type const (&buffer)[n]) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+	requires(::fast_io::containers::details::valid_view_flags<flags>)
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type, flags> a, char_type const (&buffer)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, buffer, buffer + nm1, ::std::compare_three_way{});
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type> a) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+	requires(::fast_io::containers::details::valid_view_flags<flags>)
+inline constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_cstring_view<char_type, flags> a) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::fast_io::freestanding::lexicographical_compare_three_way(buffer, buffer + nm1, a.ptr, a.ptr + a.n, ::std::compare_three_way{});
 }
 
-template <::std::integral char_type>
-inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2>)
+inline constexpr auto operator<=>(::fast_io::containers::basic_cstring_view<char_type, f1> a, ::fast_io::containers::basic_string_view<char_type, f2> b) noexcept
 {
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 
-template <::std::integral char_type>
-inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_cstring_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2>)
+inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type, f1> a, ::fast_io::containers::basic_cstring_view<char_type, f2> b) noexcept
 {
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }

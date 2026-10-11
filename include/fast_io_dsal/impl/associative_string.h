@@ -53,7 +53,7 @@ inline constexpr ::fast_io::details::associative_string<char_type> create_associ
 	using typed_allocator_type = ::fast_io::typed_generic_allocator_adapter<allocator_type, char_type>;
 	if (n == SIZE_MAX) [[unlikely]]
 	{
-		::fast_io::containers::details::contract_violation_report<typed_allocator_type::throws_on_violations>(::std::errc::value_too_large);
+		::fast_io::containers::details::contract_violation_report<typed_allocator_type::throws_on_overflow>(::std::errc::value_too_large);
 	}
 	::std::size_t const np1{static_cast<::std::size_t>(n + 1u)};
 	char_type *newp{typed_allocator_type::allocate(np1)};

@@ -36,9 +36,14 @@
 #include "fast_io_core_impl/error.h"
 #include "fast_io_core_impl/herbceptions/throws_wrapper.h"
 #include "fast_io_dsal/impl/freestanding.h"
-#include "fast_io_dsal/impl/array.h"
 #include "fast_io_core_impl/secure_clear_guard.h"
+namespace fast_io
+{
+#include "fast_io_core_impl/allocation/allocator_adapter_flags.h"
+}
 #include "fast_io_core_impl/allocation/impl.h"
+#include "fast_io_dsal/impl/common.h"
+#include "fast_io_dsal/impl/array.h"
 
 #include "fast_io_core_impl/asan_support.h"
 // fast_io core
