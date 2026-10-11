@@ -304,10 +304,10 @@ inline posix_file_factory tcp_listen(ipv6 v6, open_mode m = open_mode{})
 }
 
 template <::std::integral ch_type>
-using basic_native_socket_io_observer = basic_posix_io_observer<ch_type>;
+using basic_native_socket_io_observer = ::fast_io::basic_posix_io_observer<ch_type>;
 template <::std::integral ch_type>
-using basic_native_socket_file = basic_posix_file<ch_type>;
-using net_service = posix_net_service;
+using basic_native_socket_file = ::fast_io::basic_posix_file<ch_type>;
+using net_service = ::fast_io::posix_empty_network_service;
 
 namespace operations
 {

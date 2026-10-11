@@ -418,14 +418,15 @@ struct win32_ip_adapter_dns_server_address;
 
 struct win32_ip_adapter_unicast_address
 {
+	struct length_and_flags
+	{
+		::std::uint_least32_t length;
+		::std::uint_least32_t flags;
+	};
 	union
 	{
 		::std::uint_least64_t alignment;
-		struct
-		{
-			::std::uint_least32_t length;
-			::std::uint_least32_t flags;
-		};
+		length_and_flags fields;
 	};
 	win32_ip_adapter_unicast_address *next;
 	win32_socket_address address;
@@ -440,14 +441,15 @@ struct win32_ip_adapter_unicast_address
 
 struct win32_ip_adapter_addresses
 {
+	struct length_and_if_index
+	{
+		::std::uint_least32_t length;
+		::std::uint_least32_t if_index;
+	};
 	union
 	{
 		::std::uint_least64_t alignment;
-		struct
-		{
-			::std::uint_least32_t length;
-			::std::uint_least32_t if_index;
-		};
+		length_and_if_index fields;
 	};
 	win32_ip_adapter_addresses *next;
 	char *adapter_name;

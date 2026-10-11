@@ -643,27 +643,33 @@ namespace details
  * via io_async_flags) */
 inline void posix_socket_ignore_sigpipe_impl() noexcept
 {
-#if defined(SIG_IGN)
-#if defined(__linux__)
-	struct kernel_sigaction
-	{
-		void (*k_sa_handler)(int);
-		unsigned long sa_flags;
-		void (*sa_restorer)();
-		::sigset_t sa_mask;
-	};
-	kernel_sigaction kact{
-		.k_sa_handler = SIG_IGN,
-		.sa_flags = 0,
-		.sa_restorer = nullptr,
-		.sa_mask = {}};
-	::fast_io::system_call<__NR_rt_sigaction, int>(SIGPIPE,
-												   __builtin_addressof(kact), nullptr, sizeof(::sigset_t));
+#if defined(SIGPIPE) && defined(SIG_IGN) && 0
+	/* ::signal over ::sigaction — one call, available wherever signal.h
+	 * is, and verified to flip the disposition (SigIgn in
+	 * /proc/self/status) */
+	::fast_io::noexcept_call(::signal, SIGPIPE, SIG_IGN);
+#endif
+}
+
+/* BSD/macOS carry no MSG_NOSIGNAL — their answer is SO_NOSIGPIPE, a
+ * per-socket kill set at creation so EPIPE travels the error channel
+ * without any process-wide disposition change. Best-effort: the call
+ * cannot fail on a fresh socket fd, and the net_service disposition
+ * remains the backstop for fds that bypass these paths. Compiles out
+ * entirely where the option doesn't exist; if a linux/libc ever exposes
+ * it the raw __NR_setsockopt path is used, matching the rest of this
+ * file's syscall dispatch */
+inline void posix_socket_no_sigpipe_impl([[maybe_unused]] int fd) noexcept
+{
+#ifdef SO_NOSIGPIPE
+	constexpr int one{1};
+#if defined(__linux__) && defined(__NR_setsockopt)
+	::fast_io::system_call<__NR_setsockopt, int>(fd, SOL_SOCKET, SO_NOSIGPIPE,
+												 __builtin_addressof(one),
+												 static_cast<posix_socklen_t>(sizeof(one)));
 #else
-	struct sigaction sa{};
-	sa.sa_handler = SIG_IGN;
-	sa.sa_flags = 0;
-	::fast_io::noexcept_call(::sigaction, __builtin_addressof(sa), nullptr);
+	::fast_io::noexcept_call(::setsockopt, fd, SOL_SOCKET, SO_NOSIGPIPE,
+							 __builtin_addressof(one), static_cast<posix_socklen_t>(sizeof(one)));
 #endif
 #endif
 }
@@ -696,6 +702,7 @@ inline int open_socket_impl(sock_family d, sock_type t, open_mode m, sock_protoc
 		mode = 0;
 	}
 	int fd{sys_socket(domain, type | mode, to_posix_sock_protocol(p))};
+	posix_socket_no_sigpipe_impl(fd);
 
 #if !defined(SOCK_NONBLOCK)
 	if ((m & open_mode::no_block) == open_mode::no_block)
@@ -868,7 +875,6 @@ inline int posix_accept_posix_socket_impl(int fd, void *addr, posix_socklen_t *a
 #if defined(__linux__) && defined(__NR_accept)
 	int socfd{system_call<__NR_accept, int>(fd, addr, addrlen)};
 	system_call_throw_error(socfd);
-	return socfd;
 #else
 	using sockaddr_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -880,8 +886,11 @@ inline int posix_accept_posix_socket_impl(int fd, void *addr, posix_socklen_t *a
 	{
 		throw_posix_error();
 	}
-	return socfd;
 #endif
+	/* SO_NOSIGPIPE doesn't reliably inherit across accept on every BSD —
+	 * set it on the accepted fd explicitly */
+	posix_socket_no_sigpipe_impl(socfd);
+	return socfd;
 }
 
 inline ::std::ptrdiff_t posix_recvfrom_posix_socket_impl(int fd, void *buf, ::std::size_t len, int flags, void *src_addr, posix_socklen_t *addrlen)
@@ -953,6 +962,7 @@ inline ::std::ptrdiff_t posix_sendto_posix_socket_impl(int fd, void const *buf, 
  * default path is covered automatically. Pass
  * net_service_flags::posix_no_ignore_sigpipe to keep the
  * disposition untouched */
+#if 0
 class posix_net_service
 {
 public:
@@ -975,5 +985,5 @@ public:
 		return *this;
 	}
 };
-
+#endif
 } // namespace fast_io

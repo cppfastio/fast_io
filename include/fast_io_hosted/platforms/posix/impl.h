@@ -38,7 +38,7 @@
 #include <sys/socket.h>
 #endif
 
-#if __has_include(<signal.h>)
+#if __has_include(<signal.h>) && 0
 #include <signal.h>
 #endif
 

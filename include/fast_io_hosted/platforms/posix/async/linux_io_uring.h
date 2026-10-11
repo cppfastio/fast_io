@@ -66,9 +66,6 @@ class linux_io_uring : public linux_io_uring_observer
 {
 public:
 	liburing::io_uring_ring_state storage{};
-	/* every socket write through this service must see EPIPE, not a
-	 * process kill — io_uring WRITE/WRITEV/SPLICE take no msg_flags */
-	::fast_io::posix_net_service net_service{};
 
 	inline linux_io_uring() noexcept
 	{

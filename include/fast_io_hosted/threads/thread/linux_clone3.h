@@ -52,18 +52,15 @@ private:
 	[[gnu::noreturn]]
 	inline static constexpr void child_entry(child_ctx<F, A...> *ctx) noexcept
 	{
-#ifdef FAST_IO_CPP_EXCEPTIONS
-		try
-#endif
+		FAST_IO_HERBCEPTIONS_TRY
 		{
 			apply(ctx->func, ctx->args);
 		}
-#ifdef FAST_IO_CPP_EXCEPTIONS
-		catch (...)
+		FAST_IO_HERBCEPTIONS_CATCH_ALL
 		{
 			::fast_io::fast_terminate();
 		}
-#endif
+
 		// Kernel-dependent CLONE_CHILD_CLEARTID is cleared to 0 upon exit and wakes the futex
 
 		// libc will auto destroy stack_
