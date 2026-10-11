@@ -635,7 +635,6 @@ inline constexpr int to_native_sock_open_mode(open_mode om) noexcept
 
 namespace details
 {
-
 /* A dead peer must surface as EPIPE through the error channel, never as
  * a process-killing SIGPIPE. MSG_NOSIGNAL covers the explicit send
  * calls; anything it can't reach — io_uring WRITE/WRITEV/SPLICE ops
@@ -644,8 +643,28 @@ namespace details
  * via io_async_flags) */
 inline void posix_socket_ignore_sigpipe_impl() noexcept
 {
-#if defined(SIGPIPE) && defined(SIG_IGN)
-	::fast_io::noexcept_call(::signal, SIGPIPE, SIG_IGN);
+#if defined(SIG_IGN)
+#if defined(__linux__)
+	struct kernel_sigaction
+	{
+		void (*k_sa_handler)(int);
+		unsigned long sa_flags;
+		void (*sa_restorer)();
+		::sigset_t sa_mask;
+	};
+	kernel_sigaction kact{
+		.k_sa_handler = SIG_IGN,
+		.sa_flags = 0,
+		.sa_restorer = nullptr,
+		.sa_mask = {}};
+	::fast_io::system_call<__NR_rt_sigaction, int>(SIGPIPE,
+												   __builtin_addressof(kact), nullptr, sizeof(::sigset_t));
+#else
+	struct sigaction sa{};
+	sa.sa_handler = SIG_IGN;
+	sa.sa_flags = 0;
+	::fast_io::noexcept_call(::sigaction, __builtin_addressof(sa), nullptr);
+#endif
 #endif
 }
 
@@ -943,7 +962,7 @@ public:
 		if ((flags & ::fast_io::net_service_flags::posix_no_ignore_sigpipe) ==
 			::fast_io::net_service_flags::none)
 		{
-			details::posix_socket_ignore_sigpipe_impl();
+			::fast_io::details::posix_socket_ignore_sigpipe_impl();
 		}
 	}
 	posix_net_service(posix_net_service const &) = delete;
