@@ -207,7 +207,7 @@ inline ::fast_io::u8string default_locale_name_win32(bool ignore_system_settings
 		constexpr ::std::size_t hkcu{0x80000001u};
 		::std::size_t hkey{};
 		if (::fast_io::win32::RegOpenKeyW(hkcu, u"Control Panel\\International",
-										__builtin_addressof(hkey)) == 0)
+										  __builtin_addressof(hkey)) == 0)
 		{
 			::std::uint_least32_t bytes{sizeof(buf)};
 			auto const res{::fast_io::win32::RegQueryValueExW(
@@ -404,7 +404,7 @@ struct intl_key
 	{
 		constexpr ::std::size_t hkcu{0x80000001u};
 		if (::fast_io::win32::RegOpenKeyW(hkcu, u"Control Panel\\International",
-										__builtin_addressof(hkey)) != 0)
+										  __builtin_addressof(hkey)) != 0)
 		{
 			hkey = 0;
 		}
@@ -459,13 +459,13 @@ inline void patch_user_section(lcblob::basic_lc_all<char> *a,
 
 	auto S{[&](char16_t const *vn, lcblob::lc_scatter<char> &f)
 			   FAST_IO_HERBCEPTIONS_THROWS {
-		if (auto const n{intl_get(hkey, vn, buf, cap)}; n != 0)
-		{
-			auto const r{b.template put_str<enc>(buf, n)};
-			f.ref.off = lcblob::lc_u32(r.first);
-			f.len = lcblob::lc_u32(r.second);
-		}
-	}};
+				   if (auto const n{intl_get(hkey, vn, buf, cap)}; n != 0)
+				   {
+					   auto const r{b.template put_str<enc>(buf, n)};
+					   f.ref.off = lcblob::lc_u32(r.first);
+					   f.len = lcblob::lc_u32(r.second);
+				   }
+			   }};
 	S(u"sDecimal", a->numeric.decimal_point);
 	S(u"sThousand", a->numeric.thousands_sep);
 	S(u"sCurrency", a->monetary.currency_symbol);
@@ -481,51 +481,51 @@ inline void patch_user_section(lcblob::basic_lc_all<char> *a,
 	// "repeat the last value", glibc repeats too, so it drops out
 	auto G{[&](char16_t const *vn, lcblob::lc_scatter<char8_t> &f)
 			   FAST_IO_HERBCEPTIONS_THROWS {
-		auto const n{intl_get(hkey, vn, buf, cap)};
-		if (n == 0)
-		{
-			return;
-		}
-		char8_t gb[16];
-		::std::size_t m{};
-		::std::uint_least32_t v{};
-		bool has{};
-		for (::std::uint_least32_t i{}; i <= n; ++i)
-		{
-			if (i == n || buf[i] == u';')
-			{
-				if (!has)
-				{
-					return;
-				}
-				if (m < sizeof(gb))
-				{
-					gb[m++] = static_cast<char8_t>(v > 127 ? 127 : v);
-				}
-				v = 0;
-				has = false;
-			}
-			else if (buf[i] >= u'0' && buf[i] <= u'9')
-			{
-				v = v * 10 + static_cast<::std::uint_least32_t>(buf[i] - u'0');
-				has = true;
-			}
-			else
-			{
-				return;
-			}
-		}
-		while (m != 0 && gb[m - 1] == 0)
-		{
-			--m;
-		}
-		if (m != 0)
-		{
-			auto const r{b.put_bytes(reinterpret_cast<unsigned char const *>(gb), m)};
-			f.ref.off = lcblob::lc_u32(r.first);
-			f.len = lcblob::lc_u32(r.second);
-		}
-	}};
+				   auto const n{intl_get(hkey, vn, buf, cap)};
+				   if (n == 0)
+				   {
+					   return;
+				   }
+				   char8_t gb[16];
+				   ::std::size_t m{};
+				   ::std::uint_least32_t v{};
+				   bool has{};
+				   for (::std::uint_least32_t i{}; i <= n; ++i)
+				   {
+					   if (i == n || buf[i] == u';')
+					   {
+						   if (!has)
+						   {
+							   return;
+						   }
+						   if (m < sizeof(gb))
+						   {
+							   gb[m++] = static_cast<char8_t>(v > 127 ? 127 : v);
+						   }
+						   v = 0;
+						   has = false;
+					   }
+					   else if (buf[i] >= u'0' && buf[i] <= u'9')
+					   {
+						   v = v * 10 + static_cast<::std::uint_least32_t>(buf[i] - u'0');
+						   has = true;
+					   }
+					   else
+					   {
+						   return;
+					   }
+				   }
+				   while (m != 0 && gb[m - 1] == 0)
+				   {
+					   --m;
+				   }
+				   if (m != 0)
+				   {
+					   auto const r{b.put_bytes(reinterpret_cast<unsigned char const *>(gb), m)};
+					   f.ref.off = lcblob::lc_u32(r.first);
+					   f.len = lcblob::lc_u32(r.second);
+				   }
+			   }};
 	G(u"sGrouping", a->numeric.grouping);
 	G(u"sMonGrouping", a->monetary.mon_grouping);
 
@@ -748,7 +748,7 @@ inline ::fast_io::u8string_view locale_dir() FAST_IO_HERBCEPTIONS_THROWS
 	// what callers take (env_u8 returns an owned u8string — the
 	// static keeps it alive, no dangling view)
 	static ::fast_io::u8string const env_dir{env_u8(u"FAST_IO_L10N_PATH",
-												  "FAST_IO_L10N_PATH")};
+													"FAST_IO_L10N_PATH")};
 	if (!env_dir.is_empty())
 	{
 		return ::fast_io::u8string_view{env_dir.data(), env_dir.size()};
@@ -773,7 +773,7 @@ inline ::fast_io::u8string_view locale_dir() FAST_IO_HERBCEPTIONS_THROWS
 inline ::fast_io::dir_file *locale_dir_file{};
 
 inline ::fast_io::l10n::lc_locale const *load_blob_impl(::fast_io::u8string_view lname,
-													  bool user)
+														bool user)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// one file per locale+codeset — key = canonical file name; the
@@ -907,11 +907,9 @@ inline ::fast_io::l10n::lc_locale const *load_blob_impl(::fast_io::u8string_view
 	return p;
 }
 
-} // namespace details
-
-extern "C" FAST_IO_I18N_EXPORT ::fast_io::l10n::lc_locale const *
-fast_io_l10n_load(char8_t const *name, ::std::size_t name_len,
-				  ::std::uint_least32_t cflags) FAST_IO_HERBCEPTIONS_THROWS
+inline ::fast_io::l10n::lc_locale const *
+load_l10n_impl(char8_t const *name, ::std::size_t name_len,
+			   ::std::uint_least32_t cflags) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::u8string_view name_sv;
 	if (name_len != 0)
@@ -941,6 +939,118 @@ fast_io_l10n_load(char8_t const *name, ::std::size_t name_len,
 	return details::load_blob_impl(::fast_io::u8string_view{lname.data(), lname.size()},
 								   user);
 }
+
+#if !defined(__HERBCEPTIONS__) && defined(FAST_IO_CPP_EXCEPTIONS)
+#if defined(_WIN32) || defined(__CYGWIN__)
+// small win32->errno map covering the file/registry failures the
+// locale loader can raise; anything unmapped degrades to EIO
+inline int win32_code_to_errno(::std::uint_least32_t code) noexcept
+{
+	switch (code)
+	{
+	case 2: // ERROR_FILE_NOT_FOUND
+	case 3: // ERROR_PATH_NOT_FOUND
+		return ENOENT;
+	case 4: // ERROR_TOO_MANY_OPEN_FILES
+		return EMFILE;
+	case 5: // ERROR_ACCESS_DENIED
+		return EACCES;
+	case 6: // ERROR_INVALID_HANDLE
+		return EBADF;
+	case 8:  // ERROR_NOT_ENOUGH_MEMORY
+	case 14: // ERROR_OUTOFMEMORY
+		return ENOMEM;
+	case 32: // ERROR_SHARING_VIOLATION
+		return EBUSY;
+	case 50: // ERROR_NOT_SUPPORTED
+		return ENOTSUP;
+	case 80:  // ERROR_FILE_EXISTS
+	case 183: // ERROR_ALREADY_EXISTS
+		return EEXIST;
+	case 87:  // ERROR_INVALID_PARAMETER
+	case 123: // ERROR_INVALID_NAME
+		return EINVAL;
+	case 112: // ERROR_DISK_FULL
+		return ENOSPC;
+	case 145: // ERROR_DIR_NOT_EMPTY
+		return ENOTEMPTY;
+	case 206: // ERROR_FILENAME_EXCED_RANGE
+		return ENAMETOOLONG;
+	default:
+		return EIO;
+	}
+}
+#endif
+
+// errno projection of a thrown ::fast_io::error for the status ABI:
+// the posix domain already carries errno; nt status codes ride the
+// same win32 map through RtlNtStatusToDosError. no other domain is
+// reachable from the locale loader
+inline ::std::int_least32_t l10n_error_to_errno(::fast_io::error const &e) noexcept
+{
+#if defined(_WIN32) || defined(__CYGWIN__)
+	if (e.domain == ::fast_io::herbceptions::details::nt_domain_value)
+	{
+		return win32_code_to_errno(::fast_io::win32::nt::rtl_nt_status_to_dos_error(
+			static_cast<::std::uint_least32_t>(e.code)));
+	}
+	if (e.domain == ::fast_io::herbceptions::details::win32_domain_value)
+	{
+		return win32_code_to_errno(static_cast<::std::uint_least32_t>(e.code));
+	}
+#endif
+	if (e.domain == ::fast_io::herbceptions::details::posix_domain_value)
+	{
+		return static_cast<::std::int_least32_t>(e.code);
+	}
+	// unreachable from the locale loader — do not pass a foreign
+	// domain's code through as if it were errno
+	return EIO;
+}
+#endif
+
+} // namespace details
+
+// errno-channel twin of the throws entry for consumers without a
+// herbceptions channel — the same ABI boundary libwineunix uses:
+// {status, ptr}, 0 on success, an errno/errc value on failure.
+extern "C" FAST_IO_I18N_EXPORT ::fast_io::l10n::l10n_load_status
+fast_io_l10n_load_with_status(char8_t const *name, ::std::size_t name_len,
+							  ::std::uint_least32_t cflags) noexcept
+{
+#if defined(__HERBCEPTIONS__)
+	try
+	{
+		return {0, details::load_l10n_impl(name, name_len, cflags)};
+	}
+	catch throws(::std::error e)
+	{
+		return {static_cast<::std::int_least32_t>(e.to_errc()), nullptr};
+	}
+#elif defined(FAST_IO_CPP_EXCEPTIONS)
+	try
+	{
+		return {0, details::load_l10n_impl(name, name_len, cflags)};
+	}
+	catch (::fast_io::error const &e)
+	{
+		return {details::l10n_error_to_errno(e), nullptr};
+	}
+#else
+	// no exception mechanism at all: the loader's own error paths
+	// terminate inside the library — nothing to translate
+	return {0, details::load_l10n_impl(name, name_len, cflags)};
+#endif
+}
+
+#if defined(__HERBCEPTIONS__)
+extern "C" FAST_IO_I18N_EXPORT ::fast_io::l10n::lc_locale const *
+fast_io_l10n_load(char8_t const *name, ::std::size_t name_len,
+				  ::std::uint_least32_t cflags) FAST_IO_HERBCEPTIONS_THROWS
+{
+	return details::load_l10n_impl(name, name_len, cflags);
+}
+#endif
 
 } // namespace fast_io::l10n
 

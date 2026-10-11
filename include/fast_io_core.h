@@ -33,6 +33,7 @@
 #include "fast_io_core_impl/bitops/impl.h"
 #include "fast_io_core_impl/freestanding/impl.h"
 #include "fast_io_core_impl/terminate.h"
+#include "fast_io_core_impl/error.h"
 #include "fast_io_core_impl/herbceptions/throws_wrapper.h"
 #include "fast_io_dsal/impl/freestanding.h"
 #include "fast_io_dsal/impl/array.h"

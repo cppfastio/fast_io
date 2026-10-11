@@ -405,7 +405,7 @@ struct basic_posix_recursive_directory_iterator
 	struct dirent *entry{};
 	::std::size_t d_namlen{};
 	stack_type stack;
-	inline constexpr basic_posix_recursive_directory_iterator() = default;
+	inline constexpr basic_posix_recursive_directory_iterator() noexcept = default;
 	inline explicit constexpr basic_posix_recursive_directory_iterator(DIR *dp) noexcept
 		: dirp(dp)
 	{}

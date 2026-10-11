@@ -129,7 +129,7 @@ struct buffer_alloc_arr_ptr
 		constexpr
 #endif
 		buffer_alloc_arr_ptr(::std::size_t sz)
-		FAST_IO_HERBCEPTIONS_THROWS_IF(typed_allocator_type::throws_on_allocation_failure)
+			FAST_IO_HERBCEPTIONS_THROWS_IF(typed_allocator_type::throws_on_allocation_failure)
 		requires(!alloc_with_status)
 		: ptr(::fast_io::details::allocate_iobuf_space<T, allocator_type>(sz)), size(sz)
 	{
@@ -141,7 +141,7 @@ struct buffer_alloc_arr_ptr
 		constexpr
 #endif
 		buffer_alloc_arr_ptr(handle_type hdl, ::std::size_t sz)
-		FAST_IO_HERBCEPTIONS_THROWS_IF(typed_allocator_type::throws_on_allocation_failure)
+			FAST_IO_HERBCEPTIONS_THROWS_IF(typed_allocator_type::throws_on_allocation_failure)
 		requires(alloc_with_status)
 		: allochdl(hdl), ptr(::fast_io::details::allocate_iobuf_space<T, allocator_type>(hdl, sz)), size(sz)
 	{
@@ -183,7 +183,7 @@ struct buffer_alloc_arr_ptr
 	(__cpp_lib_is_constant_evaluated >= 201811L || __cpp_if_consteval >= 202106L)
 		constexpr
 #endif
-		~buffer_alloc_arr_ptr()
+		~buffer_alloc_arr_ptr() noexcept
 	{
 		if (ptr) [[likely]]
 		{

@@ -11,17 +11,18 @@
 #include <fast_io_dsal/string.h>
 #include <fast_io_dsal/string_view.h>
 #include "localedef.h"
+#include <fast_io_dsal/impl/misc/push_macros.h>
 
 namespace
 {
 using namespace ::fast_io_i18n;
 namespace ilc = ::fast_io::l10n;
 
-void dump_program(::fast_io::u8string_view prog, unsigned indent) throws
+void dump_program(::fast_io::u8string_view prog, unsigned indent) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using namespace ::fast_io_i18n::binfmt;
 	reader r{prog};
-	auto pad{[](unsigned n) throws {
+	auto pad{[](unsigned n) FAST_IO_HERBCEPTIONS_THROWS {
 		for (unsigned i{}; i < n; ++i)
 		{
 			::fast_io::print(" ");
@@ -110,7 +111,7 @@ void dump_program(::fast_io::u8string_view prog, unsigned indent) throws
 }
 
 void print_scatter(char const *base, char const *img, ::std::uint_least32_t off,
-		   char const *fname, bool is_program) throws
+				   char const *fname, bool is_program) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto const *s{reinterpret_cast<ilc::lc_scatter<char> const *>(img + off)};
 	::std::uint_least32_t const rva{ilc::lc_u32(s->ref.off)};
@@ -125,7 +126,7 @@ void print_scatter(char const *base, char const *img, ::std::uint_least32_t off,
 	{
 		::fast_io::print("\n");
 		dump_program(::fast_io::u8string_view{
-					 reinterpret_cast<char8_t const *>(base + rva), len},
+						 reinterpret_cast<char8_t const *>(base + rva), len},
 					 4);
 		return;
 	}
@@ -141,7 +142,8 @@ void print_scatter(char const *base, char const *img, ::std::uint_least32_t off,
 
 } // namespace
 
-int main(int argc, char **argv) try
+int main(int argc, char **argv)
+try
 {
 	if (argc != 2)
 	{
@@ -162,15 +164,15 @@ int main(int argc, char **argv) try
 		return 1;
 	}
 	::fast_io::println("version=", ilc::lc_u32(loc->version),
-			   " total=", ilc::lc_u32(loc->total),
-			   " codeset=", ilc::lc_u32(loc->codeset),
-			   " (file ", fmp.size(), ")");
+					   " total=", ilc::lc_u32(loc->total),
+					   " codeset=", ilc::lc_u32(loc->codeset),
+					   " (file ", fmp.size(), ")");
 	if (auto nm{ilc::lc_get_scatter(base, loc->name)}; nm.base != nullptr)
 	{
 		::fast_io::println("name=\"",
-				   ::fast_io::string_view{
-					   reinterpret_cast<char const *>(nm.base), nm.len},
-				   "\"");
+						   ::fast_io::string_view{
+							   reinterpret_cast<char const *>(nm.base), nm.len},
+						   "\"");
 	}
 	::fast_io::string_view const slot_names[]{"charset", "utf8", "utf16", "utf32"};
 	::std::uint_least32_t const slots[4]{ilc::lc_u32(loc->all.off),
@@ -213,7 +215,7 @@ int main(int argc, char **argv) try
 				if (!printed)
 				{
 					::fast_io::println(" ",
-						   ::fast_io::mnp::os_c_str(sch.glibc_name));
+									   ::fast_io::mnp::os_c_str(sch.glibc_name));
 					printed = true;
 				}
 				switch (def.tag)
@@ -233,7 +235,7 @@ int main(int argc, char **argv) try
 						for (::std::size_t k{}; k < m.aux[f]; ++k)
 						{
 							print_scatter(base, img, off + k * 8,
-									  def.name, false);
+										  def.name, false);
 						}
 					}
 					else
@@ -254,10 +256,10 @@ int main(int argc, char **argv) try
 						"  ", ::fast_io::mnp::os_c_str(def.name), " = ",
 						ilc::lc_s32(first_u32), " ",
 						ilc::lc_s32(*reinterpret_cast<
-							    ::std::uint_least32_t const *>(img + off + 4)),
+									::std::uint_least32_t const *>(img + off + 4)),
 						" ",
 						ilc::lc_s32(*reinterpret_cast<
-							    ::std::uint_least32_t const *>(img + off + 8)));
+									::std::uint_least32_t const *>(img + off + 8)));
 					break;
 				default:
 					break;
@@ -272,3 +274,5 @@ catch throws(::std::error e)
 	::fast_io::perrln("err: ", e);
 	return 1;
 }
+
+#include <fast_io_dsal/impl/misc/pop_macros.h>

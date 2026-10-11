@@ -57,7 +57,7 @@ struct file_lock_guard
 	}
 	inline file_lock_guard(file_lock_guard const &) = delete;
 	inline file_lock_guard &operator=(file_lock_guard const &) = delete;
-	inline constexpr ~file_lock_guard()
+	inline constexpr ~file_lock_guard() noexcept
 	{
 		lock.unlock(request);
 	}

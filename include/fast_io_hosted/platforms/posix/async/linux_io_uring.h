@@ -72,12 +72,12 @@ public:
 		this->ring = __builtin_addressof(this->storage);
 	}
 	inline explicit linux_io_uring(::fast_io::native_interface_t, ::std::uint_least32_t entries,
-								   ::std::uint_least32_t flags) throws
+								   ::std::uint_least32_t flags) FAST_IO_HERBCEPTIONS_THROWS
 		: linux_io_uring()
 	{
 		liburing::details::io_uring_queue_init_impl(this->storage, entries, flags);
 	}
-	inline explicit linux_io_uring(::fast_io::io_async_t) throws
+	inline explicit linux_io_uring(::fast_io::io_async_t) FAST_IO_HERBCEPTIONS_THROWS
 		: linux_io_uring(::fast_io::native_interface, 64, 0)
 	{
 	}
@@ -193,7 +193,10 @@ inline ::std::cxx_std_error io_uring_cqe_error(bool timeout_fired, int errn) noe
  * like details::async_new_state but without a leading scheduler ctor
  * argument (the first member of every cookie is its invoke function) */
 template <typename T, typename scheduler, typename... Args>
-inline T *io_uring_new_state(scheduler sched, Args &&...args) throws
+inline T *io_uring_new_state(scheduler sched, Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		::fast_io::typed_generic_allocator_adapter<::fast_io::details::async_scheduler_allocator_t<scheduler>, T>::throws_on_allocation_failure ||
+		!::std::is_nothrow_constructible_v<T, Args &&...>)
 {
 	using guard_type =
 		::fast_io::details::async_state_ptr<T, ::fast_io::details::async_scheduler_allocator_t<scheduler>>;
@@ -226,7 +229,7 @@ public:
 	}
 	io_uring_submit_guard(io_uring_submit_guard const &) = delete;
 	io_uring_submit_guard &operator=(io_uring_submit_guard const &) = delete;
-	inline ~io_uring_submit_guard()
+	inline ~io_uring_submit_guard() noexcept
 	{
 		if (cookie != nullptr)
 		{
@@ -1069,13 +1072,13 @@ inline void async_close_define(
  * io_async_wait blocks; io_async_peek returns false when nothing is
  * ready; io_async_wait_timeout returns false when the deadline elapsed.
  */
-inline void io_async_wait(linux_io_uring_observer ring) throws
+inline void io_async_wait(linux_io_uring_observer ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	liburing::io_uring_cqe *cqe{liburing::io_uring_wait_cqe(*ring.ring)};
 	::fast_io::liburing::details::io_uring_dispatch_cqe(ring, cqe);
 }
 
-inline bool io_async_peek(linux_io_uring_observer ring) throws
+inline bool io_async_peek(linux_io_uring_observer ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	liburing::io_uring_cqe *cqe{liburing::io_uring_peek_cqe(*ring.ring)};
 	if (cqe == nullptr)
@@ -1087,7 +1090,7 @@ inline bool io_async_peek(linux_io_uring_observer ring) throws
 }
 
 inline bool io_async_wait_timeout(linux_io_uring_observer ring,
-								  ::fast_io::posix_statx_timestamp64 timestamp) throws
+								  ::fast_io::posix_statx_timestamp64 timestamp) FAST_IO_HERBCEPTIONS_THROWS
 {
 	liburing::io_uring_cqe *cqe{liburing::io_uring_wait_cqe_timeout(*ring.ring, timestamp)};
 	if (cqe == nullptr)

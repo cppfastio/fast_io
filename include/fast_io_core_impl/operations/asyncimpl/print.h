@@ -134,7 +134,7 @@ struct async_print_strlike_buffer
 		other.end_ptr = nullptr;
 		return *this;
 	}
-	inline ~async_print_strlike_buffer()
+	inline ~async_print_strlike_buffer() noexcept
 	{
 		if (begin_ptr != nullptr)
 		{
@@ -411,7 +411,7 @@ struct async_print_awaiter : async_awaiter_result<void>
 	}
 
 	/* a never-co_awaited awaiter still owns its unsubmitted state */
-	inline ~async_print_awaiter()
+	inline ~async_print_awaiter() noexcept
 	{
 		if (work != nullptr)
 		{
@@ -453,7 +453,7 @@ struct async_print_awaiter : async_awaiter_result<void>
 		}
 		return this->async_suspend_done();
 	}
-	inline void await_resume() throws
+	inline void await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{

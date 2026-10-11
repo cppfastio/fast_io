@@ -11,6 +11,7 @@
 // skipped as unknown categories.
 
 #include "lcblob.h"
+#include <fast_io_dsal/impl/misc/push_macros.h>
 
 namespace fast_io_i18n
 {
@@ -35,10 +36,10 @@ struct parse_ctx
 };
 
 [[noreturn]] inline void pfails(parse_ctx const &ctx, ::std::string_view msg,
-				::std::string_view line) throws
+								::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::perrln(ctx.file, ":", ctx.line_no, ": ", msg, " | ", line);
-	throw throws ::std::errc::invalid_argument;
+	throw throws::std::errc::invalid_argument;
 }
 
 inline bool is_sp(char c) noexcept
@@ -117,8 +118,8 @@ inline void put_u8_cp(::fast_io::string &out, char32_t cp) noexcept
 
 // decode a quoted string's interior: escape_char, <U..> names -> UTF-8
 inline void decode_string_content(::fast_io::string &out, ::std::string_view inner,
-				  char escape, parse_ctx const &ctx,
-				  ::std::string_view line) throws
+								  char escape, parse_ctx const &ctx,
+								  ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (::std::size_t i{}; i < inner.size(); ++i)
 	{
@@ -146,10 +147,10 @@ inline void decode_string_content(::fast_io::string &out, ::std::string_view inn
 				{
 					char h{inner[k]};
 					unsigned d{static_cast<unsigned>(
-						h >= '0' && h <= '9' ? h - '0'
+						h >= '0' && h <= '9'   ? h - '0'
 						: h >= 'A' && h <= 'F' ? h - 'A' + 10
 						: h >= 'a' && h <= 'f' ? h - 'a' + 10
-								     : 99)};
+											   : 99)};
 					if (d > 15)
 					{
 						pfails(ctx, "bad <U> name", line);
@@ -174,7 +175,7 @@ inline void decode_string_content(::fast_io::string &out, ::std::string_view inn
 
 // tokenize a field value: `;`-separated quoted strings / bare words
 inline void tokenize(lc_field &f, ::std::string_view val, char escape,
-		     parse_ctx const &ctx, ::std::string_view line) throws
+					 parse_ctx const &ctx, ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (;;)
 	{
@@ -272,12 +273,12 @@ using file_cache =
 	::fast_io::vector<::std::pair<::fast_io::string, lc_file_data>>;
 
 inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &name,
-		       lc_file_data &out, file_cache &cache, unsigned depth) throws;
+					   lc_file_data &out, file_cache &cache, unsigned depth) FAST_IO_HERBCEPTIONS_THROWS;
 
 // parse one logical line's "key value" into the current category
 inline void parse_field_line(lc_file_data &out, ::std::size_t cat,
-			     ::std::string_view line, char escape,
-			     parse_ctx const &ctx) throws
+							 ::std::string_view line, char escape,
+							 parse_ctx const &ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto it{line.find_first_of(" \t")};
 	if (it == ::std::string_view::npos)
@@ -298,12 +299,12 @@ inline void parse_field_line(lc_file_data &out, ::std::size_t cat,
 }
 
 inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &name,
-		       lc_file_data &out, file_cache &cache, unsigned depth) throws
+					   lc_file_data &out, file_cache &cache, unsigned depth) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (depth > 8)
 	{
 		pfails({::std::string_view{name.data(), name.size()}, 0},
-		       "copy depth exceeded", {});
+			   "copy depth exceeded", {});
 	}
 	for (auto const &e : cache)
 	{
@@ -314,7 +315,7 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 		}
 	}
 	::fast_io::native_file_loader fmp(::fast_io::at(df),
-					  ::fast_io::mnp::os_c_str(name.c_str()));
+									  ::fast_io::mnp::os_c_str(name.c_str()));
 	char comment_char{'%'};
 	char escape_char{'/'};
 	::std::size_t cur_cat{::fast_io_i18n::lcblob::cat_count};
@@ -431,7 +432,7 @@ inline void parse_file(::fast_io::dir_file const &df, ::fast_io::string const &n
 // ---------------------------------------------------------------------------
 
 inline ::std::int_least64_t to_i64(::std::string_view tok, parse_ctx const &ctx,
-				   ::std::string_view line) throws
+								   ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!tok.empty() && tok.front() == '+')
 	{
@@ -450,7 +451,7 @@ inline ::std::int_least64_t to_i64(::std::string_view tok, parse_ctx const &ctx,
 
 // era token: "dir:offset:start:end:name:fmt" — already unquoted-decoded
 inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::std::string_view tok,
-		      parse_ctx const &ctx, ::std::string_view line) throws
+					  parse_ctx const &ctx, ::std::string_view line) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t segs[5]{};
 	{
@@ -472,7 +473,7 @@ inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::std::string_view tok
 		return tok.substr(b, e - b);
 	}};
 	auto date{[&](::std::string_view d, ::std::int_least64_t &yr,
-		     ::std::int_least32_t &mo, ::std::int_least32_t &dy) throws {
+				  ::std::int_least32_t &mo, ::std::int_least32_t &dy) FAST_IO_HERBCEPTIONS_THROWS {
 		if (d == "+*")
 		{
 			yr = 2147483647;
@@ -485,7 +486,7 @@ inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::std::string_view tok
 		}
 		auto p1{d.find('/')};
 		auto p2{p1 == ::std::string_view::npos ? ::std::string_view::npos
-						      : d.find('/', p1 + 1)};
+											   : d.find('/', p1 + 1)};
 		if (p1 == ::std::string_view::npos || p2 == ::std::string_view::npos)
 		{
 			pfails(ctx, "bad era date", line);
@@ -520,8 +521,8 @@ inline void parse_era(::fast_io_i18n::lcblob::era_src &e, ::std::string_view tok
 
 // map parsed fields onto the schema's typed slots; returns filled cats
 inline void to_cats(lc_file_data const &d,
-		    ::fast_io_i18n::lcblob::cat_src cats[],
-		    parse_ctx const &ctx) throws
+					::fast_io_i18n::lcblob::cat_src cats[],
+					parse_ctx const &ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using ::fast_io_i18n::lcblob::cat_count;
 	using ::fast_io_i18n::lcblob::cat_schemas;
@@ -549,7 +550,7 @@ inline void to_cats(lc_file_data const &d,
 			if (fi == sch.fields.size())
 			{
 				::fast_io::perrln(ctx.file, ": unknown field `",
-						  f.name, "' — skipped");
+								  f.name, "' — skipped");
 				continue;
 			}
 			auto const &def{sch.fields[fi]};
@@ -585,7 +586,7 @@ inline void to_cats(lc_file_data const &d,
 				{
 					::fast_io_i18n::lcblob::era_src e;
 					parse_era(e, {t.data(), t.size()}, ctx,
-						  {t.data(), t.size()});
+							  {t.data(), t.size()});
 					sl.eras.emplace_back(e);
 				}
 				break;
@@ -598,3 +599,5 @@ inline void to_cats(lc_file_data const &d,
 
 } // namespace localedef
 } // namespace fast_io_i18n
+
+#include <fast_io_dsal/impl/misc/pop_macros.h>

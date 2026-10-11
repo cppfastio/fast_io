@@ -109,6 +109,9 @@ inline constexpr ::std::error_reporter_encoding herbception_encoding_impl = ::fa
 template <typename output>
 inline constexpr void print_define_herbception_impl(output otm, ::std::error_domain_singleton const *domain, ::std::size_t code,
 													::std::error_reporter_encoding encoding, ::std::error_query_information info)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(domain->do_query_information(
+		code, info, encoding, ::std::declval<void *>(),
+		::fast_io::details::herbception_scatter_write_callback<output>)))
 {
 	if (domain == nullptr) [[unlikely]]
 	{
@@ -129,6 +132,8 @@ inline constexpr void print_define_herbception_impl(output otm, ::std::error_dom
 
 template <::std::integral char_type, typename output>
 inline constexpr void print_define(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::herbceptions_query_information>, output otm, ::fast_io::manipulators::herbceptions_query_information const &info)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::fast_io::details::print_define_herbception_impl(
+		otm, info.domain, info.code, ::fast_io::details::herbception_encoding_impl<char_type>, info.info)))
 {
 	::fast_io::details::print_define_herbception_impl(otm, info.domain, info.code, ::fast_io::details::herbception_encoding_impl<char_type>, info.info);
 }

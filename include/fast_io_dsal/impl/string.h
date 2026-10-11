@@ -877,7 +877,7 @@ private:
 	}
 
 public:
-	inline constexpr ~basic_string()
+	inline constexpr ~basic_string() noexcept
 	{
 		this->destroy();
 	}
@@ -1692,6 +1692,9 @@ public:
 
 template <::std::integral chtype, typename allocator1, typename U>
 inline constexpr ::fast_io::containers::basic_string<chtype, allocator1>::size_type erase(::fast_io::containers::basic_string<chtype, allocator1> &c, U const &value)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*c.begin() == value) ||
+								   !noexcept(*c.begin() = ::std::move(*c.begin())) ||
+								   !noexcept(c.erase(c.begin(), c.end())))
 {
 	auto it = ::std::remove(c.begin(), c.end(), value);
 	auto r = c.end() - it;
@@ -1701,6 +1704,9 @@ inline constexpr ::fast_io::containers::basic_string<chtype, allocator1>::size_t
 
 template <::std::integral chtype, typename allocator1, typename Pred>
 inline constexpr ::fast_io::containers::basic_string<chtype, allocator1>::size_type erase_if(::fast_io::containers::basic_string<chtype, allocator1> &c, Pred pred)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(pred(*c.begin())) ||
+								   !noexcept(*c.begin() = ::std::move(*c.begin())) ||
+								   !noexcept(c.erase(c.begin(), c.end())))
 {
 	auto it = ::std::remove_if(c.begin(), c.end(), pred);
 	auto r = c.end() - it;
@@ -1949,6 +1955,7 @@ scan_context_define_whole_fast_io_string_impl(bool &notfirstround, char_type con
 template <::std::integral char_type, typename allocator_type>
 inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_define_whole_fast_io_string_eof_impl(bool notfirstround, basic_string<char_type, allocator_type> &ref)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(ref.clear()))
 {
 	if (!notfirstround)
 	{

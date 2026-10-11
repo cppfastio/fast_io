@@ -8,19 +8,25 @@ class basic_io_io_base
 {
 public:
 	inline virtual constexpr ::fast_io::io_scatter_status_t
-	scatter_read_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *, ::std::size_t) = 0;
+	scatter_read_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *, ::std::size_t)
+		FAST_IO_HERBCEPTIONS_THROWS = 0;
 	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pread_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *, ::std::size_t,
-									 ::fast_io::intfpos_t) = 0;
-	inline virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir) = 0;
+									 ::fast_io::intfpos_t)
+		FAST_IO_HERBCEPTIONS_THROWS = 0;
+	inline virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir)
+		FAST_IO_HERBCEPTIONS_THROWS = 0;
 
 	inline virtual constexpr ::fast_io::io_scatter_status_t
-	scatter_write_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *, ::std::size_t) = 0;
+	scatter_write_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *, ::std::size_t)
+		FAST_IO_HERBCEPTIONS_THROWS = 0;
 	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pwrite_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *, ::std::size_t,
-									 ::fast_io::intfpos_t) = 0;
-	inline virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir) = 0;
-	inline virtual constexpr ~basic_io_io_base() = default;
+									 ::fast_io::intfpos_t)
+		FAST_IO_HERBCEPTIONS_THROWS = 0;
+	inline virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t, ::fast_io::seekdir)
+		FAST_IO_HERBCEPTIONS_THROWS = 0;
+	inline virtual constexpr ~basic_io_io_base() noexcept = default;
 };
 
 template <::std::integral inchar_type, ::std::integral outchar_type, typename allocatortype, typename T>
@@ -34,11 +40,13 @@ public:
 	}
 	template <typename... Args>
 	inline constexpr basic_io_io_derived(io_cookie_t, Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_constructible_v<T, Args...>)
 		: value(::fast_io::freestanding::forward<Args>(args)...)
 	{
 	}
 	inline virtual constexpr ::fast_io::io_scatter_status_t
-	scatter_read_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *base, ::std::size_t n) override
+	scatter_read_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *base, ::std::size_t n)
+		FAST_IO_HERBCEPTIONS_THROWS override
 	{
 		if constexpr (::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
 		{
@@ -61,7 +69,8 @@ public:
 	}
 	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pread_some_underflow_def(::fast_io::basic_io_scatter_t<inchar_type> const *base, ::std::size_t n,
-									 ::fast_io::intfpos_t off) override
+									 ::fast_io::intfpos_t off)
+		FAST_IO_HERBCEPTIONS_THROWS override
 	{
 		if constexpr (::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
 		{
@@ -83,7 +92,8 @@ public:
 		}
 	}
 	inline virtual constexpr ::fast_io::intfpos_t input_stream_seek_def(::fast_io::intfpos_t off,
-																 ::fast_io::seekdir sdir) override
+																		::fast_io::seekdir sdir)
+		FAST_IO_HERBCEPTIONS_THROWS override
 	{
 		if constexpr (::fast_io::operations::defines::has_input_or_io_stream_ref_define<T>)
 		{
@@ -106,7 +116,8 @@ public:
 	}
 
 	inline virtual constexpr ::fast_io::io_scatter_status_t
-	scatter_write_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *base, ::std::size_t n) override
+	scatter_write_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *base, ::std::size_t n)
+		FAST_IO_HERBCEPTIONS_THROWS override
 	{
 		if constexpr (::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
 		{
@@ -129,7 +140,8 @@ public:
 	}
 	inline virtual constexpr ::fast_io::io_scatter_status_t
 	scatter_pwrite_some_overflow_def(::fast_io::basic_io_scatter_t<outchar_type> const *base, ::std::size_t n,
-									 ::fast_io::intfpos_t off) override
+									 ::fast_io::intfpos_t off)
+		FAST_IO_HERBCEPTIONS_THROWS override
 	{
 		if constexpr (::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
 		{
@@ -151,7 +163,8 @@ public:
 		}
 	}
 	inline virtual constexpr ::fast_io::intfpos_t output_stream_seek_def(::fast_io::intfpos_t off,
-																  ::fast_io::seekdir sdir) override
+																		 ::fast_io::seekdir sdir)
+		FAST_IO_HERBCEPTIONS_THROWS override
 	{
 		if constexpr (::fast_io::operations::defines::has_output_or_io_stream_ref_define<T>)
 		{
@@ -205,6 +218,8 @@ template <::std::integral inchar_type, ::std::integral outchar_type>
 inline constexpr ::fast_io::io_scatter_status_t
 scatter_read_some_underflow_define(basic_general_io_io_observer<inchar_type, outchar_type> biob,
 								   ::fast_io::basic_io_scatter_t<inchar_type> const *pst, ::std::size_t n)
+
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return biob.handle->scatter_read_some_underflow_def(pst, n);
 }
@@ -214,6 +229,8 @@ inline constexpr ::fast_io::io_scatter_status_t
 scatter_pread_some_underflow_define(basic_general_io_io_observer<inchar_type, outchar_type> biob,
 									::fast_io::basic_io_scatter_t<inchar_type> const *pst, ::std::size_t n,
 									intfpos_t off)
+
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return biob.handle->scatter_pread_some_underflow_def(pst, n, off);
 }
@@ -222,6 +239,8 @@ template <::std::integral inchar_type, ::std::integral outchar_type>
 inline constexpr ::fast_io::intfpos_t
 input_stream_seek_define(basic_general_io_io_observer<inchar_type, outchar_type> biob, ::fast_io::intfpos_t off,
 						 ::fast_io::seekdir sdir)
+
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return biob.handle->input_stream_seek_def(off, sdir);
 }
@@ -230,6 +249,8 @@ template <::std::integral inchar_type, ::std::integral outchar_type>
 inline constexpr ::fast_io::io_scatter_status_t
 scatter_write_some_overflow_define(basic_general_io_io_observer<inchar_type, outchar_type> biob,
 								   ::fast_io::basic_io_scatter_t<inchar_type> const *pst, ::std::size_t n)
+
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return biob.handle->scatter_write_some_overflow_def(pst, n);
 }
@@ -239,6 +260,8 @@ inline constexpr ::fast_io::io_scatter_status_t
 scatter_pwrite_some_overflow_define(basic_general_io_io_observer<inchar_type, outchar_type> biob,
 									::fast_io::basic_io_scatter_t<inchar_type> const *pst, ::std::size_t n,
 									intfpos_t off)
+
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return biob.handle->scatter_pwrite_some_overflow_def(pst, n, off);
 }
@@ -247,6 +270,8 @@ template <::std::integral inchar_type, ::std::integral outchar_type>
 inline constexpr ::fast_io::intfpos_t
 output_stream_seek_define(basic_general_io_io_observer<inchar_type, outchar_type> biob, ::fast_io::intfpos_t off,
 						  ::fast_io::seekdir sdir)
+
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return biob.handle->output_stream_seek_def(off, sdir);
 }
@@ -265,7 +290,7 @@ struct biobd_allocate_guard
 	{}
 	inline biobd_allocate_guard(biobd_allocate_guard const &) = delete;
 	inline biobd_allocate_guard &operator=(biobd_allocate_guard const &) = delete;
-	inline constexpr ~biobd_allocate_guard()
+	inline constexpr ~biobd_allocate_guard() noexcept
 	{
 		using typedallocator = typed_generic_allocator_adapter<allocatortype, T>;
 		typedallocator::deallocate_n(ptr, 1);
@@ -274,6 +299,13 @@ struct biobd_allocate_guard
 
 template <::std::integral inchartype, ::std::integral outchartype, typename allocatortype, typename T, typename... Args>
 inline constexpr ::fast_io::basic_io_io_base<inchartype, outchartype> *create_io_file_handle_impl(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!noexcept(::fast_io::typed_generic_allocator_adapter<allocatortype,
+															 ::fast_io::basic_io_io_derived<inchartype, outchartype,
+																							allocatortype, T>>::allocate(::std::size_t{1})) ||
+		!::std::is_nothrow_constructible_v<
+			::fast_io::basic_io_io_derived<inchartype, outchartype, allocatortype, T>,
+			::fast_io::io_cookie_t, Args...>)
 {
 	using type = basic_io_io_derived<inchartype, outchartype, allocatortype, T>;
 	using typedallocator = typed_generic_allocator_adapter<allocatortype, type>;
@@ -296,6 +328,9 @@ public:
 	inline explicit constexpr basic_general_io_file() noexcept = default;
 	template <typename T, typename... Args>
 	inline explicit constexpr basic_general_io_file(io_cookie_type_t<T>, Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(
+			::fast_io::details::create_io_file_handle_impl<inchar_type, outchar_type, allocatortype, T>(
+				::std::declval<Args>()...)))
 		: basic_general_io_io_observer<inchar_type, outchar_type>{
 			  ::fast_io::details::create_io_file_handle_impl<inchar_type, outchar_type, allocatortype, T>(
 				  ::fast_io::freestanding::forward<Args>(args)...)}
@@ -303,6 +338,10 @@ public:
 	}
 	template <typename P>
 	inline constexpr basic_general_io_file(io_cookie_t, P &&p)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(
+			::fast_io::details::create_io_file_handle_impl<inchar_type, outchar_type, allocatortype,
+														   ::std::remove_reference_t<P>>(
+				::std::declval<P>())))
 		: basic_general_io_io_observer<inchar_type, outchar_type>{
 			  ::fast_io::details::create_io_file_handle_impl<inchar_type, outchar_type, allocatortype,
 															 ::std::remove_reference_t<P>>(
@@ -327,7 +366,7 @@ public:
 		other.handle = nullptr;
 		return *this;
 	}
-	inline constexpr ~basic_general_io_file()
+	inline constexpr ~basic_general_io_file() noexcept
 	{
 		delete this->handle;
 	}

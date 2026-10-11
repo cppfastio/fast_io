@@ -11,8 +11,17 @@ inline constexpr ::std::uint_least32_t win32_stdin_number(static_cast<::std::uin
 inline constexpr ::std::uint_least32_t win32_stdout_number(static_cast<::std::uint_least32_t>(-11));
 inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::uint_least32_t>(-12));
 
+[[noreturn]] inline void throw_win32_error() FAST_IO_HERBCEPTIONS_THROWS
+{
+	::fast_io::herbceptions::throws_win32_errc_with_value(::fast_io::win32::GetLastError());
+}
+
+[[noreturn]] inline void throw_win32_error([[maybe_unused]] ::std::uint_least32_t err) FAST_IO_HERBCEPTIONS_THROWS
+{
+	::fast_io::herbceptions::throws_win32_errc_with_value(err);
+}
+
 } // namespace fast_io
-#include "win32_code.h"
 #include "win32_io_redirection.h"
 #include "nt/impl.h"
 

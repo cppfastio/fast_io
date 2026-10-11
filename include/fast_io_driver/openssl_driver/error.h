@@ -3,6 +3,12 @@
 namespace fast_io
 {
 
+#if !defined(__HERBCEPTIONS__) && defined(FAST_IO_CPP_EXCEPTIONS)
+class openssl_error
+{
+};
+#endif
+
 /* OpenSSL failures become std::tls_alert or std::errc through the
    herbceptions channel: fatal-alert reasons pack the wire description
    at SSL_AD_REASON_OFFSET + description, ERR_LIB_SYS carries a raw
@@ -42,6 +48,8 @@ namespace fast_io
 	}
 	throw throws::std::tls_alert{::std::tls_alert::alert_level::fatal,
 								 ::std::tls_alert::alert_description::internal_error};
+#elif defined(FAST_IO_CPP_EXCEPTIONS)
+	throw openssl_error{};
 #else
 	::fast_io::fast_terminate();
 #endif

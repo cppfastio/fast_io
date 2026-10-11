@@ -341,6 +341,7 @@ span(::fast_io::freestanding::from_range_t, R &&r) -> span<::std::remove_referen
 template <typename T>
 	requires ::std::equality_comparable<T>
 inline constexpr bool operator==(::fast_io::containers::span<T> a, ::fast_io::containers::span<T> b)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*a.ptr == *b.ptr))
 {
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }

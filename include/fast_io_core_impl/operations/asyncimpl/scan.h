@@ -165,6 +165,8 @@ struct async_scan_arg_awaiter
 	}
 
 	inline bool resolve_precise(char_type const *p)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(scan_precise_reserve_define(
+			::fast_io::io_reserve_type<char_type, argtype>, p, arg)))
 	{
 		if constexpr (::fast_io::precise_reserve_scannable_no_error<char_type, argtype>)
 		{
@@ -182,6 +184,7 @@ struct async_scan_arg_awaiter
 	/* one synchronous parse step; true = resolved, false = needs device
 	 * bytes (awaiting_pread selects the submission kind) */
 	inline bool step()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(resolve_precise(::std::declval<char_type const *>())))
 	{
 		if constexpr (::fast_io::precise_reserve_scannable<char_type, argtype>)
 		{
@@ -352,6 +355,7 @@ struct async_scan_arg_awaiter
 	/* the common case: the pending window already covers the token, so
 	 * the whole scan resolves here without suspending or allocating */
 	inline bool await_ready()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(step()))
 	{
 		return step();
 	}
@@ -368,7 +372,7 @@ struct async_scan_arg_awaiter
 		return true;
 	}
 
-	inline ::fast_io::scan_some_result_t await_resume() throws
+	inline ::fast_io::scan_some_result_t await_resume() FAST_IO_HERBCEPTIONS_THROWS
 		requires(!require_all)
 	{
 		if (this->err.domain != nullptr)
@@ -380,7 +384,7 @@ struct async_scan_arg_awaiter
 		return this->value;
 	}
 
-	inline void await_resume() throws
+	inline void await_resume() FAST_IO_HERBCEPTIONS_THROWS
 		requires(require_all)
 	{
 		if (this->err.domain != nullptr)
@@ -432,7 +436,7 @@ inline ::fast_io::io_async_task<
 	::fast_io::details::async_scheduler_allocator_t<async_scheduler_type>>
 async_scan_some_freestanding_decay(async_scheduler_type sched,
 								   ::fast_io::posix_statx_timestamp_opt timeout,
-								   instmtype instm, Args... args) throws
+								   instmtype instm, Args... args) FAST_IO_HERBCEPTIONS_THROWS
 {
 	static_assert(::fast_io::operations::decay::defines::async_scheduler_observer<
 				  async_scheduler_type>);
@@ -521,7 +525,7 @@ inline ::fast_io::io_async_task<
 	void, ::fast_io::details::async_scheduler_allocator_t<async_scheduler_type>>
 async_scan_decay(async_scheduler_type sched,
 				 ::fast_io::posix_statx_timestamp_opt timeout, instmtype &&instm,
-				 Args &&...args) throws
+				 Args &&...args) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!co_await ::fast_io::operations::async_scan_some_freestanding(
 			sched, timeout, ::std::forward<instmtype>(instm), ::std::forward<Args>(args)...))

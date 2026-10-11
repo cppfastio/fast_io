@@ -427,7 +427,7 @@ private:
 		{}
 		inline run_destroy(run_destroy const &) = delete;
 		inline run_destroy &operator=(run_destroy const &) = delete;
-		inline constexpr ~run_destroy()
+		inline constexpr ~run_destroy() noexcept
 		{
 			if (thisvec)
 			{
@@ -741,7 +741,7 @@ public:
 		vec.imp = {};
 		return *this;
 	}
-	inline constexpr ~sized_vector()
+	inline constexpr ~sized_vector() noexcept
 	{
 		destroy();
 	}
@@ -771,7 +771,7 @@ private:
 		pointer tail{};
 		pointer last{};
 		size_type cap{};
-		inline constexpr ~grow_realloc_guard()
+		inline constexpr ~grow_realloc_guard() noexcept
 		{
 			if (thisvec != nullptr)
 			{
@@ -1355,7 +1355,7 @@ private:
 	{
 		sized_vector *thisvec{};
 		size_type oldn{};
-		constexpr ~append_range_guard()
+		constexpr ~append_range_guard() noexcept
 		{
 			if (thisvec)
 			{

@@ -383,7 +383,7 @@ public:
 	{
 		return address_begin[size];
 	}
-	inline void close()
+	inline void close() noexcept
 	{
 		::fast_io::details::posix_unload_address(address_begin,
 												 static_cast<::std::size_t>(address_end - address_begin));

@@ -93,7 +93,7 @@ public:
 		this->err = other;
 		return *this;
 	}
-	constexpr void rethrow_if_cxx_std_error() throws
+	constexpr void rethrow_if_cxx_std_error() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{

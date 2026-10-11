@@ -16,6 +16,7 @@ struct bytes_copy_punning_result
 template <typename FromItbg, typename FromIted, typename ToIter>
 inline constexpr bytes_copy_punning_result<FromItbg, ToIter>
 bytes_copy_punning_impl(FromItbg fromfirst, FromIted fromlast, ToIter tofirst, ToIter tolast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*tofirst = *fromfirst))
 {
 	using fromvaluetype = ::std::iter_value_t<FromItbg>;
 	using tovaluetype = ::std::iter_value_t<ToIter>;

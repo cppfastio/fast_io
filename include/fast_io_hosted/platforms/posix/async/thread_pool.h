@@ -645,7 +645,7 @@ public:
 	pthread_t *workers{};
 	::std::size_t worker_count{};
 
-	inline explicit posix_thread_pool(::std::size_t worker_cap) throws
+	inline explicit posix_thread_pool(::std::size_t worker_cap) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		int ec{::fast_io::noexcept_call(::pthread_mutex_init, __builtin_addressof(this->storage.mutex),
 										nullptr)};
@@ -698,7 +698,7 @@ public:
 		}
 	}
 
-	inline explicit posix_thread_pool(::fast_io::io_async_t) throws
+	inline explicit posix_thread_pool(::fast_io::io_async_t) FAST_IO_HERBCEPTIONS_THROWS
 		: posix_thread_pool(0)
 	{
 	}
@@ -755,13 +755,13 @@ async_scheduler_ref_define(posix_thread_pool &pool) noexcept
  * nothing is queued; io_async_wait_timeout takes a duration and returns
  * false when it elapses.
  */
-inline void io_async_wait(posix_thread_pool_observer sched) throws
+inline void io_async_wait(posix_thread_pool_observer sched) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto *node{::fast_io::details::posix_thread_pool_reap(sched.native_handle(), nullptr)};
 	node->dispatch(node);
 }
 
-inline bool io_async_peek(posix_thread_pool_observer sched) throws
+inline bool io_async_peek(posix_thread_pool_observer sched) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto *node{::fast_io::details::posix_thread_pool_reap_try(sched.native_handle())};
 	if (node == nullptr)
@@ -773,7 +773,7 @@ inline bool io_async_peek(posix_thread_pool_observer sched) throws
 }
 
 inline bool io_async_wait_timeout(posix_thread_pool_observer sched,
-								  ::fast_io::posix_statx_timestamp64 timeout) throws
+								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::timespec abs{::fast_io::details::posix_thread_pool_deadline(timeout)};
 	auto *node{::fast_io::details::posix_thread_pool_reap(sched.native_handle(),

@@ -90,6 +90,8 @@ template <typename handletype, typename iobuffertraits, typename dectref>
 inline constexpr auto
 io_stream_transcode_deco_filter_define(basic_io_buffer_transcode_ref<basic_io_buffer<handletype, iobuffertraits>> rf,
 									   dectref &&deco)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(io_stream_transcode_deco_filter_ref_define(
+		::fast_io::freestanding::move(rf.iobptr->handle))))
 {
 	using newtype = decltype(io_stream_transcode_deco_filter_define(
 		io_stream_transcode_deco_filter_ref_define(::fast_io::freestanding::move(rf.iobptr->handle)), deco));

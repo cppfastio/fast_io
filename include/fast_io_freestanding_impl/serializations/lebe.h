@@ -167,7 +167,7 @@ inline constexpr auto be_put(int_type t) noexcept(noexcept(lebe_put<::std::endia
 }
 
 template <::std::endian en, ::std::floating_point T>
-inline constexpr auto iec559_lebe_put(T t)
+inline constexpr auto iec559_lebe_put(T t) noexcept
 {
 	constexpr bool isiec559{::std::numeric_limits<T>::is_iec559};
 	using nocvref = ::std::remove_cvref_t<T>;
@@ -249,12 +249,16 @@ WASM standard uses this format.
 */
 template <::std::floating_point T>
 inline constexpr auto iec559_le_put(T t)
+
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::fast_io::manipulators::iec559_lebe_put<::std::endian::little>(t)))
 {
 	return ::fast_io::manipulators::iec559_lebe_put<::std::endian::little>(t);
 }
 
 template <::std::floating_point T>
 inline constexpr auto iec559_be_put(T t)
+
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::fast_io::manipulators::iec559_lebe_put<::std::endian::big>(t)))
 {
 	return ::fast_io::manipulators::iec559_lebe_put<::std::endian::big>(t);
 }
@@ -271,13 +275,13 @@ inline constexpr auto iec559_lebe_get(T &t) noexcept
 }
 
 template <::std::floating_point T>
-inline constexpr auto iec559_le_get(T &t)
+inline constexpr auto iec559_le_get(T &t) noexcept
 {
 	return ::fast_io::manipulators::iec559_lebe_get<::std::endian::little>(t);
 }
 
 template <::std::floating_point T>
-inline constexpr auto iec559_be_get(T &t)
+inline constexpr auto iec559_be_get(T &t) noexcept
 {
 	return ::fast_io::manipulators::iec559_lebe_get<::std::endian::big>(t);
 }

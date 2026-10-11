@@ -41,7 +41,6 @@ freestanding ones.
 #include "fast_io_unit/timespec.h"
 #endif
 
-#include "fast_io_hosted/posix_code.h"
 
 #if !defined(__AVR__)
 #include "fast_io_dsal/impl/common.h"

@@ -1599,7 +1599,7 @@ public:
 		}
 		return it->mapped();
 	}
-	constexpr ~basic_str_btree_map()
+	constexpr ~basic_str_btree_map() noexcept
 	{
 		clear_node(this->imp.root);
 	}

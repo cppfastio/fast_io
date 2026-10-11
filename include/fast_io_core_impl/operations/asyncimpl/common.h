@@ -49,19 +49,21 @@ public:
 	T *ptr{};
 	::std::size_t size{};
 
-	inline explicit async_state_ptr(::std::size_t n) throws
+	inline explicit async_state_ptr(::std::size_t n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(typed_allocator_type::throws_on_allocation_failure)
 		requires(!alloc_with_status)
 		: ptr(static_cast<T *>(typed_allocator_type::allocate(n))), size(n)
 	{
 	}
-	inline explicit async_state_ptr(handle_type hdl, ::std::size_t n) throws
+	inline explicit async_state_ptr(handle_type hdl, ::std::size_t n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(typed_allocator_type::throws_on_allocation_failure)
 		requires(alloc_with_status)
 		: allochdl(hdl), ptr(static_cast<T *>(typed_allocator_type::handle_allocate(hdl, n))), size(n)
 	{
 	}
 	async_state_ptr(async_state_ptr const &) = delete;
 	async_state_ptr &operator=(async_state_ptr const &) = delete;
-	inline ~async_state_ptr()
+	inline ~async_state_ptr() noexcept
 	{
 		if (ptr) [[likely]]
 		{
@@ -98,7 +100,10 @@ public:
  * alloc_handle member, which the object copies into itself so
  * async_delete_state can free without the scheduler. */
 template <typename T, typename scheduler, typename... Args>
-inline T *async_new_state(scheduler sched, Args &&...args) throws
+inline T *async_new_state(scheduler sched, Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		::fast_io::typed_generic_allocator_adapter<async_scheduler_allocator_t<scheduler>, T>::throws_on_allocation_failure ||
+		!::std::is_nothrow_constructible_v<T, scheduler &, Args &&...>)
 {
 	using guard_type = async_state_ptr<T, async_scheduler_allocator_t<scheduler>>;
 	if constexpr (guard_type::alloc_with_status)
@@ -121,7 +126,10 @@ inline T *async_new_state(scheduler sched, Args &&...args) throws
  * backends whose cookie's first member is a dispatch base (the io_uring
  * invoke pointer, the IOCP OVERLAPPED) construct T purely from args */
 template <typename T, typename scheduler, typename... Args>
-inline T *async_new_state_plain(scheduler sched, Args &&...args) throws
+inline T *async_new_state_plain(scheduler sched, Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		::fast_io::typed_generic_allocator_adapter<async_scheduler_allocator_t<scheduler>, T>::throws_on_allocation_failure ||
+		!::std::is_nothrow_constructible_v<T, Args &&...>)
 {
 	using guard_type = async_state_ptr<T, async_scheduler_allocator_t<scheduler>>;
 	if constexpr (guard_type::alloc_with_status)

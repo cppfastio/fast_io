@@ -125,7 +125,7 @@ struct io_detached_output_buffer
 			buffer_begin = buffer_curr = buffer_end = nullptr;
 		}
 	}
-	inline constexpr ~io_detached_output_buffer()
+	inline constexpr ~io_detached_output_buffer() noexcept
 	{
 		release();
 	}
@@ -192,7 +192,7 @@ public:
 #endif
 	allocator_handle_type allocator_handle{};
 
-	inline explicit constexpr basic_io_buffer()
+	inline explicit constexpr basic_io_buffer() noexcept
 		requires(!allocator_has_status)
 	= default;
 	inline explicit constexpr basic_io_buffer(allocator_handle_type allochdl) noexcept
@@ -302,7 +302,7 @@ public:
 		return detached;
 	}
 
-	inline constexpr ~basic_io_buffer()
+	inline constexpr ~basic_io_buffer() noexcept
 	{
 		::fast_io::details::destroy_basic_io_buffer(*this);
 	}

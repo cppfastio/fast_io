@@ -821,7 +821,7 @@ struct str_swiss_map_construct_range_destroyer
 	str_swiss_map_construct_range_destroyer(str_swiss_map_construct_range_destroyer const &) = delete;
 	str_swiss_map_construct_range_destroyer &operator=(str_swiss_map_construct_range_destroyer const &) = delete;
 
-	constexpr ~str_swiss_map_construct_range_destroyer()
+	constexpr ~str_swiss_map_construct_range_destroyer() noexcept
 	{
 		if (pimp)
 		{
@@ -989,7 +989,7 @@ public:
 		this->imp = {};
 	}
 
-	constexpr ~basic_str_swiss_map()
+	constexpr ~basic_str_swiss_map() noexcept
 	{
 		::fast_io::details::str_swiss_map_clear_impl<true, allocator_type, char_type>(this->imp);
 	}

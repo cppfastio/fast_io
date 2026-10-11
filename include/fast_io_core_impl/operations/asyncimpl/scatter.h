@@ -588,7 +588,7 @@ struct async_scatter_pread_some_bytes_awaiter : async_awaiter_result<::fast_io::
 			::fast_io::details::async_awaiter_callback<::fast_io::io_scatter_status_t>{this});
 		return this->async_suspend_done();
 	}
-	inline ::fast_io::io_scatter_status_t await_resume() throws
+	inline ::fast_io::io_scatter_status_t await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{
@@ -617,7 +617,7 @@ struct async_scatter_pread_all_bytes_awaiter : async_awaiter_result<void>
 			::fast_io::details::async_awaiter_callback<void>{this});
 		return this->async_suspend_done();
 	}
-	inline constexpr void await_resume() throws
+	inline constexpr void await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{
@@ -645,7 +645,7 @@ struct async_scatter_pwrite_some_bytes_awaiter : async_awaiter_result<::fast_io:
 			::fast_io::details::async_awaiter_callback<::fast_io::io_scatter_status_t>{this});
 		return this->async_suspend_done();
 	}
-	inline ::fast_io::io_scatter_status_t await_resume() throws
+	inline ::fast_io::io_scatter_status_t await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{
@@ -674,7 +674,7 @@ struct async_scatter_pwrite_all_bytes_awaiter : async_awaiter_result<void>
 			::fast_io::details::async_awaiter_callback<void>{this});
 		return this->async_suspend_done();
 	}
-	inline constexpr void await_resume() throws
+	inline constexpr void await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{

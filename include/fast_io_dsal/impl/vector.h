@@ -19,7 +19,7 @@ struct
 	::std::byte *end_ptr;
 };
 
-template<typename allochandle>
+template <typename allochandle>
 struct
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
@@ -73,7 +73,7 @@ inline void *grow_to_byte_size_iter_impl(vector_model &imp, void *iter, ::std::s
 		newiter = ::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(old_begin_ptr), reinterpret_cast<::std::byte const *>(iter),
 																	reinterpret_cast<::std::byte *>(begin_ptr));
 		static_cast<void>(::fast_io::freestanding::nonoverlapped_bytes_copy(reinterpret_cast<::std::byte const *>(iter), reinterpret_cast<::std::byte const *>(old_curr_ptr),
-														  reinterpret_cast<::std::byte *>(newiter + gap)));
+																			reinterpret_cast<::std::byte *>(newiter + gap)));
 		allocator::deallocate_aligned_n(old_begin_ptr, alignment, old_capacity);
 	}
 	imp.begin_ptr = begin_ptr;
@@ -413,7 +413,7 @@ private:
 		if constexpr (alloc_with_status)
 		{
 			typed_allocator_type::handle_deallocate_n(allochdl, imp.begin_ptr,
-													static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
+													  static_cast<::std::size_t>(imp.end_ptr - imp.begin_ptr));
 		}
 		else if constexpr (!typed_allocator_type::has_deallocate)
 		{
@@ -434,7 +434,7 @@ private:
 		{}
 		inline run_destroy(run_destroy const &) = delete;
 		inline run_destroy &operator=(run_destroy const &) = delete;
-		inline constexpr ~run_destroy()
+		inline constexpr ~run_destroy() noexcept
 		{
 			if (thisvec)
 			{
@@ -740,7 +740,7 @@ public:
 		vec.imp = {};
 		return *this;
 	}
-	inline constexpr ~vector()
+	inline constexpr ~vector() noexcept
 	{
 		destroy();
 	}
@@ -770,7 +770,7 @@ private:
 		pointer tail{};
 		pointer last{};
 		size_type cap{};
-		inline constexpr ~grow_realloc_guard()
+		inline constexpr ~grow_realloc_guard() noexcept
 		{
 			if (thisvec != nullptr)
 			{
@@ -822,7 +822,7 @@ private:
 					if (imp.begin_ptr != nullptr)
 					{
 						typed_allocator_type::handle_deallocate_n(allochdl, imp.begin_ptr,
-																static_cast<size_type>(imp.end_ptr - imp.begin_ptr));
+																  static_cast<size_type>(imp.end_ptr - imp.begin_ptr));
 					}
 					imp.begin_ptr = new_begin_ptr;
 					imp.curr_ptr = new_begin_ptr + old_size;
@@ -1327,7 +1327,7 @@ public:
 		requires std::constructible_from<value_type, Args...>
 	inline constexpr reference emplace_back(Args &&...args)
 		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || throwing_relocation ||
-									 ::fast_io::containers::details::may_throw_constructible<value_type, Args...>)
+									   ::fast_io::containers::details::may_throw_constructible<value_type, Args...>)
 	{
 		if (imp.curr_ptr == imp.end_ptr)
 			[[unlikely]]
@@ -1344,7 +1344,7 @@ private:
 	{
 		vector *thisvec{};
 		size_type oldn{};
-		constexpr ~append_range_guard()
+		constexpr ~append_range_guard() noexcept
 		{
 			if (thisvec)
 			{

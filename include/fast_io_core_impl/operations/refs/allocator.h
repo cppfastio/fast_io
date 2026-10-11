@@ -53,15 +53,15 @@ struct input_stream_allocator
 private:
 	template <typename U = T>
 		requires(defines::has_input_allocator_type<U>)
-	static auto pick(int) -> typename U::input_allocator_type;
+	static auto pick(int) noexcept -> typename U::input_allocator_type;
 	template <typename U = T>
 		requires(defines::has_io_allocator_type<U>)
-	static auto pick(long) -> typename U::io_allocator_type;
+	static auto pick(long) noexcept -> typename U::io_allocator_type;
 	template <typename U = T>
 		requires(defines::has_allocator_type<U>)
-	static auto pick(long long) -> typename U::allocator_type;
+	static auto pick(long long) noexcept -> typename U::allocator_type;
 	template <typename U = T>
-	static auto pick(...) -> fallbacktype;
+	static auto pick(...) noexcept -> fallbacktype;
 
 public:
 	using type = decltype(pick(0));
@@ -73,15 +73,15 @@ struct output_stream_allocator
 private:
 	template <typename U = T>
 		requires(defines::has_output_allocator_type<U>)
-	static auto pick(int) -> typename U::output_allocator_type;
+	static auto pick(int) noexcept -> typename U::output_allocator_type;
 	template <typename U = T>
 		requires(defines::has_io_allocator_type<U>)
-	static auto pick(long) -> typename U::io_allocator_type;
+	static auto pick(long) noexcept -> typename U::io_allocator_type;
 	template <typename U = T>
 		requires(defines::has_allocator_type<U>)
-	static auto pick(long long) -> typename U::allocator_type;
+	static auto pick(long long) noexcept -> typename U::allocator_type;
 	template <typename U = T>
-	static auto pick(...) -> fallbacktype;
+	static auto pick(...) noexcept -> fallbacktype;
 
 public:
 	using type = decltype(pick(0));

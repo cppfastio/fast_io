@@ -402,7 +402,7 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		return *this;
 	}
 
-	inline constexpr ~cstr_guard()
+	inline constexpr ~cstr_guard() noexcept
 	{
 		Alloc::deallocate(cstr);
 	}

@@ -217,7 +217,7 @@ struct async_pwrite_some_bytes_awaiter : async_awaiter_result<::std::size_t>
 			::fast_io::details::async_awaiter_callback<::std::size_t>{this});
 		return this->async_suspend_done();
 	}
-	inline ::std::size_t await_resume() throws
+	inline ::std::size_t await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{
@@ -247,7 +247,7 @@ struct async_pwrite_all_bytes_awaiter : async_awaiter_result<void>
 			::fast_io::details::async_awaiter_callback<void>{this});
 		return this->async_suspend_done();
 	}
-	inline constexpr void await_resume() throws
+	inline constexpr void await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{

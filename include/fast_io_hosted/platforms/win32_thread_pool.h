@@ -421,13 +421,13 @@ async_scheduler_ref_define(win32_thread_pool &pool) noexcept
  * nothing is queued; io_async_wait_timeout takes a duration and returns
  * false when it elapses.
  */
-inline void io_async_wait(win32_thread_pool_observer sched) throws
+inline void io_async_wait(win32_thread_pool_observer sched) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto *node{::fast_io::details::win32_thread_pool_reap(sched.native_handle(), -1)};
 	node->dispatch(node);
 }
 
-inline bool io_async_peek(win32_thread_pool_observer sched) throws
+inline bool io_async_peek(win32_thread_pool_observer sched) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto *node{::fast_io::details::win32_thread_pool_reap(sched.native_handle(), 0)};
 	if (node == nullptr)
@@ -439,7 +439,7 @@ inline bool io_async_peek(win32_thread_pool_observer sched) throws
 }
 
 inline bool io_async_wait_timeout(win32_thread_pool_observer sched,
-								  ::fast_io::posix_statx_timestamp64 timeout) throws
+								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t const ms{static_cast<::std::uint_least64_t>(timeout.tv_sec) * 1000u +
 								   static_cast<::std::uint_least64_t>(timeout.tv_nsec) / 1000000u};

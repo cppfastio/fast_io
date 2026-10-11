@@ -679,7 +679,7 @@ class io_uring_mmap_guard
 public:
 	void *ptr{};
 	::std::size_t size{};
-	inline io_uring_mmap_guard(::std::size_t len, int fd, ::std::uint_least64_t offset) throws
+	inline io_uring_mmap_guard(::std::size_t len, int fd, ::std::uint_least64_t offset) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		::std::ptrdiff_t p{::fast_io::liburing::details::io_uring_mmap_impl(len, fd, offset)};
 		if (::fast_io::linux_system_call_fails(p)) [[unlikely]]
@@ -934,7 +934,7 @@ inline void io_uring_cq_advance_cqe(::fast_io::liburing::io_uring_ring_state &ri
  * io_uring_feat_ext_arg. Errors from the internal timeout are propagated
  * through err.
  */
-inline bool io_uring_skip_cqe(::fast_io::liburing::io_uring_ring_state &ring, ::fast_io::liburing::io_uring_cqe *cqe) throws
+inline bool io_uring_skip_cqe(::fast_io::liburing::io_uring_ring_state &ring, ::fast_io::liburing::io_uring_cqe *cqe) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!(cqe->flags & io_uring_cqe_f_skip))
 	{
@@ -965,7 +965,7 @@ struct io_uring_peek_cqe_result
 /* returns the first visible CQE (or nullptr) plus the number of CQEs
  * currently visible, for wait_nr comparisons */
 inline ::fast_io::liburing::details::io_uring_peek_cqe_result
-io_uring_peek_cqe_impl(::fast_io::liburing::io_uring_ring_state &ring) throws
+io_uring_peek_cqe_impl(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	io_uring_cqe *cqe{};
 	::std::uint_least32_t available{};
@@ -1007,7 +1007,7 @@ struct io_uring_get_data
  * expired. Kernel errors — including EAGAIN when there is nothing to
  * reap without another kernel entry — are herbceptions.
  */
-inline io_uring_cqe *io_uring_get_cqe_impl(::fast_io::liburing::io_uring_ring_state &ring, io_uring_get_data &data) throws
+inline io_uring_cqe *io_uring_get_cqe_impl(::fast_io::liburing::io_uring_ring_state &ring, io_uring_get_data &data) FAST_IO_HERBCEPTIONS_THROWS
 {
 	io_uring_cqe *cqe{};
 	bool looped{};
@@ -1396,7 +1396,7 @@ inline ::std::uint_least32_t io_uring_sq_space_left(::fast_io::liburing::io_urin
  * Publish pending SQEs to the kernel. Returns the number submitted.
  * With io_uring_setup_sqpoll this only wakes the SQ thread when needed.
  */
-inline ::std::uint_least32_t io_uring_submit(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline ::std::uint_least32_t io_uring_submit(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least32_t submitted{::fast_io::liburing::details::io_uring_flush_sq(ring)};
 	bool cq_enter{::fast_io::liburing::details::io_uring_cq_ring_needs_enter(ring)};
@@ -1435,7 +1435,7 @@ inline ::std::uint_least32_t io_uring_submit_and_wait(::fast_io::liburing::io_ur
 }
 
 /* Flush pending CQEs the kernel may be holding (IOPOLL/overflow/taskrun) */
-inline void io_uring_get_events(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline void io_uring_get_events(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	int ret{::fast_io::liburing::details::io_uring_enter_impl(ring, 0, 0, io_uring_enter_getevents)};
 	::fast_io::system_call_throw_error(ret);
@@ -1445,7 +1445,7 @@ inline void io_uring_get_events(::fast_io::liburing::io_uring_ring_state &ring) 
  * SQPOLL only: wait for space to free up in the SQ ring. No-op for
  * non-SQPOLL rings or when space is already available.
  */
-inline void io_uring_sqring_wait(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline void io_uring_sqring_wait(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!(ring.flags & io_uring_setup_sqpoll) || io_uring_sq_space_left(ring) != 0)
 	{
@@ -1464,7 +1464,7 @@ namespace details
  * leave the kernel holding a link flag with nothing following it, so the
  * reservation loop runs first and the sqes are taken afterwards.
  */
-inline void io_uring_reserve_sqes(::fast_io::liburing::io_uring_ring_state &ring, ::std::uint_least32_t n) throws
+inline void io_uring_reserve_sqes(::fast_io::liburing::io_uring_ring_state &ring, ::std::uint_least32_t n) FAST_IO_HERBCEPTIONS_THROWS
 {
 	while (io_uring_sq_space_left(ring) < n)
 	{
@@ -1482,7 +1482,7 @@ inline void io_uring_reserve_sqes(::fast_io::liburing::io_uring_ring_state &ring
 	}
 }
 
-inline io_uring_sqe *ensure_io_uring_sqe(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline io_uring_sqe *ensure_io_uring_sqe(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	io_uring_sqe *sqe{io_uring_get_sqe(ring)};
 	while (sqe == nullptr)
@@ -1545,7 +1545,7 @@ inline void io_uring_cqe_seen(::fast_io::liburing::io_uring_ring_state &ring, io
  * might be pending a flush (IOPOLL / overflow / taskrun). Returns nullptr
  * when no completion is currently available.
  */
-inline io_uring_cqe *io_uring_peek_cqe(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline io_uring_cqe *io_uring_peek_cqe(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	io_uring_cqe *cqe{::fast_io::liburing::details::io_uring_peek_cqe_impl(ring).cqe_ptr};
 	if (cqe != nullptr)
@@ -1571,14 +1571,14 @@ inline io_uring_cqe *io_uring_wait_cqes(::fast_io::liburing::io_uring_ring_state
 	return ::fast_io::liburing::details::io_uring_get_cqe_impl(ring, data);
 }
 
-inline io_uring_cqe *io_uring_wait_cqe(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline io_uring_cqe *io_uring_wait_cqe(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return io_uring_wait_cqes(ring, 1);
 }
 
 /* Submit pending SQEs, then wait for wait_nr completions */
 inline io_uring_cqe *io_uring_submit_and_wait_cqes(::fast_io::liburing::io_uring_ring_state &ring,
-												   ::std::uint_least32_t wait_nr) throws
+												   ::std::uint_least32_t wait_nr) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::liburing::details::io_uring_get_data data{.submit = ::fast_io::liburing::details::io_uring_flush_sq(ring),
 														 .wait_nr = wait_nr,
@@ -1596,7 +1596,7 @@ inline io_uring_cqe *io_uring_submit_and_wait_cqes(::fast_io::liburing::io_uring
  * Returns nullptr when the deadline elapsed.
  */
 inline io_uring_cqe *io_uring_wait_cqe_timeout(::fast_io::liburing::io_uring_ring_state &ring,
-											   ::fast_io::posix_statx_timestamp64 timestamp) throws
+											   ::fast_io::posix_statx_timestamp64 timestamp) FAST_IO_HERBCEPTIONS_THROWS
 {
 	/* the kernel reads the full 64-bit nsec field out of the address we
 	 * hand it; convert so the statx layout's 4-byte tail padding can
@@ -1656,7 +1656,7 @@ inline io_uring_cqe *io_uring_wait_cqe_timeout(::fast_io::liburing::io_uring_rin
  * (sum of io_uring_cqe_nr over the returned CQEs).
  */
 inline ::std::uint_least32_t io_uring_peek_batch_cqe(::fast_io::liburing::io_uring_ring_state &ring, io_uring_cqe **cqes,
-													 ::std::uint_least32_t count) throws
+													 ::std::uint_least32_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least32_t ready{io_uring_cq_ready(ring)};
 	if (ready == 0)
@@ -1700,7 +1700,7 @@ inline ::std::uint_least32_t io_uring_peek_batch_cqe(::fast_io::liburing::io_uri
 /* ======================= io_uring_register(2) ======================= */
 
 inline int io_uring_register(::fast_io::liburing::io_uring_ring_state &ring, ::std::uint_least32_t opcode, void const *arg,
-							 ::std::uint_least32_t nr_args) throws
+							 ::std::uint_least32_t nr_args) FAST_IO_HERBCEPTIONS_THROWS
 {
 	int ret{::fast_io::liburing::details::io_uring_register_impl(static_cast<::std::uint_least32_t>(ring.ring_fd), opcode, arg,
 																 nr_args)};
@@ -1709,23 +1709,23 @@ inline int io_uring_register(::fast_io::liburing::io_uring_ring_state &ring, ::s
 }
 
 inline int io_uring_register_buffers(::fast_io::liburing::io_uring_ring_state &ring, io_scatter_t const *iovecs,
-									 ::std::uint_least32_t nr) throws
+									 ::std::uint_least32_t nr) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return io_uring_register(ring, io_uring_regop_buffers, iovecs, nr);
 }
 
-inline int io_uring_unregister_buffers(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline int io_uring_unregister_buffers(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return io_uring_register(ring, io_uring_regop_unregister_buffers, nullptr, 0);
 }
 
 inline int io_uring_register_files(::fast_io::liburing::io_uring_ring_state &ring, int const *files,
-								   ::std::uint_least32_t nr) throws
+								   ::std::uint_least32_t nr) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return io_uring_register(ring, io_uring_regop_files, files, nr);
 }
 
-inline int io_uring_unregister_files(::fast_io::liburing::io_uring_ring_state &ring) throws
+inline int io_uring_unregister_files(::fast_io::liburing::io_uring_ring_state &ring) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return io_uring_register(ring, io_uring_regop_unregister_files, nullptr, 0);
 }

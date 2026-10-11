@@ -119,6 +119,7 @@ struct posix_rtld_impl_context
 
 template <typename T>
 inline void *create_posix_rtld_impl(T const &t, dll_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::posix_api_common(t, posix_rtld_impl_context{mode});
 }
@@ -142,6 +143,7 @@ public:
 	inline constexpr posix_dll_file &operator=(posix_dll_io_observer) noexcept = delete;
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit posix_dll_file(T const &t, dll_mode mode)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_dll_io_observer{::fast_io::details::create_posix_rtld_impl(t, mode)}
 	{
 	}
@@ -269,6 +271,7 @@ inline void *dll_load_symbol(posix_dll_io_observer pdliob, T const &symbol) FAST
 
 template <::fast_io::constructible_to_os_c_str T, ::fast_io::constructible_to_os_c_str T1>
 inline void *dll_load_versioned_symbol(posix_dll_io_observer pdliob, T const &symbol, [[maybe_unused]] T1 const &vers)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 0)

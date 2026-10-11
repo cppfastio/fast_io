@@ -47,7 +47,7 @@ struct async_accept_awaiter
 			::fast_io::details::async_awaiter_callback<typename streamtype::native_handle_type>{this});
 		return this->async_suspend_done();
 	}
-	inline file_type await_resume() throws
+	inline file_type await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{

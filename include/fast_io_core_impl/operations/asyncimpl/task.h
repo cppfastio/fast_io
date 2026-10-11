@@ -23,18 +23,18 @@ namespace fast_io
  *
  * T is the co_return value: void tasks return_void; value tasks use
  * return_value and co_await/rethrow_if_error hands the result back —
- *     io_async_task<int> f(args...) throws { co_return 42; }
+ *     io_async_task<int> f(args...) FAST_IO_HERBCEPTIONS_THROWS { co_return 42; }
  *
  * The frame is allocated through a fast_io allocator — a template
  * parameter, not a global default — so the task also works where there
  * is no global operator new. Statusless allocators
  * (generic_allocator_adapter<alloc>::has_status == false) need nothing
  * extra:
- *     io_async_task<void, alloc> f(args...) throws { ... }
+ *     io_async_task<void, alloc> f(args...) FAST_IO_HERBCEPTIONS_THROWS { ... }
  * Status (handle-based) allocators take the allocator handle as the
  * coroutine's first parameter; the compiler passes the coroutine
  * arguments to promise_type::operator new:
- *     io_async_task<void, alloc> f(alloc::handle_type handle, args...) throws
+ *     io_async_task<void, alloc> f(alloc::handle_type handle, args...) FAST_IO_HERBCEPTIONS_THROWS
  * A status coroutine without the leading handle is a hard error rather
  * than a silent fall back to global operator new.
  *
@@ -160,7 +160,7 @@ struct io_async_task
 		{
 			::fast_io::fast_terminate();
 		}
-		static inline void *operator new(::std::size_t n, auto &&...) throws
+		static inline void *operator new(::std::size_t n, auto &&...) FAST_IO_HERBCEPTIONS_THROWS
 			requires(!alloc_with_status)
 		{
 			if constexpr (untyped_allocator_type::has_native_allocate_try)
@@ -176,7 +176,7 @@ struct io_async_task
 		 * either the handle itself or a scheduler/device exposing
 		 * .alloc_handle, which is how async APIs pass the scheduler:
 		 *     f(sched, ...) — the scheduler decides frame allocation */
-		static inline void *operator new(::std::size_t n, auto &&first, auto &&...) throws
+		static inline void *operator new(::std::size_t n, auto &&first, auto &&...) FAST_IO_HERBCEPTIONS_THROWS
 			requires(alloc_with_status)
 		{
 			alloc_handle_type handle;
@@ -232,7 +232,7 @@ struct io_async_task
 	};
 	::std::coroutine_handle<promise_type> handle{};
 
-	io_async_task() = default;
+	io_async_task() noexcept = default;
 	inline constexpr io_async_task(::std::coroutine_handle<promise_type> h) noexcept
 		: handle{h}
 	{
@@ -261,7 +261,7 @@ struct io_async_task
 	/* owns the coroutine frame: destroys it when the task object dies.
 	 * An awaited temporary task frees its (already completed) frame when
 	 * the await expression ends, so child tasks don't leak either. */
-	inline ~io_async_task()
+	inline ~io_async_task() noexcept
 	{
 		if (handle != nullptr)
 		{
@@ -295,7 +295,7 @@ struct io_async_task
 	/* synchronous error check for non-coroutine callers: rethrows a
 	 * stored herbception error through the channel. The payload is moved
 	 * out — the promise must not dispose it again */
-	inline void rethrow_if_error() throws
+	inline void rethrow_if_error() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto e{handle.promise().error};
 		handle.promise().error = {};
@@ -317,12 +317,12 @@ struct io_async_task
 	/* co_await yields the stored herbception error back to the awaiting
 	 * coroutine as a real throw — no manual error slot inspection; for
 	 * value tasks the deposited result is moved out on success */
-	inline void await_resume() throws
+	inline void await_resume() FAST_IO_HERBCEPTIONS_THROWS
 		requires(::std::is_void_v<T>)
 	{
 		rethrow_if_error();
 	}
-	inline T await_resume() throws
+	inline T await_resume() FAST_IO_HERBCEPTIONS_THROWS
 		requires(!::std::is_void_v<T>)
 	{
 		rethrow_if_error();

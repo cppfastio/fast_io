@@ -1202,7 +1202,7 @@ public:
 		auto &e{*static_cast<node_type const *>(this->imp.rightmost)};
 		return e.keys[e.size - 1u].strvw();
 	}
-	constexpr ~basic_str_ranked_btree_set()
+	constexpr ~basic_str_ranked_btree_set() noexcept
 	{
 		clear_node(this->imp.root);
 	}

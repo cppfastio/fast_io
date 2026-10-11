@@ -341,6 +341,7 @@ inline
 #endif
 	void
 	compile_time_type_punning_copy_n(range_type const *first, ::std::size_t bytes, ::std::byte *out)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*out = *first))
 {
 #if __cpp_lib_bit_cast >= 201806L
 	if (__builtin_is_constant_evaluated())
@@ -378,6 +379,7 @@ inline
 template <::std::input_or_output_iterator output_iter, typename T>
 	requires(::std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(::std::uintmax_t))
 inline constexpr output_iter my_fill_n(output_iter first, ::std::size_t count, T value)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first = value))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -406,6 +408,7 @@ inline constexpr output_iter my_fill_n(output_iter first, ::std::size_t count, T
 template <::std::forward_iterator fwd_iter, typename T>
 	requires(::std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(::std::uintmax_t))
 inline constexpr void my_fill(fwd_iter first, fwd_iter last, T value)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first = value))
 {
 	using fwd_iter_value_type = ::std::iter_value_t<fwd_iter>;
 	if constexpr (::std::contiguous_iterator<fwd_iter> && ::std::is_trivially_copyable_v<fwd_iter_value_type> &&
@@ -421,7 +424,7 @@ inline constexpr void my_fill(fwd_iter first, fwd_iter last, T value)
 
 template <::std::integral char_type, ::std::size_t n>
 	requires(n != 0)
-inline constexpr ::std::size_t string_literal_size(char_type const (&)[n])
+inline constexpr ::std::size_t string_literal_size(char_type const (&)[n]) noexcept
 {
 	return n - 1;
 }
@@ -429,6 +432,7 @@ inline constexpr ::std::size_t string_literal_size(char_type const (&)[n])
 template <::std::integral char_type, ::std::size_t n, ::std::random_access_iterator output_iter>
 	requires(n != 0)
 inline constexpr output_iter copy_string_literal(char_type const (&s)[n], output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = s[0]))
 {
 	details::non_overlapped_copy_n(s, n - 1, result);
 	return result + (n - 1);
@@ -437,6 +441,7 @@ inline constexpr output_iter copy_string_literal(char_type const (&s)[n], output
 template <::std::input_or_output_iterator output_iter>
 inline constexpr output_iter copy_scatter(basic_io_scatter_t<::std::iter_value_t<output_iter>> scatter,
 										  output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *scatter.base))
 {
 	return details::non_overlapped_copy_n(scatter.base, scatter.len, result);
 }
@@ -463,7 +468,6 @@ inline constexpr T compile_pow5{::fast_io::details::compile_pow_n<T, 5, pow>};
 
 template <my_integral T, ::std::size_t pow>
 inline constexpr T compile_pow2{::fast_io::details::compile_pow_n<T, 2, pow>};
-
 
 
 inline constexpr bool is_wasi_environment{
@@ -912,7 +916,7 @@ inline constexpr ::std::size_t cal_array_size(char_type const (&)[N]) noexcept
 }
 
 template <::std::integral char_type, bool iobuf = false>
-inline constexpr ::std::size_t cal_buffer_size()
+inline constexpr ::std::size_t cal_buffer_size() noexcept
 {
 #ifdef FAST_IO_BUFFER_SIZE
 	static_assert(sizeof(char_type) <= FAST_IO_BUFFER_SIZE);

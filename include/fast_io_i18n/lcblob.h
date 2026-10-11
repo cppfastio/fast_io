@@ -406,24 +406,59 @@ inline constexpr l10n_load_flags &operator|=(l10n_load_flags &x, l10n_load_flags
 // C ABI — the stable boundary for FFI and non-C++ consumers. Plain
 // pointer + length + flag bits; no C++ types cross it.
 //   name/name_len : locale-name bytes; name nullptr or name_len 0 -> ""
-//                   (system default). nullptr with nonzero length throws.
+//                   (system default). nullptr with nonzero length is
+//                   an error.
 //   flags         : bitmask of l10n_load_flags as uint32
+//
+// Two forms ship, same convention as libwineunix:
+//   fast_io_l10n_load_with_status : always exported, noexcept. The
+//     failure rides the status field (0 = success, otherwise an
+//     errno/errc value; locale is nullptr on failure). This is the
+//     fallback path for consumers whose compiler has no herbceptions
+//     error channel — a throws function cannot be called without one.
+//   fast_io_l10n_load             : herbceptions builds only. The
+//     failure rides the error channel as ::std::error with its full
+//     domain — no errno round-trip.
 // ---------------------------------------------------------------------------
+struct l10n_load_status
+{
+	::std::int_least32_t status; // 0 = success, otherwise an errno value
+	::fast_io::l10n::lc_locale const *locale;
+};
+
+extern "C" FAST_IO_I18N_EXPORT ::fast_io::l10n::l10n_load_status
+fast_io_l10n_load_with_status(char8_t const *name, ::std::size_t name_len,
+							  ::std::uint_least32_t flags) noexcept;
+
+#if defined(__HERBCEPTIONS__)
 extern "C" FAST_IO_I18N_EXPORT ::fast_io::l10n::lc_locale const *
 fast_io_l10n_load(char8_t const *name, ::std::size_t name_len,
 				  ::std::uint_least32_t flags) FAST_IO_HERBCEPTIONS_THROWS;
+#endif
 
 // C++ wrapper — typed view + flag enum. inline over the C ABI so the
 // DLL never exports an Itanium-mangled symbol (breaks MSVC consumers).
+// Without __HERBCEPTIONS__ the throws entry is not callable, so this
+// goes through the status form and reports the errno value the same
+// way every other non-herbceptions failure in the library does.
 inline ::fast_io::l10n::lc_locale const *
 load_l10n(::fast_io::u8string_view name,
 		  l10n_load_flags flags = l10n_load_flags::none) FAST_IO_HERBCEPTIONS_THROWS
 {
+#if defined(__HERBCEPTIONS__)
 	return fast_io_l10n_load(name.data(), name.size(),
 							 static_cast<::std::uint_least32_t>(flags));
+#else
+	auto const r{fast_io_l10n_load_with_status(name.data(), name.size(),
+											   static_cast<::std::uint_least32_t>(flags))};
+	if (r.status != 0)
+	{
+		::fast_io::throw_posix_error(static_cast<int>(r.status));
+	}
+	return r.locale;
+#endif
 }
 
 #endif
 
 } // namespace fast_io::l10n
-

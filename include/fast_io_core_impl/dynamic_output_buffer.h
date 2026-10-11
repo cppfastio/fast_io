@@ -17,7 +17,7 @@ public:
 	inline basic_generic_dynamic_output_buffer(basic_generic_dynamic_output_buffer const &) = delete;
 	inline basic_generic_dynamic_output_buffer &operator=(basic_generic_dynamic_output_buffer const &) = delete;
 
-	inline constexpr ~basic_generic_dynamic_output_buffer()
+	inline constexpr ~basic_generic_dynamic_output_buffer() noexcept
 	{
 		if (begin_ptr != buffer)
 		{
@@ -59,6 +59,10 @@ template <::std::integral char_type, ::std::size_t buffersize, typename allocato
 inline constexpr void
 write_all_overflow_define_impl(basic_generic_dynamic_output_buffer<char_type, buffersize, allocatortype> &bob,
 							   char_type const *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!noexcept(::fast_io::typed_generic_allocator_adapter<allocatortype, char_type>::allocate(::std::size_t{})) ||
+		!noexcept(::fast_io::typed_generic_allocator_adapter<allocatortype, char_type>::reallocate_n(
+			::std::declval<char_type *>(), ::std::size_t{}, ::std::size_t{})))
 {
 	using typed_allocator = ::fast_io::typed_generic_allocator_adapter<allocatortype, char_type>;
 	::std::size_t bfsz{static_cast<::std::size_t>(bob.end_ptr - bob.begin_ptr)};
@@ -112,6 +116,10 @@ template <::std::integral char_type, ::std::size_t buffersize, typename allocato
 #endif
 inline constexpr void
 grow_twice_define_impl(basic_generic_dynamic_output_buffer<char_type, buffersize, allocatortype> &bob)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!noexcept(::fast_io::typed_generic_allocator_adapter<allocatortype, char_type>::allocate(::std::size_t{})) ||
+		!noexcept(::fast_io::typed_generic_allocator_adapter<allocatortype, char_type>::reallocate_n(
+			::std::declval<char_type *>(), ::std::size_t{}, ::std::size_t{})))
 {
 	using typed_allocator = ::fast_io::typed_generic_allocator_adapter<allocatortype, char_type>;
 	::std::size_t bfsz{static_cast<::std::size_t>(bob.end_ptr - bob.begin_ptr)};
@@ -149,6 +157,8 @@ template <::std::integral char_type, ::std::size_t buffersize, typename allocato
 inline constexpr void write_all_overflow_define(
 	basic_dynamic_output_buffer_ref<basic_generic_dynamic_output_buffer<char_type, buffersize, allocatortype>> bdobr,
 	char_type const *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(
+		::fast_io::details::write_all_overflow_define_impl(*bdobr.dob_ptr, first, count)))
 {
 	::fast_io::details::write_all_overflow_define_impl(*bdobr.dob_ptr, first, count);
 }

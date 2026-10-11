@@ -12,7 +12,7 @@ struct c_family_file_factory FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		: fp(fpp) {};
 	inline c_family_file_factory(c_family_file_factory const &) = delete;
 	inline c_family_file_factory &operator=(c_family_file_factory const &) = delete;
-	inline ~c_family_file_factory()
+	inline ~c_family_file_factory() noexcept
 	{
 		if (fp) [[likely]]
 		{
@@ -101,7 +101,7 @@ public:
 		}
 #endif
 	}
-	inline ~basic_c_family_file()
+	inline ~basic_c_family_file() noexcept
 	{
 		if (this->fp) [[likely]]
 		{

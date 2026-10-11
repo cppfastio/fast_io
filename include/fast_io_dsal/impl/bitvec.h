@@ -686,7 +686,7 @@ public:
 		this->imp = newimp;
 		return *this;
 	}
-	constexpr ~bitvec()
+	constexpr ~bitvec() noexcept
 	{
 		this->destroy_bitvec();
 	}

@@ -13,6 +13,7 @@
 #include <span>
 #include <string_view>
 #include <optional>
+#include <fast_io_dsal/impl/misc/push_macros.h>
 
 namespace fast_io_i18n
 {
@@ -84,11 +85,11 @@ inline constexpr ::std::uint_least32_t sign_space{3};
 enum class pct_param : ::std::uint_least32_t
 {
 	conv = 20,
-	pad = 22,	// bit0 '-' bit1 '_' bit2 '0'
-	casef = 23,	// bit0 '^' bit1 '#'
-	modifier = 24,	// 1 E (era), 2 O (alternative)
-	colons = 25,	// 1-3, conv z only
-	// 10 width, 11 prec are shared with field_param codes
+	pad = 22,      // bit0 '-' bit1 '_' bit2 '0'
+	casef = 23,    // bit0 '^' bit1 '#'
+	modifier = 24, // 1 E (era), 2 O (alternative)
+	colons = 25,   // 1-3, conv z only
+				   // 10 width, 11 prec are shared with field_param codes
 };
 
 inline constexpr ::std::uint_least32_t pct_modifier_era{1};
@@ -100,41 +101,41 @@ inline constexpr ::std::uint_least32_t pct_modifier_alt{2};
 
 enum class pct_conv : ::std::uint_least32_t
 {
-	a = 1,	// weekday abbr
-	A = 2,	// weekday full
-	b = 3,	// month abbr (absorbs %h)
-	B = 4,	// month full
-	c = 5,	// composite -> d_t_fmt
-	C = 6,	// century
-	d = 7,	// day of month
-	e = 8,	// day of month, space-padded
-	F = 9,	// ISO date composite
-	G = 10,	// ISO week-numbering year
-	H = 11,	// hour 00-23
-	I = 12,	// hour 01-12
-	j = 13,	// day of year
-	k = 14,	// hour 0-23 space-pad
-	l = 15,	// hour 1-12 space-pad
-	m = 16,	// month
-	M = 17,	// minute
-	p = 18,	// AM/PM
-	P = 19,	// am/pm lowercase
-	r = 20,	// composite -> t_fmt_ampm
-	R = 21,	// %H:%M
-	s = 22,	// seconds since epoch
-	S = 23,	// second
-	T = 24,	// %H:%M:%S
-	u = 25,	// weekday Mon=1..Sun=7
-	U = 26,	// week number (Sunday)
-	V = 27,	// ISO week number
-	w = 28,	// weekday Sun=0..Sat=6
-	W = 29,	// week number (Monday)
-	x = 30,	// composite -> d_fmt
-	X = 31,	// composite -> t_fmt
-	Y = 32,	// year (full)
-	z = 33,	// tz offset
-	Z = 34,	// tz name
-	plus = 35,	// composite -> date_fmt
+	a = 1,     // weekday abbr
+	A = 2,     // weekday full
+	b = 3,     // month abbr (absorbs %h)
+	B = 4,     // month full
+	c = 5,     // composite -> d_t_fmt
+	C = 6,     // century
+	d = 7,     // day of month
+	e = 8,     // day of month, space-padded
+	F = 9,     // ISO date composite
+	G = 10,    // ISO week-numbering year
+	H = 11,    // hour 00-23
+	I = 12,    // hour 01-12
+	j = 13,    // day of year
+	k = 14,    // hour 0-23 space-pad
+	l = 15,    // hour 1-12 space-pad
+	m = 16,    // month
+	M = 17,    // minute
+	p = 18,    // AM/PM
+	P = 19,    // am/pm lowercase
+	r = 20,    // composite -> t_fmt_ampm
+	R = 21,    // %H:%M
+	s = 22,    // seconds since epoch
+	S = 23,    // second
+	T = 24,    // %H:%M:%S
+	u = 25,    // weekday Mon=1..Sun=7
+	U = 26,    // week number (Sunday)
+	V = 27,    // ISO week number
+	w = 28,    // weekday Sun=0..Sat=6
+	W = 29,    // week number (Monday)
+	x = 30,    // composite -> d_fmt
+	X = 31,    // composite -> t_fmt
+	Y = 32,    // year (full)
+	z = 33,    // tz offset
+	Z = 34,    // tz name
+	plus = 35, // composite -> date_fmt
 	iso8601 = 36,
 	iso8601_utc = 37,
 	fracsec = 38,
@@ -146,7 +147,7 @@ enum class pct_conv : ::std::uint_least32_t
 
 enum class ctype : ::std::uint_least32_t
 {
-	other = 0,	// user-defined / absent
+	other = 0, // user-defined / absent
 	i32 = 1,
 	i64 = 2,
 	i128 = 3,
@@ -181,15 +182,15 @@ enum class ctype : ::std::uint_least32_t
 	gbview = 32,
 	ptr = 33,
 	fptr = 34,
-	fldptr_i = 35,	// Itanium member object ptr — 1 word
-	mthptr_i = 36,	// Itanium member fn ptr — 2 words
+	fldptr_i = 35, // Itanium member object ptr — 1 word
+	mthptr_i = 36, // Itanium member fn ptr — 2 words
 	fldptr_m1 = 37,
 	fldptr_m2 = 38,
 	mthptr_m1 = 39,
 	mthptr_m2 = 40,
 	mthptr_m3 = 41,
 	mthptr_m4 = 42,
-	error = 43,	// herbceptions std::error — {domain const*, size_t}
+	error = 43, // herbceptions std::error — {domain const*, size_t}
 };
 
 // ---------------------------------------------------------------------------
@@ -205,11 +206,11 @@ enum class conv_type : ::std::uint_least32_t
 	b = 5,
 	c = 6,
 	s = 7,
-	debug = 8,	// '?'
+	debug = 8, // '?'
 	p = 9,
-	addr = 10,	// addrvw/pointervw/itervw/funcvw/fieldptrvw
-	mth = 11,	// methodvw
-	dec = 12,	// fast_io decimal shortest (float default)
+	addr = 10, // addrvw/pointervw/itervw/funcvw/fieldptrvw
+	mth = 11,  // methodvw
+	dec = 12,  // fast_io decimal shortest (float default)
 	decp = 13,
 	fix = 14,
 	fixp = 15,
@@ -298,32 +299,32 @@ struct reader
 
 	constexpr reader() noexcept = default;
 	constexpr reader(::std::u8string_view sv) noexcept
-	    : iv{sv.data(), sv.data() + sv.size()}
+		: iv{sv.data(), sv.data() + sv.size()}
 	{
 	}
 	constexpr reader(::fast_io::u8string_view sv) noexcept
-	    : iv{sv.data(), sv.data() + sv.size()}
+		: iv{sv.data(), sv.data() + sv.size()}
 	{
 	}
 	// byte buffer view: chars reinterpreted as u8 (blob payloads are
 	// charset bytes; container charset is a blob-level property)
 	constexpr reader(::std::string_view sv) noexcept
-	    : iv{reinterpret_cast<char8_t const *>(sv.data()),
-		 reinterpret_cast<char8_t const *>(sv.data() + sv.size())}
+		: iv{reinterpret_cast<char8_t const *>(sv.data()),
+			 reinterpret_cast<char8_t const *>(sv.data() + sv.size())}
 	{
 	}
 
 	template <::fast_io::details::my_integral T>
-	void get_leb(T &v) throws
+	void get_leb(T &v) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		::fast_io::scan(iv, ::fast_io::mnp::leb128_get(v));
 	}
 
-	void get_bytes(::std::size_t n, ::fast_io::u8string_view &v) throws
+	void get_bytes(::std::size_t n, ::fast_io::u8string_view &v) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (static_cast<::std::size_t>(iv.end_ptr - iv.curr_ptr) < n)
 		{
-			throw throws ::std::errc::invalid_argument;
+			throw throws::std::errc::invalid_argument;
 		}
 		v = ::fast_io::u8string_view{iv.curr_ptr, n};
 		iv.curr_ptr += n;
@@ -348,7 +349,7 @@ struct node_head
 // Read one node tag. On success the reader is positioned at the payload.
 // Out-param: this toolchain zeroes the upper bytes of register-sized
 // aggregate returns from functions that make calls — out-params avoid it.
-inline void next_tag(reader &r, node_head &h) throws
+inline void next_tag(reader &r, node_head &h) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t tag{};
 	r.get_leb(tag);
@@ -356,12 +357,12 @@ inline void next_tag(reader &r, node_head &h) throws
 	h.kind = static_cast<::std::uint_least8_t>(tag & 7u);
 	if (h.kind > kind_sleb)
 	{
-		throw throws ::std::errc::invalid_argument;
+		throw throws::std::errc::invalid_argument;
 	}
 }
 
 // Skip the payload of a node whose tag was already read.
-inline void skip_payload(reader &r, node_head h) throws
+inline void skip_payload(reader &r, node_head h) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t v{};
 	switch (h.kind)
@@ -394,16 +395,18 @@ inline void skip_payload(reader &r, node_head h) throws
 			next_tag(r, c);
 			if (c.kind == kind_list)
 			{
-				throw throws ::std::errc::invalid_argument;
+				throw throws::std::errc::invalid_argument;
 			}
 			skip_payload(r, c);
 		}
 		return;
 	}
 	default:
-		throw throws ::std::errc::invalid_argument;
+		throw throws::std::errc::invalid_argument;
 	}
 }
 
 } // namespace binfmt
 } // namespace fast_io_i18n
+
+#include <fast_io_dsal/impl/misc/pop_macros.h>

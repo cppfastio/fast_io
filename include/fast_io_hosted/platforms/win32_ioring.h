@@ -338,7 +338,7 @@ inline void win32_ioring_rw_deliver(void *self, ::std::uintptr_t information,
 /* Same async-capability check as the IOCP backend: IoRing ops are async
  * IRPs, so the file object must have been created without
  * FILE_SYNCHRONOUS_IO_* (i.e. opened with open_mode::no_block). */
-inline void win32_ioring_check_overlapped(void *file_handle) throws
+inline void win32_ioring_check_overlapped(void *file_handle) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::io_status_block isb{};
 	::std::uint_least32_t fmode{};
@@ -809,7 +809,7 @@ class win32_ioring : public win32_ioring_observer
 {
 public:
 	inline explicit win32_ioring(::std::uint_least32_t submission_entries = 256,
-								 ::std::uint_least32_t completion_entries = 512) throws
+								 ::std::uint_least32_t completion_entries = 512) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto const *api{details::win32_ioring_api()};
 		if (api == nullptr) [[unlikely]]
@@ -856,7 +856,7 @@ public:
 		}
 	}
 
-	inline explicit win32_ioring(::fast_io::io_async_t) throws
+	inline explicit win32_ioring(::fast_io::io_async_t) FAST_IO_HERBCEPTIONS_THROWS
 		: win32_ioring()
 	{
 	}
@@ -900,7 +900,7 @@ async_scheduler_ref_define(win32_ioring &ring) noexcept
  * event (old api surface) fall back to the waitOperations path.
  * Cqes with userData == 0 are internal sqes — consumed, not dispatched.
  */
-inline void io_async_wait(win32_ioring_observer sched) throws
+inline void io_async_wait(win32_ioring_observer sched) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto const *api{details::win32_ioring_api()};
 	if (api == nullptr) [[unlikely]]
@@ -959,7 +959,7 @@ inline void io_async_wait(win32_ioring_observer sched) throws
 	}
 }
 
-inline bool io_async_peek(win32_ioring_observer sched) throws
+inline bool io_async_peek(win32_ioring_observer sched) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto const *api{details::win32_ioring_api()};
 	if (api == nullptr) [[unlikely]]
@@ -994,7 +994,7 @@ inline bool io_async_peek(win32_ioring_observer sched) throws
 }
 
 inline bool io_async_wait_timeout(win32_ioring_observer sched,
-								  ::fast_io::posix_statx_timestamp64 timeout) throws
+								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	/* relative duration -> WaitForSingleObject milliseconds, rounded up
 	 * and clamped below INFINITE */

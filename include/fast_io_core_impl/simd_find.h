@@ -535,6 +535,7 @@ inline constexpr char_type const *find_simd_constant_common_impl(char_type const
 template <bool ishtml, bool findnot, ::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_space_common_iterator_generic_impl(Iter begin, Iter end)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*begin))
 {
 	if constexpr (ishtml)
 	{
@@ -633,6 +634,7 @@ inline constexpr char_type const *find_none_zero_simd_impl(char_type const *firs
 template <bool ishtml, bool findnot, ::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_space_impl(Iter first, Iter last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first))
 {
 	using value_type = ::std::iter_value_t<Iter>;
 	if constexpr (!::std::is_volatile_v<value_type> && ::std::contiguous_iterator<Iter>)
@@ -664,6 +666,7 @@ inline constexpr Iter find_space_impl(Iter first, Iter last)
 template <char8_t lfch, bool findnot, ::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_ch_impl(Iter first, Iter last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first))
 {
 	using value_type = ::std::iter_value_t<Iter>;
 	if constexpr (!::std::is_volatile_v<value_type> && ::std::contiguous_iterator<Iter>)

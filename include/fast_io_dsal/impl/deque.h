@@ -749,7 +749,7 @@ inline constexpr void deque_allocate_empty_single_block_impl(typename allocator:
 }
 
 template <typename allocator, typename dequecontroltype>
-inline constexpr void deque_clear_common_impl(dequecontroltype &controller, ::std::size_t blockbytes)
+inline constexpr void deque_clear_common_impl(dequecontroltype &controller, ::std::size_t blockbytes) noexcept
 {
 	auto start_reserved_ptr{controller.controller_block.controller_start_reserved_ptr};
 	auto after_reserved_ptr{controller.controller_block.controller_after_reserved_ptr};
@@ -966,7 +966,7 @@ struct uninitialized_copy_n_for_deque_guard
 	{}
 	uninitialized_copy_n_for_deque_guard(uninitialized_copy_n_for_deque_guard const &) = delete;
 	uninitialized_copy_n_for_deque_guard &operator=(uninitialized_copy_n_for_deque_guard const &) = delete;
-	constexpr ~uninitialized_copy_n_for_deque_guard()
+	constexpr ~uninitialized_copy_n_for_deque_guard() noexcept
 	{
 		if (torecover)
 		{
@@ -1067,6 +1067,7 @@ template <typename Itercontent>
 inline constexpr Itercontent
 deque_copy_impl(Itercontent first, Itercontent last,
 				Itercontent dest, ::std::size_t blocksize)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*dest.curr_ptr = *first.curr_ptr))
 {
 	if (first.curr_ptr == last.curr_ptr)
 	{
@@ -1129,6 +1130,7 @@ template <typename Itercontent>
 inline constexpr Itercontent
 deque_copy_backward_impl(Itercontent first, Itercontent last,
 						 Itercontent dest, ::std::size_t blocksize)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*dest.curr_ptr = *first.curr_ptr))
 {
 	if (first.curr_ptr == last.curr_ptr)
 	{
@@ -1198,6 +1200,8 @@ template <typename Itercontent>
 inline constexpr Itercontent
 deque_relocate_impl(Itercontent first, Itercontent last,
 					Itercontent dest, ::std::size_t blocksize)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(
+		::fast_io::freestanding::uninitialized_relocate_ignore_define(first.curr_ptr, first.curr_ptr, dest.curr_ptr)))
 {
 	if (first.curr_ptr == last.curr_ptr)
 	{
@@ -1260,6 +1264,8 @@ template <typename Itercontent>
 inline constexpr Itercontent
 deque_relocate_backward_impl(Itercontent first, Itercontent last,
 							 Itercontent dest, ::std::size_t blocksize)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(
+		::fast_io::freestanding::uninitialized_relocate_ignore_define(last.curr_ptr, last.curr_ptr, dest.curr_ptr)))
 {
 	if (first.curr_ptr == last.curr_ptr)
 	{
@@ -2157,7 +2163,7 @@ inline constexpr ::fast_io::containers::details::deque_nth_element_result<typena
 }
 
 template <typename T>
-inline constexpr ::std::size_t deque_itercontent_diff_impl(T const &a, T const &b, ::std::size_t block_size)
+inline constexpr ::std::size_t deque_itercontent_diff_impl(T const &a, T const &b, ::std::size_t block_size) noexcept
 {
 	::std::size_t controllerdiff{static_cast<::std::size_t>(a.controller_ptr - b.controller_ptr)};
 	return controllerdiff * block_size + static_cast<::std::size_t>((a.curr_ptr - a.begin_ptr) + (b.begin_ptr - b.curr_ptr));
@@ -2407,7 +2413,7 @@ private:
 		{}
 		inline run_destroy(run_destroy const &) = delete;
 		inline run_destroy &operator=(run_destroy const &) = delete;
-		inline constexpr ~run_destroy()
+		inline constexpr ~run_destroy() noexcept
 		{
 			if (thiscontroller)
 			{
@@ -3025,7 +3031,7 @@ private:
 		}
 		emplace_front_guard(emplace_front_guard const &) = delete;
 		emplace_front_guard &operator=(emplace_front_guard const &) = delete;
-		constexpr ~emplace_front_guard()
+		constexpr ~emplace_front_guard() noexcept
 		{
 			if (this->thisdeq)
 			{
@@ -3833,7 +3839,7 @@ private:
 		deque *thisdeq;
 		iterator retit;
 		::std::int_fast8_t decision;
-		constexpr ~emplace_guard()
+		constexpr ~emplace_guard() noexcept
 		{
 			if (thisdeq) [[unlikely]]
 			{
@@ -3923,7 +3929,7 @@ private:
 		::std::size_t pos;
 		::std::size_t oldsize;
 		::std::int_fast8_t decision;
-		constexpr ~emplace_index_guard()
+		constexpr ~emplace_index_guard() noexcept
 		{
 			if (thisdeq) [[unlikely]]
 			{
@@ -4020,7 +4026,7 @@ private:
 		deque *thisdeq;
 		iterator pos;
 		size_type count;
-		constexpr ~insert_index_guard()
+		constexpr ~insert_index_guard() noexcept
 		{
 			if (thisdeq) [[unlikely]]
 			{

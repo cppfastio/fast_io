@@ -20,7 +20,7 @@ struct basic_concat_buffer
 #if __cpp_constexpr_dynamic_alloc >= 201907L
 		constexpr
 #endif
-		~basic_concat_buffer()
+		~basic_concat_buffer() noexcept
 	{
 		if (buffer_begin != stack_buffer) [[unlikely]]
 		{

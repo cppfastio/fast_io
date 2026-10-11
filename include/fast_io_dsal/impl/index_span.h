@@ -373,6 +373,7 @@ inline constexpr ::fast_io::containers::span<::std::byte> as_writable_bytes(::fa
 template <typename T, ::std::size_t N1, ::std::size_t N2>
 	requires ::std::equality_comparable<T>
 inline constexpr bool operator==(::fast_io::containers::index_span<T, N1> a, ::fast_io::containers::index_span<T, N2> b)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*a.ptr == *b.ptr))
 {
 	if constexpr (N1 != N2)
 	{

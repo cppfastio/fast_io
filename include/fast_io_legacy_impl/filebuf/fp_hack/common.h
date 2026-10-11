@@ -52,7 +52,7 @@ struct filebuf_guard
 	inline filebuf_guard(filebuf_guard const &) = delete;
 	inline filebuf_guard &operator=(filebuf_guard const &) = delete;
 
-	inline ~filebuf_guard()
+	inline ~filebuf_guard() noexcept
 	{
 		delete new_filebuf;
 	}

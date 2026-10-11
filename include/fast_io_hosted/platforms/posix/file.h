@@ -219,7 +219,7 @@ public:
 			::fast_io::details::sys_close_throw_error(this->fd);
 		}
 	}
-	inline ~basic_posix_family_file()
+	inline ~basic_posix_family_file() noexcept
 	{
 		if (this->fd != -1) [[likely]]
 		{

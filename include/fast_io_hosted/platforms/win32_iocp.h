@@ -199,7 +199,7 @@ inline void win32_iocp_rw_deliver(void *self, ::std::size_t transferred,
  * already-associated handle fails with ERROR_INVALID_PARAMETER (87) —
  * benign, the handle rides whichever port it already has.
  */
-inline void win32_iocp_associate(void *port, void *handle) throws
+inline void win32_iocp_associate(void *port, void *handle) FAST_IO_HERBCEPTIONS_THROWS
 {
 	/* IOCP only delivers packets for handles opened with overlapped
 	 * semantics; on a synchronous-mode handle the op completes inline and
@@ -489,7 +489,7 @@ struct win32_iocp_accept_cookie
  * WSAID_ACCEPTEX = {b5367df1-cbac-11cf-95ca-00805f48a192} in the
  * wire-layout byte order GUIDs marshal in.
  */
-inline ::fast_io::win32::acceptex_func win32_iocp_acceptex(::std::size_t listen_sock) throws
+inline ::fast_io::win32::acceptex_func win32_iocp_acceptex(::std::size_t listen_sock) FAST_IO_HERBCEPTIONS_THROWS
 {
 	static constexpr ::std::byte const guid[16]{
 		::std::byte{0xf1}, ::std::byte{0x7d}, ::std::byte{0x36}, ::std::byte{0xb5},
@@ -731,7 +731,7 @@ struct win32_iocp_connect_cookie
  * WSAID_CONNECTEX = {25a207b9-ddf3-4660-8ee9-76e58c74063e} in the
  * wire-layout byte order GUIDs marshal in.
  */
-inline ::fast_io::win32::connectex_func win32_iocp_connectex(::std::size_t sock) throws
+inline ::fast_io::win32::connectex_func win32_iocp_connectex(::std::size_t sock) FAST_IO_HERBCEPTIONS_THROWS
 {
 	static constexpr ::std::byte const guid[16]{
 		::std::byte{0xb9}, ::std::byte{0x07}, ::std::byte{0xa2}, ::std::byte{0x25},
@@ -1076,7 +1076,7 @@ inline void win32_iocp_close_submit(sched_type sched, void *port, void *handle, 
  * A completion carrying no OVERLAPPED (PostQueuedCompletionStatus) is an
  * external wakeup — consumed, nothing dispatched.
  */
-inline void io_async_wait(win32_io_observer port) throws
+inline void io_async_wait(win32_io_observer port) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least32_t transferred{};
 	::std::size_t completionkey{};
@@ -1100,7 +1100,7 @@ inline void io_async_wait(win32_io_observer port) throws
 	}
 }
 
-inline bool io_async_peek(win32_io_observer port) throws
+inline bool io_async_peek(win32_io_observer port) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least32_t transferred{};
 	::std::size_t completionkey{};
@@ -1131,7 +1131,7 @@ inline bool io_async_peek(win32_io_observer port) throws
 }
 
 inline bool io_async_wait_timeout(win32_io_observer port,
-								  ::fast_io::posix_statx_timestamp64 timeout) throws
+								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	/* the port bound is a relative duration here, same as the uring
 	 * backend — convert {sec, nsec} to GQCS milliseconds */

@@ -93,7 +93,7 @@ inline constexpr bool operator!=(list_iterator<T, isconst1> a, list_iterator<T, 
 }
 
 template <typename allocator>
-inline void list_trivially_destroy(void *first, void *last, ::std::size_t sz)
+inline void list_trivially_destroy(void *first, void *last, ::std::size_t sz) noexcept
 {
 	for (void *it{first}; it != last;)
 	{
@@ -105,7 +105,7 @@ inline void list_trivially_destroy(void *first, void *last, ::std::size_t sz)
 
 template <typename allocator>
 inline void list_trivially_destroy_aligned(void *first, void *last,
-										   ::std::size_t align, ::std::size_t sz)
+										   ::std::size_t align, ::std::size_t sz) noexcept
 {
 	for (void *it{first}; it != last;)
 	{
@@ -116,7 +116,7 @@ inline void list_trivially_destroy_aligned(void *first, void *last,
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz>
-inline void list_trivially_destroy_sa(void *first, void *last)
+inline void list_trivially_destroy_sa(void *first, void *last) noexcept
 {
 	if constexpr (align <= allocator::default_alignment)
 	{
@@ -448,7 +448,7 @@ private:
 #endif
 		::std::conditional_t<alloc_with_status, list<T, allocator> *, allocator> v;
 		inline explicit constexpr new_handle_guard(::fast_io::containers::details::list_node<value_type> *p,
-												   list<T, allocator> *va)
+												   list<T, allocator> *va) noexcept
 		{
 			ptr = p;
 			if constexpr (alloc_with_status)
@@ -458,7 +458,7 @@ private:
 		}
 		inline new_handle_guard(new_handle_guard const &) = delete;
 		inline new_handle_guard &operator=(new_handle_guard const &) = delete;
-		inline constexpr ~new_handle_guard()
+		inline constexpr ~new_handle_guard() noexcept
 		{
 			if (ptr == nullptr)
 			{
@@ -481,13 +481,13 @@ private:
 		inline explicit constexpr list_destroyer(list<T, allocator> *pl) noexcept
 			: plst(pl)
 		{}
-		inline constexpr void release()
+		inline constexpr void release() noexcept
 		{
 			plst = nullptr;
 		}
 		inline list_destroyer(list_destroyer const &) = delete;
 		inline list_destroyer &operator=(list_destroyer const &) = delete;
-		inline constexpr ~list_destroyer()
+		inline constexpr ~list_destroyer() noexcept
 		{
 			if (plst == nullptr)
 			{
@@ -1087,7 +1087,7 @@ public:
 		this->sort(first, last, ::std::ranges::less{});
 	}
 
-	inline constexpr ~list()
+	inline constexpr ~list() noexcept
 	{
 		this->destroy();
 	}

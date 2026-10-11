@@ -221,6 +221,8 @@ template <c_family family, ::std::integral ch_type>
 		redirect_handle(static_cast<basic_posix_io_observer<ch_type>>(h));
 	}
 inline decltype(auto) redirect_handle(basic_c_family_io_observer<family, ch_type> h)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(
+		redirect_handle(static_cast<basic_posix_io_observer<ch_type>>(h))))
 {
 	return redirect_handle(static_cast<basic_posix_io_observer<ch_type>>(h));
 }

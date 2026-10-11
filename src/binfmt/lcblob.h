@@ -17,6 +17,7 @@
 
 #include "compile.h"
 #include <fast_io_i18n.h>
+#include <fast_io_dsal/impl/misc/push_macros.h>
 
 namespace fast_io_i18n
 {
@@ -59,7 +60,7 @@ enum class slot_tag : ::std::uint_least8_t
 enum class src_lang : ::std::uint_least8_t
 {
 	none = 0,
-	pct_time = 1,	 // strict strftime directives
+	pct_time = 1,    // strict strftime directives
 	pct_generic = 2, // generic %-letters (name_fmt, postal_fmt, tel_*)
 };
 
@@ -76,96 +77,159 @@ struct field_def
 
 inline constexpr ::std::size_t szf{0};
 
-#define LC_S(name_)                                                                                                    \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::string, {}                                                            \
+#define LC_S(name_)                                      \
+	{                                                    \
+		name_, ::fast_io_i18n::lcblob::slot_tag::string, \
+		{}                                               \
 	}
-#define LC_SL(name_)                                                                                                   \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::strlist, {}                                                           \
+#define LC_SL(name_)                                      \
+	{                                                     \
+		name_, ::fast_io_i18n::lcblob::slot_tag::strlist, \
+		{}                                                \
 	}
-#define LC_I(name_)                                                                                                    \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::integer, {}                                                           \
+#define LC_I(name_)                                       \
+	{                                                     \
+		name_, ::fast_io_i18n::lcblob::slot_tag::integer, \
+		{}                                                \
 	}
-#define LC_B(name_)                                                                                                    \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::bytes, {}                                                             \
+#define LC_B(name_)                                     \
+	{                                                   \
+		name_, ::fast_io_i18n::lcblob::slot_tag::bytes, \
+		{}                                              \
 	}
-#define LC_PT(name_)                                                                                                   \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::program,                                                              \
-			::fast_io_i18n::lcblob::src_lang::pct_time                                                                 \
+#define LC_PT(name_)                                      \
+	{                                                     \
+		name_, ::fast_io_i18n::lcblob::slot_tag::program, \
+		::fast_io_i18n::lcblob::src_lang::pct_time}
+#define LC_PG(name_)                                      \
+	{                                                     \
+		name_, ::fast_io_i18n::lcblob::slot_tag::program, \
+		::fast_io_i18n::lcblob::src_lang::pct_generic}
+#define LC_I3(name_)                                   \
+	{                                                  \
+		name_, ::fast_io_i18n::lcblob::slot_tag::int3, \
+		{}                                             \
 	}
-#define LC_PG(name_)                                                                                                   \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::program,                                                              \
-			::fast_io_i18n::lcblob::src_lang::pct_generic                                                              \
-	}
-#define LC_I3(name_)                                                                                                   \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::int3, {}                                                              \
-	}
-#define LC_EL(name_)                                                                                                   \
-	{                                                                                                                  \
-		name_, ::fast_io_i18n::lcblob::slot_tag::eralist, {}                                                           \
+#define LC_EL(name_)                                      \
+	{                                                     \
+		name_, ::fast_io_i18n::lcblob::slot_tag::eralist, \
+		{}                                                \
 	}
 
 // schema field order == file-struct member order in every category
 inline constexpr ::fast_io_i18n::lcblob::field_def identification_fields[]{
-	LC_S("title"), LC_S("source"), LC_S("address"), LC_S("contact"),
-	LC_S("email"), LC_S("tel"), LC_S("fax"), LC_S("language"),
-	LC_S("territory"), LC_S("audience"), LC_S("application"),
-	LC_S("abbreviation"), LC_S("revision"), LC_S("date"),
+	LC_S("title"),
+	LC_S("source"),
+	LC_S("address"),
+	LC_S("contact"),
+	LC_S("email"),
+	LC_S("tel"),
+	LC_S("fax"),
+	LC_S("language"),
+	LC_S("territory"),
+	LC_S("audience"),
+	LC_S("application"),
+	LC_S("abbreviation"),
+	LC_S("revision"),
+	LC_S("date"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def monetary_fields[]{
-	LC_S("int_curr_symbol"), LC_S("currency_symbol"), LC_S("mon_decimal_point"),
-	LC_S("mon_thousands_sep"), LC_B("mon_grouping"), LC_S("positive_sign"),
-	LC_S("negative_sign"), LC_I("int_frac_digits"), LC_I("frac_digits"),
-	LC_I("p_cs_precedes"), LC_I("p_sep_by_space"), LC_I("n_cs_precedes"),
-	LC_I("n_sep_by_space"), LC_I("int_p_cs_precedes"), LC_I("int_p_sep_by_space"),
-	LC_I("int_n_cs_precedes"), LC_I("int_n_sep_by_space"), LC_I("p_sign_posn"),
-	LC_I("n_sign_posn"), LC_I("int_p_sign_posn"), LC_I("int_n_sign_posn"),
+	LC_S("int_curr_symbol"),
+	LC_S("currency_symbol"),
+	LC_S("mon_decimal_point"),
+	LC_S("mon_thousands_sep"),
+	LC_B("mon_grouping"),
+	LC_S("positive_sign"),
+	LC_S("negative_sign"),
+	LC_I("int_frac_digits"),
+	LC_I("frac_digits"),
+	LC_I("p_cs_precedes"),
+	LC_I("p_sep_by_space"),
+	LC_I("n_cs_precedes"),
+	LC_I("n_sep_by_space"),
+	LC_I("int_p_cs_precedes"),
+	LC_I("int_p_sep_by_space"),
+	LC_I("int_n_cs_precedes"),
+	LC_I("int_n_sep_by_space"),
+	LC_I("p_sign_posn"),
+	LC_I("n_sign_posn"),
+	LC_I("int_p_sign_posn"),
+	LC_I("int_n_sign_posn"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def numeric_fields[]{
-	LC_S("decimal_point"), LC_S("thousands_sep"), LC_B("grouping"),
+	LC_S("decimal_point"),
+	LC_S("thousands_sep"),
+	LC_B("grouping"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def time_fields[]{
-	LC_SL("abday"), LC_SL("day"), LC_SL("abmon"), LC_SL("ab_alt_mon"),
-	LC_SL("mon"), LC_SL("alt_mon"), LC_PT("d_t_fmt"), LC_PT("d_fmt"), LC_PT("t_fmt"),
-	LC_PT("t_fmt_ampm"), LC_PT("date_fmt"), LC_SL("am_pm"),
-	LC_EL("era"), LC_PT("era_d_fmt"), LC_PT("era_d_t_fmt"),
-	LC_PT("era_t_fmt"), LC_SL("alt_digits"), LC_I3("week"),
-	LC_I("first_weekday"), LC_I("first_workday"), LC_I("cal_direction"),
+	LC_SL("abday"),
+	LC_SL("day"),
+	LC_SL("abmon"),
+	LC_SL("ab_alt_mon"),
+	LC_SL("mon"),
+	LC_SL("alt_mon"),
+	LC_PT("d_t_fmt"),
+	LC_PT("d_fmt"),
+	LC_PT("t_fmt"),
+	LC_PT("t_fmt_ampm"),
+	LC_PT("date_fmt"),
+	LC_SL("am_pm"),
+	LC_EL("era"),
+	LC_PT("era_d_fmt"),
+	LC_PT("era_d_t_fmt"),
+	LC_PT("era_t_fmt"),
+	LC_SL("alt_digits"),
+	LC_I3("week"),
+	LC_I("first_weekday"),
+	LC_I("first_workday"),
+	LC_I("cal_direction"),
 	LC_SL("timezone"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def messages_fields[]{
-	LC_S("yesexpr"), LC_S("noexpr"), LC_S("yesstr"), LC_S("nostr"),
+	LC_S("yesexpr"),
+	LC_S("noexpr"),
+	LC_S("yesstr"),
+	LC_S("nostr"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def paper_fields[]{
-	LC_I("height"), LC_I("width"),
+	LC_I("height"),
+	LC_I("width"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def telephone_fields[]{
-	LC_PG("tel_int_fmt"), LC_PG("tel_dom_fmt"), LC_S("int_select"),
+	LC_PG("tel_int_fmt"),
+	LC_PG("tel_dom_fmt"),
+	LC_S("int_select"),
 	LC_S("int_prefix"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def name_fields[]{
-	LC_PG("name_fmt"), LC_S("name_gen"), LC_S("name_miss"),
-	LC_S("name_mr"), LC_S("name_mrs"), LC_S("name_ms"),
+	LC_PG("name_fmt"),
+	LC_S("name_gen"),
+	LC_S("name_miss"),
+	LC_S("name_mr"),
+	LC_S("name_mrs"),
+	LC_S("name_ms"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def address_fields[]{
-	LC_PG("postal_fmt"), LC_S("country_name"), LC_S("country_post"),
-	LC_S("country_ab2"), LC_S("country_ab3"), LC_I("country_num"),
-	LC_S("country_car"), LC_S("country_isbn"), LC_S("lang_name"),
-	LC_S("lang_ab"), LC_S("lang_term"), LC_S("lang_lib"),
+	LC_PG("postal_fmt"),
+	LC_S("country_name"),
+	LC_S("country_post"),
+	LC_S("country_ab2"),
+	LC_S("country_ab3"),
+	LC_I("country_num"),
+	LC_S("country_car"),
+	LC_S("country_isbn"),
+	LC_S("lang_name"),
+	LC_S("lang_ab"),
+	LC_S("lang_term"),
+	LC_S("lang_lib"),
 };
 
 inline constexpr ::fast_io_i18n::lcblob::field_def measurement_fields[]{
@@ -241,7 +305,7 @@ inline constexpr ::fast_io::u8string_view blob_charset_name(blob_charset cs) noe
 }
 
 // u8 source -> section payload bytes
-inline ::fast_io::string transcode(::std::u8string_view sv, blob_charset cs) throws
+inline ::fast_io::string transcode(::std::u8string_view sv, blob_charset cs) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::string out;
 	switch (cs)
@@ -255,8 +319,8 @@ inline ::fast_io::string transcode(::std::u8string_view sv, blob_charset cs) thr
 		::fast_io::u16ostring_ref_fast_io ref{__builtin_addressof(u16)};
 		::fast_io::print(
 			ref, ::fast_io::mnp::code_cvt<::fast_io::encoding_scheme::utf_le,
-						      ::fast_io::encoding_scheme::utf_le>(
-				 ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
+										  ::fast_io::encoding_scheme::utf_le>(
+					 ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
 		out.append(reinterpret_cast<char const *>(u16.data()), u16.size() * 2);
 		return out;
 	}
@@ -266,8 +330,8 @@ inline ::fast_io::string transcode(::std::u8string_view sv, blob_charset cs) thr
 		::fast_io::u32ostring_ref_fast_io ref{__builtin_addressof(u32)};
 		::fast_io::print(
 			ref, ::fast_io::mnp::code_cvt<::fast_io::encoding_scheme::utf_le,
-						      ::fast_io::encoding_scheme::utf_le>(
-				 ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
+										  ::fast_io::encoding_scheme::utf_le>(
+					 ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
 		out.append(reinterpret_cast<char const *>(u32.data()), u32.size() * 4);
 		return out;
 	}
@@ -276,8 +340,8 @@ inline ::fast_io::string transcode(::std::u8string_view sv, blob_charset cs) thr
 		::fast_io::ostring_ref_fast_io oref{__builtin_addressof(out)};
 		::fast_io::print(
 			oref, ::fast_io::mnp::code_cvt<::fast_io::encoding_scheme::utf_le,
-					       ::fast_io::encoding_scheme::gb18030>(
-				  ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
+										   ::fast_io::encoding_scheme::gb18030>(
+					  ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
 		return out;
 	}
 	default: // utf_ebcdic — a byte transform of the utf8 form
@@ -285,8 +349,8 @@ inline ::fast_io::string transcode(::std::u8string_view sv, blob_charset cs) thr
 		::fast_io::ostring_ref_fast_io oref{__builtin_addressof(out)};
 		::fast_io::print(
 			oref, ::fast_io::mnp::code_cvt<::fast_io::encoding_scheme::utf_le,
-					       ::fast_io::encoding_scheme::utf_ebcdic>(
-				  ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
+										   ::fast_io::encoding_scheme::utf_ebcdic>(
+					  ::fast_io::basic_io_scatter_t<char8_t>{sv.data(), sv.size()}));
 		return out;
 	}
 	}
@@ -301,23 +365,23 @@ namespace details
 {
 
 inline void transcode_nodes(::fast_io_i18n::binfmt::reader &r,
-			    ::fast_io_i18n::binfmt::encoder &out, blob_charset cs,
-			    unsigned depth) throws;
+							::fast_io_i18n::binfmt::encoder &out, blob_charset cs,
+							unsigned depth) FAST_IO_HERBCEPTIONS_THROWS;
 
 // copy a node whose tag was just read, byte-identical [start, cur)
 inline void copy_node_tail(::fast_io_i18n::binfmt::reader &r, char8_t const *start,
-			   ::fast_io_i18n::binfmt::node_head h,
-			   ::fast_io_i18n::binfmt::encoder &out) throws
+						   ::fast_io_i18n::binfmt::node_head h,
+						   ::fast_io_i18n::binfmt::encoder &out) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io_i18n::binfmt::skip_payload(r, h);
 	out.buf.append(reinterpret_cast<char const *>(start),
-		       static_cast<::std::size_t>(r.cur() - start));
+				   static_cast<::std::size_t>(r.cur() - start));
 }
 
 inline void transcode_field_children(::std::uint_least64_t nchildren,
-				     ::fast_io_i18n::binfmt::reader &r,
-				     ::fast_io_i18n::binfmt::encoder &out,
-				     blob_charset cs, unsigned depth) throws
+									 ::fast_io_i18n::binfmt::reader &r,
+									 ::fast_io_i18n::binfmt::encoder &out,
+									 blob_charset cs, unsigned depth) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using namespace ::fast_io_i18n::binfmt;
 	for (::std::uint_least64_t k{}; k < nchildren; ++k)
@@ -326,7 +390,7 @@ inline void transcode_field_children(::std::uint_least64_t nchildren,
 		node_head h;
 		next_tag(r, h);
 		if (h.kind == kind_bytes &&
-		    h.code == static_cast<::std::uint_least32_t>(field_param::fill))
+			h.code == static_cast<::std::uint_least32_t>(field_param::fill))
 		{
 			::std::uint_least64_t n{};
 			r.get_leb(n);
@@ -336,8 +400,8 @@ inline void transcode_field_children(::std::uint_least64_t nchildren,
 			out.node_bytes(h.code, {tb.data(), tb.size()});
 		}
 		else if (h.kind == kind_bytes &&
-			 (h.code == static_cast<::std::uint_least32_t>(field_param::chrono) ||
-			  h.code == static_cast<::std::uint_least32_t>(field_param::element)))
+				 (h.code == static_cast<::std::uint_least32_t>(field_param::chrono) ||
+				  h.code == static_cast<::std::uint_least32_t>(field_param::element)))
 		{
 			::std::uint_least64_t n{};
 			r.get_leb(n);
@@ -347,7 +411,7 @@ inline void transcode_field_children(::std::uint_least64_t nchildren,
 			encoder subout;
 			transcode_nodes(sub, subout, cs, depth + 1);
 			out.node_bytes(h.code,
-				       ::std::string_view{subout.buf.data(), subout.buf.size()});
+						   ::std::string_view{subout.buf.data(), subout.buf.size()});
 		}
 		else
 		{
@@ -357,13 +421,13 @@ inline void transcode_field_children(::std::uint_least64_t nchildren,
 }
 
 inline void transcode_nodes(::fast_io_i18n::binfmt::reader &r,
-			    ::fast_io_i18n::binfmt::encoder &out, blob_charset cs,
-			    unsigned depth) throws
+							::fast_io_i18n::binfmt::encoder &out, blob_charset cs,
+							unsigned depth) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using namespace ::fast_io_i18n::binfmt;
 	if (depth > 8)
 	{
-		throw throws ::std::errc::invalid_argument;
+		throw throws::std::errc::invalid_argument;
 	}
 	while (!r.empty())
 	{
@@ -401,7 +465,7 @@ inline void transcode_nodes(::fast_io_i18n::binfmt::reader &r,
 
 // transcode every text payload of a compiled program into charset cs
 inline ::fast_io::string transcode_program(::std::string_view prog,
-					   blob_charset cs) throws
+										   blob_charset cs) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (cs == blob_charset::utf8)
 	{
@@ -531,7 +595,7 @@ struct sec_build
 	{
 		return static_cast<::std::uint_least32_t>(pool.size());
 	}
-	inline ::std::uint_least32_t intern(::fast_io::string const &bytes) throws
+	inline ::std::uint_least32_t intern(::fast_io::string const &bytes) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto const rva{here()};
 		pool.append(bytes.data(), bytes.size());
@@ -541,7 +605,7 @@ struct sec_build
 	// the pool's file base. fix_img stores BYTE OFFSETS into img, not
 	// pointers: the object must survive being moved into secs[].
 	template <typename T>
-	inline void rva(::fast_io::l10n::lc_rva<T> &m, ::std::uint_least32_t off) throws
+	inline void rva(::fast_io::l10n::lc_rva<T> &m, ::std::uint_least32_t off) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		m.off = details::le32(off);
 		fix_img.push_back(static_cast<::std::uint_least32_t>(
@@ -551,7 +615,7 @@ struct sec_build
 	// scatter member: rva + element count (no fixup on len)
 	template <typename T>
 	inline void scatter(::fast_io::l10n::lc_scatter<T> &m, ::std::uint_least32_t off,
-						::std::uint_least32_t len) throws
+						::std::uint_least32_t len) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		rva(m.ref, off);
 		m.len = details::le32(len);
@@ -564,7 +628,7 @@ struct sec_build
 				static_cast<::std::int_least32_t>(v))));
 	}
 	// a pool-internal rva slot (strref tables, era recs) — appended LE
-	inline void pool_rva(::std::uint_least32_t off) throws
+	inline void pool_rva(::std::uint_least32_t off) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		fix_pool.push_back(here());
 		details::put_u32(pool, off);
@@ -592,7 +656,8 @@ namespace details
 // byte size of one char unit in a section's payload charset
 inline constexpr ::std::size_t cs_units(blob_charset cs) noexcept
 {
-	return cs == blob_charset::utf16 ? 2 : cs == blob_charset::utf32 ? 4 : 1;
+	return cs == blob_charset::utf16 ? 2 : cs == blob_charset::utf32 ? 4
+																	 : 1;
 }
 
 // member of the section image by byte offset
@@ -605,7 +670,7 @@ inline M *mem_at(void *img, ::std::uint_least32_t off) noexcept
 // text member <- transcoded string; len is in section char units
 inline void sec_string(::fast_io::l10n::lc_scatter<char> &m,
 					   ::std::u8string_view sv, sec_build &b, blob_charset cs,
-					   ::std::size_t units) throws
+					   ::std::size_t units) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (sv.empty())
 	{
@@ -620,7 +685,7 @@ inline void sec_string(::fast_io::l10n::lc_scatter<char> &m,
 inline void sec_strs(::fast_io::l10n::lc_scatter<char> *arr,
 					 ::std::size_t cap,
 					 ::fast_io::vector<::std::u8string_view> const &strs,
-					 sec_build &b, blob_charset cs, ::std::size_t units) throws
+					 sec_build &b, blob_charset cs, ::std::size_t units) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (::std::size_t i{}; i < cap && i < strs.size(); ++i)
 	{
@@ -632,7 +697,7 @@ inline void sec_strs(::fast_io::l10n::lc_scatter<char> *arr,
 inline void sec_strlist(
 	::fast_io::l10n::lc_scatter<::fast_io::l10n::lc_scatter<char>> &m,
 	::fast_io::vector<::std::u8string_view> const &strs, sec_build &b,
-	blob_charset cs, ::std::size_t units) throws
+	blob_charset cs, ::std::size_t units) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (strs.empty())
 	{
@@ -662,7 +727,7 @@ inline void sec_program(::fast_io::l10n::lc_scatter<char8_t> &m,
 						::std::u8string_view fmt_src, src_lang lang, sec_build &b,
 						blob_charset cs,
 						::fast_io_i18n::binfmt::src_ctx ctx,
-						char const *fname) throws
+						char const *fname) FAST_IO_HERBCEPTIONS_THROWS
 {
 	try
 	{
@@ -682,7 +747,7 @@ inline void sec_program(::fast_io::l10n::lc_scatter<char8_t> &m,
 // raw byte list member (grouping)
 inline void sec_bytes(::fast_io::l10n::lc_scatter<char8_t> &m,
 					  ::fast_io::vector<::std::int_least64_t> const &ints,
-					  sec_build &b) throws
+					  sec_build &b) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (ints.empty())
 	{
@@ -703,7 +768,7 @@ inline void sec_bytes(::fast_io::l10n::lc_scatter<char8_t> &m,
 inline void sec_era(
 	::fast_io::l10n::lc_scatter<::fast_io::l10n::basic_lc_time_era<char>> &m,
 	::fast_io::vector<era_src> const &eras, sec_build &b, blob_charset cs,
-	::std::size_t units, ::fast_io_i18n::binfmt::src_ctx ctx) throws
+	::std::size_t units, ::fast_io_i18n::binfmt::src_ctx ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (eras.empty())
 	{
@@ -892,18 +957,13 @@ struct cat_map
 };
 
 constexpr cat_map cat_maps[cat_count]{
-	{identification_off, zero_aux}, {monetary_off, zero_aux},
-	{numeric_off, zero_aux},		{time_off, time_aux},
-	{messages_off, zero_aux},		{paper_off, zero_aux},
-	{telephone_off, zero_aux},		{name_off, zero_aux},
-	{address_off, zero_aux},		{measurement_off, zero_aux},
-	{keyboard_off, zero_aux}};
+	{identification_off, zero_aux}, {monetary_off, zero_aux}, {numeric_off, zero_aux}, {time_off, time_aux}, {messages_off, zero_aux}, {paper_off, zero_aux}, {telephone_off, zero_aux}, {name_off, zero_aux}, {address_off, zero_aux}, {measurement_off, zero_aux}, {keyboard_off, zero_aux}};
 
 // fill one category's members in the section image
 inline void fill_cat(void *img, cat_map const &m, cat_schema const &sch,
 					 cat_src const &cat, sec_build &b, blob_charset cs,
 					 ::std::size_t units,
-					 ::fast_io_i18n::binfmt::src_ctx ctx) throws
+					 ::fast_io_i18n::binfmt::src_ctx ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (::std::size_t f{}; f < sch.fields.size(); ++f)
 	{
@@ -944,7 +1004,7 @@ inline void fill_cat(void *img, cat_map const &m, cat_schema const &sch,
 			break;
 		case slot_tag::eralist:
 			sec_era(*mem_at<::fast_io::l10n::lc_scatter<
-							::fast_io::l10n::basic_lc_time_era<char>>>(img, off),
+						::fast_io::l10n::basic_lc_time_era<char>>>(img, off),
 					s.eras, b, cs, units, ctx);
 			break;
 		case slot_tag::integer:
@@ -970,7 +1030,7 @@ inline void fill_cat(void *img, cat_map const &m, cat_schema const &sch,
 inline sec_build build_section(cat_src const cats[cat_count],
 							   ::std::u8string_view name,
 							   ::std::u8string_view encname, blob_charset cs,
-							   ::std::string_view file_ctx) throws
+							   ::std::string_view file_ctx) FAST_IO_HERBCEPTIONS_THROWS
 {
 	sec_build b;
 	auto const units{details::cs_units(cs)};
@@ -999,8 +1059,8 @@ inline sec_build build_section(cat_src const cats[cat_count],
 // ---------------------------------------------------------------------------
 
 inline ::fast_io::string build_container(sec_build (&secs)[4], bool charset_is_utf8,
-									   ::std::u8string_view name,
-									   ::std::uint_least32_t codeset) throws
+										 ::std::u8string_view name,
+										 ::std::uint_least32_t codeset) FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr ::std::uint_least32_t img_size{
 		sizeof(::fast_io::l10n::basic_lc_all<char>)};
@@ -1050,3 +1110,5 @@ inline ::fast_io::string build_container(sec_build (&secs)[4], bool charset_is_u
 
 } // namespace lcblob
 } // namespace fast_io_i18n
+
+#include <fast_io_dsal/impl/misc/pop_macros.h>

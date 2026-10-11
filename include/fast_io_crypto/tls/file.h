@@ -47,6 +47,7 @@ struct basic_tls
 	}
 
 	inline explicit constexpr basic_tls(allocator_handle_type hdl)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(socket_type{}) || !noexcept(client_type{socket, hdl}))
 		requires(alloc_with_status && ::std::is_default_constructible_v<socket_type>)
 		: socket(), client{socket, hdl}
 	{

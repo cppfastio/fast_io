@@ -51,7 +51,7 @@ struct async_output_stream_flush_awaiter : async_awaiter_result<void>
 			::fast_io::details::async_awaiter_callback<void>{this});
 		return this->async_suspend_done();
 	}
-	inline constexpr void await_resume() throws
+	inline constexpr void await_resume() FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->err.domain != nullptr)
 		{

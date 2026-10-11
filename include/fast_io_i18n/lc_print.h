@@ -202,6 +202,8 @@ template <::std::integral char_type, typename sink>
 inline constexpr void lc_dump_era_date(sink &sk, ::std::int_least32_t y,
 									   ::std::int_least32_t mo,
 									   ::std::int_least32_t d)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(sk.put(char_type{})) ||
+								   !noexcept(lc_put_num<char_type>(sk, y, 0, 0)))
 {
 	constexpr ::std::int_least32_t mx{::std::numeric_limits<::std::int_least32_t>::max()};
 	constexpr ::std::int_least32_t mn{::std::numeric_limits<::std::int_least32_t>::min()};

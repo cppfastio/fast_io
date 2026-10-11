@@ -27,7 +27,7 @@ struct compare_three_way
 template <typename I1, typename I2, typename Cmp>
 constexpr auto lexicographical_compare_three_way(I1 f1, I1 l1, I2 f2, I2 l2, Cmp comp)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(comp(*f1, *f2)))
-	-> decltype(comp(*f1, *f2))
+		-> decltype(comp(*f1, *f2))
 {
 	using ret_t = decltype(comp(*f1, *f2));
 	static_assert(::std::disjunction_v<
@@ -72,7 +72,7 @@ using ::std::copy_backward;
 using ::std::move_backward;
 using ::std::fill;
 using ::std::fill_n;
-}
+} // namespace fast_io::freestanding
 
 #else
 namespace fast_io::freestanding
@@ -235,6 +235,7 @@ template <::std::input_iterator Iter, ::std::integral T>
 // requires (::std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(::std::uintmax_t))
 	requires(::std::is_trivially_copyable_v<T>)
 inline constexpr Iter find(Iter first, Iter last, T t)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == t))
 {
 	for (; first != last; ++first)
 	{
@@ -272,6 +273,7 @@ struct mismatch_result
 
 template <::std::input_iterator Iter, ::std::input_iterator Iter2>
 inline constexpr mismatch_result<Iter, Iter2> my_mismatch(Iter first1, Iter last1, Iter2 first2, Iter2 last2)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first1 == *first2))
 {
 	for (; first1 != last1 && first2 != last2 && *first1 == *first2; ++first2)
 	{
@@ -282,6 +284,8 @@ inline constexpr mismatch_result<Iter, Iter2> my_mismatch(Iter first1, Iter last
 template <::std::forward_iterator ForwardIt, class T>
 	requires(::std::is_trivially_copyable_v<T>)
 inline constexpr ForwardIt remove(ForwardIt first, ForwardIt last, T value)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == value) ||
+								   !noexcept(*first = ::std::move(*first)))
 {
 	first = find(first, last, value);
 	if (first != last)
@@ -306,6 +310,7 @@ template <::std::random_access_iterator input_iter, ::std::random_access_iterato
 			 (::std::is_trivially_copyable_v<::std::iter_value_t<input_iter>> &&
 			  ::std::is_trivially_copyable_v<::std::iter_value_t<output_iter>>))
 inline constexpr output_iter overlapped_copy_trivial(input_iter first, ::std::size_t n, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(result[0] = ::std::move(first[0])))
 {
 	::fast_io::details::overlapped_copy_buffer_ptr<::std::iter_value_t<output_iter>> tempbuffer(n);
 	auto tempbufferptr{tempbuffer.ptr};
@@ -397,6 +402,7 @@ inline
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size_t count, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 
 	if (__builtin_is_constant_evaluated())
@@ -429,6 +435,7 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter last, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -463,6 +470,7 @@ template <::std::contiguous_iterator input_iter, ::std::contiguous_iterator outp
 	requires(::std::same_as<::std::iter_value_t<input_iter>, ::std::iter_value_t<output_iter>> &&
 			 ::std::is_trivially_copyable_v<::std::iter_value_t<input_iter>>)
 inline constexpr output_iter overlapped_copy(input_iter first, input_iter last, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(result[0] = ::std::move(first[0])))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -513,6 +521,7 @@ template <::std::contiguous_iterator input_iter, ::std::contiguous_iterator outp
 	requires(::std::same_as<::std::iter_value_t<input_iter>, ::std::iter_value_t<output_iter>> &&
 			 ::std::is_trivially_copyable_v<::std::iter_value_t<input_iter>>)
 inline output_iter overlapped_copy_n(input_iter first, ::std::size_t count, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(result[0] = ::std::move(first[0])))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -551,6 +560,7 @@ inline output_iter overlapped_copy_n(input_iter first, ::std::size_t count, outp
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy_n(input_iter first, ::std::size_t count, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -583,6 +593,7 @@ inline constexpr output_iter my_copy_n(input_iter first, ::std::size_t count, ou
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy(input_iter first, input_iter second, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 	using input_value_type = ::std::iter_value_t<input_iter>;
 	using output_value_type = ::std::iter_value_t<output_iter>;
@@ -605,6 +616,7 @@ inline constexpr output_iter my_copy(input_iter first, input_iter second, output
 
 template <::std::bidirectional_iterator input_iter, ::std::bidirectional_iterator output_iter>
 inline constexpr output_iter my_copy_backward(input_iter first, input_iter last, output_iter d_last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*d_last = *last))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -681,6 +693,7 @@ inline constexpr bool my_compare_iter_n(input_iter first, ::std::size_t n, outpu
 
 template <::std::input_iterator InputIt1, ::std::input_iterator InputIt2>
 inline constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first1 < *first2))
 {
 	for (; (first1 != last1) && (first2 != last2); ++first2)
 	{
@@ -710,6 +723,7 @@ inline constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, In
 
 template <::std::forward_iterator ForwardIt, class T, class Compare>
 inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const &value, Compare comp)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(comp(*first, value)))
 {
 	ForwardIt it;
 	typename ::std::iterator_traits<ForwardIt>::difference_type count, step;
@@ -854,7 +868,7 @@ inline constexpr NoThrowForwardIt
 uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(
 		!::std::is_nothrow_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type, decltype(::std::move(*first))>) // undefined if
-																																	   // throws
+																																		  // throws
 {
 	using T = typename ::std::iterator_traits<NoThrowForwardIt>::value_type;
 	using input_iter = InputIt;
@@ -1025,6 +1039,7 @@ rotate(ForwardIt first, ForwardIt middle, ForwardIt last)
 
 template <::std::bidirectional_iterator BidIt1, typename T>
 inline constexpr BidIt1 find_not(BidIt1 first, BidIt1 last, T const &val)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == val))
 {
 	for (; first != last && *first == val; ++first)
 	{
@@ -1034,6 +1049,7 @@ inline constexpr BidIt1 find_not(BidIt1 first, BidIt1 last, T const &val)
 
 template <::std::bidirectional_iterator BidIt1, typename T>
 inline constexpr BidIt1 find_last(BidIt1 first, BidIt1 last, T const &val)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == val))
 {
 	for (auto it = last; it != first;)
 	{
@@ -1048,6 +1064,7 @@ inline constexpr BidIt1 find_last(BidIt1 first, BidIt1 last, T const &val)
 
 template <::std::bidirectional_iterator BidIt1, typename T>
 inline constexpr BidIt1 find_last_not(BidIt1 first, BidIt1 last, T const &val)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first != val))
 {
 	for (auto it = last; it != first;)
 	{
@@ -1062,6 +1079,7 @@ inline constexpr BidIt1 find_last_not(BidIt1 first, BidIt1 last, T const &val)
 
 template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
 inline constexpr BidIt1 find_first_not_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*sfirst != *first))
 {
 	for (; first != last; ++first)
 	{
@@ -1079,6 +1097,7 @@ inline constexpr BidIt1 find_first_not_of(BidIt1 first, BidIt1 last, BidIt2 sfir
 
 template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
 inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == *sfirst))
 {
 	for (auto it = last; first != it;)
 	{
@@ -1096,6 +1115,7 @@ inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, B
 
 template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
 inline constexpr BidIt1 find_last_not_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*sfirst != *first))
 {
 	for (auto it = last; first != it;)
 	{

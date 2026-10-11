@@ -1955,12 +1955,14 @@ inline constexpr char_type const *find_lf_simd_impl(char_type const *, char_type
 
 template <bool ishtml, bool findnot, ::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
-inline constexpr Iter find_space_impl(Iter, Iter);
+inline constexpr Iter find_space_impl(Iter first, Iter last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first));
 } // namespace details
 
 template <::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_lf(Iter first, Iter last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first))
 {
 	using char_type = ::std::iter_value_t<Iter>;
 	if constexpr (::std::contiguous_iterator<Iter>)
@@ -1977,6 +1979,7 @@ inline constexpr Iter find_lf(Iter first, Iter last)
 template <::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_none_c_space(Iter begin, Iter end)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*begin))
 {
 	return ::fast_io::details::find_space_impl<false, true>(begin, end);
 }
@@ -1984,6 +1987,7 @@ inline constexpr Iter find_none_c_space(Iter begin, Iter end)
 template <::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_c_space(Iter begin, Iter end)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*begin))
 {
 	return ::fast_io::details::find_space_impl<false, false>(begin, end);
 }
@@ -1991,6 +1995,7 @@ inline constexpr Iter find_c_space(Iter begin, Iter end)
 template <::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_none_html_whitespace(Iter begin, Iter end)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*begin))
 {
 	return ::fast_io::details::find_space_impl<true, true>(begin, end);
 }
@@ -1998,6 +2003,7 @@ inline constexpr Iter find_none_html_whitespace(Iter begin, Iter end)
 template <::std::forward_iterator Iter>
 	requires(::std::integral<::std::iter_value_t<Iter>>)
 inline constexpr Iter find_html_whitespace(Iter begin, Iter end)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*begin))
 {
 	return ::fast_io::details::find_space_impl<true, false>(begin, end);
 }

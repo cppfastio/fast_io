@@ -10,7 +10,7 @@ public:
 	using char_type = ch_type;
 	using output_char_type = char_type;
 	char_type *begin_ptr{}, *curr_ptr{}, *end_ptr{};
-	inline constexpr basic_omemory_map() = default;
+	inline constexpr basic_omemory_map() noexcept = default;
 	inline constexpr basic_omemory_map(native_memory_map_file const &iob, ::std::size_t offset = 0)
 		FAST_IO_HERBCEPTIONS_THROWS
 		: begin_ptr(reinterpret_cast<char_type *>(iob.address_begin + offset)),
@@ -101,7 +101,7 @@ public:
 	using char_type = ch_type;
 	using input_char_type = char_type;
 	char_type *begin_ptr{}, *curr_ptr{}, *end_ptr{};
-	inline constexpr basic_imemory_map() = default;
+	inline constexpr basic_imemory_map() noexcept = default;
 	inline constexpr basic_imemory_map(native_memory_map_file const &iob, ::std::size_t offset = 0)
 		FAST_IO_HERBCEPTIONS_THROWS
 		: begin_ptr(reinterpret_cast<char_type *>(iob.address_begin + offset)),

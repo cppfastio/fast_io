@@ -142,12 +142,12 @@ public:
 			struct delete_guard
 			{
 				native_handle_type &fbr;
-				delete_guard(native_handle_type &fb)
+				delete_guard(native_handle_type &fb) noexcept
 					: fbr(fb)
 				{}
 				delete_guard(delete_guard const &) = delete;
 				delete_guard &operator=(delete_guard const &) = delete;
-				~delete_guard()
+				~delete_guard() noexcept
 				{
 					delete fbr;
 					fbr = nullptr;
@@ -165,7 +165,7 @@ public:
 		delete this->fb;
 		this->fb = fb;
 	}
-	inline ~basic_filebuf_file()
+	inline ~basic_filebuf_file() noexcept
 	{
 		delete this->fb;
 	}

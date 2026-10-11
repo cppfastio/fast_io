@@ -359,13 +359,13 @@ inline constexpr ::std::default_sentinel_t end(basic_http_line_generator<char_ty
 }
 
 template <::std::integral char_type>
-inline constexpr bool operator==(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t)
+inline constexpr bool operator==(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t) noexcept
 {
 	return b.current == b.last;
 }
 
 template <::std::integral char_type>
-inline constexpr bool operator!=(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t)
+inline constexpr bool operator!=(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t) noexcept
 {
 	return b.current != b.last;
 }

@@ -60,7 +60,7 @@ struct basic_posix_api_encoding_converter
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
 		constexpr
 #endif
-		~basic_posix_api_encoding_converter()
+		~basic_posix_api_encoding_converter() noexcept
 	{
 		details::deallocate_iobuf_space<false, char_type, allocator_type>(buffer_data, buffer_capacity + 1);
 

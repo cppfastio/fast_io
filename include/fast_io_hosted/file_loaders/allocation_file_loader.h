@@ -12,13 +12,13 @@ struct allocation_file_loader_closer_impl
 	int fd{-1};
 	char *address_begin{};
 	::std::size_t size{};
-	inline explicit constexpr allocation_file_loader_closer_impl(int fdd, char *addressbegin, ::std::size_t sz)
+	inline explicit constexpr allocation_file_loader_closer_impl(int fdd, char *addressbegin, ::std::size_t sz) noexcept
 		: fd{fdd}, address_begin{addressbegin}, size{sz}
 	{
 	}
 	inline allocation_file_loader_closer_impl(allocation_file_loader_closer_impl const &) = delete;
 	inline allocation_file_loader_closer_impl &operator=(allocation_file_loader_closer_impl const &) = delete;
-	inline ~allocation_file_loader_closer_impl()
+	inline ~allocation_file_loader_closer_impl() noexcept
 	{
 		if (fd != -1)
 		{
@@ -116,7 +116,7 @@ struct load_file_allocation_guard
 	}
 	inline load_file_allocation_guard(load_file_allocation_guard const &) = delete;
 	inline load_file_allocation_guard &operator=(load_file_allocation_guard const &) = delete;
-	inline ~load_file_allocation_guard()
+	inline ~load_file_allocation_guard() noexcept
 	{
 		if (address != nullptr)
 		{
@@ -512,7 +512,7 @@ public:
 	{
 		return address_begin[size];
 	}
-	inline void close()
+	inline void close() noexcept
 	{
 		::fast_io::details::close_allocation_file_loader_impl<allocator>(fd, address_begin, address_end);
 		address_capacity = address_end = address_begin = nullptr;
@@ -536,7 +536,7 @@ public:
 		fd = -1;
 		return temp;
 	}
-	inline ~basic_allocation_file_loader()
+	inline ~basic_allocation_file_loader() noexcept
 	{
 		::fast_io::details::close_allocation_file_loader_impl<allocator>(fd, address_begin, address_end);
 	}

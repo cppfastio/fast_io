@@ -13,6 +13,8 @@ namespace details
 
 template <::std::uint_least32_t e2hexdigits, ::std::random_access_iterator Iter>
 inline constexpr Iter with_sign_prt_rsv_exponent_hex_impl(Iter iter, ::std::int_least32_t e2)
+
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*iter = *iter))
 {
 	using char_type = ::std::iter_value_t<Iter>;
 	::std::uint_least32_t ue2{static_cast<::std::uint_least32_t>(e2)};

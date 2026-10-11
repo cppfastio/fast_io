@@ -292,7 +292,7 @@ inline constexpr ::std::size_t print_reserve_size_width_impl(T t, ::std::size_t 
 }
 
 template <::fast_io::manipulators::scalar_placement placement, ::std::integral char_type>
-inline constexpr char_type *handle_common_ch(char_type *first, char_type *last, ::std::size_t wd, char_type fillch)
+inline constexpr char_type *handle_common_ch(char_type *first, char_type *last, ::std::size_t wd, char_type fillch) noexcept
 {
 	::std::size_t const diff{static_cast<::std::size_t>(last - first)};
 	if (wd <= diff)
@@ -323,7 +323,7 @@ inline constexpr char_type *handle_common_ch(char_type *first, char_type *last, 
 
 template <::std::integral char_type>
 inline constexpr char_type *handle_common_internal_ch(char_type *first, char_type *last, ::std::size_t wd,
-													  char_type fillch, ::std::size_t internal_len)
+													  char_type fillch, ::std::size_t internal_len) noexcept
 {
 	::std::size_t const diff1{static_cast<::std::size_t>(last - first)};
 	if (wd <= diff1 || diff1 < internal_len)
@@ -395,7 +395,7 @@ inline constexpr char_type *print_reserve_define_width_impl(char_type *iter, T t
 
 template <::std::integral char_type>
 inline constexpr char_type *handle_common_rt_ch(::fast_io::manipulators::scalar_placement placement, char_type *first,
-												char_type *last, ::std::size_t wd, char_type fillch)
+												char_type *last, ::std::size_t wd, char_type fillch) noexcept
 {
 	::std::size_t const diff{static_cast<::std::size_t>(last - first)};
 	if (wd <= diff)
@@ -492,7 +492,7 @@ template <::std::integral char_type, ::fast_io::manipulators::scalar_placement p
 			 (static_cast<::std::size_t>(static_cast<::std::size_t>(placement) - static_cast<::std::size_t>(1u)) <
 			  static_cast<::std::size_t>(4u)))
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_t<placement, T>>,
-										   ::fast_io::manipulators::width_t<placement, T> t) noexcept
+												  ::fast_io::manipulators::width_t<placement, T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
 	{
@@ -511,7 +511,7 @@ template <::std::integral char_type, ::fast_io::manipulators::scalar_placement p
 			 (static_cast<::std::size_t>(static_cast<::std::size_t>(placement) - static_cast<::std::size_t>(1u)) <
 			  static_cast<::std::size_t>(4u)))
 inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_t<placement, T>>,
-										  char_type *iter, ::fast_io::manipulators::width_t<placement, T> t) noexcept
+												 char_type *iter, ::fast_io::manipulators::width_t<placement, T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
 	{
@@ -569,7 +569,7 @@ template <::std::integral char_type, typename T>
 			 dynamic_reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 scatter_printable<char_type, ::std::remove_cvref_t<T>>)
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_t<T>>,
-										   ::fast_io::manipulators::width_runtime_t<T> t) noexcept
+												  ::fast_io::manipulators::width_runtime_t<T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
 	{
@@ -586,7 +586,7 @@ template <::std::integral char_type, typename T>
 			 dynamic_reserve_printable<char_type, ::std::remove_cvref_t<T>> ||
 			 scatter_printable<char_type, ::std::remove_cvref_t<T>>)
 inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, ::fast_io::manipulators::width_runtime_t<T>>,
-										  char_type *iter, ::fast_io::manipulators::width_runtime_t<T> t) noexcept
+												 char_type *iter, ::fast_io::manipulators::width_runtime_t<T> t) noexcept
 {
 	if constexpr (::std::is_reference_v<T>)
 	{

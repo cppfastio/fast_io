@@ -556,7 +556,7 @@ private:
 		construct_range_destroyer(construct_range_destroyer const &) = delete;
 		construct_range_destroyer &operator=(construct_range_destroyer const &) = delete;
 
-		constexpr ~construct_range_destroyer()
+		constexpr ~construct_range_destroyer() noexcept
 		{
 			if (ptr)
 			{
@@ -650,7 +650,7 @@ public:
 		this->imp = {};
 	}
 
-	constexpr ~basic_str_swiss_set()
+	constexpr ~basic_str_swiss_set() noexcept
 	{
 		::fast_io::details::str_swiss_set_clear_impl<true, allocator_type, char_type>(this->imp);
 	}
