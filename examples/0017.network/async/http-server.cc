@@ -13,12 +13,24 @@
  *
  * One detached coroutine per connection plus the accept coroutine —
  * the same two-coroutine shape as tcp_echo_server.cc.
+ *
+ * RFC 6455 websocket echo is opt-in: build with
+ * -DFAST_IO_HTTP_SERVER_WS=1 to pull in fast_io_crypto and the Upgrade
+ * path; the default build is http-only and drops all of it.
  */
 #include <fast_io.h>
 #include <fast_io_device.h>
-#include <fast_io_crypto.h>
 #include <fast_io_dsal/string.h>
 #include <fast_io_dsal/string_view.h>
+
+#ifndef FAST_IO_HTTP_SERVER_WS
+#define FAST_IO_HTTP_SERVER_WS 0
+#endif
+#if FAST_IO_HTTP_SERVER_WS
+#include <fast_io_crypto.h>
+#endif
+
+inline constexpr bool enable_ws{FAST_IO_HTTP_SERVER_WS != 0};
 
 namespace fi = ::fast_io;
 namespace fop = ::fast_io::operations;
@@ -332,9 +344,11 @@ struct http_request
 	fi::u8string_view inm{};      /* If-None-Match */
 	fi::u8string_view ims{};      /* If-Modified-Since */
 	fi::u8string_view if_range{}; /* If-Range — mismatch degrades 206 to 200 */
-	fi::u8string_view upgrade{};  /* Upgrade */
-	fi::u8string_view wskey{};    /* Sec-WebSocket-Key */
-	fi::u8string_view wsver{};    /* Sec-WebSocket-Version */
+#if FAST_IO_HTTP_SERVER_WS
+	fi::u8string_view upgrade{}; /* Upgrade */
+	fi::u8string_view wskey{};   /* Sec-WebSocket-Key */
+	fi::u8string_view wsver{};   /* Sec-WebSocket-Version */
+#endif
 	bool head_only{};
 	bool keep_alive{};
 };
@@ -763,6 +777,7 @@ static fi::io_async_task<> respond_directory(fi::io_async_observer sched,
 }
 
 /* ------------------------------ websocket ------------------------- */
+#if FAST_IO_HTTP_SERVER_WS
 
 /* comma-list header token match — Connection: keep-alive, Upgrade */
 static bool has_token(fi::u8string_view list, fi::u8string_view tok) noexcept
@@ -879,6 +894,7 @@ static fi::io_async_task<> ws_session(fi::io_async_observer sched,
 		}
 	}
 }
+#endif /* FAST_IO_HTTP_SERVER_WS */
 
 /* ------------------------------- core ----------------------------- */
 
@@ -958,6 +974,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 			{
 				req.if_range = v;
 			}
+#if FAST_IO_HTTP_SERVER_WS
 			else if (ascii_ieq(k, u8"upgrade"))
 			{
 				req.upgrade = v;
@@ -970,6 +987,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 			{
 				req.wsver = v;
 			}
+#endif
 		}
 		req.keep_alive = req.version == fi::u8string_view{u8"HTTP/1.0"}
 							 ? ascii_ieq(req.connection, u8"keep-alive")
@@ -994,6 +1012,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 		{
 			co_await respond_status(sched, sock, 405, u8"Method Not Allowed", req, cfg);
 		}
+#if FAST_IO_HTTP_SERVER_WS
 		else if (is_ws_upgrade(req))
 		{
 			/* the connection switches protocols — ws_session owns it
@@ -1001,6 +1020,7 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 			co_await ws_session(sched, sock, req);
 			co_return;
 		}
+#endif
 		else
 		{
 			fi::u8string rel;
@@ -1228,6 +1248,8 @@ int main(int argc, char const **argv)
 			 ::fast_io::mnp::os_c_str(cfg.showdir ? "visible" : "not visible"),
 			 "\nAutoIndex (--no-index): ",
 			 ::fast_io::mnp::os_c_str(cfg.autoindex ? "visible" : "not visible"),
+			 "\nWebSocket (-DFAST_IO_HTTP_SERVER_WS=1): ",
+			 ::fast_io::mnp::os_c_str(enable_ws ? "enabled" : "disabled"),
 			 "\nAccess space (--lna): ",
 			 ::fast_io::mnp::os_c_str(
 				 !cfg.allowed_peers.is_empty()
