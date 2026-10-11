@@ -4,7 +4,6 @@ namespace fast_io::containers
 {
 
 template <typename T, ::std::size_t N, ::fast_io::allocator_adapter_flags flags = ::fast_io::allocator_adapter_flags::none>
-	requires(::fast_io::containers::details::valid_view_flags<flags>)
 class array
 {
 	static_assert((N <= ::std::numeric_limits<::std::size_t>::max() / sizeof(T)), "N is too big");
@@ -268,7 +267,6 @@ public:
 };
 
 template <typename T, ::fast_io::allocator_adapter_flags flags>
-	requires(::fast_io::containers::details::valid_view_flags<flags>)
 class array<T, 0, flags>
 {
 	static inline constexpr bool throwing_violations{
@@ -490,7 +488,6 @@ public:
 };
 
 template <typename T, ::std::size_t N, ::fast_io::allocator_adapter_flags flags>
-	requires(::fast_io::containers::details::valid_view_flags<flags>)
 inline constexpr void swap(::fast_io::containers::array<T, N, flags> &a, ::fast_io::containers::array<T, N, flags> &b)
 	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::std::declval<::fast_io::containers::array<T, N, flags> &>().swap(::std::declval<::fast_io::containers::array<T, N, flags> &>()))
 {
@@ -498,7 +495,7 @@ inline constexpr void swap(::fast_io::containers::array<T, N, flags> &a, ::fast_
 }
 
 template <typename T, ::std::size_t N1, ::std::size_t N2, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
-	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2> && ::std::equality_comparable<T>)
+	requires(::std::equality_comparable<T>)
 inline constexpr bool operator==(::fast_io::containers::array<T, N1, f1> const &a, ::fast_io::containers::array<T, N2, f2> const &b)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<T const &>() == ::std::declval<T const &>()))
 {
@@ -522,7 +519,7 @@ inline constexpr bool operator==(::fast_io::containers::array<T, N1, f1> const &
 #if __cpp_impl_three_way_comparison >= 201907L
 
 template <typename T, ::std::size_t N1, ::std::size_t N2, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
-	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2> && ::std::three_way_comparable<T>)
+	requires(::std::three_way_comparable<T>)
 inline constexpr auto operator<=>(::fast_io::containers::array<T, N1, f1> const &a, ::fast_io::containers::array<T, N2, f2> const &b)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::compare_three_way{}(::std::declval<T const &>(), ::std::declval<T const &>())))
 {

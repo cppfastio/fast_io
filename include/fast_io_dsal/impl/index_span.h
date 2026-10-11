@@ -10,7 +10,6 @@ struct index_unchecked_t
 inline constexpr index_unchecked_t index_unchecked{};
 
 template <typename T, ::std::size_t N, ::fast_io::allocator_adapter_flags flags = ::fast_io::allocator_adapter_flags::none>
-	requires ::fast_io::containers::details::valid_view_flags<flags>
 class index_span
 {
 	static inline constexpr bool throwing_violations{

@@ -4,7 +4,6 @@ namespace fast_io::containers
 {
 
 template <typename T, ::fast_io::allocator_adapter_flags flags = ::fast_io::allocator_adapter_flags::none>
-	requires(::fast_io::containers::details::valid_view_flags<flags>)
 class span
 {
 	static inline constexpr bool throwing_violations{
@@ -323,14 +322,13 @@ template <::std::contiguous_iterator Iter, ::std::sentinel_for<Iter> S>
 span(Iter, S) -> span<::std::remove_reference_t<::std::iter_reference_t<Iter>>>;
 
 template <typename T, ::fast_io::allocator_adapter_flags flags>
-	requires(::fast_io::containers::details::valid_view_flags<flags>)
 inline constexpr ::fast_io::containers::span<::std::byte const, flags> as_bytes(::fast_io::containers::span<T, flags> sp) noexcept
 {
 	return ::fast_io::containers::span<::std::byte const, flags>(static_cast<::std::byte const *>(static_cast<void const *>(sp.ptr)), sp.n * sizeof(T));
 }
 
 template <typename T, ::fast_io::allocator_adapter_flags flags>
-	requires(::fast_io::containers::details::valid_view_flags<flags> && !::std::is_const_v<T>)
+	requires(!::std::is_const_v<T>)
 inline constexpr ::fast_io::containers::span<::std::byte, flags> as_writable_bytes(::fast_io::containers::span<T, flags> sp) noexcept
 {
 	return ::fast_io::containers::span<::std::byte, flags>(static_cast<::std::byte *>(static_cast<void *>(sp.ptr)), sp.n * sizeof(T));
@@ -340,7 +338,7 @@ template <::std::ranges::contiguous_range R>
 span(::fast_io::freestanding::from_range_t, R &&r) -> span<::std::remove_reference_t<::std::ranges::range_reference_t<R>>>;
 
 template <typename T, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
-	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2> && ::std::equality_comparable<T>)
+	requires(::std::equality_comparable<T>)
 inline constexpr bool operator==(::fast_io::containers::span<T, f1> a, ::fast_io::containers::span<T, f2> b)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*a.ptr == *b.ptr))
 {
@@ -349,7 +347,7 @@ inline constexpr bool operator==(::fast_io::containers::span<T, f1> a, ::fast_io
 
 #if __cpp_impl_three_way_comparison >= 201907L
 template <typename T, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
-	requires(::fast_io::containers::details::valid_view_flags<f1> && ::fast_io::containers::details::valid_view_flags<f2> && ::std::three_way_comparable<T>)
+	requires(::std::three_way_comparable<T>)
 inline constexpr auto operator<=>(::fast_io::containers::span<T, f1> a, ::fast_io::containers::span<T, f2> b)
 {
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
