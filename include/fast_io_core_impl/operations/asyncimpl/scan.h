@@ -165,8 +165,8 @@ struct async_scan_arg_awaiter
 	}
 
 	inline bool resolve_precise(char_type const *p)
-		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(scan_precise_reserve_define(
-			::fast_io::io_reserve_type<char_type, argtype>, p, arg)))
+		FAST_IO_HERBCEPTIONS_THROWS_IF(
+			!::fast_io::precise_reserve_scannable_no_error<char_type, argtype>)
 	{
 		if constexpr (::fast_io::precise_reserve_scannable_no_error<char_type, argtype>)
 		{
